@@ -2,11 +2,11 @@ import { SignInButton, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 
 import Logo from "@/components/logo";
-import { currentUser } from "@/lib/current-user";
 import { UserRole } from "@prisma/client";
+import { getSelf } from "@/lib/current-user";
 
 export const Navbar = async () => {
-  const user = await currentUser();
+  const user = await getSelf();
 
   const isAdmin = user?.role === UserRole.ADMIN;
   const isEditor = user?.role === UserRole.EDITOR;

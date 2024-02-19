@@ -1,18 +1,24 @@
-import { auth } from "@clerk/nextjs";
+import { currentUser } from "@clerk/nextjs";
 import { db } from "./db";
 
-export const currentUser = async () => {
-  const { userId } = auth();
+export const getSelf = async () => {
+  const self = await currentUser();
 
-  if (!userId) {
+  if (!self) {
     return null;
   }
 
   const user = await db.user.findUnique({
     where: {
-      externalUserId: userId,
+      externalUserId: self.id,
     },
   });
 
-  return user;
+  // TODO: delete email
+
+  if (!user) {
+    return null;
+  }
+
+  return { ...user, email: self.emailAddresses[0].emailAddress };
 };

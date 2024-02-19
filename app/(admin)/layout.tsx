@@ -1,14 +1,13 @@
 import { redirectToSignIn } from "@clerk/nextjs";
 import { UserRole } from "@prisma/client";
 
-import { currentUser } from "@/lib/current-user";
-
 import { Navbar } from "./_components/navbar";
 import { Sidebar } from "./_components/sidebar";
 import { Container } from "./_components/container";
+import { getSelf } from "@/lib/current-user";
 
 const AdminLayout = async ({ children }: { children: React.ReactNode }) => {
-  const user = await currentUser();
+  const user = await getSelf();
 
   if (!user) {
     return redirectToSignIn();

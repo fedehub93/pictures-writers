@@ -1,5 +1,14 @@
+import { getSelf } from "@/lib/current-user";
+import { redirectToSignIn } from "@clerk/nextjs";
+import { redirect } from "next/navigation";
+
 const AdminPage = async () => {
-  return <div>Admin page</div>;
+  const user = await getSelf();
+  if (!user) {
+    return redirectToSignIn();
+  }
+
+  return redirect("/admin/dashboard");
 };
 
 export default AdminPage;
