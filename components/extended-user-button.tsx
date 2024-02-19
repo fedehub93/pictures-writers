@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { UserAvatar } from "@/components/user-avatar";
+import { Button } from "./ui/button";
 
 interface UserAvatarProps {
   email: string;
@@ -21,7 +22,9 @@ export const ExtendedUserButton = ({ email, imageUrl }: UserAvatarProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <UserAvatar email={email} imageUrl={imageUrl} />
+        <Button variant="ghost" size="icon">
+          <UserAvatar email={email} imageUrl={imageUrl} />
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuLabel>My account</DropdownMenuLabel>
@@ -29,7 +32,9 @@ export const ExtendedUserButton = ({ email, imageUrl }: UserAvatarProps) => {
         <DropdownMenuItem>
           <div className="flex items-center gap-x-2">
             <UserAvatar email={email} imageUrl={imageUrl} />
-            <span className="text-xs text-zinc-700">{email}</span>
+            <span className="text-xs text-zinc-700 dark:text-white">
+              {email}
+            </span>
           </div>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
