@@ -14,7 +14,7 @@ export const getSelf = async () => {
     },
   });
 
-  // TODO: delete email
+  // TODO: add email in prisma schema
 
   if (!user) {
     return null;
