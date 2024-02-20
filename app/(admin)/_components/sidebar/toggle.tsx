@@ -18,8 +18,8 @@ export const Toggle = () => {
         </div>
       )}
       {!collapsed && (
-        <div className="p-3 pl-6 mb-2 flex items-center w-full">
-          <p>For you</p>
+        <div className="p-3 pl-6 mb-2 flex items-center font-medium w-full">
+          <p>Management</p>
           <Button
             onClick={onCollapse}
             className="h-auto p-2 ml-auto"

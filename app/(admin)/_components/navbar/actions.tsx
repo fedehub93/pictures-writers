@@ -1,3 +1,5 @@
+"use server";
+
 import { UserRole } from "@prisma/client";
 import { redirectToSignIn } from "@clerk/nextjs";
 
