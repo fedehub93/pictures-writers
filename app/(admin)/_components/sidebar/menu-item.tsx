@@ -17,7 +17,7 @@ export const MenuItem = ({ label, href, icon: Icon }: MenuItemProps) => {
 
   const { collapsed } = useSidebar();
 
-  const isActive = pathname === href;
+  const isActive = pathname.startsWith(href);
 
   return (
     <Button

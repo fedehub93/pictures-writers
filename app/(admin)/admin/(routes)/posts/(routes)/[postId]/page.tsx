@@ -1,0 +1,50 @@
+import { redirectToSignIn } from "@clerk/nextjs";
+import { redirect } from "next/navigation";
+
+import { authAdmin } from "@/lib/auth-service";
+import { db } from "@/lib/db";
+import { Button } from "@/components/ui/button";
+import { Trash } from "lucide-react";
+
+const PostIdPage = async ({ params }: { params: { postId: string } }) => {
+  const userAdmin = await authAdmin();
+  if (!userAdmin) {
+    return redirectToSignIn();
+  }
+
+  const post = await db.post.findUnique({
+    where: {
+      id: params.postId,
+    },
+  });
+
+  if (!post) {
+    redirect("/admin/posts");
+  }
+
+  return (
+    <div className="p-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-medium">Post setup</h1>
+        <div className="flex gap-x-2">
+          <Button variant="outline" size="sm">
+            Unpublish
+          </Button>
+          <Button variant="destructive" size="sm">
+            <Trash className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-6 mt-16">
+        <div className="col-span-full md:col-span-4 lg:col-span-9 bg-slate-100 border rounded-md p-4">
+          Column 1
+        </div>
+        <div className="col-span-full md:col-span-2 lg:col-span-3 bg-slate-100 border rounded-md p-4">
+          Column 2
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PostIdPage;
