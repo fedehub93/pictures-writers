@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Trash } from "lucide-react";
 import { TitleForm } from "./_components/title-form";
 import { SlugForm } from "./_components/slug-form";
+import { ContentForm } from "./_components/content-form";
 
 const PostIdPage = async ({ params }: { params: { postId: string } }) => {
   const userAdmin = await authAdmin();
@@ -41,6 +42,7 @@ const PostIdPage = async ({ params }: { params: { postId: string } }) => {
         <div className="col-span-full md:col-span-4 lg:col-span-9 flex flex-col gap-y-4">
           <TitleForm initialData={post} postId={post.id} />
           <SlugForm initialData={post} postId={post.id} />
+          <ContentForm />
         </div>
         <div className="col-span-full md:col-span-2 lg:col-span-3 bg-slate-100 border rounded-md">
           Column 2
