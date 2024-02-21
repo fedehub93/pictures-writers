@@ -7,10 +7,11 @@ import {
   Italic,
   Underline,
 } from "lucide-react";
+import { useSlate } from "slate-react";
 
 import { Toggle } from "@/components/ui/toggle";
-import { CustomEditorHelper } from "../utils/custom-editor";
-import { useSlate } from "slate-react";
+import { CustomEditorHelper } from "@/components/editor/utils/custom-editor";
+import { Separator } from "@/components/ui/separator";
 
 const Toolbar = () => {
   const editor = useSlate();
@@ -38,10 +39,10 @@ const Toolbar = () => {
   );
 
   return (
-    <div className="border rounded-md p-4">
-      <div className="flex gap-x-1">
+    <div className="border rounded-t-md p-4">
+      <div className="flex gap-x-1 h-9">
         <Toggle
-          variant="outline"
+          size="sm"
           pressed={isActiveBold}
           onPressedChange={() => CustomEditorHelper.toggleMark(editor, "bold")}
           aria-label="Toggle bold"
@@ -49,7 +50,7 @@ const Toolbar = () => {
           <Bold className="h-4 w-4" />
         </Toggle>
         <Toggle
-          variant="outline"
+          size="sm"
           pressed={isActiveItalic}
           onPressedChange={() =>
             CustomEditorHelper.toggleMark(editor, "italic")
@@ -59,7 +60,7 @@ const Toolbar = () => {
           <Italic className="h-4 w-4" />
         </Toggle>
         <Toggle
-          variant="outline"
+          size="sm"
           pressed={isActiveUnderline}
           onPressedChange={() =>
             CustomEditorHelper.toggleMark(editor, "underline")
@@ -68,8 +69,9 @@ const Toolbar = () => {
         >
           <Underline className="h-4 w-4" />
         </Toggle>
+        <Separator orientation="vertical" />
         <Toggle
-          variant="outline"
+          size="sm"
           pressed={isActiveLeftAlign}
           onPressedChange={() => CustomEditorHelper.toggleBlock(editor, "left")}
           aria-label="Toggle left"
@@ -77,7 +79,7 @@ const Toolbar = () => {
           <AlignLeft className="h-4 w-4" />
         </Toggle>
         <Toggle
-          variant="outline"
+          size="sm"
           pressed={isActiveCenterAlign}
           onPressedChange={() =>
             CustomEditorHelper.toggleBlock(editor, "center")
@@ -87,7 +89,7 @@ const Toolbar = () => {
           <AlignCenter className="h-4 w-4" />
         </Toggle>
         <Toggle
-          variant="outline"
+          size="sm"
           pressed={isActiveRightAlign}
           onPressedChange={() =>
             CustomEditorHelper.toggleBlock(editor, "right")

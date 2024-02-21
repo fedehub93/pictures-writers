@@ -35,7 +35,7 @@ const EditorInput = () => {
 
   return (
     <Editable
-      className="border rounded-md outline-none"
+      className="border border-t-0 rounded-b-md outline-none min-h-40 p-4"
       renderElement={renderElement}
       renderLeaf={renderLeaf}
     />
