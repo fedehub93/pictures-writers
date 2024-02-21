@@ -1,28 +1,33 @@
 import { NextResponse } from "next/server";
 
-import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
+import { db } from "@/lib/db";
 
-export async function POST(req: Request) {
+export async function PATCH(
+  req: Request,
+  { params }: { params: { postId: string } }
+) {
   try {
     const user = await authAdmin();
-    const { title, slug } = await req.json();
+    const { postId } = params;
+    const values = await req.json();
 
     if (!user) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const post = await db.post.create({
+    const post = await db.post.update({
+      where: {
+        id: postId,
+      },
       data: {
-        userId: user.id,
-        title,
-        slug,
+        ...values,
       },
     });
 
     return NextResponse.json(post);
   } catch (error) {
-    console.log("[POSTS]", error);
+    console.log("[POST_ID]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }
