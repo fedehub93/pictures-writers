@@ -58,7 +58,7 @@ export const TitleForm = ({ initialData, postId }: TitleFormProps) => {
   };
 
   return (
-    <div className="bg-slate-100 border rounded-md p-4">
+    <div className="bg-slate-100 dark:bg-slate-900 border rounded-md p-4">
       <div className="flex items-center justify-between">
         Post title
         <Button onClick={toggleEdit} variant="ghost">

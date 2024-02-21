@@ -69,7 +69,7 @@ export const SlugForm = ({ initialData, postId }: SlugFormProps) => {
   };
 
   return (
-    <div className="col-span-full md:col-span-4 lg:col-span-9 bg-slate-100 border rounded-md p-4">
+    <div className="col-span-full md:col-span-4 lg:col-span-9 bg-slate-100 dark:bg-slate-900 border rounded-md p-4">
       <div className="flex items-center justify-between">
         Post slug
         <Button onClick={toggleEdit} variant="ghost">

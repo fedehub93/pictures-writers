@@ -44,7 +44,7 @@ const PostIdPage = async ({ params }: { params: { postId: string } }) => {
           <SlugForm initialData={post} postId={post.id} />
           <ContentForm />
         </div>
-        <div className="col-span-full md:col-span-2 lg:col-span-3 bg-slate-100 border rounded-md">
+        <div className="col-span-full md:col-span-2 lg:col-span-3 bg-slate-100 dark:bg-slate-900 border rounded-md">
           Column 2
         </div>
       </div>

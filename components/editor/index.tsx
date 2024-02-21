@@ -1,12 +1,28 @@
 import { createEditor, BaseEditor, Descendant } from "slate";
-import { Slate, withReact, ReactEditor, Editable } from "slate-react";
+import { Slate, withReact, ReactEditor } from "slate-react";
 import EditorInput from "@/components/editor/editor-input";
 import Toolbar from "./toolbar";
 
-type CustomElementType = "paragraph" | "code";
+export type CustomEditor = BaseEditor & ReactEditor;
 
-type CustomText = {
-  attachmentId?: string;
+export type CustomElementType =
+  | "paragraph"
+  | "code"
+  | "list-item"
+  | "left"
+  | "center"
+  | "right"
+  | "bold"
+  | "italic"
+  | "underline";
+
+export type CustomText = {
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  left?: boolean;
+  center?: boolean;
+  right?: boolean;
   text: string;
 };
 
@@ -14,18 +30,19 @@ type CustomElement = {
   type: CustomElementType;
   children: CustomText[];
   href?: string;
+  align?: string;
 };
 
 declare module "slate" {
   interface CustomTypes {
-    Editor: BaseEditor & ReactEditor;
+    Editor: CustomEditor;
     Element: CustomElement;
     Text: CustomText;
   }
 }
 
 interface EditorProps {
-  editor: BaseEditor & ReactEditor;
+  editor: CustomEditor;
   initialValue?: Descendant[];
 }
 

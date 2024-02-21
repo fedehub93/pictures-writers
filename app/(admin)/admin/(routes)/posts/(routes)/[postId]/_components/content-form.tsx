@@ -10,7 +10,7 @@ import Editor from "@/components/editor";
 import { createWrappedEditor } from "@/components/editor";
 
 export const ContentForm = () => {
-  const editor = createWrappedEditor();
+  const [editor] = useState(() => createWrappedEditor());
   return (
     <div>
       <Editor editor={editor} />
