@@ -4,100 +4,55 @@ import {
   AlignLeft,
   AlignRight,
   Bold,
+  Heading1,
   Italic,
   Underline,
 } from "lucide-react";
-import { useSlate } from "slate-react";
 
-import { Toggle } from "@/components/ui/toggle";
-import { CustomEditorHelper } from "@/components/editor/utils/custom-editor";
 import { Separator } from "@/components/ui/separator";
+import MarkButton from "./mark-button";
+import BlockButton from "./block-button";
+import { SelectHeading } from "./select-heading";
+
+const heading = [
+  {
+    label: "Normal text",
+    type: "paragraph",
+    default: true,
+  },
+  {
+    label: "Heading one",
+    type: "heading-one",
+  },
+];
 
 const Toolbar = () => {
-  const editor = useSlate();
-
-  const isActiveBold = CustomEditorHelper.isMarkActive(editor, "bold");
-  const isActiveItalic = CustomEditorHelper.isMarkActive(editor, "italic");
-  const isActiveUnderline = CustomEditorHelper.isMarkActive(
-    editor,
-    "underline"
-  );
-  const isActiveLeftAlign = CustomEditorHelper.isBlockActive(
-    editor,
-    "left",
-    "align"
-  );
-  const isActiveCenterAlign = CustomEditorHelper.isBlockActive(
-    editor,
-    "center",
-    "align"
-  );
-  const isActiveRightAlign = CustomEditorHelper.isBlockActive(
-    editor,
-    "right",
-    "align"
-  );
-
   return (
     <div className="border rounded-t-md p-4">
       <div className="flex gap-x-1 h-9">
-        <Toggle
-          size="sm"
-          pressed={isActiveBold}
-          onPressedChange={() => CustomEditorHelper.toggleMark(editor, "bold")}
-          aria-label="Toggle bold"
-        >
+        <SelectHeading values={heading} />
+        <MarkButton format="bold">
           <Bold className="h-4 w-4" />
-        </Toggle>
-        <Toggle
-          size="sm"
-          pressed={isActiveItalic}
-          onPressedChange={() =>
-            CustomEditorHelper.toggleMark(editor, "italic")
-          }
-          aria-label="Toggle italic"
-        >
+        </MarkButton>
+        <MarkButton format="italic">
           <Italic className="h-4 w-4" />
-        </Toggle>
-        <Toggle
-          size="sm"
-          pressed={isActiveUnderline}
-          onPressedChange={() =>
-            CustomEditorHelper.toggleMark(editor, "underline")
-          }
-          aria-label="Toggle underline"
-        >
+        </MarkButton>
+        <MarkButton format="underline">
           <Underline className="h-4 w-4" />
-        </Toggle>
+        </MarkButton>
         <Separator orientation="vertical" />
-        <Toggle
-          size="sm"
-          pressed={isActiveLeftAlign}
-          onPressedChange={() => CustomEditorHelper.toggleBlock(editor, "left")}
-          aria-label="Toggle left"
-        >
+        <BlockButton format="left">
           <AlignLeft className="h-4 w-4" />
-        </Toggle>
-        <Toggle
-          size="sm"
-          pressed={isActiveCenterAlign}
-          onPressedChange={() =>
-            CustomEditorHelper.toggleBlock(editor, "center")
-          }
-          aria-label="Toggle center"
-        >
+        </BlockButton>
+        <BlockButton format="center">
           <AlignCenter className="h-4 w-4" />
-        </Toggle>
-        <Toggle
-          size="sm"
-          pressed={isActiveRightAlign}
-          onPressedChange={() =>
-            CustomEditorHelper.toggleBlock(editor, "right")
-          }
-          aria-label="Toggle right"
-        >
+        </BlockButton>
+        <BlockButton format="right">
           <AlignRight className="h-4 w-4" />
-        </Toggle>
+        </BlockButton>
+        <BlockButton format="heading-one">
+          <Heading1 className="h-4 w-4" />
+        </BlockButton>
       </div>
     </div>
   );

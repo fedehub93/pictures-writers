@@ -7,6 +7,7 @@ export type CustomEditor = BaseEditor & ReactEditor;
 
 export type CustomElementType =
   | "paragraph"
+  | "heading-one"
   | "code"
   | "list-item"
   | "left"
@@ -17,19 +18,15 @@ export type CustomElementType =
   | "underline";
 
 export type CustomText = {
+  text: string;
   bold?: boolean;
   italic?: boolean;
   underline?: boolean;
-  left?: boolean;
-  center?: boolean;
-  right?: boolean;
-  text: string;
 };
 
-type CustomElement = {
+export type CustomElement = {
   type: CustomElementType;
   children: CustomText[];
-  href?: string;
   align?: string;
 };
 

@@ -2,22 +2,20 @@ import { RenderElementProps } from "slate-react";
 
 import { cn } from "@/lib/utils";
 
-interface DefaultElementProps extends RenderElementProps {
-  isHighlight?: boolean;
-}
+interface HeadingOneElementProps extends RenderElementProps {}
 
-export const DefaultElement = (props: DefaultElementProps) => {
+export const HeadingOneElement = (props: HeadingOneElementProps) => {
   return (
-    <p
+    <h1
       {...props.attributes}
       className={cn(
+        "text-3xl",
         props.element.align === "left" && "text-left",
         props.element.align === "center" && "text-center",
-        props.element.align === "right" && "text-right",
-        props.isHighlight && "bg-zinc-200"
+        props.element.align === "right" && "text-right"
       )}
     >
       {props.children}
-    </p>
+    </h1>
   );
 };

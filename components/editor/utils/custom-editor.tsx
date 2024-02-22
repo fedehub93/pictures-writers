@@ -1,13 +1,16 @@
 import { Editor, Element, Transforms } from "slate";
-import { CustomEditor } from "@/components/editor";
+import { ReactEditor } from "slate-react";
 
-type Format = "bold" | "italic" | "underline" | "left" | "center" | "right";
+import { CustomEditor, CustomElementType } from "@/components/editor";
+
+type Format = "bold" | "italic" | "underline";
+type Alignment = "left" | "center" | "right" | "justify";
 
 const LIST_TYPES = ["numbered-list", "bulleted-list"];
 const TEXT_ALIGN_TYPES = ["left", "center", "right", "justify"];
 // Define our own custom set of helpers.
 export const CustomEditorHelper = {
-  toggleBlock(editor: CustomEditor, format: Format) {
+  toggleBlock(editor: CustomEditor, format: CustomElementType) {
     const isActive = CustomEditorHelper.isBlockActive(
       editor,
       format,
@@ -43,7 +46,7 @@ export const CustomEditorHelper = {
 
   isBlockActive(
     editor: CustomEditor,
-    format: Format,
+    format: CustomElementType,
     blockType: "align" | "type" = "type"
   ) {
     const { selection } = editor;
