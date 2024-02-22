@@ -38,6 +38,25 @@ const EditorInput = () => {
         return <HeadingThreeElement {...props} />;
       case "heading-four":
         return <HeadingFourElement {...props} />;
+      case "list-item":
+        return (
+          <li {...props.attributes} className="list-item">
+            {props.children}
+          </li>
+        );
+      case "bulleted-list":
+        return (
+          <ul {...props.attributes} className="list-disc">
+            {props.children}
+          </ul>
+        );
+      case "numbered-list":
+        console.log(props);
+        return (
+          <ol {...props.attributes} className="list-decimal">
+            {props.children}
+          </ol>
+        );
       default:
         // return <DefaultElement {...props} isHighlight={isHighlight} />;
         return <DefaultElement {...props} />;
@@ -61,7 +80,7 @@ const EditorInput = () => {
 
   return (
     <Editable
-      className="border border-t-0 rounded-b-md outline-none min-h-40 p-4"
+      className="border border-t-0 rounded-b-md outline-none h-full p-4"
       renderElement={renderElement}
       renderLeaf={renderLeaf}
     />

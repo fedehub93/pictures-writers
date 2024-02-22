@@ -4,8 +4,9 @@ import {
   AlignLeft,
   AlignRight,
   Bold,
-  Heading1,
   Italic,
+  List,
+  ListOrdered,
   Underline,
 } from "lucide-react";
 
@@ -13,7 +14,6 @@ import { Separator } from "@/components/ui/separator";
 import MarkButton from "./mark-button";
 import BlockButton from "./block-button";
 import { SelectHeading } from "./select-heading";
-import { CustomElementType } from "@/components/editor";
 
 const Toolbar = () => {
   return (
@@ -38,6 +38,13 @@ const Toolbar = () => {
         </BlockButton>
         <BlockButton format="right">
           <AlignRight className="h-4 w-4" />
+        </BlockButton>
+        <Separator orientation="vertical" />
+        <BlockButton format="bulleted-list">
+          <List className="h-4 w-4" />
+        </BlockButton>
+        <BlockButton format="numbered-list">
+          <ListOrdered className="h-4 w-4" />
         </BlockButton>
       </div>
     </div>

@@ -26,7 +26,7 @@ const PostIdPage = async ({ params }: { params: { postId: string } }) => {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-6 max-w-7xl mx-auto h-[calc(100%-5rem)]">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-medium">Post setup</h1>
         <div className="flex gap-x-2">
@@ -38,7 +38,7 @@ const PostIdPage = async ({ params }: { params: { postId: string } }) => {
           </Button>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-6 mt-16">
+      <div className="h-[calc(100%-5rem)] grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-6 mt-16">
         <div className="col-span-full md:col-span-4 lg:col-span-9 flex flex-col gap-y-4">
           <TitleForm initialData={post} postId={post.id} />
           <SlugForm initialData={post} postId={post.id} />

@@ -13,6 +13,8 @@ export type CustomElementType =
   | "heading-four"
   | "code"
   | "list-item"
+  | "bulleted-list"
+  | "numbered-list"
   | "left"
   | "center"
   | "right";

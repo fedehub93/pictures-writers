@@ -7,7 +7,7 @@ import Editor, { createWrappedEditor } from "@/components/editor";
 export const ContentForm = () => {
   const editor = useMemo(() => createWrappedEditor(), []);
   return (
-    <div>
+    <div className="h-full">
       <Editor editor={editor} />
     </div>
   );

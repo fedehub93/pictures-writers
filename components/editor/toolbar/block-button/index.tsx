@@ -4,10 +4,11 @@ import { useSlate } from "slate-react";
 
 import { Toggle } from "@/components/ui/toggle";
 import { CustomEditorHelper } from "../../utils/custom-editor";
+import { CustomElementType } from "../..";
 
 interface BlockButtonProps {
   children: React.ReactNode;
-  format: any;
+  format: CustomElementType;
 }
 
 const MarkButton = ({ children, format }: BlockButtonProps) => {

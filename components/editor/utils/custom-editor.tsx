@@ -62,6 +62,7 @@ export const CustomEditorHelper = {
       const block = { type: format, children: [] };
       Transforms.wrapNodes(editor, block);
     }
+
     ReactEditor.focus(editor);
   },
 
