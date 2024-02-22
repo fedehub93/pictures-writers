@@ -8,14 +8,14 @@ export type CustomEditor = BaseEditor & ReactEditor;
 export type CustomElementType =
   | "paragraph"
   | "heading-one"
+  | "heading-two"
+  | "heading-three"
+  | "heading-four"
   | "code"
   | "list-item"
   | "left"
   | "center"
-  | "right"
-  | "bold"
-  | "italic"
-  | "underline";
+  | "right";
 
 export type CustomText = {
   text: string;

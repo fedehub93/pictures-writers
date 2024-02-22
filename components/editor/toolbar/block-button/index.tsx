@@ -12,7 +12,6 @@ interface BlockButtonProps {
 
 const MarkButton = ({ children, format }: BlockButtonProps) => {
   const editor = useSlate();
-
   const isActive = CustomEditorHelper.isBlockActive(editor, format);
 
   return (

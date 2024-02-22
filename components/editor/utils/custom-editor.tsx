@@ -1,15 +1,35 @@
 import { Editor, Element, Transforms } from "slate";
-import { ReactEditor } from "slate-react";
 
 import { CustomEditor, CustomElementType } from "@/components/editor";
+import { ReactEditor } from "slate-react";
 
 type Format = "bold" | "italic" | "underline";
-type Alignment = "left" | "center" | "right" | "justify";
 
 const LIST_TYPES = ["numbered-list", "bulleted-list"];
 const TEXT_ALIGN_TYPES = ["left", "center", "right", "justify"];
 // Define our own custom set of helpers.
 export const CustomEditorHelper = {
+  isBlockActive(
+    editor: CustomEditor,
+    format: CustomElementType,
+    blockType: "align" | "type" = "type"
+  ) {
+    const { selection } = editor;
+    if (!selection) return false;
+
+    const [match] = Array.from(
+      Editor.nodes(editor, {
+        at: Editor.unhangRange(editor, selection),
+        match: (n) =>
+          !Editor.isEditor(n) &&
+          Element.isElement(n) &&
+          n[blockType] === format,
+      })
+    );
+
+    return !!match;
+  },
+
   toggleBlock(editor: CustomEditor, format: CustomElementType) {
     const isActive = CustomEditorHelper.isBlockActive(
       editor,
@@ -42,27 +62,7 @@ export const CustomEditorHelper = {
       const block = { type: format, children: [] };
       Transforms.wrapNodes(editor, block);
     }
-  },
-
-  isBlockActive(
-    editor: CustomEditor,
-    format: CustomElementType,
-    blockType: "align" | "type" = "type"
-  ) {
-    const { selection } = editor;
-    if (!selection) return false;
-
-    const [match] = Array.from(
-      Editor.nodes(editor, {
-        at: Editor.unhangRange(editor, selection),
-        match: (n) =>
-          !Editor.isEditor(n) &&
-          Element.isElement(n) &&
-          n[blockType] === format,
-      })
-    );
-
-    return !!match;
+    ReactEditor.focus(editor);
   },
 
   isMarkActive(editor: CustomEditor, format: Format) {
@@ -77,5 +77,6 @@ export const CustomEditorHelper = {
     } else {
       Editor.addMark(editor, format, true);
     }
+    ReactEditor.focus(editor);
   },
 };

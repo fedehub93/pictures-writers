@@ -13,24 +13,13 @@ import { Separator } from "@/components/ui/separator";
 import MarkButton from "./mark-button";
 import BlockButton from "./block-button";
 import { SelectHeading } from "./select-heading";
-
-const heading = [
-  {
-    label: "Normal text",
-    type: "paragraph",
-    default: true,
-  },
-  {
-    label: "Heading one",
-    type: "heading-one",
-  },
-];
+import { CustomElementType } from "@/components/editor";
 
 const Toolbar = () => {
   return (
     <div className="border rounded-t-md p-4">
       <div className="flex gap-x-1 h-9">
-        <SelectHeading values={heading} />
+        <SelectHeading />
         <MarkButton format="bold">
           <Bold className="h-4 w-4" />
         </MarkButton>
@@ -49,9 +38,6 @@ const Toolbar = () => {
         </BlockButton>
         <BlockButton format="right">
           <AlignRight className="h-4 w-4" />
-        </BlockButton>
-        <BlockButton format="heading-one">
-          <Heading1 className="h-4 w-4" />
         </BlockButton>
       </div>
     </div>

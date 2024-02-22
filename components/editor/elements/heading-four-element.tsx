@@ -2,20 +2,20 @@ import { RenderElementProps } from "slate-react";
 
 import { cn } from "@/lib/utils";
 
-interface HeadingOneElementProps extends RenderElementProps {}
+interface HeadingFourElementProps extends RenderElementProps {}
 
-export const HeadingOneElement = (props: HeadingOneElementProps) => {
+export const HeadingFourElement = (props: HeadingFourElementProps) => {
   return (
-    <h1
+    <h4
       {...props.attributes}
       className={cn(
-        "text-3xl mb-4",
+        "text-xl mb-4",
         props.element.align === "left" && "text-left",
         props.element.align === "center" && "text-center",
         props.element.align === "right" && "text-right"
       )}
     >
       {props.children}
-    </h1>
+    </h4>
   );
 };
