@@ -1,6 +1,10 @@
-import { Editor, Element, Transforms } from "slate";
+import { Editor, Element, Range, Transforms } from "slate";
 
-import { CustomEditor, CustomElementType } from "@/components/editor";
+import {
+  CustomEditor,
+  CustomElement,
+  CustomElementType,
+} from "@/components/editor";
 import { ReactEditor } from "slate-react";
 
 type Format = "bold" | "italic" | "underline";
@@ -79,5 +83,40 @@ export const CustomEditorHelper = {
       Editor.addMark(editor, format, true);
     }
     ReactEditor.focus(editor);
+  },
+
+  insertLink(editor: CustomEditor, text: string, url: string) {
+    if (editor.selection) {
+      CustomEditorHelper.wrapLink(editor, text, url);
+    }
+  },
+
+  wrapLink(editor: CustomEditor, text: string, url: string) {
+    if (CustomEditorHelper.isBlockActive(editor, "link")) {
+      CustomEditorHelper.unwrapLink(editor);
+    }
+
+    const { selection } = editor;
+    const isCollapsed = selection && Range.isCollapsed(selection);
+    const link: CustomElement = {
+      type: "link",
+      url,
+      children: isCollapsed ? [{ text }] : [],
+    };
+
+    if (isCollapsed) {
+      Transforms.insertNodes(editor, link);
+    } else {
+      Transforms.wrapNodes(editor, link, { split: true });
+      Transforms.insertText(editor, text);
+      Transforms.collapse(editor, { edge: "end" });
+    }
+  },
+
+  unwrapLink(editor: CustomEditor) {
+    Transforms.unwrapNodes(editor, {
+      match: (n) =>
+        !Editor.isEditor(n) && Element.isElement(n) && n.type === "link",
+    });
   },
 };

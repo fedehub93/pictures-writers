@@ -5,6 +5,7 @@ import {
   AlignRight,
   Bold,
   Italic,
+  Link,
   List,
   ListOrdered,
   Quote,
@@ -15,6 +16,7 @@ import { Separator } from "@/components/ui/separator";
 import MarkButton from "./mark-button";
 import BlockButton from "./block-button";
 import { SelectHeading } from "./select-heading";
+import LinkButton from "./link-button";
 
 const Toolbar = () => {
   return (
@@ -30,6 +32,8 @@ const Toolbar = () => {
         <MarkButton format="underline">
           <Underline className="h-4 w-4" />
         </MarkButton>
+        <Separator orientation="vertical" />
+        <LinkButton format="link" />
         <Separator orientation="vertical" />
         <BlockButton format="left" blockType="align">
           <AlignLeft className="h-4 w-4" />

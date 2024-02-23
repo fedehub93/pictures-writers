@@ -13,6 +13,8 @@ import { HeadingTwoElement } from "@/components/editor/elements/heading-two-elem
 import { HeadingThreeElement } from "@/components/editor/elements/heading-three-element";
 import { HeadingFourElement } from "@/components/editor/elements/heading-four-element";
 import { BlockquoteElement } from "@/components/editor/elements/blockquote-element";
+import { LinkComponent } from "../elements/link-component";
+import { Element } from "slate";
 
 interface EditorInputProps {}
 
@@ -41,6 +43,8 @@ const EditorInput = () => {
         return <HeadingFourElement {...props} />;
       case "block-quote":
         return <BlockquoteElement {...props} />;
+      case "link":
+        return <LinkComponent {...props} />;
       case "list-item":
         return (
           <li {...props.attributes} className="list-item">

@@ -12,6 +12,7 @@ export type CustomElementType =
   | "heading-three"
   | "heading-four"
   | "block-quote"
+  | "link"
   | "code"
   | "list-item"
   | "bulleted-list"
@@ -25,11 +26,13 @@ export type CustomText = {
   bold?: boolean;
   italic?: boolean;
   underline?: boolean;
+  type?: "link";
 };
 
 export type CustomElement = {
   type: CustomElementType;
   children: CustomText[];
+  url?: string;
   align?: string;
 };
 
@@ -46,7 +49,17 @@ interface EditorProps {
   initialValue?: Descendant[];
 }
 
-export const createWrappedEditor = () => withReact(createEditor());
+// PLUGIN
+const withInlines = (editor: CustomEditor) => {
+  const { isInline } = editor;
+
+  editor.isInline = (element) =>
+    element.type === "link" ? true : isInline(element);
+
+  return editor;
+};
+
+export const createWrappedEditor = () => withInlines(withReact(createEditor()));
 
 const defaultInitialValue: Descendant[] = [
   { type: "paragraph", children: [{ text: "" }] },
