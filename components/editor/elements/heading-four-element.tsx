@@ -9,7 +9,7 @@ export const HeadingFourElement = (props: HeadingFourElementProps) => {
     <h4
       {...props.attributes}
       className={cn(
-        "text-xl mb-4",
+        "text-lg mb-4",
         props.element.align === "left" && "text-left",
         props.element.align === "center" && "text-center",
         props.element.align === "right" && "text-right"

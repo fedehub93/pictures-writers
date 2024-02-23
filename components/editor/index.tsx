@@ -11,6 +11,7 @@ export type CustomElementType =
   | "heading-two"
   | "heading-three"
   | "heading-four"
+  | "block-quote"
   | "code"
   | "list-item"
   | "bulleted-list"

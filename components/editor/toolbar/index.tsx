@@ -7,6 +7,7 @@ import {
   Italic,
   List,
   ListOrdered,
+  Quote,
   Underline,
 } from "lucide-react";
 
@@ -30,13 +31,13 @@ const Toolbar = () => {
           <Underline className="h-4 w-4" />
         </MarkButton>
         <Separator orientation="vertical" />
-        <BlockButton format="left">
+        <BlockButton format="left" blockType="align">
           <AlignLeft className="h-4 w-4" />
         </BlockButton>
-        <BlockButton format="center">
+        <BlockButton format="center" blockType="align">
           <AlignCenter className="h-4 w-4" />
         </BlockButton>
-        <BlockButton format="right">
+        <BlockButton format="right" blockType="align">
           <AlignRight className="h-4 w-4" />
         </BlockButton>
         <Separator orientation="vertical" />
@@ -45,6 +46,9 @@ const Toolbar = () => {
         </BlockButton>
         <BlockButton format="numbered-list">
           <ListOrdered className="h-4 w-4" />
+        </BlockButton>
+        <BlockButton format="block-quote">
+          <Quote className="h-4 w-4" />
         </BlockButton>
       </div>
     </div>

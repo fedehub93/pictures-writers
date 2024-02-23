@@ -9,11 +9,16 @@ import { CustomElementType } from "../..";
 interface BlockButtonProps {
   children: React.ReactNode;
   format: CustomElementType;
+  blockType?: "type" | "align";
 }
 
-const MarkButton = ({ children, format }: BlockButtonProps) => {
+const MarkButton = ({
+  children,
+  format,
+  blockType = "type",
+}: BlockButtonProps) => {
   const editor = useSlate();
-  const isActive = CustomEditorHelper.isBlockActive(editor, format);
+  const isActive = CustomEditorHelper.isBlockActive(editor, format, blockType);
 
   return (
     <Toggle

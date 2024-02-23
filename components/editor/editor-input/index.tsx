@@ -6,12 +6,13 @@ import {
   useSlate,
 } from "slate-react";
 
-import { DefaultElement } from "@/components/editor/elements/default-element";
 import { cn } from "@/lib/utils";
+import { DefaultElement } from "@/components/editor/elements/default-element";
 import { HeadingOneElement } from "@/components/editor/elements/heading-one-element";
 import { HeadingTwoElement } from "@/components/editor/elements/heading-two-element";
 import { HeadingThreeElement } from "@/components/editor/elements/heading-three-element";
 import { HeadingFourElement } from "@/components/editor/elements/heading-four-element";
+import { BlockquoteElement } from "@/components/editor/elements/blockquote-element";
 
 interface EditorInputProps {}
 
@@ -38,6 +39,8 @@ const EditorInput = () => {
         return <HeadingThreeElement {...props} />;
       case "heading-four":
         return <HeadingFourElement {...props} />;
+      case "block-quote":
+        return <BlockquoteElement {...props} />;
       case "list-item":
         return (
           <li {...props.attributes} className="list-item">
@@ -51,7 +54,6 @@ const EditorInput = () => {
           </ul>
         );
       case "numbered-list":
-        console.log(props);
         return (
           <ol {...props.attributes} className="list-decimal">
             {props.children}
