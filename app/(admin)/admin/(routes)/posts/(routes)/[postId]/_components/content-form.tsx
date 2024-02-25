@@ -2,7 +2,8 @@
 
 import { useMemo } from "react";
 
-import Editor, { createWrappedEditor } from "@/components/editor";
+import Editor from "@/components/editor";
+import { createWrappedEditor } from "@/components/editor/editor-input";
 
 export const ContentForm = () => {
   const editor = useMemo(() => createWrappedEditor(), []);

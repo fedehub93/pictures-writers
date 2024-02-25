@@ -8,7 +8,7 @@ interface DefaultElementProps extends RenderElementProps {
 
 export const DefaultElement = (props: DefaultElementProps) => {
   return (
-    <p
+    <div
       {...props.attributes}
       className={cn(
         props.element.align === "left" && "text-left",
@@ -18,6 +18,6 @@ export const DefaultElement = (props: DefaultElementProps) => {
       )}
     >
       {props.children}
-    </p>
+    </div>
   );
 };

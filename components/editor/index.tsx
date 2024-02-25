@@ -1,4 +1,4 @@
-import { createEditor, BaseEditor, Descendant } from "slate";
+import { createEditor, BaseEditor, Descendant, Transforms } from "slate";
 import { Slate, withReact, ReactEditor } from "slate-react";
 import EditorInput from "@/components/editor/editor-input";
 import Toolbar from "./toolbar";
@@ -49,25 +49,28 @@ interface EditorProps {
   initialValue?: Descendant[];
 }
 
-// PLUGIN
-const withInlines = (editor: CustomEditor) => {
-  const { isInline } = editor;
-
-  editor.isInline = (element) =>
-    element.type === "link" ? true : isInline(element);
-
-  return editor;
-};
-
-export const createWrappedEditor = () => withInlines(withReact(createEditor()));
-
 const defaultInitialValue: Descendant[] = [
   { type: "paragraph", children: [{ text: "" }] },
 ];
 
 const Editor = ({ editor, initialValue }: EditorProps) => {
   return (
-    <Slate editor={editor} initialValue={initialValue || defaultInitialValue}>
+    <Slate
+      editor={editor}
+      initialValue={initialValue || defaultInitialValue}
+      // onChange={(value) => {
+      //   const isAstChange = editor.operations.some(
+      //     (op) => "set_selection" !== op.type
+      //   );
+      //   console.log(isAstChange);
+      //   if (isAstChange) {
+      //     // Save the value to Local Storage.
+      //     const content = JSON.stringify(value);
+      //     console.log(content);
+      //     localStorage.setItem("content", content);
+      //   }
+      // }}
+    >
       <Toolbar />
       <EditorInput />
     </Slate>

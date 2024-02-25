@@ -27,7 +27,7 @@ const LinkButton = ({ format }: LinkButtonProps) => {
   const handleSave = (values: { text: string; target: string }) => {
     if (!isActive) {
       if (!values.target) return;
-      CustomEditorHelper.insertLink(editor, values.text, values.target);
+      CustomEditorHelper.wrapLink(editor, values.target, values.text);
       return;
     }
 

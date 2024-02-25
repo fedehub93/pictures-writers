@@ -4,6 +4,7 @@ import {
   RenderElementProps,
   RenderLeafProps,
   useSlate,
+  withReact,
 } from "slate-react";
 
 import { cn } from "@/lib/utils";
@@ -14,9 +15,51 @@ import { HeadingThreeElement } from "@/components/editor/elements/heading-three-
 import { HeadingFourElement } from "@/components/editor/elements/heading-four-element";
 import { BlockquoteElement } from "@/components/editor/elements/blockquote-element";
 import { LinkComponent } from "../elements/link-component";
-import { Element } from "slate";
+import { Editor, Element, Node, Range, Transforms, createEditor } from "slate";
+import { CustomEditor } from "..";
+import { isKeyHotkey } from "is-hotkey";
 
 interface EditorInputProps {}
+
+// PLUGIN
+const withInlines = (editor: CustomEditor) => {
+  const { isInline, normalizeNode } = editor;
+
+  editor.isInline = (element) =>
+    element.type === "link" ? true : isInline(element);
+
+  editor.normalizeNode = (entry) => {
+    const [node, path] = entry;
+    if (Element.isElement(node) && node.type === "paragraph") {
+      const children = Array.from(Node.children(editor, path));
+      for (const [child, childPath] of children) {
+        // FIX: remove link nodes whose text value is empty string.
+        // FIX: empty text links happen when you move from link to next line or delete link line.
+        if (
+          Element.isElement(child) &&
+          editor.isInline(child) &&
+          child.children[0].text === ""
+        ) {
+          if (children.length === 1) {
+            Transforms.removeNodes(editor, { at: path });
+            Transforms.insertNodes(editor, {
+              type: "paragraph",
+              children: [{ text: "" }],
+            });
+          } else {
+            Transforms.removeNodes(editor, { at: childPath });
+          }
+          return;
+        }
+      }
+    }
+    normalizeNode(entry);
+  };
+
+  return editor;
+};
+
+export const createWrappedEditor = () => withInlines(withReact(createEditor()));
 
 const EditorInput = () => {
   const editor = useSlate();
@@ -63,6 +106,8 @@ const EditorInput = () => {
             {props.children}
           </ol>
         );
+      case "code":
+        return <div {...props.attributes}>{props.children}</div>;
       default:
         // return <DefaultElement {...props} isHighlight={isHighlight} />;
         return <DefaultElement {...props} />;
@@ -89,6 +134,39 @@ const EditorInput = () => {
       className="border border-t-0 rounded-b-md outline-none h-full p-4"
       renderElement={renderElement}
       renderLeaf={renderLeaf}
+      onKeyDown={(event) => {
+        const { selection } = editor;
+
+        // Default left/right behavior is unit:'character'.
+        // This fails to distinguish between two cursor positions, such as
+        // <inline>foo<cursor/></inline> vs <inline>foo</inline><cursor/>.
+        // Here we modify the behavior to unit:'offset'.
+        // This lets the user step into and out of the inline without stepping over characters.
+        // You may wish to customize this further to only use unit:'offset' in specific cases.
+        if (selection && Range.isCollapsed(selection)) {
+          const { nativeEvent } = event;
+          console.log(nativeEvent);
+          if (isKeyHotkey("left", nativeEvent)) {
+            event.preventDefault();
+            Transforms.move(editor, { unit: "offset", reverse: true });
+            return;
+          }
+          if (isKeyHotkey("right", nativeEvent)) {
+            event.preventDefault();
+            Transforms.move(editor, { unit: "offset" });
+            return;
+          }
+          if (isKeyHotkey("enter", nativeEvent)) {
+            event.preventDefault();
+            editor.insertBreak();
+            Transforms.splitNodes(editor);
+            Transforms.setNodes(editor, {
+              type: "paragraph",
+              children: [{ text: "" }],
+            });
+          }
+        }
+      }}
     />
   );
 };

@@ -1,4 +1,4 @@
-import { Editor, Element, Range, Transforms } from "slate";
+import { Editor, Element, Path, Range, Transforms } from "slate";
 
 import {
   CustomEditor,
@@ -85,34 +85,72 @@ export const CustomEditorHelper = {
     ReactEditor.focus(editor);
   },
 
-  insertLink(editor: CustomEditor, text: string, url: string) {
-    if (editor.selection) {
-      CustomEditorHelper.wrapLink(editor, text, url);
-    }
-  },
-
-  wrapLink(editor: CustomEditor, text: string, url: string) {
-    if (CustomEditorHelper.isBlockActive(editor, "link")) {
-      CustomEditorHelper.unwrapLink(editor);
-    }
+  wrapLink(editor: CustomEditor, url: string, text: string) {
+    if (!url) return;
 
     const { selection } = editor;
-    const isCollapsed = selection && Range.isCollapsed(selection);
+
     const link: CustomElement = {
       type: "link",
       url,
-      children: isCollapsed ? [{ text }] : [],
+      children: [{ text }],
     };
 
-    if (isCollapsed) {
-      Transforms.insertNodes(editor, link);
+    ReactEditor.focus(editor);
+
+    if (!!selection) {
+      const [parentNode, parentPath] = Editor.parent(
+        editor,
+        selection.focus?.path
+      );
+
+      // Remove the Link node if we're inserting a new link node inside of another
+      // link.
+      if (Element.isElement(parentNode)) {
+        if (parentNode.type === "link") {
+          this.unwrapLink(editor);
+        }
+
+        if (editor.isVoid(parentNode)) {
+          // Insert the new link after the void node
+          Transforms.insertNodes(
+            editor,
+            {
+              type: "paragraph",
+              children: [
+                {
+                  text: "",
+                },
+              ],
+            },
+            {
+              at: Path.next(parentPath),
+              select: true,
+            }
+          );
+        } else if (Range.isCollapsed(selection)) {
+          // Insert the new link in our last known location
+          Transforms.insertNodes(editor, link, { select: true });
+        } else {
+          // Wrap the currently selected range of text into a Link
+          Transforms.wrapNodes(editor, link, { split: true });
+          // Remove the highlight and move the cursor to the end of the highlight
+          Transforms.collapse(editor, { edge: "end" });
+        }
+      }
     } else {
-      Transforms.wrapNodes(editor, link, { split: true });
-      Transforms.insertText(editor, text);
-      Transforms.collapse(editor, { edge: "end" });
+      // Insert the new link node at the bottom of the Editor when selection
+      // is falsey
+      Transforms.insertNodes(editor, {
+        type: "paragraph",
+        children: [
+          {
+            text: "",
+          },
+        ],
+      });
     }
   },
-
   unwrapLink(editor: CustomEditor) {
     Transforms.unwrapNodes(editor, {
       match: (n) =>
