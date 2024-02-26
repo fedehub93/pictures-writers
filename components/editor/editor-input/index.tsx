@@ -139,7 +139,6 @@ const withInlines = (editor: CustomEditor) => {
         })
       );
       if (match && Element.isElement(match[0])) {
-        console.log(match);
         Transforms.insertText(editor, "\n");
         return;
       }

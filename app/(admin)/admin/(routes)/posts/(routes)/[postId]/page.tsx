@@ -42,7 +42,7 @@ const PostIdPage = async ({ params }: { params: { postId: string } }) => {
         <div className="col-span-full md:col-span-4 lg:col-span-9 flex flex-col gap-y-4">
           <TitleForm initialData={post} postId={post.id} />
           <SlugForm initialData={post} postId={post.id} />
-          <ContentForm />
+          <ContentForm initialData={{ ...post, body: "" }} postId={post.id} />
         </div>
         <div className="col-span-full md:col-span-2 lg:col-span-3 bg-slate-100 dark:bg-slate-900 border rounded-md">
           Column 2
