@@ -17,8 +17,6 @@ import MarkButton from "./mark-button";
 import BlockButton from "./block-button";
 import { SelectHeading } from "./select-heading";
 import LinkButton from "./link-button";
-import { Button } from "@/components/ui/button";
-import { CustomEditorHelper } from "../utils/custom-editor";
 import { useSlate } from "slate-react";
 
 const Toolbar = () => {

@@ -87,7 +87,6 @@ export const CustomEditorHelper = {
 
   wrapLink(editor: CustomEditor, url: string, text: string) {
     if (!url) return;
-
     const { selection } = editor;
 
     const link: CustomElement = {
@@ -108,25 +107,15 @@ export const CustomEditorHelper = {
       // link.
       if (Element.isElement(parentNode)) {
         if (parentNode.type === "link") {
-          this.unwrapLink(editor);
+          CustomEditorHelper.unwrapLink(editor);
         }
 
         if (editor.isVoid(parentNode)) {
           // Insert the new link after the void node
           Transforms.insertNodes(
             editor,
-            {
-              type: "paragraph",
-              children: [
-                {
-                  text: "",
-                },
-              ],
-            },
-            {
-              at: Path.next(parentPath),
-              select: true,
-            }
+            { type: "paragraph", children: [{ text: "" }] },
+            { at: Path.next(parentPath), select: true }
           );
         } else if (Range.isCollapsed(selection)) {
           // Insert the new link in our last known location
@@ -141,14 +130,7 @@ export const CustomEditorHelper = {
     } else {
       // Insert the new link node at the bottom of the Editor when selection
       // is falsey
-      Transforms.insertNodes(editor, {
-        type: "paragraph",
-        children: [
-          {
-            text: "",
-          },
-        ],
-      });
+      Transforms.insertNodes(editor, link);
     }
   },
   unwrapLink(editor: CustomEditor) {

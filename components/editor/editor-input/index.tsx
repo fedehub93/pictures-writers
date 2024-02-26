@@ -15,15 +15,31 @@ import { HeadingThreeElement } from "@/components/editor/elements/heading-three-
 import { HeadingFourElement } from "@/components/editor/elements/heading-four-element";
 import { BlockquoteElement } from "@/components/editor/elements/blockquote-element";
 import { LinkComponent } from "../elements/link-component";
-import { Editor, Element, Node, Range, Transforms, createEditor } from "slate";
+import {
+  Editor,
+  Element,
+  Node,
+  Path,
+  Range,
+  Transforms,
+  createEditor,
+  insertBreak,
+} from "slate";
 import { CustomEditor } from "..";
 import { isKeyHotkey } from "is-hotkey";
 
 interface EditorInputProps {}
 
+const SOFT_BREAK_ELEMENTS = [
+  "heading-one",
+  "heading-two",
+  "heading-three",
+  "heading-four",
+  "block-quote",
+];
 // PLUGIN
 const withInlines = (editor: CustomEditor) => {
-  const { isInline, normalizeNode } = editor;
+  const { isInline, normalizeNode, insertBreak, insertSoftBreak } = editor;
 
   editor.isInline = (element) =>
     element.type === "link" ? true : isInline(element);
@@ -54,6 +70,81 @@ const withInlines = (editor: CustomEditor) => {
       }
     }
     normalizeNode(entry);
+  };
+
+  editor.insertBreak = () => {
+    const { selection } = editor;
+
+    if (selection) {
+      const [match] = Array.from(
+        Editor.nodes(editor, {
+          match: (n) =>
+            !Editor.isEditor(n) &&
+            Element.isElement(n) &&
+            n.type === "list-item",
+        })
+      );
+
+      // If list-item bypass insert break and insert new list-item element
+
+      if (match && Element.isElement(match[0])) {
+        const [_, nodePath] = Editor.parent(editor, match[1]);
+        const lastNode = Editor.last(editor, nodePath);
+
+        const isLastNode = Path.equals(match[1], [
+          lastNode[1][0],
+          lastNode[1][1],
+        ]);
+
+        const isEmpty = match[0].children[0].text.trim() === "";
+
+        // If empty list-item node and is last then break
+        if (isEmpty && isLastNode) {
+          editor.removeNodes();
+          insertBreak();
+          editor.splitNodes();
+          editor.setNodes({
+            type: "paragraph",
+            children: [{ text: "" }],
+          });
+          editor.liftNodes();
+          return;
+        } else {
+          editor.insertNodes([{ ...match[0], children: [{ text: "" }] }]);
+          return;
+        }
+      }
+    }
+
+    insertBreak();
+
+    // DEFAULT ELEMENT
+    Transforms.splitNodes(editor);
+    Transforms.setNodes(editor, {
+      type: "paragraph",
+      children: [{ text: "" }],
+    });
+  };
+
+  editor.insertSoftBreak = () => {
+    const { selection } = editor;
+
+    if (selection) {
+      const [match] = Array.from(
+        Editor.nodes(editor, {
+          match: (n) =>
+            !Editor.isEditor(n) &&
+            Element.isElement(n) &&
+            SOFT_BREAK_ELEMENTS.includes(n.type),
+        })
+      );
+      if (match && Element.isElement(match[0])) {
+        console.log(match);
+        Transforms.insertText(editor, "\n");
+        return;
+      }
+    }
+    insertSoftBreak();
   };
 
   return editor;
@@ -96,13 +187,13 @@ const EditorInput = () => {
         );
       case "bulleted-list":
         return (
-          <ul {...props.attributes} className="list-disc">
+          <ul {...props.attributes} className="list-disc px-4">
             {props.children}
           </ul>
         );
       case "numbered-list":
         return (
-          <ol {...props.attributes} className="list-decimal">
+          <ol {...props.attributes} className="list-decimal px-4">
             {props.children}
           </ol>
         );
@@ -145,7 +236,6 @@ const EditorInput = () => {
         // You may wish to customize this further to only use unit:'offset' in specific cases.
         if (selection && Range.isCollapsed(selection)) {
           const { nativeEvent } = event;
-          console.log(nativeEvent);
           if (isKeyHotkey("left", nativeEvent)) {
             event.preventDefault();
             Transforms.move(editor, { unit: "offset", reverse: true });
@@ -155,15 +245,6 @@ const EditorInput = () => {
             event.preventDefault();
             Transforms.move(editor, { unit: "offset" });
             return;
-          }
-          if (isKeyHotkey("enter", nativeEvent)) {
-            event.preventDefault();
-            editor.insertBreak();
-            Transforms.splitNodes(editor);
-            Transforms.setNodes(editor, {
-              type: "paragraph",
-              children: [{ text: "" }],
-            });
           }
         }
       }}
