@@ -5,7 +5,6 @@ import {
   AlignRight,
   Bold,
   Italic,
-  Link,
   List,
   ListOrdered,
   Quote,
@@ -17,10 +16,8 @@ import MarkButton from "./mark-button";
 import BlockButton from "./block-button";
 import { SelectHeading } from "./select-heading";
 import LinkButton from "./link-button";
-import { useSlate } from "slate-react";
 
 const Toolbar = () => {
-  const editor = useSlate();
   return (
     <div className="border rounded-t-md p-4">
       <div className="flex gap-x-1 h-9">

@@ -12,7 +12,7 @@ interface BlockButtonProps {
   blockType?: "type" | "align";
 }
 
-const MarkButton = ({
+const BlockButton = ({
   children,
   format,
   blockType = "type",
@@ -24,7 +24,9 @@ const MarkButton = ({
     <Toggle
       size="sm"
       pressed={isActive}
-      onPressedChange={() => CustomEditorHelper.toggleBlock(editor, format)}
+      onPressedChange={() => {
+        CustomEditorHelper.toggleBlock(editor, format);
+      }}
       aria-label={`Toggle ${format}`}
     >
       {children}
@@ -32,4 +34,4 @@ const MarkButton = ({
   );
 };
 
-export default MarkButton;
+export default BlockButton;

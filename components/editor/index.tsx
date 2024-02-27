@@ -1,8 +1,18 @@
-import { createEditor, BaseEditor, Descendant, Transforms } from "slate";
+import {
+  createEditor,
+  BaseEditor,
+  Descendant,
+  Transforms,
+  Editor as SlateEditor,
+} from "slate";
 import { Slate, withReact, ReactEditor } from "slate-react";
-import EditorInput from "@/components/editor/editor-input";
+import EditorInput, {
+  createWrappedEditor,
+} from "@/components/editor/editor-input";
 import Toolbar from "./toolbar";
 import { ControllerRenderProps } from "react-hook-form";
+import { forwardRef, useMemo } from "react";
+import React from "react";
 
 export type CustomEditor = BaseEditor & ReactEditor;
 
@@ -46,12 +56,13 @@ declare module "slate" {
 }
 
 interface EditorProps extends ControllerRenderProps {
-  editor: CustomEditor;
   value: Descendant[];
   onChange: (value: Descendant[]) => void;
 }
 
-const Editor = ({ editor, value, onChange }: EditorProps) => {
+const Editor = ({ value, onChange }: EditorProps) => {
+  const editor = useMemo(() => createWrappedEditor(), []);
+
   return (
     <Slate editor={editor} initialValue={value} onChange={onChange}>
       <Toolbar />
@@ -59,5 +70,7 @@ const Editor = ({ editor, value, onChange }: EditorProps) => {
     </Slate>
   );
 };
+
+Editor.displayName = "Editor";
 
 export default Editor;

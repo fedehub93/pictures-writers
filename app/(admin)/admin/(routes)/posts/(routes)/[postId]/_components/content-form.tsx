@@ -5,6 +5,10 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Pencil } from "lucide-react";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
+import { Descendant } from "slate";
 
 import { Button } from "@/components/ui/button";
 
@@ -20,30 +24,42 @@ import {
 
 interface BodyFormProps {
   initialData: {
-    body: string;
+    bodyData: Descendant[];
   };
   postId: string;
 }
 
 const formSchema = z.object({
-  body: z.any(),
+  bodyData: z.any(),
 });
 
 export const ContentForm = ({ initialData, postId }: BodyFormProps) => {
-  const editor = useMemo(() => createWrappedEditor(), []);
+  const router = useRouter();
 
   const [isEditing, setIsEditing] = useState(false);
   const toggleEdit = () => setIsEditing((current) => !current);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: { body: [{ type: "paragraph", children: [{ text: "" }] }] },
+    defaultValues: {
+      bodyData: initialData.bodyData || [
+        { type: "paragraph", children: [{ text: "" }] },
+      ],
+    },
   });
 
   const { isSubmitting, isValid } = form.formState;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+    try {
+      await axios.patch(`/api/posts/${postId}`, values);
+      toast.success("Post updated");
+      toggleEdit();
+    } catch {
+      toast.error("Something went wrong");
+    } finally {
+      router.refresh();
+    }
   };
 
   return (
@@ -60,7 +76,7 @@ export const ContentForm = ({ initialData, postId }: BodyFormProps) => {
           )}
         </Button>
       </div>
-      {!isEditing && <p>{initialData.body}</p>}
+      {/* {!isEditing && <p>{initialData.bodyData}</p>} */}
       {isEditing && (
         <Form {...form}>
           <form
@@ -69,11 +85,11 @@ export const ContentForm = ({ initialData, postId }: BodyFormProps) => {
           >
             <FormField
               control={form.control}
-              name="body"
+              name="bodyData"
               render={({ field }) => (
                 <FormItem className="space-y-0">
                   <FormControl>
-                    <Editor {...field} editor={editor} />
+                    <Editor {...field} />
                   </FormControl>
                 </FormItem>
               )}

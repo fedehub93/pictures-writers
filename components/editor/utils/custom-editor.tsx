@@ -60,6 +60,7 @@ export const CustomEditorHelper = {
         type: isActive ? "paragraph" : isList ? "list-item" : format,
       };
     }
+    console.log(newProperties);
     Transforms.setNodes<Element>(editor, newProperties);
 
     if (!isActive && isList) {

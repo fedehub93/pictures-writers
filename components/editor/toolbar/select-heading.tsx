@@ -75,12 +75,13 @@ export const SelectHeading = () => {
   }
 
   const onValueChange = (value: CustomElementType) => {
+    if (!value) return;
     CustomEditorHelper.toggleBlock(editor, value);
   };
 
   return (
     <Select
-      value={selected?.type || defaultSelectValue.type}
+      defaultValue={selected?.type || defaultSelectValue.type}
       onValueChange={onValueChange}
     >
       <SelectTrigger className="w-[180px]">

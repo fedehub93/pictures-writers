@@ -35,6 +35,7 @@ model Post {
   
   title String @unique
   slug String @unique
+  bodyData Json? @db.JsonB
   
   isPublished Boolean @default(false)
 

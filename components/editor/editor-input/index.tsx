@@ -155,10 +155,10 @@ const EditorInput = () => {
   const editor = useSlate();
 
   const renderElement = useCallback((props: RenderElementProps) => {
-    const { selection } = editor;
-    if (!selection) {
-      return <DefaultElement {...props} />;
-    }
+    // const { selection } = editor;
+    // if (!selection) {
+    //   return <DefaultElement {...props} />;
+    // }
 
     // Find path of the element and compare with current element
     // const path = ReactEditor.findPath(editor, props.element);
