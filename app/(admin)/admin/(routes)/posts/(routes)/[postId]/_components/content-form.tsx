@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { ReactNode, useMemo, useState } from "react";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -8,11 +8,20 @@ import { Pencil } from "lucide-react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { Descendant } from "slate";
+import { Descendant, Text } from "slate";
+import {
+  Node,
+  Replace,
+  SlateView,
+  createElementNodeMatcher,
+  createElementTransform,
+  createLeafNodeMatcher,
+  createLeafTransform,
+} from "slate-to-react";
 
 import { Button } from "@/components/ui/button";
 
-import Editor from "@/components/editor";
+import Editor, { CustomText } from "@/components/editor";
 import { createWrappedEditor } from "@/components/editor/editor-input";
 import {
   Form,
@@ -32,6 +41,119 @@ interface BodyFormProps {
 const formSchema = z.object({
   bodyData: z.any(),
 });
+
+type Link = Replace<
+  Node<"link">,
+  {
+    url: string;
+    children: CustomText[];
+  }
+>;
+
+type Paragraph = Replace<
+  Node<"paragraph">,
+  {
+    children: CustomText[];
+  }
+>;
+
+type HeadingOne = Replace<
+  Node<"heading-one">,
+  {
+    children: CustomText[];
+  }
+>;
+
+export const isLink = createElementNodeMatcher<Link>(
+  (node): node is Link => node.type === "link" && typeof node.url === "string"
+);
+
+export const isParagraph = createElementNodeMatcher<Paragraph>(
+  (node): node is Paragraph => node.type === "paragraph"
+);
+
+export const isHeadingOne = createElementNodeMatcher<HeadingOne>(
+  (node): node is HeadingOne => node.type === "heading-one"
+);
+
+export const Anchor = createElementTransform(
+  isLink,
+  ({ key, element, attributes, children }) => (
+    <a href={element.url} rel="noopener noreferrer" target="_blank" key={key}>
+      {children}
+    </a>
+  )
+);
+
+export const Paragraph = createElementTransform(
+  isParagraph,
+  ({ key, element, attributes, children }) => <p key={key}>{children}</p>
+);
+
+export const HeadingOne = createElementTransform(
+  isHeadingOne,
+  ({ key, element, attributes, children }) => (
+    <h1 className="text-3xl" key={key}>
+      {children}
+    </h1>
+  )
+);
+
+export interface RichText extends Text {
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  strikethrough?: boolean;
+  superscript?: boolean;
+  subscript?: boolean;
+  code?: boolean;
+}
+
+export const isRichText = createLeafNodeMatcher<RichText>(
+  (node): node is RichText => {
+    return typeof node.text === "string";
+  }
+);
+
+export const RichText = createLeafTransform(
+  isRichText,
+
+  ({ key, attributes, leaf, children }) => {
+    // Render <br /> for empty text blocks as it's probably just an empty line
+    if (!children) {
+      return <br />;
+    }
+
+    let element: ReactNode = children;
+
+    if (leaf.bold) {
+      element = <strong>{element}</strong>;
+    }
+
+    if (leaf.italic) {
+      element = <i>{element}</i>;
+    }
+
+    if (leaf.underline) {
+      element = <u>{element}</u>;
+    }
+
+    if (leaf.strikethrough) {
+      element = <s>{element}</s>;
+    }
+
+    if (leaf.superscript) {
+      element = <sup>{element}</sup>;
+    } else if (leaf.subscript) {
+      element = <sub>{element}</sub>;
+    }
+
+    if (leaf.code) {
+      element = <code>{element}</code>;
+    }
+    return <span key={key}>{element}</span>;
+  }
+);
 
 export const ContentForm = ({ initialData, postId }: BodyFormProps) => {
   const router = useRouter();
@@ -76,7 +198,12 @@ export const ContentForm = ({ initialData, postId }: BodyFormProps) => {
           )}
         </Button>
       </div>
-      {/* {!isEditing && <p>{initialData.bodyData}</p>} */}
+      {!isEditing && (
+        <SlateView
+          nodes={initialData.bodyData}
+          transforms={{ elements: [Paragraph, HeadingOne], leaves: [RichText] }}
+        />
+      )}
       {isEditing && (
         <Form {...form}>
           <form
