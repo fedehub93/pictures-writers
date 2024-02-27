@@ -1,34 +1,28 @@
 import { useCallback } from "react";
+import { Editor, Element, Node, Path, Range, Transforms } from "slate";
 import {
   Editable,
   RenderElementProps,
   RenderLeafProps,
   useSlate,
-  withReact,
 } from "slate-react";
-
-import { cn } from "@/lib/utils";
-import { DefaultElement } from "@/components/editor/elements/default-element";
-import { HeadingOneElement } from "@/components/editor/elements/heading-one-element";
-import { HeadingTwoElement } from "@/components/editor/elements/heading-two-element";
-import { HeadingThreeElement } from "@/components/editor/elements/heading-three-element";
-import { HeadingFourElement } from "@/components/editor/elements/heading-four-element";
-import { BlockquoteElement } from "@/components/editor/elements/blockquote-element";
-import { LinkComponent } from "../elements/link-component";
-import {
-  Editor,
-  Element,
-  Node,
-  Path,
-  Range,
-  Transforms,
-  createEditor,
-  insertBreak,
-} from "slate";
-import { CustomEditor } from "..";
 import { isKeyHotkey } from "is-hotkey";
 
-interface EditorInputProps {}
+import { cn } from "@/lib/utils";
+
+import { CustomEditor } from "@/components/editor";
+import {
+  Default,
+  HeadingOne,
+  HeadingTwo,
+  HeadingThree,
+  HeadingFour,
+  Blockquote,
+  ListItem,
+  BulletedList,
+  NumberedList,
+  Link,
+} from "@/components/editor/editor-input/elements";
 
 const SOFT_BREAK_ELEMENTS = [
   "heading-one",
@@ -38,7 +32,7 @@ const SOFT_BREAK_ELEMENTS = [
   "block-quote",
 ];
 // PLUGIN
-const withInlines = (editor: CustomEditor) => {
+export const withInlines = (editor: CustomEditor) => {
   const { isInline, normalizeNode, insertBreak, insertSoftBreak } = editor;
 
   editor.isInline = (element) =>
@@ -149,7 +143,7 @@ const withInlines = (editor: CustomEditor) => {
   return editor;
 };
 
-export const createWrappedEditor = () => withInlines(withReact(createEditor()));
+interface EditorInputProps {}
 
 const EditorInput = () => {
   const editor = useSlate();
@@ -167,40 +161,28 @@ const EditorInput = () => {
 
     switch (props.element.type) {
       case "heading-one":
-        return <HeadingOneElement {...props} />;
+        return <HeadingOne {...props} />;
       case "heading-two":
-        return <HeadingTwoElement {...props} />;
+        return <HeadingTwo {...props} />;
       case "heading-three":
-        return <HeadingThreeElement {...props} />;
+        return <HeadingThree {...props} />;
       case "heading-four":
-        return <HeadingFourElement {...props} />;
+        return <HeadingFour {...props} />;
       case "block-quote":
-        return <BlockquoteElement {...props} />;
+        return <Blockquote {...props} />;
       case "link":
-        return <LinkComponent {...props} />;
+        return <Link {...props} />;
       case "list-item":
-        return (
-          <li {...props.attributes} className="list-item">
-            {props.children}
-          </li>
-        );
+        return <ListItem {...props} />;
       case "bulleted-list":
-        return (
-          <ul {...props.attributes} className="list-disc px-4">
-            {props.children}
-          </ul>
-        );
+        return <BulletedList {...props} />;
       case "numbered-list":
-        return (
-          <ol {...props.attributes} className="list-decimal px-4">
-            {props.children}
-          </ol>
-        );
+        return <NumberedList {...props} />;
       case "code":
         return <div {...props.attributes}>{props.children}</div>;
       default:
         // return <DefaultElement {...props} isHighlight={isHighlight} />;
-        return <DefaultElement {...props} />;
+        return <Default {...props} />;
     }
   }, []);
 

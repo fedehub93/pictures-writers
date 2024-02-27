@@ -1,3 +1,4 @@
+import { ReactEditor } from "slate-react";
 import { Editor, Element, Path, Range, Transforms } from "slate";
 
 import {
@@ -5,7 +6,6 @@ import {
   CustomElement,
   CustomElementType,
 } from "@/components/editor";
-import { ReactEditor } from "slate-react";
 
 type Format = "bold" | "italic" | "underline";
 

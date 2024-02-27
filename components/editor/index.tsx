@@ -1,18 +1,10 @@
-import {
-  createEditor,
-  BaseEditor,
-  Descendant,
-  Transforms,
-  Editor as SlateEditor,
-} from "slate";
+import React, { useMemo } from "react";
+import { createEditor, BaseEditor, Descendant } from "slate";
 import { Slate, withReact, ReactEditor } from "slate-react";
-import EditorInput, {
-  createWrappedEditor,
-} from "@/components/editor/editor-input";
-import Toolbar from "./toolbar";
 import { ControllerRenderProps } from "react-hook-form";
-import { forwardRef, useMemo } from "react";
-import React from "react";
+
+import Toolbar from "@/components/editor/toolbar";
+import EditorInput, { withInlines } from "@/components/editor/editor-input";
 
 export type CustomEditor = BaseEditor & ReactEditor;
 
@@ -29,20 +21,19 @@ export type CustomElementType =
   | "bulleted-list"
   | "numbered-list"
   | "left"
-  | "center"
-  | "right";
+  | "right"
+  | "center";
 
 export type CustomText = {
   text: string;
   bold?: boolean;
   italic?: boolean;
   underline?: boolean;
-  type?: "link";
 };
 
 export type CustomElement = {
   type: CustomElementType;
-  children: CustomText[];
+  children: Descendant[];
   url?: string;
   align?: string;
 };
@@ -59,6 +50,8 @@ interface EditorProps extends ControllerRenderProps {
   value: Descendant[];
   onChange: (value: Descendant[]) => void;
 }
+
+const createWrappedEditor = () => withInlines(withReact(createEditor()));
 
 const Editor = ({ value, onChange }: EditorProps) => {
   const editor = useMemo(() => createWrappedEditor(), []);

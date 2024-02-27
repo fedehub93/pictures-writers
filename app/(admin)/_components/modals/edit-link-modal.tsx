@@ -87,7 +87,7 @@ export const EditLinkModal = ({
           </DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form className="space-y-8">
             <div className="space-y-8 px-6">
               <FormField
                 control={form.control}
@@ -131,7 +131,13 @@ export const EditLinkModal = ({
               />
             </div>
             <DialogFooter className="bg-gray-100 px-6 py-4">
-              <Button disabled={isLoading}>Save</Button>
+              <Button
+                type="button"
+                onClick={form.handleSubmit(onSubmit)}
+                disabled={isLoading}
+              >
+                Save
+              </Button>
             </DialogFooter>
           </form>
         </Form>
