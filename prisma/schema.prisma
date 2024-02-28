@@ -51,3 +51,22 @@ model Post {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+enum MediaType {
+  AUDIO
+  FILE
+  IMAGE
+  VIDEO
+}
+
+model Media {
+  id String @id @default(uuid())
+
+  name String
+  url String @db.Text @unique
+  size Int?
+  type MediaType @default(FILE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

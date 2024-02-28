@@ -5,6 +5,7 @@ import { Toggle } from "./toggle";
 import { MenuGroup } from "./menu-group";
 import { MenuItem } from "./menu-item";
 import {
+  BookImage,
   Boxes,
   CheckCircle2,
   LayoutDashboard,
@@ -47,6 +48,7 @@ export const Sidebar = () => {
             />
           </MenuGroup>
           <MenuGroup label="Plugins">
+            <MenuItem label="Media" href="/admin/media" icon={BookImage} />
             <MenuItem label="SEO" href="/admin/seo" icon={Sparkles} />
             <MenuItem
               label="Newsletters"

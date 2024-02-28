@@ -1,21 +1,17 @@
 import { create } from "zustand";
 
-export type ModalType = "insertLink";
+export type ModalType = "createMediaAsset";
 
 interface ModalStore {
   type: ModalType | null;
   isOpen: boolean;
-  data: any;
-  setData: any;
-  onOpen: (type: ModalType, data: any, setData: any) => void;
+  onOpen: (type: ModalType) => void;
   onClose: () => void;
 }
 
 export const useModal = create<ModalStore>((set) => ({
   type: null,
   isOpen: false,
-  data: {},
-  setData: () => {},
-  onOpen: (type, data, setData) => set({ isOpen: true, type, data, setData }),
+  onOpen: (type) => set({ isOpen: true, type }),
   onClose: () => set({ type: null, isOpen: false }),
 }));

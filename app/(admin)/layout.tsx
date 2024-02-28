@@ -11,11 +11,11 @@ const AdminLayout = async ({ children }: { children: React.ReactNode }) => {
   const user = await getSelf();
 
   if (!user) {
-    return redirectToSignIn();
+    return redirectToSignIn({ returnBackUrl: "http://localhost:3000/admin" });
   }
 
   if (user.role === UserRole.USER) {
-    return redirectToSignIn();
+    return redirectToSignIn({ returnBackUrl: "http://localhost:3000/admin" });
   }
 
   return (

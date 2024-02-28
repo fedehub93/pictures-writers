@@ -5,7 +5,7 @@ import Link from "next/link";
 
 interface ContentHeaderProps {
   label: string;
-  contentType: "posts" | "categories" | "tags";
+  contentType: "posts" | "categories" | "tags" | "media";
 }
 
 export const ContentHeader = ({ label, contentType }: ContentHeaderProps) => {

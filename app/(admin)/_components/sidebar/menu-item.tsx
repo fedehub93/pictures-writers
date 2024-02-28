@@ -37,7 +37,9 @@ export const MenuItem = ({ label, href, icon: Icon }: MenuItemProps) => {
           )}
         >
           {Icon && <Icon className="w-6 h-6" strokeWidth={1.5} />}
-          {!collapsed && <p className="truncate">{label}</p>}
+          {!collapsed && (
+            <p className="truncate text-zinc-800 font-normal dark:text-white">{label}</p>
+          )}
         </div>
       </Link>
     </Button>

@@ -8,22 +8,11 @@ import { Pencil } from "lucide-react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { Node, SlateView } from "slate-to-react";
 
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 
 import Editor, { CustomElement } from "@/components/editor";
-import {
-  HeadingFour,
-  HeadingOne,
-  HeadingThree,
-  HeadingTwo,
-  Link,
-  Paragraph,
-} from "@/components/editor/view/elements";
-import { RichText } from "@/components/editor/view/leaves";
-import { Descendant } from "slate";
 
 interface BodyFormProps {
   initialData: {
