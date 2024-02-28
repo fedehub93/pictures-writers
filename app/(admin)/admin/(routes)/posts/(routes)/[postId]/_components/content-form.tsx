@@ -13,7 +13,7 @@ import { Node, SlateView } from "slate-to-react";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 
-import Editor from "@/components/editor";
+import Editor, { CustomElement } from "@/components/editor";
 import {
   HeadingFour,
   HeadingOne,
@@ -23,16 +23,17 @@ import {
   Paragraph,
 } from "@/components/editor/view/elements";
 import { RichText } from "@/components/editor/view/leaves";
+import { Descendant } from "slate";
 
 interface BodyFormProps {
   initialData: {
-    bodyData: Node[];
+    bodyData: CustomElement[];
   };
   postId: string;
 }
 
 const formSchema = z.object({
-  bodyData: z.any(),
+  bodyData: z.custom<CustomElement[]>(),
 });
 
 export const ContentForm = ({ initialData, postId }: BodyFormProps) => {
@@ -64,7 +65,7 @@ export const ContentForm = ({ initialData, postId }: BodyFormProps) => {
   };
 
   return (
-    <div className="h-full">
+    <div>
       <div className="flex items-center justify-between">
         Post body
         <Button onClick={toggleEdit} variant="ghost">
@@ -78,20 +79,23 @@ export const ContentForm = ({ initialData, postId }: BodyFormProps) => {
         </Button>
       </div>
       {!isEditing && initialData.bodyData && (
-        <SlateView
-          nodes={initialData.bodyData}
-          transforms={{
-            elements: [
-              Paragraph,
-              HeadingOne,
-              HeadingTwo,
-              HeadingThree,
-              HeadingFour,
-              Link,
-            ],
-            leaves: [RichText],
-          }}
-        />
+        // <SlateView
+        //   nodes={initialData.bodyData}
+        //   transforms={{
+        //     elements: [
+        //       Paragraph,
+        //       HeadingOne,
+        //       HeadingTwo,
+        //       HeadingThree,
+        //       HeadingFour,
+        //       Link,
+        //     ],
+        //     leaves: [RichText],
+        //   }}
+        // />
+        <Editor value={initialData.bodyData}>
+          <Editor.Input readonly />
+        </Editor>
       )}
       {isEditing && (
         <Form {...form}>
@@ -105,7 +109,10 @@ export const ContentForm = ({ initialData, postId }: BodyFormProps) => {
               render={({ field }) => (
                 <FormItem className="space-y-0">
                   <FormControl>
-                    <Editor {...field} />
+                    <Editor {...field}>
+                      <Editor.Toolbar />
+                      <Editor.Input />
+                    </Editor>
                   </FormControl>
                 </FormItem>
               )}

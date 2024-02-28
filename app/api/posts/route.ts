@@ -17,6 +17,7 @@ export async function POST(req: Request) {
         userId: user.id,
         title,
         slug,
+        bodyData: [{ type: "paragraph", children: [{ text: "" }] }],
       },
     });
 

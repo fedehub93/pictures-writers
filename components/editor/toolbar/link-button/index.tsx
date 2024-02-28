@@ -46,7 +46,13 @@ const LinkButton = ({ format }: LinkButtonProps) => {
     } else {
       selected = null;
     }
-    setData({ text: selected?.children[0].text || "", target: "" });
+    setData({
+      text:
+        !Element.isElement(selected?.children[0]) && selected?.children[0].text
+          ? selected?.children[0].text
+          : "",
+      target: "",
+    });
     setIsOpen(true);
   };
 

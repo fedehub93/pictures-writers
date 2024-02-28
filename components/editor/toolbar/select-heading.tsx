@@ -81,7 +81,7 @@ export const SelectHeading = () => {
 
   return (
     <Select
-      defaultValue={selected?.type || defaultSelectValue.type}
+      value={selected?.type || defaultSelectValue.type}
       onValueChange={onValueChange}
     >
       <SelectTrigger className="w-[180px]">

@@ -48,6 +48,7 @@ export const withInlines = (editor: CustomEditor) => {
         if (
           Element.isElement(child) &&
           editor.isInline(child) &&
+          !Element.isElement(child.children[0]) &&
           child.children[0].text === ""
         ) {
           if (children.length === 1) {
@@ -90,7 +91,10 @@ export const withInlines = (editor: CustomEditor) => {
           lastNode[1][1],
         ]);
 
-        const isEmpty = match[0].children[0].text.trim() === "";
+        const isEmpty =
+          match[0] &&
+          !Element.isElement(match[0].children[0]) &&
+          match[0].children[0].text.trim() === "";
 
         // If empty list-item node and is last then break
         if (isEmpty && isLastNode) {
@@ -143,9 +147,11 @@ export const withInlines = (editor: CustomEditor) => {
   return editor;
 };
 
-interface EditorInputProps {}
+interface EditorInputProps {
+  readonly?: boolean;
+}
 
-const EditorInput = () => {
+const EditorInput = ({ readonly = false }: EditorInputProps) => {
   const editor = useSlate();
 
   const renderElement = useCallback((props: RenderElementProps) => {
@@ -203,7 +209,11 @@ const EditorInput = () => {
 
   return (
     <Editable
-      className="border border-t-0 rounded-b-md outline-none h-full p-4"
+      className={cn(
+        "border border-t-0 rounded-b-md outline-none p-4",
+        readonly && "border-t rounded-t-md mt-4"
+      )}
+      readOnly={readonly}
       renderElement={renderElement}
       renderLeaf={renderLeaf}
       onKeyDown={(event) => {

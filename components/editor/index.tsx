@@ -31,9 +31,20 @@ export type CustomText = {
   underline?: boolean;
 };
 
+export type EmptyText = {
+  text: string;
+};
+
+// export type CustomElement = {
+//   type: CustomElementType;
+//   children: Descendant[];
+//   url?: string;
+//   align?: string;
+// };
+
 export type CustomElement = {
-  type: CustomElementType;
-  children: Descendant[];
+  type: string;
+  children: Array<CustomElement | CustomText>;
   url?: string;
   align?: string;
 };
@@ -46,24 +57,28 @@ declare module "slate" {
   }
 }
 
-interface EditorProps extends ControllerRenderProps {
+interface EditorProps {
+  children: React.ReactNode;
   value: Descendant[];
-  onChange: (value: Descendant[]) => void;
+  onChange?: (value: Descendant[]) => void;
 }
 
 const createWrappedEditor = () => withInlines(withReact(createEditor()));
 
-const Editor = ({ value, onChange }: EditorProps) => {
+const Editor = ({ children, value, onChange }: EditorProps) => {
   const editor = useMemo(() => createWrappedEditor(), []);
 
   return (
     <Slate editor={editor} initialValue={value} onChange={onChange}>
-      <Toolbar />
-      <EditorInput />
+      {React.Children.map(children, (child) => {
+        if (!React.isValidElement(child)) return child;
+        return React.cloneElement(child);
+      })}
     </Slate>
   );
 };
 
-Editor.displayName = "Editor";
+Editor.Input = EditorInput;
+Editor.Toolbar = Toolbar;
 
 export default Editor;
