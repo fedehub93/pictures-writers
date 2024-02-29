@@ -26,7 +26,6 @@ const MediaPage = async () => {
         <MediaActions />
       </div>
       <div className="flex flex-col gap-y-4">
-        <h2>Assets (2)</h2>
         <AssetsList items={assets} />
       </div>
     </div>
