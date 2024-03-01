@@ -6,12 +6,14 @@ import { MediaType } from "@prisma/client";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { formatBytes } from "@/lib/format";
 
 interface AssetCardProps {
   id: string;
   name: string;
   url: string;
   type: MediaType;
+  size: number;
   onCheckboxChange: (id: string, isChecked: boolean) => void;
 }
 
@@ -20,6 +22,7 @@ export const AssetCard = ({
   name,
   url,
   type,
+  size,
   onCheckboxChange,
 }: AssetCardProps) => {
   const [isChecked, setIsChecked] = useState(false);
@@ -39,12 +42,17 @@ export const AssetCard = ({
           <Image fill className="object-cover" alt={name} src={url} />
         )}
       </div>
-      <div className="flex flex-col  p-3">
+      <div className="flex flex-col gap-y-2 p-3">
         <div className="flex justify-between items-center gap-x-4">
           <div className="text-sm truncate font-medium group-hover:text-sky-700 transition">
             {name}
           </div>
           <Badge>{type}</Badge>
+        </div>
+        <div className="flex justify-between items-center gap-x-4">
+          <div className="text-sm truncate font-medium group-hover:text-sky-700 transition">
+            {formatBytes(size)}
+          </div>
         </div>
       </div>
     </div>

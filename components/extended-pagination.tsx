@@ -1,15 +1,18 @@
 "use client";
 
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
+
+import { Button } from "@/components/ui/button";
+
 import {
   Pagination,
   PaginationContent,
   PaginationEllipsis,
   PaginationItem,
   PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
 } from "@/components/ui/pagination";
-import { usePathname, useSearchParams } from "next/navigation";
 
 interface ExtendedPaginationProps {
   page: number;
@@ -27,21 +30,29 @@ export const ExtendedPagination = ({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  const canDisabledPrev = page === 1;
+  const canDisabledNext = page === totalPages;
+  const canShowEllipsis = totalPages - page > 1;
+
   const createPageURL = (pageNumber: number | string) => {
     const params = new URLSearchParams(searchParams);
     params.set("page", pageNumber.toString());
     return `${pathname}?${params.toString()}`;
   };
+
   return (
     <Pagination>
       <PaginationContent>
         <PaginationItem>
-          <PaginationPrevious href={createPageURL(page - 1)} />
+          <Button variant="ghost" disabled={canDisabledPrev}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            <Link href={createPageURL(page - 1)}>Previous</Link>
+          </Button>
         </PaginationItem>
         <PaginationItem>
           <PaginationLink href={createPageURL(page)}>{page}</PaginationLink>
         </PaginationItem>
-        {totalPages - page > 1 && (
+        {canShowEllipsis && (
           <>
             <PaginationItem>
               <PaginationEllipsis />
@@ -54,7 +65,10 @@ export const ExtendedPagination = ({
           </>
         )}
         <PaginationItem>
-          <PaginationNext href={createPageURL(page + 1)} />
+          <Button variant="ghost" disabled={canDisabledNext}>
+            <Link href={createPageURL(page + 1)}>Next</Link>
+            <ArrowRight className="h-4 w-4 ml-2" />
+          </Button>
         </PaginationItem>
       </PaginationContent>
     </Pagination>

@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { AssetCard } from "./asset-card";
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 import { ExtendedPagination } from "@/components/extended-pagination";
+import { SearchInput } from "@/app/(admin)/_components/search-input";
 
 interface AssetListProps {
   items: Media[];
@@ -69,14 +70,17 @@ export const AssetsList = ({ items, pagination }: AssetListProps) => {
   return (
     <div className="flex flex-col gap-y-4">
       <div className="flex gap-x-4 items-center">
-        <h2 className="sm:mt-2">Assets ({pagination.totalRecords})</h2>
-        {canShowDelete && (
-          <ConfirmModal onConfirm={onDelete}>
-            <Button disabled={isLoading} variant="destructive" size="sm">
-              <Trash />
-            </Button>
-          </ConfirmModal>
-        )}
+        <h2>Assets ({pagination.totalRecords})</h2>
+        <div className="flex items-center gap-x-4">
+          <SearchInput />
+          {canShowDelete && (
+            <ConfirmModal onConfirm={onDelete}>
+              <Button disabled={isLoading} variant="destructive" size="sm">
+                <Trash />
+              </Button>
+            </ConfirmModal>
+          )}
+        </div>
       </div>
       <div className="grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
         {assets.map((item) => (
@@ -86,6 +90,7 @@ export const AssetsList = ({ items, pagination }: AssetListProps) => {
             name={item.name}
             url={item.url}
             type={item.type}
+            size={item.size}
             onCheckboxChange={handleCheckboxChange}
           />
         ))}

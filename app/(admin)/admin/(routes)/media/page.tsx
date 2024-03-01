@@ -12,6 +12,7 @@ const MediaPage = async ({
 }: {
   searchParams?: {
     query?: string;
+    title?: string;
     page?: string;
   };
 }) => {
@@ -20,7 +21,7 @@ const MediaPage = async ({
     return redirectToSignIn();
   }
 
-  const query = searchParams?.query || "";
+  const query = searchParams?.title || "";
   const page = Number(searchParams?.page) || 1;
 
   const skip = (page - 1) * PER_PAGE;
@@ -28,6 +29,9 @@ const MediaPage = async ({
 
   const [assets, totalAssets] = await db.$transaction([
     db.media.findMany({
+      where: {
+        name: { contains: query },
+      },
       take,
       skip,
       orderBy: {
