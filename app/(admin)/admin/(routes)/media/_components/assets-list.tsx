@@ -1,30 +1,42 @@
 "use client";
 
-import { Media } from "@prisma/client";
-import { useState } from "react";
-
-import { AssetCard } from "./asset-card";
-import { Button } from "@/components/ui/button";
-import toast from "react-hot-toast";
-import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
+import { useEffect, useState } from "react";
 import { Trash } from "lucide-react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { Media } from "@prisma/client";
+import toast from "react-hot-toast";
+
+import { Button } from "@/components/ui/button";
+import { AssetCard } from "./asset-card";
+import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
+import { ExtendedPagination } from "@/components/extended-pagination";
 
 interface AssetListProps {
   items: Media[];
+  pagination: {
+    page: number;
+    perPage: number;
+    totalRecords: number;
+    totalPages: number;
+  };
 }
 
 interface AssetWithCheckbox extends Media {
   isChecked: boolean;
 }
 
-export const AssetsList = ({ items }: AssetListProps) => {
+export const AssetsList = ({ items, pagination }: AssetListProps) => {
   const router = useRouter();
+
   const [assets, setAssets] = useState<AssetWithCheckbox[]>(
     items.map((item) => ({ ...item, isChecked: false }))
   );
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    setAssets(items.map((item) => ({ ...item, isChecked: false })));
+  }, [items]);
 
   const canShowDelete = assets.some((asset) => asset.isChecked);
 
@@ -57,7 +69,7 @@ export const AssetsList = ({ items }: AssetListProps) => {
   return (
     <div className="flex flex-col gap-y-4">
       <div className="flex gap-x-4 items-center">
-        <h2 className="sm:mt-2">Assets ({assets.length})</h2>
+        <h2 className="sm:mt-2">Assets ({pagination.totalRecords})</h2>
         {canShowDelete && (
           <ConfirmModal onConfirm={onDelete}>
             <Button disabled={isLoading} variant="destructive" size="sm">
@@ -78,11 +90,17 @@ export const AssetsList = ({ items }: AssetListProps) => {
           />
         ))}
       </div>
-      {items.length === 0 && (
+      {assets.length === 0 && (
         <div className="text-center text-sm text-muted-foreground mt-10">
           No assets found
         </div>
       )}
+      <ExtendedPagination
+        page={pagination.page}
+        perPage={pagination.perPage}
+        totalRecords={pagination.totalRecords}
+        totalPages={pagination.totalPages}
+      />
     </div>
   );
 };

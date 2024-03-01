@@ -11,41 +11,37 @@ export async function GET(req: Request) {
     const user = await authAdmin();
     const { searchParams } = new URL(req.url);
 
-    const cursor = searchParams.get("cursor");
+    const page = Number(searchParams.get("page")) || 1;
 
     if (!user) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
     let media: Media[] = [];
+    let totalMedia = 0;
 
-    if (cursor) {
-      media = await db.media.findMany({
-        take: MEDIA_BATCH,
-        skip: 1,
-        cursor: {
-          id: cursor,
-        },
+    const skip = (page - 1) * MEDIA_BATCH;
+    const take = MEDIA_BATCH;
+
+    [media, totalMedia] = await db.$transaction([
+      db.media.findMany({
+        take,
+        skip,
         orderBy: {
           createdAt: "desc",
         },
-      });
-    } else {
-      media = await db.media.findMany({
-        take: MEDIA_BATCH,
-        orderBy: {
-          createdAt: "desc",
-        },
-      });
-    }
+      }),
+      db.media.count(),
+    ]);
 
-    let nextCursor = null;
+    const pagination = {
+      page,
+      perPage: MEDIA_BATCH,
+      totalRecords: totalMedia,
+      totalPages: Math.ceil(totalMedia / MEDIA_BATCH),
+    };
 
-    if (media.length === MEDIA_BATCH) {
-      nextCursor = media[MEDIA_BATCH - 1].id;
-    }
-
-    return NextResponse.json({ items: media, nextCursor });
+    return NextResponse.json({ items: media, pagination });
   } catch (error) {
     console.log("[MEDIA_GET]", error);
     return new NextResponse("Internal Error", { status: 500 });

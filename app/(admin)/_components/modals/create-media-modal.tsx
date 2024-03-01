@@ -70,10 +70,11 @@ export const CreateMediaModal = () => {
       await axios.post("/api/media", values);
 
       form.reset();
-      router.refresh();
       onClose();
     } catch (error) {
       console.log(error);
+    } finally {
+      router.refresh();
     }
   };
 
