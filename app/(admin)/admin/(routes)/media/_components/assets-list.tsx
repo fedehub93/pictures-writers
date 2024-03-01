@@ -90,7 +90,7 @@ export const AssetsList = ({ items, pagination }: AssetListProps) => {
             name={item.name}
             url={item.url}
             type={item.type}
-            size={item.size}
+            size={item.size || 0}
             onCheckboxChange={handleCheckboxChange}
           />
         ))}

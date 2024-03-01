@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type ModalType = "createMediaAsset";
+export type ModalType = "createMediaAsset" | "selectAsset";
 
 interface ModalStore {
   type: ModalType | null;

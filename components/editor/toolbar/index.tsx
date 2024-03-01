@@ -1,4 +1,5 @@
 "use client";
+
 import {
   AlignCenter,
   AlignLeft,
@@ -16,8 +17,12 @@ import MarkButton from "./mark-button";
 import BlockButton from "./block-button";
 import { SelectHeading } from "./select-heading";
 import LinkButton from "./link-button";
+import { Button } from "@/components/ui/button";
+import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 
 const Toolbar = () => {
+  const { onOpen } = useModal();
+
   return (
     <div className="border rounded-t-md p-4">
       <div className="flex gap-x-1 h-9">
@@ -53,6 +58,14 @@ const Toolbar = () => {
         <BlockButton format="block-quote">
           <Quote className="h-4 w-4" />
         </BlockButton>
+        <Button
+          type="button"
+          onClick={() => onOpen("selectAsset")}
+          variant="outline"
+          className="ml-auto"
+        >
+          Insert Embed
+        </Button>
       </div>
     </div>
   );

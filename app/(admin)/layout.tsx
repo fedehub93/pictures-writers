@@ -5,6 +5,7 @@ import { Navbar } from "./_components/navbar";
 import { Sidebar } from "./_components/sidebar";
 import { Container } from "./_components/container";
 import { getSelf } from "@/lib/current-user";
+import { ModalProvider } from "./_components/providers/modal-provider";
 
 const AdminLayout = async ({ children }: { children: React.ReactNode }) => {
   const user = await getSelf();
