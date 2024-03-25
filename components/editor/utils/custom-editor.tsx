@@ -1,10 +1,14 @@
 import { ReactEditor } from "slate-react";
 import { Editor, Element, Path, Range, Transforms } from "slate";
 
+import isUrl from "is-url";
+import imageExtensions from "image-extensions";
+
 import {
   CustomEditor,
   CustomElement,
   CustomElementType,
+  ImageElement,
 } from "@/components/editor";
 
 type Format = "bold" | "italic" | "underline";
@@ -60,7 +64,6 @@ export const CustomEditorHelper = {
         type: isActive ? "paragraph" : isList ? "list-item" : format,
       };
     }
-    console.log(newProperties);
     Transforms.setNodes<Element>(editor, newProperties);
 
     if (!isActive && isList) {
@@ -139,5 +142,20 @@ export const CustomEditorHelper = {
       match: (n) =>
         !Editor.isEditor(n) && Element.isElement(n) && n.type === "link",
     });
+  },
+  insertImage(editor: CustomEditor, url: string) {
+    const text = { text: "" };
+    const image: ImageElement = { type: "image", url, children: [text] };
+    Transforms.insertNodes(editor, image);
+    Transforms.insertNodes(editor, {
+      type: "paragraph",
+      children: [{ text: "" }],
+    });
+  },
+  isImageUrl(url: string) {
+    if (!url) return false;
+    if (!isUrl(url)) return false;
+    const ext = new URL(url).pathname.split(".").pop() || "";
+    return imageExtensions.includes(ext);
   },
 };

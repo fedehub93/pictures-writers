@@ -23,6 +23,8 @@ import {
   NumberedList,
   Link,
 } from "@/components/editor/editor-input/elements";
+import { CustomEditorHelper } from "../utils/custom-editor";
+import { ImageElement } from "./elements/image";
 
 const SOFT_BREAK_ELEMENTS = [
   "heading-one",
@@ -32,6 +34,40 @@ const SOFT_BREAK_ELEMENTS = [
   "block-quote",
 ];
 // PLUGIN
+export const withImages = (editor: CustomEditor) => {
+  const { insertData, isVoid } = editor;
+
+  editor.isVoid = (element) => {
+    return element.type === "image" ? true : isVoid(element);
+  };
+
+  editor.insertData = (data) => {
+    const text = data.getData("text/plain");
+    const { files } = data;
+
+    if (files && files.length > 0) {
+      for (const file of files) {
+        const reader = new FileReader();
+        const [mime] = file.type.split("/");
+
+        if (mime === "image") {
+          reader.addEventListener("load", () => {
+            const url = reader.result as string;
+            CustomEditorHelper.insertImage(editor, url);
+          });
+
+          reader.readAsDataURL(file);
+        }
+      }
+    } else if (CustomEditorHelper.isImageUrl(text)) {
+      CustomEditorHelper.insertImage(editor, text);
+    } else {
+      insertData(data);
+    }
+  };
+  return editor;
+};
+
 export const withInlines = (editor: CustomEditor) => {
   const { isInline, normalizeNode, insertBreak, insertSoftBreak } = editor;
 
@@ -184,6 +220,8 @@ const EditorInput = ({ readonly = false }: EditorInputProps) => {
         return <BulletedList {...props} />;
       case "numbered-list":
         return <NumberedList {...props} />;
+      case "image":
+        return <ImageElement {...props} />;
       case "code":
         return <div {...props.attributes}>{props.children}</div>;
       default:

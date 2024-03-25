@@ -5,6 +5,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ToastProvider } from "@/components/providers/toast-provider";
 import { ModalProvider } from "./(admin)/_components/providers/modal-provider";
+import { QueryProvider } from "./(admin)/_components/providers/query-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,8 +29,10 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <ToastProvider />
-            <ModalProvider />
-            {children}
+            <QueryProvider>
+              <ModalProvider />
+              {children}
+            </QueryProvider>
           </ThemeProvider>
         </body>
       </html>

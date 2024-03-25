@@ -4,13 +4,14 @@ import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
 import { Media } from "@prisma/client";
 
-const MEDIA_BATCH = 10;
+const MEDIA_BATCH = 3;
 
 export async function GET(req: Request) {
   try {
     const user = await authAdmin();
     const { searchParams } = new URL(req.url);
 
+    const cursor = searchParams.get("cursor");
     const page = Number(searchParams.get("page")) || 1;
 
     if (!user) {
@@ -23,16 +24,29 @@ export async function GET(req: Request) {
     const skip = (page - 1) * MEDIA_BATCH;
     const take = MEDIA_BATCH;
 
-    [media, totalMedia] = await db.$transaction([
-      db.media.findMany({
-        take,
-        skip,
+    if (cursor) {
+      const assets = await db.media.findMany({
+        take: MEDIA_BATCH,
+        skip: 1,
+        cursor: { id: cursor },
         orderBy: {
           createdAt: "desc",
         },
-      }),
-      db.media.count(),
-    ]);
+      });
+
+      return NextResponse.json({ items: assets, nextCursor: null });
+    } else {
+      [media, totalMedia] = await db.$transaction([
+        db.media.findMany({
+          take,
+          skip,
+          orderBy: {
+            createdAt: "desc",
+          },
+        }),
+        db.media.count(),
+      ]);
+    }
 
     const pagination = {
       page,
@@ -41,7 +55,13 @@ export async function GET(req: Request) {
       totalPages: Math.ceil(totalMedia / MEDIA_BATCH),
     };
 
-    return NextResponse.json({ items: media, pagination });
+    let nextCursor = null;
+
+    if (media.length === MEDIA_BATCH) {
+      nextCursor = media[MEDIA_BATCH - 1].id;
+    }
+
+    return NextResponse.json({ items: media, pagination, nextCursor });
   } catch (error) {
     console.log("[MEDIA_GET]", error);
     return new NextResponse("Internal Error", { status: 500 });

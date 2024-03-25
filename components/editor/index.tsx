@@ -4,7 +4,10 @@ import { Slate, withReact, ReactEditor } from "slate-react";
 import { ControllerRenderProps } from "react-hook-form";
 
 import Toolbar from "@/components/editor/toolbar";
-import EditorInput, { withInlines } from "@/components/editor/editor-input";
+import EditorInput, {
+  withImages,
+  withInlines,
+} from "@/components/editor/editor-input";
 
 export type CustomEditor = BaseEditor & ReactEditor;
 
@@ -20,9 +23,16 @@ export type CustomElementType =
   | "list-item"
   | "bulleted-list"
   | "numbered-list"
+  | "image"
   | "left"
   | "right"
   | "center";
+
+export type ImageElement = {
+  type: "image";
+  url: string;
+  children: EmptyText[];
+};
 
 export type CustomText = {
   text: string;
@@ -63,7 +73,8 @@ interface EditorProps {
   onChange?: (value: Descendant[]) => void;
 }
 
-const createWrappedEditor = () => withInlines(withReact(createEditor()));
+const createWrappedEditor = () =>
+  withImages(withInlines(withReact(createEditor())));
 
 const Editor = ({ children, value, onChange }: EditorProps) => {
   const editor = useMemo(() => createWrappedEditor(), []);

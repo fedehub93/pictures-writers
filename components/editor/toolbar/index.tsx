@@ -19,9 +19,17 @@ import { SelectHeading } from "./select-heading";
 import LinkButton from "./link-button";
 import { Button } from "@/components/ui/button";
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
+import { CustomEditorHelper } from "../utils/custom-editor";
+import { useSlate } from "slate-react";
 
 const Toolbar = () => {
-  const { onOpen } = useModal();
+  const { onOpen, data } = useModal();
+  const editor = useSlate();
+
+  const getImage = (data: any) => {
+    console.log("get image", data);
+    CustomEditorHelper.insertImage(editor, data.url);
+  };
 
   return (
     <div className="border rounded-t-md p-4">
@@ -60,7 +68,7 @@ const Toolbar = () => {
         </BlockButton>
         <Button
           type="button"
-          onClick={() => onOpen("selectAsset")}
+          onClick={() => onOpen("selectAsset", getImage)}
           variant="outline"
           className="ml-auto"
         >
