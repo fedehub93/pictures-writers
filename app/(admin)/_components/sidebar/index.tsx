@@ -16,12 +16,13 @@ import {
   Tags,
   Users,
 } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export const Sidebar = () => {
   return (
     <Wrapper>
       <Toggle />
-      <div className="flex flex-col h-full">
+      <ScrollArea className="flex flex-col h-full">
         <div className="flex-1 h-full space-y-2 lg:space-y-4 pt-4 lg:pt-0">
           <div className="px-2">
             <MenuItem
@@ -62,7 +63,7 @@ export const Sidebar = () => {
             <MenuItem label="Settings" href="/admin/settings" icon={Settings} />
           </MenuGroup>
         </div>
-      </div>
+      </ScrollArea>
     </Wrapper>
   );
 };

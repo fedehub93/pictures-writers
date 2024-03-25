@@ -70,13 +70,19 @@ declare module "slate" {
 interface EditorProps {
   children: React.ReactNode;
   value: Descendant[];
+  onHandleIsFocused: (value: boolean) => void;
   onChange?: (value: Descendant[]) => void;
 }
 
 const createWrappedEditor = () =>
   withImages(withInlines(withReact(createEditor())));
 
-const Editor = ({ children, value, onChange }: EditorProps) => {
+const Editor = ({
+  children,
+  value,
+  onChange,
+  onHandleIsFocused,
+}: EditorProps) => {
   const editor = useMemo(() => createWrappedEditor(), []);
 
   return (

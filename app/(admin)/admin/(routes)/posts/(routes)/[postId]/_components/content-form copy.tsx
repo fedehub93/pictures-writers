@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 
 import Editor, { CustomElement } from "@/components/editor";
-import { cn } from "@/lib/utils";
 
 interface BodyFormProps {
   initialData: {
@@ -28,8 +27,9 @@ const formSchema = z.object({
 
 export const ContentForm = ({ initialData, postId }: BodyFormProps) => {
   const router = useRouter();
-  const [isFocused, setIsFocused] = useState(false);
 
+  const [isEditing, setIsEditing] = useState(false);
+  const toggleEdit = () => setIsEditing((current) => !current);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -39,16 +39,13 @@ export const ContentForm = ({ initialData, postId }: BodyFormProps) => {
     },
   });
 
-  const onHandleIsFocused = (value: boolean) => {
-    setIsFocused(value);
-  };
-
   const { isSubmitting, isValid } = form.formState;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       await axios.patch(`/api/posts/${postId}`, values);
       toast.success("Post updated");
+      toggleEdit();
     } catch {
       toast.error("Something went wrong");
     } finally {
@@ -57,14 +54,20 @@ export const ContentForm = ({ initialData, postId }: BodyFormProps) => {
   };
 
   return (
-    <div
-      className={cn(
-        "border-l-4  dark:bg-slate-900 p-4 transition",
-        isFocused && "border-l-blue-500"
-      )}
-    >
-      <div className="flex items-center justify-between">Post body</div>
-      {/* {!isEditing && initialData.bodyData && (
+    <div>
+      <div className="flex items-center justify-between">
+        Post body
+        <Button onClick={toggleEdit} variant="ghost">
+          {isEditing && <>Cancel</>}
+          {!isEditing && (
+            <>
+              <Pencil className="h-4 w-4 mr-2" />
+              Edit body
+            </>
+          )}
+        </Button>
+      </div>
+      {!isEditing && initialData.bodyData && (
         // <SlateView
         //   nodes={initialData.bodyData}
         //   transforms={{
@@ -82,26 +85,37 @@ export const ContentForm = ({ initialData, postId }: BodyFormProps) => {
         <Editor value={initialData.bodyData}>
           <Editor.Input readonly />
         </Editor>
-      )} */}
-
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
-          <FormField
-            control={form.control}
-            name="bodyData"
-            render={({ field }) => (
-              <FormItem className="space-y-0">
-                <FormControl>
-                  <Editor {...field} onHandleIsFocused={onHandleIsFocused}>
-                    <Editor.Toolbar />
-                    <Editor.Input onHandleIsFocused={onHandleIsFocused} />
-                  </Editor>
-                </FormControl>
-              </FormItem>
-            )}
-          />
-        </form>
-      </Form>
+      )}
+      {isEditing && (
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-4 mt-4"
+          >
+            <FormField
+              control={form.control}
+              name="bodyData"
+              render={({ field }) => (
+                <FormItem className="space-y-0">
+                  <FormControl>
+                    <Editor {...field}>
+                      <Editor.Toolbar />
+                      <Editor.Input />
+                    </Editor>
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <Button
+              className="flex items-center gap-x-2"
+              disabled={!isValid || isSubmitting}
+              type="submit"
+            >
+              Save
+            </Button>
+          </form>
+        </Form>
+      )}
     </div>
   );
 };

@@ -32,7 +32,7 @@ const Toolbar = () => {
   };
 
   return (
-    <div className="border rounded-t-md p-4">
+    <div className="border rounded-t-md p-4 bg-slate-100">
       <div className="flex gap-x-1 h-9">
         <SelectHeading />
         <MarkButton format="bold">

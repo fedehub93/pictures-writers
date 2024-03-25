@@ -3,8 +3,6 @@
 import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Pencil } from "lucide-react";
-import { useState } from "react";
 
 import {
   Form,
@@ -14,10 +12,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface TitleFormProps {
   initialData: {
@@ -34,9 +33,7 @@ const formSchema = z.object({
 
 export const TitleForm = ({ initialData, postId }: TitleFormProps) => {
   const router = useRouter();
-
-  const [isEditing, setIsEditing] = useState(false);
-  const toggleEdit = () => setIsEditing((current) => !current);
+  const [isFocused, setIsFocused] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -49,7 +46,6 @@ export const TitleForm = ({ initialData, postId }: TitleFormProps) => {
     try {
       await axios.patch(`/api/posts/${postId}`, values);
       toast.success("Post updated");
-      toggleEdit();
     } catch {
       toast.error("Something went wrong");
     } finally {
@@ -58,52 +54,40 @@ export const TitleForm = ({ initialData, postId }: TitleFormProps) => {
   };
 
   return (
-    <div className="bg-slate-100 dark:bg-slate-900 border rounded-md p-4">
-      <div className="flex items-center justify-between">
-        Post title
-        <Button onClick={toggleEdit} variant="ghost">
-          {isEditing && <>Cancel</>}
-          {!isEditing && (
-            <>
-              <Pencil className="h-4 w-4 mr-2" />
-              Edit title
-            </>
-          )}
-        </Button>
-      </div>
-      {!isEditing && <p>{initialData.title}</p>}
-      {isEditing && (
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4 mt-4"
-          >
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      disabled={isSubmitting}
-                      placeholder="e.g. How to write a screenplay"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button
-              className="flex items-center gap-x-2"
-              disabled={!isValid || isSubmitting}
-              type="submit"
-            >
-              Save
-            </Button>
-          </form>
-        </Form>
+    <div
+      className={cn(
+        "border-l-4  dark:bg-slate-900 p-4 transition",
+        isFocused && "border-l-blue-500"
       )}
+    >
+      <div className="flex items-center justify-between">Post title</div>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input
+                    {...field}
+                    disabled={isSubmitting}
+                    placeholder="e.g. How to write a screenplay"
+                    onFocus={(e) => {
+                      setIsFocused(true);
+                    }}
+                    onBlur={(e) => {
+                      setIsFocused(false);
+                      field.onBlur();
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </form>
+      </Form>
     </div>
   );
 };

@@ -184,10 +184,14 @@ export const withInlines = (editor: CustomEditor) => {
 };
 
 interface EditorInputProps {
+  onHandleIsFocused: (value: boolean) => void;
   readonly?: boolean;
 }
 
-const EditorInput = ({ readonly = false }: EditorInputProps) => {
+const EditorInput = ({
+  onHandleIsFocused,
+  readonly = false,
+}: EditorInputProps) => {
   const editor = useSlate();
 
   const renderElement = useCallback((props: RenderElementProps) => {
@@ -254,6 +258,12 @@ const EditorInput = ({ readonly = false }: EditorInputProps) => {
       readOnly={readonly}
       renderElement={renderElement}
       renderLeaf={renderLeaf}
+      onFocus={(e) => {
+        onHandleIsFocused(true);
+      }}
+      onBlur={(e) => {
+        onHandleIsFocused(false);
+      }}
       onKeyDown={(event) => {
         const { selection } = editor;
 

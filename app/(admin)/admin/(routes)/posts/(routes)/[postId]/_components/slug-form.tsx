@@ -19,6 +19,7 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import slugify from "slugify";
+import { cn } from "@/lib/utils";
 
 interface SlugFormProps {
   initialData: {
@@ -36,9 +37,7 @@ const formSchema = z.object({
 
 export const SlugForm = ({ initialData, postId }: SlugFormProps) => {
   const router = useRouter();
-
-  const [isEditing, setIsEditing] = useState(false);
-  const toggleEdit = () => setIsEditing((current) => !current);
+  const [isFocused, setIsFocused] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -51,7 +50,6 @@ export const SlugForm = ({ initialData, postId }: SlugFormProps) => {
     try {
       await axios.patch(`/api/posts/${postId}`, values);
       toast.success("Post updated");
-      toggleEdit();
     } catch {
       toast.error("Something went wrong");
     } finally {
@@ -69,61 +67,50 @@ export const SlugForm = ({ initialData, postId }: SlugFormProps) => {
   };
 
   return (
-    <div className="col-span-full md:col-span-4 lg:col-span-9 bg-slate-100 dark:bg-slate-900 border rounded-md p-4">
-      <div className="flex items-center justify-between">
-        Post slug
-        <Button onClick={toggleEdit} variant="ghost">
-          {isEditing && <>Cancel</>}
-          {!isEditing && (
-            <>
-              <Pencil className="h-4 w-4 mr-2" />
-              Edit slug
-            </>
-          )}
-        </Button>
-      </div>
-      {!isEditing && <p>{initialData.slug}</p>}
-      {isEditing && (
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4 mt-4"
-          >
-            <FormField
-              control={form.control}
-              name="slug"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <div className="flex flex-row gap-x-2">
-                      <Input
-                        disabled={isSubmitting}
-                        placeholder="e.g. how-do-you-write-a-book"
-                        {...field}
-                      />
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        onClick={onSlugCreate}
-                      >
-                        <Sparkles className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button
-              className="flex items-center gap-x-2"
-              disabled={!isValid || isSubmitting}
-              type="submit"
-            >
-              Save
-            </Button>
-          </form>
-        </Form>
+    <div
+      className={cn(
+        "col-span-full md:col-span-4 lg:col-span-9 border-l-4 dark:bg-slate-900 p-4",
+        isFocused && "border-l-blue-500"
       )}
+    >
+      <div className="flex items-center justify-between">Post slug</div>
+
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
+          <FormField
+            control={form.control}
+            name="slug"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <div className="flex flex-row gap-x-2">
+                    <Input
+                      {...field}
+                      disabled={isSubmitting}
+                      placeholder="e.g. how-do-you-write-a-book"
+                      onFocus={(e) => {
+                        setIsFocused(true);
+                      }}
+                      onBlur={(e) => {
+                        setIsFocused(false);
+                        field.onBlur();
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={onSlugCreate}
+                    >
+                      <Sparkles className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </form>
+      </Form>
     </div>
   );
 };
