@@ -4,8 +4,10 @@ import { FileIcon, X } from "lucide-react";
 import Image from "next/image";
 
 import { UploadDropzone } from "@/lib/uploadthing";
+import { ourFileRouter } from "@/app/api/uploadthing/core";
 
 import "@uploadthing/react/styles.css";
+import { Dispatch, SetStateAction } from "react";
 
 type FileUploadOnChange = {
   name: string;
@@ -15,11 +17,17 @@ type FileUploadOnChange = {
 
 interface FileUploadProps {
   onChange: ({ name, url, size }: FileUploadOnChange) => void;
-  value: string;
-  endpoint: "mediaAsset";
+  value?: string;
+  endpoint: keyof typeof ourFileRouter;
+  setIsFocused?: Dispatch<SetStateAction<boolean>>;
 }
 
-export const FileUpload = ({ onChange, value, endpoint }: FileUploadProps) => {
+export const FileUpload = ({
+  onChange,
+  value,
+  endpoint,
+  setIsFocused,
+}: FileUploadProps) => {
   const fileType = value?.split(".").pop();
   if (value && fileType !== "pdf") {
     return (
@@ -63,12 +71,17 @@ export const FileUpload = ({ onChange, value, endpoint }: FileUploadProps) => {
     <div>
       <UploadDropzone
         endpoint={endpoint}
+        onBeforeUploadBegin={(files) => {
+          setIsFocused && setIsFocused(true);
+          return files;
+        }}
         onClientUploadComplete={(res) => {
           onChange({
             name: res?.[0].name,
             url: res?.[0].url,
             size: res?.[0].size,
           });
+          setIsFocused && setIsFocused(false);
         }}
         onUploadError={(error: Error) => {
           console.log(error);
