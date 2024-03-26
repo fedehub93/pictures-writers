@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { ChangeEvent, useState } from "react";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -14,16 +14,18 @@ import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 
 import Editor, { CustomElement } from "@/components/editor";
 import { cn } from "@/lib/utils";
+import { useDebounceCallback } from "usehooks-ts";
+import { Descendant } from "slate";
 
 interface BodyFormProps {
   initialData: {
-    bodyData: CustomElement[];
+    bodyData: Descendant[];
   };
   postId: string;
 }
 
 const formSchema = z.object({
-  bodyData: z.custom<CustomElement[]>(),
+  bodyData: z.custom<Descendant[]>(),
 });
 
 export const ContentForm = ({ initialData, postId }: BodyFormProps) => {
@@ -31,6 +33,7 @@ export const ContentForm = ({ initialData, postId }: BodyFormProps) => {
   const [isFocused, setIsFocused] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
+    mode: "all",
     resolver: zodResolver(formSchema),
     defaultValues: {
       bodyData: initialData.bodyData || [
@@ -43,7 +46,7 @@ export const ContentForm = ({ initialData, postId }: BodyFormProps) => {
     setIsFocused(value);
   };
 
-  const { isSubmitting, isValid } = form.formState;
+  const { isValid } = form.formState;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
@@ -56,11 +59,24 @@ export const ContentForm = ({ initialData, postId }: BodyFormProps) => {
     }
   };
 
+  const onChangeBody = (value: Descendant[]) => {
+    form.setValue("bodyData", value);
+  };
+
+  const onValueChangeBody = (value: Descendant[]) => {
+    debouncedSubmit();
+  };
+
+  const debouncedSubmit = useDebounceCallback(() => {
+    form.handleSubmit(onSubmit)();
+  }, 5000);
+
   return (
     <div
       className={cn(
         "border-l-4  dark:bg-slate-900 p-4 transition",
-        isFocused && "border-l-blue-500"
+        isFocused && "border-l-blue-500",
+        !isValid && "border-l-red-500"
       )}
     >
       <div className="flex items-center justify-between">Post body</div>
@@ -92,7 +108,11 @@ export const ContentForm = ({ initialData, postId }: BodyFormProps) => {
             render={({ field }) => (
               <FormItem className="space-y-0">
                 <FormControl>
-                  <Editor {...field} onHandleIsFocused={onHandleIsFocused}>
+                  <Editor
+                    {...field}
+                    onChange={onChangeBody}
+                    onValueChange={onValueChangeBody}
+                  >
                     <Editor.Toolbar />
                     <Editor.Input onHandleIsFocused={onHandleIsFocused} />
                   </Editor>

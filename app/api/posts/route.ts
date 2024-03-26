@@ -18,6 +18,7 @@ export async function POST(req: Request) {
         title,
         slug,
         bodyData: [{ type: "paragraph", children: [{ text: "" }] }],
+        isPublished: false,
       },
     });
 

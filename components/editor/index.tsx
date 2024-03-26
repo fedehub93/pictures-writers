@@ -70,23 +70,23 @@ declare module "slate" {
 interface EditorProps {
   children: React.ReactNode;
   value: Descendant[];
-  onHandleIsFocused: (value: boolean) => void;
   onChange?: (value: Descendant[]) => void;
+  onValueChange?: (value: Descendant[]) => void;
 }
 
 const createWrappedEditor = () =>
   withImages(withInlines(withReact(createEditor())));
 
-const Editor = ({
-  children,
-  value,
-  onChange,
-  onHandleIsFocused,
-}: EditorProps) => {
+const Editor = ({ children, value, onChange, onValueChange }: EditorProps) => {
   const editor = useMemo(() => createWrappedEditor(), []);
 
   return (
-    <Slate editor={editor} initialValue={value} onChange={onChange}>
+    <Slate
+      editor={editor}
+      initialValue={value}
+      onChange={onChange}
+      onValueChange={onValueChange}
+    >
       {React.Children.map(children, (child) => {
         if (!React.isValidElement(child)) return child;
         return React.cloneElement(child);

@@ -4,7 +4,7 @@ import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Pencil, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { ChangeEvent, useState } from "react";
 
 import {
   Form,
@@ -20,6 +20,7 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import slugify from "slugify";
 import { cn } from "@/lib/utils";
+import { useDebounceCallback } from "usehooks-ts";
 
 interface SlugFormProps {
   initialData: {
@@ -31,7 +32,7 @@ interface SlugFormProps {
 
 const formSchema = z.object({
   slug: z.string().min(1, {
-    message: "Title is required!",
+    message: "Slug is required!",
   }),
 });
 
@@ -40,6 +41,7 @@ export const SlugForm = ({ initialData, postId }: SlugFormProps) => {
   const [isFocused, setIsFocused] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
+    mode: "all",
     resolver: zodResolver(formSchema),
     defaultValues: initialData,
   });
@@ -57,6 +59,15 @@ export const SlugForm = ({ initialData, postId }: SlugFormProps) => {
     }
   };
 
+  const debouncedSubmit = useDebounceCallback(() => {
+    form.handleSubmit(onSubmit)();
+  }, 5000);
+
+  const onChangeSlug = (e: ChangeEvent<HTMLInputElement>) => {
+    form.setValue("slug", e.target.value);
+    debouncedSubmit();
+  };
+
   const onSlugCreate = () => {
     form.setValue(
       "slug",
@@ -64,13 +75,16 @@ export const SlugForm = ({ initialData, postId }: SlugFormProps) => {
         lower: true,
       })
     );
+    debouncedSubmit();
+    form.trigger("slug");
   };
 
   return (
     <div
       className={cn(
         "col-span-full md:col-span-4 lg:col-span-9 border-l-4 dark:bg-slate-900 p-4",
-        isFocused && "border-l-blue-500"
+        isFocused && "border-l-blue-500",
+        !isValid && "border-l-red-500"
       )}
     >
       <div className="flex items-center justify-between">Post slug</div>
@@ -86,7 +100,6 @@ export const SlugForm = ({ initialData, postId }: SlugFormProps) => {
                   <div className="flex flex-row gap-x-2">
                     <Input
                       {...field}
-                      disabled={isSubmitting}
                       placeholder="e.g. how-do-you-write-a-book"
                       onFocus={(e) => {
                         setIsFocused(true);
@@ -95,6 +108,7 @@ export const SlugForm = ({ initialData, postId }: SlugFormProps) => {
                         setIsFocused(false);
                         field.onBlur();
                       }}
+                      onChange={onChangeSlug}
                     />
                     <Button
                       type="button"

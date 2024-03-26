@@ -45,11 +45,29 @@ model Post {
   
   isPublished Boolean @default(false)
 
+  versions PostVersion[]
+
   userId String
   user User @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model PostVersion {
+  id String @id @default(uuid())
+
+  postId String
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  title String
+  content String
+
+  publishedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([postId])
 }
 
 enum MediaType {

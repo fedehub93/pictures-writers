@@ -15,8 +15,9 @@ import { Input } from "@/components/ui/input";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { useDebounceCallback } from "usehooks-ts";
 
 interface TitleFormProps {
   initialData: {
@@ -36,11 +37,12 @@ export const TitleForm = ({ initialData, postId }: TitleFormProps) => {
   const [isFocused, setIsFocused] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
+    mode: "all",
     resolver: zodResolver(formSchema),
     defaultValues: initialData,
   });
 
-  const { isSubmitting, isValid } = form.formState;
+  const { isValid } = form.formState;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
@@ -53,11 +55,21 @@ export const TitleForm = ({ initialData, postId }: TitleFormProps) => {
     }
   };
 
+  const onChangeTitle = (e: ChangeEvent<HTMLInputElement>) => {
+    form.setValue("title", e.target.value);
+    debouncedSubmit();
+  };
+
+  const debouncedSubmit = useDebounceCallback(() => {
+    form.handleSubmit(onSubmit)();
+  }, 5000);
+
   return (
     <div
       className={cn(
-        "border-l-4  dark:bg-slate-900 p-4 transition",
-        isFocused && "border-l-blue-500"
+        "border-l-4  dark:bg-slate-900 p-4 transition-all",
+        isFocused && "border-l-blue-500",
+        !isValid && "border-l-red-500"
       )}
     >
       <div className="flex items-center justify-between">Post title</div>
@@ -71,7 +83,6 @@ export const TitleForm = ({ initialData, postId }: TitleFormProps) => {
                 <FormControl>
                   <Input
                     {...field}
-                    disabled={isSubmitting}
                     placeholder="e.g. How to write a screenplay"
                     onFocus={(e) => {
                       setIsFocused(true);
@@ -80,6 +91,7 @@ export const TitleForm = ({ initialData, postId }: TitleFormProps) => {
                       setIsFocused(false);
                       field.onBlur();
                     }}
+                    onChange={onChangeTitle}
                   />
                 </FormControl>
                 <FormMessage />
