@@ -2,21 +2,22 @@
 
 import { Element } from "slate";
 import { useSlate } from "slate-react";
-
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useMemo } from "react";
+import { ChevronDown } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+
 import { CustomElementType } from "@/components/editor";
 import { CustomEditorHelper } from "@/components/editor/utils/custom-editor";
-import { useMemo } from "react";
 
 type Heading = {
   label: string;
@@ -25,41 +26,38 @@ type Heading = {
   default?: boolean;
 };
 
+const values: Heading[] = [
+  {
+    label: "Normal text",
+    type: "paragraph",
+    default: true,
+  },
+  {
+    label: "Heading one",
+    type: "heading-one",
+    className: "text-3xl",
+  },
+  {
+    label: "Heading two",
+    type: "heading-two",
+    className: "text-2xl",
+  },
+  {
+    label: "Heading three",
+    type: "heading-three",
+    className: "text-xl",
+  },
+  {
+    label: "Heading four",
+    type: "heading-four",
+    className: "text-lg",
+  },
+];
+
 export const SelectHeading = () => {
   const editor = useSlate();
 
   const { selection } = editor;
-
-  const values: Heading[] = useMemo<Heading[]>(
-    () => [
-      {
-        label: "Normal text",
-        type: "paragraph",
-        default: true,
-      },
-      {
-        label: "Heading one",
-        type: "heading-one",
-        className: "text-3xl",
-      },
-      {
-        label: "Heading two",
-        type: "heading-two",
-        className: "text-2xl",
-      },
-      {
-        label: "Heading three",
-        type: "heading-three",
-        className: "text-xl",
-      },
-      {
-        label: "Heading four",
-        type: "heading-four",
-        className: "text-lg",
-      },
-    ],
-    []
-  );
 
   const defaultSelectValue = values.find((value) => value.default) || {
     label: "Normal Text",
@@ -69,9 +67,12 @@ export const SelectHeading = () => {
   let selected = null;
   if (selection !== null && selection.anchor !== null) {
     const e = editor.children[selection.anchor.path[0]];
-    selected = Element.isElement(e) ? e : null;
+    if (Element.isElement(e)) {
+      const value = values.find((value) => value.type === e.type);
+      selected = value ? value.label : defaultSelectValue.label;
+    }
   } else {
-    selected = null;
+    selected = defaultSelectValue.label;
   }
 
   const onValueChange = (value: CustomElementType) => {
@@ -80,27 +81,34 @@ export const SelectHeading = () => {
   };
 
   return (
-    <Select
-      value={selected?.type || defaultSelectValue.type}
-      onValueChange={onValueChange}
-    >
-      <SelectTrigger className="w-[180px]">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectGroup>
-          <SelectLabel>Headers</SelectLabel>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          className="bg-transparent hover:text-muted-foreground"
+        >
+          {selected}
+          <ChevronDown className="ml-2 h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start">
+        <DropdownMenuRadioGroup
+          onValueChange={(value) => onValueChange(value as CustomElementType)}
+        >
           {values.map((value) => (
-            <SelectItem
+            <DropdownMenuRadioItem
               key={value.label}
               value={value.type}
-              className={cn(value.className)}
+              className={cn(
+                "pl-2 pr-4 h-9 font-medium cursor-pointer",
+                value.className
+              )}
             >
               {value.label}
-            </SelectItem>
+            </DropdownMenuRadioItem>
           ))}
-        </SelectGroup>
-      </SelectContent>
-    </Select>
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };

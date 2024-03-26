@@ -32,9 +32,10 @@ const Toolbar = () => {
   };
 
   return (
-    <div className="border rounded-t-md p-4 bg-slate-100">
+    <div className="border rounded-t-md p-4 bg-slate-100 dark:bg-secondary">
       <div className="flex gap-x-1 h-9">
         <SelectHeading />
+        <Separator orientation="vertical" className="bg-slate-300" />
         <MarkButton format="bold">
           <Bold className="h-4 w-4" />
         </MarkButton>
@@ -44,9 +45,9 @@ const Toolbar = () => {
         <MarkButton format="underline">
           <Underline className="h-4 w-4" />
         </MarkButton>
-        <Separator orientation="vertical" />
+        <Separator orientation="vertical" className="bg-slate-300" />
         <LinkButton format="link" />
-        <Separator orientation="vertical" />
+        <Separator orientation="vertical" className="bg-slate-300" />
         <BlockButton format="left" blockType="align">
           <AlignLeft className="h-4 w-4" />
         </BlockButton>
@@ -56,7 +57,7 @@ const Toolbar = () => {
         <BlockButton format="right" blockType="align">
           <AlignRight className="h-4 w-4" />
         </BlockButton>
-        <Separator orientation="vertical" />
+        <Separator orientation="vertical" className="bg-slate-300" />
         <BlockButton format="bulleted-list">
           <List className="h-4 w-4" />
         </BlockButton>

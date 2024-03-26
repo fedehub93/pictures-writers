@@ -72,9 +72,12 @@ export const SelectAssetModal = () => {
         <ScrollArea className="py-4 px-6 max-h-[400px]">
           <div className="flex flex-col items-center gap-y-4">
             {data?.pages?.map((group, i) => (
-              <div className="flex gap-x-4">
+              <div key={i} className="flex gap-x-4">
                 {group.items.map((item: Media) => (
-                  <div className="relative w-64 rounded-md aspect-video overflow-hidden cursor-pointer hover:border-primary hover:border-2 transition-all">
+                  <div
+                    key={item.name}
+                    className="relative w-64 rounded-md aspect-video overflow-hidden cursor-pointer hover:border-primary hover:border-2 transition-all"
+                  >
                     <Image
                       src={item.url}
                       alt="ciao"
