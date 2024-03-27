@@ -115,6 +115,7 @@ export const ContentForm = ({ initialData, postId }: BodyFormProps) => {
                   >
                     <Editor.Toolbar />
                     <Editor.Input onHandleIsFocused={onHandleIsFocused} />
+                    <Editor.Counter value={field.value} />
                   </Editor>
                 </FormControl>
               </FormItem>

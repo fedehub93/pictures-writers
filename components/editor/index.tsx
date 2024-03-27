@@ -8,6 +8,7 @@ import EditorInput, {
   withImages,
   withInlines,
 } from "@/components/editor/editor-input";
+import { Counter } from "./counter";
 
 export type CustomEditor = BaseEditor & ReactEditor;
 
@@ -97,5 +98,6 @@ const Editor = ({ children, value, onChange, onValueChange }: EditorProps) => {
 
 Editor.Input = EditorInput;
 Editor.Toolbar = Toolbar;
+Editor.Counter = Counter;
 
 export default Editor;
