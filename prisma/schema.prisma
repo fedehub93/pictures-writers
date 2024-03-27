@@ -39,7 +39,8 @@ model Post {
 
   title    String  @unique
   slug     String  @unique
-  imageUrl String? @db.Text
+  imageCover Media? @relation(fields: [imageCoverId], references: [id])
+  imageCoverId String? @unique
 
   /// [BodyData]
   bodyData Json @db.JsonB
@@ -85,6 +86,8 @@ model Media {
   url  String    @unique @db.Text
   size Int?
   type MediaType @default(FILE)
+
+  post Post?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

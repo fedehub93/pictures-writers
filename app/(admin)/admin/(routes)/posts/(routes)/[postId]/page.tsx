@@ -10,6 +10,7 @@ import { SlugForm } from "./_components/slug-form";
 import { ContentForm } from "./_components/content-form";
 import { StatusView } from "./_components/status-view";
 import { ImageForm } from "./_components/image-form";
+import { Media, Post } from "@prisma/client";
 
 const PostIdPage = async ({ params }: { params: { postId: string } }) => {
   const userAdmin = await authAdmin();
@@ -20,6 +21,9 @@ const PostIdPage = async ({ params }: { params: { postId: string } }) => {
   const post = await db.post.findUnique({
     where: {
       id: params.postId,
+    },
+    include: {
+      imageCover: true,
     },
   });
 

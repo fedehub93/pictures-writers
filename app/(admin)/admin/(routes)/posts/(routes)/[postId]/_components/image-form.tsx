@@ -1,5 +1,5 @@
 "use client";
-import { Post } from "@prisma/client";
+import { Media, Post } from "@prisma/client";
 
 import * as z from "zod";
 import toast from "react-hot-toast";
@@ -18,30 +18,33 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
+import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 
 interface ImageFormProps {
-  initialData: Post;
+  initialData: Post & {
+    imageCover: Media | null;
+  };
   postId: string;
 }
 
 const formSchema = z.object({
-  imageUrl: z.optional(
-    z
-      .string()
-      .min(1, {
-        message: "Image is required",
-      })
-      .nullable()
-  ),
+  imageCover: z.optional(z.custom<Media>().nullable()),
 });
 
 export const ImageForm = ({ initialData, postId }: ImageFormProps) => {
   const router = useRouter();
   const [isFocused, setIsFocused] = useState(false);
+  const { onOpen } = useModal();
+
+  const getImage = (data: Media) => {
+    onSubmit({ imageCover: data });
+  };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      await axios.patch(`/api/posts/${postId}`, values);
+      await axios.patch(`/api/posts/${postId}`, {
+        imageCoverId: values.imageCover?.id || null,
+      });
       toast.success("Post updated");
     } catch {
       toast.error("Something went wrong");
@@ -51,7 +54,7 @@ export const ImageForm = ({ initialData, postId }: ImageFormProps) => {
   };
 
   const onHandleRemove = () => {
-    onSubmit({ imageUrl: null });
+    onSubmit({ imageCover: null });
   };
 
   return (
@@ -62,17 +65,22 @@ export const ImageForm = ({ initialData, postId }: ImageFormProps) => {
       )}
     >
       <div className="flex items-center justify-between">Image cover</div>
-      {!initialData.imageUrl ? (
-        <FileUpload
-          endpoint="postImage"
-          onChange={({ url }) => {
-            if (url) {
-              onSubmit({ imageUrl: url });
-            }
-          }}
-          setIsFocused={setIsFocused}
-        />
+      {!initialData.imageCover ? (
+        <div className="flex w-full items-center justify-center h-56 border border-slate-300 border-dashed rounded-md">
+          <Button type="button" onClick={() => onOpen("selectAsset", getImage)}>
+            Select asset
+          </Button>
+        </div>
       ) : (
+        // <FileUpload
+        //   endpoint="postImage"
+        //   onChange={({ url }) => {
+        //     if (url) {
+        //       onSubmit({ imageUrl: url });
+        //     }
+        //   }}
+        //   setIsFocused={setIsFocused}
+        // />
         <div className="border rounded-md">
           <div className="flex items-center justify-between w-full px-4 py-2 border-b">
             <p className="text-muted-foreground text-sm">Image</p>
@@ -95,15 +103,13 @@ export const ImageForm = ({ initialData, postId }: ImageFormProps) => {
             </DropdownMenu>
           </div>
           <div className="w-full flex items-center justify-between h-40 p-4">
-            <div className="flex-1">
-              ciao
-            </div>
+            <div className="flex-1">ciao</div>
             <div className="relative aspect-video w-36 h-36">
               <Image
                 alt="upload"
                 fill
                 className="object-cover rounded-md"
-                src={initialData.imageUrl}
+                src={initialData.imageCover.url}
               />
             </div>
           </div>

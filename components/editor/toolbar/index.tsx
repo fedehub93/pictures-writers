@@ -1,5 +1,6 @@
 "use client";
 
+import { Media } from "@prisma/client";
 import {
   AlignCenter,
   AlignLeft,
@@ -11,23 +12,23 @@ import {
   Quote,
   Underline,
 } from "lucide-react";
+import { useSlate } from "slate-react";
 
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
+import { CustomEditorHelper } from "@/components/editor/utils/custom-editor";
+
 import MarkButton from "./mark-button";
 import BlockButton from "./block-button";
 import { SelectHeading } from "./select-heading";
 import LinkButton from "./link-button";
-import { Button } from "@/components/ui/button";
-import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
-import { CustomEditorHelper } from "../utils/custom-editor";
-import { useSlate } from "slate-react";
 
 const Toolbar = () => {
-  const { onOpen, data } = useModal();
+  const { onOpen } = useModal();
   const editor = useSlate();
 
-  const getImage = (data: any) => {
-    console.log("get image", data);
+  const getImage = (data: Media) => {
     CustomEditorHelper.insertImage(editor, data.url);
   };
 

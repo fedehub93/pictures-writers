@@ -47,8 +47,8 @@ export const SelectAssetModal = () => {
 
   const isModalOpen = isOpen && type === "selectAsset";
 
-  const onSelect = async (url: string) => {
-    onCallback({ url });
+  const onSelect = async (asset: Media) => {
+    onCallback(asset);
     handleClose();
   };
 
@@ -81,7 +81,7 @@ export const SelectAssetModal = () => {
                     <Image
                       src={item.url}
                       alt="ciao"
-                      onClick={() => onSelect(item.url)}
+                      onClick={() => onSelect(item)}
                       fill
                       className="object-cover rounded-md hover:scale-110 transition-all duration-500"
                     />
