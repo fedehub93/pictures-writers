@@ -12,6 +12,7 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
 
     const cursor = searchParams.get("cursor");
+    const s = searchParams.get("s") || "";
     const page = Number(searchParams.get("page")) || 1;
 
     if (!user) {
@@ -26,6 +27,9 @@ export async function GET(req: Request) {
 
     if (cursor) {
       const assets = await db.media.findMany({
+        where: {
+          name: { contains: s },
+        },
         take: MEDIA_BATCH,
         skip: 1,
         cursor: { id: cursor },
@@ -38,6 +42,9 @@ export async function GET(req: Request) {
     } else {
       [media, totalMedia] = await db.$transaction([
         db.media.findMany({
+          where: {
+            name: { contains: s },
+          },
           take,
           skip,
           orderBy: {
