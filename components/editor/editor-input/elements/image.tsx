@@ -1,4 +1,4 @@
-import { Trash } from "lucide-react";
+import { ChevronDown, Pencil, Trash, Trash2 } from "lucide-react";
 import { Transforms } from "slate";
 import {
   ReactEditor,
@@ -27,10 +27,16 @@ export const EmbeddedImage = ({
   const editor = useSlateStatic();
   const path = ReactEditor.findPath(editor, element);
 
-  const selected = useSelected();
-  const focused = useFocused();
+  // const onHandleEdit = () => {
+  //   Transforms.setNodes(editor, { altText: "new" }, { at: path });
+  // };
+
+  const onHandleRemove = () => {
+    Transforms.removeNodes(editor, { at: path });
+  };
+
   return (
-    <div {...attributes} className="w-full h-full">
+    <div {...attributes}>
       {children}
       <div
         contentEditable={false}
@@ -41,15 +47,19 @@ export const EmbeddedImage = ({
           alt={element.altText}
           fill
           objectFit="cover"
+          className="rounded-md"
         />
-        <Button
-          onClick={() => Transforms.removeNodes(editor, { at: path })}
-          variant="ghost"
-          size="sm"
-          className={cn("absolute top-4 left-4 hidden group-hover:block z-50")}
-        >
-          <Trash />
-        </Button>
+        <div className="h-full w-full opacity-0 group-hover:opacity-50 transition-all duration-700 bg-black rounded-md" />
+        <div className="flex flex-col gap-y-4 opacity-0 group-hover:opacity-100 transition-all duration-700 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          {/* <Button variant="outline" size="sm">
+            <Pencil className="mr-2 h-4 w-4" />
+            Edit image
+          </Button> */}
+          <Button onClick={onHandleRemove} variant="outline" size="sm">
+            <Trash2 className="mr-2 h-4 w-4" />
+            Remove image
+          </Button>
+        </div>
       </div>
     </div>
   );
