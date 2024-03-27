@@ -29,9 +29,10 @@ export type CustomElementType =
   | "right"
   | "center";
 
-export type ImageElement = {
+export type EmbeddedImageElement = {
   type: "image";
   url: string;
+  altText: string;
   children: EmptyText[];
 };
 
@@ -45,13 +46,6 @@ export type CustomText = {
 export type EmptyText = {
   text: string;
 };
-
-// export type CustomElement = {
-//   type: CustomElementType;
-//   children: Descendant[];
-//   url?: string;
-//   align?: string;
-// };
 
 export type CustomElement = {
   type: string;

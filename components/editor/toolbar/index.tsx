@@ -29,7 +29,7 @@ const Toolbar = () => {
   const editor = useSlate();
 
   const getImage = (data: Media) => {
-    CustomEditorHelper.insertImage(editor, data.url);
+    CustomEditorHelper.insertImage(editor, data.url, data.altText || "");
   };
 
   return (

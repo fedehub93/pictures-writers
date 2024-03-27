@@ -63,7 +63,7 @@ model PostVersion {
   post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   title   String
-  content String
+  bodyData Json @db.JsonB
 
   publishedAt DateTime @default(now())
   createdAt   DateTime @default(now())
@@ -86,6 +86,7 @@ model Media {
   url  String    @unique @db.Text
   size Int?
   type MediaType @default(FILE)
+  altText String?
 
   post Post?
 

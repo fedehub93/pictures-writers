@@ -10,7 +10,7 @@ import { isKeyHotkey } from "is-hotkey";
 
 import { cn } from "@/lib/utils";
 
-import { CustomEditor } from "@/components/editor";
+import { CustomEditor, EmbeddedImageElement } from "@/components/editor";
 import {
   Default,
   HeadingOne,
@@ -24,7 +24,7 @@ import {
   Link,
 } from "@/components/editor/editor-input/elements";
 import { CustomEditorHelper } from "../utils/custom-editor";
-import { ImageElement } from "./elements/image";
+import { EmbeddedImage } from "./elements/image";
 
 const SOFT_BREAK_ELEMENTS = [
   "heading-one",
@@ -53,14 +53,14 @@ export const withImages = (editor: CustomEditor) => {
         if (mime === "image") {
           reader.addEventListener("load", () => {
             const url = reader.result as string;
-            CustomEditorHelper.insertImage(editor, url);
+            CustomEditorHelper.insertImage(editor, url, "");
           });
 
           reader.readAsDataURL(file);
         }
       }
     } else if (CustomEditorHelper.isImageUrl(text)) {
-      CustomEditorHelper.insertImage(editor, text);
+      CustomEditorHelper.insertImage(editor, text, "");
     } else {
       insertData(data);
     }
@@ -225,7 +225,12 @@ const EditorInput = ({
       case "numbered-list":
         return <NumberedList {...props} />;
       case "image":
-        return <ImageElement {...props} />;
+        return (
+          <EmbeddedImage
+            {...props}
+            element={props.element as EmbeddedImageElement}
+          />
+        );
       case "code":
         return <div {...props.attributes}>{props.children}</div>;
       default:

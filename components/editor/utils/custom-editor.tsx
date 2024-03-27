@@ -8,7 +8,7 @@ import {
   CustomEditor,
   CustomElement,
   CustomElementType,
-  ImageElement,
+  EmbeddedImageElement,
 } from "@/components/editor";
 
 type Format = "bold" | "italic" | "underline";
@@ -143,9 +143,14 @@ export const CustomEditorHelper = {
         !Editor.isEditor(n) && Element.isElement(n) && n.type === "link",
     });
   },
-  insertImage(editor: CustomEditor, url: string) {
+  insertImage(editor: CustomEditor, url: string, altText: string) {
     const text = { text: "" };
-    const image: ImageElement = { type: "image", url, children: [text] };
+    const image: EmbeddedImageElement = {
+      type: "image",
+      url,
+      altText,
+      children: [text],
+    };
     Transforms.insertNodes(editor, image);
     Transforms.insertNodes(editor, {
       type: "paragraph",

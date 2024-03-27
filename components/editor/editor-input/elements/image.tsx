@@ -7,26 +7,41 @@ import {
   useSelected,
   useSlateStatic,
 } from "slate-react";
-
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import Image from "next/image";
 
-export const ImageElement = ({
+import { cn } from "@/lib/utils";
+
+import { Button } from "@/components/ui/button";
+
+import { EmbeddedImageElement } from "@/components/editor";
+
+interface ImageElementProps extends RenderElementProps {
+  element: EmbeddedImageElement;
+}
+
+export const EmbeddedImage = ({
   attributes,
   children,
   element,
-}: RenderElementProps) => {
+}: ImageElementProps) => {
   const editor = useSlateStatic();
   const path = ReactEditor.findPath(editor, element);
 
   const selected = useSelected();
   const focused = useFocused();
   return (
-    <div {...attributes}>
+    <div {...attributes} className="w-full h-full">
       {children}
-      <div contentEditable={false} className="relative group shadow-md">
-        <img src={element.url} alt="test" className="block w-full" />
+      <div
+        contentEditable={false}
+        className="relative group shadow-md w-full aspect-video"
+      >
+        <Image
+          src={element.url}
+          alt={element.altText}
+          fill
+          objectFit="cover"
+        />
         <Button
           onClick={() => Transforms.removeNodes(editor, { at: path })}
           variant="ghost"
