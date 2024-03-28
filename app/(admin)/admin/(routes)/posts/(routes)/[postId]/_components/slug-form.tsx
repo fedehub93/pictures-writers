@@ -21,6 +21,7 @@ import { useRouter } from "next/navigation";
 import slugify from "slugify";
 import { cn } from "@/lib/utils";
 import { useDebounceCallback } from "usehooks-ts";
+import { CharsCounter } from "./chars-counter";
 
 interface SlugFormProps {
   initialData: {
@@ -97,27 +98,30 @@ export const SlugForm = ({ initialData, postId }: SlugFormProps) => {
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <div className="flex flex-row gap-x-2">
-                    <Input
-                      {...field}
-                      placeholder="e.g. how-do-you-write-a-book"
-                      onFocus={(e) => {
-                        setIsFocused(true);
-                      }}
-                      onBlur={(e) => {
-                        setIsFocused(false);
-                        field.onBlur();
-                      }}
-                      onChange={onChangeSlug}
-                    />
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={onSlugCreate}
-                    >
-                      <Sparkles className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  <>
+                    <div className="flex flex-row gap-x-2">
+                      <Input
+                        {...field}
+                        placeholder="e.g. how-do-you-write-a-book"
+                        onFocus={(e) => {
+                          setIsFocused(true);
+                        }}
+                        onBlur={(e) => {
+                          setIsFocused(false);
+                          field.onBlur();
+                        }}
+                        onChange={onChangeSlug}
+                      />
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={onSlugCreate}
+                      >
+                        <Sparkles className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <CharsCounter value={field.value} />
+                  </>
                 </FormControl>
                 <FormMessage />
               </FormItem>

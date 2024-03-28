@@ -32,20 +32,20 @@ interface CounterProps {
 }
 
 export const Counter = ({ value }: CounterProps) => {
-  const [wordCount, setWordCount] = useState(0);
   const [charCount, setCharCount] = useState(0);
+  const [wordCount, setWordCount] = useState(0);
 
   useEffect(() => {
-    setWordCount(countWords(value));
     setCharCount(countChars(value));
+    setWordCount(countWords(value));
   }, [value]);
 
   return (
     <div className="flex items-center justify-between w-full pt-4">
-      <div className="text-sm text-muted-foreground">{wordCount} words</div>
       <div className="text-sm text-muted-foreground">
         {charCount} characters
       </div>
+      <div className="text-sm text-muted-foreground">{wordCount} words</div>
     </div>
   );
 };

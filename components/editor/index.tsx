@@ -1,7 +1,6 @@
 import React, { useMemo } from "react";
 import { createEditor, BaseEditor, Descendant } from "slate";
 import { Slate, withReact, ReactEditor } from "slate-react";
-import { ControllerRenderProps } from "react-hook-form";
 
 import Toolbar from "@/components/editor/toolbar";
 import EditorInput, {

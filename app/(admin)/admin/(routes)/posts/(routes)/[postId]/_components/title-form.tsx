@@ -1,8 +1,13 @@
 "use client";
 
 import * as z from "zod";
+import { ChangeEvent, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import toast from "react-hot-toast";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import { useDebounceCallback } from "usehooks-ts";
 
 import {
   Form,
@@ -12,12 +17,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import toast from "react-hot-toast";
-import axios from "axios";
-import { useRouter } from "next/navigation";
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+
 import { cn } from "@/lib/utils";
-import { useDebounceCallback } from "usehooks-ts";
+import { CharsCounter } from "./chars-counter";
 
 interface TitleFormProps {
   initialData: {
@@ -81,18 +83,21 @@ export const TitleForm = ({ initialData, postId }: TitleFormProps) => {
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <Input
-                    {...field}
-                    placeholder="e.g. How to write a screenplay"
-                    onFocus={(e) => {
-                      setIsFocused(true);
-                    }}
-                    onBlur={(e) => {
-                      setIsFocused(false);
-                      field.onBlur();
-                    }}
-                    onChange={onChangeTitle}
-                  />
+                  <>
+                    <Input
+                      {...field}
+                      placeholder="e.g. How to write a screenplay"
+                      onFocus={(e) => {
+                        setIsFocused(true);
+                      }}
+                      onBlur={(e) => {
+                        setIsFocused(false);
+                        field.onBlur();
+                      }}
+                      onChange={onChangeTitle}
+                    />
+                    <CharsCounter value={field.value} />
+                  </>
                 </FormControl>
                 <FormMessage />
               </FormItem>
