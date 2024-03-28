@@ -79,7 +79,7 @@ export const ContentForm = ({ initialData, postId }: BodyFormProps) => {
         !isValid && "border-l-red-500"
       )}
     >
-      <div className="flex items-center justify-between">Post body</div>
+      <div className="flex items-center justify-between">Content</div>
       {/* {!isEditing && initialData.bodyData && (
         // <SlateView
         //   nodes={initialData.bodyData}

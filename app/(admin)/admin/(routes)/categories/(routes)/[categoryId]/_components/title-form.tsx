@@ -9,7 +9,6 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useDebounceCallback } from "usehooks-ts";
 
-import { cn } from "@/lib/utils";
 import {
   Form,
   FormControl,
@@ -19,13 +18,14 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
+import { cn } from "@/lib/utils";
 import { CharsCounter } from "@/components/chars-counter";
 
 interface TitleFormProps {
   initialData: {
     title: string;
   };
-  postId: string;
+  categoryId: string;
 }
 
 const formSchema = z.object({
@@ -34,7 +34,7 @@ const formSchema = z.object({
   }),
 });
 
-export const TitleForm = ({ initialData, postId }: TitleFormProps) => {
+export const TitleForm = ({ initialData, categoryId }: TitleFormProps) => {
   const router = useRouter();
   const [isFocused, setIsFocused] = useState(false);
 
@@ -48,8 +48,8 @@ export const TitleForm = ({ initialData, postId }: TitleFormProps) => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      await axios.patch(`/api/posts/${postId}`, values);
-      toast.success("Post updated");
+      await axios.patch(`/api/categories/${categoryId}`, values);
+      toast.success("Category updated");
     } catch {
       toast.error("Something went wrong");
     } finally {
@@ -87,7 +87,7 @@ export const TitleForm = ({ initialData, postId }: TitleFormProps) => {
                   <>
                     <Input
                       {...field}
-                      placeholder="e.g. How to write a screenplay"
+                      placeholder="e.g. Screenwriting"
                       onFocus={(e) => {
                         setIsFocused(true);
                       }}

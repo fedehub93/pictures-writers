@@ -1,7 +1,8 @@
 "use client";
 
+import { Post } from "@prisma/client";
 import * as z from "zod";
-import { ChangeEvent, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
@@ -17,31 +18,36 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-import { CharsCounter } from "@/components/chars-counter";
-
-interface TitleFormProps {
-  initialData: {
-    title: string;
-  };
+interface CategoryFormProps {
+  initialData: Post;
   postId: string;
+  options: { label: string; value: string }[];
 }
 
 const formSchema = z.object({
-  title: z.string().min(1, {
-    message: "Title is required!",
-  }),
+  categoryId: z.string().min(1),
 });
 
-export const TitleForm = ({ initialData, postId }: TitleFormProps) => {
+export const CategoryForm = ({
+  initialData,
+  postId,
+  options,
+}: CategoryFormProps) => {
   const router = useRouter();
   const [isFocused, setIsFocused] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     mode: "all",
     resolver: zodResolver(formSchema),
-    defaultValues: initialData,
+    defaultValues: { categoryId: initialData?.categoryId || "" },
   });
 
   const { isValid, touchedFields } = form.formState;
@@ -57,9 +63,9 @@ export const TitleForm = ({ initialData, postId }: TitleFormProps) => {
     }
   };
 
-  const onChangeTitle = (e: ChangeEvent<HTMLInputElement>) => {
-    form.setValue("title", e.target.value);
-    form.trigger("title");
+  const onChangeCategory = (value: string) => {
+    form.setValue("categoryId", value);
+    form.trigger("categoryId");
     debouncedSubmit();
   };
 
@@ -72,34 +78,36 @@ export const TitleForm = ({ initialData, postId }: TitleFormProps) => {
       className={cn(
         "border-l-4  dark:bg-slate-900 p-4 transition-all",
         isFocused && "border-l-blue-500",
-        !isValid && touchedFields.title && "border-l-red-500"
+        !isValid && touchedFields.categoryId && "border-l-red-500"
       )}
     >
-      <div className="flex items-center justify-between">Title</div>
+      <div className="flex items-center justify-between">Category</div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
           <FormField
             control={form.control}
-            name="title"
+            name="categoryId"
             render={({ field }) => (
               <FormItem>
-                <FormControl>
-                  <>
-                    <Input
-                      {...field}
-                      placeholder="e.g. How to write a screenplay"
-                      onFocus={(e) => {
-                        setIsFocused(true);
-                      }}
-                      onBlur={(e) => {
-                        setIsFocused(false);
-                        field.onBlur();
-                      }}
-                      onChange={onChangeTitle}
-                    />
-                    <CharsCounter value={field.value} />
-                  </>
-                </FormControl>
+                <Select
+                  onValueChange={onChangeCategory}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a category..." />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {options.map((option) => {
+                      return (
+                        <SelectItem key={option.label} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}

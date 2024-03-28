@@ -28,7 +28,7 @@ interface SlugFormProps {
     title: string;
     slug: string;
   };
-  postId: string;
+  categoryId: string;
 }
 
 const formSchema = z.object({
@@ -37,7 +37,7 @@ const formSchema = z.object({
   }),
 });
 
-export const SlugForm = ({ initialData, postId }: SlugFormProps) => {
+export const SlugForm = ({ initialData, categoryId }: SlugFormProps) => {
   const router = useRouter();
   const [isFocused, setIsFocused] = useState(false);
 
@@ -47,12 +47,12 @@ export const SlugForm = ({ initialData, postId }: SlugFormProps) => {
     defaultValues: initialData,
   });
 
-  const { isSubmitting, isValid } = form.formState;
+  const { isValid, touchedFields } = form.formState;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      await axios.patch(`/api/posts/${postId}`, values);
-      toast.success("Post updated");
+      await axios.patch(`/api/categories/${categoryId}`, values);
+      toast.success("Category updated");
     } catch {
       toast.error("Something went wrong");
     } finally {
@@ -66,6 +66,7 @@ export const SlugForm = ({ initialData, postId }: SlugFormProps) => {
 
   const onChangeSlug = (e: ChangeEvent<HTMLInputElement>) => {
     form.setValue("slug", e.target.value);
+    form.trigger("slug");
     debouncedSubmit();
   };
 
@@ -85,7 +86,7 @@ export const SlugForm = ({ initialData, postId }: SlugFormProps) => {
       className={cn(
         "col-span-full md:col-span-4 lg:col-span-9 border-l-4 dark:bg-slate-900 p-4",
         isFocused && "border-l-blue-500",
-        !isValid && "border-l-red-500"
+        !isValid && touchedFields.slug && "border-l-red-500"
       )}
     >
       <div className="flex items-center justify-between">Slug</div>
@@ -102,7 +103,7 @@ export const SlugForm = ({ initialData, postId }: SlugFormProps) => {
                     <div className="flex flex-row gap-x-2">
                       <Input
                         {...field}
-                        placeholder="e.g. how-do-you-write-a-book"
+                        placeholder="e.g. screenwriting"
                         onFocus={(e) => {
                           setIsFocused(true);
                         }}

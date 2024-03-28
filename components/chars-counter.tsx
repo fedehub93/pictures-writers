@@ -3,7 +3,6 @@ interface CharsCounterProps {
 }
 
 export const CharsCounter = ({ value }: CharsCounterProps) => {
-  console.log(value)
   return (
     <div className="flex items-center justify-between w-full pt-2">
       <div className="text-sm text-muted-foreground">

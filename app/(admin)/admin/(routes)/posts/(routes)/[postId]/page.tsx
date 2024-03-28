@@ -3,14 +3,13 @@ import { redirect } from "next/navigation";
 
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
-import { Button } from "@/components/ui/button";
-import { Trash } from "lucide-react";
 import { TitleForm } from "./_components/title-form";
 import { SlugForm } from "./_components/slug-form";
 import { ContentForm } from "./_components/content-form";
 import { StatusView } from "./_components/status-view";
 import { ImageForm } from "./_components/image-form";
-import { Media, Post } from "@prisma/client";
+import { DescriptionForm } from "./_components/description-form";
+import { CategoryForm } from "./_components/category-form";
 
 const PostIdPage = async ({ params }: { params: { postId: string } }) => {
   const userAdmin = await authAdmin();
@@ -31,6 +30,12 @@ const PostIdPage = async ({ params }: { params: { postId: string } }) => {
     redirect("/admin/posts");
   }
 
+  const categories = await db.category.findMany({
+    orderBy: {
+      title: "asc",
+    },
+  });
+
   return (
     <div className="p-6 max-w-7xl mx-auto ">
       <div className="flex items-center justify-between">
@@ -39,6 +44,15 @@ const PostIdPage = async ({ params }: { params: { postId: string } }) => {
       <div className=" grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-6 py-8">
         <div className="col-span-full md:col-span-4 lg:col-span-9 flex flex-col gap-y-4">
           <TitleForm initialData={post} postId={post.id} />
+          <DescriptionForm initialData={post} postId={post.id} />
+          <CategoryForm
+            initialData={post}
+            postId={post.id}
+            options={categories.map((category) => ({
+              label: category.title,
+              value: category.id,
+            }))}
+          />
           <ImageForm initialData={post} postId={post.id} />
           <ContentForm initialData={post} postId={post.id} />
           <SlugForm initialData={post} postId={post.id} />

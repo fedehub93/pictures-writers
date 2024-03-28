@@ -34,13 +34,41 @@ model User {
   updatedAt DateTime @updatedAt
 }
 
+enum MediaType {
+  AUDIO
+  FILE
+  IMAGE
+  VIDEO
+}
+
+model Media {
+  id String @id @default(uuid())
+
+  name    String
+  url     String    @unique @db.Text
+  size    Int?
+  type    MediaType @default(FILE)
+  altText String?
+
+  post        Post?
+  postVersion PostVersion?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Post {
   id String @id @default(uuid())
 
-  title    String  @unique
-  slug     String  @unique
-  imageCover Media? @relation(fields: [imageCoverId], references: [id])
+  title       String  @unique
+  slug        String  @unique
+  description String?
+
+  imageCover   Media?  @relation(fields: [imageCoverId], references: [id])
   imageCoverId String? @unique
+
+  Category   Category? @relation(fields: [categoryId], references: [id])
+  categoryId String?
 
   /// [BodyData]
   bodyData Json @db.JsonB
@@ -62,34 +90,88 @@ model PostVersion {
   postId String
   post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
-  title   String
+  title       String  @unique
+  slug        String  @unique
+  description String?
+
+  imageCover   Media?  @relation(fields: [imageCoverId], references: [id])
+  imageCoverId String? @unique
+
+  /// [BodyData]
   bodyData Json @db.JsonB
+
+  publishedAt DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  Category    Category? @relation(fields: [categoryId], references: [id])
+  categoryId  String?
+
+  @@index([postId])
+}
+
+model Category {
+  id String @id @default(uuid())
+
+  title       String  @unique
+  slug        String  @unique
+  description String?
+
+  isPublished Boolean @default(false)
+
+  versions CategoryVersion[]
+
+  posts Post[]
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  PostVersion PostVersion[]
+}
+
+model CategoryVersion {
+  id String @id @default(uuid())
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  title       String  @unique
+  slug        String  @unique
+  description String?
 
   publishedAt DateTime @default(now())
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  @@index([postId])
+  @@index([categoryId])
 }
 
-enum MediaType {
-  AUDIO
-  FILE
-  IMAGE
-  VIDEO
-}
-
-model Media {
+model Tag {
   id String @id @default(uuid())
 
-  name String
-  url  String    @unique @db.Text
-  size Int?
-  type MediaType @default(FILE)
-  altText String?
+  title       String  @unique
+  slug        String  @unique
+  description String?
 
-  post Post?
+  isPublished Boolean @default(false)
+
+  versions TagVersion[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model TagVersion {
+  id String @id @default(uuid())
+
+  tagId String
+  tag   Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  title       String  @unique
+  slug        String  @unique
+  description String?
+
+  publishedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([tagId])
 }
