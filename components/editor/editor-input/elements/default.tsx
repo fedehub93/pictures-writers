@@ -11,6 +11,7 @@ export const Default = ({ children, attributes, element }: DefaultProps) => {
     <div
       {...attributes}
       className={cn(
+        "leading-6 mb-6 text-base",
         element.align === "left" && "text-left",
         element.align === "center" && "text-center",
         element.align === "right" && "text-right"

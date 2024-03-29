@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { CreateMediaModal } from "../modals/create-media-modal";
 import { SelectAssetModal } from "../modals/select-asset-modal";
+import { SelectUrlModal } from "../modals/select-url-modal";
 
 export const ModalProvider = () => {
   const [isMounted, setIsMounted] = useState(false);
@@ -19,6 +20,7 @@ export const ModalProvider = () => {
     <>
       <CreateMediaModal />
       <SelectAssetModal />
+      <SelectUrlModal />
     </>
   );
 };

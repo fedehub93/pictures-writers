@@ -10,7 +10,12 @@ import { isKeyHotkey } from "is-hotkey";
 
 import { cn } from "@/lib/utils";
 
-import { CustomEditor, EmbeddedImageElement } from "@/components/editor";
+import {
+  CustomEditor,
+  EmbeddedAffiliateLinkElement,
+  EmbeddedImageElement,
+  EmbeddedVideoElement,
+} from "@/components/editor";
 import {
   Default,
   HeadingOne,
@@ -25,6 +30,8 @@ import {
 } from "@/components/editor/editor-input/elements";
 import { CustomEditorHelper } from "../utils/custom-editor";
 import { EmbeddedImage } from "./elements/image";
+import { EmbeddedVideo } from "./elements/embedded-video";
+import { AffiliateLink } from "./elements/embedded-affiliate-link";
 
 const SOFT_BREAK_ELEMENTS = [
   "heading-one",
@@ -34,11 +41,11 @@ const SOFT_BREAK_ELEMENTS = [
   "block-quote",
 ];
 // PLUGIN
-export const withImages = (editor: CustomEditor) => {
+export const withEmbeds = (editor: CustomEditor) => {
   const { insertData, isVoid } = editor;
 
   editor.isVoid = (element) => {
-    return element.type === "image" ? true : isVoid(element);
+    return ["image", "video"].includes(element.type) ? true : isVoid(element);
   };
 
   editor.insertData = (data) => {
@@ -229,6 +236,20 @@ const EditorInput = ({
           <EmbeddedImage
             {...props}
             element={props.element as EmbeddedImageElement}
+          />
+        );
+      case "video":
+        return (
+          <EmbeddedVideo
+            {...props}
+            element={props.element as EmbeddedVideoElement}
+          />
+        );
+      case "affiliate-link":
+        return (
+          <AffiliateLink
+            {...props}
+            element={props.element as EmbeddedAffiliateLinkElement}
           />
         );
       case "code":

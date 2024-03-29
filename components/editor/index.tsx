@@ -4,7 +4,7 @@ import { Slate, withReact, ReactEditor } from "slate-react";
 
 import Toolbar from "@/components/editor/toolbar";
 import EditorInput, {
-  withImages,
+  withEmbeds,
   withInlines,
 } from "@/components/editor/editor-input";
 import { Counter } from "./counter";
@@ -24,6 +24,8 @@ export type CustomElementType =
   | "bulleted-list"
   | "numbered-list"
   | "image"
+  | "video"
+  | "affiliate-link"
   | "left"
   | "right"
   | "center";
@@ -32,6 +34,19 @@ export type EmbeddedImageElement = {
   type: "image";
   url: string;
   altText: string;
+  children: EmptyText[];
+};
+
+export type EmbeddedVideoElement = {
+  type: "video";
+  url: string;
+  children: EmptyText[];
+};
+
+export type EmbeddedAffiliateLinkElement = {
+  type: "affiliate-link";
+  url: string;
+  label: string;
   children: EmptyText[];
 };
 
@@ -69,7 +84,7 @@ interface EditorProps {
 }
 
 const createWrappedEditor = () =>
-  withImages(withInlines(withReact(createEditor())));
+  withEmbeds(withInlines(withReact(createEditor())));
 
 const Editor = ({ children, value, onChange, onValueChange }: EditorProps) => {
   const editor = useMemo(() => createWrappedEditor(), []);

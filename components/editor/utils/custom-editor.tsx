@@ -8,7 +8,9 @@ import {
   CustomEditor,
   CustomElement,
   CustomElementType,
+  EmbeddedAffiliateLinkElement,
   EmbeddedImageElement,
+  EmbeddedVideoElement,
 } from "@/components/editor";
 
 type Format = "bold" | "italic" | "underline";
@@ -162,5 +164,32 @@ export const CustomEditorHelper = {
     if (!isUrl(url)) return false;
     const ext = new URL(url).pathname.split(".").pop() || "";
     return imageExtensions.includes(ext);
+  },
+  insertVideo(editor: CustomEditor, url: string) {
+    const text = { text: "" };
+    const video: EmbeddedVideoElement = {
+      type: "video",
+      url,
+      children: [text],
+    };
+    Transforms.insertNodes(editor, video);
+    Transforms.insertNodes(editor, {
+      type: "paragraph",
+      children: [{ text: "" }],
+    });
+  },
+  insertAffiliateLink(editor: CustomEditor, url: string, label: string) {
+    const text = { text: "" };
+    const affiliateLink: EmbeddedAffiliateLinkElement = {
+      type: "affiliate-link",
+      url,
+      label,
+      children: [text],
+    };
+    Transforms.insertNodes(editor, affiliateLink);
+    Transforms.insertNodes(editor, {
+      type: "paragraph",
+      children: [{ text: "" }],
+    });
   },
 };

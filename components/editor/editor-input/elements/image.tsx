@@ -1,15 +1,12 @@
-import { ChevronDown, Pencil, Trash, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { Transforms } from "slate";
 import {
   ReactEditor,
   RenderElementProps,
-  useFocused,
-  useSelected,
   useSlateStatic,
 } from "slate-react";
 import Image from "next/image";
 
-import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 

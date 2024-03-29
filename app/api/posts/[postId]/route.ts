@@ -22,11 +22,15 @@ export async function PATCH(
       },
       data: {
         ...values,
-        tags: {
-          set: values?.tags.map((tagId: { label: string; value: string }) => ({
-            id: tagId.value,
-          })),
-        },
+        tags: values.tags
+          ? {
+              set: values.tags.map(
+                (tagId: { label: string; value: string }) => ({
+                  id: tagId.value,
+                })
+              ),
+            }
+          : undefined,
       },
     });
 

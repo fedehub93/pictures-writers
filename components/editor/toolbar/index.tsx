@@ -6,11 +6,15 @@ import {
   AlignLeft,
   AlignRight,
   Bold,
+  ChevronDown,
+  Image,
   Italic,
+  Link,
   List,
   ListOrdered,
   Quote,
   Underline,
+  Video,
 } from "lucide-react";
 import { useSlate } from "slate-react";
 
@@ -23,6 +27,12 @@ import MarkButton from "./mark-button";
 import BlockButton from "./block-button";
 import { SelectHeading } from "./select-heading";
 import LinkButton from "./link-button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Toolbar = () => {
   const { onOpen } = useModal();
@@ -32,8 +42,16 @@ const Toolbar = () => {
     CustomEditorHelper.insertImage(editor, data.url, data.altText || "");
   };
 
+  const getVideo = (url: string) => {
+    CustomEditorHelper.insertVideo(editor, url || "");
+  };
+
+  const getAffiliateLink = ({ url, label }: { url: string; label: string }) => {
+    CustomEditorHelper.insertAffiliateLink(editor, url || "", label || "");
+  };
+
   return (
-    <div className="border rounded-t-md p-4 bg-slate-100 dark:bg-secondary">
+    <div className="border rounded-t-md p-4 bg-slate-100 dark:bg-secondary sticky top-20 z-10">
       <div className="flex gap-x-1 h-9">
         <SelectHeading />
         <Separator orientation="vertical" className="bg-slate-300" />
@@ -68,14 +86,32 @@ const Toolbar = () => {
         <BlockButton format="block-quote">
           <Quote className="h-4 w-4" />
         </BlockButton>
-        <Button
-          type="button"
-          onClick={() => onOpen("selectAsset", getImage)}
-          variant="outline"
-          className="ml-auto"
-        >
-          Insert Embed
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button type="button" variant="outline" className="ml-auto">
+              Insert Embed
+              <ChevronDown className="h-4 w-4 ml-2" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem onClick={() => onOpen("selectAsset", getImage)}>
+              <Image className="h-4 w-4 mr-2" />
+              Image
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onOpen("selectUrl", getVideo)}>
+              <Video className="h-4 w-4 mr-2" />
+              Video
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() =>
+                onOpen("selectUrl", getAffiliateLink, { showLabel: true })
+              }
+            >
+              <Link className="h-4 w-4 mr-2" />
+              Affiliate link
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );

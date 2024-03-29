@@ -1,23 +1,26 @@
 import { create } from "zustand";
 
-export type ModalType = "createMediaAsset" | "selectAsset";
+export type ModalType = "createMediaAsset" | "selectAsset" | "selectUrl";
 
 interface ModalStore {
   type: ModalType | null;
   isOpen: boolean;
-  onOpen: (type: ModalType, onCallback?: (data: any) => any) => void;
+  onOpen: (
+    type: ModalType,
+    onCallback?: (data: any) => any,
+    data?: any
+  ) => void;
   onClose: () => void;
   data: any;
-  setData: (data: any) => void;
   onCallback: (data: any) => any;
 }
 
 export const useModal = create<ModalStore>((set) => ({
   type: null,
   isOpen: false,
-  onOpen: (type, onCallback) => set({ isOpen: true, type, onCallback }),
+  onOpen: (type, onCallback, data) =>
+    set({ isOpen: true, type, onCallback, data }),
   onClose: () => set({ type: null, isOpen: false }),
   data: {},
-  setData: (data) => set({ data: { data } }),
   onCallback: (data) => data,
 }));
