@@ -75,6 +75,8 @@ model Post {
 
   isPublished Boolean @default(false)
 
+  tags Tag[]
+
   versions PostVersion[]
 
   userId String
@@ -97,14 +99,16 @@ model PostVersion {
   imageCover   Media?  @relation(fields: [imageCoverId], references: [id])
   imageCoverId String? @unique
 
+  Category    Category? @relation(fields: [categoryId], references: [id])
+  categoryId  String?
+
   /// [BodyData]
   bodyData Json @db.JsonB
 
   publishedAt DateTime  @default(now())
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
-  Category    Category? @relation(fields: [categoryId], references: [id])
-  categoryId  String?
+
 
   @@index([postId])
 }
@@ -150,6 +154,8 @@ model Tag {
   title       String  @unique
   slug        String  @unique
   description String?
+
+  Post Post[]
 
   isPublished Boolean @default(false)
 

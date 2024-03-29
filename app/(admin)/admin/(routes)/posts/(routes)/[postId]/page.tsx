@@ -13,6 +13,7 @@ import { StatusView } from "./_components/status-view";
 import { ImageForm } from "./_components/image-form";
 import { CategoryForm } from "./_components/category-form";
 import { DescriptionForm } from "@/components/general-fields/description-form";
+import { TagForm } from "./_components/tag-form";
 
 const PostIdPage = async ({ params }: { params: { postId: string } }) => {
   const userAdmin = await authAdmin();
@@ -26,6 +27,7 @@ const PostIdPage = async ({ params }: { params: { postId: string } }) => {
     },
     include: {
       imageCover: true,
+      tags: true,
     },
   });
 
@@ -34,6 +36,12 @@ const PostIdPage = async ({ params }: { params: { postId: string } }) => {
   }
 
   const categories = await db.category.findMany({
+    orderBy: {
+      title: "asc",
+    },
+  });
+
+  const tags = await db.tag.findMany({
     orderBy: {
       title: "asc",
     },
@@ -73,6 +81,14 @@ const PostIdPage = async ({ params }: { params: { postId: string } }) => {
             placeholder="how-to-write-a-screenplay"
             apiKey="posts"
             apiKeyValue={post.id}
+          />
+          <TagForm
+            initialData={post}
+            postId={post.id}
+            options={tags.map((tag) => ({
+              label: tag.title,
+              value: tag.id,
+            }))}
           />
         </div>
         <div className="col-span-full md:col-span-2 lg:col-span-3">
