@@ -4,11 +4,12 @@ import * as z from "zod";
 import { ChangeEvent, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import toast from "react-hot-toast";
-import axios from "axios";
-import { useRouter } from "next/navigation";
 import { useDebounceCallback } from "usehooks-ts";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
+import { cn } from "@/lib/utils";
 import {
   Form,
   FormControl,
@@ -18,23 +19,29 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-import { cn } from "@/lib/utils";
 import { CharsCounter } from "@/components/chars-counter";
 
 interface TitleFormProps {
   initialData: {
     title: string;
   };
-  categoryId: string;
+  placeholder: string;
+  apiKey: "posts" | "categories" | "tags";
+  apiKeyValue: string;
 }
 
-const formSchema = z.object({
+export const formSchema = z.object({
   title: z.string().min(1, {
     message: "Title is required!",
   }),
 });
 
-export const TitleForm = ({ initialData, categoryId }: TitleFormProps) => {
+export const TitleForm = ({
+  initialData,
+  placeholder,
+  apiKey,
+  apiKeyValue,
+}: TitleFormProps) => {
   const router = useRouter();
   const [isFocused, setIsFocused] = useState(false);
 
@@ -46,10 +53,15 @@ export const TitleForm = ({ initialData, categoryId }: TitleFormProps) => {
 
   const { isValid, touchedFields } = form.formState;
 
+  const onChangeTitle = (e: ChangeEvent<HTMLInputElement>) => {
+    form.setValue("title", e.target.value);
+    debouncedSubmit();
+  };
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      await axios.patch(`/api/categories/${categoryId}`, values);
-      toast.success("Category updated");
+      await axios.patch(`/api/${apiKey}/${apiKeyValue}`, values);
+      toast.success(`Item updated`);
     } catch {
       toast.error("Something went wrong");
     } finally {
@@ -57,13 +69,8 @@ export const TitleForm = ({ initialData, categoryId }: TitleFormProps) => {
     }
   };
 
-  const onChangeTitle = (e: ChangeEvent<HTMLInputElement>) => {
-    form.setValue("title", e.target.value);
-    form.trigger("title");
-    debouncedSubmit();
-  };
-
   const debouncedSubmit = useDebounceCallback(() => {
+    form.trigger("title");
     form.handleSubmit(onSubmit)();
   }, 5000);
 
@@ -87,7 +94,7 @@ export const TitleForm = ({ initialData, categoryId }: TitleFormProps) => {
                   <>
                     <Input
                       {...field}
-                      placeholder="e.g. Screenwriting"
+                      placeholder={placeholder}
                       onFocus={(e) => {
                         setIsFocused(true);
                       }}

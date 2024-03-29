@@ -3,10 +3,11 @@ import { redirect } from "next/navigation";
 
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
-import { TitleForm } from "./_components/title-form";
-import { SlugForm } from "./_components/slug-form";
+import { TitleForm } from "@/components/general-fields/title-form";
+import { SlugForm } from "@/components/general-fields/slug-form";
+import { DescriptionForm } from "@/components/general-fields/description-form";
+
 import { StatusView } from "./_components/status-view";
-import { DescriptionForm } from "./_components/description-form";
 
 const CategoryIdPage = async ({
   params,
@@ -35,9 +36,24 @@ const CategoryIdPage = async ({
       </div>
       <div className=" grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-6 py-8">
         <div className="col-span-full md:col-span-4 lg:col-span-9 flex flex-col gap-y-4">
-          <TitleForm initialData={category} categoryId={category.id} />
-          <DescriptionForm initialData={category} categoryId={category.id} />
-          <SlugForm initialData={category} categoryId={category.id} />
+          <TitleForm
+            initialData={category}
+            placeholder="Screenwriting"
+            apiKey="categories"
+            apiKeyValue={category.id}
+          />
+          <DescriptionForm
+            initialData={category}
+            placeholder="All about screenwriting"
+            apiKey="categories"
+            apiKeyValue={category.id}
+          />
+          <SlugForm
+            initialData={category}
+            placeholder="screenwriting"
+            apiKey="categories"
+            apiKeyValue={category.id}
+          />
         </div>
         <div className="col-span-full md:col-span-2 lg:col-span-3">
           <StatusView

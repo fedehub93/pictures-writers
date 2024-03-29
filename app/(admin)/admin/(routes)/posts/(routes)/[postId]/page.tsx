@@ -1,15 +1,18 @@
+import * as z from "zod";
 import { redirectToSignIn } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
 
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
-import { TitleForm } from "./_components/title-form";
-import { SlugForm } from "./_components/slug-form";
+
+import { TitleForm } from "@/components/general-fields/title-form";
+import { SlugForm } from "@/components/general-fields/slug-form";
+
 import { ContentForm } from "./_components/content-form";
 import { StatusView } from "./_components/status-view";
 import { ImageForm } from "./_components/image-form";
-import { DescriptionForm } from "./_components/description-form";
 import { CategoryForm } from "./_components/category-form";
+import { DescriptionForm } from "@/components/general-fields/description-form";
 
 const PostIdPage = async ({ params }: { params: { postId: string } }) => {
   const userAdmin = await authAdmin();
@@ -43,8 +46,18 @@ const PostIdPage = async ({ params }: { params: { postId: string } }) => {
       </div>
       <div className=" grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-6 py-8">
         <div className="col-span-full md:col-span-4 lg:col-span-9 flex flex-col gap-y-4">
-          <TitleForm initialData={post} postId={post.id} />
-          <DescriptionForm initialData={post} postId={post.id} />
+          <TitleForm
+            initialData={post}
+            placeholder="e.g. How to write a screenplay"
+            apiKey="posts"
+            apiKeyValue={post.id}
+          />
+          <DescriptionForm
+            initialData={post}
+            placeholder="e.g. This article shows you how to write a screenplay from scratch. Learn More."
+            apiKey="posts"
+            apiKeyValue={post.id}
+          />
           <CategoryForm
             initialData={post}
             postId={post.id}
@@ -55,7 +68,12 @@ const PostIdPage = async ({ params }: { params: { postId: string } }) => {
           />
           <ImageForm initialData={post} postId={post.id} />
           <ContentForm initialData={post} postId={post.id} />
-          <SlugForm initialData={post} postId={post.id} />
+          <SlugForm
+            initialData={post}
+            placeholder="how-to-write-a-screenplay"
+            apiKey="posts"
+            apiKeyValue={post.id}
+          />
         </div>
         <div className="col-span-full md:col-span-2 lg:col-span-3">
           <StatusView

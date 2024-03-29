@@ -21,35 +21,42 @@ import { Input } from "@/components/ui/input";
 
 import { CharsCounter } from "@/components/chars-counter";
 
-interface TitleFormProps {
+interface DescriptionFormProps {
   initialData: {
-    title: string;
+    description: string | null;
   };
-  postId: string;
+  placeholder: string;
+  apiKey: "posts" | "categories" | "tags";
+  apiKeyValue: string;
 }
 
 const formSchema = z.object({
-  title: z.string().min(1, {
-    message: "Title is required!",
+  description: z.string().min(1, {
+    message: "Description is required!",
   }),
 });
 
-export const TitleForm = ({ initialData, postId }: TitleFormProps) => {
+export const DescriptionForm = ({
+  initialData,
+  placeholder,
+  apiKey,
+  apiKeyValue,
+}: DescriptionFormProps) => {
   const router = useRouter();
   const [isFocused, setIsFocused] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     mode: "all",
     resolver: zodResolver(formSchema),
-    defaultValues: initialData,
+    defaultValues: { description: initialData.description || "" },
   });
 
   const { isValid, touchedFields } = form.formState;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      await axios.patch(`/api/posts/${postId}`, values);
-      toast.success("Post updated");
+      await axios.patch(`/api/${apiKey}/${apiKeyValue}`, values);
+      toast.success("Item updated");
     } catch {
       toast.error("Something went wrong");
     } finally {
@@ -57,13 +64,13 @@ export const TitleForm = ({ initialData, postId }: TitleFormProps) => {
     }
   };
 
-  const onChangeTitle = (e: ChangeEvent<HTMLInputElement>) => {
-    form.setValue("title", e.target.value);
-    form.trigger("title");
+  const onChangeDescription = (e: ChangeEvent<HTMLInputElement>) => {
+    form.setValue("description", e.target.value);
     debouncedSubmit();
   };
 
   const debouncedSubmit = useDebounceCallback(() => {
+    form.trigger("description");
     form.handleSubmit(onSubmit)();
   }, 5000);
 
@@ -72,22 +79,22 @@ export const TitleForm = ({ initialData, postId }: TitleFormProps) => {
       className={cn(
         "border-l-4  dark:bg-slate-900 p-4 transition-all",
         isFocused && "border-l-blue-500",
-        !isValid && touchedFields.title && "border-l-red-500"
+        !isValid && touchedFields.description && "border-l-red-500"
       )}
     >
-      <div className="flex items-center justify-between">Title</div>
+      <div className="flex items-center justify-between">Summary</div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
           <FormField
             control={form.control}
-            name="title"
+            name="description"
             render={({ field }) => (
               <FormItem>
                 <FormControl>
                   <>
                     <Input
                       {...field}
-                      placeholder="e.g. How to write a screenplay"
+                      placeholder={placeholder}
                       onFocus={(e) => {
                         setIsFocused(true);
                       }}
@@ -95,7 +102,7 @@ export const TitleForm = ({ initialData, postId }: TitleFormProps) => {
                         setIsFocused(false);
                         field.onBlur();
                       }}
-                      onChange={onChangeTitle}
+                      onChange={onChangeDescription}
                     />
                     <CharsCounter value={field.value} />
                   </>

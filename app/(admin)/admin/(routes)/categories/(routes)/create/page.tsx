@@ -68,7 +68,7 @@ const CategoryCreatePage = () => {
       <div>
         <h1 className="text-2xl font-medium">Name your category</h1>
         <p className="text-sm text-slate-600">
-          What would you like to name your post? Don&apos;t worry, you can
+          What would you like to name your category? Don&apos;t worry, you can
           change this later.
         </p>
         <Form {...form}>

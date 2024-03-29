@@ -1,8 +1,10 @@
 import { redirectToSignIn } from "@clerk/nextjs";
 
 import { authAdmin } from "@/lib/auth-service";
-import { ContentHeader } from "@/components/content/content-header";
 import { db } from "@/lib/db";
+
+import { ContentHeader } from "@/components/content/content-header";
+
 import { DataTable } from "./(routes)/_components/data-table";
 import { columns } from "./(routes)/_components/columns";
 
@@ -20,14 +22,7 @@ const PostsPage = async () => {
 
   return (
     <div className="h-full w-full flex flex-col gap-y-4 px-6 py-3">
-      <div className="w-full h-12 flex items-center justify-between gap-x-2">
-        <div className="flex flex-col flex-1">
-          <h1 className="text-2xl">Posts</h1>
-          <p className="text-sm text-muted-foreground">
-            {posts.length} entry found
-          </p>
-        </div>
-      </div>
+      <ContentHeader label="Posts" totalEntries={posts.length} />
       <DataTable columns={columns} data={posts} />
     </div>
   );
