@@ -13,7 +13,7 @@ export const HeadingThree = ({
     <h3
       {...attributes}
       className={cn(
-        "text-xl mb-4",
+        "text-xl font-medium mb-4",
         element.align === "left" && "text-left",
         element.align === "center" && "text-center",
         element.align === "right" && "text-right"

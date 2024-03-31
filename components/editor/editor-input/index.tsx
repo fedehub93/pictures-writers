@@ -195,6 +195,14 @@ interface EditorInputProps {
   readonly?: boolean;
 }
 
+type Format = "bold" | "italic" | "underline";
+
+const HOTKEYS: Record<string, Format> = {
+  "mod+b": "bold",
+  "mod+i": "italic",
+  "mod+u": "underline",
+};
+
 const EditorInput = ({
   onHandleIsFocused,
   readonly = false,
@@ -299,8 +307,19 @@ const EditorInput = ({
         // Here we modify the behavior to unit:'offset'.
         // This lets the user step into and out of the inline without stepping over characters.
         // You may wish to customize this further to only use unit:'offset' in specific cases.
+        if (selection) {
+          const { nativeEvent } = event;
+          for (const hotkey in HOTKEYS) {
+            if (isKeyHotkey(hotkey, nativeEvent)) {
+              event.preventDefault();
+              const mark = HOTKEYS[hotkey as keyof typeof HOTKEYS];
+              CustomEditorHelper.toggleMark(editor, mark);
+            }
+          }
+        }
         if (selection && Range.isCollapsed(selection)) {
           const { nativeEvent } = event;
+
           if (isKeyHotkey("left", nativeEvent)) {
             event.preventDefault();
             Transforms.move(editor, { unit: "offset", reverse: true });

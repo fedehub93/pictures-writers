@@ -33,22 +33,22 @@ const values: Heading[] = [
     default: true,
   },
   {
-    label: "Heading one",
+    label: "Heading 1",
     type: "heading-one",
     className: "text-3xl",
   },
   {
-    label: "Heading two",
+    label: "Heading 2",
     type: "heading-two",
     className: "text-2xl",
   },
   {
-    label: "Heading three",
+    label: "Heading 3",
     type: "heading-three",
     className: "text-xl",
   },
   {
-    label: "Heading four",
+    label: "Heading 4",
     type: "heading-four",
     className: "text-lg",
   },

@@ -13,7 +13,7 @@ export const HeadingOne = ({
     <h1
       {...attributes}
       className={cn(
-        "text-3xl mb-4",
+        "text-3xl font-medium mb-4",
         element.align === "left" && "text-left",
         element.align === "center" && "text-center",
         element.align === "right" && "text-right"

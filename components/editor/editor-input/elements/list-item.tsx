@@ -4,7 +4,7 @@ interface ListItemProps extends RenderElementProps {}
 
 export const ListItem = ({ children, attributes }: ListItemProps) => {
   return (
-    <li {...attributes} className="list-item mb-2">
+    <li {...attributes} className="list-item mb-2 text-base">
       {children}
     </li>
   );

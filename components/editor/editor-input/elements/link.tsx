@@ -9,7 +9,7 @@ export const Link = ({ attributes, children, element }: LinkProps) => {
     <a
       {...attributes}
       href={element.url}
-      className={cn("text-blue-700 underline")}
+      className={cn("text-blue-700 underline text-base")}
     >
       {children}
     </a>

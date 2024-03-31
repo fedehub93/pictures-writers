@@ -48,7 +48,7 @@ const PostIdPage = async ({ params }: { params: { postId: string } }) => {
   });
 
   return (
-    <div className="p-6 max-w-7xl mx-auto ">
+    <div className="p-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-medium">Post setup</h1>
       </div>
