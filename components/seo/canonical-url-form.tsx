@@ -1,6 +1,7 @@
 "use client";
 
 import * as z from "zod";
+import { Seo } from "@prisma/client";
 import { ChangeEvent, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,40 +22,34 @@ import { Input } from "@/components/ui/input";
 
 import { CharsCounter } from "@/components/chars-counter";
 
-interface TitleFormProps {
-  initialData: {
-    title: string;
-  };
-  label?: string;
+interface CanonicalUrlFormProps {
+  initialData: Seo;
   placeholder: string;
   apiUrl: string;
 }
 
 export const formSchema = z.object({
-  title: z.string().min(1, {
-    message: "Title is required!",
-  }),
+  canonicalUrl: z.string(),
 });
 
-export const TitleForm = ({
+export const CanonicalUrlForm = ({
   initialData,
   placeholder,
-  label = "Title",
   apiUrl,
-}: TitleFormProps) => {
+}: CanonicalUrlFormProps) => {
   const router = useRouter();
   const [isFocused, setIsFocused] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     mode: "all",
     resolver: zodResolver(formSchema),
-    defaultValues: initialData,
+    defaultValues: { canonicalUrl: initialData.canonicalUrl || "" },
   });
 
   const { isValid, touchedFields } = form.formState;
 
-  const onChangeTitle = (e: ChangeEvent<HTMLInputElement>) => {
-    form.setValue("title", e.target.value);
+  const onChangeValue = (e: ChangeEvent<HTMLInputElement>) => {
+    form.setValue("canonicalUrl", e.target.value);
     debouncedSubmit();
   };
 
@@ -70,7 +65,7 @@ export const TitleForm = ({
   };
 
   const debouncedSubmit = useDebounceCallback(() => {
-    form.trigger("title");
+    form.trigger("canonicalUrl");
     form.handleSubmit(onSubmit)();
   }, 5000);
 
@@ -79,15 +74,15 @@ export const TitleForm = ({
       className={cn(
         "border-l-4  dark:bg-slate-900 p-4 transition-all",
         isFocused && "border-l-blue-500",
-        !isValid && touchedFields.title && "border-l-red-500"
+        !isValid && touchedFields.canonicalUrl && "border-l-red-500"
       )}
     >
-      <div className="flex items-center justify-between">{label}</div>
+      <div className="flex items-center justify-between">Canonical URL</div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
           <FormField
             control={form.control}
-            name="title"
+            name="canonicalUrl"
             render={({ field }) => (
               <FormItem>
                 <FormControl>
@@ -102,7 +97,7 @@ export const TitleForm = ({
                         setIsFocused(false);
                         field.onBlur();
                       }}
-                      onChange={onChangeTitle}
+                      onChange={onChangeValue}
                     />
                     <CharsCounter value={field.value} />
                   </>

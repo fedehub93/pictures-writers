@@ -50,8 +50,35 @@ model Media {
   type    MediaType @default(FILE)
   altText String?
 
-  post        Post?
-  postVersion PostVersion?
+  post        Post[]
+  postVersion PostVersion[]
+  Seo         Seo[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Seo {
+  id String @id @default(uuid())
+
+  title        String  @unique
+  description  String?
+  canonicalUrl String?
+
+  noIndex  Boolean @default(false)
+  noFollow Boolean @default(false)
+
+  ogTwitterType        String?
+  ogTwitterTitle       String?
+  ogTwitterDescription String?
+  ogTwitterImage       Media?  @relation(fields: [ogTwitterImageId], references: [id])
+  ogTwitterImageId     String?
+  ogTwitterLocale      String?
+  ogTwitterUrl         String?
+
+  Post     Post?
+  Category Category?
+  Tag      Tag?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -65,7 +92,7 @@ model Post {
   description String?
 
   imageCover   Media?  @relation(fields: [imageCoverId], references: [id])
-  imageCoverId String? @unique
+  imageCoverId String?
 
   Category   Category? @relation(fields: [categoryId], references: [id])
   categoryId String?
@@ -78,6 +105,9 @@ model Post {
   tags Tag[]
 
   versions PostVersion[]
+
+  seo   Seo?    @relation(fields: [seoId], references: [id])
+  seoId String? @unique
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
@@ -97,18 +127,17 @@ model PostVersion {
   description String?
 
   imageCover   Media?  @relation(fields: [imageCoverId], references: [id])
-  imageCoverId String? @unique
+  imageCoverId String?
 
-  Category    Category? @relation(fields: [categoryId], references: [id])
-  categoryId  String?
+  Category   Category? @relation(fields: [categoryId], references: [id])
+  categoryId String?
 
   /// [BodyData]
   bodyData Json @db.JsonB
 
-  publishedAt DateTime  @default(now())
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
+  publishedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@index([postId])
 }
@@ -123,6 +152,9 @@ model Category {
   isPublished Boolean @default(false)
 
   versions CategoryVersion[]
+
+  seo   Seo?    @relation(fields: [seoId], references: [id])
+  seoId String? @unique
 
   posts Post[]
 
@@ -160,6 +192,9 @@ model Tag {
   isPublished Boolean @default(false)
 
   versions TagVersion[]
+
+  seo   Seo?    @relation(fields: [seoId], references: [id])
+  seoId String? @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

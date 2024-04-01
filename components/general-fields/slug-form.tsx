@@ -31,8 +31,7 @@ interface SlugFormProps {
     slug: string;
   };
   placeholder: string;
-  apiKey: string;
-  apiKeyValue: string;
+  apiUrl: string;
 }
 
 export const formSchema = z.object({
@@ -44,8 +43,7 @@ export const formSchema = z.object({
 export const SlugForm = ({
   initialData,
   placeholder,
-  apiKey,
-  apiKeyValue,
+  apiUrl,
 }: SlugFormProps) => {
   const router = useRouter();
   const [isFocused, setIsFocused] = useState(false);
@@ -60,7 +58,7 @@ export const SlugForm = ({
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      await axios.patch(`/api/${apiKey}/${apiKeyValue}`, values);
+      await axios.patch(`${apiUrl}`, values);
       toast.success(`Item updated`);
     } catch {
       toast.error("Something went wrong");

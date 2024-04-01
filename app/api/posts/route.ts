@@ -22,6 +22,19 @@ export async function POST(req: Request) {
       },
     });
 
+    const seo = await db.seo.create({
+      data: {
+        title: post.title,
+        description: post.description,
+        ogTwitterTitle: post.title,
+        ogTwitterDescription: post.description,
+        ogTwitterType: "card",
+        ogTwitterLocale: "it_IT",
+        ogTwitterImageId: post.imageCoverId,
+        Post: { connect: { id: post.id } },
+      },
+    });
+
     return NextResponse.json(post);
   } catch (error) {
     console.log("[POSTS]", error);

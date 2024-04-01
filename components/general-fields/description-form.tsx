@@ -25,9 +25,9 @@ interface DescriptionFormProps {
   initialData: {
     description: string | null;
   };
+  label?: string;
   placeholder: string;
-  apiKey: "posts" | "categories" | "tags";
-  apiKeyValue: string;
+  apiUrl: string;
 }
 
 const formSchema = z.object({
@@ -39,8 +39,8 @@ const formSchema = z.object({
 export const DescriptionForm = ({
   initialData,
   placeholder,
-  apiKey,
-  apiKeyValue,
+  label = "Description",
+  apiUrl,
 }: DescriptionFormProps) => {
   const router = useRouter();
   const [isFocused, setIsFocused] = useState(false);
@@ -55,7 +55,7 @@ export const DescriptionForm = ({
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      await axios.patch(`/api/${apiKey}/${apiKeyValue}`, values);
+      await axios.patch(`${apiUrl}`, values);
       toast.success("Item updated");
     } catch {
       toast.error("Something went wrong");
@@ -82,7 +82,7 @@ export const DescriptionForm = ({
         !isValid && touchedFields.description && "border-l-red-500"
       )}
     >
-      <div className="flex items-center justify-between">Summary</div>
+      <div className="flex items-center justify-between">{label}</div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
           <FormField
