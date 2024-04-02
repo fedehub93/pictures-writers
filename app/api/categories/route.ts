@@ -20,6 +20,18 @@ export async function POST(req: Request) {
       },
     });
 
+    await db.seo.create({
+      data: {
+        title: category.title,
+        description: category.description,
+        ogTwitterTitle: category.title,
+        ogTwitterDescription: category.description,
+        ogTwitterType: "card",
+        ogTwitterLocale: "it_IT",
+        category: { connect: { id: category.id } },
+      },
+    });
+
     return NextResponse.json(category);
   } catch (error) {
     console.log("[CATEGORIES]", error);

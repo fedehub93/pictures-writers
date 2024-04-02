@@ -8,6 +8,9 @@ import { SlugForm } from "@/components/general-fields/slug-form";
 import { DescriptionForm } from "@/components/general-fields/description-form";
 
 import { StatusView } from "./_components/status-view";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SeoEditView } from "@/components/seo/seo-edit-view";
+import { SeoContentTypeApi } from "@/components/seo/types";
 
 const TagIdPage = async ({ params }: { params: { tagId: string } }) => {
   const userAdmin = await authAdmin();
@@ -18,6 +21,9 @@ const TagIdPage = async ({ params }: { params: { tagId: string } }) => {
   const tag = await db.tag.findUnique({
     where: {
       id: params.tagId,
+    },
+    include: {
+      seo: true,
     },
   });
 
@@ -32,24 +38,36 @@ const TagIdPage = async ({ params }: { params: { tagId: string } }) => {
       </div>
       <div className=" grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-6 py-8">
         <div className="col-span-full md:col-span-4 lg:col-span-9 flex flex-col gap-y-4">
-          <TitleForm
-            initialData={tag}
-            placeholder="Pagina uno"
-            apiKey="tags"
-            apiKeyValue={tag.id}
-          />
-          <DescriptionForm
-            initialData={tag}
-            placeholder="Analisi pagina uno di sceneggiature famose"
-            apiKey="tags"
-            apiKeyValue={tag.id}
-          />
-          <SlugForm
-            initialData={tag}
-            placeholder="pagina-uno"
-            apiKey="tags"
-            apiKeyValue={tag.id}
-          />
+          <Tabs defaultValue="tag">
+            <TabsList className="mb-4">
+              <TabsTrigger value="tag">Tag</TabsTrigger>
+              <TabsTrigger value="seo">SEO</TabsTrigger>
+            </TabsList>
+            <TabsContent value="tag" className="flex flex-col gap-y-4">
+              <TitleForm
+                initialData={tag}
+                placeholder="Pagina uno"
+                apiUrl={`/api/tags/${tag.id}/seo`}
+              />
+              <DescriptionForm
+                initialData={tag}
+                placeholder="Analisi pagina uno di sceneggiature famose"
+                apiUrl={`/api/tags/${tag.id}/seo`}
+              />
+              <SlugForm
+                initialData={tag}
+                placeholder="pagina-uno"
+                apiUrl={`/api/tags/${tag.id}/seo`}
+              />
+            </TabsContent>
+            <TabsContent value="seo">
+              <SeoEditView
+                initialData={tag.seo}
+                contentType={SeoContentTypeApi.Tag}
+                contentId={tag.id}
+              />
+            </TabsContent>
+          </Tabs>
         </div>
         <div className="col-span-full md:col-span-2 lg:col-span-3">
           <StatusView

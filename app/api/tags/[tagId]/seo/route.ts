@@ -5,11 +5,11 @@ import { db } from "@/lib/db";
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { postId: string } }
+  { params }: { params: { tagId: string } }
 ) {
   try {
     const user = await authAdmin();
-    const { postId } = params;
+    const { tagId } = params;
     const values = await req.json();
 
     if (!user) {
@@ -18,7 +18,7 @@ export async function PATCH(
 
     const seo = await db.seo.updateMany({
       where: {
-        post: { id: postId },
+        tag: { id: tagId },
       },
       data: {
         ...values,
@@ -27,7 +27,7 @@ export async function PATCH(
 
     return NextResponse.json(seo);
   } catch (error) {
-    console.log("[POST_ID_SEO]", error);
+    console.log("[TAG_ID_SEO]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }

@@ -52,7 +52,7 @@ model Media {
 
   post        Post[]
   postVersion PostVersion[]
-  Seo         Seo[]
+  seo         Seo[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -76,9 +76,9 @@ model Seo {
   ogTwitterLocale      String?
   ogTwitterUrl         String?
 
-  Post     Post?
-  Category Category?
-  Tag      Tag?
+  post     Post?
+  category Category?
+  tag      Tag?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -94,7 +94,7 @@ model Post {
   imageCover   Media?  @relation(fields: [imageCoverId], references: [id])
   imageCoverId String?
 
-  Category   Category? @relation(fields: [categoryId], references: [id])
+  category   Category? @relation(fields: [categoryId], references: [id])
   categoryId String?
 
   /// [BodyData]
@@ -129,7 +129,7 @@ model PostVersion {
   imageCover   Media?  @relation(fields: [imageCoverId], references: [id])
   imageCoverId String?
 
-  Category   Category? @relation(fields: [categoryId], references: [id])
+  category   Category? @relation(fields: [categoryId], references: [id])
   categoryId String?
 
   /// [BodyData]
@@ -187,7 +187,7 @@ model Tag {
   slug        String  @unique
   description String?
 
-  Post Post[]
+  post Post[]
 
   isPublished Boolean @default(false)
 

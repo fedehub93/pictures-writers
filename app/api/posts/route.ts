@@ -22,7 +22,7 @@ export async function POST(req: Request) {
       },
     });
 
-    const seo = await db.seo.create({
+    await db.seo.create({
       data: {
         title: post.title,
         description: post.description,
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
         ogTwitterType: "card",
         ogTwitterLocale: "it_IT",
         ogTwitterImageId: post.imageCoverId,
-        Post: { connect: { id: post.id } },
+        post: { connect: { id: post.id } },
       },
     });
 

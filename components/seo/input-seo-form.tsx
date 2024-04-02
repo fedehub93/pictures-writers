@@ -21,35 +21,56 @@ import {
 import { Input } from "@/components/ui/input";
 
 import { CharsCounter } from "@/components/chars-counter";
+import { SeoField } from "./types";
 
-interface CanonicalUrlFormProps {
+interface InputSeoFormProps {
   initialData: Seo;
+  fieldName: SeoField;
+  label: string;
   placeholder: string;
   apiUrl: string;
 }
 
 export const formSchema = z.object({
-  canonicalUrl: z.string(),
+  title: z.string().optional(),
+  description: z.string().optional(),
+  canonicalUrl: z.string().optional(),
+  ogTwitterTitle: z.optional(z.string()),
+  ogTwitterDescription: z.optional(z.string()),
+  ogTwitterType: z.optional(z.string()),
+  ogTwitterLocale: z.optional(z.string()),
+  ogTwitterUrl: z.optional(z.string()),
 });
 
-export const CanonicalUrlForm = ({
+export const InputSeoForm = ({
   initialData,
+  fieldName,
+  label,
   placeholder,
   apiUrl,
-}: CanonicalUrlFormProps) => {
+}: InputSeoFormProps) => {
   const router = useRouter();
   const [isFocused, setIsFocused] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     mode: "all",
     resolver: zodResolver(formSchema),
-    defaultValues: { canonicalUrl: initialData.canonicalUrl || "" },
+    defaultValues: {
+      title: initialData.title || undefined,
+      description: initialData.description || undefined,
+      canonicalUrl: initialData.canonicalUrl || undefined,
+      ogTwitterTitle: initialData.ogTwitterTitle || undefined,
+      ogTwitterDescription: initialData.ogTwitterDescription || undefined,
+      ogTwitterType: initialData.ogTwitterTitle || undefined,
+      ogTwitterLocale: initialData.ogTwitterLocale || undefined,
+      ogTwitterUrl: initialData.ogTwitterUrl || undefined,
+    },
   });
 
   const { isValid, touchedFields } = form.formState;
 
   const onChangeValue = (e: ChangeEvent<HTMLInputElement>) => {
-    form.setValue("canonicalUrl", e.target.value);
+    form.setValue(fieldName, e.target.value);
     debouncedSubmit();
   };
 
@@ -65,7 +86,7 @@ export const CanonicalUrlForm = ({
   };
 
   const debouncedSubmit = useDebounceCallback(() => {
-    form.trigger("canonicalUrl");
+    form.trigger(fieldName);
     form.handleSubmit(onSubmit)();
   }, 5000);
 
@@ -77,12 +98,12 @@ export const CanonicalUrlForm = ({
         !isValid && touchedFields.canonicalUrl && "border-l-red-500"
       )}
     >
-      <div className="flex items-center justify-between">Canonical URL</div>
+      <div className="flex items-center justify-between">{label}</div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
           <FormField
             control={form.control}
-            name="canonicalUrl"
+            name={fieldName}
             render={({ field }) => (
               <FormItem>
                 <FormControl>
@@ -99,7 +120,7 @@ export const CanonicalUrlForm = ({
                       }}
                       onChange={onChangeValue}
                     />
-                    <CharsCounter value={field.value} />
+                    <CharsCounter value={field.value || ""} />
                   </>
                 </FormControl>
                 <FormMessage />

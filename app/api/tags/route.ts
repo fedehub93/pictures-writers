@@ -20,6 +20,18 @@ export async function POST(req: Request) {
       },
     });
 
+    await db.seo.create({
+      data: {
+        title: tag.title,
+        description: tag.description,
+        ogTwitterTitle: tag.title,
+        ogTwitterDescription: tag.description,
+        ogTwitterType: "card",
+        ogTwitterLocale: "it_IT",
+        tag: { connect: { id: tag.id } },
+      },
+    });
+
     return NextResponse.json(tag);
   } catch (error) {
     console.log("[TAGS]", error);

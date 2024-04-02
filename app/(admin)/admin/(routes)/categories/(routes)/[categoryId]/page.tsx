@@ -8,6 +8,9 @@ import { SlugForm } from "@/components/general-fields/slug-form";
 import { DescriptionForm } from "@/components/general-fields/description-form";
 
 import { StatusView } from "./_components/status-view";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SeoEditView } from "@/components/seo/seo-edit-view";
+import { SeoContentTypeApi } from "@/components/seo/types";
 
 const CategoryIdPage = async ({
   params,
@@ -23,6 +26,9 @@ const CategoryIdPage = async ({
     where: {
       id: params.categoryId,
     },
+    include: {
+      seo: true,
+    },
   });
 
   if (!category) {
@@ -36,24 +42,36 @@ const CategoryIdPage = async ({
       </div>
       <div className=" grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-6 py-8">
         <div className="col-span-full md:col-span-4 lg:col-span-9 flex flex-col gap-y-4">
-          <TitleForm
-            initialData={category}
-            placeholder="Screenwriting"
-            apiKey="categories"
-            apiKeyValue={category.id}
-          />
-          <DescriptionForm
-            initialData={category}
-            placeholder="All about screenwriting"
-            apiKey="categories"
-            apiKeyValue={category.id}
-          />
-          <SlugForm
-            initialData={category}
-            placeholder="screenwriting"
-            apiKey="categories"
-            apiKeyValue={category.id}
-          />
+          <Tabs defaultValue="category">
+            <TabsList className="mb-4">
+              <TabsTrigger value="category">Category</TabsTrigger>
+              <TabsTrigger value="seo">SEO</TabsTrigger>
+            </TabsList>
+            <TabsContent value="category" className="flex flex-col gap-y-4">
+              <TitleForm
+                initialData={category}
+                placeholder="Screenwriting"
+                apiUrl={`/api/categories/${category.id}/seo`}
+              />
+              <DescriptionForm
+                initialData={category}
+                placeholder="All about screenwriting"
+                apiUrl={`/api/categories/${category.id}/seo`}
+              />
+              <SlugForm
+                initialData={category}
+                placeholder="screenwriting"
+                apiUrl={`/api/categories/${category.id}/seo`}
+              />
+            </TabsContent>
+            <TabsContent value="seo" className="flex flex-col gap-y-4">
+              <SeoEditView
+                initialData={category.seo}
+                contentType={SeoContentTypeApi.Category}
+                contentId={category.id}
+              />
+            </TabsContent>
+          </Tabs>
         </div>
         <div className="col-span-full md:col-span-2 lg:col-span-3">
           <StatusView

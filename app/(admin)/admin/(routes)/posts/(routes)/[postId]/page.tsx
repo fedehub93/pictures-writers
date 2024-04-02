@@ -16,6 +16,7 @@ import { CategoryForm } from "./_components/category-form";
 import { DescriptionForm } from "@/components/general-fields/description-form";
 import { TagForm } from "./_components/tag-form";
 import { SeoEditView } from "@/components/seo/seo-edit-view";
+import { SeoContentTypeApi } from "@/components/seo/types";
 
 const PostIdPage = async ({ params }: { params: { postId: string } }) => {
   const userAdmin = await authAdmin();
@@ -51,7 +52,7 @@ const PostIdPage = async ({ params }: { params: { postId: string } }) => {
   });
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-6xl mx-auto">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-medium">Post setup</h1>
       </div>
@@ -100,28 +101,11 @@ const PostIdPage = async ({ params }: { params: { postId: string } }) => {
             <TabsContent value="seo" className="flex flex-col gap-y-4">
               <SeoEditView
                 initialData={post.seo}
-                contentType="posts"
+                contentType={SeoContentTypeApi.Post}
                 contentId={post.id}
               />
             </TabsContent>
           </Tabs>
-
-          {/* {post.seo && (
-            <>
-              <TitleForm
-                initialData={post.seo}
-                placeholder="e.g. How to write a screenplay"
-                apiKey={`posts/${post.id}`}
-                apiKeyValue="seo"
-              />
-              <DescriptionForm
-                initialData={post.seo}
-                placeholder="e.g. This article shows you how to write a screenplay from scratch. Learn More."
-                apiKey={`posts/${post.id}`}
-                apiKeyValue="seo"
-              />
-            </>
-          )} */}
         </div>
         <div className="col-span-full md:col-span-2 lg:col-span-3">
           <StatusView
