@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
+import { authAdmin } from "@/lib/auth-service";
 
 export async function PATCH(
   req: Request,
@@ -10,25 +10,33 @@ export async function PATCH(
   try {
     const user = await authAdmin();
     const { categoryId } = params;
-    const values = await req.json();
 
     if (!user) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const category = await db.category.update({
+    const category = await db.category.findUnique({
+      where: {
+        id: categoryId,
+      },
+    });
+
+    if (!category) {
+      return new NextResponse("Not found", { status: 404 });
+    }
+
+    const unpublishedCategory = await db.category.update({
       where: {
         id: categoryId,
       },
       data: {
-        ...values,
         isPublished: false,
       },
     });
 
-    return NextResponse.json(category);
+    return NextResponse.json(unpublishedCategory);
   } catch (error) {
-    console.log("[CATEGORY_ID]", error);
+    console.log("[POST_ID_UNPUBLISH]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }

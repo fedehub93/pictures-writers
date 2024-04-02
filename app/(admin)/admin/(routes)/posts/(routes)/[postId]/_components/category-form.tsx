@@ -1,6 +1,6 @@
 "use client";
 
-import { Post } from "@prisma/client";
+import { Category, Post } from "@prisma/client";
 import * as z from "zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -25,11 +25,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 
 interface CategoryFormProps {
-  initialData: Post;
+  initialData: Post & {
+    category: Category | null;
+  };
   postId: string;
-  options: { label: string; value: string }[];
+  options: { label: string; value: string; isPublished: boolean }[];
 }
 
 const formSchema = z.object({
@@ -43,6 +46,9 @@ export const CategoryForm = ({
 }: CategoryFormProps) => {
   const router = useRouter();
   const [isFocused, setIsFocused] = useState(false);
+  const [selectedOption, setSelectedOptions] = useState(
+    options.find((option) => option.value === initialData.category?.id)
+  );
 
   const form = useForm<z.infer<typeof formSchema>>({
     mode: "all",
@@ -66,6 +72,7 @@ export const CategoryForm = ({
   const onChangeCategory = (value: string) => {
     form.setValue("categoryId", value);
     form.trigger("categoryId");
+    setSelectedOptions(options.find((options) => options.value === value));
     debouncedSubmit();
   };
 
@@ -81,7 +88,19 @@ export const CategoryForm = ({
         !isValid && touchedFields.categoryId && "border-l-red-500"
       )}
     >
-      <div className="flex items-center justify-between">Category</div>
+      <div className="flex items-center justify-between">
+        Category
+        {initialData.category && (
+          <Badge
+            className={cn(
+              "bg-sky-700",
+              !selectedOption?.isPublished && "bg-slate-500"
+            )}
+          >
+            {selectedOption?.isPublished ? "Published" : "Draft"}
+          </Badge>
+        )}
+      </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
           <FormField
@@ -101,8 +120,22 @@ export const CategoryForm = ({
                   <SelectContent>
                     {options.map((option) => {
                       return (
-                        <SelectItem key={option.label} value={option.value}>
+                        <SelectItem
+                          key={option.label}
+                          value={option.value}
+                          className="w-full flex items-center justify-between"
+                        >
+                          {/* <div className="w-full flex items-center justify-between"> */}
                           {option.label}
+                          {/* <Badge
+                              className={cn(
+                                "bg-slate-500",
+                                option.isPublished && "bg-sky-700"
+                              )}
+                            >
+                              {option.isPublished ? "Published" : "Draft"}
+                            </Badge>
+                          </div> */}
                         </SelectItem>
                       );
                     })}

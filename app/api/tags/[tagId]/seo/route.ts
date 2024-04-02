@@ -22,6 +22,16 @@ export async function PATCH(
       },
       data: {
         ...values,
+        isPublished: false,
+      },
+    });
+
+    await db.tag.update({
+      where: {
+        id: tagId,
+      },
+      data: {
+        isPublished: false,
       },
     });
 

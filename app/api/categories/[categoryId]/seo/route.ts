@@ -25,6 +25,15 @@ export async function PATCH(
       },
     });
 
+    await db.category.update({
+      where: {
+        id: categoryId,
+      },
+      data: {
+        isPublished: false,
+      },
+    });
+
     return NextResponse.json(seo);
   } catch (error) {
     console.log("[CATEGORY_ID_SEO]", error);

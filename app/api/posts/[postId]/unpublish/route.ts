@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
+import { authAdmin } from "@/lib/auth-service";
 
 export async function PATCH(
   req: Request,
@@ -10,34 +10,33 @@ export async function PATCH(
   try {
     const user = await authAdmin();
     const { postId } = params;
-    const values = await req.json();
 
     if (!user) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const post = await db.post.update({
+    const post = await db.post.findUnique({
+      where: {
+        id: postId,
+      },
+    });
+
+    if (!post) {
+      return new NextResponse("Not found", { status: 404 });
+    }
+
+    const unpublishedPost = await db.post.update({
       where: {
         id: postId,
       },
       data: {
-        ...values,
         isPublished: false,
-        tags: values.tags
-          ? {
-              set: values.tags.map(
-                (tagId: { label: string; value: string }) => ({
-                  id: tagId.value,
-                })
-              ),
-            }
-          : undefined,
       },
     });
 
-    return NextResponse.json(post);
+    return NextResponse.json(unpublishedPost);
   } catch (error) {
-    console.log("[POST_ID]", error);
+    console.log("[POST_ID_UNPUBLISH]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }

@@ -25,6 +25,15 @@ export async function PATCH(
       },
     });
 
+    await db.post.update({
+      where: {
+        id: postId,
+      },
+      data: {
+        isPublished: false,
+      },
+    });
+
     return NextResponse.json(seo);
   } catch (error) {
     console.log("[POST_ID_SEO]", error);

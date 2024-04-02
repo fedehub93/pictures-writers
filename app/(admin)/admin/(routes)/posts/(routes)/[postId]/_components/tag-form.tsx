@@ -25,12 +25,13 @@ interface TagFormProps {
     tags: Tag[];
   };
   postId: string;
-  options: { label: string; value: string }[];
+  options: { label: string; value: string; isPublished?: boolean }[];
 }
 
 const optionSchema = z.object({
   label: z.string(),
   value: z.string(),
+  isPublished: z.boolean().optional(),
 });
 
 const formSchema = z.object({
@@ -46,7 +47,11 @@ export const TagForm = ({ initialData, postId, options }: TagFormProps) => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       tags: [
-        ...initialData.tags.map((tag) => ({ label: tag.title, value: tag.id })),
+        ...initialData.tags.map((tag) => ({
+          label: tag.title,
+          value: tag.id,
+          isPublished: tag.isPublished,
+        })),
       ],
     },
   });

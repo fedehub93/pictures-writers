@@ -3,14 +3,15 @@ import { redirect } from "next/navigation";
 
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { TitleForm } from "@/components/general-fields/title-form";
 import { SlugForm } from "@/components/general-fields/slug-form";
 import { DescriptionForm } from "@/components/general-fields/description-form";
 
-import { StatusView } from "./_components/status-view";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SeoEditView } from "@/components/seo/seo-edit-view";
 import { SeoContentTypeApi } from "@/components/seo/types";
+import { StatusView } from "@/components/content/status-view";
 
 const CategoryIdPage = async ({
   params,
@@ -35,10 +36,20 @@ const CategoryIdPage = async ({
     redirect("/admin/categories");
   }
 
+  const requiredFields = [category.title, category.slug];
+
+  const totalFields = requiredFields.length;
+  const completedFields = requiredFields.filter(Boolean).length;
+  const completionText = `(${completedFields}/${totalFields})`;
+  const isComplete = requiredFields.every(Boolean);
+
   return (
     <div className="p-6 max-w-7xl mx-auto ">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-medium">Category setup</h1>
+        <span className="text-sm text-slate-700">
+          Complete all fields {completionText}
+        </span>
       </div>
       <div className=" grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-6 py-8">
         <div className="col-span-full md:col-span-4 lg:col-span-9 flex flex-col gap-y-4">
@@ -51,20 +62,20 @@ const CategoryIdPage = async ({
               <TitleForm
                 initialData={category}
                 placeholder="Screenwriting"
-                apiUrl={`/api/categories/${category.id}/seo`}
+                apiUrl={`/api/categories/${category.id}`}
               />
               <DescriptionForm
                 initialData={category}
                 placeholder="All about screenwriting"
-                apiUrl={`/api/categories/${category.id}/seo`}
+                apiUrl={`/api/categories/${category.id}`}
               />
               <SlugForm
                 initialData={category}
                 placeholder="screenwriting"
-                apiUrl={`/api/categories/${category.id}/seo`}
+                apiUrl={`/api/categories/${category.id}`}
               />
             </TabsContent>
-            <TabsContent value="seo" className="flex flex-col gap-y-4">
+            <TabsContent value="seo">
               <SeoEditView
                 initialData={category.seo}
                 contentType={SeoContentTypeApi.Category}
@@ -75,8 +86,9 @@ const CategoryIdPage = async ({
         </div>
         <div className="col-span-full md:col-span-2 lg:col-span-3">
           <StatusView
-            disabled={false}
-            categoryId={category.id}
+            disabled={!isComplete}
+            contentType={SeoContentTypeApi.Category}
+            contentId={category.id}
             isPublished={category.isPublished}
             lastSavedAt={category.updatedAt}
           />

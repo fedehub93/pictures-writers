@@ -52,7 +52,9 @@ model Media {
 
   post        Post[]
   postVersion PostVersion[]
-  seo         Seo[]
+
+  seo        Seo[]
+  seoVersion SeoVersion[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -61,7 +63,7 @@ model Media {
 model Seo {
   id String @id @default(uuid())
 
-  title        String  @unique
+  title        String
   description  String?
   canonicalUrl String?
 
@@ -76,9 +78,38 @@ model Seo {
   ogTwitterLocale      String?
   ogTwitterUrl         String?
 
+  isPublished Boolean @default(false)
+
   post     Post?
   category Category?
   tag      Tag?
+
+  versions SeoVersion[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SeoVersion {
+  id String @id @default(uuid())
+
+  seoId String
+  seo   Seo    @relation(fields: [seoId], references: [id], onDelete: Cascade)
+
+  title        String
+  description  String?
+  canonicalUrl String?
+
+  noIndex  Boolean @default(false)
+  noFollow Boolean @default(false)
+
+  ogTwitterType        String?
+  ogTwitterTitle       String?
+  ogTwitterDescription String?
+  ogTwitterImage       Media?  @relation(fields: [ogTwitterImageId], references: [id])
+  ogTwitterImageId     String?
+  ogTwitterLocale      String?
+  ogTwitterUrl         String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -122,8 +153,8 @@ model PostVersion {
   postId String
   post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
 
-  title       String  @unique
-  slug        String  @unique
+  title       String
+  slug        String
   description String?
 
   imageCover   Media?  @relation(fields: [imageCoverId], references: [id])
@@ -131,6 +162,8 @@ model PostVersion {
 
   category   Category? @relation(fields: [categoryId], references: [id])
   categoryId String?
+
+  tags Tag[]
 
   /// [BodyData]
   bodyData Json @db.JsonB
@@ -156,11 +189,11 @@ model Category {
   seo   Seo?    @relation(fields: [seoId], references: [id])
   seoId String? @unique
 
-  posts Post[]
+  posts       Post[]
+  postVersion PostVersion[]
 
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  PostVersion PostVersion[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model CategoryVersion {
@@ -169,8 +202,8 @@ model CategoryVersion {
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
-  title       String  @unique
-  slug        String  @unique
+  title       String
+  slug        String
   description String?
 
   publishedAt DateTime @default(now())
@@ -183,15 +216,16 @@ model CategoryVersion {
 model Tag {
   id String @id @default(uuid())
 
-  title       String  @unique
-  slug        String  @unique
+  title       String
+  slug        String
   description String?
 
-  post Post[]
+  posts Post[]
 
   isPublished Boolean @default(false)
 
-  versions TagVersion[]
+  versions     TagVersion[]
+  postVersions PostVersion[]
 
   seo   Seo?    @relation(fields: [seoId], references: [id])
   seoId String? @unique
