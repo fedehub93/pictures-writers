@@ -18,6 +18,9 @@ const PostsPage = async () => {
     orderBy: {
       createdAt: "desc",
     },
+    include: {
+      imageCover: true,
+    },
   });
 
   return (
