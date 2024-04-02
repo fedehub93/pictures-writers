@@ -28,7 +28,7 @@ export async function POST(req: Request) {
         ogTwitterDescription: category.description,
         ogTwitterType: "card",
         ogTwitterLocale: "it_IT",
-        category: { connect: { id: category.id } },
+        categoryId: category.id,
       },
     });
 

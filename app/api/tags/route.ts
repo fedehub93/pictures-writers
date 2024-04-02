@@ -28,7 +28,7 @@ export async function POST(req: Request) {
         ogTwitterDescription: tag.description,
         ogTwitterType: "card",
         ogTwitterLocale: "it_IT",
-        tag: { connect: { id: tag.id } },
+        tagId: tag.id,
       },
     });
 

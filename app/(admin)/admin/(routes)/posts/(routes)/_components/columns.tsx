@@ -4,13 +4,14 @@ import { Media, Post } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, MoreHorizontal, Pencil } from "lucide-react";
+import { ArrowUpDown, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
@@ -108,6 +109,11 @@ export const columns: ColumnDef<Post & { imageCover: Media | null }>[] = [
                 Edit
               </DropdownMenuItem>
             </Link>
+            {/* <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </DropdownMenuItem> */}
           </DropdownMenuContent>
         </DropdownMenu>
       );

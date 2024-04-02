@@ -17,6 +17,7 @@ import { TagForm } from "./_components/tag-form";
 import { SeoEditView } from "@/components/seo/seo-edit-view";
 import { SeoContentTypeApi } from "@/components/seo/types";
 import { StatusView } from "@/components/content/status-view";
+import { ContentIdActions } from "@/components/content/content-id-actions";
 
 const PostIdPage = async ({ params }: { params: { postId: string } }) => {
   const userAdmin = await authAdmin();
@@ -57,7 +58,6 @@ const PostIdPage = async ({ params }: { params: { postId: string } }) => {
     post.description,
     post.slug,
     post.imageCover,
-    post.seo?.isPublished,
     post.category && post.category.isPublished,
     post.tags.every((tag) => tag.isPublished),
   ];
@@ -71,9 +71,15 @@ const PostIdPage = async ({ params }: { params: { postId: string } }) => {
     <div className="p-6 max-w-6xl mx-auto">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-medium">Post setup</h1>
-        <span className="text-sm text-slate-700">
-          Complete all fields {completionText}
-        </span>
+        <div className="flex items-center gap-x-2">
+          <span className="text-sm text-slate-700">
+            Complete all fields {completionText}
+          </span>
+          <ContentIdActions
+            contentType={SeoContentTypeApi.Post}
+            contentId={post.id}
+          />
+        </div>
       </div>
       <div className=" grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-6 py-8">
         <div className="col-span-full md:col-span-4 lg:col-span-9">

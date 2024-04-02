@@ -5,8 +5,8 @@ import { db } from "@/lib/db";
 
 import { ContentHeader } from "@/components/content/content-header";
 
-import { DataTable } from "./(routes)/_components/data-table";
-import { columns } from "./(routes)/_components/columns";
+import { DataTable } from "./_components/data-table";
+import { columns } from "./_components/columns";
 
 const PostsPage = async () => {
   const userAdmin = await authAdmin();

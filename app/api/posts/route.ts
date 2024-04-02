@@ -31,7 +31,7 @@ export async function POST(req: Request) {
         ogTwitterType: "card",
         ogTwitterLocale: "it_IT",
         ogTwitterImageId: post.imageCoverId,
-        post: { connect: { id: post.id } },
+        postId: post.id,
       },
     });
 

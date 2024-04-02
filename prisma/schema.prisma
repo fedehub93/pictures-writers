@@ -80,9 +80,14 @@ model Seo {
 
   isPublished Boolean @default(false)
 
-  post     Post?
-  category Category?
-  tag      Tag?
+  post   Post?   @relation(references: [id], fields: [postId], onDelete: Cascade)
+  postId String? @unique
+
+  category   Category? @relation(references: [id], fields: [categoryId], onDelete: Cascade)
+  categoryId String?   @unique
+
+  tag   Tag?    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tagId String? @unique
 
   versions SeoVersion[]
 
@@ -137,8 +142,7 @@ model Post {
 
   versions PostVersion[]
 
-  seo   Seo?    @relation(fields: [seoId], references: [id])
-  seoId String? @unique
+  seo Seo?
 
   userId String
   user   User   @relation(fields: [userId], references: [id])
@@ -186,8 +190,7 @@ model Category {
 
   versions CategoryVersion[]
 
-  seo   Seo?    @relation(fields: [seoId], references: [id])
-  seoId String? @unique
+  seo Seo?
 
   posts       Post[]
   postVersion PostVersion[]
@@ -227,8 +230,7 @@ model Tag {
   versions     TagVersion[]
   postVersions PostVersion[]
 
-  seo   Seo?    @relation(fields: [seoId], references: [id])
-  seoId String? @unique
+  seo Seo?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
