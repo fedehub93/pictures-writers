@@ -29,9 +29,11 @@ export const ExtendedPagination = ({
 }: ExtendedPaginationProps) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const pageParam = Number.parseInt(searchParams.get("page") || "1");
 
   const canDisabledPrev = page === 1;
   const canDisabledNext = page === totalPages;
+  const canDisableCurrentPage = pageParam === page;
   const canShowEllipsis = totalPages - page > 1;
 
   const createPageURL = (pageNumber: number | string) => {

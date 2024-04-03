@@ -4,6 +4,7 @@ import { redirectToSignIn } from "@clerk/nextjs";
 import { db } from "@/lib/db";
 import { MediaActions } from "./_components/actions";
 import { AssetsList } from "./_components/assets-list";
+import { ContentHeader } from "@/components/content/content-header";
 
 const PER_PAGE = 8;
 
@@ -30,7 +31,7 @@ const MediaPage = async ({
   const [assets, totalAssets] = await db.$transaction([
     db.media.findMany({
       where: {
-        name: { contains: query },
+        name: { contains: query, mode: "insensitive" },
       },
       take,
       skip,
@@ -49,13 +50,8 @@ const MediaPage = async ({
   };
 
   return (
-    <div className="h-full w-full flex flex-col gap-y-2 p-8">
-      <div className="w-full h-12 flex items-center justify-between gap-x-2">
-        <div className="flex flex-col flex-1">
-          <h1 className="text-2xl">Media assets</h1>
-        </div>
-        <MediaActions />
-      </div>
+    <div className="h-full w-full flex flex-col gap-y-4 px-6 py-3">
+      <ContentHeader label="Media assets" totalEntries={assets.length} />
       <div className="flex flex-col gap-y-4">
         <AssetsList items={assets} pagination={pagination} />
       </div>

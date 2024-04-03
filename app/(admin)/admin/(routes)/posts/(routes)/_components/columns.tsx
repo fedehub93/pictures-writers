@@ -4,21 +4,24 @@ import { Media, Post } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { ArrowUpDown, MoreHorizontal, Pencil } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 
 import { cn } from "@/lib/utils";
 
-export const columns: ColumnDef<Post & { imageCover: Media | null }>[] = [
+type PostWithImageCover = Post & {
+  imageCover: Media | null;
+};
+
+export const columns: ColumnDef<PostWithImageCover>[] = [
   {
     accessorKey: "title",
     header: ({ column }) => {
@@ -53,13 +56,13 @@ export const columns: ColumnDef<Post & { imageCover: Media | null }>[] = [
       return <span>Image</span>;
     },
     cell: ({ row }) => {
-      const imageCover = row.getValue("imageCover") || null;
+      const imageCover = (row.getValue("imageCover") || null) as Media | null;
       if (!imageCover) return null;
       return (
         <div className="relative w-20 aspect-video">
           <Image
             src={imageCover.url}
-            alt={imageCover.alt}
+            alt={imageCover.altText || ""}
             fill
             objectFit="cover"
             className="rounded-md"
@@ -109,11 +112,6 @@ export const columns: ColumnDef<Post & { imageCover: Media | null }>[] = [
                 Edit
               </DropdownMenuItem>
             </Link>
-            {/* <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete
-            </DropdownMenuItem> */}
           </DropdownMenuContent>
         </DropdownMenu>
       );

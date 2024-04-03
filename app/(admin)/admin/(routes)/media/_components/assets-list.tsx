@@ -12,6 +12,7 @@ import { AssetCard } from "./asset-card";
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 import { ExtendedPagination } from "@/components/extended-pagination";
 import { SearchInput } from "@/app/(admin)/_components/search-input";
+import { MediaActions } from "./actions";
 
 interface AssetListProps {
   items: Media[];
@@ -68,10 +69,9 @@ export const AssetsList = ({ items, pagination }: AssetListProps) => {
   };
 
   return (
-    <div className="flex flex-col gap-y-4">
-      <div className="flex gap-x-4 items-center">
-        <h2>Assets ({pagination.totalRecords})</h2>
-        <div className="flex items-center gap-x-4">
+    <div className="flex flex-col">
+      <div className="flex gap-x-4 items-center py-4">
+        <div className="flex items-center gap-x-4 mr-auto" >
           <SearchInput />
           {canShowDelete && (
             <ConfirmModal onConfirm={onDelete}>
@@ -81,6 +81,7 @@ export const AssetsList = ({ items, pagination }: AssetListProps) => {
             </ConfirmModal>
           )}
         </div>
+        <MediaActions />
       </div>
       <div className="grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
         {assets.map((item) => (
