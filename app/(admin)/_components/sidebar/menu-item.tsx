@@ -20,28 +20,16 @@ export const MenuItem = ({ label, href, icon: Icon }: MenuItemProps) => {
   const isActive = pathname.startsWith(href);
 
   return (
-    <Button
-      asChild
-      variant="ghost"
+    <Link
+      href={href}
       className={cn(
-        "w-full h-12",
-        collapsed ? "justify-center" : "justify-start",
-        isActive && "bg-accent"
+        " flex items-center text-sm gap-3 w-full py-2 text-muted-foreground transition-all hover:text-primary rounded-lg",
+        collapsed ? "justify-center px-2" : "justify-start px-3",
+        isActive && "bg-accent text-black font-medium"
       )}
     >
-      <Link href={href}>
-        <div
-          className={cn(
-            "w-full flex items-center gap-x-4 ",
-            collapsed && "justify-center"
-          )}
-        >
-          {Icon && <Icon className="w-6 h-6" strokeWidth={1.5} />}
-          {!collapsed && (
-            <p className="truncate text-zinc-800 font-normal dark:text-white">{label}</p>
-          )}
-        </div>
-      </Link>
-    </Button>
+      {Icon && <Icon className="w-6 h-6" strokeWidth={1.5} />}
+      {!collapsed && <span className="truncate">{label}</span>}
+    </Link>
   );
 };

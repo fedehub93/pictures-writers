@@ -18,7 +18,7 @@ export const MenuGroup = ({ children, label }: MenuGroupProps) => {
           <p className="text-sm text-muted-foreground">{label}</p>
         </div>
       )}
-      <ul className=" px-2">{children}</ul>
+      <ul className="px-2">{children}</ul>
     </div>
   );
 };
