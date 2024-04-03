@@ -5,6 +5,7 @@ import { useMediaQuery } from "usehooks-ts";
 
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/store/use-sidebar";
+import { Navbar } from "./navbar";
 
 interface ContainerProps {
   children: React.ReactNode;
@@ -24,9 +25,15 @@ export const Container = ({ children }: ContainerProps) => {
 
   return (
     <div
-      className={cn("flex-1", collapsed ? "ml-[70px]" : "ml-[70px] lg:ml-60")}
+      className={cn(
+        "overflow-x-hidden transition-[margin] md:pt-0 md:overflow-y-hidden relative h-full",
+        collapsed ? "sm:ml-[70px]" : "sm:ml-[70px] lg:ml-60"
+      )}
     >
-      {children}
+      <div className="flex flex-col h-full">
+        <Navbar />
+        <div className="px-4 py-6 md:px-8 h-[calc(100%-4rem)]">{children}</div>
+      </div>
     </div>
   );
 };

@@ -17,10 +17,15 @@ import {
   Users,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import Logo from "../navbar/logo";
+import { MobileSidebar } from "./mobile-sidebar";
 
 export const Sidebar = () => {
   return (
     <Wrapper>
+      <div className="flex flex-none h-16 items-center gap-4 bg-background p-4 sticky top-0 justify-between shadow md:px-4">
+        <Logo />
+      </div>
       <Toggle />
       <ScrollArea className="flex flex-col h-full">
         <div className="flex-1 h-full space-y-2 lg:space-y-4 pt-4 lg:pt-0">

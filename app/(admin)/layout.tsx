@@ -19,13 +19,10 @@ const AdminLayout = async ({ children }: { children: React.ReactNode }) => {
   }
 
   return (
-    <>
-      <Navbar />
-      <div className="flex h-full pt-20">
-        <Sidebar />
-        <Container>{children}</Container>
-      </div>
-    </>
+    <div className="relative h-full overflow-hidden bg-background">
+      <Sidebar />
+      <Container>{children}</Container>
+    </div>
   );
 };
 
