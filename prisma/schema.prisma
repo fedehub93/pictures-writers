@@ -259,7 +259,9 @@ model EmailTemplate {
   name        String
   description String?
 
-  templateData Json? @db.JsonB
+  /// [EmailDesignData]
+  designData Json?  @db.JsonB
+  bodyHtml   String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())

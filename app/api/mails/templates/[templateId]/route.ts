@@ -2,37 +2,36 @@ import { NextResponse } from "next/server";
 
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
-import { UserRole } from "@prisma/client";
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { postId: string } }
+  { params }: { params: { templateId: string } }
 ) {
   try {
     const user = await authAdmin();
-    const { postId } = params;
+    const { templateId } = params;
 
     if (!user) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const post = await db.post.findUnique({
+    const emailTemplate = await db.emailTemplate.findUnique({
       where: {
-        id: params.postId,
+        id: params.templateId,
       },
     });
 
-    if (!post) {
+    if (!emailTemplate) {
       return new NextResponse("Not found", { status: 404 });
     }
 
-    const deletedPost = await db.post.delete({
-      where: { id: postId },
+    const deleteEmailTemplate = await db.emailTemplate.delete({
+      where: { id: templateId },
     });
 
-    return NextResponse.json(deletedPost);
+    return NextResponse.json(deleteEmailTemplate);
   } catch (error) {
-    console.log("[POST_ID_DELETE]", error);
+    console.log("[EMAIL_TEMPLATE_ID_DELETE]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }
