@@ -86,6 +86,7 @@ export const EmailEditorForm = ({ template }: EmailEditorForm) => {
             name: form.getValues("name"),
             description: form.getValues("description"),
             designData: design,
+            bodyHtml: html,
           });
 
           toast.success("Template saved successfully");
@@ -116,7 +117,7 @@ export const EmailEditorForm = ({ template }: EmailEditorForm) => {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto h-full flex flex-col gap-y-4 overflow-auto">
+    <div className="py-2 px-6 max-w-7xl mx-auto h-full flex flex-col gap-y-4 overflow-auto">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-medium">Email template setup</h1>
         <div className="flex items-center gap-x-2">
@@ -131,12 +132,12 @@ export const EmailEditorForm = ({ template }: EmailEditorForm) => {
         </div>
       </div>
       <Form {...form}>
-        <form className="space-y-8 mt-8">
+        <form className="flex flex-wrap gap-4">
           <FormField
             control={form.control}
             name="name"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="sm:min-w-80 w-full sm:w-auto ">
                 <FormLabel>Template Name</FormLabel>
                 <FormControl>
                   <Input
@@ -153,7 +154,7 @@ export const EmailEditorForm = ({ template }: EmailEditorForm) => {
             control={form.control}
             name="description"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="flex-1 w-full sm:w-auto">
                 <FormLabel>Template description</FormLabel>
                 <FormControl>
                   <Input

@@ -6,9 +6,11 @@ import {
   LayoutPanelTop,
   LibraryBig,
   LucideIcon,
+  MailPlus,
   Mailbox,
   Mails,
   NotebookPen,
+  Settings,
   Tags,
 } from "lucide-react";
 
@@ -59,6 +61,13 @@ export const sideLinks: SideLink[] = [
     href: "",
     icon: Mails,
     sub: [
+      { title: "Write", label: "", href: "/admin/mails/write", icon: MailPlus },
+      {
+        title: "Newsletters",
+        label: "",
+        href: "/admin/mails/newsletters",
+        icon: Mailbox,
+      },
       {
         title: "Email templates",
         label: "",
@@ -66,10 +75,10 @@ export const sideLinks: SideLink[] = [
         icon: LayoutPanelTop,
       },
       {
-        title: "Newsletters",
+        title: "Settings",
         label: "",
-        href: "/admin/mails/newsletters",
-        icon: Mailbox,
+        href: "/admin/mails/settings",
+        icon: Settings,
       },
     ],
   },

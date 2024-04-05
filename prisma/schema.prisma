@@ -253,6 +253,16 @@ model TagVersion {
   @@index([tagId])
 }
 
+model EmailSetting {
+  id String @id @default(uuid())
+
+  emailSender   String?
+  emailResponse String?
+
+  createdAt DateTime @default(now())
+  updatetAt DateTime @updatedAt
+}
+
 model EmailTemplate {
   id String @id @default(uuid())
 
@@ -260,7 +270,7 @@ model EmailTemplate {
   description String?
 
   /// [EmailDesignData]
-  designData Json?  @db.JsonB
+  designData Json?   @db.JsonB
   bodyHtml   String?
 
   createdAt DateTime @default(now())
