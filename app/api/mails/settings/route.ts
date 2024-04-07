@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
+import { EmailProvider } from "@prisma/client";
 
 export async function PATCH(req: Request) {
   try {
@@ -18,6 +19,7 @@ export async function PATCH(req: Request) {
       settings = await db.emailSetting.create({
         data: {
           ...values,
+          emailProvider: EmailProvider.SENDGRID,
         },
       });
     }

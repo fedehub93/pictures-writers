@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { EmailProvider, EmailSetting } from "@prisma/client";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +19,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { EmailSetting } from "@prisma/client";
 
 interface EmailSettingsFormProps {
   settings: EmailSetting | null;
@@ -37,6 +37,8 @@ const formSchema = z.object({
       message: "Email receiver required",
     })
     .email("This is not a valid email."),
+  emailProvider: z.custom<EmailProvider>(),
+  emailApiKey: z.string().optional(),
 });
 
 export const EmailSettingsForm = ({ settings }: EmailSettingsFormProps) => {
@@ -48,6 +50,8 @@ export const EmailSettingsForm = ({ settings }: EmailSettingsFormProps) => {
     defaultValues: {
       emailSender: settings?.emailSender || "",
       emailResponse: settings?.emailResponse || "",
+      emailProvider: settings?.emailProvider || EmailProvider.SENDGRID,
+      emailApiKey: settings?.emailApiKey || "",
     },
   });
 
@@ -83,7 +87,7 @@ export const EmailSettingsForm = ({ settings }: EmailSettingsFormProps) => {
                   <FormLabel>Default sender email</FormLabel>
                   <FormControl>
                     <Input
-                      disabled={isSubmitting}
+                      disabled={isLoading || isSubmitting}
                       placeholder="support@pictureswriters.com"
                       {...field}
                     />
@@ -100,12 +104,43 @@ export const EmailSettingsForm = ({ settings }: EmailSettingsFormProps) => {
                   <FormLabel>Default response email</FormLabel>
                   <FormControl>
                     <Input
-                      disabled={isSubmitting}
+                      disabled={isLoading || isSubmitting}
                       placeholder="support@pictureswriters.com"
                       {...field}
                     />
                   </FormControl>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <div className="flex flex-wrap gap-4">
+            <FormField
+              name="emailProvider"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem className="min-w-40">
+                  <FormLabel>Email provider</FormLabel>
+                  <FormControl>
+                    <Input disabled {...field} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              name="emailApiKey"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem className="flex-grow">
+                  <FormLabel>Email API key</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      disabled={isLoading || isSubmitting}
+                      placeholder="API Key"
+                      {...field}
+                    />
+                  </FormControl>
                 </FormItem>
               )}
             />

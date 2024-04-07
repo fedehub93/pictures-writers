@@ -52,7 +52,7 @@ const Toolbar = () => {
 
   return (
     <div className="border rounded-t-md p-4 bg-slate-100 dark:bg-secondary sticky top-0 z-10">
-      <div className="flex gap-x-1 h-9">
+      <div className="flex flex-wrap gap-x-1">
         <SelectHeading />
         <Separator orientation="vertical" className="bg-slate-300" />
         <MarkButton format="bold">

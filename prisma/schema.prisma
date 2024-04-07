@@ -253,11 +253,17 @@ model TagVersion {
   @@index([tagId])
 }
 
+enum EmailProvider {
+  SENDGRID
+}
+
 model EmailSetting {
   id String @id @default(uuid())
 
   emailSender   String?
   emailResponse String?
+  emailProvider EmailProvider?
+  emailApiKey   String?
 
   createdAt DateTime @default(now())
   updatetAt DateTime @updatedAt

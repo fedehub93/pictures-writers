@@ -23,6 +23,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useState } from "react";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 interface EmailTesterFormProps {
   templates: EmailTemplate[];
@@ -33,7 +35,7 @@ const formSchema = z.object({
     .string()
     .min(1, { message: "Email recipient is required" })
     .email("This is not a valid email."),
-  emailTemplate: z.string().optional(),
+  emailTemplateId: z.string().optional(),
 });
 
 export const EmailTesterForm = ({ templates }: EmailTesterFormProps) => {
@@ -43,21 +45,31 @@ export const EmailTesterForm = ({ templates }: EmailTesterFormProps) => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       emailRecipient: "",
-      emailTemplate: "",
+      emailTemplateId: "",
     },
   });
 
   const { isValid, isSubmitting } = form.formState;
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    try {
+      setIsLoading(true);
+      await axios.post(`/api/mails/send`, {
+        ...values,
+      });
+      toast.success("Sent mail successfully");
+    } catch {
+      toast.error("Failed to send mail");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="bg-slate-100 dark:bg-background p-4 w-full rounded-md flex flex-col">
       <h2 className="text-base text-muted-foreground">Test email</h2>
       <Form {...form}>
-        <form className="space-y-8 mt-8">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 mt-8">
           <div className="flex flex-wrap gap-4">
             <FormField
               control={form.control}
@@ -78,7 +90,7 @@ export const EmailTesterForm = ({ templates }: EmailTesterFormProps) => {
             />
             <FormField
               control={form.control}
-              name="emailTemplate"
+              name="emailTemplateId"
               render={({ field }) => (
                 <FormItem className="flex-auto min-w-40">
                   <FormLabel>Template</FormLabel>
