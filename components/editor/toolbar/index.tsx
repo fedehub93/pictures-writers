@@ -34,7 +34,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const Toolbar = () => {
+interface ToolbarProps {
+  showEmbedButton?: boolean;
+}
+
+const Toolbar = ({ showEmbedButton = true }: ToolbarProps) => {
   const { onOpen } = useModal();
   const editor = useSlate();
 
@@ -86,32 +90,34 @@ const Toolbar = () => {
         <BlockButton format="block-quote">
           <Quote className="h-4 w-4" />
         </BlockButton>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button type="button" variant="outline" className="ml-auto">
-              Insert Embed
-              <ChevronDown className="h-4 w-4 ml-2" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuItem onClick={() => onOpen("selectAsset", getImage)}>
-              <Image className="h-4 w-4 mr-2" />
-              Image
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onOpen("selectUrl", getVideo)}>
-              <Video className="h-4 w-4 mr-2" />
-              Video
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() =>
-                onOpen("selectUrl", getAffiliateLink, { showLabel: true })
-              }
-            >
-              <Link className="h-4 w-4 mr-2" />
-              Affiliate link
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {showEmbedButton && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button type="button" variant="outline" className="ml-auto">
+                Insert Embed
+                <ChevronDown className="h-4 w-4 ml-2" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem onClick={() => onOpen("selectAsset", getImage)}>
+                <Image className="h-4 w-4 mr-2" />
+                Image
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onOpen("selectUrl", getVideo)}>
+                <Video className="h-4 w-4 mr-2" />
+                Video
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() =>
+                  onOpen("selectUrl", getAffiliateLink, { showLabel: true })
+                }
+              >
+                <Link className="h-4 w-4 mr-2" />
+                Affiliate link
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
     </div>
   );

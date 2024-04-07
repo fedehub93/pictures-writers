@@ -51,7 +51,7 @@ export const EmailSettingsForm = ({ settings }: EmailSettingsFormProps) => {
       emailSender: settings?.emailSender || "",
       emailResponse: settings?.emailResponse || "",
       emailProvider: settings?.emailProvider || EmailProvider.SENDGRID,
-      emailApiKey: settings?.emailApiKey || "",
+      emailApiKey: "****************",
     },
   });
 
