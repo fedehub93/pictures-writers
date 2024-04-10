@@ -3,28 +3,23 @@
 import * as z from "zod";
 import { EmailTemplate } from "@prisma/client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CustomElement, useForm } from "react-hook-form";
-import { Descendant } from "slate";
+import { useForm } from "react-hook-form";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { EditorRef, EmailEditorProps } from "react-email-editor";
+import dynamic from "next/dynamic";
+import { useRef } from "react";
 
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import Editor from "@/components/editor";
-import { useState } from "react";
-import { CustomEditorHelper } from "@/components/editor/utils/custom-editor";
+import { Button } from "@/components/ui/button";
+import { ComboboxDemo } from "@/components/combo-box";
 
 interface WriteFormProps {
   templates: EmailTemplate[];
@@ -38,10 +33,12 @@ const formSchema = z.object({
   emailTemplateId: z.string().optional(),
 });
 
+const EmailEditor = dynamic(() => import("react-email-editor"), {
+  ssr: false,
+});
+
 export const WriteForm = ({ templates }: WriteFormProps) => {
-  const [body, setBody] = useState<Descendant[]>([
-    { type: "paragraph", children: [{ text: "" }] },
-  ]);
+  const emailEditorRef = useRef<EditorRef>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -54,20 +51,64 @@ export const WriteForm = ({ templates }: WriteFormProps) => {
 
   const { isSubmitting, isValid } = form.formState;
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {};
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (!isValid) return;
 
-  const onChangeBody = (value: Descendant[]) => {
-    console.log(CustomEditorHelper.serializeHTML(value));
+    if (!emailEditorRef?.current?.editor) return;
+    emailEditorRef.current.editor.exportHtml(async (data) => {
+      const { design, html } = data;
+      try {
+        // setIsLoading(true);
+        await axios.post(`/api/mails/send`, {
+          emailRecipient: values.emails,
+          subject: values.subject,
+          bodyHtml: html,
+          emailTemplateId: "",
+        });
+        toast.success("Sent mail successfully");
+      } catch {
+        toast.error("Failed to send mail");
+      } finally {
+        // setIsLoading(false);
+      }
+    });
   };
 
-  const onValueChangeBody = (value: Descendant[]) => {
-    console.log("onvaluechangebody");
+  const onLoad: EmailEditorProps["onLoad"] = (editor) => {};
+
+  const onReady: EmailEditorProps["onReady"] = (editor) => {
+    const selectedTemplate = templates.find(
+      (template) => template.id === form.getValues("emailTemplateId")
+    );
+    // @ts-ignore
+    emailEditorRef.current = { editor };
+    if (!emailEditorRef?.current?.editor || !selectedTemplate?.designData)
+      return;
+    emailEditorRef.current.editor.loadDesign(selectedTemplate.designData);
+  };
+
+  const loadTemplate = (id: string) => {
+    const selectedTemplate = templates.find((template) => template.id === id);
+    const data = selectedTemplate?.designData || null;
+    if (!emailEditorRef?.current?.editor) return;
+    if (!data) {
+      emailEditorRef.current.editor.loadBlank();
+    } else {
+      emailEditorRef.current.editor.loadDesign(data);
+    }
   };
 
   return (
     <>
       <Form {...form}>
-        <form className="flex flex-col gap-y-4 py-4">
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="flex flex-col gap-y-4 h-full"
+        >
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-medium">Write Email</h1>
+            <Button type="submit">Send Email</Button>
+          </div>
           <FormField
             control={form.control}
             name="emails"
@@ -101,37 +142,27 @@ export const WriteForm = ({ templates }: WriteFormProps) => {
               control={form.control}
               name="emailTemplateId"
               render={({ field }) => (
-                <FormItem className="flex-auto">
-                  <Select onValueChange={field.onChange} defaultValue="">
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select an email template" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {templates.map((template) => (
-                        <SelectItem key={template.name} value={template.id}>
-                          {template.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <FormItem className="flex items-center gap-x-2 flex-auto">
+                  <ComboboxDemo
+                    {...field}
+                    onChange={(value) => {
+                      loadTemplate(value);
+                      field.onChange(value);
+                    }}
+                    options={templates.map((template) => ({
+                      label: template.name,
+                      value: template.id,
+                    }))}
+                  />
                 </FormItem>
               )}
             />
           </div>
+          <div className="h-full">
+            <EmailEditor onReady={onReady} onLoad={onLoad} minHeight="100%" />
+          </div>
         </form>
       </Form>
-      <div className="h-full">
-        <Editor
-          onChange={onChangeBody}
-          onValueChange={onValueChangeBody}
-          value={body}
-        >
-          <Editor.Toolbar showEmbedButton={false} />
-          <Editor.Input onHandleIsFocused={() => {}} />
-        </Editor>
-      </div>
     </>
   );
 };

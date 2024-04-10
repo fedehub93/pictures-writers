@@ -1,10 +1,18 @@
+import { AudienceType } from "@prisma/client";
+import { authAdmin } from "@/lib/auth-service";
+import { redirectToSignIn } from "@clerk/nextjs";
+
 import { ContentHeader } from "@/components/content/content-header";
 import { DataTable } from "./_components/data-table";
 import { columns } from "./_components/columns";
 import { db } from "@/lib/db";
-import { AudienceType } from "@prisma/client";
 
 const ContactsPage = async () => {
+  const userAdmin = await authAdmin();
+  if (!userAdmin) {
+    return redirectToSignIn();
+  }
+
   const lists = await db.emailAudience.findMany({
     include: {
       _count: {
@@ -14,16 +22,19 @@ const ContactsPage = async () => {
     orderBy: { name: "asc" },
   });
 
-  if (lists.length === 0) {
-    const defaultList = await db.emailAudience.create({
-      data: {
-        name: "All contacts",
-        type: AudienceType.GLOBAL,
-      },
-    });
+  const totalContacts = await db.emailContact.count();
 
-    lists.push({ ...defaultList, _count: { contacts: 0 } });
-  }
+  lists.unshift({
+    id: "all",
+    name: "All contacts",
+    description: "All contacts",
+    type: AudienceType.GLOBAL,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    _count: {
+      contacts: totalContacts,
+    },
+  });
 
   const mappedLists = lists.map((list) => ({
     ...list,

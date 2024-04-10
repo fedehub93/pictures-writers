@@ -17,11 +17,7 @@ const MailSettings = async ({ params }: { params: { contactId: string } }) => {
       id: params.contactId,
     },
     include: {
-      audiences: {
-        where: {
-          type: { not: AudienceType.GLOBAL },
-        },
-      },
+      audiences: true,
     },
   });
 
@@ -30,9 +26,6 @@ const MailSettings = async ({ params }: { params: { contactId: string } }) => {
   }
 
   const audiences = await db.emailAudience.findMany({
-    where: {
-      type: { not: AudienceType.GLOBAL },
-    },
     orderBy: {
       name: "asc",
     },

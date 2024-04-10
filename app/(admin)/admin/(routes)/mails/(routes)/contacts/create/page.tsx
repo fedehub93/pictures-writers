@@ -1,12 +1,8 @@
 import { db } from "@/lib/db";
 import { CreateContactForm } from "./_components/create-contact-form";
-import { AudienceType } from "@prisma/client";
 
 const ContactCreatePage = async () => {
   const audiences = await db.emailAudience.findMany({
-    where: {
-      type: { not: AudienceType.GLOBAL },
-    },
     orderBy: {
       name: "asc",
     },

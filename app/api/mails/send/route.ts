@@ -7,7 +7,8 @@ import { authAdmin } from "@/lib/auth-service";
 export async function POST(req: Request) {
   try {
     const user = await authAdmin();
-    const { emailRecipient, emailTemplateId } = await req.json();
+    const { emailRecipient, emailTemplateId, subject, bodyHtml } =
+      await req.json();
 
     if (!user) {
       return new NextResponse("Unauthorized", { status: 401 });
@@ -41,8 +42,8 @@ export async function POST(req: Request) {
     await sgMail.send({
       to: emailRecipient,
       from: settings.emailSender,
-      subject: "TEST",
-      html: emailTemplate?.bodyHtml || "<p>Test email</p>",
+      subject: subject || "TEST",
+      html: bodyHtml || emailTemplate?.bodyHtml || "<p>Test email</p>",
     });
 
     return NextResponse.json({ status: "sent" });

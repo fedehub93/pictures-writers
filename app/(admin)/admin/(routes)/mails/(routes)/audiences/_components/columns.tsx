@@ -1,16 +1,11 @@
 "use client";
 
-import {
-  AudienceType,
-  EmailAudience,
-  EmailTemplate,
-  Media,
-  Post,
-} from "@prisma/client";
+import { AudienceType, EmailAudience } from "@prisma/client";
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, Eye, MoreHorizontal, Pencil } from "lucide-react";
 
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -18,7 +13,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
 
 export const columns: ColumnDef<EmailAudience & { totalContacts: number }>[] = [
   {
@@ -65,7 +59,6 @@ export const columns: ColumnDef<EmailAudience & { totalContacts: number }>[] = [
       const { id, type } = row.original;
 
       const isAllContactsAudience = type === AudienceType.GLOBAL;
-      const audienceSlug = isAllContactsAudience ? "all" : id;
 
       return (
         <DropdownMenu>
@@ -84,7 +77,7 @@ export const columns: ColumnDef<EmailAudience & { totalContacts: number }>[] = [
                 </DropdownMenuItem>
               </Link>
             )}
-            <Link href={`/admin/mails/audiences/${audienceSlug}/contacts`}>
+            <Link href={`/admin/mails/audiences/${id}/contacts`}>
               <DropdownMenuItem>
                 <Eye className="h-4 w-4 mr-2" />
                 View contacts

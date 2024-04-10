@@ -1,7 +1,10 @@
-import { ContentHeader } from "@/components/content/content-header";
-import { db } from "@/lib/db";
+import { authAdmin } from "@/lib/auth-service";
+import { redirectToSignIn } from "@clerk/nextjs";
 import { AudienceType } from "@prisma/client";
 import { redirect } from "next/navigation";
+
+import { db } from "@/lib/db";
+import { ContentHeader } from "@/components/content/content-header";
 import { DataTable } from "./_components/data-table";
 import { columns } from "./_components/columns";
 
@@ -10,27 +13,23 @@ const AudienceIdContactsPage = async ({
 }: {
   params: { audienceId: string };
 }) => {
-  let audienceId = params.audienceId;
-  if (audienceId === "all") {
-    const allContactsAudience = await db.emailAudience.findFirst({
-      where: { type: AudienceType.GLOBAL },
-    });
-
-    if (!allContactsAudience) {
-      redirect(`/admin/mails/audiences`);
-    }
-
-    audienceId = allContactsAudience.id;
+  const userAdmin = await authAdmin();
+  if (!userAdmin) {
+    return redirectToSignIn();
   }
 
   const contacts = await db.emailContact.findMany({
     where: {
-      audiences: {
-        some: {
-          id: audienceId,
-        },
-      },
+      audiences:
+        params.audienceId.toUpperCase() !== "ALL"
+          ? {
+              some: {
+                id: params.audienceId,
+              },
+            }
+          : undefined,
     },
+    orderBy: { email: "asc" },
   });
 
   return (
