@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import Image from "next/image";
@@ -105,7 +107,10 @@ export const HeroSection = (): JSX.Element => {
                     <Loader2 className="animate" />
                   </div>
                 ) : (
-                  <Button type="submit" className="absolute right-1 top-1 mr-2">
+                  <Button
+                    type="submit"
+                    className="absolute right-1 top-1 mr-2 bg-primary-public"
+                  >
                     Download eBook
                   </Button>
                 )}
