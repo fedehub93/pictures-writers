@@ -3,6 +3,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { NavLinkProps } from "./types";
 import { useCheckActiveNav } from "@/app/(admin)/_hooks/use-check-active-nav";
+import { Separator } from "@/components/ui/separator";
 
 export const NavLink = ({
   title,

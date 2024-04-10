@@ -282,3 +282,34 @@ model EmailTemplate {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 }
+
+enum AudienceType {
+  GLOBAL
+  LIST
+}
+
+model EmailAudience {
+  id String @id @default(uuid())
+
+  name        String
+  type        AudienceType @default(LIST)
+  description String?
+
+  contacts EmailContact[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
+
+model EmailContact {
+  id String @id @default(uuid())
+
+  firstName String?
+  lastName  String?
+  email      String
+
+  audiences EmailAudience[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}

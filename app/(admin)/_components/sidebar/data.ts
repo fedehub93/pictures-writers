@@ -2,6 +2,8 @@ import {
   Blocks,
   BookImage,
   Boxes,
+  Contact,
+  Group,
   LayoutDashboard,
   LayoutPanelTop,
   LibraryBig,
@@ -67,6 +69,12 @@ export const sideLinks: SideLink[] = [
         label: "",
         href: "/admin/mails/newsletters",
         icon: Mailbox,
+      },
+      {
+        title: "Contacts",
+        label: "",
+        href: "/admin/mails/audiences",
+        icon: Contact,
       },
       {
         title: "Email templates",

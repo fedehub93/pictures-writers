@@ -9,7 +9,7 @@ export interface NavLink {
   title: string;
   label?: string;
   href: string;
-  icon: LucideIcon;
+  icon?: LucideIcon;
 }
 
 export interface SideLink extends NavLink {
