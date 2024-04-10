@@ -18,6 +18,7 @@ body,
     --popover-foreground: 222.2 84% 4.9%;
     --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
+    --primary-public: 245, 67%, 55%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 210 40% 96.1%;
@@ -61,5 +62,47 @@ body,
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  /**
+    Footer
+  */
+
+  .footer {
+    @apply bg-gray-800 pt-8 text-primary-foreground;
+  }
+
+  .footer .footer__container {
+    @apply mx-auto flex max-w-lg flex-col items-center justify-between gap-x-12 gap-y-12 px-4 text-center md:max-w-6xl md:flex-row md:items-start md:text-left lg:my-12;
+  }
+
+  .footer .footer__mission-container {
+    @apply mb-4 w-full max-w-xs md:mb-0;
+  }
+
+  .footer .footer__mission-logo {
+    @apply mb-4 w-full max-w-xs md:mb-0;
+  }
+
+  .footer .footer__menu {
+    @apply grid grid-cols-1 gap-x-20 gap-y-12 md:grid-cols-3;
+  }
+
+  .footer .footer__menu-container {
+    @apply mb-4 w-full md:mb-0;
+  }
+
+  .footer .footer__menu-title {
+    @apply mb-5 text-xl font-bold uppercase text-white;
+  }
+
+  .footer .footer__menu-list {
+    @apply mt-2 [&>li]:mb-3 [&>li]:transition-all [&>li]:duration-500 hover:[&>li]:translate-x-2 hover:[&>li]:text-white;
+  }
+
+  .footer .footer__copyright {
+    @apply flex h-14 flex-col items-center justify-center md:flex-row;
   }
 }
