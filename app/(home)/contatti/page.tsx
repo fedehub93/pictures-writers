@@ -49,9 +49,9 @@ const ContactPage = (): JSX.Element => {
             {contactOptions.map((option) => (
               <div
                 key={option.label}
-                className="gap-y grid w-11/12 grid-cols-[max-content_1fr] items-center justify-items-center gap-x-12 text-center sm:justify-items-start sm:gap-y-4 sm:text-left"
+                className="gap-y grid w-11/12 grid-cols-[max-content_1fr] items-center justify-items-center gap-x-12 text-center sm:justify-items-start gap-y-2 sm:gap-y-4 sm:text-left"
               >
-                <option.Icon className="h-6 w-6" />
+                <option.Icon className="h-6 w-6 col-start-1 col-end-3 sm:col-start-1 sm:col-end-auto" />
                 <span className="col-start-1 col-end-3 text-base sm:col-start-2">
                   {option.label}
                 </span>
