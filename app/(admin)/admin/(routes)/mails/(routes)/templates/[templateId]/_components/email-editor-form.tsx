@@ -81,7 +81,6 @@ export const EmailEditorForm = ({ template }: EmailEditorForm) => {
 
         emailEditorRef.current.editor.exportHtml(async (data) => {
           const { design, html } = data;
-          console.log(design, html);
           await axios.patch(`/api/mails/templates/${template.id}`, {
             name: form.getValues("name"),
             description: form.getValues("description"),
