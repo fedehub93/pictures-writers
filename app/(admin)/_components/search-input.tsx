@@ -2,7 +2,6 @@
 
 import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
-import qs from "query-string";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { Input } from "@/components/ui/input";
@@ -10,7 +9,7 @@ import { useDebounce } from "@/app/(admin)/_hooks/use-debounce";
 
 export const SearchInput = () => {
   const searchParams = useSearchParams();
-  const [value, setValue] = useState(searchParams.get("title") || "");
+  const [value, setValue] = useState(searchParams.get("s") || "");
   const debouncedValue = useDebounce(value);
 
   const router = useRouter();
@@ -18,7 +17,7 @@ export const SearchInput = () => {
 
   useEffect(() => {
     const params = new URLSearchParams(searchParams);
-    params.set("title", debouncedValue);
+    params.set("s", debouncedValue);
     router.push(`${pathname}?${params.toString()}`);
   }, [debouncedValue, router, pathname, searchParams]);
 

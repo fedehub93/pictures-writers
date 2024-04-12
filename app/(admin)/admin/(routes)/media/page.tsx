@@ -13,7 +13,7 @@ const MediaPage = async ({
 }: {
   searchParams?: {
     query?: string;
-    title?: string;
+    s?: string;
     page?: string;
   };
 }) => {
@@ -22,7 +22,7 @@ const MediaPage = async ({
     return redirectToSignIn();
   }
 
-  const query = searchParams?.title || "";
+  const query = searchParams?.s || "";
   const page = Number(searchParams?.page) || 1;
 
   const skip = (page - 1) * PER_PAGE;

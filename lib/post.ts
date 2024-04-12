@@ -11,14 +11,26 @@ export type PostVersionWithImageCoverWithCategoryWithTags = PostVersion & {
 
 type GetPublishedPosts = {
   page: number;
+  s?: string;
 };
 
-export const getPublishedPosts = async ({ page }: GetPublishedPosts) => {
+export const getPublishedPosts = async ({
+  page,
+  s = "",
+}: GetPublishedPosts) => {
   const skip = POST_PER_PAGE * (page - 1);
 
   const posts = await db.post.findMany({
     where: {
       isPublished: true,
+      OR: [
+        {
+          title: { contains: s },
+        },
+        {
+          description: { contains: s },
+        },
+      ],
     },
     include: {
       versions: {

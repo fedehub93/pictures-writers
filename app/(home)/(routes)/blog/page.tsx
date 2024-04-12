@@ -1,19 +1,22 @@
-import { db } from "@/lib/db";
-import { PostList } from "./_components/post-list";
 import { getPublishedPosts } from "@/lib/post";
 
-const POST_PER_PAGE = 10;
+import { PostList } from "./_components/post-list";
 
 export const BlogPage = async ({
   searchParams,
 }: {
   searchParams?: {
     page: string;
+    s: string;
   };
 }) => {
   const currentPage = Number(searchParams?.page) || 1;
+  const s = searchParams?.s || "";
 
-  const { posts, totalPages } = await getPublishedPosts({ page: currentPage });
+  const { posts, totalPages } = await getPublishedPosts({
+    page: currentPage,
+    s,
+  });
 
   return (
     <section className="bg-indigo-100/40 px-4 py-10 lg:px-6">
