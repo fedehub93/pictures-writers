@@ -62,7 +62,7 @@ export const HeroSection = (): JSX.Element => {
               <span className="text-primary-public">uno sceneggiatore?</span>
             </h1>
             <p>
-              <span className="evidence">
+              <span className="mt-2 rounded-md bg-indigo-200/40 p-1 font-bold text-primary-public">
                 La nostra missione è alimentare la tua fiamma creativa
               </span>
               , fornendoti l&apos;ispirazione, l&apos;istruzione e la comunità
