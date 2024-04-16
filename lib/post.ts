@@ -63,6 +63,53 @@ export const getPublishedPosts = async ({
   return { posts: lastPublishedPosts, totalPages, currentPage: page };
 };
 
+export const getPublishedPostById = async (id: string) => {
+  const post = await db.post.findFirst({
+    where: {
+      id: id,
+      isPublished: true,
+    },
+    include: {
+      versions: {
+        include: {
+          imageCover: true,
+          category: true,
+          tags: true,
+        },
+        take: 1,
+        orderBy: {
+          publishedAt: "desc",
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  const lastPublishedPost = post?.versions[0];
+
+  return lastPublishedPost;
+};
+
+export const getPublishedPostBySlug = async (slug: string) => {
+  const postVersion = await db.postVersion.findFirst({
+    where: {
+      slug,
+    },
+    orderBy: {
+      publishedAt: "desc",
+    },
+  });
+
+  if (!postVersion) {
+    return null;
+  }
+
+  const post = await getPublishedPostById(postVersion.postId);
+  return post;
+};
+
 export const getLatestPublishedPosts = async () => {
   const posts = await db.post.findMany({
     where: {

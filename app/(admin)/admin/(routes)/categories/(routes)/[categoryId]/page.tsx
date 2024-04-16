@@ -45,7 +45,7 @@ const CategoryIdPage = async ({
   const isComplete = requiredFields.every(Boolean);
 
   return (
-    <div className="p-6 max-w-7xl mx-auto ">
+    <div className="p-6 max-w-7xl mx-auto h-full">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-medium">Category setup</h1>
         <div className="flex items-center gap-x-2">
@@ -58,8 +58,8 @@ const CategoryIdPage = async ({
           />
         </div>
       </div>
-      <div className=" grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-6 py-8">
-        <div className="col-span-full md:col-span-4 lg:col-span-9 flex flex-col gap-y-4">
+      <div className=" grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-6 py-8 h-full">
+        <div className="col-span-full md:col-span-4 lg:col-span-9 flex flex-col gap-y-4 overflow-auto">
           <Tabs defaultValue="category">
             <TabsList className="mb-4">
               <TabsTrigger value="category">Category</TabsTrigger>

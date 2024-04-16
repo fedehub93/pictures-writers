@@ -4,6 +4,8 @@ import {
   createElementNodeMatcher,
   createElementTransform,
 } from "slate-to-react";
+import { cn } from "@/lib/utils";
+
 import { CustomText } from "@/components/editor";
 
 type HeadingThree = Replace<
@@ -20,8 +22,16 @@ export const isHeadingThree = createElementNodeMatcher<HeadingThree>(
 export const HeadingThree = createElementTransform(
   isHeadingThree,
   ({ key, element, attributes, children }) => (
-    <h1 className="text-xl mb-2" key={key}>
+    <h3
+      key={key}
+      className={cn(
+        "text-xl font-medium mb-4",
+        element.align === "left" && "text-left",
+        element.align === "center" && "text-center",
+        element.align === "right" && "text-right"
+      )}
+    >
       {children}
-    </h1>
+    </h3>
   )
 );

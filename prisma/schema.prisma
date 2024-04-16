@@ -242,8 +242,8 @@ model TagVersion {
   tagId String
   tag   Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
-  title       String  @unique
-  slug        String  @unique
+  title       String
+  slug        String
   description String?
 
   publishedAt DateTime @default(now())

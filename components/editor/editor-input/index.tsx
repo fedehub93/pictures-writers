@@ -110,82 +110,82 @@ export const withInlines = (editor: CustomEditor) => {
     normalizeNode(entry);
   };
 
-  editor.insertBreak = () => {
-    const { selection } = editor;
+  // editor.insertBreak = () => {
+  //   const { selection } = editor;
 
-    if (selection) {
-      const [match] = Array.from(
-        Editor.nodes(editor, {
-          match: (n) =>
-            !Editor.isEditor(n) &&
-            Element.isElement(n) &&
-            n.type === "list-item",
-        })
-      );
+  //   if (selection) {
+  //     const [match] = Array.from(
+  //       Editor.nodes(editor, {
+  //         match: (n) =>
+  //           !Editor.isEditor(n) &&
+  //           Element.isElement(n) &&
+  //           n.type === "list-item",
+  //       })
+  //     );
 
-      // If list-item bypass insert break and insert new list-item element
+  //     // If list-item bypass insert break and insert new list-item element
 
-      if (match && Element.isElement(match[0])) {
-        const [_, nodePath] = Editor.parent(editor, match[1]);
-        const lastNode = Editor.last(editor, nodePath);
+  //     if (match && Element.isElement(match[0])) {
+  //       const [_, nodePath] = Editor.parent(editor, match[1]);
+  //       const lastNode = Editor.last(editor, nodePath);
 
-        const isLastNode = Path.equals(match[1], [
-          lastNode[1][0],
-          lastNode[1][1],
-        ]);
+  //       const isLastNode = Path.equals(match[1], [
+  //         lastNode[1][0],
+  //         lastNode[1][1],
+  //       ]);
 
-        const isEmpty =
-          match[0] &&
-          !Element.isElement(match[0].children[0]) &&
-          match[0].children[0].text.trim() === "";
+  //       const isEmpty =
+  //         match[0] &&
+  //         !Element.isElement(match[0].children[0]) &&
+  //         match[0].children[0].text.trim() === "";
 
-        // If empty list-item node and is last then break
-        if (isEmpty && isLastNode) {
-          editor.removeNodes();
-          insertBreak();
-          editor.splitNodes();
-          editor.setNodes({
-            type: "paragraph",
-            children: [{ text: "" }],
-          });
-          editor.liftNodes();
-          return;
-        } else {
-          editor.insertNodes([{ ...match[0], children: [{ text: "" }] }]);
-          return;
-        }
-      }
-    }
+  //       // If empty list-item node and is last then break
+  //       if (isEmpty && isLastNode) {
+  //         editor.removeNodes();
+  //         insertBreak();
+  //         editor.splitNodes();
+  //         editor.setNodes({
+  //           type: "paragraph",
+  //           children: [{ text: "" }],
+  //         });
+  //         editor.liftNodes();
+  //         return;
+  //       } else {
+  //         editor.insertNodes([{ ...match[0], children: [{ text: "" }] }]);
+  //         return;
+  //       }
+  //     }
+  //   }
 
-    insertBreak();
+  //   insertBreak();
 
-    // DEFAULT ELEMENT
-    Transforms.splitNodes(editor);
-    Transforms.setNodes(editor, {
-      type: "paragraph",
-      children: [{ text: "" }],
-    });
-  };
+  //   // DEFAULT ELEMENT
+  //   Transforms.splitNodes(editor);
+  //   Transforms.setNodes(editor, {
+  //     type: "paragraph",
+  //     children: [{ text: "" }],
+  //   });
+  // };
 
-  editor.insertSoftBreak = () => {
-    const { selection } = editor;
+  // editor.insertSoftBreak = () => {
+  //   const { selection } = editor;
 
-    if (selection) {
-      const [match] = Array.from(
-        Editor.nodes(editor, {
-          match: (n) =>
-            !Editor.isEditor(n) &&
-            Element.isElement(n) &&
-            SOFT_BREAK_ELEMENTS.includes(n.type),
-        })
-      );
-      if (match && Element.isElement(match[0])) {
-        Transforms.insertText(editor, "\n");
-        return;
-      }
-    }
-    insertSoftBreak();
-  };
+  //   if (selection) {
+  //     const [match] = Array.from(
+  //       Editor.nodes(editor, {
+  //         match: (n) =>
+  //           !Editor.isEditor(n) &&
+  //           Element.isElement(n) &&
+  //           SOFT_BREAK_ELEMENTS.includes(n.type),
+  //       })
+  //     );
+  //     if (match && Element.isElement(match[0])) {
+  //       Transforms.insertText(editor, "\n");
+  //       return;
+  //     }
+  //   }
+  //   insertSoftBreak();
+  // };
 
   return editor;
 };

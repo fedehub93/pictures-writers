@@ -51,7 +51,7 @@ export const ContentForm = ({ initialData, postId }: BodyFormProps) => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       await axios.patch(`/api/posts/${postId}`, values);
-      toast.success("Post updated");
+      // toast.success("Post updated");
     } catch {
       toast.error("Something went wrong");
     } finally {

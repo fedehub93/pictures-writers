@@ -1,3 +1,4 @@
+import SidebarCategories from "./sidebar-categories";
 import SidebarEbook from "./sidebar-ebook";
 import SidebarLatestNews from "./sidebar-latest-news";
 import SidebarSearch from "./sidebar-search";
@@ -9,7 +10,7 @@ const Sidebar = (): JSX.Element => (
     {/* <SearchAlgolia /> */}
     {/* <FreeEbook /> */}
     <SidebarLatestNews />
-    {/* <Categories /> */}
+    <SidebarCategories />
   </div>
 );
 

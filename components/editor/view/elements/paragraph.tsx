@@ -4,6 +4,8 @@ import {
   createElementNodeMatcher,
   createElementTransform,
 } from "slate-to-react";
+import { cn } from "@/lib/utils";
+
 import { CustomText } from "@/components/editor";
 
 type Paragraph = Replace<
@@ -19,5 +21,17 @@ export const isParagraph = createElementNodeMatcher<Paragraph>(
 
 export const Paragraph = createElementTransform(
   isParagraph,
-  ({ key, element, attributes, children }) => <p key={key}>{children}</p>
+  ({ key, element, attributes, children }) => (
+    <p
+      key={key}
+      className={cn(
+        "leading-6 mb-6 text-base",
+        element.align === "left" && "text-left",
+        element.align === "center" && "text-center",
+        element.align === "right" && "text-right"
+      )}
+    >
+      {children}
+    </p>
+  )
 );
