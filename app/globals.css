@@ -157,6 +157,99 @@ body,
   }
 
   /**
+    Newsletter
+  */
+
+  .snippet {
+    @apply relative my-4 flex w-full flex-col gap-6 rounded-lg border-2 border-black bg-white px-8 py-10;
+  }
+
+  .snippet .snippet__title {
+    @apply mb-2 text-center text-2xl font-extrabold uppercase;
+  }
+
+  .snippet .snippet__sponsor {
+    @apply absolute left-2 top-2 text-sm font-extrabold uppercase !text-primary;
+  }
+
+  .snippet > p {
+    @apply text-black;
+  }
+
+  .newsletter .newsletter__success,
+  .newsletter .newsletter__error {
+    @apply flex flex-col gap-y-4 text-xs text-neutral-600 sm:text-base;
+  }
+
+  .newsletter .newsletter__box {
+    @apply mb-4 text-base font-semibold text-neutral-600;
+  }
+
+  .newsletter .newsletter__form {
+    @apply flex w-full flex-col items-center gap-y-8 md:flex-row;
+  }
+
+  .newsletter .newsletter__form-email {
+    @apply mb-1 mr-4 mt-0 block w-full appearance-none border-0 border-b-2 border-black bg-transparent px-0 pb-2 pt-3 text-base focus:border-primary focus:outline-none focus:ring-0 md:w-full;
+  }
+
+  .newsletter .newsletter__form-button {
+    @apply rounded-lg bg-green-600 px-4 py-3 text-sm uppercase tracking-wider text-white transition-all duration-300 hover:scale-110 hover:shadow-xl;
+  }
+
+  .p-newsletter {
+    @apply relative mt-16 hidden w-[500px] flex-col  gap-6 rounded-lg border-2 border-primary bg-secondary px-8 py-10 transition-all duration-500 lg:fixed lg:right-4 lg:flex;
+  }
+
+  .p-newsletter .p-newsletter__close {
+    @apply absolute right-4 top-4 cursor-pointer;
+  }
+
+  .p-newsletter .p-newsletter__title {
+    @apply mb-2 text-center text-2xl font-extrabold uppercase;
+  }
+  .p-newsletter .p-newsletter__success,
+  .p-newsletter .p-newsletter__error {
+    @apply flex flex-col gap-y-4 text-xs text-neutral-600 sm:text-base;
+  }
+
+  .p-newsletter .p-newsletter__box {
+    @apply mb-4 text-base font-semibold text-neutral-600;
+  }
+
+  .p-newsletter .p-newsletter__form {
+    @apply flex w-full items-center;
+  }
+
+  .p-newsletter .p-newsletter__form-email {
+    @apply mb-1 mr-4 mt-0 block w-full appearance-none border-0 border-b-2 border-black bg-transparent px-0 pb-2 pt-3 text-base focus:border-primary focus:outline-none focus:ring-0 md:w-full;
+  }
+
+  .p-newsletter .p-newsletter__form-button {
+    @apply rounded-lg bg-green-600 px-4 py-3 text-sm uppercase tracking-wider text-white transition-all duration-300 hover:scale-110 hover:shadow-xl;
+  }
+
+  /**
+    Author Widget
+  */
+
+  .author {
+    @apply relative mt-4 flex flex-col items-center gap-y-4 sm:flex-row;
+  }
+
+  .author .author__image {
+    @apply my-auto w-48 rounded-full border-4 border-neutral-200 grayscale;
+  }
+
+  .author .author__bio {
+    @apply static flex text-justify text-xs text-gray-600 sm:text-sm lg:text-sm;
+  }
+
+  .author .author__social {
+    @apply bottom-0 right-0 inline-flex self-start sm:absolute;
+  }
+
+  /**
     Footer
   */
 

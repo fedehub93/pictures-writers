@@ -1,6 +1,6 @@
 "use client";
 
-import { Media, Post } from "@prisma/client";
+import { Media, User, UserRole } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
@@ -14,55 +14,23 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-
 import { cn } from "@/lib/utils";
+import { Actions } from "./actions";
 
-type PostWithImageCover = Post & {
-  imageCover: Media | null;
-};
-
-export const columns: ColumnDef<PostWithImageCover>[] = [
+export const columns: ColumnDef<User>[] = [
   {
-    accessorKey: "title",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Title
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-  },
-  {
-    accessorKey: "description",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Description
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-  },
-  {
-    accessorKey: "imageCover",
+    accessorKey: "imageUrl",
     header: () => {
       return <span>Image</span>;
     },
     cell: ({ row }) => {
-      const imageCover = (row.getValue("imageCover") || null) as Media | null;
-      if (!imageCover) return null;
+      const imageUrl = (row.getValue("imageUrl") || null) as string | null;
+      if (!imageUrl) return null;
       return (
-        <div className="relative w-20 aspect-video">
+        <div className="relative w-20 aspect-square">
           <Image
-            src={imageCover.url}
-            alt={imageCover.altText || ""}
+            src={imageUrl}
+            alt={"Photo profile"}
             fill
             className="rounded-md object-cover"
           />
@@ -71,23 +39,71 @@ export const columns: ColumnDef<PostWithImageCover>[] = [
     },
   },
   {
-    accessorKey: "isPublished",
+    accessorKey: "firstName",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Published
+          First name
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+  },
+  {
+    accessorKey: "lastName",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Last name
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+  },
+  {
+    accessorKey: "email",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Email
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+  },
+
+  {
+    accessorKey: "role",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Role
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
     cell: ({ row }) => {
-      const isPublished = row.getValue("isPublished") || false;
+      const role = (row.getValue("role") as UserRole) || UserRole.USER;
       return (
-        <Badge className={cn("bg-slate-500", isPublished && "bg-sky-700")}>
-          {isPublished ? "Published" : "Draft"}
+        <Badge
+          className={cn(
+            "bg-slate-500",
+            role === UserRole.ADMIN && "bg-sky-700"
+          )}
+        >
+          {role || ""}
         </Badge>
       );
     },
@@ -95,7 +111,7 @@ export const columns: ColumnDef<PostWithImageCover>[] = [
   {
     id: "actions",
     cell: ({ row }) => {
-      const { id } = row.original;
+      const { id, firstName, lastName, imageUrl, role, bio } = row.original;
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -104,14 +120,14 @@ export const columns: ColumnDef<PostWithImageCover>[] = [
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <Link href={`/admin/posts/${id}`}>
-              <DropdownMenuItem>
-                <Pencil className="h-4 w-4 mr-2" />
-                Edit
-              </DropdownMenuItem>
-            </Link>
-          </DropdownMenuContent>
+          <Actions
+            id={id}
+            firstName={firstName}
+            lastName={lastName}
+            imageUrl={imageUrl}
+            role={role}
+            bio={bio}
+          />
         </DropdownMenu>
       );
     },

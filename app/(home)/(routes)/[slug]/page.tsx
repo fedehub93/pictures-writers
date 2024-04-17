@@ -18,6 +18,8 @@ import {
 import { RichText } from "@/components/editor/view/leaves";
 import PostInfo from "../blog/_components/post-info";
 import TagsWidget from "./_components/tags-widget";
+import NewsletterWidget from "./_components/newsletter-widget";
+import AuthorWidget from "./_components/author-widget";
 
 export const Page = async ({ params }: { params: { slug: string } }) => {
   const post = await getPublishedPostBySlug(params.slug);
@@ -41,8 +43,8 @@ export const Page = async ({ params }: { params: { slug: string } }) => {
             ) : null}
           </div>
           <PostInfo
-            authorName={"Federico Verrengia"}
-            publishedAt={post.publishedAt}
+            authorName={`${post.user?.firstName} ${post.user?.lastName}`}
+            publishedAt={post.publishedAt!}
             categoryTitle={post.category?.title!}
             categorySlug={post.category?.slug!}
           />
@@ -52,7 +54,7 @@ export const Page = async ({ params }: { params: { slug: string } }) => {
 
           <div className="post">
             <SlateView
-              nodes={post.bodyData}
+              nodes={post.bodyData!}
               transforms={{
                 elements: [
                   Paragraph,
@@ -71,10 +73,17 @@ export const Page = async ({ params }: { params: { slug: string } }) => {
             />
           </div>
         </article>
-        <TagsWidget tags={post.tags} />
-        {/* <Newsletter />
-          <DisqusLazy config={disqusOptions} />
-          <AuthorWidget author={post.author[0]} /> */}
+        <TagsWidget tags={post.tags!} />
+        <NewsletterWidget />
+        {/* <DisqusLazy config={disqusOptions} /> */}
+        {post.user && (
+          <AuthorWidget
+            firstName={post.user.firstName || ""}
+            lastName={post.user.lastName || ""}
+            bio={post.user.bio || ""}
+            imageUrl={post.user.imageUrl || ""}
+          />
+        )}
       </div>
       <div
         className="blog-post__sidebar sticky top-20"

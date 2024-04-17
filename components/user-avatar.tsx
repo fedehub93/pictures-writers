@@ -9,7 +9,7 @@ export const UserAvatar = ({ email, imageUrl }: UserAvatarProps) => {
   return (
     <div className="relative">
       <Avatar className="h-8 w-8">
-        <AvatarImage src={imageUrl} />
+        <AvatarImage src={imageUrl} className="object-cover" />
         {email && (
           <AvatarFallback>
             {email[0]}

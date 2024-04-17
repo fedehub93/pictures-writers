@@ -1,4 +1,4 @@
-import { Category, Media, PostVersion, Tag } from "@prisma/client";
+import { Category, Media, PostVersion, Tag, User } from "@prisma/client";
 import { db } from "./db";
 
 const POST_PER_PAGE = 10;
@@ -8,6 +8,7 @@ export type PostVersionWithImageCoverWithCategoryWithTags = PostVersion & {
   imageCover: Media | null;
   category: Category | null;
   tags: Tag[];
+  user: User;
 };
 
 type GetPublishedPosts = {
@@ -81,13 +82,14 @@ export const getPublishedPostById = async (id: string) => {
           publishedAt: "desc",
         },
       },
+      user: true,
     },
     orderBy: {
       createdAt: "desc",
     },
   });
 
-  const lastPublishedPost = post?.versions[0];
+  const lastPublishedPost = { ...post?.versions[0], user: post?.user };
 
   return lastPublishedPost;
 };

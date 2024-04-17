@@ -8,8 +8,9 @@ import { ourFileRouter } from "@/app/api/uploadthing/core";
 
 import "@uploadthing/react/styles.css";
 import { Dispatch, SetStateAction } from "react";
+import { cn } from "@/lib/utils";
 
-type FileUploadOnChange = {
+export type FileUploadOnChange = {
   name: string;
   url: string;
   size: number;
@@ -20,6 +21,7 @@ interface FileUploadProps {
   value?: string;
   endpoint: keyof typeof ourFileRouter;
   setIsFocused?: Dispatch<SetStateAction<boolean>>;
+  size?: "small" | "medium" | "large";
 }
 
 export const FileUpload = ({
@@ -27,11 +29,18 @@ export const FileUpload = ({
   value,
   endpoint,
   setIsFocused,
+  size = "large",
 }: FileUploadProps) => {
   const fileType = value?.split(".").pop();
   if (value && fileType !== "pdf") {
     return (
-      <div className="relative w-96 h-72 aspect-video">
+      <div
+        className={cn(
+          "relative rounded-md overflow-hidden",
+          size === "small" && "w-40 h-auto aspect-square",
+          size === "large" && "w-96 h-72 aspect-video"
+        )}
+      >
         <Image fill src={value} alt="Upload" className="object-cover" />
         <button
           onClick={() => onChange({ name: "", url: "", size: 0 })}

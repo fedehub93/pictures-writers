@@ -39,7 +39,7 @@ const PostCard = ({
               src={imageCoverUrl}
               alt={imageCoverAlt || "Post card"}
               fill
-              objectFit="cover"
+              className="object-cover"
             />
           ) : null}
         </div>

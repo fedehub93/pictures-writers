@@ -24,7 +24,12 @@ enum UserRole {
 model User {
   id             String @id @default(uuid())
   externalUserId String @unique
-  imageUrl       String @db.Text
+
+  firstName String?
+  lastName  String?
+  email     String?
+  bio       String?
+  imageUrl  String?
 
   role UserRole @default(USER)
 
@@ -306,7 +311,7 @@ model EmailContact {
 
   firstName String?
   lastName  String?
-  email      String
+  email     String
 
   audiences EmailAudience[]
 

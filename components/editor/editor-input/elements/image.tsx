@@ -43,8 +43,7 @@ export const EmbeddedImage = ({
           src={element.url}
           alt={element.altText}
           fill
-          objectFit="cover"
-          className="rounded-md"
+          className="rounded-md object-cover"
         />
         <div className="h-full w-full opacity-0 group-hover:opacity-50 transition-all duration-700 bg-black rounded-md" />
         <div className="flex flex-col gap-y-4 opacity-0 group-hover:opacity-100 transition-all duration-700 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">

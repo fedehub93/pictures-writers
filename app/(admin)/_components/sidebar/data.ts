@@ -14,6 +14,7 @@ import {
   NotebookPen,
   Settings,
   Tags,
+  Users,
 } from "lucide-react";
 
 import { SideLink } from "./nav/types";
@@ -89,5 +90,11 @@ export const sideLinks: SideLink[] = [
         icon: Settings,
       },
     ],
+  },
+  {
+    title: "Users",
+    label: "",
+    href: "/admin/users",
+    icon: Users,
   },
 ];

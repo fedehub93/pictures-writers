@@ -33,8 +33,7 @@ export const ImageElement = createElementTransform(
           src={element.url!}
           alt={element.altText}
           fill
-          objectFit="cover"
-          className="rounded-md"
+          className="rounded-md object-cover"
         />
       </div>
     </div>
