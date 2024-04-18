@@ -46,6 +46,7 @@ export const getPublishedPosts = async ({
           publishedAt: "desc",
         },
       },
+      user: true,
     },
     take: POST_PER_PAGE,
     skip: skip,
@@ -57,7 +58,7 @@ export const getPublishedPosts = async ({
   const totalPages = Math.ceil(posts.length / POST_PER_PAGE);
 
   const lastPublishedPosts = posts.map((post) => {
-    const lastPublishedPost = post.versions[0];
+    const lastPublishedPost = { ...post.versions[0], user: post.user };
     return lastPublishedPost;
   });
 
@@ -129,6 +130,7 @@ export const getLatestPublishedPosts = async () => {
           publishedAt: "desc",
         },
       },
+      user: true,
     },
     take: LATEST_PUBLISHED_POST,
     orderBy: {

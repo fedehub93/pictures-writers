@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { EmailSettingsForm } from "./_components/email-settings-form";
 import { EmailTesterForm } from "./_components/email-tester-form";
+import { EmailSubscriptionForm } from "./_components/email-subscription-form";
 
 const MailSettings = async () => {
   const settings = await db.emailSetting.findFirst();
@@ -17,6 +18,7 @@ const MailSettings = async () => {
         </div>
       </div>
       <EmailSettingsForm settings={settings} />
+      <EmailSubscriptionForm settings={settings} templates={templates} />
       <EmailTesterForm templates={templates} />
     </div>
   );

@@ -1,39 +1,59 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import * as z from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useState } from "react";
+import { Loader2 } from "lucide-react";
+import { useState, useTransition } from "react";
+
+import { subscribe } from "@/actions/subscribe";
+import { SubscribeSchema } from "@/schemas";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const NewsletterWidget = (): JSX.Element => {
+  const [error, setError] = useState<string | undefined>("");
+  const [success, setSuccess] = useState<string | undefined>("");
+  const [isPending, startTransition] = useTransition();
   const [status, setStatus] = useState<string | null>(null);
-  const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const form = useForm<z.infer<typeof SubscribeSchema>>({
+    resolver: zodResolver(SubscribeSchema),
+    defaultValues: {
+      email: "",
+    },
+  });
+
+  const { isSubmitting, isValid } = form.formState;
+
+  const onSubmit = async (values: z.infer<typeof SubscribeSchema>) => {
     try {
-      event.preventDefault();
+      setIsLoading(true);
 
-      if (!email) return;
+      setError("");
+      setSuccess("");
 
-      // setIsLoading(true);
-      // await delay(1000);
-      // const response = await fetch(FORM_URL, options);
-      // const json = await response.json();
-      // if (json.status === "SUCCESS") {
-      //   setStatus("SUCCESS");
-      //   return;
-      // }
-      // setStatus("ERROR");
+      startTransition(() => {
+        subscribe(values).then((data) => {
+          setError(data.error);
+          setSuccess(data.success);
+        });
+      });
     } catch (error) {
       setStatus("ERROR");
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = event.target;
-    setEmail(value);
   };
 
   return (
@@ -95,22 +115,30 @@ const NewsletterWidget = (): JSX.Element => {
           {isLoading ? (
             <Loader2 className="animate" />
           ) : (
-            <form className="newsletter__form" onSubmit={handleSubmit}>
-              <input
-                aria-label="Email Newsletter"
-                name="email"
-                type="email"
-                className="newsletter__form-email"
-                placeholder="La tua email"
-                autoComplete="off"
-                value={email}
-                onChange={handleEmailChange}
-              />
-
-              <button className="newsletter__form-button" type="submit">
-                Iscriviti
-              </button>
-            </form>
+            <Form {...form}>
+              <form className="flex items-center gap-x-2" onSubmit={form.handleSubmit(onSubmit)}>
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem className="flex-1">
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input
+                          disabled={isSubmitting}
+                          placeholder="mario.rossi@gmail.com"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button type="submit" className="self-end" disabled={isSubmitting || !isValid}>
+                  Iscriviti
+                </Button>
+              </form>
+            </Form>
           )}
         </>
       )}

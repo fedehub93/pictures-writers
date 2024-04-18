@@ -64,12 +64,11 @@ export const sideLinks: SideLink[] = [
     href: "",
     icon: Mails,
     sub: [
-      { title: "Write", label: "", href: "/admin/mails/write", icon: MailPlus },
       {
-        title: "Newsletters",
+        title: "Single Sends",
         label: "",
-        href: "/admin/mails/newsletters",
-        icon: Mailbox,
+        href: "/admin/mails/single-sends",
+        icon: MailPlus,
       },
       {
         title: "Contacts",

@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
-import * as sgMail from "@sendgrid/mail";
+import Handlebars from "handlebars";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
+import { sendSendgridEmail } from "@/lib/mail";
 
 export async function POST(req: Request) {
   try {
     const user = await authAdmin();
-    const { emailRecipient, emailTemplateId, subject, bodyHtml } =
-      await req.json();
+    const { audiences, subject, bodyHtml } = await req.json();
 
     if (!user) {
       return new NextResponse("Unauthorized", { status: 401 });
@@ -23,28 +23,37 @@ export async function POST(req: Request) {
       return new NextResponse("Missing API key", { status: 400 });
     }
 
-    let emailTemplate = null;
-
-    if (emailTemplateId) {
-      emailTemplate = await db.emailTemplate.findUnique({
-        where: { id: emailTemplateId },
-      });
-    }
-
-    if (!emailRecipient || emailRecipient.length === 0) {
-      return new NextResponse("Missing email recipient", { status: 400 });
+    if (!audiences || audiences.length === 0) {
+      return new NextResponse("Missing audiences", { status: 400 });
     }
     if (!settings.emailSender) {
       return new NextResponse("Missing email sender", { status: 400 });
     }
 
-    sgMail.setApiKey(settings.emailApiKey);
-    await sgMail.send({
-      to: emailRecipient,
-      from: settings.emailSender,
-      subject: subject || "TEST",
-      html: bodyHtml || emailTemplate?.bodyHtml || "<p>Test email</p>",
-    });
+    for (const audience of audiences) {
+      const contacts = await db.emailContact.findMany({
+        where: {
+          audiences: {
+            some: { id: audience.value },
+          },
+        },
+      });
+      for (const contact of contacts) {
+        const template = Handlebars.compile(bodyHtml);
+        const html = template({
+          id: contact.id,
+          firstName: contact.firstName,
+          lastName: contact.lastName,
+          email: contact.email,
+        });
+        await sendSendgridEmail({
+          to: contact.email,
+          from: settings.emailSender,
+          subject,
+          html,
+        });
+      }
+    }
 
     return NextResponse.json({ status: "sent" });
   } catch (error) {
