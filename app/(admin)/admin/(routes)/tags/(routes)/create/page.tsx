@@ -126,7 +126,7 @@ const TagCreatePage = () => {
               )}
             />
             <div className="flex items-center gap-x-2">
-              <Link href="/">
+              <Link href="/admin/tags">
                 <Button variant="ghost" type="button">
                   Cancel
                 </Button>

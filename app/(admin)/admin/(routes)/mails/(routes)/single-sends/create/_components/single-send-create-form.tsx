@@ -108,7 +108,7 @@ const SingleSendCreateForm = ({ templates }: SingleSendCreateFormProps) => {
               )}
             />
             <div className="flex items-center gap-x-2">
-              <Link href="/">
+              <Link href="/admin/mails/single-sends">
                 <Button variant="ghost" type="button">
                   Cancel
                 </Button>

@@ -323,7 +323,7 @@ model EmailContact {
   emailVerified DateTime?
 
   audiences    EmailAudience[]
-  isSubscriber Boolean         @default(false)
+  isSubscriber Boolean         @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

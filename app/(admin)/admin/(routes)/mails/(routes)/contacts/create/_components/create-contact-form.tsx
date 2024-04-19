@@ -136,7 +136,7 @@ export const CreateContactForm = ({ options }: CreateContactFormProps) => {
           }}
         />
         <div className="flex items-center gap-x-2">
-          <Link href="/">
+          <Link href="/admin/mails/audiences">
             <Button variant="ghost" type="button">
               Cancel
             </Button>

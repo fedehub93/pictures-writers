@@ -4,8 +4,8 @@ import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { Loader2 } from "lucide-react";
 import { useState, useTransition } from "react";
+import { BeatLoader } from "react-spinners";
 
 import { subscribe } from "@/actions/subscribe";
 import { SubscribeSchema } from "@/schemas";
@@ -19,13 +19,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import toast from "react-hot-toast";
 
 const NewsletterWidget = (): JSX.Element => {
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
-  const [status, setStatus] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.infer<typeof SubscribeSchema>>({
     resolver: zodResolver(SubscribeSchema),
@@ -38,28 +37,26 @@ const NewsletterWidget = (): JSX.Element => {
 
   const onSubmit = async (values: z.infer<typeof SubscribeSchema>) => {
     try {
-      setIsLoading(true);
-
       setError("");
       setSuccess("");
 
-      startTransition(() => {
+      startTransition(async () => {
         subscribe(values).then((data) => {
           setError(data.error);
           setSuccess(data.success);
         });
       });
     } catch (error) {
-      setStatus("ERROR");
-    } finally {
-      setIsLoading(false);
+      setError(
+        "Qualcosa è andato storto. Prego riprovare o contattare il supporto."
+      );
     }
   };
 
   return (
-    <div className="snippet newsletter">
+    <div className="snippet newsletter relative">
       <h6 className="snippet__title">Pictures Writers Newsletter</h6>
-      {status === "SUCCESS" && (
+      {success && (
         <div className="newsletter__success">
           <p>
             Benvenuto a bordo, ti ringraziamo per esserti iscritto alla nostra
@@ -77,12 +74,12 @@ const NewsletterWidget = (): JSX.Element => {
           <p>Grazie ancora per esserti unito a noi.</p>
         </div>
       )}
-      {status === "ERROR" && (
+      {error && (
         <div className="newsletter__error">
           <p>Ooops, qualcosa è andato storto...</p>
           <p>
             Per favore,{" "}
-            <button type="button" onClick={() => setStatus(null)}>
+            <button type="button" onClick={() => setError("")}>
               <u>riprova</u>
             </button>{" "}
             oppure contattaci scrivendo a{" "}
@@ -90,7 +87,7 @@ const NewsletterWidget = (): JSX.Element => {
           </p>
         </div>
       )}
-      {status === null && (
+      {!success && !error && (
         <>
           <div className="newsletter__box">
             Iscriviti alla nostra community di sceneggiatori e riceverai news
@@ -112,11 +109,14 @@ const NewsletterWidget = (): JSX.Element => {
             </Link>{" "}
             di Pictures Writers.
           </div>
-          {isLoading ? (
-            <Loader2 className="animate" />
+          {isPending ? (
+            <BeatLoader className="mx-auto" />
           ) : (
             <Form {...form}>
-              <form className="flex items-center gap-x-2" onSubmit={form.handleSubmit(onSubmit)}>
+              <form
+                className="flex items-center gap-x-2"
+                onSubmit={form.handleSubmit(onSubmit)}
+              >
                 <FormField
                   control={form.control}
                   name="email"
@@ -134,7 +134,11 @@ const NewsletterWidget = (): JSX.Element => {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="self-end" disabled={isSubmitting || !isValid}>
+                <Button
+                  type="submit"
+                  className="self-end"
+                  disabled={isSubmitting || !isValid}
+                >
                   Iscriviti
                 </Button>
               </form>

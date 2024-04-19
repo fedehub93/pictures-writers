@@ -12,7 +12,7 @@ export const removeSubscription = async (id: string) => {
   await db.emailContact.update({
     where: { id: existingContact.id },
     data: {
-      emailVerified: null,
+      isSubscriber: false,
     },
   });
 
