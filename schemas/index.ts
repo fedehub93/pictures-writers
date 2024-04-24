@@ -5,3 +5,10 @@ export const SubscribeSchema = z.object({
     message: "Email is required",
   }),
 });
+
+export const FreeEbookSchema = z.object({
+  email: z.string().email({
+    message: "Email is required",
+  }),
+  ebookId: z.string().optional(),
+});

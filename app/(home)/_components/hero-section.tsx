@@ -1,55 +1,60 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
-import Link from "next/link";
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { BeatLoader } from "react-spinners";
 
-const FORM_URL = "/api/ebooks-subscribe";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { FreeEbookSchema } from "@/schemas";
+import { subscribeFreeEbook } from "@/actions/subscribe-free-ebook";
 
 export const HeroSection = (): JSX.Element => {
-  const [status, setStatus] = useState<"SUCCESS" | "ERROR" | null>(null);
-  const [email, setEmail] = useState("");
+  const [error, setError] = useState<string | undefined>("");
+  const [success, setSuccess] = useState<string | undefined>("");
   // const [isPrivacyAccepted, setIsPrivacyAccepted] = useState(false);
   // const [isErrorVisible, setIsErrorVisible] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    // setIsErrorVisible(true);
-    // if (!email || !isPrivacyAccepted) return;
+  const [isPending, startTransition] = useTransition();
 
-    const data = { email };
+  const form = useForm<z.infer<typeof FreeEbookSchema>>({
+    resolver: zodResolver(FreeEbookSchema),
+    defaultValues: {
+      email: "",
+      ebookId: "cdc51fdf-6d2e-4601-a985-50bb360bc29b",
+    },
+  });
 
-    const headers = { "content-type": "application/json" };
+  const { isSubmitting, isValid } = form.formState;
 
-    const options = {
-      method: "POST",
-      headers,
-      body: JSON.stringify(data),
-    };
-    // try {
-    //   setIsLoading(true);
-    //   await delay(1000);
-    //   const response = await fetch(FORM_URL, options);
-    //   const json = await response.json();
-    //   if (json.status === 'SUCCESS') {
-    //     setEmail('');
-    //     setStatus('SUCCESS');
-    //     return;
-    //   }
-    //   setStatus('ERROR');
-    // } catch (error) {
-    //   setStatus('ERROR');
-    // } finally {
-    //   setIsLoading(false);
-    // }
-  };
+  const onSubmit = async (values: z.infer<typeof FreeEbookSchema>) => {
+    try {
+      setError("");
+      setSuccess("");
 
-  const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = event.target;
-    setEmail(value);
+      startTransition(async () => {
+        subscribeFreeEbook(values).then((data) => {
+          setError(data.error);
+          setSuccess(data.success);
+        });
+      });
+    } catch (error) {
+      setError(
+        "Qualcosa è andato storto. Prego riprovare o contattare il supporto."
+      );
+    }
   };
 
   return (
@@ -81,7 +86,42 @@ export const HeroSection = (): JSX.Element => {
               </span>
               , e inizia a scrivere le tue storie di successo.
             </p>
-            <form className="relative" onSubmit={handleSubmit}>
+            {isPending ? (
+              <BeatLoader className="mx-auto" />
+            ) : (
+              <Form {...form}>
+                <form
+                  className="flex items-center gap-x-2"
+                  onSubmit={form.handleSubmit(onSubmit)}
+                >
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem className="flex-1">
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input
+                            disabled={isSubmitting}
+                            placeholder="mario.rossi@gmail.com"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button
+                    type="submit"
+                    className="self-end"
+                    disabled={isSubmitting || !isValid}
+                  >
+                    Iscriviti
+                  </Button>
+                </form>
+              </Form>
+            )}
+            {/* <form className="relative" onSubmit={handleSubmit}>
               <div className="mb-4">
                 * Confermando il modulo accetti la&nbsp;
                 <Link
@@ -115,15 +155,7 @@ export const HeroSection = (): JSX.Element => {
                   </Button>
                 )}
               </div>
-            </form>
-            {/* <Alert
-              status={status}
-              setStatus={setStatus}
-              errorMessage="Qualcosa è andato storto. Prego riprova oppure contatta il
-                nostro supporto alla mail support@pictureswriters.com."
-              successMessage="Ti è stata inviata una mail dove potrai effettuare il download
-                dell'eBook. Grazie per esserti unito a noi."
-            /> */}
+            </form> */}
           </div>
           <div className="mb-12 rounded-lg lg:mb-0 aspect-square relative">
             <Image

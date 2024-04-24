@@ -33,7 +33,8 @@ model User {
 
   role UserRole @default(USER)
 
-  posts Post[]
+  posts  Post[]
+  ebooks Ebook[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -270,8 +271,11 @@ model EmailSetting {
   emailProvider EmailProvider?
   emailApiKey   String?
 
-  suubscriptionTemplate  EmailTemplate? @relation(name: "emailSetting1", fields: [subscriptionTemplateId], references: [id], onDelete: Cascade)
+  subscriptionTemplate   EmailTemplate? @relation(name: "emailSetting1", fields: [subscriptionTemplateId], references: [id], onDelete: Cascade)
   subscriptionTemplateId String?
+
+  freeEbookTemplate   EmailTemplate? @relation(name: "emailSetting2", fields: [freeEbookTemplateId], references: [id], onDelete: Cascade)
+  freeEbookTemplateId String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -291,6 +295,7 @@ model EmailTemplate {
   updatedAt DateTime @updatedAt
 
   emailSettingSubscription EmailSetting[] @relation(name: "emailSetting1")
+  emailSettingFreeEbook    EmailSetting[] @relation(name: "emailSetting2")
 }
 
 enum AudienceType {
@@ -355,4 +360,20 @@ model EmailSubscriptionToken {
   updatedAt DateTime @updatedAt
 
   @@unique([email, token])
+}
+
+model Ebook {
+  id String @id @default(uuid())
+
+  title       String
+  description String?
+
+  imageCoverUrl String?
+  fileUrl       String?
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

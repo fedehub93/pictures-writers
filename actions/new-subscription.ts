@@ -1,12 +1,11 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { getUserByEmail } from "@/data/user";
 import { getSubscriptionTokenByToken } from "@/data/subscription-token";
 import { getContactByEmail } from "@/data/email-contact";
 
 export const newSubscription = async (token: string) => {
-  console.log(token)
+  console.log(token);
   const existingToken = await getSubscriptionTokenByToken(token);
 
   if (!existingToken) {

@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import toast from "react-hot-toast";
 
 const NewsletterWidget = (): JSX.Element => {
   const [error, setError] = useState<string | undefined>("");

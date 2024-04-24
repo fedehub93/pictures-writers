@@ -1,6 +1,7 @@
 import {
   Blocks,
   BookImage,
+  BookText,
   Boxes,
   Contact,
   Group,
@@ -89,6 +90,12 @@ export const sideLinks: SideLink[] = [
         icon: Settings,
       },
     ],
+  },
+  {
+    title: "Ebooks",
+    label: "",
+    href: "/admin/ebooks",
+    icon: BookText,
   },
   {
     title: "Users",

@@ -11,7 +11,10 @@ const handleAuth = async () => {
 };
 
 export const ourFileRouter = {
-  mediaAsset: f({ image: { maxFileSize: "4MB", maxFileCount: 1 } })
+  mediaAsset: f({
+    image: { maxFileSize: "4MB", maxFileCount: 1 },
+    pdf: { maxFileSize: "16MB", maxFileCount: 1 },
+  })
     .middleware(async () => await handleAuth())
     .onUploadComplete(() => {}),
   postImage: f({ image: { maxFileSize: "4MB", maxFileCount: 1 } })

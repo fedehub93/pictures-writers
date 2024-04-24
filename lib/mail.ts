@@ -4,8 +4,6 @@ import Handlebars from "handlebars";
 import { db } from "./db";
 
 export const sendSubscriptionEmail = async (email: string, token: string) => {
-  const confirmLink = `http://localhost:3000/auth/new-subscription?token=${token}`;
-
   const settings = await db.emailSetting.findFirst();
 
   if (!settings || !settings.emailSender || !settings.subscriptionTemplateId)
@@ -26,6 +24,42 @@ export const sendSubscriptionEmail = async (email: string, token: string) => {
     from: settings.emailSender,
     subject: "Confirm your subscription",
     html: template({ token, email }),
+  });
+};
+
+export const sendFreeEbookEmail = async (email: string, ebookId: string) => {
+  const settings = await db.emailSetting.findFirst();
+
+  if (!settings || !settings.emailSender || !settings.freeEbookTemplateId)
+    return false;
+
+  const ebook = await db.ebook.findUnique({
+    where: { id: ebookId },
+  });
+
+  if (!ebook) return false;
+
+  const freeEbookTemplate = await db.emailTemplate.findUnique({
+    where: {
+      id: settings.freeEbookTemplateId,
+    },
+  });
+
+  if (!freeEbookTemplate?.bodyHtml) return false;
+
+  const template = Handlebars.compile(freeEbookTemplate.bodyHtml);
+
+  await sendSendgridEmail({
+    to: email,
+    from: settings.emailSender,
+    subject: `Free ebook: ${ebook.title}`,
+    html: template({
+      email,
+      title: ebook.title,
+      description: ebook.description,
+      imageCoverUrl: ebook.imageCoverUrl,
+      fileUrl: ebook.fileUrl,
+    }),
   });
 };
 

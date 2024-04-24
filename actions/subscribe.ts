@@ -4,7 +4,6 @@ import * as z from "zod";
 
 import { db } from "@/lib/db";
 import { SubscribeSchema } from "@/schemas";
-import { getUserByEmail } from "@/data/user";
 import { generateSubscriptionToken } from "@/lib/tokens";
 import { sendSubscriptionEmail } from "@/lib/mail";
 import { getContactByEmail } from "@/data/email-contact";

@@ -26,7 +26,7 @@ export const Container = ({ children }: ContainerProps) => {
   return (
     <div
       className={cn(
-        "overflow-x-hidden transition-[margin] md:pt-0 md:overflow-y-hidden relative h-full",
+        "overflow-x-hidden transition-[margin] md:pt-0 md:overflow-y-hidden relative h-full ",
         collapsed ? "sm:ml-[70px]" : "sm:ml-[70px] lg:ml-60"
       )}
     >

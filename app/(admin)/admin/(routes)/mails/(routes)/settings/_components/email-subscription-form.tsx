@@ -32,6 +32,7 @@ interface EmailSubscriptionFormProps {
 
 const formSchema = z.object({
   subscriptionTemplateId: z.string().optional(),
+  freeEbookTemplateId: z.string().optional(),
 });
 
 export const EmailSubscriptionForm = ({
@@ -45,6 +46,7 @@ export const EmailSubscriptionForm = ({
     resolver: zodResolver(formSchema),
     defaultValues: {
       subscriptionTemplateId: settings?.subscriptionTemplateId || "",
+      freeEbookTemplateId: settings?.freeEbookTemplateId || "",
     },
   });
 
@@ -80,6 +82,29 @@ export const EmailSubscriptionForm = ({
               render={({ field }) => (
                 <FormItem className="flex-auto min-w-40">
                   <FormLabel>Subscription Template</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an email template" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {templates.map((template) => (
+                        <SelectItem key={template.name} value={template.id}>
+                          {template.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="freeEbookTemplateId"
+              render={({ field }) => (
+                <FormItem className="flex-auto min-w-40">
+                  <FormLabel>Free Ebook Template</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>

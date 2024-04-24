@@ -7,6 +7,7 @@ import { MediaType } from "@prisma/client";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { formatBytes } from "@/lib/format";
+import { File } from "lucide-react";
 
 interface AssetCardProps {
   id: string;
@@ -41,6 +42,7 @@ export const AssetCard = ({
         {type === MediaType.IMAGE && (
           <Image fill className="object-cover" alt={name} src={url} />
         )}
+        {type === MediaType.FILE && <File className="absolute w-full h-full" strokeWidth={1} />}
       </div>
       <div className="flex flex-col gap-y-2 p-3">
         <div className="flex justify-between items-center gap-x-4">

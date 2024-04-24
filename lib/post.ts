@@ -139,7 +139,7 @@ export const getLatestPublishedPosts = async () => {
   });
 
   const latestPublishedPosts = posts.map((post) => {
-    const lastPublishedPost = post.versions[0];
+    const lastPublishedPost = { ...post.versions[0], user: post.user };
     return lastPublishedPost;
   });
 

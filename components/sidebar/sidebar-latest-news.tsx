@@ -1,6 +1,8 @@
 import { ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { formatDistance } from "date-fns";
+import {it} from "date-fns/locale"
 
 import { getLatestPublishedPosts } from "@/lib/post";
 
@@ -31,7 +33,11 @@ export const SidebarLatestNews = async () => {
               ) : null}
               <ChevronRight className="-ml-1 mr-1 xl:-mt-2 2xl:hidden" />
               <h4 className="upper text-sm !leading-4 tracking-tight text-heading  dark:text-white 2xl:py-2 group-hover:text-primary-public ">
-                {post.title}
+                Pubblicato da {post.user.firstName} {post.user.lastName}{" "}
+                {formatDistance(post.publishedAt, new Date(), {
+                  addSuffix: true,
+                  locale: it,
+                })}
               </h4>
             </Link>
           );

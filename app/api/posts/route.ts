@@ -2,6 +2,148 @@ import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
+import { Post, PostVersion, User } from "@prisma/client";
+
+const POST_BATCH = 5;
+
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+
+    const cursor = searchParams.get("cursor");
+    const s = searchParams.get("s") || "";
+    const page = Number(searchParams.get("page")) || 1;
+
+    let posts: (Post & {
+      versions: PostVersion[];
+      user: User;
+    })[] = [];
+    let totalPosts = 0;
+
+    const skip = (page - 1) * POST_BATCH;
+    const take = POST_BATCH;
+
+    if (cursor) {
+      const posts = await db.post.findMany({
+        where: {
+          isPublished: true,
+          OR: [
+            {
+              title: {
+                contains: s,
+                mode: "insensitive",
+              },
+            },
+            {
+              description: {
+                contains: s,
+                mode: "insensitive",
+              },
+            },
+          ],
+        },
+        include: {
+          versions: {
+            include: {
+              imageCover: true,
+              category: true,
+              tags: true,
+            },
+            take: 1,
+            orderBy: {
+              publishedAt: "desc",
+            },
+          },
+          user: true,
+        },
+        take: POST_BATCH,
+        skip: 1,
+        cursor: { id: cursor },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+      console.log(posts, s);
+
+      const lastPublishedPosts = posts.map((post) => {
+        const lastPublishedPost = { ...post.versions[0], user: post.user };
+        return lastPublishedPost;
+      });
+
+      return NextResponse.json({ items: lastPublishedPosts, nextCursor: null });
+    }
+
+    posts = await db.post.findMany({
+      where: {
+        isPublished: true,
+        OR: [
+          {
+            title: {
+              contains: s,
+              mode: "insensitive",
+            },
+          },
+          {
+            description: {
+              contains: s,
+              mode: "insensitive",
+            },
+          },
+        ],
+      },
+      include: {
+        versions: {
+          include: {
+            imageCover: true,
+            category: true,
+            tags: true,
+          },
+          take: 1,
+          orderBy: {
+            publishedAt: "desc",
+          },
+        },
+        user: true,
+      },
+      take,
+      skip,
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    console.log(posts, s);
+
+    totalPosts = await db.post.count();
+
+    const lastPublishedPosts = posts.map((post) => {
+      const lastPublishedPost = { ...post.versions[0], user: post.user };
+      return lastPublishedPost;
+    });
+
+    const pagination = {
+      page,
+      perPage: POST_BATCH,
+      totalRecords: totalPosts,
+      totalPages: Math.ceil(totalPosts / POST_BATCH),
+    };
+
+    let nextCursor = null;
+
+    if (posts.length === POST_BATCH) {
+      nextCursor = posts[POST_BATCH - 1].id;
+    }
+
+    return NextResponse.json({
+      items: lastPublishedPosts,
+      pagination,
+      nextCursor,
+    });
+  } catch (error) {
+    console.log("[POST_GET]", error);
+    return new NextResponse("Internal Error", { status: 500 });
+  }
+}
 
 export async function POST(req: Request) {
   try {

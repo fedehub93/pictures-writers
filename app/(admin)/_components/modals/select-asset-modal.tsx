@@ -1,7 +1,7 @@
 "use client";
-import { Loader2 } from "lucide-react";
+import { File, Loader2 } from "lucide-react";
 import { Fragment } from "react";
-import { Media } from "@prisma/client";
+import { Media, MediaType } from "@prisma/client";
 import Image from "next/image";
 
 import {
@@ -81,13 +81,25 @@ export const SelectAssetModal = () => {
                       key={item.name}
                       className="relative w-64 rounded-md aspect-video overflow-hidden cursor-pointer hover:scale-105 duration-500 transition-all"
                     >
-                      <Image
-                        src={item.url}
-                        alt="ciao"
-                        onClick={() => onSelect(item)}
-                        fill
-                        className="object-cover rounded-md"
-                      />
+                      {item.type === MediaType.IMAGE && (
+                        <Image
+                          src={item.url}
+                          alt="ciao"
+                          onClick={() => onSelect(item)}
+                          fill
+                          className="object-cover rounded-md"
+                        />
+                      )}
+                      {item.type === MediaType.FILE && (
+                        <div className="relative w-full h-full overflow-hidden aspect-video">
+                          <File
+                            onClick={() => onSelect(item)}
+                            className="absolute w-full h-full border-2 border-black"
+                            strokeWidth={1}
+                          />
+                          {item.name}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

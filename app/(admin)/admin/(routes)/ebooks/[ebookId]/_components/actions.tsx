@@ -33,8 +33,8 @@ export const ContentIdActions = ({
     } catch {
       toast.error("Something went wrong");
     } finally {
-      router.push(`/admin/${contentType}`);
       router.refresh();
+      router.push(`/admin/${contentType}`);
       setIsLoading(false);
     }
   };
