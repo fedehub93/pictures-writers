@@ -23,9 +23,6 @@ import { subscribeFreeEbook } from "@/actions/subscribe-free-ebook";
 export const HeroSection = (): JSX.Element => {
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
-  // const [isPrivacyAccepted, setIsPrivacyAccepted] = useState(false);
-  // const [isErrorVisible, setIsErrorVisible] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   const [isPending, startTransition] = useTransition();
 
@@ -86,6 +83,13 @@ export const HeroSection = (): JSX.Element => {
               </span>
               , e inizia a scrivere le tue storie di successo.
             </p>
+            {error && <div className="p-4 bg-destructive">{error}</div>}
+            {success && (
+              <div className="p-4 bg-emerald-100 shadow-sm rounded-md">
+                {success}
+              </div>
+            )}
+
             {isPending ? (
               <BeatLoader className="mx-auto" />
             ) : (
@@ -121,41 +125,6 @@ export const HeroSection = (): JSX.Element => {
                 </form>
               </Form>
             )}
-            {/* <form className="relative" onSubmit={handleSubmit}>
-              <div className="mb-4">
-                * Confermando il modulo accetti la&nbsp;
-                <Link
-                  className="text-primary-public"
-                  href="https://www.iubenda.com/privacy-policy/49078580"
-                >
-                  Privacy Policy
-                </Link>{" "}
-                di Pictures Writers.
-              </div>
-              <div className="relative">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  className="peer block min-h-[auto] w-full rounded-lg border-2 border-gray-200 bg-ghostWhite2 bg-transparent px-3 py-[0.32rem] leading-[2.15] outline-none transition-all duration-200 ease-linear focus:placeholder:opacity-100 peer-focus:text-primary-public"
-                  placeholder="Inserisci la tua email"
-                  value={email}
-                  onChange={handleEmailChange}
-                />
-                {isLoading ? (
-                  <div role="status" className="absolute right-1 top-2 mr-2">
-                    <Loader2 className="animate" />
-                  </div>
-                ) : (
-                  <Button
-                    type="submit"
-                    className="absolute right-1 top-1 mr-2 bg-primary-public"
-                  >
-                    Download eBook
-                  </Button>
-                )}
-              </div>
-            </form> */}
           </div>
           <div className="mb-12 rounded-lg lg:mb-0 aspect-square relative">
             <Image
