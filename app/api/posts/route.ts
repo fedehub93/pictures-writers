@@ -64,8 +64,6 @@ export async function GET(req: Request) {
         },
       });
 
-      console.log(posts, s);
-
       const lastPublishedPosts = posts.map((post) => {
         const lastPublishedPost = { ...post.versions[0], user: post.user };
         return lastPublishedPost;
@@ -112,7 +110,6 @@ export async function GET(req: Request) {
         createdAt: "desc",
       },
     });
-    console.log(posts, s);
 
     totalPosts = await db.post.count();
 

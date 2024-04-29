@@ -51,7 +51,7 @@ export const FileForm = ({ initialData, ebookId }: FileFormProps) => {
   };
 
   const onHandleRemove = () => {
-    onSubmit({ fileUrl: null });
+    onSubmit({ fileUrl: "" });
   };
 
   return (
@@ -61,7 +61,7 @@ export const FileForm = ({ initialData, ebookId }: FileFormProps) => {
         isFocused && "border-l-blue-500"
       )}
     >
-      <div className="flex items-center justify-between">Image cover</div>
+      <div className="flex items-center justify-between">File URL</div>
       {!initialData.fileUrl ? (
         <div className="flex w-full items-center justify-center h-56 border border-slate-300 border-dashed rounded-md">
           <Button type="button" onClick={() => onOpen("selectAsset", getImage)}>
@@ -71,7 +71,7 @@ export const FileForm = ({ initialData, ebookId }: FileFormProps) => {
       ) : (
         <div className="border rounded-md">
           <div className="flex items-center justify-between w-full px-4 py-2 border-b bg-slate-100 dark:bg-secondary">
-            <p className="text-muted-foreground text-sm">Image</p>
+            <p className="text-muted-foreground text-sm">File</p>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-6 w-6 p-0">
@@ -90,10 +90,8 @@ export const FileForm = ({ initialData, ebookId }: FileFormProps) => {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <div className="w-full flex items-center justify-between h-40 p-4">
-            <div className="relative aspect-video w-36 h-36">
-              {initialData.fileUrl}
-            </div>
+          <div className="w-full flex items-center justify-between h-auto p-4">
+            {initialData.fileUrl}
           </div>
         </div>
       )}

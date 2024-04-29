@@ -25,11 +25,15 @@ export const subscribeFreeEbook = async (
       data: {
         email,
         isSubscriber: true,
+        emailVerified: new Date(),
       },
     });
   }
 
   await sendFreeEbookEmail(email, ebookId!);
 
-  return { success: "Confirmation email sent!" };
+  return {
+    success:
+      "È stata inviata una email al tuo indirizzo dove puoi scaricare l'eBook gratuito!",
+  };
 };

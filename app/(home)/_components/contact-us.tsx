@@ -3,9 +3,10 @@
 import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
-import { Globe, Loader, Loader2, Mail } from "lucide-react";
+import { useState, useTransition } from "react";
+import { Globe, Mail } from "lucide-react";
 import Link from "next/link";
+import { BeatLoader } from "react-spinners";
 
 import {
   Form,
@@ -18,26 +19,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-
-const formSchema = z.object({
-  name: z.string().min(1, {
-    message: "Name is required",
-  }),
-  email: z
-    .string()
-    .min(1, {
-      message: "Name is required",
-    })
-    .email("Email is invalid"),
-  subject: z.string().min(1, {
-    message: "Subject is required",
-  }),
-  message: z.string().min(1, { message: "Message is required" }),
-});
+import { ContactSchema } from "@/schemas";
+import { contact } from "@/actions/contact";
 
 const ContactUs = (): JSX.Element => {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const [error, setError] = useState<string | undefined>("");
+  const [success, setSuccess] = useState<string | undefined>("");
+  const [isPending, startTransition] = useTransition();
+
+  const form = useForm<z.infer<typeof ContactSchema>>({
+    resolver: zodResolver(ContactSchema),
     defaultValues: {
       name: "",
       email: "",
@@ -48,10 +39,22 @@ const ContactUs = (): JSX.Element => {
 
   const { isValid, isSubmitting } = form.formState;
 
-  const [isLoading, setIsLoading] = useState(false);
+  const onSubmit = async (values: z.infer<typeof ContactSchema>) => {
+    try {
+      setError("");
+      setSuccess("");
 
-  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+      startTransition(async () => {
+        contact(values).then((data) => {
+          setError(data.error);
+          setSuccess(data.success);
+        });
+      });
+    } catch (error) {
+      setError(
+        "Qualcosa è andato storto. Prego riprovare o contattare il supporto."
+      );
+    }
   };
 
   return (
@@ -68,7 +71,7 @@ const ContactUs = (): JSX.Element => {
           <Form {...form}>
             <form
               className="mb-12 lg:mb-0"
-              onSubmit={form.handleSubmit(handleSubmit)}
+              onSubmit={form.handleSubmit(onSubmit)}
             >
               <div className="flex flex-col gap-4 mb-4">
                 <div className="flex flex-wrap gap-4">
@@ -152,10 +155,22 @@ const ContactUs = (): JSX.Element => {
                 </Link>{" "}
                 di Pictures Writers.
               </div>
-              {isLoading ? (
-                <Loader2 className="animate" />
+              {error && <div className="p-4 mb-4 bg-destructive">{error}</div>}
+              {success && (
+                <div className="p-4 mb-4 bg-emerald-100 shadow-sm rounded-md">
+                  {success}
+                </div>
+              )}
+              {isPending ? (
+                <BeatLoader />
               ) : (
-                <Button type="submit" className="bg-primary-public">Invia messaggio</Button>
+                <Button
+                  type="submit"
+                  disabled={!isValid || isSubmitting}
+                  className="bg-primary-public"
+                >
+                  Invia messaggio
+                </Button>
               )}
             </form>
           </Form>
