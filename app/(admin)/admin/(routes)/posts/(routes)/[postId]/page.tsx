@@ -1,4 +1,4 @@
-import { redirectToSignIn } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 import { authAdmin } from "@/lib/auth-service";
@@ -22,7 +22,7 @@ import { ContentIdActions } from "@/components/content/content-id-actions";
 const PostIdPage = async ({ params }: { params: { postId: string } }) => {
   const userAdmin = await authAdmin();
   if (!userAdmin) {
-    return redirectToSignIn();
+    return auth().redirectToSignIn();
   }
 
   const post = await db.post.findUnique({

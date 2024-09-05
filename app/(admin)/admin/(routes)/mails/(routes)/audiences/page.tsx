@@ -1,6 +1,6 @@
 import { AudienceType } from "@prisma/client";
 import { authAdmin } from "@/lib/auth-service";
-import { redirectToSignIn } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 
 import { ContentHeader } from "@/components/content/content-header";
 import { DataTable } from "./_components/data-table";
@@ -10,7 +10,7 @@ import { db } from "@/lib/db";
 const ContactsPage = async () => {
   const userAdmin = await authAdmin();
   if (!userAdmin) {
-    return redirectToSignIn();
+    return auth().redirectToSignIn();
   }
 
   const lists = await db.emailAudience.findMany({

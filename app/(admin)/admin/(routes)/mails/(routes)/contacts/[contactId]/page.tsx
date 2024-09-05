@@ -1,6 +1,5 @@
-import { AudienceType, EmailAudience, EmailContact } from "@prisma/client";
 import { authAdmin } from "@/lib/auth-service";
-import { redirectToSignIn } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 
 import { EditContactForm } from "./_components/edit-contact-form";
@@ -9,7 +8,7 @@ import { redirect } from "next/navigation";
 const MailSettings = async ({ params }: { params: { contactId: string } }) => {
   const userAdmin = await authAdmin();
   if (!userAdmin) {
-    return redirectToSignIn();
+    return auth().redirectToSignIn();
   }
 
   const contact = await db.emailContact.findUnique({

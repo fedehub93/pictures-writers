@@ -1,4 +1,4 @@
-import { redirectToSignIn } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { UserRole } from "@prisma/client";
 
 import { Navbar } from "./_components/navbar";
@@ -11,11 +11,15 @@ const AdminLayout = async ({ children }: { children: React.ReactNode }) => {
   const user = await getSelf();
 
   if (!user) {
-    return redirectToSignIn({ returnBackUrl: "http://localhost:3000/admin" });
+    return auth().redirectToSignIn({
+      returnBackUrl: "http://localhost:3000/admin",
+    });
   }
 
   if (user.role === UserRole.USER) {
-    return redirectToSignIn({ returnBackUrl: "http://localhost:3000/admin" });
+    return auth().redirectToSignIn({
+      returnBackUrl: "http://localhost:3000/admin",
+    });
   }
 
   return (

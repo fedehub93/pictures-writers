@@ -1,4 +1,4 @@
-import { redirectToSignIn } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
@@ -11,7 +11,7 @@ import { EditUserModal } from "@/app/(admin)/_components/modals/edit-user-modal"
 const UsersPage = async () => {
   const userAdmin = await authAdmin();
   if (!userAdmin) {
-    return redirectToSignIn();
+    return auth().redirectToSignIn();
   }
 
   const users = await db.user.findMany({

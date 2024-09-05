@@ -1,4 +1,4 @@
-import { redirectToSignIn } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 
 import { db } from "@/lib/db";
 import { ContentHeader } from "@/components/content/content-header";
@@ -10,7 +10,7 @@ import { columns } from "./_components/columns";
 const EmailTemplates = async () => {
   const userAdmin = await authAdmin();
   if (!userAdmin) {
-    return redirectToSignIn();
+    return auth().redirectToSignIn();
   }
 
   const templates = await db.emailTemplate.findMany({

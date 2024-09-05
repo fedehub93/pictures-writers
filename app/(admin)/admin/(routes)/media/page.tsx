@@ -1,8 +1,7 @@
 import { authAdmin } from "@/lib/auth-service";
-import { redirectToSignIn } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 
 import { db } from "@/lib/db";
-import { MediaActions } from "./_components/actions";
 import { AssetsList } from "./_components/assets-list";
 import { ContentHeader } from "@/components/content/content-header";
 
@@ -19,7 +18,7 @@ const MediaPage = async ({
 }) => {
   const user = await authAdmin();
   if (!user) {
-    return redirectToSignIn();
+    return auth().redirectToSignIn();
   }
 
   const query = searchParams?.s || "";

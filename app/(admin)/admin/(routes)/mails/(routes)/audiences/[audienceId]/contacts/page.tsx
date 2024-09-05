@@ -1,7 +1,5 @@
 import { authAdmin } from "@/lib/auth-service";
-import { redirectToSignIn } from "@clerk/nextjs";
-import { AudienceType } from "@prisma/client";
-import { redirect } from "next/navigation";
+import { auth } from "@clerk/nextjs/server";
 
 import { db } from "@/lib/db";
 import { ContentHeader } from "@/components/content/content-header";
@@ -15,7 +13,7 @@ const AudienceIdContactsPage = async ({
 }) => {
   const userAdmin = await authAdmin();
   if (!userAdmin) {
-    return redirectToSignIn();
+    return auth().redirectToSignIn();
   }
 
   const contacts = await db.emailContact.findMany({

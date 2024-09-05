@@ -1,5 +1,4 @@
 import { UserRole } from "@prisma/client";
-import { redirectToSignIn } from "@clerk/nextjs";
 
 import { getSelf } from "@/lib/current-user";
 import { ExtendedUserButton } from "@/components/extended-user-button";

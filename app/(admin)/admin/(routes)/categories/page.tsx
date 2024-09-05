@@ -1,4 +1,4 @@
-import { redirectToSignIn } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
@@ -10,7 +10,7 @@ import { columns } from "./(routes)/_components/columns";
 const CategoriesPage = async () => {
   const userAdmin = await authAdmin();
   if (!userAdmin) {
-    return redirectToSignIn();
+    return auth().redirectToSignIn();
   }
 
   const categories = await db.category.findMany({

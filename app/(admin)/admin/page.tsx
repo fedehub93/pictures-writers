@@ -1,11 +1,11 @@
 import { getSelf } from "@/lib/current-user";
-import { redirectToSignIn } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 const AdminPage = async () => {
   const user = await getSelf();
   if (!user) {
-    return redirectToSignIn();
+    return auth().redirectToSignIn();
   }
 
   return redirect("/admin/dashboard");

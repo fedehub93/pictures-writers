@@ -1,4 +1,4 @@
-import { redirectToSignIn } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 import { authAdmin } from "@/lib/auth-service";
@@ -17,7 +17,7 @@ import { FileForm } from "./_components/file-form";
 const EbookIdPage = async ({ params }: { params: { ebookId: string } }) => {
   const userAdmin = await authAdmin();
   if (!userAdmin) {
-    return redirectToSignIn();
+    return auth().redirectToSignIn();
   }
 
   const ebook = await db.ebook.findUnique({

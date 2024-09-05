@@ -1,4 +1,4 @@
-import { redirectToSignIn } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 import { authAdmin } from "@/lib/auth-service";
@@ -12,7 +12,7 @@ const EmailTemplateIdPage = async ({
 }) => {
   const userAdmin = await authAdmin();
   if (!userAdmin) {
-    return redirectToSignIn();
+    return auth().redirectToSignIn();
   }
 
   const template = await db.emailTemplate.findUnique({

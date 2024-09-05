@@ -1,4 +1,4 @@
-import { redirectToSignIn } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
@@ -11,7 +11,7 @@ import { columns } from "./_components/columns";
 const PostsPage = async () => {
   const userAdmin = await authAdmin();
   if (!userAdmin) {
-    return redirectToSignIn();
+    return auth().redirectToSignIn();
   }
 
   const posts = await db.post.findMany({

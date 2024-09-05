@@ -1,4 +1,4 @@
-import { redirectToSignIn } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 import { authAdmin } from "@/lib/auth-service";
@@ -16,7 +16,7 @@ import { ContentIdActions } from "@/components/content/content-id-actions";
 const TagIdPage = async ({ params }: { params: { tagId: string } }) => {
   const userAdmin = await authAdmin();
   if (!userAdmin) {
-    return redirectToSignIn();
+    return auth().redirectToSignIn();
   }
 
   const tag = await db.tag.findUnique({
