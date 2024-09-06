@@ -1,5 +1,5 @@
 import * as sgMail from "@sendgrid/mail";
-import Handlebars from "handlebars";
+import handlebars from "handlebars";
 
 import { db } from "./db";
 
@@ -17,7 +17,7 @@ export const sendSubscriptionEmail = async (email: string, token: string) => {
 
   if (!subscriptionTemplate?.bodyHtml) return false;
 
-  const template = Handlebars.compile(subscriptionTemplate.bodyHtml);
+  const template = handlebars.compile(subscriptionTemplate.bodyHtml);
 
   await sendSendgridEmail({
     to: email,
@@ -47,7 +47,7 @@ export const sendFreeEbookEmail = async (email: string, ebookId: string) => {
 
   if (!freeEbookTemplate?.bodyHtml) return false;
 
-  const template = Handlebars.compile(freeEbookTemplate.bodyHtml);
+  const template = handlebars.compile(freeEbookTemplate.bodyHtml);
 
   await sendSendgridEmail({
     to: email,
