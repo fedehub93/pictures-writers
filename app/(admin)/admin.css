@@ -1,0 +1,7 @@
+@tailwind components;
+
+@layer components {
+  .sidebar__wrapper {
+    @apply fixed left-0 hidden sm:flex flex-col w-60 h-full z-50 border-r border-r-zinc-300 transition-[width];
+  }
+}

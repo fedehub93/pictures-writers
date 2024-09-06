@@ -1,6 +1,9 @@
+import { Mulish } from "next/font/google";
+
+import "./home.css";
+
 import { Navbar } from "@/components/navbar/navbar";
 import { cn } from "@/lib/utils";
-import { Mulish } from "next/font/google";
 import Footer from "./_components/footer";
 
 const mulish = Mulish({ subsets: ["latin"] });

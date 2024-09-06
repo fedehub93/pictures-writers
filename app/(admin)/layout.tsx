@@ -1,7 +1,8 @@
 import { auth } from "@clerk/nextjs/server";
 import { UserRole } from "@prisma/client";
 
-import { Navbar } from "./_components/navbar";
+import "./admin.css";
+
 import { Sidebar } from "./_components/sidebar";
 import { Container } from "./_components/container";
 import { getSelf } from "@/lib/current-user";
