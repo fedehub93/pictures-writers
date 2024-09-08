@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { forwardRef, useMemo } from "react";
 import { createEditor, BaseEditor, Descendant } from "slate";
 import { Slate, withReact, ReactEditor } from "slate-react";
 
@@ -86,23 +86,36 @@ interface EditorProps {
 const createWrappedEditor = () =>
   withEmbeds(withInlines(withReact(createEditor())));
 
-const Editor = ({ children, value, onChange, onValueChange }: EditorProps) => {
-  const editor = useMemo(() => createWrappedEditor(), []);
+interface EditorComponent
+  extends React.ForwardRefExoticComponent<
+    EditorProps & React.RefAttributes<HTMLDivElement>
+  > {
+  Input: typeof EditorInput;
+  Toolbar: typeof Toolbar;
+  Counter: typeof Counter;
+}
 
-  return (
-    <Slate
-      editor={editor}
-      initialValue={value}
-      onChange={onChange}
-      onValueChange={onValueChange}
-    >
-      {React.Children.map(children, (child) => {
-        if (!React.isValidElement(child)) return child;
-        return React.cloneElement(child);
-      })}
-    </Slate>
-  );
-};
+const Editor = forwardRef<HTMLDivElement, EditorProps>(
+  ({ children, value, onChange, onValueChange }, ref) => {
+    const editor = useMemo(() => createWrappedEditor(), []);
+
+    return (
+      <div ref={ref}>
+        <Slate
+          editor={editor}
+          initialValue={value}
+          onChange={onChange}
+          onValueChange={onValueChange}
+        >
+          {React.Children.map(children, (child) => {
+            if (!React.isValidElement(child)) return child;
+            return React.cloneElement(child);
+          })}
+        </Slate>
+      </div>
+    );
+  }
+) as EditorComponent;
 
 Editor.Input = EditorInput;
 Editor.Toolbar = Toolbar;
