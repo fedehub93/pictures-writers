@@ -8,14 +8,14 @@ import {
 import { CustomText } from "@/components/editor";
 
 type BulletedList = Replace<
-  Node<"bulleted-list">,
+  Node<"unordered-list">,
   {
     children: CustomText[];
   }
 >;
 
 export const isBulletedList = createElementNodeMatcher<BulletedList>(
-  (node): node is BulletedList => node.type === "bulleted-list"
+  (node): node is BulletedList => node.type === "unordered-list"
 );
 
 export const BulletedList = createElementTransform(

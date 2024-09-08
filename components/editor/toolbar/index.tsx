@@ -81,13 +81,13 @@ const Toolbar = ({ showEmbedButton = true }: ToolbarProps) => {
           <AlignRight className="h-4 w-4" />
         </BlockButton>
         <Separator orientation="vertical" className="bg-slate-300" />
-        <BlockButton format="bulleted-list">
+        <BlockButton format="unordered-list">
           <List className="h-4 w-4" />
         </BlockButton>
         <BlockButton format="numbered-list">
           <ListOrdered className="h-4 w-4" />
         </BlockButton>
-        <BlockButton format="block-quote">
+        <BlockButton format="blockquote">
           <Quote className="h-4 w-4" />
         </BlockButton>
         {showEmbedButton && (

@@ -8,7 +8,7 @@ interface DefaultProps extends RenderElementProps {
 
 export const Default = ({ children, attributes, element }: DefaultProps) => {
   return (
-    <div
+    <p
       {...attributes}
       className={cn(
         "leading-6 mb-6 text-base",
@@ -19,6 +19,6 @@ export const Default = ({ children, attributes, element }: DefaultProps) => {
       )}
     >
       {children}
-    </div>
+    </p>
   );
 };

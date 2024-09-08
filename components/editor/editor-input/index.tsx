@@ -38,7 +38,7 @@ const SOFT_BREAK_ELEMENTS = [
   "heading-two",
   "heading-three",
   "heading-four",
-  "block-quote",
+  "blockquote",
 ];
 // PLUGIN
 export const withEmbeds = (editor: CustomEditor) => {
@@ -103,6 +103,33 @@ export const withInlines = (editor: CustomEditor) => {
           } else {
             Transforms.removeNodes(editor, { at: childPath });
           }
+          return;
+        }
+
+        // FIX: normalize paragrah children
+        if (Element.isElement(child) && !editor.isInline(child)) {
+          Transforms.unwrapNodes(editor, { at: childPath });
+          return;
+        }
+      }
+    }
+    if (Element.isElement(node) && node.type === "blockquote") {
+      // FIX: normalize blockquote children
+      const children = Array.from(Node.children(editor, path));
+      for (const [child, childPath] of children) {
+        if (Element.isElement(child) && !editor.isInline(child)) {
+          Transforms.unwrapNodes(editor, { at: childPath });
+          return;
+        }
+      }
+    }
+
+    if (Element.isElement(node) && node.type === "list-item") {
+      // FIX: normalize blockquote children
+      const children = Array.from(Node.children(editor, path));
+      for (const [child, childPath] of children) {
+        if (Element.isElement(child) && !editor.isInline(child)) {
+          Transforms.unwrapNodes(editor, { at: childPath });
           return;
         }
       }
@@ -229,13 +256,13 @@ const EditorInput = ({
         return <HeadingThree {...props} />;
       case "heading-four":
         return <HeadingFour {...props} />;
-      case "block-quote":
+      case "blockquote":
         return <Blockquote {...props} />;
       case "link":
         return <Link {...props} />;
       case "list-item":
         return <ListItem {...props} />;
-      case "bulleted-list":
+      case "unordered-list":
         return <BulletedList {...props} />;
       case "numbered-list":
         return <NumberedList {...props} />;

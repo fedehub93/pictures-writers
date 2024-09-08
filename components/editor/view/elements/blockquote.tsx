@@ -10,14 +10,14 @@ import { cn } from "@/lib/utils";
 import { CustomText } from "@/components/editor";
 
 type Blockquote = Replace<
-  Node<"block-quote">,
+  Node<"blockquote" | "block-quote">,
   {
     children: CustomText[];
   }
 >;
 
 export const isBlockquote = createElementNodeMatcher<Blockquote>(
-  (node): node is Blockquote => node.type === "block-quote"
+  (node): node is Blockquote => node.type === "blockquote"
 );
 
 export const Blockquote = createElementTransform(

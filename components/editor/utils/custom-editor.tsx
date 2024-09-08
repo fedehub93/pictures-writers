@@ -27,7 +27,7 @@ import {
 
 type Format = "bold" | "italic" | "underline";
 
-const LIST_TYPES = ["numbered-list", "bulleted-list"];
+const LIST_TYPES = ["numbered-list", "unordered-list"];
 const TEXT_ALIGN_TYPES = ["left", "center", "right", "justify"];
 // Define our own custom set of helpers.
 export const CustomEditorHelper = {
