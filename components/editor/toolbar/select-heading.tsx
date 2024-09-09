@@ -34,22 +34,22 @@ const values: Heading[] = [
   },
   {
     label: "Heading 1",
-    type: "heading-one",
+    type: "heading-1",
     className: "text-3xl",
   },
   {
     label: "Heading 2",
-    type: "heading-two",
+    type: "heading-2",
     className: "text-2xl",
   },
   {
     label: "Heading 3",
-    type: "heading-three",
+    type: "heading-3",
     className: "text-xl",
   },
   {
     label: "Heading 4",
-    type: "heading-four",
+    type: "heading-4",
     className: "text-lg",
   },
 ];
@@ -100,7 +100,7 @@ export const SelectHeading = () => {
               key={value.label}
               value={value.type}
               className={cn(
-                "pl-2 pr-4 h-9 font-medium cursor-pointer",
+                "pl-2 pr-4 h-9 font-medium cursor-pointer mb-1",
                 value.className
               )}
             >

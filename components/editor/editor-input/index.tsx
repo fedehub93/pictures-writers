@@ -34,10 +34,10 @@ import { EmbeddedVideo } from "./elements/embedded-video";
 import { AffiliateLink } from "./elements/embedded-affiliate-link";
 
 const SOFT_BREAK_ELEMENTS = [
-  "heading-one",
-  "heading-two",
-  "heading-three",
-  "heading-four",
+  "heading-1",
+  "heading-2",
+  "heading-3",
+  "heading-4",
   "blockquote",
 ];
 // PLUGIN
@@ -248,13 +248,13 @@ const EditorInput = ({
     // const isHighlight = path[0] === currentPath[0];
 
     switch (props.element.type) {
-      case "heading-one":
+      case "heading-1":
         return <HeadingOne {...props} />;
-      case "heading-two":
+      case "heading-2":
         return <HeadingTwo {...props} />;
-      case "heading-three":
+      case "heading-3":
         return <HeadingThree {...props} />;
-      case "heading-four":
+      case "heading-4":
         return <HeadingFour {...props} />;
       case "blockquote":
         return <Blockquote {...props} />;

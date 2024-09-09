@@ -13,10 +13,10 @@ export type CustomEditor = BaseEditor & ReactEditor;
 
 export type CustomElementType =
   | "paragraph"
-  | "heading-one"
-  | "heading-two"
-  | "heading-three"
-  | "heading-four"
+  | "heading-1"
+  | "heading-2"
+  | "heading-3"
+  | "heading-4"
   | "blockquote"
   | "link"
   | "code"
@@ -117,6 +117,7 @@ const Editor = forwardRef<HTMLDivElement, EditorProps>(
   }
 ) as EditorComponent;
 
+Editor.displayName = "Editor";
 Editor.Input = EditorInput;
 Editor.Toolbar = Toolbar;
 Editor.Counter = Counter;

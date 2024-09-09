@@ -1,12 +1,7 @@
 import { Trash2 } from "lucide-react";
 import { Transforms } from "slate";
-import {
-  ReactEditor,
-  RenderElementProps,
-  useSlateStatic,
-} from "slate-react";
+import { ReactEditor, RenderElementProps, useSlateStatic } from "slate-react";
 import Image from "next/image";
-
 
 import { Button } from "@/components/ui/button";
 
@@ -37,7 +32,7 @@ export const EmbeddedImage = ({
       {children}
       <div
         contentEditable={false}
-        className="relative group shadow-md w-full aspect-video"
+        className="relative group shadow-md w-full aspect-video mt-2 mb-4"
       >
         <Image
           src={element.url}

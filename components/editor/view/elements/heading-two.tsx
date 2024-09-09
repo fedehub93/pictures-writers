@@ -9,14 +9,14 @@ import { cn } from "@/lib/utils";
 import { CustomText } from "@/components/editor";
 
 type HeadingTwo = Replace<
-  Node<"heading-two">,
+  Node<"heading-2">,
   {
     children: CustomText[];
   }
 >;
 
 export const isHeadingTwo = createElementNodeMatcher<HeadingTwo>(
-  (node): node is HeadingTwo => node.type === "heading-two"
+  (node): node is HeadingTwo => node.type === "heading-2"
 );
 
 export const HeadingTwo = createElementTransform(
