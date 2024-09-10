@@ -1,19 +1,9 @@
 import { ReactEditor } from "slate-react";
-import {
-  Descendant,
-  Editor,
-  Element,
-  Node,
-  Path,
-  Range,
-  Text,
-  Transforms,
-} from "slate";
+import { Editor, Element, Path, Range, Transforms } from "slate";
 import { slateToHtml } from "@slate-serializers/html";
 import { slateDemoSlateToDomConfig } from "@slate-serializers/dom";
 
 import isUrl from "is-url";
-import escapeHtml from "escape-html";
 import imageExtensions from "image-extensions";
 
 import {

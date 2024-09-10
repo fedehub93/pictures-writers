@@ -42,6 +42,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ToastProvider } from "@/components/providers/toast-provider";
 import { QueryProvider } from "./_components/providers/query-provider";
 import { ModalProvider } from "./_components/providers/modal-provider";
+import { SheetProvider } from "./_components/providers/sheet-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -84,6 +85,7 @@ export default async function RootLayout({
                 <Sidebar />
                 <Container>{children}</Container>
                 <ModalProvider />
+                <SheetProvider />
               </div>
             </QueryProvider>
           </ThemeProvider>

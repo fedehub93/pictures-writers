@@ -1,11 +1,11 @@
-import { Trash2 } from "lucide-react";
+import Image from "next/image";
 import { Transforms } from "slate";
 import { ReactEditor, RenderElementProps, useSlateStatic } from "slate-react";
-import Image from "next/image";
-
-import { Button } from "@/components/ui/button";
+import { Pencil, Trash2 } from "lucide-react";
 
 import { EmbeddedImageElement } from "@/components/editor";
+import { Button } from "@/components/ui/button";
+import { useSheet } from "@/app/(admin)/_hooks/use-sheet-store";
 
 interface ImageElementProps extends RenderElementProps {
   element: EmbeddedImageElement;
@@ -19,13 +19,21 @@ export const EmbeddedImage = ({
   const editor = useSlateStatic();
   const path = ReactEditor.findPath(editor, element);
 
-  // const onHandleEdit = () => {
-  //   Transforms.setNodes(editor, { altText: "new" }, { at: path });
-  // };
+  const { onOpen } = useSheet();
+
+  const onSave = ({ url, altText }: { url: any; altText: any }) => {
+    Transforms.setNodes<EmbeddedImageElement>(
+      editor,
+      { url, altText },
+      { at: path }
+    );
+  };
 
   const onHandleRemove = () => {
     Transforms.removeNodes(editor, { at: path });
   };
+
+  console.log(element)
 
   return (
     <div {...attributes}>
@@ -42,10 +50,19 @@ export const EmbeddedImage = ({
         />
         <div className="h-full w-full opacity-0 group-hover:opacity-50 transition-all duration-700 bg-black rounded-md" />
         <div className="flex flex-col gap-y-4 opacity-0 group-hover:opacity-100 transition-all duration-700 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-          {/* <Button variant="outline" size="sm">
+          <Button
+            onClick={() =>
+              onOpen("editContentImage", onSave, {
+                image: { url: element.url, altText: element.altText },
+              })
+            }
+            variant="outline"
+            size="sm"
+            type="button"
+          >
             <Pencil className="mr-2 h-4 w-4" />
             Edit image
-          </Button> */}
+          </Button>
           <Button onClick={onHandleRemove} variant="outline" size="sm">
             <Trash2 className="mr-2 h-4 w-4" />
             Remove image
