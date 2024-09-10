@@ -18,11 +18,11 @@ export type CustomElementType =
   | "heading-3"
   | "heading-4"
   | "blockquote"
-  | "link"
+  | "hyperlink"
   | "code"
   | "list-item"
   | "unordered-list"
-  | "numbered-list"
+  | "ordered-list"
   | "image"
   | "video"
   | "affiliate-link"
@@ -64,6 +64,7 @@ export type EmptyText = {
 export type CustomElement = {
   type: string;
   children: Array<CustomElement | CustomText>;
+  data?: any;
   url?: string;
   align?: string;
 };
@@ -82,6 +83,12 @@ interface EditorProps {
   onChange?: (value: Descendant[]) => void;
   onValueChange?: (value: Descendant[]) => void;
 }
+
+export const isCustomText = (
+  element: CustomElement | CustomText
+): element is CustomText => {
+  return (element as CustomText).text !== undefined;
+};
 
 const createWrappedEditor = () =>
   withEmbeds(withInlines(withReact(createEditor())));

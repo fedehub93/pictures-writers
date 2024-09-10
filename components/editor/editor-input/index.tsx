@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { Editor, Element, Node, Path, Range, Transforms } from "slate";
 import {
   Editable,
@@ -32,6 +32,7 @@ import { CustomEditorHelper } from "../utils/custom-editor";
 import { EmbeddedImage } from "./elements/image";
 import { EmbeddedVideo } from "./elements/embedded-video";
 import { AffiliateLink } from "./elements/embedded-affiliate-link";
+import { EditLinkModal } from "@/app/(admin)/_components/modals/edit-link-modal";
 
 const SOFT_BREAK_ELEMENTS = [
   "heading-1",
@@ -79,10 +80,16 @@ export const withInlines = (editor: CustomEditor) => {
   const { isInline, normalizeNode, insertBreak, insertSoftBreak } = editor;
 
   editor.isInline = (element) =>
-    element.type === "link" ? true : isInline(element);
+    element.type === "hyperlink" ? true : isInline(element);
 
   editor.normalizeNode = (entry) => {
     const [node, path] = entry;
+
+    if (Element.isElement(node) && !node.type) {
+      Transforms.setNodes(editor, { type: "paragraph" }, { at: path });
+      return;
+    }
+
     if (Element.isElement(node) && node.type === "paragraph") {
       const children = Array.from(Node.children(editor, path));
       for (const [child, childPath] of children) {
@@ -236,6 +243,12 @@ const EditorInput = ({
 }: EditorInputProps) => {
   const editor = useSlate();
 
+  const [isOpen, setIsOpen] = useState(false);
+  const [data, setData] = useState<{
+    text: string;
+    target: string;
+  }>({ text: "", target: "" });
+
   const renderElement = useCallback((props: RenderElementProps) => {
     // const { selection } = editor;
     // if (!selection) {
@@ -258,13 +271,13 @@ const EditorInput = ({
         return <HeadingFour {...props} />;
       case "blockquote":
         return <Blockquote {...props} />;
-      case "link":
+      case "hyperlink":
         return <Link {...props} />;
       case "list-item":
         return <ListItem {...props} />;
       case "unordered-list":
         return <BulletedList {...props} />;
-      case "numbered-list":
+      case "ordered-list":
         return <NumberedList {...props} />;
       case "image":
         return (
@@ -311,55 +324,57 @@ const EditorInput = ({
   }, []);
 
   return (
-    <Editable
-      className={cn(
-        "border border-t-0 rounded-b-md outline-none p-4",
-        readonly && "border-t rounded-t-md mt-4"
-      )}
-      readOnly={readonly}
-      renderElement={renderElement}
-      renderLeaf={renderLeaf}
-      onFocus={(e) => {
-        onHandleIsFocused(true);
-      }}
-      onBlur={(e) => {
-        onHandleIsFocused(false);
-      }}
-      onKeyDown={(event) => {
-        const { selection } = editor;
+    <>
+      <Editable
+        className={cn(
+          "border border-t-0 rounded-b-md outline-none p-4",
+          readonly && "border-t rounded-t-md mt-4"
+        )}
+        readOnly={readonly}
+        renderElement={renderElement}
+        renderLeaf={renderLeaf}
+        onFocus={(e) => {
+          onHandleIsFocused(true);
+        }}
+        onBlur={(e) => {
+          onHandleIsFocused(false);
+        }}
+        onKeyDown={(event) => {
+          const { selection } = editor;
 
-        // Default left/right behavior is unit:'character'.
-        // This fails to distinguish between two cursor positions, such as
-        // <inline>foo<cursor/></inline> vs <inline>foo</inline><cursor/>.
-        // Here we modify the behavior to unit:'offset'.
-        // This lets the user step into and out of the inline without stepping over characters.
-        // You may wish to customize this further to only use unit:'offset' in specific cases.
-        if (selection) {
-          const { nativeEvent } = event;
-          for (const hotkey in HOTKEYS) {
-            if (isKeyHotkey(hotkey, nativeEvent)) {
-              event.preventDefault();
-              const mark = HOTKEYS[hotkey as keyof typeof HOTKEYS];
-              CustomEditorHelper.toggleMark(editor, mark);
+          // Default left/right behavior is unit:'character'.
+          // This fails to distinguish between two cursor positions, such as
+          // <inline>foo<cursor/></inline> vs <inline>foo</inline><cursor/>.
+          // Here we modify the behavior to unit:'offset'.
+          // This lets the user step into and out of the inline without stepping over characters.
+          // You may wish to customize this further to only use unit:'offset' in specific cases.
+          if (selection) {
+            const { nativeEvent } = event;
+            for (const hotkey in HOTKEYS) {
+              if (isKeyHotkey(hotkey, nativeEvent)) {
+                event.preventDefault();
+                const mark = HOTKEYS[hotkey as keyof typeof HOTKEYS];
+                CustomEditorHelper.toggleMark(editor, mark);
+              }
             }
           }
-        }
-        if (selection && Range.isCollapsed(selection)) {
-          const { nativeEvent } = event;
+          if (selection && Range.isCollapsed(selection)) {
+            const { nativeEvent } = event;
 
-          if (isKeyHotkey("left", nativeEvent)) {
-            event.preventDefault();
-            Transforms.move(editor, { unit: "offset", reverse: true });
-            return;
+            if (isKeyHotkey("left", nativeEvent)) {
+              event.preventDefault();
+              Transforms.move(editor, { unit: "offset", reverse: true });
+              return;
+            }
+            if (isKeyHotkey("right", nativeEvent)) {
+              event.preventDefault();
+              Transforms.move(editor, { unit: "offset" });
+              return;
+            }
           }
-          if (isKeyHotkey("right", nativeEvent)) {
-            event.preventDefault();
-            Transforms.move(editor, { unit: "offset" });
-            return;
-          }
-        }
-      }}
-    />
+        }}
+      />
+    </>
   );
 };
 

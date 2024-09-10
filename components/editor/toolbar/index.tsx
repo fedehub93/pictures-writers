@@ -69,7 +69,7 @@ const Toolbar = ({ showEmbedButton = true }: ToolbarProps) => {
           <Underline className="h-4 w-4" />
         </MarkButton>
         <Separator orientation="vertical" className="bg-slate-300" />
-        <LinkButton format="link" />
+        <LinkButton format="hyperlink" />
         <Separator orientation="vertical" className="bg-slate-300" />
         <BlockButton format="left" blockType="align">
           <AlignLeft className="h-4 w-4" />
@@ -84,7 +84,7 @@ const Toolbar = ({ showEmbedButton = true }: ToolbarProps) => {
         <BlockButton format="unordered-list">
           <List className="h-4 w-4" />
         </BlockButton>
-        <BlockButton format="numbered-list">
+        <BlockButton format="ordered-list">
           <ListOrdered className="h-4 w-4" />
         </BlockButton>
         <BlockButton format="blockquote">

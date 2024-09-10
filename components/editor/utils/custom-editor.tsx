@@ -17,7 +17,7 @@ import {
 
 type Format = "bold" | "italic" | "underline";
 
-const LIST_TYPES = ["numbered-list", "unordered-list"];
+const LIST_TYPES = ["ordered-list", "unordered-list"];
 const TEXT_ALIGN_TYPES = ["left", "center", "right", "justify"];
 // Define our own custom set of helpers.
 export const CustomEditorHelper = {
@@ -92,14 +92,22 @@ export const CustomEditorHelper = {
     }
     ReactEditor.focus(editor);
   },
-
+  isLink(editor: CustomEditor) {
+    const [link] = Editor.nodes(editor, {
+      match: (n) =>
+        !Editor.isEditor(n) && Element.isElement(n) && n.type === "hyperlink",
+    });
+    return !!link;
+  },
   wrapLink(editor: CustomEditor, url: string, text: string) {
     if (!url) return;
     const { selection } = editor;
 
     const link: CustomElement = {
-      type: "link",
-      url,
+      type: "hyperlink",
+      data: {
+        uri: url,
+      },
       children: [{ text }],
     };
 
@@ -114,7 +122,7 @@ export const CustomEditorHelper = {
       // Remove the Link node if we're inserting a new link node inside of another
       // link.
       if (Element.isElement(parentNode)) {
-        if (parentNode.type === "link") {
+        if (parentNode.type === "hyperlink") {
           CustomEditorHelper.unwrapLink(editor);
         }
 
@@ -144,7 +152,7 @@ export const CustomEditorHelper = {
   unwrapLink(editor: CustomEditor) {
     Transforms.unwrapNodes(editor, {
       match: (n) =>
-        !Editor.isEditor(n) && Element.isElement(n) && n.type === "link",
+        !Editor.isEditor(n) && Element.isElement(n) && n.type === "hyperlink",
     });
   },
   insertImage(editor: CustomEditor, url: string, altText: string) {

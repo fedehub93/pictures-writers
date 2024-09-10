@@ -7,7 +7,7 @@ import {
 import { CustomText } from "@/components/editor";
 
 type Link = Replace<
-  Node<"link">,
+  Node<"hyperlink">,
   {
     url: string;
     children: CustomText[];
@@ -15,7 +15,7 @@ type Link = Replace<
 >;
 
 export const isLink = createElementNodeMatcher<Link>(
-  (node): node is Link => node.type === "link" && typeof node.url === "string"
+  (node): node is Link => node.type === "hyperlink" && typeof node.data.uri === "string"
 );
 
 export const Link = createElementTransform(

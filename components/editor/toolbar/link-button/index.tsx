@@ -1,26 +1,21 @@
 "use client";
 
+import { Element } from "slate";
 import { useSlate } from "slate-react";
+import { Link, Unlink } from "lucide-react";
 
 import { Toggle } from "@/components/ui/toggle";
-import { CustomEditorHelper } from "../../utils/custom-editor";
-import { Link, Unlink } from "lucide-react";
-import { useState } from "react";
-import { EditLinkModal } from "@/app/(admin)/_components/modals/edit-link-modal";
-import { Element } from "slate";
+import { CustomEditorHelper } from "@/components/editor/utils/custom-editor";
+import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 
 interface LinkButtonProps {
-  format: "link";
+  format: "hyperlink";
 }
 
 const LinkButton = ({ format }: LinkButtonProps) => {
   const editor = useSlate();
 
-  const [isOpen, setIsOpen] = useState(false);
-  const [data, setData] = useState<{
-    text: string;
-    target: string;
-  }>({ text: "", target: "" });
+  const { onOpen } = useModal();
 
   const isActive = CustomEditorHelper.isBlockActive(editor, format);
 
@@ -46,39 +41,25 @@ const LinkButton = ({ format }: LinkButtonProps) => {
     } else {
       selected = null;
     }
-    setData({
+
+    onOpen("editLink", handleSave, {
       text:
         !Element.isElement(selected?.children[0]) && selected?.children[0].text
           ? selected?.children[0].text
           : "",
       target: "",
     });
-    setIsOpen(true);
   };
 
   return (
-    <>
-      <Toggle
-        size="sm"
-        pressed={isActive}
-        onPressedChange={onPressedChange}
-        aria-label={`Toggle ${format}`}
-      >
-        {isActive ? (
-          <Unlink className="h-4 w-4" />
-        ) : (
-          <Link className="h-4 w-4" />
-        )}
-      </Toggle>
-      <EditLinkModal
-        isOpen={isOpen}
-        onClose={() => {
-          setIsOpen(false);
-        }}
-        onSave={handleSave}
-        initialValues={data}
-      />
-    </>
+    <Toggle
+      size="sm"
+      pressed={isActive}
+      onPressedChange={onPressedChange}
+      aria-label={`Toggle ${format}`}
+    >
+      {isActive ? <Unlink className="h-4 w-4" /> : <Link className="h-4 w-4" />}
+    </Toggle>
   );
 };
 

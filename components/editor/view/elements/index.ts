@@ -8,6 +8,7 @@ import { Blockquote } from "./blockquote";
 import { BulletedList } from "./bulleted-list";
 import { ListItem } from "./list-item";
 import { ImageElement } from "./image";
+import { NumberedList } from "./numbered-list";
 
 export {
   Paragraph,
@@ -18,6 +19,7 @@ export {
   Link,
   Blockquote,
   BulletedList,
+  NumberedList,
   ListItem,
   ImageElement,
 };

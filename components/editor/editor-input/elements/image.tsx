@@ -33,8 +33,6 @@ export const EmbeddedImage = ({
     Transforms.removeNodes(editor, { at: path });
   };
 
-  console.log(element)
-
   return (
     <div {...attributes}>
       {children}

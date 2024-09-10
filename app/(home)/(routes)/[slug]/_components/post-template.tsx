@@ -12,6 +12,7 @@ import {
   ImageElement,
   Link,
   ListItem,
+  NumberedList,
   Paragraph,
 } from "@/components/editor/view/elements";
 import { RichText } from "@/components/editor/view/leaves";
@@ -65,6 +66,7 @@ export const PostTemplate = ({ post }: PostTemplateProps) => {
                   BulletedList,
                   ListItem,
                   ImageElement,
+                  NumberedList
                 ],
                 leaves: [RichText],
               }}

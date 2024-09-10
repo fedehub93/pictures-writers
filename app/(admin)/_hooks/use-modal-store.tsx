@@ -4,7 +4,8 @@ export type ModalType =
   | "createMediaAsset"
   | "selectAsset"
   | "selectUrl"
-  | "editUser";
+  | "editUser"
+  | "editLink";
 
 interface ModalStore {
   type: ModalType | null;
