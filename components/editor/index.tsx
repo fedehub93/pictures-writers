@@ -8,6 +8,7 @@ import { Counter } from "./helpers/counter";
 import withNormalization from "./plugins/with-normalization";
 import withInline from "./plugins/with-inline";
 import withEmbeds from "./plugins/with-embeds";
+import withPasteHandler from "./plugins/with-paste-html";
 
 export type CustomEditor = BaseEditor & ReactEditor;
 
@@ -91,7 +92,9 @@ export const isCustomText = (
 };
 
 const createWrappedEditor = () =>
-  withEmbeds(withNormalization(withInline(withReact(createEditor()))));
+  withPasteHandler(
+    withEmbeds(withNormalization(withInline(withReact(createEditor()))))
+  );
 
 interface EditorComponent
   extends React.ForwardRefExoticComponent<
