@@ -32,7 +32,6 @@ import { CustomEditorHelper } from "../utils/custom-editor";
 import { EmbeddedImage } from "./elements/image";
 import { EmbeddedVideo } from "./elements/embedded-video";
 import { AffiliateLink } from "./elements/embedded-affiliate-link";
-import { EditLinkModal } from "@/app/(admin)/_components/modals/edit-link-modal";
 
 const SOFT_BREAK_ELEMENTS = [
   "heading-1",
@@ -45,9 +44,9 @@ const SOFT_BREAK_ELEMENTS = [
 export const withEmbeds = (editor: CustomEditor) => {
   const { insertData, isVoid } = editor;
 
-  editor.isVoid = (element) => {
-    return ["image", "video"].includes(element.type) ? true : isVoid(element);
-  };
+  // editor.isVoid = (element) => {
+  //   return ["image", "video"].includes(element.type) ? true : isVoid(element);
+  // };
 
   editor.insertData = (data) => {
     const text = data.getData("text/plain");
@@ -85,9 +84,17 @@ export const withInlines = (editor: CustomEditor) => {
   editor.normalizeNode = (entry) => {
     const [node, path] = entry;
 
-    if (Element.isElement(node) && !node.type) {
-      Transforms.setNodes(editor, { type: "paragraph" }, { at: path });
-      return;
+    // Se siamo alla radice e non ci sono nodi figli
+    if (path.length === 0 && editor.children.length === 0) {
+      // Inserisce un nodo di default (es: un paragrafo vuoto)
+      const defaultNode = {
+        type: "paragraph",
+        children: [{ text: "" }],
+      };
+
+      // Aggiunge il nodo di default
+      Transforms.insertNodes(editor, defaultNode, { at: [0] });
+      return; // Evita di chiamare la normale pipeline di normalizzazione
     }
 
     if (Element.isElement(node) && node.type === "paragraph") {
@@ -132,6 +139,8 @@ export const withInlines = (editor: CustomEditor) => {
     }
 
     if (Element.isElement(node) && node.type === "list-item") {
+      console.log(node);
+
       // FIX: normalize blockquote children
       const children = Array.from(Node.children(editor, path));
       for (const [child, childPath] of children) {
@@ -243,12 +252,6 @@ const EditorInput = ({
 }: EditorInputProps) => {
   const editor = useSlate();
 
-  const [isOpen, setIsOpen] = useState(false);
-  const [data, setData] = useState<{
-    text: string;
-    target: string;
-  }>({ text: "", target: "" });
-
   const renderElement = useCallback((props: RenderElementProps) => {
     // const { selection } = editor;
     // if (!selection) {
@@ -323,6 +326,24 @@ const EditorInput = ({
     );
   }, []);
 
+  // Funzione per inserire un nodo valido se il documento è vuoto
+  const ensureValidNode = () => {
+    if (editor.children.length === 0) {
+      const defaultNode = {
+        type: "paragraph",
+        children: [{ text: "" }],
+      };
+      Transforms.insertNodes(editor, defaultNode, { at: [0] });
+    }
+  };
+
+  // Gestore per il click del mouse
+  const handleMouseDown = (
+    _: React.MouseEvent<HTMLDivElement, MouseEvent>
+  ): void => {
+    ensureValidNode();
+  };
+
   return (
     <>
       <Editable
@@ -339,6 +360,7 @@ const EditorInput = ({
         onBlur={(e) => {
           onHandleIsFocused(false);
         }}
+        onMouseDown={handleMouseDown}
         onKeyDown={(event) => {
           const { selection } = editor;
 

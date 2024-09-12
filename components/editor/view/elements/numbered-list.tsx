@@ -21,8 +21,14 @@ export const isNumbered = createElementNodeMatcher<NumberedList>(
 export const NumberedList = createElementTransform(
   isNumbered,
   ({ key, element, attributes, children }) => (
-    <ol key={key} className="list-disc px-4 mb-4">
-      {children}
-    </ol>
+    <div key={key} className="max-w-md border border-gray-500 bg-gray-100 p-2 ">
+      <div className="mb-4 font-bold">Indice dei contenuti</div>
+      <ol
+        className="list-decimal listind pl-6 [&>li>a]:font-bold [&>li>a]:no-underline [&>li>a]:mb-0 "
+        type="1"
+      >
+        {children}
+      </ol>
+    </div>
   )
 );

@@ -1,5 +1,5 @@
-import { Element, Text } from "slate";
-import { RenderElementProps, useSlate } from "slate-react";
+import { Element, Text, Transforms } from "slate";
+import { ReactEditor, RenderElementProps, useSlate } from "slate-react";
 import { useState } from "react";
 
 import { Copy, Pencil, Trash2 } from "lucide-react";
@@ -25,19 +25,19 @@ interface LinkProps extends RenderElementProps {}
 
 export const Link = ({ attributes, children, element }: LinkProps) => {
   const editor = useSlate();
+  const path = ReactEditor.findPath(editor, element);
 
   const { onOpen } = useModal();
 
-  const isActive = CustomEditorHelper.isBlockActive(editor, "hyperlink");
-
   const onSave = (values: { text: string; target: string }) => {
-    if (!isActive) {
-      if (!values.target) return;
-      CustomEditorHelper.wrapLink(editor, values.target, values.text);
-      return;
-    }
-
-    CustomEditorHelper.unwrapLink(editor);
+    Transforms.setNodes(
+      editor,
+      {
+        data: { uri: values.target },
+      },
+      { at: path }
+    );
+    Transforms.insertText(editor, values.text, { at: path });
   };
 
   const onCopyLink = () => {

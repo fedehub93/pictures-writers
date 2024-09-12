@@ -3,11 +3,11 @@ import { createEditor, BaseEditor, Descendant } from "slate";
 import { Slate, withReact, ReactEditor } from "slate-react";
 
 import Toolbar from "@/components/editor/toolbar";
-import EditorInput, {
-  withEmbeds,
-  withInlines,
-} from "@/components/editor/editor-input";
-import { Counter } from "./counter";
+import EditorInput from "./editor-input";
+import { Counter } from "./helpers/counter";
+import withNormalization from "./plugins/with-normalization";
+import withInline from "./plugins/with-inline";
+import withEmbeds from "./plugins/with-embeds";
 
 export type CustomEditor = BaseEditor & ReactEditor;
 
@@ -91,7 +91,7 @@ export const isCustomText = (
 };
 
 const createWrappedEditor = () =>
-  withEmbeds(withInlines(withReact(createEditor())));
+  withEmbeds(withNormalization(withInline(withReact(createEditor()))));
 
 interface EditorComponent
   extends React.ForwardRefExoticComponent<
