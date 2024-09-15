@@ -19,9 +19,9 @@ export const RichText = createLeafTransform(
 
   ({ key, attributes, leaf, children }) => {
     // Render <br /> for empty text blocks as it's probably just an empty line
-    if (!children) {
-      return <br key={key} />;
-    }
+    // if (!children) {
+    //   return <br key={key} />;
+    // }
 
     let element: ReactNode = children;
 
