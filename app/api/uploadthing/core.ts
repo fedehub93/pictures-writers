@@ -1,6 +1,6 @@
-import { authAdmin } from "@/lib/auth-service";
-import { auth } from "@clerk/nextjs/server";
 import { createUploadthing, type FileRouter } from "uploadthing/next";
+
+import { authAdmin } from "@/lib/auth-service";
 
 const f = createUploadthing();
 
