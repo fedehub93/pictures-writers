@@ -1,8 +1,8 @@
 "use client";
-import { File, Loader2 } from "lucide-react";
-import { Fragment } from "react";
 import { Media, MediaType } from "@prisma/client";
 import Image from "next/image";
+import { File, Loader2 } from "lucide-react";
+import { useDebounceValue } from "usehooks-ts";
 
 import {
   Dialog,
@@ -17,14 +17,15 @@ import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 import { useAssetsQuery } from "../../_hooks/use-assets-query";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { useDebounceValue } from "usehooks-ts";
 
 export const SelectAssetModal = () => {
   const { isOpen, onClose, type, onCallback } = useModal();
   const [debouncedSearch, setDebouncedSearch] = useDebounceValue("", 1000);
 
+  const isModalOpen = isOpen && type === "selectAsset";
+
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
-    useAssetsQuery(debouncedSearch);
+    useAssetsQuery(debouncedSearch, isModalOpen);
 
   if (isOpen && status === "error") {
     return (
@@ -35,8 +36,6 @@ export const SelectAssetModal = () => {
       </div>
     );
   }
-
-  const isModalOpen = isOpen && type === "selectAsset";
 
   const onSelect = async (asset: Media) => {
     onCallback(asset);

@@ -1,7 +1,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import qs from "query-string";
 
-export const useAssetsQuery = (s = "") => {
+export const useAssetsQuery = (s = "", windowIsOpen = false) => {
   const fetchAssets = async ({ pageParam = undefined, s = "" }) => {
     const url = qs.stringifyUrl(
       {
@@ -17,14 +17,30 @@ export const useAssetsQuery = (s = "") => {
     return res.json();
   };
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
-    useInfiniteQuery({
-      initialPageParam: undefined,
-      queryKey: ["assets", s],
-      queryFn: ({ pageParam }) => fetchAssets({ pageParam, s }),
-      getNextPageParam: (lastPage) => lastPage?.nextCursor,
-      refetchInterval: false,
-    });
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    status,
+    refetch,
+  } = useInfiniteQuery({
+    initialPageParam: undefined,
+    queryKey: ["assets", s],
+    queryFn: ({ pageParam }) => fetchAssets({ pageParam, s }),
+    getNextPageParam: (lastPage) => lastPage?.nextCursor,
+    refetchInterval: false,
+    enabled: windowIsOpen,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+  });
 
-  return { data, fetchNextPage, hasNextPage, isFetchingNextPage, status };
+  return {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    status,
+    refetch,
+  };
 };
