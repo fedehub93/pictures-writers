@@ -11,13 +11,14 @@ import { Dispatch, SetStateAction } from "react";
 import { cn } from "@/lib/utils";
 
 export type FileUploadOnChange = {
+  key: string;
   name: string;
   url: string;
   size: number;
 };
 
 interface FileUploadProps {
-  onChange: ({ name, url, size }: FileUploadOnChange) => void;
+  onChange: ({ key, name, url, size }: FileUploadOnChange) => void;
   value?: string;
   endpoint: keyof typeof ourFileRouter;
   setIsFocused?: Dispatch<SetStateAction<boolean>>;
@@ -43,7 +44,7 @@ export const FileUpload = ({
       >
         <Image fill src={value} alt="Upload" className="object-cover" />
         <button
-          onClick={() => onChange({ name: "", url: "", size: 0 })}
+          onClick={() => onChange({ key: "", name: "", url: "", size: 0 })}
           className="bg-rose-500 text-white p-1 rounded-full absolute top-0 right-0 shadow-sm"
           type="button"
         >
@@ -66,7 +67,7 @@ export const FileUpload = ({
           {value}
         </a>
         <button
-          onClick={() => onChange({ name: "", url: "", size: 0 })}
+          onClick={() => onChange({ key: "", name: "", url: "", size: 0 })}
           className="bg-rose-500 text-white p-1 rounded-full absolute -top-2 -right-2 shadow-sm"
           type="button"
         >
@@ -86,6 +87,7 @@ export const FileUpload = ({
         }}
         onClientUploadComplete={(res) => {
           onChange({
+            key: res?.[0].key,
             name: res?.[0].name,
             url: res?.[0].url,
             size: res?.[0].size,

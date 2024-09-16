@@ -37,14 +37,15 @@ import {
 } from "@/components/ui/select";
 
 const formSchema = z.object({
-  url: z.string().min(1, {
-    message: "Media asset url is required",
-  }),
-  type: z.nativeEnum(MediaType),
+  key: z.string(),
   name: z.string().min(1, {
     message: "Media name is required",
   }),
+  url: z.string().min(1, {
+    message: "Media asset url is required",
+  }),
   altText: z.optional(z.string()),
+  type: z.nativeEnum(MediaType),
   size: z.number(),
 });
 
@@ -57,9 +58,10 @@ export const CreateMediaModal = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      key: "",
+      name: "",
       url: "",
       type: MediaType.IMAGE,
-      name: "",
       size: 0,
     },
   });
@@ -108,8 +110,9 @@ export const CreateMediaModal = () => {
                         <FileUpload
                           endpoint="mediaAsset"
                           value={field.value}
-                          onChange={({ name, url, size }) => {
+                          onChange={({ key, name, url, size }) => {
                             field.onChange(url);
+                            form.setValue("key", key);
                             form.setValue("name", name);
                             form.setValue("size", size);
                           }}
