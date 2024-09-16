@@ -35,6 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { formatBytes } from "@/lib/format";
 
 const formSchema = z.object({
   key: z.string(),
@@ -122,7 +123,7 @@ export const CreateMediaModal = () => {
                   )}
                 />
               </div>
-              <div className="flex items-center justify-between w-full gap-x-4">
+              <div className="flex justify-between w-full gap-x-4">
                 <FormField
                   control={form.control}
                   name="type"
@@ -160,17 +161,23 @@ export const CreateMediaModal = () => {
                   control={form.control}
                   name="size"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="flex-1">
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70">
                         Size
                       </FormLabel>
                       <FormControl>
-                        <Input
-                          disabled={true}
-                          className="bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0"
-                          placeholder="Enter asset name"
-                          {...field}
-                        />
+                        <div className="text-sm">
+                          <Input
+                            disabled={true}
+                            className="hidden"
+                            placeholder="Enter asset name"
+                            hidden
+                            {...field}
+                          />
+                          <span className="block mt-4">
+                            {formatBytes(field.value)}
+                          </span>
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>

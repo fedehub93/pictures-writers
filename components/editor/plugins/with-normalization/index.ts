@@ -1,6 +1,6 @@
 import { CustomEditor } from "../..";
-import normalizeLink from "./normalizeLink";
-import normalizeEditor from "./normalizeEditor";
+import normalizeLink from "./normalize-link";
+import normalizeEditor from "./normalize-editor";
 import normalizeListItem from "./normalize-list-item";
 
 const withNormalization = (editor: CustomEditor) => {
