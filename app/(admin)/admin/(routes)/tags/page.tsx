@@ -15,8 +15,9 @@ const TagsPage = async () => {
 
   const tags = await db.tag.findMany({
     orderBy: {
-      title: "asc",
+      createdAt: "desc",
     },
+    distinct: ["rootId"],
   });
 
   return (

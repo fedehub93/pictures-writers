@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
+import { createTagSeo } from "@/lib/seo";
 
 export async function POST(req: Request) {
   try {
@@ -16,25 +17,27 @@ export async function POST(req: Request) {
       data: {
         title,
         slug,
-        isPublished: false,
+        version: 1,
       },
     });
 
-    await db.seo.create({
+    if (!tag) {
+      return new NextResponse("Bad Request", { status: 400 });
+    }
+
+    const updatedTag = await db.tag.update({
+      where: { id: tag.id },
       data: {
-        title: tag.title,
-        description: tag.description,
-        ogTwitterTitle: tag.title,
-        ogTwitterDescription: tag.description,
-        ogTwitterType: "card",
-        ogTwitterLocale: "it_IT",
-        tagId: tag.id,
+        rootId: tag.id,
       },
     });
+
+    // Creo prima versione seo
+    await createTagSeo(updatedTag);
 
     return NextResponse.json(tag);
   } catch (error) {
-    console.log("[TAGS]", error);
+    console.log("[TAG_CREATE]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }

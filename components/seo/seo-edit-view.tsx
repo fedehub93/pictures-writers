@@ -11,12 +11,14 @@ import { SeoContentTypeApi, SeoField } from "./types";
 interface SeoProps {
   initialData: Seo | null;
   contentType: SeoContentTypeApi;
+  contentRootId: string;
   contentId: string;
 }
 
 export const SeoEditView = ({
   initialData,
   contentType,
+  contentRootId,
   contentId,
 }: SeoProps) => {
   if (!initialData) {
@@ -37,14 +39,14 @@ export const SeoEditView = ({
         fieldName={SeoField.Description}
         label="SEO Description"
         placeholder="e.g. This article shows you how to write a screenplay from scratch. Learn More."
-        apiUrl={`/api/${contentType}/${contentId}/seo`}
+        apiUrl={`/api/${contentType}/${contentRootId}/versions/${contentId}/seo`}
       />
       <InputSeoForm
         initialData={initialData}
         fieldName={SeoField.CanonicalUrl}
         label="Canonical URL"
         placeholder="https://pictureswriters.com/canonical-url"
-        apiUrl={`/api/${contentType}/${contentId}/seo`}
+        apiUrl={`/api/${contentType}/${contentRootId}/versions/${contentId}/seo`}
       />
 
       <InputSeoForm
@@ -52,22 +54,22 @@ export const SeoEditView = ({
         fieldName={SeoField.OgTwitterTitle}
         label="OpenGraph/Twitter Title"
         placeholder="e.g. How to write a screenplay"
-        apiUrl={`/api/${contentType}/${contentId}/seo`}
+        apiUrl={`/api/${contentType}/${contentRootId}/versions/${contentId}/seo`}
       />
       <InputSeoForm
         initialData={initialData}
         fieldName={SeoField.OgTwitterDescription}
         label="OpenGraph/Twitter Description"
         placeholder="e.g. This article shows you how to write a screenplay from scratch. Learn More."
-        apiUrl={`/api/${contentType}/${contentId}/seo`}
+        apiUrl={`/api/${contentType}/${contentRootId}/versions/${contentId}/seo`}
       />
       <NoIndexForm
         initialData={initialData}
-        apiUrl={`/api/${contentType}/${contentId}/seo`}
+        apiUrl={`/api/${contentType}/${contentRootId}/versions/${contentId}/seo`}
       />
       <NoFollowForm
         initialData={initialData}
-        apiUrl={`/api/${contentType}/${contentId}/seo`}
+        apiUrl={`/api/${contentType}/${contentRootId}/versions/${contentId}/seo`}
       />
     </div>
   );

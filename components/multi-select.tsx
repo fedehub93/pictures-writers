@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { X } from "lucide-react";
+import { TagStatus } from "@prisma/client";
 
 import {
   Command,
@@ -17,7 +18,7 @@ import { cn } from "@/lib/utils";
 export interface Option {
   value: string;
   label: string;
-  isPublished?: boolean;
+  status: TagStatus;
   disable?: boolean;
   /** fixed option that can't be removed. */
   fixed?: boolean;
@@ -376,8 +377,8 @@ const MultipleSelector = React.forwardRef<
                   className={cn(
                     "data-[disabled]:bg-muted-foreground data-[disabled]:text-muted data-[disabled]:hover:bg-muted-foreground",
                     "data-[fixed]:bg-muted-foreground data-[fixed]:text-muted data-[fixed]:hover:bg-muted-foreground",
-                    option.isPublished && "bg-sky-700",
-                    !option.isPublished && "bg-slate-500",
+                    option.status === TagStatus.PUBLISHED && "bg-sky-700",
+                    option.status === TagStatus.CHANGED && "bg-slate-500",
                     badgeClassName
                   )}
                   data-fixed={option.fixed}

@@ -17,6 +17,7 @@ const CategoriesPage = async () => {
     orderBy: {
       createdAt: "desc",
     },
+    distinct: ["rootId"],
   });
 
   return (

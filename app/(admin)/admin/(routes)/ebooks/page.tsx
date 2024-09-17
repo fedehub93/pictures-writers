@@ -17,6 +17,7 @@ const EbooksPage = async () => {
     include: {
       user: true,
     },
+    distinct: ["rootId"],
     orderBy: {
       createdAt: "desc",
     },

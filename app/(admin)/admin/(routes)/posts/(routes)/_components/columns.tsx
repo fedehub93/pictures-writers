@@ -1,6 +1,6 @@
 "use client";
 
-import { Media, Post } from "@prisma/client";
+import { ContentStatus, Media, Post } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
@@ -71,23 +71,33 @@ export const columns: ColumnDef<PostWithImageCover>[] = [
     },
   },
   {
-    accessorKey: "isPublished",
+    accessorKey: "status",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Published
+          Status
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
     cell: ({ row }) => {
-      const isPublished = row.getValue("isPublished") || false;
+      const status = row.getValue("status") || false;
       return (
-        <Badge className={cn("bg-slate-500", isPublished && "bg-sky-700")}>
-          {isPublished ? "Published" : "Draft"}
+        <Badge
+          className={cn(
+            "bg-slate-500",
+            status === ContentStatus.CHANGED && "bg-sky-700",
+            status === ContentStatus.PUBLISHED && "bg-emerald-700"
+          )}
+        >
+          {status === ContentStatus.DRAFT
+            ? "Draft"
+            : status === ContentStatus.CHANGED
+            ? "Changed"
+            : "Published"}
         </Badge>
       );
     },
@@ -95,7 +105,7 @@ export const columns: ColumnDef<PostWithImageCover>[] = [
   {
     id: "actions",
     cell: ({ row }) => {
-      const { id } = row.original;
+      const { rootId } = row.original;
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -105,7 +115,7 @@ export const columns: ColumnDef<PostWithImageCover>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <Link href={`/admin/posts/${id}`}>
+            <Link href={`/admin/posts/${rootId}`}>
               <DropdownMenuItem>
                 <Pencil className="h-4 w-4 mr-2" />
                 Edit

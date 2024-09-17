@@ -24,11 +24,14 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 import { CharsCounter } from "@/components/chars-counter";
+import { ContentStatus } from "@prisma/client";
 
 interface SlugFormProps {
   initialData: {
+    id: string;
     title: string;
     slug: string;
+    status: ContentStatus;
   };
   placeholder: string;
   apiUrl: string;
@@ -57,8 +60,21 @@ export const SlugForm = ({
   const { isValid } = form.formState;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (initialData.status === ContentStatus.PUBLISHED) {
+      try {
+        await axios.post(`${apiUrl}/versions`, values);
+        toast.success(`Item updated`);
+      } catch {
+        toast.error("Something went wrong");
+      } finally {
+        router.refresh();
+      }
+
+      return;
+    }
+
     try {
-      await axios.patch(`${apiUrl}`, values);
+      await axios.patch(`${apiUrl}/versions/${initialData.id}`, values);
       toast.success(`Item updated`);
     } catch {
       toast.error("Something went wrong");

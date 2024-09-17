@@ -12,20 +12,23 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SeoContentTypeApi } from "@/components/seo/types";
+import { ContentStatus } from "@prisma/client";
 
 interface StatusViewProps {
   disabled: boolean;
   contentType: SeoContentTypeApi;
+  contentRootId: string;
   contentId: string;
-  isPublished: boolean;
+  status: ContentStatus;
   lastSavedAt: Date;
 }
 
 export const StatusView = ({
   disabled,
   contentType,
+  contentRootId,
   contentId,
-  isPublished,
+  status,
   lastSavedAt,
 }: StatusViewProps) => {
   const router = useRouter();
@@ -39,11 +42,15 @@ export const StatusView = ({
     try {
       setIsLoading(true);
 
-      if (isPublished) {
-        await axios.patch(`/api/${contentType}/${contentId}/unpublish`);
+      if (status === ContentStatus.PUBLISHED) {
+        await axios.patch(
+          `/api/${contentType}/${contentRootId}/versions/${contentId}/unpublish`
+        );
         toast.success("Item unpublished");
       } else {
-        await axios.patch(`/api/${contentType}/${contentId}/publish`);
+        await axios.patch(
+          `/api/${contentType}/${contentRootId}/versions/${contentId}/publish`
+        );
         toast.success("Item published");
       }
       router.refresh();
@@ -60,8 +67,14 @@ export const StatusView = ({
       <Separator />
       <div className="flex w-full items-center justify-between">
         <p className="text-sm text-muted-foreground">Current</p>
-        <Badge className={cn("bg-sky-700", !isPublished && "bg-slate-500")}>
-          {isPublished ? "Published" : "Draft"}
+        <Badge
+          className={cn("bg-sky-700", status === "DRAFT" && "bg-slate-500")}
+        >
+          {status === ContentStatus.PUBLISHED
+            ? "Published"
+            : status === ContentStatus.CHANGED
+            ? "Changed"
+            : "Draft"}
         </Badge>
       </div>
       <Button
@@ -70,7 +83,7 @@ export const StatusView = ({
         className="w-full"
         onClick={onHandleClick}
       >
-        {isPublished ? "Unpublish" : "Publish"}
+        {status === ContentStatus.PUBLISHED ? "Unpublish" : "Publish"}
       </Button>
       <p className="text-xs text-muted-foreground">{lastSavedAtLabel}</p>
     </div>

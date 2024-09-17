@@ -8,6 +8,7 @@ import { useDebounceCallback } from "usehooks-ts";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { ContentStatus } from "@prisma/client";
 
 import { cn } from "@/lib/utils";
 import {
@@ -23,7 +24,9 @@ import { CharsCounter } from "@/components/chars-counter";
 
 interface TitleFormProps {
   initialData: {
+    id: string;
     title: string;
+    status: ContentStatus;
   };
   label?: string;
   placeholder: string;
@@ -59,8 +62,21 @@ export const TitleForm = ({
   };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (initialData.status === ContentStatus.PUBLISHED) {
+      try {
+        await axios.post(`${apiUrl}/versions`, values);
+        toast.success(`Item updated`);
+      } catch {
+        toast.error("Something went wrong");
+      } finally {
+        router.refresh();
+      }
+
+      return;
+    }
+
     try {
-      await axios.patch(`${apiUrl}`, values);
+      await axios.patch(`${apiUrl}/versions/${initialData.id}`, values);
       toast.success(`Item updated`);
     } catch {
       toast.error("Something went wrong");

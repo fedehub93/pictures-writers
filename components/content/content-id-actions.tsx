@@ -13,11 +13,13 @@ import { Button } from "@/components/ui/button";
 
 interface ContentIdActionsProps {
   contentType: SeoContentTypeApi;
+  contentRootId: string;
   contentId: string;
 }
 
 export const ContentIdActions = ({
   contentType,
+  contentRootId,
   contentId,
 }: ContentIdActionsProps) => {
   const router = useRouter();
@@ -27,7 +29,7 @@ export const ContentIdActions = ({
     try {
       setIsLoading(true);
 
-      await axios.delete(`/api/${contentType}/${contentId}`);
+      await axios.delete(`/api/${contentType}/${contentRootId}/versions/${contentId}`);
 
       toast.success("Item deleted!");
     } catch {

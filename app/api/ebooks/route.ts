@@ -16,10 +16,22 @@ export async function POST(req: Request) {
       data: {
         userId: user.id,
         title,
+        version: 1,
       },
     });
 
-    return NextResponse.json(ebook);
+    if (!ebook) {
+      return new NextResponse("Bad Request", { status: 400 });
+    }
+
+    const updatedEbook = await db.ebook.update({
+      where: { id: ebook.id },
+      data: {
+        rootId: ebook.id,
+      },
+    });
+
+    return NextResponse.json(updatedEbook);
   } catch (error) {
     console.log("[EBOOKS_POST]", error);
     return new NextResponse("Internal Error", { status: 500 });

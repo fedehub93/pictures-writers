@@ -1,10 +1,17 @@
-import { Category, Media, PostVersion, Tag, User } from "@prisma/client";
+import {
+  Category,
+  ContentStatus,
+  Media,
+  Post,
+  Tag,
+  User,
+} from "@prisma/client";
 import { db } from "./db";
 
 const POST_PER_PAGE = 10;
 const LATEST_PUBLISHED_POST = 4;
 
-export type PostVersionWithImageCoverWithCategoryWithTags = PostVersion & {
+export type PostWithImageCoverWithCategoryWithTags = Post & {
   imageCover: Media | null;
   category: Category | null;
   tags: Tag[];
@@ -24,7 +31,7 @@ export const getPublishedPosts = async ({
 
   const posts = await db.post.findMany({
     where: {
-      isPublished: true,
+      status: ContentStatus.PUBLISHED,
       OR: [
         {
           title: { contains: s },
@@ -35,19 +42,9 @@ export const getPublishedPosts = async ({
       ],
     },
     include: {
-      versions: {
-        include: {
-          imageCover: true,
-          category: true,
-          tags: true,
-        },
-        take: 1,
-        orderBy: {
-          publishedAt: "desc",
-        },
-      },
       user: true,
     },
+    distinct: ["rootId"],
     take: POST_PER_PAGE,
     skip: skip,
     orderBy: {
@@ -58,7 +55,7 @@ export const getPublishedPosts = async ({
   const totalPages = Math.ceil(posts.length / POST_PER_PAGE);
 
   const lastPublishedPosts = posts.map((post) => {
-    const lastPublishedPost = { ...post.versions[0], user: post.user };
+    const lastPublishedPost = { ...post };
     return lastPublishedPost;
   });
 
@@ -69,79 +66,101 @@ export const getPublishedPostById = async (id: string) => {
   const post = await db.post.findFirst({
     where: {
       id: id,
-      isPublished: true,
+      status: ContentStatus.PUBLISHED,
     },
     include: {
-      versions: {
-        include: {
-          imageCover: true,
-          category: true,
-          tags: true,
-        },
-        take: 1,
-        orderBy: {
-          publishedAt: "desc",
-        },
-      },
       user: true,
     },
+    distinct: ["rootId"],
     orderBy: {
       createdAt: "desc",
     },
   });
 
-  const lastPublishedPost = { ...post?.versions[0], user: post?.user };
+  const lastPublishedPost = { ...post };
 
   return lastPublishedPost;
 };
 
 export const getPublishedPostBySlug = async (slug: string) => {
-  const postVersion = await db.postVersion.findFirst({
+  const post = await db.post.findFirst({
     where: {
       slug,
     },
+    include: {
+      imageCover: true,
+      category: true,
+      tags: true,
+    },
+    distinct: ["rootId"],
     orderBy: {
       publishedAt: "desc",
     },
   });
 
-  if (!postVersion) {
-    return null;
-  }
-
-  const post = await getPublishedPostById(postVersion.postId);
   return post;
 };
 
 export const getLatestPublishedPosts = async () => {
   const posts = await db.post.findMany({
     where: {
-      isPublished: true,
+      status: ContentStatus.PUBLISHED,
     },
     include: {
-      versions: {
-        include: {
-          imageCover: true,
-          category: true,
-          tags: true,
-        },
-        take: 1,
-        orderBy: {
-          publishedAt: "desc",
-        },
-      },
+      imageCover: true,
       user: true,
     },
+    distinct: ["rootId"],
     take: LATEST_PUBLISHED_POST,
     orderBy: {
       createdAt: "desc",
     },
   });
+  console.log(posts);
+  return posts;
+};
 
-  const latestPublishedPosts = posts.map((post) => {
-    const lastPublishedPost = { ...post.versions[0], user: post.user };
-    return lastPublishedPost;
+export const createNewVersionPost = async (rootId: string, values: any) => {
+  // Trovo ultima versione pubblicata
+  const publishedPost = await db.post.findFirst({
+    where: { rootId, status: ContentStatus.PUBLISHED },
+    orderBy: { createdAt: "desc" },
   });
 
-  return latestPublishedPosts;
+  if (!publishedPost) {
+    return { message: "Post not found", status: 404, post: null };
+  }
+
+  const post = await db.post.create({
+    data: {
+      title: values.title || publishedPost.title,
+      slug: values.slug || publishedPost.slug,
+      version: publishedPost.version + 1,
+      status: ContentStatus.CHANGED,
+      bodyData: [{ type: "paragraph", children: [{ text: "" }] }],
+    },
+  });
+
+  const updatedPost = await db.post.update({
+    where: { id: post.id },
+    data: {
+      ...publishedPost,
+      ...values,
+      id: undefined,
+      version: undefined,
+      status: undefined,
+      tags: values.tags
+        ? {
+            set: values.tags.map((tagId: { label: string; value: string }) => ({
+              id: tagId.value,
+            })),
+          }
+        : undefined,
+      createdAt: undefined,
+      updatedAt: undefined,
+      publishedAt: undefined,
+    },
+  });
+
+  return { message: "", status: 200, post: updatedPost };
 };

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
+import { createCategorySeo } from "@/lib/seo";
 
 export async function POST(req: Request) {
   try {
@@ -16,25 +17,27 @@ export async function POST(req: Request) {
       data: {
         title,
         slug,
-        isPublished: false,
+        version: 1,
       },
     });
 
-    await db.seo.create({
+    if (!category) {
+      return new NextResponse("Bad Request", { status: 400 });
+    }
+
+    const updatedCategory = await db.category.update({
+      where: { id: category.id },
       data: {
-        title: category.title,
-        description: category.description,
-        ogTwitterTitle: category.title,
-        ogTwitterDescription: category.description,
-        ogTwitterType: "card",
-        ogTwitterLocale: "it_IT",
-        categoryId: category.id,
+        rootId: category.id,
       },
     });
 
+    // Creo prima versione seo
+    await createCategorySeo(updatedCategory);
+    
     return NextResponse.json(category);
   } catch (error) {
-    console.log("[CATEGORIES]", error);
+    console.log("[CATEGORY_CREATE]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }

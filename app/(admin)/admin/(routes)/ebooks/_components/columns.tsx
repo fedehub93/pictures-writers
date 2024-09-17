@@ -1,6 +1,6 @@
 "use client";
 
-import { Ebook, User } from "@prisma/client";
+import { ContentStatus, Ebook, User } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
@@ -13,6 +13,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+
+import { cn } from "@/lib/utils";
 
 type EbookWithUser = Ebook & {
   user: User;
@@ -69,32 +72,42 @@ export const columns: ColumnDef<EbookWithUser>[] = [
       );
     },
   },
-  // {
-  //   accessorKey: "isPublished",
-  //   header: ({ column }) => {
-  //     return (
-  //       <Button
-  //         variant="ghost"
-  //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //       >
-  //         Published
-  //         <ArrowUpDown className="ml-2 h-4 w-4" />
-  //       </Button>
-  //     );
-  //   },
-  //   cell: ({ row }) => {
-  //     const isPublished = row.getValue("isPublished") || false;
-  //     return (
-  //       <Badge className={cn("bg-slate-500", isPublished && "bg-sky-700")}>
-  //         {isPublished ? "Published" : "Draft"}
-  //       </Badge>
-  //     );
-  //   },
-  // },
+  {
+    accessorKey: "status",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Status
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      const status = row.getValue("status") || false;
+      return (
+        <Badge
+          className={cn(
+            "bg-slate-500",
+            status === ContentStatus.CHANGED && "bg-sky-700",
+            status === ContentStatus.PUBLISHED && "bg-emerald-700"
+          )}
+        >
+          {status === ContentStatus.DRAFT
+            ? "Draft"
+            : status === ContentStatus.CHANGED
+            ? "Changed"
+            : "Published"}
+        </Badge>
+      );
+    },
+  },
   {
     id: "actions",
     cell: ({ row }) => {
-      const { id } = row.original;
+      const { rootId } = row.original;
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -104,7 +117,7 @@ export const columns: ColumnDef<EbookWithUser>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <Link href={`/admin/ebooks/${id}`}>
+            <Link href={`/admin/ebooks/${rootId}`}>
               <DropdownMenuItem>
                 <Pencil className="h-4 w-4 mr-2" />
                 Edit

@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
+import { Post, ContentStatus, User } from "@prisma/client";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
-import { Post, PostVersion, User } from "@prisma/client";
+
+import { createPostSeo } from "@/lib/seo";
 
 const POST_BATCH = 5;
 
@@ -14,10 +16,7 @@ export async function GET(req: Request) {
     const s = searchParams.get("s") || "";
     const page = Number(searchParams.get("page")) || 1;
 
-    let posts: (Post & {
-      versions: PostVersion[];
-      user: User;
-    })[] = [];
+    let posts: Post[] = [];
     let totalPosts = 0;
 
     const skip = (page - 1) * POST_BATCH;
@@ -26,7 +25,7 @@ export async function GET(req: Request) {
     if (cursor) {
       const posts = await db.post.findMany({
         where: {
-          isPublished: true,
+          status: ContentStatus.PUBLISHED,
           OR: [
             {
               title: {
@@ -43,19 +42,9 @@ export async function GET(req: Request) {
           ],
         },
         include: {
-          versions: {
-            include: {
-              imageCover: true,
-              category: true,
-              tags: true,
-            },
-            take: 1,
-            orderBy: {
-              publishedAt: "desc",
-            },
-          },
           user: true,
         },
+        distinct: ["rootId"],
         take: POST_BATCH,
         skip: 1,
         cursor: { id: cursor },
@@ -65,7 +54,7 @@ export async function GET(req: Request) {
       });
 
       const lastPublishedPosts = posts.map((post) => {
-        const lastPublishedPost = { ...post.versions[0], user: post.user };
+        const lastPublishedPost = { ...post };
         return lastPublishedPost;
       });
 
@@ -74,7 +63,7 @@ export async function GET(req: Request) {
 
     posts = await db.post.findMany({
       where: {
-        isPublished: true,
+        status: ContentStatus.PUBLISHED,
         OR: [
           {
             title: {
@@ -91,19 +80,9 @@ export async function GET(req: Request) {
         ],
       },
       include: {
-        versions: {
-          include: {
-            imageCover: true,
-            category: true,
-            tags: true,
-          },
-          take: 1,
-          orderBy: {
-            publishedAt: "desc",
-          },
-        },
         user: true,
       },
+      distinct: ["rootId"],
       take,
       skip,
       orderBy: {
@@ -114,7 +93,7 @@ export async function GET(req: Request) {
     totalPosts = await db.post.count();
 
     const lastPublishedPosts = posts.map((post) => {
-      const lastPublishedPost = { ...post.versions[0], user: post.user };
+      const lastPublishedPost = { ...post };
       return lastPublishedPost;
     });
 
@@ -151,32 +130,35 @@ export async function POST(req: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    // Creo prima versione post
     const post = await db.post.create({
       data: {
-        userId: user.id,
         title,
         slug,
+        version: 1,
+        status: ContentStatus.DRAFT,
         bodyData: [{ type: "paragraph", children: [{ text: "" }] }],
-        isPublished: false,
+        userId: user.id,
       },
     });
 
-    await db.seo.create({
+    if (!post) {
+      return new NextResponse("Bad Request", { status: 400 });
+    }
+
+    const updatedPost = await db.post.update({
+      where: { id: post.id },
       data: {
-        title: post.title,
-        description: post.description,
-        ogTwitterTitle: post.title,
-        ogTwitterDescription: post.description,
-        ogTwitterType: "card",
-        ogTwitterLocale: "it_IT",
-        ogTwitterImageId: post.imageCoverId,
-        postId: post.id,
+        rootId: post.id,
       },
     });
+
+    // Creo prima versione seo
+    await createPostSeo(updatedPost);
 
     return NextResponse.json(post);
   } catch (error) {
-    console.log("[POSTS]", error);
+    console.log("[POST_CREATE]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }

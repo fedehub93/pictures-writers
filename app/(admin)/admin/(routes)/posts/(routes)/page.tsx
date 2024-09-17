@@ -15,12 +15,13 @@ const PostsPage = async () => {
   }
 
   const posts = await db.post.findMany({
-    orderBy: {
-      createdAt: "desc",
-    },
     include: {
       imageCover: true,
     },
+    orderBy: {
+      createdAt: "desc",
+    },
+    distinct: ["rootId"],
   });
 
   return (

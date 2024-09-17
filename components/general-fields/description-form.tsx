@@ -20,10 +20,13 @@ import {
 import { Input } from "@/components/ui/input";
 
 import { CharsCounter } from "@/components/chars-counter";
+import { ContentStatus } from "@prisma/client";
 
 interface DescriptionFormProps {
   initialData: {
+    id: string;
     description: string | null;
+    status: ContentStatus;
   };
   label?: string;
   placeholder: string;
@@ -54,9 +57,22 @@ export const DescriptionForm = ({
   const { isValid, touchedFields } = form.formState;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (initialData.status === ContentStatus.PUBLISHED) {
+      try {
+        await axios.post(`${apiUrl}/versions`, values);
+        toast.success(`Item updated`);
+      } catch {
+        toast.error("Something went wrong");
+      } finally {
+        router.refresh();
+      }
+
+      return;
+    }
+
     try {
-      await axios.patch(`${apiUrl}`, values);
-      toast.success("Item updated");
+      await axios.patch(`${apiUrl}/versions/${initialData.id}`, values);
+      toast.success(`Item updated`);
     } catch {
       toast.error("Something went wrong");
     } finally {

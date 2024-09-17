@@ -5,25 +5,18 @@ import { formatDistance } from "date-fns";
 import { it } from "date-fns/locale";
 
 import { db } from "@/lib/db";
+import { ContentStatus } from "@prisma/client";
 
 const LatestNews = async () => {
   const latestNews = await db.post.findMany({
     where: {
-      isPublished: true,
+      status: ContentStatus.PUBLISHED,
     },
     include: {
       imageCover: true,
       user: true,
-      versions: {
-        include: {
-          imageCover: true,
-        },
-        take: 1,
-        orderBy: {
-          createdAt: "desc",
-        },
-      },
     },
+    distinct: ["rootId"],
     take: 3,
     orderBy: {
       createdAt: "desc",
@@ -42,8 +35,8 @@ const LatestNews = async () => {
         <div className="mx-auto grid grid-cols-1 gap-8 lg:grid-cols-3">
           {latestNews.map((post) => {
             return (
-              <div key={post.versions[0]?.title}>
-                {post.versions[0]?.imageCover ? (
+              <div key={post.title}>
+                {post.imageCover ? (
                   <div
                     key={post.title}
                     className="relative aspect-video overflow-clip mb-4 rounded-md"
@@ -53,8 +46,8 @@ const LatestNews = async () => {
                       className="w-full h-full inset-0 absolute z-10"
                     />
                     <Image
-                      alt={post.versions[0]?.imageCover.altText || ""}
-                      src={post.versions[0]?.imageCover.url}
+                      alt={post.imageCover.altText || ""}
+                      src={post.imageCover.url}
                       fill
                       className="object-cover"
                     />
@@ -68,14 +61,12 @@ const LatestNews = async () => {
                     })}
                     &nbsp;
                   </span>
-                  <span>{post.user.id}</span>
+                  <span>{post?.user?.id}</span>
                 </div>
                 <h3 className="mb-2 text-lg font-bold leading-5 text-heading">
-                  {post.versions[0]?.title}
+                  {post.title}
                 </h3>
-                <p className="mb-4 leading-6 ">
-                  {post.versions[0]?.description}
-                </p>
+                <p className="mb-4 leading-6 ">{post.description}</p>
                 <Link
                   href={post.slug}
                   className="font-bold text-primary-public flex items-center gap-x-2"
