@@ -1,10 +1,10 @@
-import { PostVersionWithImageCoverWithCategoryWithTags } from "@/lib/post";
 import PostCard from "./post-card";
 import { PostPagination } from "./post-pagination";
 import Sidebar from "@/components/sidebar";
+import { PostWithImageCoverWithCategoryWithTags } from "@/lib/post";
 
 interface PostListProps {
-  posts: PostVersionWithImageCoverWithCategoryWithTags[];
+  posts: PostWithImageCoverWithCategoryWithTags[];
   currentPage: number;
   totalPages: number;
 }

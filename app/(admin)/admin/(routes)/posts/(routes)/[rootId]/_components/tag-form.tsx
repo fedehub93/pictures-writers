@@ -1,6 +1,6 @@
 "use client";
 
-import { ContentStatus, Post, Tag, TagStatus } from "@prisma/client";
+import { ContentStatus, Post, Tag } from "@prisma/client";
 import * as z from "zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -26,13 +26,13 @@ interface TagFormProps {
   };
   rootId: string;
   postId: string;
-  options: { label: string; value: string; status?: TagStatus }[];
+  options: { label: string; value: string; status: ContentStatus }[];
 }
 
 const optionSchema = z.object({
   label: z.string(),
   value: z.string(),
-  status: z.nativeEnum(TagStatus),
+  status: z.nativeEnum(ContentStatus),
 });
 
 const formSchema = z.object({

@@ -1,7 +1,8 @@
-import { PostVersionWithImageCoverWithCategoryWithTags } from "@/lib/post";
 import Image from "next/image";
-import PostInfo from "../../blog/_components/post-info";
 import { SlateView } from "slate-to-react";
+
+import { PostWithImageCoverWithCategoryWithTags } from "@/lib/post";
+
 import {
   Blockquote,
   BulletedList,
@@ -15,15 +16,19 @@ import {
   NumberedList,
   Paragraph,
 } from "@/components/editor/view/elements";
+
 import { RichText } from "@/components/editor/view/leaves";
+
 import Sidebar from "@/components/sidebar";
+
+import PostInfo from "@/app/(home)/(routes)/blog/_components/post-info";
 
 import TagsWidget from "./tags-widget";
 import NewsletterWidget from "./newsletter-widget";
 import AuthorWidget from "./author-widget";
 
 interface PostTemplateProps {
-  post: PostVersionWithImageCoverWithCategoryWithTags;
+  post: PostWithImageCoverWithCategoryWithTags;
 }
 
 export const PostTemplate = ({ post }: PostTemplateProps) => {
@@ -66,7 +71,7 @@ export const PostTemplate = ({ post }: PostTemplateProps) => {
                   BulletedList,
                   ListItem,
                   ImageElement,
-                  NumberedList
+                  NumberedList,
                 ],
                 leaves: [RichText],
               }}
