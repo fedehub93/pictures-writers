@@ -5,6 +5,7 @@ import {
   AlignCenter,
   AlignLeft,
   AlignRight,
+  Blocks,
   Bold,
   ChevronDown,
   Image,
@@ -52,6 +53,10 @@ const Toolbar = ({ showEmbedButton = true }: ToolbarProps) => {
 
   const getAffiliateLink = ({ url, label }: { url: string; label: string }) => {
     CustomEditorHelper.insertAffiliateLink(editor, url || "", label || "");
+  };
+
+  const insertSponsorFirstImpression = () => {
+    CustomEditorHelper.insertSponsorFirstImpression(editor);
   };
 
   return (
@@ -114,6 +119,10 @@ const Toolbar = ({ showEmbedButton = true }: ToolbarProps) => {
               >
                 <Link className="h-4 w-4 mr-2" />
                 Affiliate link
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={insertSponsorFirstImpression}>
+                <Blocks className="h-4 w-4 mr-2" />
+                Sponsor first impression
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

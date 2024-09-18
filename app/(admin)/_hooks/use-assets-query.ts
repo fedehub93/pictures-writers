@@ -35,6 +35,7 @@ export const useAssetsQuery = (s = "", windowIsOpen = false) => {
     refetchOnWindowFocus: false,
   });
 
+
   return {
     data,
     fetchNextPage,

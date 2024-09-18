@@ -27,6 +27,7 @@ export type CustomElementType =
   | "image"
   | "video"
   | "affiliate-link"
+  | "sponsor-first-impression"
   | "left"
   | "right"
   | "center";

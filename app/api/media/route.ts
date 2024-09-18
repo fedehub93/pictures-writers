@@ -38,7 +38,13 @@ export async function GET(req: Request) {
         },
       });
 
-      return NextResponse.json({ items: assets, nextCursor: null });
+      let nextCursor = null;
+
+      if (assets.length === MEDIA_BATCH) {
+        nextCursor = assets[MEDIA_BATCH - 1].id;
+      }
+
+      return NextResponse.json({ items: assets, nextCursor });
     } else {
       [media, totalMedia] = await db.$transaction([
         db.media.findMany({

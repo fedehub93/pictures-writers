@@ -202,6 +202,18 @@ export const CustomEditorHelper = {
       children: [{ text: "" }],
     });
   },
+  insertSponsorFirstImpression(editor: CustomEditor) {
+    const text = { text: "" };
+    const sponsor: any = {
+      type: "sponsor-first-impression",
+      children: [text],
+    };
+    Transforms.insertNodes(editor, sponsor);
+    Transforms.insertNodes(editor, {
+      type: "paragraph",
+      children: [{ text: "" }],
+    });
+  },
   serializeHTML(node: any) {
     return slateToHtml(node, slateDemoSlateToDomConfig);
     // if (Text.isText(node)) {

@@ -23,19 +23,16 @@ export const isImage = createElementNodeMatcher<ImageElement>(
 export const ImageElement = createElementTransform(
   isImage,
   ({ key, element, attributes, children }) => (
-    <div key={key}>
+    <div className="hover:scale-[1.02] my-4 transition-all overflow-hidden duration-300 rounded-md shadow-md">
       {children}
-      <div
-        contentEditable={false}
-        className="relative group shadow-md w-full aspect-video"
-      >
-        <Image
-          src={element.url!}
-          alt={element.altText}
-          fill
-          className="rounded-md object-cover"
-        />
-      </div>
+      <Image
+        src={element.url!}
+        alt={element.altText}
+        sizes="100vw"
+        className="w-full h-auto"
+        width={500}
+        height={300}
+      />
     </div>
   )
 );

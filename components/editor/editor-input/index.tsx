@@ -32,6 +32,7 @@ import { CustomEditorHelper } from "../utils/custom-editor";
 import { EmbeddedImage } from "./elements/image";
 import { EmbeddedVideo } from "./elements/embedded-video";
 import { AffiliateLink } from "./elements/embedded-affiliate-link";
+import FirstImpressionSnippet from "./elements/sponsor-first-impression";
 
 const SOFT_BREAK_ELEMENTS = [
   "heading-1",
@@ -139,8 +140,6 @@ export const withInlines = (editor: CustomEditor) => {
     }
 
     if (Element.isElement(node) && node.type === "list-item") {
-      console.log(node);
-
       // FIX: normalize blockquote children
       const children = Array.from(Node.children(editor, path));
       for (const [child, childPath] of children) {
@@ -303,6 +302,8 @@ const EditorInput = ({
             element={props.element as EmbeddedAffiliateLinkElement}
           />
         );
+      case "sponsor-first-impression":
+        return <FirstImpressionSnippet />;
       case "code":
         return <div {...props.attributes}>{props.children}</div>;
       default:

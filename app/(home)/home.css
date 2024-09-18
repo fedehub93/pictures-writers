@@ -287,4 +287,8 @@ body,
   .footer .footer__copyright {
     @apply flex h-14 flex-col items-center justify-center md:flex-row;
   }
+
+  .evidence {
+    @apply mt-2 rounded-md bg-secondary p-1 font-bold text-primary;
+  }
 }

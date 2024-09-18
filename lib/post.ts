@@ -15,7 +15,7 @@ export type PostWithImageCoverWithCategoryWithTags = Post & {
   imageCover: Media | null;
   category: Category | null;
   tags: Tag[];
-  user: User;
+  user: User | null;
 };
 
 type GetPublishedPosts = {
@@ -93,6 +93,7 @@ export const getPublishedPostBySlug = async (slug: string) => {
       imageCover: true,
       category: true,
       tags: true,
+      user: true,
     },
     distinct: ["rootId"],
     orderBy: {
@@ -118,7 +119,6 @@ export const getLatestPublishedPosts = async () => {
       createdAt: "desc",
     },
   });
-  console.log(posts);
   return posts;
 };
 

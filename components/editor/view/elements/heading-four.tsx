@@ -20,8 +20,8 @@ export const isHeadingFour = createElementNodeMatcher<HeadingFour>(
 export const HeadingFour = createElementTransform(
   isHeadingFour,
   ({ key, element, attributes, children }) => (
-    <h1 className="text-lg mb-2" key={key}>
+    <h4 className="text-lg mb-2" key={key}>
       {children}
-    </h1>
+    </h4>
   )
 );
