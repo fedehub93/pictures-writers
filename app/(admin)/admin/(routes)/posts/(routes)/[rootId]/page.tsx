@@ -98,7 +98,7 @@ const PostIdPage = async ({ params }: { params: { rootId: string } }) => {
               <TabsTrigger value="post">Post</TabsTrigger>
               <TabsTrigger value="seo">SEO</TabsTrigger>
             </TabsList>
-            <TabsContent value="post" className="flex flex-col gap-y-4 pb-8">
+            <TabsContent value="post" className="flex flex-col gap-y-4">
               <TitleForm
                 initialData={post}
                 placeholder="e.g. How to write a screenplay"

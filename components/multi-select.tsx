@@ -380,9 +380,10 @@ const MultipleSelector = React.forwardRef<
                   className={cn(
                     "data-[disabled]:bg-muted-foreground data-[disabled]:text-muted data-[disabled]:hover:bg-muted-foreground",
                     "data-[fixed]:bg-muted-foreground data-[fixed]:text-muted data-[fixed]:hover:bg-muted-foreground",
+                    option.status === ContentStatus.DRAFT && "bg-slate-700",
+                    option.status === ContentStatus.CHANGED && "bg-sky-700",
                     option.status === ContentStatus.PUBLISHED &&
                       "bg-emerald-700",
-                    option.status === ContentStatus.CHANGED && "bg-sky-700",
                     badgeClassName
                   )}
                   data-fixed={option.fixed}

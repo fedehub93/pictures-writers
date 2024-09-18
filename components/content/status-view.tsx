@@ -68,7 +68,11 @@ export const StatusView = ({
       <div className="flex w-full items-center justify-between">
         <p className="text-sm text-muted-foreground">Current</p>
         <Badge
-          className={cn("bg-sky-700", status === "DRAFT" && "bg-slate-500")}
+          className={cn(
+            status === ContentStatus.DRAFT && "bg-slate-700",
+            status === ContentStatus.CHANGED && "bg-sky-700",
+            status === ContentStatus.PUBLISHED && "bg-emerald-700"
+          )}
         >
           {status === ContentStatus.PUBLISHED
             ? "Published"

@@ -108,10 +108,10 @@ export const CategoryForm = ({
         {initialData.category && (
           <Badge
             className={cn(
-              "bg-sky-700",
-              selectedOption?.status === ContentStatus.CHANGED &&
-                "bg-slate-500",
-              selectedOption?.status === ContentStatus.DRAFT && "bg-red-500"
+              selectedOption?.status === ContentStatus.DRAFT && "bg-slate-700",
+              selectedOption?.status === ContentStatus.CHANGED && "bg-sky-700",
+              selectedOption?.status === ContentStatus.PUBLISHED &&
+                "bg-emerald-700"
             )}
           >
             {selectedOption?.status === ContentStatus.PUBLISHED

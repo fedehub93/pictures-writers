@@ -90,7 +90,7 @@ export const columns: ColumnDef<EbookWithUser>[] = [
       return (
         <Badge
           className={cn(
-            "bg-slate-500",
+            status === ContentStatus.DRAFT && "bg-slate-700",
             status === ContentStatus.CHANGED && "bg-sky-700",
             status === ContentStatus.PUBLISHED && "bg-emerald-700"
           )}
