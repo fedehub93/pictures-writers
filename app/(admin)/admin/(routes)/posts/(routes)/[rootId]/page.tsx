@@ -1,22 +1,25 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
-import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
+import { authAdmin } from "@/lib/auth-service";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { TitleForm } from "@/components/general-fields/title-form";
+import { DescriptionForm } from "@/components/general-fields/description-form";
 import { SlugForm } from "@/components/general-fields/slug-form";
 
-import { ContentForm } from "./_components/content-form";
 import { ImageForm } from "./_components/image-form";
 import { CategoryForm } from "./_components/category-form";
-import { DescriptionForm } from "@/components/general-fields/description-form";
+import { ContentForm } from "./_components/content-form";
 import { TagForm } from "./_components/tag-form";
+
 import { SeoEditView } from "@/components/seo/seo-edit-view";
 import { SeoContentTypeApi } from "@/components/seo/types";
+
 import { StatusView } from "@/components/content/status-view";
+
 import { ContentIdActions } from "@/components/content/content-id-actions";
 import { ContentStatus } from "@prisma/client";
 
@@ -39,7 +42,6 @@ const PostIdPage = async ({ params }: { params: { rootId: string } }) => {
       tags: true,
       seo: true,
     },
-    take: 1,
   });
 
   if (!post || !post.rootId) {
@@ -47,13 +49,13 @@ const PostIdPage = async ({ params }: { params: { rootId: string } }) => {
   }
 
   const categories = await db.category.findMany({
+    distinct: ["rootId"],
     orderBy: [{ createdAt: "desc" }, { title: "asc" }],
-    take: 1,
   });
 
   const tags = await db.tag.findMany({
+    distinct: ["rootId"],
     orderBy: [{ createdAt: "desc" }, { title: "asc" }],
-    take: 1,
   });
 
   const requiredFields = [
