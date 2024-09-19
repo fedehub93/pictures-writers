@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+import { ContentStatus } from "@prisma/client";
 import { redirect } from "next/navigation";
 
 import { db } from "@/lib/db";
@@ -21,7 +22,6 @@ import { SeoContentTypeApi } from "@/components/seo/types";
 import { StatusView } from "@/components/content/status-view";
 
 import { ContentIdActions } from "@/components/content/content-id-actions";
-import { ContentStatus } from "@prisma/client";
 
 const PostIdPage = async ({ params }: { params: { rootId: string } }) => {
   const userAdmin = await authAdmin();

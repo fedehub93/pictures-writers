@@ -41,13 +41,14 @@ const TEXT_TAGS: Record<string, () => ElementAttributes> = {
   I: () => ({ italic: true }),
   S: () => ({ strikethrough: true }),
   STRONG: () => ({ bold: true }),
+  B: () => ({ bold: true }),
   U: () => ({ underline: true }),
 };
 
 // Funzione per deserializzare un nodo HTML in nodi Slate
 const deserialize = (el: any): any => {
   if (el.nodeType === 3) {
-    return el.textContent;
+    return el.textContent.replace(/\r?\n|\r/g, "");
   } else if (el.nodeType !== 1) {
     return null;
   } else if (el.nodeName === "BR") {
@@ -79,6 +80,7 @@ const deserialize = (el: any): any => {
     return jsx("element", attrs, children);
   }
 
+  console.log(nodeName);
   if (TEXT_TAGS[nodeName]) {
     const attrs = TEXT_TAGS[nodeName]();
     return children.map((child) => jsx("text", attrs, child));
@@ -95,6 +97,10 @@ const withPasteHandler = (editor: CustomEditor) => {
 
     if (html) {
       const parsed = new DOMParser().parseFromString(html, "text/html");
+      const regex = /<!--StartFragment-->([\s\S]*?)<!--EndFragment-->/;
+      const outerHTML = parsed.body.outerHTML;
+      const match = outerHTML.match(regex);
+      parsed.body.innerHTML = match?.[1]?.trim() || "";
       const fragment = deserialize(parsed.body);
       Transforms.insertFragment(editor, fragment);
       return;
