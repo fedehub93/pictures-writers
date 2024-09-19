@@ -3,7 +3,7 @@
 import { Search } from "lucide-react";
 import { useDebounceValue } from "usehooks-ts";
 import { BeatLoader } from "react-spinners";
-import { Category, Media, PostVersion, User } from "@prisma/client";
+import { Category, Media, User } from "@prisma/client";
 import { formatDistance } from "date-fns";
 import { it } from "date-fns/locale";
 import Image from "next/image";

@@ -37,6 +37,6 @@ export const RichText = createLeafTransform(
       element = <u>{element}</u>;
     }
 
-    return <span key={key}>{element}</span>;
+    return <>{element}</>;
   }
 );

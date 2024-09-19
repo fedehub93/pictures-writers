@@ -92,7 +92,7 @@ export const PostTemplate = ({ post }: PostTemplateProps) => {
           />
         )}
       </div>
-      <div className="blog-post__sidebar sticky top-20">
+      <div className="blog-post__sidebar sticky -top-20">
         <Sidebar />
       </div>
     </section>

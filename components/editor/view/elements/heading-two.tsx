@@ -21,16 +21,22 @@ export const isHeadingTwo = createElementNodeMatcher<HeadingTwo>(
 
 export const HeadingTwo = createElementTransform(
   isHeadingTwo,
-  ({ key, element, attributes, children }) => (
-    <h2
-      key={key}
-      className={cn(
-        element.align === "left" && "text-left",
-        element.align === "center" && "text-center",
-        element.align === "right" && "text-right"
-      )}
-    >
-      {children}
-    </h2>
-  )
+  ({ key, element, attributes, children }) => {
+    const id = element.children
+      ? element.children[0].text.replace(/[^A-Z0-9]/gi, "_").toLowerCase()
+      : "no_id";
+    return (
+      <h2
+        key={key}
+        id={id}
+        className={cn(
+          element.align === "left" && "text-left",
+          element.align === "center" && "text-center",
+          element.align === "right" && "text-right"
+        )}
+      >
+        {children}
+      </h2>
+    );
+  }
 );

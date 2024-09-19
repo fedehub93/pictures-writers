@@ -21,16 +21,23 @@ export const isHeadingOne = createElementNodeMatcher<HeadingOne>(
 
 export const HeadingOne = createElementTransform(
   isHeadingOne,
-  ({ key, element, attributes, children }) => (
-    <h1
-      key={key}
-      className={cn(
-        element.align === "left" && "text-left",
-        element.align === "center" && "text-center",
-        element.align === "right" && "text-right"
-      )}
-    >
-      {children}
-    </h1>
-  )
+  ({ key, element, attributes, children }) => {
+    const id =
+      children && typeof children === "string"
+        ? children.replace(/[^A-Z0-9]/gi, "_").toLowerCase()
+        : "no_id";
+    return (
+      <h1
+        key={key}
+        id={id}
+        className={cn(
+          element.align === "left" && "text-left",
+          element.align === "center" && "text-center",
+          element.align === "right" && "text-right"
+        )}
+      >
+        {children}
+      </h1>
+    );
+  }
 );

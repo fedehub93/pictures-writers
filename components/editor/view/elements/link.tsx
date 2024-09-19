@@ -6,6 +6,7 @@ import {
 } from "slate-to-react";
 import { CustomText } from "@/components/editor";
 import { cn } from "@/lib/utils";
+import NextLink from "next/link"
 
 type Link = Replace<
   Node<"hyperlink">,
@@ -26,7 +27,7 @@ export const Link = createElementTransform(
     const isAnchor = element.data.uri.includes("#");
 
     return (
-      <a
+      <NextLink
         href={element.data.uri}
         className={cn("underline")}
         rel="noopener noreferrer nofollow"
@@ -34,7 +35,7 @@ export const Link = createElementTransform(
         key={key}
       >
         {children}
-      </a>
+      </NextLink>
     );
   }
 );

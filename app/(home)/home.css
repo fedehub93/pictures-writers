@@ -6,6 +6,11 @@ html,
 body,
 :root {
   height: 100%;
+  scroll-behavior: smooth;
+}
+
+h2 {
+  scroll-margin-top: 100px;
 }
 
 @layer base {
