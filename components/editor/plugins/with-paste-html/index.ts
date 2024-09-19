@@ -80,7 +80,14 @@ const deserialize = (el: any): any => {
     return jsx("element", attrs, children);
   }
 
-  console.log(nodeName);
+  // Specifico per post-quote
+  if (el.nodeName === "DIV") {
+    const classes = Array.from(el.classList);
+    if (classes.includes("post-quote")) {
+      return jsx("element", { type: "blockquote" }, children);
+    }
+  }
+
   if (TEXT_TAGS[nodeName]) {
     const attrs = TEXT_TAGS[nodeName]();
     return children.map((child) => jsx("text", attrs, child));
