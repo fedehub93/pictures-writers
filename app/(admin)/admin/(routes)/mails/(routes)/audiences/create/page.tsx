@@ -6,9 +6,7 @@ import { useRouter } from "next/navigation";
 import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import slugify from "slugify";
 import toast from "react-hot-toast";
-import { Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {

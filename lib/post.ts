@@ -44,6 +44,7 @@ export const getPublishedPosts = async ({
     include: {
       imageCover: true,
       category: true,
+      tags: true,
       user: true,
     },
     distinct: ["rootId"],
