@@ -38,9 +38,8 @@ export const getPublishedCategoryById = async (id: string) => {
 
 export const getPublishedCategoryBySlug = async (slug: string) => {
   const category = await db.category.findFirst({
-    where: {
-      slug,
-    },
+    where: { slug },
+    distinct: ["rootId"],
     orderBy: {
       publishedAt: "desc",
     },

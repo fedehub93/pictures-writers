@@ -20,7 +20,7 @@ import {
 
 import { RichText } from "@/components/editor/view/leaves";
 
-import Sidebar from "@/components/sidebar";
+import Sidebar from "@/app/(home)/_components/sidebar";
 
 import PostInfo from "@/app/(home)/(routes)/blog/_components/post-info";
 

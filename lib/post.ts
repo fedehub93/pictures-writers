@@ -94,6 +94,7 @@ export const getPublishedPostBySlug = async (slug: string) => {
       imageCover: true,
       category: true,
       tags: true,
+      seo: true,
       user: true,
     },
     distinct: ["rootId"],

@@ -42,6 +42,7 @@ export async function GET(req: Request) {
           ],
         },
         include: {
+          imageCover: true,
           user: true,
         },
         distinct: ["rootId"],
@@ -80,6 +81,7 @@ export async function GET(req: Request) {
         ],
       },
       include: {
+        imageCover: true,
         user: true,
       },
       distinct: ["rootId"],

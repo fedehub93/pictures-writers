@@ -138,6 +138,7 @@ model Post {
   user   User?   @relation(fields: [userId], references: [id])
   userId String?
 
+  firstPublishedAt DateTime @default(now())
   publishedAt DateTime @default(now())
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -165,9 +166,10 @@ model Category {
   seo   Seo?    @relation(fields: [seoId], references: [id])
   seoId String?
 
-  publishedAt DateTime @default(now())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  firstPublishedAt DateTime @default(now())
+  publishedAt      DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   @@index([rootId])
 }
@@ -192,6 +194,7 @@ model Tag {
   seo   Seo?    @relation(fields: [seoId], references: [id])
   seoId String?
 
+  firstPublishedAt DateTime @default(now())
   publishedAt DateTime @default(now())
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

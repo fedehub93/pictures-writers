@@ -1,6 +1,6 @@
 import PostCard from "./post-card";
 import { PostPagination } from "./post-pagination";
-import Sidebar from "@/components/sidebar";
+import Sidebar from "@/app/(home)/_components/sidebar";
 import { PostWithImageCoverWithCategoryWithTags } from "@/lib/post";
 
 interface PostListProps {

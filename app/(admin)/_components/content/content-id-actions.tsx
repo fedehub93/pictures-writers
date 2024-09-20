@@ -7,7 +7,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
-import { SeoContentTypeApi } from "@/components/seo/types";
+import { SeoContentTypeApi } from "@/app/(admin)/_components/seo/types";
 
 import { Button } from "@/components/ui/button";
 

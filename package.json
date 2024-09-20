@@ -55,6 +55,7 @@
     "react-hook-form": "^7.53.0",
     "react-hot-toast": "^2.4.1",
     "react-spinners": "^0.14.1",
+    "schema-dts": "^1.1.2",
     "slate": "^0.103.0",
     "slate-hyperscript": "^0.100.0",
     "slate-react": "^0.110.1",

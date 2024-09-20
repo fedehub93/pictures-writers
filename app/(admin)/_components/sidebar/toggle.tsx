@@ -7,11 +7,10 @@ import { ArrowLeftFromLine, ArrowRightFromLine } from "lucide-react";
 export const Toggle = () => {
   const { collapsed, onExpand, onCollapse } = useSidebar((state) => state);
 
-  const label = collapsed ? "Expand" : "Collapse";
   return (
     <>
       {collapsed && (
-        <div className="hidden lg:flex w-full items-center justify-center pt-4 mb-4">
+        <div className="flex w-full items-center justify-center pt-4 mb-4">
           <Button onClick={onExpand} className="h-auto p-2" variant="ghost">
             <ArrowRightFromLine className="h-4 w-4" />
           </Button>

@@ -3,6 +3,7 @@ import {
   BookImage,
   BookText,
   Boxes,
+  ChartLine,
   Contact,
   Group,
   LayoutDashboard,
@@ -96,6 +97,12 @@ export const sideLinks: SideLink[] = [
     label: "",
     href: "/admin/ebooks",
     icon: BookText,
+  },
+  {
+    title: "SEO",
+    label: "",
+    href: "/admin/seo",
+    icon: ChartLine,
   },
   {
     title: "Users",
