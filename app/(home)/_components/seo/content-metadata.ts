@@ -2,7 +2,9 @@ import { db } from "@/lib/db";
 import { Media, Post, Seo, User } from "@prisma/client";
 import { Metadata } from "next";
 
-export async function getPostMetadataBySlug(slug: string): Promise<Metadata> {
+export async function getPostMetadataBySlug(
+  slug: string
+): Promise<Metadata | null> {
   const post = (await db.post.findFirst({
     where: { slug },
     include: {
@@ -17,6 +19,8 @@ export async function getPostMetadataBySlug(slug: string): Promise<Metadata> {
     imageCover: Media;
     user: User;
   };
+
+  if (!post) return null;
   return {
     title: post.seo.title,
     description: post.seo.description,

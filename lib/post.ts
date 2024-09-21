@@ -1,11 +1,4 @@
-import {
-  Category,
-  ContentStatus,
-  Media,
-  Post,
-  Tag,
-  User,
-} from "@prisma/client";
+import { Category, ContentStatus, Media, Post, Tag, User } from "@prisma/client";
 import { db } from "./db";
 
 const POST_PER_PAGE = 10;

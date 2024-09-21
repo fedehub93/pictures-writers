@@ -55,10 +55,10 @@ export const sendFreeEbookEmail = async (email: string, ebookId: string) => {
     subject: `Free ebook: ${ebook.title}`,
     html: template({
       email,
+      id: ebook.id,
       title: ebook.title,
       description: ebook.description,
       imageCoverUrl: ebook.imageCoverUrl,
-      fileUrl: ebook.fileUrl,
     }),
   });
 

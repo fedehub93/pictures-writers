@@ -14,7 +14,9 @@ type Props = {
   params: Params;
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: Props): Promise<Metadata | null> {
   const { slug } = params;
 
   return await getPostMetadataBySlug(slug);
@@ -24,7 +26,6 @@ export const Page = async ({ params }: { params: { slug: string } }) => {
   const post = await getPublishedPostBySlug(params.slug);
 
   if (post) {
-    console.log("POST", post);
     const bodyImages =
       post.bodyData
         .filter(
