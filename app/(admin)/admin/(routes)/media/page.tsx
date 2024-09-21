@@ -2,8 +2,8 @@ import { authAdmin } from "@/lib/auth-service";
 import { auth } from "@clerk/nextjs/server";
 
 import { db } from "@/lib/db";
+import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
 import { AssetsList } from "./_components/assets-list";
-import { ContentHeader } from "@/components/content/content-header";
 
 const PER_PAGE = 8;
 

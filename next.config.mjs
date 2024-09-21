@@ -1,3 +1,5 @@
+import path from "path";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
@@ -9,11 +11,9 @@ const nextConfig = {
     ],
   },
   webpack: (config) => {
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      "handlebars/runtime": "handlebars/dist/cjs/handlebars.runtime",
-      handlebars: "handlebars/dist/cjs/handlebars.runtime",
-    };
+    config.resolve.alias["handlebars"] = path.resolve(
+      "./node_modules/handlebars/dist/handlebars.js"
+    );
     return config;
   },
 };

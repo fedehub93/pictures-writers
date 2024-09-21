@@ -23,21 +23,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export const Page = async ({ params }: { params: { slug: string } }) => {
   const post = await getPublishedPostBySlug(params.slug);
 
-  const bodyImages =
-    post?.bodyData
-      .filter(
-        (image) => image.type === "image" && image.url && image.url !== ""
-      )
-      .map((image) => image.url || "") || [];
-
-  const bodyVideos =
-    post?.bodyData
-      .filter(
-        (video) => video.type === "video" && video.url && video.url !== ""
-      )
-      .map((video) => video.url || "") || [];
-
   if (post) {
+    console.log("POST", post);
+    const bodyImages =
+      post.bodyData
+        .filter(
+          (image) => image.type === "image" && image.url && image.url !== ""
+        )
+        .map((image) => image.url || "") || [];
+
+    const bodyVideos =
+      post.bodyData
+        .filter(
+          (video) => video.type === "video" && video.url && video.url !== ""
+        )
+        .map((video) => video.url || "") || [];
+
     return (
       <>
         <BlogPostingJsonLd

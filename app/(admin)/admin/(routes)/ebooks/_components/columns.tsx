@@ -1,6 +1,6 @@
 "use client";
 
-import { ContentStatus, Ebook, User } from "@prisma/client";
+import { ContentStatus, Ebook } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
@@ -17,11 +17,7 @@ import { Badge } from "@/components/ui/badge";
 
 import { cn } from "@/lib/utils";
 
-type EbookWithUser = Ebook & {
-  user: User;
-};
-
-export const columns: ColumnDef<EbookWithUser>[] = [
+export const columns: ColumnDef<Ebook>[] = [
   {
     accessorKey: "title",
     header: ({ column }) => {

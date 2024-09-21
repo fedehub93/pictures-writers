@@ -30,7 +30,13 @@ export const subscribeFreeEbook = async (
     });
   }
 
-  await sendFreeEbookEmail(email, ebookId!);
+  const isEmailSent = await sendFreeEbookEmail(email, ebookId!);
+
+  if (!isEmailSent) {
+    return {
+      error: "C'è stato un errore durante l'invio della mail. Riprova.",
+    };
+  }
 
   return {
     success:

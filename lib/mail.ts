@@ -61,6 +61,8 @@ export const sendFreeEbookEmail = async (email: string, ebookId: string) => {
       fileUrl: ebook.fileUrl,
     }),
   });
+
+  return true;
 };
 
 type SendgridEmail = {

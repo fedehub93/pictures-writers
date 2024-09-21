@@ -31,7 +31,7 @@ const SidebarEbook = (): JSX.Element => {
     resolver: zodResolver(FreeEbookSchema),
     defaultValues: {
       email: "",
-      ebookId: "cdc51fdf-6d2e-4601-a985-50bb360bc29b",
+      ebookId: "5fbbabbf-6466-4514-9974-5879d3259347",
     },
   });
 
@@ -75,9 +75,9 @@ const SidebarEbook = (): JSX.Element => {
           Introduzione alla sceneggiatura cinematografica
         </span>
       </div>
-      {error && <div className="p-4 bg-destructive">{error}</div>}
+      {error && <div className="p-4 bg-red-500 shadow-sm rounded-md mb-2 font-bold">{error}</div>}
       {success && (
-        <div className="p-4 bg-emerald-100 shadow-sm rounded-md">{success}</div>
+        <div className="p-4 bg-emerald-500 shadow-sm rounded-md mb-2">{success}</div>
       )}
 
       {isPending ? (
