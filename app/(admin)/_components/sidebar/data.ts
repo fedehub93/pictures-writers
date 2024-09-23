@@ -1,9 +1,12 @@
 import {
+  Blend,
   Blocks,
   BookImage,
   BookText,
+  BookUp,
   Boxes,
   ChartLine,
+  ClipboardPen,
   Contact,
   Group,
   LayoutDashboard,
@@ -15,6 +18,7 @@ import {
   Mails,
   NotebookPen,
   Settings,
+  Shapes,
   Tags,
   Users,
 } from "lucide-react";
@@ -61,6 +65,12 @@ export const sideLinks: SideLink[] = [
     ],
   },
   {
+    title: "Ebooks",
+    label: "",
+    href: "/admin/ebooks",
+    icon: BookText,
+  },
+  {
     title: "Mails",
     label: "",
     href: "",
@@ -93,10 +103,40 @@ export const sideLinks: SideLink[] = [
     ],
   },
   {
-    title: "Ebooks",
+    title: "SEPARATOR",
+    label: "SEPARATOR",
+    href: "#",
+  },
+  {
+    title: "Coverage",
     label: "",
-    href: "/admin/ebooks",
-    icon: BookText,
+    href: "",
+    icon: BookUp,
+    sub: [
+      {
+        title: "First impressions",
+        label: "",
+        href: "/admin/coverage/impressions",
+        icon: ClipboardPen,
+      },
+      // {
+      //   title: "Formats",
+      //   label: "",
+      //   href: "/admin/coverage/formats",
+      //   icon: Shapes,
+      // },
+      // {
+      //   title: "Genres",
+      //   label: "",
+      //   href: "/admin/coverage/genres",
+      //   icon: Blend,
+      // },
+    ],
+  },
+  {
+    title: "SEPARATOR",
+    label: "SEPARATOR",
+    href: "#",
   },
   {
     title: "SEO",

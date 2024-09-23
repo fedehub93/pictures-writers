@@ -60,8 +60,9 @@ model Media {
   post Post[]
   seo  Seo[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  impressionId String?
 }
 
 enum ContentStatus {
@@ -139,9 +140,9 @@ model Post {
   userId String?
 
   firstPublishedAt DateTime @default(now())
-  publishedAt DateTime @default(now())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  publishedAt      DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   @@index([rootId])
 }
@@ -195,9 +196,9 @@ model Tag {
   seoId String?
 
   firstPublishedAt DateTime @default(now())
-  publishedAt DateTime @default(now())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  publishedAt      DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   @@index([rootId])
 }
@@ -339,6 +340,45 @@ model ContactForm {
   email   String
   subject String
   message String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Format {
+  id String @id @default(uuid())
+
+  title      String
+  Impression Impression[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Genre {
+  id String @id @default(uuid())
+
+  title      String
+  Impression Impression[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Impression {
+  id        String  @id @default(uuid())
+  title     String
+  firstName String?
+  lastName  String?
+  email     String
+  pageCount Int?
+  url       String  @db.Text
+
+  format   Format? @relation(fields: [formatId], references: [id])
+  formatId String?
+
+  genre   Genre?  @relation(fields: [genreId], references: [id])
+  genreId String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

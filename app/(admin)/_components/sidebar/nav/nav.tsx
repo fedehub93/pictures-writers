@@ -7,12 +7,17 @@ import { NavLink } from "./nav-link";
 import { NavLinkDropdown } from "./nav-link-dropdown";
 import { NavLinkIcon } from "./nav-link-icon";
 import { NavLinkIconDropdown } from "./nav-link-icon-dropdown";
+import { Separator } from "@/components/ui/separator";
 
 export const Nav = ({ links, isMobile = false }: NavProps) => {
   const { collapsed } = useSidebar((state) => state);
 
   const renderLink = ({ sub, ...rest }: SideLink) => {
     const key = `${rest.title}-${rest.href}`;
+
+    if (rest.title === "SEPARATOR") {
+      return <Separator />;
+    }
 
     if (collapsed && sub && !isMobile) {
       return <NavLinkIconDropdown {...rest} key={key} sub={sub} />;
