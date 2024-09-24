@@ -41,7 +41,7 @@ export type EmbeddedImageElement = {
 
 export type EmbeddedVideoElement = {
   type: "video";
-  url: string;
+  data: { uri: string };
   children: EmptyText[];
 };
 

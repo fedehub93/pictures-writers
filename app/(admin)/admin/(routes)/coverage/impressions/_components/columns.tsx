@@ -121,35 +121,35 @@ export const columns: ColumnDef<ImpressionWithFile>[] = [
       );
     },
   },
-  // {
-  //   id: "actions",
-  //   cell: ({ row }) => {
-  //     const { id, file } = row.original;
-  //     return (
-  //       <div className="flex gap-x-2">
-  //         {file && (
-  //           <Link href={`${file.url}`} target="_blank">
-  //             <Download className="h-4 w-4 mr-2" />
-  //           </Link>
-  //         )}
-  //         <DropdownMenu>
-  //           <DropdownMenuTrigger asChild>
-  //             <Button variant="ghost" className="h-4 w-8 p-0">
-  //               <span className="sr-only">Open menu</span>
-  //               <MoreHorizontal className="h-4 w-4" />
-  //             </Button>
-  //           </DropdownMenuTrigger>
-  //           <DropdownMenuContent align="end">
-  //             <Link href={`/admin/coverage/impressions/${id}`}>
-  //               <DropdownMenuItem>
-  //                 <Pencil className="h-4 w-4 mr-2" />
-  //                 Edit
-  //               </DropdownMenuItem>
-  //             </Link>
-  //           </DropdownMenuContent>
-  //         </DropdownMenu>
-  //       </div>
-  //     );
-  //   },
-  // },
+  {
+    id: "actions",
+    cell: ({ row }) => {
+      const { id, file } = row.original;
+      return (
+        <div className="flex gap-x-2">
+          {file && (
+            <Link href={`${file.url}`} target="_blank">
+              <Download className="h-4 w-4 mr-2" />
+            </Link>
+          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-4 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <Link href={`/admin/coverage/impressions/${id}`}>
+                <DropdownMenuItem>
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Edit
+                </DropdownMenuItem>
+              </Link>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      );
+    },
+  },
 ];

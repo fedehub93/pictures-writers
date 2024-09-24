@@ -21,7 +21,7 @@ export const SelectUrlModal = () => {
   const isModalOpen = isOpen && type === "selectUrl";
 
   const onSelect = async () => {
-    onCallback({ url, label });
+    onCallback(url);
     handleClose();
   };
 

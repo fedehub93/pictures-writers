@@ -1,9 +1,7 @@
 import { ReactEditor, RenderElementProps, useSlateStatic } from "slate-react";
+import { Transforms } from "slate";
 
 import { EmbeddedVideoElement } from "@/components/editor";
-import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
-import { Transforms } from "slate";
 
 interface VideoElementProps extends RenderElementProps {
   element: EmbeddedVideoElement;
@@ -16,8 +14,8 @@ export const EmbeddedVideo = ({
 }: VideoElementProps) => {
   const editor = useSlateStatic();
   const path = ReactEditor.findPath(editor, element);
-  const { url } = element;
-
+  const { data } = element;
+  console.log(data)
   const onHandleRemove = () => {
     Transforms.removeNodes(editor, { at: path });
   };
@@ -31,7 +29,7 @@ export const EmbeddedVideo = ({
           }}
         >
           <iframe
-            src={`${url}?title=0&byline=0&portrait=0`}
+            src={`${data.uri}?title=0&byline=0&portrait=0`}
             frameBorder="0"
             style={{
               position: "absolute",
@@ -41,7 +39,6 @@ export const EmbeddedVideo = ({
               height: "100%",
             }}
           />
-          
         </div>
 
         {/* <UrlInput

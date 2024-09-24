@@ -292,7 +292,7 @@ model EmailContactInteraction {
   interactionType String // es. 'newsletter_subscription', 'first_feedback_request', 'ebook_download'
   interactionDate DateTime @default(now())
 
-  contact   EmailContact @relation(fields: [contactId], references: [id])
+  contact   EmailContact @relation(fields: [contactId], references: [id], onDelete: Cascade)
   contactId String
 
   createdAt DateTime @default(now())

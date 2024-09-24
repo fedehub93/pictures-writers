@@ -179,7 +179,9 @@ export const CustomEditorHelper = {
     const text = { text: "" };
     const video: EmbeddedVideoElement = {
       type: "video",
-      url,
+      data: {
+        uri: url,
+      },
       children: [text],
     };
     Transforms.insertNodes(editor, video);
