@@ -54,3 +54,50 @@ export async function getPostMetadataBySlug(slug: string): Promise<Metadata> {
     },
   };
 }
+
+export async function getCategoryMetadataBySlug(
+  slug: string
+): Promise<Metadata | null> {
+  const category = await db.category.findFirst({
+    where: { slug },
+    include: {
+      seo: true,
+    },
+    distinct: ["rootId"],
+    orderBy: { createdAt: "desc" },
+  });
+
+  if (!category || !category.seo) {
+    return null;
+  }
+
+  return {
+    title: category.seo.title,
+    description: category.seo.description,
+    robots: {
+      index: !category.seo.noIndex,
+      follow: !category.seo.noFollow,
+      googleBot: {
+        index: !category.seo.noIndex,
+        follow: !category.seo.noFollow,
+      },
+    },
+    openGraph: {
+      title: category.seo.ogTwitterTitle || category.seo.title,
+      description:
+        category.seo.ogTwitterDescription || category.seo.description || "",
+      url: category.seo.ogTwitterUrl || "",
+      siteName: "Pictures Writers",
+      locale: "it_IT",
+      type: "article",
+      publishedTime: category.firstPublishedAt.toISOString(),
+      modifiedTime: category.publishedAt.toISOString(),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: category.seo.ogTwitterTitle || category.seo.title,
+      description:
+        category.seo.ogTwitterDescription || category.seo.description || "",
+    },
+  };
+}

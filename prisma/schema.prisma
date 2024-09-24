@@ -117,7 +117,8 @@ model Post {
 
   version Int
 
-  status ContentStatus @default(DRAFT)
+  status   ContentStatus @default(DRAFT)
+  isLatest Boolean       @default(true)
 
   /// [BodyData]
   bodyData Json @db.JsonB
@@ -159,6 +160,8 @@ model Category {
 
   status ContentStatus @default(DRAFT)
 
+  isLatest Boolean @default(true)
+
   rootId       String?
   root         Category?  @relation("RootChildren", fields: [rootId], references: [id])
   rootChildren Category[] @relation("RootChildren")
@@ -186,6 +189,8 @@ model Tag {
   version Int
 
   status ContentStatus @default(DRAFT)
+
+  isLatest Boolean @default(true)
 
   rootId       String?
   root         Tag?    @relation("RootChildren", fields: [rootId], references: [id])
@@ -316,6 +321,8 @@ model Ebook {
   version Int
 
   status ContentStatus @default(DRAFT)
+
+  isLatest Boolean @default(true)
 
   imageCoverUrl String?
   fileUrl       String?

@@ -23,6 +23,16 @@ type GetPublishedPosts = {
   s?: string;
 };
 
+type GetPublishedPostsByCategoryId = {
+  categoryRootId: string;
+  page: number;
+};
+
+type GetPublishedPostsByTagId = {
+  tagRootId: string;
+  page: number;
+};
+
 export const getPublishedPosts = async ({
   page,
   s = "",
@@ -65,6 +75,71 @@ export const getPublishedPosts = async ({
   return { posts: lastPublishedPosts, totalPages, currentPage: page };
 };
 
+export const getPublishedPostsByCategoryRootId = async ({
+  categoryRootId,
+  page,
+}: GetPublishedPostsByCategoryId) => {
+  const skip = POST_PER_PAGE * (page - 1);
+
+  const posts = await db.post.findMany({
+    where: {
+      status: ContentStatus.PUBLISHED,
+      isLatest: true,
+      category: { rootId: { equals: categoryRootId } },
+    },
+    include: {
+      imageCover: true,
+      category: true,
+      tags: true,
+      user: true,
+    },
+    distinct: ["rootId"],
+    take: POST_PER_PAGE,
+    skip: skip,
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  const totalPages = Math.ceil(posts.length / POST_PER_PAGE);
+
+  return { posts, totalPages, currentPage: page };
+};
+
+export const getPublishedPostsByTagRootId = async ({
+  tagRootId,
+  page,
+}: GetPublishedPostsByTagId) => {
+  const skip = POST_PER_PAGE * (page - 1);
+
+  const posts = await db.post.findMany({
+    where: {
+      status: ContentStatus.PUBLISHED,
+      isLatest: true,
+      tags: {
+        some: { rootId: { equals: tagRootId } },
+      },
+    },
+    include: {
+      imageCover: true,
+      category: true,
+      tags: true,
+      user: true,
+    },
+    distinct: ["rootId"],
+    take: POST_PER_PAGE,
+    skip: skip,
+    orderBy: {
+      publishedAt: "desc",
+    },
+  });
+  console.log(posts, tagRootId);
+
+  const totalPages = Math.ceil(posts.length / POST_PER_PAGE);
+
+  return { posts, totalPages, currentPage: page };
+};
+
 export const getPublishedPostById = async (id: string) => {
   const post = await db.post.findFirst({
     where: {
@@ -89,6 +164,7 @@ export const getPublishedPostBySlug = async (slug: string) => {
   const post = await db.post.findFirst({
     where: {
       slug,
+      isLatest: true,
     },
     include: {
       imageCover: true,
@@ -127,7 +203,14 @@ export const getLatestPublishedPosts = async () => {
 export const createNewVersionPost = async (rootId: string, values: any) => {
   // Trovo ultima versione pubblicata
   const publishedPost = await db.post.findFirst({
-    where: { rootId, status: ContentStatus.PUBLISHED },
+    where: {
+      rootId,
+      status: ContentStatus.PUBLISHED,
+      isLatest: true,
+    },
+    include: {
+      tags: true,
+    },
     orderBy: { createdAt: "desc" },
   });
 
@@ -135,6 +218,13 @@ export const createNewVersionPost = async (rootId: string, values: any) => {
     return { message: "Post not found", status: 404, post: null };
   }
 
+  // Aggiorna la vecchia versione
+  await db.post.updateMany({
+    where: { rootId: rootId },
+    data: { isLatest: false },
+  });
+
+  // Creo nuova versione
   const post = await db.post.create({
     data: {
       title: values.title || publishedPost.title,
@@ -153,10 +243,17 @@ export const createNewVersionPost = async (rootId: string, values: any) => {
       id: undefined,
       version: undefined,
       status: undefined,
+      isLatest: undefined,
       tags: values.tags
         ? {
             set: values.tags.map((tagId: { label: string; value: string }) => ({
               id: tagId.value,
+            })),
+          }
+        : publishedPost.tags.length > 0
+        ? {
+            set: publishedPost.tags.map((tag) => ({
+              id: tag.id,
             })),
           }
         : undefined,

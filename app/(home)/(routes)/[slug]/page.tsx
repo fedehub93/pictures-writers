@@ -24,7 +24,6 @@ export const Page = async ({ params }: { params: { slug: string } }) => {
   const post = await getPublishedPostBySlug(params.slug);
 
   if (post) {
-    console.log("POST", post);
     const bodyImages =
       post.bodyData
         .filter(

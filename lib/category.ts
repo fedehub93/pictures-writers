@@ -63,13 +63,20 @@ export const createNewVersionCategory = async (rootId: string, values: any) => {
     return { message: "Category not found", status: 404, category: null };
   }
 
+  // Aggiorna la vecchia versione
+  await db.category.updateMany({
+    where: { rootId: rootId },
+    data: { isLatest: false },
+  });
+
   const category = await db.category.create({
     data: {
       ...publishedCategory,
       ...values,
       id: undefined,
-      status: ContentStatus.CHANGED,
       version: publishedCategory.version + 1,
+      status: ContentStatus.CHANGED,
+      isLatest: true,
       rootId: undefined,
       root: {
         connect: { id: publishedCategory.rootId },

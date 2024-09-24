@@ -34,7 +34,7 @@ const PostIdPage = async ({ params }: { params: { rootId: string } }) => {
       rootId: params.rootId,
     },
     orderBy: {
-      createdAt: "desc",
+      publishedAt: "desc",
     },
     include: {
       imageCover: true,
@@ -45,7 +45,7 @@ const PostIdPage = async ({ params }: { params: { rootId: string } }) => {
   });
 
   if (!post || !post.rootId) {
-    redirect("/admin/posts");
+    return redirect("/admin/posts");
   }
 
   const categories = await db.category.findMany({
