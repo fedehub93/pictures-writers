@@ -1,11 +1,11 @@
 "use client";
 
-import Logo from "./logo";
+import { User } from "@prisma/client";
+
 import { Actions } from "./actions";
-import { useSidebar } from "@/store/use-sidebar";
 import { MobileSidebar } from "../sidebar/mobile-sidebar";
 
-export const Navbar = () => {
+export const Navbar = ({ user }: { user: User }) => {
   return (
     <div className="flex flex-none items-center gap-4 bg-background h-16 shadow-sm dark:shadow-white p-4 md:px-8">
       <MobileSidebar />
@@ -14,7 +14,7 @@ export const Navbar = () => {
         Overview
       </nav>
       <div className="ml-auto">
-        <Actions />
+        <Actions user={user} />
       </div>
     </div>
   );

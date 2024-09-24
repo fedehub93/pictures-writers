@@ -3,13 +3,13 @@ import { UTApi } from "uploadthing/server";
 import { MediaType } from "@prisma/client";
 
 import { db } from "@/lib/db";
-import { getContactByEmail } from "@/data/email-contact";
+import { createContactByEmail } from "@/data/email-contact";
+import { handleScriptSubmitted } from "@/lib/event-handler";
 
 const utapi = new UTApi();
 
 export async function POST(req: Request) {
   try {
-    // const values = await req.json();
     const formData = await req.formData();
     const title = formData.get("title");
     const firstName = formData.get("firstName");
@@ -20,7 +20,7 @@ export async function POST(req: Request) {
     const genreId = formData.get("genreId");
     const file = formData.get("file") as File;
 
-    // Controllo che i valori non siano null
+    // Check values
     if (typeof title !== "string") {
       return NextResponse.json(
         { error: "Title non è valido" },
@@ -74,16 +74,19 @@ export async function POST(req: Request) {
       );
     }
 
+    //  Check file
     if (!file) {
       return new NextResponse("BAD REQUEST", { status: 400 });
     }
 
+    //  Upload on UploadThing
     const utRes = await utapi.uploadFiles(file);
 
     if (!utRes.data?.key || !utRes.data.url || !utRes.data.name) {
       return new NextResponse("BAD REQUEST", { status: 400 });
     }
 
+    //  Create Asset
     const asset = await db.media.create({
       data: {
         key: utRes.data?.key,
@@ -98,6 +101,7 @@ export async function POST(req: Request) {
       return new NextResponse("BAD REQUEST", { status: 400 });
     }
 
+    //  Create Impression
     const newImpression = await db.impression.create({
       data: {
         title: title,
@@ -109,7 +113,7 @@ export async function POST(req: Request) {
       return new NextResponse("BAD REQUEST", { status: 400 });
     }
 
-    const impression = db.impression.update({
+    const impression = await db.impression.update({
       where: { id: newImpression.id },
       data: {
         firstName,
@@ -121,21 +125,15 @@ export async function POST(req: Request) {
       },
     });
 
-    const existingContact = await getContactByEmail(email);
-
-    if (!existingContact) {
-      await db.emailContact.create({
-        data: {
-          email,
-          isSubscriber: true,
-          emailVerified: new Date(),
-        },
-      });
-    }
-
     if (!impression) {
       return new NextResponse("BAD REQUEST", { status: 400 });
     }
+
+    //  Create contact
+    await createContactByEmail(email);
+
+    //  Send notification to admins
+    await handleScriptSubmitted();
 
     return NextResponse.json(impression);
   } catch (error) {

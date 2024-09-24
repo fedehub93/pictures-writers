@@ -103,8 +103,8 @@ export const sideLinks: SideLink[] = [
     ],
   },
   {
-    title: "SEPARATOR",
-    label: "SEPARATOR",
+    title: "SEPARATOR_1",
+    label: "SEPARATOR_1",
     href: "#",
   },
   {
@@ -134,8 +134,8 @@ export const sideLinks: SideLink[] = [
     ],
   },
   {
-    title: "SEPARATOR",
-    label: "SEPARATOR",
+    title: "SEPARATOR_2",
+    label: "SEPARATOR_2",
     href: "#",
   },
   {

@@ -6,12 +6,14 @@ import { useMediaQuery } from "usehooks-ts";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "@/store/use-sidebar";
 import { Navbar } from "./navbar";
+import { User } from "@prisma/client";
 
 interface ContainerProps {
   children: React.ReactNode;
+  user: User;
 }
 
-export const Container = ({ children }: ContainerProps) => {
+export const Container = ({ children, user }: ContainerProps) => {
   const matches = useMediaQuery("(max-width: 1024px)");
   const { collapsed, onCollapse, onExpand } = useSidebar((state) => state);
 
@@ -31,7 +33,7 @@ export const Container = ({ children }: ContainerProps) => {
       )}
     >
       <div className="flex flex-col h-full">
-        <Navbar />
+        <Navbar user={user}/>
         <div className="px-4 py-6 md:px-8 h-[calc(100%-4rem)]">{children}</div>
       </div>
     </div>

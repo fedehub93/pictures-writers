@@ -33,8 +33,9 @@ model User {
 
   role UserRole @default(USER)
 
-  posts  Post[]
-  ebooks Ebook[]
+  posts         Post[]
+  ebooks        Ebook[]
+  notifications Notification[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -57,12 +58,12 @@ model Media {
   type    MediaType @default(FILE)
   altText String?
 
-  post Post[]
-  seo  Seo[]
+  post       Post[]
+  seo        Seo[]
+  impression Impression?
 
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  impressionId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum ContentStatus {
@@ -372,13 +373,29 @@ model Impression {
   lastName  String?
   email     String
   pageCount Int?
-  url       String  @db.Text
 
   format   Format? @relation(fields: [formatId], references: [id])
   formatId String?
 
   genre   Genre?  @relation(fields: [genreId], references: [id])
   genreId String?
+
+  file   Media?  @relation(fields: [fileId], references: [id])
+  fileId String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id String @id @default(uuid())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  type    String
+  message String
+  isRead  Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

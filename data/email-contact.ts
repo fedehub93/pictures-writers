@@ -23,3 +23,21 @@ export const getContactById = async (id: string) => {
     return null;
   }
 };
+
+export const createContactByEmail = async (email: string) => {
+  const existingContact = await getContactByEmail(email);
+
+  if (!existingContact) {
+    const newContact = await db.emailContact.create({
+      data: {
+        email,
+        isSubscriber: true,
+        emailVerified: new Date(),
+      },
+    });
+
+    return newContact;
+  }
+
+  return existingContact;
+};

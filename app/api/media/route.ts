@@ -57,7 +57,11 @@ export async function GET(req: Request) {
             createdAt: "desc",
           },
         }),
-        db.media.count(),
+        db.media.count({
+          where: {
+            name: { contains: s },
+          },
+        }),
       ]);
     }
 

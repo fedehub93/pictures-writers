@@ -15,8 +15,8 @@ export const Nav = ({ links, isMobile = false }: NavProps) => {
   const renderLink = ({ sub, ...rest }: SideLink) => {
     const key = `${rest.title}-${rest.href}`;
 
-    if (rest.title === "SEPARATOR") {
-      return <Separator />;
+    if (rest.title.startsWith("SEPARATOR")) {
+      return <Separator key={key} />;
     }
 
     if (collapsed && sub && !isMobile) {
