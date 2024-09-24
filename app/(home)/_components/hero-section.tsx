@@ -30,7 +30,7 @@ export const HeroSection = (): JSX.Element => {
     resolver: zodResolver(FreeEbookSchema),
     defaultValues: {
       email: "",
-      ebookId: "cdc51fdf-6d2e-4601-a985-50bb360bc29b",
+      ebookId: "5fbbabbf-6466-4514-9974-5879d3259347",
     },
   });
 

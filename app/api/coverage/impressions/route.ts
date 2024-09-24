@@ -130,7 +130,7 @@ export async function POST(req: Request) {
     }
 
     //  Create contact
-    await createContactByEmail(email);
+    await createContactByEmail(email, "first_feedback_request");
 
     //  Send notification to admins
     await handleScriptSubmitted();

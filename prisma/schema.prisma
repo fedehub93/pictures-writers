@@ -277,11 +277,28 @@ model EmailContact {
   email         String    @unique
   emailVerified DateTime?
 
+  isSubscriber Boolean @default(true)
+
   audiences    EmailAudience[]
-  isSubscriber Boolean         @default(true)
+  interactions EmailContactInteraction[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model EmailContactInteraction {
+  id String @id @default(uuid())
+
+  interactionType String // es. 'newsletter_subscription', 'first_feedback_request', 'ebook_download'
+  interactionDate DateTime @default(now())
+
+  contact   EmailContact @relation(fields: [contactId], references: [id])
+  contactId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([contactId, interactionType])
 }
 
 model EmailSingleSend {

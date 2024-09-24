@@ -26,6 +26,7 @@ export async function GET(req: Request) {
       const posts = await db.post.findMany({
         where: {
           status: ContentStatus.PUBLISHED,
+          isLatest: true,
           OR: [
             {
               title: {
@@ -45,26 +46,21 @@ export async function GET(req: Request) {
           imageCover: true,
           user: true,
         },
-        distinct: ["rootId"],
         take: POST_BATCH,
         skip: 1,
         cursor: { id: cursor },
         orderBy: {
-          createdAt: "desc",
+          firstPublishedAt: "desc",
         },
       });
 
-      const lastPublishedPosts = posts.map((post) => {
-        const lastPublishedPost = { ...post };
-        return lastPublishedPost;
-      });
-
-      return NextResponse.json({ items: lastPublishedPosts, nextCursor: null });
+      return NextResponse.json({ items: posts, nextCursor: null });
     }
 
     posts = await db.post.findMany({
       where: {
         status: ContentStatus.PUBLISHED,
+        isLatest: true,
         OR: [
           {
             title: {
@@ -84,20 +80,14 @@ export async function GET(req: Request) {
         imageCover: true,
         user: true,
       },
-      distinct: ["rootId"],
       take,
       skip,
       orderBy: {
-        createdAt: "desc",
+        firstPublishedAt: "desc",
       },
     });
 
     totalPosts = await db.post.count();
-
-    const lastPublishedPosts = posts.map((post) => {
-      const lastPublishedPost = { ...post };
-      return lastPublishedPost;
-    });
 
     const pagination = {
       page,
@@ -113,7 +103,7 @@ export async function GET(req: Request) {
     }
 
     return NextResponse.json({
-      items: lastPublishedPosts,
+      items: posts,
       pagination,
       nextCursor,
     });

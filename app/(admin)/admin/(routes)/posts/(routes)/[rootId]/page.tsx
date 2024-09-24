@@ -49,8 +49,8 @@ const PostIdPage = async ({ params }: { params: { rootId: string } }) => {
   }
 
   const categories = await db.category.findMany({
-    distinct: ["rootId"],
     orderBy: [{ createdAt: "desc" }, { title: "asc" }],
+    distinct: ["rootId"],
   });
 
   const tags = await db.tag.findMany({

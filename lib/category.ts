@@ -4,13 +4,14 @@ import { db } from "./db";
 export const getPublishedCategories = async () => {
   const categories = await db.category.findMany({
     where: {
+      status: ContentStatus.PUBLISHED,
+      isLatest: true,
       posts: {
         some: { status: ContentStatus.PUBLISHED },
       },
     },
-    distinct: ["rootId"],
     orderBy: {
-      createdAt: "desc",
+      firstPublishedAt: "desc",
     },
   });
 
@@ -38,10 +39,9 @@ export const getPublishedCategoryById = async (id: string) => {
 
 export const getPublishedCategoryBySlug = async (slug: string) => {
   const category = await db.category.findFirst({
-    where: { slug },
-    distinct: ["rootId"],
+    where: { slug, isLatest: true },
     orderBy: {
-      publishedAt: "desc",
+      firstPublishedAt: "desc",
     },
   });
 

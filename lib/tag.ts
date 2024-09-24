@@ -3,10 +3,9 @@ import { db } from "./db";
 
 export const getPublishedTagBySlug = async (slug: string) => {
   const tag = await db.tag.findFirst({
-    where: { slug },
-    distinct: ["rootId"],
+    where: { slug, isLatest: true },
     orderBy: {
-      publishedAt: "desc",
+      firstPublishedAt: "desc",
     },
   });
 

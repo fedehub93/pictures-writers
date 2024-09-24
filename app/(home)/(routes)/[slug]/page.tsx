@@ -14,7 +14,9 @@ type Props = {
   params: Params;
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: Props): Promise<Metadata | null> {
   const { slug } = params;
 
   return await getPostMetadataBySlug(slug);
@@ -54,13 +56,6 @@ export const Page = async ({ params }: { params: { slug: string } }) => {
       </>
     );
   }
-
-  const category = await getPublishedCategoryBySlug(params.slug);
-  if (!category) {
-    return <div>Page not found</div>;
-  }
-
-  return <div>Page not found</div>;
 };
 
 export default Page;

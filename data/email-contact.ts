@@ -24,7 +24,10 @@ export const getContactById = async (id: string) => {
   }
 };
 
-export const createContactByEmail = async (email: string) => {
+export const createContactByEmail = async (
+  email: string,
+  interactionType: string
+) => {
   const existingContact = await getContactByEmail(email);
 
   if (!existingContact) {
@@ -36,8 +39,31 @@ export const createContactByEmail = async (email: string) => {
       },
     });
 
+    await addContactInteraction(newContact.id, interactionType);
+
     return newContact;
   }
 
+  await addContactInteraction(existingContact.id, interactionType);
+
   return existingContact;
+};
+
+export const addContactInteraction = async (
+  contactId: string,
+  interactionType: string
+) => {
+  return await db.emailContactInteraction.upsert({
+    where: {
+      contactId_interactionType: {
+        contactId,
+        interactionType,
+      },
+    },
+    update: {},
+    create: {
+      contactId,
+      interactionType,
+    },
+  });
 };

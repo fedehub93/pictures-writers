@@ -11,15 +11,15 @@ const LatestNews = async () => {
   const latestNews = await db.post.findMany({
     where: {
       status: ContentStatus.PUBLISHED,
+      isLatest: true,
     },
     include: {
       imageCover: true,
       user: true,
     },
-    distinct: ["rootId"],
     take: 3,
     orderBy: {
-      createdAt: "desc",
+      firstPublishedAt: "desc",
     },
   });
 

@@ -42,6 +42,7 @@ export const getPublishedPosts = async ({
   const posts = await db.post.findMany({
     where: {
       status: ContentStatus.PUBLISHED,
+      isLatest: true,
       OR: [
         {
           title: { contains: s },
@@ -57,11 +58,10 @@ export const getPublishedPosts = async ({
       tags: true,
       user: true,
     },
-    distinct: ["rootId"],
     take: POST_PER_PAGE,
     skip: skip,
     orderBy: {
-      createdAt: "desc",
+      firstPublishedAt: "desc",
     },
   });
 
@@ -93,11 +93,10 @@ export const getPublishedPostsByCategoryRootId = async ({
       tags: true,
       user: true,
     },
-    distinct: ["rootId"],
     take: POST_PER_PAGE,
     skip: skip,
     orderBy: {
-      createdAt: "desc",
+      firstPublishedAt: "desc",
     },
   });
 
@@ -126,14 +125,12 @@ export const getPublishedPostsByTagRootId = async ({
       tags: true,
       user: true,
     },
-    distinct: ["rootId"],
     take: POST_PER_PAGE,
     skip: skip,
     orderBy: {
-      publishedAt: "desc",
+      firstPublishedAt: "desc",
     },
   });
-  console.log(posts, tagRootId);
 
   const totalPages = Math.ceil(posts.length / POST_PER_PAGE);
 
@@ -145,11 +142,11 @@ export const getPublishedPostById = async (id: string) => {
     where: {
       id: id,
       status: ContentStatus.PUBLISHED,
+      isLatest: true,
     },
     include: {
       user: true,
     },
-    distinct: ["rootId"],
     orderBy: {
       createdAt: "desc",
     },
@@ -173,7 +170,6 @@ export const getPublishedPostBySlug = async (slug: string) => {
       seo: true,
       user: true,
     },
-    distinct: ["rootId"],
     orderBy: {
       publishedAt: "desc",
     },
@@ -186,12 +182,12 @@ export const getLatestPublishedPosts = async () => {
   const posts = await db.post.findMany({
     where: {
       status: ContentStatus.PUBLISHED,
+      isLatest: true,
     },
     include: {
       imageCover: true,
       user: true,
     },
-    distinct: ["rootId"],
     take: LATEST_PUBLISHED_POST,
     orderBy: {
       createdAt: "desc",

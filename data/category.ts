@@ -8,10 +8,10 @@ export const getPublishedCategories = async () => {
       posts: {
         some: { status: ContentStatus.PUBLISHED },
       },
+      isLatest: true,
     },
-    distinct: ["rootId"],
     orderBy: {
-      createdAt: "desc",
+      firstPublishedAt: "desc",
     },
   });
 
@@ -34,10 +34,9 @@ export const getPublishedCategoryById = async (id: string) => {
 
 export const getPublishedCategoryBySlug = async (slug: string) => {
   const category = await db.category.findFirst({
-    where: { slug },
-    distinct: ["rootId"],
+    where: { slug, isLatest: true },
     orderBy: {
-      publishedAt: "desc",
+      firstPublishedAt: "desc",
     },
   });
 

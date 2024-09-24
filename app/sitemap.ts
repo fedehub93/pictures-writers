@@ -3,10 +3,12 @@ import type { MetadataRoute } from "next";
 
 const generateBlogPostsSitemap = async () => {
   const posts = await db.post.findMany({
-    orderBy: {
-      createdAt: "desc",
+    where: {
+      isLatest: true,
     },
-    distinct: ["rootId"],
+    orderBy: {
+      firstPublishedAt: "desc",
+    },
   });
 
   const mappedPosts: MetadataRoute.Sitemap = posts.map((post) => ({
@@ -21,10 +23,12 @@ const generateBlogPostsSitemap = async () => {
 
 const generateBlogCategoriesSitemap = async () => {
   const categories = await db.category.findMany({
-    orderBy: {
-      createdAt: "desc",
+    where: {
+      isLatest: true,
     },
-    distinct: ["rootId"],
+    orderBy: {
+      firstPublishedAt: "desc",
+    },
   });
 
   const mappedCategories: MetadataRoute.Sitemap = categories.map((post) => ({
@@ -39,10 +43,12 @@ const generateBlogCategoriesSitemap = async () => {
 
 const generateBlogTagsSitemap = async () => {
   const tags = await db.tag.findMany({
-    orderBy: {
-      createdAt: "desc",
+    where: {
+      isLatest: true,
     },
-    distinct: ["rootId"],
+    orderBy: {
+      firstPublishedAt: "desc",
+    },
   });
 
   const mappedTags: MetadataRoute.Sitemap = tags.map((tag) => ({

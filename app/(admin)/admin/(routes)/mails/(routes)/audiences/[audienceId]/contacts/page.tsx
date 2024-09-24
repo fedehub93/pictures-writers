@@ -28,6 +28,7 @@ const AudienceIdContactsPage = async ({
             }
           : undefined,
     },
+    include: { interactions: true },
     orderBy: { email: "asc" },
   });
 
