@@ -26,12 +26,12 @@ export const Navbar = async () => {
           <Nav />
         </div>
         <div className="flex items-center gap-x-4">
-          {canSeeAdmin && <Link href="/admin">Admin</Link>}
+          {/* {canSeeAdmin && <Link href="/admin">Admin</Link>}
           {user ? (
             <ExtendedUserButton email={user.email} imageUrl={user.imageUrl} />
           ) : (
             <SignInButton />
-          )}
+          )} */}
           <MobileNavbar />
           <Button>
             <Link href="/feedback-gratuito-sceneggiatura">

@@ -32,7 +32,7 @@ export const Notifications = ({ userId }: { userId: string }) => {
       <PopoverContent
         align="start"
         sideOffset={10}
-        className="border border-gray-300 shadow-lg p-0 py-0.5 bg-white rounded-md w-full"
+        className="border border-gray-300 shadow-lg p-0 py-0.5 bg-white dark:bg-background rounded-md w-full"
       >
         <div className="px-3 py-2 font-semibold">Notifiche</div>
         <Separator />

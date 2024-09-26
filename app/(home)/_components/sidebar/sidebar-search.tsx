@@ -22,7 +22,7 @@ const SidebarSearch = () => {
 
   return (
     <div className="w-full bg-white px-6 py-8 shadow-md">
-      <h3 className="mb-4 text-sm font-extrabold uppercase">Search</h3>
+      <h3 className="mb-4 text-sm font-extrabold uppercase">Cerca</h3>
       <div className="relative mb-4">
         <Search className="h-4 w-4 absolute top-3 left-3 text-slate-600" />
         <Input
@@ -30,7 +30,6 @@ const SidebarSearch = () => {
             setDebouncedSearch(e.target.value);
           }}
           className="pl-9"
-          placeholder="Search..."
         />
       </div>
       {debouncedSearch && (
@@ -39,7 +38,7 @@ const SidebarSearch = () => {
             <div className="flex h-full flex-col flex-1 justify-center items-center py-8">
               <BeatLoader />
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                Loading assets ...
+                Caricando articoli ...
               </p>
             </div>
           ) : (
