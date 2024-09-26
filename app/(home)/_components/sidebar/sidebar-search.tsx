@@ -58,7 +58,7 @@ const SidebarSearch = () => {
                         key={item.title}
                         className="relative flex gap-x-4 group"
                       >
-                        <div className="relative w-20 aspect-square group-hover:shadow-2xl top-0 group-hover:-top-1 transition-all duration-300">
+                        <div className="relative w-40 aspect-square top-0 transition-all duration-300 self-start">
                           <Image
                             src={item.imageCover?.url!}
                             alt={item.imageCover?.altText || ""}

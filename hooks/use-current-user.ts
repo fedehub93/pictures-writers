@@ -17,7 +17,7 @@ const useCurrentUser = () => {
           }
           const data = await response.json();
           setCurrentUser(data);
-        } catch (err) {
+        } catch (err: any) {
           setError(err.message);
         } finally {
           setLoading(false);

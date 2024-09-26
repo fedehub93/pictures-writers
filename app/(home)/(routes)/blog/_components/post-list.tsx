@@ -24,7 +24,7 @@ export const PostList = ({ posts, currentPage, totalPages }: PostListProps) => {
             categorySlug={post.category?.description!}
             imageCoverUrl={post.imageCover?.url || ""}
             imageCoverAlt={post.imageCover?.altText || ""}
-            authorName={`${post.user.firstName} ${post.user.lastName}`}
+            authorName={`${post.user?.firstName} ${post.user?.lastName}`}
             updatedAt={post.updatedAt}
           />
         ))}

@@ -27,7 +27,7 @@ export async function generateMetadata({
   return await getCategoryMetadataBySlug(slug);
 }
 
-export const Page = async ({
+const Page = async ({
   params,
   searchParams,
 }: {

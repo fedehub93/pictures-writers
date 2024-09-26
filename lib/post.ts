@@ -65,14 +65,16 @@ export const getPublishedPosts = async ({
     },
   });
 
-  const totalPages = Math.ceil(posts.length / POST_PER_PAGE);
-
-  const lastPublishedPosts = posts.map((post) => {
-    const lastPublishedPost = { ...post };
-    return lastPublishedPost;
+  const totalPosts = await db.post.count({
+    where: {
+      status: ContentStatus.PUBLISHED,
+      isLatest: true,
+    },
   });
 
-  return { posts: lastPublishedPosts, totalPages, currentPage: page };
+  const totalPages = Math.ceil(totalPosts / POST_PER_PAGE);
+
+  return { posts, totalPages, currentPage: page };
 };
 
 export const getPublishedPostsByCategoryRootId = async ({

@@ -32,7 +32,7 @@ interface TagFormProps {
 const optionSchema = z.object({
   label: z.string(),
   value: z.string(),
-  status: z.nativeEnum(ContentStatus),
+  status: z.nativeEnum(ContentStatus).optional(),
 });
 
 const formSchema = z.object({
