@@ -194,8 +194,7 @@ export const CustomEditorHelper = {
     const text = { text: "" };
     const affiliateLink: EmbeddedAffiliateLinkElement = {
       type: "affiliate-link",
-      url,
-      label,
+      data: { uri: url, label },
       children: [text],
     };
     Transforms.insertNodes(editor, affiliateLink);

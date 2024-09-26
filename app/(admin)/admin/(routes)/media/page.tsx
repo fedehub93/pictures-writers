@@ -50,7 +50,7 @@ const MediaPage = async ({
 
   return (
     <div className="h-full w-full flex flex-col gap-y-4 px-6 py-3">
-      <ContentHeader label="Media assets" totalEntries={assets.length} />
+      <ContentHeader label="Media assets" totalEntries={totalAssets} />
       <div className="flex flex-col gap-y-4">
         <AssetsList items={assets} pagination={pagination} />
       </div>

@@ -47,8 +47,7 @@ export type EmbeddedVideoElement = {
 
 export type EmbeddedAffiliateLinkElement = {
   type: "affiliate-link";
-  url: string;
-  label: string;
+  data: { uri: string; label: string };
   children: EmptyText[];
 };
 

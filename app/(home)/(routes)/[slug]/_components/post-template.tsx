@@ -17,6 +17,7 @@ import {
   NumberedList,
   Paragraph,
   SponsorFirstImpression,
+  AffiliateLink,
 } from "@/components/editor/view/elements";
 
 import { RichText } from "@/components/editor/view/leaves";
@@ -69,6 +70,7 @@ export const PostTemplate = ({ post }: PostTemplateProps) => {
                   HeadingThree,
                   HeadingFour,
                   Link,
+                  AffiliateLink,
                   Blockquote,
                   BulletedList,
                   ListItem,

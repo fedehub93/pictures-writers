@@ -4,6 +4,7 @@ import { HeadingTwo } from "./heading-two";
 import { HeadingThree } from "./heading-three";
 import { HeadingFour } from "./heading-four";
 import { Link } from "./link";
+import { AffiliateLink } from "./affiliate-link";
 import { Blockquote } from "./blockquote";
 import { BulletedList } from "./bulleted-list";
 import { ListItem } from "./list-item";
@@ -19,6 +20,7 @@ export {
   HeadingThree,
   HeadingFour,
   Link,
+  AffiliateLink,
   Blockquote,
   BulletedList,
   NumberedList,

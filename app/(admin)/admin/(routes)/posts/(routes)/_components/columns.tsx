@@ -49,6 +49,10 @@ export const columns: ColumnDef<PostWithImageCover>[] = [
         </Button>
       );
     },
+    cell: ({row}) => {
+      const description = (row.getValue("description") || "") as String 
+      return <div className="line-clamp-2">{description}</div>
+    }
   },
   {
     accessorKey: "imageCover",

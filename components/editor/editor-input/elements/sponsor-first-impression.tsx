@@ -3,7 +3,10 @@ import Link from "next/link";
 import React from "react";
 
 const FirstImpressionSnippet = (): JSX.Element => (
-  <div className="snippet first-impression relative border-primary bg-ghostWhite text-center mb-8">
+  <div
+    className="snippet first-impression relative border-primary bg-ghostWhite text-center mb-8"
+    contentEditable={false}
+  >
     <p className="snippet__sponsor">Sponsor</p>
     <p className="snippet__title ">Feedback gratuito sulla prima pagina</p>
     <p>

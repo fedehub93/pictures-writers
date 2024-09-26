@@ -71,7 +71,7 @@ export const AssetsList = ({ items, pagination }: AssetListProps) => {
   return (
     <div className="flex flex-col">
       <div className="flex gap-x-4 items-center py-4">
-        <div className="flex items-center gap-x-4 mr-auto" >
+        <div className="flex items-center gap-x-4 mr-auto">
           <SearchInput />
           {canShowDelete && (
             <ConfirmModal onConfirm={onDelete}>
@@ -83,12 +83,13 @@ export const AssetsList = ({ items, pagination }: AssetListProps) => {
         </div>
         <MediaActions />
       </div>
-      <div className="grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
+      <div className="grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 mb-4">
         {assets.map((item) => (
           <AssetCard
             key={item.id}
             id={item.id}
             name={item.name}
+            altText={item.altText || ""}
             url={item.url}
             type={item.type}
             size={item.size || 0}
