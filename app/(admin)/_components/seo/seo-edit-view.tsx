@@ -32,7 +32,7 @@ export const SeoEditView = ({
         fieldName={SeoField.Title}
         label="SEO Title"
         placeholder="e.g. How to write a screenplay"
-        apiUrl={`/api/${contentType}/${contentId}/seo`}
+        apiUrl={`/api/${contentType}/${contentRootId}/versions/${contentId}/seo`}
       />
       <InputSeoForm
         initialData={initialData}

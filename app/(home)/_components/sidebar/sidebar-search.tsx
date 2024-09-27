@@ -50,7 +50,7 @@ const SidebarSearch = () => {
                       item: Post & {
                         imageCover: Media | null;
                         category: Category | null;
-                        user: User;
+                        user: User | null;
                       }
                     ) => (
                       <Link
@@ -70,8 +70,8 @@ const SidebarSearch = () => {
                           <p className="text-base font-medium">{item.title}</p>
                           <div className="flex items-center justify-between">
                             <p className="self-end text-xs text-muted-foreground">
-                              Pubblicato da {item.user.firstName}{" "}
-                              {item.user.lastName}{" "}
+                              Pubblicato da {item.user?.firstName}{" "}
+                              {item.user?.lastName}{" "}
                               {formatDistance(item.publishedAt, new Date(), {
                                 addSuffix: true,
                                 locale: it,
