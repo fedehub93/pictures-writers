@@ -7,7 +7,7 @@ interface TagsProps {
 
 const TagsWidget = (props: TagsProps) => {
   const { tags } = props;
-  if (!tags) return null;
+  if (!tags || tags.length === 0) return null;
   return (
     <div className="tags">
       <Tag className="h-4 w-4 mr-2" />

@@ -1,8 +1,5 @@
 import { Seo } from "@prisma/client";
 
-import { TitleForm } from "@/app/(admin)/general-fields/title-form";
-import { DescriptionForm } from "@/app/(admin)/general-fields/description-form";
-
 import { NoIndexForm } from "./no-index-form";
 import { NoFollowForm } from "./no-follow-form";
 import { InputSeoForm } from "./input-seo-form";
