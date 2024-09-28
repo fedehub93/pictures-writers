@@ -47,12 +47,18 @@ const Toolbar = ({ showEmbedButton = true }: ToolbarProps) => {
     CustomEditorHelper.insertImage(editor, data.url, data.altText || "");
   };
 
-  const getVideo = (url: string) => {
+  const getVideo = ({ url }: { url: string }) => {
     CustomEditorHelper.insertVideo(editor, url || "");
   };
 
-  const getAffiliateLink = ({ url, label }: { url: string; label: string }) => {
-    CustomEditorHelper.insertAffiliateLink(editor, url || "", label || "");
+  const getAffiliateLink = ({
+    target,
+    text,
+  }: {
+    target: string;
+    text: string;
+  }) => {
+    CustomEditorHelper.insertAffiliateLink(editor, target || "", text || "");
   };
 
   const insertSponsorFirstImpression = () => {
@@ -113,9 +119,7 @@ const Toolbar = ({ showEmbedButton = true }: ToolbarProps) => {
                 Video
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() =>
-                  onOpen("selectUrl", getAffiliateLink, { showLabel: true })
-                }
+                onClick={() => onOpen("editLink", getAffiliateLink)}
               >
                 <Link className="h-4 w-4 mr-2" />
                 Affiliate link

@@ -61,18 +61,20 @@ export const PostPagination = ({
           variant="ghost"
           disabled={currentPage === pageNumber}
         >
-          <Link href="#">{pageNumber}</Link>
+          <Link href={`/blog/?page=${pageNumber}`}>{pageNumber}</Link>
         </Button>
       </PaginationItem>
     ));
   };
+
+  console.log(currentPage);
 
   return (
     <Pagination>
       <PaginationContent>
         <PaginationItem>
           <Button role="button" variant="ghost" disabled={currentPage <= 1}>
-            <Link href="#">
+            <Link href={`/blog?page=${currentPage - 1}`}>
               <ChevronLeft />
             </Link>
           </Button>
@@ -94,7 +96,7 @@ export const PostPagination = ({
             variant="ghost"
             disabled={currentPage >= totalPages}
           >
-            <Link href="#">
+            <Link href={`/blog?page=${currentPage + 1}`}>
               <ChevronRight />
             </Link>
           </Button>

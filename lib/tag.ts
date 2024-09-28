@@ -1,6 +1,21 @@
 import { ContentStatus } from "@prisma/client";
 import { db } from "./db";
 
+export const getPublishedTagBySlug = async (slug: string) => {
+  const tag = await db.tag.findFirst({
+    where: { slug, isLatest: true },
+    orderBy: {
+      firstPublishedAt: "desc",
+    },
+  });
+
+  if (!tag) {
+    return null;
+  }
+
+  return tag;
+};
+
 export const createNewVersionTag = async (rootId: string, values: any) => {
   // Trovo ultima versione pubblicata
   const publishedTag = await db.tag.findFirst({
@@ -12,13 +27,20 @@ export const createNewVersionTag = async (rootId: string, values: any) => {
     return { message: "Tag not found", status: 404, tag: null };
   }
 
+  // Aggiorna la vecchia versione
+  await db.tag.updateMany({
+    where: { rootId: rootId },
+    data: { isLatest: false },
+  });
+
   const tag = await db.tag.create({
     data: {
       ...publishedTag,
       ...values,
       id: undefined,
-      status: ContentStatus.CHANGED,
       version: publishedTag.version + 1,
+      status: ContentStatus.CHANGED,
+      isLatest: true,
       rootId: undefined,
       root: {
         connect: { id: publishedTag.rootId },

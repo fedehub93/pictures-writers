@@ -88,15 +88,6 @@ export const ImageForm = ({ initialData, rootId, postId }: ImageFormProps) => {
           </Button>
         </div>
       ) : (
-        // <FileUpload
-        //   endpoint="postImage"
-        //   onChange={({ url }) => {
-        //     if (url) {
-        //       onSubmit({ imageUrl: url });
-        //     }
-        //   }}
-        //   setIsFocused={setIsFocused}
-        // />
         <div className="border rounded-md">
           <div className="flex items-center justify-between w-full px-4 py-2 border-b bg-slate-100 dark:bg-secondary">
             <p className="text-muted-foreground text-sm">Image</p>

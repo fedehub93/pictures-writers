@@ -23,6 +23,9 @@ export const ourFileRouter = {
   userImage: f({ image: { maxFileSize: "4MB", maxFileCount: 1 } })
     .middleware(() => handleAuth())
     .onUploadComplete(() => {}),
+  impressionFile: f({
+    pdf: { maxFileSize: "16MB", maxFileCount: 1 },
+  }).onUploadComplete(() => {}),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;

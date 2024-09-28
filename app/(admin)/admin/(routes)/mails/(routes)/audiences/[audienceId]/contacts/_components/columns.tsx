@@ -4,6 +4,7 @@ import {
   AudienceType,
   EmailAudience,
   EmailContact,
+  EmailContactInteraction,
   EmailTemplate,
   Media,
   Post,
@@ -19,9 +20,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
 
-export const columns: ColumnDef<EmailContact>[] = [
+type EmailContactWithInteractions = EmailContact & {
+  interactions: EmailContactInteraction[];
+};
+
+export const columns: ColumnDef<EmailContactWithInteractions>[] = [
   {
     accessorKey: "firstName",
     header: ({ column }) => {
@@ -62,6 +66,25 @@ export const columns: ColumnDef<EmailContact>[] = [
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
+    },
+  },
+  {
+    accessorKey: "Interaction Type",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Interaction
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      const { interactions } = row.original;
+      if (!interactions) return null;
+      return <div>{interactions.map((i) => i.interactionType).join()}</div>;
     },
   },
   {

@@ -36,6 +36,26 @@ export async function DELETE(
   }
 }
 
+export async function GET(
+  req: Request,
+  { params }: { params: { userId: string } }
+) {
+  try {
+    const { userId } = params;
+
+    const user = await db.user.findFirst({
+      where: {
+        externalUserId: userId,
+      },
+    });
+
+    return NextResponse.json(user);
+  } catch (error) {
+    console.log("[GET_USER_ID]", error);
+    return new NextResponse("Internal Error", { status: 500 });
+  }
+}
+
 export async function PATCH(
   req: Request,
   { params }: { params: { userId: string } }

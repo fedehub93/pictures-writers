@@ -34,7 +34,7 @@ export const SelectUrlModal = () => {
       <DialogContent className="bg-white text-black p-0 overflow-hidden">
         <DialogHeader>
           <DialogTitle className="text-xl py-4 px-6 font-normal">
-            Add video asset
+            Select Url
           </DialogTitle>
           <div className="flex flex-col gap-y-4 px-6">
             <div className="flex flex-col gap-y-2">

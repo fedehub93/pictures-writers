@@ -179,7 +179,9 @@ export const CustomEditorHelper = {
     const text = { text: "" };
     const video: EmbeddedVideoElement = {
       type: "video",
-      url,
+      data: {
+        uri: url,
+      },
       children: [text],
     };
     Transforms.insertNodes(editor, video);
@@ -192,8 +194,7 @@ export const CustomEditorHelper = {
     const text = { text: "" };
     const affiliateLink: EmbeddedAffiliateLinkElement = {
       type: "affiliate-link",
-      url,
-      label,
+      data: { uri: url, label },
       children: [text],
     };
     Transforms.insertNodes(editor, affiliateLink);

@@ -1,8 +1,7 @@
 "use client";
 
 import { Element } from "slate";
-import { useSlate } from "slate-react";
-import { useMemo } from "react";
+import { ReactEditor, useSlate } from "slate-react";
 import { ChevronDown } from "lucide-react";
 
 import { cn } from "@/lib/utils";

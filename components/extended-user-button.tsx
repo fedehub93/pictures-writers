@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { UserAvatar } from "@/components/user-avatar";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 
 interface UserAvatarProps {
   email: string;
@@ -22,7 +22,7 @@ export const ExtendedUserButton = ({ email, imageUrl }: UserAvatarProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" className="relative">
           <UserAvatar email={email} imageUrl={imageUrl} />
         </Button>
       </DropdownMenuTrigger>

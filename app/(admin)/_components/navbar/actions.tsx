@@ -1,17 +1,16 @@
-import { UserRole } from "@prisma/client";
+"use client";
+import { User } from "@prisma/client";
 
-import { getSelf } from "@/lib/current-user";
 import { ExtendedUserButton } from "@/components/extended-user-button";
 import { ModeToggle } from "@/components/mode-toggle";
+import { Notifications } from "./notifications";
 
-export const Actions = () => {
+export const Actions = ({ user }: { user: User }) => {
   return (
     <div className="flex items-center justify-end gap-x-2 ml-4 lg:ml-0">
       <ModeToggle />
-      <ExtendedUserButton
-        email={"federico.verrengia@gmail.com"}
-        imageUrl={""}
-      />
+      <Notifications userId={user.id} />
+      <ExtendedUserButton email={user.email!} imageUrl={user.imageUrl!} />
     </div>
   );
 };

@@ -11,15 +11,15 @@ const LatestNews = async () => {
   const latestNews = await db.post.findMany({
     where: {
       status: ContentStatus.PUBLISHED,
+      isLatest: true,
     },
     include: {
       imageCover: true,
       user: true,
     },
-    distinct: ["rootId"],
     take: 3,
     orderBy: {
-      createdAt: "desc",
+      firstPublishedAt: "desc",
     },
   });
 
@@ -61,7 +61,7 @@ const LatestNews = async () => {
                     })}
                     &nbsp;
                   </span>
-                  <span>{post?.user?.id}</span>
+                  <span>{post?.user?.firstName} {post?.user?.lastName}</span>
                 </div>
                 <h3 className="mb-2 text-lg font-bold leading-5 text-heading">
                   {post.title}

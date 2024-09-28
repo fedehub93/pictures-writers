@@ -22,7 +22,7 @@ const SidebarSearch = () => {
 
   return (
     <div className="w-full bg-white px-6 py-8 shadow-md">
-      <h3 className="mb-4 text-sm font-extrabold uppercase">Search</h3>
+      <h3 className="mb-4 text-sm font-extrabold uppercase">Cerca</h3>
       <div className="relative mb-4">
         <Search className="h-4 w-4 absolute top-3 left-3 text-slate-600" />
         <Input
@@ -30,7 +30,6 @@ const SidebarSearch = () => {
             setDebouncedSearch(e.target.value);
           }}
           className="pl-9"
-          placeholder="Search..."
         />
       </div>
       {debouncedSearch && (
@@ -39,7 +38,7 @@ const SidebarSearch = () => {
             <div className="flex h-full flex-col flex-1 justify-center items-center py-8">
               <BeatLoader />
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                Loading assets ...
+                Caricando articoli ...
               </p>
             </div>
           ) : (
@@ -51,7 +50,7 @@ const SidebarSearch = () => {
                       item: Post & {
                         imageCover: Media | null;
                         category: Category | null;
-                        user: User;
+                        user: User | null;
                       }
                     ) => (
                       <Link
@@ -59,7 +58,7 @@ const SidebarSearch = () => {
                         key={item.title}
                         className="relative flex gap-x-4 group"
                       >
-                        <div className="relative w-20 aspect-square group-hover:shadow-2xl top-0 group-hover:-top-1 transition-all duration-300">
+                        <div className="relative w-40 aspect-square top-0 transition-all duration-300 self-start">
                           <Image
                             src={item.imageCover?.url!}
                             alt={item.imageCover?.altText || ""}
@@ -71,8 +70,8 @@ const SidebarSearch = () => {
                           <p className="text-base font-medium">{item.title}</p>
                           <div className="flex items-center justify-between">
                             <p className="self-end text-xs text-muted-foreground">
-                              Pubblicato da {item.user.firstName}{" "}
-                              {item.user.lastName}{" "}
+                              Pubblicato da {item.user?.firstName}{" "}
+                              {item.user?.lastName}{" "}
                               {formatDistance(item.publishedAt, new Date(), {
                                 addSuffix: true,
                                 locale: it,

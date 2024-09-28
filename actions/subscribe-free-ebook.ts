@@ -5,7 +5,7 @@ import * as z from "zod";
 import { db } from "@/lib/db";
 import { FreeEbookSchema } from "@/schemas";
 import { sendFreeEbookEmail } from "@/lib/mail";
-import { getContactByEmail } from "@/data/email-contact";
+import { createContactByEmail, getContactByEmail } from "@/data/email-contact";
 
 export const subscribeFreeEbook = async (
   values: z.infer<typeof FreeEbookSchema>
@@ -18,17 +18,7 @@ export const subscribeFreeEbook = async (
 
   const { email, ebookId } = validatedFields.data;
 
-  const existingContact = await getContactByEmail(email);
-
-  if (!existingContact) {
-    await db.emailContact.create({
-      data: {
-        email,
-        isSubscriber: true,
-        emailVerified: new Date(),
-      },
-    });
-  }
+  const existingContact = await createContactByEmail(email, "ebook_downloaded");
 
   const isEmailSent = await sendFreeEbookEmail(email, ebookId!);
 

@@ -2,7 +2,7 @@ import { getPublishedPosts } from "@/lib/post";
 
 import { PostList } from "./_components/post-list";
 
-export const BlogPage = async ({
+const BlogPage = async ({
   searchParams,
 }: {
   searchParams?: {

@@ -41,14 +41,13 @@ export type EmbeddedImageElement = {
 
 export type EmbeddedVideoElement = {
   type: "video";
-  url: string;
+  data: { uri: string };
   children: EmptyText[];
 };
 
 export type EmbeddedAffiliateLinkElement = {
   type: "affiliate-link";
-  url: string;
-  label: string;
+  data: { uri: string; label: string };
   children: EmptyText[];
 };
 

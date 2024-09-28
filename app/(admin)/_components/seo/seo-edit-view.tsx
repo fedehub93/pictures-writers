@@ -1,8 +1,5 @@
 import { Seo } from "@prisma/client";
 
-import { TitleForm } from "@/app/(admin)/general-fields/title-form";
-import { DescriptionForm } from "@/app/(admin)/general-fields/description-form";
-
 import { NoIndexForm } from "./no-index-form";
 import { NoFollowForm } from "./no-follow-form";
 import { InputSeoForm } from "./input-seo-form";
@@ -32,7 +29,7 @@ export const SeoEditView = ({
         fieldName={SeoField.Title}
         label="SEO Title"
         placeholder="e.g. How to write a screenplay"
-        apiUrl={`/api/${contentType}/${contentId}/seo`}
+        apiUrl={`/api/${contentType}/${contentRootId}/versions/${contentId}/seo`}
       />
       <InputSeoForm
         initialData={initialData}

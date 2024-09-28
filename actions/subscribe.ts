@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { SubscribeSchema } from "@/schemas";
 import { generateSubscriptionToken } from "@/lib/tokens";
 import { sendSubscriptionEmail } from "@/lib/mail";
-import { getContactByEmail } from "@/data/email-contact";
+import { createContactByEmail, getContactByEmail } from "@/data/email-contact";
 
 export const subscribe = async (values: z.infer<typeof SubscribeSchema>) => {
   const validatedFields = SubscribeSchema.safeParse(values);
@@ -17,17 +17,7 @@ export const subscribe = async (values: z.infer<typeof SubscribeSchema>) => {
 
   const { email } = validatedFields.data;
 
-  const existingContact = await getContactByEmail(email);
-
-  if (existingContact) {
-    return { error: "Email already in use!" };
-  }
-
-  await db.emailContact.create({
-    data: {
-      email,
-    },
-  });
+  const existingContact = await createContactByEmail(email, "user_subscribed");
 
   const subscriptionToken = await generateSubscriptionToken(email);
 

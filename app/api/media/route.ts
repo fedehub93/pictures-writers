@@ -28,7 +28,7 @@ export async function GET(req: Request) {
     if (cursor) {
       const assets = await db.media.findMany({
         where: {
-          name: { contains: s },
+          name: { contains: s, mode: "insensitive" },
         },
         take: MEDIA_BATCH,
         skip: 1,
@@ -49,7 +49,7 @@ export async function GET(req: Request) {
       [media, totalMedia] = await db.$transaction([
         db.media.findMany({
           where: {
-            name: { contains: s },
+            name: { contains: s, mode: "insensitive" },
           },
           take,
           skip,

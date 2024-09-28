@@ -4,13 +4,14 @@ import { db } from "./db";
 export const getPublishedCategories = async () => {
   const categories = await db.category.findMany({
     where: {
+      status: ContentStatus.PUBLISHED,
+      isLatest: true,
       posts: {
         some: { status: ContentStatus.PUBLISHED },
       },
     },
-    distinct: ["rootId"],
     orderBy: {
-      createdAt: "desc",
+      firstPublishedAt: "desc",
     },
   });
 
@@ -38,10 +39,9 @@ export const getPublishedCategoryById = async (id: string) => {
 
 export const getPublishedCategoryBySlug = async (slug: string) => {
   const category = await db.category.findFirst({
-    where: { slug },
-    distinct: ["rootId"],
+    where: { slug, isLatest: true },
     orderBy: {
-      publishedAt: "desc",
+      firstPublishedAt: "desc",
     },
   });
 
@@ -63,13 +63,20 @@ export const createNewVersionCategory = async (rootId: string, values: any) => {
     return { message: "Category not found", status: 404, category: null };
   }
 
+  // Aggiorna la vecchia versione
+  await db.category.updateMany({
+    where: { rootId: rootId },
+    data: { isLatest: false },
+  });
+
   const category = await db.category.create({
     data: {
       ...publishedCategory,
       ...values,
       id: undefined,
-      status: ContentStatus.CHANGED,
       version: publishedCategory.version + 1,
+      status: ContentStatus.CHANGED,
+      isLatest: true,
       rootId: undefined,
       root: {
         connect: { id: publishedCategory.rootId },

@@ -7,6 +7,7 @@ import { getSelf } from "@/lib/current-user";
 import { ExtendedUserButton } from "@/components/extended-user-button";
 import { Nav } from "./_components/nav";
 import { MobileNavbar } from "./_components/mobile-navbar";
+import { Button } from "@/components/ui/button";
 
 export const Navbar = async () => {
   const user = await getSelf();
@@ -25,13 +26,18 @@ export const Navbar = async () => {
           <Nav />
         </div>
         <div className="flex items-center gap-x-4">
-          {canSeeAdmin && <Link href="/admin">Admin</Link>}
+          {/* {canSeeAdmin && <Link href="/admin">Admin</Link>}
           {user ? (
             <ExtendedUserButton email={user.email} imageUrl={user.imageUrl} />
           ) : (
             <SignInButton />
-          )}
-            <MobileNavbar />
+          )} */}
+          <MobileNavbar />
+          <Button>
+            <Link href="/feedback-gratuito-sceneggiatura">
+              Feedback Gratuito
+            </Link>
+          </Button>
         </div>
       </div>
     </div>
