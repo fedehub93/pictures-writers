@@ -17,7 +17,7 @@ import { OrganizationJsonLd } from "./_components/seo/json-ld/organization";
 
 const mulish = Mulish({ subsets: ["latin"] });
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata(): Promise<Metadata | null> {
   return await getHeadMetadata();
 }
 

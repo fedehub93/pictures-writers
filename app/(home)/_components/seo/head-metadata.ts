@@ -1,18 +1,25 @@
 import { Metadata } from "next";
 
-export async function getHeadMetadata(): Promise<Metadata> {
+import { getSettings } from "@/data/settings";
+
+export async function getHeadMetadata(): Promise<Metadata | null> {
+  const { seo } = await getSettings();
+
+  if (!seo) {
+    return null;
+  }
+  
   return {
-    title: "Pictures Writers: Affina la tua scrittura cinematografica",
+    title: seo.title,
     robots: {
-      index: true,
-      follow: true,
+      index: !seo.noIndex,
+      follow: !seo.noFollow,
       googleBot: {
-        index: true,
-        follow: true,
+        index: !seo.noIndex,
+        follow: !seo.noFollow,
       },
     },
-    description:
-      "Pictures Writers è una rete e un centro di informazioni per chi vuole diventare uno sceneggiatore cinematografico, per chi vuole imparare il mestiere, per chi vuole scrivere per il cinema",
+    description: seo.description,
     openGraph: {
       url: "https://pictureswriters.com",
       type: "website",

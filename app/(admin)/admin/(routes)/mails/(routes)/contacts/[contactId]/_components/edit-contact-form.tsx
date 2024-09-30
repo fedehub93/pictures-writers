@@ -7,7 +7,11 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { EmailAudience, EmailContact } from "@prisma/client";
+import {
+  EmailAudience,
+  EmailContact,
+  EmailContactInteraction,
+} from "@prisma/client";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -24,11 +28,20 @@ import MultipleSelector from "@/components/multi-select";
 import { Switch } from "@/components/ui/switch";
 
 interface EditContactFormProps {
-  contact: EmailContact & { audiences: EmailAudience[] };
+  contact: EmailContact & {
+    audiences: EmailAudience[];
+    interactions: EmailContactInteraction[];
+  };
   options: { label: string; value: string }[];
+  interactionOptions: { label: string; value: string }[];
 }
 
 const audiencesOptionSchema = z.object({
+  label: z.string(),
+  value: z.string(),
+});
+
+const interactionsOptionSchema = z.object({
   label: z.string(),
   value: z.string(),
 });
@@ -43,10 +56,15 @@ const formSchema = z.object({
     })
     .email("This is not a valid email."),
   audiences: z.array(audiencesOptionSchema),
+  interactions: z.array(interactionsOptionSchema),
   isSubscriber: z.boolean(),
 });
 
-export const EditContactForm = ({ contact, options }: EditContactFormProps) => {
+export const EditContactForm = ({
+  contact,
+  options,
+  interactionOptions,
+}: EditContactFormProps) => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -62,6 +80,14 @@ export const EditContactForm = ({ contact, options }: EditContactFormProps) => {
             ...contact.audiences.map((audience) => ({
               label: audience.name,
               value: audience.id,
+            })),
+          ]
+        : [],
+      interactions: contact
+        ? [
+            ...contact.interactions.map((interaction) => ({
+              label: interaction.interactionType,
+              value: interaction.interactionType,
             })),
           ]
         : [],
@@ -89,6 +115,12 @@ export const EditContactForm = ({ contact, options }: EditContactFormProps) => {
 
   const onChangeAudience = (value: z.infer<typeof audiencesOptionSchema>[]) => {
     form.setValue("audiences", value);
+  };
+
+  const onChangeInteraction = (
+    value: z.infer<typeof interactionsOptionSchema>[]
+  ) => {
+    form.setValue("interactions", value);
   };
 
   return (
@@ -184,6 +216,34 @@ export const EditContactForm = ({ contact, options }: EditContactFormProps) => {
                         onChange={onChangeAudience}
                         defaultOptions={options}
                         placeholder="Select audiences..."
+                        className="bg-background"
+                        emptyIndicator={
+                          <p className="text-center text-lg leading-10">
+                            no results found.
+                          </p>
+                        }
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
+            />
+          </div>
+          <div className="flex flex-wrap gap-4">
+            <FormField
+              control={form.control}
+              name="interactions"
+              render={({ field }) => {
+                return (
+                  <FormItem className="min-w-40 flex-auto">
+                    <FormLabel>Interactions</FormLabel>
+                    <FormControl>
+                      <MultipleSelector
+                        value={field.value}
+                        onChange={onChangeInteraction}
+                        defaultOptions={interactionOptions}
+                        placeholder="Select interaction..."
                         className="bg-background"
                         emptyIndicator={
                           <p className="text-center text-lg leading-10">

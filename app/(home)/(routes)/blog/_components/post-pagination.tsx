@@ -67,8 +67,6 @@ export const PostPagination = ({
     ));
   };
 
-  console.log(currentPage);
-
   return (
     <Pagination>
       <PaginationContent>

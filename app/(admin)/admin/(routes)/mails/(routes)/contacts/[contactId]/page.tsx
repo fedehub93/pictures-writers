@@ -17,6 +17,7 @@ const MailSettings = async ({ params }: { params: { contactId: string } }) => {
     },
     include: {
       audiences: true,
+      interactions: true,
     },
   });
 
@@ -29,6 +30,21 @@ const MailSettings = async ({ params }: { params: { contactId: string } }) => {
       name: "asc",
     },
   });
+
+  const interactions = [
+    {
+      label: "user_subscribed",
+      value: "user_subscribed",
+    },
+    {
+      label: "first_feedback_request",
+      value: "first_feedback_request",
+    },
+    {
+      label: "ebook_downloaded",
+      value: "ebook_downloaded",
+    },
+  ];
 
   return (
     <div className="h-full w-full flex flex-col gap-y-4 px-6 py-3 max-w-6xl mx-auto overflow-y-auto">
@@ -43,6 +59,7 @@ const MailSettings = async ({ params }: { params: { contactId: string } }) => {
           label: audience.name,
           value: audience.id,
         }))}
+        interactionOptions={interactions}
       />
     </div>
   );
