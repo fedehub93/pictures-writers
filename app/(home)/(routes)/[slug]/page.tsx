@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { getPublishedPostBySlug } from "@/lib/post";
 import { PostTemplate } from "@/app/(home)/(routes)/[slug]/_components/post-template";
@@ -26,7 +26,7 @@ const Page = async ({ params }: { params: { slug: string } }) => {
   const post = await getPublishedPostBySlug(params.slug);
 
   if (!post) {
-    return redirect(`/`);
+    return notFound();
   }
 
   const bodyImages =

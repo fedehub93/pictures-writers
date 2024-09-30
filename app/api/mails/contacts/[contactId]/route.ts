@@ -54,7 +54,11 @@ export async function PATCH(
       ? [...values.audiences]
       : [];
 
-    const template = await db.emailContact.update({
+    const interactions: { label: string; value: string }[] = values.interactions
+      ? [...values.interactions]
+      : [];
+
+    const contact = await db.emailContact.update({
       where: {
         id: contactId,
       },
@@ -67,10 +71,25 @@ export async function PATCH(
               })),
             }
           : undefined,
+        interactions: undefined,
       },
     });
 
-    return NextResponse.json(template);
+    await db.emailContactInteraction.deleteMany({
+      where: { contactId: contact.id },
+    });
+
+    for (const interaction of interactions) {
+      await db.emailContactInteraction.create({
+        data: {
+          contactId: contact.id,
+          interactionType: interaction.value,
+          interactionDate: new Date(),
+        },
+      });
+    }
+
+    return NextResponse.json(contact);
   } catch (error) {
     console.log("[EMAIL_CONTACT_ID]", error);
     return new NextResponse("Internal Error", { status: 500 });

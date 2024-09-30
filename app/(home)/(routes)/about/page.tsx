@@ -1,4 +1,17 @@
+import { Metadata } from "next";
 import Image from "next/image";
+import { getHeadMetadata } from "../../_components/seo/head-metadata";
+
+export async function generateMetadata(): Promise<Metadata | null> {
+  const metadata = await getHeadMetadata();
+
+  return {
+    ...metadata,
+    title: "Chi siamo: Pictures Writers",
+    description:
+      "Pictures Writers nasce per diventare un canale centrale per gli sceneggiatori italiani, fare network creando un community e offrire servizio a scopo educativo per questo fantastico mestiere cinematografico.",
+  };
+}
 
 const AboutPage = () => (
   <>

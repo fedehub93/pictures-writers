@@ -1,5 +1,24 @@
+import { Metadata } from "next";
 import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
+import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
+
+export async function generateMetadata(): Promise<Metadata | null> {
+  const metadata = await getHeadMetadata();
+
+  return {
+    ...metadata,
+    robots: {
+      index: false,
+      follow: false,
+      googleBot: {
+        index: false,
+        follow: false,
+      },
+    },
+  };
+}
 
 const DownloadEbook = ({
   searchParams,

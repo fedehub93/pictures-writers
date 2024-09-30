@@ -1,6 +1,6 @@
-import { db } from "@/lib/db";
-import { Media, Post, Seo, User } from "@prisma/client";
 import { Metadata } from "next";
+
+import { db } from "@/lib/db";
 
 export async function getPostMetadataBySlug(
   slug: string
@@ -99,6 +99,50 @@ export async function getCategoryMetadataBySlug(
       title: category.seo.ogTwitterTitle || category.seo.title,
       description:
         category.seo.ogTwitterDescription || category.seo.description || "",
+    },
+  };
+}
+
+export async function getTagMetdataBySlug(
+  slug: string
+): Promise<Metadata | null> {
+  const tag = await db.tag.findFirst({
+    where: { slug, isLatest: true },
+    include: {
+      seo: true,
+    },
+    orderBy: { firstPublishedAt: "desc" },
+  });
+
+  if (!tag || !tag.seo) {
+    return null;
+  }
+
+  return {
+    title: tag.seo.title,
+    description: tag.seo.description,
+    robots: {
+      index: !tag.seo.noIndex,
+      follow: !tag.seo.noFollow,
+      googleBot: {
+        index: !tag.seo.noIndex,
+        follow: !tag.seo.noFollow,
+      },
+    },
+    openGraph: {
+      title: tag.seo.ogTwitterTitle || tag.seo.title,
+      description: tag.seo.ogTwitterDescription || tag.seo.description || "",
+      url: tag.seo.ogTwitterUrl || "",
+      siteName: "Pictures Writers",
+      locale: "it_IT",
+      type: "article",
+      publishedTime: tag.firstPublishedAt.toISOString(),
+      modifiedTime: tag.publishedAt.toISOString(),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: tag.seo.ogTwitterTitle || tag.seo.title,
+      description: tag.seo.ogTwitterDescription || tag.seo.description || "",
     },
   };
 }

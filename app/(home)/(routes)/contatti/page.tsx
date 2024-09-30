@@ -1,8 +1,9 @@
-import Image from "next/image";
+import { Metadata } from "next";
 import * as z from "zod";
+import { Clock } from "lucide-react";
 
 import { ContactForm } from "./_components/contact-form";
-import { Clock } from "lucide-react";
+import { getHeadMetadata } from "../../_components/seo/head-metadata";
 
 const formSchema = z.object({
   name: z.string().min(1, {
@@ -20,11 +21,18 @@ const formSchema = z.object({
   message: z.string().min(1, { message: "Message is required" }),
 });
 
-const ContactPage = (): JSX.Element => {
-  const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log(values);
-  };
+export async function generateMetadata(): Promise<Metadata | null> {
+  const metadata = await getHeadMetadata();
 
+  return {
+    ...metadata,
+    title: "Contatti: Pictures Writers",
+    description:
+      "Sei un aspirante sceneggiatore e hai delle domande a cui non trovi risopsta? Contattaci e ti risponderemo il prima possibile.",
+  };
+}
+
+const ContactPage = (): JSX.Element => {
   const contactOptions = [
     {
       label: "Orario di lavoro",

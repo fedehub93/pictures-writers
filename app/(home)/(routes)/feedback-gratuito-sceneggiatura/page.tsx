@@ -1,5 +1,21 @@
+import { Metadata } from "next";
+
 import { db } from "@/lib/db";
+
 import FirstImpressionForm from "./_components/first-impression-form";
+
+import { getHeadMetadata } from "../../_components/seo/head-metadata";
+
+export async function generateMetadata(): Promise<Metadata | null> {
+  const metadata = await getHeadMetadata();
+
+  return {
+    ...metadata,
+    title: "Feedback gratuito sceneggiatura: Pictures Writers",
+    description:
+      "Sei alle prime armi? Richiedi subito il feedback gratuito sulla prima pagina della tua sceneggiatura.",
+  };
+}
 
 const FirstImpression = async () => {
   const formats = await db.format.findMany({

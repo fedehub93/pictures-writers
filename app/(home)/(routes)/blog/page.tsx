@@ -1,6 +1,32 @@
+import { Metadata } from "next";
 import { getPublishedPosts } from "@/lib/post";
 
 import { PostList } from "./_components/post-list";
+import { getHeadMetadata } from "../../_components/seo/head-metadata";
+
+type Props = {
+  searchParams: { page: string; s: string };
+};
+
+export async function generateMetadata({
+  searchParams,
+}: Props): Promise<Metadata | null> {
+  const metadata = await getHeadMetadata();
+
+  const currentPage = Number(searchParams?.page) || 1;
+  const s = searchParams?.s || "";
+
+  const { posts } = await getPublishedPosts({
+    page: currentPage,
+    s,
+  });
+
+  return {
+    ...metadata,
+    title: `News: ${posts[0].title}`,
+    description: `Ultime notizie sulla sceneggiatura cinematografica. ${posts[0].title}`,
+  };
+}
 
 const BlogPage = async ({
   searchParams,

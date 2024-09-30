@@ -6,10 +6,13 @@ import {
   getPublishedPostsByTagRootId,
 } from "@/lib/post";
 import { getPublishedCategoryBySlug } from "@/lib/category";
-import { getCategoryMetadataBySlug } from "@/app/(home)/_components/seo/content-metadata";
+import { getPublishedTagBySlug } from "@/lib/tag";
+import {
+  getCategoryMetadataBySlug,
+  getTagMetdataBySlug,
+} from "@/app/(home)/_components/seo/content-metadata";
 
 import { PostList } from "../_components/post-list";
-import { getPublishedTagBySlug } from "@/lib/tag";
 
 type Params = {
   slug: string;
@@ -24,7 +27,14 @@ export async function generateMetadata({
 }: Props): Promise<Metadata | null> {
   const { slug } = params;
 
-  return await getCategoryMetadataBySlug(slug);
+  const categoryMetadata = await getCategoryMetadataBySlug(slug);
+  if (categoryMetadata) {
+    return categoryMetadata;
+  }
+
+  const tagMetadata = await getTagMetdataBySlug(slug);
+
+  return tagMetadata;
 }
 
 const Page = async ({

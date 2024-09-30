@@ -1,6 +1,26 @@
+import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+
 import { Button } from "@/components/ui/button";
+
+import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
+
+export async function generateMetadata(): Promise<Metadata | null> {
+  const metadata = await getHeadMetadata();
+
+  return {
+    ...metadata,
+    robots: {
+      index: false,
+      follow: false,
+      googleBot: {
+        index: false,
+        follow: false,
+      },
+    },
+  };
+}
 
 const FirstImpressionSuccess = async () => {
   return (
@@ -27,9 +47,7 @@ const FirstImpressionSuccess = async () => {
           <strong>ultime news</strong> del nostro blog?
         </p>
         <Button className="mt-2">
-          <Link href="/">
-            Torna alla home
-          </Link>
+          <Link href="/">Torna alla home</Link>
         </Button>
       </div>
     </section>

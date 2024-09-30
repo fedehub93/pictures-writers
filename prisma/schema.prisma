@@ -15,6 +15,19 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+model Settings {
+  id String @id @default(uuid())
+
+  siteName String?
+  logoUrl  String?
+
+  seo   Seo?    @relation(fields: [seoId], references: [id])
+  seoId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 enum UserRole {
   USER
   EDITOR
@@ -95,6 +108,8 @@ model Seo {
   rootId       String?
   root         Seo?    @relation("RootChildren", fields: [rootId], references: [id])
   rootChildren Seo[]   @relation("RootChildren")
+
+  settings Settings[]
 
   posts Post[]
 
@@ -361,10 +376,10 @@ model Ebook {
 model ContactForm {
   id String @id @default(uuid())
 
-  name    String
-  email   String
-  subject String
-  message String
+  name    String?
+  email   String?
+  subject String?
+  message String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -33,7 +33,7 @@ const SidebarSearch = () => {
         />
       </div>
       {debouncedSearch && (
-        <ScrollArea className=" max-h-[400px]">
+        <ScrollArea className=" max-h-[400px] overflow-auto">
           {status === "pending" ? (
             <div className="flex h-full flex-col flex-1 justify-center items-center py-8">
               <BeatLoader />
@@ -56,9 +56,9 @@ const SidebarSearch = () => {
                       <Link
                         href={item.slug}
                         key={item.title}
-                        className="relative flex gap-x-4 group"
+                        className="relative flex gap-x-4 gap-y-8 group"
                       >
-                        <div className="relative w-40 aspect-square top-0 transition-all duration-300 self-start">
+                        <div className="relative w-14 h-14 aspect-square top-0 transition-all duration-300 self-start">
                           <Image
                             src={item.imageCover?.url!}
                             alt={item.imageCover?.altText || ""}
@@ -67,11 +67,12 @@ const SidebarSearch = () => {
                           />
                         </div>
                         <div className="flex flex-col gap-y-2 justify-evenly">
-                          <p className="text-base font-medium">{item.title}</p>
+                          <p className="text-base font-medium leading-4">
+                            {item.title}
+                          </p>
                           <div className="flex items-center justify-between">
                             <p className="self-end text-xs text-muted-foreground">
-                              Pubblicato da {item.user?.firstName}{" "}
-                              {item.user?.lastName}{" "}
+                              Pubblicato {" "}
                               {formatDistance(item.publishedAt, new Date(), {
                                 addSuffix: true,
                                 locale: it,
