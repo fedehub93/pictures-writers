@@ -34,7 +34,7 @@ export const Container = ({ children, user }: ContainerProps) => {
     >
       <div className="flex flex-col h-full">
         <Navbar user={user}/>
-        <div className="px-4 py-6 md:px-8 h-[calc(100%-4rem)] overflow-auto">{children}</div>
+        <div className="px-4 py-6 md:px-8 h-full overflow-auto">{children}</div>
       </div>
     </div>
   );
