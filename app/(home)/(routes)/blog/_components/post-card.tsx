@@ -31,6 +31,7 @@ const PostCard = ({
     <article key={title} className="mb-10">
       <Link
         href={`/${slug}`}
+        prefetch={true}
         className=" relative top-0 flex min-h-full flex-col bg-white text-[#444] no-underline shadow-lg transition-all duration-300 hover:-top-1 hover:shadow-3xl "
       >
         <div className="relative aspect-video w-full">
