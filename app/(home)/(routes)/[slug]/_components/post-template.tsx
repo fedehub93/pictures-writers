@@ -45,15 +45,16 @@ export const PostTemplate = ({ post }: PostTemplateProps) => {
         <article className="blog-post__article">
           <div className="blog-post__image-container">
             {post.imageCover ? (
-              // <Image
-              //   src={post.imageCover.url}
-              //   alt={post.imageCover.altText || ""}
-              //   fill
-              //   priority
-              //   className="blog-post__image"
-              // />
-              <OptimizedImage image={post.imageCover} />
-            ) : null}
+              <Image
+                src={post.imageCover.url}
+                alt={post.imageCover.altText || ""}
+                fill
+                priority
+                placeholder="blur"
+                className="blog-post__image"
+              />
+            ) : // <OptimizedImage image={post.imageCover} />
+            null}
           </div>
           <PostInfo
             authorName={`${post.user?.firstName} ${post.user?.lastName}`}

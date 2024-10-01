@@ -13,6 +13,7 @@ const nextConfig = {
         hostname: "img.clerk.com",
       },
     ],
+    formats: ["image/avif", "image/webp"],
   },
   webpack: (config) => {
     config.resolve.alias["handlebars"] = path.resolve(
