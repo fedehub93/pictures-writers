@@ -1,6 +1,7 @@
-import type { Metadata, ResolvingMetadata } from "next";
-import { ClerkProvider } from "@clerk/nextjs";
+import type { Metadata } from "next";
 import { Mulish } from "next/font/google";
+
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import "./home.css";
 
@@ -48,6 +49,7 @@ export default function RootLayout({
             </div>
           </QueryProvider>
         </ThemeProvider>
+        <SpeedInsights />
       </body>
     </html>
   );
