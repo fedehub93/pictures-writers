@@ -1,4 +1,11 @@
-import { Category, ContentStatus, Media, Post, Tag, User } from "@prisma/client";
+import {
+  Category,
+  ContentStatus,
+  Media,
+  Post,
+  Tag,
+  User,
+} from "@prisma/client";
 import { db } from "./db";
 
 const POST_PER_PAGE = 10;
@@ -68,6 +75,26 @@ export const getPublishedPosts = async ({
   const totalPages = Math.ceil(totalPosts / POST_PER_PAGE);
 
   return { posts, totalPages, currentPage: page };
+};
+
+export const getPublishedPostsBuilding = async () => {
+  const posts = await db.post.findMany({
+    where: {
+      status: ContentStatus.PUBLISHED,
+      isLatest: true,
+    },
+    include: {
+      imageCover: true,
+      category: true,
+      tags: true,
+      user: true,
+    },
+    orderBy: {
+      firstPublishedAt: "desc",
+    },
+  });
+
+  return posts;
 };
 
 export const getPublishedPostsByCategoryRootId = async ({

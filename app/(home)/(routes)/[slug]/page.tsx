@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 
-import { getPublishedPostBySlug } from "@/lib/post";
+import {
+  getPublishedPostBySlug,
+  getPublishedPosts,
+  getPublishedPostsBuilding,
+} from "@/lib/post";
 import { PostTemplate } from "@/app/(home)/(routes)/[slug]/_components/post-template";
 import { getPostMetadataBySlug } from "@/app/(home)/_components/seo/content-metadata";
 import { BlogPostingJsonLd } from "@/app/(home)/_components/seo/json-ld/blog-posting";
@@ -20,6 +24,12 @@ export async function generateMetadata({
   const { slug } = params;
 
   return await getPostMetadataBySlug(slug);
+}
+
+export async function generateStaticParams() {
+  const posts = await getPublishedPostsBuilding();
+
+  return posts.map((post) => ({ slug: post.slug }));
 }
 
 const Page = async ({ params }: { params: { slug: string } }) => {
