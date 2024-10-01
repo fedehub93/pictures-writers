@@ -48,6 +48,7 @@ export const PostTemplate = ({ post }: PostTemplateProps) => {
                 src={post.imageCover.url}
                 alt={post.imageCover.altText || ""}
                 fill
+                priority
                 className="blog-post__image"
               />
             ) : null}
