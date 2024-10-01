@@ -1,8 +1,6 @@
 import { ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { formatDistance } from "date-fns";
-import { it } from "date-fns/locale";
 
 import { getLatestPublishedPosts } from "@/lib/post";
 
@@ -28,6 +26,7 @@ export const SidebarLatestNews = async () => {
                     alt={post.imageCover.altText || ""}
                     className="object-cover"
                     fill
+                    quality={50}
                   />
                 </div>
               ) : null}
