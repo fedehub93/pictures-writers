@@ -32,6 +32,7 @@ import PostInfo from "@/app/(home)/(routes)/blog/_components/post-info";
 import TagsWidget from "./tags-widget";
 import NewsletterWidget from "./newsletter-widget";
 import AuthorWidget from "./author-widget";
+import { OptimizedImage } from "@/app/(home)/_components/optimized-image";
 
 interface PostTemplateProps {
   post: PostWithImageCoverWithCategoryWithTagsWithSeo;
@@ -44,13 +45,14 @@ export const PostTemplate = ({ post }: PostTemplateProps) => {
         <article className="blog-post__article">
           <div className="blog-post__image-container">
             {post.imageCover ? (
-              <Image
-                src={post.imageCover.url}
-                alt={post.imageCover.altText || ""}
-                fill
-                priority
-                className="blog-post__image"
-              />
+              // <Image
+              //   src={post.imageCover.url}
+              //   alt={post.imageCover.altText || ""}
+              //   fill
+              //   priority
+              //   className="blog-post__image"
+              // />
+              <OptimizedImage image={post.imageCover} />
             ) : null}
           </div>
           <PostInfo
