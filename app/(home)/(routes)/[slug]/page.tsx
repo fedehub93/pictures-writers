@@ -1,11 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import {
-  getPublishedPostBySlug,
-  getPublishedPostsBuilding,
-  PostWithImageCoverWithCategoryWithTagsWithSeo,
-} from "@/lib/post";
+import { getPublishedPostBySlug, getPublishedPostsBuilding } from "@/lib/post";
 import { PostTemplate } from "@/app/(home)/(routes)/[slug]/_components/post-template";
 import { getPostMetadataBySlug } from "@/app/(home)/_components/seo/content-metadata";
 import { BlogPostingJsonLd } from "@/app/(home)/_components/seo/json-ld/blog-posting";
@@ -18,13 +14,13 @@ type Props = {
   params: Params;
 };
 
-// export async function generateMetadata({
-//   params,
-// }: Props): Promise<Metadata | null> {
-//   const { slug } = params;
+export async function generateMetadata({
+  params,
+}: Props): Promise<Metadata | null> {
+  const { slug } = params;
 
-//   return await getPostMetadataBySlug(slug);
-// }
+  return await getPostMetadataBySlug(slug);
+}
 export const revalidate = 3600;
 
 export const dynamicParams = true;
@@ -34,12 +30,6 @@ export async function generateStaticParams() {
 
   return posts.map((post) => ({ slug: post.slug }));
 }
-
-// async function getPost(params: { slug: string }) {
-//   const publishedPost = await getPublishedPostBySlug(params.slug);
-
-//   return publishedPost;
-// }
 
 const Page = async ({ params }: { params: { slug: string } }) => {
   const post = await getPublishedPostBySlug(params.slug);
