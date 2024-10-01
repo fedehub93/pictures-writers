@@ -18,13 +18,16 @@ type Props = {
   params: Params;
 };
 
-export async function generateMetadata({
-  params,
-}: Props): Promise<Metadata | null> {
-  const { slug } = params;
+// export async function generateMetadata({
+//   params,
+// }: Props): Promise<Metadata | null> {
+//   const { slug } = params;
 
-  return await getPostMetadataBySlug(slug);
-}
+//   return await getPostMetadataBySlug(slug);
+// }
+export const revalidate = 3600;
+
+export const dynamicParams = true;
 
 export async function generateStaticParams() {
   const posts = await getPublishedPostsBuilding();
@@ -32,14 +35,14 @@ export async function generateStaticParams() {
   return posts.map((post) => ({ slug: post.slug }));
 }
 
-async function getPost(params: { slug: string }) {
-  const publishedPost = await getPublishedPostBySlug(params.slug);
+// async function getPost(params: { slug: string }) {
+//   const publishedPost = await getPublishedPostBySlug(params.slug);
 
-  return publishedPost;
-}
+//   return publishedPost;
+// }
 
 const Page = async ({ params }: { params: { slug: string } }) => {
-  const post = await getPost(params);
+  const post = await getPublishedPostBySlug(params.slug);
 
   if (!post) {
     return notFound();
