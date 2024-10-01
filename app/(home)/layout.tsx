@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Mulish } from "next/font/google";
 
-import { SpeedInsights } from "@vercel/speed-insights/next";
-
 import "./home.css";
 
 import { cn } from "@/lib/utils";
@@ -49,7 +47,7 @@ export default function RootLayout({
             </div>
           </QueryProvider>
         </ThemeProvider>
-        <SpeedInsights />
+        {/* <SpeedInsights /> */}
       </body>
     </html>
   );
