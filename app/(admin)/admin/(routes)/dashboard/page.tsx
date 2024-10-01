@@ -31,6 +31,10 @@ import { getEbookDownloadGrowth } from "@/data/email-contact";
 
 const DashboardPage = async () => {
   const ebookDownloadedStats = await getEbookDownloadGrowth();
+import { getEmailContactGrowth } from "@/data/email-contact";
+
+const DashboardPage = async () => {
+  const subscriptionWidget = await getEmailContactGrowth();
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 md:pt-4">
@@ -55,9 +59,9 @@ const DashboardPage = async () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+2350</div>
+            <div className="text-2xl font-bold">+{subscriptionWidget.absoluteGrowth}</div>
             <p className="text-xs text-muted-foreground">
-              +180.1% from last month
+              +{subscriptionWidget.percentageGrowth}% from last month
             </p>
           </CardContent>
         </Card>

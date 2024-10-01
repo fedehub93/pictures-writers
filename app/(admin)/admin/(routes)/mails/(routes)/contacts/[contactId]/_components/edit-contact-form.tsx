@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -24,6 +25,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import MultipleSelector from "@/components/multi-select";
+import { Switch } from "@/components/ui/switch";
 
 interface EditContactFormProps {
   contact: EmailContact & {
@@ -55,6 +57,7 @@ const formSchema = z.object({
     .email("This is not a valid email."),
   audiences: z.array(audiencesOptionSchema),
   interactions: z.array(interactionsOptionSchema),
+  isSubscriber: z.boolean(),
 });
 
 export const EditContactForm = ({
@@ -71,6 +74,7 @@ export const EditContactForm = ({
       firstName: contact?.firstName || "",
       lastName: contact?.lastName || "",
       email: contact?.email,
+      isSubscriber: contact?.isSubscriber,
       audiences: contact
         ? [
             ...contact.audiences.map((audience) => ({
@@ -174,6 +178,28 @@ export const EditContactForm = ({
                       {...field}
                     />
                   </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="isSubscriber"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">Is subscriber?</FormLabel>
+                    <FormDescription>
+                      Prevent all search engines that support the noindex rule
+                      from indexing this page.
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />

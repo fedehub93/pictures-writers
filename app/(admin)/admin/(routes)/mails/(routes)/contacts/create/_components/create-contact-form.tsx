@@ -13,12 +13,14 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 
 interface CreateContactFormProps {
   options: { label: string; value: string }[];
@@ -35,6 +37,7 @@ const formSchema = z.object({
   email: z.string().email().min(1, {
     message: "Email is required",
   }),
+  isSubscriber: z.boolean(),
   audiences: z.array(audiencesOptionSchema),
 });
 
@@ -47,6 +50,7 @@ export const CreateContactForm = ({ options }: CreateContactFormProps) => {
       firstName: "",
       lastName: "",
       email: "",
+      isSubscriber: true,
       audiences: [],
     },
   });
@@ -56,7 +60,10 @@ export const CreateContactForm = ({ options }: CreateContactFormProps) => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       const response = await axios.post("/api/mails/contacts", values);
-      router.push(`/admin/mails/contacts/${response.data.id}`);
+      // router.push(`/admin/mails/contacts/${response.data.id}`);
+      // router.push(`/admin/mails/contacts/create`);
+      form.reset();
+      router.refresh();
 
       toast.success("Contact created");
     } catch {
@@ -104,6 +111,28 @@ export const CreateContactForm = ({ options }: CreateContactFormProps) => {
                   disabled={isSubmitting}
                   placeholder="mario.rossi@email.com"
                   {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="isSubscriber"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">Is subscriber?</FormLabel>
+                <FormDescription>
+                  Prevent all search engines that support the noindex rule from
+                  indexing this page.
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
                 />
               </FormControl>
               <FormMessage />
