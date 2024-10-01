@@ -3,6 +3,7 @@ import {
   ContentStatus,
   Media,
   Post,
+  Seo,
   Tag,
   User,
 } from "@prisma/client";
@@ -15,6 +16,14 @@ export type PostWithImageCoverWithCategoryWithTags = Post & {
   imageCover: Media | null;
   category: Category | null;
   tags: Tag[];
+  user: User | null;
+};
+
+export type PostWithImageCoverWithCategoryWithTagsWithSeo = Post & {
+  imageCover: Media | null;
+  category: Category | null;
+  tags: Tag[];
+  seo: Seo | null;
   user: User | null;
 };
 
@@ -77,7 +86,9 @@ export const getPublishedPosts = async ({
   return { posts, totalPages, currentPage: page };
 };
 
-export const getPublishedPostsBuilding = async () => {
+export const getPublishedPostsBuilding = async (): Promise<
+  PostWithImageCoverWithCategoryWithTags[]
+> => {
   const posts = await db.post.findMany({
     where: {
       status: ContentStatus.PUBLISHED,
@@ -87,6 +98,7 @@ export const getPublishedPostsBuilding = async () => {
       imageCover: true,
       category: true,
       tags: true,
+      seo: true,
       user: true,
     },
     orderBy: {

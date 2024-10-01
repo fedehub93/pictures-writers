@@ -1,7 +1,10 @@
 import Image, { ImageLoader, ImageLoaderProps } from "next/image";
 import { SlateView } from "slate-to-react";
 
-import { PostWithImageCoverWithCategoryWithTags } from "@/lib/post";
+import {
+  PostWithImageCoverWithCategoryWithTags,
+  PostWithImageCoverWithCategoryWithTagsWithSeo,
+} from "@/lib/post";
 
 import {
   Blockquote,
@@ -31,7 +34,7 @@ import NewsletterWidget from "./newsletter-widget";
 import AuthorWidget from "./author-widget";
 
 interface PostTemplateProps {
-  post: PostWithImageCoverWithCategoryWithTags;
+  post: PostWithImageCoverWithCategoryWithTagsWithSeo;
 }
 
 export const PostTemplate = ({ post }: PostTemplateProps) => {

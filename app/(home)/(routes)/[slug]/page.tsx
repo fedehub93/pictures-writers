@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 import {
   getPublishedPostBySlug,
-  getPublishedPosts,
   getPublishedPostsBuilding,
+  PostWithImageCoverWithCategoryWithTagsWithSeo,
 } from "@/lib/post";
 import { PostTemplate } from "@/app/(home)/(routes)/[slug]/_components/post-template";
 import { getPostMetadataBySlug } from "@/app/(home)/_components/seo/content-metadata";
@@ -32,8 +32,14 @@ export async function generateStaticParams() {
   return posts.map((post) => ({ slug: post.slug }));
 }
 
+async function getPost(params: { slug: string }) {
+  const publishedPost = await getPublishedPostBySlug(params.slug);
+
+  return publishedPost;
+}
+
 const Page = async ({ params }: { params: { slug: string } }) => {
-  const post = await getPublishedPostBySlug(params.slug);
+  const post = await getPost(params);
 
   if (!post) {
     return notFound();
