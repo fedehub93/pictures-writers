@@ -1,15 +1,6 @@
 import Link from "next/link";
-import {
-  Activity,
-  ArrowUpRight,
-  CreditCard,
-  DollarSign,
-  Download,
-  Users,
-} from "lucide-react";
+import { ArrowUpRight, DollarSign, Download, Users } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -26,15 +17,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  
 } from "@/components/ui/table";
 import { getEbookDownloadGrowth } from "@/data/email-contact";
-
-const DashboardPage = async () => {
-  const ebookDownloadedStats = await getEbookDownloadGrowth();
 import { getEmailContactGrowth } from "@/data/email-contact";
 
 const DashboardPage = async () => {
   const subscriptionWidget = await getEmailContactGrowth();
+  const ebookDownloadedStats = await getEbookDownloadGrowth();
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 md:pt-4">
@@ -59,7 +49,9 @@ const DashboardPage = async () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+{subscriptionWidget.absoluteGrowth}</div>
+            <div className="text-2xl font-bold">
+              +{subscriptionWidget.absoluteGrowth}
+            </div>
             <p className="text-xs text-muted-foreground">
               +{subscriptionWidget.percentageGrowth}% from last month
             </p>
