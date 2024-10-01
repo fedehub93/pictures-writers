@@ -44,8 +44,7 @@ export const PostTemplate = ({ post }: PostTemplateProps) => {
               <Image
                 src={post.imageCover.url}
                 alt={post.imageCover.altText || ""}
-                width={post.imageCover.metadata?.original?.width || 750}
-                height={post.imageCover.metadata?.original?.height || 422}
+                fill
                 className="blog-post__image"
               />
             ) : null}

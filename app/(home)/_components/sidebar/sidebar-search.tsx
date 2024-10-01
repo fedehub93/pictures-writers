@@ -22,10 +22,17 @@ const SidebarSearch = () => {
 
   return (
     <div className="w-full bg-white px-6 py-8 shadow-md">
-      <h3 className="mb-4 text-sm font-extrabold uppercase">Cerca</h3>
+      <label
+        htmlFor="search"
+        className="mb-4 text-sm font-extrabold uppercase block"
+      >
+        Cerca
+      </label>
       <div className="relative mb-4">
         <Search className="h-4 w-4 absolute top-3 left-3 text-slate-600" />
         <Input
+          id="search"
+          name="search"
           onChange={(e) => {
             setDebouncedSearch(e.target.value);
           }}
@@ -72,7 +79,7 @@ const SidebarSearch = () => {
                           </p>
                           <div className="flex items-center justify-between">
                             <p className="self-end text-xs text-muted-foreground">
-                              Pubblicato {" "}
+                              Pubblicato{" "}
                               {formatDistance(item.publishedAt, new Date(), {
                                 addSuffix: true,
                                 locale: it,

@@ -27,30 +27,28 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
-      <html lang="it" suppressHydrationWarning>
-        <body className={mulish.className}>
-          <OrganizationJsonLd
-            name="Pictures Writers"
-            url="https://pictureswriters.com"
-            logo="https://pictureswriters.com/logo.png"
-          />
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            disableTransitionOnChange
-          >
-            <ToastProvider />
-            <QueryProvider>
-              <div className={cn(`h-full`, mulish.className)}>
-                <Navbar />
-                <main className="pt-20">{children}</main>
-                <Footer />
-              </div>
-            </QueryProvider>
-          </ThemeProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="it" suppressHydrationWarning>
+      <body className={mulish.className}>
+        <OrganizationJsonLd
+          name="Pictures Writers"
+          url="https://pictureswriters.com"
+          logo="https://pictureswriters.com/logo.png"
+        />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          disableTransitionOnChange
+        >
+          <ToastProvider />
+          <QueryProvider>
+            <div className={cn(`h-full`, mulish.className)}>
+              <Navbar />
+              <main className="pt-20">{children}</main>
+              <Footer />
+            </div>
+          </QueryProvider>
+        </ThemeProvider>
+      </body>
+    </html>
   );
 }
