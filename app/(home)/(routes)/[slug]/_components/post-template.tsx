@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image, { ImageLoader, ImageLoaderProps } from "next/image";
 import { SlateView } from "slate-to-react";
 
 import { PostWithImageCoverWithCategoryWithTags } from "@/lib/post";
@@ -44,7 +44,8 @@ export const PostTemplate = ({ post }: PostTemplateProps) => {
               <Image
                 src={post.imageCover.url}
                 alt={post.imageCover.altText || ""}
-                fill
+                width={post.imageCover.metadata?.original?.width || 750}
+                height={post.imageCover.metadata?.original?.height || 422}
                 className="blog-post__image"
               />
             ) : null}

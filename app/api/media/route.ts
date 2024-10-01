@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 
-import { authAdmin } from "@/lib/auth-service";
-import { db } from "@/lib/db";
 import { Media } from "@prisma/client";
+
+import { db } from "@/lib/db";
+import { authAdmin } from "@/lib/auth-service";
 
 const MEDIA_BATCH = 3;
 
@@ -91,10 +92,29 @@ export async function POST(req: Request) {
     }
 
     const media = await db.media.create({
-      data: {
-        ...values,
-      },
+      data: { ...values },
     });
+
+    // if (media.type === MediaType.IMAGE) {
+    //   const processedImage = await processImage(media.url, media.name);
+
+    //   const imagesToUpdate = mapImageToMetadata(
+    //     media.key!,
+    //     media.url!,
+    //     processedImage
+    //   );
+
+    //   const updatedMedia = await db.media.update({
+    //     where: { id: media.id },
+    //     data: {
+    //       metadata: {
+    //         ...imagesToUpdate,
+    //       },
+    //     },
+    //   });
+
+    //   return NextResponse.json(updatedMedia);
+    // }
 
     return NextResponse.json(media);
   } catch (error) {

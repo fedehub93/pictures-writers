@@ -4,6 +4,16 @@ import { CustomElement } from "./components/editor";
 declare global {
   namespace PrismaJson {
     type BodyData = CustomElement[];
+    type MediaMetadata = {
+      original: MetadataImage | null;
+      webp: {
+        resized: MetadataImage[];
+      };
+      jpeg: {
+        resized: MetadataImage[];
+      };
+      placeholder: MetadataImage | null;
+    } | null;
     type EmailDesignData = any;
   }
 }
@@ -11,6 +21,14 @@ declare global {
 /**
  * @public
  */
+
+export interface MetadataImage {
+  key: string;
+  url: string;
+  width: number;
+  height: number;
+  format: string;
+}
 
 export interface OpenGraphImages {
   url: string;

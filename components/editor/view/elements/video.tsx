@@ -22,7 +22,7 @@ export const isVideo = createElementNodeMatcher<VideoElement>(
 export const VideoElement = createElementTransform(
   isVideo,
   ({ key, element, attributes, children }) => (
-    <span className="relative mt-6 block w-full pb-[56.25%]">
+    <span key={key} className="relative mt-6 block w-full pb-[56.25%]">
       <iframe
         id="ytplayer"
         title={element.data.uri}
