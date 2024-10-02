@@ -49,7 +49,7 @@ export const PostTemplate = ({ post }: PostTemplateProps) => {
                 src={post.imageCover.url}
                 alt={post.imageCover.altText || ""}
                 fill
-                sizes="max-width(1280px) 95vw, 45vw"
+                sizes="(max-width:1280px) 90vw, 40vw"
                 priority
                 className="blog-post__image"
               />

@@ -40,6 +40,8 @@ const PostCard = ({
               src={imageCoverUrl}
               alt={imageCoverAlt || "Post card"}
               fill
+              sizes="(max-width:1280px) 90w, 40vw"
+              quality={70}
               className="object-cover"
             />
           ) : null}

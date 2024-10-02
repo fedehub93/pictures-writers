@@ -50,6 +50,7 @@ const LatestNews = async () => {
                       src={post.imageCover.url}
                       fill
                       className="object-cover"
+                      sizes="(max-width: 1023px) 75vw, 20vw"
                     />
                   </div>
                 ) : null}
@@ -61,7 +62,9 @@ const LatestNews = async () => {
                     })}
                     &nbsp;
                   </span>
-                  <span>{post?.user?.firstName} {post?.user?.lastName}</span>
+                  <span>
+                    {post?.user?.firstName} {post?.user?.lastName}
+                  </span>
                 </div>
                 <h3 className="mb-2 text-lg font-bold leading-5 text-heading">
                   {post.title}

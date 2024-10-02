@@ -63,7 +63,7 @@ const SidebarEbook = (): JSX.Element => {
         alt="eBook gratuito sull'introduzione alla sceneggiatura cinematografica"
         width={2000}
         height={2000}
-        sizes="max-width(1280px) 90vw, 25vw"
+        sizes="(max-width: 1280px) 90vw, 20vw"
         quality={50}
       />
       <div className="mb-4">

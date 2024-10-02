@@ -131,6 +131,7 @@ export const HeroSection = (): JSX.Element => {
               alt="jumbotron"
               fill
               className="object-cover"
+              sizes="(max-width: 1023px) 90vw, 35vw"
               src="/story-book.png"
             />
           </div>

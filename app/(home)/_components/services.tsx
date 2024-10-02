@@ -20,6 +20,7 @@ const CreativeFeatures = (): JSX.Element => (
               src="/post-settimanali.png"
               alt="Feature"
               fill
+              sizes="(max-width: 1023px) 90vw, 35vw"
               className="object-cover"
             />
           </div>
@@ -51,6 +52,7 @@ const CreativeFeatures = (): JSX.Element => (
               src="/sceneggiature-film-famosi.png"
               alt="Feature"
               fill
+              sizes="(max-width: 1023px) 90vw, 35vw"
               className="object-cover"
             />
           </div>

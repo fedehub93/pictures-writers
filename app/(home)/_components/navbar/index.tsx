@@ -33,7 +33,7 @@ export const Navbar = async () => {
             <SignInButton />
           )} */}
           <MobileNavbar />
-          <Button>
+          <Button asChild>
             <Link href="/feedback-gratuito-sceneggiatura">
               Feedback Gratuito
             </Link>

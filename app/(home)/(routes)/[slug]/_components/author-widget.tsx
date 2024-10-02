@@ -27,7 +27,7 @@ const AuthorWidget = ({
             className="object-cover"
             width={400}
             height={400}
-            sizes="20vw"
+            sizes="15vw"
             quality={50}
             style={{height:"100%", width:"auto"}}
           />
