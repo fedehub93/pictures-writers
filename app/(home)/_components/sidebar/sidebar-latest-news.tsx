@@ -18,6 +18,7 @@ export const SidebarLatestNews = async () => {
               key={post.title}
               href={`/${post.slug}`}
               className="flex items-center md:items-start text-gray-600 md:max-w-xl 2xl:flex-col group mb-2"
+              prefetch={true}
             >
               {post.imageCover ? (
                 <div className="aspect-video relative w-full hidden 2xl:block">

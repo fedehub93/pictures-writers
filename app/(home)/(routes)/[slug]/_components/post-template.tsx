@@ -33,12 +33,15 @@ import TagsWidget from "./tags-widget";
 import NewsletterWidget from "./newsletter-widget";
 import AuthorWidget from "./author-widget";
 import { OptimizedImage } from "@/app/(home)/_components/optimized-image";
+import { getPlaceholderImage } from "@/lib/image";
 
 interface PostTemplateProps {
   post: PostWithImageCoverWithCategoryWithTagsWithSeo;
 }
 
-export const PostTemplate = ({ post }: PostTemplateProps) => {
+export const PostTemplate = async ({ post }: PostTemplateProps) => {
+  const imageWithPlaceholder = await getPlaceholderImage(post.imageCover?.url!);
+
   return (
     <section className="blog-post">
       <div className="blog-post__post">
@@ -52,6 +55,8 @@ export const PostTemplate = ({ post }: PostTemplateProps) => {
                 sizes="(max-width:1280px) 90vw, 40vw"
                 priority
                 className="blog-post__image"
+                placeholder="blur"
+                blurDataURL={imageWithPlaceholder.placeholder}
               />
             ) : // <OptimizedImage image={post.imageCover} />
             null}

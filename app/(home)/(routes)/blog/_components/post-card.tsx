@@ -1,5 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
+
+import { getPlaceholderImage } from "@/lib/image";
 import PostInfo from "./post-info";
 
 interface PostCardProps {
@@ -15,7 +17,7 @@ interface PostCardProps {
   updatedAt: Date;
 }
 
-const PostCard = ({
+const PostCard = async ({
   id,
   title,
   description,
@@ -27,6 +29,8 @@ const PostCard = ({
   authorName,
   updatedAt,
 }: PostCardProps) => {
+  const imageWithPlaceholder = await getPlaceholderImage(imageCoverUrl);
+
   return (
     <article key={title} className="mb-10">
       <Link
@@ -43,6 +47,8 @@ const PostCard = ({
               sizes="(max-width:1280px) 90w, 40vw"
               quality={70}
               className="object-cover"
+              placeholder="blur"
+              blurDataURL={imageWithPlaceholder.placeholder}
             />
           ) : null}
         </div>
