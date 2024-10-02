@@ -58,7 +58,7 @@ const Page = async ({ params }: { params: { slug: string } }) => {
       page: 1,
     });
     return (
-      <section className="bg-indigo-100/40 px-4 py-10 lg:px-6">
+      <section className="bg-violet-100/40 px-4 py-10 lg:px-6">
         <div>
           <h1 className="mb-4 text-center text-3xl font-bold">News</h1>
           <p className="mx-auto mb-12 max-w-lg text-center text-gray-400">
@@ -95,7 +95,7 @@ const Page = async ({ params }: { params: { slug: string } }) => {
       .map((video) => video.url || "") || [];
 
   return (
-    <>
+    <div key={post.slug}>
       <BlogPostingJsonLd
         title={post.seo?.title}
         description={post.seo?.description || ""}
@@ -107,7 +107,7 @@ const Page = async ({ params }: { params: { slug: string } }) => {
         url={`https://pictureswriters.com/${post.slug}`}
       />
       <PostTemplate post={post} />
-    </>
+    </div>
   );
 };
 

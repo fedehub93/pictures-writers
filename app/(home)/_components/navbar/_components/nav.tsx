@@ -5,11 +5,10 @@ import Link from "next/link";
 import {
   NavigationMenu,
   NavigationMenuItem,
-  NavigationMenuLink,
   NavigationMenuList,
-  navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
+import { usePathname } from "next/navigation";
 
 const routes = [
   {
@@ -32,9 +31,11 @@ const routes = [
 
 interface NavProps {
   isMobile?: boolean;
+  onLinkClick?: () => void;
 }
 
-export const Nav = ({ isMobile = false }: NavProps) => {
+export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
+  const pathname = usePathname();
   return (
     <NavigationMenu
       orientation={isMobile ? "vertical" : "horizontal"}
@@ -51,19 +52,17 @@ export const Nav = ({ isMobile = false }: NavProps) => {
               <Link
                 key={route.title}
                 href={route.link}
-                legacyBehavior
-                passHref
                 prefetch={true}
+                className={cn(
+                  "text-base py-2 px-4 rounded-md hover:bg-violet-100 text-foreground hover:text-primary-public",
+                  isMobile && "text-2xl font-light tr",
+                  pathname === route.link && "text-primary-public"
+                )}
+                onClick={() => {
+                  if (isMobile && onLinkClick) onLinkClick();
+                }}
               >
-                <NavigationMenuLink
-                  className={cn(
-                    navigationMenuTriggerStyle(),
-                    "text-base hover:bg-background text-foreground hover:text-primary-public",
-                    isMobile && "text-3xl font-light tr"
-                  )}
-                >
-                  {route.title}
-                </NavigationMenuLink>
+                {route.title}
               </Link>
             </NavigationMenuItem>
           )

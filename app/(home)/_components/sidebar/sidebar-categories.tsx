@@ -15,6 +15,7 @@ export const SidebarCategories = async () => {
             key={category.title}
             href={`/blog/${category.slug}`}
             className="flex text-gray-500 md:max-w-xl xl:items-center"
+            prefetch={true}
           >
             <ChevronRight className="-ml-1 mr-1 xl:-mt-2" />
             <h5 className="upper mb-2 text-base leading-5 tracking-tight dark:text-white">

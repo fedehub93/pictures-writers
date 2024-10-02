@@ -298,6 +298,6 @@ h2 {
   }
 
   .evidence {
-    @apply mt-2 rounded-md bg-indigo-100 p-1 font-bold text-primary;
+    @apply mt-2 rounded-md bg-violet-100 p-1 font-bold text-primary;
   }
 }

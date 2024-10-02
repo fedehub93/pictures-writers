@@ -42,7 +42,7 @@ const ContactPage = (): JSX.Element => {
   ];
 
   return (
-    <section className="bg-indigo-100/40 px-4 pb-20 pt-20 lg:px-6">
+    <section className="bg-violet-100/40 px-4 pb-20 pt-20 lg:px-6">
       <div className="mx-auto  flex max-w-6xl flex-col items-center">
         <div className="mb-20 text-center">
           <h1 className="mb-4 text-3xl font-bold">Teniamoci in contatto</h1>

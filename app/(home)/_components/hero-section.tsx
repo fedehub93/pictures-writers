@@ -55,7 +55,7 @@ export const HeroSection = (): JSX.Element => {
   };
 
   return (
-    <section className="w-full bg-indigo-100/40 px-4 lg:px-6 py-24">
+    <section className="w-full bg-violet-100/40 px-4 lg:px-6 py-24">
       <div className="mx-auto max-w-lg text-center md:max-w-screen-md lg:max-w-6xl lg:text-left">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div className="flex flex-col gap-y-10">
@@ -64,7 +64,7 @@ export const HeroSection = (): JSX.Element => {
               <span className="text-primary-public">uno sceneggiatore?</span>
             </h1>
             <p>
-              <span className="mt-2 rounded-md bg-indigo-200/40 p-1 font-bold text-primary-public">
+              <span className="mt-2 rounded-md bg-violet-100 p-1 font-bold text-primary-public">
                 La nostra missione è alimentare la tua fiamma creativa
               </span>
               , fornendoti l&apos;ispirazione, l&apos;istruzione e la comunità
@@ -133,6 +133,7 @@ export const HeroSection = (): JSX.Element => {
               className="object-cover"
               sizes="(max-width: 1023px) 90vw, 35vw"
               src="/story-book.png"
+              priority
             />
           </div>
         </div>

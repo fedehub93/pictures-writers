@@ -71,9 +71,6 @@ model Media {
   type    MediaType @default(FILE)
   altText String?
 
-  /// [MediaMetadata]
-  metadata Json? @db.JsonB
-
   post       Post[]
   seo        Seo[]
   impression Impression?

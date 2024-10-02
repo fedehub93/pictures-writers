@@ -60,10 +60,12 @@ export const PostPagination = ({
           role="button"
           variant="ghost"
           disabled={currentPage === pageNumber}
-          className="hover:bg-indigo-100 rounded-full"
+          className="hover:bg-violet-100 rounded-full"
           asChild
         >
-          <Link href={`/blog/${pageNumber}`}>{pageNumber}</Link>
+          <Link href={`/blog/${pageNumber}`} prefetch={true}>
+            {pageNumber}
+          </Link>
         </Button>
       </PaginationItem>
     ));
@@ -78,10 +80,10 @@ export const PostPagination = ({
             variant="ghost"
             size="icon"
             disabled={currentPage <= 1}
-            className="hover:bg-indigo-100 rounded-full"
+            className="hover:bg-violet-100 rounded-full"
             asChild
           >
-            <Link href={`/blog/${currentPage - 1}`}>
+            <Link href={`/blog/${currentPage - 1}`} prefetch={true}>
               <ChevronLeft />
             </Link>
           </Button>
@@ -103,10 +105,10 @@ export const PostPagination = ({
             variant="ghost"
             size="icon"
             disabled={currentPage >= totalPages}
-            className="hover:bg-indigo-100 rounded-full"
+            className="hover:bg-violet-100 rounded-full"
             asChild
           >
-            <Link href={`/blog/${currentPage + 1}`}>
+            <Link href={`/blog/${currentPage + 1}`} prefetch={true}>
               <ChevronRight />
             </Link>
           </Button>

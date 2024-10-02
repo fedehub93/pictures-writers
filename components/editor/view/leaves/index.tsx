@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { Fragment, ReactNode } from "react";
 import { Text } from "slate";
 import { createLeafNodeMatcher, createLeafTransform } from "slate-to-react";
 
@@ -26,17 +26,17 @@ export const RichText = createLeafTransform(
     let element: ReactNode = children;
 
     if (leaf.bold) {
-      element = <strong>{element}</strong>;
+      element = <strong key={key}>{element}</strong>;
     }
 
     if (leaf.italic) {
-      element = <i>{element}</i>;
+      element = <i key={key}>{element}</i>;
     }
 
     if (leaf.underline) {
-      element = <u>{element}</u>;
+      element = <u key={key}>{element}</u>;
     }
 
-    return <>{element}</>;
+    return <Fragment key={key}>{element}</Fragment>;
   }
 );

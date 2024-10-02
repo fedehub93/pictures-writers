@@ -40,7 +40,7 @@ const CreativeFeatures = (): JSX.Element => (
               e affinare le tue competenze nella scrittura per il cinema.
             </p>
             <div className="mt-4 flex space-x-4">
-              <Link href="/blog/sceneggiatura">
+              <Link href="/blog/sceneggiatura" prefetch={true}>
                 <Button className="bg-primary-public">Blog</Button>
               </Link>
             </div>
@@ -74,7 +74,7 @@ const CreativeFeatures = (): JSX.Element => (
               coinvolgenti.
             </p>
             <div className="mt-4 flex space-x-4">
-              <Link href="/blog/pagina-uno">
+              <Link href="/blog/pagina-uno" prefetch={true}>
                 <Button className="bg-primary-public">
                   Esempi di sceneggiature di film famosi
                 </Button>

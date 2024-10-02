@@ -4,17 +4,6 @@ import { CustomElement } from "./components/editor";
 declare global {
   namespace PrismaJson {
     type BodyData = CustomElement[];
-    type MediaMetadata = {
-      original: MetadataImage | null;
-      webp: {
-        resized: MetadataImage[];
-      };
-      jpeg: {
-        resized: MetadataImage[];
-      };
-      placeholder: MetadataImage | null;
-    } | null;
-    type EmailDesignData = any;
   }
 }
 

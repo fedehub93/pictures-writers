@@ -17,6 +17,7 @@ const TagsWidget = (props: TagsProps) => {
           key={tag.slug}
           className="text-sm leading-3 text-gray-600"
           href={`/blog/${tag.slug}`}
+          prefetch={true}
         >
           {`${tags.length === i + 1 ? tag.title : `${tag.title}, `}`}
         </Link>

@@ -21,7 +21,7 @@ export const isListItem = createElementNodeMatcher<ListItem>(
 export const ListItem = createElementTransform(
   isListItem,
   ({ key, element, attributes, children }) => (
-    <li key={key} className="list-item mb-2 text-base" {...attributes}>
+    <li key={key} className="list-item mb-2 text-base">
       {children}
     </li>
   )

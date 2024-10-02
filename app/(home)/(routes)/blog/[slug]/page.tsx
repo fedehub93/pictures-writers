@@ -86,7 +86,7 @@ const Page = async ({ params }: { params: { slug: string } }) => {
 
   if (result && result.posts.length > 0 && entity) {
     return (
-      <section className="bg-indigo-100/40 px-4 py-10 lg:px-6">
+      <section className="bg-violet-100/40 px-4 py-10 lg:px-6">
         <div>
           <h1 className="mb-4 text-center text-3xl font-bold">
             {entity.title}
@@ -130,7 +130,7 @@ const Page = async ({ params }: { params: { slug: string } }) => {
   }
 
   return (
-    <section className="bg-indigo-100/40 px-4 py-10 lg:px-6">
+    <section className="bg-violet-100/40 px-4 py-10 lg:px-6">
       <div>
         <h1 className="mb-4 text-center text-3xl font-bold">{entity.title}</h1>
         <p className="mx-auto mb-12 max-w-lg text-center text-gray-400">

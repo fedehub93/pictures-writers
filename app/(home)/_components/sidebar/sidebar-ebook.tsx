@@ -73,7 +73,7 @@ const SidebarEbook = (): JSX.Element => {
           l&apos;ebook gratuito
         </span>
         su: <br />
-        <span className="mt-2 rounded-md bg-indigo-100 p-1 font-bold text-primary-public block italic">
+        <span className="mt-2 rounded-md bg-violet-100 p-1 font-bold text-primary-public block italic">
           Introduzione alla sceneggiatura cinematografica
         </span>
       </div>
