@@ -23,25 +23,11 @@ export async function DELETE(req: Request) {
         select: {
           id: true,
           key: true,
-          metadata: true,
         },
       });
 
       if (deletedAsset && deletedAsset.key) {
         await utapi.deleteFiles(deletedAsset.key);
-      }
-      if (deletedAsset.metadata?.jpeg) {
-        for (const image of deletedAsset.metadata.jpeg.resized) {
-          await utapi.deleteFiles(image.key);
-        }
-      }
-      if (deletedAsset.metadata?.webp) {
-        for (const image of deletedAsset.metadata.webp.resized) {
-          await utapi.deleteFiles(image.key);
-        }
-      }
-      if (deletedAsset.metadata?.placeholder) {
-        await utapi.deleteFiles(deletedAsset.metadata.placeholder.key);
       }
     }
 

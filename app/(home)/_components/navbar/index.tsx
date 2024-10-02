@@ -20,7 +20,7 @@ export const Navbar = async () => {
       <div className="block sm:hidden self-center whitespace-nowrap border-b bg-violet-100 text-center text-sm font-extrabold uppercase text-black md:text-2xl">
         Pictures Writers
       </div>
-      <div className="h-[80px] inset-y-0 w-full z-50 p-4 border-b flex items-center shadow-sm bg-white">
+      <div className="h-[80px] inset-y-0 w-full z-50 p-4  flex items-center shadow-sm bg-white">
         <div className="w-full mx-auto flex justify-between md:max-w-screen-md lg:max-w-6xl">
           <div className="flex items-center gap-x-2">
             <Logo />

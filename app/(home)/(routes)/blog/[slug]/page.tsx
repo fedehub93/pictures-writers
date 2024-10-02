@@ -71,9 +71,10 @@ const Page = async ({ params }: { params: { slug: string } }) => {
   let result: any = null;
   let entity: { title: string; description: string | null } | null = null;
 
-  const slugPage = Number.parseInt(params.slug);
+  const slugPage =
+    typeof params.slug === "string" ? Number.parseInt(params.slug) : 1;
 
-  if (!isNaN(slugPage) && isFinite(slugPage)) {
+  if (!isNaN(slugPage) && isFinite(slugPage) && slugPage > 0) {
     result = await getPublishedPosts({
       page: slugPage,
     });

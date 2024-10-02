@@ -1,10 +1,7 @@
-import Image, { ImageLoader, ImageLoaderProps } from "next/image";
+import Image from "next/image";
 import { SlateView } from "slate-to-react";
 
-import {
-  PostWithImageCoverWithCategoryWithTags,
-  PostWithImageCoverWithCategoryWithTagsWithSeo,
-} from "@/lib/post";
+import { PostWithImageCoverWithCategoryWithTagsWithSeo } from "@/lib/post";
 
 import {
   Blockquote,
@@ -26,14 +23,12 @@ import {
 import { RichText } from "@/components/editor/view/leaves";
 
 import Sidebar from "@/app/(home)/_components/sidebar";
-
 import PostInfo from "@/app/(home)/(routes)/blog/_components/post-info";
+import { getPlaceholderImage } from "@/lib/image";
 
 import TagsWidget from "./tags-widget";
 import NewsletterWidget from "./newsletter-widget";
 import AuthorWidget from "./author-widget";
-import { OptimizedImage } from "@/app/(home)/_components/optimized-image";
-import { getPlaceholderImage } from "@/lib/image";
 
 interface PostTemplateProps {
   post: PostWithImageCoverWithCategoryWithTagsWithSeo;
