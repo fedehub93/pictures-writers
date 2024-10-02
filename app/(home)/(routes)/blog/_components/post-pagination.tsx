@@ -60,8 +60,10 @@ export const PostPagination = ({
           role="button"
           variant="ghost"
           disabled={currentPage === pageNumber}
+          className="hover:bg-indigo-100 rounded-full"
+          asChild
         >
-          <Link href={`/blog/?page=${pageNumber}`}>{pageNumber}</Link>
+          <Link href={`/blog/${pageNumber}`}>{pageNumber}</Link>
         </Button>
       </PaginationItem>
     ));
@@ -71,8 +73,15 @@ export const PostPagination = ({
     <Pagination>
       <PaginationContent>
         <PaginationItem>
-          <Button role="button" variant="ghost" disabled={currentPage <= 1}>
-            <Link href={`/blog?page=${currentPage - 1}`}>
+          <Button
+            role="button"
+            variant="ghost"
+            size="icon"
+            disabled={currentPage <= 1}
+            className="hover:bg-indigo-100 rounded-full"
+            asChild
+          >
+            <Link href={`/blog/${currentPage - 1}`}>
               <ChevronLeft />
             </Link>
           </Button>
@@ -92,9 +101,12 @@ export const PostPagination = ({
           <Button
             role="button"
             variant="ghost"
+            size="icon"
             disabled={currentPage >= totalPages}
+            className="hover:bg-indigo-100 rounded-full"
+            asChild
           >
-            <Link href={`/blog?page=${currentPage + 1}`}>
+            <Link href={`/blog/${currentPage + 1}`}>
               <ChevronRight />
             </Link>
           </Button>

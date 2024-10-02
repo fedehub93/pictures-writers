@@ -34,12 +34,10 @@ type GetPublishedPosts = {
 
 type GetPublishedPostsByCategoryId = {
   categoryRootId: string;
-  page: number;
 };
 
 type GetPublishedPostsByTagId = {
   tagRootId: string;
-  page: number;
 };
 
 export const getPublishedPosts = async ({
@@ -111,10 +109,7 @@ export const getPublishedPostsBuilding = async (): Promise<
 
 export const getPublishedPostsByCategoryRootId = async ({
   categoryRootId,
-  page,
 }: GetPublishedPostsByCategoryId) => {
-  const skip = POST_PER_PAGE * (page - 1);
-
   const posts = await db.post.findMany({
     where: {
       status: ContentStatus.PUBLISHED,
@@ -127,24 +122,25 @@ export const getPublishedPostsByCategoryRootId = async ({
       tags: true,
       user: true,
     },
-    take: POST_PER_PAGE,
-    skip: skip,
     orderBy: {
       firstPublishedAt: "desc",
     },
   });
 
-  const totalPages = Math.ceil(posts.length / POST_PER_PAGE);
+  const totalPosts = await db.post.count({
+    where: {
+      status: ContentStatus.PUBLISHED,
+      isLatest: true,
+      category: { rootId: { equals: categoryRootId } },
+    },
+  });
 
-  return { posts, totalPages, currentPage: page };
+  return { posts };
 };
 
 export const getPublishedPostsByTagRootId = async ({
   tagRootId,
-  page,
 }: GetPublishedPostsByTagId) => {
-  const skip = POST_PER_PAGE * (page - 1);
-
   const posts = await db.post.findMany({
     where: {
       status: ContentStatus.PUBLISHED,
@@ -159,16 +155,12 @@ export const getPublishedPostsByTagRootId = async ({
       tags: true,
       user: true,
     },
-    take: POST_PER_PAGE,
-    skip: skip,
     orderBy: {
       firstPublishedAt: "desc",
     },
   });
 
-  const totalPages = Math.ceil(posts.length / POST_PER_PAGE);
-
-  return { posts, totalPages, currentPage: page };
+  return { posts };
 };
 
 export const getPublishedPostById = async (id: string) => {
@@ -224,7 +216,7 @@ export const getLatestPublishedPosts = async () => {
     },
     take: LATEST_PUBLISHED_POST,
     orderBy: {
-      createdAt: "desc",
+      firstPublishedAt: "desc",
     },
   });
   return posts;

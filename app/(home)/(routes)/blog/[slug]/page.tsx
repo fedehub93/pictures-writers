@@ -2,16 +2,23 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import {
+  getPublishedPosts,
   getPublishedPostsByCategoryRootId,
   getPublishedPostsByTagRootId,
 } from "@/lib/post";
-import { getPublishedCategoryBySlug } from "@/lib/category";
-import { getPublishedTagBySlug } from "@/lib/tag";
+import {
+  getPublishedCategoriesBuilding,
+  getPublishedCategoryBySlug,
+} from "@/lib/category";
+import { getPublishedTagBySlug, getPublishedTagsBuilding } from "@/lib/tag";
 import {
   getCategoryMetadataBySlug,
   getTagMetdataBySlug,
 } from "@/app/(home)/_components/seo/content-metadata";
 
+import { PostListGrid } from "../_components/post-list-grid";
+import { db } from "@/lib/db";
+import { ContentStatus } from "@prisma/client";
 import { PostList } from "../_components/post-list";
 
 type Params = {
@@ -21,6 +28,29 @@ type Params = {
 type Props = {
   params: Params;
 };
+
+export const revalidate = 3600 * 24;
+
+export const dynamicParams = true;
+
+export async function generateStaticParams() {
+  const totalPosts = await db.post.count({
+    where: { status: ContentStatus.PUBLISHED, isLatest: true },
+  });
+  const pages = Math.ceil(totalPosts / 10);
+
+  const blogs = Array.from({ length: pages }, (_, index) => ({
+    slug: `/blog/${index + 1}`,
+  }));
+  const categories = await getPublishedCategoriesBuilding();
+  const tags = await getPublishedTagsBuilding();
+
+  return [
+    ...blogs,
+    ...categories.map((category) => ({ slug: category.slug })),
+    ...tags.map((tag) => ({ slug: tag.slug })),
+  ];
+}
 
 export async function generateMetadata({
   params,
@@ -37,28 +67,52 @@ export async function generateMetadata({
   return tagMetadata;
 }
 
-const Page = async ({
-  params,
-  searchParams,
-}: {
-  params: { slug: string };
-  searchParams: {
-    page: string;
-  };
-}) => {
-  const currentPage = Number(searchParams?.page) || 1;
-  const category = await getPublishedCategoryBySlug(params.slug);
-
+const Page = async ({ params }: { params: { slug: string } }) => {
   let result: any = null;
   let entity: { title: string; description: string | null } | null = null;
 
-  if (category && category.rootId) {
-    result = await getPublishedPostsByCategoryRootId({
-      categoryRootId: category.rootId,
-      page: currentPage,
-    });
+  const slugPage = Number.parseInt(params.slug);
 
-    entity = { title: category.title, description: category.description };
+  if (!isNaN(slugPage) && isFinite(slugPage)) {
+    result = await getPublishedPosts({
+      page: slugPage,
+    });
+    entity = {
+      title: "News",
+      description:
+        "Rimani sempre aggiornato con le ultime news del nostro blog.",
+    };
+  }
+
+  if (result && result.posts.length > 0 && entity) {
+    return (
+      <section className="bg-indigo-100/40 px-4 py-10 lg:px-6">
+        <div>
+          <h1 className="mb-4 text-center text-3xl font-bold">
+            {entity.title}
+          </h1>
+          <p className="mx-auto mb-12 max-w-lg text-center text-gray-400">
+            {entity.description}
+          </p>
+        </div>
+        <PostList
+          posts={result.posts}
+          totalPages={result.totalPages}
+          currentPage={result.currentPage}
+        />
+      </section>
+    );
+  }
+
+  if (!result) {
+    const category = await getPublishedCategoryBySlug(params.slug);
+    if (category && category.rootId) {
+      result = await getPublishedPostsByCategoryRootId({
+        categoryRootId: category.rootId,
+      });
+
+      entity = { title: category.title, description: category.description };
+    }
   }
 
   if (!result) {
@@ -66,7 +120,6 @@ const Page = async ({
     if (tag && tag.rootId) {
       result = await getPublishedPostsByTagRootId({
         tagRootId: tag.rootId,
-        page: currentPage,
       });
       entity = { title: tag.title, description: tag.description };
     }
@@ -84,11 +137,7 @@ const Page = async ({
           {entity.description}
         </p>
       </div>
-      <PostList
-        posts={result.posts}
-        currentPage={result.currentPage}
-        totalPages={result.totalPages}
-      />
+      <PostListGrid posts={result.posts} />
     </section>
   );
 };

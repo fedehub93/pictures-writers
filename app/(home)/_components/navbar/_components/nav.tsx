@@ -48,7 +48,13 @@ export const Nav = ({ isMobile = false }: NavProps) => {
         {routes.map(
           (route): JSX.Element => (
             <NavigationMenuItem key={route.title}>
-              <Link key={route.title} href={route.link} legacyBehavior passHref>
+              <Link
+                key={route.title}
+                href={route.link}
+                legacyBehavior
+                passHref
+                prefetch={true}
+              >
                 <NavigationMenuLink
                   className={cn(
                     navigationMenuTriggerStyle(),

@@ -1,6 +1,23 @@
 import { ContentStatus } from "@prisma/client";
 import { db } from "./db";
 
+export const getPublishedCategoriesBuilding = async () => {
+  const categories = await db.category.findMany({
+    where: {
+      status: ContentStatus.PUBLISHED,
+      isLatest: true,
+    },
+    include: {
+      seo: true,
+    },
+    orderBy: {
+      firstPublishedAt: "desc",
+    },
+  });
+
+  return categories;
+};
+
 export const getPublishedCategories = async () => {
   const categories = await db.category.findMany({
     where: {

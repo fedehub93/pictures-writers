@@ -1,6 +1,23 @@
 import { ContentStatus } from "@prisma/client";
 import { db } from "./db";
 
+export const getPublishedTagsBuilding = async () => {
+  const tags = await db.tag.findMany({
+    where: {
+      status: ContentStatus.PUBLISHED,
+      isLatest: true,
+    },
+    include: {
+      seo: true,
+    },
+    orderBy: {
+      firstPublishedAt: "desc",
+    },
+  });
+
+  return tags;
+};
+
 export const getPublishedTagBySlug = async (slug: string) => {
   const tag = await db.tag.findFirst({
     where: { slug, isLatest: true },

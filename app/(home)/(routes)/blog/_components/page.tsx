@@ -1,11 +1,11 @@
 import { Metadata } from "next";
 import { getPublishedPosts } from "@/lib/post";
 
-import { PostList } from "./_components/post-list";
-import { getHeadMetadata } from "../../_components/seo/head-metadata";
+import { PostList } from "./post-list";
+import { getHeadMetadata } from "../../../_components/seo/head-metadata";
 
 type Props = {
-  searchParams: { page: string; s: string };
+  searchParams: { page: string };
 };
 
 export async function generateMetadata({
@@ -14,11 +14,9 @@ export async function generateMetadata({
   const metadata = await getHeadMetadata();
 
   const currentPage = Number(searchParams?.page) || 1;
-  const s = searchParams?.s || "";
 
   const { posts } = await getPublishedPosts({
     page: currentPage,
-    s,
   });
 
   return {
@@ -28,20 +26,9 @@ export async function generateMetadata({
   };
 }
 
-const BlogPage = async ({
-  searchParams,
-}: {
-  searchParams?: {
-    page: string;
-    s: string;
-  };
-}) => {
-  const currentPage = Number(searchParams?.page) || 1;
-  const s = searchParams?.s || "";
-
-  const { posts, totalPages } = await getPublishedPosts({
-    page: currentPage,
-    s,
+const Page = async () => {
+  const { posts, totalPages, currentPage } = await getPublishedPosts({
+    page: 1,
   });
 
   return (
@@ -61,4 +48,4 @@ const BlogPage = async ({
   );
 };
 
-export default BlogPage;
+export default Page;

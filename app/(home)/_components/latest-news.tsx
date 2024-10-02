@@ -44,6 +44,7 @@ const LatestNews = async () => {
                     <Link
                       href={post.slug}
                       className="w-full h-full inset-0 absolute z-10"
+                      prefetch={true}
                     />
                     <Image
                       alt={post.imageCover.altText || ""}

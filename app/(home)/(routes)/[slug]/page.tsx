@@ -1,10 +1,16 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { getPublishedPostBySlug, getPublishedPostsBuilding } from "@/lib/post";
+import {
+  getPublishedPostBySlug,
+  getPublishedPosts,
+  getPublishedPostsBuilding,
+} from "@/lib/post";
 import { PostTemplate } from "@/app/(home)/(routes)/[slug]/_components/post-template";
 import { getPostMetadataBySlug } from "@/app/(home)/_components/seo/content-metadata";
 import { BlogPostingJsonLd } from "@/app/(home)/_components/seo/json-ld/blog-posting";
+import { PostList } from "../blog/_components/post-list";
+import { getHeadMetadata } from "../../_components/seo/head-metadata";
 
 type Params = {
   slug: string;
@@ -14,24 +20,60 @@ type Props = {
   params: Params;
 };
 
-export async function generateMetadata({
-  params,
-}: Props): Promise<Metadata | null> {
-  const { slug } = params;
-
-  return await getPostMetadataBySlug(slug);
-}
-export const revalidate = 3600;
+export const revalidate = 3600 * 24;
 
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
   const posts = await getPublishedPostsBuilding();
 
-  return posts.map((post) => ({ slug: post.slug }));
+  return [{ slug: `blog` }, ...posts.map((post) => ({ slug: post.slug }))];
+}
+
+export async function generateMetadata({
+  params,
+}: Props): Promise<Metadata | null> {
+  const { slug } = params;
+
+  if (slug === "blog") {
+    const metadata = await getHeadMetadata();
+
+    const { posts } = await getPublishedPosts({
+      page: 1,
+    });
+
+    return {
+      ...metadata,
+      title: `News: ${posts[0].title}`,
+      description: `Ultime notizie sulla sceneggiatura cinematografica. ${posts[0].title}`,
+    };
+  }
+
+  return await getPostMetadataBySlug(slug);
 }
 
 const Page = async ({ params }: { params: { slug: string } }) => {
+  if (params.slug === "blog") {
+    const { posts, totalPages, currentPage } = await getPublishedPosts({
+      page: 1,
+    });
+    return (
+      <section className="bg-indigo-100/40 px-4 py-10 lg:px-6">
+        <div>
+          <h1 className="mb-4 text-center text-3xl font-bold">News</h1>
+          <p className="mx-auto mb-12 max-w-lg text-center text-gray-400">
+            Rimani sempre aggiornato con le ultime news del nostro blog.
+          </p>
+        </div>
+        <PostList
+          posts={posts}
+          currentPage={currentPage}
+          totalPages={totalPages}
+        />
+      </section>
+    );
+  }
+
   const post = await getPublishedPostBySlug(params.slug);
 
   if (!post) {

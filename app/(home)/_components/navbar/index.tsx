@@ -34,7 +34,7 @@ export const Navbar = async () => {
           )} */}
           <MobileNavbar />
           <Button asChild>
-            <Link href="/feedback-gratuito-sceneggiatura">
+            <Link href="/feedback-gratuito-sceneggiatura" prefetch={true}>
               Feedback Gratuito
             </Link>
           </Button>
