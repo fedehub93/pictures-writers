@@ -25,16 +25,18 @@ export const Link = createElementTransform(
   isLink,
   ({ key, element, attributes, children }) => {
     const isAnchor = element.data.uri.includes("#");
-    const isExternalLink = element.data.uri.includes('http://') || element.data.uri.includes('https://');
-
+    const isExternalLink =
+      element.data.uri.includes("http://") ||
+      element.data.uri.includes("https://");
 
     return (
       <NextLink
+        key={key}
         href={element.data.uri}
         className={cn("underline font-bold")}
         rel="noopener noreferrer nofollow"
         target={isExternalLink ? "_blank" : "_self"}
-        key={key}
+        prefetch={true}
       >
         {children}
       </NextLink>
