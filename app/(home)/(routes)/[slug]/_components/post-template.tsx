@@ -49,8 +49,8 @@ export const PostTemplate = ({ post }: PostTemplateProps) => {
                 src={post.imageCover.url}
                 alt={post.imageCover.altText || ""}
                 fill
+                sizes="max-width(1280px) 95vw, 45vw"
                 priority
-                placeholder="blur"
                 className="blog-post__image"
               />
             ) : // <OptimizedImage image={post.imageCover} />

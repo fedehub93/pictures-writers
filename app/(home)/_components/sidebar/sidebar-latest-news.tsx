@@ -26,6 +26,7 @@ export const SidebarLatestNews = async () => {
                     alt={post.imageCover.altText || ""}
                     className="object-cover"
                     fill
+                    sizes="25vw"
                     quality={50}
                   />
                 </div>

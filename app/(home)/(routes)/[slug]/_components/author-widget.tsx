@@ -21,7 +21,16 @@ const AuthorWidget = ({
     <div className="author">
       {imageUrl && (
         <div className="relative w-40 grayscale border-4 aspect-square rounded-full overflow-hidden">
-          <Image src={imageUrl} alt="Profile image" className="object-cover" fill />
+          <Image
+            src={imageUrl}
+            alt="Profile image"
+            className="object-cover"
+            width={400}
+            height={400}
+            sizes="20vw"
+            quality={50}
+            style={{height:"100%", width:"auto"}}
+          />
         </div>
       )}
       <div className="my-auto p-3 pt-0 ">

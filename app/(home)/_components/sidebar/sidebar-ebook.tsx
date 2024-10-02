@@ -56,13 +56,15 @@ const SidebarEbook = (): JSX.Element => {
   };
 
   return (
-    <div className="w-full bg-white px-6 py-8 shadow-md flex flex-col">
+    <div className="relative w-full bg-white px-6 py-8 shadow-md flex flex-col">
       <h3 className="mb-4 text-sm font-extrabold uppercase">Ebook gratuito</h3>
       <Image
         src="/ebook.png"
         alt="eBook gratuito sull'introduzione alla sceneggiatura cinematografica"
         width={2000}
         height={2000}
+        sizes="max-width(1280px) 90vw, 25vw"
+        quality={50}
       />
       <div className="mb-4">
         Non sai da dove iniziare?
@@ -75,9 +77,15 @@ const SidebarEbook = (): JSX.Element => {
           Introduzione alla sceneggiatura cinematografica
         </span>
       </div>
-      {error && <div className="p-4 bg-red-500 shadow-sm rounded-md mb-2 font-bold">{error}</div>}
+      {error && (
+        <div className="p-4 bg-red-500 shadow-sm rounded-md mb-2 font-bold">
+          {error}
+        </div>
+      )}
       {success && (
-        <div className="p-4 bg-emerald-500 shadow-sm rounded-md mb-2">{success}</div>
+        <div className="p-4 bg-emerald-500 shadow-sm rounded-md mb-2">
+          {success}
+        </div>
       )}
 
       {isPending ? (
