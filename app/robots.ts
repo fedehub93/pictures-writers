@@ -5,13 +5,16 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
     rules: {
       userAgent: "*",
       disallow: "/",
-      // allow: ["/"],
+      allow: ["/"],
       // disallow: [
       //   "/search?q=",
       //   "/admin/",
       //   "/confirm-subscription",
       //   "/cancel-subscription",
+      //   "/conferma-sottoscrizione",
+      //   "/rimuovi-sottoscrizione",
       //   "/download-ebooks",
+      //   "/ebooks/download",
       //   "/cos-e-il-linguaggio-cinematografico-scrivere-per-il cinema",
       // ],
     },

@@ -13,6 +13,9 @@ import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
 
 import { QueryProvider } from "@/components/providers/query-provider";
 import { OrganizationJsonLd } from "./_components/seo/json-ld/organization";
+import { Suspense } from "react";
+import GoogleAnalytics from "./_components/google-analytics";
+import CookieBanner from "./_components/cookie-banner";
 
 const mulish = Mulish({ subsets: ["latin"] });
 
@@ -27,6 +30,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="it" suppressHydrationWarning>
+      <Suspense fallback={null}>
+        <GoogleAnalytics GA_MEASUREMENT_ID={process.env.NEXT_GA_TRACKING_ID!} />
+      </Suspense>
       <body className={mulish.className}>
         <OrganizationJsonLd
           name="Pictures Writers"
@@ -47,7 +53,9 @@ export default function RootLayout({
             </div>
           </QueryProvider>
         </ThemeProvider>
-        {/* <SpeedInsights /> */}
+        <CookieBanner />
+        {/* <GoogleAnalytics gaId={process.env.NEXT_GA_TRACKING_ID!} /> */}
+        {/* <GoogleTagManager gtmId={process.env.NEXT_GTAG_CONTAINER_ID!} /> */}
       </body>
     </html>
   );

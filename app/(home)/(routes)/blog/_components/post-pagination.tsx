@@ -5,6 +5,7 @@ import {
   PaginationEllipsis,
   PaginationItem,
 } from "@/components/ui/pagination";
+import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
@@ -60,7 +61,10 @@ export const PostPagination = ({
           role="button"
           variant="ghost"
           disabled={currentPage === pageNumber}
-          className="hover:bg-violet-100 rounded-full"
+          className={cn(
+            "hover:bg-violet-100 rounded-full",
+            currentPage === pageNumber && "bg-violet-100"
+          )}
           asChild
         >
           <Link href={`/blog/${pageNumber}`} prefetch={true}>
