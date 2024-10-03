@@ -20,6 +20,7 @@ import { PostListGrid } from "../_components/post-list-grid";
 import { db } from "@/lib/db";
 import { ContentStatus } from "@prisma/client";
 import { PostList } from "../_components/post-list";
+import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
 
 type Params = {
   slug: string;
@@ -40,8 +41,9 @@ export async function generateStaticParams() {
   const pages = Math.ceil(totalPosts / 10);
 
   const blogs = Array.from({ length: pages }, (_, index) => ({
-    slug: `/blog/${index + 1}`,
-  }));
+    slug: `blog/${index + 1}`,
+  })).filter((b) => b.slug !== "blog/1");
+
   const categories = await getPublishedCategoriesBuilding();
   const tags = await getPublishedTagsBuilding();
 
@@ -64,7 +66,30 @@ export async function generateMetadata({
 
   const tagMetadata = await getTagMetdataBySlug(slug);
 
-  return tagMetadata;
+  if (tagMetadata) {
+    return tagMetadata;
+  }
+
+  const slugPage =
+    typeof params.slug === "string" ? Number.parseInt(params.slug) : 1;
+
+  const metadata = await getHeadMetadata();
+
+  if (!isNaN(slugPage) && isFinite(slugPage) && slugPage > 0) {
+    const { posts } = await getPublishedPosts({
+      page: slugPage,
+    });
+
+    if (posts.length > 0) {
+      return {
+        ...metadata,
+        title: `News: ${posts[0].title}`,
+        description: `Ultime notizie sulla sceneggiatura cinematografica. ${posts[0].title}`,
+      };
+    }
+  }
+
+  return metadata;
 }
 
 const Page = async ({ params }: { params: { slug: string } }) => {

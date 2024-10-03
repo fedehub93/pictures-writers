@@ -14,8 +14,8 @@ const generateBlogPostsSitemap = async () => {
   });
 
   const mappedPosts: MetadataRoute.Sitemap = posts.map((post) => ({
-    url: `https://pictureswriters.com/${post.slug}`,
-    lastModified: post.createdAt,
+    url: `https://pictureswriters.com/${post.slug}/`,
+    lastModified: post.publishedAt,
     changeFrequency: "monthly",
     priority: 1,
   }));
@@ -34,7 +34,7 @@ const generateBlogPagesSitemap = async () => {
   })).filter((blog) => blog.page > 1);
 
   const mappedBlogPages: MetadataRoute.Sitemap = blogs.map((blog) => ({
-    url: `https://pictureswriters.com/blog/${blog.page}`,
+    url: `https://pictureswriters.com/blog/${blog.page}/`,
     lastModified: new Date(),
     changeFrequency: "monthly",
     priority: 0.5,
@@ -55,8 +55,8 @@ const generateBlogCategoriesSitemap = async () => {
   });
 
   const mappedCategories: MetadataRoute.Sitemap = categories.map((post) => ({
-    url: `https://pictureswriters.com/blog/${post.slug}`,
-    lastModified: post.createdAt,
+    url: `https://pictureswriters.com/blog/${post.slug}/`,
+    lastModified: post.publishedAt,
     changeFrequency: "monthly",
     priority: 1,
   }));
@@ -76,8 +76,8 @@ const generateBlogTagsSitemap = async () => {
   });
 
   const mappedTags: MetadataRoute.Sitemap = tags.map((tag) => ({
-    url: `https://pictureswriters.com/blog/${tag.slug}`,
-    lastModified: tag.createdAt,
+    url: `https://pictureswriters.com/blog/${tag.slug}/`,
+    lastModified: tag.publishedAt,
     changeFrequency: "monthly",
     priority: 1,
   }));
@@ -98,32 +98,32 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1,
     },
     {
-      url: "https://pictureswriters.com/about",
+      url: "https://pictureswriters.com/about/",
       lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 0.8,
     },
 
     {
-      url: "https://pictureswriters.com/contatti",
+      url: "https://pictureswriters.com/contatti/",
       lastModified: new Date(),
       changeFrequency: "yearly",
       priority: 0.5,
     },
     {
-      url: "https://pictureswriters.com/feedback-gratuito-sceneggiatura",
+      url: "https://pictureswriters.com/feedback-gratuito-sceneggiatura/",
       lastModified: new Date(),
       changeFrequency: "yearly",
       priority: 0.5,
     },
     {
-      url: "https://pictureswriters.com/policy",
+      url: "https://pictureswriters.com/policy/",
       lastModified: new Date(),
       changeFrequency: "yearly",
       priority: 0.5,
     },
     {
-      url: "https://pictureswriters.com/blog",
+      url: "https://pictureswriters.com/blog/",
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.5,
