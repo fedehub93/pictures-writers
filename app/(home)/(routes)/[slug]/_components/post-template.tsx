@@ -38,7 +38,7 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
   const imageWithPlaceholder = await getPlaceholderImage(post.imageCover?.url!);
 
   return (
-    <section className="blog-post">
+    <div className="blog-post">
       <div className="blog-post__post">
         <article className="blog-post__article">
           <div className="blog-post__image-container">
@@ -106,6 +106,6 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
       <div className="blog-post__sidebar sticky -top-20">
         <Sidebar />
       </div>
-    </section>
+    </div>
   );
 };

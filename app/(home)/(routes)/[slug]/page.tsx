@@ -95,7 +95,7 @@ const Page = async ({ params }: { params: { slug: string } }) => {
       .map((video) => video.url || "") || [];
 
   return (
-    <div key={post.slug}>
+    <section key={post.slug} className="bg-violet-100/40 py-10">
       <BlogPostingJsonLd
         title={post.seo?.title}
         description={post.seo?.description || ""}
@@ -107,7 +107,7 @@ const Page = async ({ params }: { params: { slug: string } }) => {
         url={`https://pictureswriters.com/${post.slug}`}
       />
       <PostTemplate post={post} />
-    </div>
+    </section>
   );
 };
 

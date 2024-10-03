@@ -29,7 +29,7 @@ const DashboardPage = async () => {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 md:pt-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <h1 className="text-3xl">Dashboard</h1>
         <div>Actions</div>
       </div>
       <div className="grid gap-4 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
@@ -50,10 +50,10 @@ const DashboardPage = async () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              +{subscriptionWidget.absoluteGrowth}
+              {subscriptionWidget.absoluteGrowth}
             </div>
             <p className="text-xs text-muted-foreground">
-              +{subscriptionWidget.percentageGrowth}% from last month
+              {subscriptionWidget.percentageGrowth}% from last month
             </p>
           </CardContent>
         </Card>
@@ -66,10 +66,10 @@ const DashboardPage = async () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              +{ebookDownloadedStats.absoluteGrowth}
+              {ebookDownloadedStats.absoluteGrowth}
             </div>
             <p className="text-xs text-muted-foreground">
-              +{ebookDownloadedStats.percentageGrowth}% from last month
+              {ebookDownloadedStats.percentageGrowth}% from last month
             </p>
           </CardContent>
         </Card>

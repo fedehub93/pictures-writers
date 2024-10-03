@@ -31,7 +31,7 @@ const SidebarEbook = (): JSX.Element => {
     resolver: zodResolver(FreeEbookSchema),
     defaultValues: {
       email: "",
-      ebookId: "5fbbabbf-6466-4514-9974-5879d3259347",
+      ebookId: "e5ec60b7-bffd-412b-8383-72fcf74a5516",
     },
   });
 
@@ -78,12 +78,12 @@ const SidebarEbook = (): JSX.Element => {
         </span>
       </div>
       {error && (
-        <div className="p-4 bg-red-500 shadow-sm rounded-md mb-2 font-bold">
+        <div className="p-4 bg-destructive shadow-sm rounded-md mb-2 font-bold">
           {error}
         </div>
       )}
       {success && (
-        <div className="p-4 bg-emerald-500 shadow-sm rounded-md mb-2">
+        <div className="p-4 bg-emerald-100 shadow-sm rounded-md mb-2">
           {success}
         </div>
       )}

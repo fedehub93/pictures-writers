@@ -54,7 +54,25 @@ export async function GET(
         nextCursor = notifications[NOTIFICATION_BATCH - 1].id;
       }
 
-      return NextResponse.json({ items: notifications, nextCursor });
+      const totalNotifications = await db.notification.count({
+        where: {
+          userId: user.id,
+          isRead: false,
+        },
+      });
+
+      const pagination = {
+        page,
+        perPage: NOTIFICATION_BATCH,
+        totalRecords: totalNotifications,
+        totalPages: Math.ceil(totalNotifications / NOTIFICATION_BATCH),
+      };
+
+      return NextResponse.json({
+        items: notifications,
+        pagination,
+        nextCursor,
+      });
     } else {
       [notifications, totalNotifications] = await db.$transaction([
         db.notification.findMany({

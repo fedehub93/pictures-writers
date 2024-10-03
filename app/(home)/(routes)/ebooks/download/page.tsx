@@ -30,7 +30,7 @@ const DownloadEbook = ({
   const ebookId = searchParams?.id || "";
   return (
     <section className="h-full w-full items-center">
-      <div className="flex h-full w-full flex-col items-center justify-center gap-y-8 px-5 py-24 text-center">
+      <div className="flex h-full w-full flex-col items-center justify-center gap-y-8 px-5 py-40 text-center">
         <h1 className="text-3xl font-extrabold text-gray-300 xl:text-7xl">
           Grazie
         </h1>

@@ -2,10 +2,10 @@
 
 import * as z from "zod";
 
-import { db } from "@/lib/db";
 import { FreeEbookSchema } from "@/schemas";
 import { sendFreeEbookEmail } from "@/lib/mail";
-import { createContactByEmail, getContactByEmail } from "@/data/email-contact";
+import { createContactByEmail } from "@/data/email-contact";
+import { handleEbookDownloaded } from "@/lib/event-handler";
 
 export const subscribeFreeEbook = async (
   values: z.infer<typeof FreeEbookSchema>
@@ -21,6 +21,8 @@ export const subscribeFreeEbook = async (
   const existingContact = await createContactByEmail(email, "ebook_downloaded");
 
   const isEmailSent = await sendFreeEbookEmail(email, ebookId!);
+  //  Send notification to admins
+  await handleEbookDownloaded();
 
   if (!isEmailSent) {
     return {

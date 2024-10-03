@@ -12,6 +12,12 @@ export const createNewVersionEbook = async (rootId: string, values: any) => {
     return { message: "Ebook not found", status: 404, ebook: null };
   }
 
+  // Aggiorna la vecchia versione
+  await db.ebook.updateMany({
+    where: { rootId: rootId },
+    data: { isLatest: false },
+  });
+
   const ebook = await db.ebook.create({
     data: {
       title: values.title || publishedEbook.title,

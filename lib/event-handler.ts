@@ -47,3 +47,19 @@ export async function handleScriptSubmitted() {
     });
   }
 }
+
+export async function handleContactRequested() {
+  const users = await db.user.findMany({
+    where: {},
+  });
+
+  for (const user of users) {
+    await db.notification.create({
+      data: {
+        userId: user.id,
+        type: "CONTACT_REQUESTED",
+        message: `È arrivata una nuova richiesta dalla sezione contattaci.`,
+      },
+    });
+  }
+}

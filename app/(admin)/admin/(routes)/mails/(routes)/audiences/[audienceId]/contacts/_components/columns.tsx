@@ -20,6 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { EmailAudienceContactsAction } from "./actions";
 
 type EmailContactWithInteractions = EmailContact & {
   interactions: EmailContactInteraction[];
@@ -92,24 +93,7 @@ export const columns: ColumnDef<EmailContactWithInteractions>[] = [
     cell: ({ row }) => {
       const { id } = row.original;
 
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-4 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <Link href={`/admin/mails/contacts/${id}`}>
-              <DropdownMenuItem>
-                <Pencil className="h-4 w-4 mr-2" />
-                Edit
-              </DropdownMenuItem>
-            </Link>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
+      return <EmailAudienceContactsAction id={id} />;
     },
   },
 ];

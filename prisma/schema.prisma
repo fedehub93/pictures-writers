@@ -117,7 +117,7 @@ model Seo {
 
   tags Tag[]
 
-  ebook Ebook[]
+  ebooks Ebook[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

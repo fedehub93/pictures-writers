@@ -29,7 +29,7 @@ export async function DELETE(
       },
     });
 
-    if (!tag || !tag.seoId) {
+    if (!tag) {
       return new NextResponse("Not found", { status: 404 });
     }
 
@@ -37,9 +37,11 @@ export async function DELETE(
       where: { rootId },
     });
 
-    await db.seo.delete({
-      where: { id: tag.seoId },
-    });
+    if (tag.seoId) {
+      await db.seo.delete({
+        where: { id: tag.seoId },
+      });
+    }
 
     return NextResponse.json(deletedTag);
   } catch (error) {

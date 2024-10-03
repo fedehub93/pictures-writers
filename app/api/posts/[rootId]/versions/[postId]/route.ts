@@ -28,7 +28,7 @@ export async function DELETE(
       },
     });
 
-    if (!post || !post.seoId) {
+    if (!post) {
       return new NextResponse("Not found", { status: 404 });
     }
 
@@ -36,9 +36,11 @@ export async function DELETE(
       where: { rootId },
     });
 
-    await db.seo.delete({
-      where: { id: post.seoId },
-    });
+    if (post.seoId) {
+      await db.seo.delete({
+        where: { id: post.seoId },
+      });
+    }
 
     return NextResponse.json(deletedPost);
   } catch (error) {

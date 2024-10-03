@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
+import { createEbookSeo } from "@/lib/seo";
 
 export async function POST(req: Request) {
   try {
@@ -30,6 +31,9 @@ export async function POST(req: Request) {
         rootId: ebook.id,
       },
     });
+
+    // Creo prima versione seo
+    await createEbookSeo(updatedEbook);
 
     return NextResponse.json(updatedEbook);
   } catch (error) {

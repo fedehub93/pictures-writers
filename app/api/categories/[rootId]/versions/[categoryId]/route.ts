@@ -29,7 +29,7 @@ export async function DELETE(
       },
     });
 
-    if (!category || !category.seoId) {
+    if (!category) {
       return new NextResponse("Not found", { status: 404 });
     }
 
@@ -37,9 +37,11 @@ export async function DELETE(
       where: { rootId },
     });
 
-    await db.seo.delete({
-      where: { id: category.seoId },
-    });
+    if (category.seoId) {
+      await db.seo.delete({
+        where: { id: category.seoId },
+      });
+    }
 
     return NextResponse.json(deletedCategory);
   } catch (error) {

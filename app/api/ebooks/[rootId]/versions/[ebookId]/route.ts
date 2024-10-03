@@ -23,12 +23,10 @@ export async function DELETE(
     }
 
     const ebook = await db.ebook.findUnique({
-      where: {
-        id: params.ebookId,
-      },
+      where: { id: ebookId },
     });
 
-    if (!ebook || !ebook.seoId) {
+    if (!ebook) {
       return new NextResponse("Not found", { status: 404 });
     }
 
@@ -36,9 +34,11 @@ export async function DELETE(
       where: { rootId },
     });
 
-    await db.seo.delete({
-      where: { id: ebook.seoId },
-    });
+    if (ebook.seoId) {
+      await db.seo.delete({
+        where: { id: ebook.seoId },
+      });
+    }
 
     return NextResponse.json(deletedEbook);
   } catch (error) {

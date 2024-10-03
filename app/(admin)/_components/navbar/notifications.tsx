@@ -1,4 +1,9 @@
+"use client";
+
 import { Notification } from "@prisma/client";
+import { useState } from "react";
+import toast from "react-hot-toast";
+import { Bell, Loader2, Mail } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -7,12 +12,31 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import { Bell, Mail } from "lucide-react";
 import { useNotificationsQuery } from "../../_hooks/use-notifications-query";
+import axios from "axios";
 
 export const Notifications = ({ userId }: { userId: string }) => {
+  const [isLoading, setIsLoading] = useState(false);
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     useNotificationsQuery(userId);
+
+  const totalNotifications: number =
+    data?.pages?.[0].pagination?.totalRecords || 0;
+
+  const onNotificatonReadClick = async (id: string) => {
+    try {
+      setIsLoading(true);
+
+      await axios.patch(`/api/users/${userId}/notifications/${id}`, {
+        isRead: true,
+      });
+      toast.success("Notification Read");
+    } catch {
+      toast.error("Something went wrong");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (status === "error") {
     return (
@@ -26,44 +50,65 @@ export const Notifications = ({ userId }: { userId: string }) => {
 
   return (
     <Popover>
-      <PopoverTrigger>
-        <Bell className="h-4 w-4" />
+      <PopoverTrigger className="relative" asChild>
+        <Button variant="ghost" size="icon">
+          <Bell className="h-6 w-6" strokeWidth={1.5} />
+          {totalNotifications > 0 && (
+            <span className="absolute rounded-full bg-indigo-500 text-white text-xs w-5 h-5 -top-1 -right-1  flex items-center justify-center ">
+              {totalNotifications}
+            </span>
+          )}
+        </Button>
       </PopoverTrigger>
       <PopoverContent
-        align="start"
+        align="end"
         sideOffset={10}
         className="border border-gray-300 shadow-lg p-0 py-0.5 bg-white dark:bg-background rounded-md w-full"
       >
-        <div className="px-3 py-2 font-semibold">Notifiche</div>
-        <Separator />
-        <div className="px-3 py-2">
-          {data?.pages?.map((group, i) => {
-            return group.items.map((item: Notification) => (
-              <div key={item.id} className="flex gap-x-4 items-center">
-                <div className="text-sm">{item.message}</div>
-                <Button variant="ghost" size="icon">
-                  <Mail className="h-4 w-4" />
-                </Button>
-              </div>
-            ));
-          })}
-        </div>
-        <Separator />
-        <div className="text-sm px-3 py-2 flex justify-center">
-          <Button
-            type="button"
-            onClick={() => fetchNextPage()}
-            variant="outline"
-            size="sm"
-            disabled={!hasNextPage || isFetchingNextPage}
-          >
-            {isFetchingNextPage
-              ? "Loading more..."
-              : hasNextPage
-              ? "Load More"
-              : "Nothing more to load"}
-          </Button>
-        </div>
+        {totalNotifications<=0 && (
+          <div className="px-3 py-2">Nessuna notifica</div>
+        )}
+        {totalNotifications > 0 && (
+          <>
+            <div className="px-3 py-2 font-semibold">Notifiche</div>
+            <Separator />
+            <div className="px-3 py-2">
+              {data?.pages?.map((group, i) => {
+                return group.items.map((item: Notification) => (
+                  <div key={item.id} className="flex gap-x-4 items-center">
+                    <div className="text-sm">{item.message}</div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onNotificatonReadClick(item.id)}
+                    >
+                      {isLoading && (
+                        <Loader2 className="h-4 w-4 animate-pulse" />
+                      )}
+                      {!isLoading && <Mail className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                ));
+              })}
+            </div>
+            <Separator />
+            <div className="text-sm px-3 py-2 flex justify-center">
+              <Button
+                type="button"
+                onClick={() => fetchNextPage()}
+                variant="outline"
+                size="sm"
+                disabled={!hasNextPage || isFetchingNextPage}
+              >
+                {isFetchingNextPage
+                  ? "Loading more..."
+                  : hasNextPage
+                  ? "Load More"
+                  : "Nothing more to load"}
+              </Button>
+            </div>
+          </>
+        )}
       </PopoverContent>
     </Popover>
   );

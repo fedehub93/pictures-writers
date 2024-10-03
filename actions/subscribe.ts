@@ -2,11 +2,11 @@
 
 import * as z from "zod";
 
-import { db } from "@/lib/db";
 import { SubscribeSchema } from "@/schemas";
 import { generateSubscriptionToken } from "@/lib/tokens";
 import { sendSubscriptionEmail } from "@/lib/mail";
-import { createContactByEmail, getContactByEmail } from "@/data/email-contact";
+import { createContactByEmail } from "@/data/email-contact";
+import { handleUserSubscribed } from "@/lib/event-handler";
 
 export const subscribe = async (values: z.infer<typeof SubscribeSchema>) => {
   const validatedFields = SubscribeSchema.safeParse(values);
@@ -18,6 +18,9 @@ export const subscribe = async (values: z.infer<typeof SubscribeSchema>) => {
   const { email } = validatedFields.data;
 
   const existingContact = await createContactByEmail(email, "user_subscribed");
+
+  //  Send notification to admins
+  await handleUserSubscribed();
 
   const subscriptionToken = await generateSubscriptionToken(email);
 

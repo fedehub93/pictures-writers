@@ -22,7 +22,7 @@ export const sendSubscriptionEmail = async (email: string, token: string) => {
   await sendSendgridEmail({
     to: email,
     from: settings.emailSender,
-    subject: "Confirm your subscription",
+    subject: "Conferma sottoscrizione",
     html: template({ token, email }),
   });
 };

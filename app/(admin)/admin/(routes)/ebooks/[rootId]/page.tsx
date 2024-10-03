@@ -23,6 +23,7 @@ const EbookIdPage = async ({ params }: { params: { rootId: string } }) => {
   const ebook = await db.ebook.findFirst({
     where: {
       rootId: params.rootId,
+      isLatest: true,
     },
     include: {
       user: true,

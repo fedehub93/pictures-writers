@@ -4,6 +4,8 @@ import * as z from "zod";
 
 import { db } from "@/lib/db";
 import { ContactSchema } from "@/schemas";
+import { createContactByEmail } from "@/data/email-contact";
+import { handleContactRequested } from "@/lib/event-handler";
 
 export const contact = async (values: z.infer<typeof ContactSchema>) => {
   const validatedFields = ContactSchema.safeParse(values);
@@ -22,6 +24,14 @@ export const contact = async (values: z.infer<typeof ContactSchema>) => {
       message,
     },
   });
+
+  const existingContact = await createContactByEmail(
+    email,
+    "contact_requested"
+  );
+
+  //  Send notification to admins
+  await handleContactRequested();
 
   return { success: "Operazione eseguita con successo!" };
 };
