@@ -34,7 +34,7 @@ export const Link = createElementTransform(
         key={key}
         href={element.data.uri}
         className={cn("underline font-bold")}
-        rel="noopener noreferrer nofollow"
+        rel={`noopener noreferrer ${isExternalLink ? "nofollow" : "follow"}`}
         target={isExternalLink ? "_blank" : "_self"}
         prefetch={true}
       >
