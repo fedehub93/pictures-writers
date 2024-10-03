@@ -39,7 +39,7 @@ export default function CookieBanner() {
 
   return (
     <div className="fixed bottom-0 w-full bg-gray-800 text-white p-4">
-      <div className="container mx-auto flex justify-between items-center">
+      <div className="container mx-auto flex flex-col gap-y-4 sm:flex-row justify-between items-center">
         <span className="text-sm">
           Questo sito utilizza cookie per migliorare l&apos;esperienza utente.
           Per saperne di più, consulta la nostra{" "}
