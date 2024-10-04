@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Mulish } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import "./home.css";
 
@@ -54,6 +55,7 @@ export default function RootLayout({
           </QueryProvider>
         </ThemeProvider>
         <CookieBanner />
+        <SpeedInsights />
         {/* <GoogleAnalytics gaId={process.env.NEXT_GA_TRACKING_ID!} /> */}
         {/* <GoogleTagManager gtmId={process.env.NEXT_GTAG_CONTAINER_ID!} /> */}
       </body>

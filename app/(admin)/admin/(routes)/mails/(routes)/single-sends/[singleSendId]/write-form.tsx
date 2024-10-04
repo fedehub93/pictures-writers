@@ -166,7 +166,7 @@ export const WriteForm = ({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col gap-y-4 h-full"
+        className="flex flex-col gap-y-4 min-h-screen"
       >
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-medium">Write Email</h1>
