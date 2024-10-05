@@ -8,7 +8,6 @@ const Sidebar = (): JSX.Element => (
     <SidebarSearch />
     <SidebarEbook />
     {/* <SearchAlgolia /> */}
-    {/* <FreeEbook /> */}
     <SidebarLatestNews />
     <SidebarCategories />
   </div>
