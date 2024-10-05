@@ -36,7 +36,7 @@ export const RemoveSubscriptionForm = () => {
   }, [onSubmit]);
 
   return (
-    <section className="h-screen w-full items-center">
+    <section className="w-full items-center">
       <div className="flex h-full w-full flex-col items-center justify-center gap-y-8 px-5 py-24 text-center">
         {error ? (
           <>

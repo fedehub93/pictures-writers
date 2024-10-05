@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { Suspense } from "react";
 
 import { getHeadMetadata } from "../../_components/seo/head-metadata";
 import { RemoveSubscriptionForm } from "./_components/remove-subscription-form";
@@ -21,7 +22,11 @@ export async function generateMetadata(): Promise<Metadata | null> {
 }
 
 const RemoveSubscriptionPage = () => {
-  return <RemoveSubscriptionForm />;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RemoveSubscriptionForm />
+    </Suspense>
+  );
 };
 
 export default RemoveSubscriptionPage;

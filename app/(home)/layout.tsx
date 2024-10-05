@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Mulish } from "next/font/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Suspense } from "react";
 
 import "./home.css";
 
@@ -14,7 +15,6 @@ import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
 
 import { QueryProvider } from "@/components/providers/query-provider";
 import { OrganizationJsonLd } from "./_components/seo/json-ld/organization";
-import { Suspense } from "react";
 import GoogleAnalytics from "./_components/google-analytics";
 import CookieBanner from "./_components/cookie-banner";
 
