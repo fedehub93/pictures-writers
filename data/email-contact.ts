@@ -1,5 +1,12 @@
 import { db } from "@/lib/db";
-import { endOfMonth, startOfMonth, subMonths } from "date-fns";
+import {
+  endOfDay,
+  endOfMonth,
+  startOfDay,
+  startOfMonth,
+  subMonths,
+} from "date-fns";
+import { DateRange } from "react-day-picker";
 
 export const getContactByEmail = async (email: string) => {
   try {
@@ -69,101 +76,108 @@ export const addContactInteraction = async (
   });
 };
 
-interface GrowthStats {
+export interface GrowthStats {
   currentMonthCount: number;
   lastMonthCount: number;
   absoluteGrowth: number;
   percentageGrowth: number;
 }
 
-export async function getEbookDownloadGrowth(): Promise<GrowthStats> {
-  // Date del mese corrente (Settembre, se siamo a Settembre)
-  const currentMonthStart = startOfMonth(new Date());
-  const currentMonthEnd = new Date(); // Fino ad ora (oggi)
+export async function getEbookDownloadGrowth(
+  from?: Date,
+  to?: Date
+): Promise<GrowthStats> {
+  // Se il range di date non è definito, ritorniamo valori di default
+  if (!from || !to) {
+    throw new Error("Date range is required");
+  }
 
-  // Date del mese scorso (Agosto, se siamo a Settembre)
-  const lastMonthStart = startOfMonth(subMonths(new Date(), 1));
-  const lastMonthEnd = endOfMonth(subMonths(new Date(), 1));
+  // Otteniamo l'inizio e la fine del range selezionato dall'utente
+  const rangeStart = startOfDay(from);
+  const rangeEnd = endOfDay(to);
 
-  // 2. Query per contare quanti download di ebook ci sono stati nel mese corrente
-  const currentMonthCount = await db.emailContactInteraction.count({
+  // 1. Query per contare quanti download di ebook ci sono stati nel range selezionato
+  const currentRangeCount = await db.emailContactInteraction.count({
     where: {
       interactionType: "ebook_downloaded",
       interactionDate: {
-        gte: currentMonthStart,
-        lte: currentMonthEnd, // fino ad oggi
+        gte: rangeStart,
+        lte: rangeEnd,
       },
     },
   });
 
-  // 3. Query per contare quanti download di ebook ci sono stati nel mese scorso
-  const lastMonthCount = await db.emailContactInteraction.count({
+  // 2. Query per contare quanti download di ebook ci sono stati nello stesso range del mese scorso
+  const previousRangeStart = startOfDay(subMonths(from, 1));
+  const previousRangeEnd = endOfDay(subMonths(to, 1));
+
+  const lastRangeCount = await db.emailContactInteraction.count({
     where: {
       interactionType: "ebook_downloaded",
       interactionDate: {
-        gte: lastMonthStart,
-        lte: lastMonthEnd,
+        gte: previousRangeStart,
+        lte: previousRangeEnd,
       },
     },
   });
-
-  // 4. Calcolo del numero e percentuale di crescita
-  const absoluteGrowth = currentMonthCount - lastMonthCount;
+  // 3. Calcolo del numero e percentuale di crescita
+  const absoluteGrowth = currentRangeCount - lastRangeCount;
   const percentageGrowth =
-    lastMonthCount === 0 ? 100 : (absoluteGrowth / lastMonthCount) * 100;
+    lastRangeCount === 0 ? 100 : (absoluteGrowth / lastRangeCount) * 100;
 
   return {
-    currentMonthCount,
-    lastMonthCount,
+    currentMonthCount: currentRangeCount,
+    lastMonthCount: lastRangeCount,
     absoluteGrowth,
     percentageGrowth: Math.round(percentageGrowth * 100) / 100, // Arrotondamento a 2 decimali
   };
 }
 
-interface GrowthStats {
-  currentMonthCount: number;
-  lastMonthCount: number;
-  absoluteGrowth: number;
-  percentageGrowth: number;
-}
+export async function getEmailContactGrowth(
+  from?: Date,
+  to?: Date
+): Promise<GrowthStats> {
+  // Se il range di date non è definito, ritorniamo valori di default
+  if (!from || !to) {
+    throw new Error("Date range is required");
+  }
 
-export async function getEmailContactGrowth(): Promise<GrowthStats> {
-  // Date del mese corrente (Settembre, se siamo a Settembre)
-  const currentMonthStart = startOfMonth(new Date());
-  const currentMonthEnd = new Date(); // Fino ad ora (oggi)
-
-  // Date del mese scorso (Agosto, se siamo a Settembre)
-  const lastMonthStart = startOfMonth(subMonths(new Date(), 1));
-  const lastMonthEnd = endOfMonth(subMonths(new Date(), 1));
+  // Otteniamo l'inizio e la fine del range selezionato dall'utente
+  const rangeStart = startOfDay(from);
+  const rangeEnd = endOfDay(to);
 
   // 2. Query per contare quanti contatti ci sono stati nel mese corrente
-  const currentMonthCount = await db.emailContact.count({
+  const currentRangeCount = await db.emailContact.count({
     where: {
       createdAt: {
-        gte: currentMonthStart,
-        lte: currentMonthEnd, // fino ad oggi
+        gte: rangeStart,
+        lte: rangeEnd, // fino ad oggi
       },
     },
   });
+
+  // 2. Query per contare quanti download di ebook ci sono stati nello stesso range del mese scorso
+  const previousRangeStart = startOfDay(subMonths(from, 1));
+  const previousRangeEnd = endOfDay(subMonths(to, 1));
 
   // 3. Query per contare quanti contatti ci sono stati nel mese scorso
-  const lastMonthCount = await db.emailContact.count({
+  const lastRangeCount = await db.emailContact.count({
     where: {
       createdAt: {
-        gte: lastMonthStart,
-        lte: lastMonthEnd,
+        gte: previousRangeStart,
+        lte: previousRangeEnd,
       },
     },
   });
 
-  // 4. Calcolo del numero e percentuale di crescita
-  const absoluteGrowth = currentMonthCount - lastMonthCount;
+  // 3. Calcolo del numero e percentuale di crescita
+  const absoluteGrowth = currentRangeCount - lastRangeCount;
   const percentageGrowth =
-    lastMonthCount === 0 ? 100 : (absoluteGrowth / lastMonthCount) * 100;
+    lastRangeCount === 0 ? 100 : (absoluteGrowth / lastRangeCount) * 100;
 
   return {
-    currentMonthCount,
-    lastMonthCount,
+    currentMonthCount: currentRangeCount,
+    lastMonthCount: lastRangeCount,
     absoluteGrowth,
     percentageGrowth: Math.round(percentageGrowth * 100) / 100, // Arrotondamento a 2 decimali
   };
