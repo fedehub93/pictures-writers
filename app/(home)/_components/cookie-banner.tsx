@@ -23,13 +23,13 @@ export default function CookieBanner() {
       setLocalStorage("cookie_consent", cookieConsent);
     }
 
-    const newValue = cookieConsent ? "granted" : "denied";
+    // const newValue = cookieConsent ? "granted" : "denied";
 
-    if (typeof window !== "undefined" && window.gtag) {
-      window.gtag("consent", "update", {
-        analytics_storage: newValue,
-      });
-    }
+    // if (typeof window !== "undefined" && window.gtag) {
+    //   window.gtag("consent", "update", {
+    //     analytics_storage: newValue,
+    //   });
+    // }
   }, [cookieConsent]);
 
   // Do not render the banner if loading or consent is already given
@@ -42,7 +42,8 @@ export default function CookieBanner() {
       <div className="container mx-auto flex flex-col gap-y-4 sm:flex-row justify-between items-center">
         <span className="text-sm">
           Questo sito utilizza cookie per migliorare l&apos;esperienza utente.
-          Per saperne di più, consulta la nostra{" "}
+          Declinando verranno utilizzati solo i cookie essenziali. Per saperne
+          di più, consulta la nostra{" "}
           <Link
             href="https://www.iubenda.com/privacy-policy/49078580/cookie-policy"
             className="underline"

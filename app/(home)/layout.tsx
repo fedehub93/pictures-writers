@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Mulish } from "next/font/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Suspense } from "react";
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 import "./home.css";
 
@@ -15,7 +16,6 @@ import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
 
 import { QueryProvider } from "@/components/providers/query-provider";
 import { OrganizationJsonLd } from "./_components/seo/json-ld/organization";
-import GoogleAnalytics from "./_components/google-analytics";
 import CookieBanner from "./_components/cookie-banner";
 
 const mulish = Mulish({ subsets: ["latin"] });
@@ -31,9 +31,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="it" suppressHydrationWarning>
-      <Suspense fallback={null}>
+      {/* <Suspense fallback={null}>
         <GoogleAnalytics GA_MEASUREMENT_ID={process.env.NEXT_GA_TRACKING_ID!} />
-      </Suspense>
+      </Suspense> */}
       <body className={mulish.className}>
         <OrganizationJsonLd
           name="Pictures Writers"
@@ -56,6 +56,7 @@ export default function RootLayout({
         </ThemeProvider>
         <CookieBanner />
         <SpeedInsights />
+        <GoogleAnalytics gaId={process.env.NEXT_GA_TRACKING_ID!} />
         {/* <GoogleAnalytics gaId={process.env.NEXT_GA_TRACKING_ID!} /> */}
         {/* <GoogleTagManager gtmId={process.env.NEXT_GTAG_CONTAINER_ID!} /> */}
       </body>
