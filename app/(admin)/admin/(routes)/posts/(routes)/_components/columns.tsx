@@ -49,10 +49,10 @@ export const columns: ColumnDef<PostWithImageCover>[] = [
         </Button>
       );
     },
-    cell: ({row}) => {
-      const description = (row.getValue("description") || "") as String 
-      return <div className="line-clamp-2">{description}</div>
-    }
+    cell: ({ row }) => {
+      const description = (row.getValue("description") || "") as String;
+      return <div className="line-clamp-2">{description}</div>;
+    },
   },
   {
     accessorKey: "imageCover",
@@ -104,6 +104,30 @@ export const columns: ColumnDef<PostWithImageCover>[] = [
             : "Published"}
         </Badge>
       );
+    },
+  },
+  {
+    accessorKey: "firstPublishedAt",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Published at
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      const { createdAt } = row.original;
+      const date = new Date(createdAt);
+      const formattedDate = date.toLocaleDateString("it-IT", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+      return <div>{formattedDate}</div>;
     },
   },
   {

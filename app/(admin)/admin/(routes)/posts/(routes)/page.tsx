@@ -19,7 +19,7 @@ const PostsPage = async () => {
       imageCover: true,
     },
     orderBy: {
-      createdAt: "desc",
+      firstPublishedAt: "desc",
     },
     distinct: ["rootId"],
   });

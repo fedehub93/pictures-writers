@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getLocalStorage, setLocalStorage } from "@/lib/storage-helper";
 import Link from "next/link";
+
+import { getLocalStorage, setLocalStorage } from "@/lib/storage-helper";
 
 // CookieBanner component that displays a banner for cookie consent.
 export default function CookieBanner() {
