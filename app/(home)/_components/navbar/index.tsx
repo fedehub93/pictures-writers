@@ -15,9 +15,9 @@ export const Navbar = async () => {
         <div className="w-full mx-auto flex justify-between md:max-w-screen-md lg:max-w-6xl">
           <div className="flex items-center gap-x-2">
             <Logo />
-            <h1 className="text-xl uppercase font-bold hidden sm:block">
+            <span className="text-xl uppercase font-bold hidden sm:block">
               Pictures Writers
-            </h1>
+            </span>
           </div>
           <div className="hidden md:flex items-center">
             <Nav />
