@@ -98,7 +98,7 @@ export const FreeEbookModal = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onHandleOpenChange}>
-      <DialogContent>
+      <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader className="mt-4">
           <DialogTitle className="text-base uppercase mb-2 mt-2 rounded-md bg-violet-100 p-1 font-bold text-primary-public block italic">
             Introduzione alla sceneggiatura cinematografica
