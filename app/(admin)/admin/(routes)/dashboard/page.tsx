@@ -1,10 +1,7 @@
-import { DollarSign } from "lucide-react";
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DatePickerWithRange } from "@/components/date-range";
 
 import { SubscriptionsWidget } from "./_components/subscriptions-widget";
 import { EbooksWidget } from "./_components/ebooks-widget";
-import { DatePickerWithRange } from "@/components/date-range";
 
 const DashboardPage = async () => {
   return (

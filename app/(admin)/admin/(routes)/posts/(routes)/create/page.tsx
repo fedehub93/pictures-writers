@@ -7,6 +7,8 @@ import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import slugify from "slugify";
+import { Sparkles } from "lucide-react";
+import toast from "react-hot-toast";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -18,8 +20,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Sparkles } from "lucide-react";
-import toast from "react-hot-toast";
 
 const formSchema = z.object({
   title: z.string().min(1, {

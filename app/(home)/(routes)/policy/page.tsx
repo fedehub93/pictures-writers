@@ -11,11 +11,11 @@ export async function generateMetadata(): Promise<Metadata | null> {
     title: "Policy: Pictures Writers",
     description: "Policy di Pictures Writers",
     robots: {
-      index: false,
-      follow: false,
+      index: true,
+      follow: true,
       googleBot: {
-        index: false,
-        follow: false,
+        index: true,
+        follow: true,
       },
     },
   };

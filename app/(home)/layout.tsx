@@ -56,7 +56,9 @@ export default function RootLayout({
         <CookieBanner />
         <SpeedInsights />
       </body>
-      <GoogleTagManager gtmId={process.env.NEXT_GTAG_CONTAINER_ID!} />
+      {process.env.NODE_ENV === "production" && (
+        <GoogleTagManager gtmId={process.env.NEXT_GTAG_CONTAINER_ID!} />
+      )}
     </html>
   );
 }

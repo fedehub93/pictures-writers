@@ -22,6 +22,7 @@ import { SeoContentTypeApi } from "@/app/(admin)/_components/seo/types";
 import { StatusView } from "@/app/(admin)/_components/content/status-view";
 
 import { ContentIdActions } from "@/app/(admin)/_components/content/content-id-actions";
+import { PostPreview } from "./_components/post-preview";
 
 const PostIdPage = async ({ params }: { params: { rootId: string } }) => {
   const userAdmin = await authAdmin();
@@ -41,6 +42,7 @@ const PostIdPage = async ({ params }: { params: { rootId: string } }) => {
       category: true,
       tags: true,
       seo: true,
+      user: true,
     },
   });
 
@@ -99,6 +101,7 @@ const PostIdPage = async ({ params }: { params: { rootId: string } }) => {
             <TabsList className="mb-4">
               <TabsTrigger value="post">Post</TabsTrigger>
               <TabsTrigger value="seo">SEO</TabsTrigger>
+              <TabsTrigger value="preview">Preview</TabsTrigger>
             </TabsList>
             <TabsContent value="post" className="flex flex-col gap-y-4">
               <TitleForm
@@ -154,6 +157,9 @@ const PostIdPage = async ({ params }: { params: { rootId: string } }) => {
                 contentRootId={post.rootId}
                 contentId={post.id}
               />
+            </TabsContent>
+            <TabsContent value="preview">
+              <PostPreview post={post} />
             </TabsContent>
           </Tabs>
         </div>

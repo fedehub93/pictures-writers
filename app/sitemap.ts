@@ -1,6 +1,8 @@
-import { db } from "@/lib/db";
-import { ContentStatus } from "@prisma/client";
 import type { MetadataRoute } from "next";
+
+import { ContentStatus } from "@prisma/client";
+
+import { db } from "@/lib/db";
 
 const generateBlogPostsSitemap = async () => {
   const posts = await db.post.findMany({
