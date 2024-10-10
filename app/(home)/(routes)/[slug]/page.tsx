@@ -6,11 +6,12 @@ import {
   getPublishedPosts,
   getPublishedPostsBuilding,
 } from "@/lib/post";
-import { PostTemplate } from "@/app/(home)/(routes)/[slug]/_components/post-template";
 import { getPostMetadataBySlug } from "@/app/(home)/_components/seo/content-metadata";
 import { BlogPostingJsonLd } from "@/app/(home)/_components/seo/json-ld/blog-posting";
+import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
+import { FreeEbookModal } from "@/app/(home)/_components/free-ebook-modal";
+import { PostTemplate } from "@/app/(home)/(routes)/[slug]/_components/post-template";
 import { PostList } from "../blog/_components/post-list";
-import { getHeadMetadata } from "../../_components/seo/head-metadata";
 
 type Params = {
   slug: string;
@@ -107,6 +108,7 @@ const Page = async ({ params }: { params: { slug: string } }) => {
         url={`https://pictureswriters.com/${post.slug}`}
       />
       <PostTemplate post={post} />
+      <FreeEbookModal />
     </section>
   );
 };

@@ -30,7 +30,6 @@ export const MobileNavbar = () => {
           onClick={() => setIsOpen(true)}
         >
           <Menu className="h-5 w-5" />
-          <span className="sr-only">Toggle navigation menu</span>
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="flex flex-col px-0 py-10">

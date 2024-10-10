@@ -30,9 +30,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="it" suppressHydrationWarning>
-      {/* <Suspense fallback={null}>
-        <GoogleAnalytics GA_MEASUREMENT_ID={process.env.NEXT_GA_TRACKING_ID!} />
-      </Suspense> */}
       <body className={mulish.className}>
         <OrganizationJsonLd
           name="Pictures Writers"
