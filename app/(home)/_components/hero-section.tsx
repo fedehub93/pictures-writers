@@ -1,7 +1,8 @@
 "use client";
 
-import * as z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import * as v from "valibot";
+
+import { valibotResolver } from "@hookform/resolvers/valibot";
 import Image from "next/image";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
@@ -17,7 +18,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { FreeEbookSchema } from "@/schemas";
+import { FreeEbookSchemaValibot } from "@/schemas";
 import { subscribeFreeEbook } from "@/actions/subscribe-free-ebook";
 
 export const HeroSection = (): JSX.Element => {
@@ -26,8 +27,8 @@ export const HeroSection = (): JSX.Element => {
 
   const [isPending, startTransition] = useTransition();
 
-  const form = useForm<z.infer<typeof FreeEbookSchema>>({
-    resolver: zodResolver(FreeEbookSchema),
+  const form = useForm<v.InferInput<typeof FreeEbookSchemaValibot>>({
+    resolver: valibotResolver(FreeEbookSchemaValibot),
     defaultValues: {
       email: "",
       ebookId: "e5ec60b7-bffd-412b-8383-72fcf74a5516",
@@ -36,7 +37,9 @@ export const HeroSection = (): JSX.Element => {
 
   const { isSubmitting, isValid } = form.formState;
 
-  const onSubmit = async (values: z.infer<typeof FreeEbookSchema>) => {
+  const onSubmit = async (
+    values: v.InferInput<typeof FreeEbookSchemaValibot>
+  ) => {
     try {
       setError("");
       setSuccess("");

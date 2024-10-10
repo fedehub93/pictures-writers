@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import * as v from "valibot";
+import { valibotResolver } from "@hookform/resolvers/valibot";
 import { BeatLoader } from "react-spinners";
 
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ContactSchema } from "@/schemas";
+import { ContactSchemaValibot } from "@/schemas";
 import { contact } from "@/actions/contact";
 
 export const ContactForm = () => {
@@ -26,8 +26,8 @@ export const ContactForm = () => {
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
 
-  const form = useForm<z.infer<typeof ContactSchema>>({
-    resolver: zodResolver(ContactSchema),
+  const form = useForm<v.InferInput<typeof ContactSchemaValibot>>({
+    resolver: valibotResolver(ContactSchemaValibot),
     defaultValues: {
       name: "",
       email: "",
@@ -38,7 +38,9 @@ export const ContactForm = () => {
 
   const { isValid, isSubmitting } = form.formState;
 
-  const onSubmit = async (values: z.infer<typeof ContactSchema>) => {
+  const onSubmit = async (
+    values: v.InferInput<typeof ContactSchemaValibot>
+  ) => {
     try {
       setError("");
       setSuccess("");

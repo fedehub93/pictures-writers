@@ -1,25 +1,8 @@
 import { Metadata } from "next";
-import * as z from "zod";
 import { Clock } from "lucide-react";
 
 import { ContactForm } from "./_components/contact-form";
 import { getHeadMetadata } from "../../_components/seo/head-metadata";
-
-const formSchema = z.object({
-  name: z.string().min(1, {
-    message: "Name is required",
-  }),
-  email: z
-    .string()
-    .min(1, {
-      message: "Name is required",
-    })
-    .email("Email is invalid"),
-  subject: z.string().min(1, {
-    message: "Subject is required",
-  }),
-  message: z.string().min(1, { message: "Message is required" }),
-});
 
 export async function generateMetadata(): Promise<Metadata | null> {
   const metadata = await getHeadMetadata();

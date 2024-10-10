@@ -1,8 +1,8 @@
 "use client";
 
-import * as z from "zod";
+import * as v from "valibot";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { valibotResolver } from "@hookform/resolvers/valibot";
 import { useState, useTransition } from "react";
 import { Globe, Mail } from "lucide-react";
 import Link from "next/link";
@@ -19,16 +19,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { ContactSchema } from "@/schemas";
 import { contact } from "@/actions/contact";
+import { ContactSchemaValibot } from "@/schemas";
 
 const ContactUs = (): JSX.Element => {
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
 
-  const form = useForm<z.infer<typeof ContactSchema>>({
-    resolver: zodResolver(ContactSchema),
+  const form = useForm<v.InferInput<typeof ContactSchemaValibot>>({
+    resolver: valibotResolver(ContactSchemaValibot),
     defaultValues: {
       name: "",
       email: "",
@@ -39,7 +39,9 @@ const ContactUs = (): JSX.Element => {
 
   const { isValid, isSubmitting } = form.formState;
 
-  const onSubmit = async (values: z.infer<typeof ContactSchema>) => {
+  const onSubmit = async (
+    values: v.InferInput<typeof ContactSchemaValibot>
+  ) => {
     try {
       setError("");
       setSuccess("");

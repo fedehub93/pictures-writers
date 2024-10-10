@@ -1,16 +1,21 @@
 "use client";
 
-import * as z from "zod";
+import * as v from "valibot";
 import Image from "next/image";
 import { useEffect, useState, useTransition } from "react";
 import { useMediaQuery } from "usehooks-ts";
 import { BeatLoader } from "react-spinners";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { valibotResolver } from "@hookform/resolvers/valibot";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { getLocalStorage, setLocalStorage } from "@/lib/storage-helper";
 import {
@@ -21,9 +26,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { FreeEbookSchema } from "@/schemas";
+import { FreeEbookSchemaValibot } from "@/schemas";
 import { subscribeFreeEbook } from "@/actions/subscribe-free-ebook";
-import { DialogDescription, DialogTitle } from "@radix-ui/react-dialog";
+import {
+  DialogClose,
+  DialogDescription,
+  DialogTitle,
+} from "@radix-ui/react-dialog";
 
 const FREE_EBOOK_MODAL_KEY = "freeEbookModalShown";
 
@@ -36,8 +45,8 @@ export const FreeEbookModal = () => {
 
   const matches = useMediaQuery("(max-width: 768px)");
 
-  const form = useForm<z.infer<typeof FreeEbookSchema>>({
-    resolver: zodResolver(FreeEbookSchema),
+  const form = useForm<v.InferInput<typeof FreeEbookSchemaValibot>>({
+    resolver: valibotResolver(FreeEbookSchemaValibot),
     defaultValues: {
       email: "",
       ebookId: "e5ec60b7-bffd-412b-8383-72fcf74a5516",
@@ -70,7 +79,7 @@ export const FreeEbookModal = () => {
     setLocalStorage(FREE_EBOOK_MODAL_KEY, now.toString());
   };
 
-  const onHandleSubmit = async (values: z.infer<typeof FreeEbookSchema>) => {
+  const onHandleSubmit = async (values: v.InferInput<typeof FreeEbookSchemaValibot>) => {
     try {
       setError("");
       setSuccess("");
@@ -99,8 +108,8 @@ export const FreeEbookModal = () => {
   return (
     <Dialog open={isOpen} onOpenChange={onHandleOpenChange}>
       <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
-        <DialogHeader className="mt-4">
-          <DialogTitle className="text-base uppercase mb-2 mt-2 rounded-md bg-violet-100 p-1 font-bold text-primary-public block italic">
+        <DialogHeader className="flex flex-col items-center mt-4">
+          <DialogTitle className="text-base text-center uppercase mb-2 mt-2 rounded-md bg-violet-100 p-1 font-bold text-primary-public block italic">
             Introduzione alla sceneggiatura cinematografica
           </DialogTitle>
           <DialogDescription>
@@ -166,9 +175,18 @@ export const FreeEbookModal = () => {
                     </Link>{" "}
                     di Pictures Writers.
                   </div>
-                  <Button type="submit" disabled={isSubmitting || !isValid}>
-                    Download eBook
-                  </Button>
+                  <DialogFooter className="flex flex-row gap-x-2 justify-between">
+                    <DialogClose asChild className="flex-1">
+                      <Button type="button">Close</Button>
+                    </DialogClose>
+                    <Button
+                      className="flex-1"
+                      type="submit"
+                      disabled={isSubmitting || !isValid}
+                    >
+                      Download eBook
+                    </Button>
+                  </DialogFooter>
                 </div>
               </form>
             </Form>

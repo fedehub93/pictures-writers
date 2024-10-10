@@ -1,10 +1,9 @@
 "use client";
 
-import * as z from "zod";
+import * as v from "valibot";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { valibotResolver } from "@hookform/resolvers/valibot";
 import axios from "axios";
-import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { Format, Genre } from "@prisma/client";
@@ -26,48 +25,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-const formSchema = z.object({
-  firstName: z.string().min(1, {
-    message: "Name is required",
-  }),
-  lastName: z.string().min(1, {
-    message: "Last name is required",
-  }),
-  email: z
-    .string()
-    .min(1, {
-      message: "Email is required",
-    })
-    .email("Email is invalid"),
-  title: z.string().min(1, {
-    message: "Title is required",
-  }),
-  formatId: z.string(),
-  genreId: z.string(),
-  pageCount: z.number().optional(),
-  file: z
-    .unknown()
-    .transform((value) => {
-      return value as FileList;
-    })
-    .refine((files) => files instanceof FileList && files.length === 1, {
-      message: "Devi caricare un solo file!",
-    })
-    .refine(
-      (files) => files instanceof FileList && files[0]?.size <= 3 * 1024 * 1024, // massimo 3MB
-      {
-        message: "Il file deve essere inferiore a 3MB",
-      }
-    )
-    .refine(
-      (files) =>
-        files instanceof FileList && files[0]?.type === "application/pdf",
-      {
-        message: "Il file deve essere un PDF",
-      }
-    ),
-});
+import { FirstImpressionSchemaValibot } from "@/schemas";
+import { BeatLoader } from "react-spinners";
 
 interface FirstImpressionFormProps {
   formats: Format[];
@@ -79,8 +38,8 @@ const FirstImpressionForm = ({
   genres,
 }: FirstImpressionFormProps): JSX.Element => {
   const router = useRouter();
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<v.InferInput<typeof FirstImpressionSchemaValibot>>({
+    resolver: valibotResolver(FirstImpressionSchemaValibot),
     defaultValues: {
       title: "",
       firstName: "",
@@ -94,9 +53,11 @@ const FirstImpressionForm = ({
 
   const isLoading = form.formState.isSubmitting;
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (
+    values: v.InferInput<typeof FirstImpressionSchemaValibot>
+  ) => {
     try {
-      if (values.file === null || !values.file[0]) return;
+      if (values.file === null || !values.file || !values.file[0]) return;
       const formData = new FormData();
       formData.append("title", values.title);
       formData.append("firstName", values.firstName);
@@ -282,7 +243,7 @@ const FirstImpressionForm = ({
             </Link>{" "}
             di Pictures Writers.
           </div>
-          {isLoading && <Loader2 />}
+          {isLoading && <BeatLoader />}
           <div className="flex items-center gap-x-8 mt-4">
             <Button type="submit" disabled={isLoading}>
               Invia

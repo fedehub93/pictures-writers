@@ -1,14 +1,14 @@
 "use client";
 
-import * as z from "zod";
+import * as v from "valibot";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { valibotResolver } from "@hookform/resolvers/valibot";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { BeatLoader } from "react-spinners";
 
 import { subscribe } from "@/actions/subscribe";
-import { SubscribeSchema } from "@/schemas";
+import { SubscribeSchemaValibot } from "@/schemas";
 import {
   Form,
   FormControl,
@@ -25,8 +25,8 @@ const NewsletterWidget = (): JSX.Element => {
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
 
-  const form = useForm<z.infer<typeof SubscribeSchema>>({
-    resolver: zodResolver(SubscribeSchema),
+  const form = useForm<v.InferInput<typeof SubscribeSchemaValibot>>({
+    resolver: valibotResolver(SubscribeSchemaValibot),
     defaultValues: {
       email: "",
     },
@@ -34,7 +34,9 @@ const NewsletterWidget = (): JSX.Element => {
 
   const { isSubmitting, isValid } = form.formState;
 
-  const onSubmit = async (values: z.infer<typeof SubscribeSchema>) => {
+  const onSubmit = async (
+    values: v.InferInput<typeof SubscribeSchemaValibot>
+  ) => {
     try {
       setError("");
       setSuccess("");
