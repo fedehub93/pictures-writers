@@ -28,8 +28,10 @@ export const MobileNavbar = () => {
           size="icon"
           className="shrink-0 sm:hidden"
           onClick={() => setIsOpen(true)}
+          aria-label="Toggle menu"
         >
           <Menu className="h-5 w-5" />
+          <span className="sr-only"> Toggle Mobile Menu</span>
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="flex flex-col px-0 py-10">
