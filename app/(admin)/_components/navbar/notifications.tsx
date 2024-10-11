@@ -65,7 +65,7 @@ export const Notifications = ({ userId }: { userId: string }) => {
         sideOffset={10}
         className="border border-gray-300 shadow-lg p-0 py-0.5 bg-white dark:bg-background rounded-md w-full"
       >
-        {totalNotifications<=0 && (
+        {totalNotifications <= 0 && (
           <div className="px-3 py-2">Nessuna notifica</div>
         )}
         {totalNotifications > 0 && (
