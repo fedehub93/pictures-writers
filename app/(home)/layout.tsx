@@ -7,7 +7,6 @@ import "./home.css";
 
 import { cn } from "@/lib/utils";
 
-import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ToastProvider } from "@/components/providers/toast-provider";
 import { Navbar } from "@/app/(home)/_components/navbar";
 import Footer from "@/app/(home)/_components/footer";
@@ -36,20 +35,14 @@ export default function RootLayout({
           url="https://pictureswriters.com"
           logo="https://pictureswriters.com/logo.png"
         />
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          disableTransitionOnChange
-        >
-          <ToastProvider />
-          <QueryProvider>
-            <div className={cn(`h-full`, mulish.className)}>
-              <Navbar />
-              <main className="pt-20">{children}</main>
-              <Footer />
-            </div>
-          </QueryProvider>
-        </ThemeProvider>
+        <ToastProvider />
+        <QueryProvider>
+          <div className={cn(`h-full`, mulish.className)}>
+            <Navbar />
+            <main className="pt-20">{children}</main>
+            <Footer />
+          </div>
+        </QueryProvider>
         <CookieBanner />
         <SpeedInsights />
       </body>
