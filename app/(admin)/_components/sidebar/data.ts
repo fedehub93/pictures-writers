@@ -17,6 +17,7 @@ import {
   Mailbox,
   Mails,
   NotebookPen,
+  ReceiptText,
   Settings,
   Shapes,
   Tags,
@@ -119,6 +120,7 @@ export const sideLinks: SideLink[] = [
         href: "/admin/coverage/impressions",
         icon: ClipboardPen,
       },
+
       // {
       //   title: "Formats",
       //   label: "",
@@ -134,6 +136,12 @@ export const sideLinks: SideLink[] = [
     ],
   },
   {
+    title: "Contact Requests",
+    label: "",
+    href: "/admin/contacts",
+    icon: ReceiptText,
+  },
+  {
     title: "SEPARATOR_2",
     label: "SEPARATOR_2",
     href: "#",
@@ -143,6 +151,17 @@ export const sideLinks: SideLink[] = [
     label: "",
     href: "/admin/seo",
     icon: ChartLine,
+  },
+  {
+    title: "SEPARATOR_3",
+    label: "SEPARATOR_3",
+    href: "#",
+  },
+  {
+    title: "Settings",
+    label: "",
+    href: "/admin/settings",
+    icon: Settings,
   },
   {
     title: "Users",
