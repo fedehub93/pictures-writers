@@ -13,16 +13,17 @@ export const createNewVersionEbook = async (rootId: string, values: any) => {
   }
 
   // Aggiorna la vecchia versione
-  await db.ebook.updateMany({
-    where: { rootId: rootId },
-    data: { isLatest: false },
-  });
+  // await db.ebook.updateMany({
+  //   where: { rootId: rootId },
+  //   data: { isLatest: false },
+  // });
 
   const ebook = await db.ebook.create({
     data: {
       title: values.title || publishedEbook.title,
       version: publishedEbook.version + 1,
       status: ContentStatus.CHANGED,
+      isLatest: false,
     },
   });
 
@@ -34,6 +35,7 @@ export const createNewVersionEbook = async (rootId: string, values: any) => {
       id: undefined,
       version: undefined,
       status: undefined,
+      isLatest: undefined,
       createdAt: undefined,
       updatedAt: undefined,
       publishedAt: undefined,

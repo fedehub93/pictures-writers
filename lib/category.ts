@@ -81,10 +81,10 @@ export const createNewVersionCategory = async (rootId: string, values: any) => {
   }
 
   // Aggiorna la vecchia versione
-  await db.category.updateMany({
-    where: { rootId: rootId },
-    data: { isLatest: false },
-  });
+  // await db.category.updateMany({
+  //   where: { rootId: rootId },
+  //   data: { isLatest: false },
+  // });
 
   const category = await db.category.create({
     data: {
@@ -93,7 +93,7 @@ export const createNewVersionCategory = async (rootId: string, values: any) => {
       id: undefined,
       version: publishedCategory.version + 1,
       status: ContentStatus.CHANGED,
-      isLatest: true,
+      isLatest: false,
       rootId: undefined,
       root: {
         connect: { id: publishedCategory.rootId },

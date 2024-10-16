@@ -31,10 +31,20 @@ export async function PATCH(
       return new NextResponse("Missing required fields!", { status: 404 });
     }
 
+    await db.ebook.updateMany({
+      where: { rootId: rootId },
+      data: { isLatest: false },
+    });
+
     const publishedEbook = await db.ebook.update({
       where: { id: ebookId },
-      data: { status: ContentStatus.PUBLISHED },
-      include: { seo: true },
+      data: {
+        status: ContentStatus.PUBLISHED,
+        isLatest: true,
+      },
+      include: {
+        seo: true,
+      },
     });
 
     return NextResponse.json(publishedEbook);

@@ -17,12 +17,12 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 import { CharsCounter } from "@/components/chars-counter";
 import { SeoField } from "./types";
 
-interface InputSeoFormProps {
+interface TextareaSeoFormProps {
   fieldValue: string | null;
   fieldName: SeoField;
   label: string;
@@ -36,13 +36,13 @@ const generateDynamicSchema = (fieldName: SeoField) => {
   });
 };
 
-export const InputSeoForm = ({
+export const TextareaSeoForm = ({
   fieldValue,
   fieldName,
   label,
   placeholder,
   apiUrl,
-}: InputSeoFormProps) => {
+}: TextareaSeoFormProps) => {
   const router = useRouter();
   const [isFocused, setIsFocused] = useState(false);
 
@@ -58,7 +58,7 @@ export const InputSeoForm = ({
 
   const { isValid, touchedFields } = form.formState;
 
-  const onChangeValue = (e: ChangeEvent<HTMLInputElement>) => {
+  const onChangeValue = (e: ChangeEvent<HTMLTextAreaElement>) => {
     form.setValue(fieldName, e.target.value);
     debouncedSubmit();
   };
@@ -97,7 +97,7 @@ export const InputSeoForm = ({
               <FormItem>
                 <FormControl>
                   <>
-                    <Input
+                    <Textarea
                       {...field}
                       placeholder={placeholder}
                       onFocus={(e) => {

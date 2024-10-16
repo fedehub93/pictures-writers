@@ -241,10 +241,10 @@ export const createNewVersionPost = async (rootId: string, values: any) => {
   }
 
   // Aggiorna la vecchia versione
-  await db.post.updateMany({
-    where: { rootId: rootId },
-    data: { isLatest: false },
-  });
+  // await db.post.updateMany({
+  //   where: { rootId: rootId },
+  //   data: { isLatest: false },
+  // });
 
   // Creo nuova versione
   const post = await db.post.create({
@@ -253,6 +253,7 @@ export const createNewVersionPost = async (rootId: string, values: any) => {
       slug: values.slug || publishedPost.slug,
       version: publishedPost.version + 1,
       status: ContentStatus.CHANGED,
+      isLatest: false,
       bodyData: [{ type: "paragraph", children: [{ text: "" }] }],
     },
   });

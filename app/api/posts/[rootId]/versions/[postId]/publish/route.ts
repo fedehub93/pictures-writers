@@ -46,12 +46,19 @@ export async function PATCH(
       return new NextResponse("Missing required fields!", { status: 404 });
     }
 
+    // Aggiorna la vecchia versione
+    await db.post.updateMany({
+      where: { rootId: rootId },
+      data: { isLatest: false },
+    });
+
     const publishedPost = await db.post.update({
       where: {
         id: postId,
       },
       data: {
         status: ContentStatus.PUBLISHED,
+        isLatest: true,
       },
       include: {
         seo: true,

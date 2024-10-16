@@ -4,6 +4,7 @@ import { NoIndexForm } from "./no-index-form";
 import { NoFollowForm } from "./no-follow-form";
 import { InputSeoForm } from "./input-seo-form";
 import { SeoContentTypeApi, SeoField } from "./types";
+import { TextareaSeoForm } from "./textarea-seo-form";
 
 interface SeoProps {
   initialData: Seo | null;
@@ -25,21 +26,21 @@ export const SeoEditView = ({
   return (
     <div className="flex flex-col gap-y-4">
       <InputSeoForm
-        initialData={initialData}
+        fieldValue={initialData.title}
         fieldName={SeoField.Title}
         label="SEO Title"
         placeholder="e.g. How to write a screenplay"
         apiUrl={`/api/${contentType}/${contentRootId}/versions/${contentId}/seo`}
       />
-      <InputSeoForm
-        initialData={initialData}
+      <TextareaSeoForm
+        fieldValue={initialData.description}
         fieldName={SeoField.Description}
         label="SEO Description"
         placeholder="e.g. This article shows you how to write a screenplay from scratch. Learn More."
         apiUrl={`/api/${contentType}/${contentRootId}/versions/${contentId}/seo`}
       />
       <InputSeoForm
-        initialData={initialData}
+        fieldValue={initialData.canonicalUrl}
         fieldName={SeoField.CanonicalUrl}
         label="Canonical URL"
         placeholder="https://pictureswriters.com/canonical-url"
@@ -47,14 +48,14 @@ export const SeoEditView = ({
       />
 
       <InputSeoForm
-        initialData={initialData}
+        fieldValue={initialData.ogTwitterTitle}
         fieldName={SeoField.OgTwitterTitle}
         label="OpenGraph/Twitter Title"
         placeholder="e.g. How to write a screenplay"
         apiUrl={`/api/${contentType}/${contentRootId}/versions/${contentId}/seo`}
       />
-      <InputSeoForm
-        initialData={initialData}
+      <TextareaSeoForm
+        fieldValue={initialData.ogTwitterDescription}
         fieldName={SeoField.OgTwitterDescription}
         label="OpenGraph/Twitter Description"
         placeholder="e.g. This article shows you how to write a screenplay from scratch. Learn More."

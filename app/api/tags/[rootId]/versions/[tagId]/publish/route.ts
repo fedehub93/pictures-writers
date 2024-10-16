@@ -38,10 +38,21 @@ export async function PATCH(
       return new NextResponse("Missing required fields!", { status: 404 });
     }
 
+    // Aggiorno vecchie versioni
+    await db.tag.updateMany({
+      where: { rootId: rootId },
+      data: { isLatest: false },
+    });
+
     const publishedTag = await db.tag.update({
       where: { id: tagId },
-      data: { status: ContentStatus.PUBLISHED },
-      include: { seo: true },
+      data: {
+        status: ContentStatus.PUBLISHED,
+        isLatest: true,
+      },
+      include: {
+        seo: true,
+      },
     });
 
     return NextResponse.json(publishedTag);

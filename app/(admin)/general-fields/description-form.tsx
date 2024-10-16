@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 
 import { CharsCounter } from "@/components/chars-counter";
 import { ContentStatus } from "@prisma/client";
+import { Textarea } from "@/components/ui/textarea";
 
 interface DescriptionFormProps {
   initialData: {
@@ -80,7 +81,7 @@ export const DescriptionForm = ({
     }
   };
 
-  const onChangeDescription = (e: ChangeEvent<HTMLInputElement>) => {
+  const onChangeDescription = (e: ChangeEvent<HTMLTextAreaElement>) => {
     form.setValue("description", e.target.value);
     debouncedSubmit();
   };
@@ -108,7 +109,7 @@ export const DescriptionForm = ({
               <FormItem>
                 <FormControl>
                   <>
-                    <Input
+                    <Textarea
                       {...field}
                       placeholder={placeholder}
                       onFocus={(e) => {

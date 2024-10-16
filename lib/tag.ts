@@ -45,10 +45,10 @@ export const createNewVersionTag = async (rootId: string, values: any) => {
   }
 
   // Aggiorna la vecchia versione
-  await db.tag.updateMany({
-    where: { rootId: rootId },
-    data: { isLatest: false },
-  });
+  // await db.tag.updateMany({
+  //   where: { rootId: rootId },
+  //   data: { isLatest: false },
+  // });
 
   const tag = await db.tag.create({
     data: {
@@ -57,7 +57,7 @@ export const createNewVersionTag = async (rootId: string, values: any) => {
       id: undefined,
       version: publishedTag.version + 1,
       status: ContentStatus.CHANGED,
-      isLatest: true,
+      isLatest: false,
       rootId: undefined,
       root: {
         connect: { id: publishedTag.rootId },
