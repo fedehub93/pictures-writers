@@ -1,6 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
 
-import { ContentStatus } from "@prisma/client";
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
 
@@ -17,7 +16,6 @@ const PostsPage = async () => {
 
   const posts = await db.post.findMany({
     where: {
-      status: ContentStatus.PUBLISHED,
       isLatest: true,
     },
     include: {
