@@ -32,6 +32,7 @@ const formSchema = z.object({
       message: "Sitename is required",
     })
     .optional(),
+  logoUrl: z.string().optional(),
   deployWebhookUrl: z.string().optional(),
 });
 
@@ -43,6 +44,7 @@ export const GlobalSettingsForm = ({ settings }: GlobalSettingsFormProps) => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       siteName: settings?.siteName || "",
+      logoUrl: settings?.logoUrl || "",
       deployWebhookUrl: settings?.deployWebhookUrl || "",
     },
   });
@@ -82,6 +84,23 @@ export const GlobalSettingsForm = ({ settings }: GlobalSettingsFormProps) => {
                   <Input
                     disabled={isLoading || isSubmitting}
                     placeholder="Pictures Writers"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="logoUrl"
+            render={({ field }) => (
+              <FormItem className="min-w-40 flex-auto">
+                <FormLabel>Logo Url</FormLabel>
+                <FormControl>
+                  <Input
+                    disabled={isLoading || isSubmitting}
+                    placeholder="https://dominio.com/logo.png"
                     {...field}
                   />
                 </FormControl>

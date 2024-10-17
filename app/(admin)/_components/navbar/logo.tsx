@@ -1,12 +1,13 @@
-import Link from "next/link";
 import Image from "next/image";
 
-const Logo = () => {
-  return (
-    <Link href="/admin/dashboard">
-      <Image height={130} width={130} alt="logo" src="/logo.svg" />
-    </Link>
-  );
+interface LogoProps {
+  logoUrl?: string | null;
+}
+
+const Logo = ({ logoUrl }: LogoProps) => {
+  const imageUrl = logoUrl || "/logo.svg";
+
+  return <Image height={60} width={60} alt="logo" src={imageUrl} />;
 };
 
 export default Logo;

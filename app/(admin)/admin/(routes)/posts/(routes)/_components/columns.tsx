@@ -120,8 +120,8 @@ export const columns: ColumnDef<PostWithImageCover>[] = [
       );
     },
     cell: ({ row }) => {
-      const { createdAt } = row.original;
-      const date = new Date(createdAt);
+      const { firstPublishedAt } = row.original;
+      const date = new Date(firstPublishedAt);
       const formattedDate = date.toLocaleDateString("it-IT", {
         year: "numeric",
         month: "short",

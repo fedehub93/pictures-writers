@@ -44,6 +44,8 @@ export default async function RootLayout({
     });
   }
 
+  const settings = await getSettings();
+
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
@@ -56,7 +58,10 @@ export default async function RootLayout({
             <ToastProvider />
             <QueryProvider>
               <div className="relative h-full overflow-hidden bg-background">
-                <Sidebar />
+                <Sidebar
+                  siteName={settings.siteName}
+                  logoUrl={settings.logoUrl}
+                />
                 <Container user={user}>{children}</Container>
                 <ModalProvider />
                 <SheetProvider />
