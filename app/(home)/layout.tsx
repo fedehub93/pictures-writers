@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Mulish } from "next/font/google";
-import { SpeedInsights } from "@vercel/speed-insights/next";
+// import { SpeedInsights } from "@vercel/speed-insights/next";
 import { GoogleTagManager } from "@next/third-parties/google";
 
 import "./home.css";
@@ -44,7 +44,7 @@ export default function RootLayout({
           </div>
         </QueryProvider>
         <CookieBanner />
-        <SpeedInsights />
+        {/* <SpeedInsights /> */}
       </body>
       {process.env.NODE_ENV === "production" && (
         <GoogleTagManager gtmId={process.env.NEXT_GTAG_CONTAINER_ID!} />
