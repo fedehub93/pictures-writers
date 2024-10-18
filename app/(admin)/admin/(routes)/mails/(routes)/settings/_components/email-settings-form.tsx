@@ -19,9 +19,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 
 interface EmailSettingsFormProps {
   settings: EmailSetting | null;
+  emailsSentToday: number;
 }
 
 const formSchema = z.object({
@@ -39,11 +41,18 @@ const formSchema = z.object({
     .email("This is not a valid email."),
   emailProvider: z.custom<EmailProvider>(),
   emailApiKey: z.string().optional(),
+  maxEmailsPerDay: z.coerce.number().int(),
 });
 
-export const EmailSettingsForm = ({ settings }: EmailSettingsFormProps) => {
+export const EmailSettingsForm = ({
+  settings,
+  emailsSentToday,
+}: EmailSettingsFormProps) => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+
+  const emailsSentPercentage =
+    (emailsSentToday / (settings?.maxEmailsPerDay || 0)) * 100;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -52,6 +61,7 @@ export const EmailSettingsForm = ({ settings }: EmailSettingsFormProps) => {
       emailResponse: settings?.emailResponse || "",
       emailProvider: settings?.emailProvider || EmailProvider.SENDGRID,
       emailApiKey: "****************",
+      maxEmailsPerDay: settings?.maxEmailsPerDay || 100,
     },
   });
 
@@ -144,6 +154,41 @@ export const EmailSettingsForm = ({ settings }: EmailSettingsFormProps) => {
                 </FormItem>
               )}
             />
+          </div>
+          <div className="flex flex-wrap gap-4">
+            <FormField
+              name="maxEmailsPerDay"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem className="flex-grow">
+                  <FormLabel>Max emails per day</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      disabled={isLoading || isSubmitting}
+                      placeholder="100"
+                      {...field}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <div className="flex flex-grow flex-col space-y-2">
+              <label className="text-sm font-medium mt-1">
+                Today&apos;s emails sent
+              </label>
+              <div className="flex items-center gap-x-8">
+                <div className="w-full">
+                  <Progress
+                    value={emailsSentPercentage}
+                    className="bg-gray-300"
+                  />
+                </div>
+                <div className="text-sm font-medium">
+                  {emailsSentToday} / {settings?.maxEmailsPerDay || 0} emails
+                </div>
+              </div>
+            </div>
           </div>
           <div className="flex items-center gap-x-2 justify-end">
             <Button

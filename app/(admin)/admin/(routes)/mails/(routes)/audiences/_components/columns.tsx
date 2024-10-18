@@ -13,6 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { AudiencesAction } from "./actions";
 
 export const columns: ColumnDef<EmailAudience & { totalContacts: number }>[] = [
   {
@@ -61,30 +62,10 @@ export const columns: ColumnDef<EmailAudience & { totalContacts: number }>[] = [
       const isAllContactsAudience = type === AudienceType.GLOBAL;
 
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-4 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {!isAllContactsAudience && (
-              <Link href={`/admin/mails/audiences/${id}`}>
-                <DropdownMenuItem>
-                  <Pencil className="h-4 w-4 mr-2" />
-                  Edit
-                </DropdownMenuItem>
-              </Link>
-            )}
-            <Link href={`/admin/mails/audiences/${id}/contacts`}>
-              <DropdownMenuItem>
-                <Eye className="h-4 w-4 mr-2" />
-                View contacts
-              </DropdownMenuItem>
-            </Link>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <AudiencesAction
+          id={id}
+          isAllContactsAudience={isAllContactsAudience}
+        />
       );
     },
   },

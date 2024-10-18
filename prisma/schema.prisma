@@ -20,8 +20,8 @@ model Settings {
 
   siteName         String?
   deployWebhookUrl String?
-  
-  logoUrl          String?
+
+  logoUrl String?
 
   seo   Seo?    @relation(fields: [seoId], references: [id])
   seoId String?
@@ -238,6 +238,8 @@ model EmailSetting {
   emailProvider EmailProvider?
   emailApiKey   String?
 
+  maxEmailsPerDay Int?
+
   subscriptionTemplate   EmailTemplate? @relation(name: "emailSetting1", fields: [subscriptionTemplateId], references: [id], onDelete: Cascade)
   subscriptionTemplateId String?
 
@@ -296,8 +298,9 @@ model EmailContact {
 
   isSubscriber Boolean @default(true)
 
-  audiences    EmailAudience[]
-  interactions EmailContactInteraction[]
+  audiences           EmailAudience[]
+  interactions        EmailContactInteraction[]
+  emailSingleSendLogs EmailSingleSendLog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -324,11 +327,12 @@ model EmailSingleSend {
   name    String
   subject String?
 
-  audiences EmailAudience[]
-
   /// [EmailDesignData]
   designData Json?   @db.JsonB
   bodyHtml   String?
+
+  audiences           EmailAudience[]
+  emailSingleSendLogs EmailSingleSendLog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -344,6 +348,21 @@ model EmailSubscriptionToken {
   updatedAt DateTime @updatedAt
 
   @@unique([email, token])
+}
+
+model EmailSingleSendLog {
+  id String @id @default(uuid())
+
+  contact   EmailContact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  contactId String
+
+  singleSend   EmailSingleSend @relation(fields: [singleSendId], references: [id], onDelete: Cascade)
+  singleSendId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([contactId, singleSendId])
 }
 
 model Ebook {

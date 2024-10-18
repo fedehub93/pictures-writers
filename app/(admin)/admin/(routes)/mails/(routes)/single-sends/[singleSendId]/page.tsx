@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
-import { WriteForm } from "./write-form";
+import { WriteForm } from "./_components/write-form";
 import { redirect } from "next/navigation";
+import { getTodayEmailsAvailable } from "@/lib/mail";
 
 const SingleSendIdPage = async ({
   params,
@@ -28,10 +29,13 @@ const SingleSendIdPage = async ({
     orderBy: { name: "asc" },
   });
 
+  const todayEmailsAvailable = await getTodayEmailsAvailable();
+
   return (
     <div className="py-2 px-6 mx-auto h-full flex flex-col overflow-auto">
       <WriteForm
         singleSend={singleSend}
+        todayEmailsAvailable={todayEmailsAvailable}
         templates={templates}
         options={audiences.map((audience) => ({
           label: audience.name,

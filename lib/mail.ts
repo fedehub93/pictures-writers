@@ -2,6 +2,7 @@ import * as sgMail from "@sendgrid/mail";
 import handlebars from "handlebars";
 
 import { db } from "./db";
+import { endOfDay, startOfDay } from "date-fns";
 
 export const sendSubscriptionEmail = async (email: string, token: string) => {
   const settings = await db.emailSetting.findFirst();
@@ -93,4 +94,30 @@ export const sendSendgridEmail = async ({
     subject,
     html,
   });
+};
+
+export const getEmailsSentToday = async () => {
+  const today = new Date();
+  const startOfToday = startOfDay(today);
+  const endOfToday = endOfDay(today);
+
+  const emailsSentToday = await db.emailSingleSendLog.count({
+    where: {
+      createdAt: {
+        gte: startOfToday,
+        lte: endOfToday,
+      },
+    },
+  });
+
+  return emailsSentToday;
+};
+
+export const getTodayEmailsAvailable = async () => {
+  const settings = await db.emailSetting.findFirst();
+  if (!settings || !settings.maxEmailsPerDay) return 0;
+
+  const emailsSentToday = await getEmailsSentToday();
+
+  return settings.maxEmailsPerDay - emailsSentToday;
 };

@@ -23,11 +23,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import MultipleSelector from "@/components/multi-select";
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
+import { cn } from "@/lib/utils";
 
 interface WriteFormProps {
   singleSend: EmailSingleSend & {
     audiences: EmailAudience[];
   };
+  todayEmailsAvailable: number;
   templates: EmailTemplate[];
   options: { label: string; value: string }[];
 }
@@ -58,6 +60,7 @@ const EmailEditor = dynamic(() => import("react-email-editor"), {
 
 export const WriteForm = ({
   singleSend,
+  todayEmailsAvailable,
   templates,
   options,
 }: WriteFormProps) => {
@@ -126,6 +129,7 @@ export const WriteForm = ({
         form.setValue("designData", design);
         form.setValue("bodyHtml", html);
         await axios.post(`/api/mails/send`, {
+          singleSendId: singleSend.id,
           audiences: values.audiences,
           subject: values.subject,
           bodyHtml: html,
@@ -170,6 +174,14 @@ export const WriteForm = ({
       >
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-medium">Write Email</h1>
+          <div
+            className={cn(
+              "text-emerald-700 font-medium",
+              todayEmailsAvailable <= 0 && "text-destructive"
+            )}
+          >
+            You have <span className="font-bold">{todayEmailsAvailable} emails</span> left to send today
+          </div>
           <div className="flex gap-x-2 itemscen">
             <ConfirmModal onConfirm={onDelete}>
               <Button variant="destructive">
@@ -183,7 +195,7 @@ export const WriteForm = ({
               type="button"
               variant="outline"
               onClick={() => onSend(form.getValues())}
-              disabled={isSubmitting || !isValid}
+              disabled={isSubmitting || !isValid || todayEmailsAvailable <= 0}
             >
               <Send className="h-4 w-4 mr-2" />
               Send
