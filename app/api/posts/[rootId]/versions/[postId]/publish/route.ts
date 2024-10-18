@@ -60,6 +60,8 @@ export async function PATCH(
       data: {
         status: ContentStatus.PUBLISHED,
         isLatest: true,
+        firstPublishedAt: post.version === 1 ? new Date() : undefined,
+        publishedAt: new Date(),
       },
       include: {
         seo: true,
