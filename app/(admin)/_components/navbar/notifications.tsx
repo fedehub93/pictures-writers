@@ -1,9 +1,10 @@
 "use client";
 
-import { Notification } from "@prisma/client";
+import axios from "axios";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { Bell, Loader2, Mail } from "lucide-react";
+import { Notification } from "@prisma/client";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -13,10 +14,11 @@ import {
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { useNotificationsQuery } from "../../_hooks/use-notifications-query";
-import axios from "axios";
+import { useRouter } from "next/navigation";
 
 export const Notifications = ({ userId }: { userId: string }) => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<string | null>();
+  const router = useRouter();
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     useNotificationsQuery(userId);
 
@@ -25,16 +27,17 @@ export const Notifications = ({ userId }: { userId: string }) => {
 
   const onNotificatonReadClick = async (id: string) => {
     try {
-      setIsLoading(true);
+      setIsLoading(id);
 
       await axios.patch(`/api/users/${userId}/notifications/${id}`, {
         isRead: true,
       });
       toast.success("Notification Read");
+      router.refresh();
     } catch {
       toast.error("Something went wrong");
     } finally {
-      setIsLoading(false);
+      setIsLoading(null);
     }
   };
 
@@ -82,8 +85,8 @@ export const Notifications = ({ userId }: { userId: string }) => {
                       size="icon"
                       onClick={() => onNotificatonReadClick(item.id)}
                     >
-                      {isLoading && (
-                        <Loader2 className="h-4 w-4 animate-pulse" />
+                      {isLoading && isLoading === item.id && (
+                        <Loader2 className="h-4 w-4 animate-spin" />
                       )}
                       {!isLoading && <Mail className="h-4 w-4" />}
                     </Button>
