@@ -1,8 +1,49 @@
 import * as sgMail from "@sendgrid/mail";
+import { endOfDay, startOfDay } from "date-fns";
 import handlebars from "handlebars";
 
 import { db } from "./db";
-import { endOfDay, startOfDay } from "date-fns";
+
+type SendgridEmail = {
+  to: string;
+  from: string;
+  subject: string;
+  type: string;
+  text?: string;
+  html?: string;
+};
+
+export const sendSendgridEmail = async ({
+  to,
+  from,
+  subject,
+  type,
+  text,
+  html,
+}: SendgridEmail) => {
+  const settings = await db.emailSetting.findFirst();
+
+  if (!settings || !settings.emailApiKey || !settings.emailSender) return false;
+
+  if (!html) return;
+
+  sgMail.setApiKey(settings.emailApiKey);
+  await sgMail.send({
+    to,
+    from,
+    subject,
+    html,
+  });
+
+  await db.emailSendLog.create({
+    data: {
+      to,
+      from,
+      subject,
+      type,
+    },
+  });
+};
 
 export const sendSubscriptionEmail = async (email: string, token: string) => {
   const settings = await db.emailSetting.findFirst();
@@ -25,6 +66,7 @@ export const sendSubscriptionEmail = async (email: string, token: string) => {
     from: settings.emailSender,
     subject: "Conferma sottoscrizione",
     html: template({ token, email }),
+    type: "subscription_email",
   });
 };
 
@@ -61,39 +103,10 @@ export const sendFreeEbookEmail = async (email: string, ebookId: string) => {
       description: ebook.description,
       imageCoverUrl: ebook.imageCoverUrl,
     }),
+    type: "free_ebook_email",
   });
 
   return true;
-};
-
-type SendgridEmail = {
-  to: string;
-  from: string;
-  subject: string;
-  text?: string;
-  html?: string;
-};
-
-export const sendSendgridEmail = async ({
-  to,
-  from,
-  subject,
-  text,
-  html,
-}: SendgridEmail) => {
-  const settings = await db.emailSetting.findFirst();
-
-  if (!settings || !settings.emailApiKey || !settings.emailSender) return false;
-
-  if (!html) return;
-
-  sgMail.setApiKey(settings.emailApiKey);
-  await sgMail.send({
-    to,
-    from,
-    subject,
-    html,
-  });
 };
 
 export const getEmailsSentToday = async () => {
@@ -101,7 +114,7 @@ export const getEmailsSentToday = async () => {
   const startOfToday = startOfDay(today);
   const endOfToday = endOfDay(today);
 
-  const emailsSentToday = await db.emailSingleSendLog.count({
+  const emailsSentToday = await db.emailSendLog.count({
     where: {
       createdAt: {
         gte: startOfToday,

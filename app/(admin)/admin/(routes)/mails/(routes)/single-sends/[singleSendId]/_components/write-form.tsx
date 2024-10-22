@@ -128,7 +128,7 @@ export const WriteForm = ({
         const { design, html } = data;
         form.setValue("designData", design);
         form.setValue("bodyHtml", html);
-        await axios.post(`/api/mails/send`, {
+        await axios.post(`/api/mails/single-sends/${singleSend.id}/send`, {
           singleSendId: singleSend.id,
           audiences: values.audiences,
           subject: values.subject,
@@ -180,7 +180,9 @@ export const WriteForm = ({
               todayEmailsAvailable <= 0 && "text-destructive"
             )}
           >
-            You have <span className="font-bold">{todayEmailsAvailable} emails</span> left to send today
+            You have{" "}
+            <span className="font-bold">{todayEmailsAvailable} emails</span>{" "}
+            left to send today
           </div>
           <div className="flex gap-x-2 itemscen">
             <ConfirmModal onConfirm={onDelete}>

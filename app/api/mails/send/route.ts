@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 
 import Handlebars from "handlebars";
-import { EmailAudience } from "@prisma/client";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
@@ -11,15 +10,11 @@ export async function POST(req: Request) {
   try {
     const user = await authAdmin();
     const {
-      singleSendId,
-      audiences,
-      subject,
-      bodyHtml,
+      emailRecipient,
+      emailTemplateId,
     }: {
-      singleSendId: string;
-      audiences: { label: string; value: string }[];
-      subject: string;
-      bodyHtml: string;
+      emailRecipient: string;
+      emailTemplateId: string;
     } = await req.json();
 
     if (!user) {
@@ -35,9 +30,6 @@ export async function POST(req: Request) {
       return new NextResponse("Missing API key", { status: 400 });
     }
 
-    if (!audiences || audiences.length === 0) {
-      return new NextResponse("Missing audiences", { status: 400 });
-    }
     if (!settings.emailSender) {
       return new NextResponse("Missing email sender", { status: 400 });
     }
@@ -46,52 +38,27 @@ export async function POST(req: Request) {
     const availableEmailsToSend =
       (settings?.maxEmailsPerDay || 0) - emailsSentToday;
 
-    // for (const audience of audiences) {
-    const contacts = await db.emailContact.findMany({
+    const emailTemplate = await db.emailTemplate.findUnique({
       where: {
-        audiences: {
-          // some: { id: audience.value },
-          some: {
-            id: {
-              in: audiences.map((a) => a.value),
-            },
-          },
-        },
-        emailSingleSendLogs: {
-          none: {
-            singleSendId,
-          },
-        },
-        isSubscriber: true,
+        id: emailTemplateId,
       },
-      take: availableEmailsToSend,
     });
 
-    for (const contact of contacts) {
-      const template = Handlebars.compile(bodyHtml);
-
-      const html = template({
-        id: contact.id,
-        firstName: contact.firstName,
-        lastName: contact.lastName,
-        email: contact.email,
-      });
-
-      await sendSendgridEmail({
-        to: contact.email,
-        from: settings.emailSender,
-        subject,
-        html,
-      });
-
-      await db.emailSingleSendLog.create({
-        data: {
-          contactId: contact.id,
-          singleSendId,
-        },
-      });
+    if (!emailTemplate) {
+      return new NextResponse("Email Template error", { status: 400 });
     }
-    // }
+
+    const template = Handlebars.compile(emailTemplate.bodyHtml);
+
+    const html = template({});
+
+    await sendSendgridEmail({
+      to: emailRecipient,
+      from: `${settings.emailSenderName} <${settings.emailSender}>`,
+      subject: "Email test",
+      html,
+      type: "free_email",
+    });
 
     return NextResponse.json({ status: "sent" });
   } catch (error) {

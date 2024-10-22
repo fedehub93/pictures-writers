@@ -27,6 +27,7 @@ interface EmailSettingsFormProps {
 }
 
 const formSchema = z.object({
+  emailSenderName: z.string(),
   emailSender: z
     .string()
     .min(1, {
@@ -57,6 +58,7 @@ export const EmailSettingsForm = ({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      emailSenderName: settings?.emailSenderName || "",
       emailSender: settings?.emailSender || "",
       emailResponse: settings?.emailResponse || "",
       emailProvider: settings?.emailProvider || EmailProvider.SENDGRID,
@@ -91,6 +93,23 @@ export const EmailSettingsForm = ({
           <div className="flex flex-wrap gap-4">
             <FormField
               control={form.control}
+              name="emailSenderName"
+              render={({ field }) => (
+                <FormItem className="min-w-40 flex-auto">
+                  <FormLabel>Default sender name</FormLabel>
+                  <FormControl>
+                    <Input
+                      disabled={isLoading || isSubmitting}
+                      placeholder="support@pictureswriters.com"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name="emailSender"
               render={({ field }) => (
                 <FormItem className="min-w-40 flex-auto">
@@ -106,24 +125,24 @@ export const EmailSettingsForm = ({
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="emailResponse"
-              render={({ field }) => (
-                <FormItem className="min-w-40 flex-auto">
-                  <FormLabel>Default response email</FormLabel>
-                  <FormControl>
-                    <Input
-                      disabled={isLoading || isSubmitting}
-                      placeholder="support@pictureswriters.com"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
           </div>
+          <FormField
+            control={form.control}
+            name="emailResponse"
+            render={({ field }) => (
+              <FormItem className="min-w-40 flex-auto">
+                <FormLabel>Default response email</FormLabel>
+                <FormControl>
+                  <Input
+                    disabled={isLoading || isSubmitting}
+                    placeholder="support@pictureswriters.com"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <div className="flex flex-wrap gap-4">
             <FormField
               name="emailProvider"

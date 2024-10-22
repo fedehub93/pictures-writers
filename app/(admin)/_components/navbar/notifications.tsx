@@ -5,6 +5,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { Bell, Loader2, Mail } from "lucide-react";
 import { Notification } from "@prisma/client";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +15,6 @@ import {
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { useNotificationsQuery } from "../../_hooks/use-notifications-query";
-import { useRouter } from "next/navigation";
 
 export const Notifications = ({ userId }: { userId: string }) => {
   const [isLoading, setIsLoading] = useState<string | null>();
@@ -33,11 +33,11 @@ export const Notifications = ({ userId }: { userId: string }) => {
         isRead: true,
       });
       toast.success("Notification Read");
-      router.refresh();
     } catch {
       toast.error("Something went wrong");
     } finally {
       setIsLoading(null);
+      router.refresh();
     }
   };
 
