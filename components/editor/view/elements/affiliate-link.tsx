@@ -30,7 +30,7 @@ export const AffiliateLink = createElementTransform(
     return (
       <Button
         key={key}
-        className="flex items-center justify-center mx-auto max-w-md button-base bg-green-600 hover:bg-green-600 my-4 font-bold"
+        className="flex items-center justify-center mx-auto button-base bg-green-600 hover:bg-green-600 my-4 font-bold"
       >
         <NextLink
           href={element.data.uri}
