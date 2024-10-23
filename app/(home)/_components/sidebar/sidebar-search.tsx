@@ -20,6 +20,8 @@ const SidebarSearch = () => {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     usePostsQuery(debouncedSearch);
 
+  console.log(data);
+
   return (
     <div className="w-full bg-white px-6 py-8 shadow-md">
       <label
@@ -51,7 +53,10 @@ const SidebarSearch = () => {
           ) : (
             <div className="flex flex-col items-center py-4 gap-y-4">
               {data?.pages?.map((group, i) => (
-                <div key={i}>
+                <div
+                  key={i}
+                  className="flex flex-col items-center py-4 gap-y-4"
+                >
                   {group.items.map(
                     (
                       item: Post & {
@@ -61,7 +66,7 @@ const SidebarSearch = () => {
                       }
                     ) => (
                       <Link
-                        href={item.slug}
+                        href={`/${item.slug}`}
                         key={item.title}
                         className="relative flex gap-x-4 gap-y-8 group"
                         prefetch={true}
