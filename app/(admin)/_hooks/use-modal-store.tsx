@@ -6,7 +6,8 @@ export type ModalType =
   | "selectAsset"
   | "selectUrl"
   | "editUser"
-  | "editLink";
+  | "editLink"
+  | "importAudienceContacts";
 
 interface ModalStore {
   type: ModalType | null;

@@ -25,14 +25,21 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PlusCircle } from "lucide-react";
+import { Import, PlusCircle } from "lucide-react";
+import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
+import { useProgressLoader } from "@/app/(admin)/_hooks/use-progress-loader-store";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 interface DataTableProps<TData, TValue> {
+  audienceId: string;
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
 export function DataTable<TData, TValue>({
+  audienceId,
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
@@ -40,6 +47,43 @@ export function DataTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
+  const { onOpen } = useModal();
+  const { onOpen: onOpenProgress, onClose: onCloseProgress } =
+    useProgressLoader();
+  const router = useRouter();
+
+  const importContacts = async (values: {
+    interactions: { label: string; value: string }[];
+  }) => {
+    try {
+      onOpenProgress({ label: "Importing contacts..." });
+      const response = await axios.patch(
+        `/api/mails/audiences/${audienceId}/import`,
+        {
+          interactions: values.interactions.map(
+            (interaction) => interaction.value
+          ),
+        }
+      );
+      toast.success("Contacts imported successfully!");
+      router.refresh();
+    } catch (error) {
+      toast.error("Failed to import contacts!");
+    } finally {
+      onCloseProgress();
+    }
+  };
+
+  const onHandleImport = () => {
+    onOpen("importAudienceContacts", importContacts, {
+      interactions: [
+        "user_subscribed",
+        "first_feedback_request",
+        "ebook_downloaded",
+        "contact_requested",
+      ],
+    });
+  };
 
   const table = useReactTable({
     data,
@@ -68,6 +112,10 @@ export function DataTable<TData, TValue>({
           className="max-w-sm"
         />
         <div className="flex items-center gap-x-4">
+          <Button variant="outline" onClick={onHandleImport}>
+            <Import className="h-4 w-4 mr-2" />
+            Import
+          </Button>
           <Link href="/admin/mails/contacts/create">
             <Button>
               <PlusCircle className="h-4 w-4 mr-2" />

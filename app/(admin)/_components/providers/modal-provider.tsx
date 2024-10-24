@@ -6,6 +6,7 @@ import { SelectAssetModal } from "../modals/select-asset-modal";
 import { SelectUrlModal } from "../modals/select-url-modal";
 import { EditLinkModal } from "../modals/edit-link-modal";
 import { EditMediaModal } from "../modals/edit-media-modal";
+import { ImportAudienceContacts } from "../modals/import-audience-contacts";
 
 export const ModalProvider = () => {
   const [isMounted, setIsMounted] = useState(false);
@@ -25,6 +26,7 @@ export const ModalProvider = () => {
       <SelectAssetModal />
       <SelectUrlModal />
       <EditLinkModal />
+      <ImportAudienceContacts />
     </>
   );
 };

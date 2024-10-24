@@ -21,9 +21,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import MultipleSelector from "@/components/multi-select";
-import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 import { cn } from "@/lib/utils";
+
+import MultipleSelector from "@/components/multi-select";
+
+import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
+import { useProgressLoader } from "@/app/(admin)/_hooks/use-progress-loader-store";
 
 interface WriteFormProps {
   singleSend: EmailSingleSend & {
@@ -66,6 +69,8 @@ export const WriteForm = ({
 }: WriteFormProps) => {
   const router = useRouter();
   const emailEditorRef = useRef<EditorRef>(null);
+
+  const { onOpen, onClose, setData } = useProgressLoader();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -125,19 +130,37 @@ export const WriteForm = ({
 
     emailEditorRef.current.editor.exportHtml(async (data) => {
       try {
+        onOpen({ label: "Loading", progress: 0 });
+
+        const urlApi = `/api/mails/single-sends/${singleSend.id}/send`;
+        const eventSource = new EventSource(urlApi);
+
         const { design, html } = data;
         form.setValue("designData", design);
         form.setValue("bodyHtml", html);
-        await axios.post(`/api/mails/single-sends/${singleSend.id}/send`, {
-          singleSendId: singleSend.id,
-          audiences: values.audiences,
-          subject: values.subject,
-          bodyHtml: html,
-        });
+
+        eventSource.onmessage = (event) => {
+          const { progress, done } = JSON.parse(event.data);
+          setData({ label: "Loading", progress });
+
+          // Controlla se è stato segnalato il completamento
+          if (done) {
+            onClose();
+            eventSource.close();
+          }
+        };
+
+        eventSource.onerror = (err) => {
+          console.error("Errore nell'evento SSE:", err);
+          onClose();
+          eventSource.close();
+        };
+
         toast.success("Single send updated");
       } catch {
         toast.error("Failed to update");
       } finally {
+        router.refresh();
       }
     });
   };
@@ -153,17 +176,6 @@ export const WriteForm = ({
     emailEditorRef.current = { editor };
     if (!emailEditorRef?.current?.editor) return;
     emailEditorRef.current.editor.loadDesign(form.getValues("designData"));
-  };
-
-  const loadTemplate = (id: string) => {
-    const selectedTemplate = templates.find((template) => template.id === id);
-    const data = selectedTemplate?.designData || null;
-    if (!emailEditorRef?.current?.editor) return;
-    if (!data) {
-      emailEditorRef.current.editor.loadBlank();
-    } else {
-      emailEditorRef.current.editor.loadDesign(data);
-    }
   };
 
   return (

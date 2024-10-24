@@ -16,6 +16,7 @@ import { QueryProvider } from "../../components/providers/query-provider";
 import { ModalProvider } from "./_components/providers/modal-provider";
 import { SheetProvider } from "./_components/providers/sheet-provider";
 import { getSettings } from "@/data/settings";
+import { ProgressLoader } from "./_components/progress-loader";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -65,6 +66,7 @@ export default async function RootLayout({
                 <Container user={user}>{children}</Container>
                 <ModalProvider />
                 <SheetProvider />
+                <ProgressLoader />
               </div>
             </QueryProvider>
           </ThemeProvider>

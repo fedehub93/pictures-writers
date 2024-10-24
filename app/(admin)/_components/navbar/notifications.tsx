@@ -19,8 +19,14 @@ import { useNotificationsQuery } from "../../_hooks/use-notifications-query";
 export const Notifications = ({ userId }: { userId: string }) => {
   const [isLoading, setIsLoading] = useState<string | null>();
   const router = useRouter();
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
-    useNotificationsQuery(userId);
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    status,
+    refetch,
+  } = useNotificationsQuery(userId);
 
   const totalNotifications: number =
     data?.pages?.[0].pagination?.totalRecords || 0;
@@ -37,7 +43,7 @@ export const Notifications = ({ userId }: { userId: string }) => {
       toast.error("Something went wrong");
     } finally {
       setIsLoading(null);
-      router.refresh();
+      refetch();
     }
   };
 

@@ -29,13 +29,17 @@ const AudienceIdContactsPage = async ({
           : undefined,
     },
     include: { interactions: true },
-    orderBy: { email: "asc" },
+    orderBy: { createdAt: "desc" },
   });
 
   return (
     <div className="h-full w-full flex flex-col gap-y-4 px-6 py-3">
       <ContentHeader label="Contacts" totalEntries={contacts.length} />
-      <DataTable columns={columns} data={contacts} />
+      <DataTable
+        audienceId={params.audienceId}
+        columns={columns}
+        data={contacts}
+      />
     </div>
   );
 };

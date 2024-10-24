@@ -1,12 +1,5 @@
 import { db } from "@/lib/db";
-import {
-  endOfDay,
-  endOfMonth,
-  startOfDay,
-  startOfMonth,
-  subMonths,
-} from "date-fns";
-import { DateRange } from "react-day-picker";
+import { endOfDay, startOfDay, subMonths } from "date-fns";
 
 export const getContactByEmail = async (email: string) => {
   try {

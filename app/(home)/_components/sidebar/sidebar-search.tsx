@@ -1,26 +1,25 @@
 "use client";
 
 import { Search } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 import { useDebounceValue } from "usehooks-ts";
 import { BeatLoader } from "react-spinners";
 import { Category, Media, Post, User } from "@prisma/client";
 import { formatDistance } from "date-fns";
 import { it } from "date-fns/locale";
-import Image from "next/image";
+
 import { usePostsQuery } from "@/hooks/use-posts-query";
 
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 
 const SidebarSearch = () => {
   const [debouncedSearch, setDebouncedSearch] = useDebounceValue("", 500);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     usePostsQuery(debouncedSearch);
-
-  console.log(data);
 
   return (
     <div className="w-full bg-white px-6 py-8 shadow-md">

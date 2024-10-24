@@ -1,5 +1,5 @@
 const AudienceIdPage = ({ params }: { params: { audienceId: string } }) => {
-  return <div>{params.audienceId}</div>;
+  return <div></div>;
 };
 
 export default AudienceIdPage;
