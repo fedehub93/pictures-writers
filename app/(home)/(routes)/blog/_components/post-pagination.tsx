@@ -55,25 +55,31 @@ export const PostPagination = ({
 
   const renderPaginationItems = () => {
     const pageNumbers = getPageNumbers();
-    return pageNumbers.map((pageNumber) => (
-      <PaginationItem key={pageNumber}>
-        <Button
-          role="button"
-          variant="ghost"
-          disabled={currentPage === pageNumber}
-          className={cn(
-            "hover:bg-violet-100 rounded-full",
-            currentPage === pageNumber && "bg-violet-100"
-          )}
-          asChild
-        >
-          <Link href={`/blog/${pageNumber}`} prefetch={true}>
-            {pageNumber}
-          </Link>
-        </Button>
-      </PaginationItem>
-    ));
+    return pageNumbers.map((pageNumber) => {
+      const href = pageNumber === 1 ? `/blog` : `/blog/${pageNumber}`;
+      return (
+        <PaginationItem key={pageNumber}>
+          <Button
+            role="button"
+            variant="ghost"
+            disabled={currentPage === pageNumber}
+            className={cn(
+              "hover:bg-violet-100 rounded-full",
+              currentPage === pageNumber && "bg-violet-100"
+            )}
+            asChild
+          >
+            <Link href={href} prefetch={true}>
+              {pageNumber}
+            </Link>
+          </Button>
+        </PaginationItem>
+      );
+    });
   };
+
+  const prevHref = currentPage === 2 ? `/blog` : `/blog/${currentPage - 1}`;
+  const nextHref = `/blog/${currentPage + 1}`;
 
   return (
     <Pagination>
@@ -87,7 +93,7 @@ export const PostPagination = ({
             className="hover:bg-violet-100 rounded-full"
             asChild
           >
-            <Link href={`/blog/${currentPage - 1}`} prefetch={true}>
+            <Link href={prevHref} prefetch={true}>
               <ChevronLeft />
             </Link>
           </Button>
@@ -112,7 +118,7 @@ export const PostPagination = ({
             className="hover:bg-violet-100 rounded-full"
             asChild
           >
-            <Link href={`/blog/${currentPage + 1}`} prefetch={true}>
+            <Link href={nextHref} prefetch={true}>
               <ChevronRight />
             </Link>
           </Button>
