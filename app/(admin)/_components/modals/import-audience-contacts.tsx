@@ -41,7 +41,7 @@ export const ImportAudienceContacts = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      interactions: data.interactions,
+      interactions: data?.interactions,
     },
   });
 
