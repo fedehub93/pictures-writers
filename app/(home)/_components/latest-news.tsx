@@ -57,7 +57,7 @@ const LatestNews = async () => {
                 ) : null}
                 <div className="mb-2 flex uppercase">
                   <span>
-                    {formatDistance(post.createdAt, new Date(), {
+                    {formatDistance(post.firstPublishedAt, new Date(), {
                       addSuffix: true,
                       locale: it,
                     })}
