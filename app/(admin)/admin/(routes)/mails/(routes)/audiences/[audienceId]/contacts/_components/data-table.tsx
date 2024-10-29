@@ -112,10 +112,12 @@ export function DataTable<TData, TValue>({
           className="max-w-sm"
         />
         <div className="flex items-center gap-x-4">
-          <Button variant="outline" onClick={onHandleImport}>
-            <Import className="h-4 w-4 mr-2" />
-            Import
-          </Button>
+          {audienceId.toUpperCase() !== "ALL" && (
+            <Button variant="outline" onClick={onHandleImport}>
+              <Import className="h-4 w-4 mr-2" />
+              Import
+            </Button>
+          )}
           <Link href="/admin/mails/contacts/create">
             <Button>
               <PlusCircle className="h-4 w-4 mr-2" />
