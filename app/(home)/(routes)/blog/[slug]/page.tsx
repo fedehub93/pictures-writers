@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+import { ContentStatus } from "@prisma/client";
+import { db } from "@/lib/db";
 import {
   getPublishedPosts,
   getPublishedPostsByCategoryRootId,
@@ -15,12 +17,10 @@ import {
   getCategoryMetadataBySlug,
   getTagMetdataBySlug,
 } from "@/app/(home)/_components/seo/content-metadata";
+import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
 
 import { PostListGrid } from "../_components/post-list-grid";
-import { db } from "@/lib/db";
-import { ContentStatus } from "@prisma/client";
 import { PostList } from "../_components/post-list";
-import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
 
 type Params = {
   slug: string;

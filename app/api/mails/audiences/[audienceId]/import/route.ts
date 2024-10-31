@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
-import { contact } from "@/actions/contact";
 
 export async function PATCH(
   req: Request,
@@ -23,6 +22,10 @@ export async function PATCH(
 
     const contacts = await db.emailContact.findMany({
       where: {
+        audiences: {
+          none: { id: audienceId },
+        },
+
         interactions: {
           some: {
             interactionType: { in: [...values.interactions] },
@@ -30,7 +33,6 @@ export async function PATCH(
         },
       },
     });
-
 
     for (const contact of contacts) {
       await db.emailContact.update({

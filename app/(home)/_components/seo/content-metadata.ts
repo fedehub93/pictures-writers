@@ -30,6 +30,7 @@ export async function getPostMetadataBySlug(
         follow: !post.seo.noFollow,
       },
     },
+    alternates: { canonical: post.seo.canonicalUrl },
     openGraph: {
       title: post.seo.ogTwitterTitle || post.seo.title,
       description: post.seo.ogTwitterDescription || post.seo.description || "",
@@ -83,6 +84,7 @@ export async function getCategoryMetadataBySlug(
         follow: !category.seo.noFollow,
       },
     },
+    alternates: { canonical: category.seo.canonicalUrl },
     openGraph: {
       title: category.seo.ogTwitterTitle || category.seo.title,
       description:
@@ -129,6 +131,7 @@ export async function getTagMetdataBySlug(
         follow: !tag.seo.noFollow,
       },
     },
+    alternates: { canonical: tag.seo.canonicalUrl },
     openGraph: {
       title: tag.seo.ogTwitterTitle || tag.seo.title,
       description: tag.seo.ogTwitterDescription || tag.seo.description || "",
