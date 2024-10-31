@@ -100,6 +100,7 @@ const Page = async ({ params }: { params: { slug: string } }) => {
       <BlogPostingJsonLd
         title={post.seo?.title}
         description={post.seo?.description || ""}
+        imageCover={post.imageCover}
         images={bodyImages}
         videos={bodyVideos}
         authorName={`${post.user?.firstName} ${post.user?.lastName}`}

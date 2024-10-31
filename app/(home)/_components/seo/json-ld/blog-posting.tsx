@@ -1,5 +1,6 @@
 /* eslint-disable react/require-default-props */
 import React, { FC } from "react";
+import { Media } from "@prisma/client";
 import { BlogPosting, WithContext } from "schema-dts";
 import { JsonLd } from "./json-ld";
 
@@ -8,6 +9,7 @@ export interface BlogPostingJsonLdProps {
   headline?: string | string[];
   title?: string;
   keywords?: string | string[];
+  imageCover: Media | null;
   images: string[];
   videos?: string[];
   datePublished: string;
@@ -23,6 +25,7 @@ export const BlogPostingJsonLd: FC<BlogPostingJsonLdProps> = ({
   url,
   headline,
   title,
+  imageCover,
   images = [],
   videos = undefined,
   datePublished,
@@ -34,15 +37,18 @@ export const BlogPostingJsonLd: FC<BlogPostingJsonLdProps> = ({
   body,
   keywords,
 }) => {
+  const trailingUrl = `${url}/`;
   const json: WithContext<BlogPosting> = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
+    "@id": `${trailingUrl}#blog-posting`,
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": url,
+      "@id": trailingUrl,
     },
     headline: title,
     description: description,
+    thumbnailUrl: imageCover ? imageCover.url : undefined,
     image: [...images],
     genre: "Cinema, Sceneggiatura",
     //@ts-ignore
@@ -60,6 +66,26 @@ export const BlogPostingJsonLd: FC<BlogPostingJsonLdProps> = ({
         "@type": "ImageObject",
         url: "https://pictureswriters.com/logo.png",
       },
+    },
+    isPartOf: {
+      "@type": "WebPage",
+      "@id": trailingUrl,
+      url: trailingUrl,
+      name: title,
+      thumbnailUrl: imageCover ? imageCover.url : undefined,
+      datePublished,
+      dateModified,
+      description,
+      inLanguage: "it-IT",
+      primaryImageOfPage: imageCover
+        ? {
+            "@type": "ImageObject",
+            "@id": `${trailingUrl}#primaryimage`,
+            inLanguage: "it-IT",
+            url: imageCover.url,
+            contentUrl: imageCover.url,
+          }
+        : undefined,
     },
     datePublished: datePublished,
     dateModified: dateModified,
