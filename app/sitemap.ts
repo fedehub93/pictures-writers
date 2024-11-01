@@ -72,17 +72,22 @@ const generateBlogTagsSitemap = async () => {
       status: ContentStatus.PUBLISHED,
       isLatest: true,
     },
+    include: {
+      seo: true,
+    },
     orderBy: {
       firstPublishedAt: "desc",
     },
   });
 
-  const mappedTags: MetadataRoute.Sitemap = tags.map((tag) => ({
-    url: `https://pictureswriters.com/blog/${tag.slug}/`,
-    lastModified: tag.publishedAt,
-    changeFrequency: "monthly",
-    priority: 1,
-  }));
+  const mappedTags: MetadataRoute.Sitemap = tags
+    .filter((tag) => !tag.seo?.canonicalUrl)
+    .map((tag) => ({
+      url: `https://pictureswriters.com/blog/${tag.slug}/`,
+      lastModified: tag.publishedAt,
+      changeFrequency: "monthly",
+      priority: 1,
+    }));
 
   return mappedTags;
 };
