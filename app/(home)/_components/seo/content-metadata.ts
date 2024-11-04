@@ -1,12 +1,17 @@
 import { Metadata } from "next";
 
 import { db } from "@/lib/db";
+import { ContentStatus } from "@prisma/client";
 
 export async function getPostMetadataBySlug(
   slug: string
 ): Promise<Metadata | null> {
   const post = await db.post.findFirst({
-    where: { slug, isLatest: true },
+    where: {
+      slug,
+      status: ContentStatus.PUBLISHED,
+      isLatest: true,
+    },
     include: {
       imageCover: true,
       seo: true,

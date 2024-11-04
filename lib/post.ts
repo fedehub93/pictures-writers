@@ -187,6 +187,7 @@ export const getPublishedPostBySlug = async (slug: string) => {
   const post = await db.post.findFirst({
     where: {
       slug,
+      status: ContentStatus.PUBLISHED,
       isLatest: true,
     },
     include: {
