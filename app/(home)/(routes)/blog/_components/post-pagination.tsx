@@ -80,6 +80,8 @@ export const PostPagination = ({
 
   const prevHref = currentPage === 2 ? `/blog` : `/blog/${currentPage - 1}`;
   const nextHref = `/blog/${currentPage + 1}`;
+  const canDisablePrev = currentPage <= 1;
+  const canDisableNext = currentPage >= totalPages;
 
   return (
     <Pagination>
@@ -89,13 +91,17 @@ export const PostPagination = ({
             role="button"
             variant="ghost"
             size="icon"
-            disabled={currentPage <= 1}
+            disabled={canDisablePrev}
             className="hover:bg-violet-100 rounded-full"
-            asChild
+            asChild={!canDisablePrev}
           >
-            <Link href={prevHref} prefetch={true}>
+            {canDisablePrev ? (
               <ChevronLeft />
-            </Link>
+            ) : (
+              <Link href={prevHref} prefetch={true}>
+                <ChevronLeft />
+              </Link>
+            )}
           </Button>
         </PaginationItem>
         {showLeftEllipsis && (
@@ -114,13 +120,17 @@ export const PostPagination = ({
             role="button"
             variant="ghost"
             size="icon"
-            disabled={currentPage >= totalPages}
+            disabled={canDisableNext}
             className="hover:bg-violet-100 rounded-full"
-            asChild
+            asChild={!canDisableNext}
           >
-            <Link href={nextHref} prefetch={true}>
+            {canDisableNext ? (
               <ChevronRight />
-            </Link>
+            ) : (
+              <Link href={nextHref} prefetch={true}>
+                <ChevronRight />
+              </Link>
+            )}
           </Button>
         </PaginationItem>
       </PaginationContent>

@@ -1,6 +1,7 @@
 import React, { forwardRef, useMemo } from "react";
 import { createEditor, BaseEditor, Descendant } from "slate";
 import { Slate, withReact, ReactEditor } from "slate-react";
+import { withHistory } from "slate-history";
 
 import Toolbar from "@/components/editor/toolbar";
 import EditorInput from "./editor-input";
@@ -93,7 +94,9 @@ export const isCustomText = (
 
 const createWrappedEditor = () =>
   withPasteHandler(
-    withEmbeds(withNormalization(withInline(withReact(createEditor()))))
+    withEmbeds(
+      withNormalization(withInline(withHistory(withReact(createEditor()))))
+    )
   );
 
 interface EditorComponent
