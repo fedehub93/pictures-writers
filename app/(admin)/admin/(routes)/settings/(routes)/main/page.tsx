@@ -20,10 +20,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-
-interface GlobalSettingsFormProps {
-  settings: Settings | null;
-}
+import { useSettings } from "../../_components/providers/settings-provider";
+import { Separator } from "@/components/ui/separator";
 
 const formSchema = z.object({
   siteName: z.string().min(1, {
@@ -39,9 +37,10 @@ const formSchema = z.object({
   deployWebhookUrl: z.string().optional(),
 });
 
-export const GlobalSettingsForm = ({ settings }: GlobalSettingsFormProps) => {
+const MainSettingsPage = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const { settings } = useSettings();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -72,12 +71,16 @@ export const GlobalSettingsForm = ({ settings }: GlobalSettingsFormProps) => {
     }
   };
   return (
-    <div className="bg-slate-100 dark:bg-background p-4 w-full rounded-md">
-      <h2 className="text-base text-muted-foreground">
-        Configure your Settings
-      </h2>
+    <div className="p-4 w-full rounded-md flex flex-col gap-y-8">
+      <div className="flex flex-col flex-1">
+        <h3 className="text-lg font-bold space-y-0.5">General</h3>
+        <p className="text-muted-foreground text-sm">
+          Update your general settings. Set your site name and url.
+        </p>
+      </div>
+      <Separator />
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 mt-8">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <FormField
             control={form.control}
             name="siteName"
@@ -159,3 +162,5 @@ export const GlobalSettingsForm = ({ settings }: GlobalSettingsFormProps) => {
     </div>
   );
 };
+
+export default MainSettingsPage;

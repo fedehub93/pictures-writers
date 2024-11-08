@@ -146,17 +146,17 @@ export const sideLinks: SideLink[] = [
     label: "SEPARATOR_2",
     href: "#",
   },
-  {
-    title: "SEO",
-    label: "",
-    href: "/admin/seo",
-    icon: ChartLine,
-  },
-  {
-    title: "SEPARATOR_3",
-    label: "SEPARATOR_3",
-    href: "#",
-  },
+  // {
+  //   title: "SEO",
+  //   label: "",
+  //   href: "/admin/seo",
+  //   icon: ChartLine,
+  // },
+  // {
+  //   title: "SEPARATOR_3",
+  //   label: "SEPARATOR_3",
+  //   href: "#",
+  // },
   {
     title: "Settings",
     label: "",

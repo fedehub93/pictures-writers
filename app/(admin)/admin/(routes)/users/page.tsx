@@ -25,7 +25,7 @@ const UsersPage = async () => {
     <div className="h-full w-full flex flex-col gap-y-4 px-6 py-3">
       <ContentHeader label="Users" totalEntries={users.length} />
       <DataTable columns={columns} data={users} />
-      <EditUserModal />
+      {/* <EditUserModal /> */}
     </div>
   );
 };

@@ -1,8 +1,7 @@
-import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { LucideIcon } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/store/use-sidebar";
 import { cn } from "@/lib/utils";
 
