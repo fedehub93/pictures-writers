@@ -26,7 +26,10 @@ interface GlobalSettingsFormProps {
 }
 
 const formSchema = z.object({
-  siteName: z
+  siteName: z.string().min(1, {
+    message: "Sitename is required",
+  }),
+  siteUrl: z
     .string()
     .min(1, {
       message: "Sitename is required",
@@ -44,6 +47,7 @@ export const GlobalSettingsForm = ({ settings }: GlobalSettingsFormProps) => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       siteName: settings?.siteName || "",
+      siteUrl: settings?.siteUrl || "",
       logoUrl: settings?.logoUrl || "",
       deployWebhookUrl: settings?.deployWebhookUrl || "",
     },
@@ -84,6 +88,23 @@ export const GlobalSettingsForm = ({ settings }: GlobalSettingsFormProps) => {
                   <Input
                     disabled={isLoading || isSubmitting}
                     placeholder="Pictures Writers"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="siteUrl"
+            render={({ field }) => (
+              <FormItem className="min-w-40 flex-auto">
+                <FormLabel>Site URL</FormLabel>
+                <FormControl>
+                  <Input
+                    disabled={isLoading || isSubmitting}
+                    placeholder="pictureswriters.com"
                     {...field}
                   />
                 </FormControl>

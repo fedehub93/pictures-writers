@@ -19,6 +19,7 @@ model Settings {
   id String @id @default(uuid())
 
   siteName         String?
+  siteUrl          String?
   deployWebhookUrl String?
 
   logoUrl String?
@@ -357,8 +358,8 @@ model EmailSendLog {
   to      String
   from    String
   subject String?
-  
-  type    String
+
+  type String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
