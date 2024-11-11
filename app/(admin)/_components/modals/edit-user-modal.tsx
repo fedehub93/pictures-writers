@@ -42,7 +42,7 @@ export const EditUserModal = () => {
   const router = useRouter();
 
   const isModalOpen = isOpen && type === "editUser";
-  const { user } = data;
+  const user = data?.user || null;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
