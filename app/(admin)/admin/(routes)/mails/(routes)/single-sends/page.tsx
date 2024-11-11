@@ -14,18 +14,28 @@ const EmailSingleSends = async () => {
   }
 
   const singleSends = await db.emailSingleSend.findMany({
+    include: {
+      _count: {
+        select: { emailSingleSendLogs: true },
+      },
+    },
     orderBy: {
       createdAt: "desc",
     },
   });
 
+  const mappedsingleSends = singleSends.map((list) => ({
+    ...list,
+    totalSends: list._count.emailSingleSendLogs,
+  }));
+
   return (
     <div className="h-full w-full flex flex-col gap-y-4 px-6 py-3">
       <ContentHeader
         label="Email Single Sends"
-        totalEntries={singleSends.length}
+        totalEntries={mappedsingleSends.length}
       />
-      <DataTable columns={columns} data={singleSends} />
+      <DataTable columns={columns} data={mappedsingleSends} />
     </div>
   );
 };
