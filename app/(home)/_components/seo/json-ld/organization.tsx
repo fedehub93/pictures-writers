@@ -23,7 +23,7 @@ export const OrganizationJsonLd: FC<OrganizationJsonLdProps> = ({
     },
     name,
     url,
-    logo: "https://pictureswriters.com/logo.png",
+    logo,
     founder: {
       "@type": "Person",
       name: "Federico verrengia",
