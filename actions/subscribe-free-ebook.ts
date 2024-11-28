@@ -17,14 +17,14 @@ export const subscribeFreeEbook = async (
     //   return { error: "Invalid fields!" };
     // }
 
-    const { email, ebookId } = validatedFields;
+    const { email, rootId, format } = validatedFields;
 
     const existingContact = await createContactByEmail(
       email,
       "ebook_downloaded"
     );
 
-    const isEmailSent = await sendFreeEbookEmail(email, ebookId!);
+    const isEmailSent = await sendFreeEbookEmail(email, rootId!, format);
     //  Send notification to admins
     await handleEbookDownloaded();
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { ContentStatus, Media, Post } from "@prisma/client";
+import { ContentStatus, Media, Post, User } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
@@ -17,11 +17,32 @@ import { Badge } from "@/components/ui/badge";
 
 import { cn } from "@/lib/utils";
 
-type PostWithImageCover = Post & {
+type PostWithImageCoverAndUser = Post & {
   imageCover: Media | null;
+  user: User | null;
 };
 
-export const columns: ColumnDef<PostWithImageCover>[] = [
+export const columns: ColumnDef<PostWithImageCoverAndUser>[] = [
+  {
+    accessorKey: "imageCover",
+    header: () => {
+      return <span>Image</span>;
+    },
+    cell: ({ row }) => {
+      const imageCover = (row.getValue("imageCover") || null) as Media | null;
+      if (!imageCover) return null;
+      return (
+        <div className="relative max-w-60 aspect-video">
+          <Image
+            src={imageCover.url}
+            alt={imageCover.altText || ""}
+            fill
+            className="rounded-md object-cover"
+          />
+        </div>
+      );
+    },
+  },
   {
     accessorKey: "title",
     header: ({ column }) => {
@@ -37,43 +58,55 @@ export const columns: ColumnDef<PostWithImageCover>[] = [
     },
   },
   {
-    accessorKey: "description",
+    accessorKey: "user",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Description
+          Author
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
     cell: ({ row }) => {
-      const description = (row.getValue("description") || "") as String;
-      return <div className="line-clamp-2">{description}</div>;
-    },
-  },
-  {
-    accessorKey: "imageCover",
-    header: () => {
-      return <span>Image</span>;
-    },
-    cell: ({ row }) => {
-      const imageCover = (row.getValue("imageCover") || null) as Media | null;
-      if (!imageCover) return null;
+      const user = (row.getValue("user") || null) as User | null;
+      if (!user) return null;
       return (
-        <div className="relative w-20 aspect-video">
+        <div className="flex items-center gap-x-4">
           <Image
-            src={imageCover.url}
-            alt={imageCover.altText || ""}
-            fill
-            className="rounded-md object-cover"
+            src={user.imageUrl!}
+            width={40}
+            height={40}
+            className="rounded-full w-10 h-10 object-cover"
+            alt={`Foto profilo ${user.email}`}
           />
+          <div className="line-clamp-2">
+            {user.firstName} {user.lastName}
+          </div>
         </div>
       );
     },
   },
+  // {
+  //   accessorKey: "description",
+  //   header: ({ column }) => {
+  //     return (
+  //       <Button
+  //         variant="ghost"
+  //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+  //       >
+  //         Description
+  //         <ArrowUpDown className="ml-2 h-4 w-4" />
+  //       </Button>
+  //     );
+  //   },
+  //   cell: ({ row }) => {
+  //     const description = (row.getValue("description") || "") as String;
+  //     return <div className="line-clamp-2">{description}</div>;
+  //   },
+  // },
   {
     accessorKey: "status",
     header: ({ column }) => {

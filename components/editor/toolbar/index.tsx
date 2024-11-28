@@ -21,13 +21,6 @@ import { useSlate } from "slate-react";
 
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
-import { CustomEditorHelper } from "@/components/editor/utils/custom-editor";
-
-import MarkButton from "./mark-button";
-import BlockButton from "./block-button";
-import { SelectHeading } from "./select-heading";
-import LinkButton from "./link-button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,11 +28,26 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
+import { CustomEditorHelper } from "@/components/editor/utils/custom-editor";
+
+import MarkButton from "./mark-button";
+import BlockButton from "./block-button";
+import { SelectHeading } from "./select-heading";
+import LinkButton from "./link-button";
+import { cn } from "@/lib/utils";
+
 interface ToolbarProps {
   showEmbedButton?: boolean;
+  sticky?: boolean;
+  padding?: "none" | "xs" | "lg";
 }
 
-const Toolbar = ({ showEmbedButton = true }: ToolbarProps) => {
+const Toolbar = ({
+  showEmbedButton = true,
+  sticky = false,
+  padding = "lg",
+}: ToolbarProps) => {
   const { onOpen } = useModal();
   const editor = useSlate();
 
@@ -66,7 +74,14 @@ const Toolbar = ({ showEmbedButton = true }: ToolbarProps) => {
   };
 
   return (
-    <div className="border rounded-t-md p-4 bg-slate-100 dark:bg-secondary sticky top-0 z-10">
+    <div
+      className={cn(
+        "border rounded-t-md bg-slate-100 dark:bg-secondary top-0 z-10",
+        padding === "xs" && "p-1",
+        padding === "lg" && "p-4",
+        sticky && "sticky"
+      )}
+    >
       <div className="flex flex-wrap gap-x-1">
         <SelectHeading />
         <Separator orientation="vertical" className="bg-slate-300" />

@@ -29,6 +29,7 @@ import { getPlaceholderImage } from "@/lib/image";
 import TagsWidget from "./tags-widget";
 import NewsletterWidget from "./newsletter-widget";
 import AuthorWidget from "./author-widget";
+import CustomSlateView from "@/components/editor/view";
 
 interface PostTemplateProps {
   post: PostWithImageCoverWithCategoryWithTagsWithSeo;
@@ -67,28 +68,7 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
           </div>
 
           <div className="post">
-            <SlateView
-              nodes={post.bodyData!}
-              transforms={{
-                elements: [
-                  Paragraph,
-                  HeadingOne,
-                  HeadingTwo,
-                  HeadingThree,
-                  HeadingFour,
-                  Link,
-                  AffiliateLink,
-                  Blockquote,
-                  BulletedList,
-                  ListItem,
-                  ImageElement,
-                  VideoElement,
-                  NumberedList,
-                  SponsorFirstImpression,
-                ],
-                leaves: [RichText],
-              }}
-            />
+            <CustomSlateView nodes={post.bodyData} />
           </div>
         </article>
         <TagsWidget tags={post.tags!} />

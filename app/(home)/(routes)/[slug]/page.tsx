@@ -12,6 +12,7 @@ import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
 import { FreeEbookModal } from "@/app/(home)/_components/free-ebook-modal";
 import { PostTemplate } from "@/app/(home)/(routes)/[slug]/_components/post-template";
 import { PostList } from "../blog/_components/post-list";
+import { getSettings } from "@/data/settings";
 
 type Params = {
   slug: string;
@@ -54,6 +55,8 @@ export async function generateMetadata({
 }
 
 const Page = async ({ params }: { params: { slug: string } }) => {
+  const { siteUrl } = await getSettings();
+
   if (params.slug === "blog") {
     const { posts, totalPages, currentPage } = await getPublishedPosts({
       page: 1,
@@ -106,10 +109,10 @@ const Page = async ({ params }: { params: { slug: string } }) => {
         authorName={`${post.user?.firstName} ${post.user?.lastName}`}
         datePublished={post.firstPublishedAt.toISOString()}
         dateModified={post.publishedAt.toISOString()}
-        url={`https://pictureswriters.com/${post.slug}`}
+        url={`${siteUrl}/${post.slug}`}
       />
       <PostTemplate post={post} />
-      <FreeEbookModal />
+      {/* <FreeEbookModal /> */}
     </section>
   );
 };

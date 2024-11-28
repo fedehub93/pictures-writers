@@ -4,6 +4,7 @@ import { CustomElement } from "./components/editor";
 declare global {
   namespace PrismaJson {
     type BodyData = CustomElement[];
+    type ProductMetadata = EbookMetadata | null | undefined;
   }
 }
 
@@ -60,3 +61,27 @@ export interface BaseSeoProps {
   openGraph?: OpenGraph;
   twitterUsername?: string;
 }
+
+/**
+ * Ebook types
+ */
+
+export enum EbookType {
+  PDF = "pdf",
+  EPUB = "epub",
+  MOBI = "mobi",
+}
+
+export type EbookFormat = {
+  type: EbookType;
+  url: string;
+  size: number;
+  pages: number;
+};
+
+export type EbookMetadata = {
+  formats: EbookFormat[];
+  edition: string;
+  publishedAt?: Date | null;
+  authorId: string;
+};

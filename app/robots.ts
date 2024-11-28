@@ -19,6 +19,6 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
         "/cos-e-il-linguaggio-cinematografico-scrivere-per-il cinema",
       ],
     },
-    sitemap: ["https://pictureswriters.com/sitemap.xml"],
+    sitemap: [`${siteUrl}/sitemap.xml`],
   };
 }

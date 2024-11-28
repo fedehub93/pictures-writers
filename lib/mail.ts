@@ -3,6 +3,8 @@ import { endOfDay, startOfDay } from "date-fns";
 import handlebars from "handlebars";
 
 import { db } from "./db";
+import { ContentStatus, ProductCategory } from "@prisma/client";
+import { isEbookMetadata } from "./ebook";
 
 type SendgridEmail = {
   to: string;
@@ -70,17 +72,29 @@ export const sendSubscriptionEmail = async (email: string, token: string) => {
   });
 };
 
-export const sendFreeEbookEmail = async (email: string, ebookId: string) => {
+export const sendFreeEbookEmail = async (
+  email: string,
+  ebookId: string,
+  format: string
+) => {
   const settings = await db.emailSetting.findFirst();
 
   if (!settings || !settings.emailSender || !settings.freeEbookTemplateId)
     return false;
 
-  const ebook = await db.ebook.findUnique({
-    where: { id: ebookId },
+  const ebook = await db.product.findFirst({
+    where: {
+      rootId: ebookId,
+      category: ProductCategory.EBOOK,
+      status: ContentStatus.PUBLISHED,
+      isLatest: true,
+    },
+    include: {
+      imageCover: true,
+    },
   });
 
-  if (!ebook) return false;
+  if (!ebook || !isEbookMetadata(ebook.metadata)) return false;
 
   const freeEbookTemplate = await db.emailTemplate.findUnique({
     where: {
@@ -101,7 +115,8 @@ export const sendFreeEbookEmail = async (email: string, ebookId: string) => {
       id: ebook.id,
       title: ebook.title,
       description: ebook.description,
-      imageCoverUrl: ebook.imageCoverUrl,
+      format,
+      imageCoverUrl: ebook.imageCover?.url,
     }),
     type: "free_ebook_email",
   });

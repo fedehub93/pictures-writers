@@ -12,13 +12,13 @@ export const Navbar = async () => {
         Pictures Writers
       </div>
       <div className="h-[80px] inset-y-0 w-full z-50 p-4  flex items-center shadow-sm bg-white">
-        <div className="w-full mx-auto flex justify-between md:max-w-screen-md lg:max-w-6xl">
-          <div className="flex items-center gap-x-2">
+        <div className="w-full mx-auto flex justify-between md:max-w-6xl">
+          <Link href="/" className="flex items-center gap-x-2">
             <Logo />
-            <span className="text-xl uppercase font-bold hidden sm:block">
+            <span className="text-lg uppercase font-bold hidden sm:block mt-1">
               Pictures Writers
             </span>
-          </div>
+          </Link>
           <div className="hidden md:flex items-center">
             <Nav />
           </div>

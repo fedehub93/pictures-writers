@@ -12,9 +12,12 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { getLocalStorage, setLocalStorage } from "@/lib/storage-helper";
@@ -26,13 +29,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+
 import { FreeEbookSchemaValibot } from "@/schemas";
 import { subscribeFreeEbook } from "@/actions/subscribe-free-ebook";
-import {
-  DialogClose,
-  DialogDescription,
-  DialogTitle,
-} from "@radix-ui/react-dialog";
+import { EbookType } from "@/types";
 
 const FREE_EBOOK_MODAL_KEY = "freeEbookModalShown";
 
@@ -49,7 +49,9 @@ export const FreeEbookModal = () => {
     resolver: valibotResolver(FreeEbookSchemaValibot),
     defaultValues: {
       email: "",
-      ebookId: "e5ec60b7-bffd-412b-8383-72fcf74a5516",
+      // ebookId: "e5ec60b7-bffd-412b-8383-72fcf74a5516",
+      rootId: "ccb34a74-8738-4fe3-8a47-e3659ca15c91",
+      format: EbookType.PDF,
     },
   });
 
@@ -79,7 +81,9 @@ export const FreeEbookModal = () => {
     setLocalStorage(FREE_EBOOK_MODAL_KEY, now.toString());
   };
 
-  const onHandleSubmit = async (values: v.InferInput<typeof FreeEbookSchemaValibot>) => {
+  const onHandleSubmit = async (
+    values: v.InferInput<typeof FreeEbookSchemaValibot>
+  ) => {
     try {
       setError("");
       setSuccess("");

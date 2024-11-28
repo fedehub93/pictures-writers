@@ -26,6 +26,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -36,6 +37,7 @@ export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
+  const { onOpen } = useModal();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -56,6 +58,10 @@ export function DataTable<TData, TValue>({
     },
   });
 
+  const onHandleCreateUser = () => {
+    onOpen("createUser");
+  };
+
   return (
     <div>
       <div className="flex items-center py-4 justify-between">
@@ -67,12 +73,10 @@ export function DataTable<TData, TValue>({
           }
           className="max-w-sm"
         />
-        <Link href="/admin/users/create">
-          <Button>
-            <PlusCircle className="h-4 w-4 mr-2" />
-            New user
-          </Button>
-        </Link>
+        <Button role="button" onClick={onHandleCreateUser}>
+          <PlusCircle className="h-4 w-4 mr-2" />
+          New user
+        </Button>
       </div>
       <div className="rounded-md border">
         <Table>

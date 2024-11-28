@@ -241,12 +241,6 @@ export const createNewVersionPost = async (rootId: string, values: any) => {
     return { message: "Post not found", status: 404, post: null };
   }
 
-  // Aggiorna la vecchia versione
-  // await db.post.updateMany({
-  //   where: { rootId: rootId },
-  //   data: { isLatest: false },
-  // });
-
   // Creo nuova versione
   const post = await db.post.create({
     data: {

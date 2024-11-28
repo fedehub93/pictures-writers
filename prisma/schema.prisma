@@ -52,6 +52,7 @@ model User {
   posts         Post[]
   ebooks        Ebook[]
   notifications Notification[]
+  products      Product[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -76,7 +77,9 @@ model Media {
 
   post       Post[]
   seo        Seo[]
+  product    Product[]
   impression Impression?
+  products   ProductGallery[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -121,6 +124,8 @@ model Seo {
   tags Tag[]
 
   ebooks Ebook[]
+
+  products Product[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -283,8 +288,9 @@ model EmailAudience {
 
   contacts EmailContact[]
 
-  emailSingleSend   EmailSingleSend? @relation(fields: [emailSingleSendId], references: [id])
-  emailSingleSendId String?
+  // emailSingleSend   EmailSingleSend? @relation(fields: [emailSingleSendId], references: [id])
+  // emailSingleSendId String?
+  emailSingleSends EmailSingleSend[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -380,10 +386,87 @@ model EmailSingleSendLog {
   @@unique([contactId, singleSendId])
 }
 
+enum ProductCategory {
+  EBOOK
+  SERVICE
+  AFFILIATE
+}
+
+model Product {
+  id    String @id @default(uuid())
+  title String
+  slug  String
+
+  /// [BodyData]
+  description Json @db.JsonB
+
+  category ProductCategory
+
+  version Int
+
+  status ContentStatus @default(DRAFT)
+
+  isLatest Boolean @default(true)
+
+  imageCover   Media?  @relation(fields: [imageCoverId], references: [id])
+  imageCoverId String?
+
+  price           Float?
+  discountedPrice Float?
+  isFree          Boolean @default(false)
+
+  /// [ProductMetadata]
+  metadata Json?          @db.JsonB
+  extras   ProductExtra[]
+
+  rootId       String?
+  root         Product?  @relation("RootChildren", fields: [rootId], references: [id])
+  rootChildren Product[] @relation("RootChildren")
+
+  gallery ProductGallery[]
+
+  seo   Seo?    @relation(fields: [seoId], references: [id])
+  seoId String?
+
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProductGallery {
+  id   String @id @default(cuid())
+  sort Int // Campo per l'ordinamento
+
+  // Relazioni
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  mediaId String
+  media   Media  @relation(fields: [mediaId], references: [id])
+
+  @@unique([productId, mediaId])
+}
+
+model ProductExtra {
+  id String @id @default(uuid())
+
+  name        String
+  description String?
+  price       Float
+  productId   String
+  product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Ebook {
   id String @id @default(uuid())
 
   title       String
+  slug        String?
   description String?
 
   version Int
@@ -405,8 +488,9 @@ model Ebook {
   user   User?   @relation(fields: [userId], references: [id])
   userId String?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  firstPublishedAt DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 model ContactForm {

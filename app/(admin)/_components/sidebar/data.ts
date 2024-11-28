@@ -4,6 +4,7 @@ import {
   BookImage,
   BookText,
   BookUp,
+  Box,
   Boxes,
   ChartLine,
   ClipboardPen,
@@ -145,6 +146,12 @@ export const sideLinks: SideLink[] = [
     title: "SEPARATOR_2",
     label: "SEPARATOR_2",
     href: "#",
+  },
+  {
+    title: "Products",
+    label: "",
+    href: "/admin/products",
+    icon: Box,
   },
   // {
   //   title: "SEO",

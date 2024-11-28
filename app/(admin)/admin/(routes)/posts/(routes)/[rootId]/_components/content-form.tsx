@@ -127,7 +127,7 @@ export const ContentForm = ({ initialData, rootId, postId }: BodyFormProps) => {
                     onChange={onChangeBody}
                     onValueChange={onValueChangeBody}
                   >
-                    <Editor.Toolbar />
+                    <Editor.Toolbar sticky />
                     <Editor.Input onHandleIsFocused={onHandleIsFocused} />
                     <Editor.Counter value={field.value} />
                   </Editor>

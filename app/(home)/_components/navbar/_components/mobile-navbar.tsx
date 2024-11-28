@@ -26,7 +26,7 @@ export const MobileNavbar = () => {
         <Button
           variant="ghost"
           size="icon"
-          className="shrink-0 sm:hidden"
+          className="shrink-0 md:hidden"
           onClick={() => setIsOpen(true)}
           aria-label="Toggle menu"
         >

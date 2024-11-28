@@ -30,7 +30,6 @@ const ContactsPage = async () => {
     name: "All contacts",
     description: "All contacts",
     type: AudienceType.GLOBAL,
-    emailSingleSendId: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     _count: {

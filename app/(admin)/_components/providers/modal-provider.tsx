@@ -8,6 +8,7 @@ import { EditLinkModal } from "../modals/edit-link-modal";
 import { EditMediaModal } from "../modals/edit-media-modal";
 import { ImportAudienceContacts } from "../modals/import-audience-contacts";
 import { EditUserModal } from "../modals/edit-user-modal";
+import { CreateUserModal } from "../modals/create-user-modal";
 
 export const ModalProvider = () => {
   const [isMounted, setIsMounted] = useState(false);
@@ -23,6 +24,7 @@ export const ModalProvider = () => {
   return (
     <>
       <CreateMediaModal />
+      <CreateUserModal />
       <EditMediaModal />
       <EditUserModal />
       <SelectAssetModal />

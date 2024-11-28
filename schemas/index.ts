@@ -1,34 +1,5 @@
-// import * as z from "zod";
+import { EbookType } from "@/types";
 import * as v from "valibot";
-
-// export const SubscribeSchema = z.object({
-//   email: z.string().email({
-//     message: "Email is required",
-//   }),
-// });
-
-// export const FreeEbookSchema = z.object({
-//   email: z.string().email({
-//     message: "Email is required",
-//   }),
-//   ebookId: z.string().optional(),
-// });
-
-// export const ContactSchema = z.object({
-//   name: z.string().min(1, {
-//     message: "Name is required",
-//   }),
-//   email: z
-//     .string()
-//     .min(1, {
-//       message: "Name is required",
-//     })
-//     .email("Email is invalid"),
-//   subject: z.string().min(1, {
-//     message: "Subject is required",
-//   }),
-//   message: z.string().min(1, { message: "Message is required" }),
-// });
 
 export const SubscribeSchemaValibot = v.object({
   email: v.pipe(
@@ -44,7 +15,8 @@ export const FreeEbookSchemaValibot = v.object({
     v.nonEmpty("Please enter your email."),
     v.email("The email address is badly formatted.")
   ),
-  ebookId: v.string(),
+  rootId: v.string(),
+  format: v.enum(EbookType),
 });
 
 export const ContactSchemaValibot = v.object({

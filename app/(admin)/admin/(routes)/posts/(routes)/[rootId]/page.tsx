@@ -1,5 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
-import { ContentStatus } from "@prisma/client";
+import { ContentStatus, UserRole } from "@prisma/client";
 import { redirect } from "next/navigation";
 
 import { db } from "@/lib/db";
@@ -23,6 +23,7 @@ import { StatusView } from "@/app/(admin)/_components/content/status-view";
 
 import { ContentIdActions } from "@/app/(admin)/_components/content/content-id-actions";
 import { PostPreview } from "./_components/post-preview";
+import { AuthorForm } from "./_components/author-form";
 
 const PostIdPage = async ({ params }: { params: { rootId: string } }) => {
   const userAdmin = await authAdmin();
@@ -58,6 +59,14 @@ const PostIdPage = async ({ params }: { params: { rootId: string } }) => {
   const tags = await db.tag.findMany({
     distinct: ["rootId"],
     orderBy: [{ createdAt: "desc" }, { title: "asc" }],
+  });
+
+  const authors = await db.user.findMany({
+    where: {
+      role: {
+        in: [UserRole.ADMIN, UserRole.EDITOR],
+      },
+    },
   });
 
   const requiredFields = [
@@ -163,7 +172,7 @@ const PostIdPage = async ({ params }: { params: { rootId: string } }) => {
             </TabsContent>
           </Tabs>
         </div>
-        <div className="col-span-full md:col-span-2 lg:col-span-3">
+        <div className="col-span-full md:col-span-2 lg:col-span-3 space-y-4">
           <StatusView
             disabled={!isComplete}
             contentType={SeoContentTypeApi.Post}
@@ -171,6 +180,12 @@ const PostIdPage = async ({ params }: { params: { rootId: string } }) => {
             contentId={post.id}
             status={post.status}
             lastSavedAt={post.updatedAt}
+          />
+          <AuthorForm
+            initialData={post}
+            rootId={post.rootId}
+            postId={post.id}
+            authors={authors}
           />
         </div>
       </div>

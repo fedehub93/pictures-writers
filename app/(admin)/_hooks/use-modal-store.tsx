@@ -5,6 +5,7 @@ export type ModalType =
   | "editMediaAsset"
   | "selectAsset"
   | "selectUrl"
+  | "createUser"
   | "editUser"
   | "editLink"
   | "importAudienceContacts";

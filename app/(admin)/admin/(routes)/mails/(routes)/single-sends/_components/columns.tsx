@@ -12,8 +12,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { EmailSingleSendCustom } from "../page";
 
-export const columns: ColumnDef<EmailSingleSend & { totalSends: number }>[] = [
+export const columns: ColumnDef<EmailSingleSendCustom>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => {
@@ -41,6 +42,10 @@ export const columns: ColumnDef<EmailSingleSend & { totalSends: number }>[] = [
         </Button>
       );
     },
+  },
+  {
+    accessorKey: "totalContacts",
+    header: "Total Contacts",
   },
   {
     accessorKey: "totalSends",

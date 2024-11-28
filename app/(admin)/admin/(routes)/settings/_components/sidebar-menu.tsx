@@ -21,7 +21,6 @@ const routes = [
 
 export const SidebarMenu = () => {
   const pathname = usePathname();
-  console.log(pathname);
 
   return (
     <aside className="lg:w-1/5">

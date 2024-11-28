@@ -7,6 +7,7 @@ import Image from "next/image";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { BeatLoader } from "react-spinners";
+import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +22,8 @@ import { Input } from "@/components/ui/input";
 import { FreeEbookSchemaValibot } from "@/schemas";
 import { subscribeFreeEbook } from "@/actions/subscribe-free-ebook";
 
+import { EbookType } from "@/types";
+
 export const HeroSection = (): JSX.Element => {
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
@@ -31,7 +34,9 @@ export const HeroSection = (): JSX.Element => {
     resolver: valibotResolver(FreeEbookSchemaValibot),
     defaultValues: {
       email: "",
-      ebookId: "e5ec60b7-bffd-412b-8383-72fcf74a5516",
+      // ebookId: "e5ec60b7-bffd-412b-8383-72fcf74a5516",
+      rootId: "ccb34a74-8738-4fe3-8a47-e3659ca15c91",
+      format: EbookType.PDF,
     },
   });
 
@@ -86,7 +91,14 @@ export const HeroSection = (): JSX.Element => {
               </span>
               , e inizia a scrivere le tue storie di successo.
             </p>
-            {error && <div className="p-4 bg-destructive">{error}</div>}
+            <div>
+              <Button asChild type="button">
+                <Link href="/ebooks/introduzione-alla-sceneggiatura-cinematografica">
+                  Vai all&apos;Ebook
+                </Link>
+              </Button>
+            </div>
+            {/* {error && <div className="p-4 bg-destructive">{error}</div>}
             {success && (
               <div className="p-4 bg-emerald-100 shadow-sm rounded-md">
                 {success}
@@ -127,7 +139,7 @@ export const HeroSection = (): JSX.Element => {
                   </Button>
                 </form>
               </Form>
-            )}
+            )} */}
           </div>
           <div className="mb-12 rounded-lg lg:mb-0 aspect-square relative">
             <Image

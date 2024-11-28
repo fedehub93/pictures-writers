@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
+import { isValidEbookFormat } from "@/lib/ebook";
 
 export async function generateMetadata(): Promise<Metadata | null> {
   const metadata = await getHeadMetadata();
@@ -25,9 +26,16 @@ const DownloadEbook = ({
 }: {
   searchParams?: {
     id?: string;
+    format?: string;
   };
 }) => {
   const ebookId = searchParams?.id || "";
+  const format = searchParams?.format || "";
+
+  if (!isValidEbookFormat(format)) {
+    return <div>Qualcosa è andato storto!</div>;
+  }
+
   return (
     <section className="h-full w-full items-center">
       <div className="flex h-full w-full flex-col items-center justify-center gap-y-8 px-5 py-40 text-center">
@@ -40,7 +48,7 @@ const DownloadEbook = ({
         <p>Se così non fosse puoi cliccare il link qui sotto.</p>
         <div className="flex">
           <a
-            href={`/api/ebooks/download?id=${ebookId}`}
+            href={`/api/products/download?id=${ebookId}&format=${format}`}
             className="mr-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white transition-all duration-500 hover:-translate-y-1 hover:shadow-xl focus:outline-none lg:px-5 lg:py-2.5"
           >
             Download
