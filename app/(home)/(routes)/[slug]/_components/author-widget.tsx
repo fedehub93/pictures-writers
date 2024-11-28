@@ -20,7 +20,7 @@ const AuthorWidget = ({
   return (
     <div className="author">
       {imageUrl && (
-        <div className="relative w-40 grayscale border-4 aspect-square rounded-full overflow-hidden">
+        <div className="relative w-40 min-w-40 grayscale border-4 aspect-square rounded-full overflow-hidden">
           <Image
             src={imageUrl}
             alt="Profile image"
