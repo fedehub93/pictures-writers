@@ -15,6 +15,8 @@ import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
 
 import { QueryProvider } from "@/components/providers/query-provider";
 import { OrganizationJsonLd } from "./_components/seo/json-ld/organization";
+import Script from "next/script";
+import IubendaScript from "./_components/iubenda";
 
 const mulish = Mulish({ subsets: ["latin"] });
 
@@ -49,7 +51,10 @@ export default async function RootLayout({
         {/* <SpeedInsights /> */}
       </body>
       {process.env.NODE_ENV === "production" && (
-        <GoogleTagManager gtmId={process.env.NEXT_GTAG_CONTAINER_ID!} />
+        <>
+          <GoogleTagManager gtmId={process.env.NEXT_GTAG_CONTAINER_ID!} />
+          <IubendaScript />
+        </>
       )}
     </html>
   );
