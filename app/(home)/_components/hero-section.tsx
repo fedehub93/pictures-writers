@@ -93,7 +93,7 @@ export const HeroSection = (): JSX.Element => {
             </p>
             <div>
               <Button asChild type="button">
-                <Link href="/ebooks/introduzione-alla-sceneggiatura-cinematografica">
+                <Link href="/ebooks/introduzione-alla-sceneggiatura">
                   Vai all&apos;Ebook
                 </Link>
               </Button>
