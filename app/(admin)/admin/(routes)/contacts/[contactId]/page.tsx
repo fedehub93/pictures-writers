@@ -9,7 +9,7 @@ import { ContactRequestForm } from "./_components/contact-request-form";
 const MailSettings = async ({ params }: { params: { contactId: string } }) => {
   const userAdmin = await authAdmin();
   if (!userAdmin) {
-    return auth().redirectToSignIn();
+    return (await auth()).redirectToSignIn();
   }
 
   const contact = await db.contactForm.findUnique({

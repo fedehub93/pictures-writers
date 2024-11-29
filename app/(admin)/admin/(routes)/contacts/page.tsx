@@ -10,7 +10,7 @@ import { columns } from "./_components/columns";
 const ImpressionsPage = async () => {
   const userAdmin = await authAdmin();
   if (!userAdmin) {
-    return auth().redirectToSignIn();
+    return (await auth()).redirectToSignIn();
   }
 
   const contacts = await db.contactForm.findMany({

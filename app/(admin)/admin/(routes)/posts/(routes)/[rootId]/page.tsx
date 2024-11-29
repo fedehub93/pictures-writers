@@ -7,9 +7,9 @@ import { authAdmin } from "@/lib/auth-service";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import { TitleForm } from "@/app/(admin)/general-fields/title-form";
-import { DescriptionForm } from "@/app/(admin)/general-fields/description-form";
-import { SlugForm } from "@/app/(admin)/general-fields/slug-form";
+import { TitleForm } from "@/app/(admin)/_components/general-fields/title-form";
+import { DescriptionForm } from "@/app/(admin)/_components/general-fields/description-form";
+import { SlugForm } from "@/app/(admin)/_components/general-fields/slug-form";
 
 import { ImageForm } from "./_components/image-form";
 import { CategoryForm } from "./_components/category-form";
@@ -28,7 +28,7 @@ import { AuthorForm } from "./_components/author-form";
 const PostIdPage = async ({ params }: { params: { rootId: string } }) => {
   const userAdmin = await authAdmin();
   if (!userAdmin) {
-    return auth().redirectToSignIn();
+    return (await auth()).redirectToSignIn();
   }
 
   const post = await db.post.findFirst({

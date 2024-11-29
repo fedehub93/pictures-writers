@@ -22,7 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { contact } from "@/actions/contact";
 import { ContactSchemaValibot } from "@/schemas";
 
-const ContactUs = (): JSX.Element => {
+export const ContactUs = (): JSX.Element => {
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
@@ -201,5 +201,3 @@ const ContactUs = (): JSX.Element => {
     </section>
   );
 };
-
-export default ContactUs;

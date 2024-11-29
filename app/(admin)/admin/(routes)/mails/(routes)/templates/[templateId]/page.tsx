@@ -12,7 +12,7 @@ const EmailTemplateIdPage = async ({
 }) => {
   const userAdmin = await authAdmin();
   if (!userAdmin) {
-    return auth().redirectToSignIn();
+    return (await auth()).redirectToSignIn();
   }
 
   const template = await db.emailTemplate.findUnique({

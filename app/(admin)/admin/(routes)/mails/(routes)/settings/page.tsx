@@ -11,7 +11,7 @@ import { EmailSubscriptionForm } from "./_components/email-subscription-form";
 const MailSettings = async () => {
   const userAdmin = await authAdmin();
   if (!userAdmin) {
-    return auth().redirectToSignIn();
+    return (await auth()).redirectToSignIn();
   }
 
   const settings = await db.emailSetting.findFirst();

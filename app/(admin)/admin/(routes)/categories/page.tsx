@@ -10,7 +10,7 @@ import { columns } from "./(routes)/_components/columns";
 const CategoriesPage = async () => {
   const userAdmin = await authAdmin();
   if (!userAdmin) {
-    return auth().redirectToSignIn();
+    return (await auth()).redirectToSignIn();
   }
 
   const categories = await db.category.findMany({

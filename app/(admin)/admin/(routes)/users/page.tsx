@@ -4,7 +4,6 @@ import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
 
 import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
-import { EditUserModal } from "@/app/(admin)/_components/modals/edit-user-modal";
 
 import { DataTable } from "./_components/data-table";
 import { columns } from "./_components/columns";
@@ -12,7 +11,7 @@ import { columns } from "./_components/columns";
 const UsersPage = async () => {
   const userAdmin = await authAdmin();
   if (!userAdmin) {
-    return auth().redirectToSignIn();
+    return (await auth()).redirectToSignIn();
   }
 
   const users = await db.user.findMany({
@@ -25,7 +24,6 @@ const UsersPage = async () => {
     <div className="h-full w-full flex flex-col gap-y-4 px-6 py-3">
       <ContentHeader label="Users" totalEntries={users.length} />
       <DataTable columns={columns} data={users} />
-      {/* <EditUserModal /> */}
     </div>
   );
 };

@@ -19,7 +19,7 @@ export type EmailSingleSendCustom = EmailSingleSend & {
 const EmailSingleSends = async () => {
   const userAdmin = await authAdmin();
   if (!userAdmin) {
-    return auth().redirectToSignIn();
+    return (await auth()).redirectToSignIn();
   }
 
   const singleSends = await db.emailSingleSend.findMany({

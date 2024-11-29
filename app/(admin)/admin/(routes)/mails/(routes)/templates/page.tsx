@@ -11,7 +11,7 @@ import { columns } from "./_components/columns";
 const EmailTemplates = async () => {
   const userAdmin = await authAdmin();
   if (!userAdmin) {
-    return auth().redirectToSignIn();
+    return (await auth()).redirectToSignIn();
   }
 
   const templates = await db.emailTemplate.findMany({

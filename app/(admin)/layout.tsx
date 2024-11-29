@@ -34,13 +34,13 @@ export default async function RootLayout({
   const user = await getSelf();
 
   if (!user) {
-    return auth().redirectToSignIn({
+    return (await auth()).redirectToSignIn({
       returnBackUrl: "http://localhost:3000/admin",
     });
   }
 
   if (user.role === UserRole.USER) {
-    return auth().redirectToSignIn({
+    return (await auth()).redirectToSignIn({
       returnBackUrl: "http://localhost:3000/admin",
     });
   }

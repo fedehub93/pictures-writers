@@ -5,6 +5,7 @@ import { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { ContentStatus } from "@prisma/client";
 
 import { cn } from "@/lib/utils";
 
@@ -12,7 +13,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SeoContentTypeApi } from "@/app/(admin)/_components/seo/types";
-import { ContentStatus } from "@prisma/client";
 
 interface StatusViewProps {
   disabled: boolean;

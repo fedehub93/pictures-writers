@@ -1,5 +1,6 @@
-import { EbookType } from "@/types";
 import * as v from "valibot";
+
+import { EbookType } from "@/types";
 
 export const SubscribeSchemaValibot = v.object({
   email: v.pipe(

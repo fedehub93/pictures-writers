@@ -10,14 +10,12 @@ import { cn } from "@/lib/utils";
 import { ToastProvider } from "@/components/providers/toast-provider";
 import { getSettings } from "@/data/settings";
 import { Navbar } from "@/app/(home)/_components/navbar";
-import Footer from "@/app/(home)/_components/footer";
+import { Footer } from "@/app/(home)/_components/footer";
 import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
 
 import { QueryProvider } from "@/components/providers/query-provider";
+import { AppScripts } from "@/components/scripts";
 import { OrganizationJsonLd } from "./_components/seo/json-ld/organization";
-import Script from "next/script";
-import IubendaScript from "./_components/iubenda";
-import AppScripts from "@/components/scripts";
 
 const mulish = Mulish({ subsets: ["latin"] });
 
@@ -48,13 +46,11 @@ export default async function RootLayout({
             <Footer />
           </div>
         </QueryProvider>
-        {/* {settings.cookieConsent ? <CookieBannerV2 /> : <CookieBanner />} */}
         {/* <SpeedInsights /> */}
       </body>
       {process.env.NODE_ENV === "production" && (
         <>
           <GoogleTagManager gtmId={process.env.NEXT_GTAG_CONTAINER_ID!} />
-          {/* <IubendaScript /> */}
           <AppScripts scripts={settings.scripts} />
         </>
       )}

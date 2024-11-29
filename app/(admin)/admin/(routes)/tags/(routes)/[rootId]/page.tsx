@@ -3,9 +3,9 @@ import { redirect } from "next/navigation";
 
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
-import { TitleForm } from "@/app/(admin)/general-fields/title-form";
-import { SlugForm } from "@/app/(admin)/general-fields/slug-form";
-import { DescriptionForm } from "@/app/(admin)/general-fields/description-form";
+import { TitleForm } from "@/app/(admin)/_components/general-fields/title-form";
+import { SlugForm } from "@/app/(admin)/_components/general-fields/slug-form";
+import { DescriptionForm } from "@/app/(admin)/_components/general-fields/description-form";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SeoEditView } from "@/app/(admin)/_components/seo/seo-edit-view";
@@ -16,7 +16,7 @@ import { ContentIdActions } from "@/app/(admin)/_components/content/content-id-a
 const TagIdPage = async ({ params }: { params: { rootId: string } }) => {
   const userAdmin = await authAdmin();
   if (!userAdmin) {
-    return auth().redirectToSignIn();
+    return (await auth()).redirectToSignIn();
   }
 
   const tag = await db.tag.findFirst({

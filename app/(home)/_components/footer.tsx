@@ -1,7 +1,7 @@
 import Link from "next/link";
 import React from "react";
 
-const Footer = (): JSX.Element => (
+export const Footer = (): JSX.Element => (
   <footer className="footer">
     <div className="footer__container">
       <div className="footer__mission-container">
@@ -76,5 +76,3 @@ const Footer = (): JSX.Element => (
     </div>
   </footer>
 );
-
-export default Footer;

@@ -8,7 +8,7 @@ import { redirect } from "next/navigation";
 const MailSettings = async ({ params }: { params: { contactId: string } }) => {
   const userAdmin = await authAdmin();
   if (!userAdmin) {
-    return auth().redirectToSignIn();
+    return (await auth()).redirectToSignIn();
   }
 
   const contact = await db.emailContact.findUnique({

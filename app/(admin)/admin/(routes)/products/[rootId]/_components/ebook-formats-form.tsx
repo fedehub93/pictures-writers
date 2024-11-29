@@ -1,9 +1,7 @@
 "use client";
 
 import * as z from "zod";
-import { useRouter } from "next/navigation";
 import { Control, useController } from "react-hook-form";
-import { productFormSchema } from "./product-form";
 import { EbookFormat } from "@/types";
 import {
   FormControl,
@@ -21,14 +19,14 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
+import { productFormSchema } from "./product-form";
+
 interface EbookFormatsFormProps {
   control: Control<z.infer<typeof productFormSchema>>;
   name: "metadata.formats";
 }
 
 export const EbookFormatsForm = ({ control, name }: EbookFormatsFormProps) => {
-  const router = useRouter();
-
   const { field } = useController({ control, name });
 
   return (
@@ -45,7 +43,9 @@ export const EbookFormatsForm = ({ control, name }: EbookFormatsFormProps) => {
             value={format.type}
             className="last:border-b-0"
           >
-            <AccordionTrigger className="uppercase">{format.type}</AccordionTrigger>
+            <AccordionTrigger className="uppercase">
+              {format.type}
+            </AccordionTrigger>
 
             <AccordionContent className="space-y-4 px-2">
               <FormField

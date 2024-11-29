@@ -14,7 +14,7 @@ const AudienceIdContactsPage = async ({
 }) => {
   const userAdmin = await authAdmin();
   if (!userAdmin) {
-    return auth().redirectToSignIn();
+    return (await auth()).redirectToSignIn();
   }
 
   const contacts = await db.emailContact.findMany({

@@ -10,7 +10,7 @@ import { columns } from "./_components/columns";
 const ProductsPage = async () => {
   const userAdmin = await authAdmin();
   if (!userAdmin) {
-    return auth().redirectToSignIn();
+    return (await auth()).redirectToSignIn();
   }
 
   const products = await db.product.findMany({

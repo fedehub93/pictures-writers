@@ -2,11 +2,11 @@ import Script from "next/script";
 
 import { SettingsScripts } from "@/types";
 
-export default async function AppScripts({
+export const AppScripts = async ({
   scripts,
 }: {
   scripts: SettingsScripts[] | undefined | null;
-}) {
+}) => {
   if (!scripts || !scripts.length) return;
 
   return (
@@ -29,4 +29,4 @@ export default async function AppScripts({
       })}
     </>
   );
-}
+};

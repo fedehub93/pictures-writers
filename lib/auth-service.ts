@@ -3,7 +3,7 @@ import { UserRole } from "@prisma/client";
 import { db } from "./db";
 
 export const authAdmin = async () => {
-  const { userId } = auth();
+  const { userId } = await auth();
 
   if (!userId) {
     return null;

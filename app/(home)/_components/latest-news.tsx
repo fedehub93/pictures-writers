@@ -7,7 +7,7 @@ import { it } from "date-fns/locale";
 import { db } from "@/lib/db";
 import { ContentStatus } from "@prisma/client";
 
-const LatestNews = async () => {
+export const LatestNews = async () => {
   const latestNews = await db.post.findMany({
     where: {
       status: ContentStatus.PUBLISHED,
@@ -86,4 +86,3 @@ const LatestNews = async () => {
   );
 };
 
-export default LatestNews;

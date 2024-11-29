@@ -11,7 +11,7 @@ import { columns } from "./(routes)/_components/columns";
 const TagsPage = async () => {
   const userAdmin = await authAdmin();
   if (!userAdmin) {
-    return auth().redirectToSignIn();
+    return (await auth()).redirectToSignIn();
   }
 
   const tags = await db.tag.findMany({

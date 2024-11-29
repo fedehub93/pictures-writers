@@ -1,13 +1,16 @@
 "use client";
 
 import { ScrollArea } from "@/components/ui/scroll-area";
+import Link from "next/link";
+
+import { cn } from "@/lib/utils";
+import Logo from "@/components/logo";
+import { useSidebar } from "@/store/use-sidebar";
 
 import { Wrapper } from "./wrapper";
 import { Toggle } from "./toggle";
-import Logo from "../navbar/logo";
 import { Nav } from "./nav/nav";
 import { sideLinks } from "./data";
-import Link from "next/link";
 
 interface SidebarProps {
   siteName?: string | null;
@@ -15,13 +18,23 @@ interface SidebarProps {
 }
 
 export const Sidebar = ({ siteName = "Site Name", logoUrl }: SidebarProps) => {
+  const { collapsed } = useSidebar((state) => state);
+
   return (
     <Wrapper>
       <Link
-        href="/admin/dashboard"
-        className="flex flex-none h-16 items-center gap-4 bg-background p-4 sticky top-0 justify-between shadow-sm dark:shadow-white md:px-4"
+        href="/admin"
+        className="flex flex-none gap-x-2 h-16 items-center bg-background p-4 shadow-sm dark:shadow-white"
       >
-        <Logo logoUrl={logoUrl} />
+        <Logo />
+        <span
+          className={cn(
+            "text-sm uppercase font-bold mt-1",
+            collapsed && "hidden"
+          )}
+        >
+          {siteName}
+        </span>
       </Link>
       <Toggle />
       <ScrollArea className="flex flex-col h-full">

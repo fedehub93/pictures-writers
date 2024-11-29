@@ -32,6 +32,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { ScriptStrategy } from "@/types";
 import { useSettings } from "../../_components/providers/settings-provider";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const formSchema = z.object({
   scripts: z.array(
@@ -99,124 +105,139 @@ const MainSettingsPage = () => {
   return (
     <div className="p-4 w-full rounded-md flex flex-col gap-y-8">
       <div className="flex flex-col flex-1">
-        <h3 className="text-lg font-bold space-y-0.5">General</h3>
+        <h3 className="text-lg font-bold space-y-0.5">Scripts</h3>
         <p className="text-muted-foreground text-sm">
-          Update your general settings. Set your site name and url.
+          Add scripts to the application that will be inserted after body.
         </p>
       </div>
       <Separator />
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          {fields.map((field, index) => (
-            <div key={field.id} className="space-y-4 border p-4 rounded-md">
-              <div className="text-right">
-                <Button
-                  size="icon"
-                  variant="destructive"
-                  type="button"
-                  onClick={() => onRemoveScript(index)}
+          <Accordion type="single" collapsible className="space-y-4">
+            {fields.map((field, index) => (
+              <div key={field.name} className="flex gap-x-4 ">
+                <AccordionItem
+                  value={field.id}
+                  className="flex-1 space-y-4 border px-4 py-0 rounded-md"
                 >
-                  <X />
-                </Button>
+                  <AccordionTrigger>
+                    {field.name}
+                  </AccordionTrigger>
+
+                  <AccordionContent className="space-y-4 px-2">
+                    <div className="flex gap-x-4 w-full">
+                      <FormField
+                        control={form.control}
+                        name={`scripts.${index}.name`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Name</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Nome script" {...field} />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`scripts.${index}.src`}
+                        render={({ field }) => (
+                          <FormItem className="flex-1">
+                            <FormLabel>URL</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="https://example.com/script.js"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`scripts.${index}.strategy`}
+                        render={({ field }) => (
+                          <FormItem className="md:min-w-52">
+                            <FormLabel>Strategy</FormLabel>
+                            <FormControl>
+                              <Select
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Seleziona una strategia" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {Object.values(ScriptStrategy).map((s) => (
+                                    <SelectItem key={s} value={s}>
+                                      {s}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div className="flex items-center gap-x-4 w-full">
+                      <FormField
+                        control={form.control}
+                        name={`scripts.${index}.content`}
+                        render={({ field }) => (
+                          <FormItem className="flex-1">
+                            <FormLabel>Content</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                placeholder="Inline content..."
+                                rows={
+                                  !!form.getValues(`scripts.${index}.src`)
+                                    ? 1
+                                    : 10
+                                }
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormDescription>Only if no URL.</FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`scripts.${index}.enabled`}
+                        render={({ field }) => (
+                          <FormItem className="flex items-center gap-x-2 space-y-0">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                            <FormLabel>Enabled</FormLabel>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+                <div className="text-right">
+                  <Button
+                    size="icon"
+                    variant="destructive"
+                    type="button"
+                    onClick={() => onRemoveScript(index)}
+                  >
+                    <X />
+                  </Button>
+                </div>
               </div>
-              <div className="flex gap-x-4 w-full">
-                <FormField
-                  control={form.control}
-                  name={`scripts.${index}.name`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Nome script" {...field} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name={`scripts.${index}.src`}
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormLabel>URL</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="https://example.com/script.js"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name={`scripts.${index}.strategy`}
-                  render={({ field }) => (
-                    <FormItem className="md:min-w-52">
-                      <FormLabel>Strategy</FormLabel>
-                      <FormControl>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Seleziona una strategia" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {Object.values(ScriptStrategy).map((s) => (
-                              <SelectItem key={s} value={s}>
-                                {s}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="flex items-center gap-x-4 w-full">
-                <FormField
-                  control={form.control}
-                  name={`scripts.${index}.content`}
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormLabel>Content</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Inline content..."
-                          rows={
-                            !!form.getValues(`scripts.${index}.src`) ? 1 : 10
-                          }
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>Only if no URL.</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name={`scripts.${index}.enabled`}
-                  render={({ field }) => (
-                    <FormItem className="flex items-center gap-x-2 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <FormLabel>Enabled</FormLabel>
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
-          ))}
+            ))}
+          </Accordion>
           <div className="flex items-center gap-x-2 justify-start">
-            <Button type="button" onClick={onAddScript}>
+            <Button type="button" onClick={onAddScript} variant="outline">
               Add a script
             </Button>
             <Button type="submit" disabled={isSubmitting || isLoading}>

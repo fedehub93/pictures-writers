@@ -67,12 +67,6 @@ export const sideLinks: SideLink[] = [
     ],
   },
   {
-    title: "Ebooks",
-    label: "",
-    href: "/admin/ebooks",
-    icon: BookText,
-  },
-  {
     title: "Mails",
     label: "",
     href: "",
@@ -121,19 +115,6 @@ export const sideLinks: SideLink[] = [
         href: "/admin/coverage/impressions",
         icon: ClipboardPen,
       },
-
-      // {
-      //   title: "Formats",
-      //   label: "",
-      //   href: "/admin/coverage/formats",
-      //   icon: Shapes,
-      // },
-      // {
-      //   title: "Genres",
-      //   label: "",
-      //   href: "/admin/coverage/genres",
-      //   icon: Blend,
-      // },
     ],
   },
   {
@@ -153,17 +134,11 @@ export const sideLinks: SideLink[] = [
     href: "/admin/products",
     icon: Box,
   },
-  // {
-  //   title: "SEO",
-  //   label: "",
-  //   href: "/admin/seo",
-  //   icon: ChartLine,
-  // },
-  // {
-  //   title: "SEPARATOR_3",
-  //   label: "SEPARATOR_3",
-  //   href: "#",
-  // },
+  {
+    title: "SEPARATOR_3",
+    label: "SEPARATOR_3",
+    href: "#",
+  },
   {
     title: "Settings",
     label: "",

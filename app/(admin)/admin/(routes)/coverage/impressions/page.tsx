@@ -9,7 +9,7 @@ import { ContentHeader } from "@/app/(admin)/_components/content/content-header"
 const ImpressionsPage = async () => {
   const userAdmin = await authAdmin();
   if (!userAdmin) {
-    return auth().redirectToSignIn();
+    return (await auth()).redirectToSignIn();
   }
 
   const impressions = await db.impression.findMany({

@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 const AdminPage = async () => {
   const user = await getSelf();
   if (!user) {
-    return auth().redirectToSignIn();
+    return (await auth()).redirectToSignIn();
   }
 
   return redirect("/admin/dashboard");

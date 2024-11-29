@@ -1,7 +1,5 @@
 import { ReactEditor } from "slate-react";
 import { Editor, Element, Path, Range, Transforms } from "slate";
-import { slateToHtml } from "@slate-serializers/html";
-import { slateDemoSlateToDomConfig } from "@slate-serializers/dom";
 
 import isUrl from "is-url";
 import imageExtensions from "image-extensions";
@@ -214,28 +212,5 @@ export const CustomEditorHelper = {
       type: "paragraph",
       children: [{ text: "" }],
     });
-  },
-  serializeHTML(node: any) {
-    return slateToHtml(node, slateDemoSlateToDomConfig);
-    // if (Text.isText(node)) {
-    //   let string = escapeHtml(node.text);
-    //   if (node.bold) {
-    //     string = `<strong>${string}</strong>`;
-    //   }
-    //   return string;
-    // }
-
-    // if (Element.isElement(node)) {
-    //   const children:string = node.children
-    //     .map((n) => CustomEditorHelper.serializeHTML(n))
-    //     .join("");
-
-    //   switch (node.type) {
-    //     case "paragraph":
-    //       return `<p>${children}</p>`;
-    //     default:
-    //       return children;
-    //   }
-    // }
   },
 };

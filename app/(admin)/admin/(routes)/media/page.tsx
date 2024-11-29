@@ -18,7 +18,7 @@ const MediaPage = async ({
 }) => {
   const user = await authAdmin();
   if (!user) {
-    return auth().redirectToSignIn();
+    return (await auth()).redirectToSignIn();
   }
 
   const query = searchParams?.s || "";

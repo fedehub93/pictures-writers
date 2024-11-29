@@ -10,7 +10,7 @@ import { ProductForm } from "./_components/product-form";
 const ProductIdPage = async ({ params }: { params: { rootId: string } }) => {
   const userAdmin = await authAdmin();
   if (!userAdmin) {
-    return auth().redirectToSignIn();
+    return (await auth()).redirectToSignIn();
   }
 
   const product = await db.product.findFirst({
