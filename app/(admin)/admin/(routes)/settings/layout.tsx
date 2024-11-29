@@ -1,5 +1,4 @@
 import { getSettings } from "@/data/settings";
-import { GlobalSettingsForm } from "./_components/global-settings-form";
 import { Separator } from "@/components/ui/separator";
 import { SidebarMenu } from "./_components/sidebar-menu";
 import { SettingsProvider } from "./_components/providers/settings-provider";

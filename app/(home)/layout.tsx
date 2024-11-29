@@ -17,6 +17,7 @@ import { QueryProvider } from "@/components/providers/query-provider";
 import { OrganizationJsonLd } from "./_components/seo/json-ld/organization";
 import Script from "next/script";
 import IubendaScript from "./_components/iubenda";
+import AppScripts from "@/components/scripts";
 
 const mulish = Mulish({ subsets: ["latin"] });
 
@@ -53,7 +54,8 @@ export default async function RootLayout({
       {process.env.NODE_ENV === "production" && (
         <>
           <GoogleTagManager gtmId={process.env.NEXT_GTAG_CONTAINER_ID!} />
-          <IubendaScript />
+          {/* <IubendaScript /> */}
+          <AppScripts scripts={settings.scripts} />
         </>
       )}
     </html>

@@ -5,6 +5,7 @@ declare global {
   namespace PrismaJson {
     type BodyData = CustomElement[];
     type ProductMetadata = EbookMetadata | null | undefined;
+    type Scripts = SettingsScripts[] | null | undefined;
   }
 }
 
@@ -84,4 +85,19 @@ export type EbookMetadata = {
   edition: string;
   publishedAt?: Date | null;
   authorId: string;
+};
+
+export enum ScriptStrategy {
+  beforeInteractive = "beforeInteractive",
+  afterInteractive = "afterInteractive",
+  lazyOnLoad = "lazyOnload",
+  worker = "worker",
+}
+
+export type SettingsScripts = {
+  name?: string;
+  src?: string;
+  strategy?: ScriptStrategy;
+  content?: string;
+  enabled?: boolean;
 };

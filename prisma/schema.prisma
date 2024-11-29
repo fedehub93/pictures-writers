@@ -24,6 +24,9 @@ model Settings {
 
   logoUrl String?
 
+  /// [Scripts]
+  scripts Json @default("null") @db.JsonB
+
   seo   Seo?    @relation(fields: [seoId], references: [id])
   seoId String?
 
