@@ -55,7 +55,7 @@ const SidebarEbook = async () => {
   // };
 
   const ebook = await getPublishedEbookBySlug(
-    "introduzione-alla-sceneggiatura-cinematografica"
+    "introduzione-alla-sceneggiatura"
   );
 
   if (!ebook) {

@@ -133,9 +133,9 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
                       />
                       <div className="my-2 text-lg font-medium">Ebooks</div>
                       <p className="text-sm leading-tight text-muted-foreground">
-                        Beautifully designed components that you can copy and
-                        paste into your apps. Accessible. Customizable. Open
-                        Source.
+                        Esplora una selezione di ebook e risorse esclusive sulla
+                        sceneggiatura cinematografica, ideali per scrittori e
+                        appassionati del settore.
                       </p>
                     </Link>
                   </li>
@@ -150,9 +150,9 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
                       />
                       <div className="my-2 text-lg font-medium">Blog</div>
                       <p className="text-sm leading-tight text-muted-foreground">
-                        Beautifully designed components that you can copy and
-                        paste into your apps. Accessible. Customizable. Open
-                        Source.
+                        Leggi articoli e approfondimenti sul mondo del cinema,
+                        con focus sulla scrittura di sceneggiature e le tecniche
+                        narrative utilizzate nei film.
                       </p>
                     </Link>
                   </li>
