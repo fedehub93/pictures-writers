@@ -11,7 +11,7 @@ export async function generateMetadata(): Promise<Metadata | null> {
     ...metadata,
     title: "Contatti: Pictures Writers",
     description:
-      "Sei un aspirante sceneggiatore e hai delle domande a cui non trovi risopsta? Contattaci e ti risponderemo il prima possibile.",
+      "Sei un aspirante sceneggiatore e hai delle domande a cui non trovi risposta? Contattaci e ti risponderemo il prima possibile.",
   };
 }
 

@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata | null> {
     ...metadata,
     title: "Ebooks: Pictures Writers",
     description:
-      "Sei un aspirante sceneggiatore e hai delle domande a cui non trovi risopsta? Contattaci e ti risponderemo il prima possibile.",
+      "Impara il mestiere dello sceneggiatore attraverso la nostra selezione di ebooks. Scopri di più.",
   };
 }
 

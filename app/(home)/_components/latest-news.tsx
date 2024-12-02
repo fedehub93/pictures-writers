@@ -42,9 +42,9 @@ export const LatestNews = async () => {
                     className="relative aspect-video overflow-clip mb-4 rounded-md"
                   >
                     <Link
-                      href={post.slug}
+                      href={`/${post.slug}`}
                       className="w-full h-full inset-0 absolute z-10"
-                      prefetch={true}
+                      prefetch
                     />
                     <Image
                       alt={post.imageCover.altText || ""}
@@ -72,8 +72,9 @@ export const LatestNews = async () => {
                 </h3>
                 <p className="mb-4 leading-6 ">{post.description}</p>
                 <Link
-                  href={post.slug}
+                  href={`/${post.slug}`}
                   className="font-bold text-primary-public flex items-center gap-x-2"
+                  prefetch
                 >
                   Scopri di più <ChevronRight className="h-5 w-5" />
                 </Link>
@@ -85,4 +86,3 @@ export const LatestNews = async () => {
     </section>
   );
 };
-

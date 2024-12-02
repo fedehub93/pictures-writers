@@ -77,7 +77,7 @@ const Page = async ({ params }: { params: { slug: string } }) => {
         <Breadcrumbs
           items={[
             { title: "Home", href: "/" },
-            { title: "Ebooks", href: "/ebooks" },
+            { title: "Ebooks", href: "/ebooks/" },
             { title: product.title },
           ]}
         />
