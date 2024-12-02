@@ -47,11 +47,13 @@ export default async function RootLayout({
           </div>
         </QueryProvider>
         {/* <SpeedInsights /> */}
+        {process.env.NODE_ENV === "production" && (
+          <AppScripts scripts={settings.scripts} />
+        )}
       </body>
       {process.env.NODE_ENV === "production" && (
         <>
           <GoogleTagManager gtmId={process.env.NEXT_GTAG_CONTAINER_ID!} />
-          <AppScripts scripts={settings.scripts} />
         </>
       )}
     </html>

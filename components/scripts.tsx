@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-before-interactive-script-outside-document */
 import Script from "next/script";
 
 import { SettingsScripts } from "@/types";
