@@ -115,7 +115,7 @@ const ProductCreatePage = () => {
               name="slug"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Post Slug</FormLabel>
+                  <FormLabel>Product Slug</FormLabel>
                   <FormControl>
                     <div className="flex flex-row gap-x-2">
                       <Input

@@ -15,6 +15,7 @@ import {
   Paragraph,
   SponsorFirstImpression,
   AffiliateLink,
+  ProductElement,
 } from "@/components/editor/view/elements";
 import { RichText } from "@/components/editor/view/leaves";
 
@@ -42,6 +43,7 @@ const CustomSlateView = ({ nodes }: CustomSlateViewProps) => {
           VideoElement,
           NumberedList,
           SponsorFirstImpression,
+          ProductElement
         ],
         leaves: [RichText],
       }}

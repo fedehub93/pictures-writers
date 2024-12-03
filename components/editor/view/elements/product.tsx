@@ -48,7 +48,7 @@ export const ProductElement = createElementTransform(
       return (
         <div
           key={key}
-          className="flex flex-col items-center justify-center mx-auto w-full md:w-5/12 border my-8 rounded-lg shadow-lg"
+          className="flex flex-col items-center justify-center mx-auto w-full md:w-5/12 border my-8 rounded-lg shadow-lg bg-white"
         >
           <div className="relative w-full aspect-square border-b">
             <Image
@@ -86,7 +86,7 @@ export const ProductElement = createElementTransform(
       return (
         <div
           key={key}
-          className="flex flex-col items-center justify-center mx-auto w-full md:w-5/12 border my-8 rounded-lg shadow-lg"
+          className="flex flex-col items-center justify-center mx-auto w-full md:w-5/12 border my-8 rounded-lg shadow-lg bg-white"
         >
           <div className="relative w-full aspect-square border-b">
             <Image

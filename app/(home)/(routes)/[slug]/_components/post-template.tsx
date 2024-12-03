@@ -1,35 +1,16 @@
 import Image from "next/image";
-import { SlateView } from "slate-to-react";
 
 import { PostWithImageCoverWithCategoryWithTagsWithSeo } from "@/lib/post";
 
-import {
-  Blockquote,
-  BulletedList,
-  HeadingFour,
-  HeadingOne,
-  HeadingThree,
-  HeadingTwo,
-  ImageElement,
-  VideoElement,
-  Link,
-  ListItem,
-  NumberedList,
-  Paragraph,
-  SponsorFirstImpression,
-  AffiliateLink,
-} from "@/components/editor/view/elements";
-
-import { RichText } from "@/components/editor/view/leaves";
+import { getPlaceholderImage } from "@/lib/image";
+import CustomSlateView from "@/components/editor/view";
 
 import Sidebar from "@/app/(home)/_components/sidebar";
 import PostInfo from "@/app/(home)/(routes)/blog/_components/post-info";
-import { getPlaceholderImage } from "@/lib/image";
 
 import TagsWidget from "./tags-widget";
 import NewsletterWidget from "./newsletter-widget";
 import AuthorWidget from "./author-widget";
-import CustomSlateView from "@/components/editor/view";
 
 interface PostTemplateProps {
   post: PostWithImageCoverWithCategoryWithTagsWithSeo;
