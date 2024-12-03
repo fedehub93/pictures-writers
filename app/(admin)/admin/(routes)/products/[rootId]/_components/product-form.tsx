@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { redirect, useRouter } from "next/navigation";
+import { Descendant } from "slate";
 import {
   ContentStatus,
   Media,
@@ -13,7 +14,6 @@ import {
   ProductCategory,
   User,
   Seo,
-  ProductGallery,
 } from "@prisma/client";
 
 import { Form } from "@/components/ui/form";
@@ -26,9 +26,9 @@ import { ProductDetailsForm } from "./product-details-form";
 import { ImageForm } from "./image-form";
 import { ProductPricingForm } from "./product-pricing-form";
 import { ProductSeoForm } from "./product-seo-form";
-import { EbookMetadata } from "@/types";
+import { AffiliateMetadata, EbookMetadata } from "@/types";
 import { ProductGalleryForm } from "./product-gallery-form";
-import { Descendant } from "slate";
+import { ProductAffiliateForm } from "./affiliate/product-affiliate-form";
 
 export type Gallery = {
   mediaId: string;
@@ -41,7 +41,7 @@ interface ProductFormProps {
     imageCover: Media | null;
     seo: Seo | null;
     gallery: Gallery[];
-    metadata?: EbookMetadata | null;
+    metadata?: EbookMetadata | AffiliateMetadata | null;
   };
   apiUrl: string;
   authors?: User[];
@@ -85,8 +85,9 @@ export const ProductForm = ({
   const router = useRouter();
 
   const isEbookProduct = initialData.category === ProductCategory.EBOOK;
+  const isAffiliateProduct = initialData.category === ProductCategory.AFFILIATE;
 
-  const metadata = isEbookProduct && initialData.metadata;
+  const metadata = initialData.metadata;
 
   const form = useForm<z.infer<typeof productFormSchema>>({
     mode: "all",
@@ -150,6 +151,8 @@ export const ProductForm = ({
     return redirect("/admin/products");
   }
 
+  console.log(form.getValues());
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -169,10 +172,16 @@ export const ProductForm = ({
                   isSubmitting={isSubmitting}
                 />
 
-                {initialData.category === ProductCategory.EBOOK && (
+                {isEbookProduct && (
                   <ProductEbookForm
                     control={form.control}
                     authors={authors}
+                    isSubmitting={isSubmitting}
+                  />
+                )}
+                {isAffiliateProduct && (
+                  <ProductAffiliateForm
+                    control={form.control}
                     isSubmitting={isSubmitting}
                   />
                 )}

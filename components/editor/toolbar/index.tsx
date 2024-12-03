@@ -7,8 +7,9 @@ import {
   AlignRight,
   Blocks,
   Bold,
+  Box,
   ChevronDown,
-  Image,
+  Image as LucideImage,
   Italic,
   Link,
   List,
@@ -30,12 +31,12 @@ import {
 
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 import { CustomEditorHelper } from "@/components/editor/utils/custom-editor";
+import { cn } from "@/lib/utils";
 
 import MarkButton from "./mark-button";
 import BlockButton from "./block-button";
 import { SelectHeading } from "./select-heading";
 import LinkButton from "./link-button";
-import { cn } from "@/lib/utils";
 
 interface ToolbarProps {
   showEmbedButton?: boolean;
@@ -71,6 +72,10 @@ const Toolbar = ({
 
   const insertSponsorFirstImpression = () => {
     CustomEditorHelper.insertSponsorFirstImpression(editor);
+  };
+
+  const getProduct = (data: any) => {
+    CustomEditorHelper.insertProduct(editor, { ...data });
   };
 
   return (
@@ -126,7 +131,7 @@ const Toolbar = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
               <DropdownMenuItem onClick={() => onOpen("selectAsset", getImage)}>
-                <Image className="h-4 w-4 mr-2" />
+                <LucideImage className="h-4 w-4 mr-2" />
                 Image
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onOpen("selectUrl", getVideo)}>
@@ -142,6 +147,12 @@ const Toolbar = ({
               <DropdownMenuItem onClick={insertSponsorFirstImpression}>
                 <Blocks className="h-4 w-4 mr-2" />
                 Sponsor first impression
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onOpen("selectProduct", getProduct)}
+              >
+                <Box className="h-4 w-4 mr-2" />
+                Product
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

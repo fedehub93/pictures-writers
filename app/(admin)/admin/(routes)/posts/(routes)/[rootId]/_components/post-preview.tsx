@@ -13,6 +13,7 @@ import {
   VideoElement,
   NumberedList,
   SponsorFirstImpression,
+  ProductElement,
 } from "@/components/editor/view/elements";
 import { RichText } from "@/components/editor/view/leaves";
 import { PostWithImageCoverWithCategoryWithTagsWithSeo } from "@/lib/post";
@@ -43,6 +44,7 @@ export const PostPreview = ({
             VideoElement,
             NumberedList,
             SponsorFirstImpression,
+            ProductElement,
           ],
           leaves: [RichText],
         }}

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import axios from "axios";
 
 import { db } from "@/lib/db";
-import { isEbookMetadata, isValidEbookFormat } from "@/lib/ebook";
+import { isEbookMetadata, isValidEbookFormat } from "@/type-guards";
 
 export const dynamic = "force-dynamic";
 
@@ -27,11 +27,7 @@ export async function GET(req: Request) {
       where: { id: productId },
     });
 
-    if (!product || !product.metadata?.formats) {
-      return new NextResponse("Bad Request", { status: 400 });
-    }
-
-    if (!isEbookMetadata(product.metadata)) {
+    if (!product || !isEbookMetadata(product.metadata)) {
       return new NextResponse("Bad Request", { status: 400 });
     }
 

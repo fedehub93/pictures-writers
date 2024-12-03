@@ -2,8 +2,9 @@ import { Metadata } from "next";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import { isValidEbookFormat } from "@/type-guards";
+
 import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
-import { isValidEbookFormat } from "@/lib/ebook";
 
 export async function generateMetadata(): Promise<Metadata | null> {
   const metadata = await getHeadMetadata();

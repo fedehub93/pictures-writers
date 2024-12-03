@@ -1,19 +1,20 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { isEbookMetadata } from "@/type-guards";
+
 import { getProductMetadataBySlug } from "@/app/(home)/_components/seo/content-metadata";
+import { ProductJsonLd } from "@/app/(home)/_components/seo/json-ld/product";
+import { Breadcrumbs } from "@/app/(home)/_components/breadcrumbs";
+
+import { getSettings } from "@/data/settings";
 import {
   getPublishedEbookBySlug,
   getPublishedEbooksBuilding,
-  isEbookMetadata,
-} from "@/lib/ebook";
+} from "@/data/ebook";
 
-import { Breadcrumbs } from "@/app/(home)/_components/breadcrumbs";
-
-import { EbookInfo } from "./_components/ebook-info";
 import { EbookImage } from "./_components/ebook-image";
-import { ProductJsonLd } from "@/app/(home)/_components/seo/json-ld/product";
-import { getSettings } from "@/data/settings";
+import { EbookInfo } from "./_components/ebook-info";
 
 type Params = {
   slug: string;
@@ -42,7 +43,7 @@ export async function generateMetadata({
 }
 
 const Page = async ({ params }: { params: { slug: string } }) => {
-  const { siteUrl, seo } = await getSettings();
+  const { siteUrl } = await getSettings();
   const product = await getPublishedEbookBySlug(params.slug);
 
   if (!product) {

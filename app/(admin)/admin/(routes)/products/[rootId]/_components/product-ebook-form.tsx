@@ -3,9 +3,12 @@
 import * as z from "zod";
 
 import Image from "next/image";
-import { Control } from "react-hook-form";
+import { Control, useController } from "react-hook-form";
+
+import { CalendarIcon } from "lucide-react";
 
 import { User } from "@prisma/client";
+import { cn } from "@/lib/utils";
 
 import {
   FormControl,
@@ -23,9 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-import { productFormSchema } from "./product-form";
-import { EbookFormatsForm } from "./ebook-formats-form";
+import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import {
   Popover,
@@ -33,10 +34,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
+
+import { productFormSchema } from "./product-form";
+import { EbookFormatsForm } from "./ebook-formats-form";
 import { formatDate } from "@/lib/format";
-import { CalendarIcon } from "lucide-react";
-import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
 
 interface ProductEbookFormProps {
   control: Control<z.infer<typeof productFormSchema>>;
@@ -49,6 +50,31 @@ export const ProductEbookForm = ({
   authors,
   isSubmitting,
 }: ProductEbookFormProps) => {
+  const { field: fieldAuthorId } = useController({
+    control,
+    name: "metadata.author.id",
+  });
+  const { field: fieldAuthorFirstName } = useController({
+    control,
+    name: "metadata.author.firstName",
+  });
+  const { field: fieldAuthorLastName } = useController({
+    control,
+    name: "metadata.author.lastName",
+  });
+  const { field: fieldAuthorImageUrl } = useController({
+    control,
+    name: "metadata.author.imageUrl",
+  });
+
+  const onAuthorChange = (id: string) => {
+    const author = authors?.find((a) => a.id === id);
+    fieldAuthorId.onChange(author?.id);
+    fieldAuthorFirstName.onChange(author?.firstName);
+    fieldAuthorLastName.onChange(author?.lastName);
+    fieldAuthorImageUrl.onChange(author?.imageUrl);
+  };
+
   return (
     <Card className="mt-6">
       <CardHeader className="relative">
@@ -61,12 +87,12 @@ export const ProductEbookForm = ({
       <CardContent className="space-y-4">
         <FormField
           control={control}
-          name="metadata.authorId"
+          name="metadata.author.id"
           render={({ field }) => (
             <FormItem className="flex-1 flex flex-col">
               <FormLabel className="block">Author</FormLabel>
               <Select
-                onValueChange={field.onChange}
+                onValueChange={onAuthorChange}
                 defaultValue={field.value}
                 disabled={isSubmitting}
               >

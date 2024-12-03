@@ -23,7 +23,12 @@ interface EbookInfoProps {
   price: number | null;
   discountedPrice: number | null;
   formats: EbookFormat[];
-  author: User | null;
+  author: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    imageUrl: string;
+  } | null;
   edition?: string;
   publishedAt?: Date | null;
 }
@@ -53,7 +58,9 @@ export const EbookInfo = ({
           <p className="text-muted-foreground text-sm">
             di {author?.firstName} {author?.lastName}
           </p>
-          {edition && <p className="text-muted-foreground text-sm">{edition}</p>}
+          {edition && (
+            <p className="text-muted-foreground text-sm">{edition}</p>
+          )}
         </div>
       </div>
       <div>
@@ -99,12 +106,6 @@ export const EbookInfo = ({
         />
       </div>
       <Separator />
-      {/* <AuthorWidget
-        firstName={author?.firstName!}
-        lastName={author?.lastName!}
-        imageUrl={author?.imageUrl!}
-        bio={author?.bio!}
-      /> */}
       <FreeEbookModal
         rootId={rootId}
         title={title}

@@ -2,9 +2,9 @@ import * as sgMail from "@sendgrid/mail";
 import { endOfDay, startOfDay } from "date-fns";
 import handlebars from "handlebars";
 
-import { db } from "./db";
 import { ContentStatus, ProductCategory } from "@prisma/client";
-import { isEbookMetadata } from "./ebook";
+import { db } from "@/lib/db";
+import { isEbookMetadata } from "@/type-guards";
 
 type SendgridEmail = {
   to: string;

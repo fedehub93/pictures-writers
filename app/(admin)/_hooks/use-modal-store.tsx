@@ -4,6 +4,7 @@ export type ModalType =
   | "createMediaAsset"
   | "editMediaAsset"
   | "selectAsset"
+  | "selectProduct"
   | "selectUrl"
   | "createUser"
   | "editUser"

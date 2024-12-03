@@ -1,11 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
 
-import { EbookWithImageCoverAndAuthor, isEbookMetadata } from "@/lib/ebook";
+import { ProductWithImageCoverAndAuthor } from "@/types";
+import { isEbookMetadata } from "@/type-guards";
+
 import { formatPrice } from "@/lib/format";
 
 interface EbooksListProps {
-  ebooks: EbookWithImageCoverAndAuthor[];
+  ebooks: ProductWithImageCoverAndAuthor[];
   totalPages: number;
   currentPage: number;
 }
@@ -43,7 +45,8 @@ export const EbooksList = ({ ebooks }: EbooksListProps) => {
                 {ebook.title}
               </Link>
               <div className="text-xs text-muted-foreground">
-                di {ebook.author?.firstName} {ebook.author?.lastName}
+                di {ebook.metadata.author?.firstName}{" "}
+                {ebook.metadata.author?.lastName}
               </div>
               <div className="flex flex-col text-xl font-extrabold">
                 <div className="text-primary">

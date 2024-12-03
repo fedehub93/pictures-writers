@@ -10,6 +10,8 @@ import withNormalization from "./plugins/with-normalization";
 import withInline from "./plugins/with-inline";
 import withEmbeds from "./plugins/with-embeds";
 import withPasteHandler from "./plugins/with-paste-html";
+import { ProductCategory } from "@prisma/client";
+import { AffiliateMetadata, EbookMetadata } from "@/types";
 
 export type CustomEditor = BaseEditor & ReactEditor;
 
@@ -28,10 +30,25 @@ export type CustomElementType =
   | "image"
   | "video"
   | "affiliate-link"
+  | "product"
   | "sponsor-first-impression"
   | "left"
   | "right"
   | "center";
+
+export type EmbeddedProductElement = {
+  type: "product";
+  data: {
+    title: string;
+    type: ProductCategory;
+    slug: string;
+    imageCoverUrl: string;
+    price: number;
+    discountedPrice: number;
+    metadata?: EbookMetadata | AffiliateMetadata | null;
+  };
+  children: EmptyText[];
+};
 
 export type EmbeddedImageElement = {
   type: "image";

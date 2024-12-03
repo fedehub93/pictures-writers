@@ -12,6 +12,7 @@ import { ImageElement } from "./image";
 import { NumberedList } from "./numbered-list";
 import { SponsorFirstImpression } from "./first-impression-snippet";
 import { VideoElement } from "./video";
+import { ProductElement } from "./product";
 
 export {
   Paragraph,
@@ -28,4 +29,5 @@ export {
   ImageElement,
   VideoElement,
   SponsorFirstImpression,
+  ProductElement,
 };

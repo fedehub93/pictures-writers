@@ -10,8 +10,11 @@ import {
   CustomElementType,
   EmbeddedAffiliateLinkElement,
   EmbeddedImageElement,
+  EmbeddedProductElement,
   EmbeddedVideoElement,
 } from "@/components/editor";
+import { db } from "@/lib/db";
+import { ProductCategory } from "@prisma/client";
 
 type Format = "bold" | "italic" | "underline";
 
@@ -208,6 +211,30 @@ export const CustomEditorHelper = {
       children: [text],
     };
     Transforms.insertNodes(editor, sponsor);
+    Transforms.insertNodes(editor, {
+      type: "paragraph",
+      children: [{ text: "" }],
+    });
+  },
+  async insertProduct(editor: CustomEditor, data: any) {
+    const text = { text: "" };
+
+    const product: EmbeddedProductElement = {
+      type: "product",
+      data: {
+        title: data?.title || "",
+        type: data?.category || "AFFILIATE",
+        slug: data?.slug || "",
+        imageCoverUrl: data?.imageCover?.url || "",
+        price: data?.price,
+        discountedPrice: data?.discountedPrice,
+        metadata: {
+          ...data.metadata,
+        },
+      },
+      children: [text],
+    };
+    Transforms.insertNodes(editor, product);
     Transforms.insertNodes(editor, {
       type: "paragraph",
       children: [{ text: "" }],

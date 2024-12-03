@@ -1,59 +1,10 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { BeatLoader } from "react-spinners";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { db } from "@/lib/db";
-import { getPublishedEbookBySlug } from "@/lib/ebook";
+import { getPublishedEbookBySlug } from "@/data/ebook";
 
 const SidebarEbook = async () => {
-  // const [error, setError] = useState<string | undefined>("");
-  // const [success, setSuccess] = useState<string | undefined>("");
-
-  // const [isPending, startTransition] = useTransition();
-
-  // const form = useForm<v.InferInput<typeof FreeEbookSchemaValibot>>({
-  //   resolver: valibotResolver(FreeEbookSchemaValibot),
-  //   defaultValues: {
-  //     email: "",
-  //     // ebookId: "e5ec60b7-bffd-412b-8383-72fcf74a5516",
-  //     ebookId: "ccb34a74-8738-4fe3-8a47-e3659ca15c91",
-  //     format: "pdf",
-  //   },
-  // });
-
-  // const { isSubmitting, isValid } = form.formState;
-
-  // const onSubmit = async (
-  //   values: v.InferInput<typeof FreeEbookSchemaValibot>
-  // ) => {
-  //   try {
-  //     setError("");
-  //     setSuccess("");
-
-  //     startTransition(async () => {
-  //       subscribeFreeEbook(values).then((data) => {
-  //         setError(data.error);
-  //         setSuccess(data.success);
-  //       });
-  //     });
-  //   } catch (error) {
-  //     setError(
-  //       "Qualcosa è andato storto. Prego riprovare o contattare il supporto."
-  //     );
-  //   }
-  // };
-
   const ebook = await getPublishedEbookBySlug(
     "introduzione-alla-sceneggiatura"
   );

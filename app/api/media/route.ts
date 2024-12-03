@@ -95,27 +95,6 @@ export async function POST(req: Request) {
       data: { ...values },
     });
 
-    // if (media.type === MediaType.IMAGE) {
-    //   const processedImage = await processImage(media.url, media.name);
-
-    //   const imagesToUpdate = mapImageToMetadata(
-    //     media.key!,
-    //     media.url!,
-    //     processedImage
-    //   );
-
-    //   const updatedMedia = await db.media.update({
-    //     where: { id: media.id },
-    //     data: {
-    //       metadata: {
-    //         ...imagesToUpdate,
-    //       },
-    //     },
-    //   });
-
-    //   return NextResponse.json(updatedMedia);
-    // }
-
     return NextResponse.json(media);
   } catch (error) {
     console.log("[MEDIA_POST]", error);

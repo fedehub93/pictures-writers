@@ -1,10 +1,11 @@
 import { ReactNode } from "react";
 import { CustomElement } from "./components/editor";
+import { Media, Product, ProductCategory, User } from "@prisma/client";
 
 declare global {
   namespace PrismaJson {
     type BodyData = CustomElement[];
-    type ProductMetadata = EbookMetadata | null | undefined;
+    type ProductMetadata = EbookMetadata | AffiliateMetadata | null | undefined;
     type Scripts = SettingsScripts[] | null | undefined;
   }
 }
@@ -64,6 +65,14 @@ export interface BaseSeoProps {
 }
 
 /**
+ * Product Types
+ */
+
+export type ProductWithImageCoverAndAuthor = Product & {
+  imageCover: Media | null;
+};
+
+/**
  * Ebook types
  */
 
@@ -81,10 +90,21 @@ export type EbookFormat = {
 };
 
 export type EbookMetadata = {
+  type: ProductCategory;
   formats: EbookFormat[];
   edition: string;
-  publishedAt?: Date | null;
-  authorId: string;
+  publishedAt: Date | null;
+  author: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    imageUrl: string;
+  } | null;
+};
+
+export type AffiliateMetadata = {
+  type: ProductCategory;
+  url: string;
 };
 
 export enum ScriptStrategy {

@@ -66,6 +66,8 @@ export const columns: ColumnDef<Product>[] = [
         <Badge>
           {category === ProductCategory.EBOOK
             ? "Ebook"
+            : category === ProductCategory.AFFILIATE
+            ? "Affiliate"
             : category === ProductCategory.SERVICE
             ? "Service"
             : "None"}
@@ -88,6 +90,11 @@ export const columns: ColumnDef<Product>[] = [
     },
     cell: ({ row }) => {
       const price = (row.getValue("price") || 0.0) as number;
+      const category = row.getValue("category") || false;
+
+      if (category === ProductCategory.AFFILIATE) {
+        return <span className="font-extrabold">N/D</span>;
+      }
       return <span className="font-extrabold">{formatPrice(price, true)}</span>;
     },
   },

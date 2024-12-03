@@ -5,7 +5,7 @@ import { ContentStatus, ProductCategory } from "@prisma/client";
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
 import { triggerWebhookBuild } from "@/lib/vercel";
-import { isEbookMetadata } from "@/lib/ebook";
+import { isEbookMetadata } from "@/type-guards";
 
 export async function PATCH(
   req: Request,

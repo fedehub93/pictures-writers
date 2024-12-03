@@ -1,9 +1,10 @@
 import { Metadata } from "next";
 
-import { getPublishedEbooks } from "@/lib/ebook";
-import { getHeadMetadata } from "../../_components/seo/head-metadata";
+import { getPublishedEbooks } from "@/data/ebook";
 
-import { Breadcrumbs } from "../../_components/breadcrumbs";
+import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
+import { Breadcrumbs } from "@/app/(home)/_components/breadcrumbs";
+
 import { EbooksList } from "./_components/ebooks-list";
 
 export async function generateMetadata(): Promise<Metadata | null> {
