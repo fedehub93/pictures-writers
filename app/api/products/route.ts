@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { Product, ProductCategory } from "@prisma/client";
+import { ContentStatus, Product, ProductCategory } from "@prisma/client";
 import { AffiliateMetadata, EbookMetadata, EbookType } from "@/types";
 
 import { db } from "@/lib/db";
@@ -96,8 +96,9 @@ export async function GET(req: Request) {
     if (cursor) {
       const products = await db.product.findMany({
         where: {
-          // status: ContentStatus.PUBLISHED,
           isLatest: true,
+          status: ContentStatus.PUBLISHED,
+          title: { contains: s, mode: "insensitive" },
         },
         include: {
           imageCover: true,
@@ -121,8 +122,9 @@ export async function GET(req: Request) {
       [products, totalProducts] = await db.$transaction([
         db.product.findMany({
           where: {
-            // status: ContentStatus.PUBLISHED,
             isLatest: true,
+            status: ContentStatus.PUBLISHED,
+            title: { contains: s, mode: "insensitive" },
           },
           include: {
             imageCover: true,

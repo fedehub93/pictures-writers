@@ -7,7 +7,6 @@ const Sidebar = (): JSX.Element => (
   <div className="flex flex-col gap-y-4">
     <SidebarSearch />
     <SidebarEbook />
-    {/* <SearchAlgolia /> */}
     <SidebarLatestNews />
     <SidebarCategories />
   </div>

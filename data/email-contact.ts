@@ -1,5 +1,11 @@
 import { db } from "@/lib/db";
-import { endOfDay, startOfDay, subMonths } from "date-fns";
+import {
+  endOfDay,
+  endOfMonth,
+  startOfDay,
+  startOfMonth,
+  subMonths,
+} from "date-fns";
 
 export const getContactByEmail = async (email: string) => {
   try {
@@ -74,6 +80,7 @@ export interface GrowthStats {
   lastMonthCount: number;
   absoluteGrowth: number;
   percentageGrowth: number;
+  chartData?: any;
 }
 
 export async function getEbookDownloadGrowth(
@@ -118,13 +125,132 @@ export async function getEbookDownloadGrowth(
   const percentageGrowth =
     lastRangeCount === 0 ? 100 : (absoluteGrowth / lastRangeCount) * 100;
 
+  // 4. Chart Data
+  const chartData = await getEbookDownloadChartData();
+
   return {
     currentMonthCount: currentRangeCount,
     lastMonthCount: lastRangeCount,
     absoluteGrowth,
     percentageGrowth: Math.round(percentageGrowth * 100) / 100, // Arrotondamento a 2 decimali
+    chartData,
   };
 }
+
+const getEbookDownloadChartData = async () => {
+  const today = new Date();
+  const startDate = startOfMonth(subMonths(today, 6)); // 7 mesi fa e poi il primo giorno del mese
+  const endDate = endOfMonth(subMonths(today, 1)); // Ultimo giorno del mese scorso
+
+  const interactions = await db.emailContactInteraction.findMany({
+    where: {
+      interactionDate: {
+        gte: startDate,
+        lt: endDate, // Escludi il mese corrente
+      },
+      interactionType: "ebook_downloaded", // Puoi cambiarlo in base al tipo di interazione che ti interessa
+    },
+  });
+
+  // Raggruppa i dati per mese e anno
+  const groupedData: { [key: string]: number } = {};
+
+  interactions.forEach((interaction) => {
+    const interactionDate = new Date(interaction.interactionDate);
+    const month = interactionDate.getMonth(); // 0-based (gennaio = 0, febbraio = 1, ...)
+    const year = interactionDate.getFullYear();
+
+    const monthYearKey = `${year}-${month + 1}`; // Formato 'YYYY-MM'
+
+    if (!groupedData[monthYearKey]) {
+      groupedData[monthYearKey] = 0;
+    }
+
+    groupedData[monthYearKey] += 1; // Conta le interazioni per quel mese
+  });
+
+  // Organizza i dati nel formato richiesto
+  const chartData = [];
+  let month = startDate.getMonth();
+  let year = startDate.getFullYear();
+
+  // Mappa i risultati nel formato { month: "January", download: 186 }
+  for (let i = 0; i < 6; i++) {
+    const monthName = new Date(year, month).toLocaleString("default", {
+      month: "long",
+    });
+    const monthYearKey = `${year}-${month + 1}`;
+    const downloads = groupedData[monthYearKey] || 0;
+
+    chartData.push({
+      month: monthName,
+      download: downloads,
+    });
+
+    // Passa al mese successivo
+    month = (month + 1) % 12;
+    if (month === 0) year += 1; // Se superi dicembre, aumenta l'anno
+  }
+
+  return chartData;
+};
+
+const getEmailContactsChartData = async () => {
+  const today = new Date();
+  const startDate = startOfMonth(subMonths(today, 6)); // 7 mesi fa e poi il primo giorno del mese
+  const endDate = endOfMonth(subMonths(today, 1)); // Ultimo giorno del mese scorso
+
+  const contacts = await db.emailContact.findMany({
+    where: {
+      createdAt: {
+        gte: startDate,
+        lt: endDate,
+      },
+    },
+  });
+
+  // Raggruppa i dati per mese e anno
+  const groupedData: { [key: string]: number } = {};
+
+  contacts.forEach((contact) => {
+    const contactDate = new Date(contact.createdAt);
+    const month = contactDate.getMonth(); // 0-based (gennaio = 0, febbraio = 1, ...)
+    const year = contactDate.getFullYear();
+
+    const monthYearKey = `${year}-${month + 1}`; // Formato 'YYYY-MM'
+
+    if (!groupedData[monthYearKey]) {
+      groupedData[monthYearKey] = 0;
+    }
+
+    groupedData[monthYearKey] += 1; // Conta le interazioni per quel mese
+  });
+
+  // Organizza i dati nel formato richiesto
+  const chartData = [];
+  let month = startDate.getMonth();
+  let year = startDate.getFullYear();
+
+  // Mappa i risultati nel formato { month: "January", download: 186 }
+  for (let i = 0; i < 6; i++) {
+    const monthName = new Date(year, month).toLocaleString("default", {
+      month: "long",
+    });
+    const monthYearKey = `${year}-${month + 1}`;
+    const downloads = groupedData[monthYearKey] || 0;
+
+    chartData.push({
+      month: monthName,
+      download: downloads,
+    });
+
+    // Passa al mese successivo
+    month = (month + 1) % 12;
+    if (month === 0) year += 1; // Se superi dicembre, aumenta l'anno
+  }
+
+  return chartData;
+};
 
 export async function getEmailContactGrowth(
   from?: Date,
@@ -168,10 +294,14 @@ export async function getEmailContactGrowth(
   const percentageGrowth =
     lastRangeCount === 0 ? 100 : (absoluteGrowth / lastRangeCount) * 100;
 
+  // 4. Chart Data
+  const chartData = await getEmailContactsChartData();
+
   return {
     currentMonthCount: currentRangeCount,
     lastMonthCount: lastRangeCount,
     absoluteGrowth,
     percentageGrowth: Math.round(percentageGrowth * 100) / 100, // Arrotondamento a 2 decimali
+    chartData,
   };
 }

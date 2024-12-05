@@ -1,4 +1,4 @@
-import { Category, Ebook, Post, Product, Tag } from "@prisma/client";
+import { Category, Post, Product, Tag } from "@prisma/client";
 import { db } from "./db";
 
 const updateSeoRootId = async (seoId: string, rootId: string) => {
@@ -86,30 +86,6 @@ export const createTagSeo = async (tag: Tag) => {
 
   const updatedTagSeo = await updateSeoRootId(tagSeo.id, tagSeo.id);
   return updatedTagSeo;
-};
-
-export const createEbookSeo = async (ebook: Ebook) => {
-  const ebookSeo = await db.seo.create({
-    data: {
-      title: ebook.title,
-      version: 1,
-      description: ebook.description,
-      ogTwitterTitle: ebook.title,
-      ogTwitterDescription: ebook.description,
-      ogTwitterType: "card",
-      ogTwitterLocale: "it_IT",
-      ebooks: {
-        connect: { id: ebook.id },
-      },
-    },
-  });
-
-  if (!ebookSeo) {
-    return null;
-  }
-
-  const ebookUPdatedSeo = await updateSeoRootId(ebookSeo.id, ebookSeo.id);
-  return ebookUPdatedSeo;
 };
 
 export const createProductSeo = async (product: Product) => {

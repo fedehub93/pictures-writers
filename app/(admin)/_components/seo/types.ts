@@ -2,7 +2,6 @@ export enum SeoContentTypeApi {
   Post = "posts",
   Category = "categories",
   Tag = "tags",
-  Ebook = "ebooks",
   Product = "products",
 }
 

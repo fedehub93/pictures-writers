@@ -60,8 +60,6 @@ export const CreateContactForm = ({ options }: CreateContactFormProps) => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       const response = await axios.post("/api/mails/contacts", values);
-      // router.push(`/admin/mails/contacts/${response.data.id}`);
-      // router.push(`/admin/mails/contacts/create`);
       form.reset();
       router.refresh();
 
@@ -69,6 +67,10 @@ export const CreateContactForm = ({ options }: CreateContactFormProps) => {
     } catch {
       toast.error("Something went wrong");
     }
+  };
+
+  const onChangeAudience = (value: z.infer<typeof audiencesOptionSchema>[]) => {
+    form.setValue("audiences", value);
   };
 
   return (
@@ -150,6 +152,7 @@ export const CreateContactForm = ({ options }: CreateContactFormProps) => {
                   <MultipleSelector
                     value={field.value}
                     defaultOptions={options}
+                    onChange={onChangeAudience}
                     placeholder="Select audiences..."
                     className="bg-background"
                     emptyIndicator={

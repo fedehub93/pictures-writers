@@ -20,7 +20,6 @@ const tables = [
   "emailSingleSendLog",
   "emailSendLog",
   "emailSubscriptionToken",
-  "ebook",
   "contactForm",
   "format",
   "genre",

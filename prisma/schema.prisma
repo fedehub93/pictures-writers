@@ -53,7 +53,6 @@ model User {
   role UserRole @default(USER)
 
   posts         Post[]
-  ebooks        Ebook[]
   notifications Notification[]
   products      Product[]
 
@@ -125,8 +124,6 @@ model Seo {
   categories Category[]
 
   tags Tag[]
-
-  ebooks Ebook[]
 
   products Product[]
 
@@ -463,37 +460,6 @@ model ProductExtra {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-}
-
-model Ebook {
-  id String @id @default(uuid())
-
-  title       String
-  slug        String?
-  description String?
-
-  version Int
-
-  status ContentStatus @default(DRAFT)
-
-  isLatest Boolean @default(true)
-
-  imageCoverUrl String?
-  fileUrl       String?
-
-  rootId       String?
-  root         Ebook?  @relation("RootChildren", fields: [rootId], references: [id])
-  rootChildren Ebook[] @relation("RootChildren")
-
-  seo   Seo?    @relation(fields: [seoId], references: [id])
-  seoId String?
-
-  user   User?   @relation(fields: [userId], references: [id])
-  userId String?
-
-  firstPublishedAt DateTime @default(now())
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
 }
 
 model ContactForm {

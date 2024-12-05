@@ -16,6 +16,8 @@ export async function POST(req: Request) {
       ? [...values.audiences]
       : [];
 
+    console.log(values.audiences, audiences);
+
     const contact = await db.emailContact.create({
       data: {
         ...values,

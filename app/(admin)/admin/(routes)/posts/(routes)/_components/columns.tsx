@@ -50,6 +50,7 @@ export const columns: ColumnDef<PostWithImageCoverAndUser>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="-ml-4"
         >
           Title
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -64,6 +65,7 @@ export const columns: ColumnDef<PostWithImageCoverAndUser>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="-ml-4"
         >
           Author
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -89,24 +91,6 @@ export const columns: ColumnDef<PostWithImageCoverAndUser>[] = [
       );
     },
   },
-  // {
-  //   accessorKey: "description",
-  //   header: ({ column }) => {
-  //     return (
-  //       <Button
-  //         variant="ghost"
-  //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //       >
-  //         Description
-  //         <ArrowUpDown className="ml-2 h-4 w-4" />
-  //       </Button>
-  //     );
-  //   },
-  //   cell: ({ row }) => {
-  //     const description = (row.getValue("description") || "") as String;
-  //     return <div className="line-clamp-2">{description}</div>;
-  //   },
-  // },
   {
     accessorKey: "status",
     header: ({ column }) => {
@@ -114,6 +98,7 @@ export const columns: ColumnDef<PostWithImageCoverAndUser>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="-ml-4"
         >
           Status
           <ArrowUpDown className="ml-2 h-4 w-4" />
@@ -138,6 +123,9 @@ export const columns: ColumnDef<PostWithImageCoverAndUser>[] = [
         </Badge>
       );
     },
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id));
+    },
   },
   {
     accessorKey: "firstPublishedAt",
@@ -146,6 +134,7 @@ export const columns: ColumnDef<PostWithImageCoverAndUser>[] = [
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="-ml-4"
         >
           Published at
           <ArrowUpDown className="ml-2 h-4 w-4" />
