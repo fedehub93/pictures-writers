@@ -22,7 +22,7 @@ const SidebarSearch = () => {
     usePostsQuery(debouncedSearch);
 
   return (
-    <div className="w-full bg-white px-6 py-8 shadow-md">
+    <div className="w-full bg-white px-6 py-8 shadow-md hidden md:block">
       <label
         htmlFor="search"
         className="mb-4 text-sm font-extrabold uppercase block"

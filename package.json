@@ -11,7 +11,7 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@clerk/nextjs": "^6.6.0",
+    "@clerk/nextjs": "^6.7.0",
     "@hello-pangea/dnd": "^17.0.0",
     "@hookform/resolvers": "^3.9.1",
     "@next/bundle-analyzer": "^14.2.15",
@@ -52,7 +52,7 @@
     "image-extensions": "^1.1.0",
     "is-hotkey": "^0.2.0",
     "is-url": "^1.2.4",
-    "lucide-react": "^0.465.0",
+    "lucide-react": "^0.466.0",
     "next": "^14.2.15",
     "next-themes": "^0.3.0",
     "query-string": "^9.1.1",
@@ -80,13 +80,13 @@
     "uuid": "^10.0.0",
     "valibot": "^0.42.1",
     "zod": "^3.23.8",
-    "zustand": "^5.0.1"
+    "zustand": "^5.0.2"
   },
   "devDependencies": {
     "@types/is-hotkey": "^0.1.10",
     "@types/is-url": "^1.2.32",
     "@types/node": "^22.10.1",
-    "@types/react": "^18.3.12",
+    "@types/react": "^18.3.13",
     "@types/react-dom": "^18.3.1",
     "@types/uuid": "^10.0.0",
     "autoprefixer": "^10.4.20",

@@ -141,12 +141,12 @@ const ProductCreatePage = () => {
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Product Category</FormLabel>
+                  <FormLabel>Product Type</FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
                       defaultValue={field.value}
-                      className="grid grid-cols-2 gap-2"
+                      className="grid grid-cols-3 gap-2"
                     >
                       {categories.map((category) => (
                         <FormItem key={category.type}>
