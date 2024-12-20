@@ -83,7 +83,7 @@ const AboutPage = async () => {
             {authors.map((author) => (
               <div
                 key={author.id}
-                className="grid grid-cols-2 items-center gap-x-4 "
+                className="grid grid-cols-1 md:grid-cols-2 items-center gap-4 "
               >
                 <Image
                   src={author.imageUrl!}
@@ -93,7 +93,7 @@ const AboutPage = async () => {
                   sizes="90vw"
                   className="aspect-square mx-auto block rounded-full border-2 border-neutral-200 grayscale object-cover"
                 />
-                <div className="flex flex-col gap-y-2">
+                <div className="flex flex-col gap-y-2 text-center md:text-left">
                   <div className="text-xl font-medium">
                     {author.firstName} {author.lastName}
                   </div>
