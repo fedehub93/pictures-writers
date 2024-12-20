@@ -1,9 +1,19 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import qs from "query-string";
 
-export const usePostsQuery = (s = "") => {
+type UsePostsQuery = {
+  s: string;
+  minChar?: boolean;
+  windowIsOpen?: boolean;
+};
+
+export const usePostsQuery = ({
+  s,
+  minChar = true,
+  windowIsOpen = false,
+}: UsePostsQuery) => {
   const fetchPosts = async ({ pageParam = undefined, s = "" }) => {
-    if (!s) return { items: [] };
+    if (!s && minChar === true) return { items: [] };
     const url = qs.stringifyUrl(
       {
         url: `/api/posts`,
@@ -18,14 +28,30 @@ export const usePostsQuery = (s = "") => {
     return res.json();
   };
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
-    useInfiniteQuery({
-      initialPageParam: undefined,
-      queryKey: ["posts", s],
-      queryFn: ({ pageParam }) => fetchPosts({ pageParam, s }),
-      getNextPageParam: (lastPage) => lastPage?.nextCursor,
-      refetchInterval: false,
-    });
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    status,
+    refetch,
+  } = useInfiniteQuery({
+    initialPageParam: undefined,
+    queryKey: ["posts", s],
+    queryFn: ({ pageParam }) => fetchPosts({ pageParam, s }),
+    getNextPageParam: (lastPage) => lastPage?.nextCursor,
+    refetchInterval: false,
+    enabled: windowIsOpen,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+  });
 
-  return { data, fetchNextPage, hasNextPage, isFetchingNextPage, status };
+  return {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    status,
+    refetch,
+  };
 };

@@ -151,8 +151,6 @@ export const ProductForm = ({
     return redirect("/admin/products");
   }
 
-  console.log(form.getValues());
-
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
