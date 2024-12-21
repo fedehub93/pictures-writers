@@ -1,11 +1,12 @@
 import { ReactNode } from "react";
 import { CustomElement } from "./components/editor";
-import { Media, Product, ProductCategory, User } from "@prisma/client";
+import { Media, Product, ProductCategory, WidgetType } from "@prisma/client";
 
 declare global {
   namespace PrismaJson {
     type BodyData = CustomElement[];
     type ProductMetadata = EbookMetadata | AffiliateMetadata | null | undefined;
+    type WidgetMetadata = any;
     type Scripts = SettingsScripts[] | null | undefined;
   }
 }
@@ -106,6 +107,44 @@ export type AffiliateMetadata = {
   type: ProductCategory;
   url: string;
 };
+
+/**
+ * Widget types
+ */
+
+export enum WidgetPostType {
+  ALL = "ALL",
+  SPECIFIC = "SPECIFIC",
+  POPULAR = "POPULAR",
+  LATEST = "LATEST",
+  CORRELATED = "CORRELATED",
+}
+
+export enum WidgetPostCategoryFilter {
+  ALL = "ALL",
+  CURRENT = "CURRENT",
+  SPECIFIC = "SPECIFIC",
+}
+
+export type WidgetSearchMetadata = {
+  label: string;
+  type: WidgetType;
+  isDynamic: boolean
+};
+
+export type WidgetPostMetadata = {
+  label: string;
+  type: WidgetType;
+  postType: WidgetPostType;
+  posts: string[];
+  categoryType: WidgetPostCategoryFilter;
+  categories: string[];
+  limit: number;
+};
+
+/**
+ * Script types
+ */
 
 export enum ScriptStrategy {
   beforeInteractive = "beforeInteractive",

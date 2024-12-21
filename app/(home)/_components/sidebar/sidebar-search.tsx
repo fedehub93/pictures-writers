@@ -19,7 +19,7 @@ const SidebarSearch = () => {
   const [debouncedSearch, setDebouncedSearch] = useDebounceValue("", 500);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
-    usePostsQuery(debouncedSearch);
+    usePostsQuery({ s: debouncedSearch });
 
   return (
     <div className="w-full bg-white px-6 py-8 shadow-md hidden md:block">

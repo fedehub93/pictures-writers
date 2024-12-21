@@ -55,13 +55,14 @@ export const LatestNews = async () => {
                     />
                   </div>
                 ) : null}
-                <div className="mb-2 flex uppercase">
+                <div className="mb-2 flex text-muted-foreground">
                   <span>
+                    Pubblicato&nbsp;
                     {formatDistance(post.firstPublishedAt, new Date(), {
                       addSuffix: true,
                       locale: it,
                     })}
-                    &nbsp;
+                    &nbsp;-&nbsp;
                   </span>
                   <span>
                     {post?.user?.firstName} {post?.user?.lastName}

@@ -10,6 +10,7 @@ import { ImportAudienceContacts } from "../modals/import-audience-contacts";
 import { EditUserModal } from "../modals/edit-user-modal";
 import { CreateUserModal } from "../modals/create-user-modal";
 import { SelectProductModal } from "../modals/select-product-modal";
+import { SelectPostModal } from "../modals/select-post-modal";
 
 export const ModalProvider = () => {
   const [isMounted, setIsMounted] = useState(false);
@@ -29,6 +30,7 @@ export const ModalProvider = () => {
       <EditMediaModal />
       <EditUserModal />
       <SelectAssetModal />
+      <SelectPostModal />
       <SelectProductModal />
       <SelectUrlModal />
       <EditLinkModal />

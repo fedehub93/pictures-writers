@@ -34,6 +34,37 @@ model Settings {
   updatedAt DateTime @updatedAt
 }
 
+enum WidgetSection {
+  HERO
+  POPUP
+  SIDEBAR
+}
+
+enum WidgetType {
+  SEARCH_BOX
+  POST
+  CATEGORY
+  TAG
+  PRODUCT
+}
+
+model Widget {
+  id String @id @default(uuid())
+
+  name    String
+  section WidgetSection
+  type    WidgetType
+  sort    Int
+
+  isEnabled Boolean @default(false)
+
+  /// [WidgetMetadata]
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 enum UserRole {
   USER
   EDITOR

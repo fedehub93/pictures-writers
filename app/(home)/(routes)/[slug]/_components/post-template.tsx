@@ -17,6 +17,8 @@ interface PostTemplateProps {
 }
 
 export const PostTemplate = async ({ post }: PostTemplateProps) => {
+  if (!post.category?.id) return null;
+
   const imageWithPlaceholder = await getPlaceholderImage(post.imageCover?.url!);
 
   return (
@@ -53,8 +55,6 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
           </div>
         </article>
         <TagsWidget tags={post.tags!} />
-        <NewsletterWidget />
-        {/* <DisqusLazy config={disqusOptions} /> */}
         {post.user && (
           <AuthorWidget
             firstName={post.user.firstName || ""}
@@ -63,9 +63,11 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
             imageUrl={post.user.imageUrl || ""}
           />
         )}
+        <NewsletterWidget />
+        {/* <DisqusLazy config={disqusOptions} /> */}
       </div>
       <div className="blog-post__sidebar sticky -top-20">
-        <Sidebar />
+        <Sidebar postId={post.id} categoryId={post.category?.id} />
       </div>
     </div>
   );

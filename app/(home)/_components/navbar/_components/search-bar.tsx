@@ -20,7 +20,7 @@ export const SearchBar = () => {
   const [debouncedSearch, setDebouncedSearch] = useDebounceValue("", 500);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
-    usePostsQuery(debouncedSearch);
+    usePostsQuery({ s: debouncedSearch });
 
   const onHandleOpen = () => {
     setIsOpen(!isOpen);

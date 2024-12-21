@@ -1,6 +1,11 @@
-import { ProductCategory } from "@prisma/client";
+import { ProductCategory, WidgetSection, WidgetType } from "@prisma/client";
 
-import { AffiliateMetadata, EbookMetadata, EbookType } from "@/types";
+import {
+  AffiliateMetadata,
+  EbookMetadata,
+  EbookType,
+  WidgetPostMetadata,
+} from "@/types";
 
 export function isValidEbookFormat(format: string | null): format is EbookType {
   return format === "pdf" || format === "epub" || format === "mobi";
@@ -25,5 +30,28 @@ export function isAffiliateMetadata(
     "type" in metadata &&
     typeof (metadata as any).type === "string" &&
     metadata.type === ProductCategory.AFFILIATE
+  );
+}
+
+export function isValidWidgetMetadata(
+  metadata: unknown
+): metadata is WidgetPostMetadata {
+  return (
+    typeof metadata === "object" &&
+    metadata !== null &&
+    "type" in metadata &&
+    typeof (metadata as any).type === "string"
+  );
+}
+
+export function isWidgetPostMetadata(
+  metadata: unknown
+): metadata is WidgetPostMetadata {
+  return (
+    typeof metadata === "object" &&
+    metadata !== null &&
+    "type" in metadata &&
+    typeof (metadata as any).type === "string" &&
+    metadata.type === WidgetType.POST
   );
 }
