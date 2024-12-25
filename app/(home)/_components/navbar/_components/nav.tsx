@@ -31,7 +31,7 @@ const routes = [
     link: "/blog/",
   },
   {
-    title: "Risorse",
+    title: "Contatti",
     link: "/contatti/",
   },
 ];

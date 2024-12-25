@@ -32,7 +32,7 @@ export const WidgetCategory = async ({
             prefetch={true}
           >
             <ChevronRight className="-ml-1 mr-1 xl:-mt-2" />
-            <h5 className="upper mb-2 text-base leading-5 tracking-tight dark:text-white">
+            <h5 className="upper mb-2 text-base leading-5 tracking-tight ">
               {category.title}
             </h5>
           </Link>
