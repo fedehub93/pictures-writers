@@ -30,6 +30,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 
 import { cn } from "@/lib/utils";
+import { WidgetActions } from "./actions";
 
 export const columns: ColumnDef<Widget>[] = [
   {
@@ -92,16 +93,8 @@ export const columns: ColumnDef<Widget>[] = [
       );
     },
     cell: ({ row }) => {
-      const type = row.getValue("type") || false;
-      return (
-        <Badge>
-          {type === WidgetType.SEARCH_BOX
-            ? "Search Box"
-            : type === WidgetType.POST
-            ? "Post"
-            : "Sidebar"}
-        </Badge>
-      );
+      const type = (row.getValue("type") as string) || false;
+      return <Badge>{type}</Badge>;
     },
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id));
@@ -131,24 +124,7 @@ export const columns: ColumnDef<Widget>[] = [
     id: "actions",
     cell: ({ row }) => {
       const { id } = row.original;
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-4 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <Link href={`/admin/widgets/${id}`}>
-              <DropdownMenuItem>
-                <Pencil className="h-4 w-4 mr-2" />
-                Edit
-              </DropdownMenuItem>
-            </Link>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
+      return <WidgetActions id={id} />;
     },
   },
 ];

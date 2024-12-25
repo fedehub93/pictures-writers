@@ -120,25 +120,49 @@ export enum WidgetPostType {
   CORRELATED = "CORRELATED",
 }
 
+export enum WidgetCategoryType {
+  ALL = "ALL",
+}
+
 export enum WidgetPostCategoryFilter {
   ALL = "ALL",
   CURRENT = "CURRENT",
   SPECIFIC = "SPECIFIC",
 }
 
+export enum WidgetProductType {
+  ALL = "ALL",
+  SPECIFIC = "SPECIFIC",
+}
+
 export type WidgetSearchMetadata = {
   label: string;
   type: WidgetType;
-  isDynamic: boolean
+  isDynamic: boolean;
 };
 
 export type WidgetPostMetadata = {
   label: string;
   type: WidgetType;
   postType: WidgetPostType;
-  posts: string[];
-  categoryType: WidgetPostCategoryFilter;
+  posts: { id: string; sort: number }[];
+  categoryFilter: WidgetPostCategoryFilter;
   categories: string[];
+  limit: number;
+};
+
+export type WidgetCategoryMetadata = {
+  label: string;
+  type: WidgetType;
+  categoryType: WidgetCategoryType;
+  limit: number;
+};
+
+export type WidgetProductMetadata = {
+  label: string;
+  type: WidgetType;
+  productType: WidgetProductType;
+  products: { id: string; sort: number }[];
   limit: number;
 };
 

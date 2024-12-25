@@ -5,12 +5,12 @@ import { PostWithImageCoverWithCategoryWithTagsWithSeo } from "@/lib/post";
 import { getPlaceholderImage } from "@/lib/image";
 import CustomSlateView from "@/components/editor/view";
 
-import Sidebar from "@/app/(home)/_components/sidebar";
 import PostInfo from "@/app/(home)/(routes)/blog/_components/post-info";
 
 import TagsWidget from "./tags-widget";
 import NewsletterWidget from "./newsletter-widget";
 import AuthorWidget from "./author-widget";
+import Sidebar from "./sidebar";
 
 interface PostTemplateProps {
   post: PostWithImageCoverWithCategoryWithTagsWithSeo;
@@ -66,7 +66,7 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
         <NewsletterWidget />
         {/* <DisqusLazy config={disqusOptions} /> */}
       </div>
-      <div className="blog-post__sidebar sticky -top-20">
+      <div className="blog-post__sidebar">
         <Sidebar postId={post.id} categoryId={post.category?.id} />
       </div>
     </div>

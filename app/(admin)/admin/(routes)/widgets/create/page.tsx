@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
 import {
   AppWindow,
+  Box,
   Boxes,
   Captions,
   LucideIcon,
@@ -50,8 +51,8 @@ const sections = [
   },
   { section: WidgetSection.POPUP, label: "Pop-up", Icon: AppWindow, types: [] },
   {
-    section: WidgetSection.SIDEBAR,
-    label: "Sidebar",
+    section: WidgetSection.POST_SIDEBAR,
+    label: "Post Sidebar",
     Icon: PanelRight,
     types: [
       {
@@ -74,6 +75,7 @@ const sections = [
         label: "Tags",
         Icon: Tags,
       },
+      { type: WidgetType.PRODUCT, label: "Products", Icon: Box },
     ],
   },
 ];
@@ -98,7 +100,7 @@ const WidgetCreatePage = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const response = await axios.post("/api/widgets", values);
+      const response = await axios.post("/api/admin/widgets", values);
       router.push(`/admin/widgets/${response.data.id}`);
 
       toast.success("Widget created");
@@ -186,43 +188,45 @@ const WidgetCreatePage = () => {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Widget Type</FormLabel>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className="grid grid-cols-3 gap-2"
-                    >
-                      {selectedTypes.map((type) => (
-                        <FormItem key={type.type}>
-                          <div>
-                            <FormControl>
-                              <RadioGroupItem
-                                value={type.type}
-                                id={type.type}
-                                className="peer sr-only"
-                              />
-                            </FormControl>
-                            <FormLabel
-                              htmlFor={type.type}
-                              className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
-                            >
-                              <type.Icon className="w-6 h-6 mb-3" />
-                              {type.label}
-                            </FormLabel>
-                          </div>
-                        </FormItem>
-                      ))}
-                    </RadioGroup>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+            {selectedTypes.length > 0 && (
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Widget Type</FormLabel>
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="grid grid-cols-3 gap-2"
+                      >
+                        {selectedTypes.map((type) => (
+                          <FormItem key={type.type}>
+                            <div>
+                              <FormControl>
+                                <RadioGroupItem
+                                  value={type.type}
+                                  id={type.type}
+                                  className="peer sr-only"
+                                />
+                              </FormControl>
+                              <FormLabel
+                                htmlFor={type.type}
+                                className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                              >
+                                <type.Icon className="w-6 h-6 mb-3" />
+                                {type.label}
+                              </FormLabel>
+                            </div>
+                          </FormItem>
+                        ))}
+                      </RadioGroup>
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            )}
             <div className="flex items-center gap-x-2">
               <Link href="/admin/products">
                 <Button variant="ghost" type="button">

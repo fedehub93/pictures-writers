@@ -79,20 +79,20 @@ export const SelectPostModal = () => {
           ) : (
             <div className="flex flex-col py-4 px-6 gap-y-4">
               {data?.pages?.map((group, i) => (
-                <div key={i} className="flex flex-wrap gap-x-4">
+                <div key={i} className="flex flex-wrap gap-4">
                   {group.items.map(
                     (item: PostWithImageCoverWithCategoryWithTags) => (
                       <div
                         key={item.title}
-                        className="flex flex-col gap-y-2 pb-4 w-40 border cursor-pointer hover:scale-[1.02] hover:shadow-xl duration-500 transition-all rounded-md shadow-md"
+                        className="flex flex-col gap-y-2 pb-4 w-60 border cursor-pointer hover:scale-[1.02] hover:shadow-xl duration-500 transition-all rounded-md shadow-md"
                       >
-                        <div className="relative w-40 aspect-square overflow-hidden border-b">
+                        <div className="relative w-60 aspect-video overflow-hidden border-b">
                           <Image
                             src={item.imageCover?.url || ""}
                             alt={item.imageCover?.altText || ""}
                             onClick={() => onSelect(item)}
                             fill
-                            className="object-contain rounded-md"
+                            className="object-cover rounded-md"
                           />
                         </div>
                         <div className="text-sm px-2 line-clamp-2">

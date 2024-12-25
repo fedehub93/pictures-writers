@@ -77,7 +77,7 @@ export const SpecificCategoryForm = ({
 
   const { field: fieldCategoryFilter } = useController({
     control,
-    name: "metadata.categoryType",
+    name: "metadata.categoryFilter",
   });
   const { field: fieldCategories } = useController({
     control,
@@ -118,15 +118,14 @@ export const SpecificCategoryForm = ({
     <div className="flex gap-4 items-center">
       <FormField
         control={control}
-        name="metadata.categoryType"
+        name="metadata.categoryFilter"
         render={({ field }) => (
           <FormItem className="w-full">
             <FormLabel className="block">Category Filter</FormLabel>
             <Select
               onValueChange={field.onChange}
-              defaultValue={categoryFilters[0].type}
-              {...field}
-              disabled={isSubmitting}
+              value={field.value}
+              disabled={isSubmitting || isDisabled}
             >
               <FormControl>
                 <SelectTrigger>

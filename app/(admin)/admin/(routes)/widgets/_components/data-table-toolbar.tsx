@@ -1,7 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle, Circle, PlusCircle, Timer, X } from "lucide-react";
+import {
+  AppWindow,
+  Captions,
+  CheckCircle,
+  Circle,
+  PanelRight,
+  PlusCircle,
+  Timer,
+  X,
+} from "lucide-react";
 import { WidgetSection } from "@prisma/client";
 import { Table } from "@tanstack/react-table";
 
@@ -18,17 +27,17 @@ const sections = [
   {
     value: WidgetSection.HERO,
     label: "Hero",
-    icon: Circle,
+    icon: Captions,
   },
   {
     value: WidgetSection.POPUP,
     label: "Pop-up",
-    icon: Timer,
+    icon: AppWindow,
   },
   {
-    value: WidgetSection.SIDEBAR,
-    label: "Published",
-    icon: CheckCircle,
+    value: WidgetSection.POST_SIDEBAR,
+    label: "Post Sidebar",
+    icon: PanelRight,
   },
 ];
 

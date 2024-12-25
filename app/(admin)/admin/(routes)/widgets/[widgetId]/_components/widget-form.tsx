@@ -11,39 +11,67 @@ import { Widget, WidgetSection, WidgetType } from "@prisma/client";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 
-import { isWidgetPostMetadata } from "@/type-guards";
+import {
+  WidgetCategoryType,
+  WidgetPostCategoryFilter,
+  WidgetPostType,
+  WidgetProductType,
+} from "@/types";
+import {
+  isWidgetCategoryMetadata,
+  isWidgetPostMetadata,
+  isWidgetProductMetadata,
+  isWidgetSearchMetadata,
+} from "@/type-guards";
+
 import { WidgetDetailsForm } from "./widget-details-form";
 import { WidgetStatusView } from "./widget-status";
-import { WidgetPostForm } from "./post/widget-post-form";
-import { WidgetPostCategoryFilter, WidgetPostType } from "@/types";
+import { WidgetSort } from "./widget-sort";
+
+import { WidgetPostForm } from "./post/post-form";
+import { WidgetSearchForm } from "./search/search-form";
+import { WidgetProductForm } from "./product/product-form";
+import { WidgetCategoryForm } from "./category/category-form";
 
 interface WidgetFormProps {
   initialData: Widget;
   apiUrl: string;
 }
 
-const WidgetTypeZ = z.enum([WidgetType.SEARCH_BOX, WidgetType.POST]); // Enum per WidgetType
-const WidgetPostTypeZ = z.enum([
-  WidgetPostType.ALL,
-  WidgetPostType.LATEST,
-  WidgetPostType.POPULAR,
-  WidgetPostType.SPECIFIC,
-  WidgetPostType.CORRELATED,
-]); // Enum per WidgetPostType
-const WidgetPostCategoryFilterZ = z.enum([
-  WidgetPostCategoryFilter.ALL,
-  WidgetPostCategoryFilter.CURRENT,
-  WidgetPostCategoryFilter.SPECIFIC,
-]); // Enum per WidgetPostCategoryFilter
+const WidgetTypeZ = z.enum([
+  WidgetType.SEARCH_BOX,
+  WidgetType.POST,
+  WidgetType.CATEGORY,
+  WidgetType.PRODUCT,
+]);
 
-// Schema per WidgetSearchMetadata
 const WidgetSearchMetadataSchema = z.object({
   label: z.string(),
   type: WidgetTypeZ,
   isDynamic: z.boolean(),
 });
 
-// Schema per WidgetPostMetadata
+const WidgetPostTypeZ = z.enum([
+  WidgetPostType.ALL,
+  WidgetPostType.LATEST,
+  WidgetPostType.POPULAR,
+  WidgetPostType.SPECIFIC,
+  WidgetPostType.CORRELATED,
+]);
+
+const WidgetPostCategoryFilterZ = z.enum([
+  WidgetPostCategoryFilter.ALL,
+  WidgetPostCategoryFilter.CURRENT,
+  WidgetPostCategoryFilter.SPECIFIC,
+]);
+
+const WidgetProductTypeZ = z.enum([
+  WidgetProductType.ALL,
+  WidgetProductType.SPECIFIC,
+]);
+
+const WidgetCategoryTypeZ = z.enum([WidgetCategoryType.ALL]);
+
 const WidgetPostMetadataSchema = z.object({
   label: z.string(),
   type: WidgetTypeZ,
@@ -54,8 +82,29 @@ const WidgetPostMetadataSchema = z.object({
       sort: z.coerce.number(),
     })
   ),
-  categoryType: WidgetPostCategoryFilterZ,
+  categoryFilter: WidgetPostCategoryFilterZ,
   categories: z.array(z.string()),
+  limit: z.number(),
+});
+
+const WidgetCategoryMetadataSchema = z.object({
+  label: z.string(),
+  type: WidgetTypeZ,
+  categoryType: WidgetCategoryTypeZ,
+  limit: z.number(),
+});
+
+// Schema per WidgetProductMetadata
+const WidgetProductMetadataSchema = z.object({
+  label: z.string(),
+  type: WidgetTypeZ,
+  productType: WidgetProductTypeZ,
+  products: z.array(
+    z.object({
+      id: z.string(),
+      sort: z.coerce.number(),
+    })
+  ),
   limit: z.number(),
 });
 
@@ -64,7 +113,12 @@ export const widgetFormSchema = z.object({
     message: "Name is required!",
   }),
   isEnabled: z.boolean(),
-  metadata: z.union([WidgetSearchMetadataSchema, WidgetPostMetadataSchema]),
+  metadata: z.union([
+    WidgetSearchMetadataSchema,
+    WidgetPostMetadataSchema,
+    WidgetCategoryMetadataSchema,
+    WidgetProductMetadataSchema,
+  ]),
 });
 
 export const WidgetForm = ({ initialData, apiUrl }: WidgetFormProps) => {
@@ -72,9 +126,13 @@ export const WidgetForm = ({ initialData, apiUrl }: WidgetFormProps) => {
 
   const isHeroWidget = initialData.section === WidgetSection.HERO;
   const isPopupWidget = initialData.section === WidgetSection.POPUP;
-  const isSidebarWidget = initialData.section === WidgetSection.SIDEBAR;
+  const isPostSidebarWidget =
+    initialData.section === WidgetSection.POST_SIDEBAR;
 
+  const isSearchWidget = isWidgetSearchMetadata(initialData.metadata);
   const isPostWidget = isWidgetPostMetadata(initialData.metadata);
+  const isCategoryWidget = isWidgetCategoryMetadata(initialData.metadata);
+  const isProductWidget = isWidgetProductMetadata(initialData.metadata);
 
   const metadata = initialData.metadata;
 
@@ -91,6 +149,7 @@ export const WidgetForm = ({ initialData, apiUrl }: WidgetFormProps) => {
 
   const onSubmit = async (values: z.infer<typeof widgetFormSchema>) => {
     try {
+      console.log(values)
       await axios.patch(`${apiUrl}`, values);
       toast.success(`Widget updated`);
     } catch {
@@ -122,8 +181,26 @@ export const WidgetForm = ({ initialData, apiUrl }: WidgetFormProps) => {
                   initialData={initialData}
                   isSubmitting={isSubmitting}
                 />
+                {isSearchWidget && (
+                  <WidgetSearchForm
+                    control={form.control}
+                    isSubmitting={isSubmitting}
+                  />
+                )}
                 {isPostWidget && (
                   <WidgetPostForm
+                    control={form.control}
+                    isSubmitting={isSubmitting}
+                  />
+                )}
+                {isCategoryWidget && (
+                  <WidgetCategoryForm
+                    control={form.control}
+                    isSubmitting={isSubmitting}
+                  />
+                )}
+                {isProductWidget && (
+                  <WidgetProductForm
                     control={form.control}
                     isSubmitting={isSubmitting}
                   />
@@ -135,6 +212,9 @@ export const WidgetForm = ({ initialData, apiUrl }: WidgetFormProps) => {
                 control={form.control}
                 isSubmitting={isSubmitting}
               />
+              {isPostSidebarWidget && (
+                <WidgetSort section={initialData.section} />
+              )}
             </div>
           </div>
         </div>

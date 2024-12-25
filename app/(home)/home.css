@@ -99,7 +99,7 @@ h2 {
   }
 
   .blog-post .blog-post__sidebar {
-    @apply col-span-1 self-start sm:col-span-2 lg:block xl:col-span-2 xl:px-3;
+    @apply col-span-1 sm:col-span-2 lg:block xl:col-span-2 xl:px-3;
   }
 
   .tags {

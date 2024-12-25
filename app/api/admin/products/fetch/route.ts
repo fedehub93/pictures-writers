@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { ids } = RequestSchema.parse(body);
 
-    const posts = await db.post.findMany({
+    const products = await db.product.findMany({
       where: { id: { in: ids } },
       select: {
         id: true,
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json(posts);
+    return NextResponse.json(products);
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

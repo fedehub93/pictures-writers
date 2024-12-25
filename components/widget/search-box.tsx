@@ -5,9 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useDebounceValue } from "usehooks-ts";
 import { BeatLoader } from "react-spinners";
-import { Category, Media, Post, User } from "@prisma/client";
 import { formatDistance } from "date-fns";
 import { it } from "date-fns/locale";
+
+import { Category, Media, Post, User } from "@prisma/client";
 
 import { usePostsQuery } from "@/hooks/use-posts-query";
 
@@ -15,11 +16,11 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 
-const SidebarSearch = () => {
+export const WidgetSearchBox = () => {
   const [debouncedSearch, setDebouncedSearch] = useDebounceValue("", 500);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
-    usePostsQuery({ s: debouncedSearch, windowIsOpen:true });
+    usePostsQuery({ s: debouncedSearch, windowIsOpen: true });
 
   return (
     <div className="w-full bg-white px-6 py-8 shadow-md hidden md:block">
@@ -116,5 +117,3 @@ const SidebarSearch = () => {
     </div>
   );
 };
-
-export default SidebarSearch;

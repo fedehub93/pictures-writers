@@ -1,11 +1,58 @@
 import { db } from "@/lib/db";
-import { WidgetPostCategoryFilter, WidgetPostType } from "@/types";
-import { ContentStatus } from "@prisma/client";
+import {
+  WidgetCategoryMetadata,
+  WidgetCategoryType,
+  WidgetPostCategoryFilter,
+  WidgetPostMetadata,
+  WidgetPostType,
+  WidgetProductMetadata,
+  WidgetProductType,
+  WidgetSearchMetadata,
+} from "@/types";
+import { ContentStatus, WidgetType } from "@prisma/client";
+
+export const setDefaultWidgetSearchMetadata = (): WidgetSearchMetadata => {
+  return {
+    label: "",
+    type: WidgetType.SEARCH_BOX,
+    isDynamic: true,
+  };
+};
+
+export const setDefaultWidgetPostMetadata = (): WidgetPostMetadata => {
+  return {
+    label: "",
+    type: WidgetType.POST,
+    postType: WidgetPostType.ALL,
+    posts: [],
+    categoryFilter: WidgetPostCategoryFilter.ALL,
+    categories: [],
+    limit: 0,
+  };
+};
+
+export const setDefaultWidgetCategoryMetadata = (): WidgetCategoryMetadata => {
+  return {
+    label: "",
+    type: WidgetType.CATEGORY,
+    categoryType: WidgetCategoryType.ALL,
+    limit: 0,
+  };
+};
+
+export const setDefaultWidgetProductMetadata = (): WidgetProductMetadata => {
+  return {
+    label: "",
+    type: WidgetType.PRODUCT,
+    productType: WidgetProductType.ALL,
+    products: [],
+    limit: 0,
+  };
+};
 
 type GetWidgetPosts = {
-  postId: string;
   postType: WidgetPostType;
-  posts: string[];
+  posts: { id: string; sort: number }[];
   postCategoryId: string;
   categoryFilter: WidgetPostCategoryFilter;
   categories: string[];
@@ -13,7 +60,6 @@ type GetWidgetPosts = {
 };
 
 export const getWidgetPosts = async ({
-  postId,
   postType,
   posts,
   postCategoryId,
@@ -32,7 +78,7 @@ export const getWidgetPosts = async ({
 
     case WidgetPostType.SPECIFIC:
       if (posts.length > 0) {
-        whereClause.id = { in: posts };
+        whereClause.id = { in: posts.map((p) => p.id) };
       }
       break;
 
@@ -78,4 +124,80 @@ export const getWidgetPosts = async ({
   });
 
   return postsData;
+};
+
+type GetWidgetCategories = {
+  categoryType: WidgetCategoryType;
+  limit: number;
+};
+
+export const getWidgetCategories = async ({
+  categoryType,
+  limit,
+}: GetWidgetCategories) => {
+  let whereClause: any = {
+    status: ContentStatus.PUBLISHED,
+    isLatest: true,
+  };
+
+  switch (categoryType) {
+    case WidgetCategoryType.ALL:
+      break;
+
+    default:
+      throw new Error("Invalid WidgetCategoryType");
+  }
+
+  const categoriessData = await db.category.findMany({
+    where: whereClause,
+    orderBy: { firstPublishedAt: "desc" },
+    take: limit,
+  });
+
+  return categoriessData;
+};
+
+type GetWidgetProducts = {
+  productType: WidgetProductType;
+  products: { id: string; sort: number }[];
+  limit: number;
+};
+
+export const getWidgetProducts = async ({
+  productType,
+  products,
+  limit,
+}: GetWidgetProducts) => {
+  let whereClause: any = {
+    status: ContentStatus.PUBLISHED,
+    isLatest: true,
+  };
+
+  let take: any = limit;
+
+  switch (productType) {
+    case WidgetProductType.ALL:
+      break;
+
+    case WidgetProductType.SPECIFIC:
+      if (products.length > 0) {
+        whereClause.id = { in: products.map((p) => p.id) };
+      }
+      take = undefined;
+      break;
+
+    default:
+      throw new Error("Invalid WidgetProductType");
+  }
+
+  const productsData = await db.product.findMany({
+    where: whereClause,
+    include: {
+      imageCover: true,
+    },
+    orderBy: { createdAt: "desc" },
+    take,
+  });
+
+  return productsData;
 };

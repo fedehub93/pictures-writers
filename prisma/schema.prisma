@@ -37,7 +37,7 @@ model Settings {
 enum WidgetSection {
   HERO
   POPUP
-  SIDEBAR
+  POST_SIDEBAR
 }
 
 enum WidgetType {

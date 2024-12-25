@@ -6,9 +6,8 @@ import { getWidgetPosts } from "@/data/widget";
 
 interface WidgetPostProps {
   label: string;
-  postId: string;
+  posts: { id: string; sort: number }[];
   postType: WidgetPostType;
-  posts: string[];
   postCategoryId: string;
   categoryFilter: WidgetPostCategoryFilter;
   categories: string[];
@@ -17,7 +16,6 @@ interface WidgetPostProps {
 
 export const WidgetPost = async ({
   label,
-  postId,
   postType,
   posts,
   postCategoryId,
@@ -26,7 +24,6 @@ export const WidgetPost = async ({
   limit,
 }: WidgetPostProps) => {
   const postData = await getWidgetPosts({
-    postId,
     postType,
     posts,
     postCategoryId,

@@ -24,7 +24,7 @@ const WidgetIdPage = async ({ params }: { params: { widgetId: string } }) => {
   }
 
   return (
-    <WidgetForm initialData={widget} apiUrl={`/api/widgets/${widget.id}`} />
+    <WidgetForm initialData={widget} apiUrl={`/api/admin/widgets/${widget.id}`} />
   );
 };
 
