@@ -13,6 +13,7 @@ import { NumberedList } from "./numbered-list";
 import { SponsorFirstImpression } from "./first-impression-snippet";
 import { VideoElement } from "./video";
 import { ProductElement } from "./product";
+import { InfoBoxElement } from "./info-box";
 
 export {
   Paragraph,
@@ -21,6 +22,7 @@ export {
   HeadingThree,
   HeadingFour,
   Link,
+  InfoBoxElement,
   AffiliateLink,
   Blockquote,
   BulletedList,

@@ -17,6 +17,8 @@ import {
   Quote,
   Underline,
   Video,
+  Info,
+  Table,
 } from "lucide-react";
 import { useSlate } from "slate-react";
 
@@ -28,10 +30,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 import { CustomEditorHelper } from "@/components/editor/utils/custom-editor";
-import { cn } from "@/lib/utils";
 
 import MarkButton from "./mark-button";
 import BlockButton from "./block-button";
@@ -77,6 +79,13 @@ const Toolbar = ({
   const getProduct = (data: any) => {
     CustomEditorHelper.insertProduct(editor, { ...data });
   };
+
+  const insertInfoBox = () => {
+    CustomEditorHelper.insertInfoBox(editor, {});
+  };
+  // const insertTable = () => {
+  //   CustomEditorHelper.insertTable(editor);
+  // };
 
   return (
     <div
@@ -154,6 +163,14 @@ const Toolbar = ({
                 <Box className="h-4 w-4 mr-2" />
                 Product
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={insertInfoBox}>
+                <Info className="h-4 w-4 mr-2" />
+                Info box
+              </DropdownMenuItem>
+              {/* <DropdownMenuItem onClick={insertTable}>
+                <Table className="h-4 w-4 mr-2" />
+                Table
+              </DropdownMenuItem> */}
             </DropdownMenuContent>
           </DropdownMenu>
         )}

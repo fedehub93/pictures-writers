@@ -12,14 +12,14 @@ import {
   EmbeddedImageElement,
   EmbeddedProductElement,
   EmbeddedVideoElement,
+  InfoBoxElement,
 } from "@/components/editor";
-import { db } from "@/lib/db";
-import { ProductCategory } from "@prisma/client";
 
 type Format = "bold" | "italic" | "underline";
 
 const LIST_TYPES = ["ordered-list", "unordered-list"];
 const TEXT_ALIGN_TYPES = ["left", "center", "right", "justify"];
+const CONTAINERS = ["info-box"];
 // Define our own custom set of helpers.
 export const CustomEditorHelper = {
   isBlockActive(
@@ -50,15 +50,47 @@ export const CustomEditorHelper = {
       TEXT_ALIGN_TYPES.includes(format) ? "align" : "type"
     );
     const isList = LIST_TYPES.includes(format);
+    const [parentNode] = Editor.parent(editor, editor.selection || []);
+    const isInBox =
+      !Editor.isEditor(parentNode) && parentNode.type === "info-box";
+
+    // Se siamo in un "info-box", modifica solo i figli
+    // if (isInBox && editor.selection) {
+    //   let newProperties: Partial<Element>;
+    //   if (TEXT_ALIGN_TYPES.includes(format)) {
+    //     newProperties = {
+    //       align: isActive ? undefined : format,
+    //     };
+    //   } else {
+    //     newProperties = {
+    //       type: isActive ? "paragraph" : isList ? "list-item" : format,
+    //     };
+    //   }
+    //   Transforms.setNodes<Element>(editor, newProperties, {
+    //     at: editor.selection,
+    //   });
+    //   if (!isActive && isList) {
+    //     const block = { type: format, children: [] };
+    //     Transforms.wrapNodes(editor, block, { at: editor.selection });
+    //   }
+
+    //   ReactEditor.focus(editor);
+    //   return;
+    // }
 
     Transforms.unwrapNodes(editor, {
-      match: (n) =>
-        !Editor.isEditor(n) &&
-        Element.isElement(n) &&
-        LIST_TYPES.includes(n.type) &&
-        !TEXT_ALIGN_TYPES.includes(format),
+      match: (n) => {
+        return (
+          !Editor.isEditor(n) &&
+          Element.isElement(n) &&
+          LIST_TYPES.includes(n.type) &&
+          !CONTAINERS.includes(n.type) &&
+          !TEXT_ALIGN_TYPES.includes(format)
+        );
+      },
       split: true,
     });
+
     let newProperties: Partial<Element>;
     if (TEXT_ALIGN_TYPES.includes(format)) {
       newProperties = {
@@ -239,5 +271,31 @@ export const CustomEditorHelper = {
       type: "paragraph",
       children: [{ text: "" }],
     });
+  },
+  insertInfoBox(editor: CustomEditor, data: any) {
+    const info: InfoBoxElement = {
+      type: "info-box",
+      data: { icon: "💡" },
+      children: [{ type: "paragraph", children: [{ text: "" }] }],
+    };
+    Transforms.insertNodes(editor, info);
+    Transforms.insertNodes(editor, {
+      type: "paragraph",
+      children: [{ text: "" }],
+    });
+    Transforms.liftNodes(editor);
+  },
+  insertTable(editor: Editor, rows: number = 3, columns: number = 3) {
+    const table = {
+      type: "table",
+      children: Array.from({ length: rows }, () => ({
+        type: "table-row",
+        children: Array.from({ length: columns }, () => ({
+          type: "table-cell",
+          children: [{ text: "" }],
+        })),
+      })),
+    };
+    Transforms.insertNodes(editor, table);
   },
 };

@@ -14,6 +14,7 @@ import {
   NumberedList,
   SponsorFirstImpression,
   ProductElement,
+  InfoBoxElement,
 } from "@/components/editor/view/elements";
 import { RichText } from "@/components/editor/view/leaves";
 import { PostWithImageCoverWithCategoryWithTagsWithSeo } from "@/lib/post";
@@ -45,6 +46,7 @@ export const PostPreview = ({
             NumberedList,
             SponsorFirstImpression,
             ProductElement,
+            InfoBoxElement,
           ],
           leaves: [RichText],
         }}

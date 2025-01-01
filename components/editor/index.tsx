@@ -22,6 +22,7 @@ export type CustomElementType =
   | "heading-3"
   | "heading-4"
   | "blockquote"
+  | "info-box"
   | "hyperlink"
   | "code"
   | "list-item"
@@ -35,6 +36,12 @@ export type CustomElementType =
   | "left"
   | "right"
   | "center";
+
+export type InfoBoxElement = {
+  type: "info-box";
+  data: { icon: string };
+  children: CustomElement[];
+};
 
 export type EmbeddedProductElement = {
   type: "product";

@@ -2,9 +2,11 @@ import { useCallback, useState } from "react";
 import { Editor, Element, Node, Path, Range, Transforms } from "slate";
 import {
   Editable,
+  ReactEditor,
   RenderElementProps,
   RenderLeafProps,
   useSlate,
+  useSlateStatic,
 } from "slate-react";
 import { isKeyHotkey } from "is-hotkey";
 
@@ -35,127 +37,14 @@ import { AffiliateLink } from "./elements/embedded-affiliate-link";
 import { EmbeddedProductElement } from "@/components/editor";
 import FirstImpressionSnippet from "./elements/sponsor-first-impression";
 import { EmbeddedProduct } from "./elements/product";
+import { InfoBox } from "./elements/info-box";
+import {
+  TableCellElement,
+  TableElement,
+  TableRowElement,
+} from "./elements/table";
 
-const SOFT_BREAK_ELEMENTS = [
-  "heading-1",
-  "heading-2",
-  "heading-3",
-  "heading-4",
-  "blockquote",
-];
-// PLUGIN
-export const withEmbeds = (editor: CustomEditor) => {
-  const { insertData, isVoid } = editor;
-
-  // editor.isVoid = (element) => {
-  //   return ["image", "video"].includes(element.type) ? true : isVoid(element);
-  // };
-
-  editor.insertData = (data) => {
-    const text = data.getData("text/plain");
-    const { files } = data;
-
-    if (files && files.length > 0) {
-      for (const file of files) {
-        const reader = new FileReader();
-        const [mime] = file.type.split("/");
-
-        if (mime === "image") {
-          reader.addEventListener("load", () => {
-            const url = reader.result as string;
-            CustomEditorHelper.insertImage(editor, url, "");
-          });
-
-          reader.readAsDataURL(file);
-        }
-      }
-    } else if (CustomEditorHelper.isImageUrl(text)) {
-      CustomEditorHelper.insertImage(editor, text, "");
-    } else {
-      insertData(data);
-    }
-  };
-  return editor;
-};
-
-export const withInlines = (editor: CustomEditor) => {
-  const { isInline, normalizeNode, insertBreak, insertSoftBreak } = editor;
-
-  editor.isInline = (element) =>
-    element.type === "hyperlink" ? true : isInline(element);
-
-  editor.normalizeNode = (entry) => {
-    const [node, path] = entry;
-
-    // Se siamo alla radice e non ci sono nodi figli
-    if (path.length === 0 && editor.children.length === 0) {
-      // Inserisce un nodo di default (es: un paragrafo vuoto)
-      const defaultNode = {
-        type: "paragraph",
-        children: [{ text: "" }],
-      };
-
-      // Aggiunge il nodo di default
-      Transforms.insertNodes(editor, defaultNode, { at: [0] });
-      return; // Evita di chiamare la normale pipeline di normalizzazione
-    }
-
-    if (Element.isElement(node) && node.type === "paragraph") {
-      const children = Array.from(Node.children(editor, path));
-      for (const [child, childPath] of children) {
-        // FIX: remove link nodes whose text value is empty string.
-        // FIX: empty text links happen when you move from link to next line or delete link line.
-        if (
-          Element.isElement(child) &&
-          editor.isInline(child) &&
-          !Element.isElement(child.children[0]) &&
-          child.children[0].text === ""
-        ) {
-          if (children.length === 1) {
-            Transforms.removeNodes(editor, { at: path });
-            Transforms.insertNodes(editor, {
-              type: "paragraph",
-              children: [{ text: "" }],
-            });
-          } else {
-            Transforms.removeNodes(editor, { at: childPath });
-          }
-          return;
-        }
-
-        // FIX: normalize paragrah children
-        if (Element.isElement(child) && !editor.isInline(child)) {
-          Transforms.unwrapNodes(editor, { at: childPath });
-          return;
-        }
-      }
-    }
-    if (Element.isElement(node) && node.type === "blockquote") {
-      // FIX: normalize blockquote children
-      const children = Array.from(Node.children(editor, path));
-      for (const [child, childPath] of children) {
-        if (Element.isElement(child) && !editor.isInline(child)) {
-          Transforms.unwrapNodes(editor, { at: childPath });
-          return;
-        }
-      }
-    }
-
-    if (Element.isElement(node) && node.type === "list-item") {
-      // FIX: normalize blockquote children
-      const children = Array.from(Node.children(editor, path));
-      for (const [child, childPath] of children) {
-        if (Element.isElement(child) && !editor.isInline(child)) {
-          Transforms.unwrapNodes(editor, { at: childPath });
-          return;
-        }
-      }
-    }
-    normalizeNode(entry);
-  };
-
-  return editor;
-};
+const SOFT_BREAK_ELEMENTS = ["infobox"];
 
 interface EditorInputProps {
   onHandleIsFocused: (value: boolean) => void;
@@ -198,6 +87,8 @@ const EditorInput = ({
         return <HeadingFour {...props} />;
       case "blockquote":
         return <Blockquote {...props} />;
+      case "info-box":
+        return <InfoBox {...props} />;
       case "hyperlink":
         return <Link {...props} />;
       case "list-item":
@@ -238,6 +129,24 @@ const EditorInput = ({
         );
       case "code":
         return <div {...props.attributes}>{props.children}</div>;
+      // case "table":
+      //   return <TableElement {...props} />;
+      // case "table-row":
+      //   return <TableRowElement {...props} />;
+      // case "table-cell":
+      //   const rowIndex = path[1] ?? 0; // Evita errori in caso di percorsi non validi
+      //   const colIndex = path[2] ?? 0;
+      //   return (
+      //     <TableCellElement
+      //       {...props}
+      //       rowIndex={rowIndex}
+      //       colIndex={colIndex}
+      //       onAddColumn={() => {}}
+      //       onRemoveColumn={() => {}}
+      //       onAddRow={() => {}}
+      //       onRemoveRow={() => {}}
+      //     />
+      //   );
 
       default:
         // return <DefaultElement {...props} isHighlight={isHighlight} />;
