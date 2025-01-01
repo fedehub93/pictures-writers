@@ -34,9 +34,8 @@ export const InfoBoxElement = createElementTransform(
           element.align === "center" && "text-center",
           element.align === "right" && "text-right"
         )}
-      >6ò6
-      ècxxxà
-        <div className="absolute top-3 left-2 text-lg p-2ffffffffffffffffffffffffffffffffffffffffffffffdddddddddddddddddddy">
+      >
+        <div className="absolute top-3 left-2 text-lg p-2">
           {element.data.icon}
         </div>
 
