@@ -25,7 +25,7 @@ export const ImageElement = createElementTransform(
   ({ key, element, attributes, children }) => (
     <div
       key={key}
-      className="hover:scale-[1.02] my-4 transition-all overflow-hidden duration-300 rounded-md shadow-md"
+      className="post__image"
     >
       {children}
       <Image

@@ -79,7 +79,7 @@ export const setDefaultWidgetTagMetadata = (): WidgetTagMetadata => {
 type GetWidgetPosts = {
   postType: WidgetPostType;
   posts: { rootId: string; sort: number }[];
-  postCategoryId: string;
+  postCategoryRootId: string;
   categoryFilter: WidgetPostCategoryFilter;
   categories: string[];
   limit: number;
@@ -88,7 +88,7 @@ type GetWidgetPosts = {
 export const getWidgetPosts = async ({
   postType,
   posts,
-  postCategoryId,
+  postCategoryRootId,
   categoryFilter,
   categories,
   limit,
@@ -132,7 +132,7 @@ export const getWidgetPosts = async ({
 
   if (categoryFilter === WidgetPostCategoryFilter.CURRENT) {
     whereClause.category = {
-      rootId: { equals: postCategoryId },
+      rootId: { equals: postCategoryRootId },
     };
   }
   if (

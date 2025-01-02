@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-interface AuthorWidgetProps {
+interface WidgetAuthorProps {
   label: string;
   firstName: string;
   lastName: string;
@@ -18,7 +18,7 @@ const WidgetAuthor = ({
   imageUrl,
   twitterUrl,
   linkedinUrl,
-}: AuthorWidgetProps): JSX.Element => {
+}: WidgetAuthorProps): JSX.Element => {
   return (
     <div className="author">
       {imageUrl && (

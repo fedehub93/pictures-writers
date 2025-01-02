@@ -25,7 +25,6 @@ export const Paragraph = createElementTransform(
     <p
       key={key}
       className={cn(
-        "leading-6 mb-6 text-base",
         element.align === "left" && "text-left",
         element.align === "center" && "text-center",
         element.align === "right" && "text-right"

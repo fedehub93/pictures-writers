@@ -12,7 +12,6 @@ import { BuyButton } from "./buy-button";
 import { BoxInfo } from "./box-info";
 import { BookOpenText, CalendarDays, Earth, Weight } from "lucide-react";
 import { FreeEbookModal } from "@/app/(home)/_components/modals/free-ebook-modal";
-import AuthorWidget from "../../../[slug]/_components/author-widget";
 import CustomSlateView from "@/components/editor/view";
 
 interface EbookInfoProps {

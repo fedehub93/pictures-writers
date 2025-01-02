@@ -59,10 +59,8 @@ const WidgetNewsletter = ({ label }: WidgetNewsletter) => {
   };
 
   return (
-    <div className="snippet newsletter relative">
-      <h6 id="newsletter_form" className="snippet__title">
-        {label}
-      </h6>
+    <div id="newsletter_form" className="snippet newsletter relative">
+      <h6 className="snippet__title">{label}</h6>
       {success && (
         <div className="newsletter__success">
           <p>
@@ -103,7 +101,9 @@ const WidgetNewsletter = ({ label }: WidgetNewsletter) => {
             <br />
             <ul className="list-disc pl-4">
               <li>Articoli più popolari e news sul settore.</li>
-              <li>Aggiornamenti sui più importanti concorsi di sceneggiatura.</li>
+              <li>
+                Aggiornamenti sui più importanti concorsi di sceneggiatura.
+              </li>
               <li>Nuovi eventi online di Pictures Writers.</li>
             </ul>
           </div>

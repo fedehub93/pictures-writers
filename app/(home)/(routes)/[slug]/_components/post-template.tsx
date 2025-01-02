@@ -8,9 +8,6 @@ import CustomSlateView from "@/components/editor/view";
 
 import PostInfo from "@/app/(home)/(routes)/blog/_components/post-info";
 
-import TagsWidget from "./tags-widget";
-import NewsletterWidget from "./newsletter-widget";
-import AuthorWidget from "./author-widget";
 import Sidebar from "./sidebar";
 import { WidgetPostBottom } from "./post-bottom";
 
@@ -64,7 +61,7 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
         {/* <DisqusLazy config={disqusOptions} /> */}
       </div>
       <div className="blog-post__sidebar">
-        <Sidebar postId={post.id} categoryId={post.category?.id} />
+        <Sidebar postId={post.id} categoryRootId={post.category?.rootId!} />
       </div>
     </div>
   );

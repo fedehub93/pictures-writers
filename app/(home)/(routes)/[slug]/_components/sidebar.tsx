@@ -16,10 +16,10 @@ import { WidgetCategory } from "@/components/widget/category";
 
 interface PostSidebarProps {
   postId: string;
-  categoryId: string;
+  categoryRootId: string;
 }
 
-const Sidebar = async ({ postId, categoryId }: PostSidebarProps) => {
+const Sidebar = async ({ postId, categoryRootId }: PostSidebarProps) => {
   const widgets = await db.widget.findMany({
     where: {
       section: WidgetSection.POST_SIDEBAR,
@@ -45,7 +45,7 @@ const Sidebar = async ({ postId, categoryId }: PostSidebarProps) => {
                 label={w.metadata.label}
                 postType={w.metadata.postType}
                 posts={w.metadata.posts}
-                postCategoryId={categoryId}
+                postCategoryRootId={categoryRootId}
                 categoryFilter={w.metadata.categoryFilter}
                 categories={w.metadata.categories}
                 limit={w.metadata.limit}

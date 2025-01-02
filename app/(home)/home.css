@@ -131,17 +131,27 @@ h2 {
   .post > ul > li > p > b {
     @apply font-bold;
   }
-  .post-image {
-    @apply my-4 shadow-lg transition-all duration-500 hover:scale-102 hover:shadow-2xl;
-  }
+
   .post > p {
-    @apply mb-3 text-base !leading-6 text-neutral-700;
+    @apply mb-6 text-base !leading-6 text-neutral-700;
   }
   .post > p > b {
     @apply font-bold;
   }
   .post-quote {
     @apply mb-8 border-l-4 border-l-neutral-800 bg-white p-4 pl-8 shadow-md [&>p]:mb-0;
+  }
+
+  .post__info-box {
+    @apply relative mb-8 bg-violet-100 p-4 py-6 pl-12 rounded-lg [&>p]:mb-4 [&>*:last-child]:mb-0 min-h-14;
+  }
+
+  .post__info-box-icon {
+    @apply absolute top-3 left-2 text-lg p-2;
+  }
+
+  .post__image {
+    @apply hover:scale-[1.02] my-4 transition-all overflow-hidden duration-300 rounded-md shadow-md;
   }
 
   /**

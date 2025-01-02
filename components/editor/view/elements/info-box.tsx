@@ -29,15 +29,13 @@ export const InfoBoxElement = createElementTransform(
       <div
         key={key}
         className={cn(
-          "relative mb-8 bg-violet-100 p-4 py-6 pl-12 rounded-lg [&>p]:mb-4 min-h-14",
+          "post__info-box",
           element.align === "left" && "text-left",
           element.align === "center" && "text-center",
           element.align === "right" && "text-right"
         )}
       >
-        <div className="absolute top-3 left-2 text-lg p-2">
-          {element.data.icon}
-        </div>
+        <div className="post__info-box-icon">{element.data.icon}</div>
 
         {children}
       </div>
