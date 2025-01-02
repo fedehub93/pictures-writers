@@ -60,7 +60,7 @@ const WidgetNewsletter = ({ label }: WidgetNewsletter) => {
 
   return (
     <div className="snippet newsletter relative">
-      <h6 id="#newsletter_form" className="snippet__title">
+      <h6 id="newsletter_form" className="snippet__title">
         {label}
       </h6>
       {success && (

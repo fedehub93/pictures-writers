@@ -183,7 +183,6 @@ export const WidgetForm = ({ initialData, apiUrl }: WidgetFormProps) => {
 
   const onSubmit = async (values: z.infer<typeof widgetFormSchema>) => {
     try {
-      console.log(values);
       await axios.patch(`${apiUrl}`, values);
       toast.success(`Widget updated`);
     } catch {

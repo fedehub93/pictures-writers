@@ -1,35 +1,12 @@
 "use client";
 
-import {
-  ContentStatus,
-  Media,
-  Post,
-  User,
-  Widget,
-  WidgetSection,
-  WidgetType,
-} from "@prisma/client";
-import Image from "next/image";
-import Link from "next/link";
+import { Widget } from "@prisma/client";
 import { ColumnDef } from "@tanstack/react-table";
-import {
-  ArrowUpDown,
-  CheckCircle,
-  CircleOff,
-  MoreHorizontal,
-  Pencil,
-} from "lucide-react";
+import { ArrowUpDown, CheckCircle, CircleOff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 
-import { cn } from "@/lib/utils";
 import { WidgetActions } from "./actions";
 
 export const columns: ColumnDef<Widget>[] = [
