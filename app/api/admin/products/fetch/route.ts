@@ -34,7 +34,6 @@ export async function POST(req: NextRequest) {
       },
     });
 
-
     return NextResponse.json(products);
   } catch (error) {
     if (error instanceof z.ZodError) {

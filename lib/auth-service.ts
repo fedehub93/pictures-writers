@@ -1,4 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
+
 import { UserRole } from "@prisma/client";
 import { db } from "./db";
 
