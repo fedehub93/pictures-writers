@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
+import { ContentStatus } from "@prisma/client";
 
 const RequestSchema = z.object({
   ids: z.array(z.string().uuid()).nonempty(),
@@ -20,13 +21,19 @@ export async function POST(req: NextRequest) {
     const { ids } = RequestSchema.parse(body);
 
     const products = await db.product.findMany({
-      where: { id: { in: ids } },
+      where: {
+        status: ContentStatus.PUBLISHED,
+        isLatest: true,
+        rootId: { in: ids },
+      },
       select: {
         id: true,
+        rootId: true,
         title: true,
         imageCover: { select: { url: true } },
       },
     });
+
 
     return NextResponse.json(products);
   } catch (error) {

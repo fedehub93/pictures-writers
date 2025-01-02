@@ -87,7 +87,7 @@ const WidgetPostMetadataSchema = z.object({
   postType: WidgetPostTypeZ,
   posts: z.array(
     z.object({
-      id: z.string(),
+      rootId: z.string(),
       sort: z.coerce.number(),
     })
   ),
@@ -110,7 +110,7 @@ const WidgetProductMetadataSchema = z.object({
   productType: WidgetProductTypeZ,
   products: z.array(
     z.object({
-      id: z.string(),
+      rootId: z.string(),
       sort: z.coerce.number(),
     })
   ),
@@ -201,7 +201,7 @@ export const WidgetForm = ({ initialData, apiUrl }: WidgetFormProps) => {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <div className="p-6 max-w-5xl mx-auto h-full">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-medium">Product setup</h1>
+            <h1 className="text-2xl font-medium">Widget setup</h1>
             <div className="flex items-center gap-x-2">
               <Button>Save</Button>
             </div>

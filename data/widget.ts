@@ -1,3 +1,5 @@
+import { ContentStatus, Prisma, WidgetType } from "@prisma/client";
+
 import { db } from "@/lib/db";
 import {
   WidgetAuthorMetadata,
@@ -12,7 +14,6 @@ import {
   WidgetSearchMetadata,
   WidgetTagMetadata,
 } from "@/types";
-import { ContentStatus, WidgetType } from "@prisma/client";
 
 export const setDefaultWidgetSearchMetadata = (): WidgetSearchMetadata => {
   return {
@@ -77,7 +78,7 @@ export const setDefaultWidgetTagMetadata = (): WidgetTagMetadata => {
 
 type GetWidgetPosts = {
   postType: WidgetPostType;
-  posts: { id: string; sort: number }[];
+  posts: { rootId: string; sort: number }[];
   postCategoryId: string;
   categoryFilter: WidgetPostCategoryFilter;
   categories: string[];
@@ -92,7 +93,7 @@ export const getWidgetPosts = async ({
   categories,
   limit,
 }: GetWidgetPosts) => {
-  let whereClause: any = {
+  let whereClause: Prisma.PostWhereInput = {
     status: ContentStatus.PUBLISHED,
     isLatest: true,
   };
@@ -103,7 +104,7 @@ export const getWidgetPosts = async ({
 
     case WidgetPostType.SPECIFIC:
       if (posts.length > 0) {
-        whereClause.id = { in: posts.map((p) => p.id) };
+        whereClause.rootId = { in: posts.map((p) => p.rootId) };
       }
       break;
 
@@ -130,13 +131,17 @@ export const getWidgetPosts = async ({
   }
 
   if (categoryFilter === WidgetPostCategoryFilter.CURRENT) {
-    whereClause.categoryId = { equals: postCategoryId };
+    whereClause.category = {
+      rootId: { equals: postCategoryId },
+    };
   }
   if (
     categoryFilter === WidgetPostCategoryFilter.SPECIFIC &&
     categories.length > 0
   ) {
-    whereClause.categoryId = { in: categories };
+    whereClause.category = {
+      rootId: { in: categories },
+    };
   }
 
   const postsData = await db.post.findMany({
@@ -184,7 +189,7 @@ export const getWidgetCategories = async ({
 
 type GetWidgetProducts = {
   productType: WidgetProductType;
-  products: { id: string; sort: number }[];
+  products: { rootId: string; sort: number }[];
   limit: number;
 };
 
@@ -206,7 +211,7 @@ export const getWidgetProducts = async ({
 
     case WidgetProductType.SPECIFIC:
       if (products.length > 0) {
-        whereClause.id = { in: products.map((p) => p.id) };
+        whereClause.rootId = { in: products.map((p) => p.rootId) };
       }
       take = undefined;
       break;

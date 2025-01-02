@@ -6,7 +6,7 @@ import { getWidgetPosts } from "@/data/widget";
 
 interface WidgetPostProps {
   label: string;
-  posts: { id: string; sort: number }[];
+  posts: { rootId: string; sort: number }[];
   postType: WidgetPostType;
   postCategoryId: string;
   categoryFilter: WidgetPostCategoryFilter;

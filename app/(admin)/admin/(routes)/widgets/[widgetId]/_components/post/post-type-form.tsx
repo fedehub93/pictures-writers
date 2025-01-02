@@ -98,7 +98,7 @@ export const PostTypeForm = ({
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["postsFetch", fieldPosts.value.length],
-    queryFn: () => fetchPosts(fieldPosts.value.map((v) => v.id)),
+    queryFn: () => fetchPosts(fieldPosts.value.map((v) => v.rootId)),
     enabled: fieldPosts.value.length > 0,
   });
 
@@ -113,12 +113,12 @@ export const PostTypeForm = ({
   const onSelectPost = (post: PostWithImageCoverWithCategoryWithTags) => {
     fieldPosts.onChange([
       ...fieldPosts.value,
-      { id: post.id, sort: fieldPosts.value.length },
+      { rootId: post.rootId, sort: fieldPosts.value.length },
     ]);
   };
 
-  const onDeletePost = (id: string) => {
-    const newPosts = fieldPosts.value.filter((v) => v.id !== id);
+  const onDeletePost = (rootId: string) => {
+    const newPosts = fieldPosts.value.filter((v) => v.rootId !== rootId);
     fieldPosts.onChange(newPosts);
   };
 
@@ -222,7 +222,7 @@ export const PostTypeForm = ({
                       >
                         {data &&
                           fieldPosts.value.map((v, index) => {
-                            const p = data.find((d) => d.id === v.id);
+                            const p = data.find((d) => d.rootId === v.rootId);
                             if (!p) return null;
                             return (
                               <Draggable

@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 
 const fetchCategories = async () => {
-  const response = await axios.get("/api/categories");
+  const response = await axios.get("/api/admin/categories");
 
   return response.data as Category[];
 };

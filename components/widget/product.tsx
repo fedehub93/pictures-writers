@@ -6,7 +6,7 @@ import { getWidgetProducts } from "@/data/widget";
 
 interface WidgetProductProps {
   label: string;
-  products: { id: string; sort: number }[];
+  products: { rootId: string; sort: number }[];
   productType: WidgetProductType;
   limit: number;
 }

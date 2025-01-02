@@ -2,7 +2,7 @@
 
 import * as z from "zod";
 
-import { ChangeEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Control, useController } from "react-hook-form";
 
 import {
@@ -17,9 +17,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
 import { WidgetPostType } from "@/types";
+
 import { widgetFormSchema } from "../widget-form";
 import { PostTypeForm } from "./post-type-form";
-import { SpecificCategoryForm } from "./specific-category-form";
+import { SpecificCategoryForm } from "./post-category-form";
 
 interface WidgetPostFormProps {
   control: Control<z.infer<typeof widgetFormSchema>>;

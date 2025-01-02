@@ -85,7 +85,7 @@ export const ProductTypeForm = ({
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["productsFetch", fieldProducts.value.length],
-    queryFn: () => fetchProducts(fieldProducts.value.map((v) => v.id)),
+    queryFn: () => fetchProducts(fieldProducts.value.map((v) => v.rootId)),
     enabled: fieldProducts.value.length > 0,
   });
 
@@ -104,12 +104,12 @@ export const ProductTypeForm = ({
   const onSelectProduct = (product: Product) => {
     fieldProducts.onChange([
       ...fieldProducts.value,
-      { id: product.id, sort: fieldProducts.value.length },
+      { rootId: product.rootId, sort: fieldProducts.value.length },
     ]);
   };
 
-  const onDeleteProduct = (id: string) => {
-    const newProducts = fieldProducts.value.filter((v) => v.id !== id);
+  const onDeleteProduct = (rootId: string) => {
+    const newProducts = fieldProducts.value.filter((v) => v.rootId !== rootId);
     fieldProducts.onChange(newProducts);
   };
 
@@ -214,7 +214,7 @@ export const ProductTypeForm = ({
                       >
                         {data &&
                           fieldProducts.value.map((v, index) => {
-                            const p = data.find((d) => d.id === v.id);
+                            const p = data.find((d) => d.rootId === v.rootId);
                             if (!p) return null;
                             return (
                               <Draggable
@@ -249,7 +249,9 @@ export const ProductTypeForm = ({
                                       </div>
                                       <div
                                         className="h-16 w-0 border-r bg-destructive flex justify-center items-center cursor-pointer group-hover:w-8 transition-all duration-500"
-                                        onClick={() => onDeleteProduct(p.id)}
+                                        onClick={() =>
+                                          onDeleteProduct(p.rootId!)
+                                        }
                                       >
                                         <Trash2 className="h-5 w-5 text-white" />
                                       </div>

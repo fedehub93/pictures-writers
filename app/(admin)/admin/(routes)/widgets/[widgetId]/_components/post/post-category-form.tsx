@@ -88,14 +88,14 @@ export const SpecificCategoryForm = ({
     fieldCategories.onChange([]);
   }
 
-  const onSelectCategory = (id: string) => {
+  const onSelectCategory = (rootId: string) => {
     let newCategories = [...fieldCategories.value];
-    const category = fieldCategories.value.includes(id);
+    const category = fieldCategories.value.includes(rootId);
     if (category) {
-      newCategories = [...fieldCategories.value.filter((v) => v !== id)];
+      newCategories = [...fieldCategories.value.filter((v) => v !== rootId)];
     }
     if (!category) {
-      newCategories.push(id);
+      newCategories.push(rootId);
     }
     fieldCategories.onChange(newCategories);
   };
@@ -184,13 +184,13 @@ export const SpecificCategoryForm = ({
                           ) : (
                             categories
                               .filter((option) => {
-                                return field.value.includes(option.id);
+                                return field.value.includes(option.rootId!);
                               })
                               .map((option) => {
                                 return (
                                   <Badge
                                     variant="secondary"
-                                    key={option.id}
+                                    key={option.rootId}
                                     className="rounded-sm px-1 font-normal"
                                   >
                                     {option.title}
@@ -213,9 +213,9 @@ export const SpecificCategoryForm = ({
                       {categories.map((category) => (
                         <CommandItem
                           value={category.title}
-                          key={category.id}
+                          key={category.rootId}
                           onSelect={() => {
-                            onSelectCategory(category.id);
+                            onSelectCategory(category.rootId!);
                             // fieldCategories.onChange(category.id);
                           }}
                         >
@@ -223,7 +223,7 @@ export const SpecificCategoryForm = ({
                           <Check
                             className={cn(
                               "ml-auto",
-                              field.value.includes(category.id)
+                              field.value.includes(category.rootId!)
                                 ? "opacity-100"
                                 : "opacity-0"
                             )}

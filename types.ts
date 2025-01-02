@@ -145,7 +145,7 @@ export type WidgetPostMetadata = {
   label: string;
   type: WidgetType;
   postType: WidgetPostType;
-  posts: { id: string; sort: number }[];
+  posts: { rootId: string; sort: number }[];
   categoryFilter: WidgetPostCategoryFilter;
   categories: string[];
   limit: number;
@@ -162,7 +162,7 @@ export type WidgetProductMetadata = {
   label: string;
   type: WidgetType;
   productType: WidgetProductType;
-  products: { id: string; sort: number }[];
+  products: { rootId: string; sort: number }[];
   limit: number;
 };
 
