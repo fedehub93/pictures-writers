@@ -1,13 +1,16 @@
 import { db } from "@/lib/db";
 import {
+  WidgetAuthorMetadata,
   WidgetCategoryMetadata,
   WidgetCategoryType,
+  WidgetNewsletterMetadata,
   WidgetPostCategoryFilter,
   WidgetPostMetadata,
   WidgetPostType,
   WidgetProductMetadata,
   WidgetProductType,
   WidgetSearchMetadata,
+  WidgetTagMetadata,
 } from "@/types";
 import { ContentStatus, WidgetType } from "@prisma/client";
 
@@ -47,6 +50,28 @@ export const setDefaultWidgetProductMetadata = (): WidgetProductMetadata => {
     productType: WidgetProductType.ALL,
     products: [],
     limit: 0,
+  };
+};
+
+export const setDefaultWidgetNewsletterMetadata =
+  (): WidgetNewsletterMetadata => {
+    return {
+      label: "",
+      type: WidgetType.NEWSLETTER,
+    };
+  };
+
+export const setDefaultWidgetAuthorMetadata = (): WidgetAuthorMetadata => {
+  return {
+    label: "",
+    type: WidgetType.AUTHOR,
+  };
+};
+
+export const setDefaultWidgetTagMetadata = (): WidgetTagMetadata => {
+  return {
+    label: "",
+    type: WidgetType.TAG,
   };
 };
 

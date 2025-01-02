@@ -9,13 +9,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
 import {
   AppWindow,
+  BookUser,
   Box,
   Boxes,
   Captions,
   LucideIcon,
+  Mailbox,
   NotebookPen,
+  PanelBottom,
   PanelRight,
   Search,
+  Tag,
   Tags,
 } from "lucide-react";
 
@@ -76,6 +80,28 @@ const sections = [
         Icon: Tags,
       },
       { type: WidgetType.PRODUCT, label: "Products", Icon: Box },
+    ],
+  },
+  {
+    section: WidgetSection.POST_BOTTOM,
+    label: "Post Bottom",
+    Icon: PanelBottom,
+    types: [
+      {
+        type: WidgetType.NEWSLETTER,
+        label: "Newsletter",
+        Icon: Mailbox,
+      },
+      {
+        type: WidgetType.AUTHOR,
+        label: "Author",
+        Icon: BookUser,
+      },
+      {
+        type: WidgetType.TAG,
+        label: "Tags",
+        Icon: Tag,
+      },
     ],
   },
 ];
@@ -161,7 +187,7 @@ const WidgetCreatePage = () => {
                         field.onChange(value);
                       }}
                       defaultValue={field.value}
-                      className="grid grid-cols-3 gap-2"
+                      className="grid grid-cols-4 gap-2"
                     >
                       {sections.map((section) => (
                         <FormItem key={section.section}>

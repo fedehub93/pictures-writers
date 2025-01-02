@@ -3,16 +3,16 @@ import Link from "next/link";
 import { Tag } from "lucide-react";
 
 interface TagsProps {
+  label: string;
   tags: ReadonlyArray<{ title: string; slug: string }>;
 }
 
-const TagsWidget = (props: TagsProps) => {
-  const { tags } = props;
+const WidgetTags = ({ label, tags }: TagsProps) => {
   if (!tags || tags.length === 0) return null;
   return (
     <div className="tags">
       <Tag className="h-4 w-4 mr-2" />
-      <h6 className="tags__title">Tags:</h6>
+      <h6 className="tags__title">{label}</h6>
       {tags.map((tag, i) => (
         <Link
           key={tag.slug}
@@ -27,4 +27,4 @@ const TagsWidget = (props: TagsProps) => {
   );
 };
 
-export default TagsWidget;
+export default WidgetTags;

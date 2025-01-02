@@ -3,6 +3,7 @@ import Image from "next/image";
 import { PostWithImageCoverWithCategoryWithTagsWithSeo } from "@/lib/post";
 
 import { getPlaceholderImage } from "@/lib/image";
+
 import CustomSlateView from "@/components/editor/view";
 
 import PostInfo from "@/app/(home)/(routes)/blog/_components/post-info";
@@ -11,6 +12,7 @@ import TagsWidget from "./tags-widget";
 import NewsletterWidget from "./newsletter-widget";
 import AuthorWidget from "./author-widget";
 import Sidebar from "./sidebar";
+import { WidgetPostBottom } from "./post-bottom";
 
 interface PostTemplateProps {
   post: PostWithImageCoverWithCategoryWithTagsWithSeo;
@@ -54,16 +56,11 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
             <CustomSlateView nodes={post.bodyData} />
           </div>
         </article>
-        <TagsWidget tags={post.tags!} />
-        {post.user && (
-          <AuthorWidget
-            firstName={post.user.firstName || ""}
-            lastName={post.user.lastName || ""}
-            bio={post.user.bio || ""}
-            imageUrl={post.user.imageUrl || ""}
-          />
-        )}
-        <NewsletterWidget />
+        <WidgetPostBottom
+          postId={post.id}
+          authorId={post.userId || ""}
+          tags={post.tags}
+        />
         {/* <DisqusLazy config={disqusOptions} /> */}
       </div>
       <div className="blog-post__sidebar">

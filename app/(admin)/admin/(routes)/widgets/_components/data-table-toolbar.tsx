@@ -4,11 +4,9 @@ import Link from "next/link";
 import {
   AppWindow,
   Captions,
-  CheckCircle,
-  Circle,
+  PanelBottom,
   PanelRight,
   PlusCircle,
-  Timer,
   X,
 } from "lucide-react";
 import { WidgetSection } from "@prisma/client";
@@ -38,6 +36,11 @@ const sections = [
     value: WidgetSection.POST_SIDEBAR,
     label: "Post Sidebar",
     icon: PanelRight,
+  },
+  {
+    value: WidgetSection.POST_BOTTOM,
+    label: "Post Bottom",
+    icon: PanelBottom,
   },
 ];
 

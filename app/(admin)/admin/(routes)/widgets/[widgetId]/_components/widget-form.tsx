@@ -18,10 +18,13 @@ import {
   WidgetProductType,
 } from "@/types";
 import {
+  isWidgetAuthorMetadata,
   isWidgetCategoryMetadata,
+  isWidgetNewsletterMetadata,
   isWidgetPostMetadata,
   isWidgetProductMetadata,
   isWidgetSearchMetadata,
+  isWidgetTagMetadata,
 } from "@/type-guards";
 
 import { WidgetDetailsForm } from "./widget-details-form";
@@ -32,6 +35,9 @@ import { WidgetPostForm } from "./post/post-form";
 import { WidgetSearchForm } from "./search/search-form";
 import { WidgetProductForm } from "./product/product-form";
 import { WidgetCategoryForm } from "./category/category-form";
+import { WidgetNewsletterForm } from "./newsletter/newsletter-form";
+import { WidgetAuthorForm } from "./author/author-form";
+import { WidgetTagForm } from "./tag/tag-form";
 
 interface WidgetFormProps {
   initialData: Widget;
@@ -43,6 +49,9 @@ const WidgetTypeZ = z.enum([
   WidgetType.POST,
   WidgetType.CATEGORY,
   WidgetType.PRODUCT,
+  WidgetType.NEWSLETTER,
+  WidgetType.AUTHOR,
+  WidgetType.TAG,
 ]);
 
 const WidgetSearchMetadataSchema = z.object({
@@ -108,6 +117,22 @@ const WidgetProductMetadataSchema = z.object({
   limit: z.number(),
 });
 
+// Schema per WidgetNewsleterMetadata
+const WidgetNewsletterMetadataSchema = z.object({
+  label: z.string(),
+  type: WidgetTypeZ,
+});
+
+const WidgetAuthorMetadataSchema = z.object({
+  label: z.string(),
+  type: WidgetTypeZ,
+});
+
+const WidgetTagMetadataSchema = z.object({
+  label: z.string(),
+  type: WidgetTypeZ,
+});
+
 export const widgetFormSchema = z.object({
   name: z.string().min(1, {
     message: "Name is required!",
@@ -118,6 +143,9 @@ export const widgetFormSchema = z.object({
     WidgetPostMetadataSchema,
     WidgetCategoryMetadataSchema,
     WidgetProductMetadataSchema,
+    WidgetNewsletterMetadataSchema,
+    WidgetAuthorMetadataSchema,
+    WidgetTagMetadataSchema,
   ]),
 });
 
@@ -128,11 +156,17 @@ export const WidgetForm = ({ initialData, apiUrl }: WidgetFormProps) => {
   const isPopupWidget = initialData.section === WidgetSection.POPUP;
   const isPostSidebarWidget =
     initialData.section === WidgetSection.POST_SIDEBAR;
+  const isPostBottomWidget = initialData.section === WidgetSection.POST_BOTTOM;
 
   const isSearchWidget = isWidgetSearchMetadata(initialData.metadata);
   const isPostWidget = isWidgetPostMetadata(initialData.metadata);
   const isCategoryWidget = isWidgetCategoryMetadata(initialData.metadata);
   const isProductWidget = isWidgetProductMetadata(initialData.metadata);
+  const isNewsletterWidget = isWidgetNewsletterMetadata(initialData.metadata);
+  const isAuthorWidget = isWidgetAuthorMetadata(initialData.metadata);
+  const isTagWidget = isWidgetTagMetadata(initialData.metadata);
+
+  const isWidgetSortVisible = !!(isPostSidebarWidget || isPostBottomWidget);
 
   const metadata = initialData.metadata;
 
@@ -149,7 +183,7 @@ export const WidgetForm = ({ initialData, apiUrl }: WidgetFormProps) => {
 
   const onSubmit = async (values: z.infer<typeof widgetFormSchema>) => {
     try {
-      console.log(values)
+      console.log(values);
       await axios.patch(`${apiUrl}`, values);
       toast.success(`Widget updated`);
     } catch {
@@ -205,6 +239,24 @@ export const WidgetForm = ({ initialData, apiUrl }: WidgetFormProps) => {
                     isSubmitting={isSubmitting}
                   />
                 )}
+                {isNewsletterWidget && (
+                  <WidgetNewsletterForm
+                    control={form.control}
+                    isSubmitting={isSubmitting}
+                  />
+                )}
+                {isAuthorWidget && (
+                  <WidgetAuthorForm
+                    control={form.control}
+                    isSubmitting={isSubmitting}
+                  />
+                )}
+                {isTagWidget && (
+                  <WidgetTagForm
+                    control={form.control}
+                    isSubmitting={isSubmitting}
+                  />
+                )}
               </div>
             </div>
             <div className="col-span-full md:col-span-2 lg:col-span-4 flex flex-col gap-y-4">
@@ -212,8 +264,8 @@ export const WidgetForm = ({ initialData, apiUrl }: WidgetFormProps) => {
                 control={form.control}
                 isSubmitting={isSubmitting}
               />
-              {isPostSidebarWidget && (
-                <WidgetSort section={initialData.section} />
+              {isWidgetSortVisible && (
+                <WidgetSort label="Sorting" section={initialData.section} />
               )}
             </div>
           </div>

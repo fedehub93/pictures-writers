@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Column } from "@tanstack/react-table";
 import { Check, PlusCircle } from "lucide-react";
-import { ContentStatus, WidgetSection } from "@prisma/client";
+import { WidgetSection } from "@prisma/client";
 
 import { cn } from "@/lib/utils";
 import {

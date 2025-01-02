@@ -38,6 +38,7 @@ enum WidgetSection {
   HERO
   POPUP
   POST_SIDEBAR
+  POST_BOTTOM
 }
 
 enum WidgetType {
@@ -46,6 +47,8 @@ enum WidgetType {
   CATEGORY
   TAG
   PRODUCT
+  NEWSLETTER
+  AUTHOR
 }
 
 model Widget {

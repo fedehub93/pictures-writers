@@ -63,16 +63,8 @@ export const columns: ColumnDef<Widget>[] = [
       );
     },
     cell: ({ row }) => {
-      const section = row.getValue("section") || false;
-      return (
-        <Badge>
-          {section === WidgetSection.HERO
-            ? "Hero"
-            : section === WidgetSection.POPUP
-            ? "Pop-up"
-            : "Sidebar"}
-        </Badge>
-      );
+      const section = row.getValue("section") as string;
+      return <Badge>{section}</Badge>;
     },
     filterFn: (row, id, value) => {
       return value.includes(row.getValue(id));

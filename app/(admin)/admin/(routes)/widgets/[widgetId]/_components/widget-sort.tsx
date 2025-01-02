@@ -18,10 +18,11 @@ import { useWidgetsQuery } from "@/app/(admin)/_hooks/use-widgets-query";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface WidgetSortProps {
+  label: string;
   section: WidgetSection;
 }
 
-export const WidgetSort = ({ section }: WidgetSortProps) => {
+export const WidgetSort = ({ label, section }: WidgetSortProps) => {
   const { data, isFetching, isError, refetch } = useWidgetsQuery({ section });
 
   const onDragEnd = async (result: DropResult) => {
@@ -48,7 +49,7 @@ export const WidgetSort = ({ section }: WidgetSortProps) => {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Sidebar</CardTitle>
+          <CardTitle className="text-base">{label}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Skeleton className="w-full h-[40px]" />
@@ -62,7 +63,7 @@ export const WidgetSort = ({ section }: WidgetSortProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Sidebar</CardTitle>
+        <CardTitle className="text-base">{label}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <DragDropContext onDragEnd={onDragEnd}>

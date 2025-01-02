@@ -102,14 +102,6 @@ h2 {
     @apply col-span-1 sm:col-span-2 lg:block xl:col-span-2 xl:px-3;
   }
 
-  .tags {
-    @apply mb-8 inline-flex w-full items-center border-y border-y-gray-300 py-4;
-  }
-
-  .tags .tags__title {
-    @apply mr-4 text-base font-bold leading-3;
-  }
-
   .blog-post-disqus {
     @apply mb-8 w-full transition-all delay-1000;
   }
@@ -157,7 +149,7 @@ h2 {
   */
 
   .tags {
-    @apply mb-8 flex h-20 w-full items-center border-y border-y-gray-300 py-4;
+    @apply flex h-20 w-full items-center border-y border-y-gray-300 py-4;
   }
 
   .tags .tags__title {
@@ -169,11 +161,11 @@ h2 {
   */
 
   .snippet {
-    @apply relative my-4 flex w-full flex-col gap-6 rounded-lg border-2 border-primary bg-white px-8 py-10;
+    @apply bg-primary/10 relative flex w-full flex-col gap-6 rounded-lg border border-primary px-8 py-8;
   }
 
   .snippet .snippet__title {
-    @apply mb-2 text-center text-2xl font-extrabold uppercase;
+    @apply mb-2 text-2xl font-extrabold uppercase;
   }
 
   .snippet .snippet__sponsor {
@@ -190,7 +182,7 @@ h2 {
   }
 
   .newsletter .newsletter__box {
-    @apply mb-4 text-base font-semibold text-neutral-600;
+    @apply text-base font-semibold text-neutral-600;
   }
 
   .newsletter .newsletter__form {
@@ -242,7 +234,7 @@ h2 {
   */
 
   .author {
-    @apply relative mt-4 flex flex-col items-center gap-y-4 sm:flex-row;
+    @apply relative flex flex-col items-center gap-y-4 sm:flex-row;
   }
 
   .author .author__image {

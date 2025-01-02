@@ -166,6 +166,21 @@ export type WidgetProductMetadata = {
   limit: number;
 };
 
+export type WidgetNewsletterMetadata = {
+  label: string;
+  type: WidgetType;
+};
+
+export type WidgetAuthorMetadata = {
+  label: string;
+  type: WidgetType;
+};
+
+export type WidgetTagMetadata = {
+  label: string;
+  type: WidgetType;
+};
+
 /**
  * Script types
  */

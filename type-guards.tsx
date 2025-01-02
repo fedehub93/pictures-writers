@@ -4,10 +4,13 @@ import {
   AffiliateMetadata,
   EbookMetadata,
   EbookType,
+  WidgetAuthorMetadata,
   WidgetCategoryMetadata,
+  WidgetNewsletterMetadata,
   WidgetPostMetadata,
   WidgetProductMetadata,
   WidgetSearchMetadata,
+  WidgetTagMetadata,
 } from "@/types";
 
 export function isValidEbookFormat(format: string | null): format is EbookType {
@@ -92,5 +95,41 @@ export function isWidgetProductMetadata(
     "type" in metadata &&
     typeof (metadata as any).type === "string" &&
     metadata.type === WidgetType.PRODUCT
+  );
+}
+
+export function isWidgetNewsletterMetadata(
+  metadata: unknown
+): metadata is WidgetNewsletterMetadata {
+  return (
+    typeof metadata === "object" &&
+    metadata !== null &&
+    "type" in metadata &&
+    typeof (metadata as any).type === "string" &&
+    metadata.type === WidgetType.NEWSLETTER
+  );
+}
+
+export function isWidgetAuthorMetadata(
+  metadata: unknown
+): metadata is WidgetAuthorMetadata {
+  return (
+    typeof metadata === "object" &&
+    metadata !== null &&
+    "type" in metadata &&
+    typeof (metadata as any).type === "string" &&
+    metadata.type === WidgetType.AUTHOR
+  );
+}
+
+export function isWidgetTagMetadata(
+  metadata: unknown
+): metadata is WidgetTagMetadata {
+  return (
+    typeof metadata === "object" &&
+    metadata !== null &&
+    "type" in metadata &&
+    typeof (metadata as any).type === "string" &&
+    metadata.type === WidgetType.TAG
   );
 }

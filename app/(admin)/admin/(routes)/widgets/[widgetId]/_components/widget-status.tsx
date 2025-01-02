@@ -14,6 +14,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 
 import { widgetFormSchema } from "./widget-form";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface WidgetStatusViewProps {
   control: Control<z.infer<typeof widgetFormSchema>>;
@@ -25,15 +26,17 @@ export const WidgetStatusView = ({
   isSubmitting,
 }: WidgetStatusViewProps) => {
   return (
-    <div className=" rounded-md transition flex flex-col gap-y-4">
-      <div className="flex flex-col w-full items-center justify-between">
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Is Enabled?</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
         <FormField
           control={control}
           name="isEnabled"
           render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+            <FormItem className="flex flex-row justify-between rounded-lg">
               <div className="space-y-0.5">
-                <FormLabel className="text-base">Is enabled?</FormLabel>
                 <FormDescription>
                   When enabled this widget will appear online.
                 </FormDescription>
@@ -49,7 +52,7 @@ export const WidgetStatusView = ({
             </FormItem>
           )}
         />
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };

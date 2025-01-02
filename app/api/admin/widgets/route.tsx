@@ -4,10 +4,13 @@ import { WidgetSection, WidgetType } from "@prisma/client";
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
 import {
+  setDefaultWidgetAuthorMetadata,
   setDefaultWidgetCategoryMetadata,
+  setDefaultWidgetNewsletterMetadata,
   setDefaultWidgetPostMetadata,
   setDefaultWidgetProductMetadata,
   setDefaultWidgetSearchMetadata,
+  setDefaultWidgetTagMetadata,
 } from "@/data/widget";
 
 export async function GET(req: NextRequest) {
@@ -83,6 +86,18 @@ export async function POST(req: Request) {
       }
       if (type === WidgetType.PRODUCT) {
         metadata = { ...setDefaultWidgetProductMetadata() };
+      }
+    }
+
+    if (section === WidgetSection.POST_BOTTOM) {
+      if (type === WidgetType.NEWSLETTER) {
+        metadata = { ...setDefaultWidgetNewsletterMetadata() };
+      }
+      if (type === WidgetType.AUTHOR) {
+        metadata = { ...setDefaultWidgetAuthorMetadata() };
+      }
+      if (type === WidgetType.TAG) {
+        metadata = { ...setDefaultWidgetTagMetadata() };
       }
     }
 
