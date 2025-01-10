@@ -46,7 +46,6 @@ export async function POST(req: Request) {
         title,
         description: [{ type: "paragraph", children: [{ text: "" }] }],
         slug,
-        category: type,
         type,
         version: 1,
         price: 0,

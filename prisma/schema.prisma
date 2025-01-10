@@ -426,12 +426,6 @@ enum ProductType {
   AFFILIATE
 }
 
-enum ProductCategory {
-  EBOOK
-  SERVICE
-  AFFILIATE
-}
-
 model Product {
   id    String @id @default(uuid())
   title String
@@ -440,8 +434,7 @@ model Product {
   /// [BodyData]
   description Json @db.JsonB
 
-  category ProductCategory
-  type     ProductType
+  type ProductType
 
   version Int
 

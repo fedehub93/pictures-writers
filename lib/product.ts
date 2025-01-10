@@ -23,7 +23,6 @@ export const createNewVersionProduct = async (rootId: string, values: any) => {
       description: values.description || publishedProduct.description,
       slug: values.slug || publishedProduct.slug,
       type: publishedProduct.type,
-      category: publishedProduct.category,
       price: values.price || publishedProduct.price,
       version: publishedProduct.version + 1,
       status: ContentStatus.CHANGED,
