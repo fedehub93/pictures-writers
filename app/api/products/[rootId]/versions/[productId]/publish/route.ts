@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { ContentStatus, ProductCategory } from "@prisma/client";
+import { ContentStatus, ProductType } from "@prisma/client";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
@@ -42,7 +42,7 @@ export async function PATCH(
     }
 
     if (
-      product.category === ProductCategory.EBOOK &&
+      product.type === ProductType.EBOOK &&
       isEbookMetadata(product.metadata)
     ) {
       if (product.metadata.formats.length === 0) {

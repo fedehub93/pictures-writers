@@ -1,6 +1,6 @@
 "use client";
 
-import { ContentStatus, Media, Product, ProductCategory } from "@prisma/client";
+import { ContentStatus, Media, Product, ProductType } from "@prisma/client";
 import Image from "next/image";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
@@ -48,27 +48,27 @@ export const columns: ColumnDef<Product>[] = [
     },
   },
   {
-    accessorKey: "category",
+    accessorKey: "type",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Category
+          Type
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
     cell: ({ row }) => {
-      const category = row.getValue("category") || false;
+      const type = row.getValue("type") || false;
       return (
         <Badge>
-          {category === ProductCategory.EBOOK
+          {type === ProductType.EBOOK
             ? "Ebook"
-            : category === ProductCategory.AFFILIATE
+            : type === ProductType.AFFILIATE
             ? "Affiliate"
-            : category === ProductCategory.SERVICE
+            : type === ProductType.SERVICE
             ? "Service"
             : "None"}
         </Badge>
@@ -90,9 +90,9 @@ export const columns: ColumnDef<Product>[] = [
     },
     cell: ({ row }) => {
       const price = (row.getValue("price") || 0.0) as number;
-      const category = row.getValue("category") || false;
+      const type = row.getValue("type") || false;
 
-      if (category === ProductCategory.AFFILIATE) {
+      if (type === ProductType.AFFILIATE) {
         return <span className="font-extrabold">N/D</span>;
       }
       return <span className="font-extrabold">{formatPrice(price, true)}</span>;

@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-import { ContentStatus, ProductCategory } from "@prisma/client";
+import { ContentStatus, ProductType } from "@prisma/client";
 
 import { db } from "@/lib/db";
 import { getSettings } from "@/data/settings";
@@ -118,7 +118,7 @@ const generateEbooksSitemap = async () => {
     where: {
       status: ContentStatus.PUBLISHED,
       isLatest: true,
-      category: ProductCategory.EBOOK,
+      type: ProductType.EBOOK,
     },
     include: {
       seo: true,

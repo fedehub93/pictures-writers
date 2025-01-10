@@ -10,7 +10,7 @@ import withNormalization from "./plugins/with-normalization";
 import withInline from "./plugins/with-inline";
 import withEmbeds from "./plugins/with-embeds";
 import withPasteHandler from "./plugins/with-paste-html";
-import { ProductCategory } from "@prisma/client";
+import { ProductType } from "@prisma/client";
 import { AffiliateMetadata, EbookMetadata } from "@/types";
 
 export type CustomEditor = BaseEditor & ReactEditor;
@@ -47,7 +47,7 @@ export type EmbeddedProductElement = {
   type: "product";
   data: {
     title: string;
-    type: ProductCategory;
+    type: ProductType;
     slug: string;
     imageCoverUrl: string;
     price: number;

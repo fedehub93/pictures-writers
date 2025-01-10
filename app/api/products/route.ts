@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { ContentStatus, Product, ProductCategory } from "@prisma/client";
+import { ContentStatus, Product, ProductType } from "@prisma/client";
 import { AffiliateMetadata, EbookMetadata, EbookType } from "@/types";
 
 import { db } from "@/lib/db";
@@ -12,16 +12,16 @@ const PRODUCT_BATCH = 6;
 export async function POST(req: Request) {
   try {
     const user = await authAdmin();
-    const { title, slug, category } = await req.json();
+    const { title, slug, type } = await req.json();
 
     if (!user) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
     let metadata: EbookMetadata | AffiliateMetadata | null | undefined = null;
-    if (category === ProductCategory.EBOOK) {
+    if (type === ProductType.EBOOK) {
       metadata = {
-        type: ProductCategory.EBOOK,
+        type: ProductType.EBOOK,
         edition: "",
         formats: [
           { type: EbookType.PDF, url: "", size: 0, pages: 0 },
@@ -33,9 +33,9 @@ export async function POST(req: Request) {
       };
     }
 
-    if (category === ProductCategory.AFFILIATE) {
+    if (type === ProductType.AFFILIATE) {
       metadata = {
-        type: ProductCategory.AFFILIATE,
+        type: ProductType.AFFILIATE,
         url: "",
       };
     }
@@ -46,7 +46,8 @@ export async function POST(req: Request) {
         title,
         description: [{ type: "paragraph", children: [{ text: "" }] }],
         slug,
-        category,
+        category: type,
+        type,
         version: 1,
         price: 0,
         metadata,

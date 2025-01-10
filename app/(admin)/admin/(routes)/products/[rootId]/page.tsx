@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { ProductCategory, UserRole } from "@prisma/client";
+import { ProductType, UserRole } from "@prisma/client";
 
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
@@ -37,7 +37,7 @@ const ProductIdPage = async ({ params }: { params: { rootId: string } }) => {
   }
 
   let authors = undefined;
-  if (product.category === ProductCategory.EBOOK) {
+  if (product.type === ProductType.EBOOK) {
     authors = await db.user.findMany({
       where: {
         role: {

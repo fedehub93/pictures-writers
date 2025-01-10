@@ -1,4 +1,4 @@
-import { ProductCategory, WidgetSection, WidgetType } from "@prisma/client";
+import { ProductType, WidgetType } from "@prisma/client";
 
 import {
   AffiliateMetadata,
@@ -23,7 +23,7 @@ export function isEbookMetadata(metadata: unknown): metadata is EbookMetadata {
     metadata !== null &&
     "type" in metadata &&
     typeof (metadata as any).type === "string" &&
-    metadata.type === ProductCategory.EBOOK
+    metadata.type === ProductType.EBOOK
   );
 }
 
@@ -35,7 +35,7 @@ export function isAffiliateMetadata(
     metadata !== null &&
     "type" in metadata &&
     typeof (metadata as any).type === "string" &&
-    metadata.type === ProductCategory.AFFILIATE
+    metadata.type === ProductType.AFFILIATE
   );
 }
 

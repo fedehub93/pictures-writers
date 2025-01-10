@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { CustomElement } from "./components/editor";
-import { Media, Product, ProductCategory, WidgetType } from "@prisma/client";
+import { Media, Product, ProductType, WidgetType } from "@prisma/client";
 
 declare global {
   namespace PrismaJson {
@@ -91,7 +91,7 @@ export type EbookFormat = {
 };
 
 export type EbookMetadata = {
-  type: ProductCategory;
+  type: ProductType;
   formats: EbookFormat[];
   edition: string;
   publishedAt: Date | null;
@@ -104,7 +104,7 @@ export type EbookMetadata = {
 };
 
 export type AffiliateMetadata = {
-  type: ProductCategory;
+  type: ProductType;
   url: string;
 };
 

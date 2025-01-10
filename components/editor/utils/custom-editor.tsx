@@ -255,7 +255,7 @@ export const CustomEditorHelper = {
       type: "product",
       data: {
         title: data?.title || "",
-        type: data?.category || "AFFILIATE",
+        type: data?.type || "AFFILIATE",
         slug: data?.slug || "",
         imageCoverUrl: data?.imageCover?.url || "",
         price: data?.price,

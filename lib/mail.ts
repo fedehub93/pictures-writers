@@ -2,7 +2,7 @@ import * as sgMail from "@sendgrid/mail";
 import { endOfDay, startOfDay } from "date-fns";
 import handlebars from "handlebars";
 
-import { ContentStatus, ProductCategory } from "@prisma/client";
+import { ContentStatus, ProductType } from "@prisma/client";
 import { db } from "@/lib/db";
 import { isEbookMetadata } from "@/type-guards";
 
@@ -85,7 +85,7 @@ export const sendFreeEbookEmail = async (
   const ebook = await db.product.findFirst({
     where: {
       rootId: ebookId,
-      category: ProductCategory.EBOOK,
+      type: ProductType.EBOOK,
       status: ContentStatus.PUBLISHED,
       isLatest: true,
     },

@@ -11,7 +11,7 @@ import {
   ContentStatus,
   Media,
   Product,
-  ProductCategory,
+  ProductType,
   User,
   Seo,
 } from "@prisma/client";
@@ -84,8 +84,8 @@ export const ProductForm = ({
 }: ProductFormProps) => {
   const router = useRouter();
 
-  const isEbookProduct = initialData.category === ProductCategory.EBOOK;
-  const isAffiliateProduct = initialData.category === ProductCategory.AFFILIATE;
+  const isEbookProduct = initialData.type === ProductType.EBOOK;
+  const isAffiliateProduct = initialData.type === ProductType.AFFILIATE;
 
   const metadata = initialData.metadata;
 

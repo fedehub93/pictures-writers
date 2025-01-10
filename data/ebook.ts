@@ -1,4 +1,4 @@
-import { ContentStatus, Product, ProductCategory } from "@prisma/client";
+import { ContentStatus, Product, ProductType } from "@prisma/client";
 
 import { db } from "@/lib/db";
 import { isEbookMetadata } from "@/type-guards";
@@ -16,7 +16,7 @@ export const getPublishedEbooks = async ({ page }: GetPublishedEbooks) => {
     where: {
       isLatest: true,
       status: ContentStatus.PUBLISHED,
-      category: ProductCategory.EBOOK,
+      type: ProductType.EBOOK,
     },
     include: {
       imageCover: true,
@@ -38,7 +38,7 @@ export const getPublishedEbooks = async ({ page }: GetPublishedEbooks) => {
     where: {
       status: ContentStatus.PUBLISHED,
       isLatest: true,
-      category: ProductCategory.EBOOK,
+      type: ProductType.EBOOK,
     },
   });
 
@@ -53,7 +53,7 @@ export const getPublishedEbookBySlug = async (slug: string) => {
       slug,
       isLatest: true,
       status: ContentStatus.PUBLISHED,
-      category: ProductCategory.EBOOK,
+      type: ProductType.EBOOK,
     },
     include: {
       imageCover: true,
@@ -91,7 +91,7 @@ export const getPublishedEbooksBuilding = async (): Promise<Product[]> => {
     where: {
       isLatest: true,
       status: ContentStatus.PUBLISHED,
-      category: ProductCategory.EBOOK,
+      type: ProductType.EBOOK,
     },
     include: {
       imageCover: true,

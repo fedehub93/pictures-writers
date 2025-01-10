@@ -420,6 +420,12 @@ model EmailSingleSendLog {
   @@unique([contactId, singleSendId])
 }
 
+enum ProductType {
+  EBOOK
+  SERVICE
+  AFFILIATE
+}
+
 enum ProductCategory {
   EBOOK
   SERVICE
@@ -435,6 +441,7 @@ model Product {
   description Json @db.JsonB
 
   category ProductCategory
+  type     ProductType
 
   version Int
 

@@ -57,7 +57,7 @@ export const ProductDetailsForm = ({
     <Card>
       <CardHeader>
         <CardTitle className="text-base flex justify-between">
-          Product Details <Badge>{initialData.category!}</Badge>
+          Product Details <Badge>{initialData.type}</Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">

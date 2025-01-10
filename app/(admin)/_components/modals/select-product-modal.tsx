@@ -94,9 +94,11 @@ export const SelectProductModal = () => {
                           className="object-contain rounded-md"
                         />
                       </div>
-                      <div className="text-sm px-2 line-clamp-2">{item.title}</div>
+                      <div className="text-sm px-2 line-clamp-2">
+                        {item.title}
+                      </div>
                       <div className="self-center">
-                        <Badge className="text-xs">{item.category}</Badge>
+                        <Badge className="text-xs">{item.type}</Badge>
                       </div>
                     </div>
                   ))}

@@ -18,7 +18,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { ProductCategory } from "@prisma/client";
+import { ProductType } from "@prisma/client";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { BookText, ClipboardPen, ExternalLink, Sparkles } from "lucide-react";
 import slugify from "slugify";
@@ -30,13 +30,13 @@ const formSchema = z.object({
   slug: z.string().min(1, {
     message: "Slug is required",
   }),
-  category: z.nativeEnum(ProductCategory),
+  type: z.nativeEnum(ProductType),
 });
 
-const categories = [
-  { type: ProductCategory.EBOOK, label: "Ebook", Icon: BookText },
-  { type: ProductCategory.SERVICE, label: "Coverage", Icon: ClipboardPen },
-  { type: ProductCategory.AFFILIATE, label: "Affiliate", Icon: ExternalLink },
+const types = [
+  { type: ProductType.EBOOK, label: "Ebook", Icon: BookText },
+  { type: ProductType.SERVICE, label: "Coverage", Icon: ClipboardPen },
+  { type: ProductType.AFFILIATE, label: "Affiliate", Icon: ExternalLink },
 ];
 
 const ProductCreatePage = () => {
@@ -138,7 +138,7 @@ const ProductCreatePage = () => {
             />
             <FormField
               control={form.control}
-              name="category"
+              name="type"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Product Type</FormLabel>
@@ -148,22 +148,22 @@ const ProductCreatePage = () => {
                       defaultValue={field.value}
                       className="grid grid-cols-3 gap-2"
                     >
-                      {categories.map((category) => (
-                        <FormItem key={category.type}>
+                      {types.map((type) => (
+                        <FormItem key={type.type}>
                           <div>
                             <FormControl>
                               <RadioGroupItem
-                                value={category.type}
-                                id={category.type}
+                                value={type.type}
+                                id={type.type}
                                 className="peer sr-only"
                               />
                             </FormControl>
                             <FormLabel
-                              htmlFor={category.type}
+                              htmlFor={type.type}
                               className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
                             >
-                              <category.Icon className="w-6 h-6 mb-3" />
-                              {category.label}
+                              <type.Icon className="w-6 h-6 mb-3" />
+                              {type.label}
                             </FormLabel>
                           </div>
                         </FormItem>
