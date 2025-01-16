@@ -138,6 +138,14 @@ export async function POST(req: Request) {
       return new NextResponse("Bad Request", { status: 400 });
     }
 
+    await db.postAuthor.create({
+      data: {
+        postId: post.id,
+        userId: user.id,
+        sort: 0,
+      },
+    });
+
     const updatedPost = await db.post.update({
       where: { id: post.id },
       data: {

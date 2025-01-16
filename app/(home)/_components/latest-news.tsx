@@ -6,6 +6,7 @@ import { it } from "date-fns/locale";
 
 import { db } from "@/lib/db";
 import { ContentStatus } from "@prisma/client";
+import { getAuthorsString } from "@/data/user";
 
 export const LatestNews = async () => {
   const latestNews = await db.post.findMany({
@@ -16,6 +17,15 @@ export const LatestNews = async () => {
     include: {
       imageCover: true,
       user: true,
+      postAuthors: {
+        select: {
+          user: true,
+          sort: true,
+        },
+        orderBy: {
+          sort: "asc",
+        },
+      },
     },
     take: 3,
     orderBy: {
@@ -34,6 +44,9 @@ export const LatestNews = async () => {
         </p>
         <div className="mx-auto grid grid-cols-1 gap-8 lg:grid-cols-3">
           {latestNews.map((post) => {
+            const authorsString = getAuthorsString(
+              post.postAuthors.map((v) => v.user)
+            );
             return (
               <div key={post.title}>
                 {post.imageCover ? (
@@ -55,18 +68,16 @@ export const LatestNews = async () => {
                     />
                   </div>
                 ) : null}
-                <div className="mb-2 flex text-muted-foreground">
+                <div className="text-sm mb-2 text-muted-foreground">
                   <span>
                     Pubblicato&nbsp;
                     {formatDistance(post.firstPublishedAt, new Date(), {
                       addSuffix: true,
                       locale: it,
                     })}
-                    &nbsp;-&nbsp;
                   </span>
-                  <span>
-                    {post?.user?.firstName} {post?.user?.lastName}
-                  </span>
+                  &nbsp;-&nbsp;
+                  <span className="text-sm">{authorsString}</span>
                 </div>
                 <h3 className="mb-2 text-lg font-bold leading-5 text-heading">
                   {post.title}

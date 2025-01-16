@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { User } from "@prisma/client";
 
 export const getUserByEmail = async (email: string) => {
   try {
@@ -22,4 +23,8 @@ export const getUserById = async (id: string) => {
   } catch (error) {
     return null;
   }
+};
+
+export const getAuthorsString = (authors: User[]) => {
+  return authors.map((a) => `${a.firstName} ${a.lastName}`).join(", ");
 };

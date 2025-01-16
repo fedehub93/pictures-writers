@@ -2,6 +2,7 @@ import { Metadata } from "next";
 
 import { db } from "@/lib/db";
 import { ContentStatus } from "@prisma/client";
+import { getAuthorsString } from "@/data/user";
 
 export async function getPostMetadataBySlug(
   slug: string
@@ -16,6 +17,15 @@ export async function getPostMetadataBySlug(
       imageCover: true,
       seo: true,
       user: true,
+      postAuthors: {
+        select: {
+          user: true,
+          sort: true,
+        },
+        orderBy: {
+          sort: "asc",
+        },
+      },
     },
     orderBy: { firstPublishedAt: "desc" },
   });
@@ -23,6 +33,8 @@ export async function getPostMetadataBySlug(
   if (!post || !post.seo) {
     return null;
   }
+
+  const authorsString = getAuthorsString(post.postAuthors.map((v) => v.user));
 
   return {
     title: post.seo.title,
@@ -49,7 +61,7 @@ export async function getPostMetadataBySlug(
       ],
       locale: "it_IT",
       type: "article",
-      authors: [`${post.user!.firstName} ${post.user!.lastName}`],
+      authors: [authorsString],
       publishedTime: post.firstPublishedAt.toISOString(),
       modifiedTime: post.publishedAt.toISOString(),
     },
@@ -58,7 +70,7 @@ export async function getPostMetadataBySlug(
       title: post.seo.ogTwitterTitle || post.seo.title,
       description: post.seo.ogTwitterDescription || post.seo.description || "",
       images: [post.imageCover!.url],
-      creator: `${post.user!.firstName} ${post.user!.lastName}`,
+      creator: authorsString,
     },
   };
 }

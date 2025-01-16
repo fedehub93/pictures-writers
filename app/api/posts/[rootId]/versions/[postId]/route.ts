@@ -68,7 +68,6 @@ export async function PATCH(
     if (!user) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
-
     const post = await db.post.update({
       where: { id: postId },
       data: {
@@ -82,8 +81,35 @@ export async function PATCH(
               ),
             }
           : undefined,
+        authors: undefined,
+        // authors: values.authors
+        //   ? {
+        //       set: values.authors.map((authorId: string) => ({
+        //         id: authorId,
+        //       })),
+        //     }
+        //   : undefined,
+        postAuthors: undefined,
       },
     });
+
+    if (postId && values.authors) {
+      await db.postAuthor.deleteMany({
+        where: {
+          postId,
+        },
+      });
+
+      for (const author of values.authors) {
+        await db.postAuthor.create({
+          data: {
+            postId,
+            userId: author.id,
+            sort: author.sort,
+          },
+        });
+      }
+    }
 
     return NextResponse.json(post);
   } catch (error) {

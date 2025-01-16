@@ -6,10 +6,9 @@ import { getPlaceholderImage } from "@/lib/image";
 
 import CustomSlateView from "@/components/editor/view";
 
-import PostInfo from "@/app/(home)/(routes)/blog/_components/post-info";
-
 import Sidebar from "./sidebar";
 import { WidgetPostBottom } from "./post-bottom";
+import PostInfoV2 from "../../blog/_components/post-info-v2";
 
 interface PostTemplateProps {
   post: PostWithImageCoverWithCategoryWithTagsWithSeo;
@@ -39,8 +38,8 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
             ) : // <OptimizedImage image={post.imageCover} />
             null}
           </div>
-          <PostInfo
-            authorName={`${post.user?.firstName} ${post.user?.lastName}`}
+          <PostInfoV2
+            authors={post.postAuthors.map((v) => v.user)}
             publishedAt={post.publishedAt!}
             categoryTitle={post.category?.title!}
             categorySlug={post.category?.slug!}

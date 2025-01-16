@@ -1,17 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle, Circle, PlusCircle, Timer, X } from "lucide-react";
+import {
+  ArrowDown,
+  CheckCircle,
+  Circle,
+  Pencil,
+  PlusCircle,
+  Timer,
+  X,
+} from "lucide-react";
 import { ContentStatus } from "@prisma/client";
 import { Table } from "@tanstack/react-table";
+import { useState } from "react";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 import { DataTableFacetedFilter } from "./data-table-faceted-filter";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useRouter } from "next/navigation";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
+  data: TData[];
 }
 
 const statuses = [
@@ -34,8 +53,31 @@ const statuses = [
 
 export function DataTableToolbar<TData>({
   table,
+  data,
 }: DataTableToolbarProps<TData>) {
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
   const isFiltered = table.getState().columnFilters.length > 0;
+  const selectedRows = table.getState().rowSelection;
+
+  const onPublishPost = async () => {
+    try {
+      setIsLoading(true);
+
+      const selectedRecords = Object.keys(selectedRows)
+        .filter((key) => selectedRows[key]) // Filtra solo le righe selezionate.
+        .map((key) => data[Number(key)]); // Recupera i record basandoti sull'indice.
+
+      await axios.patch(`/api/posts/publish`, { posts: selectedRecords });
+      toast.success("Items published");
+
+      router.refresh();
+    } catch {
+      toast.error("Something went wrong");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="flex items-center justify-between py-4">
@@ -66,12 +108,34 @@ export function DataTableToolbar<TData>({
           </Button>
         )}
       </div>
-      <Link href="/admin/posts/create">
-        <Button role="button" size="default">
-          <PlusCircle className="h-4 w-4 mr-2" />
-          New post
-        </Button>
-      </Link>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild disabled={isLoading}>
+          <Button type="button" variant="outline" size="sm">
+            Actions
+            <ArrowDown className="h-4 w-4 ml-2" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <Link href="/admin/posts/create">
+            <DropdownMenuItem>
+              <PlusCircle className="h-4 w-4 mr-2" />
+              New post
+            </DropdownMenuItem>
+          </Link>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onPublishPost}
+            className="px-0 w-full justify-start"
+          >
+            <DropdownMenuItem>
+              <Pencil className="h-4 w-4 mr-2" />
+              Publish
+            </DropdownMenuItem>
+          </Button>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }

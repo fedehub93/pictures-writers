@@ -9,6 +9,7 @@ import WidgetAuthor from "@/components/widget/author";
 import WidgetNewsletter from "@/components/widget/newsletter";
 import { db } from "@/lib/db";
 import WidgetTags from "@/components/widget/tags";
+import WidgetAuthors from "@/components/widget/authors";
 
 interface WidgetPostBottomProps {
   postId: string;
@@ -29,9 +30,19 @@ export const WidgetPostBottom = async ({
     orderBy: { sort: "asc" },
   });
 
-  const author = authorId
-    ? await db.user.findUnique({ where: { id: authorId } })
-    : null;
+  const postAuthors = await db.postAuthor.findMany({
+    where: {
+      postId,
+    },
+    select: {
+      user: true,
+    },
+    orderBy: {
+      sort: "asc",
+    },
+  });
+
+  const authors = postAuthors.map((v) => v.user);
 
   return (
     <div className="flex flex-col gap-y-8">
@@ -40,16 +51,7 @@ export const WidgetPostBottom = async ({
           return null;
         }
         if (isWidgetAuthorMetadata(w.metadata)) {
-          return (
-            <WidgetAuthor
-              key={w.name}
-              label={w.metadata.label}
-              firstName={author?.firstName || ""}
-              lastName={author?.lastName || ""}
-              bio={author?.bio || ""}
-              imageUrl={author?.imageUrl || ""}
-            />
-          );
+          return <WidgetAuthors key={w.name} authors={authors} />;
         }
         if (isWidgetNewsletterMetadata(w.metadata)) {
           return <WidgetNewsletter key={w.name} label={w.metadata.label} />;

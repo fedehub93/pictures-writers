@@ -1,6 +1,6 @@
 "use client";
 
-import { ContentStatus, Media, Post, User } from "@prisma/client";
+import { ContentStatus, Media, Post, PostAuthor, User } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
@@ -15,14 +15,41 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 
+import { Checkbox } from "@/components/ui/checkbox";
+
 import { cn } from "@/lib/utils";
 
 type PostWithImageCoverAndUser = Post & {
   imageCover: Media | null;
   user: User | null;
+  postAuthors: { user: User }[];
 };
 
 export const columns: ColumnDef<PostWithImageCoverAndUser>[] = [
+  {
+    id: "select",
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && "indeterminate")
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+        className="translate-y-[2px]"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+        className="translate-y-[2px]"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
   {
     accessorKey: "imageCover",
     header: () => {
@@ -59,7 +86,7 @@ export const columns: ColumnDef<PostWithImageCoverAndUser>[] = [
     },
   },
   {
-    accessorKey: "user",
+    accessorKey: "postAuthors",
     header: ({ column }) => {
       return (
         <Button
@@ -67,26 +94,28 @@ export const columns: ColumnDef<PostWithImageCoverAndUser>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="-ml-4"
         >
-          Author
+          Authors
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
     },
     cell: ({ row }) => {
-      const user = (row.getValue("user") || null) as User | null;
-      if (!user) return null;
+      const authors = row.getValue("postAuthors") as { user: User }[];
+
       return (
         <div className="flex items-center gap-x-4">
-          <Image
-            src={user.imageUrl!}
-            width={40}
-            height={40}
-            className="rounded-full w-10 h-10 object-cover"
-            alt={`Foto profilo ${user.email}`}
-          />
-          <div className="line-clamp-2">
-            {user.firstName} {user.lastName}
-          </div>
+          {authors.map((a) => {
+            return (
+              <Image
+                key={a.user.email}
+                src={a.user.imageUrl!}
+                width={40}
+                height={40}
+                className="rounded-full w-10 h-10 object-cover"
+                alt={`Foto profilo ${a.user.email}`}
+              />
+            );
+          })}
         </div>
       );
     },

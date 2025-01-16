@@ -1,0 +1,76 @@
+import { NextResponse } from "next/server";
+import { ContentStatus } from "@prisma/client";
+
+import { db } from "@/lib/db";
+import { authAdmin } from "@/lib/auth-service";
+import { triggerWebhookBuild } from "@/lib/vercel";
+
+export async function PATCH(req: Request) {
+  try {
+    const user = await authAdmin();
+
+    if (!user) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    const { posts } = await req.json();
+
+    const publishedPosts = [];
+
+    for (const p of posts) {
+      const post = await db.post.findFirst({
+        where: {
+          rootId: p.rootId,
+          id: p.id,
+        },
+        include: {
+          tags: true,
+        },
+      });
+
+      if (!post) {
+        return new NextResponse("Not found", { status: 404 });
+      }
+
+      if (
+        !post.title ||
+        !post.description ||
+        !post.imageCoverId ||
+        !post.categoryId
+      ) {
+        return new NextResponse("Missing required fields!", { status: 404 });
+      }
+
+      // Aggiorna la vecchia versione
+      await db.post.updateMany({
+        where: { rootId: p.rootId },
+        data: { isLatest: false },
+      });
+
+      const publishedPost = await db.post.update({
+        where: {
+          id: p.id,
+        },
+        data: {
+          status: ContentStatus.PUBLISHED,
+          isLatest: true,
+          firstPublishedAt: post.version === 1 ? new Date() : undefined,
+          publishedAt: new Date(),
+        },
+        include: {
+          seo: true,
+        },
+      });
+      publishedPosts.push(publishedPost);
+    }
+
+    if (process.env.NODE_ENV === "production" && publishedPosts.length > 0) {
+      await triggerWebhookBuild();
+    }
+
+    return NextResponse.json(publishedPosts);
+  } catch (error) {
+    console.log("[POSTS_PUBLISH]", error);
+    return new NextResponse("Internal Error", { status: 500 });
+  }
+}

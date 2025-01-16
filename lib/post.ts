@@ -3,6 +3,7 @@ import {
   ContentStatus,
   Media,
   Post,
+  PostAuthor,
   Seo,
   Tag,
   User,
@@ -17,6 +18,10 @@ export type PostWithImageCoverWithCategoryWithTags = Post & {
   category: Category | null;
   tags: Tag[];
   user: User | null;
+  postAuthors: {
+    user: User;
+    sort: number;
+  }[];
 };
 
 export type PostWithImageCoverWithCategoryWithTagsWithSeo = Post & {
@@ -25,6 +30,10 @@ export type PostWithImageCoverWithCategoryWithTagsWithSeo = Post & {
   tags: Tag[];
   seo: Seo | null;
   user: User | null;
+  postAuthors: {
+    user: User;
+    sort: number;
+  }[];
 };
 
 type GetPublishedPosts = {
@@ -64,6 +73,15 @@ export const getPublishedPosts = async ({
       category: true,
       tags: true,
       user: true,
+      postAuthors: {
+        select: {
+          user: true,
+          sort: true,
+        },
+        orderBy: {
+          sort: "asc",
+        },
+      },
     },
     take: POST_PER_PAGE,
     skip: skip,
@@ -98,6 +116,15 @@ export const getPublishedPostsBuilding = async (): Promise<
       tags: true,
       seo: true,
       user: true,
+      postAuthors: {
+        select: {
+          user: true,
+          sort: true,
+        },
+        orderBy: {
+          sort: "asc",
+        },
+      },
     },
     orderBy: {
       firstPublishedAt: "desc",
@@ -121,6 +148,15 @@ export const getPublishedPostsByCategoryRootId = async ({
       category: true,
       tags: true,
       user: true,
+      postAuthors: {
+        select: {
+          user: true,
+          sort: true,
+        },
+        orderBy: {
+          sort: "asc",
+        },
+      },
     },
     orderBy: {
       firstPublishedAt: "desc",
@@ -154,6 +190,15 @@ export const getPublishedPostsByTagRootId = async ({
       category: true,
       tags: true,
       user: true,
+      postAuthors: {
+        select: {
+          user: true,
+          sort: true,
+        },
+        orderBy: {
+          sort: "asc",
+        },
+      },
     },
     orderBy: {
       firstPublishedAt: "desc",
@@ -196,6 +241,15 @@ export const getPublishedPostBySlug = async (slug: string) => {
       tags: true,
       seo: true,
       user: true,
+      postAuthors: {
+        select: {
+          user: true,
+          sort: true,
+        },
+        orderBy: {
+          sort: "asc",
+        },
+      },
     },
     orderBy: {
       publishedAt: "desc",
@@ -233,6 +287,7 @@ export const createNewVersionPost = async (rootId: string, values: any) => {
     },
     include: {
       tags: true,
+      postAuthors: true,
     },
     orderBy: { createdAt: "desc" },
   });
@@ -275,11 +330,35 @@ export const createNewVersionPost = async (rootId: string, values: any) => {
             })),
           }
         : undefined,
+      authors: undefined,
+      postAuthors: undefined,
       createdAt: undefined,
       updatedAt: undefined,
       publishedAt: undefined,
     },
   });
+
+  if (values.postAuthors) {
+    for (const author of values.postAuthors) {
+      await db.postAuthor.create({
+        data: {
+          postId: post.id,
+          userId: author.id,
+          sort: author.sort,
+        },
+      });
+    }
+  } else {
+    for (const postAuthor of publishedPost.postAuthors) {
+      await db.postAuthor.create({
+        data: {
+          postId: post.id,
+          userId: postAuthor.userId,
+          sort: postAuthor.sort,
+        },
+      });
+    }
+  }
 
   return { message: "", status: 200, post: updatedPost };
 };

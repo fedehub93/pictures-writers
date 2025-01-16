@@ -23,7 +23,7 @@ import { StatusView } from "@/app/(admin)/_components/content/status-view";
 
 import { ContentIdActions } from "@/app/(admin)/_components/content/content-id-actions";
 import { PostPreview } from "./_components/post-preview";
-import { AuthorForm } from "./_components/author-form";
+import { AuthorsForm } from "./_components/authors-form";
 
 const PostIdPage = async ({ params }: { params: { rootId: string } }) => {
   const userAdmin = await authAdmin();
@@ -44,6 +44,15 @@ const PostIdPage = async ({ params }: { params: { rootId: string } }) => {
       tags: true,
       seo: true,
       user: true,
+      postAuthors: {
+        select: {
+          user: true,
+          sort: true,
+        },
+        orderBy: {
+          sort: "asc",
+        },
+      },
     },
   });
 
@@ -59,14 +68,6 @@ const PostIdPage = async ({ params }: { params: { rootId: string } }) => {
   const tags = await db.tag.findMany({
     distinct: ["rootId"],
     orderBy: [{ createdAt: "desc" }, { title: "asc" }],
-  });
-
-  const authors = await db.user.findMany({
-    where: {
-      role: {
-        in: [UserRole.ADMIN, UserRole.EDITOR],
-      },
-    },
   });
 
   const requiredFields = [
@@ -181,11 +182,10 @@ const PostIdPage = async ({ params }: { params: { rootId: string } }) => {
             status={post.status}
             lastSavedAt={post.updatedAt}
           />
-          <AuthorForm
+          <AuthorsForm
             initialData={post}
             rootId={post.rootId}
             postId={post.id}
-            authors={authors}
           />
         </div>
       </div>

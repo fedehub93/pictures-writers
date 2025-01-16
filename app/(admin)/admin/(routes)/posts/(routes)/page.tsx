@@ -18,6 +18,14 @@ const PostsPage = async () => {
     include: {
       imageCover: true,
       user: true,
+      postAuthors: {
+        select: {
+          user: true,
+        },
+        orderBy: {
+          sort: "asc",
+        },
+      },
     },
     orderBy: {
       publishedAt: "desc",

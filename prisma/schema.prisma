@@ -87,6 +87,7 @@ model User {
   role UserRole @default(USER)
 
   posts         Post[]
+  postAuthors   PostAuthor[]
   notifications Notification[]
   products      Product[]
 
@@ -195,6 +196,8 @@ model Post {
   seo   Seo?    @relation(fields: [seoId], references: [id])
   seoId String?
 
+  postAuthors PostAuthor[]
+
   user   User?   @relation(fields: [userId], references: [id])
   userId String?
 
@@ -204,6 +207,18 @@ model Post {
   updatedAt        DateTime @updatedAt
 
   @@index([rootId])
+}
+
+model PostAuthor {
+  post   Post   @relation(fields: [postId], references: [id])
+  postId String
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  sort Int
+
+  @@id([postId, userId])
 }
 
 model Category {

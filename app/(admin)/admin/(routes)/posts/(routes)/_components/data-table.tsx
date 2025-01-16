@@ -40,6 +40,9 @@ export function DataTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
+  const [selectedRows, setSelectedRows] = React.useState<
+    Record<string, boolean>
+  >({});
 
   const table = useReactTable({
     data,
@@ -55,12 +58,14 @@ export function DataTable<TData, TValue>({
     state: {
       sorting,
       columnFilters,
+      rowSelection: selectedRows,
     },
+    onRowSelectionChange: setSelectedRows,
   });
 
   return (
     <div>
-      <DataTableToolbar table={table} />
+      <DataTableToolbar table={table} data={data} />
       <div className="rounded-md border">
         <Table>
           <TableHeader>
