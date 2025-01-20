@@ -338,23 +338,17 @@ export const createNewVersionPost = async (rootId: string, values: any) => {
     },
   });
 
-  if (values.postAuthors) {
-    for (const author of values.postAuthors) {
+  const newAuthors = values.authors
+    ? [...values.authors]
+    : [...publishedPost.postAuthors];
+
+  if (newAuthors) {
+    for (const author of newAuthors) {
       await db.postAuthor.create({
         data: {
           postId: post.id,
           userId: author.id,
           sort: author.sort,
-        },
-      });
-    }
-  } else {
-    for (const postAuthor of publishedPost.postAuthors) {
-      await db.postAuthor.create({
-        data: {
-          postId: post.id,
-          userId: postAuthor.userId,
-          sort: postAuthor.sort,
         },
       });
     }
