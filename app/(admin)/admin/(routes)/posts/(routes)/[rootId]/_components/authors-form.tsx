@@ -46,8 +46,9 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
-import { useAuthorsQuery } from "@/app/(admin)/_hooks/use-authors-query";
 import { Skeleton } from "@/components/ui/skeleton";
+
+import { useAuthorsQuery } from "@/app/(admin)/_hooks/use-authors-query";
 
 interface AuthorsFormProps {
   initialData: Post & {
@@ -90,7 +91,7 @@ export const AuthorsForm = ({
         : [],
     },
   });
-  const { data: authors, isFetching, isError, refetch } = useAuthorsQuery();
+  const { data: authors, isFetching, isError } = useAuthorsQuery();
 
   const { isSubmitting } = form.formState;
 

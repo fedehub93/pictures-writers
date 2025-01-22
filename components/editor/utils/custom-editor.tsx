@@ -132,7 +132,10 @@ export const CustomEditorHelper = {
     });
     return !!link;
   },
-  wrapLink(editor: CustomEditor, url: string, text: string) {
+  wrapLink(
+    editor: CustomEditor,
+    { url, text, follow }: { url: string; text: string; follow: boolean }
+  ) {
     if (!url) return;
     const { selection } = editor;
 
@@ -140,6 +143,7 @@ export const CustomEditorHelper = {
       type: "hyperlink",
       data: {
         uri: url,
+        follow,
       },
       children: [{ text }],
     };

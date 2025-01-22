@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Eye, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { Download, Eye, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { useState } from "react";
 import toast from "react-hot-toast";
 
 import { Button } from "@/components/ui/button";
@@ -40,6 +39,18 @@ export const AudiencesAction = ({
     }
   };
 
+  const onExportToCSV = async () => {
+    const response = await fetch("/api/mails/contacts/export-to-csv");
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "export.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -63,6 +74,12 @@ export const AudiencesAction = ({
             View contacts
           </DropdownMenuItem>
         </Link>
+        {isAllContactsAudience && (
+          <DropdownMenuItem onClick={onExportToCSV}>
+            <Download className="h-4 w-4 mr-2" />
+            Export to CSV
+          </DropdownMenuItem>
+        )}
         {!isAllContactsAudience && (
           <>
             <DropdownMenuSeparator />

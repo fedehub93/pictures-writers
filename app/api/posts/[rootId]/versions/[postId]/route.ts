@@ -81,14 +81,6 @@ export async function PATCH(
               ),
             }
           : undefined,
-        authors: undefined,
-        // authors: values.authors
-        //   ? {
-        //       set: values.authors.map((authorId: string) => ({
-        //         id: authorId,
-        //       })),
-        //     }
-        //   : undefined,
         postAuthors: undefined,
       },
     });

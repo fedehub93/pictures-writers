@@ -1,12 +1,10 @@
-import { useCallback, useState } from "react";
-import { Editor, Element, Node, Path, Range, Transforms } from "slate";
+import { useCallback } from "react";
+import { Range, Transforms } from "slate";
 import {
   Editable,
-  ReactEditor,
   RenderElementProps,
   RenderLeafProps,
   useSlate,
-  useSlateStatic,
 } from "slate-react";
 import { isKeyHotkey } from "is-hotkey";
 
@@ -38,11 +36,6 @@ import { EmbeddedProductElement } from "@/components/editor";
 import FirstImpressionSnippet from "./elements/sponsor-first-impression";
 import { EmbeddedProduct } from "./elements/product";
 import { InfoBox } from "./elements/info-box";
-import {
-  TableCellElement,
-  TableElement,
-  TableRowElement,
-} from "./elements/table";
 
 const SOFT_BREAK_ELEMENTS = ["infobox"];
 
@@ -129,24 +122,6 @@ const EditorInput = ({
         );
       case "code":
         return <div {...props.attributes}>{props.children}</div>;
-      // case "table":
-      //   return <TableElement {...props} />;
-      // case "table-row":
-      //   return <TableRowElement {...props} />;
-      // case "table-cell":
-      //   const rowIndex = path[1] ?? 0; // Evita errori in caso di percorsi non validi
-      //   const colIndex = path[2] ?? 0;
-      //   return (
-      //     <TableCellElement
-      //       {...props}
-      //       rowIndex={rowIndex}
-      //       colIndex={colIndex}
-      //       onAddColumn={() => {}}
-      //       onRemoveColumn={() => {}}
-      //       onAddRow={() => {}}
-      //       onRemoveRow={() => {}}
-      //     />
-      //   );
 
       default:
         // return <DefaultElement {...props} isHighlight={isHighlight} />;

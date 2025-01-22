@@ -106,7 +106,7 @@ const Page = async ({ params }: { params: { slug: string } }) => {
         imageCover={post.imageCover}
         images={bodyImages}
         videos={bodyVideos}
-        authorName={`${post.user?.firstName} ${post.user?.lastName}`}
+        authors={post.postAuthors.map((a) => a.user)}
         datePublished={post.firstPublishedAt.toISOString()}
         dateModified={post.publishedAt.toISOString()}
         url={`${siteUrl}/${post.slug}`}

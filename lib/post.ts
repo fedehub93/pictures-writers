@@ -17,7 +17,6 @@ export type PostWithImageCoverWithCategoryWithTags = Post & {
   imageCover: Media | null;
   category: Category | null;
   tags: Tag[];
-  user: User | null;
   postAuthors: {
     user: User;
     sort: number;
@@ -29,7 +28,6 @@ export type PostWithImageCoverWithCategoryWithTagsWithSeo = Post & {
   category: Category | null;
   tags: Tag[];
   seo: Seo | null;
-  user: User | null;
   postAuthors: {
     user: User;
     sort: number;
@@ -72,7 +70,6 @@ export const getPublishedPosts = async ({
       imageCover: true,
       category: true,
       tags: true,
-      user: true,
       postAuthors: {
         select: {
           user: true,
@@ -115,7 +112,6 @@ export const getPublishedPostsBuilding = async (): Promise<
       category: true,
       tags: true,
       seo: true,
-      user: true,
       postAuthors: {
         select: {
           user: true,
@@ -147,7 +143,6 @@ export const getPublishedPostsByCategoryRootId = async ({
       imageCover: true,
       category: true,
       tags: true,
-      user: true,
       postAuthors: {
         select: {
           user: true,
@@ -189,7 +184,6 @@ export const getPublishedPostsByTagRootId = async ({
       imageCover: true,
       category: true,
       tags: true,
-      user: true,
       postAuthors: {
         select: {
           user: true,
@@ -240,7 +234,6 @@ export const getPublishedPostBySlug = async (slug: string) => {
       category: true,
       tags: true,
       seo: true,
-      user: true,
       postAuthors: {
         select: {
           user: true,
@@ -330,7 +323,6 @@ export const createNewVersionPost = async (rootId: string, values: any) => {
             })),
           }
         : undefined,
-      authors: undefined,
       postAuthors: undefined,
       createdAt: undefined,
       updatedAt: undefined,
@@ -347,7 +339,7 @@ export const createNewVersionPost = async (rootId: string, values: any) => {
       await db.postAuthor.create({
         data: {
           postId: post.id,
-          userId: author.id,
+          userId: author.userId,
           sort: author.sort,
         },
       });

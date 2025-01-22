@@ -43,7 +43,6 @@ const PostIdPage = async ({ params }: { params: { rootId: string } }) => {
       category: true,
       tags: true,
       seo: true,
-      user: true,
       postAuthors: {
         select: {
           user: true,

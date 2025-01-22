@@ -19,13 +19,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 import { cn } from "@/lib/utils";
 
-type PostWithImageCoverAndUser = Post & {
+type PostWithImageCoverAndAuthor = Post & {
   imageCover: Media | null;
-  user: User | null;
   postAuthors: { user: User }[];
 };
 
-export const columns: ColumnDef<PostWithImageCoverAndUser>[] = [
+export const columns: ColumnDef<PostWithImageCoverAndAuthor>[] = [
   {
     id: "select",
     header: ({ table }) => (

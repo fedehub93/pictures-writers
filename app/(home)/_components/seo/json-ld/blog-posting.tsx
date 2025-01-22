@@ -1,6 +1,6 @@
 /* eslint-disable react/require-default-props */
 import React, { FC } from "react";
-import { Media } from "@prisma/client";
+import { Media, User } from "@prisma/client";
 import { BlogPosting, WithContext } from "schema-dts";
 import { JsonLd } from "./json-ld";
 
@@ -15,8 +15,7 @@ export interface BlogPostingJsonLdProps {
   datePublished: string;
   dateCreated?: string;
   dateModified?: string;
-  authorName: string;
-  authorType?: "Person" | "Organization";
+  authors: User[];
   description: string;
   body?: string;
 }
@@ -31,8 +30,7 @@ export const BlogPostingJsonLd: FC<BlogPostingJsonLdProps> = ({
   datePublished,
   dateCreated,
   dateModified,
-  authorName,
-  authorType = "Person",
+  authors,
   description,
   body,
   keywords,
@@ -53,12 +51,16 @@ export const BlogPostingJsonLd: FC<BlogPostingJsonLdProps> = ({
     genre: "Cinema, Sceneggiatura",
     //@ts-ignore
     video: videos && videos.length > 0 ? [...videos] : undefined,
-    author: {
-      "@type": authorType,
-      name: authorName,
-      url: "https://pictureswriters.com/about",
-    },
-    editor: authorName,
+    author: authors.map((a) => ({
+      "@type": "Person",
+      name: `${a.firstName} ${a.lastName}`,
+      url: "https://pictureswriters.com/about/",
+    })),
+    editor: authors.map((a) => ({
+      "@type": "Person",
+      name: `${a.firstName} ${a.lastName}`,
+      url: "https://pictureswriters.com/about/",
+    })),
     publisher: {
       "@type": "Organization",
       name: "Pictures Writers",

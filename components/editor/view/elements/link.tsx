@@ -11,7 +11,10 @@ import NextLink from "next/link";
 type Link = Replace<
   Node<"hyperlink">,
   {
-    data: { uri: string };
+    data: {
+      uri: string;
+      follow?: boolean;
+    };
     children: CustomText[];
   }
 >;
@@ -29,12 +32,19 @@ export const Link = createElementTransform(
       element.data.uri.includes("http://") ||
       element.data.uri.includes("https://");
 
+    const isFollow =
+      element.data.follow !== undefined
+        ? element.data.follow
+        : !isExternalLink
+        ? true
+        : false;
+
     return (
       <NextLink
         key={key}
         href={element.data.uri}
         className={cn("underline font-bold")}
-        rel={`noopener noreferrer ${isExternalLink ? "nofollow" : "follow"}`}
+        rel={`noopener noreferrer ${isFollow ? "follow" : "nofollow"}`}
         target={isExternalLink ? "_blank" : "_self"}
         prefetch={true}
       >

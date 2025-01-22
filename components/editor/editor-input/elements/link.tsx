@@ -2,7 +2,7 @@ import { Element, Text, Transforms } from "slate";
 import { ReactEditor, RenderElementProps, useSlate } from "slate-react";
 import { useState } from "react";
 
-import { Copy, Pencil, Trash2 } from "lucide-react";
+import { ArrowUpRight, Copy, Pencil, Trash2 } from "lucide-react";
 
 import {
   Popover,
@@ -20,6 +20,7 @@ import { CustomEditorHelper } from "../../utils/custom-editor";
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 import toast from "react-hot-toast";
 import { isCustomText } from "../..";
+import { cn } from "@/lib/utils";
 
 interface LinkProps extends RenderElementProps {}
 
@@ -29,11 +30,18 @@ export const Link = ({ attributes, children, element }: LinkProps) => {
 
   const { onOpen } = useModal();
 
-  const onSave = (values: { text: string; target: string }) => {
+  const onSave = (values: {
+    text: string;
+    target: string;
+    follow: boolean;
+  }) => {
     Transforms.setNodes(
       editor,
       {
-        data: { uri: values.target },
+        data: {
+          uri: values.target,
+          follow: values.follow,
+        },
       },
       { at: path }
     );
@@ -62,6 +70,7 @@ export const Link = ({ attributes, children, element }: LinkProps) => {
       onOpen("editLink", onSave, {
         text: firstChild.text,
         target: element.data.uri,
+        follow: element.data?.follow,
       });
     }
   };
@@ -73,13 +82,30 @@ export const Link = ({ attributes, children, element }: LinkProps) => {
     }
   };
 
+  const isExternalLink =
+    element.data.uri.includes("http://") ||
+    element.data.uri.includes("https://");
+
+  const isFollow =
+    element.data.follow !== undefined
+      ? element.data.follow
+      : !isExternalLink
+      ? true
+      : false;
+
   return (
     <Popover>
       <PopoverTrigger asChild>
         <a
           href={element.data.uri}
-          className="text-blue-700 underline underline-offset-2 cursor-pointer"
+          className={cn(
+            "relative text-blue-700 underline underline-offset-2 cursor-pointer",
+            isFollow && "mr-4"
+          )}
         >
+          {isFollow && (
+            <ArrowUpRight className="absolute top-0 -right-4 h-4 w-4" />
+          )}
           {children}
         </a>
       </PopoverTrigger>

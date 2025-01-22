@@ -19,10 +19,18 @@ const LinkButton = ({ format }: LinkButtonProps) => {
 
   const isActive = CustomEditorHelper.isBlockActive(editor, format);
 
-  const handleSave = (values: { text: string; target: string }) => {
+  const handleSave = (values: {
+    text: string;
+    target: string;
+    follow: boolean;
+  }) => {
     if (!isActive) {
       if (!values.target) return;
-      CustomEditorHelper.wrapLink(editor, values.target, values.text);
+      CustomEditorHelper.wrapLink(editor, {
+        url: values.target,
+        text: values.text,
+        follow: values.follow,
+      });
       return;
     }
 
@@ -48,6 +56,7 @@ const LinkButton = ({ format }: LinkButtonProps) => {
           ? selected?.children[0].text
           : "",
       target: "",
+      follow: false,
     });
   };
 

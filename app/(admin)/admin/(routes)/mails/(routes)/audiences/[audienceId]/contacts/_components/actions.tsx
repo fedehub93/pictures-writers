@@ -61,7 +61,10 @@ export const EmailAudienceContactsAction = ({ id }: { id: string }) => {
         </Link>
         <DropdownMenuSeparator />
         <ConfirmModal onConfirm={onDelete}>
-          <Button variant="ghost" className="text-destructive px-2 w-full justify-start">
+          <Button
+            variant="ghost"
+            className="text-destructive px-2 w-full justify-start"
+          >
             <Trash2 className="h-4 w-4 mr-2" />
             Delete
           </Button>

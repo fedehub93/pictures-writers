@@ -17,7 +17,6 @@ const PostsPage = async () => {
   const posts = await db.post.findMany({
     include: {
       imageCover: true,
-      user: true,
       postAuthors: {
         select: {
           user: true,

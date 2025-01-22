@@ -16,14 +16,17 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
+  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const formSchema = z.object({
   text: z.string().min(1, {
@@ -32,6 +35,7 @@ const formSchema = z.object({
   target: z.string().min(1, {
     message: "Link target is required",
   }),
+  follow: z.boolean().default(false).optional(),
 });
 
 export const EditLinkModal = () => {
@@ -41,19 +45,25 @@ export const EditLinkModal = () => {
 
   const text = data?.text || "";
   const target = data?.target || "";
+  const follow = (data.follow ? data.follow : false) as boolean;
+
+  const isExternalLink =
+    target.includes("http://") || target.includes("https://");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       text: text || "",
       target: target || "",
+      follow,
     },
   });
 
   useEffect(() => {
     form.setValue("text", text);
     form.setValue("target", target);
-  }, [form, text, target, isOpen]);
+    form.setValue("follow", !isExternalLink ? true : follow);
+  }, [form, text, target, follow, isOpen, isExternalLink]);
 
   const isLoading = form.formState.isSubmitting;
 
@@ -114,6 +124,28 @@ export const EditLinkModal = () => {
                         {...field}
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="follow"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        disabled={!isExternalLink}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Follow attribute</FormLabel>
+                      <FormDescription>
+                        You can manage follow attribute for SEO purpose.
+                      </FormDescription>
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
