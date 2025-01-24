@@ -72,6 +72,7 @@ export async function PATCH(
       where: { id: postId },
       data: {
         ...values,
+        authors: undefined,
         tags: values.tags
           ? {
               set: values.tags.map(

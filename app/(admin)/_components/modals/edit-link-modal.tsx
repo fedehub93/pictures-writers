@@ -45,7 +45,7 @@ export const EditLinkModal = () => {
 
   const text = data?.text || "";
   const target = data?.target || "";
-  const follow = (data.follow ? data.follow : false) as boolean;
+  const follow = (data?.follow ? data.follow : false) as boolean;
 
   const isExternalLink =
     target.includes("http://") || target.includes("https://");
