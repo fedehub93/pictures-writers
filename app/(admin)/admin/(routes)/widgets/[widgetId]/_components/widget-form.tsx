@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { redirect, useRouter } from "next/navigation";
-import { Widget, WidgetSection, WidgetType } from "@prisma/client";
+import { SocialKey, Widget, WidgetSection, WidgetType } from "@prisma/client";
 
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ import {
   isWidgetPostMetadata,
   isWidgetProductMetadata,
   isWidgetSearchMetadata,
+  isWidgetSocialMetadata,
   isWidgetTagMetadata,
 } from "@/type-guards";
 
@@ -38,6 +39,7 @@ import { WidgetCategoryForm } from "./category/category-form";
 import { WidgetNewsletterForm } from "./newsletter/newsletter-form";
 import { WidgetAuthorForm } from "./author/author-form";
 import { WidgetTagForm } from "./tag/tag-form";
+import { WidgetSocialForm } from "./social/social-form";
 
 interface WidgetFormProps {
   initialData: Widget;
@@ -52,6 +54,7 @@ const WidgetTypeZ = z.enum([
   WidgetType.NEWSLETTER,
   WidgetType.AUTHOR,
   WidgetType.TAG,
+  WidgetType.SOCIAL,
 ]);
 
 const WidgetSearchMetadataSchema = z.object({
@@ -77,6 +80,14 @@ const WidgetPostCategoryFilterZ = z.enum([
 const WidgetProductTypeZ = z.enum([
   WidgetProductType.ALL,
   WidgetProductType.SPECIFIC,
+]);
+
+const WidgetSocialKeyZ = z.enum([
+  SocialKey.FACEBOOK,
+  SocialKey.INSTAGRAM,
+  SocialKey.LINKEDIN,
+  SocialKey.TWITTER,
+  SocialKey.YOUTUBE,
 ]);
 
 const WidgetCategoryTypeZ = z.enum([WidgetCategoryType.ALL]);
@@ -133,12 +144,26 @@ const WidgetTagMetadataSchema = z.object({
   type: WidgetTypeZ,
 });
 
+const WidgetSocialMetadataSchema = z.object({
+  label: z.string(),
+  type: WidgetTypeZ,
+  socials: z.array(
+    z.object({
+      key: WidgetSocialKeyZ,
+      url: z.string(),
+      isVisible: z.boolean().default(false),
+      sort: z.coerce.number(),
+    })
+  ),
+});
+
 export const widgetFormSchema = z.object({
   name: z.string().min(1, {
     message: "Name is required!",
   }),
   isEnabled: z.boolean(),
   metadata: z.union([
+    WidgetSocialMetadataSchema,
     WidgetSearchMetadataSchema,
     WidgetPostMetadataSchema,
     WidgetCategoryMetadataSchema,
@@ -162,13 +187,16 @@ export const WidgetForm = ({ initialData, apiUrl }: WidgetFormProps) => {
   const isPostWidget = isWidgetPostMetadata(initialData.metadata);
   const isCategoryWidget = isWidgetCategoryMetadata(initialData.metadata);
   const isProductWidget = isWidgetProductMetadata(initialData.metadata);
+  const isSocialWidget = isWidgetSocialMetadata(initialData.metadata);
   const isNewsletterWidget = isWidgetNewsletterMetadata(initialData.metadata);
   const isAuthorWidget = isWidgetAuthorMetadata(initialData.metadata);
   const isTagWidget = isWidgetTagMetadata(initialData.metadata);
 
   const isWidgetSortVisible = !!(isPostSidebarWidget || isPostBottomWidget);
 
-  const metadata = initialData.metadata;
+  const metadata = {
+    ...initialData.metadata,
+  };
 
   const form = useForm<z.infer<typeof widgetFormSchema>>({
     mode: "all",
@@ -234,6 +262,12 @@ export const WidgetForm = ({ initialData, apiUrl }: WidgetFormProps) => {
                 )}
                 {isProductWidget && (
                   <WidgetProductForm
+                    control={form.control}
+                    isSubmitting={isSubmitting}
+                  />
+                )}
+                {isSocialWidget && (
+                  <WidgetSocialForm
                     control={form.control}
                     isSubmitting={isSubmitting}
                   />

@@ -10,6 +10,7 @@ import {
   WidgetPostMetadata,
   WidgetProductMetadata,
   WidgetSearchMetadata,
+  WidgetSocialMetadata,
   WidgetTagMetadata,
 } from "@/types";
 
@@ -131,5 +132,17 @@ export function isWidgetTagMetadata(
     "type" in metadata &&
     typeof (metadata as any).type === "string" &&
     metadata.type === WidgetType.TAG
+  );
+}
+
+export function isWidgetSocialMetadata(
+  metadata: unknown
+): metadata is WidgetSocialMetadata {
+  return (
+    typeof metadata === "object" &&
+    metadata !== null &&
+    "type" in metadata &&
+    typeof (metadata as any).type === "string" &&
+    metadata.type === WidgetType.SOCIAL
   );
 }

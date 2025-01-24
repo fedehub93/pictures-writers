@@ -1,6 +1,15 @@
 import { ReactNode } from "react";
 import { CustomElement } from "./components/editor";
-import { Media, Product, ProductType, WidgetType } from "@prisma/client";
+import {
+  Media,
+  Product,
+  ProductType,
+  Seo,
+  Settings,
+  SocialChannel,
+  SocialKey,
+  WidgetType,
+} from "@prisma/client";
 
 declare global {
   namespace PrismaJson {
@@ -181,6 +190,16 @@ export type WidgetTagMetadata = {
   type: WidgetType;
 };
 
+export type WidgetSocialMetadata = {
+  label: string;
+  type: WidgetType;
+  socials: {
+    key: SocialKey;
+    isVisible: boolean;
+    sort: number;
+  }[];
+};
+
 /**
  * Script types
  */
@@ -198,4 +217,13 @@ export type SettingsScripts = {
   strategy?: ScriptStrategy;
   content?: string;
   enabled?: boolean;
+};
+
+/**
+ * Settings types
+ */
+
+export type SettingsWithScriptsAndSocials = Settings & {
+  seo: Seo | null;
+  socials: SocialChannel[];
 };

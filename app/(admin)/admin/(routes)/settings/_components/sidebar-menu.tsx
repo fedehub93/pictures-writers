@@ -14,6 +14,10 @@ const routes = [
     href: "/admin/settings/seo",
   },
   {
+    label: "Socials",
+    href: "/admin/settings/socials",
+  },
+  {
     label: "Scripts",
     href: "/admin/settings/scripts",
   },

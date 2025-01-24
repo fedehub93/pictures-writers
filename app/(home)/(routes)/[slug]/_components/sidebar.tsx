@@ -5,6 +5,7 @@ import {
   isWidgetCategoryMetadata,
   isWidgetPostMetadata,
   isWidgetProductMetadata,
+  isWidgetSocialMetadata,
 } from "@/type-guards";
 
 import StickyWrapper from "./sticky-wrapper";
@@ -13,6 +14,7 @@ import { WidgetPost } from "@/components/widget/post";
 import { WidgetProduct } from "@/components/widget/product";
 import { WidgetSearchBox } from "@/components/widget/search-box";
 import { WidgetCategory } from "@/components/widget/category";
+import WidgetSocial from "@/components/widget/socials";
 
 interface PostSidebarProps {
   postId: string;
@@ -70,6 +72,15 @@ const Sidebar = async ({ postId, categoryRootId }: PostSidebarProps) => {
                 productType={w.metadata.productType}
                 products={w.metadata.products}
                 limit={w.metadata.limit}
+              />
+            );
+          }
+          if (isWidgetSocialMetadata(w.metadata)) {
+            return (
+              <WidgetSocial
+                key={w.name}
+                label={w.metadata.label}
+                socials={w.metadata.socials}
               />
             );
           }

@@ -15,6 +15,7 @@ import {
   Captions,
   LucideIcon,
   Mailbox,
+  Network,
   NotebookPen,
   PanelBottom,
   PanelRight,
@@ -79,7 +80,16 @@ const sections = [
         label: "Tags",
         Icon: Tags,
       },
-      { type: WidgetType.PRODUCT, label: "Products", Icon: Box },
+      {
+        type: WidgetType.PRODUCT,
+        label: "Products",
+        Icon: Box,
+      },
+      {
+        type: WidgetType.SOCIAL,
+        label: "Socials",
+        Icon: Network,
+      },
     ],
   },
   {

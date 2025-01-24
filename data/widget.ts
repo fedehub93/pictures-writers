@@ -12,8 +12,11 @@ import {
   WidgetProductMetadata,
   WidgetProductType,
   WidgetSearchMetadata,
+  WidgetSocialMetadata,
   WidgetTagMetadata,
 } from "@/types";
+import { DEFAULT_SOCIAL_CHANNEL_VALUES, getSettings } from "./settings";
+import { isWidgetSocialMetadata } from "@/type-guards";
 
 export const setDefaultWidgetSearchMetadata = (): WidgetSearchMetadata => {
   return {
@@ -51,6 +54,20 @@ export const setDefaultWidgetProductMetadata = (): WidgetProductMetadata => {
     productType: WidgetProductType.ALL,
     products: [],
     limit: 0,
+  };
+};
+
+export const setDefaultWidgetSocialMetadata = (): WidgetSocialMetadata => {
+  const socials = DEFAULT_SOCIAL_CHANNEL_VALUES.map((v) => ({
+    key: v.key,
+    isVisible: false,
+    sort: 0,
+  }));
+
+  return {
+    label: "",
+    type: WidgetType.SOCIAL,
+    socials: [...socials],
   };
 };
 
@@ -230,4 +247,29 @@ export const getWidgetProducts = async ({
   });
 
   return productsData;
+};
+
+type GetWidgetSocial = {
+  socials: {
+    key: string;
+    isVisible: boolean;
+    sort: number;
+  }[];
+};
+
+export const getWidgetSocials = async ({
+  socials: widgetSocials,
+}: GetWidgetSocial) => {
+  const { socials } = await getSettings();
+  const mappedSocials = socials.filter((s) => {
+    const isFound = widgetSocials.find((sw) => {
+      if (sw.key === s.key && sw.isVisible && !!s.url) {
+        return true;
+      }
+      return false;
+    });
+    return isFound;
+  });
+
+  return mappedSocials;
 };

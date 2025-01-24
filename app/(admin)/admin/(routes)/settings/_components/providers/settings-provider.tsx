@@ -1,14 +1,15 @@
 "use client";
 
-import { Seo, Settings } from "@prisma/client";
+import { Seo, Settings, SocialChannel } from "@prisma/client";
 import { createContext, useContext } from "react";
 
-type SettingsWithSeo = Settings & {
+type SettingsWithSeoWithSocials = Settings & {
   seo: Seo | null;
+  socials: SocialChannel[];
 };
 
 interface SettingsContextProps {
-  settings: SettingsWithSeo | null;
+  settings: SettingsWithSeoWithSocials | null;
 }
 
 const SettingsContext = createContext<SettingsContextProps | undefined>(

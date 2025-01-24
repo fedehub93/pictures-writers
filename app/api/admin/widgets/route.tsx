@@ -10,6 +10,7 @@ import {
   setDefaultWidgetPostMetadata,
   setDefaultWidgetProductMetadata,
   setDefaultWidgetSearchMetadata,
+  setDefaultWidgetSocialMetadata,
   setDefaultWidgetTagMetadata,
 } from "@/data/widget";
 
@@ -32,13 +33,14 @@ export async function GET(req: NextRequest) {
     const widgets = await db.widget.findMany({
       where: {
         section: validSection,
+        isEnabled: true,
       },
       orderBy: { sort: "asc" },
     });
 
     return NextResponse.json(widgets);
   } catch (error) {
-    console.error(error);
+    console.log("[WIDGETS_GET]", error);
     return NextResponse.json(
       { message: "Internal server error" },
       { status: 500 }
@@ -86,6 +88,9 @@ export async function POST(req: Request) {
       }
       if (type === WidgetType.PRODUCT) {
         metadata = { ...setDefaultWidgetProductMetadata() };
+      }
+      if (type === WidgetType.SOCIAL) {
+        metadata = { ...setDefaultWidgetSocialMetadata() };
       }
     }
 

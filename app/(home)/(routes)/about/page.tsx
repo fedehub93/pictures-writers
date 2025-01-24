@@ -1,11 +1,10 @@
 import { Metadata } from "next";
 import Image from "next/image";
-import { Separator } from "@/components/ui/separator";
 import { SocialIcon } from "react-social-icons";
-import { getHeadMetadata } from "../../_components/seo/head-metadata";
-import { db } from "@/lib/db";
 import { UserRole } from "@prisma/client";
-import { User } from "lucide-react";
+import { db } from "@/lib/db";
+import { Separator } from "@/components/ui/separator";
+import { getHeadMetadata } from "../../_components/seo/head-metadata";
 
 export async function generateMetadata(): Promise<Metadata | null> {
   const metadata = await getHeadMetadata();

@@ -20,7 +20,7 @@ import { X } from "lucide-react";
 
 interface InfoBoxProps extends RenderElementProps {}
 
-const emojiList = ["💡", "🏆", "📌", "⚠️", "✅", "❓", "📖", "📨", "📩", "🔽"]; // Lista di emoji personalizzata
+const emojiList = ["💡", "🏆", "📌", "⚠️", "✅", "❓", "📖", "📨", "📩", "🔽", "🔗"]; // Lista di emoji personalizzata
 
 export const InfoBox = ({ attributes, element, children }: InfoBoxProps) => {
   const editor = useSlateStatic();

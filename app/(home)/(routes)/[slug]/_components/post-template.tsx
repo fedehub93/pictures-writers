@@ -35,8 +35,7 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
                 placeholder="blur"
                 blurDataURL={imageWithPlaceholder.placeholder}
               />
-            ) : // <OptimizedImage image={post.imageCover} />
-            null}
+            ) : null}
           </div>
           <PostInfoV2
             authors={post.postAuthors.map((v) => v.user)}
