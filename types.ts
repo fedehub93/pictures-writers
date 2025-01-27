@@ -150,11 +150,16 @@ export type WidgetSearchMetadata = {
   isDynamic: boolean;
 };
 
+export type WidgetPostMetadataPosts = {
+  rootId: string;
+  sort: number;
+};
+
 export type WidgetPostMetadata = {
   label: string;
   type: WidgetType;
   postType: WidgetPostType;
-  posts: { rootId: string; sort: number }[];
+  posts: WidgetPostMetadataPosts[];
   categoryFilter: WidgetPostCategoryFilter;
   categories: string[];
   limit: number;
@@ -167,11 +172,16 @@ export type WidgetCategoryMetadata = {
   limit: number;
 };
 
+export type WidgetProductMetadataProducts = {
+  rootId: string;
+  sort: number;
+};
+
 export type WidgetProductMetadata = {
   label: string;
   type: WidgetType;
   productType: WidgetProductType;
-  products: { rootId: string; sort: number }[];
+  products: WidgetProductMetadataProducts[];
   limit: number;
 };
 
@@ -190,14 +200,16 @@ export type WidgetTagMetadata = {
   type: WidgetType;
 };
 
+export type WidgetSocialMetadataSocial = {
+  key: SocialKey;
+  isVisible: boolean;
+  sort: number;
+};
+
 export type WidgetSocialMetadata = {
   label: string;
   type: WidgetType;
-  socials: {
-    key: SocialKey;
-    isVisible: boolean;
-    sort: number;
-  }[];
+  socials: WidgetSocialMetadataSocial[];
 };
 
 /**

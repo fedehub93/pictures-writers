@@ -27,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { WidgetPostType } from "@/types";
+import { WidgetPostMetadataPosts, WidgetPostType } from "@/types";
 import { Input } from "@/components/ui/input";
 import { ChangeEvent } from "react";
 
@@ -98,7 +98,10 @@ export const PostTypeForm = ({
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["postsFetch", fieldPosts.value.length],
-    queryFn: () => fetchPosts(fieldPosts.value.map((v) => v.rootId)),
+    queryFn: () =>
+      fetchPosts(
+        fieldPosts.value.map((v: WidgetPostMetadataPosts) => v.rootId)
+      ),
     enabled: fieldPosts.value.length > 0,
   });
 
@@ -118,7 +121,9 @@ export const PostTypeForm = ({
   };
 
   const onDeletePost = (rootId: string) => {
-    const newPosts = fieldPosts.value.filter((v) => v.rootId !== rootId);
+    const newPosts = fieldPosts.value.filter(
+      (v: WidgetPostMetadataPosts) => v.rootId !== rootId
+    );
     fieldPosts.onChange(newPosts);
   };
 
@@ -221,52 +226,54 @@ export const PostTypeForm = ({
                         {...provided.droppableProps}
                       >
                         {data &&
-                          fieldPosts.value.map((v, index) => {
-                            const p = data.find((d) => d.rootId === v.rootId);
-                            if (!p) return null;
-                            return (
-                              <Draggable
-                                key={p.title}
-                                draggableId={p.title}
-                                index={index}
-                              >
-                                {(provided) => (
-                                  <div
-                                    key={p.title}
-                                    className="flex items-center gap-y-2 w-full border hover:shadow-xl duration-500 transition-all rounded-md shadow-md mb-4"
-                                    ref={provided.innerRef}
-                                    {...provided.draggableProps}
-                                  >
+                          fieldPosts.value.map(
+                            (v: WidgetPostMetadataPosts, index: number) => {
+                              const p = data.find((d) => d.rootId === v.rootId);
+                              if (!p) return null;
+                              return (
+                                <Draggable
+                                  key={p.title}
+                                  draggableId={p.title}
+                                  index={index}
+                                >
+                                  {(provided) => (
                                     <div
-                                      className="h-16 w-8 border-r bg-muted flex justify-center items-center cursor-pointer"
-                                      {...provided.dragHandleProps}
+                                      key={p.title}
+                                      className="flex items-center gap-y-2 w-full border hover:shadow-xl duration-500 transition-all rounded-md shadow-md mb-4"
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
                                     >
-                                      <Grip className="h-5 w-5" />
-                                    </div>
-                                    <div className="text-sm px-2 line-clamp-2">
-                                      {p.title}
-                                    </div>
-                                    <div className="flex ml-auto group">
-                                      <div className="relative w-16 h-16 aspect-square overflow-hidden">
-                                        <Image
-                                          src={p.imageCover?.url || ""}
-                                          alt={"image"}
-                                          fill
-                                          className="object-cover"
-                                        />
-                                      </div>
                                       <div
-                                        className="h-16 w-0 border-r bg-destructive flex justify-center items-center cursor-pointer group-hover:w-8 transition-all duration-500"
-                                        onClick={() => onDeletePost(p.id)}
+                                        className="h-16 w-8 border-r bg-muted flex justify-center items-center cursor-pointer"
+                                        {...provided.dragHandleProps}
                                       >
-                                        <Trash2 className="h-5 w-5 text-white" />
+                                        <Grip className="h-5 w-5" />
+                                      </div>
+                                      <div className="text-sm px-2 line-clamp-2">
+                                        {p.title}
+                                      </div>
+                                      <div className="flex ml-auto group">
+                                        <div className="relative w-16 h-16 aspect-square overflow-hidden">
+                                          <Image
+                                            src={p.imageCover?.url || ""}
+                                            alt={"image"}
+                                            fill
+                                            className="object-cover"
+                                          />
+                                        </div>
+                                        <div
+                                          className="h-16 w-0 border-r bg-destructive flex justify-center items-center cursor-pointer group-hover:w-8 transition-all duration-500"
+                                          onClick={() => onDeletePost(p.id)}
+                                        >
+                                          <Trash2 className="h-5 w-5 text-white" />
+                                        </div>
                                       </div>
                                     </div>
-                                  </div>
-                                )}
-                              </Draggable>
-                            );
-                          })}
+                                  )}
+                                </Draggable>
+                              );
+                            }
+                          )}
                       </div>
                     )}
                   </Droppable>

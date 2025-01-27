@@ -22,6 +22,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SocialIcon } from "react-social-icons";
 import { Switch } from "@/components/ui/switch";
 import { getFirstCharUppercase } from "@/lib/utils";
+import { WidgetSocialMetadataSocial } from "@/types";
 
 interface WidgetSocialFormProps {
   control: Control<z.infer<typeof widgetFormSchema>>;
@@ -88,42 +89,44 @@ export const WidgetSocialForm = ({
           />
         </div>
         <div className="flex flex-col gap-y-4">
-          {fieldSocials.value.map((field, index) => (
-            <div key={field.key} className="flex gap-x-4 items-center w-full">
-              <FormField
-                control={control}
-                name={`metadata.socials`}
-                render={({ field: fieldSocials }) => (
-                  <FormItem className="flex flex-1 flex-row gap-x-4 items-center justify-between rounded-lg border p-4">
-                    <SocialIcon
-                      network={field.key.toLowerCase()}
-                      style={{ height: 45, width: 45 }}
-                    />
-                    <div className="space-y-0.5 mr-auto">
-                      <FormLabel className="text-base">
-                        {getFirstCharUppercase(field.key)}
-                      </FormLabel>
-                      <FormDescription>
-                        Show your {getFirstCharUppercase(field.key)} social
-                        button link.
-                      </FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={fieldSocials.value[index].isVisible}
-                        onCheckedChange={(checked) => {
-                          const updatedSocials = [...fieldSocials.value];
-                          updatedSocials[index].isVisible = checked;
-                          fieldSocials.onChange(updatedSocials);
-                        }}
-                        disabled={isSubmitting}
+          {fieldSocials.value.map(
+            (field: WidgetSocialMetadataSocial, index: number) => (
+              <div key={field.key} className="flex gap-x-4 items-center w-full">
+                <FormField
+                  control={control}
+                  name={`metadata.socials`}
+                  render={({ field: fieldSocials }) => (
+                    <FormItem className="flex flex-1 flex-row gap-x-4 items-center justify-between rounded-lg border p-4">
+                      <SocialIcon
+                        network={field.key.toLowerCase()}
+                        style={{ height: 45, width: 45 }}
                       />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
-          ))}
+                      <div className="space-y-0.5 mr-auto">
+                        <FormLabel className="text-base">
+                          {getFirstCharUppercase(field.key)}
+                        </FormLabel>
+                        <FormDescription>
+                          Show your {getFirstCharUppercase(field.key)} social
+                          button link.
+                        </FormDescription>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={fieldSocials.value[index].isVisible}
+                          onCheckedChange={(checked) => {
+                            const updatedSocials = [...fieldSocials.value];
+                            updatedSocials[index].isVisible = checked;
+                            fieldSocials.onChange(updatedSocials);
+                          }}
+                          disabled={isSubmitting}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )
+          )}
         </div>
       </CardContent>
     </Card>

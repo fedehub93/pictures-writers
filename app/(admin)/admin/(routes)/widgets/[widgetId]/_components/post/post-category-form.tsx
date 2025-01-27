@@ -92,7 +92,9 @@ export const SpecificCategoryForm = ({
     let newCategories = [...fieldCategories.value];
     const category = fieldCategories.value.includes(rootId);
     if (category) {
-      newCategories = [...fieldCategories.value.filter((v) => v !== rootId)];
+      newCategories = [
+        ...fieldCategories.value.filter((v: string) => v !== rootId),
+      ];
     }
     if (!category) {
       newCategories.push(rootId);

@@ -162,16 +162,17 @@ export const widgetFormSchema = z.object({
     message: "Name is required!",
   }),
   isEnabled: z.boolean(),
-  metadata: z.union([
-    WidgetSocialMetadataSchema,
-    WidgetSearchMetadataSchema,
-    WidgetPostMetadataSchema,
-    WidgetCategoryMetadataSchema,
-    WidgetProductMetadataSchema,
-    WidgetNewsletterMetadataSchema,
-    WidgetAuthorMetadataSchema,
-    WidgetTagMetadataSchema,
-  ]),
+  // metadata: z.union([
+  //   WidgetSocialMetadataSchema,
+  //   WidgetSearchMetadataSchema,
+  //   WidgetPostMetadataSchema,
+  //   WidgetCategoryMetadataSchema,
+  //   WidgetProductMetadataSchema,
+  //   WidgetNewsletterMetadataSchema,
+  //   WidgetAuthorMetadataSchema,
+  //   WidgetTagMetadataSchema,
+  // ]),
+  metadata: z.any(),
 });
 
 export const WidgetForm = ({ initialData, apiUrl }: WidgetFormProps) => {
