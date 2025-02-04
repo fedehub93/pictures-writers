@@ -7,7 +7,7 @@ import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
 import { createProductSeo } from "@/lib/seo";
 
-const PRODUCT_BATCH = 6;
+const PRODUCT_BATCH = 4;
 
 export async function POST(req: Request) {
   try {

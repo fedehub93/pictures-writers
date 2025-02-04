@@ -1,18 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { User } from "@prisma/client";
+import { BookOpenText, CalendarDays, Earth, Weight } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { formatBytes, formatDate, formatPrice } from "@/lib/format";
 import { EbookFormat } from "@/types";
 
+import CustomSlateView from "@/components/editor/view";
+import { FreeEbookModal } from "@/app/(home)/_components/modals/free-ebook-modal";
 import { BuyButton } from "./buy-button";
 import { BoxInfo } from "./box-info";
-import { BookOpenText, CalendarDays, Earth, Weight } from "lucide-react";
-import { FreeEbookModal } from "@/app/(home)/_components/modals/free-ebook-modal";
-import CustomSlateView from "@/components/editor/view";
 
 interface EbookInfoProps {
   rootId: string;

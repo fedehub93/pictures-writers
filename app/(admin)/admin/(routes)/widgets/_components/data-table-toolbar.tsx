@@ -28,7 +28,7 @@ const sections = [
     icon: Captions,
   },
   {
-    value: WidgetSection.POPUP,
+    value: WidgetSection.MODAL_POPUP,
     label: "Pop-up",
     icon: AppWindow,
   },

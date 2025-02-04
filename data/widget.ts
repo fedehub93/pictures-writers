@@ -1,4 +1,10 @@
-import { ContentStatus, Prisma, WidgetType } from "@prisma/client";
+import {
+  ContentStatus,
+  Prisma,
+  Widget,
+  WidgetSection,
+  WidgetType,
+} from "@prisma/client";
 
 import { db } from "@/lib/db";
 import {
@@ -6,6 +12,7 @@ import {
   WidgetCategoryMetadata,
   WidgetCategoryType,
   WidgetNewsletterMetadata,
+  WidgetProductPopMetadata,
   WidgetPostCategoryFilter,
   WidgetPostMetadata,
   WidgetPostType,
@@ -14,9 +21,21 @@ import {
   WidgetSearchMetadata,
   WidgetSocialMetadata,
   WidgetTagMetadata,
+  WidgetProductPopActionType,
 } from "@/types";
 import { DEFAULT_SOCIAL_CHANNEL_VALUES, getSettings } from "./settings";
-import { isWidgetSocialMetadata } from "@/type-guards";
+import { isWidgetProductPopMetadata } from "@/type-guards";
+
+export const setDefaultWidgetProductPopMetadata =
+  (): WidgetProductPopMetadata => {
+    return {
+      label: "",
+      type: WidgetType.PRODUCT_POP,
+      autoOpenDelay: 10,
+      actionType: WidgetProductPopActionType.GO_TO_PRODUCT,
+      productRootId: null,
+    };
+  };
 
 export const setDefaultWidgetSearchMetadata = (): WidgetSearchMetadata => {
   return {

@@ -7,6 +7,7 @@ import {
   setDefaultWidgetAuthorMetadata,
   setDefaultWidgetCategoryMetadata,
   setDefaultWidgetNewsletterMetadata,
+  setDefaultWidgetProductPopMetadata,
   setDefaultWidgetPostMetadata,
   setDefaultWidgetProductMetadata,
   setDefaultWidgetSearchMetadata,
@@ -69,11 +70,10 @@ export async function POST(req: Request) {
       };
     }
 
-    if (section === WidgetSection.POPUP) {
-      metadata = {
-        section: WidgetSection.POPUP,
-        type,
-      };
+    if (section === WidgetSection.MODAL_POPUP) {
+      if (type === WidgetType.PRODUCT_POP) {
+        metadata = { ...setDefaultWidgetProductPopMetadata() };
+      }
     }
 
     if (section === WidgetSection.POST_SIDEBAR) {

@@ -36,7 +36,7 @@ model Settings {
 
 enum WidgetSection {
   HERO
-  POPUP
+  MODAL_POPUP
   POST_SIDEBAR
   POST_BOTTOM
 }
@@ -50,6 +50,8 @@ enum WidgetType {
   NEWSLETTER
   AUTHOR
   SOCIAL
+  PRODUCT_POP
+  NEWSLETTER_POP
 }
 
 model Widget {

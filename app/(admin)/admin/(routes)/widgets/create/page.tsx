@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import {
   AppWindow,
@@ -15,6 +16,7 @@ import {
   Captions,
   LucideIcon,
   Mailbox,
+  MailPlus,
   Network,
   NotebookPen,
   PanelBottom,
@@ -37,7 +39,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useEffect, useState } from "react";
 
 const formSchema = z.object({
   name: z.string().min(1, {
@@ -54,7 +55,23 @@ const sections = [
     Icon: Captions,
     types: [],
   },
-  { section: WidgetSection.POPUP, label: "Pop-up", Icon: AppWindow, types: [] },
+  {
+    section: WidgetSection.MODAL_POPUP,
+    label: "Pop-up",
+    Icon: AppWindow,
+    types: [
+      {
+        type: WidgetType.PRODUCT_POP,
+        label: "Product Pop-up",
+        Icon: Box,
+      },
+      {
+        type: WidgetType.NEWSLETTER_POP,
+        label: "Newsletter Pop-up",
+        Icon: MailPlus,
+      },
+    ],
+  },
   {
     section: WidgetSection.POST_SIDEBAR,
     label: "Post Sidebar",
@@ -118,17 +135,13 @@ const sections = [
 
 const WidgetCreatePage = () => {
   const router = useRouter();
-  const [selectedSection, setSelectedSection] = useState<WidgetSection | null>(
-    null
-  );
-  const [selectedTypes, setSelectedTypes] = useState<
-    { type: WidgetType; label: string; Icon: LucideIcon }[]
-  >([]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
+      section: "POST_SIDEBAR",
+      type: "POST",
     },
   });
 
@@ -147,12 +160,9 @@ const WidgetCreatePage = () => {
     }
   };
 
-  useEffect(() => {
-    const section = sections.find((s) => s.section === selectedSection);
-    if (section) {
-      setSelectedTypes(section.types);
-    }
-  }, [selectedSection]);
+  const selectedSection = form.watch("section");
+  const selectedTypes =
+    sections.find((s) => s.section === selectedSection)?.types || [];
 
   return (
     <div className="max-w-5xl mx-auto flex md:items-center md:justify-center h-full p-6">
@@ -192,10 +202,7 @@ const WidgetCreatePage = () => {
                   <FormLabel>Widget Section</FormLabel>
                   <FormControl>
                     <RadioGroup
-                      onValueChange={(value) => {
-                        setSelectedSection(value as WidgetSection);
-                        field.onChange(value);
-                      }}
+                      onValueChange={field.onChange}
                       defaultValue={field.value}
                       className="grid grid-cols-4 gap-2"
                     >
@@ -233,7 +240,9 @@ const WidgetCreatePage = () => {
                     <FormLabel>Widget Type</FormLabel>
                     <FormControl>
                       <RadioGroup
-                        onValueChange={field.onChange}
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                        }}
                         defaultValue={field.value}
                         className="grid grid-cols-3 gap-2"
                       >

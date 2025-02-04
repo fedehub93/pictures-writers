@@ -21,6 +21,7 @@ import {
   isWidgetAuthorMetadata,
   isWidgetCategoryMetadata,
   isWidgetNewsletterMetadata,
+  isWidgetProductPopMetadata,
   isWidgetPostMetadata,
   isWidgetProductMetadata,
   isWidgetSearchMetadata,
@@ -40,6 +41,7 @@ import { WidgetNewsletterForm } from "./newsletter/newsletter-form";
 import { WidgetAuthorForm } from "./author/author-form";
 import { WidgetTagForm } from "./tag/tag-form";
 import { WidgetSocialForm } from "./social/social-form";
+import { WidgetPopupForm } from "./popup/popup-form";
 
 interface WidgetFormProps {
   initialData: Widget;
@@ -178,8 +180,8 @@ export const widgetFormSchema = z.object({
 export const WidgetForm = ({ initialData, apiUrl }: WidgetFormProps) => {
   const router = useRouter();
 
-  const isHeroWidget = initialData.section === WidgetSection.HERO;
-  const isPopupWidget = initialData.section === WidgetSection.POPUP;
+  const isHeroSectionWidget = initialData.section === WidgetSection.HERO;
+  const isPopupSectionWidget = initialData.section === WidgetSection.MODAL_POPUP;
   const isPostSidebarWidget =
     initialData.section === WidgetSection.POST_SIDEBAR;
   const isPostBottomWidget = initialData.section === WidgetSection.POST_BOTTOM;
@@ -192,6 +194,8 @@ export const WidgetForm = ({ initialData, apiUrl }: WidgetFormProps) => {
   const isNewsletterWidget = isWidgetNewsletterMetadata(initialData.metadata);
   const isAuthorWidget = isWidgetAuthorMetadata(initialData.metadata);
   const isTagWidget = isWidgetTagMetadata(initialData.metadata);
+
+  const isProductPopupWidget = isWidgetProductPopMetadata(initialData.metadata);
 
   const isWidgetSortVisible = !!(isPostSidebarWidget || isPostBottomWidget);
 
@@ -287,6 +291,12 @@ export const WidgetForm = ({ initialData, apiUrl }: WidgetFormProps) => {
                 )}
                 {isTagWidget && (
                   <WidgetTagForm
+                    control={form.control}
+                    isSubmitting={isSubmitting}
+                  />
+                )}
+                {isProductPopupWidget && (
+                  <WidgetPopupForm
                     control={form.control}
                     isSubmitting={isSubmitting}
                   />

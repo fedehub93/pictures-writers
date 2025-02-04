@@ -144,6 +144,19 @@ export enum WidgetProductType {
   SPECIFIC = "SPECIFIC",
 }
 
+export enum WidgetProductPopActionType {
+  GO_TO_PRODUCT = "GO_TO_PRODUCT",
+  FILL_FORM = "FILL_FORM",
+}
+
+export type WidgetProductPopMetadata = {
+  label: string;
+  type: WidgetType;
+  autoOpenDelay: number;
+  actionType: WidgetProductPopActionType;
+  productRootId: null | string;
+};
+
 export type WidgetSearchMetadata = {
   label: string;
   type: WidgetType;

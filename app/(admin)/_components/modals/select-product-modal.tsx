@@ -77,7 +77,7 @@ export const SelectProductModal = () => {
               </p>
             </div>
           ) : (
-            <div className="flex flex-col py-4 px-6 gap-y-4">
+            <div className="flex flex-col py-4 px-6 gap-y-4 w-full">
               {data?.pages?.map((group, i) => (
                 <div key={i} className="flex gap-x-4">
                   {group.items.map((item: ProductWithImageCover) => (

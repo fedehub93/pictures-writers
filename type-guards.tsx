@@ -7,6 +7,7 @@ import {
   WidgetAuthorMetadata,
   WidgetCategoryMetadata,
   WidgetNewsletterMetadata,
+  WidgetProductPopMetadata,
   WidgetPostMetadata,
   WidgetProductMetadata,
   WidgetSearchMetadata,
@@ -144,5 +145,17 @@ export function isWidgetSocialMetadata(
     "type" in metadata &&
     typeof (metadata as any).type === "string" &&
     metadata.type === WidgetType.SOCIAL
+  );
+}
+
+export function isWidgetProductPopMetadata(
+  metadata: unknown
+): metadata is WidgetProductPopMetadata {
+  return (
+    typeof metadata === "object" &&
+    metadata !== null &&
+    "type" in metadata &&
+    typeof (metadata as any).type === "string" &&
+    metadata.type === WidgetType.PRODUCT_POP
   );
 }
