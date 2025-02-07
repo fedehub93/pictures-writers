@@ -89,6 +89,7 @@ const WidgetSocialKeyZ = z.enum([
   SocialKey.INSTAGRAM,
   SocialKey.LINKEDIN,
   SocialKey.TWITTER,
+  SocialKey.PINTEREST,
   SocialKey.YOUTUBE,
 ]);
 

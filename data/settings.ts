@@ -23,6 +23,10 @@ export const DEFAULT_SOCIAL_CHANNEL_VALUES: {
     url: "",
   },
   {
+    key: SocialKey.PINTEREST,
+    url: "",
+  },
+  {
     key: SocialKey.YOUTUBE,
     url: "",
   },

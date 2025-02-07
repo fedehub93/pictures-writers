@@ -587,6 +587,7 @@ enum SocialKey {
   TWITTER
   INSTAGRAM
   LINKEDIN
+  PINTEREST
   YOUTUBE
 }
 
