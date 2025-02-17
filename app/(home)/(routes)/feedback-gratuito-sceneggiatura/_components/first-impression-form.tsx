@@ -1,4 +1,5 @@
-"use client";;
+"use client";
+
 import * as v from "valibot";
 import { useForm } from "react-hook-form";
 import { valibotResolver } from "@hookform/resolvers/valibot";
@@ -26,8 +27,6 @@ import {
 } from "@/components/ui/select";
 import { FirstImpressionSchemaValibot } from "@/schemas";
 import { BeatLoader } from "react-spinners";
-
-import type { JSX } from "react";
 
 interface FirstImpressionFormProps {
   formats: Format[];

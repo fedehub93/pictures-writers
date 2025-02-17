@@ -5,13 +5,14 @@ import { db } from "@/lib/db";
 
 export async function DELETE(
   req: Request,
-  props: {
-    params: Promise<{
+  {
+    params,
+  }: {
+    params: {
       impressionId: string;
-    }>;
+    };
   }
 ) {
-  const params = await props.params;
   try {
     const user = await authAdmin();
     const { impressionId } = params;

@@ -6,6 +6,7 @@ import {
 } from "slate-to-react";
 import NextLink from "next/link";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 

@@ -24,11 +24,10 @@ type Params = {
 };
 
 type Props = {
-  params: Promise<Params>;
+  params: Params;
 };
 
-// export const revalidate = 3600 * 24;
-export const revalidate = 86400;
+export const revalidate = 3600 * 24;
 
 export const dynamicParams = true;
 
@@ -38,8 +37,9 @@ export async function generateStaticParams() {
   return [{ slug: `blog` }, ...posts.map((post) => ({ slug: post.slug }))];
 }
 
-export async function generateMetadata(props: Props): Promise<Metadata | null> {
-  const params = await props.params;
+export async function generateMetadata({
+  params,
+}: Props): Promise<Metadata | null> {
   const { slug } = params;
 
   if (slug === "blog") {
@@ -59,8 +59,7 @@ export async function generateMetadata(props: Props): Promise<Metadata | null> {
   return await getPostMetadataBySlug(slug);
 }
 
-const Page = async (props: { params: Promise<{ slug: string }> }) => {
-  const params = await props.params;
+const Page = async ({ params }: { params: { slug: string } }) => {
   const { siteUrl } = await getSettings();
 
   if (params.slug === "blog") {

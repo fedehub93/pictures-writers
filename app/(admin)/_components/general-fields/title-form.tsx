@@ -107,7 +107,7 @@ export const TitleForm = ({
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <div>
+                  <>
                     <Input
                       {...field}
                       placeholder={placeholder}
@@ -121,7 +121,7 @@ export const TitleForm = ({
                       onChange={onChangeTitle}
                     />
                     <CharsCounter value={field.value} />
-                  </div>
+                  </>
                 </FormControl>
                 <FormMessage />
               </FormItem>

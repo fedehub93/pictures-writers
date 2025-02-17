@@ -7,14 +7,15 @@ import { triggerWebhookBuild } from "@/lib/vercel";
 
 export async function PATCH(
   req: Request,
-  props: {
-    params: Promise<{
+  {
+    params,
+  }: {
+    params: {
       rootId: string;
       postId: string;
-    }>;
+    };
   }
 ) {
-  const params = await props.params;
   try {
     const user = await authAdmin();
     const { rootId, postId } = params;

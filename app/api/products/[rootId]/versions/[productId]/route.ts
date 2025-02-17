@@ -5,14 +5,15 @@ import { db } from "@/lib/db";
 
 export async function DELETE(
   req: Request,
-  props: {
-    params: Promise<{
+  {
+    params,
+  }: {
+    params: {
       rootId: string;
       productId: string;
-    }>;
+    };
   }
 ) {
-  const params = await props.params;
   try {
     const user = await authAdmin();
     const { rootId, productId } = params;
@@ -48,14 +49,15 @@ export async function DELETE(
 
 export async function PATCH(
   req: Request,
-  props: {
-    params: Promise<{
+  {
+    params,
+  }: {
+    params: {
       rootId: string;
       productId: string;
-    }>;
+    };
   }
 ) {
-  const params = await props.params;
   try {
     const user = await authAdmin();
     const { rootId, productId } = params;

@@ -7,14 +7,15 @@ import { createNewVersionCategory } from "@/lib/category";
 
 export async function PATCH(
   req: Request,
-  props: {
-    params: Promise<{
+  {
+    params,
+  }: {
+    params: {
       rootId: string;
       categoryId: string;
-    }>;
+    };
   }
 ) {
-  const params = await props.params;
   try {
     const user = await authAdmin();
     const { rootId, categoryId } = params;

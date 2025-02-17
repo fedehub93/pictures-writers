@@ -85,7 +85,7 @@ export const ProductDetailsForm = ({
             <FormItem>
               <FormLabel>Slug</FormLabel>
               <FormControl>
-                <div>
+                <>
                   <div className="flex flex-row gap-x-2">
                     <Input
                       {...field}
@@ -100,7 +100,7 @@ export const ProductDetailsForm = ({
                       <Sparkles className="h-4 w-4" />
                     </Button>
                   </div>
-                </div>
+                </>
               </FormControl>
               <FormMessage />
             </FormItem>

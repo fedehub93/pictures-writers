@@ -21,11 +21,10 @@ type Params = {
 };
 
 type Props = {
-  params: Promise<Params>;
+  params: Params;
 };
 
-// export const revalidate = 3600 * 24;
-export const revalidate = 86400;
+export const revalidate = 3600 * 24;
 
 export const dynamicParams = true;
 
@@ -35,15 +34,15 @@ export async function generateStaticParams() {
   return [...ebooks.map((ebook) => ({ slug: ebook.slug }))];
 }
 
-export async function generateMetadata(props: Props): Promise<Metadata | null> {
-  const params = await props.params;
+export async function generateMetadata({
+  params,
+}: Props): Promise<Metadata | null> {
   const { slug } = params;
 
   return await getProductMetadataBySlug(slug);
 }
 
-const Page = async (props: { params: Promise<{ slug: string }> }) => {
-  const params = await props.params;
+const Page = async ({ params }: { params: { slug: string } }) => {
   const { siteUrl } = await getSettings();
   const product = await getPublishedEbookBySlug(params.slug);
 

@@ -3,8 +3,6 @@ import { User } from "@prisma/client";
 import { formatDistance } from "date-fns";
 import { it } from "date-fns/locale";
 
-import type { JSX } from "react";
-
 interface PostInfoV2Props {
   categoryTitle: string;
   categorySlug: string;

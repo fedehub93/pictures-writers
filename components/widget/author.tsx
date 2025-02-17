@@ -1,7 +1,5 @@
 import Image from "next/image";
 
-import type { JSX } from "react";
-
 interface WidgetAuthorProps {
   label: string;
   firstName: string;

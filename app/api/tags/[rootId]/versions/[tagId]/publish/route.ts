@@ -6,14 +6,15 @@ import { ContentStatus } from "@prisma/client";
 
 export async function PATCH(
   req: Request,
-  props: {
-    params: Promise<{
+  {
+    params,
+  }: {
+    params: {
       rootId: string;
       tagId: string;
-    }>;
+    };
   }
 ) {
-  const params = await props.params;
   try {
     const user = await authAdmin();
     const { rootId, tagId } = params;

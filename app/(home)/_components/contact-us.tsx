@@ -3,7 +3,7 @@
 import * as v from "valibot";
 import { useForm } from "react-hook-form";
 import { valibotResolver } from "@hookform/resolvers/valibot";
-import { useState, useTransition, type JSX } from "react";
+import { useState, useTransition } from "react";
 import { Globe, Mail } from "lucide-react";
 import Link from "next/link";
 import { BeatLoader } from "react-spinners";

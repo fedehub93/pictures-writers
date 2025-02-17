@@ -1,5 +1,5 @@
 import Link from "next/link";
-import React, { type JSX } from "react";
+import React from "react";
 
 export const Footer = (): JSX.Element => (
   <footer className="footer">

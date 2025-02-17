@@ -7,8 +7,10 @@ import { db } from "@/lib/db";
 
 const NOTIFICATION_BATCH = 5;
 
-export async function GET(req: Request, props: { params: Promise<{ userId: string }> }) {
-  const params = await props.params;
+export async function GET(
+  req: Request,
+  { params }: { params: { userId: string } }
+) {
   try {
     const { userId } = params;
     const user = await authAdmin();

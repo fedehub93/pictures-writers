@@ -7,12 +7,11 @@ import { ContentHeader } from "@/app/(admin)/_components/content/content-header"
 import { DataTable } from "./_components/data-table";
 import { columns } from "./_components/columns";
 
-const AudienceIdContactsPage = async (
-  props: {
-    params: Promise<{ audienceId: string }>;
-  }
-) => {
-  const params = await props.params;
+const AudienceIdContactsPage = async ({
+  params,
+}: {
+  params: { audienceId: string };
+}) => {
   const userAdmin = await authAdmin();
   if (!userAdmin) {
     return (await auth()).redirectToSignIn();

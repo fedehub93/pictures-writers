@@ -7,16 +7,15 @@ import { AssetsList } from "./_components/assets-list";
 
 const PER_PAGE = 8;
 
-const MediaPage = async (
-  props: {
-    searchParams?: Promise<{
-      query?: string;
-      s?: string;
-      page?: string;
-    }>;
-  }
-) => {
-  const searchParams = await props.searchParams;
+const MediaPage = async ({
+  searchParams,
+}: {
+  searchParams?: {
+    query?: string;
+    s?: string;
+    page?: string;
+  };
+}) => {
   const user = await authAdmin();
   if (!user) {
     return (await auth()).redirectToSignIn();

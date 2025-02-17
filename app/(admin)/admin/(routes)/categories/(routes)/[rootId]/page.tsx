@@ -14,8 +14,7 @@ import { SeoContentTypeApi } from "@/app/(admin)/_components/seo/types";
 import { StatusView } from "@/app/(admin)/_components/content/status-view";
 import { ContentIdActions } from "@/app/(admin)/_components/content/content-id-actions";
 
-const CategoryIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
-  const params = await props.params;
+const CategoryIdPage = async ({ params }: { params: { rootId: string } }) => {
   const userAdmin = await authAdmin();
   if (!userAdmin) {
     return (await auth()).redirectToSignIn();

@@ -1,9 +1,4 @@
-const AudienceIdPage = ({
-  params,
-}: {
-  params: Promise<{ audienceId: string }>;
-}) => {
-  console.log("ehi");
+const AudienceIdPage = ({ params }: { params: { audienceId: string } }) => {
   return <div></div>;
 };
 
