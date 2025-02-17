@@ -6,7 +6,8 @@ import { authAdmin } from "@/lib/auth-service";
 
 import { ContactRequestForm } from "./_components/contact-request-form";
 
-const MailSettings = async ({ params }: { params: { contactId: string } }) => {
+const MailSettings = async (props: { params: Promise<{ contactId: string }> }) => {
+  const params = await props.params;
   const userAdmin = await authAdmin();
   if (!userAdmin) {
     return (await auth()).redirectToSignIn();

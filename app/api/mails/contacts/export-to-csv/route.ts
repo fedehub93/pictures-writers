@@ -6,7 +6,7 @@ import { authAdmin } from "@/lib/auth-service";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: Request, res: NextResponse) {
+export async function GET() {
   try {
     const user = await authAdmin();
 

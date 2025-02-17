@@ -108,7 +108,7 @@ export const DescriptionForm = ({
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <>
+                  <div>
                     <Textarea
                       {...field}
                       placeholder={placeholder}
@@ -122,7 +122,7 @@ export const DescriptionForm = ({
                       onChange={onChangeDescription}
                     />
                     <CharsCounter value={field.value} />
-                  </>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>

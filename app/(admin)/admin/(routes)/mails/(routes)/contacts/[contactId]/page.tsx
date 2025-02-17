@@ -5,7 +5,8 @@ import { db } from "@/lib/db";
 import { EditContactForm } from "./_components/edit-contact-form";
 import { redirect } from "next/navigation";
 
-const MailSettings = async ({ params }: { params: { contactId: string } }) => {
+const MailSettings = async (props: { params: Promise<{ contactId: string }> }) => {
+  const params = await props.params;
   const userAdmin = await authAdmin();
   if (!userAdmin) {
     return (await auth()).redirectToSignIn();

@@ -7,7 +7,8 @@ import { db } from "@/lib/db";
 
 import { WidgetForm } from "./_components/widget-form";
 
-const WidgetIdPage = async ({ params }: { params: { widgetId: string } }) => {
+const WidgetIdPage = async (props: { params: Promise<{ widgetId: string }> }) => {
+  const params = await props.params;
   const userAdmin = await authAdmin();
   if (!userAdmin) {
     return (await auth()).redirectToSignIn();

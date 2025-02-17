@@ -2,6 +2,8 @@ import Link from "next/link";
 import { formatDistance } from "date-fns";
 import { it } from "date-fns/locale";
 
+import type { JSX } from "react";
+
 interface PostInfoProps {
   categoryTitle: string;
   categorySlug: string;

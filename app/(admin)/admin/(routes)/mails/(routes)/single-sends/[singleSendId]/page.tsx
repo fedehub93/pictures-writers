@@ -3,11 +3,12 @@ import { WriteForm } from "./_components/write-form";
 import { redirect } from "next/navigation";
 import { getTodayEmailsAvailable } from "@/lib/mail";
 
-const SingleSendIdPage = async ({
-  params,
-}: {
-  params: { singleSendId: string };
-}) => {
+const SingleSendIdPage = async (
+  props: {
+    params: Promise<{ singleSendId: string }>;
+  }
+) => {
+  const params = await props.params;
   const singleSend = await db.emailSingleSend.findUnique({
     where: {
       id: params.singleSendId,

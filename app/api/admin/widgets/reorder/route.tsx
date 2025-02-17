@@ -2,10 +2,7 @@ import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
 
-export async function PUT(
-  req: Request,
-  { params }: { params: { courseId: string } }
-) {
+export async function PUT(req: Request) {
   try {
     const user = await authAdmin();
 

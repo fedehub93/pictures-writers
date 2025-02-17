@@ -5,12 +5,11 @@ import { PostList } from "./post-list";
 import { getHeadMetadata } from "../../../_components/seo/head-metadata";
 
 type Props = {
-  searchParams: { page: string };
+  searchParams: Promise<{ page: string }>;
 };
 
-export async function generateMetadata({
-  searchParams,
-}: Props): Promise<Metadata | null> {
+export async function generateMetadata(props: Props): Promise<Metadata | null> {
+  const searchParams = await props.searchParams;
   const metadata = await getHeadMetadata();
 
   const currentPage = Number(searchParams?.page) || 1;

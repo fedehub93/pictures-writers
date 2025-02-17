@@ -4,7 +4,7 @@ import * as v from "valibot";
 
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import Image from "next/image";
-import { useState, useTransition } from "react";
+import { useState, useTransition, type JSX } from "react";
 import { useForm } from "react-hook-form";
 import { BeatLoader } from "react-spinners";
 import Link from "next/link";

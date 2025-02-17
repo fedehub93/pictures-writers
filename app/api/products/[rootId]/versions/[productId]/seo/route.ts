@@ -8,15 +8,14 @@ import { createNewVersionProduct } from "@/lib/product";
 
 export async function PATCH(
   req: Request,
-  {
-    params,
-  }: {
-    params: {
+  props: {
+    params: Promise<{
       rootId: string;
       productId: string;
-    };
+    }>;
   }
 ) {
+  const params = await props.params;
   try {
     const user = await authAdmin();
     const { rootId, productId } = params;

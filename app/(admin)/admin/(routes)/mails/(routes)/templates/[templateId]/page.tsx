@@ -5,11 +5,12 @@ import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
 import { EmailEditorForm } from "./_components/email-editor-form";
 
-const EmailTemplateIdPage = async ({
-  params,
-}: {
-  params: { templateId: string };
-}) => {
+const EmailTemplateIdPage = async (
+  props: {
+    params: Promise<{ templateId: string }>;
+  }
+) => {
+  const params = await props.params;
   const userAdmin = await authAdmin();
   if (!userAdmin) {
     return (await auth()).redirectToSignIn();

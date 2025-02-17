@@ -3,10 +3,8 @@ import { NextResponse } from "next/server";
 import { authAdmin } from "@/lib/auth-service";
 import { createNewVersionPost } from "@/lib/post";
 
-export async function POST(
-  req: Request,
-  { params }: { params: { rootId: string } }
-) {
+export async function POST(req: Request, props: { params: Promise<{ rootId: string }> }) {
+  const params = await props.params;
   try {
     const user = await authAdmin();
     const { rootId } = params;
