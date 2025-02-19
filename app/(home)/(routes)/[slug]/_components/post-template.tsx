@@ -4,11 +4,10 @@ import { PostWithImageCoverWithCategoryWithTagsWithSeo } from "@/lib/post";
 
 import { getPlaceholderImage } from "@/lib/image";
 
-import CustomSlateView from "@/components/editor/view";
-
 import Sidebar from "./sidebar";
 import { WidgetPostBottom } from "./post-bottom";
 import PostInfoV2 from "../../blog/_components/post-info-v2";
+import { SlateRendererV2 } from "@/components/editor/view/slate-renderer";
 
 interface PostTemplateProps {
   post: PostWithImageCoverWithCategoryWithTagsWithSeo;
@@ -47,9 +46,7 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
             <h1 className="blog-post__title">{post.title}</h1>
           </div>
 
-          <div className="post">
-            <CustomSlateView nodes={post.bodyData} />
-          </div>
+          <SlateRendererV2 content={post.bodyData} />
         </article>
         <WidgetPostBottom
           postId={post.id}

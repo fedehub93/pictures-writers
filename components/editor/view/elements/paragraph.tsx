@@ -1,36 +1,23 @@
-import {
-  Node,
-  Replace,
-  createElementNodeMatcher,
-  createElementTransform,
-} from "slate-to-react";
 import { cn } from "@/lib/utils";
+import { RenderNode } from "../helpers/render-node";
+import { CustomElement } from "../slate-renderer";
 
-import { CustomText } from "@/components/editor";
-
-type Paragraph = Replace<
-  Node<"paragraph">,
-  {
-    children: CustomText[];
-  }
->;
-
-export const isParagraph = createElementNodeMatcher<Paragraph>(
-  (node): node is Paragraph => node.type === "paragraph"
-);
-
-export const Paragraph = createElementTransform(
-  isParagraph,
-  ({ key, element, attributes, children }) => (
+export const ParagraphElement = ({ node }: { node: CustomElement }) => {
+  return (
     <p
-      key={key}
-      className={cn(
-        element.align === "left" && "text-left",
-        element.align === "center" && "text-center",
-        element.align === "right" && "text-right"
-      )}
+      className={
+        node.align === undefined
+          ? undefined
+          : cn(
+              node.align === "left" && "text-left",
+              node.align === "center" && "text-center",
+              node.align === "right" && "text-right"
+            )
+      }
     >
-      {children}
+      {node.children.map((child: any, i: number) => (
+        <RenderNode key={i} node={child} />
+      ))}
     </p>
-  )
-);
+  );
+};

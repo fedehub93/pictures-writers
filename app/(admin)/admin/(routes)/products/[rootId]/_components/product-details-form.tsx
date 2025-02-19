@@ -20,7 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { productFormSchema } from "./product-form";
 import { Button } from "@/components/ui/button";
-import Editor from "@/components/editor";
+import Editor from "@/app/(admin)/_components/editor";
 import { Descendant } from "slate";
 
 interface ProductDetailsFormProps {

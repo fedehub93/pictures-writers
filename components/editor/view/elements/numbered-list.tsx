@@ -1,34 +1,22 @@
-import {
-  Node,
-  Replace,
-  createElementNodeMatcher,
-  createElementTransform,
-} from "slate-to-react";
+import { RenderNode } from "../helpers/render-node";
+import { CustomElement } from "../slate-renderer";
 
-import { CustomText } from "@/components/editor";
+interface NumberedListProps {
+  node: CustomElement;
+}
 
-type NumberedList = Replace<
-  Node<"ordered-list">,
-  {
-    children: CustomText[];
-  }
->;
-
-export const isNumbered = createElementNodeMatcher<NumberedList>(
-  (node): node is NumberedList => node.type === "ordered-list"
-);
-
-export const NumberedList = createElementTransform(
-  isNumbered,
-  ({ key, element, attributes, children }) => (
-    <div key={key} className="max-w-md border border-gray-500 bg-gray-100 p-2 ">
+export const NumberedListElement = ({ node }: NumberedListProps) => {
+  return (
+    <div className="max-w-md border border-gray-500 bg-gray-100 p-2 ">
       <div className="mb-4 font-bold">Indice dei contenuti</div>
       <ol
         className="list-decimal listind pl-6 [&>li>a]:font-bold [&>li>a]:no-underline [&>li>a]:mb-0 "
         type="1"
       >
-        {children}
+        {node.children.map((child: any, i: number) => (
+          <RenderNode key={i} node={child} />
+        ))}
       </ol>
     </div>
-  )
-);
+  );
+};

@@ -1,55 +1,36 @@
-import {
-  Node,
-  Replace,
-  createElementNodeMatcher,
-  createElementTransform,
-} from "slate-to-react";
-import { CustomText } from "@/components/editor";
-import { cn } from "@/lib/utils";
 import NextLink from "next/link";
 
-type Link = Replace<
-  Node<"hyperlink">,
-  {
-    data: {
-      uri: string;
-      follow?: boolean;
-    };
-    children: CustomText[];
-  }
->;
+import { cn } from "@/lib/utils";
+import { RenderNode } from "../helpers/render-node";
+import { CustomElement } from "../slate-renderer";
 
-export const isLink = createElementNodeMatcher<Link>(
-  (node): node is Link =>
-    node.type === "hyperlink" && typeof node.data.uri === "string"
-);
+interface LinkProps {
+  node: CustomElement;
+}
 
-export const Link = createElementTransform(
-  isLink,
-  ({ key, element, attributes, children }) => {
-    const isAnchor = element.data.uri.includes("#");
-    const isExternalLink =
-      element.data.uri.includes("http://") ||
-      element.data.uri.includes("https://");
+export const LinkElement = ({ node }: LinkProps) => {
+  const isAnchor = node.data.uri.includes("#");
+  const isExternalLink =
+    node.data.uri.includes("http://") || node.data.uri.includes("https://");
 
-    const isFollow =
-      element.data.follow !== undefined
-        ? element.data.follow
-        : !isExternalLink
-        ? true
-        : false;
+  const isFollow =
+    node.data.follow !== undefined
+      ? node.data.follow
+      : !isExternalLink
+      ? true
+      : false;
 
-    return (
-      <NextLink
-        key={key}
-        href={element.data.uri}
-        className={cn("underline font-bold")}
-        rel={`noopener noreferrer ${isFollow ? "follow" : "nofollow"}`}
-        target={isExternalLink ? "_blank" : "_self"}
-        prefetch={true}
-      >
-        {children}
-      </NextLink>
-    );
-  }
-);
+  return (
+    <NextLink
+      href={node.data.uri}
+      className={cn("underline font-bold")}
+      rel={`noopener noreferrer ${isFollow ? "follow" : "nofollow"}`}
+      target={isExternalLink ? "_blank" : "_self"}
+      prefetch={true}
+    >
+      {node.children.map((child: any, i: number) => (
+        <RenderNode key={i} node={child} />
+      ))}
+    </NextLink>
+  );
+};

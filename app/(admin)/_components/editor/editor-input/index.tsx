@@ -11,31 +11,30 @@ import { isKeyHotkey } from "is-hotkey";
 import { cn } from "@/lib/utils";
 
 import {
-  CustomEditor,
   EmbeddedAffiliateLinkElement,
   EmbeddedImageElement,
   EmbeddedVideoElement,
-} from "@/components/editor";
-import {
-  Default,
-  HeadingOne,
-  HeadingTwo,
-  HeadingThree,
-  HeadingFour,
-  Blockquote,
-  ListItem,
-  BulletedList,
-  NumberedList,
-  Link,
-} from "@/components/editor/editor-input/elements";
+} from "@/app/(admin)/_components/editor";
 import { CustomEditorHelper } from "../utils/custom-editor";
 import { EmbeddedImage } from "./elements/image";
 import { EmbeddedVideo } from "./elements/embedded-video";
 import { AffiliateLink } from "./elements/embedded-affiliate-link";
-import { EmbeddedProductElement } from "@/components/editor";
+import { EmbeddedProductElement } from "@/app/(admin)/_components/editor";
 import FirstImpressionSnippet from "./elements/sponsor-first-impression";
 import { EmbeddedProduct } from "./elements/product";
 import { InfoBox } from "./elements/info-box";
+import {
+  Blockquote,
+  BulletedList,
+  Default,
+  HeadingFour,
+  HeadingOne,
+  HeadingThree,
+  HeadingTwo,
+  Link,
+  ListItem,
+  NumberedList,
+} from "./elements";
 
 const SOFT_BREAK_ELEMENTS = ["infobox"];
 

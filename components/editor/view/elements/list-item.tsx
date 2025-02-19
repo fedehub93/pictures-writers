@@ -1,28 +1,16 @@
-import {
-  Node,
-  Replace,
-  createElementNodeMatcher,
-  createElementTransform,
-} from "slate-to-react";
+import { RenderNode } from "../helpers/render-node";
+import { CustomElement } from "../slate-renderer";
 
-import { CustomText } from "@/components/editor";
+interface ListItemProps {
+  node: CustomElement;
+}
 
-type ListItem = Replace<
-  Node<"list-item">,
-  {
-    children: CustomText[];
-  }
->;
-
-export const isListItem = createElementNodeMatcher<ListItem>(
-  (node): node is ListItem => node.type === "list-item"
-);
-
-export const ListItem = createElementTransform(
-  isListItem,
-  ({ key, element, attributes, children }) => (
-    <li key={key} className="list-item mb-2 text-base">
-      {children}
+export const ListItemElement = ({ node }: ListItemProps) => {
+  return (
+    <li className="list-item mb-2 text-base">
+      {node.children.map((child: any, i: number) => (
+        <RenderNode key={i} node={child} />
+      ))}
     </li>
-  )
-);
+  );
+};

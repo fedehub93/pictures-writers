@@ -3,7 +3,6 @@ import { createEditor, BaseEditor, Descendant } from "slate";
 import { Slate, withReact, ReactEditor } from "slate-react";
 import { withHistory } from "slate-history";
 
-import Toolbar from "@/components/editor/toolbar";
 import EditorInput from "./editor-input";
 import { Counter } from "./helpers/counter";
 import withNormalization from "./plugins/with-normalization";
@@ -12,6 +11,7 @@ import withEmbeds from "./plugins/with-embeds";
 import withPasteHandler from "./plugins/with-paste-html";
 import { ProductType } from "@prisma/client";
 import { AffiliateMetadata, EbookMetadata } from "@/types";
+import Toolbar from "./toolbar";
 
 export type CustomEditor = BaseEditor & ReactEditor;
 
@@ -83,6 +83,8 @@ export type CustomText = {
   underline?: boolean;
 };
 
+
+
 export type EmptyText = {
   text: string;
 };
@@ -93,6 +95,7 @@ export type CustomElement = {
   data?: any;
   url?: string;
   align?: string;
+  altText?: string;
 };
 
 declare module "slate" {

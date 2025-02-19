@@ -135,9 +135,11 @@ h2 {
   .post > p {
     @apply mb-6 text-base !leading-6 text-neutral-700;
   }
+
   .post > p > b {
     @apply font-bold;
   }
+
   .post-quote {
     @apply mb-8 border-l-4 border-l-neutral-800 bg-white p-4 pl-8 shadow-md [&>p]:mb-0;
   }
@@ -171,11 +173,11 @@ h2 {
   */
 
   .snippet {
-    @apply bg-primary/10 relative flex w-full flex-col gap-6 rounded-lg border border-primary px-8 py-8;
+    @apply relative my-4 flex w-full flex-col gap-6 rounded-lg border-2 border-black bg-white px-8 py-10;
   }
 
   .snippet .snippet__title {
-    @apply mb-2 text-2xl font-extrabold uppercase;
+    @apply mb-2 text-center text-2xl font-extrabold uppercase;
   }
 
   .snippet .snippet__sponsor {
@@ -184,6 +186,14 @@ h2 {
 
   .snippet > p {
     @apply text-black;
+  }
+
+  .evidence {
+    @apply mt-2 rounded-md bg-secondary p-1 font-bold text-primary;
+  }
+
+  .newsletter {
+    @apply border-primary;
   }
 
   .newsletter .newsletter__success,

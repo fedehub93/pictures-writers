@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { CustomElement } from "./components/editor";
+import { CustomElement } from "./app/(admin)/_components/editor";
 import {
   Media,
   Product,

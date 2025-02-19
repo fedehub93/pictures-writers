@@ -1,7 +1,7 @@
 import { ReactEditor, RenderElementProps, useSlateStatic } from "slate-react";
 import { Transforms } from "slate";
 
-import { EmbeddedVideoElement } from "@/components/editor";
+import { EmbeddedVideoElement } from "@/app/(admin)/_components/editor";
 import {
   DropdownMenu,
   DropdownMenuContent,

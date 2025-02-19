@@ -1,41 +1,32 @@
-import {
-  Node,
-  Replace,
-  createElementNodeMatcher,
-  createElementTransform,
-} from "slate-to-react";
 import Image from "next/image";
 
-import { CustomText } from "@/components/editor";
+import { RenderNode } from "../helpers/render-node";
+import { CustomElement } from "../slate-renderer";
 
-type ImageElement = Replace<
-  Node<"image">,
-  {
-    children: CustomText[];
-    altText: string;
-  }
->;
+interface ImageElementProps {
+  node: CustomElement;
+}
 
-export const isImage = createElementNodeMatcher<ImageElement>(
-  (node): node is ImageElement => node.type === "image"
-);
-
-export const ImageElement = createElementTransform(
-  isImage,
-  ({ key, element, attributes, children }) => (
-    <div
-      key={key}
-      className="post__image"
-    >
-      {children}
+export const ImageElement = ({ node }: ImageElementProps) => {
+  return (
+    <div className="post__image">
+      {node.children.map((child: any, i: number) => (
+        <RenderNode key={i} node={child} />
+      ))}
       <Image
-        src={element.url!}
-        alt={element.altText}
+        src={node.url!}
+        alt={
+          node.altText
+            ? node.altText
+            : node.data.altText
+            ? node.data.altText
+            : ""
+        }
         className="w-full h-auto"
         width={500}
         height={300}
         sizes="(max-width: 1280px) 90vw, 40vw"
       />
     </div>
-  )
-);
+  );
+};

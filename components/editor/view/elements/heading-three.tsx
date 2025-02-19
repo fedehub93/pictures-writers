@@ -1,36 +1,19 @@
-import {
-  Node,
-  Replace,
-  createElementNodeMatcher,
-  createElementTransform,
-} from "slate-to-react";
 import { cn } from "@/lib/utils";
+import { RenderNode } from "../helpers/render-node";
+import { CustomElement } from "../slate-renderer";
 
-import { CustomText } from "@/components/editor";
-
-type HeadingThree = Replace<
-  Node<"heading-3">,
-  {
-    children: CustomText[];
-  }
->;
-
-export const isHeadingThree = createElementNodeMatcher<HeadingThree>(
-  (node): node is HeadingThree => node.type === "heading-3"
-);
-
-export const HeadingThree = createElementTransform(
-  isHeadingThree,
-  ({ key, element, attributes, children }) => (
+export const HeadingThreeElement = ({ node }: { node: CustomElement }) => {
+  return (
     <h3
-      key={key}
       className={cn(
-        element.align === "left" && "text-left",
-        element.align === "center" && "text-center",
-        element.align === "right" && "text-right"
+        node.align === "left" && "text-left",
+        node.align === "center" && "text-center",
+        node.align === "right" && "text-right"
       )}
     >
-      {children}
+      {node.children.map((child: any, i: number) => (
+        <RenderNode key={i} node={child} />
+      ))}
     </h3>
-  )
-);
+  );
+};

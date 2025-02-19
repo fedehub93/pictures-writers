@@ -33,7 +33,7 @@ import {
 import { cn } from "@/lib/utils";
 
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
-import { CustomEditorHelper } from "@/components/editor/utils/custom-editor";
+import { CustomEditorHelper } from "@/app/(admin)/_components/editor/utils/custom-editor";
 
 import MarkButton from "./mark-button";
 import BlockButton from "./block-button";

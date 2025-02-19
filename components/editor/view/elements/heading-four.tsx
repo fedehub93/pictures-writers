@@ -1,27 +1,19 @@
-import {
-  Node,
-  Replace,
-  createElementNodeMatcher,
-  createElementTransform,
-} from "slate-to-react";
-import { CustomText } from "@/components/editor";
+import { cn } from "@/lib/utils";
+import { RenderNode } from "../helpers/render-node";
+import { CustomElement } from "../slate-renderer";
 
-type HeadingFour = Replace<
-  Node<"heading-4">,
-  {
-    children: CustomText[];
-  }
->;
-
-export const isHeadingFour = createElementNodeMatcher<HeadingFour>(
-  (node): node is HeadingFour => node.type === "heading-4"
-);
-
-export const HeadingFour = createElementTransform(
-  isHeadingFour,
-  ({ key, element, attributes, children }) => (
-    <h4 key={key}>
-      {children}
+export const HeadingFourElement = ({ node }: { node: CustomElement }) => {
+  return (
+    <h4
+      className={cn(
+        node.align === "left" && "text-left",
+        node.align === "center" && "text-center",
+        node.align === "right" && "text-right"
+      )}
+    >
+      {node.children.map((child: any, i: number) => (
+        <RenderNode key={i} node={child} />
+      ))}
     </h4>
-  )
-);
+  );
+};

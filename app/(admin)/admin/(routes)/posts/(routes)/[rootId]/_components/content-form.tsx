@@ -13,7 +13,7 @@ import { ContentStatus } from "@prisma/client";
 
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 
-import Editor from "@/components/editor";
+import Editor from "@/app/(admin)/_components/editor";
 import { cn } from "@/lib/utils";
 
 interface BodyFormProps {

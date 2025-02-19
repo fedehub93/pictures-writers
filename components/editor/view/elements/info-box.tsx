@@ -1,44 +1,28 @@
-import {
-  Node,
-  Replace,
-  createElementNodeMatcher,
-  createElementTransform,
-} from "slate-to-react";
+"use client";
 
-import { CustomText } from "@/components/editor";
 import { cn } from "@/lib/utils";
+import { RenderNode } from "../helpers/render-node";
+import { CustomElement } from "../slate-renderer";
 
-type InfoBox = Replace<
-  Node<"info-box">,
-  {
-    data: {
-      icon: string;
-    };
-    children: CustomText[];
-  }
->;
+interface InfoBoxProps {
+  node: CustomElement;
+}
 
-export const isInfoBox = createElementNodeMatcher<InfoBox>(
-  (node): node is InfoBox => node.type === "info-box"
-);
+export const InfoBoxElement = ({ node }: InfoBoxProps) => {
+  return (
+    <div
+      className={cn(
+        "post__info-box",
+        node.align === "left" && "text-left",
+        node.align === "center" && "text-center",
+        node.align === "right" && "text-right"
+      )}
+    >
+      <div className="post__info-box-icon">{node.data.icon}</div>
 
-export const InfoBoxElement = createElementTransform(
-  isInfoBox,
-  ({ key, element, attributes, children }) => {
-    return (
-      <div
-        key={key}
-        className={cn(
-          "post__info-box",
-          element.align === "left" && "text-left",
-          element.align === "center" && "text-center",
-          element.align === "right" && "text-right"
-        )}
-      >
-        <div className="post__info-box-icon">{element.data.icon}</div>
-
-        {children}
-      </div>
-    );
-  }
-);
+      {node.children.map((child: any, i: number) => (
+        <RenderNode key={i} node={child} />
+      ))}
+    </div>
+  );
+};

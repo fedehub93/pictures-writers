@@ -13,7 +13,7 @@ import {
   EmbeddedProductElement,
   EmbeddedVideoElement,
   InfoBoxElement,
-} from "@/components/editor";
+} from "@/app/(admin)/_components/editor";
 
 type Format = "bold" | "italic" | "underline";
 

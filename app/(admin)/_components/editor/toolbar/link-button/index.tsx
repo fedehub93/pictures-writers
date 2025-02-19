@@ -5,7 +5,7 @@ import { useSlate } from "slate-react";
 import { Link, Unlink } from "lucide-react";
 
 import { Toggle } from "@/components/ui/toggle";
-import { CustomEditorHelper } from "@/components/editor/utils/custom-editor";
+import { CustomEditorHelper } from "@/app/(admin)/_components/editor/utils/custom-editor";
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 
 interface LinkButtonProps {

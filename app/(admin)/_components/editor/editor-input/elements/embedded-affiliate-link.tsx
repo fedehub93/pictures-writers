@@ -1,6 +1,6 @@
 import { ReactEditor, RenderElementProps, useSlateStatic } from "slate-react";
 
-import { EmbeddedAffiliateLinkElement } from "@/components/editor";
+import { EmbeddedAffiliateLinkElement } from "@/app/(admin)/_components/editor";
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 import { Transforms } from "slate";
 import {

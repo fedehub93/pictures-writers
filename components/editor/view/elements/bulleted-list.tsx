@@ -1,28 +1,16 @@
-import {
-  Node,
-  Replace,
-  createElementNodeMatcher,
-  createElementTransform,
-} from "slate-to-react";
+import { RenderNode } from "../helpers/render-node";
+import { CustomElement } from "../slate-renderer";
 
-import { CustomText } from "@/components/editor";
+interface BulletedListProps {
+  node: CustomElement;
+}
 
-type BulletedList = Replace<
-  Node<"unordered-list">,
-  {
-    children: CustomText[];
-  }
->;
-
-export const isBulletedList = createElementNodeMatcher<BulletedList>(
-  (node): node is BulletedList => node.type === "unordered-list"
-);
-
-export const BulletedList = createElementTransform(
-  isBulletedList,
-  ({ key, element, attributes, children }) => (
-    <ul key={key} className="list-disc px-4 mb-4">
-      {children}
+export const BulletedListElement = ({ node }: BulletedListProps) => {
+  return (
+    <ul className="list-disc px-4 mb-4">
+      {node.children.map((child: any, i: number) => (
+        <RenderNode key={i} node={child} />
+      ))}
     </ul>
-  )
-);
+  );
+};

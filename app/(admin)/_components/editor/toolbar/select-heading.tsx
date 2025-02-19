@@ -15,8 +15,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 
-import { CustomElementType } from "@/components/editor";
-import { CustomEditorHelper } from "@/components/editor/utils/custom-editor";
+import { CustomElementType } from "@/app/(admin)/_components/editor";
+import { CustomEditorHelper } from "@/app/(admin)/_components/editor/utils/custom-editor";
 
 type Heading = {
   label: string;

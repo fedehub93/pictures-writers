@@ -1,43 +1,24 @@
-import {
-  Node,
-  Replace,
-  createElementNodeMatcher,
-  createElementTransform,
-} from "slate-to-react";
 import { cn } from "@/lib/utils";
+import { RenderNode } from "../helpers/render-node";
+import { CustomElement, isCustomText } from "../slate-renderer";
 
-import { CustomText } from "@/components/editor";
-
-type HeadingOne = Replace<
-  Node<"heading-1">,
-  {
-    children: CustomText[];
-  }
->;
-
-export const isHeadingOne = createElementNodeMatcher<HeadingOne>(
-  (node): node is HeadingOne => node.type === "heading-1"
-);
-
-export const HeadingOne = createElementTransform(
-  isHeadingOne,
-  ({ key, element, attributes, children }) => {
-    const id =
-      children && typeof children === "string"
-        ? children.replace(/[^A-Z0-9]/gi, "_").toLowerCase()
-        : "no_id";
-    return (
-      <h1
-        key={key}
-        id={id}
-        className={cn(
-          element.align === "left" && "text-left",
-          element.align === "center" && "text-center",
-          element.align === "right" && "text-right"
-        )}
-      >
-        {children}
-      </h1>
-    );
-  }
-);
+export const HeadingOneElement = ({ node }: { node: CustomElement }) => {
+  const id =
+    node.children && isCustomText(node.children[0])
+      ? node.children[0].text.replace(/[^A-Z0-9]/gi, "_").toLowerCase()
+      : "no_id";
+  return (
+    <h1
+      id={id}
+      className={cn(
+        node.align === "left" && "text-left",
+        node.align === "center" && "text-center",
+        node.align === "right" && "text-right"
+      )}
+    >
+      {node.children.map((child: any, i: number) => (
+        <RenderNode key={i} node={child} />
+      ))}
+    </h1>
+  );
+};

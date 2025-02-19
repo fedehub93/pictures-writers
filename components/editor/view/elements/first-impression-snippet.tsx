@@ -2,36 +2,17 @@ import Link from "next/link";
 import React from "react";
 
 import { Button } from "@/components/ui/button";
-import {
-  Node,
-  Replace,
-  createElementNodeMatcher,
-  createElementTransform,
-} from "slate-to-react";
+import { CustomElement } from "../slate-renderer";
 
-import { CustomText } from "@/components/editor";
+interface FirstImpressionElementProps {
+  node: CustomElement;
+}
 
-type SponsorFirstImpression = Replace<
-  Node<"sponsor-first-impression">,
-  {
-    children: CustomText[];
-  }
->;
-
-export const isSponsorFirstImpression =
-  createElementNodeMatcher<SponsorFirstImpression>(
-    (node): node is SponsorFirstImpression =>
-      node.type === "sponsor-first-impression"
-  );
-
-export const SponsorFirstImpression = createElementTransform(
-  isSponsorFirstImpression,
-  ({ key, element, attributes, children }) => (
-    <div
-      key={key}
-      className="snippet first-impression relative border-primary bg-ghostWhite text-center mb-8"
-    >
-      {children}
+export const FirstImpressionSnippetElement = ({
+  node,
+}: FirstImpressionElementProps) => {
+  return (
+    <div className="snippet first-impression relative border-primary bg-ghostWhite text-center mb-8">
       <p className="snippet__sponsor">Sponsor</p>
       <p className="snippet__title ">Feedback gratuito sulla prima pagina</p>
       <p>
@@ -59,8 +40,8 @@ export const SponsorFirstImpression = createElementTransform(
       </p>
       <p>Che aspetti?</p>
       <Link href="/feedback-gratuito-sceneggiatura" className="text-xl">
-        <Button>Richiedi il feedback gratuito!</Button>
+        <Button className="font-bold">Richiedi il feedback gratuito!</Button>
       </Link>
     </div>
-  )
-);
+  );
+};
