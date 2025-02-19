@@ -5,14 +5,13 @@ import { db } from "@/lib/db";
 
 export async function PATCH(
   req: Request,
-  {
-    params,
-  }: {
-    params: {
+  props: {
+    params: Promise<{
       mediaId: string;
-    };
+    }>;
   }
 ) {
+  const params = await props.params;
   try {
     const user = await authAdmin();
     const { mediaId } = params;

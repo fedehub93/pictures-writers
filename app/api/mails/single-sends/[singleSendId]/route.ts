@@ -3,10 +3,8 @@ import { NextResponse } from "next/server";
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
 
-export async function DELETE(
-  req: Request,
-  { params }: { params: { singleSendId: string } }
-) {
+export async function DELETE(req: Request, props: { params: Promise<{ singleSendId: string }> }) {
+  const params = await props.params;
   try {
     const user = await authAdmin();
     const { singleSendId } = params;
@@ -36,10 +34,8 @@ export async function DELETE(
   }
 }
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: { singleSendId: string } }
-) {
+export async function PATCH(req: Request, props: { params: Promise<{ singleSendId: string }> }) {
+  const params = await props.params;
   try {
     const user = await authAdmin();
     const { singleSendId } = params;

@@ -27,10 +27,10 @@ type Params = {
 };
 
 type Props = {
-  params: Params;
+  params: Promise<Params>;
 };
 
-export const revalidate = 3600 * 24;
+export const revalidate = 86400;
 
 export const dynamicParams = true;
 
@@ -54,9 +54,8 @@ export async function generateStaticParams() {
   ];
 }
 
-export async function generateMetadata({
-  params,
-}: Props): Promise<Metadata | null> {
+export async function generateMetadata(props: Props): Promise<Metadata | null> {
+  const params = await props.params;
   const { slug } = params;
 
   const categoryMetadata = await getCategoryMetadataBySlug(slug);
@@ -92,7 +91,8 @@ export async function generateMetadata({
   return metadata;
 }
 
-const Page = async ({ params }: { params: { slug: string } }) => {
+const Page = async (props: { params: Promise<{ slug: string }> }) => {
+  const params = await props.params;
   let result: any = null;
   let entity: { title: string; description: string | null } | null = null;
 

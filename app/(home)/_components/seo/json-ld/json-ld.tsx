@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type JSX } from 'react';
 import { Thing, WithContext } from 'schema-dts';
 
 export interface JsonLdProps<GThing extends Thing> {

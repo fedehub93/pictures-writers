@@ -1,5 +1,4 @@
-"use client";
-
+"use client";;
 import Link from "next/link";
 
 import {
@@ -12,6 +11,8 @@ import {
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import { LibraryBig, Newspaper } from "lucide-react";
+
+import type { JSX } from "react";
 
 const routes = [
   {

@@ -3,6 +3,8 @@ import Link from "next/link";
 
 import { getHeadMetadata } from "./_components/seo/head-metadata";
 
+import type { JSX } from "react";
+
 export async function generateMetadata(): Promise<Metadata | null> {
   const metadata = await getHeadMetadata();
 

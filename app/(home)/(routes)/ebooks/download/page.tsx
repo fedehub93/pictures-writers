@@ -22,14 +22,15 @@ export async function generateMetadata(): Promise<Metadata | null> {
   };
 }
 
-const DownloadEbook = ({
-  searchParams,
-}: {
-  searchParams?: {
-    id?: string;
-    format?: string;
-  };
-}) => {
+const DownloadEbook = async (
+  props: {
+    searchParams?: Promise<{
+      id?: string;
+      format?: string;
+    }>;
+  }
+) => {
+  const searchParams = await props.searchParams;
   const ebookId = searchParams?.id || "";
   const format = searchParams?.format || "";
 

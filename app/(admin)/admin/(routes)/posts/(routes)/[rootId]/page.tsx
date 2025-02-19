@@ -25,7 +25,8 @@ import { ContentIdActions } from "@/app/(admin)/_components/content/content-id-a
 import { PostPreview } from "./_components/post-preview";
 import { AuthorsForm } from "./_components/authors-form";
 
-const PostIdPage = async ({ params }: { params: { rootId: string } }) => {
+const PostIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
+  const params = await props.params;
   const userAdmin = await authAdmin();
   if (!userAdmin) {
     return (await auth()).redirectToSignIn();

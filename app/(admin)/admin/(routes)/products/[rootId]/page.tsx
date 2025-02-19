@@ -7,7 +7,8 @@ import { db } from "@/lib/db";
 
 import { ProductForm } from "./_components/product-form";
 
-const ProductIdPage = async ({ params }: { params: { rootId: string } }) => {
+const ProductIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
+  const params = await props.params;
   const userAdmin = await authAdmin();
   if (!userAdmin) {
     return (await auth()).redirectToSignIn();

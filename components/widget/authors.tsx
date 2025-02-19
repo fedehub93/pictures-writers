@@ -1,5 +1,7 @@
 import Image from "next/image";
 
+import type { JSX } from "react";
+
 interface WidgetAuthorProps {
   firstName: string | null;
   lastName: string | null;

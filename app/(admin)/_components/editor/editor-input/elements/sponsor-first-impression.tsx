@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import React from "react";
+import React, { type JSX } from "react";
 
 const FirstImpressionSnippet = (): JSX.Element => (
   <div

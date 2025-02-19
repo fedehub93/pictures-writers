@@ -4,10 +4,8 @@ import { authAdmin } from "@/lib/auth-service";
 
 import { getPublishedProductByRootId } from "@/data/product";
 
-export async function GET(
-  req: Request,
-  { params }: { params: { rootId: string } }
-) {
+export async function GET(req: Request, props: { params: Promise<{ rootId: string }> }) {
+  const params = await props.params;
   try {
     const user = await authAdmin();
     const { rootId } = params;

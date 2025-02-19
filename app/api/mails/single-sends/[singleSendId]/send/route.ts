@@ -7,10 +7,8 @@ import { authAdmin } from "@/lib/auth-service";
 import { getEmailsSentToday, sendSendgridEmail } from "@/lib/mail";
 
 export const maxDuration = 30;
-export async function GET(
-  req: Request,
-  { params }: { params: { singleSendId: string } }
-) {
+export async function GET(req: Request, props: { params: Promise<{ singleSendId: string }> }) {
+  const params = await props.params;
   try {
     const encoder = new TextEncoder();
     const { singleSendId } = params;

@@ -4,10 +4,8 @@ import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
 import { ContentStatus } from "@prisma/client";
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: { categoryId: string } }
-) {
+export async function PATCH(req: Request, props: { params: Promise<{ categoryId: string }> }) {
+  const params = await props.params;
   try {
     const user = await authAdmin();
     const { categoryId } = params;
