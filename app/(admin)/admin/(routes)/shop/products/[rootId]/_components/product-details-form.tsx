@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
 
 import { productFormSchema } from "./product-form";
 import { Button } from "@/components/ui/button";
@@ -85,22 +84,20 @@ export const ProductDetailsForm = ({
             <FormItem>
               <FormLabel>Slug</FormLabel>
               <FormControl>
-                <>
-                  <div className="flex flex-row gap-x-2">
-                    <Input
-                      {...field}
-                      placeholder="screenplay-101"
-                      disabled={isSubmitting}
-                    />
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={onSlugCreate}
-                    >
-                      <Sparkles className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </>
+                <div className="flex flex-row gap-x-2">
+                  <Input
+                    {...field}
+                    placeholder="screenplay-101"
+                    disabled={isSubmitting}
+                  />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={onSlugCreate}
+                  >
+                    <Sparkles className="h-4 w-4" />
+                  </Button>
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>

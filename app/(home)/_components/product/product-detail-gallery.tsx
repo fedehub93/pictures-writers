@@ -13,14 +13,14 @@ import {
 } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
 
-import { cn } from "@/lib/utils";
 import { Gallery } from "@/types";
+import { cn } from "@/lib/utils";
 
-interface EbookImageProps {
+interface ProductGalleryProps {
   gallery: Gallery[];
 }
 
-export const EbookImage = ({ gallery }: EbookImageProps) => {
+export const ProductGallery = ({ gallery }: ProductGalleryProps) => {
   const [api, setApi] = useState<CarouselApi>();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 

@@ -10,7 +10,12 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { getLocalStorage, setLocalStorage } from "@/lib/storage-helper";
 import {
@@ -126,6 +131,7 @@ export const WidgetProductPop = ({
         className="p-0 py-4 md:py-0 md:w-[700px] md:max-w-[700px] border-0 overflow-hidden"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
+        <DialogTitle className="text-2xl text-center font-bold hidden"></DialogTitle>
         <div className="relative w-full px-0 flex flex-col md:flex-row items-center justify-between">
           <Image
             src={imageCoverUrl}
@@ -133,7 +139,7 @@ export const WidgetProductPop = ({
             width={600}
             height={600}
             sizes="(max-width: 1280px) 90vw, 20vw"
-            quality={80}
+            quality={75}
             className="w-40 md:w-1/2 rounded-md md:rounded-tr-none md:rounded-br-none object-contain"
           />
           {actionType === WidgetProductPopActionType.GO_TO_PRODUCT && (

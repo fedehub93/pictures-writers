@@ -60,7 +60,7 @@ export const ProductsAction = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <Link href={`/admin/products/${rootId}`}>
+        <Link href={`/admin/shop/products/${rootId}`}>
           <DropdownMenuItem>
             <Pencil className="h-4 w-4 mr-2" />
             Edit

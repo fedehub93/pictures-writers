@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 
 import { ContentStatus, Product, ProductType } from "@prisma/client";
-import { AffiliateMetadata, EbookMetadata, EbookType } from "@/types";
+import {
+  AffiliateMetadata,
+  EbookMetadata,
+  EbookType,
+  WebinarMetadata,
+} from "@/types";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
@@ -18,7 +23,13 @@ export async function POST(req: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    let metadata: EbookMetadata | AffiliateMetadata | null | undefined = null;
+    let metadata:
+      | EbookMetadata
+      | AffiliateMetadata
+      | WebinarMetadata
+      | null
+      | undefined = null;
+
     if (type === ProductType.EBOOK) {
       metadata = {
         type: ProductType.EBOOK,
@@ -37,6 +48,17 @@ export async function POST(req: Request) {
       metadata = {
         type: ProductType.AFFILIATE,
         url: "",
+      };
+    }
+
+    if (type === ProductType.WEBINAR) {
+      metadata = {
+        type: ProductType.WEBINAR,
+        date: null,
+        time: "",
+        seats: 0,
+        duration: "",
+        platform: "",
       };
     }
 

@@ -13,6 +13,7 @@ import {
   WidgetSearchMetadata,
   WidgetSocialMetadata,
   WidgetTagMetadata,
+  WebinarMetadata,
 } from "@/types";
 
 export function isValidEbookFormat(format: string | null): format is EbookType {
@@ -38,6 +39,18 @@ export function isAffiliateMetadata(
     "type" in metadata &&
     typeof (metadata as any).type === "string" &&
     metadata.type === ProductType.AFFILIATE
+  );
+}
+
+export function isWebinarMetadata(
+  metadata: unknown
+): metadata is WebinarMetadata {
+  return (
+    typeof metadata === "object" &&
+    metadata !== null &&
+    "type" in metadata &&
+    typeof (metadata as any).type === "string" &&
+    metadata.type === ProductType.WEBINAR
   );
 }
 

@@ -121,7 +121,7 @@ export const SlugForm = ({
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <>
+                  <div>
                     <div className="flex flex-row gap-x-2">
                       <Input
                         {...field}
@@ -144,7 +144,7 @@ export const SlugForm = ({
                       </Button>
                     </div>
                     <CharsCounter value={field.value} />
-                  </>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>

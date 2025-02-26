@@ -20,7 +20,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { ProductType } from "@prisma/client";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { BookText, ClipboardPen, ExternalLink, Sparkles } from "lucide-react";
+import {
+  BookText,
+  ClipboardPen,
+  ExternalLink,
+  Headset,
+  Sparkles,
+} from "lucide-react";
 import slugify from "slugify";
 
 const formSchema = z.object({
@@ -37,6 +43,7 @@ const types = [
   { type: ProductType.EBOOK, label: "Ebook", Icon: BookText },
   { type: ProductType.SERVICE, label: "Coverage", Icon: ClipboardPen },
   { type: ProductType.AFFILIATE, label: "Affiliate", Icon: ExternalLink },
+  { type: ProductType.WEBINAR, label: "Webinar", Icon: Headset },
 ];
 
 const ProductCreatePage = () => {
@@ -55,7 +62,7 @@ const ProductCreatePage = () => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       const response = await axios.post("/api/products", values);
-      router.push(`/admin/products/${response.data.id}`);
+      router.push(`/admin/shop/products/${response.data.id}`);
 
       toast.success("Product created");
     } catch {
@@ -146,7 +153,7 @@ const ProductCreatePage = () => {
                     <RadioGroup
                       onValueChange={field.onChange}
                       defaultValue={field.value}
-                      className="grid grid-cols-3 gap-2"
+                      className="grid grid-cols-4 gap-2"
                     >
                       {types.map((type) => (
                         <FormItem key={type.type}>

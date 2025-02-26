@@ -60,17 +60,17 @@ export function DataTable<TData, TValue>({
     <div>
       <div className="flex items-center py-4 justify-between">
         <Input
-          placeholder="Filter products..."
+          placeholder="Filter categories..."
           value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("title")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
-        <Link href="/admin/products/create">
+        <Link href="/admin/shop/categories/create">
           <Button>
             <PlusCircle className="h-4 w-4 mr-2" />
-            New product
+            New category
           </Button>
         </Link>
       </div>
@@ -102,7 +102,7 @@ export function DataTable<TData, TValue>({
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="max-w-40">
+                    <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

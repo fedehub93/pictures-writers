@@ -1,17 +1,25 @@
+"use client";
+
+import React from "react";
 import { CustomText } from "@/app/(admin)/_components/editor";
 
 export const RenderLeaf = ({ leaf }: { leaf: CustomText }) => {
-  let text = <>{leaf.text}</>;
+  let elements = leaf.text.split("\n").map((part, index) => (
+    <React.Fragment key={index}>
+      {index > 0 && <br />}
+      {part}
+    </React.Fragment>
+  ));
 
   if (leaf.bold) {
-    text = <strong>{text}</strong>;
+    elements = [<strong key="bold">{elements}</strong>];
   }
   if (leaf.italic) {
-    text = <em>{text}</em>;
+    elements = [<em key="italic">{elements}</em>];
   }
   if (leaf.underline) {
-    text = <u>{text}</u>;
+    elements = [<u key="underline">{elements}</u>];
   }
 
-  return text;
+  return <>{elements}</>;
 };

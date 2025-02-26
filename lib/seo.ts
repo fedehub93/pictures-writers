@@ -111,3 +111,30 @@ export const createProductSeo = async (product: Product) => {
   const productUPdatedSeo = await updateSeoRootId(productSeo.id, productSeo.id);
   return productUPdatedSeo;
 };
+
+export const createProductCategorySeo = async (category: Category) => {
+  const categorySeo = await db.seo.create({
+    data: {
+      title: category.title,
+      version: 1,
+      description: category.description,
+      ogTwitterTitle: category.title,
+      ogTwitterDescription: category.description,
+      ogTwitterType: "card",
+      ogTwitterLocale: "it_IT",
+      productCategories: {
+        connect: { id: category.id },
+      },
+    },
+  });
+
+  if (!categorySeo) {
+    return null;
+  }
+
+  const updatedCategorySeo = await updateSeoRootId(
+    categorySeo.id,
+    categorySeo.id
+  );
+  return updatedCategorySeo;
+};

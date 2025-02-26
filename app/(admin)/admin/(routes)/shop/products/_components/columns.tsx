@@ -61,18 +61,8 @@ export const columns: ColumnDef<Product>[] = [
       );
     },
     cell: ({ row }) => {
-      const type = row.getValue("type") || false;
-      return (
-        <Badge>
-          {type === ProductType.EBOOK
-            ? "Ebook"
-            : type === ProductType.AFFILIATE
-            ? "Affiliate"
-            : type === ProductType.SERVICE
-            ? "Service"
-            : "None"}
-        </Badge>
-      );
+      const type = (row.getValue("type") as string) || false;
+      return <Badge>{type}</Badge>;
     },
   },
   {

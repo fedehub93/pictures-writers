@@ -24,7 +24,7 @@ const SidebarEbook = async () => {
           height={400}
           sizes="(max-width: 1280px) 90vw, 20vw"
           className="mx-auto w-4/5 group-hover:scale-[1.02] group-hover:shadow-lg duration-700"
-          quality={90}
+          quality={75}
         />
       </Link>
     </div>

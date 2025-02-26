@@ -14,6 +14,7 @@ import {
   NotebookPen,
   ReceiptText,
   Settings,
+  ShoppingBag,
   Tags,
   Users,
 } from "lucide-react";
@@ -122,10 +123,19 @@ export const sideLinks: SideLink[] = [
     href: "#",
   },
   {
-    title: "Products",
+    title: "Shop",
     label: "",
-    href: "/admin/products",
-    icon: Box,
+    href: "",
+    icon: ShoppingBag,
+    sub: [
+      { title: "Products", label: "", href: "/admin/shop/products", icon: Box },
+      {
+        title: "Categories",
+        label: "",
+        href: "/admin/shop/categories",
+        icon: Boxes,
+      },
+    ],
   },
   {
     title: "SEPARATOR_3",

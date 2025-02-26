@@ -24,6 +24,7 @@ const nextConfig = {
         hostname: "img.clerk.com",
       },
     ],
+    qualities: [50, 75],
     formats: ["image/avif", "image/webp"],
   },
   webpack: (config) => {

@@ -14,7 +14,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-import { Gallery, productFormSchema } from "./product-form";
+import { productFormSchema } from "./product-form";
 import { Button } from "@/components/ui/button";
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 import { PlusCircle, X } from "lucide-react";
@@ -137,40 +137,6 @@ export const ProductGalleryForm = ({
               )}
             </Droppable>
           </DragDropContext>
-          {/* <FormField
-            control={control}
-            name="seo.title"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Meta title</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    placeholder="Screenplay 101 Ebook"
-                    disabled={isSubmitting}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={control}
-            name="seo.description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Meta Description</FormLabel>
-                <FormControl>
-                  <Textarea
-                    {...field}
-                    placeholder="This ebook talks about..."
-                    disabled={isSubmitting}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          /> */}
         </AccordionContent>
       </AccordionItem>
     </Accordion>

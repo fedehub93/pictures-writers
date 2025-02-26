@@ -14,7 +14,12 @@ import {
 declare global {
   namespace PrismaJson {
     type BodyData = CustomElement[];
-    type ProductMetadata = EbookMetadata | AffiliateMetadata | null | undefined;
+    type ProductMetadata =
+      | EbookMetadata
+      | AffiliateMetadata
+      | WebinarMetadata
+      | null
+      | undefined;
     type WidgetMetadata = any;
     type Scripts = SettingsScripts[] | null | undefined;
   }
@@ -82,6 +87,12 @@ export type ProductWithImageCoverAndAuthor = Product & {
   imageCover: Media | null;
 };
 
+export type Gallery = {
+  mediaId: string;
+  sort: number;
+  media: Media;
+};
+
 /**
  * Ebook types
  */
@@ -115,6 +126,15 @@ export type EbookMetadata = {
 export type AffiliateMetadata = {
   type: ProductType;
   url: string;
+};
+
+export type WebinarMetadata = {
+  type: ProductType;
+  date: Date | null;
+  time: string;
+  seats: number;
+  duration: string;
+  platform: string;
 };
 
 /**
