@@ -31,7 +31,7 @@ const nextConfig = {
       },
     ],
     qualities: [50, 75],
-    formats: ["image/avif", "image/webp"],
+    formats: ["image/webp"],
   },
   webpack: (config) => {
     config.resolve.alias["handlebars"] = path.resolve(
