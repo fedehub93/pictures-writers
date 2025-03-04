@@ -144,7 +144,7 @@ const generateProductsSitemap = async () => {
   const mappedProducts: MetadataRoute.Sitemap = products
     .filter((product) => !product.seo?.canonicalUrl)
     .map((product) => ({
-      url: `${siteShopUrl}/${product.slug}/`,
+      url: `${siteShopUrl}/${product.category!.slug}/${product.slug}/`,
       lastModified: product.createdAt,
       changeFrequency: "monthly",
       priority: 1,
