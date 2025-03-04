@@ -16,7 +16,7 @@ import { SeoContentTypeApi } from "@/app/(admin)/_components/seo/types";
 
 interface StatusViewProps {
   disabled: boolean;
-  contentType: SeoContentTypeApi;
+  contentType: SeoContentTypeApi | string;
   contentRootId: string;
   contentId: string;
   status: ContentStatus;
@@ -83,6 +83,8 @@ export const StatusView = ({
       </div>
       <Button
         disabled={disabled || isLoading}
+        type="button"
+        role="button"
         variant="outline"
         className="w-full"
         onClick={onHandleClick}

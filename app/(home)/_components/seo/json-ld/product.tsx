@@ -16,7 +16,6 @@ export interface ProductJsonLdProps {
   };
   category?: string;
   keywords?: string | string[];
-  imageCover: Media | null;
   images: string[];
   videos?: string[];
   datePublished: string;
@@ -33,7 +32,6 @@ export const ProductJsonLd: FC<ProductJsonLdProps> = ({
   title,
   offers,
   category,
-  imageCover,
   images = [],
   videos = undefined,
   description,

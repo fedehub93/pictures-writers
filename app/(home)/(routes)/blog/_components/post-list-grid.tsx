@@ -25,9 +25,6 @@ export const PostListGrid = ({ posts }: PostListGridProps) => {
           />
         </div>
       ))}
-      {/* <div className="col-span-1 self-start sm:col-span-2 lg:block xl:col-span-2 xl:px-3">
-        <Sidebar />
-      </div> */}
     </section>
   );
 };

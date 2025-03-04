@@ -1,10 +1,4 @@
-import {
-  ContentStatus,
-  Prisma,
-  Widget,
-  WidgetSection,
-  WidgetType,
-} from "@prisma/client";
+import { ContentStatus, Prisma, WidgetType } from "@prisma/client";
 
 import { db } from "@/lib/db";
 import {
@@ -23,8 +17,10 @@ import {
   WidgetTagMetadata,
   WidgetProductPopActionType,
 } from "@/types";
+import { isEbookMetadata, isWebinarMetadata } from "@/type-guards";
+
 import { DEFAULT_SOCIAL_CHANNEL_VALUES, getSettings } from "./settings";
-import { isWidgetProductPopMetadata } from "@/type-guards";
+import { getPurchasedWebinar } from "./webinars";
 
 export const setDefaultWidgetProductPopMetadata =
   (): WidgetProductPopMetadata => {
@@ -115,7 +111,7 @@ export const setDefaultWidgetTagMetadata = (): WidgetTagMetadata => {
 type GetWidgetPosts = {
   postType: WidgetPostType;
   posts: { rootId: string; sort: number }[];
-  postCategoryRootId: string;
+  postCategoryRootId?: string;
   categoryFilter: WidgetPostCategoryFilter;
   categories: string[];
   limit: number;
@@ -166,7 +162,10 @@ export const getWidgetPosts = async ({
       throw new Error("Invalid WidgetPostType");
   }
 
-  if (categoryFilter === WidgetPostCategoryFilter.CURRENT) {
+  if (
+    categoryFilter === WidgetPostCategoryFilter.CURRENT &&
+    postCategoryRootId
+  ) {
     whereClause.category = {
       rootId: { equals: postCategoryRootId },
     };
@@ -259,13 +258,36 @@ export const getWidgetProducts = async ({
   const productsData = await db.product.findMany({
     where: whereClause,
     include: {
+      category: {
+        select: {
+          id: true,
+          slug: true,
+        },
+      },
       imageCover: true,
     },
     orderBy: { createdAt: "desc" },
     take,
   });
 
-  return productsData;
+  const mappedProducts = [];
+
+  for (const product of productsData) {
+    const purchasedWebinar = await getPurchasedWebinar(product.rootId!);
+    if (isEbookMetadata(product.metadata)) {
+      mappedProducts.push({
+        ...product,
+      });
+    }
+    if (isWebinarMetadata(product.metadata)) {
+      mappedProducts.push({
+        ...product,
+        availableSeats: product.metadata.seats - purchasedWebinar,
+      });
+    }
+  }
+
+  return mappedProducts;
 };
 
 type GetWidgetSocial = {

@@ -1,4 +1,4 @@
-"use client";;
+"use client";
 import Link from "next/link";
 
 import {
@@ -25,7 +25,7 @@ const routes = [
   },
   {
     title: "Ebooks",
-    link: "/ebooks/",
+    link: "/shop/ebooks/",
   },
   {
     title: "Blog",
@@ -115,7 +115,7 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
                 className={cn(
                   "text-base py-2 rounded-md hover:bg-violet-100 text-foreground hover:text-primary-public",
                   isMobile && "text-2xl font-light tr",
-                  (pathname === "/ebooks/" || pathname === "/blog/") &&
+                  (pathname === "/shop/ebooks/" || pathname === "/blog/") &&
                     "text-primary-public"
                 )}
               >
@@ -126,7 +126,7 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
                   <li className="row-span-3">
                     <Link
                       className="flex h-full w-full relative select-none flex-col justify-end rounded-md bg-violet-100/40 hover:bg-violet-200 transition-all p-6 no-underline outline-none focus:shadow-md"
-                      href="/ebooks/"
+                      href="/shop/ebooks/"
                     >
                       <LibraryBig
                         className="absolute h-8 w-8 bottom-4 right-4 text-primary "

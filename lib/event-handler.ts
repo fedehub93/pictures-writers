@@ -1,3 +1,4 @@
+import { ProductType } from "@prisma/client";
 import { db } from "./db";
 
 export async function handleUserSubscribed() {
@@ -27,6 +28,22 @@ export async function handleEbookDownloaded() {
         userId: user.id,
         type: "EBOOK_DOWNLOADED",
         message: `È stato eseguito il download dell'ebook!`,
+      },
+    });
+  }
+}
+
+export async function handleProductPurchased({ type }: { type: ProductType }) {
+  const users = await db.user.findMany({
+    where: {},
+  });
+
+  for (const user of users) {
+    await db.notification.create({
+      data: {
+        userId: user.id,
+        type: `${type}_PURCHASED `,
+        message: `È stato acquistato un nuovo prodotto!`,
       },
     });
   }

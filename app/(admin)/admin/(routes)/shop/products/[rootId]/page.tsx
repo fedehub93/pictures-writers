@@ -51,7 +51,7 @@ const ProductIdPage = async (props: { params: Promise<{ rootId: string }> }) => 
   return (
     <ProductForm
       initialData={product}
-      apiUrl={`/api/products/${product.rootId}`}
+      apiUrl={`/api/admin/products/${product.rootId}`}
       authors={authors}
     />
   );

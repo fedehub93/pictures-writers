@@ -9,6 +9,15 @@ type GetPublishedWebinars = {
   page: number;
 };
 
+export const getPurchasedWebinar = async (webinarRootId: string) => {
+  const w = await db.purchase.findMany({
+    where: { productRootId: webinarRootId },
+    select: { id: true },
+  });
+
+  return w.length;
+};
+
 export const getPublishedWebinars = async ({ page }: GetPublishedWebinars) => {
   const skip = WEBINAR_PER_PAGE * (page - 1);
 
@@ -17,9 +26,23 @@ export const getPublishedWebinars = async ({ page }: GetPublishedWebinars) => {
       isLatest: true,
       status: ContentStatus.PUBLISHED,
       type: ProductType.WEBINAR,
+      category: {
+        slug: { equals: "webinars" },
+      },
     },
     include: {
-      imageCover: true,
+      category: {
+        select: {
+          title: true,
+          slug: true,
+        },
+      },
+      imageCover: {
+        select: {
+          altText: true,
+          url: true,
+        },
+      },
     },
     take: WEBINAR_PER_PAGE,
     skip: skip,
@@ -31,14 +54,22 @@ export const getPublishedWebinars = async ({ page }: GetPublishedWebinars) => {
   const mappedWebinars = [];
 
   for (const webinar of webinars) {
-    mappedWebinars.push({ ...webinar });
+    const purchasedWebinar = await getPurchasedWebinar(webinar.rootId!);
+    if (isWebinarMetadata(webinar.metadata)) {
+      mappedWebinars.push({
+        ...webinar,
+        availableSeats: webinar.metadata.seats - purchasedWebinar,
+      });
+    }
   }
 
   const totalWebinars = await db.product.count({
     where: {
       status: ContentStatus.PUBLISHED,
       isLatest: true,
-      type: ProductType.WEBINAR,
+      category: {
+        slug: { equals: "webinars" },
+      },
     },
   });
 
@@ -56,7 +87,18 @@ export const getPublishedWebinarBySlug = async (slug: string) => {
       type: ProductType.WEBINAR,
     },
     include: {
-      imageCover: true,
+      imageCover: {
+        select: {
+          altText: true,
+          url: true,
+        },
+      },
+      category: {
+        select: {
+          title: true,
+          slug: true,
+        },
+      },
       seo: true,
       gallery: {
         select: {
@@ -79,23 +121,28 @@ export const getPublishedWebinarBySlug = async (slug: string) => {
 
   if (!isWebinarMetadata(product.metadata)) return;
 
+  const purchasedWebinar = await getPurchasedWebinar(product.rootId!);
+
   const mappedProduct = {
     ...product,
+    availableSeats: product.metadata.seats - purchasedWebinar,
   };
 
   return mappedProduct;
 };
 
-export const getPublishedWebinarsBuilding = async (): Promise<Product[]> => {
+export const getPublishedWebinarsBuilding = async (): Promise<
+  { id: string; slug: string }[]
+> => {
   const products = await db.product.findMany({
     where: {
       isLatest: true,
       status: ContentStatus.PUBLISHED,
       type: ProductType.WEBINAR,
     },
-    include: {
-      imageCover: true,
-      seo: true,
+    select: {
+      id: true,
+      slug: true,
     },
     orderBy: {
       createdAt: "desc",

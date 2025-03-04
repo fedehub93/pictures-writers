@@ -10,10 +10,16 @@ const nextConfig = {
         destination: "/sitemap.xml",
         permanent: true,
       },
+      {
+        source: "/ebooks/:path*",
+        destination: "/shop/ebooks/:path*",
+        permanent: true,
+      },
     ];
   },
   trailingSlash: true,
   images: {
+    minimumCacheTTL: 2678400,
     remotePatterns: [
       {
         protocol: "https",

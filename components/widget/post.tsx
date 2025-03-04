@@ -8,7 +8,7 @@ interface WidgetPostProps {
   label: string;
   posts: { rootId: string; sort: number }[];
   postType: WidgetPostType;
-  postCategoryRootId: string;
+  postCategoryRootId?: string;
   categoryFilter: WidgetPostCategoryFilter;
   categories: string[];
   limit: number;

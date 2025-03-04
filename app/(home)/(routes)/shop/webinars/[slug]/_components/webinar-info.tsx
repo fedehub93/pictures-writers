@@ -15,10 +15,12 @@ import { formatDate, formatPrice } from "@/lib/format";
 
 import { FreeEbookModal } from "@/app/(home)/_components/modals/free-ebook-modal";
 import { SlateRendererV2 } from "@/components/editor/view/slate-renderer";
-import { Button } from "@/components/ui/button";
+
 import { ProductBoxInfo } from "@/app/(home)/_components/product/product-box-info";
+import { BuyButton } from "@/components/checkout/buy-button";
 
 interface WebinarInfoProps {
+  id: string;
   rootId: string;
   title: string;
   imageCoverUrl: string;
@@ -31,14 +33,16 @@ interface WebinarInfoProps {
     lastName: string;
     imageUrl: string;
   } | null;
-  date?: Date | null;
-  time?: string;
-  seats?: number;
-  duration?: string;
-  platform?: string;
+  date: Date | null;
+  time: string;
+  seats: number;
+  availableSeats: number;
+  duration: string;
+  platform: string;
 }
 
 export const WebinarInfo = ({
+  id,
   rootId,
   title,
   imageCoverUrl,
@@ -49,6 +53,7 @@ export const WebinarInfo = ({
   date,
   time,
   seats,
+  availableSeats,
   duration,
   platform,
 }: WebinarInfoProps) => {
@@ -77,8 +82,13 @@ export const WebinarInfo = ({
         <SlateRendererV2 content={description!} />
       </div>
       <Separator />
-      <div className="flex justify-between items-center">
-        <Button>Iscriviti</Button>
+      <div className="flex mx-auto items-center">
+        {availableSeats ? <BuyButton productId={id} /> : null}
+        {!availableSeats && (
+          <div className="text-white text-2xl font-bold bg-destructive p-1 px-2 rounded-md">
+            Posti esauriti
+          </div>
+        )}
       </div>
       <Separator />
       <div className="flex flex-wrap gap-x-16 gap-y-4">
@@ -97,13 +107,6 @@ export const WebinarInfo = ({
         />
       </div>
       <Separator />
-      <FreeEbookModal
-        rootId={rootId}
-        title={title}
-        imageCoverUrl={imageCoverUrl}
-        isOpen={isOpen}
-        setIsOpen={setIsOpen}
-      />
     </div>
   );
 };

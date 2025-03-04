@@ -111,42 +111,84 @@ const generateBlogTagsSitemap = async () => {
   return mappedTags;
 };
 
-const generateEbooksSitemap = async () => {
-  const { siteUrl } = await getSettings();
+const generateProductsSitemap = async () => {
+  const { siteShopUrl } = await getSettings();
 
-  const ebooks = await db.product.findMany({
+  const products = await db.product.findMany({
     where: {
       status: ContentStatus.PUBLISHED,
       isLatest: true,
-      type: ProductType.EBOOK,
+      type: {
+        in: [ProductType.EBOOK, ProductType.WEBINAR],
+      },
     },
-    include: {
-      seo: true,
+    select: {
+      slug: true,
+      createdAt: true,
+      category: {
+        select: {
+          slug: true,
+        },
+      },
+      seo: {
+        select: {
+          canonicalUrl: true,
+        },
+      },
     },
     orderBy: {
       createdAt: "desc",
     },
   });
 
-  const mappedEbooks: MetadataRoute.Sitemap = ebooks
-    .filter((ebook) => !ebook.seo?.canonicalUrl)
-    .map((ebook) => ({
-      url: `${siteUrl}/ebooks/${ebook.slug}/`,
-      lastModified: ebook.createdAt,
+  const mappedProducts: MetadataRoute.Sitemap = products
+    .filter((product) => !product.seo?.canonicalUrl)
+    .map((product) => ({
+      url: `${siteShopUrl}/${product.category!.slug}/${product.slug}/`,
+      lastModified: product.createdAt,
       changeFrequency: "monthly",
       priority: 1,
     }));
 
-  return mappedEbooks;
+  return mappedProducts;
+};
+
+const generateProductCategoriesSitemap = async () => {
+  const { siteShopUrl } = await getSettings();
+
+  const categories = await db.productCategory.findMany({
+    where: {
+      status: ContentStatus.PUBLISHED,
+      isLatest: true,
+    },
+    include: {
+      seo: true,
+    },
+    orderBy: {
+      firstPublishedAt: "desc",
+    },
+  });
+
+  const mappedCategories: MetadataRoute.Sitemap = categories
+    .filter((category) => !category.seo?.canonicalUrl)
+    .map((post) => ({
+      url: `${siteShopUrl}/${post.slug}/`,
+      lastModified: post.publishedAt,
+      changeFrequency: "monthly",
+      priority: 1,
+    }));
+
+  return mappedCategories;
 };
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const { siteUrl } = await getSettings();
+  const { siteUrl, siteShopUrl } = await getSettings();
   const blogPages = await generateBlogPagesSitemap();
   const posts = await generateBlogPostsSitemap();
   const categories = await generateBlogCategoriesSitemap();
   const tags = await generateBlogTagsSitemap();
-  const ebooks = await generateEbooksSitemap();
+  const products = await generateProductsSitemap();
+  const productCategories = await generateProductCategoriesSitemap();
 
   if (!siteUrl) return [];
 
@@ -189,15 +231,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.5,
     },
     {
-      url: `${siteUrl}/ebooks/`,
+      url: `${siteShopUrl}/`,
       lastModified: new Date(),
-      changeFrequency: "monthly",
+      changeFrequency: "weekly",
       priority: 0.5,
     },
     ...blogPages,
     ...posts,
     ...categories,
     ...tags,
-    ...ebooks,
+    ...products,
+    ...productCategories,
   ];
 }

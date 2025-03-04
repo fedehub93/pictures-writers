@@ -306,6 +306,9 @@ model EmailSetting {
   freeEbookTemplate   EmailTemplate? @relation(name: "emailSetting2", fields: [freeEbookTemplateId], references: [id], onDelete: Cascade)
   freeEbookTemplateId String?
 
+  webinarTemplate   EmailTemplate? @relation(name: "emailSetting3", fields: [webinarTemplateId], references: [id], onDelete: Cascade)
+  webinarTemplateId String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -325,6 +328,7 @@ model EmailTemplate {
 
   emailSettingSubscription EmailSetting[] @relation(name: "emailSetting1")
   emailSettingFreeEbook    EmailSetting[] @relation(name: "emailSetting2")
+  emailSettingWebinar      EmailSetting[] @relation(name: "emailSetting3")
 }
 
 enum AudienceType {
@@ -482,6 +486,8 @@ model Product {
 
   gallery ProductGallery[]
 
+  purchases Purchase[]
+
   seo   Seo?    @relation(fields: [seoId], references: [id])
   seoId String?
 
@@ -542,6 +548,19 @@ model ProductExtra {
   price       Float
   productId   String
   product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Purchase {
+  id String @id @default(uuid())
+
+  email String
+
+  product       Product @relation(fields: [productId], references: [id])
+  productId     String
+  productRootId String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

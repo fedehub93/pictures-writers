@@ -4,10 +4,11 @@ import { PostWithImageCoverWithCategoryWithTagsWithSeo } from "@/lib/post";
 
 import { getPlaceholderImage } from "@/lib/image";
 
-import Sidebar from "./sidebar";
-import { WidgetPostBottom } from "./post-bottom";
-import PostInfoV2 from "../../blog/_components/post-info-v2";
 import { SlateRendererV2 } from "@/components/editor/view/slate-renderer";
+import Sidebar from "@/app/(home)/_components/sidebar";
+import PostInfoV2 from "@/app/(home)/(routes)/blog/_components/post-info-v2";
+
+import { WidgetPostBottom } from "./post-bottom";
 
 interface PostTemplateProps {
   post: PostWithImageCoverWithCategoryWithTagsWithSeo;

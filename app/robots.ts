@@ -3,7 +3,7 @@ import { MetadataRoute } from "next";
 
 export default async function robots(): Promise<MetadataRoute.Robots> {
   const { siteUrl } = await getSettings();
-  
+
   return {
     rules: {
       userAgent: "*",
@@ -15,8 +15,10 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
         "/conferma-sottoscrizione",
         "/rimuovi-sottoscrizione",
         "/download-ebooks",
-        "/ebooks/download",
+        "/shop/ebooks/download",
         "/cos-e-il-linguaggio-cinematografico-scrivere-per-il cinema",
+        "/ebooks/",
+        "/ebooks/introduzione-alla-sceneggiatura/",
       ],
     },
     sitemap: [`${siteUrl}/sitemap.xml`],

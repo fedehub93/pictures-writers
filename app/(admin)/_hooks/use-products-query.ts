@@ -5,7 +5,7 @@ export const useProductsQuery = (s = "", windowIsOpen = false) => {
   const fetchProducts = async ({ pageParam = undefined, s = "" }) => {
     const url = qs.stringifyUrl(
       {
-        url: `/api/products`,
+        url: `/api/admin/products`,
         query: {
           cursor: pageParam,
           s,

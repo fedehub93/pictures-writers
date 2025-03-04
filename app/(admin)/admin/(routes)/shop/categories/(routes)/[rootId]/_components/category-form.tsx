@@ -73,7 +73,7 @@ export const CategoryForm = ({ initialData, apiUrl }: CategoryFormProps) => {
     }
 
     try {
-      console.log(apiUrl)
+      console.log(apiUrl);
       await axios.patch(`${apiUrl}/versions/${initialData.id}`, values);
       toast.success(`Product updated`);
     } catch {
@@ -121,7 +121,7 @@ export const CategoryForm = ({ initialData, apiUrl }: CategoryFormProps) => {
             <div className="col-span-full md:col-span-2 lg:col-span-4 flex flex-col gap-y-4">
               <StatusView
                 disabled={!isComplete}
-                contentType={SeoContentTypeApi.Product}
+                contentType={SeoContentTypeApi.ProductCategory}
                 contentRootId={initialData.rootId!}
                 contentId={initialData.id}
                 status={initialData.status}

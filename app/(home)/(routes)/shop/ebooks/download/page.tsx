@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+
 import { isValidEbookFormat } from "@/type-guards";
 
 import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
@@ -22,14 +23,12 @@ export async function generateMetadata(): Promise<Metadata | null> {
   };
 }
 
-const DownloadEbook = async (
-  props: {
-    searchParams?: Promise<{
-      id?: string;
-      format?: string;
-    }>;
-  }
-) => {
+const DownloadEbook = async (props: {
+  searchParams?: Promise<{
+    id?: string;
+    format?: string;
+  }>;
+}) => {
   const searchParams = await props.searchParams;
   const ebookId = searchParams?.id || "";
   const format = searchParams?.format || "";

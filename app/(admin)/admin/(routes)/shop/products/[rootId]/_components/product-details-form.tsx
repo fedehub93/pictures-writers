@@ -21,6 +21,7 @@ import { productFormSchema } from "./product-form";
 import { Button } from "@/components/ui/button";
 import Editor from "@/app/(admin)/_components/editor";
 import { Descendant } from "slate";
+import { ProductCategoryForm } from "./product-category-form";
 
 interface ProductDetailsFormProps {
   control: Control<z.infer<typeof productFormSchema>>;
@@ -77,6 +78,7 @@ export const ProductDetailsForm = ({
             </FormItem>
           )}
         />
+        <ProductCategoryForm control={control} isSubmitting={isSubmitting} />
         <FormField
           control={control}
           name="slug"

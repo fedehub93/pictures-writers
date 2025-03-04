@@ -33,7 +33,7 @@ export const ProductsAction = ({
     try {
       setIsLoading(true);
 
-      await axios.delete(`/api/products/${rootId}/versions/${id}`);
+      await axios.delete(`/api/admin/products/${rootId}/versions/${id}`);
 
       toast.success("Item deleted!");
     } catch {

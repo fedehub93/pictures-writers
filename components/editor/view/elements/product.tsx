@@ -31,7 +31,7 @@ export const ProductElement = ({ node }: ImageElementProps) => {
           <div>
             <Button asChild>
               <NextLink
-                href={`/ebooks/${node.data.slug}`}
+                href={`/shop/ebooks/${node.data.slug}/`}
                 rel="noopener noreferrer nofollow"
                 target={"_blank"}
               >

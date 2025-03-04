@@ -1,0 +1,23 @@
+import { Category } from "@prisma/client";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+
+const fetchProductCategories = async () => {
+  const response = await axios.get("/api/admin/shop/categories");
+
+  return response.data as Category[];
+};
+
+export const useProductCategoriesQuery = () => {
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["product-categories"], // Chiave unica per la cache basata sulle date
+    queryFn: () => fetchProductCategories(), // Funzione fetch
+    enabled: true,
+  });
+
+  return {
+    data,
+    isLoading,
+    isError,
+  };
+};

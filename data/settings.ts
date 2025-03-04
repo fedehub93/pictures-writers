@@ -67,6 +67,7 @@ export const getSettings = async () => {
     const mappedSettings: SettingsWithScriptsAndSocials = {
       ...updatedSettings,
       socials: [...socials],
+      siteShopUrl: `${settings.siteUrl}/shop`,
     };
 
     return mappedSettings;
@@ -76,6 +77,7 @@ export const getSettings = async () => {
   const mappedSettings: SettingsWithScriptsAndSocials = {
     ...settings,
     socials: [...socials],
+    siteShopUrl: `${settings.siteUrl}/shop`,
   };
 
   return mappedSettings;

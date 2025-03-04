@@ -62,7 +62,7 @@ export const EmailSettingsForm = ({
       emailSender: settings?.emailSender || "",
       emailResponse: settings?.emailResponse || "",
       emailProvider: settings?.emailProvider || EmailProvider.SENDGRID,
-      emailApiKey: "****************",
+      emailApiKey: process.env.NEXT_SENDGRID_KEY,
       maxEmailsPerDay: settings?.maxEmailsPerDay || 100,
     },
   });

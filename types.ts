@@ -84,7 +84,8 @@ export interface BaseSeoProps {
  */
 
 export type ProductWithImageCoverAndAuthor = Product & {
-  imageCover: Media | null;
+  category: { title: string; slug: string } | null;
+  imageCover: Media | { url: string; altText: string | null } | null;
 };
 
 export type Gallery = {
@@ -271,4 +272,5 @@ export type SettingsScripts = {
 export type SettingsWithScriptsAndSocials = Settings & {
   seo: Seo | null;
   socials: SocialChannel[];
+  siteShopUrl: string;
 };

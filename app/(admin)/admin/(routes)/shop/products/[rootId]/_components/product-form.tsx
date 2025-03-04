@@ -57,6 +57,9 @@ export const productFormSchema = z.object({
   title: z.string().min(1, {
     message: "Title is required!",
   }),
+  categoryId: z.string().min(1, {
+    message: "Category is required!",
+  }),
   slug: z.string().min(1, {
     message: "Slug is required!",
   }),
@@ -98,6 +101,7 @@ export const ProductForm = ({
       description: initialData.description || [
         { type: "paragraph", children: [{ text: "" }] },
       ],
+      categoryId: initialData.categoryId || undefined,
       imageCoverId: initialData.imageCoverId || undefined,
       price: initialData.price || 0,
       discountedPrice: initialData.discountedPrice || 0,
@@ -203,7 +207,7 @@ export const ProductForm = ({
             <div className="col-span-full md:col-span-2 lg:col-span-4 flex flex-col gap-y-4">
               <StatusView
                 disabled={!isComplete}
-                contentType={SeoContentTypeApi.Product}
+                contentType={`admin/${SeoContentTypeApi.Product}`}
                 contentRootId={initialData.rootId!}
                 contentId={initialData.id}
                 status={initialData.status}

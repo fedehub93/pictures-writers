@@ -42,5 +42,3 @@ export const WidgetSocial = async ({ label, socials }: WidgetSocialProps) => {
     </div>
   );
 };
-
-export default WidgetSocial;

@@ -1,25 +1,24 @@
 import { Metadata } from "next";
 
-import { getPublishedEbooks } from "@/data/ebook";
-
 import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
 import { Breadcrumbs } from "@/app/(home)/_components/breadcrumbs";
+import { getPublishedWebinars } from "@/data/webinars";
 
-import { EbooksList } from "./_components/ebooks-list";
+import { WebinarsList } from "./_components/webinars-list";
 
 export async function generateMetadata(): Promise<Metadata | null> {
   const metadata = await getHeadMetadata();
 
   return {
     ...metadata,
-    title: "Ebooks: Pictures Writers",
+    title: "Webinars: Pictures Writers",
     description:
       "Impara il mestiere dello sceneggiatore attraverso la nostra selezione di ebooks. Scopri di più.",
   };
 }
 
-const EbooksPage = async () => {
-  const { ebooks, totalPages, currentPage } = await getPublishedEbooks({
+const Page = async () => {
+  const { webinars, totalPages, currentPage } = await getPublishedWebinars({
     page: 1,
   });
 
@@ -28,27 +27,32 @@ const EbooksPage = async () => {
       <div className="bg-primary w-full">
         <div className="max-w-6xl mx-auto h-20 flex justify-center items-center">
           <h1 className="text-white font-extrabold text-4xl uppercase">
-            Ebooks
+            Webinars
           </h1>
         </div>
       </div>
       <div className="py-12">
         <div className="px-4 xl:px-0 lg:max-w-6xl mx-auto flex flex-col gap-y-4">
           <Breadcrumbs
-            items={[{ title: "Home", href: "/" }, { title: "Ebooks" }]}
+            items={[
+              { title: "Home", href: "/" },
+              { title: "Shop", href: "/shop/" },
+              { title: "Webinars" },
+            ]}
           />
           <p className="font-bold">
-            Scopri la nostra collezione di ebook dedicati alla sceneggiatura
+            Scopri i nuovi webinars in programma dedicata alla scrittura
             cinematografica.
           </p>
           <p>
-            Strumenti pratici, guide essenziali e approfondimenti per
-            trasformare le tue idee in storie indimenticabili. Che tu sia un
-            aspirante sceneggiatore o un professionista in cerca di ispirazione,
-            qui troverai risorse pensate per il tuo percorso creativo.
+            Dialoghi, personaggi e approfondimenti di ogni tipo per aiutarti a
+            rendere la tua storia migliore. Che tu sia un aspirante
+            sceneggiatore o un professionista in cerca di ispirazione, qui
+            troverai webinar pensati per portare le tue conoscenze ad uno step
+            successivo.
           </p>
-          <EbooksList
-            ebooks={ebooks}
+          <WebinarsList
+            webinars={webinars}
             totalPages={totalPages}
             currentPage={currentPage}
           />
@@ -58,4 +62,4 @@ const EbooksPage = async () => {
   );
 };
 
-export default EbooksPage;
+export default Page;

@@ -4,7 +4,9 @@ import handlebars from "handlebars";
 
 import { ContentStatus, ProductType } from "@prisma/client";
 import { db } from "@/lib/db";
-import { isEbookMetadata } from "@/type-guards";
+import { isEbookMetadata, isWebinarMetadata } from "@/type-guards";
+import { createContactByEmail } from "@/data/email-contact";
+import { handleProductPurchased } from "./event-handler";
 
 type SendgridEmail = {
   to: string;
@@ -45,6 +47,60 @@ export const sendSendgridEmail = async ({
       type,
     },
   });
+};
+
+export const sendWebinarPurchaseEmail = async (
+  email: string,
+  productRootId: string
+) => {
+  const settings = await db.emailSetting.findFirst();
+
+  if (!settings || !settings.emailSender || !settings.webinarTemplateId)
+    return false;
+
+  const webinar = await db.product.findFirst({
+    where: {
+      rootId: productRootId,
+      type: ProductType.WEBINAR,
+      status: ContentStatus.PUBLISHED,
+      isLatest: true,
+    },
+    include: {
+      imageCover: true,
+    },
+  });
+
+  if (!webinar || !isWebinarMetadata(webinar.metadata)) return false;
+
+  await createContactByEmail(email, "webinar_purchased");
+
+  const webinarTemplate = await db.emailTemplate.findUnique({
+    where: {
+      id: settings.webinarTemplateId,
+    },
+  });
+
+  if (!webinarTemplate?.bodyHtml) return false;
+
+  const template = handlebars.compile(webinarTemplate.bodyHtml);
+
+  await sendSendgridEmail({
+    to: email,
+    from: settings.emailSender,
+    subject: `Webinar: ${webinar.title} acquistato con successo`,
+    html: template({
+      email,
+      id: webinar.id,
+      title: webinar.title,
+      description: webinar.description,
+      imageCoverUrl: webinar.imageCover?.url,
+    }),
+    type: "webinar_purchased",
+  });
+
+  await handleProductPurchased({ type: webinar.type });
+
+  return true;
 };
 
 export const sendSubscriptionEmail = async (email: string, token: string) => {

@@ -1,7 +1,8 @@
+import { PostWithImageCoverWithCategoryWithTags } from "@/lib/post";
+import Sidebar from "@/app/(home)/_components/sidebar";
+
 import PostCard from "./post-card";
 import { PostPagination } from "./post-pagination";
-import Sidebar from "@/app/(home)/_components/sidebar";
-import { PostWithImageCoverWithCategoryWithTags } from "@/lib/post";
 
 interface PostListProps {
   posts: PostWithImageCoverWithCategoryWithTags[];
@@ -30,10 +31,7 @@ export const PostList = ({ posts, currentPage, totalPages }: PostListProps) => {
         ))}
         <PostPagination currentPage={currentPage} totalPages={totalPages} />
       </div>
-      <div
-        className="col-span-1 self-start sm:col-span-2 lg:block xl:col-span-2 xl:px-3"
-        // ref={stickyRef}
-      >
+      <div className="col-span-1 self-start sm:col-span-2 lg:block xl:col-span-2 xl:px-3">
         <Sidebar />
       </div>
     </section>

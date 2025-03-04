@@ -35,9 +35,10 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 
+import { formatDate } from "@/lib/format";
+
 import { productFormSchema } from "./product-form";
 import { EbookFormatsForm } from "./ebook-formats-form";
-import { formatDate } from "@/lib/format";
 
 interface ProductEbookFormProps {
   control: Control<z.infer<typeof productFormSchema>>;

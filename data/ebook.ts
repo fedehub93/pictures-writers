@@ -16,10 +16,23 @@ export const getPublishedEbooks = async ({ page }: GetPublishedEbooks) => {
     where: {
       isLatest: true,
       status: ContentStatus.PUBLISHED,
-      type: ProductType.EBOOK,
+      category: {
+        slug: { equals: "ebooks" },
+      },
     },
     include: {
-      imageCover: true,
+      imageCover: {
+        select: {
+          url: true,
+          altText: true,
+        },
+      },
+      category: {
+        select: {
+          title: true,
+          slug: true,
+        },
+      },
     },
     take: EBOOK_PER_PAGE,
     skip: skip,
@@ -38,7 +51,9 @@ export const getPublishedEbooks = async ({ page }: GetPublishedEbooks) => {
     where: {
       status: ContentStatus.PUBLISHED,
       isLatest: true,
-      type: ProductType.EBOOK,
+      category: {
+        slug: { equals: "ebooks" },
+      },
     },
   });
 
@@ -56,7 +71,18 @@ export const getPublishedEbookBySlug = async (slug: string) => {
       type: ProductType.EBOOK,
     },
     include: {
-      imageCover: true,
+      imageCover: {
+        select: {
+          altText: true,
+          url: true,
+        },
+      },
+      category: {
+        select: {
+          title: true,
+          slug: true,
+        },
+      },
       seo: true,
       gallery: {
         select: {
@@ -86,16 +112,18 @@ export const getPublishedEbookBySlug = async (slug: string) => {
   return mappedProduct;
 };
 
-export const getPublishedEbooksBuilding = async (): Promise<Product[]> => {
+export const getPublishedEbooksBuilding = async (): Promise<
+  { id: string; slug: string }[]
+> => {
   const products = await db.product.findMany({
     where: {
       isLatest: true,
       status: ContentStatus.PUBLISHED,
       type: ProductType.EBOOK,
     },
-    include: {
-      imageCover: true,
-      seo: true,
+    select: {
+      id: true,
+      slug: true,
     },
     orderBy: {
       createdAt: "desc",
