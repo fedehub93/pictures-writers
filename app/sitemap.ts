@@ -144,7 +144,7 @@ const generateProductsSitemap = async () => {
   const mappedProducts: MetadataRoute.Sitemap = products
     .filter((product) => !product.seo?.canonicalUrl)
     .map((product) => ({
-      url: `${siteShopUrl}/${product.category!.slug}/${product.slug}/`,
+      url: `${siteShopUrl}/${product.slug}/`,
       lastModified: product.createdAt,
       changeFrequency: "monthly",
       priority: 1,
@@ -171,9 +171,9 @@ const generateProductCategoriesSitemap = async () => {
 
   const mappedCategories: MetadataRoute.Sitemap = categories
     .filter((category) => !category.seo?.canonicalUrl)
-    .map((post) => ({
-      url: `${siteShopUrl}/${post.slug}/`,
-      lastModified: post.publishedAt,
+    .map((category) => ({
+      url: `${siteShopUrl}/${category.slug}/`,
+      lastModified: category.publishedAt,
       changeFrequency: "monthly",
       priority: 1,
     }));
