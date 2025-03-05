@@ -64,6 +64,7 @@ export const columns: ColumnDef<PostWithImageCoverAndAuthor>[] = [
             alt={imageCover.altText || ""}
             fill
             className="rounded-md object-cover"
+            unoptimized
           />
         </div>
       );
@@ -112,6 +113,7 @@ export const columns: ColumnDef<PostWithImageCoverAndAuthor>[] = [
                 height={40}
                 className="rounded-full w-10 h-10 object-cover"
                 alt={`Foto profilo ${a.user.email}`}
+                unoptimized
               />
             );
           })}

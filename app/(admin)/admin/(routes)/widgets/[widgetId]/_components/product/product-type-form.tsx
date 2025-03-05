@@ -256,6 +256,7 @@ export const ProductTypeForm = ({
                                             alt={"image"}
                                             fill
                                             className="object-cover"
+                                            unoptimized
                                           />
                                         </div>
                                         <div

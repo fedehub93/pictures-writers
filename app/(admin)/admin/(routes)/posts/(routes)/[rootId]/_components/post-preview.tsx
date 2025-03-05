@@ -6,5 +6,5 @@ export const PostPreview = ({
 }: {
   post: PostWithImageCoverWithCategoryWithTagsWithSeo;
 }) => {
-  return <SlateRendererV2 content={post.bodyData} />;
+  return <SlateRendererV2 content={post.bodyData} preview />;
 };

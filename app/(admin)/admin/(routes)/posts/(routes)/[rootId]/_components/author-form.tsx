@@ -130,6 +130,7 @@ export const AuthorForm = ({
                                 className="rounded-full"
                                 width="32"
                                 height="32"
+                                unoptimized
                               />
                             )}
                             {author.firstName} {author.lastName}

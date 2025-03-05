@@ -271,9 +271,20 @@ async function getFileBufferLocal(filepath: string) {
   return fs.readFile(realFilepath);
 }
 
+async function getFileBuffer(filepath: string) {
+  if (filepath.startsWith("http")) {
+    const response = await fetch(filepath);
+    if (!response.ok) throw new Error("Errore nel recupero dell'immagine");
+    return Buffer.from(await response.arrayBuffer());
+  } else {
+    const realFilepath = path.join(process.cwd(), "public", filepath);
+    return fs.readFile(realFilepath);
+  }
+}
+
 export async function getPlaceholderImage(filepath: string) {
   try {
-    const originalBuffer = await getFileBufferLocal(filepath);
+    const originalBuffer = await getFileBuffer(filepath);
     const resizedBuffer = await sharp(originalBuffer).resize(20).toBuffer();
     return {
       src: filepath,

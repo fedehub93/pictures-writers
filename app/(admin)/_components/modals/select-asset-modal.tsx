@@ -83,10 +83,11 @@ export const SelectAssetModal = () => {
                       {item.type === MediaType.IMAGE && (
                         <Image
                           src={item.url}
-                          alt="ciao"
+                          alt={item.altText || "ciao"}
                           onClick={() => onSelect(item)}
                           fill
                           className="object-cover rounded-md"
+                          unoptimized
                         />
                       )}
                       {item.type === MediaType.FILE && (

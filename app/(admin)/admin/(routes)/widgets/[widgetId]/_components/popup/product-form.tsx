@@ -90,6 +90,7 @@ export const PopupProductForm = ({
                         alt={"image"}
                         fill
                         className="object-cover"
+                        unoptimized
                       />
                     </div>
                     <div

@@ -116,6 +116,7 @@ export const ProductGalleryForm = ({
                             alt={`${fieldMedia.mediaId}-${index}`}
                             className="object-cover"
                             fill
+                            unoptimized
                           />
                         </div>
                       )}

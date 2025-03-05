@@ -93,6 +93,7 @@ export const SelectPostModal = () => {
                             onClick={() => onSelect(item)}
                             fill
                             className="object-cover rounded-md"
+                            unoptimized
                           />
                         </div>
                         <div className="text-sm px-2 line-clamp-2">

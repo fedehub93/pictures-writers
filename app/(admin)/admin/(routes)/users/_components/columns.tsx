@@ -33,6 +33,7 @@ export const columns: ColumnDef<User>[] = [
             alt={"Photo profile"}
             fill
             className="rounded-md object-cover"
+            unoptimized
           />
         </div>
       );

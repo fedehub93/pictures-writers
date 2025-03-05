@@ -28,6 +28,7 @@ export const columns: ColumnDef<Product>[] = [
             alt={imageCover.altText || ""}
             fill
             className="rounded-md object-contain"
+            unoptimized
           />
         </div>
       );

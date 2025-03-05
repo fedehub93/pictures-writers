@@ -18,7 +18,13 @@ import {
 } from "../elements";
 import { CustomElement, isCustomText } from "../slate-renderer";
 
-export const RenderNode = ({ node }: { node: CustomElement }) => {
+export const RenderNode = ({
+  node,
+  preview = false,
+}: {
+  node: CustomElement;
+  preview?: boolean;
+}) => {
   if (node.type === "paragraph") {
     return <ParagraphElement node={node} />;
   }
@@ -57,7 +63,7 @@ export const RenderNode = ({ node }: { node: CustomElement }) => {
     return <InfoBoxElement node={node} />;
   }
   if (node.type === "image") {
-    return <ImageElement node={node} />;
+    return <ImageElement node={node} preview={preview} />;
   }
   if (node.type === "product") {
     return <ProductElement node={node} />;

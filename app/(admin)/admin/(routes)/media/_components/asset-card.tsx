@@ -52,7 +52,13 @@ export const AssetCard = ({
       </div>
       <div className="relative w-full aspect-video rounded-md overflow-hidden">
         {type === MediaType.IMAGE && (
-          <Image fill className="object-cover" alt={name} src={url} />
+          <Image
+            fill
+            className="object-cover"
+            alt={name}
+            src={url}
+            unoptimized
+          />
         )}
         {type === MediaType.FILE && (
           <File className="absolute w-full h-full" strokeWidth={1} />

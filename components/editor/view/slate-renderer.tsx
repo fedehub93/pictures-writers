@@ -30,13 +30,14 @@ export const isCustomText = (
 
 type Props = {
   content: CustomElement[];
+  preview?: boolean;
 };
 
-const SlateRendererV2 = ({ content }: Props) => {
+const SlateRendererV2 = ({ content, preview = false }: Props) => {
   return (
     <div className="post">
       {content.map((node, i) => (
-        <RenderNode key={i} node={node} />
+        <RenderNode key={i} node={node} preview={preview} />
       ))}
     </div>
   );

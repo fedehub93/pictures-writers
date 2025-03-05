@@ -95,6 +95,7 @@ export const EditContentImageSheet = () => {
                   alt="ciao"
                   fill
                   className="object-cover rounded-md"
+                  unoptimized
                 />
               </div>
               <div className="flex items-center justify-between">Alt Text</div>

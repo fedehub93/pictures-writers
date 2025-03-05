@@ -108,6 +108,7 @@ export const ImageForm = ({ imageCoverUrl, control, name }: ImageFormProps) => {
                 fill
                 className="object-contain wfu rounded-md"
                 src={imageCover}
+                unoptimized
               />
             </div>
           </div>

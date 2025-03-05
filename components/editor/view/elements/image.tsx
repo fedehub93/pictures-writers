@@ -5,9 +5,10 @@ import { CustomElement } from "../slate-renderer";
 
 interface ImageElementProps {
   node: CustomElement;
+  preview?: boolean;
 }
 
-export const ImageElement = ({ node }: ImageElementProps) => {
+export const ImageElement = ({ node, preview = false }: ImageElementProps) => {
   return (
     <div className="post__image">
       {node.children.map((child: any, i: number) => (
@@ -26,6 +27,7 @@ export const ImageElement = ({ node }: ImageElementProps) => {
         width={500}
         height={300}
         sizes="(max-width: 1280px) 90vw, 40vw"
+        unoptimized={preview}
       />
     </div>
   );
