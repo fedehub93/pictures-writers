@@ -17,7 +17,10 @@ import { Button } from "@/components/ui/button";
 
 import { usePostsQuery } from "@/hooks/use-posts-query";
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
-import { PostWithImageCoverWithCategoryWithTags } from "@/lib/post";
+import {
+  PostWithImageCoverWithCategory,
+  PostWithImageCoverWithCategoryWithTags,
+} from "@/lib/post";
 
 export const SelectPostModal = () => {
   const { isOpen, onClose, type, onCallback } = useModal();
@@ -42,7 +45,7 @@ export const SelectPostModal = () => {
     );
   }
 
-  const onSelect = async (post: Post) => {
+  const onSelect = async (post: PostWithImageCoverWithCategory) => {
     onCallback(post);
     handleClose();
   };

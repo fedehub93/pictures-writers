@@ -9,8 +9,7 @@ import { useState } from "react";
 import Image from "next/image";
 
 import { cn } from "@/lib/utils";
-import { FileUpload } from "@/components/file-upload";
-import { ImageIcon, MoreHorizontal, Trash2 } from "lucide-react";
+import { MoreHorizontal, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -21,8 +20,14 @@ import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 
 interface ImageFormProps {
-  initialData: Post & {
-    imageCover: Media | null;
+  initialData: {
+    status: ContentStatus;
+  } & {
+    imageCover: {
+      url: string;
+      name: string | null;
+      altText: string | null;
+    } | null;
   };
   rootId: string;
   postId: string;

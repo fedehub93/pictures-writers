@@ -13,7 +13,27 @@ import { db } from "./db";
 const POST_PER_PAGE = 10;
 const LATEST_PUBLISHED_POST = 4;
 
-export type PostWithImageCoverWithCategoryWithTags = Post & {
+export type PostWithImageCoverWithCategory = {
+  id: string;
+  rootId: string | null;
+  title: string;
+  slug: string;
+  description: string | null;
+  imageCover: { url: string; altText: string | null } | null;
+  category: { title: string; slug: string } | null;
+  postAuthors: {
+    user: User;
+    sort: number;
+  }[];
+  updatedAt: Date;
+};
+
+export type PostWithImageCoverWithCategoryWithTags = {
+  id: string;
+  rootId: string;
+  title: string;
+  slug: string;
+  description: string;
   imageCover: Media | null;
   category: Category | null;
   tags: Tag[];
@@ -21,13 +41,28 @@ export type PostWithImageCoverWithCategoryWithTags = Post & {
     user: User;
     sort: number;
   }[];
+  updatedAt: Date;
 };
 
-export type PostWithImageCoverWithCategoryWithTagsWithSeo = Post & {
-  imageCover: Media | null;
-  category: Category | null;
-  tags: Tag[];
-  seo: Seo | null;
+export type PostWithImageCoverWithCategoryWithTagsWithSeo = {
+  id: string;
+  rootId: string | null;
+  title: string;
+  slug: string;
+  description: string | null;
+  bodyData: any;
+  publishedAt: Date | null;
+  updatedAt: Date;
+  imageCover: { url: string; altText: string | null } | null;
+  category: {
+    id: string;
+    rootId: string | null;
+    title: string;
+    slug: string;
+    description: string | null;
+  } | null;
+  tags: { title: string; slug: string }[];
+  seo: { title: string; description: string | null } | null;
   postAuthors: {
     user: User;
     sort: number;
@@ -66,10 +101,25 @@ export const getPublishedPosts = async ({
         },
       ],
     },
-    include: {
-      imageCover: true,
-      category: true,
-      tags: true,
+    select: {
+      id: true,
+      rootId: true,
+      title: true,
+      description: true,
+      slug: true,
+      updatedAt: true,
+      category: {
+        select: {
+          title: true,
+          slug: true,
+        },
+      },
+      imageCover: {
+        select: {
+          url: true,
+          altText: true,
+        },
+      },
       postAuthors: {
         select: {
           user: true,
@@ -99,28 +149,16 @@ export const getPublishedPosts = async ({
   return { posts, totalPages, currentPage: page };
 };
 
-export const getPublishedPostsBuilding = async (): Promise<
-  PostWithImageCoverWithCategoryWithTags[]
-> => {
+export const getPublishedPostsBuilding = async () => {
   const posts = await db.post.findMany({
     where: {
       status: ContentStatus.PUBLISHED,
       isLatest: true,
     },
-    include: {
-      imageCover: true,
-      category: true,
-      tags: true,
-      seo: true,
-      postAuthors: {
-        select: {
-          user: true,
-          sort: true,
-        },
-        orderBy: {
-          sort: "asc",
-        },
-      },
+    select: {
+      id: true,
+      rootId: true,
+      slug: true,
     },
     orderBy: {
       firstPublishedAt: "desc",
@@ -139,10 +177,25 @@ export const getPublishedPostsByCategoryRootId = async ({
       isLatest: true,
       category: { rootId: { equals: categoryRootId } },
     },
-    include: {
-      imageCover: true,
-      category: true,
-      tags: true,
+    select: {
+      id: true,
+      rootId: true,
+      title: true,
+      description: true,
+      slug: true,
+      updatedAt: true,
+      category: {
+        select: {
+          title: true,
+          slug: true,
+        },
+      },
+      imageCover: {
+        select: {
+          url: true,
+          altText: true,
+        },
+      },
       postAuthors: {
         select: {
           user: true,
@@ -180,10 +233,25 @@ export const getPublishedPostsByTagRootId = async ({
         some: { rootId: { equals: tagRootId } },
       },
     },
-    include: {
-      imageCover: true,
-      category: true,
-      tags: true,
+    select: {
+      id: true,
+      rootId: true,
+      title: true,
+      description: true,
+      slug: true,
+      updatedAt: true,
+      category: {
+        select: {
+          title: true,
+          slug: true,
+        },
+      },
+      imageCover: {
+        select: {
+          url: true,
+          altText: true,
+        },
+      },
       postAuthors: {
         select: {
           user: true,
@@ -229,11 +297,43 @@ export const getPublishedPostBySlug = async (slug: string) => {
       status: ContentStatus.PUBLISHED,
       isLatest: true,
     },
-    include: {
-      imageCover: true,
-      category: true,
-      tags: true,
-      seo: true,
+    select: {
+      id: true,
+      rootId: true,
+      title: true,
+      slug: true,
+      description: true,
+      bodyData: true,
+      publishedAt: true,
+      firstPublishedAt: true,
+      updatedAt: true,
+      seo: {
+        select: {
+          title: true,
+          description: true,
+        },
+      },
+      category: {
+        select: {
+          id: true,
+          rootId: true,
+          title: true,
+          description: true,
+          slug: true,
+        },
+      },
+      tags: {
+        select: {
+          title: true,
+          slug: true,
+        },
+      },
+      imageCover: {
+        select: {
+          url: true,
+          altText: true,
+        },
+      },
       postAuthors: {
         select: {
           user: true,

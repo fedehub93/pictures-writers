@@ -49,11 +49,7 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
 
           <SlateRendererV2 content={post.bodyData} />
         </article>
-        <WidgetPostBottom
-          postId={post.id}
-          authorId={post.userId || ""}
-          tags={post.tags}
-        />
+        <WidgetPostBottom postId={post.id} tags={post.tags} />
         {/* <DisqusLazy config={disqusOptions} /> */}
       </div>
       <div className="blog-post__sidebar">

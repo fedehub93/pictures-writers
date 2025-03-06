@@ -35,13 +35,13 @@ export default async function RootLayout({
 
   if (!user) {
     return (await auth()).redirectToSignIn({
-      returnBackUrl: "http://localhost:3000/admin",
+      returnBackUrl: `${process.env.NEXT_PUBLIC_APP_URL}/admin`,
     });
   }
 
   if (user.role === UserRole.USER) {
     return (await auth()).redirectToSignIn({
-      returnBackUrl: "http://localhost:3000/admin",
+      returnBackUrl: `${process.env.NEXT_PUBLIC_APP_URL}/admin`,
     });
   }
 

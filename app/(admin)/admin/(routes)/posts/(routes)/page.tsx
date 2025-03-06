@@ -15,11 +15,28 @@ const PostsPage = async () => {
   }
 
   const posts = await db.post.findMany({
-    include: {
-      imageCover: true,
+    select: {
+      id: true,
+      rootId: true,
+      title: true,
+      slug: true,
+      status: true,
+      publishedAt: true,
+      firstPublishedAt: true,
+      imageCover: {
+        select: {
+          url: true,
+          altText: true,
+        },
+      },
       postAuthors: {
         select: {
-          user: true,
+          user: {
+            select: {
+              email: true,
+              imageUrl: true,
+            },
+          },
         },
         orderBy: {
           sort: "asc",
@@ -31,6 +48,7 @@ const PostsPage = async () => {
     },
     distinct: ["rootId"],
   });
+
 
   return (
     <div className="h-full w-full flex flex-col gap-y-4 px-6 py-3">

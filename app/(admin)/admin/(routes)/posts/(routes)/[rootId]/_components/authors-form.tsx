@@ -51,7 +51,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthorsQuery } from "@/app/(admin)/_hooks/use-authors-query";
 
 interface AuthorsFormProps {
-  initialData: Post & {
+  initialData: { status: ContentStatus; firstPublishedAt: Date } & {
     postAuthors: {
       user: User;
       sort: number;

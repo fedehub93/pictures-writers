@@ -21,8 +21,10 @@ import MultipleSelector from "@/components/multi-select";
 import { useDebounceCallback } from "usehooks-ts";
 
 interface TagFormProps {
-  initialData: Post & {
-    tags: Tag[];
+  initialData: {
+    status: ContentStatus;
+  } & {
+    tags: { id: string; title: string; status: ContentStatus }[];
   };
   rootId: string;
   postId: string;

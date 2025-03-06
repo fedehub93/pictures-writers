@@ -1,11 +1,11 @@
-import { PostWithImageCoverWithCategoryWithTags } from "@/lib/post";
+import { PostWithImageCoverWithCategory } from "@/lib/post";
 import Sidebar from "@/app/(home)/_components/sidebar";
 
 import PostCard from "./post-card";
 import { PostPagination } from "./post-pagination";
 
 interface PostListProps {
-  posts: PostWithImageCoverWithCategoryWithTags[];
+  posts: PostWithImageCoverWithCategory[];
   currentPage: number;
   totalPages: number;
 }
@@ -22,7 +22,7 @@ export const PostList = ({ posts, currentPage, totalPages }: PostListProps) => {
             description={post.description!}
             slug={post.slug}
             categoryTitle={post.category?.title!}
-            categorySlug={post.category?.description!}
+            categorySlug={post.category?.slug!}
             imageCoverUrl={post.imageCover?.url || ""}
             imageCoverAlt={post.imageCover?.altText || ""}
             authors={post.postAuthors.map((v) => v.user)}

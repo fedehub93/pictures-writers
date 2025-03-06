@@ -25,6 +25,11 @@ export const getUserById = async (id: string) => {
   }
 };
 
-export const getAuthorsString = (authors: User[]) => {
+export const getAuthorsString = (
+  authors: {
+    firstName: string | null;
+    lastName: string | null;
+  }[]
+) => {
   return authors.map((a) => `${a.firstName} ${a.lastName}`).join(", ");
 };

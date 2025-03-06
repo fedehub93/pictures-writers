@@ -28,8 +28,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 
 interface CategoryFormProps {
-  initialData: Post & {
-    category: Category | null;
+  initialData: {
+    status: ContentStatus;
+    category: { id: string; status: ContentStatus } | null;
   };
   rootId: string;
   postId: string;
@@ -55,7 +56,7 @@ export const CategoryForm = ({
   const form = useForm<z.infer<typeof formSchema>>({
     mode: "all",
     resolver: zodResolver(formSchema),
-    defaultValues: { categoryId: initialData?.categoryId || "" },
+    defaultValues: { categoryId: initialData?.category?.id || "" },
   });
 
   const { isValid, touchedFields } = form.formState;

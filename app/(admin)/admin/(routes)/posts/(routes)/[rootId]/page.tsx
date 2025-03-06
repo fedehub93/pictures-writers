@@ -1,5 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
-import { ContentStatus, UserRole } from "@prisma/client";
+import { ContentStatus } from "@prisma/client";
 import { redirect } from "next/navigation";
 
 import { db } from "@/lib/db";
@@ -10,18 +10,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TitleForm } from "@/app/(admin)/_components/general-fields/title-form";
 import { DescriptionForm } from "@/app/(admin)/_components/general-fields/description-form";
 import { SlugForm } from "@/app/(admin)/_components/general-fields/slug-form";
+import { SeoEditView } from "@/app/(admin)/_components/seo/seo-edit-view";
+import { SeoContentTypeApi } from "@/app/(admin)/_components/seo/types";
+import { StatusView } from "@/app/(admin)/_components/content/status-view";
+import { ContentIdActions } from "@/app/(admin)/_components/content/content-id-actions";
 
 import { ImageForm } from "./_components/image-form";
 import { CategoryForm } from "./_components/category-form";
 import { ContentForm } from "./_components/content-form";
 import { TagForm } from "./_components/tag-form";
 
-import { SeoEditView } from "@/app/(admin)/_components/seo/seo-edit-view";
-import { SeoContentTypeApi } from "@/app/(admin)/_components/seo/types";
-
-import { StatusView } from "@/app/(admin)/_components/content/status-view";
-
-import { ContentIdActions } from "@/app/(admin)/_components/content/content-id-actions";
 import { PostPreview } from "./_components/post-preview";
 import { AuthorsForm } from "./_components/authors-form";
 
@@ -39,11 +37,43 @@ const PostIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
     orderBy: {
       publishedAt: "desc",
     },
-    include: {
-      imageCover: true,
-      category: true,
-      tags: true,
+    select: {
+      id: true,
+      rootId: true,
+      title: true,
+      slug: true,
+      description: true,
+      status: true,
+      bodyData: true,
+      publishedAt: true,
+      firstPublishedAt: true,
+      updatedAt: true,
       seo: true,
+      category: {
+        select: {
+          id: true,
+          rootId: true,
+          title: true,
+          description: true,
+          status: true,
+          slug: true,
+        },
+      },
+      tags: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          status: true,
+        },
+      },
+      imageCover: {
+        select: {
+          url: true,
+          name: true,
+          altText: true,
+        },
+      },
       postAuthors: {
         select: {
           user: true,

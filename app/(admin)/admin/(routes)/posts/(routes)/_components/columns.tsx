@@ -19,9 +19,18 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 import { cn } from "@/lib/utils";
 
-type PostWithImageCoverAndAuthor = Post & {
-  imageCover: Media | null;
-  postAuthors: { user: User }[];
+type PostWithImageCoverAndAuthor = {
+  id: string;
+  rootId: string | null;
+  title: string;
+  slug: string;
+  status: ContentStatus;
+  publishedAt: Date;
+  firstPublishedAt: Date;
+  imageCover: { url: string; altText: string | null } | null;
+  postAuthors: {
+    user: { email: string | null; imageUrl: string | null } | null;
+  }[];
 };
 
 export const columns: ColumnDef<PostWithImageCoverAndAuthor>[] = [
@@ -55,7 +64,10 @@ export const columns: ColumnDef<PostWithImageCoverAndAuthor>[] = [
       return <span>Image</span>;
     },
     cell: ({ row }) => {
-      const imageCover = (row.getValue("imageCover") || null) as Media | null;
+      const imageCover = (row.getValue("imageCover") || null) as {
+        url: string;
+        altText: string | null;
+      } | null;
       if (!imageCover) return null;
       return (
         <div className="relative max-w-60 aspect-video">
@@ -100,7 +112,9 @@ export const columns: ColumnDef<PostWithImageCoverAndAuthor>[] = [
       );
     },
     cell: ({ row }) => {
-      const authors = row.getValue("postAuthors") as { user: User }[];
+      const authors = row.getValue("postAuthors") as {
+        user: { email: string; imageUrl: string | null };
+      }[];
 
       return (
         <div className="flex items-center gap-x-4">

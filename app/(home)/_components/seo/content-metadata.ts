@@ -13,19 +13,38 @@ export async function getPostMetadataBySlug(
       status: ContentStatus.PUBLISHED,
       isLatest: true,
     },
-    include: {
-      imageCover: true,
-      seo: true,
-      user: true,
-      postAuthors: {
+    select: {
+      title: true,
+      seo: {
         select: {
-          user: true,
-          sort: true,
-        },
-        orderBy: {
-          sort: "asc",
+          title: true,
+          description: true,
+          canonicalUrl: true,
+          noIndex: true,
+          noFollow: true,
+          ogTwitterTitle: true,
+          ogTwitterDescription: true,
+          ogTwitterUrl: true,
         },
       },
+      imageCover: {
+        select: {
+          url: true,
+          altText: true,
+        },
+      },
+      postAuthors: {
+        select: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      },
+      firstPublishedAt: true,
+      publishedAt: true,
     },
     orderBy: { firstPublishedAt: "desc" },
   });

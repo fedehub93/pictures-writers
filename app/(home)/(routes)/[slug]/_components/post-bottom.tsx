@@ -13,13 +13,11 @@ import WidgetAuthors from "@/components/widget/authors";
 
 interface WidgetPostBottomProps {
   postId: string;
-  authorId?: string;
   tags: { title: string; slug: string }[];
 }
 
 export const WidgetPostBottom = async ({
   postId,
-  authorId,
   tags,
 }: WidgetPostBottomProps) => {
   const widgets = await db.widget.findMany({

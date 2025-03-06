@@ -9,7 +9,7 @@ export interface BlogPostingJsonLdProps {
   headline?: string | string[];
   title?: string;
   keywords?: string | string[];
-  imageCover: Media | null;
+  imageCover: { url: string } | null;
   images: string[];
   videos?: string[];
   datePublished: string;
