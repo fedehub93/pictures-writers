@@ -4,14 +4,17 @@ import Logo from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { Nav } from "./_components/nav";
 import { MobileNavbar } from "./_components/mobile-navbar";
-import { Search } from "lucide-react";
+
 import { SearchBar } from "./_components/search-bar";
 
 export const Navbar = async () => {
   return (
     <header className="fixed top-0 z-50 w-full border-b border-b-gray-200">
-      {/* <div className="block sm:hidden self-center whitespace-nowrap border-b bg-violet-100 text-center text-sm font-extrabold uppercase text-black md:text-2xl h-5">
-        Pictures Writers
+      {/* <div className="flex gap-x-4 w-full px-4 items-center justify-center py-1 border-b bg-violet-100">
+        Acquista ora il miglior libro sulla sceneggiatura cinematografica!
+        <Button type="button" role="button">
+          Prova
+        </Button>
       </div> */}
       <div className="h-[80px] inset-y-0 w-full z-50 p-4  flex items-center shadow-sm bg-white">
         <div className="w-full mx-auto flex justify-between md:max-w-6xl">
