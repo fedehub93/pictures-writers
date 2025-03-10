@@ -160,6 +160,11 @@ const generateProductCategoriesSitemap = async () => {
     where: {
       status: ContentStatus.PUBLISHED,
       isLatest: true,
+      products: {
+        some: {
+          type: { equals: ProductType.EBOOK },
+        },
+      },
     },
     include: {
       seo: true,

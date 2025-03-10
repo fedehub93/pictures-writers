@@ -119,7 +119,7 @@ export function DataTableToolbar<TData>({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <Link href="/admin/products/create">
+          <Link href="/admin/shop/products/create">
             <DropdownMenuItem>
               <PlusCircle className="h-4 w-4 mr-2" />
               New product
