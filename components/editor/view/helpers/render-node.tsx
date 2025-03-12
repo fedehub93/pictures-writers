@@ -2,6 +2,7 @@ import { RenderLeaf } from "./render-leaf";
 import { ParagraphElement } from "../elements/paragraph";
 import {
   AffiliateLinkElement,
+  BlockquoteElement,
   BulletedListElement,
   FirstImpressionSnippetElement,
   HeadingFourElement,
@@ -27,6 +28,9 @@ export const RenderNode = ({
 }) => {
   if (node.type === "paragraph") {
     return <ParagraphElement node={node} />;
+  }
+  if (node.type === "blockquote") {
+    return <BlockquoteElement node={node} />;
   }
 
   if (node.type === "heading-1") {
