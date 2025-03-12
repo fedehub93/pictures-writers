@@ -1,7 +1,5 @@
-"use client";
-
 import React from "react";
-import { CustomText } from "@/app/(admin)/_components/editor";
+import { CustomText } from "../slate-renderer";
 
 export const RenderLeaf = ({ leaf }: { leaf: CustomText }) => {
   let elements = leaf.text.split("\n").map((part, index) => (

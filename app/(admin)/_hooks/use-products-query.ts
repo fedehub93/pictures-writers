@@ -1,11 +1,13 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import qs from "query-string";
 
+import { API_ADMIN_PRODUCTS } from "@/constants/api";
+
 export const useProductsQuery = (s = "", windowIsOpen = false) => {
   const fetchProducts = async ({ pageParam = undefined, s = "" }) => {
     const url = qs.stringifyUrl(
       {
-        url: `/api/admin/products`,
+        url: API_ADMIN_PRODUCTS,
         query: {
           cursor: pageParam,
           s,

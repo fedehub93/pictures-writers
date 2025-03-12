@@ -5,9 +5,12 @@ import { ProductType, UserRole } from "@prisma/client";
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
 
+import { API_ADMIN_PRODUCTS } from "@/constants/api";
 import { ProductForm } from "./_components/product-form";
 
-const ProductIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
+const ProductIdPage = async (props: {
+  params: Promise<{ rootId: string }>;
+}) => {
   const params = await props.params;
   const userAdmin = await authAdmin();
   if (!userAdmin) {
@@ -26,6 +29,14 @@ const ProductIdPage = async (props: { params: Promise<{ rootId: string }> }) => 
           mediaId: true,
           sort: true,
           media: true,
+        },
+      },
+      faqs: {
+        select: {
+          id: true,
+          question: true,
+          answer: true,
+          sort: true,
         },
       },
       imageCover: true,
@@ -51,7 +62,7 @@ const ProductIdPage = async (props: { params: Promise<{ rootId: string }> }) => 
   return (
     <ProductForm
       initialData={product}
-      apiUrl={`/api/admin/products/${product.rootId}`}
+      apiUrl={`${API_ADMIN_PRODUCTS}/${product.rootId}`}
       authors={authors}
     />
   );

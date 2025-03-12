@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
+import { API_ADMIN_PRODUCTS } from "@/constants/api";
 
 export const ProductsAction = ({
   id,
@@ -33,7 +34,7 @@ export const ProductsAction = ({
     try {
       setIsLoading(true);
 
-      await axios.delete(`/api/admin/products/${rootId}/versions/${id}`);
+      await axios.delete(`${API_ADMIN_PRODUCTS}/${rootId}/versions/${id}`);
 
       toast.success("Item deleted!");
     } catch {

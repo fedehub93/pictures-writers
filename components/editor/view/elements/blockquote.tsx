@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { RenderLeaf } from "../helpers/render-leaf";
-import { CustomElement } from "../slate-renderer";
+import { CustomElement, isCustomText } from "../slate-renderer";
+import { RenderNode } from "../helpers/render-node";
 
 interface BlockquoteProps {
   node: CustomElement;
@@ -16,9 +17,13 @@ export const BlockquoteElement = ({ node }: BlockquoteProps) => {
         node.align === "right" && "text-right"
       )}
     >
-      {node.children.map((child: any, i: number) => (
-        <RenderLeaf key={i} leaf={child} />
-      ))}
+      {node.children.map((child: any, i: number) => {
+        if (isCustomText(child)) {
+          return <RenderLeaf key={i} leaf={child} />;
+        }
+
+        return <RenderNode key={i} node={child} />;
+      })}
     </blockquote>
   );
 };

@@ -35,12 +35,19 @@ import {
 import { ProductGalleryForm } from "./product-gallery-form";
 import { ProductAffiliateForm } from "./affiliate/product-affiliate-form";
 import { ProductWebinarForm } from "./product-webinar-form";
+import { ProductFAQForm } from "./product-faq-form";
 
 interface ProductFormProps {
   initialData: Product & {
     imageCover: Media | null;
     seo: Seo | null;
     gallery: Gallery[];
+    faqs: {
+      id: string;
+      question: string;
+      answer: string;
+      sort: number;
+    }[];
     metadata?: EbookMetadata | AffiliateMetadata | WebinarMetadata | null;
   };
   apiUrl: string;
@@ -50,6 +57,13 @@ interface ProductFormProps {
 const productGalleryFormSchema = z.object({
   mediaId: z.string(),
   url: z.string().optional(),
+  sort: z.coerce.number(),
+});
+
+const productFAQsFormSchema = z.object({
+  id: z.string().optional(),
+  question: z.string().optional(),
+  answer: z.string().optional(),
   sort: z.coerce.number(),
 });
 
@@ -72,6 +86,7 @@ export const productFormSchema = z.object({
     description: z.string().optional(),
   }),
   gallery: z.array(productGalleryFormSchema),
+  faqs: z.array(productFAQsFormSchema),
   metadata: z.any(),
 });
 
@@ -105,9 +120,6 @@ export const ProductForm = ({
       imageCoverId: initialData.imageCoverId || undefined,
       price: initialData.price || 0,
       discountedPrice: initialData.discountedPrice || 0,
-      seo: initialData.seo
-        ? { ...initialData.seo, description: initialData.seo.description || "" }
-        : { ...defaultSEO },
       gallery: [
         ...initialData.gallery.map((a) => ({
           mediaId: a.mediaId,
@@ -115,6 +127,16 @@ export const ProductForm = ({
           url: a.media.url,
         })),
       ],
+      faqs: [
+        ...initialData.faqs.map((a) => ({
+          question: a.question,
+          answer: a.answer,
+          sort: a.sort,
+        })),
+      ],
+      seo: initialData.seo
+        ? { ...initialData.seo, description: initialData.seo.description || "" }
+        : { ...defaultSEO },
       metadata,
     },
   });
@@ -198,6 +220,10 @@ export const ProductForm = ({
                   control={form.control}
                   isSubmitting={isSubmitting}
                 />
+                <ProductFAQForm
+                  control={form.control}
+                  isSubmitting={isSubmitting}
+                />
                 <ProductSeoForm
                   control={form.control}
                   isSubmitting={isSubmitting}
@@ -207,7 +233,7 @@ export const ProductForm = ({
             <div className="col-span-full md:col-span-2 lg:col-span-4 flex flex-col gap-y-4">
               <StatusView
                 disabled={!isComplete}
-                contentType={`admin/${SeoContentTypeApi.Product}`}
+                contentType={`${SeoContentTypeApi.Product}`}
                 contentRootId={initialData.rootId!}
                 contentId={initialData.id}
                 status={initialData.status}

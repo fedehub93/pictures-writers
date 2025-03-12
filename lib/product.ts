@@ -39,8 +39,9 @@ export const createNewVersionProduct = async (rootId: string, values: any) => {
       version: undefined,
       status: undefined,
       isLatest: undefined,
-      seo: undefined,
       gallery: undefined,
+      faqs: undefined,
+      seo: undefined,
       createdAt: undefined,
       updatedAt: undefined,
       publishedAt: undefined,
@@ -57,6 +58,24 @@ export const createNewVersionProduct = async (rootId: string, values: any) => {
       mediaId: v.mediaId,
       sort: v.sort,
     })),
+  });
+
+  /**
+   * FAQ
+   */
+  await db.productFAQ.deleteMany({
+    where: { productId: updatedProduct.id },
+  });
+
+  await db.productFAQ.createMany({
+    data: values.faqs.map(
+      (v: { question: string; answer: string; sort: number }) => ({
+        productId: product.id,
+        question: v.question,
+        answer: v.answer,
+        sort: v.sort,
+      })
+    ),
   });
 
   if (updatedProduct.seoId && values.seo) {

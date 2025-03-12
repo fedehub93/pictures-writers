@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { DataTableFacetedFilter } from "./data-table-faceted-filter";
+import { API_ADMIN_PRODUCTS_PUBLISH } from "@/constants/api";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -69,7 +70,7 @@ export function DataTableToolbar<TData>({
         .filter((key) => selectedRows[key]) // Filtra solo le righe selezionate.
         .map((key) => data[Number(key)]); // Recupera i record basandoti sull'indice.
 
-      await axios.patch(`/api/admin/products/publish`, {
+      await axios.patch(`${API_ADMIN_PRODUCTS_PUBLISH}`, {
         products: selectedRecords,
       });
       toast.success("Items published");

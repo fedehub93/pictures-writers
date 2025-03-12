@@ -1,8 +1,11 @@
 import * as z from "zod";
 import Image from "next/image";
+import { Trash2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { Product } from "@prisma/client";
 
 import { Control, useController } from "react-hook-form";
-import { widgetFormSchema } from "../widget-form";
 import {
   FormControl,
   FormField,
@@ -10,13 +13,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import axios from "axios";
-import { ProductWithImageCoverAndAuthor } from "@/types";
-import { useQuery } from "@tanstack/react-query";
-import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
-import { Product } from "@prisma/client";
 import { Button } from "@/components/ui/button";
-import { Grip, Trash2 } from "lucide-react";
+
+import { ProductWithImageCoverAndAuthor } from "@/types";
+
+import { widgetFormSchema } from "../widget-form";
+import { API_ADMIN_PRODUCTS_FETCH } from "@/constants/api";
+import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 
 interface PopupProductFormProps {
   control: Control<z.infer<typeof widgetFormSchema>>;
@@ -38,7 +41,7 @@ export const PopupProductForm = ({
 
   const fetchProducts = async (id: string) => {
     const { data } = await axios.post<ProductWithImageCoverAndAuthor[]>(
-      "/api/admin/products/fetch",
+      API_ADMIN_PRODUCTS_FETCH,
       { ids: [id] }
     );
     return data;

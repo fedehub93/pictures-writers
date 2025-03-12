@@ -32,7 +32,6 @@ export const RenderNode = ({
   if (node.type === "blockquote") {
     return <BlockquoteElement node={node} />;
   }
-
   if (node.type === "heading-1") {
     return <HeadingOneElement node={node} />;
   }

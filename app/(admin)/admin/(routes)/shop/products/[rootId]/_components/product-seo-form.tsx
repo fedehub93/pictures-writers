@@ -31,7 +31,12 @@ export const ProductSeoForm = ({
   isSubmitting,
 }: ProductSeoFormProps) => {
   return (
-    <Accordion type="single" collapsible className="border rounded-lg px-4 py-2">
+    <Accordion
+      type="single"
+      collapsible
+      defaultValue="seo"
+      className="border rounded-lg px-4 py-2"
+    >
       <AccordionItem value="seo" className="border-b-0">
         <AccordionTrigger className="px-2">SEO</AccordionTrigger>
 

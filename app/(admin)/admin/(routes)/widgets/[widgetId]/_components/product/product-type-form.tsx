@@ -2,6 +2,13 @@
 
 import * as z from "zod";
 import Image from "next/image";
+import { ChangeEvent } from "react";
+import axios from "axios";
+import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
+import { Product } from "@prisma/client";
+import { Control, useController } from "react-hook-form";
+import { useQuery } from "@tanstack/react-query";
+import { Grip, Trash2 } from "lucide-react";
 
 import {
   FormControl,
@@ -10,15 +17,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
-import { Control, useController } from "react-hook-form";
-import { widgetFormSchema } from "../widget-form";
-import { Grip, Trash2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
-import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import {
   Select,
   SelectContent,
@@ -26,10 +24,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ProductWithImageCoverAndAuthor, WidgetProductType } from "@/types";
-import { Product } from "@prisma/client";
+import { Button } from "@/components/ui/button";
+
 import { Input } from "@/components/ui/input";
-import { ChangeEvent } from "react";
+import { API_ADMIN_PRODUCTS_FETCH } from "@/constants/api";
+import { widgetFormSchema } from "../widget-form";
+import { cn } from "@/lib/utils";
+import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
+import { ProductWithImageCoverAndAuthor, WidgetProductType } from "@/types";
 
 interface ProductTypeFormProps {
   control: Control<z.infer<typeof widgetFormSchema>>;
@@ -77,7 +79,7 @@ export const ProductTypeForm = ({
 
   const fetchProducts = async (ids: string[]) => {
     const { data } = await axios.post<ProductWithImageCoverAndAuthor[]>(
-      "/api/admin/products/fetch",
+      `${API_ADMIN_PRODUCTS_FETCH}`,
       { ids }
     );
     return data;

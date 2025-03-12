@@ -1,6 +1,6 @@
+import axios from "axios";
 import { Category } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 
 const fetchProductCategories = async () => {
   const response = await axios.get("/api/admin/shop/categories");

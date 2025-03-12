@@ -7,6 +7,15 @@ import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
+import {
+  BookText,
+  ClipboardPen,
+  ExternalLink,
+  Headset,
+  Sparkles,
+} from "lucide-react";
+import slugify from "slugify";
+import { ProductType } from "@prisma/client";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -18,16 +27,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { ProductType } from "@prisma/client";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-  BookText,
-  ClipboardPen,
-  ExternalLink,
-  Headset,
-  Sparkles,
-} from "lucide-react";
-import slugify from "slugify";
+
+import { API_ADMIN_PRODUCTS } from "@/constants/api";
 
 const formSchema = z.object({
   title: z.string().min(1, {
@@ -61,7 +63,7 @@ const ProductCreatePage = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const response = await axios.post("/api/admin/products", values);
+      const response = await axios.post(API_ADMIN_PRODUCTS, values);
       router.push(`/admin/shop/products/${response.data.id}`);
 
       toast.success("Product created");

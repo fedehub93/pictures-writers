@@ -1,5 +1,3 @@
-"use client";
-
 import { RenderNode } from "./helpers/render-node";
 
 export type CustomText = {

@@ -73,6 +73,7 @@ export const ProductGalleryForm = ({
     <Accordion
       type="single"
       collapsible
+      defaultValue="gallery"
       className="border rounded-lg px-4 py-2"
     >
       <AccordionItem value="gallery" className="border-b-0">

@@ -76,6 +76,7 @@ export async function PATCH(
       data: {
         ...values,
         gallery: undefined,
+        faqs: undefined,
         seo: undefined,
       },
     });
@@ -90,6 +91,21 @@ export async function PATCH(
         mediaId: v.mediaId,
         sort: v.sort,
       })),
+    });
+
+    await db.productFAQ.deleteMany({
+      where: { productId: updatedProduct.id },
+    });
+
+    await db.productFAQ.createMany({
+      data: values.faqs.map(
+        (v: { question: string; answer: string; sort: number }) => ({
+          productId: product.id,
+          question: v.question,
+          answer: v.answer,
+          sort: v.sort,
+        })
+      ),
     });
 
     if (product.seoId && values.seo) {
