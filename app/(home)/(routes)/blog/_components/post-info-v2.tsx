@@ -1,3 +1,4 @@
+import { getCategoriesString } from "@/data/category";
 import { getAuthorsString } from "@/data/user";
 import { User } from "@prisma/client";
 import { formatDistance } from "date-fns";
@@ -8,6 +9,7 @@ import type { JSX } from "react";
 interface PostInfoV2Props {
   categoryTitle: string;
   categorySlug: string;
+  categories: { title: string; slug: string }[];
   authors: User[];
   publishedAt: Date;
 }
@@ -15,10 +17,12 @@ interface PostInfoV2Props {
 const PostInfoV2 = ({
   categoryTitle,
   categorySlug,
+  categories,
   authors,
   publishedAt,
 }: PostInfoV2Props): JSX.Element => {
   const authorsString = getAuthorsString(authors);
+  const categoriesString = getCategoriesString(categories);
 
   return (
     <div className="mb-4 border-b border-b-gray-300 pb-2 text-xs text-gray-500">

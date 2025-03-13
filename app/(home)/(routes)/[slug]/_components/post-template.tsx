@@ -42,6 +42,7 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
             publishedAt={post.publishedAt!}
             categoryTitle={post.category?.title!}
             categorySlug={post.category?.slug!}
+            categories={post.postCategories.map((c) => c.category)}
           />
           <div className="mx-auto mb-4 max-w-5xl">
             <h1 className="blog-post__title">{post.title}</h1>

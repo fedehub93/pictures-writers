@@ -1,13 +1,4 @@
-import {
-  Category,
-  ContentStatus,
-  Media,
-  Post,
-  PostAuthor,
-  Seo,
-  Tag,
-  User,
-} from "@prisma/client";
+import { Category, ContentStatus, Media, Tag, User } from "@prisma/client";
 import { db } from "./db";
 
 const POST_PER_PAGE = 10;
@@ -19,8 +10,20 @@ export type PostWithImageCoverWithCategory = {
   title: string;
   slug: string;
   description: string | null;
-  imageCover: { url: string; altText: string | null } | null;
-  category: { title: string; slug: string } | null;
+  imageCover: {
+    url: string;
+    altText: string | null;
+  } | null;
+  category: {
+    title: string;
+    slug: string;
+  } | null;
+  postCategories: {
+    category: {
+      title: string;
+      slug: string;
+    };
+  }[];
   postAuthors: {
     user: User;
     sort: number;
@@ -36,6 +39,12 @@ export type PostWithImageCoverWithCategoryWithTags = {
   description: string;
   imageCover: Media | null;
   category: Category | null;
+  postCategories: {
+    category: {
+      title: string;
+      slug: string;
+    };
+  }[];
   tags: Tag[];
   postAuthors: {
     user: User;
@@ -61,6 +70,12 @@ export type PostWithImageCoverWithCategoryWithTagsWithSeo = {
     slug: string;
     description: string | null;
   } | null;
+  postCategories: {
+    category: {
+      title: string;
+      slug: string;
+    };
+  }[];
   tags: { title: string; slug: string }[];
   seo: { title: string; description: string | null } | null;
   postAuthors: {
@@ -112,6 +127,16 @@ export const getPublishedPosts = async ({
         select: {
           title: true,
           slug: true,
+        },
+      },
+      postCategories: {
+        select: {
+          category: {
+            select: {
+              title: true,
+              slug: true,
+            },
+          },
         },
       },
       imageCover: {
@@ -176,6 +201,13 @@ export const getPublishedPostsByCategoryRootId = async ({
       status: ContentStatus.PUBLISHED,
       isLatest: true,
       category: { rootId: { equals: categoryRootId } },
+      // postCategories: {
+      //   some: {
+      //     category: {
+      //       rootId: { equals: categoryRootId },
+      //     },
+      //   },
+      // },
     },
     select: {
       id: true,
@@ -188,6 +220,16 @@ export const getPublishedPostsByCategoryRootId = async ({
         select: {
           title: true,
           slug: true,
+        },
+      },
+      postCategories: {
+        select: {
+          category: {
+            select: {
+              title: true,
+              slug: true,
+            },
+          },
         },
       },
       imageCover: {
@@ -244,6 +286,16 @@ export const getPublishedPostsByTagRootId = async ({
         select: {
           title: true,
           slug: true,
+        },
+      },
+      postCategories: {
+        select: {
+          category: {
+            select: {
+              title: true,
+              slug: true,
+            },
+          },
         },
       },
       imageCover: {
@@ -320,6 +372,16 @@ export const getPublishedPostBySlug = async (slug: string) => {
           title: true,
           description: true,
           slug: true,
+        },
+      },
+      postCategories: {
+        select: {
+          category: {
+            select: {
+              title: true,
+              slug: true,
+            },
+          },
         },
       },
       tags: {

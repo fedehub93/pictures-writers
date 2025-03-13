@@ -194,6 +194,7 @@ model Post {
 
   category   Category? @relation(fields: [categoryId], references: [id])
   categoryId String?
+  postCategories PostCategory[]
 
   tags Tag[]
 
@@ -243,6 +244,7 @@ model Category {
   rootChildren Category[] @relation("RootChildren")
 
   posts Post[]
+  postCategories PostCategory[]
 
   seo   Seo?    @relation(fields: [seoId], references: [id])
   seoId String?
@@ -253,6 +255,18 @@ model Category {
   updatedAt        DateTime @updatedAt
 
   @@index([rootId])
+}
+
+model PostCategory {
+  post   Post   @relation(fields: [postId], references: [id])
+  postId String
+
+  category Category   @relation(fields: [categoryId], references: [id])
+  categoryId String
+
+  sort Int
+
+  @@id([postId, categoryId])
 }
 
 model Tag {

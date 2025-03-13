@@ -226,9 +226,9 @@ export const AuthorsForm = ({
                     </PopoverTrigger>
                     <PopoverContent className="w-full p-0">
                       <Command>
-                        <CommandInput placeholder="Search language..." />
+                        <CommandInput placeholder="Search authors..." />
                         <CommandList>
-                          <CommandEmpty>No language found.</CommandEmpty>
+                          <CommandEmpty>No authors found.</CommandEmpty>
                           <CommandGroup>
                             {authors.map((author) => (
                               <CommandItem

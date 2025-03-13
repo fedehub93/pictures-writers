@@ -70,6 +70,8 @@ export async function PATCH(
       where: { id: postId },
       data: {
         ...values,
+        categories: undefined,
+        postCategories: undefined,
         authors: undefined,
         tags: values.tags
           ? {
@@ -97,6 +99,24 @@ export async function PATCH(
             postId,
             userId: author.id,
             sort: author.sort,
+          },
+        });
+      }
+    }
+
+    if (postId && values.categories) {
+      await db.postCategory.deleteMany({
+        where: {
+          postId,
+        },
+      });
+
+      for (const category of values.categories) {
+        await db.postCategory.create({
+          data: {
+            postId,
+            categoryId: category.id,
+            sort: category.sort,
           },
         });
       }

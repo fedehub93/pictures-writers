@@ -96,7 +96,7 @@ export const InputSeoForm = ({
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <>
+                  <div>
                     <Input
                       {...field}
                       placeholder={placeholder}
@@ -110,7 +110,7 @@ export const InputSeoForm = ({
                       onChange={onChangeValue}
                     />
                     <CharsCounter value={field.value || ""} />
-                  </>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>

@@ -13,6 +13,7 @@ interface PostCardProps {
   slug: string;
   categoryTitle: string;
   categorySlug: string;
+  categories: { title: string; slug: string }[];
   imageCoverUrl: string;
   imageCoverAlt: string;
   authors: User[];
@@ -26,6 +27,7 @@ const PostCard = async ({
   slug,
   categoryTitle,
   categorySlug,
+  categories,
   imageCoverUrl,
   imageCoverAlt,
   authors,
@@ -59,6 +61,7 @@ const PostCard = async ({
           <PostInfoV2
             categoryTitle={categoryTitle}
             categorySlug={categorySlug}
+            categories={categories}
             authors={authors}
             publishedAt={updatedAt}
           />

@@ -96,7 +96,7 @@ export const TextareaSeoForm = ({
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <>
+                  <div>
                     <Textarea
                       {...field}
                       placeholder={placeholder}
@@ -110,7 +110,7 @@ export const TextareaSeoForm = ({
                       onChange={onChangeValue}
                     />
                     <CharsCounter value={field.value || ""} />
-                  </>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>

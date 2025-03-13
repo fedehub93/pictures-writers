@@ -22,6 +22,7 @@ import { TagForm } from "./_components/tag-form";
 
 import { PostPreview } from "./_components/post-preview";
 import { AuthorsForm } from "./_components/authors-form";
+import { CategoriesForm } from "./_components/categories-form";
 
 const PostIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
   const params = await props.params;
@@ -57,6 +58,18 @@ const PostIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
           description: true,
           status: true,
           slug: true,
+        },
+      },
+      postCategories: {
+        select: {
+          category: {
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+            },
+          },
+          sort: true,
         },
       },
       tags: {
@@ -154,7 +167,17 @@ const PostIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
                 placeholder="e.g. This article shows you how to write a screenplay from scratch. Learn More."
                 apiUrl={`/api/posts/${post.rootId}`}
               />
-              <CategoryForm
+              {/* <CategoryForm
+                initialData={post}
+                rootId={post.rootId}
+                postId={post.id}
+                options={categories.map((category) => ({
+                  label: category.title,
+                  value: category.id,
+                  status: category.status,
+                }))}
+              /> */}
+              <CategoriesForm
                 initialData={post}
                 rootId={post.rootId}
                 postId={post.id}
