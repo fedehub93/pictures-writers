@@ -7,16 +7,12 @@ import { it } from "date-fns/locale";
 import type { JSX } from "react";
 
 interface PostInfoV2Props {
-  categoryTitle: string;
-  categorySlug: string;
   categories: { title: string; slug: string }[];
   authors: User[];
   publishedAt: Date;
 }
 
 const PostInfoV2 = ({
-  categoryTitle,
-  categorySlug,
   categories,
   authors,
   publishedAt,
@@ -33,7 +29,7 @@ const PostInfoV2 = ({
           addSuffix: true,
           locale: it,
         }
-      )} / ${categoryTitle} `}
+      )} / ${categoriesString} `}
     </div>
   );
 };

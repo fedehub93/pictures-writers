@@ -15,7 +15,7 @@ interface PostTemplateProps {
 }
 
 export const PostTemplate = async ({ post }: PostTemplateProps) => {
-  if (!post.category?.id) return null;
+  if (!post.postCategories.length) return null;
 
   const imageWithPlaceholder = await getPlaceholderImage(post.imageCover?.url!);
 
@@ -40,8 +40,6 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
           <PostInfoV2
             authors={post.postAuthors.map((v) => v.user)}
             publishedAt={post.publishedAt!}
-            categoryTitle={post.category?.title!}
-            categorySlug={post.category?.slug!}
             categories={post.postCategories.map((c) => c.category)}
           />
           <div className="mx-auto mb-4 max-w-5xl">
@@ -54,7 +52,7 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
         {/* <DisqusLazy config={disqusOptions} /> */}
       </div>
       <div className="blog-post__sidebar">
-        <Sidebar postId={post.id} categoryRootId={post.category?.rootId!} />
+        <Sidebar postId={post.id} postCategories={post.postCategories} />
       </div>
     </div>
   );

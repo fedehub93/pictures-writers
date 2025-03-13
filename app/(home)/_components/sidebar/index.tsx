@@ -18,10 +18,14 @@ import { WidgetSocial } from "@/components/widget/socials";
 
 interface PostSidebarProps {
   postId?: string;
-  categoryRootId?: string;
+  postCategories?: {
+    category: {
+      rootId: string | null;
+    };
+  }[];
 }
 
-const Sidebar = async ({ postId, categoryRootId }: PostSidebarProps) => {
+const Sidebar = async ({ postId, postCategories }: PostSidebarProps) => {
   const widgets = await db.widget.findMany({
     where: {
       section: WidgetSection.POST_SIDEBAR,
@@ -47,7 +51,7 @@ const Sidebar = async ({ postId, categoryRootId }: PostSidebarProps) => {
                 label={w.metadata.label}
                 postType={w.metadata.postType}
                 posts={w.metadata.posts}
-                postCategoryRootId={categoryRootId}
+                postCategories={postCategories}
                 categoryFilter={w.metadata.categoryFilter}
                 categories={w.metadata.categories}
                 limit={w.metadata.limit}

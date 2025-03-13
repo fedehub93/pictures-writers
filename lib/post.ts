@@ -14,12 +14,9 @@ export type PostWithImageCoverWithCategory = {
     url: string;
     altText: string | null;
   } | null;
-  category: {
-    title: string;
-    slug: string;
-  } | null;
   postCategories: {
     category: {
+      rootId: string | null;
       title: string;
       slug: string;
     };
@@ -38,9 +35,9 @@ export type PostWithImageCoverWithCategoryWithTags = {
   slug: string;
   description: string;
   imageCover: Media | null;
-  category: Category | null;
   postCategories: {
     category: {
+      rootId: string | null;
       title: string;
       slug: string;
     };
@@ -62,16 +59,13 @@ export type PostWithImageCoverWithCategoryWithTagsWithSeo = {
   bodyData: any;
   publishedAt: Date | null;
   updatedAt: Date;
-  imageCover: { url: string; altText: string | null } | null;
-  category: {
-    id: string;
-    rootId: string | null;
-    title: string;
-    slug: string;
-    description: string | null;
+  imageCover: {
+    url: string;
+    altText: string | null;
   } | null;
   postCategories: {
     category: {
+      rootId: string | null;
       title: string;
       slug: string;
     };
@@ -123,16 +117,11 @@ export const getPublishedPosts = async ({
       description: true,
       slug: true,
       updatedAt: true,
-      category: {
-        select: {
-          title: true,
-          slug: true,
-        },
-      },
       postCategories: {
         select: {
           category: {
             select: {
+              rootId: true,
               title: true,
               slug: true,
             },
@@ -200,14 +189,13 @@ export const getPublishedPostsByCategoryRootId = async ({
     where: {
       status: ContentStatus.PUBLISHED,
       isLatest: true,
-      category: { rootId: { equals: categoryRootId } },
-      // postCategories: {
-      //   some: {
-      //     category: {
-      //       rootId: { equals: categoryRootId },
-      //     },
-      //   },
-      // },
+      postCategories: {
+        some: {
+          category: {
+            rootId: { equals: categoryRootId },
+          },
+        },
+      },
     },
     select: {
       id: true,
@@ -216,12 +204,6 @@ export const getPublishedPostsByCategoryRootId = async ({
       description: true,
       slug: true,
       updatedAt: true,
-      category: {
-        select: {
-          title: true,
-          slug: true,
-        },
-      },
       postCategories: {
         select: {
           category: {
@@ -257,7 +239,13 @@ export const getPublishedPostsByCategoryRootId = async ({
     where: {
       status: ContentStatus.PUBLISHED,
       isLatest: true,
-      category: { rootId: { equals: categoryRootId } },
+      postCategories: {
+        some: {
+          category: {
+            rootId: { equals: categoryRootId },
+          },
+        },
+      },
     },
   });
 
@@ -282,12 +270,6 @@ export const getPublishedPostsByTagRootId = async ({
       description: true,
       slug: true,
       updatedAt: true,
-      category: {
-        select: {
-          title: true,
-          slug: true,
-        },
-      },
       postCategories: {
         select: {
           category: {
@@ -365,19 +347,11 @@ export const getPublishedPostBySlug = async (slug: string) => {
           description: true,
         },
       },
-      category: {
-        select: {
-          id: true,
-          rootId: true,
-          title: true,
-          description: true,
-          slug: true,
-        },
-      },
       postCategories: {
         select: {
           category: {
             select: {
+              rootId: true,
               title: true,
               slug: true,
             },

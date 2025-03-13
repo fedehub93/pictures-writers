@@ -1,6 +1,6 @@
 "use client";
 
-import { ContentStatus, Media, Post, PostAuthor, User } from "@prisma/client";
+import { ContentStatus } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
@@ -27,9 +27,15 @@ type PostWithImageCoverAndAuthor = {
   status: ContentStatus;
   publishedAt: Date;
   firstPublishedAt: Date;
-  imageCover: { url: string; altText: string | null } | null;
+  imageCover: {
+    url: string;
+    altText: string | null;
+  } | null;
   postAuthors: {
-    user: { email: string | null; imageUrl: string | null } | null;
+    user: {
+      email: string | null;
+      imageUrl: string | null;
+    } | null;
   }[];
 };
 

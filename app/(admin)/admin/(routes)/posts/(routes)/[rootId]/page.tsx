@@ -16,7 +16,6 @@ import { StatusView } from "@/app/(admin)/_components/content/status-view";
 import { ContentIdActions } from "@/app/(admin)/_components/content/content-id-actions";
 
 import { ImageForm } from "./_components/image-form";
-import { CategoryForm } from "./_components/category-form";
 import { ContentForm } from "./_components/content-form";
 import { TagForm } from "./_components/tag-form";
 
@@ -50,23 +49,15 @@ const PostIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
       firstPublishedAt: true,
       updatedAt: true,
       seo: true,
-      category: {
-        select: {
-          id: true,
-          rootId: true,
-          title: true,
-          description: true,
-          status: true,
-          slug: true,
-        },
-      },
       postCategories: {
         select: {
           category: {
             select: {
               id: true,
+              rootId: true,
               title: true,
               slug: true,
+              status: true,
             },
           },
           sort: true,
@@ -118,9 +109,12 @@ const PostIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
     post.description,
     post.slug,
     post.imageCover,
-    post.category &&
-      (post.category.status === ContentStatus.CHANGED ||
-        post.category.status === ContentStatus.PUBLISHED),
+    post.postCategories.length > 0 &&
+      post.postCategories.every(
+        (c) =>
+          c.category.status === ContentStatus.CHANGED ||
+          c.category.status === ContentStatus.PUBLISHED
+      ),
     post.tags.every(
       (tag) =>
         tag.status === ContentStatus.CHANGED ||

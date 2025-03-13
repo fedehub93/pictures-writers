@@ -3,16 +3,14 @@ import Link from "next/link";
 import { User } from "@prisma/client";
 
 import { getPlaceholderImage } from "@/lib/image";
-import PostInfoV2 from "./post-info-v2";
 import { getAuthorsString } from "@/data/user";
+import PostInfoV2 from "./post-info-v2";
 
 interface PostCardProps {
   id: string;
   title: string;
   description: string;
   slug: string;
-  categoryTitle: string;
-  categorySlug: string;
   categories: { title: string; slug: string }[];
   imageCoverUrl: string;
   imageCoverAlt: string;
@@ -25,8 +23,6 @@ const PostCard = async ({
   title,
   description,
   slug,
-  categoryTitle,
-  categorySlug,
   categories,
   imageCoverUrl,
   imageCoverAlt,
@@ -59,8 +55,6 @@ const PostCard = async ({
         </div>
         <div className="flex flex-grow  flex-col justify-between p-5">
           <PostInfoV2
-            categoryTitle={categoryTitle}
-            categorySlug={categorySlug}
             categories={categories}
             authors={authors}
             publishedAt={updatedAt}

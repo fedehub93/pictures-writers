@@ -21,8 +21,6 @@ export const PostList = ({ posts, currentPage, totalPages }: PostListProps) => {
             title={post.title}
             description={post.description!}
             slug={post.slug}
-            categoryTitle={post.category?.title!}
-            categorySlug={post.category?.slug!}
             categories={post.postCategories.map((c) => c.category)}
             imageCoverUrl={post.imageCover?.url || ""}
             imageCoverAlt={post.imageCover?.altText || ""}

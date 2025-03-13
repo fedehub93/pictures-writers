@@ -16,8 +16,6 @@ export const PostListGrid = ({ posts }: PostListGridProps) => {
             title={post.title}
             description={post.description!}
             slug={post.slug}
-            categoryTitle={post.category?.title!}
-            categorySlug={post.category?.description!}
             categories={post.postCategories.map((c) => c.category)}
             imageCoverUrl={post.imageCover?.url || ""}
             imageCoverAlt={post.imageCover?.altText || ""}

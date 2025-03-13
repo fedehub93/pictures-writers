@@ -28,8 +28,20 @@ export async function PATCH(
         rootId,
         id: postId,
       },
-      include: {
-        tags: true,
+      select: {
+        title: true,
+        description: true,
+        imageCoverId: true,
+        postCategories: {
+          select: {
+            category: {
+              select: {
+                id: true,
+              },
+            },
+          },
+        },
+        version: true,
       },
     });
 
@@ -41,7 +53,7 @@ export async function PATCH(
       !post.title ||
       !post.description ||
       !post.imageCoverId ||
-      !post.categoryId
+      !post.postCategories.length
     ) {
       return new NextResponse("Missing required fields!", { status: 404 });
     }

@@ -111,7 +111,11 @@ export const setDefaultWidgetTagMetadata = (): WidgetTagMetadata => {
 type GetWidgetPosts = {
   postType: WidgetPostType;
   posts: { rootId: string; sort: number }[];
-  postCategoryRootId?: string;
+  postCategories?: {
+    category: {
+      rootId: string | null;
+    };
+  }[];
   categoryFilter: WidgetPostCategoryFilter;
   categories: string[];
   limit: number;
@@ -120,7 +124,7 @@ type GetWidgetPosts = {
 export const getWidgetPosts = async ({
   postType,
   posts,
-  postCategoryRootId,
+  postCategories,
   categoryFilter,
   categories,
   limit,
@@ -161,21 +165,28 @@ export const getWidgetPosts = async ({
     default:
       throw new Error("Invalid WidgetPostType");
   }
-
   if (
     categoryFilter === WidgetPostCategoryFilter.CURRENT &&
-    postCategoryRootId
+    postCategories?.length
   ) {
-    whereClause.category = {
-      rootId: { equals: postCategoryRootId },
+    whereClause.postCategories = {
+      some: {
+        category: {
+          rootId: { in: postCategories.map((c) => c.category.rootId!) },
+        },
+      },
     };
   }
   if (
     categoryFilter === WidgetPostCategoryFilter.SPECIFIC &&
     categories.length > 0
   ) {
-    whereClause.category = {
-      rootId: { in: categories },
+    whereClause.postCategories = {
+      some: {
+        category: {
+          rootId: { in: categories },
+        },
+      },
     };
   }
 

@@ -9,6 +9,11 @@ interface WidgetPostProps {
   posts: { rootId: string; sort: number }[];
   postType: WidgetPostType;
   postCategoryRootId?: string;
+  postCategories?: {
+    category: {
+      rootId: string | null;
+    };
+  }[];
   categoryFilter: WidgetPostCategoryFilter;
   categories: string[];
   limit: number;
@@ -18,7 +23,7 @@ export const WidgetPost = async ({
   label,
   postType,
   posts,
-  postCategoryRootId,
+  postCategories,
   categoryFilter,
   categories,
   limit,
@@ -26,7 +31,7 @@ export const WidgetPost = async ({
   const postData = await getWidgetPosts({
     postType,
     posts,
-    postCategoryRootId,
+    postCategories,
     categoryFilter,
     categories,
     limit,

@@ -126,10 +126,6 @@ export const CategoriesForm = ({
     form.handleSubmit(onSubmit)();
   };
 
-  const debouncedSubmit = useDebounceCallback(() => {
-    form.handleSubmit(onSubmit)();
-  }, 5000);
-
   if (isError) return <div>Error...</div>;
 
   return (
@@ -137,7 +133,8 @@ export const CategoriesForm = ({
       className={cn(
         "border-l-4  dark:bg-slate-900 p-4 transition-all",
         isFocused && "border-l-blue-500",
-        !isValid && touchedFields.categories && "border-l-red-500"
+        !isValid ||
+          (initialData.postCategories.length === 0 && "border-l-red-500")
       )}
     >
       <div className="flex items-center justify-between">Categories</div>
