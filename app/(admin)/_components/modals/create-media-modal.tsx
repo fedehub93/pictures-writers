@@ -138,7 +138,7 @@ export const CreateMediaModal = () => {
                         defaultValue={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger className="bg-zinc-300/50 border-0 focus:ring-0 text-black ring-offset-0 focus:ring-offset-0 capitalize outline-none">
+                          <SelectTrigger className="bg-zinc-300/50 border-0 focus:ring-0 text-black ring-offset-0 focus:ring-offset-0 capitalize outline-hidden">
                             <SelectValue placeholder="Select asset type" />
                           </SelectTrigger>
                         </FormControl>

@@ -106,12 +106,12 @@ export const FreeEbookModal = ({
             quality={50}
           />
           {error && (
-            <div className="p-4 bg-destructive shadow-sm rounded-md font-bold">
+            <div className="p-4 bg-destructive shadow-2xs rounded-md font-bold">
               {error}
             </div>
           )}
           {success && (
-            <div className="p-4 bg-emerald-100 shadow-sm rounded-md">
+            <div className="p-4 bg-emerald-100 shadow-2xs rounded-md">
               {success}
             </div>
           )}

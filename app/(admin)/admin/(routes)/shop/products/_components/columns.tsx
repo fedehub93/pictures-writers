@@ -47,7 +47,7 @@ export const columns: ColumnDef<Product>[] = [
       const imageCover = (row.getValue("imageCover") || null) as Media | null;
       if (!imageCover) return null;
       return (
-        <div className="relative h-20 aspect-[1/2]">
+        <div className="relative h-20 aspect-1/2">
           <Image
             src={imageCover.url}
             alt={imageCover.altText || ""}

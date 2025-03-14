@@ -26,7 +26,7 @@ const AboutPage = async () => {
   return (
     <>
       <section className="bg-violet-100/40 px-4 pt-20 lg:px-6">
-        <div className="mx-auto max-w-lg md:max-w-screen-md lg:max-w-6xl">
+        <div className="mx-auto max-w-lg md:max-w-(--breakpoint-md) lg:max-w-6xl">
           <h1 className="mb-4 text-center text-3xl font-bold">Chi siamo</h1>
           <p className="mx-auto max-w-lg text-center ">
             Siamo un team appassionato che si impegna a fornirti tutto ciò di

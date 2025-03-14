@@ -43,7 +43,7 @@ export const AssetCard = ({
   };
 
   return (
-    <div className="relative group hover:shadow-sm transition overflow-hidden border rounded-lg h-full">
+    <div className="relative group hover:shadow-2xs transition overflow-hidden border rounded-lg h-full">
       <div className="absolute p-4 z-10 w-full flex items-center justify-between">
         <Checkbox checked={isChecked} onCheckedChange={handleCheckboxChange} />
         <Button variant="outline" size="sm" onClick={onHandleEdit}>

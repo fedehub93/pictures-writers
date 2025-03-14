@@ -65,7 +65,7 @@ export const RemoveSubscriptionForm = () => {
             </h3>
           </>
         )}
-        <Link href="/" className="!text-primary-public">
+        <Link href="/" className="text-primary-public!">
           Torna alla home
         </Link>
       </div>

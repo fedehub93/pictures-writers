@@ -5,7 +5,7 @@ import React, { type JSX } from "react";
 
 export const CreativeFeatures = (): JSX.Element => (
   <section className="px-4 py-20 lg:px-6">
-    <div className="mx-auto max-w-lg md:max-w-screen-md lg:max-w-6xl">
+    <div className="mx-auto max-w-lg md:max-w-(--breakpoint-md) lg:max-w-6xl">
       <h2 className="mb-4 text-center text-3xl font-bold">I nostri servizi</h2>
       <p className="mx-auto mb-12 max-w-lg text-center ">
         Offriamo una vasta gamma di strumenti e risorse di qualità per

@@ -35,7 +35,7 @@ export const LatestNews = async () => {
 
   return (
     <section className="bg-violet-100/40 px-4 py-20 lg:px-6">
-      <div className="mx-auto max-w-lg md:max-w-screen-md lg:max-w-6xl">
+      <div className="mx-auto max-w-lg md:max-w-(--breakpoint-md) lg:max-w-6xl">
         <h2 className="mb-4 text-center text-3xl font-bold">Ultimi articoli</h2>
         <p className="mx-auto mb-12 max-w-lg text-center">
           Resta aggiornato con i nostri articoli più recenti per alimentare la

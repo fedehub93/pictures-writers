@@ -46,7 +46,7 @@ export const FileUpload = ({
         <Image fill src={value} alt="Upload" className="object-cover" />
         <button
           onClick={() => onChange({ key: "", name: "", url: "", size: 0 })}
-          className="bg-rose-500 text-white p-1 rounded-full absolute top-0 right-0 shadow-sm"
+          className="bg-rose-500 text-white p-1 rounded-full absolute top-0 right-0 shadow-2xs"
           type="button"
         >
           <X className="h-4 w-4" />
@@ -69,7 +69,7 @@ export const FileUpload = ({
         </a>
         <button
           onClick={() => onChange({ key: "", name: "", url: "", size: 0 })}
-          className="bg-rose-500 text-white p-1 rounded-full absolute -top-2 -right-2 shadow-sm"
+          className="bg-rose-500 text-white p-1 rounded-full absolute -top-2 -right-2 shadow-2xs"
           type="button"
         >
           <X className="h-4 w-4" />

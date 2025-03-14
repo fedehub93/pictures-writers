@@ -50,7 +50,7 @@ export const BuyModal = ({ productId }: BuyModalProps) => {
       <DialogTrigger asChild>
         <Button type="button">Acquista</Button>
       </DialogTrigger>
-      <DialogContent className="my-4 py-12 xl:max-w-screen-xl overflow-y-auto max-h-[90vh]">
+      <DialogContent className="my-4 py-12 xl:max-w-(--breakpoint-xl) overflow-y-auto max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>Pictures Writers</DialogTitle>
         </DialogHeader>

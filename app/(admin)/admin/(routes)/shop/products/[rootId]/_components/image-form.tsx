@@ -102,7 +102,7 @@ export const ImageForm = ({ imageCoverUrl, control, name }: ImageFormProps) => {
           </div>
         ) : (
           <div className="w-full flex items-center justify-between">
-            <div className="relative aspect-[1/2] w-full max-h-72">
+            <div className="relative aspect-1/2 w-full max-h-72">
               <Image
                 alt="upload"
                 fill

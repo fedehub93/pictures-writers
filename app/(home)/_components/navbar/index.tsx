@@ -16,7 +16,7 @@ export const Navbar = async () => {
           Prova
         </Button>
       </div> */}
-      <div className="h-[80px] inset-y-0 w-full z-50 p-4  flex items-center shadow-sm bg-white">
+      <div className="h-[80px] inset-y-0 w-full z-50 p-4  flex items-center shadow-2xs bg-white">
         <div className="w-full mx-auto flex justify-between md:max-w-6xl">
           <Link href="/" className="flex items-center gap-x-2">
             <Logo />

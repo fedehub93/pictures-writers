@@ -145,7 +145,7 @@ export const ContactForm = () => {
         </div>
         {error && <div className="p-4 mb-4 bg-destructive">{error}</div>}
         {success && (
-          <div className="p-4 mb-4 bg-emerald-100 shadow-sm rounded-md">
+          <div className="p-4 mb-4 bg-emerald-100 shadow-2xs rounded-md">
             {success}
           </div>
         )}

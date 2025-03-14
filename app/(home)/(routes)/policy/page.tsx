@@ -44,7 +44,7 @@ const Policy = (): JSX.Element => (
           tempo reale, possono quindi subire variazioni. Vi consigliamo di
           verificare sempre la disponibilità e il prezzo su Amazon.`}
         </p>
-        <Link className="bg-secondary !text-primary" href="/">
+        <Link className="bg-secondary text-primary!" href="/">
           Torna alla home
         </Link>
       </div>

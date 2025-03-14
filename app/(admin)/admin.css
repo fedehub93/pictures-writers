@@ -1,11 +1,274 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
-html,
-body,
-:root {
-  height: 100%;
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-public: hsl(var(--primary-public));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --color-sidebar: hsl(var(--sidebar-background));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+}
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+  @media (width >= --theme(--breakpoint-sm)) {
+    max-width: none;
+  }
+  @media (width >= 1400px) {
+    max-width: 1400px;
+  }
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}
+
+@utility blog-post {
+  /**
+    Post
+  */
+  @apply mx-auto mb-20 mt-20 grid w-full max-w-6xl grid-cols-1 px-4 sm:grid-cols-2 xl:grid-cols-6 xl:gap-6;
+
+  & .blog-post__post {
+    @apply col-span-1 mb-8 flex flex-col max-w-full sm:col-span-2 xl:col-span-4 xl:mb-0;
+  }
+
+  & .blog-post__article {
+    @apply mb-4 max-w-full xl:px-0;
+  }
+
+  & .blog-post__image-container {
+    @apply relative mb-8 w-full aspect-video;
+  }
+
+  & .blog-post__image {
+    @apply object-cover;
+  }
+
+  & .blog-post__title {
+    @apply mb-6 text-3xl font-extrabold uppercase;
+  }
+
+  & .blog-post__sidebar {
+    @apply col-span-1 self-start sm:col-span-2 lg:block xl:col-span-2 xl:px-3;
+  }
+}
+
+@utility blog-post__post {
+  .blog-post & {
+    @apply col-span-1 mb-8 flex flex-col max-w-full sm:col-span-2 xl:col-span-4 xl:mb-0;
+  }
+}
+
+@utility blog-post__article {
+  .blog-post & {
+    @apply mb-4 max-w-full xl:px-0;
+  }
+}
+
+@utility blog-post__image-container {
+  .blog-post & {
+    @apply relative mb-8 w-full aspect-video;
+  }
+}
+
+@utility blog-post__image {
+  .blog-post & {
+    @apply object-cover;
+  }
+}
+
+@utility blog-post__title {
+  .blog-post & {
+    @apply mb-6 text-3xl font-extrabold uppercase;
+  }
+}
+
+@utility blog-post__sidebar {
+  .blog-post & {
+    @apply col-span-1 self-start sm:col-span-2 lg:block xl:col-span-2 xl:px-3;
+  }
+}
+
+@utility tags {
+  @apply mb-8 inline-flex w-full items-center border-y border-y-gray-300 py-4;
+
+  & .tags__title {
+    @apply mr-4 text-base font-bold leading-3;
+  }
+}
+
+@utility tags__title {
+  .tags & {
+    @apply mr-4 text-base font-bold leading-3;
+  }
+}
+
+@utility blog-post-disqus {
+  @apply mb-8 w-full transition-all delay-1000;
+}
+
+@utility post {
+  @apply relative w-full;
+
+  & > h1 {
+    @apply mb-4 mt-10 text-4xl font-semibold uppercase;
+  }
+  & > h2 {
+    @apply mb-4 mt-10 text-2xl font-extrabold uppercase;
+  }
+  & > h3 {
+    @apply mb-4 mt-8 text-lg font-extrabold uppercase;
+  }
+  & > h4 {
+    @apply mb-1 mt-4 text-base font-extrabold uppercase;
+  }
+  & > ul {
+    @apply mb-2 list-disc pl-8;
+  }
+  & > ul > li {
+    @apply mb-4 text-neutral-700;
+  }
+  & > ul > li > p > b {
+    @apply font-bold;
+  }
+  & > p {
+    @apply mb-3 text-base leading-6! text-neutral-700;
+  }
+  & > p > b {
+    @apply font-bold;
+  }
+}
+
+@utility post-quote {
+  @apply mb-8 border-l-4 border-l-neutral-800 bg-white p-4 pl-8 shadow-md [&>p]:mb-0;
+}
+
+@utility post__image {
+  @apply hover:scale-[1.02] my-4 transition-all overflow-hidden duration-300 rounded-md shadow-md;
+}
+
+@utility post__info-box {
+  @apply relative mb-8 bg-violet-100 p-4 py-6 pl-12 rounded-lg [&>p]:mb-4 [&>*:last-child]:mb-0 min-h-14;
+}
+
+@utility post__info-box-icon {
+  @apply absolute top-3 left-2 text-lg p-2;
+}
+
+@utility sidebar__wrapper {
+  @apply fixed left-0 hidden sm:flex flex-col w-60 h-full z-50 border-r border-r-zinc-300 transition-[width];
+}
+
+@utility snippet {
+  @apply relative my-4 flex w-full flex-col gap-6 rounded-lg border-2 border-black bg-white px-8 py-10;
+
+  & .snippet__title {
+    @apply mb-2 text-center text-2xl font-extrabold uppercase;
+  }
+
+  & .snippet__sponsor {
+    @apply absolute left-2 top-2 text-sm font-extrabold uppercase text-primary!;
+  }
+
+  & > p {
+    @apply text-black;
+  }
+}
+
+@utility snippet__title {
+  .snippet & {
+    @apply mb-2 text-center text-2xl font-extrabold uppercase;
+  }
+}
+
+@utility snippet__sponsor {
+  .snippet & {
+    @apply absolute left-2 top-2 text-sm font-extrabold uppercase text-primary!;
+  }
+}
+
+@utility evidence {
+  @apply mt-2 rounded-md bg-secondary p-1 font-bold text-primary;
+}
+
+@layer utilities {
+  html,
+  body,
+  :root {
+    height: 100%;
+  }
 }
 
 @layer base {
@@ -62,118 +325,5 @@ body,
   }
   body {
     @apply bg-background text-foreground;
-  }
-}
-
-@layer components {
-  /**
-    Post
-  */
-  .blog-post {
-    @apply mx-auto mb-20 mt-20 grid w-full max-w-6xl grid-cols-1 px-4 sm:grid-cols-2 xl:grid-cols-6 xl:gap-6;
-  }
-
-  .blog-post .blog-post__post {
-    @apply col-span-1 mb-8 flex flex-col max-w-full sm:col-span-2 xl:col-span-4 xl:mb-0;
-  }
-
-  .blog-post .blog-post__article {
-    @apply mb-4 max-w-full xl:px-0;
-  }
-
-  .blog-post .blog-post__image-container {
-    @apply relative mb-8 w-full aspect-video;
-  }
-
-  .blog-post .blog-post__image {
-    @apply object-cover;
-  }
-
-  .blog-post .blog-post__title {
-    @apply mb-6 text-3xl font-extrabold uppercase;
-  }
-
-  .blog-post .blog-post__sidebar {
-    @apply col-span-1 self-start sm:col-span-2 lg:block xl:col-span-2 xl:px-3;
-  }
-
-  .tags {
-    @apply mb-8 inline-flex w-full items-center border-y border-y-gray-300 py-4;
-  }
-
-  .tags .tags__title {
-    @apply mr-4 text-base font-bold leading-3;
-  }
-
-  .blog-post-disqus {
-    @apply mb-8 w-full transition-all delay-1000;
-  }
-
-  .post {
-    @apply relative w-full;
-  }
-
-  .post > h1 {
-    @apply mb-4 mt-10 text-4xl font-semibold uppercase;
-  }
-  .post > h2 {
-    @apply mb-4 mt-10 text-2xl font-extrabold uppercase;
-  }
-  .post > h3 {
-    @apply mb-4 mt-8 text-lg font-extrabold uppercase;
-  }
-  .post > h4 {
-    @apply mb-1 mt-4 text-base font-extrabold uppercase;
-  }
-  .post > ul {
-    @apply mb-2 list-disc pl-8;
-  }
-  .post > ul > li {
-    @apply mb-4 text-neutral-700;
-  }
-  .post > ul > li > p > b {
-    @apply font-bold;
-  }
-  .post > p {
-    @apply mb-3 text-base !leading-6 text-neutral-700;
-  }
-  .post > p > b {
-    @apply font-bold;
-  }
-  .post-quote {
-    @apply mb-8 border-l-4 border-l-neutral-800 bg-white p-4 pl-8 shadow-md [&>p]:mb-0;
-  }
-  .post__image {
-    @apply hover:scale-[1.02] my-4 transition-all overflow-hidden duration-300 rounded-md shadow-md;
-  }
-  .post__info-box {
-    @apply relative mb-8 bg-violet-100 p-4 py-6 pl-12 rounded-lg [&>p]:mb-4 [&>*:last-child]:mb-0 min-h-14;
-  }
-  .post__info-box-icon {
-    @apply absolute top-3 left-2 text-lg p-2;
-  }
-
-  .sidebar__wrapper {
-    @apply fixed left-0 hidden sm:flex flex-col w-60 h-full z-50 border-r border-r-zinc-300 transition-[width];
-  }
-
-  .snippet {
-    @apply relative my-4 flex w-full flex-col gap-6 rounded-lg border-2 border-black bg-white px-8 py-10;
-  }
-
-  .snippet .snippet__title {
-    @apply mb-2 text-center text-2xl font-extrabold uppercase;
-  }
-
-  .snippet .snippet__sponsor {
-    @apply absolute left-2 top-2 text-sm font-extrabold uppercase !text-primary;
-  }
-
-  .snippet > p {
-    @apply text-black;
-  }
-
-  .evidence {
-    @apply mt-2 rounded-md bg-secondary p-1 font-bold text-primary;
   }
 }

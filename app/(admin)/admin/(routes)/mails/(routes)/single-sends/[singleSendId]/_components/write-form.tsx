@@ -250,7 +250,7 @@ export const WriteForm = ({
                       showValuesInButton
                     />
                   </FormControl>
-                  <FormMessage className="!mt-0" />
+                  <FormMessage className="mt-0!" />
                 </FormItem>
               );
             }}

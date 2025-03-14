@@ -53,7 +53,7 @@ const PostCard = async ({
             />
           ) : null}
         </div>
-        <div className="flex flex-grow  flex-col justify-between p-5">
+        <div className="flex grow  flex-col justify-between p-5">
           <PostInfoV2
             categories={categories}
             authors={authors}

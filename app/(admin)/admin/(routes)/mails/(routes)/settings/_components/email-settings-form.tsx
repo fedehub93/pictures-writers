@@ -160,7 +160,7 @@ export const EmailSettingsForm = ({
               name="emailApiKey"
               control={form.control}
               render={({ field }) => (
-                <FormItem className="flex-grow">
+                <FormItem className="grow">
                   <FormLabel>Email API key</FormLabel>
                   <FormControl>
                     <Input
@@ -179,7 +179,7 @@ export const EmailSettingsForm = ({
               name="maxEmailsPerDay"
               control={form.control}
               render={({ field }) => (
-                <FormItem className="flex-grow">
+                <FormItem className="grow">
                   <FormLabel>Max emails per day</FormLabel>
                   <FormControl>
                     <Input
@@ -192,7 +192,7 @@ export const EmailSettingsForm = ({
                 </FormItem>
               )}
             />
-            <div className="flex flex-grow flex-col space-y-2">
+            <div className="flex grow flex-col space-y-2">
               <label className="text-sm font-medium mt-1">
                 Today&apos;s emails sent
               </label>

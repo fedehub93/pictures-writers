@@ -125,7 +125,7 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
                 <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
                   <li className="row-span-3">
                     <Link
-                      className="flex h-full w-full relative select-none flex-col justify-end rounded-md bg-violet-100/40 hover:bg-violet-200 transition-all p-6 no-underline outline-none focus:shadow-md"
+                      className="flex h-full w-full relative select-none flex-col justify-end rounded-md bg-violet-100/40 hover:bg-violet-200 transition-all p-6 no-underline outline-hidden focus:shadow-md"
                       href="/shop/ebooks/"
                     >
                       <LibraryBig
@@ -142,7 +142,7 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
                   </li>
                   <li className="row-span-3">
                     <Link
-                      className="flex h-full w-full relative select-none flex-col justify-end rounded-md bg-violet-100/40 hover:bg-violet-200 transition-all p-6 no-underline outline-none focus:shadow-md"
+                      className="flex h-full w-full relative select-none flex-col justify-end rounded-md bg-violet-100/40 hover:bg-violet-200 transition-all p-6 no-underline outline-hidden focus:shadow-md"
                       href="/blog"
                     >
                       <Newspaper

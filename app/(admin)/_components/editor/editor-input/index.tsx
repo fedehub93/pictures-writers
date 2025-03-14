@@ -165,7 +165,7 @@ const EditorInput = ({
     <>
       <Editable
         className={cn(
-          "border border-t-0 rounded-b-md outline-none p-4",
+          "border border-t-0 rounded-b-md outline-hidden p-4",
           readonly && "border-t rounded-t-md mt-4"
         )}
         readOnly={readonly}

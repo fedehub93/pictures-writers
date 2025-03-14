@@ -168,12 +168,12 @@ export const WidgetProductPop = ({
                 {title}
               </div>
               {error && (
-                <div className="p-4 bg-destructive shadow-sm rounded-md mb-2 font-bold">
+                <div className="p-4 bg-destructive shadow-2xs rounded-md mb-2 font-bold">
                   {error}
                 </div>
               )}
               {success && (
-                <div className="p-4 bg-emerald-100 shadow-sm rounded-md mb-2">
+                <div className="p-4 bg-emerald-100 shadow-2xs rounded-md mb-2">
                   {success}
                 </div>
               )}

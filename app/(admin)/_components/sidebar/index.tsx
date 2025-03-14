@@ -24,7 +24,7 @@ export const Sidebar = ({ siteName = "Site Name", logoUrl }: SidebarProps) => {
     <Wrapper>
       <Link
         href="/admin"
-        className="flex flex-none gap-x-2 h-16 items-center bg-background p-4 shadow-sm dark:shadow-white"
+        className="flex flex-none gap-x-2 h-16 items-center bg-background p-4 shadow-2xs dark:shadow-white"
       >
         <Logo />
         <span

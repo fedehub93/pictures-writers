@@ -26,7 +26,7 @@ const NotFound = (): JSX.Element => (
         Oops, sembrerebbe che la pagina sia andata perduta.
         <br /> Non è un errore ma solo un incidente non intenzionale.
       </p>
-      <Link href="/" className="bg-secondary !text-primary">
+      <Link href="/" className="bg-secondary text-primary!">
         Torna alla home
       </Link>
     </div>

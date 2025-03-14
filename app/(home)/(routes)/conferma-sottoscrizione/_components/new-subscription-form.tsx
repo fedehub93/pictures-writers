@@ -72,7 +72,7 @@ export const NewSubscriptionForm = () => {
             </p>
           </>
         )}
-        <Link href="/" className="!text-primary-public">
+        <Link href="/" className="text-primary-public!">
           Torna alla home
         </Link>
       </div>

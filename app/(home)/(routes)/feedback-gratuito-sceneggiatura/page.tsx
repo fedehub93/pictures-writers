@@ -28,7 +28,7 @@ const FirstImpression = async () => {
 
   return (
     <section className="bg-violet-100/40 px-4 lg:px-6">
-      <div className="mx-auto max-w-lg pb-20 pt-14 md:max-w-screen-md lg:max-w-5xl lg:text-left">
+      <div className="mx-auto max-w-lg pb-20 pt-14 md:max-w-(--breakpoint-md) lg:max-w-5xl lg:text-left">
         <div className="flex flex-col px-4">
           <h1 className="mb-4 mr-auto text-2xl font-extrabold">
             Ottieni un feedback gratuito sulla prima pagina della tua

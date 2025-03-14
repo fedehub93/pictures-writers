@@ -62,7 +62,7 @@ export const WidgetPost = async ({
                   />
                 </div>
               ) : null}
-              <h4 className="upper text-sm !leading-4 tracking-tight text-heading  dark:text-whitepy-2 group-hover:text-primary-public ">
+              <h4 className="upper text-sm leading-4! tracking-tight text-heading  dark:text-whitepy-2 group-hover:text-primary-public ">
                 {post.title}
               </h4>
             </Link>
