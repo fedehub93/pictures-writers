@@ -211,9 +211,17 @@ export const getWidgetCategories = async ({
   categoryType,
   limit,
 }: GetWidgetCategories) => {
-  let whereClause: any = {
+  let whereClause: Prisma.CategoryWhereInput = {
     status: ContentStatus.PUBLISHED,
     isLatest: true,
+    postCategories: {
+      some: {
+        post: {
+          status: ContentStatus.PUBLISHED,
+          isLatest: true,
+        },
+      },
+    },
   };
 
   switch (categoryType) {
@@ -244,7 +252,7 @@ export const getWidgetProducts = async ({
   products,
   limit,
 }: GetWidgetProducts) => {
-  let whereClause: any = {
+  let whereClause: Prisma.ProductWhereInput = {
     status: ContentStatus.PUBLISHED,
     isLatest: true,
   };
