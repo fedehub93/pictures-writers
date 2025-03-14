@@ -62,7 +62,6 @@ const withInline = (editor: CustomEditor) => {
   // };
 
   editor.insertSoftBreak = () => {
-    console.log("Insert soft breaks");
     Transforms.insertText(editor, "\n");
   };
 

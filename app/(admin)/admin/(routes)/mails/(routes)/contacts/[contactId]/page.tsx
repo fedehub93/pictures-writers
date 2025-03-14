@@ -5,7 +5,9 @@ import { db } from "@/lib/db";
 import { EditContactForm } from "./_components/edit-contact-form";
 import { redirect } from "next/navigation";
 
-const MailSettings = async (props: { params: Promise<{ contactId: string }> }) => {
+const MailSettings = async (props: {
+  params: Promise<{ contactId: string }>;
+}) => {
   const params = await props.params;
   const userAdmin = await authAdmin();
   if (!userAdmin) {
@@ -45,6 +47,10 @@ const MailSettings = async (props: { params: Promise<{ contactId: string }> }) =
       label: "ebook_downloaded",
       value: "ebook_downloaded",
     },
+    {
+      label: "webinar_purchased",
+      value: "webinar_purchased",
+    },
   ];
 
   return (
@@ -54,14 +60,7 @@ const MailSettings = async (props: { params: Promise<{ contactId: string }> }) =
           <h1 className="text-2xl font-bold">Contact</h1>
         </div>
       </div>
-      <EditContactForm
-        contact={contact}
-        options={audiences.map((audience) => ({
-          label: audience.name,
-          value: audience.id,
-        }))}
-        interactionOptions={interactions}
-      />
+      <EditContactForm contact={contact} interactionOptions={interactions} />
     </div>
   );
 };

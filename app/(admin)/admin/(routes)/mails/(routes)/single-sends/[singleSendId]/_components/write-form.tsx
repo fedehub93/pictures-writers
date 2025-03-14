@@ -3,7 +3,7 @@
 import * as z from "zod";
 import { EmailAudience, EmailSingleSend, EmailTemplate } from "@prisma/client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useController, useForm } from "react-hook-form";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { EditorRef, EmailEditorProps } from "react-email-editor";
@@ -23,10 +23,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-import MultipleSelector from "@/components/multi-select";
-
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 import { useProgressLoader } from "@/app/(admin)/_hooks/use-progress-loader-store";
+import { MultiSelectV2 } from "@/components/multi-select-v2";
+import { useAudiencesQuery } from "@/app/(admin)/_hooks/use-audiences-query";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface WriteFormProps {
   singleSend: EmailSingleSend & {
@@ -34,12 +35,10 @@ interface WriteFormProps {
   };
   todayEmailsAvailable: number;
   templates: EmailTemplate[];
-  options: { label: string; value: string }[];
 }
 
 const optionSchema = z.object({
-  label: z.string(),
-  value: z.string(),
+  id: z.string(),
 });
 
 const formSchema = z.object({
@@ -65,11 +64,11 @@ export const WriteForm = ({
   singleSend,
   todayEmailsAvailable,
   templates,
-  options,
 }: WriteFormProps) => {
   const router = useRouter();
   const emailEditorRef = useRef<EditorRef>(null);
 
+  const { data: audiences, isLoading, isError } = useAudiencesQuery();
   const { onOpen, onClose, setData } = useProgressLoader();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -78,8 +77,7 @@ export const WriteForm = ({
       name: singleSend.name || "",
       subject: singleSend.subject || "",
       audiences: singleSend.audiences.map((audience) => ({
-        label: audience.name,
-        value: audience.id,
+        id: audience.id,
       })),
       designData: singleSend.designData,
       bodyHtml: singleSend.bodyHtml || "",
@@ -88,6 +86,11 @@ export const WriteForm = ({
   });
 
   const { isSubmitting, isValid } = form.formState;
+
+  const { field } = useController({
+    control: form.control,
+    name: "audiences",
+  });
 
   const onDelete = async () => {
     try {
@@ -165,8 +168,16 @@ export const WriteForm = ({
     });
   };
 
-  const onChangeAudience = (value: z.infer<typeof optionSchema>[]) => {
-    form.setValue("audiences", value);
+  const onSelectAudience = ({ id }: { id: string }) => {
+    let newAudiences = [...field.value];
+    const audience = field.value.find((v) => v.id === id);
+    if (audience) {
+      newAudiences = [...field.value.filter((v) => v.id !== id)];
+    }
+    if (!audience) {
+      newAudiences.push({ id });
+    }
+    field.onChange(newAudiences);
   };
 
   const onLoad: EmailEditorProps["onLoad"] = (editor) => {};
@@ -177,6 +188,8 @@ export const WriteForm = ({
     if (!emailEditorRef?.current?.editor) return;
     emailEditorRef.current.editor.loadDesign(form.getValues("designData"));
   };
+
+  if (isError) return <div>Error...</div>;
 
   return (
     <Form {...form}>
@@ -216,26 +229,33 @@ export const WriteForm = ({
             </Button>
           </div>
         </div>
-        <FormField
-          control={form.control}
-          name="audiences"
-          render={({ field }) => {
-            return (
-              <FormItem className="flex items-center gap-x-8">
-                <FormControl>
-                  <MultipleSelector
-                    disabled={isSubmitting}
-                    defaultOptions={options}
-                    value={field.value}
-                    onChange={onChangeAudience}
-                    placeholder="Select audiences..."
-                  />
-                </FormControl>
-                <FormMessage className="!mt-0" />
-              </FormItem>
-            );
-          }}
-        />
+        {isLoading && <Skeleton className="mt-4 w-full h-[40px]" />}
+        {!isLoading && audiences && (
+          <FormField
+            control={form.control}
+            name="audiences"
+            render={({ field }) => {
+              return (
+                <FormItem className="flex items-center gap-x-8">
+                  <FormControl>
+                    <MultiSelectV2
+                      label="audiences"
+                      isSubmitting={isSubmitting}
+                      values={field.value}
+                      options={audiences.map((a) => ({
+                        id: a.id,
+                        label: a.name,
+                      }))}
+                      onSelectValue={onSelectAudience}
+                      showValuesInButton
+                    />
+                  </FormControl>
+                  <FormMessage className="!mt-0" />
+                </FormItem>
+              );
+            }}
+          />
+        )}
         <div className="flex flex-wrap gap-4 items-start">
           <FormField
             control={form.control}

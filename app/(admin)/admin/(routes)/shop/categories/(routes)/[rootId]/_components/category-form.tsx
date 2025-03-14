@@ -73,7 +73,6 @@ export const CategoryForm = ({ initialData, apiUrl }: CategoryFormProps) => {
     }
 
     try {
-      console.log(apiUrl);
       await axios.patch(`${apiUrl}/versions/${initialData.id}`, values);
       toast.success(`Product updated`);
     } catch {

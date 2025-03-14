@@ -1,5 +1,6 @@
 "use client";
 
+import { ContentStatus } from "@prisma/client";
 import * as z from "zod";
 import { useState } from "react";
 import { useController, useForm } from "react-hook-form";
@@ -8,23 +9,19 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
-import { ContentStatus } from "@prisma/client";
+import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import { cn } from "@/lib/utils";
-import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
-import { useCategoriesQuery } from "@/app/(admin)/_hooks/use-categories";
-import { Skeleton } from "@/components/ui/skeleton";
+
+import { useTagssQuery } from "@/app/(admin)/_hooks/use-tags-query";
 import { MultiSelectV2 } from "@/components/multi-select-v2";
 
-interface CategoriesFormProps {
+interface TagsFormProps {
   initialData: {
     status: ContentStatus;
-    postCategories: {
-      category: {
-        id: string;
-        title: string;
-      };
-      sort: number;
+    tags: {
+      id: string;
     }[];
   };
   rootId: string;
@@ -32,33 +29,27 @@ interface CategoriesFormProps {
 }
 
 const formSchema = z.object({
-  categories: z.array(
+  tags: z.array(
     z.object({
       id: z.string().min(1),
-      sort: z.coerce.number(),
     })
   ),
 });
 
-export const CategoriesForm = ({
-  initialData,
-  rootId,
-  postId,
-}: CategoriesFormProps) => {
+export const TagsForm = ({ initialData, rootId, postId }: TagsFormProps) => {
   const router = useRouter();
   const [isFocused, setIsFocused] = useState(false);
 
-  const { data: categories, isError, isLoading } = useCategoriesQuery();
+  const { data: tags, isError, isLoading } = useTagssQuery();
 
   const form = useForm<z.infer<typeof formSchema>>({
     mode: "all",
     resolver: zodResolver(formSchema),
     defaultValues: {
-      categories: initialData.postCategories
+      tags: initialData.tags
         ? [
-            ...initialData.postCategories.map((a) => ({
-              id: a.category.id,
-              sort: a.sort,
+            ...initialData.tags.map((t) => ({
+              id: t.id,
             })),
           ]
         : [],
@@ -69,7 +60,7 @@ export const CategoriesForm = ({
 
   const { field } = useController({
     control: form.control,
-    name: "categories",
+    name: "tags",
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -96,16 +87,16 @@ export const CategoriesForm = ({
     }
   };
 
-  const onSelectCategory = ({ id, sort }: { id: string; sort: number }) => {
-    let newCategories = [...field.value];
-    const author = field.value.find((v) => v.id === id);
-    if (author) {
-      newCategories = [...field.value.filter((v) => v.id !== id)];
+  const onSelectTag = ({ id }: { id: string }) => {
+    let newTags = [...field.value];
+    const tag = field.value.find((v) => v.id === id);
+    if (tag) {
+      newTags = [...field.value.filter((v) => v.id !== id)];
     }
-    if (!author) {
-      newCategories.push({ id, sort });
+    if (!tag) {
+      newTags.push({ id });
     }
-    field.onChange(newCategories);
+    field.onChange(newTags);
     form.handleSubmit(onSubmit)();
   };
 
@@ -115,14 +106,12 @@ export const CategoriesForm = ({
     <div
       className={cn(
         "border-l-4  dark:bg-slate-900 p-4 transition-all",
-        isFocused && "border-l-blue-500",
-        !isValid ||
-          (initialData.postCategories.length === 0 && "border-l-red-500")
+        isFocused && "border-l-blue-500"
       )}
     >
-      <div className="flex items-center justify-between">Categories</div>
+      <div className="flex items-center justify-between">Tags</div>
       {isLoading && <Skeleton className="mt-4 w-full h-[40px]" />}
-      {!isLoading && categories && (
+      {!isLoading && tags && (
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
@@ -130,19 +119,19 @@ export const CategoriesForm = ({
           >
             <FormField
               control={form.control}
-              name="categories"
+              name="tags"
               render={({ field }) => (
                 <FormItem className="w-full flex flex-col">
                   <MultiSelectV2
-                    label="Categories"
+                    label="tags"
                     isSubmitting={isSubmitting}
                     values={field.value}
-                    options={categories.map((c) => ({
-                      id: c.id,
-                      label: c.title,
-                      status: c.status,
+                    options={tags.map((t) => ({
+                      id: t.id,
+                      label: t.title,
+                      status: t.status,
                     }))}
-                    onSelectValue={onSelectCategory}
+                    onSelectValue={onSelectTag}
                     showValuesInButton
                   />
                   <FormMessage />

@@ -24,8 +24,8 @@ import { ContentStatus } from "@prisma/client";
 
 interface MultiSelectV2Props {
   label: string;
-  isSubmitting: boolean;
-  values: { id: string; sort: number }[];
+  isSubmitting?: boolean;
+  values: { id: string; sort?: number }[];
   options: {
     id: string;
     label: string;
@@ -39,7 +39,7 @@ interface MultiSelectV2Props {
 
 export const MultiSelectV2 = ({
   label,
-  isSubmitting,
+  isSubmitting = false,
   values,
   options,
   onSelectValue,
@@ -50,7 +50,7 @@ export const MultiSelectV2 = ({
     <Popover>
       <PopoverTrigger asChild>
         <FormControl>
-          <div className="flex flex-col space-y-4">
+          <div className="flex flex-col space-y-4 w-full">
             <Button
               type="button"
               variant="outline"
@@ -61,12 +61,15 @@ export const MultiSelectV2 = ({
               {showValuesInButton && (
                 <>
                   <Separator orientation="vertical" className="mx-2 h-4" />
-                  <Badge
-                    variant="secondary"
-                    className="rounded-sm px-1 font-normal lg:hidden"
-                  >
-                    {values.length}
-                  </Badge>
+                  {values.length === 0 && <div>Select {label}</div>}
+                  {values.length > 0 && (
+                    <Badge
+                      variant="secondary"
+                      className="rounded-sm px-1 font-normal lg:hidden"
+                    >
+                      {values.length} {label} selected
+                    </Badge>
+                  )}
                   <div className="hidden space-x-1 lg:flex">
                     {values.length > 8 ? (
                       <Badge
@@ -85,13 +88,13 @@ export const MultiSelectV2 = ({
                             variant="secondary"
                             key={option.id}
                             className={cn(
-                              "rounded-sm px-1 text-white font-semibold",
+                              "rounded-sm px-1 text-white font-semibold bg-primary",
                               option?.status === ContentStatus.DRAFT &&
-                                "bg-slate-700",
+                                "bg-slate-700 hover:bg-slate-700/60",
                               option?.status === ContentStatus.CHANGED &&
-                                "bg-sky-700",
+                                "bg-sky-700 hover:bg-sky-700/60",
                               option?.status === ContentStatus.PUBLISHED &&
-                                "bg-emerald-700"
+                                "bg-emerald-700 hover:bg-emerald-700/60"
                             )}
                           >
                             {option.label}

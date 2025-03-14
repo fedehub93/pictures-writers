@@ -2,7 +2,7 @@
 
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useController, useForm } from "react-hook-form";
 
 import {
   Dialog,
@@ -21,16 +21,16 @@ import {
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import MultipleSelector from "@/components/multi-select";
+
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
+import { MultiSelectV2 } from "@/components/multi-select-v2";
 
 const optionSchema = z.object({
-  label: z.string(),
-  value: z.string(),
+  id: z.string(),
 });
 
 const formSchema = z.object({
-  interactions: z.array(optionSchema).optional(),
+  interactions: z.array(optionSchema),
 });
 
 export const ImportAudienceContacts = () => {
@@ -41,11 +41,30 @@ export const ImportAudienceContacts = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      interactions: data?.interactions,
+      interactions: data?.interactions
+        ? data.interactions.map((i: string) => ({ id: i, label: i }))
+        : [],
     },
   });
 
   const isLoading = form.formState.isSubmitting;
+
+  const { field } = useController({
+    control: form.control,
+    name: "interactions",
+  });
+
+  const onSelectInteraction = ({ id }: { id: string }) => {
+    let newTags = [...field.value];
+    const tag = field.value.find((v) => v.id === id);
+    if (tag) {
+      newTags = [...field.value.filter((v) => v.id !== id)];
+    }
+    if (!tag) {
+      newTags.push({ id });
+    }
+    field.onChange(newTags);
+  };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
@@ -82,15 +101,15 @@ export const ImportAudienceContacts = () => {
                   <FormItem>
                     <div className="text-sm">Interactions</div>
                     <FormControl>
-                      <MultipleSelector
-                        {...field}
-                        options={data.interactions.map(
-                          (interaction: string) => ({
-                            label: interaction,
-                            value: interaction,
-                          })
-                        )}
-                        placeholder="Select interactions..."
+                      <MultiSelectV2
+                        label="audiences"
+                        values={field.value}
+                        options={data.interactions.map((i: string) => ({
+                          id: i,
+                          label: i,
+                        }))}
+                        onSelectValue={onSelectInteraction}
+                        showValuesInButton
                       />
                     </FormControl>
                     <FormMessage />

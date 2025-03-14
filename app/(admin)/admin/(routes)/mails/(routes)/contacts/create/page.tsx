@@ -23,7 +23,7 @@ const ContactCreatePage = async () => {
           What would you like to name your contact? Don&apos;t worry, you can
           change this later.
         </p>
-        <CreateContactForm options={mappedAudiences} />
+        <CreateContactForm />
       </div>
     </div>
   );

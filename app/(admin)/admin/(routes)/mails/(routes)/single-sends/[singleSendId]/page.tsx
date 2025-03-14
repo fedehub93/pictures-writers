@@ -3,11 +3,9 @@ import { WriteForm } from "./_components/write-form";
 import { redirect } from "next/navigation";
 import { getTodayEmailsAvailable } from "@/lib/mail";
 
-const SingleSendIdPage = async (
-  props: {
-    params: Promise<{ singleSendId: string }>;
-  }
-) => {
+const SingleSendIdPage = async (props: {
+  params: Promise<{ singleSendId: string }>;
+}) => {
   const params = await props.params;
   const singleSend = await db.emailSingleSend.findUnique({
     where: {
@@ -38,10 +36,6 @@ const SingleSendIdPage = async (
         singleSend={singleSend}
         todayEmailsAvailable={todayEmailsAvailable}
         templates={templates}
-        options={audiences.map((audience) => ({
-          label: audience.name,
-          value: audience.id,
-        }))}
       />
     </div>
   );

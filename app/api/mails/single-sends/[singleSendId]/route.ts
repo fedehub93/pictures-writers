@@ -3,7 +3,10 @@ import { NextResponse } from "next/server";
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
 
-export async function DELETE(req: Request, props: { params: Promise<{ singleSendId: string }> }) {
+export async function DELETE(
+  req: Request,
+  props: { params: Promise<{ singleSendId: string }> }
+) {
   const params = await props.params;
   try {
     const user = await authAdmin();
@@ -34,7 +37,10 @@ export async function DELETE(req: Request, props: { params: Promise<{ singleSend
   }
 }
 
-export async function PATCH(req: Request, props: { params: Promise<{ singleSendId: string }> }) {
+export async function PATCH(
+  req: Request,
+  props: { params: Promise<{ singleSendId: string }> }
+) {
   const params = await props.params;
   try {
     const user = await authAdmin();
@@ -45,7 +51,7 @@ export async function PATCH(req: Request, props: { params: Promise<{ singleSendI
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const audiences: { label: string; value: string }[] = values.audiences
+    const audiences: { id: string }[] = values.audiences
       ? [...values.audiences]
       : [];
 
@@ -57,8 +63,8 @@ export async function PATCH(req: Request, props: { params: Promise<{ singleSendI
         ...values,
         audiences: values.audiences
           ? {
-              set: audiences.map((audience) => ({
-                id: audience.value,
+              set: audiences.map((a) => ({
+                id: a.id,
               })),
             }
           : undefined,

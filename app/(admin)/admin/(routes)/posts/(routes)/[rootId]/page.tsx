@@ -17,11 +17,11 @@ import { ContentIdActions } from "@/app/(admin)/_components/content/content-id-a
 
 import { ImageForm } from "./_components/image-form";
 import { ContentForm } from "./_components/content-form";
-import { TagForm } from "./_components/tag-form";
 
 import { PostPreview } from "./_components/post-preview";
 import { AuthorsForm } from "./_components/authors-form";
 import { CategoriesForm } from "./_components/categories-form";
+import { TagsForm } from "./_components/tags-form";
 
 const PostIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
   const params = await props.params;
@@ -94,16 +94,6 @@ const PostIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
     return redirect("/admin/posts");
   }
 
-  const categories = await db.category.findMany({
-    orderBy: [{ createdAt: "desc" }, { title: "asc" }],
-    distinct: ["rootId"],
-  });
-
-  const tags = await db.tag.findMany({
-    distinct: ["rootId"],
-    orderBy: [{ createdAt: "desc" }, { title: "asc" }],
-  });
-
   const requiredFields = [
     post.title,
     post.description,
@@ -175,11 +165,6 @@ const PostIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
                 initialData={post}
                 rootId={post.rootId}
                 postId={post.id}
-                options={categories.map((category) => ({
-                  label: category.title,
-                  value: category.id,
-                  status: category.status,
-                }))}
               />
               <ImageForm
                 initialData={post}
@@ -196,7 +181,12 @@ const PostIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
                 placeholder="how-to-write-a-screenplay"
                 apiUrl={`/api/posts/${post.rootId}`}
               />
-              <TagForm
+              <TagsForm
+                initialData={post}
+                rootId={post.rootId}
+                postId={post.id}
+              />
+              {/* <TagForm
                 initialData={post}
                 rootId={post.rootId}
                 postId={post.id}
@@ -205,7 +195,7 @@ const PostIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
                   value: tag.id,
                   status: tag.status,
                 }))}
-              />
+              /> */}
             </TabsContent>
             <TabsContent value="seo">
               <SeoEditView

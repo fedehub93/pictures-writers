@@ -450,8 +450,8 @@ export const createNewVersionPost = async (rootId: string, values: any) => {
       postCategories: undefined,
       tags: values.tags
         ? {
-            set: values.tags.map((tagId: { label: string; value: string }) => ({
-              id: tagId.value,
+            set: values.tags.map((tag: { id: string }) => ({
+              id: tag.id,
             })),
           }
         : publishedPost.tags.length > 0

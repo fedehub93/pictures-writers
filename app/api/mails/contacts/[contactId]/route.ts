@@ -3,7 +3,10 @@ import { NextResponse } from "next/server";
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
 
-export async function DELETE(req: Request, props: { params: Promise<{ contactId: string }> }) {
+export async function DELETE(
+  req: Request,
+  props: { params: Promise<{ contactId: string }> }
+) {
   const params = await props.params;
   try {
     const user = await authAdmin();
@@ -34,7 +37,10 @@ export async function DELETE(req: Request, props: { params: Promise<{ contactId:
   }
 }
 
-export async function PATCH(req: Request, props: { params: Promise<{ contactId: string }> }) {
+export async function PATCH(
+  req: Request,
+  props: { params: Promise<{ contactId: string }> }
+) {
   const params = await props.params;
   try {
     const user = await authAdmin();
@@ -45,11 +51,11 @@ export async function PATCH(req: Request, props: { params: Promise<{ contactId: 
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const audiences: { label: string; value: string }[] = values.audiences
+    const audiences: { id: string }[] = values.audiences
       ? [...values.audiences]
       : [];
 
-    const interactions: { label: string; value: string }[] = values.interactions
+    const interactions: { id: string }[] = values.interactions
       ? [...values.interactions]
       : [];
 
@@ -62,7 +68,7 @@ export async function PATCH(req: Request, props: { params: Promise<{ contactId: 
         audiences: values.audiences
           ? {
               set: audiences.map((audience) => ({
-                id: audience.value,
+                id: audience.id,
               })),
             }
           : undefined,
@@ -78,7 +84,7 @@ export async function PATCH(req: Request, props: { params: Promise<{ contactId: 
       await db.emailContactInteraction.create({
         data: {
           contactId: contact.id,
-          interactionType: interaction.value,
+          interactionType: interaction.id,
           interactionDate: new Date(),
         },
       });

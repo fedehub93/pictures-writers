@@ -72,16 +72,14 @@ export async function PATCH(
         ...values,
         categories: undefined,
         postCategories: undefined,
-        authors: undefined,
         tags: values.tags
           ? {
-              set: values.tags.map(
-                (tagId: { label: string; value: string }) => ({
-                  id: tagId.value,
-                })
-              ),
+              set: values.tags.map((tag: { id: string }) => ({
+                id: tag.id,
+              })),
             }
           : undefined,
+        authors: undefined,
         postAuthors: undefined,
       },
     });

@@ -52,16 +52,14 @@ export function DataTable<TData, TValue>({
     useProgressLoader();
   const router = useRouter();
 
-  const importContacts = async (values: {
-    interactions: { label: string; value: string }[];
-  }) => {
+  const importContacts = async (values: { interactions: { id: string }[] }) => {
     try {
       onOpenProgress({ label: "Importing contacts..." });
       const response = await axios.patch(
         `/api/mails/audiences/${audienceId}/import`,
         {
           interactions: values.interactions.map(
-            (interaction) => interaction.value
+            (interaction) => interaction.id
           ),
         }
       );

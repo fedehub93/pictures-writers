@@ -12,7 +12,7 @@ export async function POST(req: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const audiences: { label: string; value: string }[] = values.audiences
+    const audiences: { id: string }[] = values.audiences
       ? [...values.audiences]
       : [];
 
@@ -21,11 +21,9 @@ export async function POST(req: Request) {
         ...values,
         audiences: audiences
           ? {
-              connect: audiences.map(
-                (audienceId: { label: string; value: string }) => ({
-                  id: audienceId.value,
-                })
-              ),
+              connect: audiences.map((audience: { id: string }) => ({
+                id: audience.id,
+              })),
             }
           : undefined,
       },
