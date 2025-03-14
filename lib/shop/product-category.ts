@@ -18,28 +18,6 @@ export const getPublishedCategoriesBuilding = async () => {
   return categories;
 };
 
-export const getPublishedCategories = async () => {
-  const categories = await db.productCategory.findMany({
-    where: {
-      status: ContentStatus.PUBLISHED,
-      isLatest: true,
-      products: {
-        some: { status: ContentStatus.PUBLISHED },
-      },
-    },
-    orderBy: {
-      firstPublishedAt: "desc",
-    },
-  });
-
-  const lastPublishedCategories = categories.map((category) => {
-    const lastPublishedCategory = category;
-    return lastPublishedCategory;
-  });
-
-  return lastPublishedCategories;
-};
-
 export const getPublishedCategoryById = async (id: string) => {
   const category = await db.productCategory.findFirst({
     where: {

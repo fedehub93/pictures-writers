@@ -416,6 +416,7 @@ export const createNewVersionPost = async (rootId: string, values: any) => {
     },
     include: {
       tags: true,
+      postCategories: true,
       postAuthors: true,
     },
     orderBy: { createdAt: "desc" },
@@ -446,6 +447,7 @@ export const createNewVersionPost = async (rootId: string, values: any) => {
       version: undefined,
       status: undefined,
       isLatest: undefined,
+      postCategories: undefined,
       tags: values.tags
         ? {
             set: values.tags.map((tagId: { label: string; value: string }) => ({
@@ -465,6 +467,22 @@ export const createNewVersionPost = async (rootId: string, values: any) => {
       publishedAt: undefined,
     },
   });
+
+  const newCategories = values.categories
+    ? [...values.categories]
+    : [...publishedPost.postCategories];
+
+  if (newCategories) {
+    for (const category of newCategories) {
+      await db.postCategory.create({
+        data: {
+          postId: post.id,
+          categoryId: category.categoryId,
+          sort: category.sort,
+        },
+      });
+    }
+  }
 
   const newAuthors = values.authors
     ? [...values.authors]

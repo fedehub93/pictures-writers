@@ -192,8 +192,6 @@ model Post {
   imageCover   Media?  @relation(fields: [imageCoverId], references: [id])
   imageCoverId String?
 
-  category   Category? @relation(fields: [categoryId], references: [id])
-  categoryId String?
   postCategories PostCategory[]
 
   tags Tag[]
@@ -243,7 +241,6 @@ model Category {
   root         Category?  @relation("RootChildren", fields: [rootId], references: [id])
   rootChildren Category[] @relation("RootChildren")
 
-  posts Post[]
   postCategories PostCategory[]
 
   seo   Seo?    @relation(fields: [seoId], references: [id])
@@ -261,7 +258,7 @@ model PostCategory {
   post   Post   @relation(fields: [postId], references: [id])
   postId String
 
-  category Category   @relation(fields: [categoryId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id])
   categoryId String
 
   sort Int
