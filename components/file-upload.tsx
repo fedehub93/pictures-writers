@@ -6,10 +6,9 @@ import Image from "next/image";
 import { UploadDropzone } from "@/lib/uploadthing";
 import { ourFileRouter } from "@/app/api/uploadthing/core";
 
-import "@uploadthing/react/styles.css";
+// import "@uploadthing/react/styles.css";
 import { Dispatch, SetStateAction } from "react";
 import { cn } from "@/lib/utils";
-import { processImage } from "@/lib/image";
 
 export type FileUploadOnChange = {
   key: string;

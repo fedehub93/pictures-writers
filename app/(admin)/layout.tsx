@@ -17,6 +17,22 @@ import { ModalProvider } from "./_components/providers/modal-provider";
 import { SheetProvider } from "./_components/providers/sheet-provider";
 import { getSettings } from "@/data/settings";
 import { ProgressLoader } from "./_components/progress-loader";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { AppSidebar } from "./_components/sidebar-v2/app-sidebar";
+import { Separator } from "@/components/ui/separator";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Header } from "./_components/header";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -58,16 +74,20 @@ export default async function RootLayout({
           >
             <ToastProvider />
             <QueryProvider>
-              <div className="relative h-full overflow-hidden bg-background">
-                <Sidebar
+              <SidebarProvider>
+                {/* <Sidebar
                   siteName={settings.siteName}
                   logoUrl={settings.logoUrl}
-                />
-                <Container user={user}>{children}</Container>
+                /> */}
+                <AppSidebar />
+                <SidebarInset>
+                  <Header user={user} />
+                  <Container user={user}>{children}</Container>
+                </SidebarInset>
                 <ModalProvider />
                 <SheetProvider />
                 <ProgressLoader />
-              </div>
+              </SidebarProvider>
             </QueryProvider>
           </ThemeProvider>
         </body>

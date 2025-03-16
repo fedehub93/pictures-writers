@@ -28,12 +28,11 @@ export const Container = ({ children, user }: ContainerProps) => {
   return (
     <div
       className={cn(
-        "overflow-x-hidden transition-[margin] md:pt-0 overflow-y-hidden relative h-full ",
-        collapsed ? "sm:ml-[70px]" : "sm:ml-[70px] lg:ml-60"
+        "overflow-x-hidden transition-[margin] md:pt-0 overflow-y-hidden relative h-full "
       )}
     >
       <div className="flex flex-col h-full">
-        <Navbar user={user}/>
+        {/* <Navbar user={user} /> */}
         <div className="px-4 py-6 md:px-8 overflow-auto">{children}</div>
       </div>
     </div>
