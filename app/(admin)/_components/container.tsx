@@ -1,12 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
-import { useMediaQuery } from "usehooks-ts";
+import { User } from "@prisma/client";
 
 import { cn } from "@/lib/utils";
-import { useSidebar } from "@/store/use-sidebar";
-import { Navbar } from "./navbar";
-import { User } from "@prisma/client";
 
 interface ContainerProps {
   children: React.ReactNode;
@@ -14,17 +10,6 @@ interface ContainerProps {
 }
 
 export const Container = ({ children, user }: ContainerProps) => {
-  const matches = useMediaQuery("(max-width: 1024px)");
-  const { collapsed, onCollapse, onExpand } = useSidebar((state) => state);
-
-  useEffect(() => {
-    if (matches) {
-      onCollapse();
-    } else {
-      onExpand();
-    }
-  }, [matches, onCollapse, onExpand]);
-
   return (
     <div
       className={cn(
@@ -32,7 +17,6 @@ export const Container = ({ children, user }: ContainerProps) => {
       )}
     >
       <div className="flex flex-col h-full">
-        {/* <Navbar user={user} /> */}
         <div className="px-4 py-6 md:px-8 overflow-auto">{children}</div>
       </div>
     </div>

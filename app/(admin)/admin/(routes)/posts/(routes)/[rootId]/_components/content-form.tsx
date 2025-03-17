@@ -94,25 +94,6 @@ export const ContentForm = ({ initialData, rootId, postId }: BodyFormProps) => {
       )}
     >
       <div className="flex items-center justify-between">Content</div>
-      {/* {!isEditing && initialData.bodyData && (
-        // <SlateView
-        //   nodes={initialData.bodyData}
-        //   transforms={{
-        //     elements: [
-        //       Paragraph,
-        //       HeadingOne,
-        //       HeadingTwo,
-        //       HeadingThree,
-        //       HeadingFour,
-        //       Link,
-        //     ],
-        //     leaves: [RichText],
-        //   }}
-        // />
-        <Editor value={initialData.bodyData}>
-          <Editor.Input readonly />
-        </Editor>
-      )} */}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">

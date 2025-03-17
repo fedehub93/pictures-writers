@@ -74,11 +74,7 @@ export default async function RootLayout({
           >
             <ToastProvider />
             <QueryProvider>
-              <SidebarProvider>
-                {/* <Sidebar
-                  siteName={settings.siteName}
-                  logoUrl={settings.logoUrl}
-                /> */}
+              <SidebarProvider className="h-screen">
                 <AppSidebar />
                 <SidebarInset>
                   <Header user={user} />
