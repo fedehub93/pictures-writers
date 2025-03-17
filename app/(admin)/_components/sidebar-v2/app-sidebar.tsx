@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import {
   Blocks,
@@ -5,18 +7,14 @@ import {
   BookUp,
   Box,
   Boxes,
-  ChevronRight,
   ClipboardPen,
   Contact,
-  GalleryVerticalEnd,
   LayoutDashboard,
   LayoutPanelTop,
   LibraryBig,
   MailPlus,
   Mails,
-  Minus,
   NotebookPen,
-  Plus,
   ReceiptText,
   Settings,
   ShoppingBag,
@@ -25,26 +23,17 @@ import {
 } from "lucide-react";
 
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
   Sidebar,
   SidebarContent,
-  SidebarGroup,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
 import Logo from "@/components/logo";
 import Link from "next/link";
+import { NavMain } from "./nav-main";
 
 // This is sample data.
 const data = {
@@ -74,13 +63,30 @@ const data = {
           url: "/admin/tags",
           Icon: Tags,
         },
+      ],
+    },
+  ],
+  shop: [
+    {
+      title: "Shop",
+      url: "#",
+      Icon: ShoppingBag,
+      items: [
         {
-          title: "Media",
-          url: "/admin/media",
-          Icon: BookImage,
+          title: "Products",
+          url: "/admin/shop/products",
+          Icon: Box,
+        },
+        {
+          title: "Categories",
+          label: "",
+          url: "/admin/shop/categories",
+          Icon: Boxes,
         },
       ],
     },
+  ],
+  tools: [
     {
       title: "Mails",
       url: "#",
@@ -109,6 +115,23 @@ const data = {
       ],
     },
     {
+      title: "Widgets",
+      url: "/admin/widgets",
+      Icon: Blocks,
+    },
+    {
+      title: "Settings",
+      url: "/admin/settings",
+      Icon: Settings,
+    },
+  ],
+  others: [
+    {
+      title: "Media",
+      url: "/admin/media",
+      Icon: BookImage,
+    },
+    {
       title: "Coverage",
       url: "#",
       Icon: BookUp,
@@ -125,34 +148,7 @@ const data = {
       url: "/admin/contacts",
       Icon: ReceiptText,
     },
-    {
-      title: "Shop",
-      url: "#",
-      Icon: ShoppingBag,
-      items: [
-        {
-          title: "Products",
-          url: "/admin/shop/products",
-          Icon: Box,
-        },
-        {
-          title: "Categories",
-          label: "",
-          url: "/admin/shop/categories",
-          Icon: Boxes,
-        },
-      ],
-    },
-    {
-      title: "Widgets",
-      url: "/admin/widgets",
-      Icon: Blocks,
-    },
-    {
-      title: "Settings",
-      url: "/admin/settings",
-      Icon: Settings,
-    },
+
     {
       title: "Users",
       url: "/admin/users",
@@ -169,7 +165,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/admin">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-secondary text-sidebar-primary-foreground">
                   <Logo />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
@@ -181,50 +177,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarMenu>
-            {data.navMain.map((item, index) => (
-              <Collapsible
-                key={item.title}
-                defaultOpen={index === 1}
-                className="group/collapsible"
-              >
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild tooltip={item.title}>
-                    <Link href={item.url}>
-                      <item.Icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                  {item.items?.length ? (
-                    <>
-                      <CollapsibleTrigger asChild>
-                        <SidebarMenuAction className="data-[state=open]:rotate-90">
-                          <ChevronRight />
-                          <span className="sr-only">Toggle</span>
-                        </SidebarMenuAction>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <SidebarMenuSub>
-                          {item.items?.map((subItem) => (
-                            <SidebarMenuSubItem key={subItem.title}>
-                              <SidebarMenuSubButton asChild>
-                                <Link href={subItem.url}>
-                                  {subItem.Icon && <subItem.Icon />}
-                                  {subItem.title}{" "}
-                                </Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    </>
-                  ) : null}
-                </SidebarMenuItem>
-              </Collapsible>
-            ))}
-          </SidebarMenu>
-        </SidebarGroup>
+        <NavMain label="Blog" items={data.navMain} />
+        <NavMain label="Shop" items={data.shop} />
+        <NavMain label="Tools" items={data.tools} />
+        <NavMain label="Others" items={data.others} />
       </SidebarContent>
       <SidebarRail />
     </Sidebar>
