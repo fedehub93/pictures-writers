@@ -23,7 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 interface ImageFormProps {
   imageCoverUrl?: string | null;
   control: Control<z.infer<typeof organizationFormSchema>>;
-  name: "imageCoverId";
+  name: "logoId";
 }
 
 export const ImageForm = ({ imageCoverUrl, control, name }: ImageFormProps) => {
@@ -47,7 +47,7 @@ export const ImageForm = ({ imageCoverUrl, control, name }: ImageFormProps) => {
     try {
       field.onChange(imageCoverId);
       setImageCover(imageUrl);
-      toast.success(`Ebook updated`);
+      toast.success(`Image updated`);
     } catch {
       toast.error("Something went wrong");
     } finally {

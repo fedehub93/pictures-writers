@@ -76,7 +76,7 @@ export async function POST(
         name: defaultContest.name, // Potresti tradurre il titolo in seguito
         slug: defaultContest.slug, // Potresti tradurre lo slug in seguito
         version: 1,
-        description: defaultContest.description,
+        description: defaultContest.description || undefined,
         imageCoverId: defaultContest.imageCoverId,
         categories: undefined,
         deadlines: undefined,

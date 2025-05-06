@@ -16,6 +16,7 @@ import { API_ADMIN_COMPETITIONS } from "@/constants/api";
 import { GenericInput } from "@/components/form-component/generic-input";
 import { SlugInput } from "@/components/form-component/slug-input";
 import { OrganizationSelect } from "../_components/organization-select";
+import { contestFormSchema } from "../[rootId]/_components/contest-form";
 
 const formSchema = z.object({
   name: z.string().min(1, {
@@ -32,8 +33,8 @@ const formSchema = z.object({
 const ContestCreatePage = () => {
   const router = useRouter();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof contestFormSchema>>({
+    resolver: zodResolver(contestFormSchema),
     defaultValues: {
       name: "",
       slug: "",

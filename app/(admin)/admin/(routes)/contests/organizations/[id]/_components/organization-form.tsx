@@ -27,7 +27,7 @@ export const organizationFormSchema = z.object({
   }),
   logoId: z.string().min(1, {
     message: "Logo is required!",
-  }),
+  }).nullable(),
 });
 
 export const OrganizationForm = ({
