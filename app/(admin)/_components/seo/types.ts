@@ -3,7 +3,9 @@ export enum SeoContentTypeApi {
   Category = "categories",
   Tag = "tags",
   Product = "admin/shop/products",
-  ProductCategory ="admin/shop/categories"
+  ProductCategory = "admin/shop/categories",
+  Organization = "admin/contests/organizations",
+  Contest = "admin/contests",
 }
 
 export enum SeoField {

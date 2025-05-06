@@ -15,6 +15,21 @@ datasource db {
   // directUrl = env("DIRECT_URL")
 }
 
+model Language {
+  id   String  @id @default(uuid())
+  code String  @unique
+  name String
+  slug String?
+
+  isActive  Boolean @default(true)
+  isDefault Boolean @default(false)
+
+  contests Contest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Settings {
   id String @id @default(uuid())
 
@@ -78,14 +93,19 @@ enum UserRole {
 }
 
 model User {
-  id             String @id @default(uuid())
-  externalUserId String @unique
+  id             String  @id @default(uuid())
+  externalUserId String? @unique
 
-  firstName String?
-  lastName  String?
-  email     String?
-  bio       String?
-  imageUrl  String?
+  firstName     String?
+  lastName      String?
+  email         String?   @unique
+  password      String?
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+
+  bio      String?
+  imageUrl String?
 
   role UserRole @default(USER)
 
@@ -97,6 +117,43 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model VerificationToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model PasswordResetToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
 }
 
 enum MediaType {
@@ -116,11 +173,13 @@ model Media {
   type    MediaType @default(FILE)
   altText String?
 
-  post       Post[]
-  seo        Seo[]
-  product    Product[]
-  impression Impression?
-  products   ProductGallery[]
+  post             Post[]
+  seo              Seo[]
+  product          Product[]
+  impression       Impression?
+  products         ProductGallery[]
+  contest          Contest[]
+  organizationLogo Organization[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -599,6 +658,112 @@ model ContactForm {
   email   String?
   subject String?
   message String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Organization {
+  id String @id @default(uuid())
+
+  name String
+
+  logo   Media?  @relation(fields: [logoId], references: [id])
+  logoId String?
+
+  email       String?
+  website     String?
+  description String?
+
+  contests Contest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Contest {
+  id String @id @default(uuid())
+
+  name String
+  slug String
+
+  shortDescription String?
+
+  /// [BodyData]
+  description Json? @db.JsonB
+  /// [BodyData]
+  benefits    Json? @db.JsonB
+  /// [BodyData]
+  rules       Json? @db.JsonB
+
+  version  Int
+  isLatest Boolean @default(true)
+
+  status ContentStatus @default(DRAFT)
+
+  isOpen Boolean @default(false)
+
+  imageCover   Media?  @relation(fields: [imageCoverId], references: [id])
+  imageCoverId String?
+
+  language   Language? @relation(fields: [languageId], references: [id])
+  languageId String?
+
+  rootId       String?
+  root         Contest?  @relation("RootChildren", fields: [rootId], references: [id])
+  rootChildren Contest[] @relation("RootChildren")
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  categories ContestCategory[]
+  deadlines  ContestDeadline[]
+  prices     ContestPrice[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([rootId, languageId, status])
+}
+
+model ContestDeadline {
+  id        String   @id @default(uuid())
+  date      DateTime
+  name      String
+  contestId String
+  contest   Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
+
+  prices ContestPrice[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ContestCategory {
+  id        String  @id @default(uuid())
+  name      String
+  contestId String
+  contest   Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+
+  prices ContestPrice[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ContestPrice {
+  id String @id @default(uuid())
+
+  contestId String
+  contest   Contest? @relation(fields: [contestId], references: [id])
+
+  categoryId String
+  category   ContestCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  deadlineId String
+  deadline   ContestDeadline @relation(fields: [deadlineId], references: [id], onDelete: Cascade)
+
+  price Float @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

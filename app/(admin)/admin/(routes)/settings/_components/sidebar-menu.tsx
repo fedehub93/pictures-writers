@@ -22,6 +22,10 @@ const routes = [
     href: "/admin/settings/scripts",
   },
   {
+    label: "Languages",
+    href: "/admin/settings/languages",
+  },
+  {
     label: "Database",
     href: "/admin/settings/database",
   },

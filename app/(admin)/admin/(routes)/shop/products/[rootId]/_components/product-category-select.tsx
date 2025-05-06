@@ -3,7 +3,7 @@
 import { ContentStatus, ProductCategory } from "@prisma/client";
 import * as z from "zod";
 import { useEffect, useState } from "react";
-import { Control, useController, useForm } from "react-hook-form";
+import { Control, useController } from "react-hook-form";
 
 import { cn } from "@/lib/utils";
 import {
@@ -25,15 +25,15 @@ import { productFormSchema } from "./product-form";
 import { useProductCategoriesQuery } from "@/app/(admin)/_hooks/use-product-categories";
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface ProductCategoryFormProps {
+interface ProductCategorySelectProps {
   control: Control<z.infer<typeof productFormSchema>>;
   isSubmitting: boolean;
 }
 
-export const ProductCategoryForm = ({
+export const ProductCategorySelect = ({
   control,
   isSubmitting,
-}: ProductCategoryFormProps) => {
+}: ProductCategorySelectProps) => {
   const { data: categories, isLoading, isError } = useProductCategoriesQuery();
   const { field: fieldCategoryId } = useController({
     control,

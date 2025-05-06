@@ -1,7 +1,7 @@
 "use client";
 import { Media, MediaType } from "@prisma/client";
 import Image from "next/image";
-import { File, Loader2 } from "lucide-react";
+import { File, Loader2, Plus } from "lucide-react";
 import { useDebounceValue } from "usehooks-ts";
 
 import {
@@ -17,9 +17,11 @@ import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 import { useAssetsQuery } from "../../_hooks/use-assets-query";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
+import { UploadButton } from "@/lib/uploadthing";
+import { MediaActions } from "../../admin/(routes)/media/_components/actions";
 
 export const SelectAssetModal = () => {
-  const { isOpen, onClose, type, onCallback } = useModal();
+  const { isOpen, onClose, type, onCallback, onOpen } = useModal();
   const [debouncedSearch, setDebouncedSearch] = useDebounceValue("", 1000);
 
   const isModalOpen = isOpen && type === "selectAsset";
@@ -50,9 +52,18 @@ export const SelectAssetModal = () => {
     <Dialog open={isModalOpen} onOpenChange={handleClose}>
       <DialogContent className="bg-white text-black p-0 overflow-hidden max-w-4xl">
         <DialogHeader>
-          <DialogTitle className="text-xl py-4 px-6 font-normal">
-            Add existing asset
-          </DialogTitle>
+          <div className="flex flex-col justify-center w-full py-4 px-6 gap-y-4">
+            <DialogTitle className="flex justify-between text-xl  font-normal">
+              Add existing asset
+            </DialogTitle>
+            <Button
+              className="max-w-40 self-center"
+              onClick={() => onOpen("createMediaAsset")}
+            >
+              <Plus />
+              Create new asset
+            </Button>
+          </div>
           <Separator />
           <div className="flex flex-col gap-y-2 px-6">
             <span>Search for assets</span>

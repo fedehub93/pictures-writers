@@ -7,8 +7,10 @@ import {
   BookUp,
   Box,
   Boxes,
+  Building,
   ClipboardPen,
   Contact,
+  Icon,
   LayoutDashboard,
   LayoutPanelTop,
   LibraryBig,
@@ -19,6 +21,8 @@ import {
   Settings,
   ShoppingBag,
   Tags,
+  Theater,
+  Trophy,
   Users,
 } from "lucide-react";
 
@@ -84,6 +88,18 @@ const data = {
           Icon: Boxes,
         },
       ],
+    },
+  ],
+  contests: [
+    {
+      title: "Contests",
+      url: "/admin/contests",
+      Icon: Theater,
+    },
+    {
+      title: "Organizations",
+      url: "/admin/contests/organizations",
+      Icon: Building,
     },
   ],
   tools: [
@@ -179,6 +195,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <NavMain label="Blog" items={data.navMain} />
         <NavMain label="Shop" items={data.shop} />
+        <NavMain label="Competitions" items={data.contests} />
         <NavMain label="Tools" items={data.tools} />
         <NavMain label="Others" items={data.others} />
       </SidebarContent>

@@ -62,6 +62,7 @@ export const CreateMediaModal = () => {
       key: "",
       name: "",
       url: "",
+      altText: "",
       type: MediaType.IMAGE,
       size: 0,
     },

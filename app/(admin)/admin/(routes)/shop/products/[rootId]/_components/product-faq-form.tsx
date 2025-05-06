@@ -15,7 +15,6 @@ import {
 
 import { productFormSchema } from "./product-form";
 import { Button } from "@/components/ui/button";
-import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 import {
   FormControl,
   FormField,
@@ -35,8 +34,6 @@ export const ProductFAQForm = ({
   control,
   isSubmitting,
 }: ProductGalleryFormProps) => {
-  const { onOpen } = useModal();
-
   const { fields, append, remove, replace } = useFieldArray({
     control,
     name: "faqs",

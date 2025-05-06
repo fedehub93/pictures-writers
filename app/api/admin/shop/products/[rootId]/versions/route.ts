@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 
 import { authAdmin } from "@/lib/auth-service";
 import { createNewVersionProduct } from "@/lib/product";
-import { db } from "@/lib/db";
-import { getPublishedProductByRootId } from "@/data/product";
 
-export async function POST(req: Request, props: { params: Promise<{ rootId: string }> }) {
+export async function POST(
+  req: Request,
+  props: { params: Promise<{ rootId: string }> }
+) {
   const params = await props.params;
   try {
     const user = await authAdmin();
