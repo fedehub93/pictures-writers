@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
-import { LibraryBig, Newspaper } from "lucide-react";
+import { LibraryBig, Newspaper, School, Trophy } from "lucide-react";
 
 import type { JSX } from "react";
 
@@ -22,6 +22,14 @@ const routes = [
   {
     title: "About",
     link: "/about/",
+  },
+  {
+    title: "Formazione",
+    link: "/blog/scuole-di-sceneggiatura/",
+  },
+  {
+    title: "Concorsi",
+    link: "/blog/concorsi-di-sceneggiatura/",
   },
   {
     title: "Ebooks",
@@ -47,11 +55,12 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
   return (
     <NavigationMenu
       orientation={isMobile ? "vertical" : "horizontal"}
-      className={cn(isMobile && "mx-auto")}
+      className={cn(isMobile && "mx-auto max-w-full w-full")}
     >
       <NavigationMenuList
         className={cn(
-          isMobile && "flex-col justify-center items-start space-x-0 gap-y-8"
+          isMobile &&
+            "flex-col justify-center items-start space-x-0 gap-y-8"
         )}
       >
         {isMobile &&
@@ -123,6 +132,40 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
               </NavigationMenuTrigger>
               <NavigationMenuContent>
                 <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
+                  <li className="row-span-3">
+                    <Link
+                      className="flex h-full w-full relative select-none flex-col justify-end rounded-md bg-violet-100/40 hover:bg-violet-200 transition-all p-6 no-underline outline-hidden focus:shadow-md"
+                      href="/blog/scuole-di-sceneggiatura"
+                    >
+                      <School
+                        className="absolute h-8 w-8 bottom-4 right-4 text-primary "
+                        strokeWidth={1}
+                      />
+                      <div className="my-2 text-lg font-medium">Formazione</div>
+                      <p className="text-sm leading-tight text-muted-foreground">
+                        Esplora scuole, corsi e percorsi formativi dedicati alla
+                        scrittura per il cinema per orientarti nel mondo della
+                        sceneggiatura.
+                      </p>
+                    </Link>
+                  </li>
+                  <li className="row-span-3">
+                    <Link
+                      className="flex h-full w-full relative select-none flex-col justify-end rounded-md bg-violet-100/40 hover:bg-violet-200 transition-all p-6 no-underline outline-hidden focus:shadow-md"
+                      href="/blog/concorsi-di-sceneggiatura"
+                    >
+                      <Trophy
+                        className="absolute h-8 w-8 bottom-4 right-4 text-primary "
+                        strokeWidth={1}
+                      />
+                      <div className="my-2 text-lg font-medium">Concorsi</div>
+                      <p className="text-sm leading-tight text-muted-foreground">
+                        Scopri bandi attivi, consigli per partecipare e storie
+                        di chi ce l&apos;ha fatta nei concorsi di sceneggiatura
+                        in Italia e all&apos;estero.
+                      </p>
+                    </Link>
+                  </li>
                   <li className="row-span-3">
                     <Link
                       className="flex h-full w-full relative select-none flex-col justify-end rounded-md bg-violet-100/40 hover:bg-violet-200 transition-all p-6 no-underline outline-hidden focus:shadow-md"

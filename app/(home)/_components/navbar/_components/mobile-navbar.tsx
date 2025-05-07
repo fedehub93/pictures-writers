@@ -34,8 +34,8 @@ export const MobileNavbar = () => {
           <span className="sr-only"> Toggle Mobile Menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="flex flex-col px-0 py-10">
-        <SheetTitle className="text-3xl font-light w-full flex items-center justify-center">
+      <SheetContent side="left" className="flex flex-col px-0 py-10 overflow-y-auto">
+        <SheetTitle className="text-3xl font-light w-full flex items-center justify-center mb-4">
           Menu
         </SheetTitle>
         <Nav isMobile onLinkClick={onLinkClick} />
