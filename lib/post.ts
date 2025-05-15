@@ -162,11 +162,101 @@ export const getPublishedPosts = async ({
 
   return { posts, totalPages, currentPage: page };
 };
+export const getPublishedDraftPosts = async ({
+  page,
+  s = "",
+}: GetPublishedPosts) => {
+  const skip = POST_PER_PAGE * (page - 1);
+
+  const posts = await db.post.findMany({
+    where: {
+      status: ContentStatus.DRAFT,
+      isLatest: true,
+      OR: [
+        {
+          title: { contains: s },
+        },
+        {
+          description: { contains: s },
+        },
+      ],
+    },
+    select: {
+      id: true,
+      rootId: true,
+      title: true,
+      description: true,
+      slug: true,
+      updatedAt: true,
+      postCategories: {
+        select: {
+          category: {
+            select: {
+              rootId: true,
+              title: true,
+              slug: true,
+            },
+          },
+        },
+      },
+      imageCover: {
+        select: {
+          url: true,
+          altText: true,
+        },
+      },
+      postAuthors: {
+        select: {
+          user: true,
+          sort: true,
+        },
+        orderBy: {
+          sort: "asc",
+        },
+      },
+    },
+    take: POST_PER_PAGE,
+    skip: skip,
+    orderBy: {
+      firstPublishedAt: "desc",
+    },
+  });
+
+  const totalPosts = await db.post.count({
+    where: {
+      status: ContentStatus.PUBLISHED,
+      isLatest: true,
+    },
+  });
+
+  const totalPages = Math.ceil(totalPosts / POST_PER_PAGE);
+
+  return { posts, totalPages, currentPage: page };
+};
 
 export const getPublishedPostsBuilding = async () => {
   const posts = await db.post.findMany({
     where: {
       status: ContentStatus.PUBLISHED,
+      isLatest: true,
+    },
+    select: {
+      id: true,
+      rootId: true,
+      slug: true,
+    },
+    orderBy: {
+      firstPublishedAt: "desc",
+    },
+  });
+
+  return posts;
+};
+
+export const getPublishedDraftPostsBuilding = async () => {
+  const posts = await db.post.findMany({
+    where: {
+      status: ContentStatus.DRAFT,
       isLatest: true,
     },
     select: {
@@ -329,6 +419,69 @@ export const getPublishedPostBySlug = async (slug: string) => {
     where: {
       slug,
       status: ContentStatus.PUBLISHED,
+      isLatest: true,
+    },
+    select: {
+      id: true,
+      rootId: true,
+      title: true,
+      slug: true,
+      description: true,
+      bodyData: true,
+      publishedAt: true,
+      firstPublishedAt: true,
+      updatedAt: true,
+      seo: {
+        select: {
+          title: true,
+          description: true,
+        },
+      },
+      postCategories: {
+        select: {
+          category: {
+            select: {
+              rootId: true,
+              title: true,
+              slug: true,
+            },
+          },
+        },
+      },
+      tags: {
+        select: {
+          title: true,
+          slug: true,
+        },
+      },
+      imageCover: {
+        select: {
+          url: true,
+          altText: true,
+        },
+      },
+      postAuthors: {
+        select: {
+          user: true,
+          sort: true,
+        },
+        orderBy: {
+          sort: "asc",
+        },
+      },
+    },
+    orderBy: {
+      publishedAt: "desc",
+    },
+  });
+
+  return post;
+};
+export const getPublishedDraftPostBySlug = async (slug: string) => {
+  const post = await db.post.findFirst({
+    where: {
+      slug,
+      status: ContentStatus.DRAFT,
       isLatest: true,
     },
     select: {
