@@ -151,6 +151,7 @@ export const ContestForm = ({
     if (response.data) {
       if (!isDefaultLang) {
         router.push(`${pathname}?${params.toString()}`);
+        // window.location.href = `${pathname}?${params.toString()}`;
       }
     }
 
@@ -164,6 +165,7 @@ export const ContestForm = ({
       );
       if (newContest.data) {
         router.push(`${pathname}?${params.toString()}`);
+        // window.location.href = `${pathname}?${params.toString()}`;
       }
     }
   };

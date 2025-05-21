@@ -3,14 +3,15 @@ import { createEditor, BaseEditor, Descendant } from "slate";
 import { Slate, withReact, ReactEditor } from "slate-react";
 import { withHistory } from "slate-history";
 
+import { ProductType } from "@prisma/client";
+import { AffiliateMetadata, EbookMetadata } from "@/types";
+
 import EditorInput from "./editor-input";
 import { Counter } from "./helpers/counter";
 import withNormalization from "./plugins/with-normalization";
 import withInline from "./plugins/with-inline";
 import withEmbeds from "./plugins/with-embeds";
 import withPasteHandler from "./plugins/with-paste-html";
-import { ProductType } from "@prisma/client";
-import { AffiliateMetadata, EbookMetadata } from "@/types";
 import Toolbar from "./toolbar";
 
 export type CustomEditor = BaseEditor & ReactEditor;
@@ -83,8 +84,6 @@ export type CustomText = {
   underline?: boolean;
 };
 
-
-
 export type EmptyText = {
   text: string;
 };
@@ -146,6 +145,7 @@ const Editor = forwardRef<HTMLDivElement, EditorProps>(
           initialValue={value}
           onChange={onChange}
           onValueChange={onValueChange}
+          key={JSON.stringify(value)}
         >
           {React.Children.map(children, (child) => {
             if (!React.isValidElement(child)) return child;

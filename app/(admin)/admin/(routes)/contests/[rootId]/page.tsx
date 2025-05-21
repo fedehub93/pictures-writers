@@ -43,7 +43,6 @@ const ContestIdPage = async (props: ContestIdPage) => {
     },
     orderBy: { createdAt: "desc" },
   });
-
   if (!contest || !contest.id) {
     redirect("/admin/contests");
   }
