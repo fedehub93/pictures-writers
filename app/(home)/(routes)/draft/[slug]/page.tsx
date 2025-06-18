@@ -22,6 +22,8 @@ import { PostList } from "@/app/(home)/(routes)/blog/_components/post-list";
 
 import { WidgetProductPop } from "@/components/widget/product-pop";
 
+export const dynamic = "force-dynamic";
+
 type Params = {
   slug: string;
 };
