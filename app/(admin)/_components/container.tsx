@@ -17,7 +17,7 @@ export const Container = ({ children, user }: ContainerProps) => {
       )}
     >
       <div className="flex flex-col h-full">
-        <div className="px-4 py-6 md:px-8 overflow-auto">{children}</div>
+        <div className="overflow-auto">{children}</div>
       </div>
     </div>
   );

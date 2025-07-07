@@ -7,9 +7,6 @@ import {
   getPublishedDraftPostBySlug,
   getPublishedDraftPosts,
   getPublishedDraftPostsBuilding,
-  getPublishedPostBySlug,
-  getPublishedPosts,
-  getPublishedPostsBuilding,
 } from "@/lib/post";
 import { getPublishedProductByRootId } from "@/data/product";
 import { getSettings } from "@/data/settings";

@@ -16,7 +16,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 import { contestFormSchema } from "./contest-form";
@@ -48,11 +47,8 @@ export const ImageForm = ({ imageCoverUrl, control, name }: ImageFormProps) => {
     try {
       field.onChange(imageCoverId);
       setImageCover(imageUrl);
-      toast.success(`Ebook updated`);
     } catch {
       toast.error("Something went wrong");
-    } finally {
-      router.refresh();
     }
   };
 

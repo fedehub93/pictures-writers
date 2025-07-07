@@ -3,9 +3,12 @@ import { Suspense } from "react";
 
 import { getHeadMetadata } from "../../_components/seo/head-metadata";
 import { NewSubscriptionForm } from "./_components/new-subscription-form";
+import { getSettings } from "@/data/settings";
 
 export async function generateMetadata(): Promise<Metadata | null> {
   const metadata = await getHeadMetadata();
+
+  const { siteUrl } = await getSettings();
 
   return {
     ...metadata,
@@ -17,6 +20,9 @@ export async function generateMetadata(): Promise<Metadata | null> {
         index: false,
         follow: false,
       },
+    },
+    alternates: {
+      canonical: `${siteUrl}/conferma-sottoscrizione/`,
     },
   };
 }

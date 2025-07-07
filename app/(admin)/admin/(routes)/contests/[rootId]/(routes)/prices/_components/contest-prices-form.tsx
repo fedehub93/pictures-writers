@@ -1,23 +1,22 @@
 "use client";
 
 import * as z from "zod";
-import { Control, useFieldArray } from "react-hook-form";
-import { Contest, Media } from "@prisma/client";
+import { Control, useFieldArray, UseFormReset } from "react-hook-form";
+import { Contest } from "@prisma/client";
+import { Euro, Sparkles } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
 import { Separator } from "@/components/ui/separator";
 
 import { formatDate } from "@/lib/format";
 import { GenericInput } from "@/components/form-component/generic-input";
-import { contestFormSchema } from "./contest-form";
-import { Euro, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
+
+import { PricesFormSchema } from "./prices-form";
 
 interface ContestPricesFormProps {
-  control: Control<z.infer<typeof contestFormSchema>>;
+  control: Control<z.infer<typeof PricesFormSchema>>;
   initialData: Contest & {
-    imageCover: Media | null;
     deadlines: {
       id: string;
       name: string;
@@ -27,15 +26,21 @@ interface ContestPricesFormProps {
       id: string;
       name: string;
     }[];
-    prices: { deadlineId: string; categoryId: string; price: number }[];
+    prices: {
+      deadlineId: string;
+      categoryId: string;
+      price: number;
+    }[];
   };
   isSubmitting: boolean;
+  reset: UseFormReset<any>;
 }
 
 export const ContestPricesForm = ({
   control,
   initialData,
   isSubmitting,
+  reset,
 }: ContestPricesFormProps) => {
   const { fields, append } = useFieldArray({
     control,
@@ -77,7 +82,10 @@ export const ContestPricesForm = ({
   let index = -1;
 
   const onGenerateCombinations = () => {
-    for (const d of initialData.deadlines) {
+    const sortedDeadlines = initialData.deadlines.sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+    for (const d of sortedDeadlines) {
       for (const c of initialData.categories) {
         const isExist = fields.find(
           (f) => f.categoryId === c.id && f.deadlineId === d.id
@@ -93,24 +101,36 @@ export const ContestPricesForm = ({
     }
   };
 
+  const onClickReset = () => {
+    reset({ prices: [] });
+  };
+
   return (
-    <Card className="bg-secondary">
+    <Card>
       <CardHeader className="flex flex-row justify-between items-center">
         <CardTitle className="text-base">
           <div>💵 Prices</div>
         </CardTitle>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onGenerateCombinations}
-        >
-          <Sparkles className="size-4" />
-          Generate combinations
-        </Button>
+        <div className="flex gap-x-4 items-center">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onGenerateCombinations}
+          >
+            <Sparkles className="size-4" />
+            Generate combinations
+          </Button>
+          <Button type="button" variant="destructive" onClick={onClickReset}>
+            Reset
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {categories.map((field, cIndex) => (
-          <div key={cIndex} className="flex gap-x-4 p-4 rounded-lg">
+          <div
+            key={cIndex}
+            className="flex gap-x-4 p-4 rounded-lg bg-secondary border shadow-lg"
+          >
             <div className="flex flex-col w-full gap-4">
               🏆 {field.name}
               {field.deadlines.map((d, dIndex) => {
@@ -132,23 +152,11 @@ export const ContestPricesForm = ({
                       />
                       <Euro className="text-muted-foreground" />
                     </div>
-                    <Separator />
+                    {dIndex < field.deadlines.length - 1 && <Separator />}
                   </div>
                 );
               })}
             </div>
-
-            {/* <div className="text-right">
-              <Button
-                size="icon"
-                variant="destructive"
-                type="button"
-                className="size-4"
-                onClick={() => onRemoveDeadline(index)}
-              >
-                <X className="size-4" />
-              </Button>
-            </div> */}
           </div>
         ))}
       </CardContent>

@@ -17,7 +17,15 @@ import { GenericImage } from "@/components/form-component/generic-image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface OrganizationFormProps {
-  initialData: Organization & {};
+  initialData: {
+    id: string;
+    name: string;
+    logo: {
+      id: string;
+      url: string;
+      altText: string | null;
+    } | null;
+  };
   apiUrl: string;
 }
 
@@ -25,9 +33,12 @@ export const organizationFormSchema = z.object({
   name: z.string().min(1, {
     message: "Name is required!",
   }),
-  logoId: z.string().min(1, {
-    message: "Logo is required!",
-  }).nullable(),
+  logoId: z
+    .string()
+    .min(1, {
+      message: "Logo is required!",
+    })
+    .nullable(),
 });
 
 export const OrganizationForm = ({
@@ -41,6 +52,7 @@ export const OrganizationForm = ({
     resolver: zodResolver(organizationFormSchema),
     defaultValues: {
       ...initialData,
+      logoId: initialData.logo ? initialData.logo.id : null,
     },
   });
 
@@ -48,7 +60,7 @@ export const OrganizationForm = ({
 
   const onSubmit = async (values: z.infer<typeof organizationFormSchema>) => {
     try {
-      await axios.post(`${apiUrl}/versions`, values);
+      await axios.patch(`${apiUrl}`, values);
       toast.success(`Item updated`);
     } catch {
       toast.error("Something went wrong");
@@ -93,6 +105,7 @@ export const OrganizationForm = ({
                 control={form.control}
                 name="logoId"
                 label="Logo"
+                imageUrl={initialData.logo?.url}
                 suggestedDimensions="(48x48)"
               />
             </div>

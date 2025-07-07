@@ -3,10 +3,13 @@ import { Metadata } from "next";
 import { db } from "@/lib/db";
 import { ContentStatus } from "@prisma/client";
 import { getAuthorsString } from "@/data/user";
+import { getSettings } from "@/data/settings";
 
 export async function getPostMetadataBySlug(
   slug: string
 ): Promise<Metadata | null> {
+  const { siteName, siteUrl } = await getSettings();
+
   const post = await db.post.findFirst({
     where: {
       slug,
@@ -15,6 +18,7 @@ export async function getPostMetadataBySlug(
     },
     select: {
       title: true,
+      slug: true,
       seo: {
         select: {
           title: true,
@@ -66,12 +70,16 @@ export async function getPostMetadataBySlug(
         follow: !post.seo.noFollow,
       },
     },
-    alternates: { canonical: post.seo.canonicalUrl },
+    alternates: {
+      canonical: post.seo.canonicalUrl
+        ? post.seo.canonicalUrl
+        : `${siteUrl}/${post.slug}`,
+    },
     openGraph: {
       title: post.seo.ogTwitterTitle || post.seo.title,
       description: post.seo.ogTwitterDescription || post.seo.description || "",
       url: post.seo.ogTwitterUrl || "",
-      siteName: "Pictures Writers",
+      siteName: siteName!,
       images: [
         {
           url: post.imageCover!.url,
@@ -97,6 +105,8 @@ export async function getPostMetadataBySlug(
 export async function getCategoryMetadataBySlug(
   slug: string
 ): Promise<Metadata | null> {
+  const { siteName, siteUrl } = await getSettings();
+
   const category = await db.category.findFirst({
     where: { slug, isLatest: true },
     include: {
@@ -120,13 +130,17 @@ export async function getCategoryMetadataBySlug(
         follow: !category.seo.noFollow,
       },
     },
-    alternates: { canonical: category.seo.canonicalUrl },
+    alternates: {
+      canonical: category.seo.canonicalUrl
+        ? category.seo.canonicalUrl
+        : `${siteUrl}/blog/${category.slug}`,
+    },
     openGraph: {
       title: category.seo.ogTwitterTitle || category.seo.title,
       description:
         category.seo.ogTwitterDescription || category.seo.description || "",
       url: category.seo.ogTwitterUrl || "",
-      siteName: "Pictures Writers",
+      siteName: siteName!,
       locale: "it_IT",
       type: "article",
       publishedTime: category.firstPublishedAt.toISOString(),
@@ -144,6 +158,8 @@ export async function getCategoryMetadataBySlug(
 export async function getTagMetdataBySlug(
   slug: string
 ): Promise<Metadata | null> {
+  const { siteName, siteUrl } = await getSettings();
+
   const tag = await db.tag.findFirst({
     where: { slug, isLatest: true },
     include: {
@@ -167,12 +183,16 @@ export async function getTagMetdataBySlug(
         follow: !tag.seo.noFollow,
       },
     },
-    alternates: { canonical: tag.seo.canonicalUrl },
+    alternates: {
+      canonical: tag.seo.canonicalUrl
+        ? tag.seo.canonicalUrl
+        : `${siteUrl}/blog/${tag.slug}`,
+    },
     openGraph: {
       title: tag.seo.ogTwitterTitle || tag.seo.title,
       description: tag.seo.ogTwitterDescription || tag.seo.description || "",
       url: tag.seo.ogTwitterUrl || "",
-      siteName: "Pictures Writers",
+      siteName: siteName!,
       locale: "it_IT",
       type: "article",
       publishedTime: tag.firstPublishedAt.toISOString(),
@@ -189,6 +209,8 @@ export async function getTagMetdataBySlug(
 export async function getProductMetadataBySlug(
   slug: string
 ): Promise<Metadata | null> {
+  const { siteName, siteShopUrl } = await getSettings();
+
   const product = await db.product.findFirst({
     where: {
       slug,
@@ -198,6 +220,7 @@ export async function getProductMetadataBySlug(
     include: {
       imageCover: true,
       seo: true,
+      category: true,
       user: true,
     },
     orderBy: { createdAt: "desc" },
@@ -218,13 +241,17 @@ export async function getProductMetadataBySlug(
         follow: !product.seo.noFollow,
       },
     },
-    alternates: { canonical: product.seo.canonicalUrl },
+    alternates: {
+      canonical: product.seo.canonicalUrl
+        ? product.seo.canonicalUrl
+        : `${siteShopUrl}/${product.category?.slug}/${product.slug}`,
+    },
     openGraph: {
       title: product.seo.ogTwitterTitle || product.seo.title,
       description:
         product.seo.ogTwitterDescription || product.seo.description || "",
       url: product.seo.ogTwitterUrl || "",
-      siteName: "Pictures Writers",
+      siteName: siteName!,
       images: [
         {
           url: product.imageCover!.url,

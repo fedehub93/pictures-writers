@@ -26,10 +26,9 @@ export async function POST(
     }
 
     // Controlla se il contest esiste già
-    const existingContest = await db.contest.findFirst({
+    const existingContest = await db.contestTranslations.findFirst({
       where: {
-        id: contestId,
-        rootId,
+        contestId: contestId,
         languageId: langId,
       },
     });
@@ -46,10 +45,6 @@ export async function POST(
       where: {
         id: contestId,
         rootId,
-        OR: [
-          { languageId: null }, // Contest senza lingua
-          { language: { isDefault: true } }, // Contest nella lingua di default
-        ],
       },
       include: {
         categories: true,
@@ -68,19 +63,15 @@ export async function POST(
       );
     }
 
-    const newContest = await db.contest.create({
+    const newContest = await db.contestTranslations.create({
       data: {
-        rootId: rootId,
+        contestId: contestId,
         languageId: langId,
-        organizationId: defaultContest.organizationId,
         name: defaultContest.name, // Potresti tradurre il titolo in seguito
         slug: defaultContest.slug, // Potresti tradurre lo slug in seguito
-        version: 1,
         description: defaultContest.description || undefined,
-        imageCoverId: defaultContest.imageCoverId,
-        categories: undefined,
-        deadlines: undefined,
-        prices: undefined,
+        benefits: defaultContest.benefits || undefined,
+        rules: defaultContest.rules || undefined,
       },
     });
 

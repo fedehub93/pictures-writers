@@ -21,6 +21,7 @@ import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
 
 import { PostListGrid } from "../_components/post-list-grid";
 import { PostList } from "../_components/post-list";
+import { getSettings } from "@/data/settings";
 
 type Params = {
   slug: string;
@@ -46,7 +47,6 @@ export async function generateStaticParams() {
 
   const categories = await getPublishedCategoriesBuilding();
   const tags = await getPublishedTagsBuilding();
-
   return [
     ...blogs,
     ...categories.map((category) => ({ slug: category.slug })),
@@ -57,6 +57,8 @@ export async function generateStaticParams() {
 export async function generateMetadata(props: Props): Promise<Metadata | null> {
   const params = await props.params;
   const { slug } = params;
+
+  const { siteUrl } = await getSettings();
 
   const categoryMetadata = await getCategoryMetadataBySlug(slug);
   if (categoryMetadata) {
@@ -84,6 +86,9 @@ export async function generateMetadata(props: Props): Promise<Metadata | null> {
         ...metadata,
         title: `News: ${posts[0].title}`,
         description: `Ultime notizie sulla sceneggiatura cinematografica. ${posts[0].title}`,
+        alternates: {
+          canonical: `${siteUrl}/blog/${slug}/`,
+        },
       };
     }
   }

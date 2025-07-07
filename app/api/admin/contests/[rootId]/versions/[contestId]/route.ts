@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
+import { disconnect } from "process";
 
 export async function DELETE(
   req: Request,
@@ -59,8 +60,6 @@ export async function PATCH(
   try {
     const user = await authAdmin();
     const { rootId, contestId } = params;
-    const searchParams = req.nextUrl.searchParams;
-    const langId = searchParams.get("langId");
 
     const values = await req.json();
 
@@ -78,41 +77,102 @@ export async function PATCH(
       where: { id: contest.id },
       data: {
         ...values,
+        translation: undefined,
+        translations: undefined,
         deadlines: undefined,
         categories: undefined,
-        prices: undefined,
+        stages: undefined,
+        updatedAt: new Date(),
       },
     });
 
     if (updatedContest) {
-      await updateContestDeadlines({
-        contestId: updatedContest.id,
-        deadlines: values.deadlines,
-      });
+      if (values.translation) {
+        await updateContestTranslation({
+          contestId: updatedContest.id,
+          translation: values.translation,
+        });
+      }
 
-      await updateContestCategories({
-        contestId: updatedContest.id,
-        categories: values.categories,
-      });
+      if (values.deadlines) {
+        await updateContestDeadlines({
+          contestId: updatedContest.id,
+          deadlines: values.deadlines,
+        });
+      }
 
-      await updateContestPrices({
-        contestId: updatedContest.id,
-        prices: values.prices,
-      });
+      if (values.categories) {
+        await updateContestCategories({
+          contestId: updatedContest.id,
+          categories: values.categories,
+        });
+      }
+
+      if (values.stages) {
+        await updateContestStages({
+          contestId: updatedContest.id,
+          stages: values.stages,
+        });
+      }
     }
-
-    // if (contest.seoId && values.seo) {
-    //   await db.seo.update({
-    //     where: { id: contest.seoId },
-    //     data: { ...values.seo },
-    //   });
-    // }
 
     return NextResponse.json(updatedContest);
   } catch (error) {
     console.log("[CONTESTS_ROOT_ID_VERSIONS_CONTEST_ID_PATCH]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
+}
+
+async function updateContestTranslation({
+  contestId,
+  translation,
+}: {
+  contestId: string;
+  translation: {
+    id?: string;
+    languageId: string;
+    name: string;
+    slug: string;
+    shortDescription: string | null;
+    description: PrismaJson.BodyData;
+    benefits: PrismaJson.BodyData;
+    rules: PrismaJson.BodyData;
+  };
+}) {
+  return await db.$transaction(async (tx) => {
+    // 1️⃣ Recupera le deadlines esistenti per il contest
+    const existingTranslation = await tx.contestTranslations.findFirst({
+      where: {
+        contestId,
+        languageId: translation.languageId,
+      },
+      select: { id: true },
+    });
+
+    let updatedTranslation = null;
+
+    if (existingTranslation) {
+      updatedTranslation = await tx.contestTranslations.update({
+        where: {
+          id: existingTranslation.id,
+        },
+        data: {
+          ...translation,
+        },
+      });
+    }
+
+    if (!existingTranslation) {
+      updatedTranslation = await tx.contestTranslations.create({
+        data: {
+          contestId,
+          ...translation,
+        },
+      });
+    }
+
+    return updatedTranslation;
+  });
 }
 
 async function updateContestDeadlines({
@@ -220,54 +280,55 @@ async function updateContestCategories({
   });
 }
 
-async function updateContestPrices({
+async function updateContestStages({
   contestId,
-  prices,
+  stages,
 }: {
   contestId: string;
-  prices: {
+  stages: {
     id?: string;
-    deadlineId: string;
-    categoryId: string;
-    price: number;
+    name: string;
+    date: Date;
   }[];
 }) {
   return await db.$transaction(async (tx) => {
-    // 1️⃣ Recupera le prices esistenti per il contest
-    const existingPrices = await tx.contestPrice.findMany({
+    // 1️⃣ Recupera le stages esistenti per il contest
+    const existingStages = await tx.contestSelectionStage.findMany({
       where: { contestId },
       select: { id: true },
     });
 
-    const existingIds = new Set(existingPrices.map((p) => p.id));
+    const existingIds = new Set(existingStages.map((d) => d.id));
     const incomingIds = new Set(
-      prices.filter((p) => p.id).map((p) => p.id as string)
+      stages.filter((d) => d.id).map((d) => d.id as string)
     );
 
     // 2️⃣ Determina cosa creare, aggiornare, eliminare
-    const toCreate = prices.filter((d) => !d.id);
-    const toUpdate = prices.filter((d) => d.id && existingIds.has(d.id));
-    const toDelete = existingPrices.filter((d) => !incomingIds.has(d.id));
+    const toCreate = stages.filter((d) => !d.id);
+    const toUpdate = stages.filter((d) => d.id && existingIds.has(d.id));
+    const toDelete = existingStages.filter((d) => !incomingIds.has(d.id));
 
     // 3️⃣ Esegue operazioni nella transazione
     await Promise.all([
-      // Creazione nuove prices
-      ...toCreate.map((p) =>
-        tx.contestPrice.create({
-          data: { ...p, contestId },
+      // Creazione nuove stages
+      ...toCreate.map((d) =>
+        tx.contestSelectionStage.create({
+          data: { ...d, contestId },
         })
       ),
 
-      // Aggiornamento delle prices esistenti
-      ...toUpdate.map((p) =>
-        tx.contestPrice.update({
-          where: { id: p.id },
-          data: { price: p.price },
+      // Aggiornamento delle deadlines esistenti
+      ...toUpdate.map((d) =>
+        tx.contestSelectionStage.update({
+          where: { id: d.id },
+          data: { date: d.date, name: d.name },
         })
       ),
 
-      // Eliminazione delle prices rimosse dal payload
-      ...toDelete.map((p) => tx.contestPrice.delete({ where: { id: p.id } })),
+      // Eliminazione delle deadlines rimosse dal payload
+      ...toDelete.map((d) =>
+        tx.contestSelectionStage.delete({ where: { id: d.id } })
+      ),
     ]);
   });
 }

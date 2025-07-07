@@ -16,7 +16,7 @@ import { API_ADMIN_COMPETITIONS } from "@/constants/api";
 import { GenericInput } from "@/components/form-component/generic-input";
 import { SlugInput } from "@/components/form-component/slug-input";
 import { OrganizationSelect } from "../_components/organization-select";
-import { contestFormSchema } from "../[rootId]/_components/contest-form";
+import { contestFormSchema } from "../[rootId]/(routes)/details/_components/contest-form";
 
 const formSchema = z.object({
   name: z.string().min(1, {

@@ -41,15 +41,18 @@ export const columns: ColumnDef<Contest>[] = [
       return <span>Image</span>;
     },
     cell: ({ row }) => {
-      const imageCover = (row.getValue("imageCover") || null) as Media | null;
+      const imageCover = (row.getValue("imageCover") || null) as {
+        url: string;
+        altText: string | null;
+      } | null;
       if (!imageCover) return null;
       return (
-        <div className="relative h-20 aspect-1/2">
+        <div className="relative max-w-60 aspect-video">
           <Image
             src={imageCover.url}
             alt={imageCover.altText || ""}
             fill
-            className="rounded-md object-contain"
+            className="rounded-md object-cover"
             unoptimized
           />
         </div>
@@ -68,6 +71,59 @@ export const columns: ColumnDef<Contest>[] = [
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
+    },
+  },
+  {
+    accessorKey: "organization",
+    header: () => {
+      return <span>Organization</span>;
+    },
+    cell: ({ row }) => {
+      const organization = (row.getValue("organization") || null) as {
+        name: string;
+        logo: Media | null;
+      } | null;
+      if (!organization) return null;
+      return (
+        <div className="flex items-center gap-x-4">
+          <div className="relative w-16 h-16 bg-secondary aspect-square rounded-full">
+            <Image
+              src={organization.logo?.url!}
+              alt={organization.logo?.altText || ""}
+              fill
+              className="rounded-md object-cover"
+              unoptimized
+            />
+          </div>
+          {organization.name}
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "nextDeadline",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="-ml-4"
+        >
+          Next Deadline
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      const { nextDeadline } = row.original;
+      if (!nextDeadline) return <div>No deadline</div>;
+      const date = new Date(nextDeadline);
+      const formattedDate = date.toLocaleDateString("it-IT", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+      return <div>{formattedDate}</div>;
     },
   },
   {

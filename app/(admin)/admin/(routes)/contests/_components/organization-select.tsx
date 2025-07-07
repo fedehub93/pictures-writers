@@ -20,7 +20,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { useOrganizationsQuery } from "@/app/(admin)/_hooks/use-organizations-query";
-import { contestFormSchema } from "../[rootId]/_components/contest-form";
+import { contestFormSchema } from "../[rootId]/(routes)/details/_components/contest-form";
 
 interface OrganizationSelectProps {
   control: Control<z.infer<typeof contestFormSchema>>;

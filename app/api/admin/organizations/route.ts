@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
-import { createProductSeo } from "@/lib/seo";
+import slugify from "slugify";
+import { stripe } from "@/lib/stripe";
 
 const ORGANIZATION_BATCH = 4;
 
@@ -15,9 +16,33 @@ export async function POST(req: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    const account = await stripe.accounts.create({
+      email: user.email!,
+      controller: {
+        losses: {
+          payments: "application",
+        },
+        fees: {
+          payer: "application",
+        },
+        stripe_dashboard: {
+          type: "express",
+        },
+      },
+    });
+    if (!account) {
+      return new NextResponse("Bad Request", { status: 400 });
+    }
+
     const organization = await db.organization.create({
       data: {
         name,
+        slug: slugify(name, {
+          lower: true,
+          strict: true,
+          remove: /[*+~.,()'"!:@]/g,
+        }),
+        stripeAccountId: account.id,
       },
     });
 

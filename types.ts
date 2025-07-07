@@ -1,6 +1,8 @@
 import { ReactNode } from "react";
 import { CustomElement } from "./app/(admin)/_components/editor";
 import {
+  Contest,
+  ContestTranslations,
   Media,
   Product,
   ProductType,
@@ -137,6 +139,14 @@ export type WebinarMetadata = {
   duration: string;
   platform: string;
 };
+
+/**
+ * Contest type
+ */
+
+export interface ContestWithTranslation extends Contest {
+  translation: ContestTranslations | null
+}
 
 /**
  * Widget types

@@ -14,15 +14,13 @@ const ContestsPage = async () => {
   }
 
   const contests = await db.contest.findMany({
-    where: {
-      OR: [
-        { languageId: null },
-        {
-          language: {
-            isDefault: true,
-          },
+    include: {
+      imageCover: true,
+      organization: {
+        include: {
+          logo: true,
         },
-      ],
+      },
     },
     orderBy: {
       createdAt: "desc",

@@ -18,11 +18,13 @@ export async function GET(
     const { rootId } = params;
     const searchParams = req.nextUrl.searchParams;
 
-    const langId = searchParams.get("langId");
-    
-    const contest = await db.contest.findFirst({
+    const langId = searchParams.get("langId") || "";
+
+    const contest = await db.contestTranslations.findFirst({
       where: {
-        rootId,
+        contest: {
+          rootId,
+        },
         languageId: langId,
       },
     });

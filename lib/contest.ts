@@ -29,7 +29,6 @@ export const createNewVersionContest = async (
       description: values.description || publishedContest.description,
       slug: values.slug || publishedContest.slug,
       organizationId: values.organizationId || publishedContest.organizationId,
-      languageId: langId,
       version: publishedContest.version + 1,
       status: ContentStatus.CHANGED,
       isLatest: false,

@@ -5,15 +5,20 @@ import { ContactForm } from "./_components/contact-form";
 import { getHeadMetadata } from "../../_components/seo/head-metadata";
 
 import type { JSX } from "react";
+import { getSettings } from "@/data/settings";
 
 export async function generateMetadata(): Promise<Metadata | null> {
   const metadata = await getHeadMetadata();
+  const { siteUrl } = await getSettings();
 
   return {
     ...metadata,
     title: "Contatti: Pictures Writers",
     description:
       "Sei un aspirante sceneggiatore e hai delle domande a cui non trovi risposta? Contattaci e ti risponderemo il prima possibile.",
+    alternates: {
+      canonical: `${siteUrl}/contatti/`,
+    },
   };
 }
 

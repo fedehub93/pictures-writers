@@ -24,7 +24,7 @@ model Language {
   isActive  Boolean @default(true)
   isDefault Boolean @default(false)
 
-  contests Contest[]
+  contestTranslations ContestTranslations[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -92,17 +92,35 @@ enum UserRole {
   ADMIN
 }
 
+enum UserGender {
+  UNDEFINED
+  MALE
+  FEMALE
+  OTHER
+}
+
 model User {
   id             String  @id @default(uuid())
   externalUserId String? @unique
 
-  firstName     String?
-  lastName      String?
+  name      String?
+  firstName String?
+  lastName  String?
+
+  password String?
+
   email         String?   @unique
-  password      String?
   emailVerified DateTime?
-  image         String?
-  accounts      Account[]
+
+  image String?
+
+  profileImage   Media?  @relation(fields: [profileImageId], references: [id], onDelete: Cascade)
+  profileImageId String?
+
+  gender      UserGender @default(UNDEFINED)
+  dateOfBirth DateTime?
+
+  accounts Account[]
 
   bio      String?
   imageUrl String?
@@ -112,8 +130,14 @@ model User {
   posts       Post[]
   postAuthors PostAuthor[]
 
-  notifications Notification[]
-  products      Product[]
+  notifications    Notification[]
+  products         Product[]
+  projects         Project[]
+  submissions      Submission[]
+  payments         Payment[]
+  organizationUser OrganizationUser[]
+
+  scores SubmissionScore[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -180,6 +204,9 @@ model Media {
   products         ProductGallery[]
   contest          Contest[]
   organizationLogo Organization[]
+  project          Project?
+  submission       Submission[]
+  user             User[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -349,8 +376,9 @@ model Tag {
 
   firstPublishedAt DateTime @default(now())
   publishedAt      DateTime @default(now())
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([rootId])
 }
@@ -667,6 +695,7 @@ model Organization {
   id String @id @default(uuid())
 
   name String
+  slug String @unique
 
   logo   Media?  @relation(fields: [logoId], references: [id])
   logoId String?
@@ -675,10 +704,34 @@ model Organization {
   website     String?
   description String?
 
-  contests Contest[]
+  stripeAccountId String?
+
+  contests          Contest[]
+  organizationUsers OrganizationUser[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum OrgRole {
+  ADMIN
+  REVIEWER
+  VIEWER
+}
+
+model OrganizationUser {
+  id String @id @default(cuid())
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+
+  role     OrgRole @default(VIEWER) // enum: ADMIN, REVIEWER, VIEWER, ecc.
+  isActive Boolean @default(false)
+
+  @@unique([userId, organizationId])
 }
 
 model Contest {
@@ -706,9 +759,6 @@ model Contest {
   imageCover   Media?  @relation(fields: [imageCoverId], references: [id])
   imageCoverId String?
 
-  language   Language? @relation(fields: [languageId], references: [id])
-  languageId String?
-
   rootId       String?
   root         Contest?  @relation("RootChildren", fields: [rootId], references: [id])
   rootChildren Contest[] @relation("RootChildren")
@@ -716,22 +766,55 @@ model Contest {
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
+  translations ContestTranslations[]
+
   categories ContestCategory[]
   deadlines  ContestDeadline[]
   prices     ContestPrice[]
+  stages     ContestSelectionStage[]
+
+  submissions Submission[]
+
+  nextDeadline DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([rootId, languageId, status])
+  @@index([rootId, status])
+}
+
+model ContestTranslations {
+  id String @id @default(uuid())
+
+  name String
+  slug String
+
+  shortDescription String?
+
+  /// [BodyData]
+  description Json? @db.JsonB
+  /// [BodyData]
+  benefits    Json? @db.JsonB
+  /// [BodyData]
+  rules       Json? @db.JsonB
+
+  language   Language @relation(fields: [languageId], references: [id])
+  languageId String
+
+  contestId String
+  contest   Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ContestDeadline {
-  id        String   @id @default(uuid())
-  date      DateTime
-  name      String
+  id   String   @id @default(uuid())
+  date DateTime
+  name String
+
   contestId String
-  contest   Contest  @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  contest   Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
 
   prices ContestPrice[]
 
@@ -740,8 +823,15 @@ model ContestDeadline {
 }
 
 model ContestCategory {
-  id        String  @id @default(uuid())
-  name      String
+  id   String @id @default(uuid())
+  name String
+
+  formatId String?
+  format   Format? @relation(fields: [formatId], references: [id])
+
+  genreId String?
+  genre   Genre?  @relation(fields: [genreId], references: [id])
+
   contestId String
   contest   Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
 
@@ -765,15 +855,38 @@ model ContestPrice {
 
   price Float @default(0)
 
+  submissions Submission[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model ContestSelectionStage {
+  id String @id @default(uuid())
+
+  name    String // Es. "Quarti di finale", "Finalisti"
+  date    DateTime
+  isFinal Boolean  @default(false) // Se è la fase finale (utile per i vincitori)
+
+  contestId String
+  contest   Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+
+  selections SubmissionSelection[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([contestId, name])
 }
 
 model Format {
   id String @id @default(uuid())
 
-  title      String
-  Impression Impression[]
+  title             String
+  Impression        Impression[]
+  projects          Project[]
+  submission        Submission[]
+  contestCategories ContestCategory[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -782,11 +895,175 @@ model Format {
 model Genre {
   id String @id @default(uuid())
 
-  title      String
-  Impression Impression[]
+  title             String
+  Impression        Impression[]
+  projects          Project[]
+  submission        Submission[]
+  contestCategories ContestCategory[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Project {
+  id String @id @default(uuid())
+
+  title   String
+  logline String
+
+  email     String?
+  pageCount Int?
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  authors ProjectAuthor[]
+
+  format   Format? @relation(fields: [formatId], references: [id])
+  formatId String?
+
+  genre   Genre?  @relation(fields: [genreId], references: [id])
+  genreId String?
+
+  file   Media?  @relation(fields: [fileId], references: [id])
+  fileId String? @unique
+
+  submissions Submission[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProjectAuthor {
+  id String @id @default(uuid())
+
+  firstName String
+  lastName  String
+
+  project   Project @relation(fields: [projectId], references: [id])
+  projectId String
+
+  submissions Submission[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum SubmissionStatus {
+  PENDING
+  REVIEWED
+  REJECTED
+  ACCEPTED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  UNPAID
+  REFUNDED
+}
+
+model Payment {
+  id String @id @default(cuid())
+
+  stripeIntentId String
+
+  amount Float?
+
+  currency String  @default("eur")
+  method   String? // es. card, se vuoi loggarlo
+
+  status PaymentStatus @default(PENDING)
+
+  submission Submission?
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Submission {
+  id String @id @default(uuid())
+
+  title   String
+  logline String
+
+  email     String
+  pageCount Int?
+
+  authors ProjectAuthor[]
+
+  format   Format? @relation(fields: [formatId], references: [id])
+  formatId String?
+
+  genre   Genre?  @relation(fields: [genreId], references: [id])
+  genreId String?
+
+  file   Media?  @relation(fields: [fileId], references: [id])
+  fileId String? @unique
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  contest   Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  contestId String
+
+  category   ContestPrice @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId String
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+
+  payment   Payment? @relation(fields: [paymentId], references: [id])
+  paymentId String?  @unique
+
+  status SubmissionStatus @default(PENDING)
+
+  selections SubmissionSelection[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SubmissionSelection {
+  id String @id @default(uuid())
+
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  stageId String
+  stage   ContestSelectionStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
+
+  scores SubmissionScore[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([submissionId, stageId])
+}
+
+model SubmissionScore {
+  id String @id @default(cuid())
+
+  overall    Float
+  plot       Float
+  characters Float
+  concept    Float
+  structure  Float
+  dialogue   Float
+
+  stageId String
+  stage   SubmissionSelection @relation(fields: [stageId], references: [id])
+
+  judge   User   @relation(fields: [judgeId], references: [id])
+  judgeId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([stageId, judgeId])
 }
 
 model Impression {

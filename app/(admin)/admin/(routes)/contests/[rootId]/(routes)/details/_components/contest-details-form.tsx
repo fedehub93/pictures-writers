@@ -4,16 +4,17 @@ import * as z from "zod";
 import { Control, useController } from "react-hook-form";
 import slugify from "slugify";
 
+import { Contest, Media } from "@prisma/client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-import { contestFormSchema } from "./contest-form";
 import { GenericInput } from "@/components/form-component/generic-input";
-import { OrganizationSelect } from "../../_components/organization-select";
 import { SlugInput } from "@/components/form-component/slug-input";
 import { GenericSwitch } from "@/components/form-component/generic-switch";
+
+import { contestFormSchema } from "./contest-form";
 import { ImageForm } from "./contest-image-cover";
-import { Contest, Media } from "@prisma/client";
-import { Separator } from "@/components/ui/separator";
+import { OrganizationSelect } from "../../../../_components/organization-select";
 
 interface ContestDetailsFormProps {
   control: Control<z.infer<typeof contestFormSchema>>;
@@ -21,12 +22,14 @@ interface ContestDetailsFormProps {
     imageCover: Media | null;
   };
   isSubmitting: boolean;
+  isDefaultLang: boolean;
 }
 
 export const ContestDetailsForm = ({
   control,
   initialData,
   isSubmitting,
+  isDefaultLang,
 }: ContestDetailsFormProps) => {
   const { field: fieldSlug } = useController({ control, name: "slug" });
 
@@ -37,6 +40,12 @@ export const ContestDetailsForm = ({
       })
     );
   };
+
+  const formName = isDefaultLang ? "name" : "translation.name";
+  const formDescription = isDefaultLang
+    ? "shortDescription"
+    : "translation.shortDescription";
+  const formSlug = isDefaultLang ? "slug" : "translation.slug";
 
   return (
     <Card>
@@ -60,8 +69,20 @@ export const ContestDetailsForm = ({
         <OrganizationSelect control={control} isSubmitting={isSubmitting} />
         <GenericInput
           control={control}
-          name="name"
+          name={formName}
           label="Name"
+          placeholder="e.g. Pictures Writers Script Contest"
+          disabled={isSubmitting}
+          onBlur={(e) => {
+            if (!fieldSlug.value) {
+              onSlugCreate();
+            }
+          }}
+        />
+        <GenericInput
+          control={control}
+          name={formDescription}
+          label="Short description"
           placeholder="e.g. Pictures Writers Script Contest"
           disabled={isSubmitting}
           onBlur={(e) => {
@@ -72,7 +93,7 @@ export const ContestDetailsForm = ({
         />
         <SlugInput
           control={control}
-          name="slug"
+          name={formSlug}
           label="Slug"
           placeholder="e.g. pictures-writers-script-contest-2025"
           disabled={isSubmitting}

@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import * as z from "zod";
 import { Control, useFieldArray } from "react-hook-form";
-import { Contest, Media } from "@prisma/client";
-import { CalendarIcon, Pencil, X } from "lucide-react";
+import { Contest } from "@prisma/client";
+import { CalendarIcon, X } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -22,18 +21,22 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
 
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/format";
+
 import { GenericInput } from "@/components/form-component/generic-input";
-import { contestFormSchema } from "./contest-form";
+
+import { DeadlinesFormSchema } from "./deadlines-form";
 
 interface ContestDeadlinesFormProps {
-  control: Control<z.infer<typeof contestFormSchema>>;
+  control: Control<z.infer<typeof DeadlinesFormSchema>>;
   initialData: Contest & {
-    imageCover: Media | null;
+    deadlines: {
+      id: string;
+      name: string;
+      date: Date;
+    }[];
   };
   isSubmitting: boolean;
 }
@@ -43,9 +46,6 @@ export const ContestDeadlinesForm = ({
   initialData,
   isSubmitting,
 }: ContestDeadlinesFormProps) => {
-  const [isEditing, setIsEditing] = useState(false);
-  const toggleEdit = () => setIsEditing((current) => !current);
-
   const { fields, append, remove } = useFieldArray({
     control,
     name: "deadlines",
@@ -68,53 +68,30 @@ export const ContestDeadlinesForm = ({
         <CardTitle className="text-base">
           <div>📅 Deadlines</div>
         </CardTitle>
-        <Button
-          disabled={isSubmitting}
-          onClick={toggleEdit}
-          type="button"
-          variant="secondary"
-        >
-          {isEditing && <>Cancel</>}
-          {!isEditing && (
-            <>
-              <Pencil className="h-4 w-4 mr-2" />
-              Edit
-            </>
-          )}
-        </Button>
       </CardHeader>
       <CardContent>
-        {!isEditing && fields.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {fields.map((field, index) => (
-              <Badge key={index}>
-                {field.name} - {formatDate({ date: field.date, month: "long" })}
-              </Badge>
-            ))}
-          </div>
-        )}
-        {!isEditing && fields.length === 0 && (
-          <div className="flex flex-wrap gap-2">No deadlines found!</div>
-        )}
-        {isEditing && (
-          <div className="space-y-8">
-            {fields.map((field, index) => (
+        <div className="space-y-8">
+          {fields
+            .sort(
+              (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+            )
+            .map((field, index) => (
               <div key={index} className="flex gap-x-4">
-                <div className="flex flex-wrap w-full gap-4">
+                <div className="flex flex-wrap w-full gap-4 border p-4 rounded-md bg-secondary">
                   <GenericInput
                     control={control}
                     name={`deadlines.${index}.name`}
                     label="Name"
                     placeholder="Early Bird Deadline"
                     disabled={isSubmitting}
-                    className="min-w-40"
+                    className="min-w-40 bg-white"
                   />
                   <FormField
                     control={control}
                     name={`deadlines.${index}.date`}
                     render={({ field }) => {
                       return (
-                        <FormItem className="flex flex-col">
+                        <FormItem className="flex flex-col min-w-40">
                           <FormLabel className="block">Date</FormLabel>
                           <Popover>
                             <PopoverTrigger asChild>
@@ -154,7 +131,6 @@ export const ContestDeadlinesForm = ({
                       );
                     }}
                   />
-                  <Separator />
                 </div>
 
                 <div className="text-right">
@@ -162,7 +138,7 @@ export const ContestDeadlinesForm = ({
                     size="icon"
                     variant="destructive"
                     type="button"
-                    className="size-4"
+                    className="size-8"
                     disabled={isSubmitting}
                     onClick={() => onRemoveDeadline(index)}
                   >
@@ -172,16 +148,15 @@ export const ContestDeadlinesForm = ({
               </div>
             ))}
 
-            <Button
-              type="button"
-              disabled={isSubmitting}
-              onClick={onAddDeadline}
-              variant="outline"
-            >
-              Add a deadline
-            </Button>
-          </div>
-        )}
+          <Button
+            type="button"
+            disabled={isSubmitting}
+            onClick={onAddDeadline}
+            variant="outline"
+          >
+            Add a deadline
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

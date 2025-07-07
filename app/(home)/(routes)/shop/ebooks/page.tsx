@@ -6,15 +6,21 @@ import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
 import { Breadcrumbs } from "@/app/(home)/_components/breadcrumbs";
 
 import { EbooksList } from "./_components/ebooks-list";
+import { getSettings } from "@/data/settings";
 
 export async function generateMetadata(): Promise<Metadata | null> {
   const metadata = await getHeadMetadata();
+
+  const { siteShopUrl } = await getSettings();
 
   return {
     ...metadata,
     title: "Ebooks: Pictures Writers",
     description:
       "Impara il mestiere dello sceneggiatore attraverso la nostra selezione di ebooks. Scopri di più.",
+    alternates: {
+      canonical: `${siteShopUrl}/ebooks/`,
+    },
   };
 }
 

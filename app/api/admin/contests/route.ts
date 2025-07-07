@@ -6,7 +6,7 @@ import { authAdmin } from "@/lib/auth-service";
 export async function POST(req: Request) {
   try {
     const user = await authAdmin();
-    const { name, organizationId, languageId, slug } = await req.json();
+    const { name, organizationId, slug } = await req.json();
 
     if (!user) {
       return new NextResponse("Unauthorized", { status: 401 });
@@ -17,7 +17,6 @@ export async function POST(req: Request) {
         name,
         slug,
         organizationId,
-        languageId,
         version: 1,
       },
     });

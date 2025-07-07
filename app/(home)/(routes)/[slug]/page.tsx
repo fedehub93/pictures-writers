@@ -41,6 +41,8 @@ export async function generateMetadata(props: Props): Promise<Metadata | null> {
   const params = await props.params;
   const { slug } = params;
 
+  const { siteUrl } = await getSettings();
+
   if (slug === "blog") {
     const metadata = await getHeadMetadata();
 
@@ -52,6 +54,9 @@ export async function generateMetadata(props: Props): Promise<Metadata | null> {
       ...metadata,
       title: `News: ${posts[0].title}`,
       description: `Ultime notizie sulla sceneggiatura cinematografica. ${posts[0].title}`,
+      alternates: {
+        canonical: `${siteUrl}/${slug}/`,
+      },
     };
   }
 

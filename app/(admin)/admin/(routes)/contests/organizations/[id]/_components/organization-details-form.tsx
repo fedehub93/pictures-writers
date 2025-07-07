@@ -12,7 +12,9 @@ import { GenericInput } from "@/components/form-component/generic-input";
 
 interface OrganizationDetailsFormProps {
   control: Control<z.infer<typeof organizationFormSchema>>;
-  initialData: Organization;
+  initialData: {
+    name: string;
+  };
   isSubmitting: boolean;
 }
 

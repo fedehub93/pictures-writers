@@ -20,7 +20,16 @@ import { OrganizationJsonLd } from "./_components/seo/json-ld/organization";
 const mulish = Mulish({ subsets: ["latin"] });
 
 export async function generateMetadata(): Promise<Metadata | null> {
-  return await getHeadMetadata();
+  const metadata = await getHeadMetadata();
+
+  const { siteUrl } = await getSettings();
+
+  return {
+    ...metadata,
+    alternates: {
+      canonical: `${siteUrl}/`,
+    },
+  };
 }
 
 export default async function RootLayout({
@@ -35,7 +44,7 @@ export default async function RootLayout({
       <body className={mulish.className}>
         <OrganizationJsonLd
           name={settings.siteName!}
-          url={settings.siteUrl!}
+          url={`${settings.siteUrl!}/`}
           logo={`${settings.siteUrl}${settings.logoUrl}`}
         />
         <ToastProvider />

@@ -5,15 +5,21 @@ import { UserRole } from "@prisma/client";
 import { db } from "@/lib/db";
 import { Separator } from "@/components/ui/separator";
 import { getHeadMetadata } from "../../_components/seo/head-metadata";
+import { getSettings } from "@/data/settings";
 
 export async function generateMetadata(): Promise<Metadata | null> {
   const metadata = await getHeadMetadata();
+
+  const { siteUrl } = await getSettings();
 
   return {
     ...metadata,
     title: "Chi siamo: Pictures Writers",
     description:
       "Pictures Writers nasce per diventare un canale centrale per gli sceneggiatori italiani, fare network creando un community e offrire servizio a scopo educativo per questo fantastico mestiere cinematografico.",
+    alternates: {
+      canonical: `${siteUrl}/about/`,
+    },
   };
 }
 

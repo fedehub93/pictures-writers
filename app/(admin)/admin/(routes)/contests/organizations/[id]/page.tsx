@@ -20,6 +20,17 @@ const OrganizationIdPage = async (props: {
     where: {
       id: params.id,
     },
+    select: {
+      id: true,
+      name: true,
+      logo: {
+        select: {
+          id:true,
+          url: true,
+          altText: true,
+        },
+      },
+    },
   });
 
   if (!organization || !organization.id) {

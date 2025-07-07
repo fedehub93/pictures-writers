@@ -4,9 +4,11 @@ import Link from "next/link";
 import { getHeadMetadata } from "../../_components/seo/head-metadata";
 
 import type { JSX } from "react";
+import { getSettings } from "@/data/settings";
 
 export async function generateMetadata(): Promise<Metadata | null> {
   const metadata = await getHeadMetadata();
+  const { siteUrl } = await getSettings();
 
   return {
     ...metadata,
@@ -19,6 +21,9 @@ export async function generateMetadata(): Promise<Metadata | null> {
         index: true,
         follow: true,
       },
+    },
+    alternates: {
+      canonical: `${siteUrl}/policy/`,
     },
   };
 }

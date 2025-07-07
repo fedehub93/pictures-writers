@@ -3,12 +3,12 @@ import { Metadata } from "next";
 import { getSettings } from "@/data/settings";
 
 export async function getHeadMetadata(): Promise<Metadata | null> {
-  const { seo } = await getSettings();
+  const { seo, siteUrl } = await getSettings();
 
   if (!seo) {
     return null;
   }
-  
+
   return {
     title: seo.title,
     robots: {
@@ -21,7 +21,7 @@ export async function getHeadMetadata(): Promise<Metadata | null> {
     },
     description: seo.description,
     openGraph: {
-      url: "https://pictureswriters.com",
+      url: `${siteUrl}/"`,
       type: "website",
     },
   };

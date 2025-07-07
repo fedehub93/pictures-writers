@@ -102,7 +102,7 @@ const FirstImpressionForm = ({
               <FormItem>
                 <FormLabel>Nome *</FormLabel>
                 <FormControl>
-                  <Input placeholder="Mario" {...field} />
+                  <Input className="bg-white" placeholder="Mario" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -115,7 +115,7 @@ const FirstImpressionForm = ({
               <FormItem>
                 <FormLabel>Cognome *</FormLabel>
                 <FormControl>
-                  <Input placeholder="Rossi" {...field} />
+                  <Input className="bg-white" placeholder="Rossi" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -128,7 +128,7 @@ const FirstImpressionForm = ({
               <FormItem>
                 <FormLabel>Email *</FormLabel>
                 <FormControl>
-                  <Input placeholder="mario.rossi@gmail.com" {...field} />
+                  <Input className="bg-white" placeholder="mario.rossi@gmail.com" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -141,7 +141,7 @@ const FirstImpressionForm = ({
               <FormItem>
                 <FormLabel>Titolo sceneggiatura *</FormLabel>
                 <FormControl>
-                  <Input placeholder="Il petroliere" {...field} />
+                  <Input className="bg-white" placeholder="Il petroliere" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -223,7 +223,7 @@ const FirstImpressionForm = ({
                 <FormItem>
                   <FormLabel>File</FormLabel>
                   <FormControl>
-                    <Input
+                    <Input className="bg-white"
                       type="file"
                       placeholder="Sceneggiatura"
                       {...fileRef}

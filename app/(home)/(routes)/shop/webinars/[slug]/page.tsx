@@ -55,7 +55,7 @@ const Page = async (props: { params: Promise<{ slug: string }> }) => {
   const galleryImages =
     product.gallery.map((image) => image.media.url || "") || [];
 
-  const webinarUrl = `${siteShopUrl}/${product.category.slug}/${product.slug}`;
+  const webinarUrl = `${siteShopUrl}/${product.category.slug}/${product.slug}/`;
 
   return (
     <section key={product.slug} className="bg-violet-100/40 py-10">

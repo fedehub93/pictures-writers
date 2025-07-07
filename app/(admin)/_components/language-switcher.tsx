@@ -1,36 +1,40 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Language } from "@prisma/client";
 
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface LanguageSwitcherProps {
   languages: Language[];
-  onLanguageChange: (langId: string) => void;
 }
 
-function getFlagEmoji(countryCode: string) {
-  const codePoints = countryCode
-    .toUpperCase()
-    .split("")
-    //@ts-ignore
-    .map((char) => 127397 + char.charCodeAt());
-  return String.fromCodePoint(...codePoints);
-}
-
-export const LanguageSwitcher = ({
-  languages,
-  onLanguageChange,
-}: LanguageSwitcherProps) => {
+export const LanguageSwitcher = ({ languages }: LanguageSwitcherProps) => {
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const currentLangId = searchParams.get("langId");
 
+  const langId =
+    currentLangId || (languages.find((l) => l.isDefault)?.id as string);
+
+  const onLanguageChange = (id: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("langId", id);
+
+    router.push(`${pathname}?${params.toString()}`);
+  };
+
   return (
-    <div className="flex gap-2">
-      {languages.map((lang) => (
+    <div className="flex gap-4 items-center">
+      {/* {languages.map((lang) => (
         <Button
           key={lang.id}
           onClick={() => onLanguageChange(lang.id)}
@@ -42,9 +46,21 @@ export const LanguageSwitcher = ({
               : "outline"
           }
         >
-          {getFlagEmoji(lang.code)}
+          {lang.name}
         </Button>
-      ))}
+      ))} */}
+      <Select value={langId} onValueChange={onLanguageChange}>
+        <SelectTrigger className="w-[160px]">
+          <SelectValue placeholder="Select language" />
+        </SelectTrigger>
+        <SelectContent>
+          {languages.map((lang) => (
+            <SelectItem key={lang.id} value={lang.id}>
+              {lang.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 };

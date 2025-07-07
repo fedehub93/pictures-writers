@@ -54,7 +54,6 @@ export const GenericImage = <T extends FieldValues>({
     try {
       field.onChange(imageId);
       setImage(imageUrl);
-      toast.success(`Ebook updated`);
     } catch {
       toast.error("Something went wrong");
     } finally {
@@ -65,6 +64,8 @@ export const GenericImage = <T extends FieldValues>({
   const onHandleRemove = () => {
     onSubmit({ imageId: undefined, imageUrl: "" });
   };
+
+  console.log(field)
 
   return (
     <Card>

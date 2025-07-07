@@ -199,7 +199,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     {
-      url: siteUrl,
+      url: `${siteUrl}/`,
       lastModified: new Date(),
       changeFrequency: "yearly",
       priority: 1,

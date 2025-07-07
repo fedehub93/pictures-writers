@@ -5,9 +5,11 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
 import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
+import { getSettings } from "@/data/settings";
 
 export async function generateMetadata(): Promise<Metadata | null> {
   const metadata = await getHeadMetadata();
+  const { siteUrl } = await getSettings();
 
   return {
     ...metadata,
@@ -19,6 +21,9 @@ export async function generateMetadata(): Promise<Metadata | null> {
         follow: false,
       },
     },
+    alternates: {
+      canonical: `${siteUrl}/feedback-gratuito-sceneggiatura/success/`
+    }
   };
 }
 

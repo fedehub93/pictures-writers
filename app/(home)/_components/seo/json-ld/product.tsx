@@ -36,14 +36,13 @@ export const ProductJsonLd: FC<ProductJsonLdProps> = ({
   videos = undefined,
   description,
 }) => {
-  const trailingUrl = `${url}/`;
   const json: WithContext<Product> = {
     "@context": "https://schema.org",
     "@type": "Product",
-    "@id": `${trailingUrl}#product`,
+    "@id": `${url}#product`,
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": trailingUrl,
+      "@id": url,
     },
     name: title,
     description: description,
@@ -58,6 +57,7 @@ export const ProductJsonLd: FC<ProductJsonLdProps> = ({
       availability: offers.availability,
     },
     category,
+    url
   };
 
   return <JsonLd json={json} />;
