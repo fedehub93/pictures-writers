@@ -9,9 +9,7 @@
     "build:analyze": "cross-env ANALYZE=true next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "npx prisma generate --schema ./prisma-cms/schema.prisma --no-engine && npx prisma generate --schema ./prisma-competitions/schema.prisma --no-engine",
-    "generate": "npx prisma generate --schema ./prisma-cms/schema.prisma --no-engine && npx prisma generate --schema ./prisma-competitions/schema.prisma --no-engine",
-    "push": "npx prisma db push --schema ./prisma-cms/schema.prisma && npx prisma db push --schema ./prisma-competitions/schema.prisma"
+    "postinstall": "npx prisma generate"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.25.4",
