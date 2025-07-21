@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Check, ChevronsUpDown, PlusCircle } from "lucide-react";
+import { Check, PlusCircle } from "lucide-react";
 import {
   Command,
   CommandEmpty,

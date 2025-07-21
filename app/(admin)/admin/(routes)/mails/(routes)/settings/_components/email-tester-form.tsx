@@ -32,9 +32,8 @@ interface EmailTesterFormProps {
 
 const formSchema = z.object({
   emailRecipient: z
-    .string()
-    .min(1, { message: "Email recipient is required" })
-    .email("This is not a valid email."),
+    .email({ error: "This is not a valid email." })
+    .min(1, { message: "Email recipient is required" }),
   emailTemplateId: z.string().optional(),
 });
 

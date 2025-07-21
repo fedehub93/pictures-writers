@@ -12,8 +12,9 @@ import { ContentStatus } from "@prisma/client";
 
 import { cn } from "@/lib/utils";
 import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
-import { useCategoriesQuery } from "@/app/(admin)/_hooks/use-categories";
 import { Skeleton } from "@/components/ui/skeleton";
+
+import { useCategoriesQuery } from "@/app/(admin)/_hooks/use-categories";
 import { MultiSelectV2 } from "@/components/multi-select-v2";
 
 interface CategoriesFormProps {
@@ -35,7 +36,7 @@ const formSchema = z.object({
   categories: z.array(
     z.object({
       id: z.string().min(1),
-      sort: z.coerce.number(),
+      sort: z.coerce.number<number>(),
     })
   ),
 });

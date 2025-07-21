@@ -4,9 +4,10 @@ import Link from "next/link";
 import { formatDistance } from "date-fns";
 import { it } from "date-fns/locale";
 
-import { db } from "@/lib/db";
 import { ContentStatus } from "@prisma/client";
 import { getAuthorsString } from "@/data/user";
+import { db } from "@/lib/db";
+
 
 export const LatestNews = async () => {
   const latestNews = await db.post.findMany({

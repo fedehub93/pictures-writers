@@ -1,19 +1,14 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import qs from "query-string";
+import axios from "axios";
 
 export const useNotificationsQuery = (userId: string) => {
   const fetchNotifications = async ({ pageParam = undefined }) => {
-    const url = qs.stringifyUrl(
-      {
-        url: `/api/users/${userId}/notifications`,
-        query: {
-          cursor: pageParam,
-        },
-      },
-      { skipNull: true }
+    const paramsObj = { cursor: pageParam };
+    const res = await axios.get(
+      `/api/users/${userId}/notifications?cursor=${pageParam}`,
+      { params: { ...paramsObj } }
     );
-    const res = await fetch(url);
-    return res.json();
+    return res.data;
   };
 
   const {

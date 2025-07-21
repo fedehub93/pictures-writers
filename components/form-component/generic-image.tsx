@@ -65,8 +65,6 @@ export const GenericImage = <T extends FieldValues>({
     onSubmit({ imageId: undefined, imageUrl: "" });
   };
 
-  console.log(field)
-
   return (
     <Card>
       <CardHeader className="flex flex-row justify-between items-center">

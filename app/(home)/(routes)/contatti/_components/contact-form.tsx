@@ -16,10 +16,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ContactSchemaValibot } from "@/schemas";
 import { contact } from "@/actions/contact";
+import { GenericInput } from "@/components/form-component/generic-input";
 
 export const ContactForm = () => {
   const [error, setError] = useState<string | undefined>("");
@@ -63,57 +63,30 @@ export const ContactForm = () => {
       <form className="mb-12 lg:mb-0" onSubmit={form.handleSubmit(onSubmit)}>
         <div className="flex flex-col gap-8 mb-4">
           <div className="flex flex-wrap gap-4">
-            <FormField
+            <GenericInput
               control={form.control}
+              label="Name"
               name="name"
-              render={({ field }) => (
-                <FormItem className="flex-auto min-w-60">
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      disabled={isSubmitting}
-                      placeholder="Mario Rossi"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              placeholder="Mario Rossi"
+              disabled={isSubmitting}
+              className="bg-white"
             />
-            <FormField
+            <GenericInput
               control={form.control}
+              label="Email"
               name="email"
-              render={({ field }) => (
-                <FormItem className="flex-auto min-w-60">
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      disabled={isSubmitting}
-                      placeholder="mario.rossi@gmail.com"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              placeholder="mario.rossi@gmail.com"
+              disabled={isSubmitting}
+              className="bg-white"
             />
           </div>
-          <FormField
+          <GenericInput
             control={form.control}
+            label="Subject"
             name="subject"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Subject</FormLabel>
-                <FormControl>
-                  <Input
-                    disabled={isSubmitting}
-                    placeholder="Info"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            placeholder="Info"
+            disabled={isSubmitting}
+            className="bg-white"
           />
           <FormField
             control={form.control}

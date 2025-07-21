@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import { db } from "@/lib/db";
-import { authAdmin } from "@/lib/auth-service";
 import { ContentStatus } from "@prisma/client";
 
+import { db } from "@/lib/db";
+import { authAdmin } from "@/lib/auth-service";
+
 const RequestSchema = z.object({
-  ids: z.array(z.string().uuid()).nonempty(),
+  ids: z.array(z.uuid()).nonempty(),
 });
 
 export async function POST(req: NextRequest) {
@@ -38,7 +39,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { message: "Invalid request", errors: error.errors },
+        { message: "Invalid request", errors: error.message },
         { status: 400 }
       );
     }

@@ -13,12 +13,11 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { FileUpload, FileUploadOnChange } from "@/components/file-upload";
+import { FileUploadOnChange } from "@/components/file-upload";
 import { useSheet } from "@/app/(admin)/_hooks/use-sheet-store";
 import {
   Sheet,

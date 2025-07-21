@@ -36,9 +36,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 import { productFormSchema } from "./product-form";
-import { EbookFormatsForm } from "./ebook-formats-form";
 import { formatDate } from "@/lib/format";
-import { format } from "date-fns";
 
 interface ProductWebinarFormProps {
   control: Control<z.infer<typeof productFormSchema>>;

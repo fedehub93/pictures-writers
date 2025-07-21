@@ -28,21 +28,16 @@ interface EmailSettingsFormProps {
 
 const formSchema = z.object({
   emailSenderName: z.string(),
-  emailSender: z
-    .string()
-    .min(1, {
-      message: "Email sender required",
-    })
-    .email("This is not a valid email."),
-  emailResponse: z
-    .string()
-    .min(1, {
-      message: "Email receiver required",
-    })
-    .email("This is not a valid email."),
+  emailSender: z.email().min(1, {
+    error: "Email sender required",
+  }),
+  emailResponse: z.email().min(1, {
+    error: "Email receiver required",
+  }),
+
   emailProvider: z.custom<EmailProvider>(),
   emailApiKey: z.string().optional(),
-  maxEmailsPerDay: z.coerce.number().int(),
+  maxEmailsPerDay: z.coerce.number<number>().int(),
 });
 
 export const EmailSettingsForm = ({

@@ -48,12 +48,9 @@ const interactionsOptionSchema = z.object({
 const formSchema = z.object({
   firstName: z.string().optional(),
   lastName: z.string().optional(),
-  email: z
-    .string()
-    .min(1, {
-      message: "Email receiver required",
-    })
-    .email("This is not a valid email."),
+  email: z.email().min(1, {
+    error: "Email receiver required",
+  }),
   audiences: z.array(audiencesOptionSchema),
   interactions: z.array(interactionsOptionSchema),
   isSubscriber: z.boolean(),

@@ -1,6 +1,7 @@
+import axios from "axios";
+
 import { Widget, WidgetSection } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
-import qs from "query-string";
 
 type UseWidgetsQuery = {
   s?: string;
@@ -9,18 +10,11 @@ type UseWidgetsQuery = {
 
 export const useWidgetsQuery = ({ s = "", section }: UseWidgetsQuery) => {
   const fetchWidgets = async ({ s = "", section }: UseWidgetsQuery) => {
-    const url = qs.stringifyUrl(
-      {
-        url: `/api/admin/widgets`,
-        query: {
-          s,
-          section,
-        },
-      },
-      { skipNull: true }
-    );
-    const res = await fetch(url);
-    return res.json();
+    const paramsObj = { s, section };
+    const res = await axios.get(`/api/admin/widgets`, {
+      params: { ...paramsObj },
+    });
+    return res.data;
   };
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery<Widget[]>({

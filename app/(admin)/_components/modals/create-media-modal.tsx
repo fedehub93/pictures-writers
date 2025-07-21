@@ -40,13 +40,13 @@ import { formatBytes } from "@/lib/format";
 const formSchema = z.object({
   key: z.string(),
   name: z.string().min(1, {
-    message: "Media name is required",
+    error: "Media name is required",
   }),
   url: z.string().min(1, {
-    message: "Media asset url is required",
+    error: "Media asset url is required",
   }),
   altText: z.optional(z.string()),
-  type: z.nativeEnum(MediaType),
+  type: z.enum(MediaType),
   size: z.number(),
 });
 

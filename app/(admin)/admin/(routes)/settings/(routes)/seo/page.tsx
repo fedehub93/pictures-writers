@@ -30,13 +30,13 @@ const formSchema = z.object({
   title: z
     .string()
     .min(1, {
-      message: "SEO Title required",
+      error: "SEO Title required",
     })
     .optional(),
   description: z
     .string()
     .min(1, {
-      message: "SEO Description required",
+      error: "SEO Description required",
     })
     .optional(),
   noIndex: z.boolean().optional(),

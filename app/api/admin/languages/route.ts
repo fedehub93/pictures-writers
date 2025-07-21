@@ -56,7 +56,6 @@ async function updateLanguages({
   }[];
 }) {
   return await db.$transaction(async (tx) => {
-    // 1️⃣ Recupera le languages esistenti per il contest
     const existingLanguages = await tx.language.findMany({
       select: { id: true },
     });

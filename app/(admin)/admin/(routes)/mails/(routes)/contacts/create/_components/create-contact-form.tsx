@@ -20,8 +20,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { useAudiencesQuery } from "@/app/(admin)/_hooks/use-audiences-query";
 import { Skeleton } from "@/components/ui/skeleton";
+
+import { useAudiencesQuery } from "@/app/(admin)/_hooks/use-audiences-query";
 import { MultiSelectV2 } from "@/components/multi-select-v2";
 
 interface CreateContactFormProps {}
@@ -33,8 +34,8 @@ const audiencesOptionSchema = z.object({
 const formSchema = z.object({
   firstName: z.string().optional(),
   lastName: z.string().optional(),
-  email: z.string().email().min(1, {
-    message: "Email is required",
+  email: z.email().min(1, {
+    error: "Email is required",
   }),
   isSubscriber: z.boolean(),
   audiences: z.array(audiencesOptionSchema),

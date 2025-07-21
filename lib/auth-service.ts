@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 
+import { db } from "@/lib/db";
 import { UserRole } from "@prisma/client";
-import { db } from "./db";
 
 export const authAdmin = async () => {
   const { userId } = await auth();

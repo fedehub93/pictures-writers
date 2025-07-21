@@ -42,10 +42,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const formSchema = z.object({
   name: z.string().min(1, {
-    message: "Name is required",
+    error: "Name is required",
   }),
-  section: z.nativeEnum(WidgetSection),
-  type: z.nativeEnum(WidgetType),
+  section: z.enum(WidgetSection),
+  type: z.enum(WidgetType),
 });
 
 const sections = [

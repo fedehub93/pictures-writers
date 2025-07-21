@@ -32,7 +32,7 @@ const EmailEditor = dynamic(() => import("react-email-editor"), {
 
 const formSchema = z.object({
   name: z.string().min(1, {
-    message: "Name is required",
+    error: "Name is required",
   }),
   description: z.string().optional(),
 });

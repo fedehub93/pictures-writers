@@ -21,9 +21,9 @@ const formSchema = z.object({
   languages: z.array(
     z.object({
       id: z.string().optional(),
-      code: z.string({ message: "Code is required" }),
-      name: z.string({ message: "Name is required" }),
-      slug: z.string({ message: "Slug is required" }).nullable(),
+      code: z.string({ error: "Code is required" }),
+      name: z.string({ error: "Name is required" }),
+      slug: z.string({ error: "Slug is required" }).nullable(),
       isActive: z.boolean().optional(),
       isDefault: z.boolean().optional(),
     })

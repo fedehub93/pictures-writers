@@ -1,17 +1,12 @@
+import axios from "axios";
+
 import { User } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
-import qs from "query-string";
 
 export const useAuthorsQuery = () => {
   const fetchAuthors = async () => {
-    const url = qs.stringifyUrl(
-      {
-        url: `/api/admin/authors`,
-      },
-      { skipNull: true }
-    );
-    const res = await fetch(url);
-    return res.json();
+    const res = await axios.get(`/api/admin/authors`);
+    return res.data;
   };
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery<User[]>({

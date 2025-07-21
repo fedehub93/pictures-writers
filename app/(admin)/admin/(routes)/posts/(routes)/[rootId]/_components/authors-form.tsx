@@ -7,9 +7,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { useDebounceCallback } from "usehooks-ts";
 
-import { ContentStatus, Post, PostAuthor, User } from "@prisma/client";
+import { ContentStatus, User } from "@prisma/client";
 import {
   Form,
   FormControl,
@@ -18,13 +17,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDate } from "@/lib/format";
@@ -35,7 +27,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { Check, PlusCircle, X } from "lucide-react";
+import { Check, PlusCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Command,
@@ -66,7 +58,7 @@ const formSchema = z.object({
   authors: z.array(
     z.object({
       id: z.string().min(1),
-      sort: z.coerce.number(),
+      sort: z.coerce.number<number>(),
     })
   ),
 });

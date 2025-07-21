@@ -57,30 +57,30 @@ interface ProductFormProps {
 const productGalleryFormSchema = z.object({
   mediaId: z.string(),
   url: z.string().optional(),
-  sort: z.coerce.number(),
+  sort: z.coerce.number<number>(),
 });
 
 const productFAQsFormSchema = z.object({
   id: z.string().optional(),
   question: z.string().optional(),
   answer: z.string().optional(),
-  sort: z.coerce.number(),
+  sort: z.coerce.number<number>(),
 });
 
 export const productFormSchema = z.object({
   title: z.string().min(1, {
-    message: "Title is required!",
+    error: "Title is required!",
   }),
   categoryId: z.string().min(1, {
-    message: "Category is required!",
+    error: "Category is required!",
   }),
   slug: z.string().min(1, {
-    message: "Slug is required!",
+    error: "Slug is required!",
   }),
   description: z.custom<Descendant[]>(),
   imageCoverId: z.string().optional(),
-  price: z.coerce.number(),
-  discountedPrice: z.coerce.number(), // Trasforma in numero,
+  price: z.coerce.number<number>(),
+  discountedPrice: z.coerce.number<number>(), // Trasforma in numero,
   seo: z.object({
     title: z.string().optional(),
     description: z.string().optional(),

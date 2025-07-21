@@ -25,12 +25,12 @@ import { Separator } from "@/components/ui/separator";
 
 const formSchema = z.object({
   siteName: z.string().min(1, {
-    message: "Sitename is required",
+    error: "Sitename is required",
   }),
   siteUrl: z
     .string()
     .min(1, {
-      message: "Sitename is required",
+      error: "Sitename is required",
     })
     .optional(),
   logoUrl: z.string().optional(),

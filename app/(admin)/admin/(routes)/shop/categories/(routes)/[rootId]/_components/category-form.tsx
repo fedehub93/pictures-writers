@@ -26,10 +26,10 @@ interface CategoryFormProps {
 
 export const CategoryFormSchema = z.object({
   title: z.string().min(1, {
-    message: "Title is required!",
+    error: "Title is required!",
   }),
   slug: z.string().min(1, {
-    message: "Slug is required!",
+    error: "Slug is required!",
   }),
   seo: z.object({
     title: z.string().optional(),

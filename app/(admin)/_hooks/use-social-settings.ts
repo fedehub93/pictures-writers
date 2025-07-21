@@ -1,6 +1,7 @@
+import axios from "axios";
+
 import { Widget } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
-import qs from "query-string";
 
 type UseSocialSettingsQuery = {
   onlyActive: boolean;
@@ -14,15 +15,11 @@ export const useSocialSettingsQuery = ({
   const fetchSocials = async ({
     onlyActive = false,
   }: UseSocialSettingsQuery) => {
-    const url = qs.stringifyUrl(
-      {
-        url: `/api/admin/settings/socials`,
-        query: { onlyActive },
-      },
-      { skipNull: true }
-    );
-    const res = await fetch(url);
-    return res.json();
+    const paramsObj = { onlyActive };
+    const res = await axios.get(`/api/admin/settings/socials`, {
+      params: { ...paramsObj },
+    });
+    return res.data;
   };
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery<Widget[]>({

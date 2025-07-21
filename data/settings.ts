@@ -1,6 +1,7 @@
+import { SocialChannel, SocialEntityType, SocialKey } from "@prisma/client";
+
 import { db } from "@/lib/db";
 import { SettingsWithScriptsAndSocials } from "@/types";
-import { SocialChannel, SocialEntityType, SocialKey } from "@prisma/client";
 
 export const DEFAULT_SOCIAL_CHANNEL_VALUES: {
   key: SocialKey;

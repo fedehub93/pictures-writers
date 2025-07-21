@@ -42,7 +42,7 @@ import {
 const formSchema = z.object({
   scripts: z.array(
     z.object({
-      name: z.string({ message: "Il nome è obbligatorio" }),
+      name: z.string({ error: "Il nome è obbligatorio" }),
       src: z.string().optional(),
       strategy: z.any(),
       content: z.string().optional(),
@@ -120,9 +120,7 @@ const MainSettingsPage = () => {
                   value={field.id}
                   className="flex-1 space-y-4 border px-4 py-0 rounded-md"
                 >
-                  <AccordionTrigger>
-                    {field.name}
-                  </AccordionTrigger>
+                  <AccordionTrigger>{field.name}</AccordionTrigger>
 
                   <AccordionContent className="space-y-4 px-2">
                     <div className="flex gap-x-4 w-full">

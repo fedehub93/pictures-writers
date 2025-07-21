@@ -11,6 +11,8 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
+import { ContentStatus } from "@prisma/client";
+
 import {
   Form,
   FormControl,
@@ -24,7 +26,6 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 import { CharsCounter } from "@/components/chars-counter";
-import { ContentStatus } from "@prisma/client";
 
 interface SlugFormProps {
   initialData: {
@@ -39,7 +40,7 @@ interface SlugFormProps {
 
 export const formSchema = z.object({
   slug: z.string().min(1, {
-    message: "Slug is required!",
+    error: "Slug is required!",
   }),
 });
 

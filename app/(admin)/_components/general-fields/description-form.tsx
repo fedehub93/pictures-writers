@@ -9,6 +9,8 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useDebounceCallback } from "usehooks-ts";
 
+import { ContentStatus } from "@prisma/client";
+
 import { cn } from "@/lib/utils";
 import {
   Form,
@@ -17,10 +19,8 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 
 import { CharsCounter } from "@/components/chars-counter";
-import { ContentStatus } from "@prisma/client";
 import { Textarea } from "@/components/ui/textarea";
 
 interface DescriptionFormProps {
@@ -36,7 +36,7 @@ interface DescriptionFormProps {
 
 const formSchema = z.object({
   description: z.string().min(1, {
-    message: "Description is required!",
+    error: "Description is required!",
   }),
 });
 

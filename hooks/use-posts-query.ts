@@ -1,5 +1,6 @@
+import axios from "axios";
+
 import { useInfiniteQuery } from "@tanstack/react-query";
-import qs from "query-string";
 
 type UsePostsQuery = {
   s: string;
@@ -14,18 +15,11 @@ export const usePostsQuery = ({
 }: UsePostsQuery) => {
   const fetchPosts = async ({ pageParam = undefined, s = "" }) => {
     if (!s && minChar === true) return { items: [] };
-    const url = qs.stringifyUrl(
-      {
-        url: `/api/posts`,
-        query: {
-          cursor: pageParam,
-          s,
-        },
-      },
-      { skipNull: true }
-    );
-    const res = await fetch(url);
-    return res.json();
+    const paramsObj = { cursor: pageParam, s };
+    const res = await axios.get(`/api/posts`, {
+      params: { ...paramsObj },
+    });
+    return res.data;
   };
 
   const {

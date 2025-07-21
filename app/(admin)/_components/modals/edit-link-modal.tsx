@@ -30,10 +30,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 const formSchema = z.object({
   text: z.string().min(1, {
-    message: "Link text is required",
+    error: "Link text is required",
   }),
   target: z.string().min(1, {
-    message: "Link target is required",
+    error: "Link target is required",
   }),
   follow: z.boolean().default(false).optional(),
 });

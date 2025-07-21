@@ -44,7 +44,7 @@ const formSchema = z.object({
         .optional()
         .refine(
           (value) => !value || /^https?:\/\/[^\s$.?#].[^\s]*$/.test(value),
-          { message: "Deve essere un URL valido" }
+          { error: "Deve essere un URL valido" }
         ),
     })
   ),

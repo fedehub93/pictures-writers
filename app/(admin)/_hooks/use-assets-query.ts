@@ -1,20 +1,12 @@
+import axios from "axios";
+
 import { useInfiniteQuery } from "@tanstack/react-query";
-import qs from "query-string";
 
 export const useAssetsQuery = (s = "", windowIsOpen = false) => {
   const fetchAssets = async ({ pageParam = undefined, s = "" }) => {
-    const url = qs.stringifyUrl(
-      {
-        url: `/api/media`,
-        query: {
-          cursor: pageParam,
-          s,
-        },
-      },
-      { skipNull: true }
-    );
-    const res = await fetch(url);
-    return res.json();
+    const paramsObj = { cursor: pageParam, s };
+    const res = await axios.get(`/api/media`, { params: { ...paramsObj } });
+    return res.data;
   };
 
   const {
@@ -34,7 +26,6 @@ export const useAssetsQuery = (s = "", windowIsOpen = false) => {
     refetchOnMount: true,
     refetchOnWindowFocus: false,
   });
-
 
   return {
     data,

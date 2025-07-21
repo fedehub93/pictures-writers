@@ -43,13 +43,13 @@ const optionSchema = z.object({
 
 const formSchema = z.object({
   name: z.string().min(1, {
-    message: "Name is required",
+    error: "Name is required",
   }),
   subject: z.string().min(1, {
-    message: "Subject is required",
+    error: "Subject is required",
   }),
   audiences: z.array(optionSchema).min(1, {
-    message: "Almost one audience is required",
+    error: "Almost one audience is required",
   }),
   designData: z.any().optional(),
   bodyHtml: z.string().optional(),

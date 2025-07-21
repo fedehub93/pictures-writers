@@ -21,7 +21,7 @@ import { Input } from "@/components/ui/input";
 
 const formSchema = z.object({
   name: z.string().min(1, {
-    message: "Name is required",
+    error: "Name is required",
   }),
 });
 
