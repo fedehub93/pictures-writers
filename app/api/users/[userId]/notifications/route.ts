@@ -13,14 +13,11 @@ export async function GET(
 ) {
   try {
     const params = await props.params;
-    const { userId } = params;
     const user = await authAdmin();
 
-    if (!user) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
+    const { userId } = params;
 
-    if (user.id !== userId) {
+    if (!user || user.id !== userId) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
@@ -31,12 +28,10 @@ export async function GET(
 
     let notifications: Notification[] = [];
     let totalNotifications = 0;
-
-    const skip = (page - 1) * NOTIFICATION_BATCH;
-    const take = NOTIFICATION_BATCH;
+    let nextCursor: string | null = null;
 
     if (cursor) {
-      const notifications = await db.notification.findMany({
+      notifications = await db.notification.findMany({
         where: {
           userId: user.id,
           isRead: false,
@@ -55,27 +50,17 @@ export async function GET(
         nextCursor = notifications[NOTIFICATION_BATCH - 1].id;
       }
 
-      const totalNotifications = await db.notification.count({
+      totalNotifications = await db.notification.count({
         where: {
           userId: user.id,
           isRead: false,
         },
       });
-
-      const pagination = {
-        page,
-        perPage: NOTIFICATION_BATCH,
-        totalRecords: totalNotifications,
-        totalPages: Math.ceil(totalNotifications / NOTIFICATION_BATCH),
-      };
-
-      return NextResponse.json({
-        items: notifications,
-        pagination,
-        nextCursor,
-      });
     } else {
-      [notifications, totalNotifications] = await db.$transaction([
+      const skip = (page - 1) * NOTIFICATION_BATCH;
+      const take = NOTIFICATION_BATCH;
+
+      const [foundNotifications, count] = await db.$transaction([
         db.notification.findMany({
           where: {
             userId: user.id,
@@ -94,6 +79,13 @@ export async function GET(
           },
         }),
       ]);
+
+      notifications = foundNotifications;
+      totalNotifications = count;
+
+      if (notifications.length === NOTIFICATION_BATCH) {
+        nextCursor = notifications[NOTIFICATION_BATCH - 1].id;
+      }
     }
 
     const pagination = {
@@ -102,12 +94,6 @@ export async function GET(
       totalRecords: totalNotifications,
       totalPages: Math.ceil(totalNotifications / NOTIFICATION_BATCH),
     };
-
-    let nextCursor = null;
-
-    if (notifications.length === NOTIFICATION_BATCH) {
-      nextCursor = notifications[NOTIFICATION_BATCH - 1].id;
-    }
 
     return NextResponse.json({ items: notifications, pagination, nextCursor });
   } catch (error) {
