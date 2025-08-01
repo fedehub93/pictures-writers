@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
 import { getEmailsSentToday, sendSendgridEmail } from "@/lib/mail";
 
-export const maxDuration = 30;
+export const maxDuration = 180;
 export async function GET(req: Request, props: { params: Promise<{ singleSendId: string }> }) {
   const params = await props.params;
   try {
