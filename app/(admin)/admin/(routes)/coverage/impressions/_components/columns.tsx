@@ -128,9 +128,9 @@ export const columns: ColumnDef<ImpressionWithFile>[] = [
       return (
         <div className="flex gap-x-2">
           {file && (
-            <Link href={`${file.url}`} target="_blank">
+            <a href={`${file.url}`} target="_blank">
               <Download className="h-4 w-4 mr-2" />
-            </Link>
+            </a>
           )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -140,12 +140,12 @@ export const columns: ColumnDef<ImpressionWithFile>[] = [
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <Link href={`/admin/coverage/impressions/${id}`}>
+              {/* <Link href={`/admin/coverage/impressions/${id}`}>
                 <DropdownMenuItem>
                   <Pencil className="h-4 w-4 mr-2" />
                   Edit
                 </DropdownMenuItem>
-              </Link>
+              </Link> */}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

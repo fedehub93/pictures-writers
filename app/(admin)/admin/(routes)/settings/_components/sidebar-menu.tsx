@@ -1,10 +1,12 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const routes = [
+import { cn } from "@/lib/utils";
+
+const routes: {label:string, href: Route}[] = [
   {
     label: "Main",
     href: "/admin/settings/main",

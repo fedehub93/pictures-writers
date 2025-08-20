@@ -16,14 +16,6 @@ import {
 import { EbookImage } from "./_components/ebook-image";
 import { EbookInfo } from "./_components/ebook-info";
 
-type Params = {
-  slug: string;
-};
-
-type Props = {
-  params: Promise<Params>;
-};
-
 export const revalidate = 86400;
 
 export const dynamicParams = true;
@@ -34,17 +26,18 @@ export async function generateStaticParams() {
   return [...ebooks.map((ebook) => ({ slug: ebook.slug }))];
 }
 
-export async function generateMetadata(props: Props): Promise<Metadata | null> {
-  const params = await props.params;
-  const { slug } = params;
+export async function generateMetadata(
+  props: PageProps<"/shop/ebooks/[slug]">
+): Promise<Metadata | null> {
+  const { slug } = await props.params;
 
   return await getProductMetadataBySlug(slug);
 }
 
-const Page = async (props: { params: Promise<{ slug: string }> }) => {
-  const params = await props.params;
+const Page = async (props: PageProps<"/shop/ebooks/[slug]">) => {
+  const { slug } = await props.params;
   const { siteShopUrl } = await getSettings();
-  const product = await getPublishedEbookBySlug(params.slug);
+  const product = await getPublishedEbookBySlug(slug);
 
   if (!product || !product.category) {
     return notFound();

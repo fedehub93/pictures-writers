@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -8,6 +9,26 @@
     cursor: pointer;
   }
 }
+
+@layer utilities {
+  button:not([disabled]),
+  [role="button"]:not([disabled]) {
+    cursor: pointer;
+  }
+
+  .prose {
+    --tw-prose-bullets: black; /* red-500 */
+  }
+
+  .custom-upload-button > label[data-state="ready"] {
+    background-color: var(--primary);
+  }
+
+  .custom-upload-dropzone > button[data-state="ready"] {
+    background-color: var(--primary);
+  }
+}
+
 
 @theme {
   --color-border: hsl(var(--border));

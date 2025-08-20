@@ -2,7 +2,7 @@
 
 import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/app/(admin)/_hooks/use-debounce";
@@ -13,13 +13,12 @@ export const SearchInput = () => {
   const debouncedValue = useDebounce(value);
 
   const router = useRouter();
-  const pathname = usePathname();
 
   useEffect(() => {
     const params = new URLSearchParams(searchParams);
     params.set("s", debouncedValue);
-    router.push(`${pathname}?${params.toString()}`);
-  }, [debouncedValue, router, pathname, searchParams]);
+    router.push(`/admin/media?${params.toString()}`);
+  }, [debouncedValue, router, searchParams]);
 
   return (
     <div className="relative">

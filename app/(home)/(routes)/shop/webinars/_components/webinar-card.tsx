@@ -34,6 +34,8 @@ export const WebinarCard = async ({
 }: WebinarCardProps) => {
   const purchasedWebinar = await getPurchasedWebinar(rootId!);
   const availableSeats = seats - purchasedWebinar;
+  const href = `/shop/webinars/${slug}` as const;
+
   return (
     <div
       key={title}
@@ -49,7 +51,7 @@ export const WebinarCard = async ({
       </div>
       <div className="w-full border-b flex items-center justify-center group rounded-lg overflow-hidden">
         <Link
-          href={`/shop/${categorySlug}/${slug}/`}
+          href={href}
           className="group-hover:scale-105 transition-all duration-700 "
         >
           <Image
@@ -104,7 +106,7 @@ export const WebinarCard = async ({
         </div>
         <div className="flex flex-col text-xl font-extrabold">
           <Button asChild size="sm" className="w-1/2 self-center">
-            <Link href={`/shop/${categorySlug}/${slug}/`} prefetch={true}>
+            <Link href={href} prefetch={true}>
               Scopri
             </Link>
           </Button>

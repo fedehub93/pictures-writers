@@ -23,15 +23,11 @@ export async function generateMetadata(): Promise<Metadata | null> {
   };
 }
 
-const DownloadEbook = async (props: {
-  searchParams?: Promise<{
-    id?: string;
-    format?: string;
-  }>;
-}) => {
+const DownloadEbook = async (props: PageProps<"/shop/ebooks/download">) => {
   const searchParams = await props.searchParams;
   const ebookId = searchParams?.id || "";
-  const format = searchParams?.format || "";
+  const format =
+    typeof searchParams?.format === "string" ? searchParams?.format : "";
 
   if (!isValidEbookFormat(format)) {
     return <div>Qualcosa è andato storto!</div>;

@@ -27,6 +27,7 @@ export const EbookCard = ({
   price,
   discountedPrice,
 }: EbookCardProps) => {
+  const href = `/shop/ebooks/${slug}` as const;
   return (
     <div
       key={title}
@@ -34,7 +35,7 @@ export const EbookCard = ({
     >
       <div className="w-full border-b flex items-center justify-center group overflow-hidden">
         <Link
-          href={`/shop/${categorySlug}/${slug}/`}
+          href={href}
           className="group-hover:scale-105 transition-all duration-700 "
         >
           <Image
@@ -48,7 +49,7 @@ export const EbookCard = ({
       </div>
       <div className="p-4 flex flex-col gap-y-2 text-center">
         <Link
-          href={`/shop/${categorySlug}/${slug}/`}
+          href={href}
           className="font-bold text-lg leading-5 hover:text-primary"
         >
           {title}

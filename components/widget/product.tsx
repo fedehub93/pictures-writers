@@ -37,7 +37,9 @@ export const WidgetProduct = async ({
         {productData
           .filter((p) => p.category)
           .map((product) => {
-            const categorySlug = product.category!.slug;
+            const categorySlug = product.category!.slug as
+              | "ebooks"
+              | "webinars";
 
             return (
               <div key={product.title}>

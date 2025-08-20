@@ -12,7 +12,10 @@ import { SeoContentTypeApi } from "@/app/(admin)/_components/seo/types";
 import { Button } from "@/components/ui/button";
 
 interface ContentIdActionsProps {
-  contentType: SeoContentTypeApi;
+  contentType:
+    | SeoContentTypeApi.Post
+    | SeoContentTypeApi.Category
+    | SeoContentTypeApi.Tag;
   contentId: string;
 }
 

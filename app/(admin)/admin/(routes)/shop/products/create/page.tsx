@@ -183,7 +183,7 @@ const ProductCreatePage = () => {
               )}
             />
             <div className="flex items-center gap-x-2">
-              <Link href="/admin/products">
+              <Link href="/admin/shop/products">
                 <Button variant="ghost" type="button">
                   Cancel
                 </Button>

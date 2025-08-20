@@ -31,7 +31,7 @@ export const sideLinks: SideLink[] = [
   {
     title: "Contents",
     label: "",
-    href: "",
+    href: "#",
     icon: LibraryBig,
     sub: [
       {
@@ -63,7 +63,7 @@ export const sideLinks: SideLink[] = [
   {
     title: "Mails",
     label: "",
-    href: "",
+    href: "#",
     icon: Mails,
     sub: [
       {
@@ -100,7 +100,7 @@ export const sideLinks: SideLink[] = [
   {
     title: "Coverage",
     label: "",
-    href: "",
+    href: "#",
     icon: BookUp,
     sub: [
       {
@@ -125,7 +125,7 @@ export const sideLinks: SideLink[] = [
   {
     title: "Shop",
     label: "",
-    href: "",
+    href: "#",
     icon: ShoppingBag,
     sub: [
       { title: "Products", label: "", href: "/admin/shop/products", icon: Box },

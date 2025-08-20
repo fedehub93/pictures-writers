@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Mulish } from "next/font/google";
+import { Mulish, Figtree } from "next/font/google";
 // import { SpeedInsights } from "@vercel/speed-insights/next";
 import { GoogleTagManager } from "@next/third-parties/google";
 
@@ -18,6 +18,8 @@ import { AppScripts } from "@/components/scripts";
 import { OrganizationJsonLd } from "./_components/seo/json-ld/organization";
 
 const mulish = Mulish({ subsets: ["latin"] });
+const figtree = Figtree({ subsets: ["latin"] });
+
 
 export async function generateMetadata(): Promise<Metadata | null> {
   const metadata = await getHeadMetadata();
@@ -41,7 +43,7 @@ export default async function RootLayout({
 
   return (
     <html lang="it" suppressHydrationWarning>
-      <body className={mulish.className}>
+      <body className={figtree.className}>
         <OrganizationJsonLd
           name={settings.siteName!}
           url={`${settings.siteUrl!}/`}
@@ -49,7 +51,7 @@ export default async function RootLayout({
         />
         <ToastProvider />
         <QueryProvider>
-          <div className={cn(`h-full`, mulish.className)}>
+          <div className={cn(`h-full`, figtree.className)}>
             <Navbar />
             <main className="pt-20">{children}</main>
             <Footer />

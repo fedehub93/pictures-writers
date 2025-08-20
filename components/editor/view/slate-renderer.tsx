@@ -33,7 +33,7 @@ type Props = {
 
 const SlateRendererV2 = ({ content, preview = false }: Props) => {
   return (
-    <div className="post">
+    <div className="prose md:prose-md lg:prose-lg max-w-full">
       {content.map((node, i) => (
         <RenderNode key={i} node={node} preview={preview} />
       ))}

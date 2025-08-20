@@ -31,7 +31,7 @@ export const ProductElement = ({ node }: ImageElementProps) => {
           <div>
             <Button asChild>
               <NextLink
-                href={`/shop/ebooks/${node.data.slug}/`}
+                href={`/shop/ebooks/${node.data.slug as string}`}
                 rel="noopener noreferrer nofollow"
                 target={"_blank"}
               >
@@ -60,8 +60,8 @@ export const ProductElement = ({ node }: ImageElementProps) => {
         <div className="p-4 flex flex-col gap-y-4 text-center">
           <div className="font-medium text-lg leading-5">{node.data.title}</div>
           <Button asChild>
-            <NextLink
-              href={node.data.metadata.url}
+            <a
+              href={node.data.metadata.url as string}
               rel="noopener noreferrer nofollow"
               target={"_blank"}
             >
@@ -69,7 +69,7 @@ export const ProductElement = ({ node }: ImageElementProps) => {
               {node.children.map((child: any, i: number) => (
                 <RenderNode key={i} node={child} />
               ))}
-            </NextLink>
+            </a>
           </Button>
         </div>
       </div>

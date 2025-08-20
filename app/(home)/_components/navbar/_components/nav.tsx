@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import type { Route } from "next";
 
 import {
   NavigationMenu,
@@ -14,34 +15,34 @@ import { LibraryBig, Newspaper, School, Trophy } from "lucide-react";
 
 import type { JSX } from "react";
 
-const routes = [
+const routes: { title: string; link: Route }[] = [
   {
     title: "Home",
     link: "/",
   },
   {
     title: "About",
-    link: "/about/",
+    link: "/about",
   },
   {
     title: "Formazione",
-    link: "/blog/scuole-di-sceneggiatura/",
+    link: "/blog/scuole-di-sceneggiatura" as Route,
   },
   {
     title: "Concorsi",
-    link: "/blog/concorsi-di-sceneggiatura/",
+    link: "/blog/concorsi-di-sceneggiatura" as Route,
   },
   {
     title: "Ebooks",
-    link: "/shop/ebooks/",
+    link: "/shop/ebooks",
   },
   {
     title: "Blog",
-    link: "/blog/",
+    link: "/blog" as Route,
   },
   {
     title: "Contatti",
-    link: "/contatti/",
+    link: "/contatti",
   },
 ];
 
@@ -59,8 +60,7 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
     >
       <NavigationMenuList
         className={cn(
-          isMobile &&
-            "flex-col justify-center items-start space-x-0 gap-y-8"
+          isMobile && "flex-col justify-center items-start space-x-0 gap-y-8"
         )}
       >
         {isMobile &&
@@ -105,7 +105,7 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
             </NavigationMenuItem>
             <NavigationMenuItem>
               <Link
-                href="/about/"
+                href="/about"
                 prefetch={true}
                 className={cn(
                   "text-base py-2 px-4 rounded-md hover:bg-violet-100 text-foreground hover:text-primary-public",
@@ -124,7 +124,8 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
                 className={cn(
                   "text-base py-2 rounded-md hover:bg-violet-100 text-foreground hover:text-primary-public",
                   isMobile && "text-2xl font-light tr",
-                  (pathname === "/shop/ebooks/" || pathname === "/blog/") &&
+                  (pathname.startsWith("/shop/ebooks") ||
+                    pathname.startsWith("/blog/")) &&
                     "text-primary-public"
                 )}
               >
@@ -169,7 +170,7 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
                   <li className="row-span-3">
                     <Link
                       className="flex h-full w-full relative select-none flex-col justify-end rounded-md bg-violet-100/40 hover:bg-violet-200 transition-all p-6 no-underline outline-hidden focus:shadow-md"
-                      href="/shop/ebooks/"
+                      href="/shop/ebooks"
                     >
                       <LibraryBig
                         className="absolute h-8 w-8 bottom-4 right-4 text-primary "
@@ -205,7 +206,7 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
             </NavigationMenuItem>
             <NavigationMenuItem>
               <Link
-                href="/contatti/"
+                href="/contatti"
                 prefetch={true}
                 className={cn(
                   "text-base py-2 px-4 rounded-md hover:bg-violet-100 text-foreground hover:text-primary-public",

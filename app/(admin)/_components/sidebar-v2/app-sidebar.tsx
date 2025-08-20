@@ -1,6 +1,10 @@
 "use client";
 
 import * as React from "react";
+
+import type { Route } from "next";
+import Link from "next/link";
+
 import {
   Blocks,
   BookImage,
@@ -14,6 +18,7 @@ import {
   LayoutDashboard,
   LayoutPanelTop,
   LibraryBig,
+  LucideIcon,
   MailPlus,
   Mails,
   NotebookPen,
@@ -36,11 +41,22 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import Logo from "@/components/logo";
-import Link from "next/link";
 import { NavMain } from "./nav-main";
 
 // This is sample data.
-const data = {
+
+export type NavObject = {
+  title: string;
+  url: Route;
+  Icon?: LucideIcon;
+  items?: {
+    title: string;
+    url: Route;
+    Icon?: LucideIcon;
+  }[];
+};
+
+const data: Record<string, NavObject[]> = {
   navMain: [
     {
       title: "Dashboard",
@@ -83,7 +99,6 @@ const data = {
         },
         {
           title: "Categories",
-          label: "",
           url: "/admin/shop/categories",
           Icon: Boxes,
         },

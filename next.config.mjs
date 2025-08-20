@@ -17,7 +17,6 @@ const nextConfig = {
       },
     ];
   },
-  trailingSlash: true,
   images: {
     minimumCacheTTL: 2678400,
     remotePatterns: [
@@ -38,6 +37,13 @@ const nextConfig = {
     qualities: [50, 75],
     formats: ["image/webp"],
   },
+  trailingSlash: true,
+  typedRoutes: true,
+  // turbopack: {
+  //   resolveAlias: {
+  //     handlebars: path.resolve("./node_modules/handlebars/dist/handlebars.js"),
+  //   },
+  // },
   webpack: (config) => {
     config.resolve.alias["handlebars"] = path.resolve(
       "./node_modules/handlebars/dist/handlebars.js"

@@ -23,14 +23,6 @@ import { PostListGrid } from "../_components/post-list-grid";
 import { PostList } from "../_components/post-list";
 import { getSettings } from "@/data/settings";
 
-type Params = {
-  slug: string;
-};
-
-type Props = {
-  params: Promise<Params>;
-};
-
 export const revalidate = 86400;
 
 export const dynamicParams = true;
@@ -54,7 +46,9 @@ export async function generateStaticParams() {
   ];
 }
 
-export async function generateMetadata(props: Props): Promise<Metadata | null> {
+export async function generateMetadata(
+  props: PageProps<"/blog/[slug]">
+): Promise<Metadata | null> {
   const params = await props.params;
   const { slug } = params;
 
@@ -71,8 +65,7 @@ export async function generateMetadata(props: Props): Promise<Metadata | null> {
     return tagMetadata;
   }
 
-  const slugPage =
-    typeof params.slug === "string" ? Number.parseInt(params.slug) : 1;
+  const slugPage = typeof slug === "string" ? Number.parseInt(slug) : 1;
 
   const metadata = await getHeadMetadata();
 
@@ -96,13 +89,12 @@ export async function generateMetadata(props: Props): Promise<Metadata | null> {
   return metadata;
 }
 
-const Page = async (props: { params: Promise<{ slug: string }> }) => {
-  const params = await props.params;
+const Page = async (props: PageProps<"/blog/[slug]">) => {
+  const { slug } = await props.params;
   let result: any = null;
   let entity: { title: string; description: string | null } | null = null;
 
-  const slugPage =
-    typeof params.slug === "string" ? Number.parseInt(params.slug) : 1;
+  const slugPage = typeof slug === "string" ? Number.parseInt(slug) : 1;
 
   if (!isNaN(slugPage) && isFinite(slugPage) && slugPage > 0) {
     result = await getPublishedPosts({
@@ -136,7 +128,7 @@ const Page = async (props: { params: Promise<{ slug: string }> }) => {
   }
 
   if (!result) {
-    const category = await getPublishedCategoryBySlug(params.slug);
+    const category = await getPublishedCategoryBySlug(slug);
     if (category && category.rootId) {
       result = await getPublishedPostsByCategoryRootId({
         categoryRootId: category.rootId,
@@ -147,7 +139,7 @@ const Page = async (props: { params: Promise<{ slug: string }> }) => {
   }
 
   if (!result) {
-    const tag = await getPublishedTagBySlug(params.slug);
+    const tag = await getPublishedTagBySlug(slug);
     if (tag && tag.rootId) {
       result = await getPublishedPostsByTagRootId({
         tagRootId: tag.rootId,

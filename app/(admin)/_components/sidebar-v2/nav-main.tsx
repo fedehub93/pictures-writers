@@ -1,6 +1,8 @@
 "use client";
 
 import { ChevronRight, type LucideIcon } from "lucide-react";
+import Link from "next/link";
+import type { Route } from "next";
 
 import {
   Collapsible,
@@ -17,27 +19,20 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import Link from "next/link";
+import { NavObject } from "./app-sidebar";
 
 export function NavMain({
   label,
   items,
 }: {
   label: string;
-  items: {
-    title: string;
-    url: string;
-    Icon?: LucideIcon;
-    items?: {
-      title: string;
-      url: string;
-      Icon?: LucideIcon;
-    }[];
-  }[];
+  items: NavObject[];
 }) {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="text-muted-foreground">{label}</SidebarGroupLabel>
+      <SidebarGroupLabel className="text-muted-foreground">
+        {label}
+      </SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => {
           if (!item.items?.length) {

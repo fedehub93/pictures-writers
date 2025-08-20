@@ -1,8 +1,8 @@
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const user = await authAdmin();
     const values = await req.json();

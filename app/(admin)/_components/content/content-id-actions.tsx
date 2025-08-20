@@ -12,7 +12,10 @@ import { SeoContentTypeApi } from "@/app/(admin)/_components/seo/types";
 import { Button } from "@/components/ui/button";
 
 interface ContentIdActionsProps {
-  contentType: SeoContentTypeApi;
+  contentType:
+    | SeoContentTypeApi.Post
+    | SeoContentTypeApi.Category
+    | SeoContentTypeApi.Tag;
   contentRootId: string;
   contentId: string;
 }
@@ -29,7 +32,9 @@ export const ContentIdActions = ({
     try {
       setIsLoading(true);
 
-      await axios.delete(`/api/${contentType}/${contentRootId}/versions/${contentId}`);
+      await axios.delete(
+        `/api/${contentType}/${contentRootId}/versions/${contentId}`
+      );
 
       toast.success("Item deleted!");
     } catch {

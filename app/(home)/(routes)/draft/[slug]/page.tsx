@@ -21,14 +21,6 @@ import { WidgetProductPop } from "@/components/widget/product-pop";
 
 export const dynamic = "force-dynamic";
 
-type Params = {
-  slug: string;
-};
-
-type Props = {
-  params: Promise<Params>;
-};
-
 export const revalidate = 86400;
 
 export const dynamicParams = true;
@@ -39,7 +31,9 @@ export async function generateStaticParams() {
   return [{ slug: `blog` }, ...posts.map((post) => ({ slug: post.slug }))];
 }
 
-export async function generateMetadata(props: Props): Promise<Metadata | null> {
+export async function generateMetadata(
+  props: PageProps<"/draft/[slug]">
+): Promise<Metadata | null> {
   const params = await props.params;
   const { slug } = params;
 
@@ -78,11 +72,11 @@ export async function generateMetadata(props: Props): Promise<Metadata | null> {
   };
 }
 
-const Page = async (props: { params: Promise<{ slug: string }> }) => {
-  const params = await props.params;
+const Page = async (props: PageProps<"/draft/[slug]">) => {
+  const { slug } = await props.params;
   const { siteUrl } = await getSettings();
 
-  if (params.slug === "blog") {
+  if (slug === "blog") {
     const { posts, totalPages, currentPage } = await getPublishedDraftPosts({
       page: 1,
     });
@@ -103,7 +97,7 @@ const Page = async (props: { params: Promise<{ slug: string }> }) => {
     );
   }
 
-  const post = await getPublishedDraftPostBySlug(params.slug);
+  const post = await getPublishedDraftPostBySlug(slug);
 
   if (!post) {
     return notFound();

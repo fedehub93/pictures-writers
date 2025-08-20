@@ -1,40 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
 
-export async function DELETE(req: Request, props: { params: Promise<{ templateId: string }> }) {
-  const params = await props.params;
-  try {
-    const user = await authAdmin();
-    const { templateId } = params;
-
-    if (!user) {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
-
-    const emailTemplate = await db.emailTemplate.findUnique({
-      where: {
-        id: params.templateId,
-      },
-    });
-
-    if (!emailTemplate) {
-      return new NextResponse("Not found", { status: 404 });
-    }
-
-    const deleteEmailTemplate = await db.emailTemplate.delete({
-      where: { id: templateId },
-    });
-
-    return NextResponse.json(deleteEmailTemplate);
-  } catch (error) {
-    console.log("[EMAIL_TEMPLATE_ID_DELETE]", error);
-    return new NextResponse("Internal Error", { status: 500 });
-  }
-}
-
-export async function GET(req: Request, props: { params: Promise<{ userId: string }> }) {
+export async function GET(
+  req: Request,
+  props: { params: Promise<{ userId: string }> }
+) {
   const params = await props.params;
   try {
     const { userId } = params;
@@ -52,11 +24,13 @@ export async function GET(req: Request, props: { params: Promise<{ userId: strin
   }
 }
 
-export async function PATCH(req: Request, props: { params: Promise<{ userId: string }> }) {
-  const params = await props.params;
+export async function PATCH(
+  req: NextRequest,
+  ctx: RouteContext<"/api/users/[userId]">
+) {
   try {
+    const { userId } = await ctx.params;
     const user = await authAdmin();
-    const { userId } = params;
     const values = await req.json();
 
     if (!user) {

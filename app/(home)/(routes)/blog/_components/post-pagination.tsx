@@ -1,3 +1,8 @@
+import type { Route } from "next";
+
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
 import {
   Pagination,
@@ -6,8 +11,6 @@ import {
   PaginationItem,
 } from "@/components/ui/pagination";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import Link from "next/link";
 
 interface PostPaginationProps {
   totalPages: number;
@@ -56,7 +59,8 @@ export const PostPagination = ({
   const renderPaginationItems = () => {
     const pageNumbers = getPageNumbers();
     return pageNumbers.map((pageNumber) => {
-      const href = pageNumber === 1 ? `/blog` : `/blog/${pageNumber}`;
+      const blogSlug =
+        pageNumber === 1 ? `/blog` : (`/blog/${pageNumber}` as const);
       return (
         <PaginationItem key={pageNumber}>
           <Button
@@ -69,7 +73,7 @@ export const PostPagination = ({
             )}
             asChild
           >
-            <Link href={href} prefetch={true}>
+            <Link href={blogSlug} prefetch={true}>
               {pageNumber}
             </Link>
           </Button>
@@ -78,8 +82,9 @@ export const PostPagination = ({
     });
   };
 
-  const prevHref = currentPage === 2 ? `/blog` : `/blog/${currentPage - 1}`;
-  const nextHref = `/blog/${currentPage + 1}`;
+  const prevHref =
+    currentPage === 2 ? `/blog` : `/blog/${currentPage - 1}` as const;
+  const nextHref = `/blog/${currentPage + 1}` as const;
   const canDisablePrev = currentPage <= 1;
   const canDisableNext = currentPage >= totalPages;
 
