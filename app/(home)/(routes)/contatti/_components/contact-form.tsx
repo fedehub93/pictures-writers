@@ -130,7 +130,7 @@ export const ContactForm = () => {
           <Button
             type="submit"
             disabled={!isValid || isSubmitting}
-            className="bg-primary-public"
+            className="bg-primary"
           >
             Invia messaggio
           </Button>

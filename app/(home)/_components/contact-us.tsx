@@ -170,7 +170,7 @@ export const ContactUs = (): JSX.Element => {
                 <Button
                   type="submit"
                   disabled={!isValid || isSubmitting}
-                  className="bg-primary-public"
+                  className="bg-primary"
                 >
                   Invia messaggio
                 </Button>

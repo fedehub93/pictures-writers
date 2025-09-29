@@ -41,7 +41,7 @@ const nextConfig = {
   typedRoutes: true,
   // turbopack: {
   //   resolveAlias: {
-  //     handlebars: path.resolve("./node_modules/handlebars/dist/handlebars.js"),
+  //     handlebars: "handlebars/dist/handlebars.js",
   //   },
   // },
   webpack: (config) => {
