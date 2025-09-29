@@ -14,6 +14,7 @@ import {
 declare global {
   namespace PrismaJson {
     type BodyData = CustomElement[];
+    type TipTapBodyData = any;
     type ProductMetadata =
       | EbookMetadata
       | AffiliateMetadata
@@ -131,7 +132,9 @@ export type AffiliateMetadata = {
 
 export type WebinarMetadata = {
   type: ProductType;
-  date: Date | null;
+  startDate: Date | null;
+  endDate: Date | null;
+  lessons: number;
   time: string;
   seats: number;
   duration: string;

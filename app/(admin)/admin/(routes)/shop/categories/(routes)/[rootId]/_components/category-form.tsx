@@ -90,7 +90,7 @@ export const CategoryForm = ({ initialData, apiUrl }: CategoryFormProps) => {
   const isComplete = requiredFields.every(Boolean);
 
   if (!initialData || !initialData.rootId) {
-    return redirect("/admin/products");
+    return redirect("/admin/shop/products");
   }
 
   return (

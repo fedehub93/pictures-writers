@@ -72,9 +72,9 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
                   href={route.link}
                   prefetch={true}
                   className={cn(
-                    "text-base py-2 px-4 rounded-md hover:bg-violet-100 text-foreground hover:text-primary-public",
+                    "text-base py-2 px-4 rounded-md text-foreground hover:text-primary",
                     isMobile && "text-2xl font-light tr",
-                    pathname === route.link && "text-primary-public"
+                    pathname === route.link && "text-primary"
                   )}
                   onClick={() => {
                     if (isMobile && onLinkClick) onLinkClick();
@@ -92,9 +92,9 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
                 href="/"
                 prefetch={true}
                 className={cn(
-                  "text-base py-2 px-4 rounded-md hover:bg-violet-100 text-foreground hover:text-primary-public",
+                  "text-base py-2 px-4 rounded-md hover:text-primary text-foreground",
                   isMobile && "text-2xl font-light tr",
-                  pathname === "/" && "text-primary-public"
+                  pathname === "/" && "text-primary"
                 )}
                 onClick={() => {
                   if (isMobile && onLinkClick) onLinkClick();
@@ -108,9 +108,9 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
                 href="/about"
                 prefetch={true}
                 className={cn(
-                  "text-base py-2 px-4 rounded-md hover:bg-violet-100 text-foreground hover:text-primary-public",
+                  "text-base py-2 px-4 rounded-md hover:text-primary text-foreground",
                   isMobile && "text-2xl font-light tr",
-                  pathname === "/about/" && "text-primary-public"
+                  pathname === "/about/" && "text-primary"
                 )}
                 onClick={() => {
                   if (isMobile && onLinkClick) onLinkClick();
@@ -122,11 +122,11 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
             <NavigationMenuItem>
               <NavigationMenuTrigger
                 className={cn(
-                  "text-base py-2 rounded-md hover:bg-violet-100 text-foreground hover:text-primary-public",
+                  "text-base py-2 rounded-md text-foreground hover:text-primary bg-transparent",
                   isMobile && "text-2xl font-light tr",
                   (pathname.startsWith("/shop/ebooks") ||
                     pathname.startsWith("/blog/")) &&
-                    "text-primary-public"
+                    "text-primary"
                 )}
               >
                 Risorse
@@ -135,7 +135,7 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
                 <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
                   <li className="row-span-3">
                     <Link
-                      className="flex h-full w-full relative select-none flex-col justify-end rounded-md bg-violet-100/40 hover:bg-violet-200 transition-all p-6 no-underline outline-hidden focus:shadow-md"
+                      className="flex h-full w-full relative select-none flex-col justify-end rounded-md transition-all p-6 no-underline outline-hidden focus:bg-accent focus:shadow-md"
                       href="/blog/scuole-di-sceneggiatura"
                     >
                       <School
@@ -152,7 +152,7 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
                   </li>
                   <li className="row-span-3">
                     <Link
-                      className="flex h-full w-full relative select-none flex-col justify-end rounded-md bg-violet-100/40 hover:bg-violet-200 transition-all p-6 no-underline outline-hidden focus:shadow-md"
+                      className="flex h-full w-full relative select-none flex-col justify-end rounded-md transition-all p-6 no-underline outline-hidden focus:bg-accent focus:shadow-md"
                       href="/blog/concorsi-di-sceneggiatura"
                     >
                       <Trophy
@@ -169,7 +169,7 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
                   </li>
                   <li className="row-span-3">
                     <Link
-                      className="flex h-full w-full relative select-none flex-col justify-end rounded-md bg-violet-100/40 hover:bg-violet-200 transition-all p-6 no-underline outline-hidden focus:shadow-md"
+                      className="flex h-full w-full relative select-none flex-col justify-end rounded-md transition-all p-6 no-underline outline-hidden focus:bg-accent focus:shadow-md"
                       href="/shop/ebooks"
                     >
                       <LibraryBig
@@ -186,7 +186,7 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
                   </li>
                   <li className="row-span-3">
                     <Link
-                      className="flex h-full w-full relative select-none flex-col justify-end rounded-md bg-violet-100/40 hover:bg-violet-200 transition-all p-6 no-underline outline-hidden focus:shadow-md"
+                      className="flex h-full w-full relative select-none flex-col justify-end rounded-md transition-all p-6 no-underline outline-hidden focus:bg-accent focus:shadow-md"
                       href="/blog"
                     >
                       <Newspaper
@@ -209,9 +209,9 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
                 href="/contatti"
                 prefetch={true}
                 className={cn(
-                  "text-base py-2 px-4 rounded-md hover:bg-violet-100 text-foreground hover:text-primary-public",
+                  "text-base py-2 px-4 rounded-md text-foreground hover:text-primary",
                   isMobile && "text-2xl font-light tr",
-                  pathname === "/contatti/" && "text-primary-public"
+                  pathname === "/contatti/" && "text-primary"
                 )}
                 onClick={() => {
                   if (isMobile && onLinkClick) onLinkClick();

@@ -54,7 +54,9 @@ export async function POST(req: Request) {
     if (type === ProductType.WEBINAR) {
       metadata = {
         type: ProductType.WEBINAR,
-        date: null,
+        startDate: null,
+        endDate: null,
+        lessons: 0,
         time: "",
         seats: 0,
         duration: "",

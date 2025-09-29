@@ -29,10 +29,10 @@ const Page = async () => {
   });
 
   return (
-    <section className="bg-violet-100/40">
-      <div className="bg-primary w-full">
+    <section className="bg-background">
+      <div className="bg-accent w-full">
         <div className="max-w-6xl mx-auto h-20 flex justify-center items-center">
-          <h1 className="text-white font-extrabold text-4xl uppercase">
+          <h1 className="text-primary font-extrabold text-4xl uppercase">
             Webinars
           </h1>
         </div>

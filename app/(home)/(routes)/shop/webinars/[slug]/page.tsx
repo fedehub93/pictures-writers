@@ -51,7 +51,7 @@ const Page = async (props: PageProps<"/shop/webinars/[slug]">) => {
   const webinarUrl = `${siteShopUrl}/${product.category.slug}/${product.slug}/`;
 
   return (
-    <section key={product.slug} className="bg-violet-100/40 py-10">
+    <section key={product.slug} className="bg-background py-10">
       <ProductJsonLd
         title={product.seo?.title}
         description={product.seo?.description || ""}
@@ -93,7 +93,7 @@ const Page = async (props: PageProps<"/shop/webinars/[slug]">) => {
           price={product.price}
           discountedPrice={product.discountedPrice}
           author={null}
-          date={product.metadata.date}
+          date={product.metadata.startDate}
           time={product.metadata.time}
           seats={product.metadata.seats}
           availableSeats={product.availableSeats}

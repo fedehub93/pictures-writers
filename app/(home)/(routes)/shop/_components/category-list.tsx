@@ -78,7 +78,7 @@ export const CategoryList = ({
   //         return (
   //           <div
   //             key={p.title}
-  //             className="flex flex-col justify-center items-center w-72 rounded-lg overflow-hidden shadow-lg bg-white"
+  //             className="flex flex-col justify-center items-center w-72 rounded-lg overflow-hidden shadow-lg bg-primary-foreground"
   //           >
   //             <div className="w-full border-b flex items-center justify-center group overflow-hidden h-60">
   //               <Link

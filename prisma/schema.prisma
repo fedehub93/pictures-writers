@@ -232,6 +232,11 @@ model Seo {
   updatedAt DateTime @updatedAt
 }
 
+enum EditorType {
+  SLATE
+  TIPTAP
+}
+
 model Post {
   id String @id @default(uuid())
 
@@ -244,8 +249,13 @@ model Post {
   status   ContentStatus @default(DRAFT)
   isLatest Boolean       @default(true)
 
+  editorType EditorType @default(TIPTAP)
+
   /// [BodyData]
   bodyData Json @db.JsonB
+
+  /// [TipTapBodyData]
+  tiptapBodyData Json? @db.JsonB
 
   rootId       String?
   root         Post?   @relation("RootChildren", fields: [rootId], references: [id])

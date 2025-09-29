@@ -7,18 +7,30 @@ import { useForm } from "react-hook-form";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { useDebounceCallback } from "usehooks-ts";
 import { Descendant } from "slate";
-import { ContentStatus } from "@prisma/client";
+import { useDebouncedCallback } from "use-debounce";
+
+import { ContentStatus, EditorType } from "@prisma/client";
 
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-import Editor from "@/app/(admin)/_components/editor";
 import { cn } from "@/lib/utils";
+import Editor from "@/app/(admin)/_components/editor";
+import { GenericTiptap } from "@/components/form-component/generic-tiptap";
 
 interface BodyFormProps {
   initialData: {
+    id: string;
+    editorType: EditorType;
     bodyData: Descendant[];
+    tiptapBodyData: any;
     status: ContentStatus;
   };
   rootId: string;
@@ -26,7 +38,9 @@ interface BodyFormProps {
 }
 
 const formSchema = z.object({
+  editorType: z.enum([EditorType.SLATE, EditorType.TIPTAP]),
   bodyData: z.custom<Descendant[]>(),
+  tiptapBodyData: z.any().optional(),
 });
 
 export const ContentForm = ({ initialData, rootId, postId }: BodyFormProps) => {
@@ -37,17 +51,24 @@ export const ContentForm = ({ initialData, rootId, postId }: BodyFormProps) => {
     mode: "all",
     resolver: zodResolver(formSchema),
     defaultValues: {
+      editorType: initialData.editorType || EditorType.SLATE,
       bodyData: initialData.bodyData || [
         { type: "paragraph", children: [{ text: "" }] },
       ],
+      tiptapBodyData: initialData.tiptapBodyData || {
+        type: "doc",
+        content: [],
+      },
     },
   });
+
+  const { watch, setValue, handleSubmit, control, formState } = form;
+  const { isValid } = formState;
+  const editorType = watch("editorType");
 
   const onHandleIsFocused = (value: boolean) => {
     setIsFocused(value);
   };
-
-  const { isValid } = form.formState;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (initialData.status === ContentStatus.PUBLISHED) {
@@ -81,7 +102,7 @@ export const ContentForm = ({ initialData, rootId, postId }: BodyFormProps) => {
     debouncedSubmit();
   };
 
-  const debouncedSubmit = useDebounceCallback(() => {
+  const debouncedSubmit = useDebouncedCallback(() => {
     form.handleSubmit(onSubmit)();
   }, 5000);
 
@@ -93,29 +114,65 @@ export const ContentForm = ({ initialData, rootId, postId }: BodyFormProps) => {
         !isValid && "border-l-red-500"
       )}
     >
-      <div className="flex items-center justify-between">Content</div>
+      <div className="flex items-center justify-between">
+        <span>Content</span>
+        <FormField
+          control={control}
+          name="editorType"
+          render={({ field }) => (
+            <FormItem>
+              <Select
+                value={field.value}
+                onValueChange={(val) => {
+                  field.onChange(val);
+                  form.handleSubmit(onSubmit)();
+                }}
+              >
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue placeholder="Editor" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={EditorType.SLATE}>Slate</SelectItem>
+                  <SelectItem value={EditorType.TIPTAP}>Tiptap</SelectItem>
+                </SelectContent>
+              </Select>
+            </FormItem>
+          )}
+        />
+      </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
-          <FormField
-            control={form.control}
-            name="bodyData"
-            render={({ field }) => (
-              <FormItem className="space-y-0">
-                <FormControl>
-                  <Editor
-                    {...field}
-                    onChange={onChangeBody}
-                    onValueChange={onValueChangeBody}
-                  >
-                    <Editor.Toolbar sticky />
-                    <Editor.Input onHandleIsFocused={onHandleIsFocused} />
-                    <Editor.Counter value={field.value} />
-                  </Editor>
-                </FormControl>
-              </FormItem>
-            )}
-          />
+          {editorType === EditorType.SLATE && (
+            <FormField
+              control={form.control}
+              name="bodyData"
+              render={({ field }) => (
+                <FormItem className="space-y-0">
+                  <FormControl>
+                    <Editor
+                      {...field}
+                      onChange={onChangeBody}
+                      onValueChange={onValueChangeBody}
+                    >
+                      <Editor.Toolbar sticky />
+                      <Editor.Input onHandleIsFocused={onHandleIsFocused} />
+                      <Editor.Counter value={field.value} />
+                    </Editor>
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          )}
+          {editorType === EditorType.TIPTAP && (
+            <GenericTiptap
+              key={initialData.id}
+              id={initialData.id}
+              control={form.control}
+              name="tiptapBodyData"
+              onUpdate={debouncedSubmit}
+            />
+          )}
         </form>
       </Form>
     </div>

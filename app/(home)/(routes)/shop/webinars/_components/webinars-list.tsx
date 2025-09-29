@@ -27,7 +27,7 @@ export const WebinarsList = async ({ webinars }: WebinarsListProps) => {
             categorySlug={webinar.category?.slug!}
             slug={webinar.slug}
             imageCover={webinar.imageCover}
-            date={webinar.metadata.date}
+            date={webinar.metadata.startDate}
             time={webinar.metadata.time}
             duration={webinar.metadata.duration}
             seats={webinar.metadata.seats}

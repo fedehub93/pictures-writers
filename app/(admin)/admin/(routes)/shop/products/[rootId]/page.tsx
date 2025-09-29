@@ -45,7 +45,7 @@ const ProductIdPage = async (props: {
   });
 
   if (!product || !product.rootId) {
-    redirect("/admin/products");
+    redirect("/admin/shop/products");
   }
 
   let authors = undefined;

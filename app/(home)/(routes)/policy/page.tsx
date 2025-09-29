@@ -1,9 +1,10 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import type { JSX } from "react";
 
 import { getHeadMetadata } from "../../_components/seo/head-metadata";
 
-import type { JSX } from "react";
+import { Button } from "@/components/ui/button";
 import { getSettings } from "@/data/settings";
 
 export async function generateMetadata(): Promise<Metadata | null> {
@@ -32,7 +33,7 @@ const Policy = (): JSX.Element => (
   <section className="px-4 py-20 lg:px-6">
     <div className="mx-auto  flex max-w-6xl flex-col items-center">
       <div className="flex h-full w-full flex-col items-start gap-y-8 py-12">
-        <h1 className="text-5xl font-extrabold text-gray-300">Policy</h1>
+        <h1 className="text-5xl font-extrabold">Policy</h1>
         <h2 className="text-3xl font-extrabold uppercase text-heading">
           Disclaimer Amazon
         </h2>
@@ -49,9 +50,11 @@ const Policy = (): JSX.Element => (
           tempo reale, possono quindi subire variazioni. Vi consigliamo di
           verificare sempre la disponibilità e il prezzo su Amazon.`}
         </p>
-        <Link className="bg-secondary text-primary!" href="/">
-          Torna alla home
-        </Link>
+        <Button asChild>
+          <Link className="bg-secondary text-primary!" href="/">
+            Torna alla home
+          </Link>
+        </Button>
       </div>
     </div>
   </section>

@@ -32,7 +32,7 @@ const FirstImpression = async () => {
   });
 
   return (
-    <section className="bg-violet-100/40 px-4 lg:px-6">
+    <section className="px-4 lg:px-6">
       <div className="mx-auto max-w-lg pb-20 pt-14 md:max-w-(--breakpoint-md) lg:max-w-5xl lg:text-left">
         <div className="flex flex-col px-4">
           <h1 className="mb-4 mr-auto text-2xl font-extrabold">
@@ -42,7 +42,7 @@ const FirstImpression = async () => {
         </div>
         <div className="mb-10 flex w-full flex-col items-center justify-center p-4 md:mb-0">
           <div className="mb-10 self-start">
-            <p className="max-w-4xl text-sm leading-6 text-neutral-500">
+            <p className="max-w-4xl text-sm leading-6">
               Breve nota gratuita sulla tua prima pagina: guarda cosa pensa una
               persona esperta della prima pagina della tua sceneggiatura.
               Riceverai mezza pagina di note entro cinque giorni -{" "}

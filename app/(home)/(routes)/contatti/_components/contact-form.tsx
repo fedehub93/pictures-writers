@@ -17,6 +17,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
+
 import { ContactSchemaValibot } from "@/schemas";
 import { contact } from "@/actions/contact";
 import { GenericInput } from "@/components/form-component/generic-input";
@@ -69,7 +70,7 @@ export const ContactForm = () => {
               name="name"
               placeholder="Mario Rossi"
               disabled={isSubmitting}
-              className="bg-white"
+              className="bg-primary-foreground"
             />
             <GenericInput
               control={form.control}
@@ -77,7 +78,7 @@ export const ContactForm = () => {
               name="email"
               placeholder="mario.rossi@gmail.com"
               disabled={isSubmitting}
-              className="bg-white"
+              className="bg-primary-foreground"
             />
           </div>
           <GenericInput
@@ -86,7 +87,7 @@ export const ContactForm = () => {
             name="subject"
             placeholder="Info"
             disabled={isSubmitting}
-            className="bg-white"
+            className="bg-primary-foreground"
           />
           <FormField
             control={form.control}
@@ -98,6 +99,7 @@ export const ContactForm = () => {
                   <Textarea
                     disabled={isSubmitting}
                     placeholder="I want to ask you..."
+                    className="bg-primary-foreground"
                     {...field}
                   />
                 </FormControl>

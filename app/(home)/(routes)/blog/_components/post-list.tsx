@@ -12,7 +12,7 @@ interface PostListProps {
 
 export const PostList = ({ posts, currentPage, totalPages }: PostListProps) => {
   return (
-    <section className="mx-auto mb-12  grid max-w-6xl grid-cols-1 px-4 sm:grid-cols-2 xl:grid-cols-6 xl:gap-6">
+    <section className="mx-auto mb-12 grid max-w-6xl grid-cols-1 px-4 sm:grid-cols-2 xl:grid-cols-6 xl:gap-6">
       <div className="col-span-1 sm:col-span-2 xl:col-span-4 mb-10">
         {posts.map((post) => (
           <PostCard

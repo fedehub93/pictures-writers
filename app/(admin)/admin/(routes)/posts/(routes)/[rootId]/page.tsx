@@ -44,7 +44,9 @@ const PostIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
       slug: true,
       description: true,
       status: true,
+      editorType: true,
       bodyData: true,
+      tiptapBodyData: true,
       publishedAt: true,
       firstPublishedAt: true,
       updatedAt: true,
@@ -151,16 +153,6 @@ const PostIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
                 placeholder="e.g. This article shows you how to write a screenplay from scratch. Learn More."
                 apiUrl={`/api/posts/${post.rootId}`}
               />
-              {/* <CategoryForm
-                initialData={post}
-                rootId={post.rootId}
-                postId={post.id}
-                options={categories.map((category) => ({
-                  label: category.title,
-                  value: category.id,
-                  status: category.status,
-                }))}
-              /> */}
               <CategoriesForm
                 initialData={post}
                 rootId={post.rootId}

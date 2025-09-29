@@ -14,6 +14,7 @@ interface GenericEditorProps<T extends FieldValues> {
   control: Control<T>;
   name: Path<T>;
   label: string;
+  disabled: boolean;
   containerProps?: React.HTMLAttributes<HTMLDivElement>;
 }
 
@@ -23,6 +24,7 @@ export const GenericEditor = <T extends FieldValues>({
   name,
   label,
   containerProps,
+  disabled,
   ...inputProps
 }: GenericEditorProps<T>) => {
   return (
@@ -42,7 +44,7 @@ export const GenericEditor = <T extends FieldValues>({
               }}
             >
               <Editor.Toolbar showEmbedButton={false} padding="xs" />
-              <Editor.Input onHandleIsFocused={() => {}} />
+              <Editor.Input onHandleIsFocused={() => {}} readonly={disabled} />
               <Editor.Counter value={field.value} />
             </Editor>
           </FormControl>

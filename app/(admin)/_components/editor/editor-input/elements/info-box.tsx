@@ -64,7 +64,7 @@ export const InfoBox = ({ attributes, element, children }: InfoBoxProps) => {
     <div
       {...attributes}
       className={cn(
-        "relative mb-8 bg-violet-100 p-4 py-6 pl-12 rounded-lg [&>p]:mb-4",
+        "relative mb-8 bg-background p-4 py-6 pl-12 rounded-lg [&>p]:mb-4",
         element.align === "left" && "text-left",
         element.align === "center" && "text-center",
         element.align === "right" && "text-right"

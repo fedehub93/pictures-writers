@@ -85,7 +85,7 @@ export const WebinarInfo = ({
       <div className="flex mx-auto items-center">
         {availableSeats ? <BuyButton productId={id} /> : null}
         {!availableSeats && (
-          <div className="text-white text-2xl font-bold bg-destructive p-1 px-2 rounded-md">
+          <div className="text-foreground-primary text-2xl font-bold bg-destructive p-1 px-2 rounded-md">
             Posti esauriti
           </div>
         )}

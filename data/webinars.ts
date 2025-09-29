@@ -27,7 +27,7 @@ export const getPublishedWebinars = async ({ page }: GetPublishedWebinars) => {
       status: ContentStatus.PUBLISHED,
       type: ProductType.WEBINAR,
       category: {
-        slug: { equals: "webinars" },
+        slug: { equals: "corsi" },
       },
     },
     include: {

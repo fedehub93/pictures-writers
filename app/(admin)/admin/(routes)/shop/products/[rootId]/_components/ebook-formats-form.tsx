@@ -2,16 +2,7 @@
 
 import * as z from "zod";
 import { Control, useController } from "react-hook-form";
-import { EbookFormat } from "@/types";
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { FileForm } from "./file-form";
+
 import {
   Accordion,
   AccordionContent,
@@ -19,14 +10,24 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
+import { EbookFormat } from "@/types";
+
+import { GenericInput } from "@/components/form-component/generic-input";
+
 import { productFormSchema } from "./product-form";
+import { FileForm } from "./file-form";
 
 interface EbookFormatsFormProps {
   control: Control<z.infer<typeof productFormSchema>>;
   name: "metadata.formats";
+  isSubmitting: boolean;
 }
 
-export const EbookFormatsForm = ({ control, name }: EbookFormatsFormProps) => {
+export const EbookFormatsForm = ({
+  control,
+  name,
+  isSubmitting,
+}: EbookFormatsFormProps) => {
   const { field } = useController({ control, name });
 
   return (
@@ -48,24 +49,13 @@ export const EbookFormatsForm = ({ control, name }: EbookFormatsFormProps) => {
             </AccordionTrigger>
 
             <AccordionContent className="space-y-4 px-2">
-              <FormField
+              <GenericInput
                 control={control}
                 name={`metadata.formats.${index}.type`}
-                render={({ field }) => {
-                  return (
-                    <FormItem className="flex flex-col gap-y-2">
-                      <FormControl>
-                        <Input
-                          disabled
-                          type="hidden"
-                          placeholder="Ebook type"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  );
-                }}
+                label="Type"
+                type="hidden"
+                placeholder="Ebook type"
+                disabled={isSubmitting}
               />
               <FileForm
                 control={control}
@@ -73,35 +63,21 @@ export const EbookFormatsForm = ({ control, name }: EbookFormatsFormProps) => {
                 sizeName={`metadata.formats.${index}.size`}
               />
               <div className="flex gap-x-4">
-                <FormField
+                <GenericInput
                   control={control}
                   name={`metadata.formats.${index}.pages`}
-                  render={({ field }) => {
-                    return (
-                      <FormItem className="flex flex-col gap-y-2 flex-1">
-                        <FormLabel>Pages</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Ebook Pages" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    );
-                  }}
+                  label="Pages"
+                  placeholder="Ebook pages"
+                  disabled={isSubmitting}
+                  containerProps={{ className: "flex flex-col gap-y-2 flex-1" }}
                 />
-                <FormField
+                <GenericInput
                   control={control}
                   name={`metadata.formats.${index}.size`}
-                  render={({ field }) => {
-                    return (
-                      <FormItem className="flex flex-col gap-y-2 flex-1">
-                        <FormLabel>Size</FormLabel>
-                        <FormControl>
-                          <Input disabled placeholder="Ebook Size" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    );
-                  }}
+                  label="Size"
+                  placeholder="Ebook size"
+                  disabled
+                  containerProps={{ className: "flex flex-col gap-y-2 flex-1" }}
                 />
               </div>
             </AccordionContent>

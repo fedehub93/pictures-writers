@@ -15,15 +15,7 @@ import {
 
 import { productFormSchema } from "./product-form";
 import { Button } from "@/components/ui/button";
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { GenericInput } from "@/components/form-component/generic-input";
 
 interface ProductGalleryFormProps {
   control: Control<z.infer<typeof productFormSchema>>;
@@ -103,36 +95,19 @@ export const ProductFAQForm = ({
 
                           <AccordionContent className="space-y-4 px-2">
                             <div className="flex flex-col gap-y-4 w-full">
-                              <FormField
+                              <GenericInput
                                 control={control}
                                 name={`faqs.${index}.question`}
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel>Question</FormLabel>
-                                    <FormControl>
-                                      <Input
-                                        placeholder="Why should I enroll this workshop?"
-                                        {...field}
-                                      />
-                                    </FormControl>
-                                  </FormItem>
-                                )}
+                                label="Question"
+                                placeholder="Why should I enroll this workshop?"
+                                disabled={isSubmitting}
                               />
-                              <FormField
+                              <GenericInput
                                 control={control}
                                 name={`faqs.${index}.answer`}
-                                render={({ field }) => (
-                                  <FormItem className="flex-1">
-                                    <FormLabel>Answer</FormLabel>
-                                    <FormControl>
-                                      <Textarea
-                                        placeholder="This is an answer..."
-                                        {...field}
-                                      />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
+                                label="Answer"
+                                placeholder="This is an answer..."
+                                disabled={isSubmitting}
                               />
                             </div>
                           </AccordionContent>

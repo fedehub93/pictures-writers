@@ -86,17 +86,17 @@ export const FreeEbookModal = ({
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader className="flex flex-col items-center mt-4">
-          <DialogTitle className="text-xl text-center mb-2 mt-2 rounded-md bg-violet-100 w-full p-1 font-bold text-primary-public block italic">
+          <DialogTitle className="text-xl text-center mb-2 mt-2 rounded-md bg-accent w-full p-1 font-bold text-primary-public block italic">
             {title}
           </DialogTitle>
           <DialogDescription>
             Scarica{" "}
-            <span className="rounded-md bg-primary-public p-1 text-secondary">
+            <span className="rounded-md text-primary p-1">
               l&apos;ebook gratuito
             </span>
           </DialogDescription>
         </DialogHeader>
-        <div className="relative w-full bg-white px-6 py-2 flex flex-col gap-y-4 items-center">
+        <div className="relative w-full bg-primary-foreground px-6 py-2 flex flex-col gap-y-4 items-center">
           <Image
             src={imageCoverUrl}
             alt="eBook gratuito sull'introduzione alla sceneggiatura cinematografica"

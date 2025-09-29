@@ -46,7 +46,7 @@ const DownloadEbook = async (props: PageProps<"/shop/ebooks/download">) => {
         <div className="flex">
           <a
             href={`/api/products/download?id=${ebookId}&format=${format}`}
-            className="mr-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white transition-all duration-500 hover:-translate-y-1 hover:shadow-xl focus:outline-hidden lg:px-5 lg:py-2.5"
+            className="mr-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-foreground-primary transition-all duration-500 hover:-translate-y-1 hover:shadow-xl focus:outline-hidden lg:px-5 lg:py-2.5"
           >
             Download
           </a>

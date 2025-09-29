@@ -59,10 +59,10 @@ const ShopPage = async () => {
   });
 
   return (
-    <section className="bg-violet-100/40">
+    <section className="bg-background">
       <div className="bg-primary w-full">
         <div className="max-w-6xl mx-auto h-20 flex justify-center items-center">
-          <h1 className="text-white font-extrabold text-4xl uppercase">Shop</h1>
+          <h1 className="text-foreground-primary font-extrabold text-4xl uppercase">Shop</h1>
         </div>
       </div>
       <div className="py-12">

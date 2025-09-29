@@ -4,6 +4,7 @@ import { ContentStatus } from "@prisma/client";
 
 import { db } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
+import { convertToSubcurrency } from "@/lib/format";
 
 export async function POST(req: Request) {
   const { productId } = await req.json();
@@ -42,7 +43,7 @@ export async function POST(req: Request) {
             description: "PRODUCT DESCRIPTION",
             images: [product.imageCover?.url!],
           },
-          unit_amount: Math.round(1 * 100),
+          unit_amount: convertToSubcurrency(product.price || 0),
         },
       },
     ];

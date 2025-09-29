@@ -39,11 +39,11 @@ export const WebinarCard = async ({
   return (
     <div
       key={title}
-      className="flex flex-col justify-center items-center w-80 border rounded-lg relative shadow-lg bg-white"
+      className="flex flex-col justify-center items-center w-80 border rounded-lg relative shadow-lg bg-foreground-primary"
     >
       <div
         className={cn(
-          "absolute -top-6 left-2 text-sm bg-primary pt-1 px-2 text-white rounded-t-lg font-bold",
+          "absolute -top-6 left-2 text-sm bg-primary pt-1 px-2 text-primary-foreground rounded-t-lg font-bold",
           availableSeats < 1 && "bg-destructive"
         )}
       >

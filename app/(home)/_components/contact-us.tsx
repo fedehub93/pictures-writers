@@ -60,7 +60,7 @@ export const ContactUs = (): JSX.Element => {
   };
 
   return (
-    <section className="px-4 py-20 lg:px-6">
+    <section className="px-4 py-20 lg:px-6 bg-primary-foreground">
       <div className="mx-auto max-w-lg md:max-w-(--breakpoint-md) lg:max-w-6xl">
         <h2 className="mb-4 text-center text-3xl font-bold">Contattaci</h2>
         <p className="mx-auto mb-12 max-w-lg text-center ">
@@ -139,6 +139,7 @@ export const ContactUs = (): JSX.Element => {
                         <Textarea
                           disabled={isSubmitting}
                           placeholder="I want to ask you..."
+                          className="bg-primary-foreground"
                           {...field}
                         />
                       </FormControl>
@@ -150,7 +151,7 @@ export const ContactUs = (): JSX.Element => {
               <div className="mb-4">
                 * Confermando il modulo accetti la&nbsp;
                 <Link
-                  className="text-primary-public"
+                  className="text-primary"
                   href="https://www.iubenda.com/privacy-policy/49078580"
                 >
                   Privacy Policy
@@ -159,7 +160,7 @@ export const ContactUs = (): JSX.Element => {
               </div>
               {error && <div className="p-4 mb-4 bg-destructive">{error}</div>}
               {success && (
-                <div className="p-4 mb-4 bg-emerald-100 shadow-2xs rounded-md">
+                <div className="p-4 mb-4 bg-primary shadow-2xs rounded-md">
                   {success}
                 </div>
               )}

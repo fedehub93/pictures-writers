@@ -31,7 +31,7 @@ const AboutPage = async () => {
   });
   return (
     <>
-      <section className="bg-violet-100/40 px-4 pt-20 lg:px-6">
+      <section className="px-4 pt-20 lg:px-6">
         <div className="mx-auto max-w-lg md:max-w-(--breakpoint-md) lg:max-w-6xl">
           <h1 className="mb-4 text-center text-3xl font-bold">Chi siamo</h1>
           <p className="mx-auto max-w-lg text-center ">
@@ -43,7 +43,7 @@ const AboutPage = async () => {
           <div className="grid grid-cols-1 items-center gap-x-16 md:grid-cols-2">
             <div className="md:order-1 aspect-square">
               <Image
-                src="/chi-siamo.png"
+                src="/about-us.png"
                 alt="Feature"
                 width={2000}
                 height={2000}

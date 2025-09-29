@@ -4,7 +4,7 @@ import Link from "next/link";
 import React, { type JSX } from "react";
 
 export const CreativeFeatures = (): JSX.Element => (
-  <section className="px-4 py-20 lg:px-6">
+  <section className="px-4 py-20 lg:px-6 bg-primary-foreground">
     <div className="mx-auto max-w-lg md:max-w-(--breakpoint-md) lg:max-w-6xl">
       <h2 className="mb-4 text-center text-3xl font-bold">I nostri servizi</h2>
       <p className="mx-auto mb-12 max-w-lg text-center ">
@@ -17,7 +17,7 @@ export const CreativeFeatures = (): JSX.Element => (
         <div className="grid grid-cols-1 items-center gap-16 md:grid-cols-2">
           <div className="md:order-1 aspect-square relative">
             <Image
-              src="/post-settimanali.png"
+              src="/blog-services-pana.png"
               alt="Feature"
               fill
               sizes="(max-width: 1023px) 90vw, 35vw"
@@ -41,7 +41,7 @@ export const CreativeFeatures = (): JSX.Element => (
             </p>
             <div className="mt-4 flex space-x-4">
               <Link href="/blog/sceneggiatura" prefetch={true}>
-                <Button className="bg-primary-public">Blog</Button>
+                <Button className="bg-primary">Blog</Button>
               </Link>
             </div>
           </div>
@@ -49,7 +49,7 @@ export const CreativeFeatures = (): JSX.Element => (
         <div className="grid grid-cols-1 items-center gap-16 md:grid-cols-2">
           <div className="md:order-2 aspect-square relative">
             <Image
-              src="/sceneggiature-film-famosi.png"
+              src="/reading-pagina-uno.png"
               alt="Feature"
               fill
               sizes="(max-width: 1023px) 90vw, 35vw"
@@ -75,7 +75,7 @@ export const CreativeFeatures = (): JSX.Element => (
             </p>
             <div className="mt-4 flex space-x-4">
               <Link href="/blog/pagina-uno" prefetch={true}>
-                <Button className="bg-primary-public">
+                <Button className="bg-primary">
                   Esempi di sceneggiature di film famosi
                 </Button>
               </Link>

@@ -33,11 +33,14 @@ const PostCard = async ({
   const authorsString = getAuthorsString(authors);
 
   return (
-    <article key={title} className="mb-10">
+    <article
+      key={title}
+      className="relative top-0 mb-10 shadow-lg transition-all duration-300 hover:-top-1 hover:shadow-2xl"
+    >
       <Link
         href={`/${slug}`}
         prefetch={true}
-        className=" relative top-0 flex min-h-full flex-col bg-white text-[#444] no-underline shadow-lg transition-all duration-300 hover:-top-1 hover:shadow-3xl "
+        className=" flex min-h-full flex-col bg-primary-foreground no-underline"
       >
         <div className="relative aspect-video w-full">
           {imageCoverUrl.length ? (

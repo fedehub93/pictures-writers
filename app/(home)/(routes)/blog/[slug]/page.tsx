@@ -109,12 +109,12 @@ const Page = async (props: PageProps<"/blog/[slug]">) => {
 
   if (result && result.posts.length > 0 && entity) {
     return (
-      <section className="bg-violet-100/40 px-4 py-10 lg:px-6">
+      <section className="px-4 py-10 lg:px-6">
         <div>
           <h1 className="mb-4 text-center text-3xl font-bold">
             {entity.title}
           </h1>
-          <p className="mx-auto mb-12 max-w-lg text-center text-gray-400">
+          <p className="mx-auto mb-12 max-w-lg text-center">
             {entity.description}
           </p>
         </div>
@@ -153,10 +153,10 @@ const Page = async (props: PageProps<"/blog/[slug]">) => {
   }
 
   return (
-    <section className="bg-violet-100/40 px-4 py-10 lg:px-6">
+    <section className="bg-background px-4 py-10 lg:px-6">
       <div>
         <h1 className="mb-4 text-center text-3xl font-bold">{entity.title}</h1>
-        <p className="mx-auto mb-12 max-w-lg text-center text-gray-400">
+        <p className="mx-auto mb-12 max-w-lg text-center">
           {entity.description}
         </p>
       </div>

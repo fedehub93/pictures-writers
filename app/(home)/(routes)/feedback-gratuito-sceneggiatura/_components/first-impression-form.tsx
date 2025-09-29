@@ -102,7 +102,7 @@ const FirstImpressionForm = ({
               <FormItem>
                 <FormLabel>Nome *</FormLabel>
                 <FormControl>
-                  <Input className="bg-white" placeholder="Mario" {...field} />
+                  <Input className="bg-primary-foreground" placeholder="Mario" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -115,7 +115,7 @@ const FirstImpressionForm = ({
               <FormItem>
                 <FormLabel>Cognome *</FormLabel>
                 <FormControl>
-                  <Input className="bg-white" placeholder="Rossi" {...field} />
+                  <Input className="bg-primary-foreground" placeholder="Rossi" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -128,7 +128,7 @@ const FirstImpressionForm = ({
               <FormItem>
                 <FormLabel>Email *</FormLabel>
                 <FormControl>
-                  <Input className="bg-white" placeholder="mario.rossi@gmail.com" {...field} />
+                  <Input className="bg-primary-foreground" placeholder="mario.rossi@gmail.com" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -141,7 +141,7 @@ const FirstImpressionForm = ({
               <FormItem>
                 <FormLabel>Titolo sceneggiatura *</FormLabel>
                 <FormControl>
-                  <Input className="bg-white" placeholder="Il petroliere" {...field} />
+                  <Input className="bg-primary-foreground" placeholder="Il petroliere" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -159,7 +159,7 @@ const FirstImpressionForm = ({
                 >
                   <FormLabel>Formato *</FormLabel>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-primary-foreground">
                       <SelectValue placeholder="Seleziona un formato..." />
                     </SelectTrigger>
                   </FormControl>
@@ -193,7 +193,7 @@ const FirstImpressionForm = ({
                 >
                   <FormLabel>Genere *</FormLabel>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-primary-foreground">
                       <SelectValue placeholder="Seleziona un genere..." />
                     </SelectTrigger>
                   </FormControl>
@@ -223,7 +223,7 @@ const FirstImpressionForm = ({
                 <FormItem>
                   <FormLabel>File</FormLabel>
                   <FormControl>
-                    <Input className="bg-white"
+                    <Input className="bg-primary-foreground"
                       type="file"
                       placeholder="Sceneggiatura"
                       {...fileRef}

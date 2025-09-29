@@ -81,10 +81,10 @@ const Page = async (props: PageProps<"/draft/[slug]">) => {
       page: 1,
     });
     return (
-      <section className="bg-violet-100/40 px-4 py-10 lg:px-6">
+      <section className="bg-background px-4 py-10 lg:px-6">
         <div>
           <h1 className="mb-4 text-center text-3xl font-bold">News</h1>
-          <p className="mx-auto mb-12 max-w-lg text-center text-gray-400">
+          <p className="mx-auto mb-12 max-w-lg text-center">
             Rimani sempre aggiornato con le ultime news del nostro blog.
           </p>
         </div>
@@ -140,7 +140,7 @@ const Page = async (props: PageProps<"/draft/[slug]">) => {
   }
 
   return (
-    <section key={post.slug} className="bg-violet-100/40 py-10">
+    <section key={post.slug} className="bg-background py-10">
       <BlogPostingJsonLd
         title={post.seo?.title}
         description={post.seo?.description || ""}

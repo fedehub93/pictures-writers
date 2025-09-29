@@ -68,8 +68,8 @@ export const PostPagination = ({
             variant="ghost"
             disabled={currentPage === pageNumber}
             className={cn(
-              "hover:bg-violet-100 rounded-full",
-              currentPage === pageNumber && "bg-violet-100"
+              "hover:bg-accent rounded-full",
+              currentPage === pageNumber && "bg-primary text-primary-foreground"
             )}
             asChild
           >
@@ -97,7 +97,7 @@ export const PostPagination = ({
             variant="ghost"
             size="icon"
             disabled={canDisablePrev}
-            className="hover:bg-violet-100 rounded-full"
+            className="hover:bg-accent rounded-full"
             asChild={!canDisablePrev}
           >
             {canDisablePrev ? (
@@ -126,7 +126,7 @@ export const PostPagination = ({
             variant="ghost"
             size="icon"
             disabled={canDisableNext}
-            className="hover:bg-violet-100 rounded-full"
+            className="hover:bg-accent rounded-full"
             asChild={!canDisableNext}
           >
             {canDisableNext ? (

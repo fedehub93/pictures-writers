@@ -4,20 +4,14 @@ import { Product } from "@prisma/client";
 import * as z from "zod";
 import { Control, useController } from "react-hook-form";
 import slugify from "slugify";
-import { Descendant } from "slate";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-} from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
 
-import Editor from "@/app/(admin)/_components/editor";
 import { GenericInput } from "@/components/form-component/generic-input";
 import { SlugInput } from "@/components/form-component/slug-input";
+
+import { GenericEditor } from "@/components/form-component/generic-editor";
 
 import { productFormSchema } from "./product-form";
 import { ProductCategorySelect } from "./product-category-select";
@@ -35,10 +29,6 @@ export const ProductDetailsForm = ({
 }: ProductDetailsFormProps) => {
   const { field: fieldTitle } = useController({ control, name: "title" });
   const { field: fieldSlug } = useController({ control, name: "slug" });
-  const { field: fieldDescription } = useController({
-    control,
-    name: "description",
-  });
 
   const onSlugCreate = () => {
     fieldSlug.onChange(
@@ -46,10 +36,6 @@ export const ProductDetailsForm = ({
         lower: true,
       })
     );
-  };
-
-  const onChangeBody = (value: Descendant[]) => {
-    fieldDescription.onChange(value);
   };
 
   return (
@@ -76,21 +62,12 @@ export const ProductDetailsForm = ({
           disabled={isSubmitting}
           buttonOnClick={onSlugCreate}
         />
-        <FormField
+        <GenericEditor
+          id="description"
           control={control}
           name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description (Optional)</FormLabel>
-              <FormControl>
-                <Editor {...field} onChange={onChangeBody}>
-                  <Editor.Toolbar showEmbedButton={false} padding="xs" />
-                  <Editor.Input onHandleIsFocused={() => {}} />
-                  <Editor.Counter value={field.value} />
-                </Editor>
-              </FormControl>
-            </FormItem>
-          )}
+          label="Description (Optional)"
+          disabled={isSubmitting}
         />
       </CardContent>
     </Card>

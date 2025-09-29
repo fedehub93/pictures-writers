@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ProductType } from "@prisma/client";
-import { CalendarDays, Clock, Euro, Hourglass, Sofa } from "lucide-react";
+import { CalendarDays, CalendarOff, Clock, Euro, Hourglass, Sofa } from "lucide-react";
 
 import { WidgetProductType } from "@/types";
 import { getWidgetProducts } from "@/data/widget";
@@ -30,8 +30,8 @@ export const WidgetProduct = async ({
   });
 
   return (
-    <div className="w-full bg-white px-6 py-8 shadow-md flex flex-col gap-y-2">
-      <h3 className="mb-4 text-sm font-extrabold uppercase">{label}</h3>
+    <div className="w-full bg-white px-6 pt-8 pb-6 shadow-md flex flex-col gap-y-2">
+      <h3 className="mb-2 text-sm font-extrabold uppercase">{label}</h3>
 
       <div className="flex flex-col">
         {productData
@@ -64,22 +64,34 @@ export const WidgetProduct = async ({
                 {product.type === ProductType.WEBINAR &&
                   isWebinarMetadata(product.metadata) &&
                   "availableSeats" in product && (
-                    <div className="flex flex-col gap-y-2 text-sm ">
+                    <div className="flex flex-col gap-y-4 text-sm">
                       <div className="font-bold text-center text-lg leading-5 hover:text-primary">
                         {product.title}
                       </div>
-                      <div className="flex flex-col gap-y-2 text-sm text-muted-foreground">
-                        <div className="grid grid-cols-2 gap-x-4 ">
+                      <div className="flex flex-col flex-wrap gap-y-2 text-sm text-muted-foreground">
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-2 ">
                           <div className="flex items-center gap-x-2">
                             <CalendarDays className="w-4 h-4" />
+                            Inizio:{" "}
                             {formatDate({
-                              date: product.metadata.date!,
+                              date: product.metadata.startDate!,
                             })}
                           </div>
-                          <div className="flex items-center gap-x-2">
-                            <Clock className="h-4 w-4" />
-                            Ora: {product.metadata.time}
-                          </div>
+                          {!!product.metadata.time && (
+                            <div className="flex items-center gap-x-2">
+                              <Clock className="h-4 w-4" />
+                              Ora: {product.metadata.time}
+                            </div>
+                          )}
+                          {!!product.metadata.endDate && (
+                            <div className="flex items-center gap-x-2">
+                              <CalendarOff className="h-4 w-4" />
+                              Fine:{" "}
+                              {formatDate({
+                                date: product.metadata.endDate,
+                              })}
+                            </div>
+                          )}
                         </div>
                         <div className="grid grid-cols-2 gap-x-4">
                           <div className="flex items-center gap-x-2">
@@ -87,8 +99,8 @@ export const WidgetProduct = async ({
                             Durata: {product.metadata.duration}
                           </div>
                           <div className="flex items-center gap-x-2">
-                            <Euro className="h-4 w-4" />
-                            Costo: {formatPrice(product.price!, true)}
+                            <Clock className="h-4 w-4" />
+                            Lezioni: {product.metadata.lessons}
                           </div>
                         </div>
                         <div className="grid grid-cols-2 gap-x-4">
@@ -104,6 +116,12 @@ export const WidgetProduct = async ({
                           >
                             <Sofa className="h-4 w-4" />
                             Disponibili: {product.availableSeats}
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-x-4">
+                          <div className="flex items-center gap-x-2">
+                            <Euro className="h-4 w-4" />
+                            Costo: {formatPrice(product.price!, true)}
                           </div>
                         </div>
                       </div>

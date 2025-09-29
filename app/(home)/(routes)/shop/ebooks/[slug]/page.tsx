@@ -51,7 +51,7 @@ const Page = async (props: PageProps<"/shop/ebooks/[slug]">) => {
   const ebookUrl = `${siteShopUrl}/${product.category.slug}/${product.slug}/`;
 
   return (
-    <section key={product.slug} className="bg-violet-100/40 py-10">
+    <section key={product.slug} className="bg-background py-10">
       <ProductJsonLd
         title={product.seo?.title}
         description={product.seo?.description || ""}
