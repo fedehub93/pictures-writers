@@ -254,7 +254,7 @@ model Post {
   /// [BodyData]
   bodyData Json @db.JsonB
 
-  /// [TipTapBodyData]
+  // [TipTapBodyData]
   tiptapBodyData Json? @db.JsonB
 
   rootId       String?
