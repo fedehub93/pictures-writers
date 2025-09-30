@@ -8,18 +8,23 @@ import {
   AlignRight,
   Bold,
   Italic,
+  Link,
   List,
   ListOrdered,
   Quote,
   Underline,
 } from "lucide-react";
-import { Editor } from "@tiptap/react";
+import { Editor, useEditorState } from "@tiptap/react";
 
 import { Separator } from "@/components/ui/separator";
 
 import { cn } from "@/lib/utils";
+
+import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
+
 import { HeadingSelect } from "./heading-select";
 import { MarkButton } from "./mark-button";
+import { LinkButtonToolbar } from "./extensions/link/ui/LinkButtonToolbar";
 
 export interface MenuBarProps {
   editor: Editor | null;
@@ -34,18 +39,58 @@ export const MenuBar = ({
   sticky = false,
   padding = "lg",
 }: MenuBarProps) => {
-  if (!editor) return null;
+  // Stato derivato dall'editor, tipato in modo sicuro
+  const editorState = useEditorState({
+    editor,
+    selector: ({ editor }) => {
+      if (!editor) {
+        return {
+          isBold: false,
+          isItalic: false,
+          isUnderline: false,
+          isLink: false,
+          isBulletList: false,
+          isOrderedList: false,
+          isBlockquote: false,
+          textAlign: null as "left" | "center" | "right" | "justify" | null,
+        };
+      }
 
+      return {
+        isBold: editor.isActive("bold"),
+        isItalic: editor.isActive("italic"),
+        isUnderline: editor.isActive("underline"),
+        isLink: editor.isActive("link"),
+        isBulletList: editor.isActive("bulletList"),
+        isOrderedList: editor.isActive("orderedList"),
+        isBlockquote: editor.isActive("blockquote"),
+        textAlign: editor.isActive({ textAlign: "left" })
+          ? "left"
+          : editor.isActive({ textAlign: "center" })
+          ? "center"
+          : editor.isActive({ textAlign: "right" })
+          ? "right"
+          : editor.isActive({ textAlign: "justify" })
+          ? "justify"
+          : null,
+      };
+    },
+  });
+
+  if (!editor || !editorState) return null;
+
+  // === Actions ===
   const onClickBold = () => {
-    editor?.chain().focus().toggleBold().run();
+    editor.chain().focus().toggleBold().run();
   };
   const onClickItalic = () => {
-    editor?.chain().focus().toggleItalic().run();
+    editor.chain().focus().toggleItalic().run();
   };
   const onClickUnderline = () => {
-    editor?.chain().focus().toggleUnderline().run();
+    editor.chain().focus().toggleUnderline().run();
   };
 
+  // === Render ===
   return (
     <div
       className={cn(
@@ -58,56 +103,65 @@ export const MenuBar = ({
       <div className="flex items-center flex-wrap gap-x-1 h-full gap-y-2">
         <HeadingSelect editor={editor} />
         <Separator orientation="vertical" className="mx-2 !h-8" />
+
         <MarkButton
           onClick={onClickBold}
-          isActive={editor?.isActive("bold")}
+          isActive={editorState.isBold}
           Icon={Bold}
         />
         <MarkButton
           onClick={onClickItalic}
-          isActive={editor?.isActive("italic")}
+          isActive={editorState.isItalic}
           Icon={Italic}
         />
         <MarkButton
           onClick={onClickUnderline}
-          isActive={editor?.isActive("underline")}
+          isActive={editorState.isUnderline}
           Icon={Underline}
         />
+
         <Separator orientation="vertical" className="bg-slate-300 mx-2 !h-8" />
+
+        <LinkButtonToolbar editor={editor} />
+
+        <Separator orientation="vertical" className="bg-slate-300 mx-2 !h-8" />
+
         <MarkButton
-          onClick={() => editor?.chain().focus().setTextAlign("left").run()}
-          isActive={editor?.isActive({ textAlign: "left" })}
+          onClick={() => editor.chain().focus().setTextAlign("left").run()}
+          isActive={editorState.textAlign === "left"}
           Icon={AlignLeft}
         />
         <MarkButton
-          onClick={() => editor?.chain().focus().setTextAlign("center").run()}
-          isActive={editor?.isActive({ textAlign: "center" })}
+          onClick={() => editor.chain().focus().setTextAlign("center").run()}
+          isActive={editorState.textAlign === "center"}
           Icon={AlignCenter}
         />
         <MarkButton
-          onClick={() => editor?.chain().focus().setTextAlign("right").run()}
-          isActive={editor?.isActive({ textAlign: "right" })}
+          onClick={() => editor.chain().focus().setTextAlign("right").run()}
+          isActive={editorState.textAlign === "right"}
           Icon={AlignRight}
         />
         <MarkButton
-          onClick={() => editor?.chain().focus().setTextAlign("justify").run()}
-          isActive={editor?.isActive({ textAlign: "justify" })}
+          onClick={() => editor.chain().focus().setTextAlign("justify").run()}
+          isActive={editorState.textAlign === "justify"}
           Icon={AlignJustify}
         />
+
         <Separator orientation="vertical" className="bg-slate-300 mx-2 !h-8" />
+
         <MarkButton
           onClick={() => editor.chain().focus().toggleBulletList().run()}
-          isActive={editor?.isActive("bulletList")}
+          isActive={editorState.isBulletList}
           Icon={List}
         />
         <MarkButton
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          isActive={editor?.isActive("orderedList")}
+          isActive={editorState.isOrderedList}
           Icon={ListOrdered}
         />
         <MarkButton
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          isActive={editor?.isActive("blockquote")}
+          isActive={editorState.isBlockquote}
           Icon={Quote}
         />
       </div>

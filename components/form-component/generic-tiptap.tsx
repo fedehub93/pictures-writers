@@ -4,7 +4,6 @@ import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import Heading from "@tiptap/extension-heading";
-import { Link } from "@tiptap/extension-link";
 import Blockquote from "@tiptap/extension-blockquote";
 
 import { useEditor } from "@tiptap/react";
@@ -14,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { FormControl, FormField, FormItem } from "@/components/ui/form";
 
 import Tiptap from "../tiptap-editor";
+import { CustomLink } from "../tiptap-editor/extensions/link";
 
 interface GenericTiptapProps<T extends FieldValues> {
   id: string;
@@ -22,22 +22,6 @@ interface GenericTiptapProps<T extends FieldValues> {
   containerProps?: React.HTMLAttributes<HTMLDivElement>;
   onUpdate?: () => void;
 }
-
-export const CustomLink = Link.extend({
-  addAttributes() {
-    return {
-      ...this.parent?.(),
-      rel: {
-        default: null,
-        parseHTML: (element) => element.getAttribute("rel"),
-        renderHTML: (attributes) => {
-          if (!attributes.rel) return {};
-          return { rel: attributes.rel };
-        },
-      },
-    };
-  },
-});
 
 export const GenericTiptap = <T extends FieldValues>({
   id,

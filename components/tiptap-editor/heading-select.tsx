@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { Editor } from "@tiptap/react";
+import { Editor, useEditorState } from "@tiptap/react";
 
 import {
   Select,
@@ -10,29 +9,19 @@ import {
 } from "@/components/ui/select";
 
 export const HeadingSelect = ({ editor }: { editor: Editor }) => {
-  const [heading, setHeading] = useState("paragraph");
+  const editorState = useEditorState({
+    editor,
+    selector: ({ editor: e }) => {
+      if (!e) {
+        return { heading: "paragraph" as "paragraph" | "h1" | "h2" | "h3" };
+      }
 
-  useEffect(() => {
-    if (!editor) return;
-
-    const updateHeading = () => {
-      if (editor.isActive("heading", { level: 1 })) return setHeading("h1");
-      if (editor.isActive("heading", { level: 2 })) return setHeading("h2");
-      if (editor.isActive("heading", { level: 3 })) return setHeading("h3");
-      if (editor.isActive("paragraph")) return setHeading("paragraph");
-      return setHeading(""); // fallback
-    };
-
-    updateHeading();
-
-    editor.on("selectionUpdate", updateHeading);
-    editor.on("transaction", updateHeading);
-
-    return () => {
-      editor.off("selectionUpdate", updateHeading);
-      editor.off("transaction", updateHeading);
-    };
-  }, [editor]);
+      if (e.isActive("heading", { level: 1 })) return { heading: "h1" };
+      if (e.isActive("heading", { level: 2 })) return { heading: "h2" };
+      if (e.isActive("heading", { level: 3 })) return { heading: "h3" };
+      return { heading: "paragraph" };
+    },
+  });
 
   const handleChange = (value: string) => {
     switch (value) {
@@ -49,12 +38,13 @@ export const HeadingSelect = ({ editor }: { editor: Editor }) => {
         editor.chain().focus().toggleHeading({ level: 3 }).run();
         break;
     }
-
-    setHeading(value);
+    setTimeout(() => {
+      editor.chain().focus().run();
+    }, 1);
   };
 
   return (
-    <Select value={heading} onValueChange={handleChange}>
+    <Select value={editorState.heading} onValueChange={handleChange}>
       <SelectTrigger className="w-[140px]">
         <SelectValue placeholder="Heading" />
       </SelectTrigger>
