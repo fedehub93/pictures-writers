@@ -53,7 +53,7 @@ export const SubscriptionsWidget = () => {
             />
             <ChartTooltip
               cursor={false}
-              content={<ChartTooltipContent hideLabel />}
+              // content={<ChartTooltipContent hideLabel />}
             />
             <Bar dataKey="download" fill="var(--color-desktop)" radius={8} />
           </BarChart>

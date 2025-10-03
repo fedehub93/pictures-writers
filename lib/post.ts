@@ -501,6 +501,8 @@ export const getPublishedDraftPostBySlug = async (slug: string) => {
       title: true,
       slug: true,
       description: true,
+      editorType: true,
+      tiptapBodyData: true,
       bodyData: true,
       publishedAt: true,
       firstPublishedAt: true,
