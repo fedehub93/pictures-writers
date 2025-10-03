@@ -1,4 +1,11 @@
-import { Category, ContentStatus, Media, Tag, User } from "@prisma/client";
+import {
+  Category,
+  ContentStatus,
+  EditorType,
+  Media,
+  Tag,
+  User,
+} from "@prisma/client";
 import { db } from "./db";
 
 const POST_PER_PAGE = 10;
@@ -56,7 +63,9 @@ export type PostWithImageCoverWithCategoryWithTagsWithSeo = {
   title: string;
   slug: string;
   description: string | null;
+  editorType: EditorType;
   bodyData: any;
+  tiptapBodyData: any;
   publishedAt: Date | null;
   updatedAt: Date;
   imageCover: {
@@ -427,7 +436,9 @@ export const getPublishedPostBySlug = async (slug: string) => {
       title: true,
       slug: true,
       description: true,
+      editorType: true,
       bodyData: true,
+      tiptapBodyData: true,
       publishedAt: true,
       firstPublishedAt: true,
       updatedAt: true,

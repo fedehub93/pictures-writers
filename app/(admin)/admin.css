@@ -37,6 +37,12 @@
   }
 }
 
+@layer components {
+  [data-youtube-video] > iframe {
+    @apply w-full mb-8
+  }
+}
+
 @layer utilities {
   button:not([disabled]),
   [role="button"]:not([disabled]) {

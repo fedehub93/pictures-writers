@@ -2,15 +2,24 @@ import type { Editor } from "@tiptap/react";
 
 export const setLinkMark = (
   editor: Editor,
-  options: { href: string; follow?: boolean }
+  options: { href: string; nofollow?: boolean }
 ) => {
-  const { href, follow } = options;
-  console.log(follow);
+  const { href } = options;
+
+  return editor.chain().focus().extendMarkRange("link").setLink({ href }).run();
+};
+
+export const updateLinkMark = (
+  editor: Editor,
+  options: { href: string; nofollow?: boolean }
+) => {
+  const { href, nofollow } = options;
+
   return editor
     .chain()
     .focus()
     .extendMarkRange("link")
-    .setLink({ href, rel: follow ? "" : "nofollow" })
+    .updateAttributes("link", { href, nofollow })
     .run();
 };
 

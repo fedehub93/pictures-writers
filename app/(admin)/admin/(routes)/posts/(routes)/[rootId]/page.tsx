@@ -142,7 +142,11 @@ const PostIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
               <TabsTrigger value="seo">SEO</TabsTrigger>
               <TabsTrigger value="preview">Preview</TabsTrigger>
             </TabsList>
-            <TabsContent value="post" className="flex flex-col gap-y-4">
+            <TabsContent
+              value="post"
+              className="flex-col gap-y-4 hidden data-[state=active]:flex"
+              forceMount
+            >
               <TitleForm
                 initialData={post}
                 placeholder="e.g. How to write a screenplay"
@@ -189,7 +193,7 @@ const PostIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
                 }))}
               /> */}
             </TabsContent>
-            <TabsContent value="seo">
+            <TabsContent value="seo" forceMount className="hidden data-[state=active]:block">
               <SeoEditView
                 initialData={post.seo}
                 contentType={SeoContentTypeApi.Post}
@@ -197,7 +201,7 @@ const PostIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
                 contentId={post.id}
               />
             </TabsContent>
-            <TabsContent value="preview">
+            <TabsContent value="preview" forceMount className="hidden data-[state=active]:block">
               <PostPreview post={post} />
             </TabsContent>
           </Tabs>

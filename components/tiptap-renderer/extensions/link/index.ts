@@ -1,8 +1,6 @@
 import { Link } from "@tiptap/extension-link";
-import { ReactMarkViewRenderer } from "@tiptap/react";
-import { LinkButton } from "./ui/LinkButton";
 
-export const CustomLink = Link.extend({
+export const CustomLinkMarkRenderer = Link.extend({
   addAttributes() {
     return {
       ...this.parent?.(),
@@ -17,8 +15,5 @@ export const CustomLink = Link.extend({
         },
       },
     };
-  },
-  addMarkView() {
-    return ReactMarkViewRenderer(LinkButton);
   },
 });

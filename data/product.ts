@@ -21,3 +21,7 @@ export const getPublishedProductByRootId = async (rootId: string) => {
 
   return product;
 };
+
+export type GetPublishedProductByRootId = Awaited<
+  ReturnType<typeof getPublishedProductByRootId>
+>;

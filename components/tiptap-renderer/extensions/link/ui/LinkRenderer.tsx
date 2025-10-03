@@ -1,0 +1,35 @@
+import NextLink from "next/link";
+
+import { Mark, Node } from "@tiptap/pm/model";
+
+import { cn } from "@/lib/utils";
+
+interface LinkProps {
+  mark: Mark;
+  children: React.ReactNode;
+}
+
+export const LinkRenderer = ({ mark, children }: LinkProps) => {
+  const isAnchor = mark.attrs.href.includes("#");
+
+  const isExternalLink =
+    mark.attrs.href.includes("http://") || mark.attrs.href.includes("https://");
+
+    const isFollow = isExternalLink
+    ? mark.attrs.nofollow !== undefined
+      ? !!!mark.attrs.nofollow
+      : false
+    : true;
+
+  return (
+    <NextLink
+      href={mark.attrs.href}
+      className={cn("underline font-bold")}
+      rel={`noopener noreferrer ${isFollow ? "follow" : "nofollow"}`}
+      target={isExternalLink ? "_blank" : "_self"}
+      prefetch={true}
+    >
+      {children}
+    </NextLink>
+  );
+};

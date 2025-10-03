@@ -1,19 +1,21 @@
 import React from "react";
 import { Control, FieldValues, Path, useController } from "react-hook-form";
-import StarterKit from "@tiptap/starter-kit";
-import Underline from "@tiptap/extension-underline";
-import TextAlign from "@tiptap/extension-text-align";
-import Heading from "@tiptap/extension-heading";
-import Blockquote from "@tiptap/extension-blockquote";
-
 import { useEditor } from "@tiptap/react";
 
-import { cn } from "@/lib/utils";
+import StarterKit from "@tiptap/starter-kit";
+import TextAlign from "@tiptap/extension-text-align";
+import Youtube from "@tiptap/extension-youtube";
 
 import { FormControl, FormField, FormItem } from "@/components/ui/form";
 
-import Tiptap from "../tiptap-editor";
 import { CustomLink } from "../tiptap-editor/extensions/link";
+import { CustomImage } from "../tiptap-editor/extensions/image";
+import { ProductNode } from "../tiptap-editor/extensions/product";
+import { InfoBoxNode } from "../tiptap-editor/extensions/info-box";
+
+import { cn } from "@/lib/utils";
+
+import Tiptap from "../tiptap-editor";
 
 interface GenericTiptapProps<T extends FieldValues> {
   id: string;
@@ -35,19 +37,24 @@ export const GenericTiptap = <T extends FieldValues>({
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        link: {
-          openOnClick: false,
+        heading: {
+          levels: [1, 2, 3, 4],
+        },
+        link: false,
+        blockquote: {
+          HTMLAttributes: {
+            class: "not-prose",
+          },
         },
       }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
-      Heading.configure({ levels: [1, 2, 3, 4] }),
-      Underline,
       CustomLink.configure({ openOnClick: false }),
-      Blockquote.configure({
-        HTMLAttributes: {
-          class: "not-prose",
-        },
+      CustomImage,
+      Youtube.configure({
+        nocookie: true,
       }),
+      ProductNode,
+      InfoBoxNode,
     ],
     content: field.value ?? "",
     immediatelyRender: false,
@@ -58,8 +65,10 @@ export const GenericTiptap = <T extends FieldValues>({
     },
     onUpdate: ({ editor }) => {
       const json = editor.getJSON();
-      field.onChange(json);
-      if (onUpdate) onUpdate();
+      queueMicrotask(() => {
+        field.onChange(json);
+        if (onUpdate) onUpdate();
+      });
     },
   });
 

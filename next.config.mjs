@@ -34,7 +34,7 @@ const nextConfig = {
         pathname: "/f/*",
       },
     ],
-    qualities: [50, 75],
+    qualities: [50, 75, 100],
     formats: ["image/webp"],
   },
   trailingSlash: true,

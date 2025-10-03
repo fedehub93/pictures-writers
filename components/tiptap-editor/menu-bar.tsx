@@ -7,16 +7,30 @@ import {
   AlignLeft,
   AlignRight,
   Bold,
+  Box,
+  ChevronDown,
+  Info,
   Italic,
   Link,
   List,
   ListOrdered,
+  LucideImage,
   Quote,
   Underline,
+  Video,
 } from "lucide-react";
 import { Editor, useEditorState } from "@tiptap/react";
 
+import { Media } from "@prisma/client";
+
 import { Separator } from "@/components/ui/separator";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 import { cn } from "@/lib/utils";
 
@@ -25,6 +39,8 @@ import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 import { HeadingSelect } from "./heading-select";
 import { MarkButton } from "./mark-button";
 import { LinkButtonToolbar } from "./extensions/link/ui/LinkButtonToolbar";
+import { insertProduct } from "./extensions/product/helpers";
+import { insertInfoBox } from "./extensions/info-box/helpers";
 
 export interface MenuBarProps {
   editor: Editor | null;
@@ -39,6 +55,7 @@ export const MenuBar = ({
   sticky = false,
   padding = "lg",
 }: MenuBarProps) => {
+  const { onOpen } = useModal();
   // Stato derivato dall'editor, tipato in modo sicuro
   const editorState = useEditorState({
     editor,
@@ -88,6 +105,31 @@ export const MenuBar = ({
   };
   const onClickUnderline = () => {
     editor.chain().focus().toggleUnderline().run();
+  };
+
+  const getImage = (data: Media) => {
+    editor
+      .chain()
+      .focus()
+      .setImage({
+        src: data.url,
+        alt: data.altText || "image",
+      })
+      .run();
+  };
+
+  const getVideo = ({ url }: { url: string }) => {
+    editor.commands.setYoutubeVideo({
+      src: url,
+    });
+  };
+
+  const getProduct = (data: any) => {
+    insertProduct(editor, { rootId: data.rootId });
+  };
+
+  const insertInfoBoxNode = () => {
+    insertInfoBox(editor);
   };
 
   // === Render ===
@@ -164,6 +206,50 @@ export const MenuBar = ({
           isActive={editorState.isBlockquote}
           Icon={Quote}
         />
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button type="button" variant="outline">
+              Insert Embed
+              <ChevronDown className="h-4 w-4 ml-2" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem onClick={() => onOpen("selectAsset", getImage)}>
+              <LucideImage className="h-4 w-4 mr-2" />
+              Image
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onOpen("selectUrl", getVideo)}>
+              <Video className="h-4 w-4 mr-2" />
+              Video
+            </DropdownMenuItem>
+            {/* <DropdownMenuItem
+              onClick={() => onOpen("editLink", getAffiliateLink)}
+            >
+              <Link className="h-4 w-4 mr-2" />
+              Affiliate link
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={insertSponsorFirstImpression}>
+              <Blocks className="h-4 w-4 mr-2" />
+              Sponsor first impression
+            </DropdownMenuItem> */}
+            <DropdownMenuItem
+              onClick={() => onOpen("selectProduct", getProduct)}
+            >
+              <Box className="h-4 w-4 mr-2" />
+              Product
+            </DropdownMenuItem>
+
+            <DropdownMenuItem onClick={insertInfoBoxNode}>
+              <Info className="h-4 w-4 mr-2" />
+              Info box
+            </DropdownMenuItem>
+            {/* <DropdownMenuItem onClick={insertTable}>
+                <Table className="h-4 w-4 mr-2" />
+                Table
+              </DropdownMenuItem> */}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );

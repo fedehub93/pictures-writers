@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { EditorType } from "@prisma/client";
 
 import { PostWithImageCoverWithCategoryWithTagsWithSeo } from "@/lib/post";
 
@@ -7,6 +8,8 @@ import { getPlaceholderImage } from "@/lib/image";
 import { SlateRendererV2 } from "@/components/editor/view/slate-renderer";
 import Sidebar from "@/app/(home)/_components/sidebar";
 import PostInfoV2 from "@/app/(home)/(routes)/blog/_components/post-info-v2";
+
+import { TipTapRendererV2 } from "@/components/tiptap-renderer";
 
 import { WidgetPostBottom } from "./post-bottom";
 
@@ -18,7 +21,6 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
   if (!post.postCategories.length) return null;
 
   const imageWithPlaceholder = await getPlaceholderImage(post.imageCover?.url!);
-
   return (
     <div className="blog-post">
       <div className="blog-post__post">
@@ -34,6 +36,7 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
                 className="blog-post__image"
                 placeholder="blur"
                 blurDataURL={imageWithPlaceholder.placeholder}
+                quality={100}
               />
             ) : null}
           </div>
@@ -46,7 +49,12 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
             <h1 className="blog-post__title">{post.title}</h1>
           </div>
 
-          <SlateRendererV2 content={post.bodyData} />
+          {post.editorType === EditorType.SLATE && (
+            <SlateRendererV2 content={post.bodyData} />
+          )}
+          {post.editorType === EditorType.TIPTAP && (
+            <TipTapRendererV2 content={post.tiptapBodyData} />
+          )}
         </article>
         <WidgetPostBottom postId={post.id} tags={post.tags} />
         {/* <DisqusLazy config={disqusOptions} /> */}

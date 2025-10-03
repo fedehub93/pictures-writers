@@ -10,11 +10,14 @@ import {
   SocialKey,
   WidgetType,
 } from "@prisma/client";
+import { HTMLContent, JSONContent } from "@tiptap/core";
+
+export type TiptapContent = HTMLContent | JSONContent | JSONContent[] | null;
 
 declare global {
   namespace PrismaJson {
     type BodyData = CustomElement[];
-    type TipTapBodyData = any;
+    type TipTapBodyData = TiptapContent;
     type ProductMetadata =
       | EbookMetadata
       | AffiliateMetadata

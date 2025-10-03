@@ -28,9 +28,14 @@ export const LinkButtonToolbar = ({ editor }: { editor: Editor }) => {
     target: string;
     follow: boolean;
   }) => {
-    const { target } = data;
+    const { target, follow } = data;
 
     setLinkMark(editor, { href: target });
+    editor
+      .chain()
+      .focus()
+      .extendMarkRange("link")
+      .updateAttributes("link", { nofollow: !follow });
 
     setTimeout(() => {
       editor.chain().focus().run();
@@ -39,7 +44,7 @@ export const LinkButtonToolbar = ({ editor }: { editor: Editor }) => {
 
   const onClickLink = () => {
     if (editorState.isLink) return removeLinkMark(editor);
-    
+
     onOpen("editLink", handleLinkSave, {
       text: "",
       target: "",

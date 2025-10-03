@@ -1,5 +1,5 @@
 import { MarkViewContent, MarkViewRendererProps } from "@tiptap/react";
-import { Copy, Pencil, Trash2 } from "lucide-react";
+import { ArrowUpRight, Copy, Pencil, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 
 import {
@@ -18,19 +18,24 @@ import {
 import { cn } from "@/lib/utils";
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 
-import { removeLinkMark, setLinkMark } from "../helpers";
+import { removeLinkMark, updateLinkMark } from "../helpers";
 
-export const LinkButton = ({
-  editor,
-  HTMLAttributes,
-  updateAttributes,
-}: MarkViewRendererProps) => {
+export const LinkButton = ({ editor, mark }: MarkViewRendererProps) => {
   const { onOpen } = useModal();
+
+  const isExternalLink =
+    mark.attrs.href.includes("http://") || mark.attrs.href.includes("https://");
+
+  const isFollow = isExternalLink
+    ? mark.attrs.nofollow !== undefined
+      ? !!!mark.attrs.nofollow
+      : false
+    : true;
 
   const onCopyLink = () => {
     if (navigator.clipboard) {
       navigator.clipboard
-        .writeText(HTMLAttributes.href)
+        .writeText(mark.attrs.href)
         .then(() => {
           toast.success("Link copied successfully");
         })
@@ -43,15 +48,14 @@ export const LinkButton = ({
   };
 
   const onSave = ({ target, follow }: { target: string; follow: boolean }) => {
-    setLinkMark(editor, { href: target, follow });
-    updateAttributes({ rel: follow ? "" : "nofollow" });
+    updateLinkMark(editor, { href: target, nofollow: !follow });
   };
 
   const onEditLink = () => {
     onOpen("editLink", onSave, {
       text: "empty",
-      target: HTMLAttributes.href,
-      follow: HTMLAttributes.rel !== "nofollow",
+      target: mark.attrs.href,
+      follow: !mark.attrs.nofollow,
     });
   };
 
@@ -65,14 +69,13 @@ export const LinkButton = ({
         <a
           href="#"
           className={cn(
-            "relative text-blue-700 underline underline-offset-2 cursor-pointer"
-            // isFollow && "mr-4"
+            "relative text-blue-700 underline underline-offset-2 cursor-pointer",
+            isFollow && "mr-4"
           )}
-          rel={HTMLAttributes.rel}
         >
-          {/* {isFollow && (
+          {isFollow && (
             <ArrowUpRight className="absolute top-0 -right-4 h-4 w-4" />
-          )} */}
+          )}
           <MarkViewContent />
         </a>
       </PopoverTrigger>
@@ -86,7 +89,7 @@ export const LinkButton = ({
       >
         <div className="flex items-center justify-between">
           <p className="text-sm font-medium leading-none text-blue-700 underline underline-offset-2 cursor-default">
-            {HTMLAttributes.href}
+            {mark.attrs.href}
           </p>
           <div className="ml-8 flex">
             <TooltipProvider>

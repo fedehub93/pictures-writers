@@ -86,7 +86,7 @@ export const EditContentImageSheet = () => {
         </SheetHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
-            <div className="my-4 dark:bg-slate-900 transition-all flex flex-col gap-y-4">
+            <div className="my-4 dark:bg-slate-900 transition-all flex flex-col gap-y-4 p-4">
               <div className="flex items-center justify-between">Image</div>
               <div className="relative w-64 rounded-md aspect-video overflow-hidden">
                 <Image
@@ -114,7 +114,7 @@ export const EditContentImageSheet = () => {
                   </FormItem>
                 )}
               />
-              <SheetFooter className="py-2">
+              <SheetFooter className="py-2 px-0">
                 <Button disabled={isLoading}>Save</Button>
               </SheetFooter>
             </div>
