@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 
 export const HeroSection = (): JSX.Element => {
   return (
-    <section className="w-full bg-background px-4 lg:px-6 py-24 h-[calc(100vh-80px)]">
+    <section className="w-full bg-background px-4 lg:px-6 py-24 lg:h-[calc(100vh-80px)]">
       <div className="mx-auto max-w-lg text-center md:max-w-(--breakpoint-md) lg:max-w-6xl lg:text-left">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div className="flex flex-col gap-y-10">
@@ -45,7 +45,7 @@ export const HeroSection = (): JSX.Element => {
               </Button>
             </div>
           </div>
-          <div className="mb-12 rounded-lg lg:mb-0 aspect-square relative">
+          <div className="rounded-lg aspect-square relative">
             <Image
               alt="jumbotron"
               fill

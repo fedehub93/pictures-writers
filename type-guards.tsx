@@ -14,7 +14,9 @@ import {
   WidgetSocialMetadata,
   WidgetTagMetadata,
   WebinarMetadata,
+  TiptapContent,
 } from "@/types";
+import { JSONContent } from "@tiptap/react";
 
 export function isValidEbookFormat(format: string | null): format is EbookType {
   return format === "pdf" || format === "epub" || format === "mobi";
@@ -171,4 +173,13 @@ export function isWidgetProductPopMetadata(
     typeof (metadata as any).type === "string" &&
     metadata.type === WidgetType.PRODUCT_POP
   );
+}
+
+export function isJSONContent(
+  content: TiptapContent
+): content is JSONContent {
+  return typeof content === "object" 
+    && content !== null
+    && !Array.isArray(content)
+    && ("type" in content || "text" in content)
 }

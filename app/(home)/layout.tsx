@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Mulish, Figtree } from "next/font/google";
+import { Figtree } from "next/font/google";
 // import { SpeedInsights } from "@vercel/speed-insights/next";
 import { GoogleTagManager } from "@next/third-parties/google";
 
@@ -15,11 +15,11 @@ import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
 
 import { QueryProvider } from "@/components/providers/query-provider";
 import { AppScripts } from "@/components/scripts";
+
 import { OrganizationJsonLd } from "./_components/seo/json-ld/organization";
+import { BottomBanner } from "./_components/bottom-banner";
 
-const mulish = Mulish({ subsets: ["latin"] });
 const figtree = Figtree({ subsets: ["latin"] });
-
 
 export async function generateMetadata(): Promise<Metadata | null> {
   const metadata = await getHeadMetadata();
@@ -55,6 +55,7 @@ export default async function RootLayout({
             <Navbar />
             <main className="pt-20">{children}</main>
             <Footer />
+            <BottomBanner />
           </div>
         </QueryProvider>
         {/* <SpeedInsights /> */}
