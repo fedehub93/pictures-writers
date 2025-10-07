@@ -1,4 +1,3 @@
-/* eslint-disable react/require-default-props */
 import React, { FC } from "react";
 import { Organization, WithContext } from "schema-dts";
 import { JsonLd } from "./json-ld";

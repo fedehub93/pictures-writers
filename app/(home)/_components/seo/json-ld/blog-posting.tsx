@@ -1,4 +1,3 @@
-/* eslint-disable react/require-default-props */
 import React, { FC } from "react";
 import { User } from "@prisma/client";
 import { BlogPosting, WithContext } from "schema-dts";

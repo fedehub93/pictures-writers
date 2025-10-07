@@ -1,6 +1,4 @@
-/* eslint-disable react/require-default-props */
 import React, { FC } from "react";
-import { Media } from "@prisma/client";
 import { Product, WithContext } from "schema-dts";
 import { JsonLd } from "./json-ld";
 
@@ -57,7 +55,7 @@ export const ProductJsonLd: FC<ProductJsonLdProps> = ({
       availability: offers.availability,
     },
     category,
-    url
+    url,
   };
 
   return <JsonLd json={json} />;
