@@ -10,7 +10,9 @@ export type ModalType =
   | "createUser"
   | "editUser"
   | "editLink"
-  | "importAudienceContacts";
+  | "importAudienceContacts"
+  | "createAdBlock"
+  | "createAdItem";
 
 interface ModalStore {
   type: ModalType | null;

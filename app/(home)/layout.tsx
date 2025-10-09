@@ -18,6 +18,7 @@ import { AppScripts } from "@/components/scripts";
 
 import { OrganizationJsonLd } from "./_components/seo/json-ld/organization";
 import { BottomBanner } from "./_components/bottom-banner";
+import HolyLoader from "holy-loader";
 
 const figtree = Figtree({ subsets: ["latin"] });
 
@@ -43,6 +44,7 @@ export default async function RootLayout({
 
   return (
     <html lang="it" suppressHydrationWarning>
+      <HolyLoader color="var(--primary)" />
       <body className={figtree.className}>
         <OrganizationJsonLd
           name={settings.siteName!}

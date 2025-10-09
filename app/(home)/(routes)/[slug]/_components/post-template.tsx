@@ -12,6 +12,8 @@ import PostInfoV2 from "@/app/(home)/(routes)/blog/_components/post-info-v2";
 import { TipTapRendererV2 } from "@/components/tiptap-renderer";
 
 import { WidgetPostBottom } from "./post-bottom";
+import { normalizeContent } from "@/components/tiptap-renderer/helpers/normalize-content";
+import { db } from "@/lib/db";
 
 interface PostTemplateProps {
   post: PostWithImageCoverWithCategoryWithTagsWithSeo;
@@ -19,6 +21,35 @@ interface PostTemplateProps {
 
 export const PostTemplate = async ({ post }: PostTemplateProps) => {
   if (!post.postCategories.length) return null;
+
+  /**
+   * TEMP - devo sviluppare funzionaltà per escludere tag, categorie, articoli
+   */
+
+  let normalizedContent = post.tiptapBodyData;
+
+  if (
+    post.slug !== "laboratorio-di-scrittura-di-un-soggetto-cinematografico-2025"
+  ) {
+    const blocks = await db.adBlock.findMany({
+      where: {
+        campaign: {
+          isActive: true,
+        },
+        isActive: true,
+      },
+      include: {
+        items: true,
+      },
+    });
+
+    if (post.editorType === EditorType.TIPTAP) {
+      normalizedContent = normalizeContent(post.tiptapBodyData, {
+        adBlocks: blocks,
+        totalWordCount: 5000,
+      });
+    }
+  }
 
   const imageWithPlaceholder = await getPlaceholderImage(post.imageCover?.url!);
   return (
@@ -53,7 +84,7 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
             <SlateRendererV2 content={post.bodyData} />
           )}
           {post.editorType === EditorType.TIPTAP && (
-            <TipTapRendererV2 content={post.tiptapBodyData} />
+            <TipTapRendererV2 content={normalizedContent} />
           )}
         </article>
         <WidgetPostBottom postId={post.id} tags={post.tags} />

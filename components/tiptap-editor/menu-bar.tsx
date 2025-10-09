@@ -14,6 +14,7 @@ import {
   Link,
   List,
   ListOrdered,
+  ListOrderedIcon,
   LucideImage,
   Quote,
   Underline,
@@ -41,6 +42,7 @@ import { MarkButton } from "./mark-button";
 import { LinkButtonToolbar } from "./extensions/link/ui/LinkButtonToolbar";
 import { insertProduct } from "./extensions/product/helpers";
 import { insertInfoBox } from "./extensions/info-box/helpers";
+import { insertTableContent } from "./extensions/table-content/helpers";
 
 export interface MenuBarProps {
   editor: Editor | null;
@@ -130,6 +132,10 @@ export const MenuBar = ({
 
   const insertInfoBoxNode = () => {
     insertInfoBox(editor);
+  };
+
+  const insertTableContentNode = () => {
+    insertTableContent(editor);
   };
 
   // === Render ===
@@ -243,6 +249,10 @@ export const MenuBar = ({
             <DropdownMenuItem onClick={insertInfoBoxNode}>
               <Info className="h-4 w-4 mr-2" />
               Info box
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={insertTableContentNode}>
+              <ListOrderedIcon className="h-4 w-4 mr-2" />
+              Table of Contents
             </DropdownMenuItem>
             {/* <DropdownMenuItem onClick={insertTable}>
                 <Table className="h-4 w-4 mr-2" />

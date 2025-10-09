@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { WidgetSection, WidgetType } from "@prisma/client";
+import { EditorType, WidgetSection, WidgetType } from "@prisma/client";
 
 import { db } from "@/lib/db";
 import {
@@ -10,7 +10,7 @@ import {
 } from "@/lib/post";
 import { getPublishedProductByRootId } from "@/data/product";
 import { getSettings } from "@/data/settings";
-import { isWidgetProductPopMetadata } from "@/type-guards";
+import { isJSONContent, isWidgetProductPopMetadata } from "@/type-guards";
 import { getPostMetadataBySlug } from "@/app/(home)/_components/seo/content-metadata";
 import { BlogPostingJsonLd } from "@/app/(home)/_components/seo/json-ld/blog-posting";
 import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
@@ -18,6 +18,7 @@ import { PostTemplate } from "@/app/(home)/(routes)/[slug]/_components/post-temp
 import { PostList } from "@/app/(home)/(routes)/blog/_components/post-list";
 
 import { WidgetProductPop } from "@/components/widget/product-pop";
+import { normalizeContent } from "@/components/tiptap-renderer/helpers/normalize-content";
 
 export const revalidate = 86400;
 
@@ -88,19 +89,39 @@ const Page = async (props: PageProps<"/[slug]">) => {
     return notFound();
   }
 
-  const bodyImages =
-    post.bodyData
-      .filter(
-        (image) => image.type === "image" && image.url && image.url !== ""
-      )
-      .map((image) => image.url || "") || [];
+  let bodyImages: string[] = [];
+  let bodyVideos: string[] = [];
 
-  const bodyVideos =
-    post.bodyData
-      .filter(
-        (video) => video.type === "video" && video.url && video.url !== ""
-      )
-      .map((video) => video.url || "") || [];
+  if (post.editorType === EditorType.SLATE) {
+    bodyImages =
+      post.bodyData
+        .filter(
+          (image) => image.type === "image" && image.url && image.url !== ""
+        )
+        .map((image) => image.url || "") || [];
+
+    bodyVideos =
+      post.bodyData
+        .filter(
+          (video) => video.type === "video" && video.url && video.url !== ""
+        )
+        .map((video) => video.url || "") || [];
+  }
+
+  if (
+    post.editorType === EditorType.TIPTAP &&
+    isJSONContent(post.tiptapBodyData)
+  ) {
+    bodyImages =
+      post.tiptapBodyData.content
+        ?.filter((image) => image.type === "image" && image.attrs?.src !== "")
+        .map((image) => image.attrs?.src || "") || [];
+
+    bodyVideos =
+      post.tiptapBodyData.content
+        ?.filter((video) => video.type === "youtube" && video.attrs?.src !== "")
+        .map((video) => video.attrs?.src || "") || [];
+  }
 
   const widgetPopup = await db.widget.findFirst({
     where: {

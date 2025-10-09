@@ -20,6 +20,12 @@
     --tw-prose-bullets: black; /* red-500 */
   }
 
+  .prose {
+    blockquote {
+      @apply mb-8 border-l-4 border-l-secondary-foreground bg-primary-foreground p-4 pl-8 shadow-md [&>p]:mb-0;
+    }
+  }
+
   .prose img {
     margin-top: 0px;
     margin-bottom: 0px;
@@ -402,7 +408,7 @@
   @apply relative mb-8 bg-muted p-4 py-6 pl-12 rounded-lg [&>p]:mb-4 [&>*:last-child]:mb-0 min-h-14;
 
   & p {
-    @apply mt-0
+    @apply mt-0;
   }
 }
 

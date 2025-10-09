@@ -16,6 +16,7 @@ import { InfoBoxNode } from "../tiptap-editor/extensions/info-box";
 import { cn } from "@/lib/utils";
 
 import Tiptap from "../tiptap-editor";
+import { TableContentNode } from "../tiptap-editor/extensions/table-content";
 
 interface GenericTiptapProps<T extends FieldValues> {
   id: string;
@@ -55,6 +56,7 @@ export const GenericTiptap = <T extends FieldValues>({
       }),
       ProductNode,
       InfoBoxNode,
+      TableContentNode,
     ],
     content: field.value ?? "",
     immediatelyRender: false,

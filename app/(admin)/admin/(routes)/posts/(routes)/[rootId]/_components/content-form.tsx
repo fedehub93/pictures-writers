@@ -104,7 +104,7 @@ export const ContentForm = ({ initialData, rootId, postId }: BodyFormProps) => {
 
   const debouncedSubmit = useDebouncedCallback(() => {
     form.handleSubmit(onSubmit)();
-  }, 5000);
+  }, 2000);
 
   return (
     <div

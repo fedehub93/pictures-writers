@@ -20,6 +20,7 @@ import { PostList } from "@/app/(home)/(routes)/blog/_components/post-list";
 import { WidgetProductPop } from "@/components/widget/product-pop";
 import { TiptapContent } from "@/types";
 import { JSONContent } from "@tiptap/react";
+import { normalizeContent } from "@/components/tiptap-renderer/helpers/normalize-content";
 
 export const dynamic = "force-dynamic";
 

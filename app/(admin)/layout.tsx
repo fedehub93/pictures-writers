@@ -17,22 +17,10 @@ import { ModalProvider } from "./_components/providers/modal-provider";
 import { SheetProvider } from "./_components/providers/sheet-provider";
 import { getSettings } from "@/data/settings";
 import { ProgressLoader } from "./_components/progress-loader";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "./_components/sidebar-v2/app-sidebar";
-import { Separator } from "@/components/ui/separator";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import { Header } from "./_components/header";
+import HolyLoader from "holy-loader";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -61,11 +49,10 @@ export default async function RootLayout({
     });
   }
 
-  const settings = await getSettings();
-
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
+        <HolyLoader  />
         <body className={inter.className}>
           <ThemeProvider
             attribute="class"

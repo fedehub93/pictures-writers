@@ -1,7 +1,9 @@
 import Image from "next/image";
 
-import { PostWithImageCoverWithCategoryWithTagsWithSeo } from "@/lib/post";
+import { EditorType } from "@prisma/client";
 
+import { db } from "@/lib/db";
+import { PostWithImageCoverWithCategoryWithTagsWithSeo } from "@/lib/post";
 import { getPlaceholderImage } from "@/lib/image";
 
 import { SlateRendererV2 } from "@/components/editor/view/slate-renderer";
@@ -9,6 +11,7 @@ import Sidebar from "@/app/(home)/_components/sidebar";
 import PostInfoV2 from "@/app/(home)/(routes)/blog/_components/post-info-v2";
 
 import { WidgetPostBottom } from "./post-bottom";
+import { normalizeContent } from "@/components/tiptap-renderer/helpers/normalize-content";
 
 interface PostTemplateProps {
   post: PostWithImageCoverWithCategoryWithTagsWithSeo;
@@ -16,6 +19,26 @@ interface PostTemplateProps {
 
 export const PostTemplate = async ({ post }: PostTemplateProps) => {
   if (!post.postCategories.length) return null;
+
+  const blocks = await db.adBlock.findMany({
+    where: {
+      campaign: {
+        isActive: true,
+      },
+      isActive: true,
+    },
+    include: {
+      items: true,
+    },
+  });
+
+  let normalizedContent = post.tiptapBodyData;
+  if (post.editorType === EditorType.TIPTAP) {
+    normalizedContent = normalizeContent(post.tiptapBodyData, {
+      adBlocks: blocks,
+      totalWordCount: 5000,
+    });
+  }
 
   const imageWithPlaceholder = await getPlaceholderImage(post.imageCover?.url!);
 

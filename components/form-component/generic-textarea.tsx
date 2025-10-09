@@ -43,10 +43,7 @@ export const GenericTextarea = <T extends FieldValues>({
             <Textarea
               {...field}
               {...textareaProps}
-              className={cn(
-                `bg-primary-foreground`,
-                textareaProps.className && textareaProps.className
-              )}
+              className={cn(textareaProps.className && textareaProps.className)}
               onBlur={(e) => {
                 field.onBlur(); // Mantiene la gestione di react-hook-form
                 onBlur?.(e); // Chiama anche il tuo onBlur personalizzato se presente

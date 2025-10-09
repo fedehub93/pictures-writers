@@ -19,6 +19,8 @@ export async function GET(
 
     const product = await getPublishedProductByRootId(rootId);
 
+    console.log(product, rootId)
+
     return NextResponse.json(product);
   } catch (error) {
     console.log("[PRODUCTS_ROOT_ID_VERSIONS_GET]", error);

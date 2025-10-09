@@ -2,24 +2,28 @@ import { Control, FieldValues, Path } from "react-hook-form";
 
 import {
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils";
 
 interface GenericSwitchProps<T extends FieldValues>
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   control: Control<T>;
   name: Path<T>;
-  label: string;
+  label?: string;
+  description?: string;
 }
 
 export const GenericSwitch = <T extends FieldValues>({
   control,
   name,
   label,
+  description,
   ...buttonProps
 }: GenericSwitchProps<T>) => {
   return (
@@ -27,8 +31,14 @@ export const GenericSwitch = <T extends FieldValues>({
       control={control}
       name={name}
       render={({ field }) => (
-        <FormItem className="flex flex-row items-center justify-between gap-x-4">
-          <FormLabel className="text-base mb-0">{label}</FormLabel>
+        <FormItem
+          className={cn(
+            "flex flex-row justify-between gap-x-4",
+            label && "items-center"
+          )}
+        >
+          {label && <FormLabel className="text-base mb-0">{label}</FormLabel>}
+          {description && <FormDescription>{description}</FormDescription>}
           <FormControl>
             <Switch
               {...field}

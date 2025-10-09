@@ -652,6 +652,94 @@ model ProductFAQ {
   updatedAt DateTime @updatedAt
 }
 
+/**
+ * ADS
+ */
+
+model AdCampaign {
+  id String @id @default(uuid())
+
+  name        String
+  description String?
+  startDate   DateTime?
+  endDate     DateTime?
+  isActive    Boolean   @default(false)
+
+  blocks AdBlock[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AdBlock {
+  id String @id @default(uuid())
+
+  label      String
+  layoutType AdLayoutType
+  isActive   Boolean      @default(true)
+
+  campaignId String
+  campaign   AdCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  items AdItem[]
+
+  placement      AdPositionPlacement @default(BEFORE)
+  reference      AdPositionReference @default(HEADING)
+  referenceCount Int                 @default(0)
+
+  minWords Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AdItem {
+  id String @id @default(uuid())
+
+  sourceType AdItemSourceType
+  adBlockId  String
+  adBlock    AdBlock          @relation(fields: [adBlockId], references: [id], onDelete: Cascade)
+
+  // statics data
+  title       String?
+  description String?
+  imageUrl    String?
+  url         String?
+
+  // dynamic relations
+  postRootId    String?
+  productRootId String?
+
+  sort     Int?
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum AdLayoutType {
+  SINGLE
+  GRID
+  CAROUSEL
+}
+
+enum AdItemSourceType {
+  STATIC // Dati scritti direttamente nell’AdItem
+  POST // Collegato a un post del blog
+  PRODUCT // Collegato a un prodotto
+}
+
+enum AdPositionPlacement {
+  BEFORE
+  AFTER
+}
+
+enum AdPositionReference {
+  HEADING
+  PARAGRAPH
+  IMAGE
+}
+
 model Purchase {
   id String @id @default(uuid())
 

@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import React from "react";
+import { cn } from "@/lib/utils";
 
 interface GenericInputProps<T extends FieldValues>
   extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -40,6 +41,10 @@ export const GenericInput = <T extends FieldValues>({
             <Input
               {...field}
               {...inputProps}
+              className={cn(
+                `disabled:cursor-not-allowed`,
+                inputProps.className && inputProps.className
+              )}
               onBlur={(e) => {
                 field.onBlur(); // Mantiene la gestione di react-hook-form
                 onBlur?.(e); // Chiama anche il tuo onBlur personalizzato se presente

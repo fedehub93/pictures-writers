@@ -1,11 +1,4 @@
-import {
-  Category,
-  ContentStatus,
-  EditorType,
-  Media,
-  Tag,
-  User,
-} from "@prisma/client";
+import { ContentStatus, EditorType, Media, Tag, User } from "@prisma/client";
 import { db } from "./db";
 
 const POST_PER_PAGE = 10;
@@ -422,6 +415,39 @@ export const getPublishedPostById = async (id: string) => {
 
   return lastPublishedPost;
 };
+
+export const getPublishedPostByRootId = async (rootId: string) => {
+  const post = await db.post.findFirst({
+    where: {
+      rootId: rootId,
+      status: ContentStatus.PUBLISHED,
+      isLatest: true,
+    },
+    select: {
+      id: true,
+      rootId: true,
+      title: true,
+      description: true,
+      slug: true,
+      imageCover: {
+        select: {
+          id: true,
+          url: true,
+          altText: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  return post;
+};
+
+export type GetPublishedPostByRootId = Awaited<
+  ReturnType<typeof getPublishedPostByRootId>
+>;
 
 export const getPublishedPostBySlug = async (slug: string) => {
   const post = await db.post.findFirst({

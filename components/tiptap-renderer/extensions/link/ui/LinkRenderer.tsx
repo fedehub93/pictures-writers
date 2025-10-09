@@ -15,18 +15,25 @@ export const LinkRenderer = ({ mark, children }: LinkProps) => {
   const isExternalLink =
     mark.attrs.href.includes("http://") || mark.attrs.href.includes("https://");
 
-    const isFollow = isExternalLink
+  const isFollow = isExternalLink
     ? mark.attrs.nofollow !== undefined
       ? !!!mark.attrs.nofollow
       : false
     : true;
 
+  let rel = "noopener noreferrer";
+  if (!isFollow) {
+    rel = "noopener noreferrer nofollow";
+  }
+
+  let target = isExternalLink ? "_blank" : undefined;
+
   return (
     <NextLink
       href={mark.attrs.href}
       className={cn("underline font-bold")}
-      rel={`noopener noreferrer ${isFollow ? "follow" : "nofollow"}`}
-      target={isExternalLink ? "_blank" : "_self"}
+      rel={rel}
+      target={target}
       prefetch={true}
     >
       {children}

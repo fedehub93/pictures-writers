@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
         rootId: true,
         title: true,
         imageCover: { select: { url: true } },
+        slug: true,
       },
     });
 
