@@ -27,6 +27,7 @@ const AdsCreatePage = () => {
     resolver: zodResolver(adCampaignFormSchema),
     defaultValues: {
       name: "",
+      isActive: false,
     },
   });
 

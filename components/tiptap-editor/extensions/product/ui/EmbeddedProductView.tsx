@@ -14,7 +14,8 @@ export const EmbeddedProductView = ({ node }: NodeViewRendererProps) => {
     data: product,
     isLoading,
     isError,
-  } = useProductRootIdQuery(node.attrs.productRootId);
+  } = useProductRootIdQuery({ rootId: node.attrs.productRootId });
+  console.log(node.attrs, product);
 
   if (!product || isLoading) {
     return (

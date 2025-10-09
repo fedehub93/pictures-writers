@@ -16,10 +16,10 @@ export async function GET(
     if (!user) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
-
+    
+    console.log("ciao")
     const product = await getPublishedProductByRootId(rootId);
 
-    console.log(product, rootId)
 
     return NextResponse.json(product);
   } catch (error) {

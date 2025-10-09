@@ -24,6 +24,14 @@
     blockquote {
       @apply mb-8 border-l-4 border-l-secondary-foreground bg-primary-foreground p-4 pl-8 shadow-md [&>p]:mb-0;
     }
+
+    ol {
+      @apply leading-5
+    }
+
+    ol > li {
+      @apply my-1
+    }
   }
 
   .prose img {

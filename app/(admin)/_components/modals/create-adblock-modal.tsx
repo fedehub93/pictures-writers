@@ -1,12 +1,15 @@
 "use client";
 
 import axios from "axios";
-import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 
-import { AdLayoutType } from "@prisma/client";
+import {
+  AdLayoutType,
+  AdPositionPlacement,
+  AdPositionReference,
+} from "@prisma/client";
 import {
   Dialog,
   DialogContent,
@@ -18,17 +21,12 @@ import {
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 
+import { adBlockFormSchema, AdBlockFormValues } from "@/schemas/ads";
+
 import { GenericInput } from "@/components/form-component/generic-input";
 import { GenericRadioGroup } from "@/components/form-component/generic-radio-group";
 
 import { useModal } from "../../_hooks/use-modal-store";
-
-const formSchema = z.object({
-  label: z.string(),
-  layoutType: z.enum(AdLayoutType, {
-    error: () => ({ message: "Select a type" }),
-  }),
-});
 
 export const CreateAdBlockModal = () => {
   const { isOpen, onClose, type, data } = useModal();
@@ -37,17 +35,22 @@ export const CreateAdBlockModal = () => {
   const isModalOpen = isOpen && type === "createAdBlock";
   const campaignId = data?.campaignId || null;
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<AdBlockFormValues>({
+    resolver: zodResolver(adBlockFormSchema),
     defaultValues: {
       label: "",
       layoutType: AdLayoutType.SINGLE,
+      isActive: false,
+      minWords: 500,
+      placement: AdPositionPlacement.BEFORE,
+      reference: AdPositionReference.HEADING,
+      referenceCount: 1,
     },
   });
 
   const isLoading = form.formState.isSubmitting;
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: AdBlockFormValues) => {
     try {
       await axios.post(`/api/admin/ads/${campaignId}/blocks`, values);
 

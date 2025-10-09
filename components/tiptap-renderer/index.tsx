@@ -87,7 +87,7 @@ const TipTapRendererV2 = ({ content, preview = false }: Props) => {
         },
         adBlock: ({ node }) => {
           return (
-            <div className="border rounded-md bg-primary-foreground flex flex-col overflow-hidden w-5/8 mx-auto items-center shadow-lg">
+            <div className="border rounded-md bg-primary-foreground flex flex-col overflow-hidden md:w-5/8 mx-auto items-center shadow-lg">
               <NextImage
                 src={node.attrs.src}
                 alt="Ads Box"
@@ -103,7 +103,7 @@ const TipTapRendererV2 = ({ content, preview = false }: Props) => {
                   {node.attrs.description}
                 </div>
                 <Button asChild>
-                  <Link href={`${node.attrs.url}` as Route}>Scopri di più</Link>
+                  <Link href={`${node.attrs.url}` as Route} className="text-xl font-light">Scopri di più</Link>
                 </Button>
               </div>
             </div>
