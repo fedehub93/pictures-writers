@@ -490,6 +490,9 @@ export const getPublishedPostBySlug = async (slug: string) => {
           title: true,
           slug: true,
         },
+        where: {
+          isLatest: true,
+        },
       },
       imageCover: {
         select: {

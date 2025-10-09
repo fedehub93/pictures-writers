@@ -1,13 +1,14 @@
-import { Widget, WidgetSection } from "@prisma/client";
+import { WidgetSection } from "@prisma/client";
+
+import { db } from "@/lib/db";
 
 import {
   isWidgetAuthorMetadata,
   isWidgetNewsletterMetadata,
   isWidgetTagMetadata,
 } from "@/type-guards";
-import WidgetAuthor from "@/components/widget/author";
+
 import WidgetNewsletter from "@/components/widget/newsletter";
-import { db } from "@/lib/db";
 import WidgetTags from "@/components/widget/tags";
 import WidgetAuthors from "@/components/widget/authors";
 

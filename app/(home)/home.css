@@ -432,7 +432,7 @@
   /**
     Tag
   */
-  @apply flex h-20 w-full items-center border-y border-y-gray-300 py-4;
+  @apply flex w-full border-y border-y-gray-300 py-4;
 
   & .tags__title {
     @apply mr-4 text-base font-bold leading-3;

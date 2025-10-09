@@ -72,6 +72,9 @@ const PostIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
           slug: true,
           status: true,
         },
+        where: {
+          isLatest: true,
+        },
       },
       imageCover: {
         select: {
@@ -193,7 +196,11 @@ const PostIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
                 }))}
               /> */}
             </TabsContent>
-            <TabsContent value="seo" forceMount className="hidden data-[state=active]:block">
+            <TabsContent
+              value="seo"
+              forceMount
+              className="hidden data-[state=active]:block"
+            >
               <SeoEditView
                 initialData={post.seo}
                 contentType={SeoContentTypeApi.Post}
@@ -201,7 +208,11 @@ const PostIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
                 contentId={post.id}
               />
             </TabsContent>
-            <TabsContent value="preview" forceMount className="hidden data-[state=active]:block">
+            <TabsContent
+              value="preview"
+              forceMount
+              className="hidden data-[state=active]:block"
+            >
               <PostPreview post={post} />
             </TabsContent>
           </Tabs>
