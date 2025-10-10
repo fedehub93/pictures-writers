@@ -13,12 +13,15 @@ export const HeadingSelect = ({ editor }: { editor: Editor }) => {
     editor,
     selector: ({ editor: e }) => {
       if (!e) {
-        return { heading: "paragraph" as "paragraph" | "h1" | "h2" | "h3" };
+        return {
+          heading: "paragraph" as "paragraph" | "h1" | "h2" | "h3" | "h4",
+        };
       }
 
       if (e.isActive("heading", { level: 1 })) return { heading: "h1" };
       if (e.isActive("heading", { level: 2 })) return { heading: "h2" };
       if (e.isActive("heading", { level: 3 })) return { heading: "h3" };
+      if (e.isActive("heading", { level: 4 })) return { heading: "h4" };
       return { heading: "paragraph" };
     },
   });
@@ -37,6 +40,9 @@ export const HeadingSelect = ({ editor }: { editor: Editor }) => {
       case "h3":
         editor.chain().focus().toggleHeading({ level: 3 }).run();
         break;
+      case "h4":
+        editor.chain().focus().toggleHeading({ level: 4 }).run();
+        break;
     }
     setTimeout(() => {
       editor.chain().focus().run();
@@ -53,6 +59,7 @@ export const HeadingSelect = ({ editor }: { editor: Editor }) => {
         <SelectItem value="h1">Heading 1</SelectItem>
         <SelectItem value="h2">Heading 2</SelectItem>
         <SelectItem value="h3">Heading 3</SelectItem>
+        <SelectItem value="h4">Heading 4</SelectItem>
       </SelectContent>
     </Select>
   );
