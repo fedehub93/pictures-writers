@@ -1,7 +1,8 @@
 import { auth } from "@clerk/nextjs/server";
 
 import { authAdmin } from "@/lib/auth-service";
-import { db } from "@/lib/db";
+
+import { getPostsGroupedByRootId } from "@/data/post";
 
 import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
 
@@ -14,41 +15,7 @@ const PostsPage = async () => {
     return (await auth()).redirectToSignIn();
   }
 
-  const posts = await db.post.findMany({
-    select: {
-      id: true,
-      rootId: true,
-      title: true,
-      slug: true,
-      status: true,
-      publishedAt: true,
-      firstPublishedAt: true,
-      imageCover: {
-        select: {
-          url: true,
-          altText: true,
-        },
-      },
-      postAuthors: {
-        select: {
-          user: {
-            select: {
-              email: true,
-              imageUrl: true,
-            },
-          },
-        },
-        orderBy: {
-          sort: "asc",
-        },
-      },
-    },
-    orderBy: {
-      publishedAt: "desc",
-    },
-    distinct: ["rootId"],
-  });
-
+  const posts = await getPostsGroupedByRootId();
 
   return (
     <div className="h-full w-full flex flex-col gap-y-4 px-6 py-3">

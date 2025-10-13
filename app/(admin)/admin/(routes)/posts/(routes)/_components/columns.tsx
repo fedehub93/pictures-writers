@@ -19,27 +19,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 import { cn } from "@/lib/utils";
 
-type PostWithImageCoverAndAuthor = {
-  id: string;
-  rootId: string | null;
-  title: string;
-  slug: string;
-  status: ContentStatus;
-  publishedAt: Date;
-  firstPublishedAt: Date;
-  imageCover: {
-    url: string;
-    altText: string | null;
-  } | null;
-  postAuthors: {
-    user: {
-      email: string | null;
-      imageUrl: string | null;
-    } | null;
-  }[];
-};
+import { GetPostsGroupedByRootId } from "@/data/post";
 
-export const columns: ColumnDef<PostWithImageCoverAndAuthor>[] = [
+export const columns: ColumnDef<GetPostsGroupedByRootId>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -138,6 +120,21 @@ export const columns: ColumnDef<PostWithImageCoverAndAuthor>[] = [
             );
           })}
         </div>
+      );
+    },
+  },
+  {
+    accessorKey: "editorType",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="-ml-4"
+        >
+          Editor Type
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
       );
     },
   },

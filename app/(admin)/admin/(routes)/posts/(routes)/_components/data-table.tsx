@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/table";
 
 import { Button } from "@/components/ui/button";
+
 import { DataTableToolbar } from "./data-table-toolbar";
 
 interface DataTableProps<TData, TValue> {

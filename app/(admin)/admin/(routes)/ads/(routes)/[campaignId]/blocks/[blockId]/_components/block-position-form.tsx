@@ -51,6 +51,9 @@ export const BlockPositionForm = ({
           name="reference"
           options={[
             AdPositionReference.HEADING,
+            AdPositionReference.HEADING_2,
+            AdPositionReference.HEADING_3,
+            AdPositionReference.HEADING_4,
             AdPositionReference.PARAGRAPH,
             AdPositionReference.IMAGE,
           ]}

@@ -38,7 +38,7 @@ export const GenericRadioGroup = <T extends FieldValues>({
             <RadioGroup
               onValueChange={field.onChange}
               defaultValue={field.value}
-              className="flex space-x-4"
+              className="flex flex-wrap space-x-4"
               disabled={disabled}
             >
               {options.map((o) => (

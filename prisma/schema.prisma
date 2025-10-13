@@ -736,6 +736,9 @@ enum AdPositionPlacement {
 
 enum AdPositionReference {
   HEADING
+  HEADING_2
+  HEADING_3
+  HEADING_4
   PARAGRAPH
   IMAGE
 }

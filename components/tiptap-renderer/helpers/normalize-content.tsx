@@ -73,6 +73,9 @@ function normalizeNodes(
   totalWordCount?: number
 ): JSONContent[] {
   let headingCount = 0;
+  let headingTwoCount = 0;
+  let headingThreeCount = 0;
+  let headingFourCount = 0;
   let paragraphCount = 0;
   let imageCount = 0;
 
@@ -80,7 +83,13 @@ function normalizeNodes(
     const newNodes: JSONContent[] = [];
 
     for (const node of nodeList) {
-      if (node.type === "heading") headingCount++;
+      if (node.type === "heading" && node.attrs?.level === 1) headingCount++;
+      if (node.type === "heading" && node.attrs?.level === 2) headingTwoCount++;
+      if (node.type === "heading" && node.attrs?.level === 3)
+        headingThreeCount++;
+      if (node.type === "heading" && node.attrs?.level === 4)
+        headingFourCount++;
+
       if (node.type === "paragraph") paragraphCount++;
       if (node.type === "image") imageCount++;
 
@@ -88,7 +97,11 @@ function normalizeNodes(
       const beforeAds = getAdsToInsert(
         adBlocks,
         node.type,
+        node.attrs,
         headingCount,
+        headingTwoCount,
+        headingThreeCount,
+        headingFourCount,
         paragraphCount,
         imageCount,
         AdPositionPlacement.BEFORE,
@@ -107,7 +120,11 @@ function normalizeNodes(
       const afterAds = getAdsToInsert(
         adBlocks,
         node.type,
+        node.attrs,
         headingCount,
+        headingTwoCount,
+        headingThreeCount,
+        headingFourCount,
         paragraphCount,
         imageCount,
         AdPositionPlacement.AFTER,
@@ -127,7 +144,11 @@ function normalizeNodes(
 function getAdsToInsert(
   adBlocks: (AdBlock & { items: AdItem[] })[],
   nodeType: string | undefined,
+  nodeAttrs: Record<string, any> | undefined,
   headingCount: number,
+  headingTwoCount: number,
+  headingThreeCount: number,
+  headingFourCount: number,
   paragraphCount: number,
   imageCount: number,
   placement: AdPositionPlacement,
@@ -143,8 +164,25 @@ function getAdsToInsert(
 
     const match =
       (block.reference === AdPositionReference.HEADING &&
+        block &&
         nodeType === "heading" &&
+        nodeAttrs?.level === 1 &&
         headingCount === block.referenceCount) ||
+      (block.reference === AdPositionReference.HEADING_2 &&
+        block &&
+        nodeType === "heading" &&
+        nodeAttrs?.level === 2 &&
+        headingTwoCount === block.referenceCount) ||
+      (block.reference === AdPositionReference.HEADING_3 &&
+        block &&
+        nodeType === "heading" &&
+        nodeAttrs?.level === 3 &&
+        headingThreeCount === block.referenceCount) ||
+      (block.reference === AdPositionReference.HEADING_4 &&
+        block &&
+        nodeType === "heading" &&
+        nodeAttrs?.level === 4 &&
+        headingFourCount === block.referenceCount) ||
       (block.reference === AdPositionReference.PARAGRAPH &&
         nodeType === "paragraph" &&
         paragraphCount === block.referenceCount) ||

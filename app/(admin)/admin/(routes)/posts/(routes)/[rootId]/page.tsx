@@ -22,6 +22,7 @@ import { PostPreview } from "./_components/post-preview";
 import { AuthorsForm } from "./_components/authors-form";
 import { CategoriesForm } from "./_components/categories-form";
 import { TagsForm } from "./_components/tags-form";
+import { getLastPostByRootId } from "@/data/post";
 
 const PostIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
   const params = await props.params;
@@ -30,70 +31,7 @@ const PostIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
     return (await auth()).redirectToSignIn();
   }
 
-  const post = await db.post.findFirst({
-    where: {
-      rootId: params.rootId,
-    },
-    orderBy: {
-      publishedAt: "desc",
-    },
-    select: {
-      id: true,
-      rootId: true,
-      title: true,
-      slug: true,
-      description: true,
-      status: true,
-      editorType: true,
-      bodyData: true,
-      tiptapBodyData: true,
-      publishedAt: true,
-      firstPublishedAt: true,
-      updatedAt: true,
-      seo: true,
-      postCategories: {
-        select: {
-          category: {
-            select: {
-              id: true,
-              rootId: true,
-              title: true,
-              slug: true,
-              status: true,
-            },
-          },
-          sort: true,
-        },
-      },
-      tags: {
-        select: {
-          id: true,
-          title: true,
-          slug: true,
-          status: true,
-        },
-        where: {
-          isLatest: true,
-        },
-      },
-      imageCover: {
-        select: {
-          url: true,
-          name: true,
-          altText: true,
-        },
-      },
-      postAuthors: {
-        select: {
-          user: true,
-          sort: true,
-        },
-        orderBy: {
-          sort: "asc",
-        },
-      },
-    },
-  });
+  const post = await getLastPostByRootId(params.rootId);
 
   if (!post || !post.rootId) {
     return redirect("/admin/posts");
@@ -185,16 +123,6 @@ const PostIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
                 rootId={post.rootId}
                 postId={post.id}
               />
-              {/* <TagForm
-                initialData={post}
-                rootId={post.rootId}
-                postId={post.id}
-                options={tags.map((tag) => ({
-                  label: tag.title,
-                  value: tag.id,
-                  status: tag.status,
-                }))}
-              /> */}
             </TabsContent>
             <TabsContent
               value="seo"
