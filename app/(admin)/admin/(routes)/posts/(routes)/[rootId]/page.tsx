@@ -2,10 +2,11 @@ import { auth } from "@clerk/nextjs/server";
 import { ContentStatus } from "@prisma/client";
 import { redirect } from "next/navigation";
 
-import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+import { getLastPostByRootId } from "@/data/post";
 
 import { TitleForm } from "@/app/(admin)/_components/general-fields/title-form";
 import { DescriptionForm } from "@/app/(admin)/_components/general-fields/description-form";
@@ -22,7 +23,6 @@ import { PostPreview } from "./_components/post-preview";
 import { AuthorsForm } from "./_components/authors-form";
 import { CategoriesForm } from "./_components/categories-form";
 import { TagsForm } from "./_components/tags-form";
-import { getLastPostByRootId } from "@/data/post";
 
 const PostIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
   const params = await props.params;

@@ -1,9 +1,7 @@
 "use client";
 
-import axios from "axios";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 import Image from "next/image";
@@ -17,8 +15,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { FileUploadOnChange } from "@/components/file-upload";
-import { useSheet } from "@/app/(admin)/_hooks/use-sheet-store";
 import {
   Sheet,
   SheetContent,
@@ -28,6 +24,8 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 
+import { useSheet } from "@/app/(admin)/_hooks/use-sheet-store";
+
 const formSchema = z.object({
   url: z.string().optional(),
   altText: z.string().optional(),
@@ -35,11 +33,9 @@ const formSchema = z.object({
 
 export const EditContentImageSheet = () => {
   const { isOpen, onClose, type, data, onCallback } = useSheet();
-  const router = useRouter();
 
   const isSheetOpen = isOpen && type === "editContentImage";
   const { image } = data;
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -64,10 +60,6 @@ export const EditContentImageSheet = () => {
     } catch (error) {
       console.log(error);
     }
-  };
-
-  const onImageChange = ({ url }: FileUploadOnChange) => {
-    form.setValue("url", url);
   };
 
   const handleClose = () => {

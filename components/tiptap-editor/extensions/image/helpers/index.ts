@@ -7,7 +7,10 @@ export const setImage = (
 ) => {
   if (position) {
     editor.commands.setNodeSelection(position);
-    editor.commands.updateAttributes("image", values);
+    editor.commands.updateAttributes("image", {
+      src: values.url,
+      alt: values.altText,
+    });
   }
 };
 
