@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 
 import Tiptap from "../tiptap-editor";
 import { TableContentNode } from "../tiptap-editor/extensions/table-content";
+import { CustomBold } from "../tiptap-editor/extensions/bold";
 
 interface GenericTiptapProps<T extends FieldValues> {
   id: string;
@@ -38,6 +39,7 @@ export const GenericTiptap = <T extends FieldValues>({
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
+        bold: false,
         heading: {
           levels: [1, 2, 3, 4],
         },
@@ -48,6 +50,7 @@ export const GenericTiptap = <T extends FieldValues>({
           },
         },
       }),
+      CustomBold,
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       CustomLink.configure({ openOnClick: false }),
       CustomImage,

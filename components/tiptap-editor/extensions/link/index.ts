@@ -19,8 +19,6 @@ export const CustomLink = Link.extend({
           const relValues = relAttr.split(/\s+/);
           const nofollow = relValues.includes("nofollow");
 
-          // puliamo classi/inline style
-          element.style.removeProperty("font-weight");
           return {
             href,
             nofollow,

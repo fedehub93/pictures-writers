@@ -23,7 +23,7 @@ export const LinkElement = ({ node }: LinkProps) => {
   return (
     <NextLink
       href={node.data.uri}
-      className={cn("underline font-bold")}
+      className={cn("underline font-normal")}
       rel={`noopener noreferrer ${isFollow ? "follow" : "nofollow"}`}
       target={isExternalLink ? "_blank" : "_self"}
       prefetch={true}
