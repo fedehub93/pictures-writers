@@ -76,6 +76,7 @@ export const WidgetSearchBox = () => {
                             src={item.imageCover?.url!}
                             alt={item.imageCover?.altText || ""}
                             fill
+                            sizes="10vw"
                             className="object-cover rounded-md"
                           />
                         </div>

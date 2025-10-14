@@ -97,6 +97,7 @@ export const SelectAssetModal = () => {
                           alt={item.altText || "ciao"}
                           onClick={() => onSelect(item)}
                           fill
+                          sizes="35vw"
                           className="object-cover rounded-md"
                           unoptimized
                         />

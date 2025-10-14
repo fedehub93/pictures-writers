@@ -31,7 +31,6 @@ export const LinkRenderer = ({ mark, children }: LinkProps) => {
   return (
     <NextLink
       href={mark.attrs.href}
-      className={cn("underline font-bold")}
       rel={rel}
       target={target}
       prefetch={true}

@@ -63,8 +63,8 @@ export const columns: ColumnDef<GetPostsGroupedByRootId>[] = [
             src={imageCover.url}
             alt={imageCover.altText || ""}
             fill
+            sizes="20vw"
             className="rounded-md object-cover"
-            unoptimized
           />
         </div>
       );
