@@ -24,11 +24,13 @@ import { CustomHeading } from "./extensions/heading";
 import { Route } from "next";
 
 type Props = {
-  content: TiptapContent[];
+  content: TiptapContent;
   preview?: boolean;
 };
 
 const TipTapRendererV2 = ({ content, preview = false }: Props) => {
+  if (!content || typeof content === "string") return content;
+  
   const output = renderToReactElement({
     content,
     extensions: [
@@ -103,7 +105,12 @@ const TipTapRendererV2 = ({ content, preview = false }: Props) => {
                   {node.attrs.description}
                 </div>
                 <Button asChild>
-                  <Link href={`${node.attrs.url}` as Route} className="text-xl font-light">Scopri di più</Link>
+                  <Link
+                    href={`${node.attrs.url}` as Route}
+                    className="text-xl font-light"
+                  >
+                    Scopri di più
+                  </Link>
                 </Button>
               </div>
             </div>

@@ -2,41 +2,40 @@ import Image from "next/image";
 
 import { EditorType } from "@prisma/client";
 
-import { db } from "@/lib/db";
-import { PostWithImageCoverWithCategoryWithTagsWithSeo } from "@/lib/post";
+import { getAdBlocks } from "@/data/ad-blocks";
+import type { GetPublishedPostBySlug } from "@/data/post";
 import { getPlaceholderImage } from "@/lib/image";
 
 import { SlateRendererV2 } from "@/components/editor/view/slate-renderer";
+import { normalizeContent } from "@/components/tiptap-renderer/helpers/normalize-content";
+
 import Sidebar from "@/app/(home)/_components/sidebar";
 import PostInfoV2 from "@/app/(home)/(routes)/blog/_components/post-info-v2";
 
 import { WidgetPostBottom } from "./post-bottom";
-import { normalizeContent } from "@/components/tiptap-renderer/helpers/normalize-content";
+import { countWordsFromTiptap } from "@/components/tiptap-renderer/helpers/words-counter";
 
 interface PostTemplateProps {
-  post: PostWithImageCoverWithCategoryWithTagsWithSeo;
+  post: NonNullable<GetPublishedPostBySlug>;
 }
 
 export const PostTemplate = async ({ post }: PostTemplateProps) => {
   if (!post.postCategories.length) return null;
 
-  const blocks = await db.adBlock.findMany({
-    where: {
-      campaign: {
-        isActive: true,
-      },
-      isActive: true,
-    },
-    include: {
-      items: true,
-    },
-  });
-
   let normalizedContent = post.tiptapBodyData;
+
   if (post.editorType === EditorType.TIPTAP) {
+    const blocks = await getAdBlocks({
+      postRootId: post.rootId!,
+      categoryRootIds: post.postCategories.map((c) => c.category.rootId!),
+      tagRootIds: post.tags.map((t) => t.rootId!),
+    });
     normalizedContent = normalizeContent(post.tiptapBodyData, {
       adBlocks: blocks,
-      totalWordCount: 5000,
+      totalWordCount:
+        post.tiptapBodyData && typeof post.tiptapBodyData !== "string"
+          ? countWordsFromTiptap(post.tiptapBodyData)
+          : 0,
     });
   }
 

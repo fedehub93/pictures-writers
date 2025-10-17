@@ -67,7 +67,6 @@ export async function PATCH(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    console.log(values.tags);
     const post = await db.post.update({
       where: { id: postId },
       data: {
@@ -128,8 +127,6 @@ export async function PATCH(
     /**
      * Tags
      */
-
-    
 
     return NextResponse.json(post);
   } catch (error) {

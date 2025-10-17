@@ -1,7 +1,7 @@
 "use client";
 
-import { Control, useController, useWatch } from "react-hook-form";
 import Image from "next/image";
+import { Control, useController, useWatch } from "react-hook-form";
 import { X } from "lucide-react";
 
 import { AdItemSourceType } from "@prisma/client";
@@ -11,8 +11,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 import { AdItemFormValues } from "@/schemas/ads";
 
-import { GetPublishedPostByRootId } from "@/lib/post";
-import { GetPublishedProductByRootId } from "@/data/product";
+import type { GetPublishedProductByRootId } from "@/data/product";
+import type { GetPublishedPostByRootId } from "@/data/post";
 
 import { GenericInput } from "@/components/form-component/generic-input";
 import { GenericTextarea } from "@/components/form-component/generic-textarea";
@@ -100,7 +100,6 @@ const ItemContentAddButton = ({
 };
 
 export const ItemContent = ({ control, isSubmitting }: ItemContentProps) => {
-  // 👇 osserva dinamicamente il tipo sorgente selezionato
   const { onOpen } = useModal();
 
   const { field: fieldPost } = useController({ name: "postRootId", control });

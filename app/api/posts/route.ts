@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { Post, ContentStatus, User } from "@prisma/client";
+import { ContentStatus } from "@prisma/client";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
 
 import { createPostSeo } from "@/lib/seo";
+import { getPaginatedPosts } from "@/data/post";
 
 const POST_BATCH = 5;
 
@@ -16,94 +17,15 @@ export async function GET(req: Request) {
     const s = searchParams.get("s") || "";
     const page = Number(searchParams.get("page")) || 1;
 
-    let posts: Post[] = [];
-    let totalPosts = 0;
-
-    const skip = (page - 1) * POST_BATCH;
-    const take = POST_BATCH;
-
-    if (cursor) {
-      const posts = await db.post.findMany({
-        where: {
-          status: ContentStatus.PUBLISHED,
-          isLatest: true,
-          OR: [
-            {
-              title: {
-                contains: s,
-                mode: "insensitive",
-              },
-            },
-            {
-              description: {
-                contains: s,
-                mode: "insensitive",
-              },
-            },
-          ],
-        },
-        include: {
-          imageCover: true,
-          user: true,
-        },
-        take: POST_BATCH,
-        skip: 1,
-        cursor: { id: cursor },
-        orderBy: {
-          firstPublishedAt: "desc",
-        },
-      });
-
-      return NextResponse.json({ items: posts, nextCursor: null });
-    }
-
-    posts = await db.post.findMany({
-      where: {
-        status: ContentStatus.PUBLISHED,
-        isLatest: true,
-        OR: [
-          {
-            title: {
-              contains: s,
-              mode: "insensitive",
-            },
-          },
-          {
-            description: {
-              contains: s,
-              mode: "insensitive",
-            },
-          },
-        ],
-      },
-      include: {
-        imageCover: true,
-        user: true,
-      },
-      take,
-      skip,
-      orderBy: {
-        firstPublishedAt: "desc",
-      },
+    const { posts, pagination, nextCursor } = await getPaginatedPosts({
+      cursor,
+      searchString: s,
+      page,
+      postBatch: POST_BATCH,
     });
 
-    totalPosts = await db.post.count();
-
-    const pagination = {
-      page,
-      perPage: POST_BATCH,
-      totalRecords: totalPosts,
-      totalPages: Math.ceil(totalPosts / POST_BATCH),
-    };
-
-    let nextCursor = null;
-
-    if (posts.length === POST_BATCH) {
-      nextCursor = posts[POST_BATCH - 1].id;
-    }
-
     return NextResponse.json({
-      items: posts,
+      posts,
       pagination,
       nextCursor,
     });

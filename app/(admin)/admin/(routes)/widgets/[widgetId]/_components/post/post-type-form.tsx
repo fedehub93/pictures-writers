@@ -2,6 +2,13 @@
 
 import * as z from "zod";
 import Image from "next/image";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { ChangeEvent } from "react";
+
+import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
+import { Control, useController } from "react-hook-form";
+import { Grip, Trash2 } from "lucide-react";
 
 import {
   FormControl,
@@ -10,16 +17,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
-import { Control, useController } from "react-hook-form";
-import { widgetFormSchema } from "../widget-form";
-import { Grip, Trash2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { PostWithImageCoverWithCategoryWithTags } from "@/lib/post";
-import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import { cn } from "@/lib/utils";
+
 import {
   Select,
   SelectContent,
@@ -27,9 +27,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { WidgetPostMetadataPosts, WidgetPostType } from "@/types";
 import { Input } from "@/components/ui/input";
-import { ChangeEvent } from "react";
+
+import { WidgetPostMetadataPosts, WidgetPostType } from "@/types";
+import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
+
+import { widgetFormSchema } from "../widget-form";
+import { GetPostsByIds } from "@/data/post";
 
 interface PostTypeFormProps {
   control: Control<z.infer<typeof widgetFormSchema>>;
@@ -89,10 +93,9 @@ export const PostTypeForm = ({
   };
 
   const fetchPosts = async (ids: string[]) => {
-    const { data } = await axios.post<PostWithImageCoverWithCategoryWithTags[]>(
-      "/api/admin/posts/fetch",
-      { ids }
-    );
+    const { data } = await axios.post<GetPostsByIds>("/api/admin/posts/fetch", {
+      ids,
+    });
     return data;
   };
 
@@ -113,7 +116,7 @@ export const PostTypeForm = ({
     onOpen("selectPost", onSelectPost);
   };
 
-  const onSelectPost = (post: PostWithImageCoverWithCategoryWithTags) => {
+  const onSelectPost = (post: GetPostsByIds[number]) => {
     fieldPosts.onChange([
       ...fieldPosts.value,
       { rootId: post.rootId, sort: fieldPosts.value.length },

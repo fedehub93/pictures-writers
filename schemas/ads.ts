@@ -40,6 +40,9 @@ export const adBlockFormSchema = z.object({
   }),
   referenceCount: z.coerce.number<number>(),
   minWords: z.coerce.number<number>(),
+  excludedPostIds: z.array(z.string()),
+  excludedCategoryIds: z.array(z.string()),
+  excludedTagIds: z.array(z.string()),
 });
 
 export type AdBlockFormValues = z.infer<typeof adBlockFormSchema>;

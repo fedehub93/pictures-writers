@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { authAdmin } from "@/lib/auth-service";
-import { getPublishedPostByRootId } from "@/lib/post";
+
+import { getPublishedPostByRootId } from "@/data/post";
 
 export async function GET(
   req: Request,

@@ -8,9 +8,7 @@ import { BeatLoader } from "react-spinners";
 import { formatDistance } from "date-fns";
 import { it } from "date-fns/locale";
 
-import { Category, Media, Post, User } from "@prisma/client";
-
-import { usePostsQuery } from "@/hooks/use-posts-query";
+import { usePostsInfiniteQuery } from "@/hooks/use-posts-infinite-query";
 
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -20,7 +18,7 @@ export const WidgetSearchBox = () => {
   const [debouncedSearch, setDebouncedSearch] = useDebounceValue("", 500);
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
-    usePostsQuery({ s: debouncedSearch, windowIsOpen: true });
+    usePostsInfiniteQuery({ s: debouncedSearch, windowIsOpen: true });
 
   return (
     <div className="w-full bg-white px-6 py-8 shadow-md hidden md:block">
@@ -57,46 +55,38 @@ export const WidgetSearchBox = () => {
                   key={i}
                   className="flex flex-col items-center py-4 gap-y-4"
                 >
-                  {group.items.map(
-                    (
-                      item: Post & {
-                        imageCover: Media | null;
-                        category: Category | null;
-                        user: User | null;
-                      }
-                    ) => (
-                      <Link
-                        href={`/${item.slug}`}
-                        key={item.title}
-                        className="relative flex gap-x-4 gap-y-8 group"
-                        prefetch={true}
-                      >
-                        <div className="relative w-14 h-14 aspect-square top-0 transition-all duration-300 self-start">
-                          <Image
-                            src={item.imageCover?.url!}
-                            alt={item.imageCover?.altText || ""}
-                            fill
-                            sizes="10vw"
-                            className="object-cover rounded-md"
-                          />
-                        </div>
-                        <div className="flex flex-col gap-y-2 justify-evenly">
-                          <p className="text-base font-medium leading-4">
-                            {item.title}
+                  {group.posts.map((item) => (
+                    <Link
+                      href={`/${item.slug}`}
+                      key={item.title}
+                      className="relative flex gap-x-4 gap-y-8 group"
+                      prefetch={true}
+                    >
+                      <div className="relative w-14 h-14 aspect-square top-0 transition-all duration-300 self-start">
+                        <Image
+                          src={item.imageCover?.url!}
+                          alt={item.imageCover?.altText || ""}
+                          fill
+                          sizes="10vw"
+                          className="object-cover rounded-md"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-y-2 justify-evenly">
+                        <p className="text-base font-medium leading-4">
+                          {item.title}
+                        </p>
+                        <div className="flex items-center justify-between">
+                          <p className="self-end text-xs text-muted-foreground">
+                            Pubblicato{" "}
+                            {formatDistance(item.publishedAt, new Date(), {
+                              addSuffix: true,
+                              locale: it,
+                            })}
                           </p>
-                          <div className="flex items-center justify-between">
-                            <p className="self-end text-xs text-muted-foreground">
-                              Pubblicato{" "}
-                              {formatDistance(item.publishedAt, new Date(), {
-                                addSuffix: true,
-                                locale: it,
-                              })}
-                            </p>
-                          </div>
                         </div>
-                      </Link>
-                    )
-                  )}
+                      </div>
+                    </Link>
+                  ))}
                 </div>
               ))}
               <Button

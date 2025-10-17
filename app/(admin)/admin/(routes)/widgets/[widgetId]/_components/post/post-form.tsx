@@ -5,22 +5,14 @@ import * as z from "zod";
 import { useEffect, useState } from "react";
 import { Control, useController } from "react-hook-form";
 
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 
 import { WidgetPostType } from "@/types";
 
 import { widgetFormSchema } from "../widget-form";
 import { PostTypeForm } from "./post-type-form";
 import { SpecificCategoryForm } from "./post-category-form";
+import { GenericInput } from "@/components/form-component/generic-input";
 
 interface WidgetPostFormProps {
   control: Control<z.infer<typeof widgetFormSchema>>;
@@ -50,22 +42,12 @@ export const WidgetPostForm = ({
         <CardTitle className="text-base">Post widget details</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <FormField
+        <GenericInput
           control={control}
           name="metadata.label"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Label</FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  placeholder="Latest News"
-                  disabled={isSubmitting}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Label"
+          disabled={isSubmitting}
+          placeholder="Latest News"
         />
 
         <PostTypeForm

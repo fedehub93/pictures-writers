@@ -1,8 +1,9 @@
+import type { GetPostsByFiltersReturn } from "@/data/post";
+
 import PostCard from "./post-card";
-import { PostWithImageCoverWithCategoryWithTags } from "@/lib/post";
 
 interface PostListGridProps {
-  posts: PostWithImageCoverWithCategoryWithTags[];
+  posts: GetPostsByFiltersReturn["posts"];
 }
 
 export const PostListGrid = ({ posts }: PostListGridProps) => {

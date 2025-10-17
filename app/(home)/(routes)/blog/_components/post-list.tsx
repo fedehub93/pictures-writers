@@ -1,11 +1,13 @@
-import { PostWithImageCoverWithCategory } from "@/lib/post";
 import Sidebar from "@/app/(home)/_components/sidebar";
 
+import type { GetPostsPaginatedByFiltersReturn } from "@/data/post";
+
 import PostCard from "./post-card";
+
 import { PostPagination } from "./post-pagination";
 
 interface PostListProps {
-  posts: PostWithImageCoverWithCategory[];
+  posts: GetPostsPaginatedByFiltersReturn["posts"];
   currentPage: number;
   totalPages: number;
 }

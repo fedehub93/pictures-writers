@@ -1,16 +1,25 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { EditorType, WidgetSection, WidgetType } from "@prisma/client";
+import {
+  ContentStatus,
+  EditorType,
+  WidgetSection,
+  WidgetType,
+} from "@prisma/client";
 
 import { db } from "@/lib/db";
+
+import { isJSONContent, isWidgetProductPopMetadata } from "@/type-guards";
+
 import {
+  getPostsPaginatedByFilters,
   getPublishedPostBySlug,
-  getPublishedPosts,
-  getPublishedPostsBuilding,
-} from "@/lib/post";
+} from "@/data/post";
 import { getPublishedProductByRootId } from "@/data/product";
 import { getSettings } from "@/data/settings";
-import { isJSONContent, isWidgetProductPopMetadata } from "@/type-guards";
+
+import { getPublishedPostsBuilding } from "@/lib/post";
+
 import { getPostMetadataBySlug } from "@/app/(home)/_components/seo/content-metadata";
 import { BlogPostingJsonLd } from "@/app/(home)/_components/seo/json-ld/blog-posting";
 import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
@@ -18,7 +27,6 @@ import { PostTemplate } from "@/app/(home)/(routes)/[slug]/_components/post-temp
 import { PostList } from "@/app/(home)/(routes)/blog/_components/post-list";
 
 import { WidgetProductPop } from "@/components/widget/product-pop";
-import { normalizeContent } from "@/components/tiptap-renderer/helpers/normalize-content";
 
 export const revalidate = 86400;
 
@@ -41,8 +49,12 @@ export async function generateMetadata(
   if (slug === "blog") {
     const metadata = await getHeadMetadata();
 
-    const { posts } = await getPublishedPosts({
+    const { posts } = await getPostsPaginatedByFilters({
       page: 1,
+      where: {
+        status: ContentStatus.PUBLISHED,
+        isLatest: true,
+      },
     });
 
     return {
@@ -63,9 +75,15 @@ const Page = async (props: PageProps<"/[slug]">) => {
   const { siteUrl } = await getSettings();
 
   if (slug === "blog") {
-    const { posts, totalPages, currentPage } = await getPublishedPosts({
-      page: 1,
-    });
+    const { posts, totalPages, currentPage } = await getPostsPaginatedByFilters(
+      {
+        page: 1,
+        where: {
+          status: ContentStatus.PUBLISHED,
+          isLatest: true,
+        },
+      }
+    );
     return (
       <section className="bg-background px-4 py-10 lg:px-6">
         <div>

@@ -28,7 +28,7 @@ interface NormalizationOptions {
 export function normalizeContent(
   content: TiptapContent,
   { adBlocks, totalWordCount }: NormalizationOptions
-): JSONContent | null {
+): TiptapContent {
   if (!content) return null;
 
   if (typeof content === "string") {

@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 
-import { GetPublishedPostByRootId } from "@/lib/post";
+import type { GetPublishedPostByRootId } from "@/data/post";
 
 const fetchPostByRootId = async (rootId?: string | null) => {
   if (!rootId) return null;

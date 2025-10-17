@@ -3,16 +3,15 @@ import { redirect } from "next/navigation";
 
 import { ContentStatus } from "@prisma/client";
 import { db } from "@/lib/db";
-import {
-  getPublishedPosts,
-  getPublishedPostsByCategoryRootId,
-  getPublishedPostsByTagRootId,
-} from "@/lib/post";
+
 import {
   getPublishedCategoriesBuilding,
   getPublishedCategoryBySlug,
 } from "@/lib/category";
 import { getPublishedTagBySlug, getPublishedTagsBuilding } from "@/lib/tag";
+import { getPostsByFilters, getPostsPaginatedByFilters } from "@/data/post";
+import { getSettings } from "@/data/settings";
+
 import {
   getCategoryMetadataBySlug,
   getTagMetdataBySlug,
@@ -21,7 +20,6 @@ import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
 
 import { PostListGrid } from "../_components/post-list-grid";
 import { PostList } from "../_components/post-list";
-import { getSettings } from "@/data/settings";
 
 export const revalidate = 86400;
 
@@ -70,8 +68,12 @@ export async function generateMetadata(
   const metadata = await getHeadMetadata();
 
   if (!isNaN(slugPage) && isFinite(slugPage) && slugPage > 0) {
-    const { posts } = await getPublishedPosts({
+    const { posts } = await getPostsPaginatedByFilters({
       page: slugPage,
+      where: {
+        status: ContentStatus.PUBLISHED,
+        isLatest: true,
+      },
     });
 
     if (posts.length > 0) {
@@ -97,8 +99,9 @@ const Page = async (props: PageProps<"/blog/[slug]">) => {
   const slugPage = typeof slug === "string" ? Number.parseInt(slug) : 1;
 
   if (!isNaN(slugPage) && isFinite(slugPage) && slugPage > 0) {
-    result = await getPublishedPosts({
+    result = await getPostsPaginatedByFilters({
       page: slugPage,
+      where: { status: ContentStatus.PUBLISHED, isLatest: true },
     });
     entity = {
       title: "News",
@@ -130,8 +133,18 @@ const Page = async (props: PageProps<"/blog/[slug]">) => {
   if (!result) {
     const category = await getPublishedCategoryBySlug(slug);
     if (category && category.rootId) {
-      result = await getPublishedPostsByCategoryRootId({
-        categoryRootId: category.rootId,
+      result = await getPostsByFilters({
+        where: {
+          status: ContentStatus.PUBLISHED,
+          isLatest: true,
+          postCategories: {
+            some: {
+              category: {
+                rootId: { equals: category.rootId },
+              },
+            },
+          },
+        },
       });
 
       entity = { title: category.title, description: category.description };
@@ -141,8 +154,16 @@ const Page = async (props: PageProps<"/blog/[slug]">) => {
   if (!result) {
     const tag = await getPublishedTagBySlug(slug);
     if (tag && tag.rootId) {
-      result = await getPublishedPostsByTagRootId({
-        tagRootId: tag.rootId,
+      result = await getPostsByFilters({
+        where: {
+          status: ContentStatus.PUBLISHED,
+          isLatest: true,
+          tags: {
+            some: {
+              rootId: { equals: tag.rootId },
+            },
+          },
+        },
       });
       entity = { title: tag.title, description: tag.description };
     }

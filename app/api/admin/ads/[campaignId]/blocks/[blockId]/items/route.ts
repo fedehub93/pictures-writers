@@ -18,7 +18,6 @@ export async function POST(
 
     const body = await req.json();
     const parsed = adItemFormSchema.safeParse(body);
-    console.log(parsed.error)
 
     if (!parsed.success) {
       return NextResponse.json(parsed.error, { status: 400 });
@@ -41,7 +40,6 @@ export async function POST(
         sort: nextSort,
       },
     });
-
 
     if (!item) {
       return new NextResponse("Bad Request", { status: 400 });

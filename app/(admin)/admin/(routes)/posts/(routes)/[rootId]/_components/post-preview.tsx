@@ -1,10 +1,11 @@
 import { SlateRendererV2 } from "@/components/editor/view/slate-renderer";
-import { PostWithImageCoverWithCategoryWithTagsWithSeo } from "@/lib/post";
+
+import { CustomElement } from "@/app/(admin)/_components/editor";
 
 export const PostPreview = ({
   post,
 }: {
-  post: PostWithImageCoverWithCategoryWithTagsWithSeo;
+  post: { bodyData: CustomElement[] };
 }) => {
   return <SlateRendererV2 content={post.bodyData} preview />;
 };

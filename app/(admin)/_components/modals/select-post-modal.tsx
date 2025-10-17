@@ -1,5 +1,4 @@
 "use client";
-import { Media, Post, Product } from "@prisma/client";
 import Image from "next/image";
 import { Loader2 } from "lucide-react";
 import { useDebounceValue } from "usehooks-ts";
@@ -15,12 +14,10 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 
-import { usePostsQuery } from "@/hooks/use-posts-query";
+import { GetPaginatedPosts } from "@/data/post";
+
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
-import {
-  PostWithImageCoverWithCategory,
-  PostWithImageCoverWithCategoryWithTags,
-} from "@/lib/post";
+import { usePostsInfiniteQuery } from "@/hooks/use-posts-infinite-query";
 
 export const SelectPostModal = () => {
   const { isOpen, onClose, type, onCallback } = useModal();
@@ -29,7 +26,7 @@ export const SelectPostModal = () => {
   const isModalOpen = isOpen && type === "selectPost";
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
-    usePostsQuery({
+    usePostsInfiniteQuery({
       s: debouncedSearch,
       minChar: false,
       windowIsOpen: isModalOpen,
@@ -45,7 +42,7 @@ export const SelectPostModal = () => {
     );
   }
 
-  const onSelect = async (post: PostWithImageCoverWithCategory) => {
+  const onSelect = async (post: GetPaginatedPosts["posts"][number]) => {
     onCallback(post);
     handleClose();
   };
@@ -83,31 +80,29 @@ export const SelectPostModal = () => {
             <div className="flex flex-col py-4 px-6 gap-y-4">
               {data?.pages?.map((group, i) => (
                 <div key={i} className="flex flex-wrap gap-4">
-                  {group.items.map(
-                    (item: PostWithImageCoverWithCategoryWithTags) => (
-                      <div
-                        key={item.title}
-                        className="flex flex-col gap-y-2 pb-4 w-60 border cursor-pointer hover:scale-[1.02] hover:shadow-xl duration-500 transition-all rounded-md shadow-md"
-                      >
-                        <div className="relative w-60 aspect-video overflow-hidden border-b">
-                          <Image
-                            src={item.imageCover?.url || ""}
-                            alt={item.imageCover?.altText || ""}
-                            onClick={() => onSelect(item)}
-                            fill
-                            className="object-cover rounded-md"
-                            unoptimized
-                          />
-                        </div>
-                        <div className="text-sm px-2 line-clamp-2">
-                          {item.title}
-                        </div>
-                        <div className="self-center">
-                          {/* <Badge className="text-xs">{item.category}</Badge> */}
-                        </div>
+                  {group.posts.map((item) => (
+                    <div
+                      key={item.title}
+                      className="flex flex-col gap-y-2 pb-4 w-60 border cursor-pointer hover:scale-[1.02] hover:shadow-xl duration-500 transition-all rounded-md shadow-md"
+                    >
+                      <div className="relative w-60 aspect-video overflow-hidden border-b">
+                        <Image
+                          src={item.imageCover?.url || ""}
+                          alt={item.imageCover?.altText || ""}
+                          onClick={() => onSelect(item)}
+                          fill
+                          className="object-cover rounded-md"
+                          unoptimized
+                        />
                       </div>
-                    )
-                  )}
+                      <div className="text-sm px-2 line-clamp-2">
+                        {item.title}
+                      </div>
+                      <div className="self-center">
+                        {/* <Badge className="text-xs">{item.category}</Badge> */}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ))}
               <Button

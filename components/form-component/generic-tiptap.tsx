@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import Tiptap from "../tiptap-editor";
 import { TableContentNode } from "../tiptap-editor/extensions/table-content";
 import { CustomBold } from "../tiptap-editor/extensions/bold";
+import { countWordsFromTiptap } from "../tiptap-renderer/helpers/words-counter";
 
 interface GenericTiptapProps<T extends FieldValues> {
   id: string;
@@ -78,16 +79,23 @@ export const GenericTiptap = <T extends FieldValues>({
   });
 
   return (
-    <FormField
-      control={control}
-      name={name}
-      render={({ field }) => (
-        <FormItem className="space-y-0">
-          <FormControl>
-            <Tiptap key={id} editor={editor} value={field.value} />
-          </FormControl>
-        </FormItem>
-      )}
-    />
+    <div className="flex flex-col space-y-2">
+      <FormField
+        control={control}
+        name={name}
+        render={({ field }) => (
+          <FormItem className="space-y-0">
+            <FormControl>
+              <Tiptap key={id} editor={editor} value={field.value} />
+            </FormControl>
+          </FormItem>
+        )}
+      />
+      <div className="flex items-center justify-between w-full pt-4">
+        <div className="text-sm text-muted-foreground">
+          {countWordsFromTiptap(field.value)} words
+        </div>
+      </div>
+    </div>
   );
 };

@@ -1,14 +1,18 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { EditorType, WidgetSection, WidgetType } from "@prisma/client";
+import {
+  ContentStatus,
+  EditorType,
+  WidgetSection,
+  WidgetType,
+} from "@prisma/client";
 
 import { db } from "@/lib/db";
-import {
-  getPublishedDraftPostBySlug,
-  getPublishedDraftPosts,
-  getPublishedDraftPostsBuilding,
-} from "@/lib/post";
+import { getPublishedDraftPostsBuilding } from "@/lib/post";
+
+import { getDraftPostBySlug, getPostsPaginatedByFilters } from "@/data/post";
 import { getPublishedProductByRootId } from "@/data/product";
+
 import { getSettings } from "@/data/settings";
 import { isJSONContent, isWidgetProductPopMetadata } from "@/type-guards";
 import { getPostMetadataBySlug } from "@/app/(home)/_components/seo/content-metadata";
@@ -18,9 +22,6 @@ import { PostTemplate } from "@/app/(home)/(routes)/[slug]/_components/post-temp
 import { PostList } from "@/app/(home)/(routes)/blog/_components/post-list";
 
 import { WidgetProductPop } from "@/components/widget/product-pop";
-import { TiptapContent } from "@/types";
-import { JSONContent } from "@tiptap/react";
-import { normalizeContent } from "@/components/tiptap-renderer/helpers/normalize-content";
 
 export const dynamic = "force-dynamic";
 
@@ -43,8 +44,12 @@ export async function generateMetadata(
   if (slug === "blog") {
     const metadata = await getHeadMetadata();
 
-    const { posts } = await getPublishedDraftPosts({
+    const { posts } = await getPostsPaginatedByFilters({
       page: 1,
+      where: {
+        status: ContentStatus.DRAFT,
+        isLatest: true,
+      },
     });
 
     return {
@@ -80,9 +85,15 @@ const Page = async (props: PageProps<"/draft/[slug]">) => {
   const { siteUrl } = await getSettings();
 
   if (slug === "blog") {
-    const { posts, totalPages, currentPage } = await getPublishedDraftPosts({
-      page: 1,
-    });
+    const { posts, totalPages, currentPage } = await getPostsPaginatedByFilters(
+      {
+        page: 1,
+        where: {
+          status: ContentStatus.DRAFT,
+          isLatest: true,
+        },
+      }
+    );
     return (
       <section className="bg-background px-4 py-10 lg:px-6">
         <div>
@@ -100,7 +111,7 @@ const Page = async (props: PageProps<"/draft/[slug]">) => {
     );
   }
 
-  const post = await getPublishedDraftPostBySlug(slug);
+  const post = await getDraftPostBySlug(slug);
 
   if (!post) {
     return notFound();
