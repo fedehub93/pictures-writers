@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import * as v from "valibot";
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import { BeatLoader } from "react-spinners";
+import { sendGTMEvent } from "@next/third-parties/google";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -50,6 +51,17 @@ export const ContactForm = () => {
         contact(values).then((data) => {
           setError(data.error);
           setSuccess(data.success);
+
+          if (data.success && typeof window !== "undefined") {
+            sendGTMEvent({
+              event: "contact_form_submission",
+              form_type: "contact",
+              form_location: "contact_page",
+              page_path: window.location.pathname,
+              page_title: document.title,
+              email_domain: values.email.split("@")[1],
+            });
+          }
         });
       });
     } catch (error) {
@@ -120,7 +132,7 @@ export const ContactForm = () => {
         </div>
         {error && <div className="p-4 mb-4 bg-destructive">{error}</div>}
         {success && (
-          <div className="p-4 mb-4 bg-emerald-100 shadow-2xs rounded-md">
+          <div className="p-4 mb-4 bg-accent shadow-2xs rounded-md">
             {success}
           </div>
         )}

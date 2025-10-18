@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { contact } from "@/actions/contact";
 import { ContactSchemaValibot } from "@/schemas";
+import { sendGTMEvent } from "@next/third-parties/google";
 
 export const ContactUs = (): JSX.Element => {
   const [error, setError] = useState<string | undefined>("");
@@ -50,6 +51,17 @@ export const ContactUs = (): JSX.Element => {
         contact(values).then((data) => {
           setError(data.error);
           setSuccess(data.success);
+
+          if (data.success && typeof window !== "undefined") {
+            sendGTMEvent({
+              event: "contact_form_submission",
+              form_type: "contact",
+              form_location: "home",
+              page_path: window.location.pathname,
+              page_title: document.title,
+              email_domain: values.email.split("@")[1],
+            });
+          }
         });
       });
     } catch (error) {

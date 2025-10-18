@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { sendGTMEvent } from "@next/third-parties/google";
 
 interface WidgetNewsletter {
   label: string;
@@ -49,6 +50,17 @@ const WidgetNewsletter = ({ label }: WidgetNewsletter) => {
         subscribe(values).then((data) => {
           setError(data.error);
           setSuccess(data.success);
+
+          if (data.success && typeof window !== "undefined") {
+            sendGTMEvent({
+              event: "newsletter_signup",
+              form_type: "newsletter",
+              form_location: "blog_post_bottom",
+              page_path: window.location.pathname,
+              page_title: document.title,
+              email_domain: values.email.split("@")[1],
+            });
+          }
         });
       });
     } catch (error) {
