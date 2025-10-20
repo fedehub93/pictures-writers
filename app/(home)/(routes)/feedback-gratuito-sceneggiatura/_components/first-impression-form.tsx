@@ -1,9 +1,13 @@
-"use client";;
+"use client";
 import * as v from "valibot";
 import { useForm } from "react-hook-form";
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { BeatLoader } from "react-spinners";
+import type { JSX } from "react";
+import { sendGTMEvent } from "@next/third-parties/google";
 
 import { Format, Genre } from "@prisma/client";
 import {
@@ -14,7 +18,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -25,9 +28,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FirstImpressionSchemaValibot } from "@/schemas";
-import { BeatLoader } from "react-spinners";
-
-import type { JSX } from "react";
 
 interface FirstImpressionFormProps {
   formats: Format[];
@@ -79,6 +79,14 @@ const FirstImpressionForm = ({
       });
 
       if (res.data) {
+        sendGTMEvent({
+          event: "free_feedback_submission",
+          form_type: "free_feedback",
+          form_location: "free_feedback_page",
+          page_path: window.location.pathname,
+          page_title: document.title,
+          email_domain: values.email.split("@")[1],
+        });
         router.push("/feedback-gratuito-sceneggiatura/success");
       }
     } catch (error) {
@@ -102,7 +110,11 @@ const FirstImpressionForm = ({
               <FormItem>
                 <FormLabel>Nome *</FormLabel>
                 <FormControl>
-                  <Input className="bg-primary-foreground" placeholder="Mario" {...field} />
+                  <Input
+                    className="bg-primary-foreground"
+                    placeholder="Mario"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -115,7 +127,11 @@ const FirstImpressionForm = ({
               <FormItem>
                 <FormLabel>Cognome *</FormLabel>
                 <FormControl>
-                  <Input className="bg-primary-foreground" placeholder="Rossi" {...field} />
+                  <Input
+                    className="bg-primary-foreground"
+                    placeholder="Rossi"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -128,7 +144,11 @@ const FirstImpressionForm = ({
               <FormItem>
                 <FormLabel>Email *</FormLabel>
                 <FormControl>
-                  <Input className="bg-primary-foreground" placeholder="mario.rossi@gmail.com" {...field} />
+                  <Input
+                    className="bg-primary-foreground"
+                    placeholder="mario.rossi@gmail.com"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -141,7 +161,11 @@ const FirstImpressionForm = ({
               <FormItem>
                 <FormLabel>Titolo sceneggiatura *</FormLabel>
                 <FormControl>
-                  <Input className="bg-primary-foreground" placeholder="Il petroliere" {...field} />
+                  <Input
+                    className="bg-primary-foreground"
+                    placeholder="Il petroliere"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -223,7 +247,8 @@ const FirstImpressionForm = ({
                 <FormItem>
                   <FormLabel>File</FormLabel>
                   <FormControl>
-                    <Input className="bg-primary-foreground"
+                    <Input
+                      className="bg-primary-foreground"
                       type="file"
                       placeholder="Sceneggiatura"
                       {...fileRef}

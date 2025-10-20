@@ -7,6 +7,7 @@ import { BeatLoader } from "react-spinners";
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
+import { sendGTMEvent } from "@next/third-parties/google";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -27,9 +28,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+
+import { EbookType } from "@/types";
 import { FreeEbookSchemaValibot } from "@/schemas";
 import { subscribeFreeEbook } from "@/actions/subscribe-free-ebook";
-import { EbookType } from "@/types";
 
 interface FreeEbookModalProps {
   rootId: string;
@@ -73,6 +75,19 @@ export const FreeEbookModal = ({
         subscribeFreeEbook(values).then((data) => {
           setError(data.error);
           setSuccess(data.success);
+
+          if (data.success && typeof window !== "undefined") {
+            sendGTMEvent({
+              event: "ebook_download",
+              product_name: title,
+              product_id: rootId,
+              form_type: "ebook",
+              form_location: "ebook_details_page",
+              page_path: window.location.pathname,
+              page_title: document.title,
+              email_domain: values.email.split("@")[1],
+            });
+          }
         });
       });
     } catch (error) {
@@ -96,7 +111,7 @@ export const FreeEbookModal = ({
             </span>
           </DialogDescription>
         </DialogHeader>
-        <div className="relative w-full bg-primary-foreground px-6 py-2 flex flex-col gap-y-4 items-center">
+        <div className="relative w-full px-6 py-2 flex flex-col gap-y-4 items-center">
           <Image
             src={imageCoverUrl}
             alt="eBook gratuito sull'introduzione alla sceneggiatura cinematografica"
