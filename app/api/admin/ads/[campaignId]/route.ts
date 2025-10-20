@@ -4,6 +4,7 @@ import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
 
 import { adCampaignFormSchema } from "@/schemas/ads";
+import { triggerWebhookBuild } from "@/lib/vercel";
 
 export async function DELETE(
   req: Request,
@@ -79,6 +80,10 @@ export async function PATCH(
       where: { id: campaign.id },
       data: { ...values },
     });
+
+    if (process.env.NODE_ENV === "production" && updatedCampaign) {
+      await triggerWebhookBuild();
+    }
 
     return NextResponse.json(updatedCampaign);
   } catch (error) {

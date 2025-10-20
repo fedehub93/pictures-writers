@@ -2,8 +2,12 @@ import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
+import { triggerWebhookBuild } from "@/lib/vercel";
 
-export async function PATCH(req: Request, props: { params: Promise<{ widgetId: string }> }) {
+export async function PATCH(
+  req: Request,
+  props: { params: Promise<{ widgetId: string }> }
+) {
   const params = await props.params;
   try {
     const user = await authAdmin();
@@ -24,6 +28,10 @@ export async function PATCH(req: Request, props: { params: Promise<{ widgetId: s
         type: undefined,
       },
     });
+
+    if (process.env.NODE_ENV === "production" && updatedWidget) {
+      await triggerWebhookBuild();
+    }
 
     return NextResponse.json(updatedWidget);
   } catch (error) {
