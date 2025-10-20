@@ -57,7 +57,7 @@ export default async function RootLayout({
             <Navbar />
             <main className="pt-20">{children}</main>
             <Footer />
-            <BottomBanner />
+            {/* <BottomBanner /> */}
           </div>
         </QueryProvider>
         {/* <SpeedInsights /> */}
