@@ -1,8 +1,6 @@
 import { ProductWithImageCoverAndAuthor } from "@/types";
 import { isWebinarMetadata } from "@/type-guards";
 
-import { getPurchasedWebinar } from "@/data/webinars";
-
 import { WebinarCard } from "./webinar-card";
 
 interface WebinarsListProps {
