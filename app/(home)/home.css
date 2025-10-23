@@ -15,10 +15,10 @@
   [role="button"]:not([disabled]) {
     cursor: pointer;
   }
-/* 
+
   .grecaptcha-badge {
     visibility: hidden !important;
-  } */
+  }
 
   .prose {
     --tw-prose-bullets: black; /* red-500 */

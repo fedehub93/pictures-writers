@@ -46,7 +46,7 @@ export async function verifyRecaptcha(
 
     // For reCAPTCHA v3, check the score (0.0 to 1.0)
     // 0.5 is the recommended threshold
-    if (result.score !== undefined && result.score < 0.5) {
+    if (result.score !== undefined && result.score < 0.7) {
       return {
         success: false,
         score: result.score,
