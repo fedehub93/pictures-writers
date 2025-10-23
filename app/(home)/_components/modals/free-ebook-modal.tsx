@@ -8,6 +8,8 @@ import { valibotResolver } from "@hookform/resolvers/valibot";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { sendGTMEvent } from "@next/third-parties/google";
+import toast from "react-hot-toast";
+import Script from "next/script";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -24,8 +26,8 @@ import { Form } from "@/components/ui/form";
 import { EbookType } from "@/types";
 import { FreeEbookSchemaValibot } from "@/schemas";
 
-import { GenericInput } from "@/components/form-component/generic-input";
 import { subscribeFreeEbook } from "@/actions/subscribe-free-ebook";
+import { GenericInput } from "@/components/form-component/generic-input";
 
 interface FreeEbookModalProps {
   rootId: string;
@@ -44,8 +46,9 @@ export const FreeEbookModal = ({
 }: FreeEbookModalProps) => {
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
-
   const [isPending, startTransition] = useTransition();
+  const [isRecaptchaLoading, setIsRecaptchaLoading] = useState(false);
+  const [recaptchaReady, setRecaptchaReady] = useState(false);
 
   const form = useForm<v.InferInput<typeof FreeEbookSchemaValibot>>({
     resolver: valibotResolver(FreeEbookSchemaValibot),
@@ -58,6 +61,23 @@ export const FreeEbookModal = ({
 
   const { isSubmitting, isValid } = form.formState;
 
+  async function executeRecaptcha(): Promise<string | null> {
+    if (!recaptchaReady || !window.grecaptcha) {
+      throw new Error("reCAPTCHA not ready");
+    }
+
+    return new Promise((resolve, reject) => {
+      window.grecaptcha.ready(() => {
+        window.grecaptcha
+          .execute(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!, {
+            action: "subscribe_product",
+          })
+          .then(resolve)
+          .catch(reject);
+      });
+    });
+  }
+
   const onHandleSubmit = async (
     values: v.InferInput<typeof FreeEbookSchemaValibot>
   ) => {
@@ -66,11 +86,25 @@ export const FreeEbookModal = ({
       setSuccess("");
 
       startTransition(async () => {
-        subscribeFreeEbook(values).then((data) => {
-          setError(data.error);
-          setSuccess(data.success);
+        // Execute reCAPTCHA first
+        setIsRecaptchaLoading(true);
+        const recaptchaToken = await executeRecaptcha();
+        setIsRecaptchaLoading(false);
+
+        if (!recaptchaToken) {
+          toast.error("Security verification failed. Please try again.");
+          return;
+        }
+
+        subscribeFreeEbook(values, recaptchaToken).then((data) => {
+          if (!data.success) {
+            setError(data.message);
+            setSuccess("");
+          }
 
           if (data.success && typeof window !== "undefined") {
+            setError("");
+            setSuccess(data.message);
             sendGTMEvent({
               event: "ebook_download",
               product_name: title,
@@ -85,90 +119,130 @@ export const FreeEbookModal = ({
         });
       });
     } catch (error) {
+      setIsRecaptchaLoading(false);
       setError(
         "Qualcosa è andato storto. Prego riprovare o contattare il supporto."
       );
+      setSuccess("");
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
-        <DialogHeader className="flex flex-col items-center mt-4">
-          <DialogTitle className="text-xl text-center mb-2 mt-2 rounded-md bg-accent w-full p-1 font-bold text-primary-public block italic">
-            {title}
-          </DialogTitle>
-          <DialogDescription>
-            Scarica{" "}
-            <span className="rounded-md text-primary p-1">
-              l&apos;ebook gratuito
-            </span>
-          </DialogDescription>
-        </DialogHeader>
-        <div className="relative w-full px-6 py-2 flex flex-col gap-y-8 items-center">
-          <Image
-            src={imageCoverUrl}
-            alt="eBook gratuito sull'introduzione alla sceneggiatura cinematografica"
-            width={150}
-            height={150}
-            sizes="(max-width: 1280px) 90vw, 20vw"
-            quality={50}
-          />
-          {error && (
-            <div className="p-4 bg-destructive shadow-2xs rounded-md font-bold">
-              {error}
-            </div>
-          )}
-          {success && (
-            <div className="p-4 bg-primary shadow-2xs rounded-md text-primary-foreground">
-              {success}
-            </div>
-          )}
+    <>
+      <Script
+        src={`https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`}
+        onLoad={() => {
+          if (window.grecaptcha) {
+            window.grecaptcha.ready(() => {
+              setRecaptchaReady(true);
+            });
+          }
+        }}
+      />
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
+          <DialogHeader className="flex flex-col items-center mt-4">
+            <DialogTitle className="text-xl text-center mb-2 mt-2 rounded-md bg-accent w-full p-1 font-bold text-primary-public block italic">
+              {title}
+            </DialogTitle>
+            <DialogDescription>
+              Scarica{" "}
+              <span className="rounded-md text-primary p-1">
+                l&apos;ebook gratuito
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="relative w-full px-6 py-2 flex flex-col gap-y-8 items-center">
+            <Image
+              src={imageCoverUrl}
+              alt="eBook gratuito sull'introduzione alla sceneggiatura cinematografica"
+              width={150}
+              height={150}
+              sizes="(max-width: 1280px) 90vw, 20vw"
+              quality={50}
+            />
+            {error && (
+              <div className="p-4 bg-destructive shadow-2xs rounded-md font-bold">
+                {error}
+              </div>
+            )}
+            {success && (
+              <div className="p-4 bg-primary shadow-2xs rounded-md text-primary-foreground">
+                {success}
+              </div>
+            )}
 
-          {isPending && !success ? <BeatLoader className="mx-auto" /> : null}
+            {isPending && !success ? <BeatLoader className="mx-auto" /> : null}
 
-          {!isPending && !success && (
-            <Form {...form}>
-              <form
-                className="flex items-center gap-x-2"
-                onSubmit={form.handleSubmit(onHandleSubmit)}
-              >
-                <div className="flex flex-col gap-y-4">
-                  <GenericInput
-                    control={form.control}
-                    name="email"
-                    label="Email"
-                    placeholder="mario.rossi@gmail.com"
-                    disabled={isSubmitting}
-                  />
-                  <div>
-                    * Confermando il modulo accetti la&nbsp;
-                    <Link
-                      className="text-primary-public"
-                      href="https://www.iubenda.com/privacy-policy/49078580"
-                    >
-                      <strong>Privacy Policy</strong>
-                    </Link>{" "}
-                    di Pictures Writers.
+            {!isPending && !success && (
+              <Form {...form}>
+                <form
+                  className="flex items-center gap-x-2"
+                  onSubmit={form.handleSubmit(onHandleSubmit)}
+                >
+                  <div className="flex flex-col gap-y-4">
+                    <GenericInput
+                      control={form.control}
+                      name="email"
+                      label="Email"
+                      placeholder="mario.rossi@gmail.com"
+                      disabled={isSubmitting}
+                    />
+                    <div>
+                      <div className="text-xs text-muted-foreground">
+                        * Confermando il modulo accetti la&nbsp;
+                        <Link
+                          className="text-primary"
+                          href="https://www.iubenda.com/privacy-policy/49078580"
+                        >
+                          Privacy Policy
+                        </Link>{" "}
+                        di Pictures Writers.
+                      </div>
+                      <div className="mb-4 text-xs text-muted-foreground">
+                        This site is protected by reCAPTCHA and the Google
+                        <Link
+                          href="https://policies.google.com/privacy"
+                          className="text-primary"
+                        >
+                          {" "}
+                          Privacy Policy
+                        </Link>{" "}
+                        and
+                        <Link
+                          href="https://policies.google.com/terms"
+                          className="text-primary"
+                        >
+                          {" "}
+                          Terms of Service
+                        </Link>{" "}
+                        apply.
+                      </div>
+                    </div>
+                    <DialogFooter className="flex flex-row gap-x-2 justify-between">
+                      <DialogClose asChild className="flex-1">
+                        <Button type="button">Close</Button>
+                      </DialogClose>
+                      <Button
+                        className="flex-1"
+                        type="submit"
+                        disabled={
+                          !isValid ||
+                          isSubmitting ||
+                          isRecaptchaLoading ||
+                          !recaptchaReady
+                        }
+                      >
+                        Download eBook
+                      </Button>
+                    </DialogFooter>
                   </div>
-                  <DialogFooter className="flex flex-row gap-x-2 justify-between">
-                    <DialogClose asChild className="flex-1">
-                      <Button type="button">Close</Button>
-                    </DialogClose>
-                    <Button
-                      className="flex-1"
-                      type="submit"
-                      disabled={isSubmitting || !isValid}
-                    >
-                      Download eBook
-                    </Button>
-                  </DialogFooter>
-                </div>
-              </form>
-            </Form>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
+                </form>
+              </Form>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };

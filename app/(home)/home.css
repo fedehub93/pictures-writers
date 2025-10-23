@@ -15,6 +15,10 @@
   [role="button"]:not([disabled]) {
     cursor: pointer;
   }
+/* 
+  .grecaptcha-badge {
+    visibility: hidden !important;
+  } */
 
   .prose {
     --tw-prose-bullets: black; /* red-500 */
@@ -26,11 +30,11 @@
     }
 
     ol {
-      @apply leading-5
+      @apply leading-5;
     }
 
     ol > li {
-      @apply my-1
+      @apply my-1;
     }
   }
 
