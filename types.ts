@@ -93,9 +93,12 @@ export type ProductWithImageCoverAndAuthor = Product & {
 };
 
 export type Gallery = {
-  mediaId: string;
   sort: number;
-  media: Media;
+  media: {
+    id: string;
+    url: string;
+    altText: string | null;
+  };
 };
 
 /**

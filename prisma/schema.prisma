@@ -534,6 +534,13 @@ enum ProductType {
   WEBINAR
 }
 
+enum ProductAcquisitionMode {
+  FREE
+  PAID
+  FORM
+  AFFILIATE
+}
+
 model Product {
   id    String @id @default(uuid())
   title String
@@ -555,6 +562,8 @@ model Product {
 
   category   ProductCategory? @relation(fields: [categoryId], references: [id])
   categoryId String?
+
+  acquisitionMode ProductAcquisitionMode @default(PAID)
 
   price           Float?
   discountedPrice Float?

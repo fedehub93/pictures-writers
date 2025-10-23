@@ -1,12 +1,13 @@
 "use client";
-import { Media, Product } from "@prisma/client";
 
 import Image from "next/image";
-
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import { PlusCircle, X } from "lucide-react";
 
-import * as z from "zod";
 import { Control, useController } from "react-hook-form";
+
+import { Media } from "@prisma/client";
+
 import {
   Accordion,
   AccordionContent,
@@ -14,13 +15,14 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-import { productFormSchema } from "./product-form";
 import { Button } from "@/components/ui/button";
+
+import { ProductFormValues } from "@/schemas/product";
+
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
-import { PlusCircle, X } from "lucide-react";
 
 interface ProductGalleryFormProps {
-  control: Control<z.infer<typeof productFormSchema>>;
+  control: Control<ProductFormValues>;
   isSubmitting: boolean;
 }
 
@@ -108,6 +110,7 @@ export const ProductGalleryForm = ({
                               variant="ghost"
                               onClick={() => onHandleRemove(fieldMedia.mediaId)}
                               className="absolute h-4 w-4 top-2 right-2 z-30 text-white"
+                              disabled={isSubmitting}
                             >
                               <X />
                             </Button>
@@ -131,6 +134,7 @@ export const ProductGalleryForm = ({
                       type="button"
                       size="icon"
                       onClick={onHandleAddImage}
+                      disabled={isSubmitting}
                     >
                       <PlusCircle className="h-12 w-12" />
                     </Button>

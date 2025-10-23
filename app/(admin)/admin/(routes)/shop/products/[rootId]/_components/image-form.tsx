@@ -1,14 +1,18 @@
 "use client";
-import { Media } from "@prisma/client";
 
-import * as z from "zod";
 import { useState } from "react";
-import toast from "react-hot-toast";
-import { useRouter } from "next/navigation";
+
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+
+import toast from "react-hot-toast";
 import { Control, useController } from "react-hook-form";
+
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 
+import { Media } from "@prisma/client";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -16,13 +20,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+import { ProductFormValues } from "@/schemas/product";
+
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
-import { productFormSchema } from "./product-form";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface ImageFormProps {
   imageCoverUrl?: string | null;
-  control: Control<z.infer<typeof productFormSchema>>;
+  control: Control<ProductFormValues>;
   name: "imageCoverId";
 }
 

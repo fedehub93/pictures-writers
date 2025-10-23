@@ -40,11 +40,11 @@
   }
 
   .custom-upload-button > label[data-state="ready"] {
-    background-color: var(--primary);
+    background-color: var(--color-foreground);
   }
 
   .custom-upload-dropzone > button[data-state="ready"] {
-    background-color: var(--primary);
+    background-color: var(--color-foreground);
   }
 }
 

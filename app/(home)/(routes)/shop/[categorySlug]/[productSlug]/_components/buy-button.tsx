@@ -11,5 +11,9 @@ export const BuyButton = ({
   const onHandleClick = () => {
     setIsOpen(true);
   };
-  return <Button onClick={onHandleClick}>Scarica con 1-Click</Button>;
+  return (
+    <Button type="button" onClick={onHandleClick}>
+      Scarica con 1-Click
+    </Button>
+  );
 };

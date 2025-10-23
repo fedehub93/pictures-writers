@@ -57,10 +57,10 @@ export const RemoveSubscriptionForm = () => {
           </>
         ) : (
           <>
-            <h2 className="text-3xl font-extrabold text-gray-300 xl:text-7xl">
+            <h2 className="text-3xl font-extrabold text-primary xl:text-7xl">
               Grazie
             </h2>
-            <h3 className="text-lg font-extrabold uppercase text-heading xl:text-xl">
+            <h3 className="text-xl font-extrabold text-heading xl:text-2xl">
               La tua sottoscrizione è stata annullata.
             </h3>
           </>

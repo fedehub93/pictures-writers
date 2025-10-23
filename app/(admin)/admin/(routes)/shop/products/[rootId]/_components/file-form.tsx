@@ -1,10 +1,12 @@
 "use client";
-import { Media } from "@prisma/client";
 
-import * as z from "zod";
-import toast from "react-hot-toast";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Control, useController } from "react-hook-form";
+import toast from "react-hot-toast";
 import { MoreHorizontal, Trash2 } from "lucide-react";
+
+import { Media } from "@prisma/client";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -13,13 +15,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+import { ProductFormValues } from "@/schemas/product";
+
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
-import { Control, useController } from "react-hook-form";
-import { productFormSchema } from "./product-form";
-import Link from "next/link";
 
 interface FileFormProps {
-  control: Control<z.infer<typeof productFormSchema>>;
+  control: Control<ProductFormValues>;
   name: `metadata.formats.${number}.url`;
   sizeName: `metadata.formats.${number}.size`;
 }

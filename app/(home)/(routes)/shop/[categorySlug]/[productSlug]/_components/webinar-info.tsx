@@ -1,6 +1,6 @@
 "use client";
-
-import { useState } from "react";
+import Link from "next/link";
+import { Route } from "next";
 import {
   CalendarDays,
   Clock,
@@ -9,11 +9,14 @@ import {
   Sofa,
 } from "lucide-react";
 
+import { ProductAcquisitionMode } from "@prisma/client";
+
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+
 import { formatDate, formatPrice } from "@/lib/format";
 
-import { FreeEbookModal } from "@/app/(home)/_components/modals/free-ebook-modal";
 import { SlateRendererV2 } from "@/components/editor/view/slate-renderer";
 
 import { ProductBoxInfo } from "@/app/(home)/_components/product/product-box-info";
@@ -39,6 +42,7 @@ interface WebinarInfoProps {
   availableSeats: number;
   duration: string;
   platform: string;
+  acquisitionMode: ProductAcquisitionMode;
 }
 
 export const WebinarInfo = ({
@@ -56,9 +60,8 @@ export const WebinarInfo = ({
   availableSeats,
   duration,
   platform,
+  acquisitionMode,
 }: WebinarInfoProps) => {
-  const [isOpen, setIsOpen] = useState(false);
-
   return (
     <div className="flex flex-col space-y-2">
       <div>
@@ -83,7 +86,14 @@ export const WebinarInfo = ({
       </div>
       <Separator />
       <div className="flex mx-auto items-center">
-        {availableSeats ? <BuyButton productId={id} /> : null}
+        {availableSeats && acquisitionMode === ProductAcquisitionMode.PAID ? (
+          <BuyButton productId={id} />
+        ) : null}
+        {acquisitionMode === ProductAcquisitionMode.FORM && (
+          <Button type="button" asChild>
+            <Link href={`submission` as Route}>Invia preselezione</Link>
+          </Button>
+        )}
         {!availableSeats && (
           <div className="text-foreground-primary text-2xl font-bold bg-destructive p-1 px-2 rounded-md">
             Posti esauriti

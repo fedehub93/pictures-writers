@@ -1,4 +1,5 @@
 import { Control, FieldValues, Path } from "react-hook-form";
+import * as LabelPrimitive from "@radix-ui/react-label";
 
 import {
   FormControl,
@@ -17,6 +18,7 @@ interface GenericInputProps<T extends FieldValues>
   name: Path<T>;
   label: string;
   containerProps?: React.HTMLAttributes<HTMLDivElement>;
+  labelProps?: React.ComponentProps<typeof LabelPrimitive.Root>;
 }
 
 export const GenericInput = <T extends FieldValues>({
@@ -26,6 +28,8 @@ export const GenericInput = <T extends FieldValues>({
   onBlur,
   onChange,
   containerProps,
+  labelProps,
+
   ...inputProps
 }: GenericInputProps<T>) => {
   return (
@@ -34,9 +38,12 @@ export const GenericInput = <T extends FieldValues>({
       name={name}
       render={({ field }) => (
         <FormItem
-          className={`flex-1 flex flex-col space-y-2 ${containerProps?.className}`}
+          className={cn(
+            `flex-1 flex flex-col space-y-2`,
+            containerProps?.className && containerProps.className
+          )}
         >
-          <FormLabel>{label}</FormLabel>
+          <FormLabel {...labelProps}>{label}</FormLabel>
           <FormControl>
             <Input
               {...field}

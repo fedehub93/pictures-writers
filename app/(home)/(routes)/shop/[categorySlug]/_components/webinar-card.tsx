@@ -34,7 +34,7 @@ export const WebinarCard = async ({
 }: WebinarCardProps) => {
   const purchasedWebinar = await getPurchasedWebinar(rootId!);
   const availableSeats = seats - purchasedWebinar;
-  const href = `/shop/webinars/${slug}` as const;
+  const href = `/shop/${categorySlug}/${slug}` as const;
 
   return (
     <div
@@ -68,29 +68,29 @@ export const WebinarCard = async ({
         <div className="flex flex-col gap-y-2 text-sm text-muted-foreground">
           <div className="grid grid-cols-2 gap-x-4 ">
             <div className="flex items-center gap-x-2">
-              <CalendarDays className="w-4 h-4" />
+              <CalendarDays className="size-4" />
               {formatDate({
                 date: date!,
               })}
             </div>
             <div className="flex items-center gap-x-2">
-              <Clock className="h-4 w-4" />
+              <Clock className="size-4" />
               Ora: {time}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-x-4">
             <div className="flex items-center gap-x-2">
-              <Hourglass className="w-4 h-4" />
+              <Hourglass className="size-4" />
               Durata: {duration}
             </div>
             <div className="flex items-center gap-x-2">
-              <Euro className="h-4 w-4" />
+              <Euro className="size-4" />
               Costo: {formatPrice(price!, true)}
             </div>
           </div>
           <div className="grid grid-cols-2 gap-x-4">
             <div className="flex items-center gap-x-2">
-              <Sofa className="h-4 w-4" />
+              <Sofa className="size-4" />
               Posti: {seats}
             </div>
             <div
@@ -99,7 +99,7 @@ export const WebinarCard = async ({
                 availableSeats < 1 && "text-destructive"
               )}
             >
-              <Sofa className="h-4 w-4" />
+              <Sofa className="size-4" />
               Disponibili: {availableSeats}
             </div>
           </div>

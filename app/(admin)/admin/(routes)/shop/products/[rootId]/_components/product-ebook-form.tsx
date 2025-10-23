@@ -1,7 +1,5 @@
 "use client";
 
-import * as z from "zod";
-
 import Image from "next/image";
 import { Control, useController } from "react-hook-form";
 
@@ -24,14 +22,15 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+import { ProductFormValues } from "@/schemas/product";
+
 import { GenericInput } from "@/components/form-component/generic-input";
 import { GenericCalendar } from "@/components/form-component/generic-calendar";
 
-import { productFormSchema } from "./product-form";
 import { EbookFormatsForm } from "./ebook-formats-form";
 
 interface ProductEbookFormProps {
-  control: Control<z.infer<typeof productFormSchema>>;
+  control: Control<ProductFormValues>;
   authors?: User[];
   isSubmitting: boolean;
 }
@@ -130,50 +129,6 @@ export const ProductEbookForm = ({
             label="Publication Date"
             disabled={isSubmitting}
           />
-          {/* <FormField
-            control={control}
-            name="metadata.publishedAt"
-            render={({ field }) => {
-              return (
-                <FormItem className="flex-1 flex flex-col">
-                  <FormLabel className="block">Publication Date</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                          disabled={isSubmitting}
-                        >
-                          {field.value ? (
-                            formatDate({ date: field.value })
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        disabled={(date) =>
-                          date > new Date() || date < new Date("1900-01-01")
-                        }
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              );
-            }}
-          /> */}
         </div>
         <div className="flex gap-x-4 items-center">
           <EbookFormatsForm

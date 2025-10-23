@@ -10,37 +10,13 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
-  BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Actions } from "../navbar/actions";
 
-// const getRouteNameMap = (): Record<string, string> => {
-//   return {
-//     dashboard: "Dashboard",
-//     admin: "Admin",
-//     posts: "Posts",
-//     categories: "Categories",
-//     tags: "Tags",
-//     shop: "Shop",
-//     products: "Products",
-//     mails: "Mails",
-//     "single-sends": "Single sends",
-//     contacts: "Contacts",
-//     "email-templates": "Email Templates",
-//     settings: "Settings",
-//     widgets: "Widgets",
-//     ads: "Ads",
-//     media: "Media",
-//     coverage: "Coverage",
-//     impressions: "Impressions",
-//     "contact-requests": "Contact Requests",
-//     users: "Users",
-//   };
-// };
+import { Actions } from "../navbar/actions";
 
 interface HeaderProps {
   user: User;
@@ -54,7 +30,6 @@ export const Header = ({ user }: HeaderProps) => {
 
   const breadcrumbs = segments.map((seg, index) => {
     const href = "/" + segments.slice(0, index + 1).join("/");
-    // const name = routes[seg] || seg;
     const name = seg;
     const isLast = index === segments.length - 1;
 
@@ -73,7 +48,7 @@ export const Header = ({ user }: HeaderProps) => {
   return (
     <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
       <SidebarTrigger className="-ml-1" />
-      <Separator orientation="vertical" className="mr-2 !h-4" />
+      <Separator orientation="vertical" className="mr-2 h-4!" />
       <Breadcrumb>
         <BreadcrumbList>
           {breadcrumbs.map((item, i) => (

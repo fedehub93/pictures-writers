@@ -1,20 +1,18 @@
 "use client";
 
-import * as z from "zod";
-
 import { Control } from "react-hook-form";
 
 import { User } from "@prisma/client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+import { ProductFormValues } from "@/schemas/product";
+
 import { GenericInput } from "@/components/form-component/generic-input";
 import { GenericCalendar } from "@/components/form-component/generic-calendar";
 
-import { productFormSchema } from "./product-form";
-
 interface ProductWebinarFormProps {
-  control: Control<z.infer<typeof productFormSchema>>;
+  control: Control<ProductFormValues>;
   authors?: User[];
   isSubmitting: boolean;
 }

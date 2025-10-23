@@ -1,12 +1,4 @@
-import Image from "next/image";
-import Link from "next/link";
-
-import { formatPrice } from "@/lib/format";
-import { isEbookMetadata, isWebinarMetadata } from "@/type-guards";
 import { AffiliateMetadata, EbookMetadata, WebinarMetadata } from "@/types";
-
-import { WebinarCard } from "@/app/(home)/(routes)/shop/webinars/_components/webinar-card";
-import { EbookCard } from "@/app/(home)/(routes)/shop/ebooks/_components/ebook-card";
 
 interface CategoryListProps {
   title: string;
@@ -33,7 +25,7 @@ export const CategoryList = ({
   slug,
   products,
 }: CategoryListProps) => {
-  return <div>Category</div>
+  return <div>Category</div>;
   // return (
   //   <div className="flex flex-col">
   //     <Link href={`/${slug}`} className="hover:text-primary">

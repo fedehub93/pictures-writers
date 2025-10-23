@@ -37,7 +37,12 @@ export const GenericTextarea = <T extends FieldValues>({
       control={control}
       name={name}
       render={({ field }) => (
-        <FormItem className={`flex-1 ${containerProps?.className}`}>
+        <FormItem
+          className={cn(
+            `flex-1 flex flex-col space-y-2`,
+            containerProps?.className && containerProps.className
+          )}
+        >
           <FormLabel {...labelProps}>{label}</FormLabel>
           <FormControl>
             <Textarea

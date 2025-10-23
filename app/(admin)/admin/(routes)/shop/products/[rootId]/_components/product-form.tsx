@@ -6,7 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { redirect, useRouter } from "next/navigation";
-import { Descendant } from "slate";
 import {
   ContentStatus,
   Media,
@@ -18,6 +17,8 @@ import {
 
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
+
+import { productFormSchema, ProductFormValues } from "@/schemas/product";
 
 import { StatusView } from "@/app/(admin)/_components/content/status-view";
 import { SeoContentTypeApi } from "@/app/(admin)/_components/seo/types";
@@ -54,42 +55,6 @@ interface ProductFormProps {
   authors?: User[];
 }
 
-const productGalleryFormSchema = z.object({
-  mediaId: z.string(),
-  url: z.string().optional(),
-  sort: z.coerce.number<number>(),
-});
-
-const productFAQsFormSchema = z.object({
-  id: z.string().optional(),
-  question: z.string().optional(),
-  answer: z.string().optional(),
-  sort: z.coerce.number<number>(),
-});
-
-export const productFormSchema = z.object({
-  title: z.string().min(1, {
-    error: "Title is required!",
-  }),
-  categoryId: z.string().min(1, {
-    error: "Category is required!",
-  }),
-  slug: z.string().min(1, {
-    error: "Slug is required!",
-  }),
-  description: z.custom<Descendant[]>(),
-  imageCoverId: z.string().optional(),
-  price: z.coerce.number<number>(),
-  discountedPrice: z.coerce.number<number>(), // Trasforma in numero,
-  seo: z.object({
-    title: z.string().optional(),
-    description: z.string().optional(),
-  }),
-  gallery: z.array(productGalleryFormSchema),
-  faqs: z.array(productFAQsFormSchema),
-  metadata: z.any(),
-});
-
 const defaultSEO = {
   title: "",
   description: "",
@@ -108,7 +73,7 @@ export const ProductForm = ({
 
   const metadata = initialData.metadata;
 
-  const form = useForm<z.infer<typeof productFormSchema>>({
+  const form = useForm<ProductFormValues>({
     mode: "all",
     resolver: zodResolver(productFormSchema),
     defaultValues: {
@@ -122,7 +87,7 @@ export const ProductForm = ({
       discountedPrice: initialData.discountedPrice || 0,
       gallery: [
         ...initialData.gallery.map((a) => ({
-          mediaId: a.mediaId,
+          mediaId: a.media.id,
           sort: a.sort,
           url: a.media.url,
         })),

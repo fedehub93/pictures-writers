@@ -1,10 +1,9 @@
 "use client";
 
-import { PlusCircle, X } from "lucide-react";
+import { DragDropContext, Droppable } from "@hello-pangea/dnd";
 
-import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import { X } from "lucide-react";
 
-import * as z from "zod";
 import { Control, useFieldArray } from "react-hook-form";
 import {
   Accordion,
@@ -13,12 +12,14 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-import { productFormSchema } from "./product-form";
 import { Button } from "@/components/ui/button";
+
+import { ProductFormValues } from "@/schemas/product";
+
 import { GenericInput } from "@/components/form-component/generic-input";
 
 interface ProductGalleryFormProps {
-  control: Control<z.infer<typeof productFormSchema>>;
+  control: Control<ProductFormValues>;
   isSubmitting: boolean;
 }
 

@@ -1,6 +1,5 @@
 "use client";
 
-import * as z from "zod";
 import { Control, useController } from "react-hook-form";
 
 import {
@@ -11,14 +10,14 @@ import {
 } from "@/components/ui/accordion";
 
 import { EbookFormat } from "@/types";
+import { ProductFormValues } from "@/schemas/product";
 
 import { GenericInput } from "@/components/form-component/generic-input";
 
-import { productFormSchema } from "./product-form";
 import { FileForm } from "./file-form";
 
 interface EbookFormatsFormProps {
-  control: Control<z.infer<typeof productFormSchema>>;
+  control: Control<ProductFormValues>;
   name: "metadata.formats";
   isSubmitting: boolean;
 }

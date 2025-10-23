@@ -1,6 +1,12 @@
 "use client";
 
-import { ContentStatus, Media, Product, ProductType } from "@prisma/client";
+import {
+  ContentStatus,
+  Media,
+  Product,
+  ProductCategory,
+  ProductType,
+} from "@prisma/client";
 import Image from "next/image";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
@@ -24,7 +30,7 @@ export const columns: ColumnDef<Product>[] = [
         }
         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
         aria-label="Select all"
-        className="translate-y-[2px]"
+        className="translate-y-0.5"
       />
     ),
     cell: ({ row }) => (
@@ -32,7 +38,7 @@ export const columns: ColumnDef<Product>[] = [
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
         aria-label="Select row"
-        className="translate-y-[2px]"
+        className="translate-y-0.5"
       />
     ),
     enableSorting: false,
@@ -74,6 +80,26 @@ export const columns: ColumnDef<Product>[] = [
     },
   },
   {
+    accessorKey: "category",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Category
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      const category =
+        (row.getValue("category") as ProductCategory | null) || false;
+      if (!category) return <div>N/D</div>;
+      return <div>{category.title}</div>;
+    },
+  },
+  {
     accessorKey: "type",
     header: ({ column }) => {
       return (
@@ -109,9 +135,9 @@ export const columns: ColumnDef<Product>[] = [
       const type = row.getValue("type") || false;
 
       if (type === ProductType.AFFILIATE) {
-        return <span className="font-extrabold">N/D</span>;
+        return <span className="font-bold">N/D</span>;
       }
-      return <span className="font-extrabold">{formatPrice(price, true)}</span>;
+      return <span className="font-bold">{formatPrice(price, true)}</span>;
     },
   },
   {

@@ -11,6 +11,9 @@ const handleAuth = async () => {
 };
 
 export const ourFileRouter = {
+  submissionAttachments: f({
+    pdf: { maxFileSize: "4MB", maxFileCount: 5 },
+  }).onUploadComplete(() => {}),
   mediaAsset: f({
     image: { maxFileSize: "4MB", maxFileCount: 1 },
     pdf: { maxFileSize: "16MB", maxFileCount: 1 },

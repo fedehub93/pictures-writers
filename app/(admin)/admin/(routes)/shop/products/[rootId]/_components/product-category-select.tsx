@@ -1,11 +1,12 @@
 "use client";
 
-import { ContentStatus, ProductCategory } from "@prisma/client";
-import * as z from "zod";
 import { useEffect, useState } from "react";
 import { Control, useController } from "react-hook-form";
 
+import { ContentStatus, ProductCategory } from "@prisma/client";
+
 import { cn } from "@/lib/utils";
+
 import {
   FormControl,
   FormField,
@@ -21,12 +22,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { productFormSchema } from "./product-form";
-import { useProductCategoriesQuery } from "@/app/(admin)/_hooks/use-product-categories";
 import { Skeleton } from "@/components/ui/skeleton";
 
+import { ProductFormValues } from "@/schemas/product";
+
+import { useProductCategoriesQuery } from "@/app/(admin)/_hooks/use-product-categories";
+
 interface ProductCategorySelectProps {
-  control: Control<z.infer<typeof productFormSchema>>;
+  control: Control<ProductFormValues>;
   isSubmitting: boolean;
 }
 

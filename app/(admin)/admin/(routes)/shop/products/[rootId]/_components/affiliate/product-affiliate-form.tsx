@@ -1,7 +1,5 @@
 "use client";
 
-import * as z from "zod";
-
 import { Control } from "react-hook-form";
 
 import {
@@ -14,10 +12,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
-import { productFormSchema } from "../product-form";
+import { ProductFormValues } from "@/schemas/product";
 
 interface ProductAffiliateFormProps {
-  control: Control<z.infer<typeof productFormSchema>>;
+  control: Control<ProductFormValues>;
   isSubmitting: boolean;
 }
 

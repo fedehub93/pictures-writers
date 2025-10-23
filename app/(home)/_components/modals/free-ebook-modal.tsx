@@ -19,18 +19,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 
 import { EbookType } from "@/types";
 import { FreeEbookSchemaValibot } from "@/schemas";
+
+import { GenericInput } from "@/components/form-component/generic-input";
 import { subscribeFreeEbook } from "@/actions/subscribe-free-ebook";
 
 interface FreeEbookModalProps {
@@ -111,7 +105,7 @@ export const FreeEbookModal = ({
             </span>
           </DialogDescription>
         </DialogHeader>
-        <div className="relative w-full px-6 py-2 flex flex-col gap-y-4 items-center">
+        <div className="relative w-full px-6 py-2 flex flex-col gap-y-8 items-center">
           <Image
             src={imageCoverUrl}
             alt="eBook gratuito sull'introduzione alla sceneggiatura cinematografica"
@@ -126,7 +120,7 @@ export const FreeEbookModal = ({
             </div>
           )}
           {success && (
-            <div className="p-4 bg-emerald-100 shadow-2xs rounded-md">
+            <div className="p-4 bg-primary shadow-2xs rounded-md text-primary-foreground">
               {success}
             </div>
           )}
@@ -140,22 +134,12 @@ export const FreeEbookModal = ({
                 onSubmit={form.handleSubmit(onHandleSubmit)}
               >
                 <div className="flex flex-col gap-y-4">
-                  <FormField
+                  <GenericInput
                     control={form.control}
                     name="email"
-                    render={({ field }) => (
-                      <FormItem className="flex-1">
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <Input
-                            disabled={isSubmitting}
-                            placeholder="mario.rossi@gmail.com"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                    label="Email"
+                    placeholder="mario.rossi@gmail.com"
+                    disabled={isSubmitting}
                   />
                   <div>
                     * Confermando il modulo accetti la&nbsp;
@@ -163,7 +147,7 @@ export const FreeEbookModal = ({
                       className="text-primary-public"
                       href="https://www.iubenda.com/privacy-policy/49078580"
                     >
-                      Privacy Policy
+                      <strong>Privacy Policy</strong>
                     </Link>{" "}
                     di Pictures Writers.
                   </div>

@@ -12,11 +12,13 @@ import { FreeEbookModal } from "@/app/(home)/_components/modals/free-ebook-modal
 import { SlateRendererV2 } from "@/components/editor/view/slate-renderer";
 import { BuyButton } from "./buy-button";
 import { BoxInfo } from "./box-info";
+import { ProductAcquisitionMode } from "@prisma/client";
 
 interface EbookInfoProps {
   rootId: string;
   title: string;
   imageCoverUrl: string;
+  acquisitionMode: ProductAcquisitionMode;
   description: PrismaJson.BodyData | null;
   price: number | null;
   discountedPrice: number | null;
@@ -34,6 +36,7 @@ interface EbookInfoProps {
 export const EbookInfo = ({
   rootId,
   title,
+  acquisitionMode,
   imageCoverUrl,
   description,
   price,
@@ -48,7 +51,7 @@ export const EbookInfo = ({
   return (
     <div className="flex flex-col space-y-2">
       <div>
-        <Badge>Scaricato più di 200 volte</Badge>
+        <Badge>Scaricato più di 500 volte</Badge>
       </div>
       <div>
         <h1 className="text-4xl">{title}</h1>
@@ -80,7 +83,9 @@ export const EbookInfo = ({
         <p>
           Formato: <span className="font-bold">PDF</span>
         </p>
-        <BuyButton setIsOpen={setIsOpen} />
+        {acquisitionMode === ProductAcquisitionMode.FORM && (
+          <BuyButton setIsOpen={setIsOpen} />
+        )}
       </div>
       <Separator />
       <div className="flex flex-wrap gap-x-16 gap-y-4">

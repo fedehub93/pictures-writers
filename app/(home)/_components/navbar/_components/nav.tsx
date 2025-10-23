@@ -1,6 +1,8 @@
 "use client";
-import Link from "next/link";
 import type { Route } from "next";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { LibraryBig, Newspaper, School, Trophy } from "lucide-react";
 
 import {
   NavigationMenu,
@@ -10,8 +12,6 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
-import { usePathname } from "next/navigation";
-import { LibraryBig, Newspaper, School, Trophy } from "lucide-react";
 
 import type { JSX } from "react";
 
@@ -34,7 +34,7 @@ const routes: { title: string; link: Route }[] = [
   },
   {
     title: "Ebooks",
-    link: "/shop/ebooks",
+    link: "/shop/ebooks" as Route,
   },
   {
     title: "Blog",

@@ -16,6 +16,7 @@ const ProductsPage = async () => {
   const products = await db.product.findMany({
     include: {
       imageCover: true,
+      category: true,
     },
     orderBy: {
       createdAt: "desc",

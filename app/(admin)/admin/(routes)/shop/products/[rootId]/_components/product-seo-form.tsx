@@ -1,6 +1,5 @@
 "use client";
 
-import * as z from "zod";
 import { Control } from "react-hook-form";
 
 import {
@@ -10,13 +9,13 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
+import { ProductFormValues } from "@/schemas/product";
+
 import { GenericInput } from "@/components/form-component/generic-input";
 import { GenericTextarea } from "@/components/form-component/generic-textarea";
 
-import { productFormSchema } from "./product-form";
-
 interface ProductSeoFormProps {
-  control: Control<z.infer<typeof productFormSchema>>;
+  control: Control<ProductFormValues>;
   isSubmitting: boolean;
 }
 
