@@ -39,17 +39,17 @@ const nextConfig = {
   },
   trailingSlash: true,
   typedRoutes: true,
-  turbopack: {
-    resolveAlias: {
-      handlebars: "handlebars/dist/handlebars.js",
-    },
-  },
-  // webpack: (config) => {
-  //   config.resolve.alias["handlebars"] = path.resolve(
-  //     "./node_modules/handlebars/dist/handlebars.js"
-  //   );
-  //   return config;
+  // turbopack: {
+  //   resolveAlias: {
+  //     handlebars: "handlebars/dist/handlebars.js",
+  //   },
   // },
+  webpack: (config) => {
+    config.resolve.alias["handlebars"] = path.resolve(
+      "./node_modules/handlebars/dist/handlebars.js"
+    );
+    return config;
+  },
 };
 
 const bundleAnalyzer = withBundleAnalyzer({
