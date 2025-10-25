@@ -9,7 +9,7 @@
     "build:analyze": "cross-env ANALYZE=true next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "npx prisma generate"
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.34.0",
