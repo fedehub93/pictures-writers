@@ -122,7 +122,7 @@ export default function SubmissionForm({
           onSubmit={form.handleSubmit(onSubmit)}
           className="bg-card border rounded-lg shadow-lg p-4 w-full mx-auto h-full flex flex-col space-y-4"
         >
-          {jsonFields.map((field) => {
+          {jsonFields.map((field: any) => {
             switch (field.type) {
               case "text":
                 return (

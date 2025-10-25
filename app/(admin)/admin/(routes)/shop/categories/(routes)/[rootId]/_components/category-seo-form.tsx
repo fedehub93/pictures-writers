@@ -17,10 +17,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { CategoryFormSchema } from "./category-form";
+import { ProductCategoryFormValues } from "@/schemas/product-category";
 
 interface CategorySeoFormProps {
-  control: Control<z.infer<typeof CategoryFormSchema>>;
+  control: Control<ProductCategoryFormValues>;
   isSubmitting: boolean;
 }
 

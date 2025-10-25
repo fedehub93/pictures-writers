@@ -1,13 +1,11 @@
 "use client";
 
-import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { redirect, useRouter } from "next/navigation";
-import { Descendant } from "slate";
-import { ContentStatus, Media, ProductCategory, Seo } from "@prisma/client";
+import { ContentStatus, ProductCategory, Seo } from "@prisma/client";
 
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
