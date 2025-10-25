@@ -119,6 +119,7 @@ export const getPublishedProductBySlug = async (slug: string) => {
           altText: true,
         },
       },
+      formId: true,
       gallery: {
         select: {
           media: {

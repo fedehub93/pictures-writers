@@ -9,6 +9,7 @@ import { Breadcrumbs } from "@/app/(home)/_components/breadcrumbs";
 import { getSettings } from "@/data/settings";
 import { getPublishedProductCategoryBySlug } from "@/data/product-category";
 import { getProductsPaginatedByFilters } from "@/data/product";
+
 import { ProductsList } from "./_components/products-list";
 
 export async function generateMetadata(
@@ -45,7 +46,6 @@ const ShopCategoryPage = async (props: PageProps<"/shop/[categorySlug]">) => {
         category: {
           slug: categorySlug,
           status: ContentStatus.PUBLISHED,
-          isLatest: true,
         },
         status: ContentStatus.PUBLISHED,
         isLatest: true,
@@ -69,7 +69,7 @@ const ShopCategoryPage = async (props: PageProps<"/shop/[categorySlug]">) => {
           </h1>
         </div>
       </div>
-      <div className="py-12">
+      <div className="py-6">
         <div className="px-4 xl:px-0 lg:max-w-6xl mx-auto flex flex-col gap-y-4">
           <Breadcrumbs
             items={[
@@ -78,16 +78,7 @@ const ShopCategoryPage = async (props: PageProps<"/shop/[categorySlug]">) => {
               { title: category.title },
             ]}
           />
-          <p className="font-bold">
-            Scopri la nostra collezione di ebook dedicati alla sceneggiatura
-            cinematografica.
-          </p>
-          <p>
-            Strumenti pratici, guide essenziali e approfondimenti per
-            trasformare le tue idee in storie indimenticabili. Che tu sia un
-            aspirante sceneggiatore o un professionista in cerca di ispirazione,
-            qui troverai risorse pensate per il tuo percorso creativo.
-          </p>
+          <p>{category.description}</p>
           <ProductsList products={products} categorySlug={categorySlug} />
         </div>
       </div>

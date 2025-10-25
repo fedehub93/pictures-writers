@@ -13,6 +13,7 @@ import {
   Boxes,
   ClipboardPen,
   Contact,
+  FilePenLine,
   LayoutDashboard,
   LayoutPanelTop,
   LibraryBig,
@@ -139,6 +140,11 @@ const data: Record<string, NavObject[]> = {
       title: "Ads",
       url: "/admin/ads",
       Icon: Megaphone,
+    },
+    {
+      title: "Forms",
+      url: "/admin/forms",
+      Icon: FilePenLine,
     },
     {
       title: "Settings",

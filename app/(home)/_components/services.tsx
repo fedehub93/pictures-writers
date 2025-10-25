@@ -7,13 +7,13 @@ export const CreativeFeatures = (): JSX.Element => (
   <section className="px-4 py-20 lg:px-6 bg-primary-foreground">
     <div className="mx-auto max-w-lg md:max-w-(--breakpoint-md) lg:max-w-6xl">
       <h2 className="mb-4 text-center text-3xl font-bold">I nostri servizi</h2>
-      <p className="mx-auto mb-12 max-w-lg text-center ">
+      <p className="mx-auto max-w-lg text-center ">
         Offriamo una vasta gamma di strumenti e risorse di qualità per
         supportare e arricchire la tua pratica della sceneggiatura
         cinematografica. Siamo qui per aiutarti a migliorare, crescere e
         raggiungere il massimo potenziale come sceneggiatore.
       </p>
-      <div className="flex flex-col gap-y-20">
+      <div className="flex flex-col gap-y-20 lg:gap-y-4 ">
         <div className="grid grid-cols-1 items-center gap-16 md:grid-cols-2">
           <div className="md:order-1 aspect-square relative">
             <Image

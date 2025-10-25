@@ -18,6 +18,7 @@ declare global {
   namespace PrismaJson {
     type BodyData = CustomElement[];
     type TipTapBodyData = TiptapContent;
+    type FormFields = any;
     type ProductMetadata =
       | EbookMetadata
       | AffiliateMetadata

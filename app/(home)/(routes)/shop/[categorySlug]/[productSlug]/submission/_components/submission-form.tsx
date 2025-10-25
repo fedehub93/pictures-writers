@@ -1,8 +1,9 @@
 "use client";
 
+import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import {
@@ -20,46 +21,92 @@ import { GenericTextarea } from "@/components/form-component/generic-textarea";
 import { projectFormSchema, ProjectFormValues } from "@/schemas/submission";
 import { FileUploadButton } from "@/components/file-upload-button";
 
-interface SubmissionFormProps {}
+// 🔧 funzione per costruire schema Zod dinamico
+function buildZodSchema(fields: any[]) {
+  const shape: Record<string, any> = {};
 
-export default function SubmissionForm({}: SubmissionFormProps) {
+  for (const field of fields) {
+    switch (field.type) {
+      case "text":
+      case "textarea":
+        shape[field.name] = field.required
+          ? z.string().min(1, `${field.label} obbligatorio`)
+          : z.string().optional();
+        break;
+      case "file":
+        shape[field.name] = field.required
+          ? z.object({
+              key: z.string().min(1),
+              name: z.string(),
+              url: z.url().optional(),
+              size: z.number().optional(),
+              type: z.string().optional(),
+            })
+          : z.any().optional();
+        break;
+      default:
+        shape[field.name] = z.any().optional();
+    }
+  }
+
+  return z.object(shape);
+}
+
+interface SubmissionFormProps {
+  rootId: string;
+  form: {
+    id: string;
+    name: string;
+    fields: string;
+  };
+}
+
+export default function SubmissionForm({
+  rootId,
+  form: formDef,
+}: SubmissionFormProps) {
   const [submissionJustSent, setSubmissionJustSent] = useState(false);
 
-  const router = useRouter();
+  const jsonFields = JSON.parse(formDef.fields as string);
 
-  const form = useForm<ProjectFormValues>({
+  const schema = useMemo(() => buildZodSchema(jsonFields), [formDef.fields]);
+
+  // 👇 Crea defaultValues dinamicamente
+  const defaultValues = useMemo(() => {
+    const values: Record<string, any> = {};
+    for (const field of jsonFields) {
+      switch (field.type) {
+        case "file":
+          values[field.name] = null; // oppure {} se usi un oggetto file
+          break;
+        default:
+          values[field.name] = "";
+      }
+    }
+    return values;
+  }, [jsonFields]);
+
+  const form = useForm({
+    resolver: zodResolver(schema),
     mode: "all",
-    resolver: zodResolver(projectFormSchema),
-    values: {
-      title: "",
-      logline: "",
-      file: { key: "", name: "", size: 0, type: "", url: "" },
-    },
+    defaultValues,
   });
 
   const { isSubmitting } = form.formState;
-
-  const disabled = isSubmitting;
-
-  const onSubmit = async (values: ProjectFormValues) => {
+  const onSubmit = async (values: any) => {
     try {
-      const res = await fetch("/api/forms/[formId]/submit", {
+      // Invio lato client: puoi chiamare direttamente un'API o un'azione server
+      const res = await fetch(`/api/products/${rootId}/submission`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify(values),
       });
 
-      const data = await res.json();
+      if (!res.ok) throw new Error("Errore invio form");
 
-      if (!res.ok && data.code === 103) {
-        return setSubmissionJustSent(true);
-      }
-
-      const submissionId = data.submissionId;
-
-      // router.push(`/submit/${contestId}/summary?submissionId=${submissionId}`);
+      setSubmissionJustSent(true);
     } catch (err) {
-      console.error("Error, ", err);
+      console.error("Errore durante l'invio:", err);
     }
   };
 
@@ -75,55 +122,63 @@ export default function SubmissionForm({}: SubmissionFormProps) {
           onSubmit={form.handleSubmit(onSubmit)}
           className="bg-card border rounded-lg shadow-lg p-4 w-full mx-auto h-full flex flex-col space-y-4"
         >
-          <GenericInput
-            control={form.control}
-            name="title"
-            label="Titolo"
-            placeholder="Qual è il nome del tuo progetto?"
-            disabled={disabled}
-            className="w-full disabled:bg-muted"
-            labelProps={{ className: "text-lg" }}
-          />
-          <GenericTextarea
-            control={form.control}
-            name="logline"
-            label="Bio"
-            placeholder="La logline del tuo progetto"
-            className="py-4 w-full h-20 disabled:bg-muted"
-            containerProps={{ className: "h-10" }}
-            labelProps={{ className: "text-lg" }}
-            disabled={disabled}
-          />
-          <GenericTextarea
-            control={form.control}
-            name="logline"
-            label="Logline"
-            placeholder="La logline del tuo progetto"
-            className="py-4 w-full h-20 disabled:bg-muted"
-            containerProps={{ className: "h-10" }}
-            labelProps={{ className: "text-lg" }}
-            disabled={disabled}
-          />
-          <FormField
-            control={form.control}
-            name="file"
-            render={({ field }) => (
-              <FormItem className="flex-1 flex flex-col space-y-2">
-                <FormLabel className="text-lg">Allegati</FormLabel>
-                <FormControl>
-                  <FileUploadButton
-                    endpoint="submissionAttachments"
-                    size="small"
-                    value={field.value}
-                    onChange={({ key, name, url, size, type }) => {
-                      field.onChange({ key, name, url, size, type });
-                    }}
-                    disabled={disabled}
+          {jsonFields.map((field) => {
+            switch (field.type) {
+              case "text":
+                return (
+                  <GenericInput
+                    key={field.name}
+                    control={form.control}
+                    name={field.name}
+                    label={field.label}
+                    placeholder={field.placeholder || ""}
+                    disabled={isSubmitting}
+                    className="w-full disabled:bg-muted"
+                    labelProps={{ className: "text-lg" }}
                   />
-                </FormControl>
-              </FormItem>
-            )}
-          />
+                );
+
+              case "textarea":
+                return (
+                  <GenericTextarea
+                    key={field.name}
+                    control={form.control}
+                    name={field.name}
+                    label={field.label}
+                    placeholder={field.placeholder || ""}
+                    className="py-4 w-full h-20 disabled:bg-muted"
+                    labelProps={{ className: "text-lg" }}
+                    disabled={isSubmitting}
+                  />
+                );
+
+              case "file":
+                return (
+                  <FormField
+                    key={field.name}
+                    control={form.control}
+                    name={field.name}
+                    render={({ field: f }) => (
+                      <FormItem>
+                        <FormLabel className="text-lg">{field.label}</FormLabel>
+                        <FormControl>
+                          <FileUploadButton
+                            endpoint="submissionAttachments"
+                            size="small"
+                            value={f.value as any}
+                            onChange={(file) => f.onChange(file)}
+                            disabled={isSubmitting}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                );
+
+              default:
+                return null;
+            }
+          })}
           <Button type="submit">Invia</Button>
         </form>
       </Form>

@@ -28,6 +28,7 @@ export const productFormSchema = z.object({
   description: z.custom<Descendant[]>(),
   imageCoverId: z.string().optional(),
   acquisitionMode: z.enum(ProductAcquisitionMode),
+  formId: z.string().optional(),
   price: z.coerce.number<number>(),
   discountedPrice: z.coerce.number<number>(), // Trasforma in numero,
   seo: z.object({

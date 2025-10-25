@@ -16,6 +16,10 @@ import { StatusView } from "@/app/(admin)/_components/content/status-view";
 import { SeoContentTypeApi } from "@/app/(admin)/_components/seo/types";
 import { CategoryDetails } from "./category-details-form";
 import { CategorySeoForm } from "./category-seo-form";
+import {
+  productCategoryFormSchema,
+  ProductCategoryFormValues,
+} from "@/schemas/product-category";
 
 interface CategoryFormProps {
   initialData: ProductCategory & {
@@ -23,19 +27,6 @@ interface CategoryFormProps {
   };
   apiUrl: string;
 }
-
-export const CategoryFormSchema = z.object({
-  title: z.string().min(1, {
-    error: "Title is required!",
-  }),
-  slug: z.string().min(1, {
-    error: "Slug is required!",
-  }),
-  seo: z.object({
-    title: z.string().optional(),
-    description: z.string().optional(),
-  }),
-});
 
 const defaultSEO = {
   title: "",
@@ -45,11 +36,12 @@ const defaultSEO = {
 export const CategoryForm = ({ initialData, apiUrl }: CategoryFormProps) => {
   const router = useRouter();
 
-  const form = useForm<z.infer<typeof CategoryFormSchema>>({
+  const form = useForm<ProductCategoryFormValues>({
     mode: "all",
-    resolver: zodResolver(CategoryFormSchema),
+    resolver: zodResolver(productCategoryFormSchema),
     defaultValues: {
       ...initialData,
+      description: initialData.description || "",
       seo: initialData.seo
         ? { ...initialData.seo, description: initialData.seo.description || "" }
         : { ...defaultSEO },
@@ -58,7 +50,7 @@ export const CategoryForm = ({ initialData, apiUrl }: CategoryFormProps) => {
 
   const { isSubmitting } = form.formState;
 
-  const onSubmit = async (values: z.infer<typeof CategoryFormSchema>) => {
+  const onSubmit = async (values: ProductCategoryFormValues) => {
     if (initialData.status === ContentStatus.PUBLISHED) {
       try {
         await axios.post(`${apiUrl}/versions`, values);

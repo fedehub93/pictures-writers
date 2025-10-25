@@ -17,7 +17,6 @@ import {
 import { ProductGallery } from "./_components/product-gallery";
 import { EbookInfo } from "./_components/ebook-info";
 import { WebinarInfo } from "./_components/webinar-info";
-import { ProductType } from "@prisma/client";
 
 export const revalidate = 86400;
 
@@ -77,7 +76,7 @@ const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
         dateModified={product.updatedAt.toISOString()}
         url={url}
       />
-      <div className="mx-auto my-5 grid w-full max-w-6xl grid-cols-1 px-4 md:grid-cols-2 gap-y-8 md:gap-y-12 gap-x-12">
+      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 px-4 md:grid-cols-2 gap-y-8 md:gap-y-12 gap-x-12">
         <Breadcrumbs
           items={[
             { title: "Home", href: "/" },

@@ -1,7 +1,6 @@
 "use client";
-import { Product, ProductCategory } from "@prisma/client";
+import { ProductCategory } from "@prisma/client";
 
-import * as z from "zod";
 import { Control, useController } from "react-hook-form";
 import { Sparkles } from "lucide-react";
 import slugify from "slugify";
@@ -15,13 +14,16 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 
 import { Button } from "@/components/ui/button";
-import { CategoryFormSchema } from "./category-form";
+
+import { ProductCategoryFormValues } from "@/schemas/product-category";
+
+import { GenericTextarea } from "@/components/form-component/generic-textarea";
+import { GenericInput } from "@/components/form-component/generic-input";
 
 interface CategoryDetailsProps {
-  control: Control<z.infer<typeof CategoryFormSchema>>;
+  control: Control<ProductCategoryFormValues>;
   initialData: ProductCategory;
   isSubmitting: boolean;
 }
@@ -50,22 +52,12 @@ export const CategoryDetails = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <FormField
+        <GenericInput
           control={control}
           name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Name</FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  placeholder="Screenplay 101 Ebook"
-                  disabled={isSubmitting}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Name"
+          disabled={isSubmitting}
+          placeholder="Screenplay 101 Ebook"
         />
         <FormField
           control={control}
@@ -92,6 +84,12 @@ export const CategoryDetails = ({
               <FormMessage />
             </FormItem>
           )}
+        />
+        <GenericTextarea
+          control={control}
+          name="description"
+          label="Description"
+          disabled={isSubmitting}
         />
       </CardContent>
     </Card>

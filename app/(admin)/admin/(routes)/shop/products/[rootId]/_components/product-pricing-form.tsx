@@ -10,6 +10,7 @@ import { ProductFormValues } from "@/schemas/product";
 
 import { GenericSelect } from "@/components/form-component/generic-select";
 import { GenericMoneyInput } from "@/components/form-component/generic-money-input";
+import { ProductFormsSelect } from "./product-forms-select";
 
 interface ProductPricingFormProps {
   control: Control<ProductFormValues>;
@@ -38,6 +39,7 @@ export const ProductPricingForm = ({
           control={control}
           name="acquisitionMode"
           label="Acquisition Mode"
+          disabled={isSubmitting}
           options={[
             ProductAcquisitionMode.FREE,
             ProductAcquisitionMode.PAID,
@@ -45,6 +47,9 @@ export const ProductPricingForm = ({
             ProductAcquisitionMode.AFFILIATE,
           ]}
         />
+        {fieldAcquisition.value === ProductAcquisitionMode.FORM && (
+          <ProductFormsSelect control={control} isSubmitting={isSubmitting} />
+        )}
         <GenericMoneyInput
           control={control}
           name="price"

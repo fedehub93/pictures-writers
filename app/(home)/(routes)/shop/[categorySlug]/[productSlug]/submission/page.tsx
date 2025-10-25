@@ -22,6 +22,7 @@ import { Separator } from "@/components/ui/separator";
 import { isWebinarMetadata } from "@/type-guards";
 import { formatDate, formatPrice } from "@/lib/format";
 import { Button } from "@/components/ui/button";
+import { db } from "@/lib/db";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
@@ -49,15 +50,23 @@ export async function generateMetadata(
 
 const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
   const { productSlug } = await props.params;
+
   const product = await getPublishedProductBySlug(productSlug);
 
   if (!product || !product.category) {
     return notFound();
   }
+  const form = product.formId
+    ? await db.form.findFirst({ where: { id: product.formId } })
+    : null;
+
+  if (!form) {
+    return notFound();
+  }
 
   return (
     <section key={product.slug} className="bg-background py-10">
-      <div className="mx-auto my-5 grid w-full max-w-6xl grid-cols-1 px-4 md:grid-cols-2 gap-x-12">
+      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 px-4 md:grid-cols-2 gap-x-12">
         <Breadcrumbs
           items={[
             { title: "Home", href: "/" },
@@ -75,7 +84,7 @@ const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
         />
         <div className="col-span-full w-full py-6 md:py-10 pb-28 flex flex-col md:flex-row gap-y-8 gap-x-8 px-4 xl:px-0">
           <div className="w-full md:w-3/5">
-            <SubmissionForm />
+            <SubmissionForm rootId={product.rootId!} form={form} />
           </div>
           <div className="w-full md:w-2/5">
             {/* <SubmitReview /> */}

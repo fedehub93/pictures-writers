@@ -83,6 +83,7 @@ export const ProductForm = ({
       ],
       categoryId: initialData.categoryId || undefined,
       imageCoverId: initialData.imageCoverId || undefined,
+      formId: initialData.formId || undefined,
       price: initialData.price || 0,
       discountedPrice: initialData.discountedPrice || 0,
       gallery: [

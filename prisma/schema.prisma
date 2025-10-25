@@ -573,6 +573,10 @@ model Product {
   metadata Json?          @db.JsonB
   extras   ProductExtra[]
 
+  // collegamento opzionale a un form
+  formId String?
+  form   Form?   @relation(fields: [formId], references: [id])
+
   rootId       String?
   root         Product?  @relation("RootChildren", fields: [rootId], references: [id])
   rootChildren Product[] @relation("RootChildren")
@@ -776,6 +780,32 @@ model ContactForm {
   email   String?
   subject String?
   message String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Form {
+  id String @id @default(uuid())
+
+  name   String
+  /// [FormFields]
+  fields Json?  @db.JsonB // array di campi [{ name, label, type, required, placeholder }]
+
+  products    Product[]
+  submissions FormSubmission[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FormSubmission {
+  id String @id @default(uuid())
+
+  formId String
+  form   Form   @relation(fields: [formId], references: [id])
+
+  data Json @db.JsonB // dati sottomessi dall’utente
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
