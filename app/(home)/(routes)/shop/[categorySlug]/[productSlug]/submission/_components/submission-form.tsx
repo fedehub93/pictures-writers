@@ -69,7 +69,7 @@ export default function SubmissionForm({
 
   const jsonFields = JSON.parse(formDef.fields as string);
 
-  const schema = useMemo(() => buildZodSchema(jsonFields), [formDef.fields]);
+  const schema = useMemo(() => buildZodSchema(jsonFields), [jsonFields]);
 
   // 👇 Crea defaultValues dinamicamente
   const defaultValues = useMemo(() => {
