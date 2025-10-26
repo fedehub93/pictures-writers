@@ -70,7 +70,7 @@ export const ProductsList = ({ categorySlug, products }: ProductsListProps) => {
                   alt={p.imageCover?.altText!}
                   className="shadow-md group-hover:shadow-xl transition-all duration-700 w-full h-full object-cover"
                   width={150}
-                  height={400}
+                  height={150}
                 />
               </Link>
             </div>

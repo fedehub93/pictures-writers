@@ -17,7 +17,6 @@ export const getFormsByFilters = async ({ where }: GetFormsByFiltersParams) => {
         name: true,
       },
     });
-    console.log(forms);
 
     return forms;
   } catch (error) {

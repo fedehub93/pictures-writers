@@ -26,7 +26,7 @@ export const FormForm = ({ initialData, apiUrl }: FormFormProps) => {
     resolver: zodResolver(formFormSchema),
     values: {
       name: initialData.name,
-      fields: initialData.fields,
+      fields: initialData.fields || "",
     },
   });
 

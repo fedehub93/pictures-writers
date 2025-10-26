@@ -43,7 +43,7 @@ export const EbookCard = ({
             alt={imageCover?.altText!}
             className="shadow-md group-hover:shadow-xl transition-all duration-700"
             width={150}
-            height={400}
+            height={240}
           />
         </Link>
       </div>
