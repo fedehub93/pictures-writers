@@ -16,7 +16,7 @@ export const Navbar = async () => {
           Prova
         </Button>
       </div> */}
-      <div className="h-[80px] inset-y-0 w-full z-50 p-4 flex items-center shadow-2xs bg-primary-foreground ">
+      <div className="h-20 inset-y-0 w-full z-50 p-4 flex items-center shadow-2xs bg-primary-foreground ">
         <div className="w-full mx-auto flex justify-between md:max-w-6xl">
           <Link href="/" className="flex items-center gap-x-4">
             <div className="bg-muted/70 rounded-full">
@@ -31,7 +31,10 @@ export const Navbar = async () => {
           </div>
           <div className="flex items-center gap-x-4">
             <Button asChild className="hidden md:block font-bold">
-              <Link href="/feedback-gratuito-sceneggiatura" prefetch={true}>
+              <Link
+                href="/feedback-gratuito-sceneggiatura"
+                // prefetch={true}
+              >
                 Feedback Gratuito
               </Link>
             </Button>

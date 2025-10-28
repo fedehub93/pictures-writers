@@ -22,7 +22,10 @@ export const Footer = (): JSX.Element => (
               </Link>
             </li>
             <li>
-              <Link href="/contatti" prefetch={true}>
+              <Link
+                href="/contatti"
+                // prefetch={true}
+              >
                 Contattaci
               </Link>
             </li>

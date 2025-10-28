@@ -70,7 +70,7 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
                 <Link
                   key={route.title}
                   href={route.link}
-                  prefetch={true}
+                  // prefetch={true}
                   className={cn(
                     "text-base py-2 px-4 rounded-md text-foreground hover:text-primary",
                     isMobile && "text-2xl font-light tr",
@@ -90,7 +90,7 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
             <NavigationMenuItem>
               <Link
                 href="/"
-                prefetch={true}
+                // prefetch={true}
                 className={cn(
                   "text-base py-2 px-4 rounded-md hover:text-primary text-foreground",
                   isMobile && "text-2xl font-light tr",
@@ -207,7 +207,7 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
             <NavigationMenuItem>
               <Link
                 href="/contatti"
-                prefetch={true}
+                // prefetch={true}
                 className={cn(
                   "text-base py-2 px-4 rounded-md text-foreground hover:text-primary",
                   isMobile && "text-2xl font-light tr",

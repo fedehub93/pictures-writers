@@ -8,7 +8,6 @@ import { ContentStatus } from "@prisma/client";
 import { getAuthorsString } from "@/data/user";
 import { db } from "@/lib/db";
 
-
 export const LatestNews = async () => {
   const latestNews = await db.post.findMany({
     where: {
@@ -58,7 +57,7 @@ export const LatestNews = async () => {
                     <Link
                       href={`/${post.slug}`}
                       className="w-full h-full inset-0 absolute z-10"
-                      prefetch
+                      // prefetch
                     />
                     <Image
                       alt={post.imageCover.altText || ""}
@@ -87,7 +86,7 @@ export const LatestNews = async () => {
                 <Link
                   href={`/${post.slug}`}
                   className="font-bold text-primary-public flex items-center gap-x-2"
-                  prefetch
+                  // prefetch
                 >
                   Scopri di più <ChevronRight className="h-5 w-5" />
                 </Link>

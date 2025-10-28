@@ -207,7 +207,10 @@ export const WidgetProductPop = ({
                   {title}
                 </div>
                 <Button asChild className="font-bold mt-8">
-                  <Link href={`/shop/ebooks/${slug}`} prefetch={true}>
+                  <Link
+                    href={`/shop/ebooks/${slug}`}
+                    // prefetch={true}
+                  >
                     Vai al prodotto
                   </Link>
                 </Button>

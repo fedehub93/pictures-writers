@@ -37,7 +37,7 @@ export const SearchBar = () => {
       </Button>
       <div
         className={cn(
-          "bg-white fixed top-[80px] left-0 h-0 w-screen transition-all duration-500 overflow-hidden px-6 shadow-xl opacity-0 md:hidden",
+          "bg-white fixed top-20 left-0 h-0 w-screen transition-all duration-500 overflow-hidden px-6 shadow-xl opacity-0 md:hidden",
           isOpen && "h-auto min-h-20 opacity-100"
         )}
       >
@@ -70,7 +70,7 @@ export const SearchBar = () => {
                           href={`/${item.slug}`}
                           key={item.title}
                           className="relative flex gap-x-4 gap-y-8 group w-full"
-                          prefetch={true}
+                          // prefetch={true}
                           onClick={() => setIsOpen(false)}
                         >
                           <div className="relative w-14 h-14 aspect-square top-0 transition-all duration-300 self-start">

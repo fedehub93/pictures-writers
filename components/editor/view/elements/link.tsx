@@ -26,7 +26,7 @@ export const LinkElement = ({ node }: LinkProps) => {
       className={cn("underline font-normal")}
       rel={`noopener noreferrer ${isFollow ? "follow" : "nofollow"}`}
       target={isExternalLink ? "_blank" : "_self"}
-      prefetch={true}
+      // prefetch={true}
     >
       {node.children.map((child: any, i: number) => (
         <RenderNode key={i} node={child} />

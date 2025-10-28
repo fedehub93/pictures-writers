@@ -105,6 +105,7 @@ const WidgetNewsletter = ({ label }: WidgetNewsletter) => {
     <>
       <Script
         src={`https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`}
+        strategy="afterInteractive"
         onLoad={() => {
           if (window.grecaptcha) {
             window.grecaptcha.ready(() => {

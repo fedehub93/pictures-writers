@@ -1,7 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ProductType } from "@prisma/client";
-import { CalendarDays, CalendarOff, Clock, Euro, Hourglass, Sofa } from "lucide-react";
+import {
+  CalendarDays,
+  CalendarOff,
+  Clock,
+  Euro,
+  Hourglass,
+  Sofa,
+} from "lucide-react";
 
 import { WidgetProductType } from "@/types";
 import { getWidgetProducts } from "@/data/widget";
@@ -47,7 +54,7 @@ export const WidgetProduct = async ({
                   key={product.title}
                   href={`/shop/${categorySlug}/${product.slug}`}
                   className="flex items-center md:items-start text-gray-600  flex-col group mb-4"
-                  prefetch={true}
+                  // prefetch={true}
                 >
                   {product.imageCover ? (
                     <Image

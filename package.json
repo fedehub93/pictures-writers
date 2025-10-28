@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build-webpack": "next build --webpack",
     "vercel-build": "prisma generate && prisma migrate deploy && next build --webpack",
     "build:analyze": "cross-env ANALYZE=true next build",
     "start": "next start",
