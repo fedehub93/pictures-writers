@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 export const HeroSection = (): JSX.Element => {
   return (
     <section className="w-full bg-background px-4 lg:px-6 py-24 lg:py-8 lg:h-[calc(100vh-80px)]">
-      <div className="mx-auto max-w-lg text-center md:max-w-(--breakpoint-md) lg:max-w-6xl lg:text-left">
+      <div className="mx-auto max-w-lg text-center md:max-w-(--breakpoint-md) lg:max-w-6xl lg:text-left lg:mt-10 xl:mt-20">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div className="flex flex-col gap-y-10">
             <h1 className="text-4xl font-bold md:text-5xl xl:text-6xl">
