@@ -70,7 +70,7 @@ export const SearchBar = () => {
                           href={`/${item.slug}`}
                           key={item.title}
                           className="relative flex gap-x-4 gap-y-8 group w-full"
-                          // prefetch={true}
+                          prefetch
                           onClick={() => setIsOpen(false)}
                         >
                           <div className="relative w-14 h-14 aspect-square top-0 transition-all duration-300 self-start">

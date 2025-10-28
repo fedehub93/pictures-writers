@@ -31,10 +31,7 @@ export const Navbar = async () => {
           </div>
           <div className="flex items-center gap-x-4">
             <Button asChild className="hidden md:block font-bold">
-              <Link
-                href="/feedback-gratuito-sceneggiatura"
-                // prefetch={true}
-              >
+              <Link href="/feedback-gratuito-sceneggiatura" prefetch>
                 Feedback Gratuito
               </Link>
             </Button>

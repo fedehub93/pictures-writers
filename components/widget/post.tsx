@@ -48,7 +48,7 @@ export const WidgetPost = async ({
               key={post.title}
               href={`/${post.slug}`}
               className="flex items-center md:items-start text-gray-600  flex-col group gap-y-2 mb-4"
-              // prefetch={true}
+              prefetch
             >
               {post.imageCover ? (
                 <div className="aspect-video relative w-full block">

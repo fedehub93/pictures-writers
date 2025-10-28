@@ -73,10 +73,7 @@ export const PostPagination = ({
             )}
             asChild
           >
-            <Link
-              href={blogSlug}
-              // prefetch={true}
-            >
+            <Link href={blogSlug} prefetch>
               {pageNumber}
             </Link>
           </Button>
@@ -106,10 +103,7 @@ export const PostPagination = ({
             {canDisablePrev ? (
               <ChevronLeft />
             ) : (
-              <Link
-                href={prevHref}
-                // prefetch={true}
-              >
+              <Link href={prevHref} prefetch>
                 <ChevronLeft />
               </Link>
             )}
@@ -138,10 +132,7 @@ export const PostPagination = ({
             {canDisableNext ? (
               <ChevronRight />
             ) : (
-              <Link
-                href={nextHref}
-                // prefetch={true}
-              >
+              <Link href={nextHref} prefetch>
                 <ChevronRight />
               </Link>
             )}

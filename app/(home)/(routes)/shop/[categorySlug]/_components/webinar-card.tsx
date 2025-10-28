@@ -106,10 +106,7 @@ export const WebinarCard = async ({
         </div>
         <div className="flex flex-col text-xl font-extrabold">
           <Button asChild size="sm" className="w-1/2 self-center">
-            <Link
-              href={href}
-              // prefetch={true}
-            >
+            <Link href={href} prefetch>
               Scopri
             </Link>
           </Button>

@@ -54,7 +54,7 @@ export const WidgetProduct = async ({
                   key={product.title}
                   href={`/shop/${categorySlug}/${product.slug}`}
                   className="flex items-center md:items-start text-gray-600  flex-col group mb-4"
-                  // prefetch={true}
+                  prefetch
                 >
                   {product.imageCover ? (
                     <Image

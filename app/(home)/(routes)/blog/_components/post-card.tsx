@@ -39,7 +39,7 @@ const PostCard = async ({
     >
       <Link
         href={`/${slug}`}
-        // prefetch={true}
+        prefetch
         className=" flex min-h-full flex-col bg-primary-foreground no-underline"
       >
         <div className="relative aspect-video w-full">

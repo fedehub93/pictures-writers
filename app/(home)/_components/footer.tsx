@@ -17,15 +17,12 @@ export const Footer = (): JSX.Element => (
           <p className="footer__menu-title">About Us</p>
           <ul className="footer__menu-list text-gray-400">
             <li>
-              <Link href="/about" prefetch={true}>
+              <Link href="/about" prefetch>
                 Chi siamo
               </Link>
             </li>
             <li>
-              <Link
-                href="/contatti"
-                // prefetch={true}
-              >
+              <Link href="/contatti" prefetch>
                 Contattaci
               </Link>
             </li>
@@ -53,17 +50,17 @@ export const Footer = (): JSX.Element => (
           <p className="footer__menu-title">Risorse</p>
           <ul className="footer__menu-list text-gray-400">
             <li>
-              <Link href="/blog" prefetch={true}>
+              <Link href="/blog" prefetch>
                 Blog
               </Link>
             </li>
             <li>
-              <Link href="/blog/pagina-uno" prefetch={true}>
+              <Link href="/blog/pagina-uno" prefetch>
                 Esempi sceneggiatura
               </Link>
             </li>
             <li>
-              <Link href="/feedback-gratuito-sceneggiatura" prefetch={true}>
+              <Link href="/feedback-gratuito-sceneggiatura" prefetch>
                 Feedback gratuito
               </Link>
             </li>

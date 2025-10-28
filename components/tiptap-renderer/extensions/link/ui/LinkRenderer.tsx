@@ -33,7 +33,7 @@ export const LinkRenderer = ({ mark, children }: LinkProps) => {
       href={mark.attrs.href}
       rel={rel}
       target={target}
-      // prefetch={true}
+      prefetch
     >
       {children}
     </NextLink>
