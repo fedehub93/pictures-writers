@@ -16,25 +16,25 @@ export async function verifyRecaptcha(
   error?: string;
 }> {
   try {
-    const response = await fetch(
-      "https://www.google.com/recaptcha/api/siteverify",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: `secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${token}`,
-      }
-    );
+    const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+    if (!secretKey) {
+      throw new Error("No RECAPTCHA v3 secret key found");
+    }
 
-    if (!response.ok) {
+    const url = new URL("https://www.google.com/recaptcha/api/siteverify");
+    url.searchParams.append("secret", secretKey);
+    url.searchParams.append("response", token);
+
+    const res = await fetch(url, { method: "POST" });
+
+    if (!res.ok) {
       return {
         success: false,
         error: "Failed to verify reCAPTCHA",
       };
     }
 
-    const result: RecaptchaVerificationResult = await response.json();
+    const result: RecaptchaVerificationResult = await res.json();
 
     if (!result.success) {
       return {

@@ -19,6 +19,7 @@ import { AppScripts } from "@/components/scripts";
 import { OrganizationJsonLd } from "./_components/seo/json-ld/organization";
 import { BottomBanner } from "./_components/bottom-banner";
 import HolyLoader from "holy-loader";
+import Script from "next/script";
 
 const figtree = Figtree({ subsets: ["latin"] });
 
@@ -64,6 +65,10 @@ export default async function RootLayout({
         {process.env.NODE_ENV === "production" && (
           <AppScripts scripts={settings.scripts} />
         )}
+        <Script
+          src={`https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`}
+          strategy="beforeInteractive"
+        />
       </body>
       {process.env.NODE_ENV === "production" && (
         <>
