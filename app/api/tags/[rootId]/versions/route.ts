@@ -4,7 +4,10 @@ import { ContentStatus } from "@prisma/client";
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
 
-export async function POST(req: Request, props: { params: Promise<{ rootId: string }> }) {
+export async function POST(
+  req: Request,
+  props: { params: Promise<{ rootId: string }> }
+) {
   const params = await props.params;
   try {
     const user = await authAdmin();
@@ -35,6 +38,10 @@ export async function POST(req: Request, props: { params: Promise<{ rootId: stri
         rootId: undefined,
         root: {
           connect: { id: publishedTag.rootId },
+        },
+        seoId: undefined,
+        seo: {
+          connect: { id: publishedTag.seoId },
         },
         createdAt: undefined,
         updatedAt: undefined,
