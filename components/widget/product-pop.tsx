@@ -25,6 +25,9 @@ import { Form } from "@/components/ui/form";
 import { EbookType, WidgetProductPopActionType } from "@/types";
 import { FreeEbookSchemaValibot } from "@/schemas";
 import { subscribeFreeEbook } from "@/actions/subscribe-free-ebook";
+
+import { GoogleRecaptchaV3 } from "@/components/google-recaptchav3";
+
 import { GenericInput } from "@/components/form-component/generic-input";
 
 import { getCaptchaToken } from "@/app/(home)/_components/utils/captcha";
@@ -179,10 +182,7 @@ export const WidgetProductPop = ({
                 {title}
               </div>
               <Button asChild className="font-bold mt-8">
-                <Link
-                  href={`/shop/ebooks/${slug}`}
-                  prefetch
-                >
+                <Link href={`/shop/ebooks/${slug}`} prefetch>
                   Vai al prodotto
                 </Link>
               </Button>
@@ -235,25 +235,7 @@ export const WidgetProductPop = ({
                           </Link>{" "}
                           di Pictures Writers.
                         </div>
-                        <div className="mb-4 text-xs text-muted-foreground">
-                          This site is protected by reCAPTCHA and the Google
-                          <Link
-                            href="https://policies.google.com/privacy"
-                            className="text-primary"
-                          >
-                            {" "}
-                            Privacy Policy
-                          </Link>{" "}
-                          and
-                          <Link
-                            href="https://policies.google.com/terms"
-                            className="text-primary"
-                          >
-                            {" "}
-                            Terms of Service
-                          </Link>{" "}
-                          apply.
-                        </div>
+                        <GoogleRecaptchaV3 />
                       </div>
                       <DialogFooter className="flex flex-row gap-x-2 justify-between">
                         <Button

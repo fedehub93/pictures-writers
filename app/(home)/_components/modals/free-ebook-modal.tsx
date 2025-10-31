@@ -26,7 +26,10 @@ import { EbookType } from "@/types";
 import { FreeEbookSchemaValibot } from "@/schemas";
 
 import { subscribeFreeEbook } from "@/actions/subscribe-free-ebook";
+import { GoogleRecaptchaV3 } from "@/components/google-recaptchav3";
+
 import { GenericInput } from "@/components/form-component/generic-input";
+
 import { getCaptchaToken } from "../utils/captcha";
 
 interface FreeEbookModalProps {
@@ -170,25 +173,7 @@ export const FreeEbookModal = ({
                       </Link>{" "}
                       di Pictures Writers.
                     </div>
-                    <div className="mb-4 text-xs text-muted-foreground">
-                      This site is protected by reCAPTCHA and the Google
-                      <Link
-                        href="https://policies.google.com/privacy"
-                        className="text-primary"
-                      >
-                        {" "}
-                        Privacy Policy
-                      </Link>{" "}
-                      and
-                      <Link
-                        href="https://policies.google.com/terms"
-                        className="text-primary"
-                      >
-                        {" "}
-                        Terms of Service
-                      </Link>{" "}
-                      apply.
-                    </div>
+                    <GoogleRecaptchaV3 />
                   </div>
                   <DialogFooter className="flex flex-row gap-x-2 justify-between">
                     <DialogClose asChild className="flex-1">

@@ -76,7 +76,7 @@ export const WidgetProduct = async ({
                         {product.title}
                       </div>
                       <div className="flex flex-col flex-wrap gap-y-2 text-sm text-muted-foreground">
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-2 ">
+                        {/* <div className="grid grid-cols-2 gap-x-4 gap-y-2 ">
                           <div className="flex items-center gap-x-2">
                             <CalendarDays className="w-4 h-4" />
                             Inizio:{" "}
@@ -109,7 +109,7 @@ export const WidgetProduct = async ({
                             <Clock className="h-4 w-4" />
                             Lezioni: {product.metadata.lessons}
                           </div>
-                        </div>
+                        </div> */}
                         <div className="grid grid-cols-2 gap-x-4">
                           <div className="flex items-center gap-x-2">
                             <Sofa className="h-4 w-4" />

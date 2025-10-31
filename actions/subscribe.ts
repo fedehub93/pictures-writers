@@ -19,7 +19,6 @@ export const subscribe = async (
       recaptchaToken,
       "subscribe_newsletter"
     );
-    console.log(recaptchaResult);
     if (!recaptchaResult.success) {
       return {
         success: false,

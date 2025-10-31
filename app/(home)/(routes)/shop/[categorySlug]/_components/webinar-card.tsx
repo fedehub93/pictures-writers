@@ -13,9 +13,6 @@ interface WebinarCardProps {
   categorySlug: string;
   slug: string;
   imageCover: { url: string; altText: string | null } | null;
-  date: Date | null;
-  time: string;
-  duration: string;
   seats: number;
   price: number;
 }
@@ -26,9 +23,6 @@ export const WebinarCard = async ({
   categorySlug,
   slug,
   imageCover,
-  date,
-  time,
-  duration,
   seats,
   price,
 }: WebinarCardProps) => {
@@ -39,7 +33,7 @@ export const WebinarCard = async ({
   return (
     <div
       key={title}
-      className="flex flex-col justify-center items-center w-80 border rounded-lg relative shadow-lg bg-foreground-primary"
+      className="flex flex-col justify-center items-center w-80 border rounded-lg relative shadow-lg bg-foreground-primary mt-4"
     >
       <div
         className={cn(
@@ -47,7 +41,7 @@ export const WebinarCard = async ({
           availableSeats < 1 && "bg-destructive"
         )}
       >
-        {availableSeats < 1 ? "Esaurito" : "Aperto"}
+        {availableSeats < 1 ? "Chiuso" : "Aperto"}
       </div>
       <div className="w-full border-b flex items-center justify-center group rounded-lg overflow-hidden">
         <Link
@@ -66,7 +60,7 @@ export const WebinarCard = async ({
       <div className="p-4 flex flex-col gap-y-6 text-center">
         <div className="font-bold text-lg leading-5">{title}</div>
         <div className="flex flex-col gap-y-2 text-sm text-muted-foreground">
-          <div className="grid grid-cols-2 gap-x-4 ">
+          {/* <div className="grid grid-cols-2 gap-x-4 ">
             <div className="flex items-center gap-x-2">
               <CalendarDays className="size-4" />
               {formatDate({
@@ -87,7 +81,7 @@ export const WebinarCard = async ({
               <Euro className="size-4" />
               Costo: {formatPrice(price!, true)}
             </div>
-          </div>
+          </div> */}
           <div className="grid grid-cols-2 gap-x-4">
             <div className="flex items-center gap-x-2">
               <Sofa className="size-4" />

@@ -27,9 +27,6 @@ export const ProductsList = ({ categorySlug, products }: ProductsListProps) => {
               categorySlug={categorySlug}
               slug={p.slug}
               imageCover={p.imageCover}
-              date={p.metadata.startDate}
-              time={p.metadata.time}
-              duration={p.metadata.duration}
               seats={p.metadata.seats}
               price={p.price!}
             />

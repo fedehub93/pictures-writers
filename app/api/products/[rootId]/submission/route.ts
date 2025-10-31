@@ -44,9 +44,6 @@ export async function POST(
       return NextResponse.json({ error: "Form not found" }, { status: 400 });
     }
 
-    // ⚙️ Validazione minima lato server
-    // (facoltativo: potresti anche ricostruire lo schema Zod dinamicamente qui
-    // per fare una validazione server-side completa)
     if (typeof body !== "object" || Array.isArray(body)) {
       return NextResponse.json(
         { error: "Invalid submission data format" },
@@ -54,23 +51,22 @@ export async function POST(
       );
     }
 
+    const emailFromBody = body.email || null;
+
     // Salva la submission
     const submission = await db.formSubmission.create({
       data: {
         formId: product.formId,
+        email: emailFromBody,
         data: body,
       },
     });
 
-    return NextResponse.json(
-      {
-        success: true,
-        submissionId: submission.id,
-      },
-      { status: 201 }
-    );
+    return NextResponse.json({
+      submissionId: submission.id,
+    });
   } catch (error) {
-    console.error("❌ Error creating submission:", error);
+    console.error("PRODUCTS_ROOT_ID_SUBMISSION:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

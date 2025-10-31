@@ -27,6 +27,17 @@ import { db } from "@/lib/db";
 export const revalidate = 86400;
 export const dynamicParams = true;
 
+const getLessonRange = (lessons?: any[]) => {
+  if (!lessons || lessons.length === 0) return { start: null, end: null };
+  const sorted = lessons
+    .map((l) => ({ ...l, dateObj: new Date(l.date) }))
+    .sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime());
+  return {
+    start: sorted[0].dateObj,
+    end: sorted[sorted.length - 1].dateObj,
+  };
+};
+
 export async function generateStaticParams() {
   const products = await getPublishedProductsBuilding();
 
@@ -108,52 +119,6 @@ const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
                   <div className="flex flex-col space-y-2">
                     <div className="flex">
                       <div className="flex gap-x-2 w-1/2">
-                        <CalendarDays className="size-5" strokeWidth={1.5} />
-                        <div className="flex flex-col">
-                          <div className="flex gap-x-4 font-semibold">
-                            Data inizio
-                          </div>
-                          <span className="text-muted-foreground">
-                            {formatDate({ date: product.metadata.startDate! })}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex gap-x-2">
-                        <Clock className="size-5" strokeWidth={1.5} />
-                        <div className="flex flex-col">
-                          <div className="flex gap-x-4 font-semibold">Ora</div>
-                          <span className="text-muted-foreground">
-                            {product.metadata.time}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex">
-                      <div className="flex gap-x-2 w-1/2">
-                        <Hourglass className="size-5" strokeWidth={1.5} />
-                        <div className="flex flex-col">
-                          <div className="flex gap-x-4 font-semibold">
-                            Durata
-                          </div>
-                          <span className="text-muted-foreground">
-                            {product.metadata.duration}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex gap-x-2">
-                        <Presentation className="size-5" strokeWidth={1.5} />
-                        <div className="flex flex-col">
-                          <div className="flex gap-x-4 font-semibold">
-                            Lezioni
-                          </div>
-                          <span className="text-muted-foreground">
-                            {product.metadata.lessons}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex">
-                      <div className="flex gap-x-2 w-1/2">
                         <Sofa className="size-5" strokeWidth={1.5} />
                         <div className="flex flex-col">
                           <div className="flex gap-x-4 font-semibold">
@@ -176,6 +141,67 @@ const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
                         </div>
                       </div>
                     </div>
+                    <Separator />
+                    {Array.isArray(product.metadata.lessons) &&
+                      product.metadata.lessons.length > 0 && (
+                        <div className="flex flex-col space-y-2">
+                          <div className="flex gap-x-2 items-center mb-1">
+                            <CalendarDays
+                              className="size-5"
+                              strokeWidth={1.5}
+                            />
+                            <div className="font-semibold">
+                              Calendario lezioni
+                            </div>
+                          </div>
+
+                          {/* Range complessivo */}
+                          {(() => {
+                            const { start, end } = getLessonRange(
+                              product.metadata.lessons
+                            );
+                            return (
+                              <div className="text-sm text-muted-foreground mb-2">
+                                Dal{" "}
+                                <span className="text-foreground font-medium">
+                                  {formatDate({ date: start, month: "long" })}
+                                </span>{" "}
+                                al{" "}
+                                <span className="text-foreground font-medium">
+                                  {formatDate({ date: end, month: "long" })}
+                                </span>
+                              </div>
+                            );
+                          })()}
+
+                          {/* Elenco dettagliato */}
+                          <ul className="space-y-1 border-t pt-2 text-sm">
+                            {product.metadata.lessons.map(
+                              (lesson: any, index: number) => (
+                                <li
+                                  key={index}
+                                  className="flex items-center justify-between"
+                                >
+                                  <div>
+                                    <span className="text-foreground font-medium">
+                                      {formatDate({
+                                        date: lesson.date,
+                                        month: "short",
+                                      })}
+                                    </span>{" "}
+                                    · {lesson.startTime}–{lesson.endTime}
+                                    {lesson.title && (
+                                      <span className="italic text-muted-foreground ml-1">
+                                        ({lesson.title})
+                                      </span>
+                                    )}
+                                  </div>
+                                </li>
+                              )
+                            )}
+                          </ul>
+                        </div>
+                      )}
                   </div>
                 )}
               </div>

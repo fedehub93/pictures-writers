@@ -115,11 +115,8 @@ const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
             price={product.price}
             discountedPrice={product.discountedPrice}
             author={null}
-            date={product.metadata.startDate}
-            time={product.metadata.time}
             seats={product.metadata.seats}
             availableSeats={5}
-            duration={product.metadata.duration}
             platform={product.metadata.platform}
           />
         )}

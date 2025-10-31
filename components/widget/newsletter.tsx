@@ -16,6 +16,8 @@ import { SubscribeSchemaValibot } from "@/schemas";
 
 import { subscribe } from "@/actions/subscribe";
 
+import { GoogleRecaptchaV3 } from "@/components/google-recaptchav3";
+
 import { GenericInput } from "@/components/form-component/generic-input";
 
 import { getCaptchaToken } from "@/app/(home)/_components/utils/captcha";
@@ -145,25 +147,7 @@ const WidgetNewsletter = ({ label }: WidgetNewsletter) => {
             </Link>{" "}
             di Pictures Writers.
           </div>
-          <div className="mb-4 text-sm text-muted-foreground">
-            This site is protected by reCAPTCHA and the Google
-            <Link
-              href="https://policies.google.com/privacy"
-              className="text-primary"
-            >
-              {" "}
-              Privacy Policy
-            </Link>{" "}
-            and
-            <Link
-              href="https://policies.google.com/terms"
-              className="text-primary"
-            >
-              {" "}
-              Terms of Service
-            </Link>{" "}
-            apply.
-          </div>
+          <GoogleRecaptchaV3 />
           {isPending || isRecaptchaLoading ? (
             <>
               <BeatLoader />

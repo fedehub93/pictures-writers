@@ -12,16 +12,21 @@ import {
   Box,
   Boxes,
   ClipboardPen,
+  ClipboardPenLine,
   Contact,
   FilePenLine,
+  Inbox,
   LayoutDashboard,
   LayoutPanelTop,
   LibraryBig,
+  List,
   LucideIcon,
+  Mail,
   MailPlus,
   Mails,
   Megaphone,
   NotebookPen,
+  Puzzle,
   ReceiptText,
   Settings,
   ShoppingBag,
@@ -40,6 +45,7 @@ import {
 } from "@/components/ui/sidebar";
 import Logo from "@/components/logo";
 import { NavMain } from "./nav-main";
+import { title } from "process";
 
 // This is sample data.
 
@@ -143,8 +149,20 @@ const data: Record<string, NavObject[]> = {
     },
     {
       title: "Forms",
-      url: "/admin/forms",
-      Icon: FilePenLine,
+      url: "#",
+      Icon: Puzzle,
+      items: [
+        {
+          title: "All forms",
+          url: "/admin/forms",
+          Icon: List,
+        },
+        {
+          title: "Submissions",
+          url: "/admin/submissions",
+          Icon: Mail,
+        },
+      ],
     },
     {
       title: "Settings",

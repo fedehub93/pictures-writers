@@ -1,6 +1,22 @@
 import { ProductType } from "@prisma/client";
 import { db } from "./db";
 
+export async function handleFormSubmitted() {
+  const users = await db.user.findMany({
+    where: {},
+  });
+
+  for (const user of users) {
+    await db.notification.create({
+      data: {
+        userId: user.id,
+        type: "FORM_SUBMITTED",
+        message: "È stato compilato un nuovo modulo!",
+      },
+    });
+  }
+}
+
 export async function handleUserSubscribed() {
   const users = await db.user.findMany({
     where: {},

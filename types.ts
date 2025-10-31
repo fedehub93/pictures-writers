@@ -139,15 +139,17 @@ export type AffiliateMetadata = {
 
 export type WebinarMetadata = {
   type: ProductType;
-  startDate: Date | null;
-  endDate: Date | null;
-  lessons: number;
-  time: string;
   seats: number;
-  duration: string;
   platform: string;
+  lessons: WebinarLesson[];
 };
 
+export type WebinarLesson = {
+  title?: string; // opzionale, per lezioni con nome (es. “Costruire un protagonista”)
+  date: string; // ISO string → “2025-11-10”
+  startTime: string; // “18:00”
+  endTime: string; // “20:00”
+};
 /**
  * Widget types
  */

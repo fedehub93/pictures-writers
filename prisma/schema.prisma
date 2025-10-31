@@ -806,7 +806,8 @@ model FormSubmission {
   formId String
   form   Form   @relation(fields: [formId], references: [id])
 
-  data Json @db.JsonB // dati sottomessi dall’utente
+  email String?
+  data  Json    @db.JsonB // dati sottomessi dall’utente
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

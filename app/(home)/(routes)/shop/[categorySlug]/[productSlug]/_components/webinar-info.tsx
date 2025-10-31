@@ -36,11 +36,8 @@ interface WebinarInfoProps {
     lastName: string;
     imageUrl: string;
   } | null;
-  date: Date | null;
-  time: string;
   seats: number;
   availableSeats: number;
-  duration: string;
   platform: string;
   acquisitionMode: ProductAcquisitionMode;
 }
@@ -54,11 +51,8 @@ export const WebinarInfo = ({
   price,
   discountedPrice,
   author,
-  date,
-  time,
   seats,
   availableSeats,
-  duration,
   platform,
   acquisitionMode,
 }: WebinarInfoProps) => {
@@ -102,13 +96,13 @@ export const WebinarInfo = ({
       </div>
       <Separator />
       <div className="flex flex-wrap gap-x-16 gap-y-4">
-        <ProductBoxInfo
+        {/* <ProductBoxInfo
           label="Data"
           value={date ? formatDate({ date: date, month: "long" }) : ""}
           Icon={CalendarDays}
         />
         <ProductBoxInfo label="Ora" value={time!} Icon={Clock} />
-        <ProductBoxInfo label="Durata" value={duration!} Icon={Hourglass} />
+        <ProductBoxInfo label="Durata" value={duration!} Icon={Hourglass} /> */}
         <ProductBoxInfo label="Posti" value={seats!} Icon={Sofa} />
         <ProductBoxInfo
           label="Piattaforma"

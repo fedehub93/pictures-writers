@@ -15,8 +15,11 @@ import { Form } from "@/components/ui/form";
 import { ContactSchemaValibot } from "@/schemas";
 import { contact } from "@/actions/contact";
 
+import { GoogleRecaptchaV3 } from "@/components/google-recaptchav3";
+
 import { GenericInput } from "@/components/form-component/generic-input";
 import { GenericTextarea } from "@/components/form-component/generic-textarea";
+
 import { getCaptchaToken } from "@/app/(home)/_components/utils/captcha";
 
 declare global {
@@ -149,25 +152,7 @@ export const ContactForm = () => {
           </Link>{" "}
           di Pictures Writers.
         </div>
-        <div className="mb-4 text-sm text-muted-foreground">
-          This site is protected by reCAPTCHA and the Google
-          <Link
-            href="https://policies.google.com/privacy"
-            className="text-primary"
-          >
-            {" "}
-            Privacy Policy
-          </Link>{" "}
-          and
-          <Link
-            href="https://policies.google.com/terms"
-            className="text-primary"
-          >
-            {" "}
-            Terms of Service
-          </Link>{" "}
-          apply.
-        </div>
+        <GoogleRecaptchaV3 />
         {error && (
           <div className="p-4 mb-4 bg-destructive text-primary-foreground rounded">
             {error}
