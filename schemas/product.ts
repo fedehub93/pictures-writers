@@ -26,6 +26,7 @@ export const productFormSchema = z.object({
     error: "Slug is required!",
   }),
   description: z.custom<Descendant[]>(),
+  tiptapDescription: z.any().optional(),
   imageCoverId: z.string().optional(),
   acquisitionMode: z.enum(ProductAcquisitionMode),
   formId: z.string().optional(),

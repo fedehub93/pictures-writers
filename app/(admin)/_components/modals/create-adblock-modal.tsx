@@ -45,6 +45,9 @@ export const CreateAdBlockModal = () => {
       placement: AdPositionPlacement.BEFORE,
       reference: AdPositionReference.HEADING,
       referenceCount: 1,
+      excludedPostIds: [],
+      excludedCategoryIds: [],
+      excludedTagIds: [],
     },
   });
 

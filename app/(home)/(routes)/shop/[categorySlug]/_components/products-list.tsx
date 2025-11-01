@@ -29,6 +29,8 @@ export const ProductsList = ({ categorySlug, products }: ProductsListProps) => {
               imageCover={p.imageCover}
               seats={p.metadata.seats}
               price={p.price!}
+              discountedPrice={p.discountedPrice}
+              lessons={p.metadata.lessons}
             />
           );
         }

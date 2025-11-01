@@ -81,6 +81,10 @@ export const ProductForm = ({
       description: initialData.description || [
         { type: "paragraph", children: [{ text: "" }] },
       ],
+      tiptapDescription: initialData.tiptapDescription || {
+        type: "doc",
+        content: [],
+      },
       categoryId: initialData.categoryId || undefined,
       imageCoverId: initialData.imageCoverId || undefined,
       formId: initialData.formId || undefined,

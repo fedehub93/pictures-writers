@@ -16,7 +16,8 @@ import {
 
 import { ProductGallery } from "./_components/product-gallery";
 import { EbookInfo } from "./_components/ebook-info";
-import { WebinarInfo } from "./_components/webinar-info";
+
+import { Webinar } from "./_components/webinar";
 
 export const revalidate = 86400;
 
@@ -59,7 +60,7 @@ const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
   const url = `${siteShopUrl}/${product.category.slug}/${product.slug}/`;
 
   return (
-    <section key={product.slug} className="bg-background py-10">
+    <section key={product.slug} className="bg-background py-8">
       <ProductJsonLd
         title={product.seo?.title}
         description={product.seo?.description || ""}
@@ -76,7 +77,7 @@ const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
         dateModified={product.updatedAt.toISOString()}
         url={url}
       />
-      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 px-4 md:grid-cols-2 gap-y-8 md:gap-y-12 gap-x-12">
+      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 px-4 md:grid-cols-2 gap-y-4 gap-x-12">
         <Breadcrumbs
           items={[
             { title: "Home", href: "/" },
@@ -88,36 +89,34 @@ const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
             { title: product.title },
           ]}
         />
-        <ProductGallery gallery={product.gallery} />
         {isEbookMetadata(product.metadata) && (
-          <EbookInfo
-            rootId={product.rootId!}
-            title={product.title}
-            acquisitionMode={product.acquisitionMode}
-            imageCoverUrl={product.imageCover?.url!}
-            description={product.description}
-            price={product.price}
-            discountedPrice={product.discountedPrice}
-            formats={product.metadata.formats}
-            publishedAt={product.metadata.publishedAt}
-            author={product.metadata.author}
-            edition={product.metadata.edition}
-          />
+          <>
+            <ProductGallery gallery={product.gallery} />
+            <EbookInfo
+              rootId={product.rootId!}
+              title={product.title}
+              acquisitionMode={product.acquisitionMode}
+              imageCoverUrl={product.imageCover?.url!}
+              description={product.description}
+              price={product.price}
+              discountedPrice={product.discountedPrice}
+              formats={product.metadata.formats}
+              publishedAt={product.metadata.publishedAt}
+              author={product.metadata.author}
+              edition={product.metadata.edition}
+            />
+          </>
         )}
         {isWebinarMetadata(product.metadata) && (
-          <WebinarInfo
+          <Webinar
             id={product.id}
-            rootId={product.rootId!}
             title={product.title}
-            acquisitionMode={product.acquisitionMode}
-            imageCoverUrl={product.imageCover?.url!}
-            description={product.description}
+            tiptapDescription={product.tiptapDescription}
+            image={product.imageCover}
             price={product.price}
             discountedPrice={product.discountedPrice}
-            author={null}
-            seats={product.metadata.seats}
-            availableSeats={5}
-            platform={product.metadata.platform}
+            acquisitionMode={product.acquisitionMode}
+            data={product.metadata}
           />
         )}
       </div>

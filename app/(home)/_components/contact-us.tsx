@@ -167,7 +167,7 @@ export const ContactUs = (): JSX.Element => {
                 <Button
                   type="submit"
                   disabled={!isValid || isSubmitting || isRecaptchaLoading}
-                  className="bg-primary"
+                  className="bg-primary mt-4"
                 >
                   Invia messaggio
                 </Button>

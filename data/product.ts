@@ -105,6 +105,7 @@ export const getPublishedProductBySlug = async (slug: string) => {
       rootId: true,
       title: true,
       description: true,
+      tiptapDescription: true,
       slug: true,
       category: {
         select: {

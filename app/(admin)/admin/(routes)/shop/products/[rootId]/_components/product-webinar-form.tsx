@@ -55,14 +55,6 @@ export const ProductWebinarForm = ({
             disabled={isSubmitting}
             containerProps={{ className: "flex-1" }}
           />
-          <GenericInput
-            control={control}
-            name="metadata.duration"
-            label="Duration"
-            placeholder="2h"
-            disabled={isSubmitting}
-            containerProps={{ className: "flex-1" }}
-          />
         </div>
 
         {/* Lezioni dinamiche */}

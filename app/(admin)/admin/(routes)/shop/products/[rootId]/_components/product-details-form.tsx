@@ -14,6 +14,7 @@ import { GenericInput } from "@/components/form-component/generic-input";
 import { SlugInput } from "@/components/form-component/slug-input";
 
 import { GenericEditor } from "@/components/form-component/generic-editor";
+import { GenericTiptap } from "@/components/form-component/generic-tiptap";
 
 import { ProductCategorySelect } from "./product-category-select";
 
@@ -63,12 +64,18 @@ export const ProductDetailsForm = ({
           disabled={isSubmitting}
           buttonOnClick={onSlugCreate}
         />
-        <GenericEditor
+        {/* <GenericEditor
           id="description"
           control={control}
           name="description"
           label="Description (Optional)"
           disabled={isSubmitting}
+        /> */}
+        <GenericTiptap
+          key={initialData.id}
+          id={initialData.id}
+          control={control}
+          name="tiptapDescription"
         />
       </CardContent>
     </Card>

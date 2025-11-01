@@ -1,42 +1,28 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import {
-  CalendarDays,
-  Clock,
-  Euro,
-  Hourglass,
-  Presentation,
-  Sofa,
-} from "lucide-react";
+import { CalendarDays, Euro, Sofa } from "lucide-react";
 
-import { getProductMetadataBySlug } from "@/app/(home)/_components/seo/content-metadata";
-import { Breadcrumbs } from "@/app/(home)/_components/breadcrumbs";
+import Image from "next/image";
+
+import { Separator } from "@/components/ui/separator";
 
 import {
   getPublishedProductBySlug,
   getPublishedProductsBuilding,
 } from "@/data/product";
+
+import { getProductMetadataBySlug } from "@/app/(home)/_components/seo/content-metadata";
+import { Breadcrumbs } from "@/app/(home)/_components/breadcrumbs";
+
 import SubmissionForm from "./_components/submission-form";
-import Image from "next/image";
-import { Separator } from "@/components/ui/separator";
+
 import { isWebinarMetadata } from "@/type-guards";
-import { formatDate, formatPrice } from "@/lib/format";
-import { Button } from "@/components/ui/button";
+import { formatDate } from "@/lib/format";
 import { db } from "@/lib/db";
+import { getLessonRange } from "@/data/webinars";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
-
-const getLessonRange = (lessons?: any[]) => {
-  if (!lessons || lessons.length === 0) return { start: null, end: null };
-  const sorted = lessons
-    .map((l) => ({ ...l, dateObj: new Date(l.date) }))
-    .sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime());
-  return {
-    start: sorted[0].dateObj,
-    end: sorted[sorted.length - 1].dateObj,
-  };
-};
 
 export async function generateStaticParams() {
   const products = await getPublishedProductsBuilding();
@@ -155,11 +141,11 @@ const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
                             </div>
                           </div>
 
-                          {/* Range complessivo */}
                           {(() => {
                             const { start, end } = getLessonRange(
                               product.metadata.lessons
                             );
+                            if (!start || !end) return null;
                             return (
                               <div className="text-sm text-muted-foreground mb-2">
                                 Dal{" "}

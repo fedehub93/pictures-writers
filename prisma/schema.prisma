@@ -548,7 +548,9 @@ model Product {
   slug  String
 
   /// [BodyData]
-  description Json @db.JsonB
+  description       Json  @db.JsonB
+  /// [TipTapBodyData]
+  tiptapDescription Json? @db.JsonB
 
   type ProductType
 
