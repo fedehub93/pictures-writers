@@ -71,7 +71,7 @@ const Page = async (
   const galleryImages =
     product.gallery.map((image) => image.media.url || "") || [];
 
-  const url = `${siteShopUrl}/${product.category.slug}/${product.slug}/`;
+  const url = `draft/${siteShopUrl}/${product.category.slug}/${product.slug}/`;
 
   return (
     <section key={product.slug} className="bg-background py-8">
@@ -95,10 +95,10 @@ const Page = async (
         <Breadcrumbs
           items={[
             { title: "Home", href: "/" },
-            { title: "Shop", href: `/shop/` },
+            { title: "Shop", href: `/draft/shop/` },
             {
               title: product.category.title,
-              href: `/shop/${product.category.slug}/`,
+              href: `/draft/shop/${product.category.slug}/`,
             },
             { title: product.title },
           ]}

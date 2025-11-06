@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 const ShopPage = async () => {
-  return redirect(`/shop/ebooks`);
+  return redirect(`/draft/shop/ebooks`);
 };
 
 export default ShopPage;

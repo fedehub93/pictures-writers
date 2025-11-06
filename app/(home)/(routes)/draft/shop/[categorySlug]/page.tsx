@@ -7,7 +7,10 @@ import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
 import { Breadcrumbs } from "@/app/(home)/_components/breadcrumbs";
 
 import { getSettings } from "@/data/settings";
-import { getPublishedProductCategoryBySlug } from "@/data/product-category";
+import {
+  getDraftProductCategoryBySlug,
+  getPublishedProductCategoryBySlug,
+} from "@/data/product-category";
 import { getProductsPaginatedByFilters } from "@/data/product";
 import { ProductsList } from "../../../shop/[categorySlug]/_components/products-list";
 
@@ -18,7 +21,7 @@ export const revalidate = 86400;
 export const dynamicParams = true;
 
 export async function generateMetadata(
-  props: PageProps<"/shop/[categorySlug]">
+  props: PageProps<"/draft/shop/[categorySlug]">
 ): Promise<Metadata | null> {
   const metadata = await getHeadMetadata();
 
@@ -64,8 +67,16 @@ const ShopCategoryPage = async (
           slug: categorySlug,
           status: ContentStatus.PUBLISHED,
         },
-        status: ContentStatus.DRAFT,
-        isLatest: true,
+        OR: [
+          {
+            status: ContentStatus.DRAFT,
+            isLatest: true,
+          },
+          {
+            status: ContentStatus.CHANGED,
+            isLatest: false,
+          },
+        ],
         type: {
           not: ProductType.AFFILIATE,
         },
@@ -74,7 +85,7 @@ const ShopCategoryPage = async (
     });
 
   if (!category || !products.length) {
-    return redirect(`/shop/ebooks`);
+    return redirect(`/draft/shop/ebooks`);
   }
 
   return (
@@ -91,7 +102,7 @@ const ShopCategoryPage = async (
           <Breadcrumbs
             items={[
               { title: "Home", href: "/" },
-              { title: "Shop", href: "/shop/" },
+              { title: "Shop", href: "/draft/shop/" },
               { title: category.title },
             ]}
           />

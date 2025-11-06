@@ -13,8 +13,8 @@ import { formatDate } from "@/lib/format";
 import { getLessonRange } from "@/data/webinars";
 
 import {
-  getPublishedProductBySlug,
-  getPublishedProductsBuilding,
+  getDraftProductBySlug,
+  getDraftProductsBuilding,
 } from "@/data/product";
 
 import { getProductMetadataBySlug } from "@/app/(home)/_components/seo/content-metadata";
@@ -28,7 +28,7 @@ export const revalidate = 86400;
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
-  const products = await getPublishedProductsBuilding();
+  const products = await getDraftProductsBuilding();
 
   return [
     ...products
@@ -41,17 +41,19 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata(
-  props: PageProps<"/shop/[categorySlug]/[productSlug]/submission">
+  props: PageProps<"/draft/shop/[categorySlug]/[productSlug]/submission">
 ): Promise<Metadata | null> {
   const { productSlug } = await props.params;
 
   return await getProductMetadataBySlug(productSlug);
 }
 
-const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
+const Page = async (
+  props: PageProps<"/draft/shop/[categorySlug]/[productSlug]">
+) => {
   const { productSlug } = await props.params;
 
-  const product = await getPublishedProductBySlug(productSlug);
+  const product = await getDraftProductBySlug(productSlug);
 
   if (!product || !product.category) {
     return notFound();
@@ -70,14 +72,14 @@ const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
         <Breadcrumbs
           items={[
             { title: "Home", href: "/" },
-            { title: "Shop", href: `/shop/` },
+            { title: "Shop", href: `/draft/shop/` },
             {
               title: product.category.title,
-              href: `/shop/${product.category.slug}/`,
+              href: `/draft/shop/${product.category.slug}/`,
             },
             {
               title: product.title,
-              href: `/shop/${product.category.slug}/${productSlug}/`,
+              href: `/draft/shop/${product.category.slug}/${productSlug}/`,
             },
             { title: "Submission" },
           ]}
