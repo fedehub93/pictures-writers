@@ -21,7 +21,10 @@ import { getProductMetadataBySlug } from "@/app/(home)/_components/seo/content-m
 import { Breadcrumbs } from "@/app/(home)/_components/breadcrumbs";
 import SubmissionForm from "@/app/(home)/(routes)/shop/[categorySlug]/[productSlug]/submission/_components/submission-form";
 
+export const dynamic = "force-dynamic";
+
 export const revalidate = 86400;
+
 export const dynamicParams = true;
 
 export async function generateStaticParams() {

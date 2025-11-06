@@ -11,6 +11,12 @@ import { getPublishedProductCategoryBySlug } from "@/data/product-category";
 import { getProductsPaginatedByFilters } from "@/data/product";
 import { ProductsList } from "../../../shop/[categorySlug]/_components/products-list";
 
+export const dynamic = "force-dynamic";
+
+export const revalidate = 86400;
+
+export const dynamicParams = true;
+
 export async function generateMetadata(
   props: PageProps<"/shop/[categorySlug]">
 ): Promise<Metadata | null> {

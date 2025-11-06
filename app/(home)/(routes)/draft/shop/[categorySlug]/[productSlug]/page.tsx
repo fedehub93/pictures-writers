@@ -18,6 +18,8 @@ import { ProductGallery } from "@/app/(home)/(routes)/shop/[categorySlug]/[produ
 import { EbookInfo } from "@/app/(home)/(routes)/shop/[categorySlug]/[productSlug]/_components/ebook-info";
 import { Webinar } from "@/app/(home)/(routes)/shop/[categorySlug]/[productSlug]/_components/webinar";
 
+export const dynamic = "force-dynamic";
+
 export const revalidate = 86400;
 
 export const dynamicParams = true;
