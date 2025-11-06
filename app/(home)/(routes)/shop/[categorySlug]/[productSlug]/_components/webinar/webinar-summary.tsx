@@ -1,5 +1,3 @@
-"use client";
-
 import { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -36,7 +34,7 @@ export const WebinarSummary = ({
 }: WebinarSummaryProps) => {
   return (
     <div className="w-full flex flex-col gap-y-4 sticky top-24">
-      {/* <div className="text-3xl">Riepilogo</div> */}
+      <div className="text-2xl font-medium">Riepilogo</div>
       <div className="bg-card border rounded p-6 py-4 w-full flex flex-col space-y-2 shadow">
         <div className="flex flex-col items-center w-full space-y-2">
           {image && (
@@ -101,7 +99,9 @@ export const WebinarSummary = ({
                 ) : null}
                 {acquisitionMode === ProductAcquisitionMode.FORM && (
                   <Button type="button" asChild>
-                    <Link href={`submission` as Route}>Invia preselezione</Link>
+                    <Link href={`submission` as Route}>
+                      Vai alla submission
+                    </Link>
                   </Button>
                 )}
               </div>

@@ -381,6 +381,33 @@ export type GetPublishedPostBySlug = Awaited<
   ReturnType<typeof getPublishedPostBySlug>
 >;
 
+export const getPublishedDraftPostsBuilding = async () => {
+  const posts = await db.post.findMany({
+    where: {
+      OR: [
+        {
+          isLatest: true,
+          status: ContentStatus.DRAFT,
+        },
+        {
+          isLatest: false,
+          status: ContentStatus.CHANGED,
+        },
+      ],
+    },
+    select: {
+      id: true,
+      rootId: true,
+      slug: true,
+    },
+    orderBy: {
+      firstPublishedAt: "desc",
+    },
+  });
+
+  return posts;
+};
+
 /**
  *
  * @param slug Get Draft Post by Slug
@@ -391,8 +418,16 @@ export const getDraftPostBySlug = async (slug: string) => {
   const post = await db.post.findFirst({
     where: {
       slug,
-      status: ContentStatus.DRAFT,
-      isLatest: true,
+      OR: [
+        {
+          isLatest: true,
+          status: ContentStatus.DRAFT,
+        },
+        {
+          isLatest: false,
+          status: ContentStatus.CHANGED,
+        },
+      ],
     },
     select: {
       id: true,

@@ -10,23 +10,20 @@ import { Breadcrumbs } from "@/app/(home)/_components/breadcrumbs";
 import { getSettings } from "@/data/settings";
 
 import {
-  getPublishedProductBySlug,
-  getPublishedProductsBuilding,
+  getDraftProductBySlug,
+  getDraftProductsBuilding,
 } from "@/data/product";
 
-import { FaqSection } from "@/components/faq-section";
-
-import { ProductGallery } from "./_components/product-gallery";
-import { EbookInfo } from "./_components/ebook-info";
-
-import { Webinar } from "./_components/webinar";
+import { ProductGallery } from "@/app/(home)/(routes)/shop/[categorySlug]/[productSlug]/_components/product-gallery";
+import { EbookInfo } from "@/app/(home)/(routes)/shop/[categorySlug]/[productSlug]/_components/ebook-info";
+import { Webinar } from "@/app/(home)/(routes)/shop/[categorySlug]/[productSlug]/_components/webinar";
 
 export const revalidate = 86400;
 
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
-  const products = await getPublishedProductsBuilding();
+  const products = await getDraftProductsBuilding();
 
   return [
     ...products
@@ -39,18 +36,31 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata(
-  props: PageProps<"/shop/[categorySlug]/[productSlug]">
+  props: PageProps<"/draft/shop/[categorySlug]/[productSlug]">
 ): Promise<Metadata | null> {
   const { productSlug } = await props.params;
 
-  return await getProductMetadataBySlug(productSlug);
+  return {
+    ...(await getProductMetadataBySlug(productSlug)),
+    robots: {
+      index: false,
+      follow: false,
+      googleBot: {
+        index: false,
+        follow: false,
+      },
+    },
+  };
 }
 
-const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
+const Page = async (
+  props: PageProps<"/draft/shop/[categorySlug]/[productSlug]">
+) => {
   const { productSlug } = await props.params;
 
   const { siteShopUrl } = await getSettings();
-  const product = await getPublishedProductBySlug(productSlug);
+  const product = await getDraftProductBySlug(productSlug);
+  console.log(productSlug);
 
   if (!product || !product.category) {
     return notFound();

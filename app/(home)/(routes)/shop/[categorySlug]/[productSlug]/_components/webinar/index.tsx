@@ -2,6 +2,9 @@ import { TiptapContent, WebinarMetadata } from "@/types";
 import { WebinarInfo } from "./webinar-info";
 import { WebinarSummary } from "./webinar-summary";
 import { ProductAcquisitionMode } from "@prisma/client";
+import { FaqSection } from "@/components/faq-section";
+import { Separator } from "@/components/ui/separator";
+import { WebinarBottomCta } from "./webinar-bottom-cta";
 
 interface WebinarProps {
   id: string;
@@ -12,6 +15,7 @@ interface WebinarProps {
   discountedPrice: number | null;
   acquisitionMode: ProductAcquisitionMode;
   data: WebinarMetadata;
+  faqs: { question: string; answer: string }[];
 }
 
 export const Webinar = ({
@@ -23,23 +27,40 @@ export const Webinar = ({
   discountedPrice,
   acquisitionMode,
   data,
+  faqs,
 }: WebinarProps) => {
   return (
-    <div className="col-span-2 grid grid-cols-12 gap-x-4">
-      <div className="col-span-8 w-11/12">
-        <WebinarInfo title={title} tiptapDescription={tiptapDescription} />
+    <>
+      <div className="col-span-2 grid grid-cols-12 gap-x-4 space-y-8">
+        <div className="col-span-full lg:col-span-8 lg:w-11/12 flex flex-col space-y-8">
+          <WebinarInfo
+            title={title}
+            imageCover={image}
+            tiptapDescription={tiptapDescription}
+          />
+          <Separator />
+          {faqs.length && <FaqSection faqs={faqs} />}
+        </div>
+
+        <div id="summary" className="col-span-full lg:col-span-4 relative">
+          <WebinarSummary
+            id={id}
+            title={title}
+            image={image}
+            price={price}
+            discountedPrice={discountedPrice}
+            acquisitionMode={acquisitionMode}
+            data={data}
+          />
+        </div>
       </div>
-      <div className="col-span-4 relative">
-        <WebinarSummary
-          id={id}
-          title={title}
-          image={image}
-          price={price}
-          discountedPrice={discountedPrice}
-          acquisitionMode={acquisitionMode}
-          data={data}
-        />
-      </div>
-    </div>
+
+      <WebinarBottomCta
+        acquisitionMode={acquisitionMode}
+        ctaLabel="Vai alla submission"
+        price={price}
+        discountedPrice={discountedPrice}
+      />
+    </>
   );
 };

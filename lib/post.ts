@@ -22,25 +22,6 @@ export const getPublishedPostsBuilding = async () => {
   return posts;
 };
 
-export const getPublishedDraftPostsBuilding = async () => {
-  const posts = await db.post.findMany({
-    where: {
-      status: ContentStatus.DRAFT,
-      isLatest: true,
-    },
-    select: {
-      id: true,
-      rootId: true,
-      slug: true,
-    },
-    orderBy: {
-      firstPublishedAt: "desc",
-    },
-  });
-
-  return posts;
-};
-
 export const getPublishedPostById = async (id: string) => {
   const post = await db.post.findFirst({
     where: {

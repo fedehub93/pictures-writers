@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 
 import { formFormSchema, FormFormValues } from "@/schemas/form";
 import { FormDetails } from "./form-details-form";
+import { FormGtmForm } from "./form-gtm-form";
 
 interface FormFormProps {
   initialData: Form;
@@ -27,6 +28,10 @@ export const FormForm = ({ initialData, apiUrl }: FormFormProps) => {
     values: {
       name: initialData.name,
       fields: initialData.fields || "",
+      submitLabel: initialData.submitLabel || "",
+      gtmLabel: initialData.gtmLabel || "",
+      gtmCategory: initialData.gtmCategory || "",
+      gtmEventName: initialData.gtmEventName || "",
     },
   });
 
@@ -66,7 +71,9 @@ export const FormForm = ({ initialData, apiUrl }: FormFormProps) => {
                 />
               </div>
             </div>
-            <div className="col-span-full md:col-span-2 lg:col-span-4 flex flex-col gap-y-4"></div>
+            <div className="col-span-full md:col-span-2 lg:col-span-4 flex flex-col gap-y-4">
+              <FormGtmForm control={form.control} isSubmitting={isSubmitting} />
+            </div>
           </div>
         </div>
       </form>

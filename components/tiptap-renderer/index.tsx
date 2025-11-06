@@ -8,20 +8,20 @@ import Youtube from "@tiptap/extension-youtube";
 import Image from "@tiptap/extension-image";
 
 import { TiptapContent } from "@/types";
-import { Button } from "@/components/ui/button";
 
 import { InfoBoxNodeRenderer } from "./extensions/info-box";
-import { InfoBoxRenderer } from "./extensions/info-box/ui/InfoBoxRenderer";
 import { ProductNodeRenderer } from "./extensions/product";
-import { ProductRenderer } from "./extensions/product/ui/ProductRenderer";
-import { ImageRenderer } from "./extensions/image/ui/ImageRenderer";
-import { LinkRenderer } from "./extensions/link/ui/LinkRenderer";
 import { CustomLinkMarkRenderer } from "./extensions/link";
 import { AdBlockNodeRenderer } from "./extensions/ads";
 import { TableContentNodeRenderer } from "./extensions/table-content";
 import { TableContentRenderer } from "./extensions/table-content/ui/table-content-renderer";
 import { CustomHeading } from "./extensions/heading";
-import { Route } from "next";
+
+import { InfoBoxRenderer } from "./extensions/info-box/ui/info-box-renderer";
+import { ProductRenderer } from "./extensions/product/ui/product-renderer";
+import { ImageRenderer } from "./extensions/image/ui/image-renderer";
+import { LinkRenderer } from "./extensions/link/ui/link-renderer";
+import { AdItemRenderer } from "./extensions/ads/ui/ad-item-renderer";
 
 type Props = {
   content: TiptapContent;
@@ -30,7 +30,7 @@ type Props = {
 
 const TipTapRendererV2 = ({ content, preview = false }: Props) => {
   if (!content || typeof content === "string") return content;
-  
+
   const output = renderToReactElement({
     content,
     extensions: [
@@ -89,31 +89,12 @@ const TipTapRendererV2 = ({ content, preview = false }: Props) => {
         },
         adBlock: ({ node }) => {
           return (
-            <div className="border rounded-md bg-primary-foreground flex flex-col overflow-hidden md:w-5/8 mx-auto items-center shadow-lg">
-              <NextImage
-                src={node.attrs.src}
-                alt="Ads Box"
-                width={1000}
-                height={1000}
-                className="object-cover"
-              />
-              <div className="p-4 flex flex-col gap-y-4">
-                <div className="text-2xl text-primary font-semibold leading-8 text-center">
-                  {node.attrs.title}
-                </div>
-                <div className="text-base font-semibold text-center">
-                  {node.attrs.description}
-                </div>
-                <Button asChild>
-                  <Link
-                    href={`${node.attrs.url}` as Route}
-                    className="text-xl font-light"
-                  >
-                    Scopri di più
-                  </Link>
-                </Button>
-              </div>
-            </div>
+            <AdItemRenderer
+              imageSrc={node.attrs.src}
+              title={node.attrs.title}
+              description={node.attrs.description}
+              href={node.attrs.url}
+            />
           );
         },
       },

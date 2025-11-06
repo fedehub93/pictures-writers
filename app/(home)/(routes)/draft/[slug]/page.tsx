@@ -8,9 +8,13 @@ import {
 } from "@prisma/client";
 
 import { db } from "@/lib/db";
-import { getPublishedDraftPostsBuilding } from "@/lib/post";
 
-import { getDraftPostBySlug, getPostsPaginatedByFilters } from "@/data/post";
+import {
+  getDraftPostBySlug,
+  getPostsPaginatedByFilters,
+  getPublishedDraftPostsBuilding,
+} from "@/data/post";
+
 import { getPublishedProductByRootId } from "@/data/product";
 
 import { getSettings } from "@/data/settings";

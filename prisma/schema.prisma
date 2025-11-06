@@ -791,9 +791,14 @@ model ContactForm {
 model Form {
   id String @id @default(uuid())
 
-  name   String
+  name        String
   /// [FormFields]
-  fields Json?  @db.JsonB // array di campi [{ name, label, type, required, placeholder }]
+  fields      Json?   @db.JsonB
+  submitLabel String?
+
+  gtmEventName String? // es: "form_submission_laboratorio"
+  gtmCategory  String? // es: "lead" o "submission"
+  gtmLabel     String? // es: "Laboratorio di scrittura novembre"
 
   products    Product[]
   submissions FormSubmission[]

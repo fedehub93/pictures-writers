@@ -6,6 +6,7 @@ import * as v from "valibot";
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import toast from "react-hot-toast";
 import { BeatLoader } from "react-spinners";
+import { sendGTMEvent } from "@next/third-parties/google";
 
 import {
   Form,
@@ -32,6 +33,8 @@ interface SubmissionFormProps {
     id: string;
     name: string;
     fields: string;
+    submitLabel: string | null;
+    gtmEventName: string | null;
   };
 }
 
@@ -99,14 +102,16 @@ export default function SubmissionForm({
           if (data.success && typeof window !== "undefined") {
             setError("");
             setSuccess(data.message);
-            // sendGTMEvent({
-            //   event: "contact_form_submission",
-            //   form_type: "contact",
-            //   form_location: "contact_page",
-            //   page_path: window.location.pathname,
-            //   page_title: document.title,
-            //   email_domain: values.email.split("@")[1],
-            // });
+            if (!!formDef.gtmEventName) {
+              sendGTMEvent({
+                event: formDef.gtmEventName,
+                form_type: "form_submission",
+                form_location: "product_page",
+                page_path: window.location.pathname,
+                page_title: document.title,
+                email_domain: values.email.split("@")[1],
+              });
+            }
           }
         });
       });
@@ -227,7 +232,7 @@ export default function SubmissionForm({
               disabled={isSubmitting || isRecaptchaLoading}
               className="bg-primary"
             >
-              Conferma
+              {formDef.submitLabel || "Invia"}
             </Button>
           ) : null}
         </form>

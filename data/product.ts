@@ -144,6 +144,15 @@ export const getPublishedProductBySlug = async (slug: string) => {
         },
       },
       acquisitionMode: true,
+      faqs: {
+        select: {
+          question: true,
+          answer: true,
+        },
+        orderBy: {
+          sort: "asc",
+        },
+      },
       user: {
         select: {
           firstName: true,
@@ -189,3 +198,126 @@ export const getPublishedProductsBuilding = async () => {
 
   return products;
 };
+
+/**
+ * DRAFT
+ */
+
+export const getDraftProductsBuilding = async () => {
+  const products = await db.product.findMany({
+    where: {
+      isLatest: true,
+      status: { in: [ContentStatus.DRAFT, ContentStatus.CHANGED] },
+      type: { not: ProductType.AFFILIATE },
+    },
+    select: {
+      id: true,
+      slug: true,
+      type: true,
+      category: {
+        select: {
+          slug: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  return products;
+};
+
+export type GetDraftProductByRootId = Awaited<
+  ReturnType<typeof getPublishedProductByRootId>
+>;
+
+export const getDraftProductBySlug = async (slug: string) => {
+  const product = await db.product.findFirst({
+    where: {
+      slug,
+      OR: [
+        {
+          isLatest: true,
+          status: ContentStatus.DRAFT,
+        },
+        {
+          isLatest: false,
+          status: ContentStatus.CHANGED,
+        },
+      ],
+      type: { not: ProductType.AFFILIATE },
+    },
+    select: {
+      id: true,
+      rootId: true,
+      title: true,
+      description: true,
+      tiptapDescription: true,
+      slug: true,
+      category: {
+        select: {
+          title: true,
+          description: true,
+          slug: true,
+        },
+      },
+      imageCover: {
+        select: {
+          url: true,
+          altText: true,
+        },
+      },
+      formId: true,
+      gallery: {
+        select: {
+          media: {
+            select: {
+              id: true,
+              url: true,
+              altText: true,
+            },
+          },
+          sort: true,
+        },
+      },
+      metadata: true,
+      price: true,
+      discountedPrice: true,
+      seo: {
+        select: {
+          title: true,
+          description: true,
+          canonicalUrl: true,
+        },
+      },
+      acquisitionMode: true,
+      faqs: {
+        select: {
+          question: true,
+          answer: true,
+        },
+        orderBy: {
+          sort: "asc",
+        },
+      },
+      user: {
+        select: {
+          firstName: true,
+          lastName: true,
+        },
+      },
+      createdAt: true,
+      updatedAt: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  return product;
+};
+
+export type GetDraftProductBySlug = Awaited<
+  ReturnType<typeof getPublishedProductBySlug>
+>;
