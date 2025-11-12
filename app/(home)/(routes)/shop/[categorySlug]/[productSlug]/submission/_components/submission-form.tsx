@@ -49,7 +49,49 @@ export default function SubmissionForm({
 
   const jsonFields = JSON.parse(formDef.fields as string);
 
-  const schema = v.record(v.string(), v.any());
+  const schema = useMemo(() => {
+    const shape: Record<string, any> = {};
+
+    for (const field of jsonFields) {
+      let validator: any = v.string();
+
+      // 🔹 Gestisci i tipi base
+      switch (field.type) {
+        case "text":
+        case "textarea":
+          validator = v.pipe(v.string());
+          if (field.required) validator = v.pipe(validator, v.minLength(1, `${field.label} è obbligatorio`));
+          break;
+
+        case "email":
+          validator = v.pipe(
+            v.string(),
+            v.email(`${field.label || "Email"} non è valida`)
+          );
+          if (field.required) validator = v.pipe(validator, v.minLength(1));
+          break;
+
+        case "checkbox":
+          validator = field.required
+            ? v.literal(true, `${field.label} deve essere accettato`)
+            : v.boolean();
+          break;
+
+        case "file":
+          validator = field.required
+            ? v.array(v.any(), `${field.label} è obbligatorio`)
+            : v.optional(v.array(v.any()));
+          break;
+
+        default:
+          validator = v.any();
+      }
+
+      shape[field.name] = validator;
+    }
+
+    return v.object(shape);
+  }, [jsonFields]);
 
   // 👇 Crea defaultValues dinamicamente
   const defaultValues = useMemo(() => {

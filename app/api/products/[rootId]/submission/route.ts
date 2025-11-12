@@ -1,7 +1,8 @@
-import { getPublishedProductByRootId } from "@/data/product";
-import { db } from "@/lib/db";
-import { ProductAcquisitionMode } from "@prisma/client";
 import { NextResponse } from "next/server";
+import { ProductAcquisitionMode } from "@prisma/client";
+
+import { db } from "@/lib/db";
+import { getPublishedProductByRootId } from "@/data/product";
 
 export async function POST(
   req: Request,

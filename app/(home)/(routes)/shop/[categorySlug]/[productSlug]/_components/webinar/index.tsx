@@ -51,6 +51,7 @@ export const Webinar = ({
             discountedPrice={discountedPrice}
             acquisitionMode={acquisitionMode}
             data={data}
+            showCta
           />
         </div>
       </div>

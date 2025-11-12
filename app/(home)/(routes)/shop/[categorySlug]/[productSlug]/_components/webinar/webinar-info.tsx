@@ -21,7 +21,7 @@ export const WebinarInfo = async ({
 
   return (
     <div className="flex flex-col space-y-4">
-      <div className="w-full relative aspect-video">
+      <div className="w-full relative aspect-video rounded overflow-hidden">
         {imageCover ? (
           <Image
             src={imageCover.url}
