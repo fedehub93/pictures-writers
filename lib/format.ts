@@ -45,6 +45,7 @@ export const formatDate = ({
     year,
     month,
     day,
+    timeZone: "Europe/Rome",
   });
 
   return formattedDate;
