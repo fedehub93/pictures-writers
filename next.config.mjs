@@ -15,6 +15,11 @@ const nextConfig = {
         destination: "/shop/ebooks/:path*",
         permanent: true,
       },
+      {
+        source: "/concorso-tre-colori-2025/",
+        destination: "/concorso-tre-colori-2026/",
+        permanent: true,
+      },
     ];
   },
   images: {

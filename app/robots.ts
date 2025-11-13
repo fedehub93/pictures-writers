@@ -19,6 +19,7 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
         "/cos-e-il-linguaggio-cinematografico-scrivere-per-il cinema",
         "/ebooks/",
         "/ebooks/introduzione-alla-sceneggiatura/",
+        "/concorso-tre-colori-2025/",
       ],
     },
     sitemap: [`${siteUrl}/sitemap.xml`],
