@@ -3,7 +3,6 @@ import { ContentStatus } from "@prisma/client";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
-import { triggerWebhookBuild } from "@/lib/vercel";
 
 export async function PATCH(req: Request) {
   try {
@@ -74,10 +73,6 @@ export async function PATCH(req: Request) {
         },
       });
       publishedPosts.push(publishedPost);
-    }
-
-    if (process.env.NODE_ENV === "production" && publishedPosts.length > 0) {
-      await triggerWebhookBuild();
     }
 
     return NextResponse.json(publishedPosts);

@@ -55,6 +55,11 @@ const nextConfig = {
     );
     return config;
   },
+  /* the problem is not with the prisma application or configuration, but with nextjs 16 ignoring the Prisma binary file ( .so.node) excluded from the deployment package, which causes errors at runtime. https://community.vercel.com/t/prisma-client-integration-issue-in-next-js-16/26262 */
+  outputFileTracingIncludes: {
+    "/api/**/*": ["./node_modules/.prisma/client/**/*"],
+    "/*": ["./node_modules/.prisma/client/**/*"],
+  },
 };
 
 const bundleAnalyzer = withBundleAnalyzer({

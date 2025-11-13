@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
 
-import { triggerWebhookBuild } from "@/lib/vercel";
 import { formFormSchema } from "@/schemas/form";
 
 export async function DELETE(
@@ -14,8 +13,8 @@ export async function DELETE(
     }>;
   }
 ) {
-  const params = await props.params;
   try {
+    const params = await props.params;
     const user = await authAdmin();
     const { formId } = params;
 
@@ -80,10 +79,6 @@ export async function PATCH(
       where: { id: form.id },
       data: { ...values },
     });
-
-    if (process.env.NODE_ENV === "production" && updatedForm) {
-      await triggerWebhookBuild();
-    }
 
     return NextResponse.json(updatedForm);
   } catch (error) {

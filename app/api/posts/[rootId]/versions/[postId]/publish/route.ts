@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 
+import { ContentStatus } from "@prisma/client";
+
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
-import { ContentStatus } from "@prisma/client";
-import { triggerWebhookBuild } from "@/lib/vercel";
 
 export async function PATCH(
   req: Request,
@@ -78,10 +78,6 @@ export async function PATCH(
         seo: true,
       },
     });
-
-    if (process.env.NODE_ENV === "production" && publishedPost) {
-      await triggerWebhookBuild();
-    }
 
     return NextResponse.json(publishedPost);
   } catch (error) {
