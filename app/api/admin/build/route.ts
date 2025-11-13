@@ -3,10 +3,7 @@ import { NextResponse } from "next/server";
 import { authAdmin } from "@/lib/auth-service";
 import { triggerWebhookBuild } from "@/lib/vercel";
 
-export async function POST(
-  req: Request,
-  props: { params: Promise<{ widgetId: string }> }
-) {
+export async function POST(req: Request) {
   try {
     const user = await authAdmin();
 
