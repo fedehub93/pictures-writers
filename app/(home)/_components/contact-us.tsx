@@ -52,7 +52,7 @@ export const ContactUs = (): JSX.Element => {
       startTransition(async () => {
         // Execute reCAPTCHA first
         setIsRecaptchaLoading(true);
-        const recaptchaToken = await getCaptchaToken("contact-form");
+        const recaptchaToken = await getCaptchaToken("contact_form");
         setIsRecaptchaLoading(false);
 
         if (!recaptchaToken) {
