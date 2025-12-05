@@ -134,32 +134,39 @@ export const getWidgetPosts = async ({
     isLatest: true,
   };
 
+  let hasLimit = false;
+
   switch (postType) {
     case WidgetPostType.ALL:
+      hasLimit = true;
       break;
 
     case WidgetPostType.SPECIFIC:
       if (posts.length > 0) {
         whereClause.rootId = { in: posts.map((p) => p.rootId) };
       }
+      hasLimit = false;
       break;
 
     case WidgetPostType.POPULAR:
       whereClause = {
         ...whereClause,
       };
+      hasLimit = true;
       break;
 
     case WidgetPostType.LATEST:
       whereClause = {
         ...whereClause,
       };
+      hasLimit = true;
       break;
 
     case WidgetPostType.CORRELATED:
       whereClause = {
         ...whereClause,
       };
+      hasLimit = false;
       break;
 
     default:
@@ -196,7 +203,7 @@ export const getWidgetPosts = async ({
       imageCover: true,
     },
     orderBy: { firstPublishedAt: "desc" },
-    take: limit,
+    take: hasLimit ? limit : undefined,
   });
 
   return postsData;
