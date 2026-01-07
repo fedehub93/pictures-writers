@@ -1,4 +1,4 @@
-import { Widget, WidgetSection } from "@prisma/client";
+import { Widget, WidgetSection } from "@/prisma/generated/client";
 
 import {
   isWidgetAuthorMetadata,

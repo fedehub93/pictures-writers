@@ -1,6 +1,6 @@
 "use client";
 
-import { ContentStatus, ProductCategory } from "@prisma/client";
+import { ContentStatus, ProductCategory } from "@/prisma/generated/client";
 import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { ArrowUpDown, MoreHorizontal, Pencil } from "lucide-react";

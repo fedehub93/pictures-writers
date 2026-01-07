@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Trash } from "lucide-react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { Media } from "@prisma/client";
+import { Media } from "@/prisma/generated/client";
 import toast from "react-hot-toast";
 
 import { Button } from "@/components/ui/button";

@@ -1,5 +1,5 @@
 "use client";
-import { AdLayoutType } from "@prisma/client";
+import { AdLayoutType } from "@/prisma/generated/client";
 
 import { Control } from "react-hook-form";
 

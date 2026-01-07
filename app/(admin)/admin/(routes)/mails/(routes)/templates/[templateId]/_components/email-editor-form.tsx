@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import axios from "axios";
-import { EmailTemplate } from "@prisma/client";
+import { EmailTemplate } from "@/prisma/generated/client";
 import dynamic from "next/dynamic";
 import { EditorRef, EmailEditorProps } from "react-email-editor";
 import toast from "react-hot-toast";

@@ -1,5 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
-import { ContentStatus } from "@prisma/client";
+import { ContentStatus } from "@/prisma/generated/client";
 import { redirect } from "next/navigation";
 
 import { authAdmin } from "@/lib/auth-service";

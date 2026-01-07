@@ -5,7 +5,7 @@ import Image from "next/image";
 import { ChangeEvent } from "react";
 import axios from "axios";
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
-import { Product } from "@prisma/client";
+import { Product } from "@/prisma/generated/client";
 import { Control, useController } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
 import { Grip, Trash2 } from "lucide-react";

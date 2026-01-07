@@ -1,6 +1,6 @@
 import axios from "axios";
 
-import { Widget } from "@prisma/client";
+import { Widget } from "@/prisma/generated/client";
 import { useQuery } from "@tanstack/react-query";
 
 type UseSocialSettingsQuery = {

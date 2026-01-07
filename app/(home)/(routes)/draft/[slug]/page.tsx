@@ -5,7 +5,7 @@ import {
   EditorType,
   WidgetSection,
   WidgetType,
-} from "@prisma/client";
+} from "@/prisma/generated/client";
 
 import { db } from "@/lib/db";
 

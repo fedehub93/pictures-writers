@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { redirect, useRouter } from "next/navigation";
-import { Form } from "@prisma/client";
+import { Form } from "@/prisma/generated/client";
 
 import { Form as UiForm } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";

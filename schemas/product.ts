@@ -1,4 +1,4 @@
-import { ProductAcquisitionMode } from "@prisma/client";
+import { ProductAcquisitionMode } from "@/prisma/generated/client";
 import { Descendant } from "slate";
 import { z } from "zod";
 

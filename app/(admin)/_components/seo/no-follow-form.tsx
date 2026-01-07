@@ -1,7 +1,7 @@
 "use client";
 
 import * as z from "zod";
-import { Seo } from "@prisma/client";
+import { Seo } from "@/prisma/generated/client";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useDebounceCallback } from "usehooks-ts";

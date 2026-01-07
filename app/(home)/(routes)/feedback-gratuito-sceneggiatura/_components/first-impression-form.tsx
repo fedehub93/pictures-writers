@@ -9,7 +9,7 @@ import { BeatLoader } from "react-spinners";
 import type { JSX } from "react";
 import { sendGTMEvent } from "@next/third-parties/google";
 
-import { Format, Genre } from "@prisma/client";
+import { Format, Genre } from "@/prisma/generated/client";
 import {
   Form,
   FormControl,

@@ -3,7 +3,7 @@
  */
 
 import { db } from "@/lib/db";
-import { ContentStatus } from "@prisma/client";
+import { ContentStatus } from "@/prisma/generated/client";
 
 type GetPublishedProductCategoryBySlug = {
   slug: string;

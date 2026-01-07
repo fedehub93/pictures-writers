@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
-import { Language } from "@prisma/client";
+import { Language } from "@/prisma/generated/client";
 
 export async function GET(req: Request) {
   try {

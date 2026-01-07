@@ -1,4 +1,4 @@
-import { AudienceType } from "@prisma/client";
+import { AudienceType } from "@/prisma/generated/client";
 import { auth } from "@clerk/nextjs/server";
 
 import { db } from "@/lib/db";

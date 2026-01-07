@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Form } from "@prisma/client";
+import { Form } from "@/prisma/generated/client";
 import { useQuery } from "@tanstack/react-query";
 
 const fetchForms = async () => {

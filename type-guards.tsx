@@ -1,4 +1,4 @@
-import { ProductType, WidgetType } from "@prisma/client";
+import { ProductType, WidgetType } from "@/prisma/generated/client";
 
 import {
   AffiliateMetadata,

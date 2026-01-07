@@ -3,7 +3,7 @@
 import { Control, useController } from "react-hook-form";
 import slugify from "slugify";
 
-import { Product } from "@prisma/client";
+import { Product } from "@/prisma/generated/client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";

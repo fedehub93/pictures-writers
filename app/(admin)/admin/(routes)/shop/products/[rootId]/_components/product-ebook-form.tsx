@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { Control, useController } from "react-hook-form";
 
-import { User } from "@prisma/client";
+import { User } from "@/prisma/generated/client";
 
 import {
   FormControl,

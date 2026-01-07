@@ -1,4 +1,4 @@
-import { ProductType } from "@prisma/client";
+import { ProductType } from "@/prisma/generated/client";
 import { db } from "./db";
 
 export async function handleFormSubmitted() {

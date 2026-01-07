@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { ProductType, UserRole } from "@prisma/client";
+import { ProductType, UserRole } from "@/prisma/generated/client";
 
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";

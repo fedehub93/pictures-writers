@@ -1,6 +1,6 @@
 "use client";
 
-import { ContentStatus } from "@prisma/client";
+import { ContentStatus } from "@/prisma/generated/client";
 import * as z from "zod";
 import { useState } from "react";
 import { useController, useForm } from "react-hook-form";

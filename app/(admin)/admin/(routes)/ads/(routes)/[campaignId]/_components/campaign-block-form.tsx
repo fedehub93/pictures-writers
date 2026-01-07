@@ -7,7 +7,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { Grip, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 
-import { AdBlock } from "@prisma/client";
+import { AdBlock } from "@/prisma/generated/client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

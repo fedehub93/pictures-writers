@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { ContentStatus, ProductType } from "@prisma/client";
+import { ContentStatus, ProductType } from "@/prisma/generated/client";
 
 import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
 import { Breadcrumbs } from "@/app/(home)/_components/breadcrumbs";

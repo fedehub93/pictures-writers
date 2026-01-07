@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { Editor, useEditorState } from "@tiptap/react";
 
-import { Media } from "@prisma/client";
+import { Media } from "@/prisma/generated/client";
 
 import { Separator } from "@/components/ui/separator";
 import {

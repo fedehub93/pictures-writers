@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { CalendarDays, Euro, Sofa } from "lucide-react";
 
-import { ProductAcquisitionMode } from "@prisma/client";
+import { ProductAcquisitionMode } from "@/prisma/generated/client";
 
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";

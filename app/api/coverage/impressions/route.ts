@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { UTApi } from "uploadthing/server";
-import { MediaType } from "@prisma/client";
+import { MediaType } from "@/prisma/generated/client";
 
 import { db } from "@/lib/db";
 import { createContactByEmail } from "@/data/email-contact";

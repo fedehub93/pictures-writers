@@ -1,6 +1,11 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@/prisma/generated/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 
-const getPrisma = () => new PrismaClient();
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL,
+});
+
+const getPrisma = () => new PrismaClient({ adapter });
 
 const globalForCmsPrisma = global as unknown as {
   cmsPrisma: ReturnType<typeof getPrisma>;

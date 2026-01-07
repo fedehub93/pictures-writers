@@ -6,7 +6,7 @@ import {
   Droppable,
   DropResult,
 } from "@hello-pangea/dnd";
-import { WidgetSection } from "@prisma/client";
+import { WidgetSection } from "@/prisma/generated/client";
 import axios from "axios";
 import { Grip } from "lucide-react";
 

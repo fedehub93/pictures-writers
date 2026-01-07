@@ -9,7 +9,7 @@ import { Grip, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { Control, useWatch } from "react-hook-form";
 
-import { AdItem, AdLayoutType } from "@prisma/client";
+import { AdItem, AdLayoutType } from "@/prisma/generated/client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

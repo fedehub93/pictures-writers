@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 
-import { Tag } from "@prisma/client";
+import { Tag } from "@/prisma/generated/client";
 
 const fetchTags = async () => {
   const response = await axios.get("/api/admin/tags");

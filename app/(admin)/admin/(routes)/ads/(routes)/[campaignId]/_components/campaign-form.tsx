@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { redirect, useRouter } from "next/navigation";
-import { AdBlock, AdCampaign } from "@prisma/client";
+import { AdBlock, AdCampaign } from "@/prisma/generated/client";
 
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";

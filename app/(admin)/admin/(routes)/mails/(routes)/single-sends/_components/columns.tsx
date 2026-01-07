@@ -1,6 +1,6 @@
 "use client";
 
-import { EmailSingleSend } from "@prisma/client";
+import { EmailSingleSend } from "@/prisma/generated/client";
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal, Pencil, Trash2 } from "lucide-react";

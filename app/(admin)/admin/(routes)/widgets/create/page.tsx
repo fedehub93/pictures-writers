@@ -26,7 +26,7 @@ import {
   Tags,
 } from "lucide-react";
 
-import { WidgetSection, WidgetType } from "@prisma/client";
+import { WidgetSection, WidgetType } from "@/prisma/generated/client";
 
 import { Button } from "@/components/ui/button";
 import {

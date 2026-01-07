@@ -1,6 +1,6 @@
 "use client";
 
-import { Media } from "@prisma/client";
+import { Media } from "@/prisma/generated/client";
 import {
   AlignCenter,
   AlignLeft,

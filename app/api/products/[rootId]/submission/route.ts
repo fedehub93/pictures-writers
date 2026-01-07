@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ProductAcquisitionMode } from "@prisma/client";
+import { ProductAcquisitionMode } from "@/prisma/generated/client";
 
 import { db } from "@/lib/db";
 import { getPublishedProductByRootId } from "@/data/product";

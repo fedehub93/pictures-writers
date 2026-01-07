@@ -1,6 +1,6 @@
 "use client";
 
-import { User } from "@prisma/client";
+import { User } from "@/prisma/generated/client";
 
 import { Actions } from "./actions";
 import { MobileSidebar } from "../sidebar/mobile-sidebar";

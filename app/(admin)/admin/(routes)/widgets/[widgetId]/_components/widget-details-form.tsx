@@ -3,7 +3,7 @@
 import * as z from "zod";
 import { Control } from "react-hook-form";
 
-import { Widget } from "@prisma/client";
+import { Widget } from "@/prisma/generated/client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {

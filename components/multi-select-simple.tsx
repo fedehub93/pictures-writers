@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Check, PlusCircle } from "lucide-react";
 
-import { ContentStatus } from "@prisma/client";
+import { ContentStatus } from "@/prisma/generated/client";
 import {
   Popover,
   PopoverContent,

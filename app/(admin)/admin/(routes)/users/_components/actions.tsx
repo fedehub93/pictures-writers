@@ -1,6 +1,6 @@
 "use client";
 
-import { UserRole } from "@prisma/client";
+import { UserRole } from "@/prisma/generated/client";
 
 import {
   DropdownMenuContent,
