@@ -12,7 +12,7 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 
-import { Language } from "@prisma/client";
+import { Language } from "@/prisma/generated/client";
 import { SlugInput } from "@/components/form-component/slug-input";
 import { GenericInput } from "@/components/form-component/generic-input";
 import { GenericSwitch } from "@/components/form-component/generic-switch";

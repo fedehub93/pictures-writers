@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { ComboboxDemo } from "@/components/combo-box";
-import { EmailTemplate } from "@prisma/client";
+import { EmailTemplate } from "@/prisma/generated/client";
 
 interface SingleSendCreateFormProps {
   templates: EmailTemplate[];

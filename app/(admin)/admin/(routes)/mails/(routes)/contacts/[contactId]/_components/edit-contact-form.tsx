@@ -10,7 +10,7 @@ import {
   EmailAudience,
   EmailContact,
   EmailContactInteraction,
-} from "@prisma/client";
+} from "@/prisma/generated/client";
 
 import { Button } from "@/components/ui/button";
 import {

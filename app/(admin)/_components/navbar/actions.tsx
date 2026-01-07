@@ -1,5 +1,5 @@
 "use client";
-import { User } from "@prisma/client";
+import { User } from "@/prisma/generated/client";
 
 import axios from "axios";
 import toast from "react-hot-toast";

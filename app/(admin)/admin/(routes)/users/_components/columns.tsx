@@ -1,6 +1,6 @@
 "use client";
 
-import { Media, User, UserRole } from "@prisma/client";
+import { Media, User, UserRole } from "@/prisma/generated/client";
 import Image from "next/image";
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";

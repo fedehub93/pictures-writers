@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { useDebounceCallback } from "usehooks-ts";
 
-import { ContentStatus, Post, User } from "@prisma/client";
+import { ContentStatus, Post, User } from "@/prisma/generated/client";
 import {
   Form,
   FormControl,

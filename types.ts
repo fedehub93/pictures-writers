@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { CustomElement } from "./app/(admin)/_components/editor";
+import { HTMLContent, JSONContent } from "@tiptap/core";
 import {
   Media,
   Product,
@@ -9,8 +10,7 @@ import {
   SocialChannel,
   SocialKey,
   WidgetType,
-} from "@prisma/client";
-import { HTMLContent, JSONContent } from "@tiptap/core";
+} from "@/prisma/generated/client";
 
 export type TiptapContent = HTMLContent | JSONContent | JSONContent[] | null;
 

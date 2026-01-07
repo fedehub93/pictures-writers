@@ -1,4 +1,4 @@
-import { Seo } from "@prisma/client";
+import { Seo } from "@/prisma/generated/client";
 
 import { NoIndexForm } from "./no-index-form";
 import { NoFollowForm } from "./no-follow-form";

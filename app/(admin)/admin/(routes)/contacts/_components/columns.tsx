@@ -8,7 +8,7 @@ import {
   Impression,
   Media,
   Post,
-} from "@prisma/client";
+} from "@/prisma/generated/client";
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, Download, MoreHorizontal, Pencil } from "lucide-react";

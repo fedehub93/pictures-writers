@@ -1,6 +1,6 @@
 "use client";
 
-import { EmailTemplate, Media, Post } from "@prisma/client";
+import { EmailTemplate, Media, Post } from "@/prisma/generated/client";
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal, Pencil } from "lucide-react";

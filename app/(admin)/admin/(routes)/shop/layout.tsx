@@ -1,5 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
-import { UserRole } from "@prisma/client";
+import { UserRole } from "@/prisma/generated/client";
 
 import { getSelf } from "@/lib/current-user";
 

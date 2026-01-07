@@ -1,5 +1,5 @@
 import { auth } from "@clerk/nextjs/server";
-import { UserRole } from "@prisma/client";
+import { UserRole } from "@/prisma/generated/client";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";

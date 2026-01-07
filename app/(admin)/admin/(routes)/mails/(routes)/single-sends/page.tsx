@@ -6,7 +6,7 @@ import { authAdmin } from "@/lib/auth-service";
 import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
 import { DataTable } from "./_components/data-table";
 import { columns } from "./_components/columns";
-import { EmailAudience, EmailSingleSend } from "@prisma/client";
+import { EmailAudience, EmailSingleSend } from "@/prisma/generated/client";
 
 type CustomeEmailAudience = { _count: { contacts: number } };
 

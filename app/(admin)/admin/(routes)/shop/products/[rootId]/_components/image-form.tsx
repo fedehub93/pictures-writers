@@ -10,7 +10,7 @@ import { Control, useController } from "react-hook-form";
 
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 
-import { Media } from "@prisma/client";
+import { Media } from "@/prisma/generated/client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

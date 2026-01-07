@@ -1,5 +1,5 @@
 "use client";
-import { Media, Product } from "@prisma/client";
+import { Media, Product } from "@/prisma/generated/client";
 import Image from "next/image";
 import { File, Loader2 } from "lucide-react";
 import { useDebounceValue } from "usehooks-ts";

@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 import { redirect, useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { AdBlock, AdItem } from "@prisma/client";
+import { AdBlock, AdItem } from "@/prisma/generated/client";
 
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";

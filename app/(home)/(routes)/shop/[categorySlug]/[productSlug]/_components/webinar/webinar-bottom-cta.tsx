@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 
-import { ProductAcquisitionMode } from "@prisma/client";
+import { ProductAcquisitionMode } from "@/prisma/generated/client";
 import { Route } from "next";
 
 interface WebinarBottomCtaProps {

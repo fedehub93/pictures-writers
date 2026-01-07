@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { Notification } from "@prisma/client";
+import { Notification } from "@/prisma/generated/client";
 
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";

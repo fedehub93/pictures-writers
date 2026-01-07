@@ -11,7 +11,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
-import { ContentStatus } from "@prisma/client";
+import { ContentStatus } from "@/prisma/generated/client";
 
 import {
   Form,

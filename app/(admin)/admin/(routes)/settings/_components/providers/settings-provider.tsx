@@ -1,6 +1,6 @@
 "use client";
 
-import { Seo, Settings, SocialChannel, Language } from "@prisma/client";
+import { Seo, Settings, SocialChannel, Language } from "@/prisma/generated/client";
 import { createContext, useContext } from "react";
 
 type SettingsWithSeoWithSocialsLanguages = Settings & {

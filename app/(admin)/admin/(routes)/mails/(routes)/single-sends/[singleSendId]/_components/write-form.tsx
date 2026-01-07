@@ -1,7 +1,7 @@
 "use client";
 
 import * as z from "zod";
-import { EmailAudience, EmailSingleSend, EmailTemplate } from "@prisma/client";
+import { EmailAudience, EmailSingleSend, EmailTemplate } from "@/prisma/generated/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useController, useForm } from "react-hook-form";
 import axios from "axios";

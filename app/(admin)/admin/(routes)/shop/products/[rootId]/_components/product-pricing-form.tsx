@@ -2,7 +2,7 @@
 
 import { Control, useController } from "react-hook-form";
 
-import { ProductAcquisitionMode } from "@prisma/client";
+import { ProductAcquisitionMode } from "@/prisma/generated/client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 

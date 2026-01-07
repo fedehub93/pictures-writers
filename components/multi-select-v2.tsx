@@ -20,7 +20,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 
 import { cn } from "@/lib/utils";
-import { ContentStatus } from "@prisma/client";
+import { ContentStatus } from "@/prisma/generated/client";
 
 interface MultiSelectV2Props {
   label: string;

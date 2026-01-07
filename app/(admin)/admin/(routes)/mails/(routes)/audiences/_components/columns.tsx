@@ -1,6 +1,6 @@
 "use client";
 
-import { AudienceType, EmailAudience } from "@prisma/client";
+import { AudienceType, EmailAudience } from "@/prisma/generated/client";
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, Eye, MoreHorizontal, Pencil } from "lucide-react";

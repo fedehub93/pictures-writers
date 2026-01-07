@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { EditorType } from "@prisma/client";
+import { EditorType } from "@/prisma/generated/client";
 
 import { getAdBlocks } from "@/data/ad-blocks";
 

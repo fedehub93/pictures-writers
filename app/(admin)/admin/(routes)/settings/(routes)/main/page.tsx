@@ -8,7 +8,7 @@ import axios from "axios";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
-import { Settings } from "@prisma/client";
+import { Settings } from "@/prisma/generated/client";
 
 import { Button } from "@/components/ui/button";
 import {

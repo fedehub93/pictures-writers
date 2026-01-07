@@ -1,4 +1,4 @@
-import { ContentStatus, Product, ProductType } from "@prisma/client";
+import { ContentStatus, Product, ProductType } from "@/prisma/generated/client";
 
 import { db } from "@/lib/db";
 import { isEbookMetadata } from "@/type-guards";

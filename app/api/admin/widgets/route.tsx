@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { WidgetSection, WidgetType } from "@prisma/client";
+import { WidgetSection, WidgetType } from "@/prisma/generated/client";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";

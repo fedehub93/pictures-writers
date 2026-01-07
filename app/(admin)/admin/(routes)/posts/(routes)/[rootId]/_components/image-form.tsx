@@ -1,5 +1,5 @@
 "use client";
-import { ContentStatus, Media, Post } from "@prisma/client";
+import { ContentStatus, Media, Post } from "@/prisma/generated/client";
 
 import * as z from "zod";
 import toast from "react-hot-toast";

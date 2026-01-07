@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ProductType } from "@prisma/client";
+import { ProductType } from "@/prisma/generated/client";
 import {
   CalendarDays,
   CalendarOff,

@@ -1,37 +1,8 @@
-import { SocialChannel, SocialEntityType, SocialKey } from "@prisma/client";
+import { SocialChannel, SocialEntityType } from "@/prisma/generated/client";
 
 import { db } from "@/lib/db";
 import { SettingsWithScriptsAndSocials } from "@/types";
-
-export const DEFAULT_SOCIAL_CHANNEL_VALUES: {
-  key: SocialKey;
-  url: string;
-}[] = [
-  {
-    key: SocialKey.FACEBOOK,
-    url: "",
-  },
-  {
-    key: SocialKey.INSTAGRAM,
-    url: "",
-  },
-  {
-    key: SocialKey.LINKEDIN,
-    url: "",
-  },
-  {
-    key: SocialKey.TWITTER,
-    url: "",
-  },
-  {
-    key: SocialKey.PINTEREST,
-    url: "",
-  },
-  {
-    key: SocialKey.YOUTUBE,
-    url: "",
-  },
-];
+import { DEFAULT_SOCIAL_CHANNEL_VALUES } from "@/constants";
 
 export const getSettings = async () => {
   const settings = await db.settings.findFirst({

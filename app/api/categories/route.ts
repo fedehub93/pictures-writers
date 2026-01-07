@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
 import { createCategorySeo } from "@/lib/seo";
-import { ContentStatus } from "@prisma/client";
+import { ContentStatus } from "@/prisma/generated/client";
 
 export async function POST(req: Request) {
   try {

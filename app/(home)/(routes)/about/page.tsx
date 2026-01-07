@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import Image from "next/image";
 import { SocialIcon } from "react-social-icons";
-import { UserRole } from "@prisma/client";
+import { UserRole } from "@/prisma/generated/client";
 import { db } from "@/lib/db";
 import { Separator } from "@/components/ui/separator";
 import { getHeadMetadata } from "../../_components/seo/head-metadata";

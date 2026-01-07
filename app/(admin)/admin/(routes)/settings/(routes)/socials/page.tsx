@@ -9,7 +9,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { SocialIcon } from "react-social-icons";
 
-import { SocialKey } from "@prisma/client";
+import { SocialKey } from "@/prisma/generated/client";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -23,8 +23,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { useSettings } from "../../_components/providers/settings-provider";
-import { DEFAULT_SOCIAL_CHANNEL_VALUES } from "@/data/settings";
 import { getFirstCharUppercase } from "@/lib/utils";
+import { DEFAULT_SOCIAL_CHANNEL_VALUES } from "@/constants";
 
 const SocialKeyZ = z.enum([
   SocialKey.FACEBOOK,

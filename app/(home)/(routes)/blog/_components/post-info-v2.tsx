@@ -1,6 +1,6 @@
 import { getCategoriesString } from "@/data/category";
 import { getAuthorsString } from "@/data/user";
-import { User } from "@prisma/client";
+import { User } from "@/prisma/generated/client";
 import { formatDistance } from "date-fns";
 import { it } from "date-fns/locale";
 

@@ -1,4 +1,4 @@
-import { ContentStatus, Prisma, WidgetType } from "@prisma/client";
+import { ContentStatus, Prisma, WidgetType } from "@/prisma/generated/client";
 
 import { db } from "@/lib/db";
 import {
@@ -17,9 +17,10 @@ import {
   WidgetTagMetadata,
   WidgetProductPopActionType,
 } from "@/types";
+import { DEFAULT_SOCIAL_CHANNEL_VALUES } from "@/constants";
 import { isEbookMetadata, isWebinarMetadata } from "@/type-guards";
 
-import { DEFAULT_SOCIAL_CHANNEL_VALUES, getSettings } from "./settings";
+import { getSettings } from "./settings";
 import { getPurchasedWebinar } from "./webinars";
 
 export const setDefaultWidgetProductPopMetadata =

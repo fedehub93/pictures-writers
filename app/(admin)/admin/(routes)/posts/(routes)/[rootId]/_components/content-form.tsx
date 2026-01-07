@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { Descendant } from "slate";
 import { useDebouncedCallback } from "use-debounce";
 
-import { ContentStatus, EditorType } from "@prisma/client";
+import { ContentStatus, EditorType } from "@/prisma/generated/client";
 
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import {

@@ -1,4 +1,4 @@
-import { Media, Post } from "@prisma/client";
+import { Media, Post } from "@/prisma/generated/client";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 

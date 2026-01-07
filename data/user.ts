@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { User } from "@prisma/client";
+import { User } from "@/prisma/generated/client";
 
 export const getUserByEmail = async (email: string) => {
   try {

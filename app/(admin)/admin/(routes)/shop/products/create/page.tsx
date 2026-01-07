@@ -15,7 +15,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import slugify from "slugify";
-import { ProductType } from "@prisma/client";
+import { ProductType } from "@/prisma/generated/client";
 
 import { Button } from "@/components/ui/button";
 import {

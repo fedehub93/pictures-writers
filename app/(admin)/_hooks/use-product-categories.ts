@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Category } from "@prisma/client";
+import { Category } from "@/prisma/generated/client";
 import { useQuery } from "@tanstack/react-query";
 
 const fetchProductCategories = async () => {

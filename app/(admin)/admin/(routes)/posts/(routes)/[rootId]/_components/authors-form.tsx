@@ -8,7 +8,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
-import { ContentStatus, User } from "@prisma/client";
+import { ContentStatus, User } from "@/prisma/generated/client";
 import {
   Form,
   FormControl,
