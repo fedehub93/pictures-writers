@@ -69,7 +69,7 @@ export const Footer = (): JSX.Element => (
       </div>
     </div>
     <div className="footer__copyright">
-      © 2022 Federico Verrengia. All Right Reserved.&nbsp;
+      © 2022-2026 Federico Verrengia. All Right Reserved.&nbsp;P.IVA: 02126780473
       <a className="text-foreground-primary" href="https://storyset.com/people">
         People illustrations by Storyset
       </a>
