@@ -86,24 +86,26 @@
   --sidebar-accent-foreground: oklch(0.325 0 0);
   --sidebar-border: oklch(0.9401 0 0);
   --sidebar-ring: oklch(0.7731 0 0);
-  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    "Liberation Mono", "Courier New", monospace;
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
   --radius: 0.5rem;
   --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
   --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-  --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.1),
-    0 1px 2px -1px hsl(0 0% 0% / 0.1);
+  --shadow-sm:
+    0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
   --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
-  --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.1),
-    0 2px 4px -1px hsl(0 0% 0% / 0.1);
-  --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.1),
-    0 4px 6px -1px hsl(0 0% 0% / 0.1);
-  --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1),
-    0 8px 10px -1px hsl(0 0% 0% / 0.1);
+  --shadow-md:
+    0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.1);
+  --shadow-lg:
+    0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
+  --shadow-xl:
+    0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
   --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
@@ -142,24 +144,26 @@
   --sidebar-accent-foreground: oklch(0.8074 0.0142 93.0137);
   --sidebar-border: oklch(0.9401 0 0);
   --sidebar-ring: oklch(0.7731 0 0);
-  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    "Liberation Mono", "Courier New", monospace;
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
   --radius: 0.5rem;
   --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
   --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
-  --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.1),
-    0 1px 2px -1px hsl(0 0% 0% / 0.1);
+  --shadow-sm:
+    0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
   --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
-  --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.1),
-    0 2px 4px -1px hsl(0 0% 0% / 0.1);
-  --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.1),
-    0 4px 6px -1px hsl(0 0% 0% / 0.1);
-  --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1),
-    0 8px 10px -1px hsl(0 0% 0% / 0.1);
+  --shadow-md:
+    0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.1);
+  --shadow-lg:
+    0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
+  --shadow-xl:
+    0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
   --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
 }
 
@@ -215,69 +219,6 @@
   --shadow-xl: var(--shadow-xl);
   --shadow-2xl: var(--shadow-2xl);
 }
-
-/* @theme {
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
-  --color-primary-public: hsl(var(--primary-public));
-
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
-
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
-
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
-
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
-
-  --color-sidebar: hsl(var(--sidebar-background));
-  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
-  --color-sidebar-primary: hsl(var(--sidebar-primary));
-  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
-  --color-sidebar-accent: hsl(var(--sidebar-accent));
-  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
-  --color-sidebar-border: hsl(var(--sidebar-border));
-  --color-sidebar-ring: hsl(var(--sidebar-ring));
-
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-sm: calc(var(--radius) - 4px);
-
-  --animate-accordion-down: accordion-down 0.2s ease-out;
-  --animate-accordion-up: accordion-up 0.2s ease-out;
-
-  @keyframes accordion-down {
-    from {
-      height: 0;
-    }
-    to {
-      height: var(--radix-accordion-content-height);
-    }
-  }
-  @keyframes accordion-up {
-    from {
-      height: var(--radix-accordion-content-height);
-    }
-    to {
-      height: 0;
-    }
-  }
-} */
 
 @utility container {
   margin-inline: auto;
@@ -337,46 +278,6 @@
   & .blog-post__sidebar {
     @apply col-span-1 sm:col-span-2 lg:block xl:col-span-2 xl:px-3;
   }
-}
-
-@utility blog-post__post {
-  .blog-post & {
-    @apply col-span-1 mb-8 flex flex-col max-w-full sm:col-span-2 xl:col-span-4 xl:mb-0;
-  }
-}
-
-@utility blog-post__article {
-  .blog-post & {
-    @apply mb-4 max-w-full xl:px-0;
-  }
-}
-
-@utility blog-post__image-container {
-  .blog-post & {
-    @apply relative mb-8 w-full aspect-video;
-  }
-}
-
-@utility blog-post__image {
-  .blog-post & {
-    @apply object-cover;
-  }
-}
-
-@utility blog-post__title {
-  .blog-post & {
-    @apply mb-6 text-3xl font-extrabold uppercase;
-  }
-}
-
-@utility blog-post__sidebar {
-  .blog-post & {
-    @apply col-span-1 sm:col-span-2 lg:block xl:col-span-2 xl:px-3;
-  }
-}
-
-@utility blog-post-disqus {
-  @apply mb-8 w-full transition-all delay-1000;
 }
 
 @utility post {
@@ -469,18 +370,6 @@
   }
 }
 
-@utility snippet__title {
-  .snippet & {
-    @apply mb-2 text-center text-2xl font-extrabold uppercase;
-  }
-}
-
-@utility snippet__sponsor {
-  .snippet & {
-    @apply absolute left-2 top-2 text-sm font-extrabold uppercase text-primary!;
-  }
-}
-
 @utility evidence {
   @apply mt-2 rounded-md bg-accent p-1 font-bold text-primary;
 }
@@ -509,42 +398,6 @@
   }
 
   & .newsletter__form-button {
-    @apply rounded-lg bg-green-600 px-4 py-3 text-sm uppercase tracking-wider text-primary-foreground transition-all duration-300 hover:scale-110 hover:shadow-xl;
-  }
-}
-
-@utility newsletter__success {
-  .newsletter & {
-    @apply flex flex-col gap-y-4 text-xs text-neutral-600 sm:text-base;
-  }
-}
-
-@utility newsletter__error {
-  .newsletter & {
-    @apply flex flex-col gap-y-4 text-xs text-neutral-600 sm:text-base;
-  }
-}
-
-@utility newsletter__box {
-  .newsletter & {
-    @apply text-base font-semibold text-neutral-600;
-  }
-}
-
-@utility newsletter__form {
-  .newsletter & {
-    @apply flex w-full flex-col items-center gap-y-8 md:flex-row;
-  }
-}
-
-@utility newsletter__form-email {
-  .newsletter & {
-    @apply mb-1 mr-4 mt-0 block w-full appearance-none border-0 border-b-2 border-black bg-transparent px-0 pb-2 pt-3 text-base focus:border-primary focus:outline-hidden focus:ring-0 md:w-full;
-  }
-}
-
-@utility newsletter__form-button {
-  .newsletter & {
     @apply rounded-lg bg-green-600 px-4 py-3 text-sm uppercase tracking-wider text-primary-foreground transition-all duration-300 hover:scale-110 hover:shadow-xl;
   }
 }
@@ -583,54 +436,6 @@
   }
 }
 
-@utility p-newsletter__close {
-  .p-newsletter & {
-    @apply absolute right-4 top-4 cursor-pointer;
-  }
-}
-
-@utility p-newsletter__title {
-  .p-newsletter & {
-    @apply mb-2 text-center text-2xl font-extrabold uppercase;
-  }
-}
-
-@utility p-newsletter__success {
-  .p-newsletter & {
-    @apply flex flex-col gap-y-4 text-xs text-neutral-600 sm:text-base;
-  }
-}
-
-@utility p-newsletter__error {
-  .p-newsletter & {
-    @apply flex flex-col gap-y-4 text-xs text-neutral-600 sm:text-base;
-  }
-}
-
-@utility p-newsletter__box {
-  .p-newsletter & {
-    @apply mb-4 text-base font-semibold text-neutral-600;
-  }
-}
-
-@utility p-newsletter__form {
-  .p-newsletter & {
-    @apply flex w-full items-center;
-  }
-}
-
-@utility p-newsletter__form-email {
-  .p-newsletter & {
-    @apply mb-1 mr-4 mt-0 block w-full appearance-none border-0 border-b-2 border-black bg-transparent px-0 pb-2 pt-3 text-base focus:border-primary focus:outline-hidden focus:ring-0 md:w-full;
-  }
-}
-
-@utility p-newsletter__form-button {
-  .p-newsletter & {
-    @apply rounded-lg bg-green-600 px-4 py-3 text-sm uppercase tracking-wider text-primary-foreground transition-all duration-300 hover:scale-110 hover:shadow-xl;
-  }
-}
-
 @utility author {
   /**
     Author Widget
@@ -650,32 +455,14 @@
   }
 }
 
-@utility author__image {
-  .author & {
-    @apply my-auto w-48 rounded-full border-4 border-neutral-200 grayscale;
-  }
-}
-
-@utility author__bio {
-  .author & {
-    @apply static flex text-justify text-xs text-gray-600 sm:text-sm lg:text-sm;
-  }
-}
-
-@utility author__social {
-  .author & {
-    @apply bottom-0 right-0 inline-flex self-start sm:absolute;
-  }
-}
-
 @utility footer {
   /**
     Footer
   */
-  @apply bg-gray-800 pt-8 text-primary-foreground;
+  @apply bg-gray-800 pt-8 pb-2 text-primary-foreground;
 
   & .footer__container {
-    @apply mx-auto flex max-w-lg flex-col items-center justify-between gap-x-12 gap-y-12 px-4 text-center md:max-w-6xl md:flex-row md:items-start md:text-left lg:my-12;
+    @apply mx-auto flex max-w-lg flex-col items-center justify-between gap-x-12 gap-y-12 px-4 text-center md:max-w-6xl md:flex-row md:items-start md:text-left lg:my-8;
   }
 
   & .footer__mission-container {
@@ -703,55 +490,7 @@
   }
 
   & .footer__copyright {
-    @apply flex h-14 flex-col items-center justify-center md:flex-row;
-  }
-}
-
-@utility footer__container {
-  .footer & {
-    @apply mx-auto flex max-w-lg flex-col items-center justify-between gap-x-12 gap-y-12 px-4 text-center md:max-w-6xl md:flex-row md:items-start md:text-left lg:my-12;
-  }
-}
-
-@utility footer__mission-container {
-  .footer & {
-    @apply mb-4 w-full max-w-xs md:mb-0;
-  }
-}
-
-@utility footer__mission-logo {
-  .footer & {
-    @apply mb-4 w-full max-w-xs md:mb-0 text-xl font-bold uppercase;
-  }
-}
-
-@utility footer__menu {
-  .footer & {
-    @apply grid grid-cols-1 gap-x-20 gap-y-12 md:grid-cols-3;
-  }
-}
-
-@utility footer__menu-container {
-  .footer & {
-    @apply mb-4 w-full md:mb-0;
-  }
-}
-
-@utility footer__menu-title {
-  .footer & {
-    @apply mb-5 text-xl font-bold uppercase text-primary-foreground;
-  }
-}
-
-@utility footer__menu-list {
-  .footer & {
-    @apply mt-2 [&>li]:mb-3 [&>li]:transition-all [&>li]:duration-500 [&>li]:hover:translate-x-2 [&>li]:hover:text-primary-foreground;
-  }
-}
-
-@utility footer__copyright {
-  .footer & {
-    @apply flex h-14 flex-col items-center justify-center md:flex-row;
+    @apply flex flex-col items-center justify-center text-sm px-4 py-2 text-center gap-y-1;
   }
 }
 
