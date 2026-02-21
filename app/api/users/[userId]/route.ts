@@ -11,9 +11,9 @@ export async function GET(
   try {
     const { userId } = params;
 
-    const user = await db.user.findFirst({
+    const user = await db.user.findUnique({
       where: {
-        externalUserId: userId,
+        id: userId,
       },
     });
 
