@@ -1,6 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
-
-import { authAdmin } from "@/lib/auth-service";
+import { requireAdminAuth } from "@/lib/auth-utils";
 
 import { getPostsGroupedByRootId } from "@/data/post";
 
@@ -10,10 +8,7 @@ import { DataTable } from "./_components/data-table";
 import { columns } from "./_components/columns";
 
 const PostsPage = async () => {
-  const userAdmin = await authAdmin();
-  if (!userAdmin) {
-    return (await auth()).redirectToSignIn();
-  }
+  await requireAdminAuth();
 
   const posts = await getPostsGroupedByRootId();
 

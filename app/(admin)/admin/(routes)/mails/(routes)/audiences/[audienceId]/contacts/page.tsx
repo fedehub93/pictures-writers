@@ -1,22 +1,17 @@
-import { authAdmin } from "@/lib/auth-service";
-import { auth } from "@clerk/nextjs/server";
-
 import { db } from "@/lib/db";
+import { requireAdminAuth } from "@/lib/auth-utils";
+
 import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
 
 import { DataTable } from "./_components/data-table";
 import { columns } from "./_components/columns";
 
-const AudienceIdContactsPage = async (
-  props: {
-    params: Promise<{ audienceId: string }>;
-  }
-) => {
+const AudienceIdContactsPage = async (props: {
+  params: Promise<{ audienceId: string }>;
+}) => {
+  await requireAdminAuth();
+
   const params = await props.params;
-  const userAdmin = await authAdmin();
-  if (!userAdmin) {
-    return (await auth()).redirectToSignIn();
-  }
 
   const contacts = await db.emailContact.findMany({
     where: {

@@ -1,18 +1,14 @@
-import { auth } from "@clerk/nextjs/server";
-
 import { db } from "@/lib/db";
-import { authAdmin } from "@/lib/auth-service";
-import { getEmailsSentToday, getTodayEmailsAvailable } from "@/lib/mail";
+import { requireAdminAuth } from "@/lib/auth-utils";
+
+import { getEmailsSentToday } from "@/lib/mail";
 
 import { EmailSettingsForm } from "./_components/email-settings-form";
 import { EmailTesterForm } from "./_components/email-tester-form";
 import { EmailSubscriptionForm } from "./_components/email-subscription-form";
 
 const MailSettings = async () => {
-  const userAdmin = await authAdmin();
-  if (!userAdmin) {
-    return (await auth()).redirectToSignIn();
-  }
+  await requireAdminAuth();
 
   const settings = await db.emailSetting.findFirst();
 

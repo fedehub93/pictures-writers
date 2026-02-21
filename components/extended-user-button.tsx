@@ -1,4 +1,3 @@
-import { SignOutButton } from "@clerk/nextjs";
 import { LogOut, Settings } from "lucide-react";
 
 import {
@@ -10,8 +9,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { UserAvatar } from "@/components/user-avatar";
 import { Button } from "@/components/ui/button";
+
+import { authClient } from "@/lib/auth-client";
+import { UserAvatar } from "@/components/user-avatar";
+import { useRouter } from "next/navigation";
 
 interface UserAvatarProps {
   email: string;
@@ -19,6 +21,7 @@ interface UserAvatarProps {
 }
 
 export const ExtendedUserButton = ({ email, imageUrl }: UserAvatarProps) => {
+  const router = useRouter();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -43,9 +46,19 @@ export const ExtendedUserButton = ({ email, imageUrl }: UserAvatarProps) => {
           <span>Settings</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => {
+            authClient.signOut({
+              fetchOptions: {
+                onSuccess: () => {
+                  router.push("/sign-in");
+                },
+              },
+            });
+          }}
+        >
           <LogOut className="mr-2 h-4 w-4" />
-          <SignOutButton>Log out</SignOutButton>
+          Logout
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

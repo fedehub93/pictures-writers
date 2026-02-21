@@ -1,5 +1,4 @@
 "use client";
-import { User } from "@/prisma/generated/client";
 
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -11,7 +10,15 @@ import { ModeToggle } from "@/components/mode-toggle";
 
 import { Notifications } from "./notifications";
 
-export const Actions = ({ user }: { user: User }) => {
+export const Actions = ({
+  user,
+}: {
+  user: {
+    id: string;
+    email: string;
+    imageUrl: string;
+  };
+}) => {
   const onBuildSite = async () => {
     try {
       await axios.post(`/api/admin/build`);

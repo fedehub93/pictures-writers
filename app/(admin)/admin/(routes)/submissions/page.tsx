@@ -1,18 +1,13 @@
-import { auth } from "@clerk/nextjs/server";
-
-import { authAdmin } from "@/lib/auth-service";
+import { requireAdminAuth } from "@/lib/auth-utils";
+import { getFormSubmissionsByFilters } from "@/data/form";
 
 import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
-import { getFormSubmissionsByFilters } from "@/data/form";
 
 import { DataTable } from "./_components/data-table";
 import { columns } from "./_components/column";
 
 const FormSubmissionsPage = async () => {
-  const userAdmin = await authAdmin();
-  if (!userAdmin) {
-    return (await auth()).redirectToSignIn();
-  }
+  await requireAdminAuth();
 
   const forms = await getFormSubmissionsByFilters({ where: {} });
 

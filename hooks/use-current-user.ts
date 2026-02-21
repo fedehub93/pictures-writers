@@ -1,11 +1,14 @@
+import { authClient } from "@/lib/auth-client";
 import { useEffect, useState } from "react";
-import { useUser } from "@clerk/clerk-react";
 
 const useCurrentUser = () => {
-  const { user, isLoaded, isSignedIn } = useUser();
+  const { data, isPending: isLoaded } = authClient.useSession();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const user = data?.user;
+  const isSignedIn = data?.user;
 
   useEffect(() => {
     const fetchCurrentUser = async () => {

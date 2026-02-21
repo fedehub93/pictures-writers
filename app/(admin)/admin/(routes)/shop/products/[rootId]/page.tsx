@@ -1,9 +1,8 @@
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { ProductType, UserRole } from "@/prisma/generated/client";
 
-import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
+import { requireAdminAuth } from "@/lib/auth-utils";
 
 import { API_ADMIN_PRODUCTS } from "@/constants/api";
 import { ProductForm } from "./_components/product-form";
@@ -11,11 +10,9 @@ import { ProductForm } from "./_components/product-form";
 const ProductIdPage = async (props: {
   params: Promise<{ rootId: string }>;
 }) => {
+  await requireAdminAuth();
+
   const params = await props.params;
-  const userAdmin = await authAdmin();
-  if (!userAdmin) {
-    return (await auth()).redirectToSignIn();
-  }
 
   const product = await db.product.findFirst({
     where: {

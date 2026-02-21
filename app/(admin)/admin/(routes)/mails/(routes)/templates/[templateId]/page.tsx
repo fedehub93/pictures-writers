@@ -1,20 +1,16 @@
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
 import { EmailEditorForm } from "./_components/email-editor-form";
+import { requireAdminAuth } from "@/lib/auth-utils";
 
-const EmailTemplateIdPage = async (
-  props: {
-    params: Promise<{ templateId: string }>;
-  }
-) => {
+const EmailTemplateIdPage = async (props: {
+  params: Promise<{ templateId: string }>;
+}) => {
+  await requireAdminAuth();
+  
   const params = await props.params;
-  const userAdmin = await authAdmin();
-  if (!userAdmin) {
-    return (await auth()).redirectToSignIn();
-  }
 
   const template = await db.emailTemplate.findUnique({
     where: {

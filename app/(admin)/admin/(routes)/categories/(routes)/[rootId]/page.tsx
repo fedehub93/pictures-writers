@@ -1,9 +1,9 @@
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
-import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+import { requireAdminAuth } from "@/lib/auth-utils";
 
 import { TitleForm } from "@/app/(admin)/_components/general-fields/title-form";
 import { SlugForm } from "@/app/(admin)/_components/general-fields/slug-form";
@@ -14,12 +14,12 @@ import { SeoContentTypeApi } from "@/app/(admin)/_components/seo/types";
 import { StatusView } from "@/app/(admin)/_components/content/status-view";
 import { ContentIdActions } from "@/app/(admin)/_components/content/content-id-actions";
 
-const CategoryIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
+const CategoryIdPage = async (props: {
+  params: Promise<{ rootId: string }>;
+}) => {
+  await requireAdminAuth();
+
   const params = await props.params;
-  const userAdmin = await authAdmin();
-  if (!userAdmin) {
-    return (await auth()).redirectToSignIn();
-  }
 
   const category = await db.category.findFirst({
     where: {

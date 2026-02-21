@@ -1,13 +1,8 @@
-import { auth } from "@clerk/nextjs/server";
-import { UserRole } from "@/prisma/generated/client";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { ClerkProvider } from "@clerk/nextjs";
 
 import "./admin.css";
 
-import { getSelf } from "@/lib/current-user";
-import { Sidebar } from "./_components/sidebar";
 import { Container } from "./_components/container";
 
 import { ThemeProvider } from "@/components/providers/theme-provider";
@@ -21,6 +16,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "./_components/sidebar-v2/app-sidebar";
 import { Header } from "./_components/header";
 import HolyLoader from "holy-loader";
+import { requireAdminAuth, requireAuth } from "@/lib/auth-utils";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -35,46 +31,32 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const user = await getSelf();
-
-  if (!user) {
-    return (await auth()).redirectToSignIn({
-      returnBackUrl: `${process.env.NEXT_PUBLIC_APP_URL}/admin`,
-    });
-  }
-
-  if (user.role === UserRole.USER) {
-    return (await auth()).redirectToSignIn({
-      returnBackUrl: `${process.env.NEXT_PUBLIC_APP_URL}/admin`,
-    });
-  }
+  const user = await requireAdminAuth();
 
   return (
-    <ClerkProvider>
-      <html lang="en" suppressHydrationWarning>
-        <HolyLoader  />
-        <body className={inter.className}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            disableTransitionOnChange
-          >
-            <ToastProvider />
-            <QueryProvider>
-              <SidebarProvider className="h-screen">
-                <AppSidebar />
-                <SidebarInset>
-                  <Header user={user} />
-                  <Container user={user}>{children}</Container>
-                </SidebarInset>
-                <ModalProvider />
-                <SheetProvider />
-                <ProgressLoader />
-              </SidebarProvider>
-            </QueryProvider>
-          </ThemeProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="en" suppressHydrationWarning>
+      <HolyLoader />
+      <body className={inter.className}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          disableTransitionOnChange
+        >
+          <ToastProvider />
+          <QueryProvider>
+            <SidebarProvider className="h-screen">
+              <AppSidebar />
+              <SidebarInset>
+                <Header user={user} />
+                <Container>{children}</Container>
+              </SidebarInset>
+              <ModalProvider />
+              <SheetProvider />
+              <ProgressLoader />
+            </SidebarProvider>
+          </QueryProvider>
+        </ThemeProvider>
+      </body>
+    </html>
   );
 }
