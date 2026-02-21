@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import { User } from "@/prisma/generated/client";
+import { User } from "@/generated/prisma";
 import { BlogPosting, WithContext } from "schema-dts";
 import { JsonLd } from "./json-ld";
 

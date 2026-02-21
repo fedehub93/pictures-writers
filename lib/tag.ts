@@ -1,4 +1,4 @@
-import { ContentStatus } from "@/prisma/generated/client";
+import { ContentStatus } from "@/generated/prisma";
 import { db } from "./db";
 
 export const getPublishedTagsBuilding = async () => {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import { ContentStatus } from "@/prisma/generated/client";
+import { ContentStatus } from "@/generated/prisma";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";

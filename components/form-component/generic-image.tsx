@@ -1,5 +1,5 @@
 "use client";
-import { Media } from "@/prisma/generated/client";
+import { Media } from "@/generated/prisma";
 
 import { useState } from "react";
 import toast from "react-hot-toast";

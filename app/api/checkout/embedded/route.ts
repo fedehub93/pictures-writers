@@ -2,7 +2,7 @@ import Stripe from "stripe";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
-import { ContentStatus } from "@/prisma/generated/client";
+import { ContentStatus } from "@/generated/prisma";
 
 export async function POST(req: Request) {
   const { productId } = await req.json();

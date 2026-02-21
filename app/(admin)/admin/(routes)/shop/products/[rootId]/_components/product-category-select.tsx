@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Control, useController } from "react-hook-form";
 
-import { ContentStatus, ProductCategory } from "@/prisma/generated/client";
+import { ContentStatus, ProductCategory } from "@/generated/prisma";
 
 import { cn } from "@/lib/utils";
 

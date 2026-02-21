@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { Descendant } from "slate";
 import { useDebouncedCallback } from "use-debounce";
 
-import { ContentStatus, EditorType } from "@/prisma/generated/client";
+import { ContentStatus, EditorType } from "@/generated/prisma";
 
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import {
@@ -128,7 +128,7 @@ export const ContentForm = ({ initialData, rootId, postId }: BodyFormProps) => {
                   form.handleSubmit(onSubmit)();
                 }}
               >
-                <SelectTrigger className="w-[120px]">
+                <SelectTrigger className="w-30">
                   <SelectValue placeholder="Editor" />
                 </SelectTrigger>
                 <SelectContent>

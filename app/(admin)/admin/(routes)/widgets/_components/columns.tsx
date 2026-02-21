@@ -1,6 +1,6 @@
 "use client";
 
-import { Widget } from "@/prisma/generated/client";
+import { Widget } from "@/generated/prisma";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, CheckCircle, CircleOff } from "lucide-react";
 

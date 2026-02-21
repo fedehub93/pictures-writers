@@ -22,7 +22,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ProductFormValues } from "@/schemas/product";
 
 import { useFormsQuery } from "@/app/(admin)/_hooks/use-forms-query";
-import { Form } from "@/prisma/generated/client";
+import { Form } from "@/generated/prisma";
 
 interface ProductFormsSelectProps {
   control: Control<ProductFormValues>;

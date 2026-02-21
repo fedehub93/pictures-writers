@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { User } from "@/prisma/generated/client";
+import { User } from "@/generated/prisma";
 
 import { getPlaceholderImage } from "@/lib/image";
 import { getAuthorsString } from "@/data/user";

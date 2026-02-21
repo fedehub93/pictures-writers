@@ -1,5 +1,5 @@
 "use client";
-import { Media, Product } from "@/prisma/generated/client";
+import { Media, Product } from "@/generated/prisma";
 import Image from "next/image";
 import { File, Loader2 } from "lucide-react";
 import { useDebounceValue } from "usehooks-ts";
@@ -68,7 +68,7 @@ export const SelectProductModal = () => {
             />
           </div>
         </DialogHeader>
-        <ScrollArea className=" max-h-[400px]">
+        <ScrollArea className=" max-h-100">
           {isOpen && status === "pending" ? (
             <div className="flex h-full flex-col flex-1 justify-center items-center py-8">
               <Loader2 className="h-7 w-7 text-zinc-500 animate-spin my-4" />
@@ -114,8 +114,8 @@ export const SelectProductModal = () => {
                 {isFetchingNextPage
                   ? "Loading more..."
                   : hasNextPage
-                  ? "Load More"
-                  : "Nothing more to load"}
+                    ? "Load More"
+                    : "Nothing more to load"}
               </Button>
             </div>
           )}

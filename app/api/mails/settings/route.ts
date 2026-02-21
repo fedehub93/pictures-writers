@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
-import { EmailProvider } from "@/prisma/generated/client";
+import { EmailProvider } from "@/generated/prisma";
 
 export async function PATCH(req: Request) {
   try {

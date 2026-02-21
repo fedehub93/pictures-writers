@@ -6,7 +6,7 @@ import { Control, useController } from "react-hook-form";
 import toast from "react-hot-toast";
 import { MoreHorizontal, Trash2 } from "lucide-react";
 
-import { Media } from "@/prisma/generated/client";
+import { Media } from "@/generated/prisma";
 
 import { Button } from "@/components/ui/button";
 import {

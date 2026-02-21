@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 
-import { EmailAudience } from "@/prisma/generated/client";
+import { EmailAudience } from "@/generated/prisma";
 
 const fetchLanguages = async () => {
   const response = await axios.get("/api/admin/languages");

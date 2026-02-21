@@ -1,0 +1,930 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+  output        = "../generated/prisma"
+}
+
+generator json {
+  provider = "prisma-json-types-generator"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Language {
+  id   String  @id @default(uuid())
+  code String  @unique
+  name String
+  slug String?
+
+  isActive  Boolean @default(true)
+  isDefault Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Settings {
+  id String @id @default(uuid())
+
+  siteName         String?
+  siteUrl          String?
+  deployWebhookUrl String?
+
+  logoUrl String?
+
+  /// [Scripts]
+  scripts Json @default("null") @db.JsonB
+
+  seo   Seo?    @relation(fields: [seoId], references: [id])
+  seoId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum WidgetSection {
+  HERO
+  MODAL_POPUP
+  POST_SIDEBAR
+  POST_BOTTOM
+}
+
+enum WidgetType {
+  SEARCH_BOX
+  POST
+  CATEGORY
+  TAG
+  PRODUCT
+  NEWSLETTER
+  AUTHOR
+  SOCIAL
+  PRODUCT_POP
+  NEWSLETTER_POP
+}
+
+model Widget {
+  id String @id @default(uuid())
+
+  name    String
+  section WidgetSection
+  type    WidgetType
+  sort    Int
+
+  isEnabled Boolean @default(false)
+
+  /// [WidgetMetadata]
+  metadata Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum UserRole {
+  USER
+  EDITOR
+  ADMIN
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+}
+
+model User {
+  id String @id @default(uuid())
+
+  name      String?
+  firstName String?
+  lastName  String?
+
+  password String?
+
+  email         String? @unique
+  emailVerified Boolean @default(false)
+
+  image String?
+
+  profileImage   Media?  @relation(fields: [profileImageId], references: [id], onDelete: Cascade)
+  profileImageId String?
+
+  accounts Account[]
+  sessions Session[]
+
+  bio      String?
+  imageUrl String?
+
+  role UserRole @default(USER)
+
+  posts         Post[]
+  postAuthors   PostAuthor[]
+  notifications Notification[]
+  products      Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id     String @id @default(cuid())
+  userId String @map("user_id")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  scope String?
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model PasswordResetToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+enum MediaType {
+  AUDIO
+  FILE
+  IMAGE
+  VIDEO
+}
+
+model Media {
+  id String @id @default(uuid())
+
+  name    String
+  key     String?
+  url     String    @unique @db.Text
+  size    Int?
+  type    MediaType @default(FILE)
+  altText String?
+
+  post       Post[]
+  seo        Seo[]
+  product    Product[]
+  impression Impression?
+  products   ProductGallery[]
+  user       User[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum ContentStatus {
+  DRAFT
+  CHANGED
+  PUBLISHED
+}
+
+model Seo {
+  id String @id @default(uuid())
+
+  title        String
+  description  String?
+  canonicalUrl String?
+
+  version Int
+
+  noIndex  Boolean @default(false)
+  noFollow Boolean @default(false)
+
+  ogTwitterType        String?
+  ogTwitterTitle       String?
+  ogTwitterDescription String?
+  ogTwitterImage       Media?  @relation(fields: [ogTwitterImageId], references: [id])
+  ogTwitterImageId     String?
+  ogTwitterLocale      String?
+  ogTwitterUrl         String?
+
+  rootId       String?
+  root         Seo?    @relation("RootChildren", fields: [rootId], references: [id])
+  rootChildren Seo[]   @relation("RootChildren")
+
+  settings Settings[]
+
+  posts      Post[]
+  categories Category[]
+
+  tags Tag[]
+
+  products          Product[]
+  productCategories ProductCategory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum EditorType {
+  SLATE
+  TIPTAP
+}
+
+model Post {
+  id String @id @default(uuid())
+
+  title       String
+  slug        String
+  description String?
+
+  version Int
+
+  status   ContentStatus @default(DRAFT)
+  isLatest Boolean       @default(true)
+
+  editorType EditorType @default(TIPTAP)
+
+  /// [BodyData]
+  bodyData Json @db.JsonB
+
+  /// [TipTapBodyData]
+  tiptapBodyData Json? @db.JsonB
+
+  rootId       String?
+  root         Post?   @relation("RootChildren", fields: [rootId], references: [id])
+  rootChildren Post[]  @relation("RootChildren")
+
+  imageCover   Media?  @relation(fields: [imageCoverId], references: [id])
+  imageCoverId String?
+
+  postCategories PostCategory[]
+
+  tags Tag[]
+
+  seo   Seo?    @relation(fields: [seoId], references: [id])
+  seoId String?
+
+  postAuthors PostAuthor[]
+
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
+
+  firstPublishedAt DateTime @default(now())
+  publishedAt      DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([rootId])
+}
+
+model PostAuthor {
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId String
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  sort Int
+
+  @@id([postId, userId])
+}
+
+model Category {
+  id String @id @default(uuid())
+
+  title       String
+  slug        String
+  description String?
+
+  version Int
+
+  status ContentStatus @default(DRAFT)
+
+  isLatest Boolean @default(true)
+
+  rootId       String?
+  root         Category?  @relation("RootChildren", fields: [rootId], references: [id])
+  rootChildren Category[] @relation("RootChildren")
+
+  postCategories PostCategory[]
+
+  seo   Seo?    @relation(fields: [seoId], references: [id])
+  seoId String?
+
+  firstPublishedAt DateTime @default(now())
+  publishedAt      DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([rootId])
+}
+
+model PostCategory {
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId String
+
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId String
+
+  sort Int
+
+  @@id([postId, categoryId])
+}
+
+model Tag {
+  id String @id @default(uuid())
+
+  title       String
+  slug        String
+  description String?
+
+  version Int
+
+  status ContentStatus @default(DRAFT)
+
+  isLatest Boolean @default(true)
+
+  rootId       String?
+  root         Tag?    @relation("RootChildren", fields: [rootId], references: [id])
+  rootChildren Tag[]   @relation("RootChildren")
+
+  posts Post[]
+
+  seo   Seo?    @relation(fields: [seoId], references: [id])
+  seoId String?
+
+  firstPublishedAt DateTime @default(now())
+  publishedAt      DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([rootId])
+}
+
+enum EmailProvider {
+  SENDGRID
+}
+
+model EmailSetting {
+  id String @id @default(uuid())
+
+  emailSender     String?
+  emailSenderName String?
+  emailResponse   String?
+  emailProvider   EmailProvider?
+  emailApiKey     String?
+
+  maxEmailsPerDay Int?
+
+  subscriptionTemplate   EmailTemplate? @relation(name: "emailSetting1", fields: [subscriptionTemplateId], references: [id], onDelete: Cascade)
+  subscriptionTemplateId String?
+
+  freeEbookTemplate   EmailTemplate? @relation(name: "emailSetting2", fields: [freeEbookTemplateId], references: [id], onDelete: Cascade)
+  freeEbookTemplateId String?
+
+  webinarTemplate   EmailTemplate? @relation(name: "emailSetting3", fields: [webinarTemplateId], references: [id], onDelete: Cascade)
+  webinarTemplateId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EmailTemplate {
+  id String @id @default(uuid())
+
+  name        String
+  description String?
+
+  /// [EmailDesignData]
+  designData Json?   @db.JsonB
+  bodyHtml   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  emailSettingSubscription EmailSetting[] @relation(name: "emailSetting1")
+  emailSettingFreeEbook    EmailSetting[] @relation(name: "emailSetting2")
+  emailSettingWebinar      EmailSetting[] @relation(name: "emailSetting3")
+}
+
+enum AudienceType {
+  GLOBAL
+  LIST
+}
+
+model EmailAudience {
+  id String @id @default(uuid())
+
+  name        String
+  type        AudienceType @default(LIST)
+  description String?
+
+  contacts EmailContact[]
+
+  // emailSingleSend   EmailSingleSend? @relation(fields: [emailSingleSendId], references: [id])
+  // emailSingleSendId String?
+  emailSingleSends EmailSingleSend[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EmailContact {
+  id String @id @default(uuid())
+
+  firstName     String?
+  lastName      String?
+  email         String    @unique
+  emailVerified DateTime?
+
+  isSubscriber Boolean @default(true)
+
+  audiences           EmailAudience[]
+  interactions        EmailContactInteraction[]
+  emailSingleSendLogs EmailSingleSendLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EmailContactInteraction {
+  id String @id @default(uuid())
+
+  interactionType String // es. 'newsletter_subscription', 'first_feedback_request', 'ebook_download'
+  interactionDate DateTime @default(now())
+
+  contact   EmailContact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  contactId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([contactId, interactionType])
+}
+
+model EmailSingleSend {
+  id String @id @default(uuid())
+
+  name    String
+  subject String?
+
+  /// [EmailDesignData]
+  designData Json?   @db.JsonB
+  bodyHtml   String?
+
+  audiences           EmailAudience[]
+  emailSingleSendLogs EmailSingleSendLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EmailSubscriptionToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([email, token])
+}
+
+model EmailSendLog {
+  id String @id @default(uuid())
+
+  to      String
+  from    String
+  subject String?
+
+  type String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EmailSingleSendLog {
+  id String @id @default(uuid())
+
+  contact   EmailContact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  contactId String
+
+  singleSend   EmailSingleSend @relation(fields: [singleSendId], references: [id], onDelete: Cascade)
+  singleSendId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([contactId, singleSendId])
+}
+
+enum ProductType {
+  EBOOK
+  SERVICE
+  AFFILIATE
+  WEBINAR
+}
+
+enum ProductAcquisitionMode {
+  FREE
+  PAID
+  FORM
+  AFFILIATE
+}
+
+model Product {
+  id    String @id @default(uuid())
+  title String
+  slug  String
+
+  /// [BodyData]
+  description       Json  @db.JsonB
+  /// [TipTapBodyData]
+  tiptapDescription Json? @db.JsonB
+
+  type ProductType
+
+  version Int
+
+  status ContentStatus @default(DRAFT)
+
+  isLatest Boolean @default(true)
+
+  imageCover   Media?  @relation(fields: [imageCoverId], references: [id])
+  imageCoverId String?
+
+  category   ProductCategory? @relation(fields: [categoryId], references: [id])
+  categoryId String?
+
+  acquisitionMode ProductAcquisitionMode @default(PAID)
+
+  price           Float?
+  discountedPrice Float?
+  isFree          Boolean @default(false)
+
+  /// [ProductMetadata]
+  metadata Json?          @db.JsonB
+  extras   ProductExtra[]
+
+  // collegamento opzionale a un form
+  formId String?
+  form   Form?   @relation(fields: [formId], references: [id])
+
+  rootId       String?
+  root         Product?  @relation("RootChildren", fields: [rootId], references: [id])
+  rootChildren Product[] @relation("RootChildren")
+
+  gallery ProductGallery[]
+  faqs    ProductFAQ[]
+
+  purchases Purchase[]
+
+  seo   Seo?    @relation(fields: [seoId], references: [id])
+  seoId String?
+
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProductCategory {
+  id String @id @default(uuid())
+
+  title       String
+  slug        String
+  description String?
+
+  version Int
+
+  status ContentStatus @default(DRAFT)
+
+  isLatest Boolean @default(true)
+
+  rootId       String?
+  root         ProductCategory?  @relation("RootChildren", fields: [rootId], references: [id])
+  rootChildren ProductCategory[] @relation("RootChildren")
+
+  products Product[]
+
+  seo   Seo?    @relation(fields: [seoId], references: [id])
+  seoId String?
+
+  firstPublishedAt DateTime @default(now())
+  publishedAt      DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model ProductGallery {
+  id   String @id @default(cuid())
+  sort Int // Campo per l'ordinamento
+
+  // Relazioni
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  mediaId String
+  media   Media  @relation(fields: [mediaId], references: [id])
+
+  @@unique([productId, mediaId])
+}
+
+model ProductExtra {
+  id String @id @default(uuid())
+
+  name        String
+  description String?
+  price       Float
+  productId   String
+  product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProductFAQ {
+  id String @id @default(uuid())
+
+  question String
+  answer   String
+  sort     Int
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AdCampaign {
+  id String @id @default(uuid())
+
+  name        String
+  description String?
+  startDate   DateTime?
+  endDate     DateTime?
+  isActive    Boolean   @default(false)
+
+  blocks AdBlock[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AdBlock {
+  id String @id @default(uuid())
+
+  label      String
+  layoutType AdLayoutType
+  isActive   Boolean      @default(true)
+
+  campaignId String
+  campaign   AdCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  items AdItem[]
+
+  placement      AdPositionPlacement @default(BEFORE)
+  reference      AdPositionReference @default(HEADING)
+  referenceCount Int                 @default(0)
+
+  minWords Int @default(0)
+
+  excludedPostIds     String[] @default([])
+  excludedCategoryIds String[] @default([])
+  excludedTagIds      String[] @default([])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AdItem {
+  id String @id @default(uuid())
+
+  sourceType AdItemSourceType
+  adBlockId  String
+  adBlock    AdBlock          @relation(fields: [adBlockId], references: [id], onDelete: Cascade)
+
+  // statics data
+  title       String?
+  description String?
+  imageUrl    String?
+  url         String?
+
+  // dynamic relations
+  postRootId    String?
+  productRootId String?
+
+  sort     Int?
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum AdLayoutType {
+  SINGLE
+  GRID
+  CAROUSEL
+}
+
+enum AdItemSourceType {
+  STATIC // Dati scritti direttamente nell’AdItem
+  POST // Collegato a un post del blog
+  PRODUCT // Collegato a un prodotto
+}
+
+enum AdPositionPlacement {
+  BEFORE
+  AFTER
+}
+
+enum AdPositionReference {
+  HEADING
+  HEADING_2
+  HEADING_3
+  HEADING_4
+  PARAGRAPH
+  IMAGE
+}
+
+model Purchase {
+  id String @id @default(uuid())
+
+  email String
+
+  product       Product @relation(fields: [productId], references: [id])
+  productId     String
+  productRootId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ContactForm {
+  id String @id @default(uuid())
+
+  name    String?
+  email   String?
+  subject String?
+  message String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Form {
+  id String @id @default(uuid())
+
+  name        String
+  /// [FormFields]
+  fields      Json?   @db.JsonB
+  submitLabel String?
+
+  gtmEventName String? // es: "form_submission_laboratorio"
+  gtmCategory  String? // es: "lead" o "submission"
+  gtmLabel     String? // es: "Laboratorio di scrittura novembre"
+
+  products    Product[]
+  submissions FormSubmission[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FormSubmission {
+  id String @id @default(uuid())
+
+  formId String
+  form   Form   @relation(fields: [formId], references: [id])
+
+  email String?
+  data  Json    @db.JsonB // dati sottomessi dall’utente
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Format {
+  id String @id @default(uuid())
+
+  title      String
+  Impression Impression[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Genre {
+  id String @id @default(uuid())
+
+  title      String
+  Impression Impression[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Impression {
+  id        String  @id @default(uuid())
+  title     String
+  firstName String?
+  lastName  String?
+  email     String
+  pageCount Int?
+
+  format   Format? @relation(fields: [formatId], references: [id])
+  formatId String?
+
+  genre   Genre?  @relation(fields: [genreId], references: [id])
+  genreId String?
+
+  file   Media?  @relation(fields: [fileId], references: [id])
+  fileId String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id String @id @default(uuid())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  type    String
+  message String
+  isRead  Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum SocialKey {
+  FACEBOOK
+  TWITTER
+  INSTAGRAM
+  LINKEDIN
+  PINTEREST
+  YOUTUBE
+}
+
+enum SocialEntityType {
+  SITE
+  USER
+}
+
+model SocialChannel {
+  id String @id @default(uuid())
+
+  key SocialKey
+  url String?
+
+  entityId   String
+  entityType SocialEntityType
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([key, entityId, entityType])
+}

@@ -6,7 +6,7 @@ import {
   Product,
   ProductCategory,
   ProductType,
-} from "@/prisma/generated/client";
+} from "@/generated/prisma";
 import Image from "next/image";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";

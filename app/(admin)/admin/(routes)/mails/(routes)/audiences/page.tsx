@@ -1,4 +1,4 @@
-import { AudienceType } from "@/prisma/generated/client";
+import { AudienceType } from "@/generated/prisma";
 
 import { db } from "@/lib/db";
 

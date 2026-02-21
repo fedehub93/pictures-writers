@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { requireAdminAuth } from "@/lib/auth-utils";
-import { ContentStatus } from "@/prisma/generated/client";
+import { ContentStatus } from "@/generated/prisma";
 
 import { getLastPostByRootId } from "@/data/post";
 

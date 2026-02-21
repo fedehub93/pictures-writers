@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
-import { ContentStatus } from "@/prisma/generated/client";
+import { ContentStatus } from "@/generated/prisma";
 
 export async function PATCH(req: Request, props: { params: Promise<{ postId: string }> }) {
   const params = await props.params;

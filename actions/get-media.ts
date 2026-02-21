@@ -1,4 +1,4 @@
-import { Media } from "@/prisma/generated/client";
+import { Media } from "@/generated/prisma";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";

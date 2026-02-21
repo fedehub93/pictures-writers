@@ -3,7 +3,7 @@ import {
   AdPositionReference,
   AdPositionPlacement,
   AdItem,
-} from "@/prisma/generated/client";
+} from "@/generated/prisma";
 
 export type JSONContent = {
   type?: string;

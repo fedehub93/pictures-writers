@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Column } from "@tanstack/react-table";
 import { Check, PlusCircle } from "lucide-react";
-import { WidgetSection } from "@/prisma/generated/client";
+import { WidgetSection } from "@/generated/prisma";
 
 import { cn } from "@/lib/utils";
 import {
@@ -81,7 +81,7 @@ export function DataTableFacetedFilter<TData, TValue>({
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0" align="start">
+      <PopoverContent className="w-50 p-0" align="start">
         <Command>
           <CommandInput placeholder={title} />
           <CommandList>

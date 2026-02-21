@@ -6,7 +6,7 @@ import { PlusCircle, X } from "lucide-react";
 
 import { Control, useController } from "react-hook-form";
 
-import { Media } from "@/prisma/generated/client";
+import { Media } from "@/generated/prisma";
 
 import {
   Accordion,

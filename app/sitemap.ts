@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-import { ContentStatus, ProductType } from "@/prisma/generated/client";
+import { ContentStatus, ProductType } from "@/generated/prisma";
 
 import { db } from "@/lib/db";
 import { getSettings } from "@/data/settings";

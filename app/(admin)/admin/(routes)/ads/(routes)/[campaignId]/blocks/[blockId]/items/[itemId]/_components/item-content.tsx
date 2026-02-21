@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Control, useController, useWatch } from "react-hook-form";
 import { X } from "lucide-react";
 
-import { AdItemSourceType } from "@/prisma/generated/client";
+import { AdItemSourceType } from "@/generated/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";

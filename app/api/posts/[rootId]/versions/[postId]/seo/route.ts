@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
-import { ContentStatus } from "@/prisma/generated/client";
+import { ContentStatus } from "@/generated/prisma";
 import { createNewVersionPost } from "@/lib/post";
 
 export async function PATCH(

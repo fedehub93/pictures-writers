@@ -1,7 +1,7 @@
 "use client";
 
 import { Control, useFieldArray } from "react-hook-form";
-import { User } from "@/prisma/generated/client";
+import { User } from "@/generated/prisma";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

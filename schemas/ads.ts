@@ -5,7 +5,7 @@ import {
   AdLayoutType,
   AdPositionPlacement,
   AdPositionReference,
-} from "@/prisma/generated/client";
+} from "@/generated/prisma";
 
 /**
  * Ad Campaign

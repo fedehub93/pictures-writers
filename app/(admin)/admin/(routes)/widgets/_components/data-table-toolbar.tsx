@@ -9,7 +9,7 @@ import {
   PlusCircle,
   X,
 } from "lucide-react";
-import { WidgetSection } from "@/prisma/generated/client";
+import { WidgetSection } from "@/generated/prisma";
 import { Table } from "@tanstack/react-table";
 
 import { Input } from "@/components/ui/input";

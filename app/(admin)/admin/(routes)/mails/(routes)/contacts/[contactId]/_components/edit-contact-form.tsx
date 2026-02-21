@@ -10,7 +10,7 @@ import {
   EmailAudience,
   EmailContact,
   EmailContactInteraction,
-} from "@/prisma/generated/client";
+} from "@/generated/prisma";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -225,7 +225,7 @@ export const EditContactForm = ({
               <label className="text-sm font-medium leading-none">
                 Audiences
               </label>
-              <Skeleton className="w-full h-[40px] bg-white space-y-4" />
+              <Skeleton className="w-full h-10 bg-white space-y-4" />
             </div>
           )}
           {!isLoading && audiences && (

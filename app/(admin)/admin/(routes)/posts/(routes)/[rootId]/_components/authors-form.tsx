@@ -8,7 +8,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
-import { ContentStatus, User } from "@/prisma/generated/client";
+import { ContentStatus, User } from "@/generated/prisma";
 import {
   Form,
   FormControl,
@@ -138,7 +138,7 @@ export const AuthorsForm = ({
         <CardContent className="space-y-4">
           <Separator />
           {field.value.map((v) => (
-            <Skeleton key={v.id} className="w-full h-[40px]" />
+            <Skeleton key={v.id} className="w-full h-10" />
           ))}
         </CardContent>
       </Card>

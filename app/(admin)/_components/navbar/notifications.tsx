@@ -4,7 +4,7 @@ import axios from "axios";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { Bell, Loader2, Mail } from "lucide-react";
-import { Notification } from "@/prisma/generated/client";
+import { Notification } from "@/generated/prisma";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";

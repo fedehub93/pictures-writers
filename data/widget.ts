@@ -1,4 +1,4 @@
-import { ContentStatus, Prisma, WidgetType } from "@/prisma/generated/client";
+import { ContentStatus, Prisma, WidgetType } from "@/generated/prisma";
 
 import { db } from "@/lib/db";
 import {

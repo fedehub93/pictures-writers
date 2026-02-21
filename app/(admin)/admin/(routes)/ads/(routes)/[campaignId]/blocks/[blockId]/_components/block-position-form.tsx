@@ -1,5 +1,5 @@
 "use client";
-import { AdPositionPlacement, AdPositionReference } from "@/prisma/generated/client";
+import { AdPositionPlacement, AdPositionReference } from "@/generated/prisma";
 
 import { Control } from "react-hook-form";
 
