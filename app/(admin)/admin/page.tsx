@@ -1,14 +1,7 @@
-import { getSelf } from "@/lib/current-user";
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
+import { requireAdminAuth } from "@/lib/auth-utils";
 
 const AdminPage = async () => {
-  const user = await getSelf();
-  if (!user) {
-    return (await auth()).redirectToSignIn();
-  }
-
-  return redirect("/admin/dashboard");
+  await requireAdminAuth()
 };
 
 export default AdminPage;

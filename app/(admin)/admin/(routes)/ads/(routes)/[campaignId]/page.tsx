@@ -1,19 +1,17 @@
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
 
 import { CampaignForm } from "./_components/campaign-form";
+import { requireAdminAuth } from "@/lib/auth-utils";
 
 const CampaignIdPost = async (props: {
   params: Promise<{ campaignId: string }>;
 }) => {
+  await requireAdminAuth();
+
   const { campaignId } = await props.params;
-  const userAdmin = await authAdmin();
-  if (!userAdmin) {
-    return (await auth()).redirectToSignIn();
-  }
 
   const campaign = await db.adCampaign.findFirst({
     where: {

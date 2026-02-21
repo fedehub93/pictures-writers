@@ -1,10 +1,9 @@
-import { auth } from "@clerk/nextjs/server";
-import { ContentStatus } from "@/prisma/generated/client";
 import { redirect } from "next/navigation";
 
-import { authAdmin } from "@/lib/auth-service";
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+import { requireAdminAuth } from "@/lib/auth-utils";
+import { ContentStatus } from "@/prisma/generated/client";
 
 import { getLastPostByRootId } from "@/data/post";
 
@@ -25,11 +24,9 @@ import { CategoriesForm } from "./_components/categories-form";
 import { TagsForm } from "./_components/tags-form";
 
 const PostIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
+  await requireAdminAuth();
+
   const params = await props.params;
-  const userAdmin = await authAdmin();
-  if (!userAdmin) {
-    return (await auth()).redirectToSignIn();
-  }
 
   const post = await getLastPostByRootId(params.rootId);
 
@@ -46,12 +43,12 @@ const PostIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
       post.postCategories.every(
         (c) =>
           c.category.status === ContentStatus.CHANGED ||
-          c.category.status === ContentStatus.PUBLISHED
+          c.category.status === ContentStatus.PUBLISHED,
       ),
     post.tags.every(
       (tag) =>
         tag.status === ContentStatus.CHANGED ||
-        tag.status === ContentStatus.PUBLISHED
+        tag.status === ContentStatus.PUBLISHED,
     ),
   ];
 

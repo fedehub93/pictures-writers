@@ -1,19 +1,16 @@
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
-import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
+import { requireAdminAuth } from "@/lib/auth-utils";
 
 import { WidgetForm } from "./_components/widget-form";
 
 const WidgetIdPage = async (props: {
   params: Promise<{ widgetId: string }>;
 }) => {
+  await requireAdminAuth();
+
   const params = await props.params;
-  const userAdmin = await authAdmin();
-  if (!userAdmin) {
-    return (await auth()).redirectToSignIn();
-  }
 
   const widget = await db.widget.findUnique({
     where: {

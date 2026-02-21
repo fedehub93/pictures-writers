@@ -1,19 +1,16 @@
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
-import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
 
+import { requireAdminAuth } from "@/lib/auth-utils";
 import { BlockForm } from "./_components/block-form";
 
 const BlockIdPage = async (props: {
   params: Promise<{ campaignId: string; blockId: string }>;
 }) => {
+  await requireAdminAuth();
+
   const { campaignId, blockId } = await props.params;
-  const userAdmin = await authAdmin();
-  if (!userAdmin) {
-    return (await auth()).redirectToSignIn();
-  }
 
   const block = await db.adBlock.findFirst({
     where: {

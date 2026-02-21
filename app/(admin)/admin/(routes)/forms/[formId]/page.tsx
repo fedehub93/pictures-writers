@@ -1,16 +1,14 @@
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
-import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
+
+import { requireAdminAuth } from "@/lib/auth-utils";
 import { FormForm } from "./_components/form-form";
 
 const FormIdPage = async (props: { params: Promise<{ formId: string }> }) => {
+  await requireAdminAuth();
+
   const params = await props.params;
-  const userAdmin = await authAdmin();
-  if (!userAdmin) {
-    return (await auth()).redirectToSignIn();
-  }
 
   const form = await db.form.findFirst({
     where: {

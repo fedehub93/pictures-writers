@@ -1,26 +1,11 @@
-import { auth } from "@clerk/nextjs/server";
-import { UserRole } from "@/prisma/generated/client";
-
-import { getSelf } from "@/lib/current-user";
+import { requireAdminAuth } from "@/lib/auth-utils";
 
 export default async function Layout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const user = await getSelf();
-
-  if (!user) {
-    return (await auth()).redirectToSignIn({
-      returnBackUrl: `${process.env.NEXT_PUBLIC_APP_URL}/admin`,
-    });
-  }
-
-  if (user.role === UserRole.USER) {
-    return (await auth()).redirectToSignIn({
-      returnBackUrl: `${process.env.NEXT_PUBLIC_APP_URL}/admin`,
-    });
-  }
+  await requireAdminAuth();
 
   return (
     <div className="flex flex-col">

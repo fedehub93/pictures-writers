@@ -1,23 +1,24 @@
-import { auth } from "@clerk/nextjs/server";
-
 import { db } from "@/lib/db";
 import { UserRole } from "@/prisma/generated/client";
+import { auth } from "./auth";
+import { headers } from "next/headers";
 
 export const authAdmin = async () => {
-  const { userId } = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
 
-  if (!userId) {
+  if (!session) {
     return null;
   }
 
   const user = await db.user.findUnique({
     where: {
-      externalUserId: userId,
+      id: session.id,
       role: UserRole.ADMIN,
     },
   });
 
-  // TODO: add email in prisma schema
 
   if (!user) {
     return null;

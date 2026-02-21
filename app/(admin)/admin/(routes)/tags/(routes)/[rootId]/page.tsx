@@ -1,8 +1,8 @@
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
-import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
+import { requireAdminAuth } from "@/lib/auth-utils";
+
 import { TitleForm } from "@/app/(admin)/_components/general-fields/title-form";
 import { SlugForm } from "@/app/(admin)/_components/general-fields/slug-form";
 import { DescriptionForm } from "@/app/(admin)/_components/general-fields/description-form";
@@ -14,11 +14,9 @@ import { StatusView } from "@/app/(admin)/_components/content/status-view";
 import { ContentIdActions } from "@/app/(admin)/_components/content/content-id-actions";
 
 const TagIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
+  await requireAdminAuth();
+
   const params = await props.params;
-  const userAdmin = await authAdmin();
-  if (!userAdmin) {
-    return (await auth()).redirectToSignIn();
-  }
 
   const tag = await db.tag.findFirst({
     where: {

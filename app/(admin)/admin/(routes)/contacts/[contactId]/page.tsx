@@ -1,17 +1,16 @@
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
 import { db } from "@/lib/db";
-import { authAdmin } from "@/lib/auth-service";
 
+import { requireAdminAuth } from "@/lib/auth-utils";
 import { ContactRequestForm } from "./_components/contact-request-form";
 
-const MailSettings = async (props: { params: Promise<{ contactId: string }> }) => {
+const MailSettings = async (props: {
+  params: Promise<{ contactId: string }>;
+}) => {
+  await requireAdminAuth();
+
   const params = await props.params;
-  const userAdmin = await authAdmin();
-  if (!userAdmin) {
-    return (await auth()).redirectToSignIn();
-  }
 
   const contact = await db.contactForm.findUnique({
     where: {

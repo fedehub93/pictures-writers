@@ -19,7 +19,11 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Actions } from "../navbar/actions";
 
 interface HeaderProps {
-  user: User;
+  user: {
+    id: string;
+    email: string;
+    imageUrl: string;
+  };
 }
 
 export const Header = ({ user }: HeaderProps) => {
