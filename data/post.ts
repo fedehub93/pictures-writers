@@ -1,4 +1,4 @@
-import { ContentStatus, Prisma } from "@/prisma/generated/client";
+import { ContentStatus, Prisma } from "@/generated/prisma";
 
 import { db } from "@/lib/db";
 

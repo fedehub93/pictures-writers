@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { Editor, useEditorState } from "@tiptap/react";
 
-import { Media } from "@/prisma/generated/client";
+import { Media } from "@/generated/prisma";
 
 import { Separator } from "@/components/ui/separator";
 import {
@@ -150,7 +150,7 @@ export const MenuBar = ({
     >
       <div className="flex items-center flex-wrap gap-x-1 h-full gap-y-2">
         <HeadingSelect editor={editor} />
-        <Separator orientation="vertical" className="mx-2 !h-8" />
+        <Separator orientation="vertical" className="mx-2 h-8!" />
 
         <MarkButton
           onClick={onClickBold}
@@ -168,11 +168,11 @@ export const MenuBar = ({
           Icon={Underline}
         />
 
-        <Separator orientation="vertical" className="bg-slate-300 mx-2 !h-8" />
+        <Separator orientation="vertical" className="bg-slate-300 mx-2 h-8!" />
 
         <LinkButtonToolbar editor={editor} />
 
-        <Separator orientation="vertical" className="bg-slate-300 mx-2 !h-8" />
+        <Separator orientation="vertical" className="bg-slate-300 mx-2 h-8!" />
 
         <MarkButton
           onClick={() => editor.chain().focus().setTextAlign("left").run()}
@@ -195,7 +195,7 @@ export const MenuBar = ({
           Icon={AlignJustify}
         />
 
-        <Separator orientation="vertical" className="bg-slate-300 mx-2 !h-8" />
+        <Separator orientation="vertical" className="bg-slate-300 mx-2 h-8!" />
 
         <MarkButton
           onClick={() => editor.chain().focus().toggleBulletList().run()}

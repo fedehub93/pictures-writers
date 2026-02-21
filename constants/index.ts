@@ -1,4 +1,4 @@
-import { SocialKey } from "@/prisma/generated/client";
+import { SocialKey } from "@/generated/prisma";
 
 export const DEFAULT_SOCIAL_CHANNEL_VALUES: {
   key: SocialKey;

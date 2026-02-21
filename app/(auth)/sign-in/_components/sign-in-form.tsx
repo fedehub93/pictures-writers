@@ -51,7 +51,7 @@ export function LoginForm() {
       {
         email: values.email,
         password: values.password,
-        callbackURL: "/",
+        callbackURL: "/admin/dashboard",
       },
       {
         onSuccess: () => {

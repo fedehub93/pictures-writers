@@ -1,5 +1,5 @@
 "use client";
-import { AdItemSourceType } from "@/prisma/generated/client";
+import { AdItemSourceType } from "@/generated/prisma";
 
 import { Control } from "react-hook-form";
 

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { formatDistance } from "date-fns";
 import { it } from "date-fns/locale";
 
-import { ContentStatus } from "@/prisma/generated/client";
+import { ContentStatus } from "@/generated/prisma";
 import { getAuthorsString } from "@/data/user";
 import { db } from "@/lib/db";
 

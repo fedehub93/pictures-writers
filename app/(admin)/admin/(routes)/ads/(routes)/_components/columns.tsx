@@ -1,6 +1,6 @@
 "use client";
 
-import { AdCampaign } from "@/prisma/generated/client";
+import { AdCampaign } from "@/generated/prisma";
 import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import { ArrowUpDown, MoreHorizontal, Pencil } from "lucide-react";

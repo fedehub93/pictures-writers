@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 
-import { EmailAudience } from "@/prisma/generated/client";
+import { EmailAudience } from "@/generated/prisma";
 
 const fetchAudiences = async () => {
   const response = await axios.get("/api/admin/mails/audiences");

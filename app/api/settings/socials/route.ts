@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
 import { getSettings } from "@/data/settings";
-import { SocialChannel, SocialEntityType } from "@/prisma/generated/client";
+import { SocialChannel, SocialEntityType } from "@/generated/prisma";
 
 export async function PATCH(req: Request) {
   try {

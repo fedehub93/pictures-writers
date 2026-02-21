@@ -14,7 +14,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { EmailTemplate } from "@/prisma/generated/client";
+import { EmailTemplate } from "@/generated/prisma";
 import {
   Select,
   SelectContent,

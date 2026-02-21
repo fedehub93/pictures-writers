@@ -1,4 +1,4 @@
-import { SocialChannel, SocialEntityType } from "@/prisma/generated/client";
+import { SocialChannel, SocialEntityType } from "@/generated/prisma";
 
 import { db } from "@/lib/db";
 import { SettingsWithScriptsAndSocials } from "@/types";

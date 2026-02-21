@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
-import { ContentStatus } from "@/prisma/generated/client";
+import { ContentStatus } from "@/generated/prisma";
 
 import { cn } from "@/lib/utils";
 import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
@@ -122,7 +122,7 @@ export const CategoriesForm = ({
       )}
     >
       <div className="flex items-center justify-between">Categories</div>
-      {isLoading && <Skeleton className="mt-4 w-full h-[40px]" />}
+      {isLoading && <Skeleton className="mt-4 w-full h-10" />}
       {!isLoading && categories && (
         <Form {...form}>
           <form

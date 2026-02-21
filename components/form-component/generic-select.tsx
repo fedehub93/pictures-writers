@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ProductAcquisitionMode } from "@/prisma/generated/client";
+import { ProductAcquisitionMode } from "@/generated/prisma";
 
 interface GenericSelectProps<T extends FieldValues>
   extends React.InputHTMLAttributes<HTMLInputElement> {

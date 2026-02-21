@@ -1,4 +1,4 @@
-import { Category, Post, Product, Tag } from "@/prisma/generated/client";
+import { Category, Post, Product, Tag } from "@/generated/prisma";
 import { db } from "./db";
 
 const updateSeoRootId = async (seoId: string, rootId: string) => {

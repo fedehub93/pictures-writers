@@ -1,5 +1,5 @@
 "use client";
-import { Media, MediaType } from "@/prisma/generated/client";
+import { Media, MediaType } from "@/generated/prisma";
 import Image from "next/image";
 import { File, Loader2, Plus } from "lucide-react";
 import { useDebounceValue } from "usehooks-ts";
@@ -74,7 +74,7 @@ export const SelectAssetModal = () => {
             />
           </div>
         </DialogHeader>
-        <ScrollArea className=" max-h-[400px]">
+        <ScrollArea className=" max-h-100">
           {isOpen && status === "pending" ? (
             <div className="flex h-full flex-col flex-1 justify-center items-center py-8">
               <Loader2 className="h-7 w-7 text-zinc-500 animate-spin my-4" />

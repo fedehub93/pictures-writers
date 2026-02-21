@@ -3,7 +3,7 @@
 import { Control, useController } from "react-hook-form";
 import slugify from "slugify";
 
-import { Product } from "@/prisma/generated/client";
+import { Product } from "@/generated/prisma";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +13,6 @@ import { ProductFormValues } from "@/schemas/product";
 import { GenericInput } from "@/components/form-component/generic-input";
 import { SlugInput } from "@/components/form-component/slug-input";
 
-import { GenericEditor } from "@/components/form-component/generic-editor";
 import { GenericTiptap } from "@/components/form-component/generic-tiptap";
 
 import { ProductCategorySelect } from "./product-category-select";
@@ -36,7 +35,7 @@ export const ProductDetailsForm = ({
     fieldSlug.onChange(
       slugify(fieldTitle.value, {
         lower: true,
-      })
+      }),
     );
   };
 

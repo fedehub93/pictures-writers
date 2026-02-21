@@ -1,3 +1,0 @@
-id,first_name,last_name,username,primary_email_address,primary_phone_number,verified_email_addresses,unverified_email_addresses,verified_phone_numbers,unverified_phone_numbers,totp_secret,password_digest,password_hasher
-user_2mZMN5nr7EagDUovTAQhVnb7PpB,,,,federico@pictureswriters.com,,federico@pictureswriters.com,,,,,$2a$10$or4wGfI6pKxhWe4.QHNaT.h0rYsFPMI4FYyiuoWQ7M5lc1uD/OMOa,bcrypt
-user_2pP8dlR6oRfaiVSroc7AhYX9bO0,Lorenzo,Carapezzi,,carapezzilorenzo1@gmail.com,,carapezzilorenzo1@gmail.com,,,,,$2a$10$u9NmXyqmqXFixO9275xg8O3LQoT5kwKHtwG4ZtRP6.zjxvBTuS/SO,bcrypt

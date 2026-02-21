@@ -8,7 +8,7 @@ import {
   EmailTemplate,
   Media,
   Post,
-} from "@/prisma/generated/client";
+} from "@/generated/prisma";
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, Eye, MoreHorizontal, Pencil } from "lucide-react";

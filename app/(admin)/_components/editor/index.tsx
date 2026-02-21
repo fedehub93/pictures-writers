@@ -3,7 +3,7 @@ import { createEditor, BaseEditor, Descendant } from "slate";
 import { Slate, withReact, ReactEditor } from "slate-react";
 import { withHistory } from "slate-history";
 
-import { ProductType } from "@/prisma/generated/client";
+import { ProductType } from "@/generated/prisma";
 import { AffiliateMetadata, EbookMetadata } from "@/types";
 
 import EditorInput from "./editor-input";

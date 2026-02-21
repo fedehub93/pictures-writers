@@ -3,7 +3,7 @@
 import { FileIcon, X } from "lucide-react";
 import { Dispatch, SetStateAction } from "react";
 import Link from "next/link";
-import { MediaType } from "@/prisma/generated/client";
+import { MediaType } from "@/generated/prisma";
 
 import { UploadButton } from "@/lib/uploadthing";
 import { ourFileRouter } from "@/app/api/uploadthing/core";

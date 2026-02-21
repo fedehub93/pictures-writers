@@ -10,7 +10,7 @@ import {
   SocialChannel,
   SocialKey,
   WidgetType,
-} from "@/prisma/generated/client";
+} from "@/generated/prisma";
 
 export type TiptapContent = HTMLContent | JSONContent | JSONContent[] | null;
 

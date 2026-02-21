@@ -1,7 +1,7 @@
 "use client";
 
 import * as z from "zod";
-import { EmailAudience, EmailSingleSend, EmailTemplate } from "@/prisma/generated/client";
+import { EmailAudience, EmailSingleSend, EmailTemplate } from "@/generated/prisma";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useController, useForm } from "react-hook-form";
 import axios from "axios";
@@ -229,7 +229,7 @@ export const WriteForm = ({
             </Button>
           </div>
         </div>
-        {isLoading && <Skeleton className="mt-4 w-full h-[40px]" />}
+        {isLoading && <Skeleton className="mt-4 w-full h-10" />}
         {!isLoading && audiences && (
           <FormField
             control={form.control}

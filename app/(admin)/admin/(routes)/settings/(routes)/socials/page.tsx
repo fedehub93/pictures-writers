@@ -9,7 +9,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { SocialIcon } from "react-social-icons";
 
-import { SocialKey } from "@/prisma/generated/client";
+import { SocialKey } from "@/generated/prisma";
 
 import { Button } from "@/components/ui/button";
 import {

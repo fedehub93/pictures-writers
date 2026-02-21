@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 
 import { db } from "@/lib/db";
-import { ContentStatus } from "@/prisma/generated/client";
+import { ContentStatus } from "@/generated/prisma";
 import { getAuthorsString } from "@/data/user";
 import { getSettings } from "@/data/settings";
 

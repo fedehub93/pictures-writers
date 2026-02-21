@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 
-import { EmailSingleSend } from "@/prisma/generated/client";
+import { EmailSingleSend } from "@/generated/prisma";
 import { requireAdminAuth } from "@/lib/auth-utils";
 
 import { ContentHeader } from "@/app/(admin)/_components/content/content-header";

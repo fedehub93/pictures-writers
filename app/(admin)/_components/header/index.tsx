@@ -3,7 +3,7 @@
 import React from "react";
 import { usePathname } from "next/navigation";
 
-import { User } from "@/prisma/generated/client";
+import { User } from "@/generated/prisma";
 
 import {
   Breadcrumb,

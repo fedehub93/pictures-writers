@@ -9,7 +9,7 @@ import {
   AdLayoutType,
   AdPositionPlacement,
   AdPositionReference,
-} from "@/prisma/generated/client";
+} from "@/generated/prisma";
 import {
   Dialog,
   DialogContent,

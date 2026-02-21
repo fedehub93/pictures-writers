@@ -10,7 +10,7 @@ import {
   Timer,
   X,
 } from "lucide-react";
-import { ContentStatus } from "@/prisma/generated/client";
+import { ContentStatus } from "@/generated/prisma";
 import { Table } from "@tanstack/react-table";
 import { useState } from "react";
 import axios from "axios";

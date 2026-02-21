@@ -6,7 +6,7 @@ import {
   Droppable,
   DropResult,
 } from "@hello-pangea/dnd";
-import { WidgetSection } from "@/prisma/generated/client";
+import { WidgetSection } from "@/generated/prisma";
 import axios from "axios";
 import { Grip } from "lucide-react";
 
@@ -52,9 +52,9 @@ export const WidgetSort = ({ label, section }: WidgetSortProps) => {
           <CardTitle className="text-base">{label}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Skeleton className="w-full h-[40px]" />
-          <Skeleton className="w-full h-[40px]" />
-          <Skeleton className="w-full h-[40px]" />
+          <Skeleton className="w-full h-10" />
+          <Skeleton className="w-full h-10" />
+          <Skeleton className="w-full h-10" />
         </CardContent>
       </Card>
     );

@@ -1,4 +1,4 @@
-import { SocialKey } from "@/prisma/generated/client";
+import { SocialKey } from "@/generated/prisma";
 import { SocialIcon } from "react-social-icons";
 
 import { getWidgetSocials } from "@/data/widget";

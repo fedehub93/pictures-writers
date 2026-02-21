@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { EmailProvider, EmailSetting } from "@/prisma/generated/client";
+import { EmailProvider, EmailSetting } from "@/generated/prisma";
 
 import { Button } from "@/components/ui/button";
 import {

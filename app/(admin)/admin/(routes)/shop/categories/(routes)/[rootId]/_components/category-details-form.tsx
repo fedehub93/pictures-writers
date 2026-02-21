@@ -1,5 +1,5 @@
 "use client";
-import { ProductCategory } from "@/prisma/generated/client";
+import { ProductCategory } from "@/generated/prisma";
 
 import { Control, useController } from "react-hook-form";
 import { Sparkles } from "lucide-react";

@@ -1,7 +1,8 @@
-import { db } from "@/lib/db";
-import { UserRole } from "@/prisma/generated/client";
-import { auth } from "./auth";
 import { headers } from "next/headers";
+import { UserRole } from "@/generated/prisma";
+import { db } from "@/lib/db";
+
+import { auth } from "./auth";
 
 export const authAdmin = async () => {
   const session = await auth.api.getSession({

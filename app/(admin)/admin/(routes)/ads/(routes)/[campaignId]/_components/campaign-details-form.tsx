@@ -1,5 +1,5 @@
 "use client";
-import { AdCampaign } from "@/prisma/generated/client";
+import { AdCampaign } from "@/generated/prisma";
 
 import * as z from "zod";
 import { Control } from "react-hook-form";

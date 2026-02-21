@@ -1,6 +1,6 @@
 import axios from "axios";
 
-import { Widget, WidgetSection } from "@/prisma/generated/client";
+import { Widget, WidgetSection } from "@/generated/prisma";
 import { useQuery } from "@tanstack/react-query";
 
 type UseWidgetsQuery = {

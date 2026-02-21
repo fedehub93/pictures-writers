@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { ProductType, UserRole } from "@/prisma/generated/client";
+import { ProductType, UserRole } from "@/generated/prisma";
 
 import { db } from "@/lib/db";
 import { requireAdminAuth } from "@/lib/auth-utils";

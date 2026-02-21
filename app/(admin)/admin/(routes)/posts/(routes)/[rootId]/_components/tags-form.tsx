@@ -1,6 +1,6 @@
 "use client";
 
-import { ContentStatus } from "@/prisma/generated/client";
+import { ContentStatus } from "@/generated/prisma";
 import * as z from "zod";
 import { useState } from "react";
 import { useController, useForm } from "react-hook-form";
@@ -110,7 +110,7 @@ export const TagsForm = ({ initialData, rootId, postId }: TagsFormProps) => {
       )}
     >
       <div className="flex items-center justify-between">Tags</div>
-      {isLoading && <Skeleton className="mt-4 w-full h-[40px]" />}
+      {isLoading && <Skeleton className="mt-4 w-full h-10" />}
       {!isLoading && tags && (
         <Form {...form}>
           <form

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { ContentStatus, Product, ProductType } from "@/prisma/generated/client";
+import { ContentStatus, Product, ProductType } from "@/generated/prisma";
 import {
   AffiliateMetadata,
   EbookMetadata,

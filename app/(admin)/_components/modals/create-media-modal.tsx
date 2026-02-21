@@ -5,7 +5,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { MediaType } from "@/prisma/generated/client";
+import { MediaType } from "@/generated/prisma";
 
 import {
   Dialog,

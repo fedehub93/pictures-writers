@@ -3,7 +3,7 @@ import Image from "next/image";
 import { Trash2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { Product } from "@/prisma/generated/client";
+import { Product } from "@/generated/prisma";
 
 import { Control, useController } from "react-hook-form";
 import {

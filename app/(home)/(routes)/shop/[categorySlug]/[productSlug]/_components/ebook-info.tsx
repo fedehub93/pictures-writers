@@ -12,7 +12,7 @@ import { FreeEbookModal } from "@/app/(home)/_components/modals/free-ebook-modal
 import { SlateRendererV2 } from "@/components/editor/view/slate-renderer";
 import { BuyButton } from "./buy-button";
 import { BoxInfo } from "./box-info";
-import { ProductAcquisitionMode } from "@/prisma/generated/client";
+import { ProductAcquisitionMode } from "@/generated/prisma";
 
 interface EbookInfoProps {
   rootId: string;

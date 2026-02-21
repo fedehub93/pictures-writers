@@ -1,4 +1,4 @@
-import { WidgetSection } from "@/prisma/generated/client";
+import { WidgetSection } from "@/generated/prisma";
 
 import { db } from "@/lib/db";
 

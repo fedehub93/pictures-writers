@@ -1,6 +1,6 @@
 import axios from "axios";
 
-import { User } from "@/prisma/generated/client";
+import { User } from "@/generated/prisma";
 import { useQuery } from "@tanstack/react-query";
 
 export const useAuthorsQuery = () => {

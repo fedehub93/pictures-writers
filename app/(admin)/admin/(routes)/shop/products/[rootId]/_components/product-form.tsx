@@ -13,7 +13,7 @@ import {
   ProductType,
   User,
   Seo,
-} from "@/prisma/generated/client";
+} from "@/generated/prisma";
 
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";

@@ -1,4 +1,4 @@
-import { ContentStatus } from "@/prisma/generated/client";
+import { ContentStatus } from "@/generated/prisma";
 import { db } from "@/lib/db";
 
 const LATEST_PUBLISHED_POST = 4;

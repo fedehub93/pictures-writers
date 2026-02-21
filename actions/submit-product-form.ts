@@ -1,6 +1,6 @@
 "use server";
 
-import { ProductAcquisitionMode } from "@/prisma/generated/client";
+import { ProductAcquisitionMode } from "@/generated/prisma";
 
 import { createContactByEmail } from "@/data/email-contact";
 import { handleFormSubmitted } from "@/lib/event-handler";

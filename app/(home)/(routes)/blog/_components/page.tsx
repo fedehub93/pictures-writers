@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 
-import { ContentStatus } from "@/prisma/generated/client";
+import { ContentStatus } from "@/generated/prisma";
 import { PostList } from "./post-list";
 import { getHeadMetadata } from "../../../_components/seo/head-metadata";
 import { getPostsPaginatedByFilters } from "@/data/post";
