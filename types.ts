@@ -23,6 +23,7 @@ declare global {
       | EbookMetadata
       | AffiliateMetadata
       | WebinarMetadata
+      | ServiceMetadata
       | null
       | undefined;
     type WidgetMetadata = any;
@@ -142,6 +143,15 @@ export type WebinarMetadata = {
   seats: number;
   platform: string;
   lessons: WebinarLesson[];
+};
+
+export type ServiceMetadata = {
+  type: ProductType;
+  serviceType: string;
+  competitorPrice: number;
+  target: string;
+  attachamentUrl: string;
+  features: { title: string; Icon: string; description: string }[];
 };
 
 export type WebinarLesson = {
