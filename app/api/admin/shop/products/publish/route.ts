@@ -28,12 +28,7 @@ export async function PATCH(req: Request) {
         return new NextResponse("Not found", { status: 404 });
       }
 
-      if (
-        !product.title ||
-        !product.description ||
-        !product.imageCoverId ||
-        !product.categoryId
-      ) {
+      if (!product.title || !product.categoryId) {
         return new NextResponse("Missing required fields!", { status: 404 });
       }
 
