@@ -58,7 +58,6 @@ export function LoginForm() {
           router.push("/admin/dashboard");
         },
         onError: (ctx) => {
-          console.log(ctx);
           toast.error(ctx.error.message);
         },
       },

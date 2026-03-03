@@ -4,6 +4,7 @@ import { ProductType } from "@/generated/prisma";
 import {
   CalendarDays,
   CalendarOff,
+  CheckIcon,
   Clock,
   Euro,
   Hourglass,
@@ -14,8 +15,9 @@ import { WidgetProductType } from "@/types";
 import { getWidgetProducts } from "@/data/widget";
 import { Button } from "@/components/ui/button";
 import { formatDate, formatPrice } from "@/lib/format";
-import { isWebinarMetadata } from "@/type-guards";
+import { isServiceMetadata, isWebinarMetadata } from "@/type-guards";
 import { cn } from "@/lib/utils";
+import { Route } from "next";
 
 interface WidgetProductProps {
   label: string;
@@ -39,7 +41,6 @@ export const WidgetProduct = async ({
   return (
     <div className="w-full bg-white px-6 pt-8 pb-6 shadow-md flex flex-col gap-y-2">
       <h3 className="mb-2 text-sm font-extrabold uppercase">{label}</h3>
-
       <div className="flex flex-col">
         {productData
           .filter((p) => p.category)
@@ -53,7 +54,7 @@ export const WidgetProduct = async ({
                 <Link
                   key={product.title}
                   href={`/shop/${categorySlug}/${product.slug}`}
-                  className="flex items-center md:items-start text-gray-600  flex-col group mb-4"
+                  className="flex items-center md:items-start text-gray-600  flex-col group"
                   prefetch
                 >
                   {product.imageCover ? (
@@ -118,7 +119,7 @@ export const WidgetProduct = async ({
                           <div
                             className={cn(
                               "flex items-center gap-x-2 text-primary underline font-semibold",
-                              product.availableSeats < 1 && "text-destructive"
+                              product.availableSeats < 1 && "text-destructive",
                             )}
                           >
                             <Sofa className="h-4 w-4" />
@@ -152,6 +153,60 @@ export const WidgetProduct = async ({
                           </div>
                         )}
                       </div>
+                    </div>
+                  )}
+                {product.type === ProductType.SERVICE &&
+                  isServiceMetadata(product.metadata) && (
+                    <div className="group flex flex-col space-y-4">
+                      <div className="text-2xl font-bold text-foreground group-hover:text-primary transition-colors">
+                        {product.title}
+                      </div>
+
+                      <div className="p-5 bg-muted rounded-2xl border border-primary/5">
+                        <div className="flex items-baseline gap-2 mb-1">
+                          <span className="text-3xl font-black text-foreground">
+                            €{product.price}
+                          </span>
+                        </div>
+                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
+                          Prezzo Competitor:{" "}
+                          <span className="line-through decoration-primary/50">
+                            €{product.metadata.competitorPrice}
+                          </span>
+                        </p>
+                      </div>
+
+                      <div className="grow">
+                        <p className="text-xs font-bold text-foreground uppercase tracking-widest mb-4">
+                          Riceverai:
+                        </p>
+                        <ul className="space-y-3">
+                          {product.metadata.features.slice(0, 3).map((f, i) => (
+                            <li
+                              key={i}
+                              className="flex items-start gap-3 text-sm text-secondary-foreground"
+                            >
+                              <CheckIcon className="size-6 text-primary" />
+                              <span className="line-clamp-2">
+                                {f.description}
+                              </span>
+                            </li>
+                          ))}
+                          {product.metadata.features.length > 3 && (
+                            <li className="text-xs text-primary font-bold ml-8">
+                              + altro ancora...
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+
+                      <Button
+                        asChild
+                        type="button"
+                        className="bg-foreground hover:bg-primary font-bold transition-colors shadow-lg"
+                      >
+                        <Link href={product.slug as Route}>Vedi Dettagli</Link>
+                      </Button>
                     </div>
                   )}
               </div>

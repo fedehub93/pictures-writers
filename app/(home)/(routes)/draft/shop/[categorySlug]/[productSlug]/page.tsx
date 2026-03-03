@@ -38,7 +38,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata(
-  props: PageProps<"/draft/shop/[categorySlug]/[productSlug]">
+  props: PageProps<"/draft/shop/[categorySlug]/[productSlug]">,
 ): Promise<Metadata | null> {
   const { productSlug } = await props.params;
 
@@ -56,13 +56,12 @@ export async function generateMetadata(
 }
 
 const Page = async (
-  props: PageProps<"/draft/shop/[categorySlug]/[productSlug]">
+  props: PageProps<"/draft/shop/[categorySlug]/[productSlug]">,
 ) => {
   const { productSlug } = await props.params;
 
   const { siteShopUrl } = await getSettings();
   const product = await getDraftProductBySlug(productSlug);
-  console.log(productSlug);
 
   if (!product || !product.category) {
     return notFound();

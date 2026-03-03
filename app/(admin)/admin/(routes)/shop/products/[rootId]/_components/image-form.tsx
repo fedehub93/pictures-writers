@@ -46,7 +46,7 @@ export const ImageForm = ({ imageCoverUrl, control, name }: ImageFormProps) => {
     imageCoverId,
     imageUrl,
   }: {
-    imageCoverId?: string;
+    imageCoverId: string | null;
     imageUrl: string;
   }) => {
     try {
@@ -61,7 +61,7 @@ export const ImageForm = ({ imageCoverUrl, control, name }: ImageFormProps) => {
   };
 
   const onHandleRemove = () => {
-    onSubmit({ imageCoverId: undefined, imageUrl: "" });
+    onSubmit({ imageCoverId: null, imageUrl: "" });
   };
 
   return (

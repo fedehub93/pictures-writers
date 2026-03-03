@@ -143,6 +143,8 @@ export const ProductServiceForm = ({
                         variant="destructive"
                         size="sm"
                         type="button"
+                        disabled={isSubmitting}
+                        aria-label={`Remove feature ${index + 1}`}
                         onClick={() => remove(index)}
                       >
                         <Trash className="h-4 w-4" />
@@ -169,7 +171,8 @@ export const ProductServiceForm = ({
               <Button
                 type="button"
                 size="sm"
-                onClick={() => append({ title: "", icon: "", description: "" })}
+                disabled={isSubmitting}
+                onClick={() => append({ title: "", Icon: "", description: "" })}
               >
                 <Plus className="h-4 w-4" />
                 <span className="ml-1">Aggiungi feature</span>

@@ -27,7 +27,7 @@ export const productFormSchema = z.object({
   }),
   description: z.custom<Descendant[]>(),
   tiptapDescription: z.any().optional(),
-  imageCoverId: z.string().optional(),
+  imageCoverId: z.string().nullable(),
   acquisitionMode: z.enum(ProductAcquisitionMode),
   formId: z.string().optional(),
   price: z.coerce.number<number>(),

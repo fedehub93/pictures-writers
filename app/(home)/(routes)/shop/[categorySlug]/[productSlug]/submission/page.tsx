@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import { db } from "@/lib/db";
 
-import { isWebinarMetadata } from "@/type-guards";
+import { isServiceMetadata, isWebinarMetadata } from "@/type-guards";
 
 import {
   getPublishedProductBySlug,
@@ -15,6 +15,7 @@ import { Breadcrumbs } from "@/app/(home)/_components/breadcrumbs";
 
 import SubmissionForm from "./_components/submission-form";
 import { WebinarSummary } from "../_components/webinar/webinar-summary";
+import { ServiceSummary } from "../_components/service/service-summary";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
@@ -33,7 +34,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata(
-  props: PageProps<"/shop/[categorySlug]/[productSlug]/submission">
+  props: PageProps<"/shop/[categorySlug]/[productSlug]/submission">,
 ): Promise<Metadata | null> {
   const { productSlug } = await props.params;
 
@@ -90,6 +91,16 @@ const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
                   price={product.price}
                   discountedPrice={product.discountedPrice}
                   data={product.metadata}
+                />
+              )}
+              {isServiceMetadata(product.metadata) && (
+                <ServiceSummary
+                  id={product.id}
+                  title={product.title}
+                  image={product.imageCover}
+                  price={product.price}
+                  discountedPrice={product.discountedPrice}
+                  faqs={product.faqs}
                 />
               )}
             </div>

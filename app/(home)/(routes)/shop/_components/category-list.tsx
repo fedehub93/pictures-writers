@@ -1,110 +1,89 @@
-import { AffiliateMetadata, EbookMetadata, WebinarMetadata } from "@/types";
+"use client";
+import type { Route } from "next";
+import Link from "next/link";
 
-interface CategoryListProps {
-  title: string;
-  description: string | null;
-  slug: string;
-  products: {
-    rootId: string | null;
-    title: string;
-    description: any;
-    slug: string;
-    price: number | null;
-    discountedPrice: number | null;
-    imageCover: {
-      url: string;
-      altText: string | null;
-    } | null;
-    metadata?: EbookMetadata | AffiliateMetadata | WebinarMetadata | null;
-  }[];
-}
+import {
+  ArrowRightIcon,
+  BookOpenIcon,
+  FileTextIcon,
+  VideoIcon,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-export const CategoryList = ({
-  title,
-  description,
-  slug,
-  products,
-}: CategoryListProps) => {
-  return <div>Category</div>;
-  // return (
-  //   <div className="flex flex-col">
-  //     <Link href={`/${slug}`} className="hover:text-primary">
-  //       <h2 className="text-3xl font-semibold mb-8">{title}</h2>
-  //     </Link>
-  //     <div className="flex flex-col items-center md:items-stretch md:flex-row gap-8">
-  //       {products.map((p) => {
-  //         if (p.metadata && isWebinarMetadata(p.metadata)) {
-  //           return (
-  //             <WebinarCard
-  //               key={p.title}
-  //               rootId={p.rootId!}
-  //               title={p.title}
-  //               categorySlug={slug}
-  //               slug={p.slug}
-  //               imageCover={p.imageCover}
-  //               date={p.metadata.date}
-  //               time={p.metadata.time}
-  //               duration={p.metadata.duration}
-  //               seats={p.metadata.seats}
-  //               price={p.price!}
-  //             />
-  //           );
-  //         }
+const categories = [
+  {
+    id: "Service",
+    name: "Servizi editoriali",
+    slug: "/shop/servizi-editoriali/",
+    description:
+      "Ottieni una valutazione tecnica profonda del tuo progetto. Ideale per chi vuole scoprire i punti di forza e le criticità della propria sceneggiatura prima di presentarla a produttori o concorsi.",
+    icon: <FileTextIcon size={28} />,
+    color: "text-blue-600",
+    bgColor: "bg-blue-50",
+    borderColor: "border-blue-100",
+    hoverBorder: "hover:border-blue-300",
+  },
+  {
+    id: "Course",
+    name: "Corsi & Masterclass",
+    slug: "/shop/corsi-di-sceneggiatura/",
+    description:
+      "Percorsi formativi strutturati per una crescita professionale accelerata. Impara dai migliori consulenti con lezioni mirate sulla struttura, i personaggi e il mercato.",
+    icon: <VideoIcon size={28} />,
+    color: "text-purple-600",
+    bgColor: "bg-purple-50",
+    borderColor: "border-purple-100",
+    hoverBorder: "hover:border-purple-300",
+  },
+  {
+    id: "Ebook",
+    name: "Ebook & Guide",
+    slug: "/shop/ebooks/",
+    description:
+      "Manuali pratici e guide rapide per affinare la tua tecnica. Perfetti per uno studio autonomo e costante, con consigli applicabili immediatamente ai tuoi testi.",
+    icon: <BookOpenIcon size={28} />,
+    color: "text-orange-600",
+    bgColor: "bg-orange-50",
+    borderColor: "border-orange-100",
+    hoverBorder: "hover:border-orange-300",
+  },
+];
 
-  //         if (p.metadata && isEbookMetadata(p.metadata)) {
-  //           return (
-  //             <EbookCard
-  //               key={p.title}
-  //               title={p.title}
-  //               categorySlug={slug}
-  //               slug={p.slug}
-  //               imageCover={p.imageCover}
-  //               authorFirstName={p.metadata.author?.firstName!}
-  //               authorLastName={p.metadata.author?.lastName!}
-  //               price={p.price!}
-  //               discountedPrice={p.discountedPrice!}
-  //             />
-  //           );
-  //         }
+interface CategoryListProps {}
 
-  //         return (
-  //           <div
-  //             key={p.title}
-  //             className="flex flex-col justify-center items-center w-72 rounded-lg overflow-hidden shadow-lg bg-primary-foreground"
-  //           >
-  //             <div className="w-full border-b flex items-center justify-center group overflow-hidden h-60">
-  //               <Link
-  //                 href={`${slug}/${p.slug}/`}
-  //                 prefetch={true}
-  //                 className="group-hover:scale-105 transition-all duration-700 h-full"
-  //               >
-  //                 <Image
-  //                   src={p.imageCover?.url!}
-  //                   alt={p.imageCover?.altText!}
-  //                   className="shadow-md group-hover:shadow-xl transition-all duration-700 w-full h-full object-cover"
-  //                   width={150}
-  //                   height={400}
-  //                 />
-  //               </Link>
-  //             </div>
-  //             <div className="p-4 flex flex-col gap-y-2 text-center h-40">
-  //               <div className="font-bold text-lg leading-5">{p.title}</div>
+export const CategoryList = ({}: CategoryListProps) => {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      {categories.map((cat) => (
+        <div
+          key={cat.id}
+          className={`group relative p-10 bg-card border ${cat.borderColor} ${cat.hoverBorder} rounded-[2.5rem] transition-all duration-500 hover:shadow-xl hover:shadow-gray-100 flex flex-col h-full`}
+        >
+          <div
+            className={`w-16 h-16 ${cat.bgColor} ${cat.color} rounded-2xl flex items-center justify-center mb-8 transform group-hover:scale-110 transition-transform duration-500`}
+          >
+            {cat.icon}
+          </div>
 
-  //               <div className="flex flex-col text-xl font-extrabold">
-  //                 <div className="text-primary">
-  //                   {formatPrice(p.price!, true)}
-  //                 </div>
-  //                 {p.price !== p.discountedPrice && (
-  //                   <span className="text-xs line-through">
-  //                     {formatPrice(p.discountedPrice!, true)}
-  //                   </span>
-  //                 )}
-  //               </div>
-  //             </div>
-  //           </div>
-  //         );
-  //       })}
-  //     </div>
-  //   </div>
-  // );
+          <h3 className="text-2xl font-black text-foreground mb-4 leading-tight group-hover:text-primary transition-colors">
+            {cat.name}
+          </h3>
+
+          <p className="text-muted-foreground text-sm leading-relaxed mb-8 grow">
+            {cat.description}
+          </p>
+
+          <Button asChild className="bg-foreground">
+            <Link
+              href={cat.slug as Route}
+              className={`flex items-center gap-3`}
+            >
+              <span className="font-bold">Vedi dettagli</span>
+              <ArrowRightIcon className="size-4 group-hover:translate-x-2 transition-transform" />
+            </Link>
+          </Button>
+        </div>
+      ))}
+    </div>
+  );
 };

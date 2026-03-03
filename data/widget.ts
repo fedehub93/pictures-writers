@@ -18,7 +18,11 @@ import {
   WidgetProductPopActionType,
 } from "@/types";
 import { DEFAULT_SOCIAL_CHANNEL_VALUES } from "@/constants";
-import { isEbookMetadata, isWebinarMetadata } from "@/type-guards";
+import {
+  isEbookMetadata,
+  isServiceMetadata,
+  isWebinarMetadata,
+} from "@/type-guards";
 
 import { getSettings } from "./settings";
 import { getPurchasedWebinar } from "./webinars";
@@ -310,6 +314,11 @@ export const getWidgetProducts = async ({
       mappedProducts.push({
         ...product,
         availableSeats: product.metadata.seats - purchasedWebinar,
+      });
+    }
+    if (isServiceMetadata(product.metadata)) {
+      mappedProducts.push({
+        ...product,
       });
     }
   }
