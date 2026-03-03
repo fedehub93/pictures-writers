@@ -67,17 +67,17 @@ export const ProductCategorySelect = ({
   }
 
   return (
-    <div>
       <FormField
         control={control}
         name="categoryId"
         render={({ field }) => (
-          <FormItem>
+          <FormItem className="flex-1 flex flex-col space-y-2">
             <div className="flex justify-between items-center">
               <FormLabel>Category</FormLabel>
               {selectedOption && (
                 <Badge
                   className={cn(
+                    `h-3.5 text-xs`,
                     selectedOption?.status === ContentStatus.DRAFT &&
                       "bg-slate-700",
                     selectedOption?.status === ContentStatus.CHANGED &&
@@ -94,7 +94,7 @@ export const ProductCategorySelect = ({
                 </Badge>
               )}
             </div>
-            {isLoading && <Skeleton className="w-full h-10" />}
+            {isLoading && <Skeleton className="w-full h-9" />}
             {categories && (
               <Select
                 onValueChange={onChangeCategory}
@@ -102,7 +102,7 @@ export const ProductCategorySelect = ({
                 disabled={isSubmitting}
               >
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-9 shadow-2xs mb-0">
                     <SelectValue placeholder="Select a category..." />
                   </SelectTrigger>
                 </FormControl>
@@ -126,6 +126,5 @@ export const ProductCategorySelect = ({
           </FormItem>
         )}
       />
-    </div>
   );
 };

@@ -31,11 +31,13 @@ import {
   AffiliateMetadata,
   EbookMetadata,
   Gallery,
+  ServiceMetadata,
   WebinarMetadata,
 } from "@/types";
 import { ProductGalleryForm } from "./product-gallery-form";
 import { ProductAffiliateForm } from "./affiliate/product-affiliate-form";
 import { ProductWebinarForm } from "./product-webinar-form";
+import { ProductServiceForm } from "./service/product-service-form";
 import { ProductFAQForm } from "./product-faq-form";
 
 interface ProductFormProps {
@@ -49,7 +51,12 @@ interface ProductFormProps {
       answer: string;
       sort: number;
     }[];
-    metadata?: EbookMetadata | AffiliateMetadata | WebinarMetadata | null;
+    metadata?:
+      | EbookMetadata
+      | AffiliateMetadata
+      | WebinarMetadata
+      | ServiceMetadata
+      | null;
   };
   apiUrl: string;
   authors?: User[];
@@ -70,6 +77,7 @@ export const ProductForm = ({
   const isEbookProduct = initialData.type === ProductType.EBOOK;
   const isAffiliateProduct = initialData.type === ProductType.AFFILIATE;
   const isWebinarProduct = initialData.type === ProductType.WEBINAR;
+  const isServiceProduct = initialData.type === ProductType.SERVICE;
 
   const metadata = initialData.metadata;
 
@@ -151,7 +159,7 @@ export const ProductForm = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <div className="p-6 max-w-6xl mx-auto h-full">
+        <div className="p-6 max-w-350 mx-auto h-full">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-medium">Product setup</h1>
             <div className="flex items-center gap-x-2">
@@ -182,6 +190,12 @@ export const ProductForm = ({
                 )}
                 {isWebinarProduct && (
                   <ProductWebinarForm
+                    control={form.control}
+                    isSubmitting={isSubmitting}
+                  />
+                )}
+                {isServiceProduct && (
+                  <ProductServiceForm
                     control={form.control}
                     isSubmitting={isSubmitting}
                   />
@@ -218,6 +232,12 @@ export const ProductForm = ({
                 control={form.control}
                 isSubmitting={isSubmitting}
               />
+              {/* <ProductMetadata
+                control={form.control}
+                isSubmitting={isSubmitting}
+                data={initialData.metadata}
+                productType={initialData.type}
+              /> */}
             </div>
           </div>
         </div>

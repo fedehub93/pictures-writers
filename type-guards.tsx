@@ -15,6 +15,7 @@ import {
   WidgetTagMetadata,
   WebinarMetadata,
   TiptapContent,
+  ServiceMetadata,
 } from "@/types";
 import { JSONContent } from "@tiptap/react";
 
@@ -53,6 +54,18 @@ export function isWebinarMetadata(
     "type" in metadata &&
     typeof (metadata as any).type === "string" &&
     metadata.type === ProductType.WEBINAR
+  );
+}
+
+export function isServiceMetadata(
+  metadata: unknown
+): metadata is ServiceMetadata {
+  return (
+    typeof metadata === "object" &&
+    metadata !== null &&
+    "type" in metadata &&
+    typeof (metadata as any).type === "string" &&
+    metadata.type === ProductType.SERVICE
   );
 }
 

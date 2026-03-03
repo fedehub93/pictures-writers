@@ -5,6 +5,7 @@ import {
   AffiliateMetadata,
   EbookMetadata,
   EbookType,
+  ServiceMetadata,
   WebinarMetadata,
 } from "@/types";
 
@@ -27,6 +28,7 @@ export async function POST(req: Request) {
       | EbookMetadata
       | AffiliateMetadata
       | WebinarMetadata
+      | ServiceMetadata
       | null
       | undefined = null;
 
@@ -57,6 +59,17 @@ export async function POST(req: Request) {
         lessons: [],
         seats: 0,
         platform: "",
+      };
+    }
+
+    if (type === ProductType.SERVICE) {
+      metadata = {
+        type: ProductType.SERVICE,
+        serviceType: "",
+        competitorPrice: 0,
+        target: "",
+        attachamentUrl: "",
+        features: [],
       };
     }
 

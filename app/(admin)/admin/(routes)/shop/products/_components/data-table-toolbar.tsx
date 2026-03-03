@@ -2,15 +2,19 @@
 
 import Link from "next/link";
 import {
-  ArrowDown,
-  CheckCircle,
-  Circle,
-  Pencil,
-  PlusCircle,
-  Timer,
-  X,
+  ArrowDownIcon,
+  BookTextIcon,
+  CheckCircleIcon,
+  CircleIcon,
+  ClipboardPenIcon,
+  ExternalLinkIcon,
+  HeadsetIcon,
+  PencilIcon,
+  PlusCircleIcon,
+  TimerIcon,
+  XIcon,
 } from "lucide-react";
-import { ContentStatus } from "@/generated/prisma";
+import { ContentStatus, ProductType } from "@/generated/prisma";
 import { Table } from "@tanstack/react-table";
 import { useState } from "react";
 import axios from "axios";
@@ -27,8 +31,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { DataTableFacetedFilter } from "./data-table-faceted-filter";
 import { API_ADMIN_PRODUCTS_PUBLISH } from "@/constants/api";
+
+import { DataTableFacetedFilter } from "./data-table-faceted-filter";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
@@ -39,17 +44,40 @@ const statuses = [
   {
     value: ContentStatus.DRAFT,
     label: "Draft",
-    icon: Circle,
+    icon: CircleIcon,
   },
   {
     value: ContentStatus.CHANGED,
     label: "Changed",
-    icon: Timer,
+    icon: TimerIcon,
   },
   {
     value: ContentStatus.PUBLISHED,
     label: "Published",
-    icon: CheckCircle,
+    icon: CheckCircleIcon,
+  },
+];
+
+const types = [
+  {
+    value: ProductType.SERVICE,
+    label: "Service",
+    icon: ClipboardPenIcon,
+  },
+  {
+    value: ProductType.WEBINAR,
+    label: "Webinar",
+    icon: HeadsetIcon,
+  },
+  {
+    value: ProductType.EBOOK,
+    label: "Ebook",
+    icon: BookTextIcon,
+  },
+  {
+    value: ProductType.AFFILIATE,
+    label: "Affiliate",
+    icon: ExternalLinkIcon,
   },
 ];
 
@@ -92,13 +120,20 @@ export function DataTableToolbar<TData>({
           onChange={(event) =>
             table.getColumn("title")?.setFilterValue(event.target.value)
           }
-          className="h-8 w-[150px] lg:w-[250px]"
+          className="h-8 w-37.5 lg:w-62.5"
         />
         {table.getColumn("status") && (
           <DataTableFacetedFilter
             column={table.getColumn("status")}
             title="Status"
             options={statuses}
+          />
+        )}
+        {table.getColumn("type") && (
+          <DataTableFacetedFilter
+            column={table.getColumn("type")}
+            title="Type"
+            options={types}
           />
         )}
         {isFiltered && (
@@ -108,7 +143,7 @@ export function DataTableToolbar<TData>({
             className="h-8 px-2 lg:px-3"
           >
             Reset
-            <X className="ml-2 h-4 w-4" />
+            <XIcon className="ml-2 h-4 w-4" />
           </Button>
         )}
       </div>
@@ -116,13 +151,13 @@ export function DataTableToolbar<TData>({
         <DropdownMenuTrigger asChild disabled={isLoading}>
           <Button type="button" variant="outline" size="sm">
             Actions
-            <ArrowDown className="h-4 w-4 ml-2" />
+            <ArrowDownIcon className="h-4 w-4 ml-2" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <Link href="/admin/shop/products/create">
             <DropdownMenuItem>
-              <PlusCircle className="h-4 w-4 mr-2" />
+              <PlusCircleIcon className="h-4 w-4 mr-2" />
               New product
             </DropdownMenuItem>
           </Link>
@@ -134,7 +169,7 @@ export function DataTableToolbar<TData>({
             className="px-0 w-full justify-start"
           >
             <DropdownMenuItem>
-              <Pencil className="h-4 w-4 mr-2" />
+              <PencilIcon className="h-4 w-4 mr-2" />
               Publish
             </DropdownMenuItem>
           </Button>

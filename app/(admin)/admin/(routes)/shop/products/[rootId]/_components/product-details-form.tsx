@@ -47,14 +47,19 @@ export const ProductDetailsForm = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <GenericInput
-          control={control}
-          name="title"
-          label="Name"
-          placeholder="Screenplay 101 Ebook"
-          disabled={isSubmitting}
-        />
-        <ProductCategorySelect control={control} isSubmitting={isSubmitting} />
+        <div className="grid grid-cols-2 items-center gap-x-4">
+          <GenericInput
+            control={control}
+            name="title"
+            label="Title"
+            placeholder="Screenplay 101 Ebook"
+            disabled={isSubmitting}
+          />
+          <ProductCategorySelect
+            control={control}
+            isSubmitting={isSubmitting}
+          />
+        </div>
         <SlugInput
           control={control}
           name="slug"
