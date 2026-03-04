@@ -13,8 +13,8 @@ import { Button } from "@/components/ui/button";
 const categories = [
   {
     id: "Service",
-    name: "Servizi editoriali",
-    slug: "/shop/servizi-editoriali/",
+    name: "Servizi di editing",
+    slug: "/shop/servizi-di-editing/",
     description:
       "Ottieni una valutazione tecnica profonda del tuo progetto. Ideale per chi vuole scoprire i punti di forza e le criticità della propria sceneggiatura prima di presentarla a produttori o concorsi.",
     icon: <FileTextIcon size={28} />,
