@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { isEbookMetadata, isWebinarMetadata } from "@/type-guards";
+import {
+  isEbookMetadata,
+  isServiceMetadata,
+  isWebinarMetadata,
+} from "@/type-guards";
 
 import { getProductMetadataBySlug } from "@/app/(home)/_components/seo/content-metadata";
 import { ProductJsonLd } from "@/app/(home)/_components/seo/json-ld/product";
@@ -20,6 +24,7 @@ import { ProductGallery } from "./_components/product-gallery";
 import { EbookInfo } from "./_components/ebook-info";
 
 import { Webinar } from "./_components/webinar";
+import { Service } from "./_components/service";
 
 export const revalidate = 86400;
 
@@ -39,7 +44,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata(
-  props: PageProps<"/shop/[categorySlug]/[productSlug]">
+  props: PageProps<"/shop/[categorySlug]/[productSlug]">,
 ): Promise<Metadata | null> {
   const { productSlug } = await props.params;
 
@@ -111,6 +116,19 @@ const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
         )}
         {isWebinarMetadata(product.metadata) && (
           <Webinar
+            id={product.id}
+            title={product.title}
+            tiptapDescription={product.tiptapDescription}
+            image={product.imageCover}
+            price={product.price}
+            discountedPrice={product.discountedPrice}
+            acquisitionMode={product.acquisitionMode}
+            data={product.metadata}
+            faqs={product.faqs}
+          />
+        )}
+        {isServiceMetadata(product.metadata) && (
+          <Service
             id={product.id}
             title={product.title}
             tiptapDescription={product.tiptapDescription}

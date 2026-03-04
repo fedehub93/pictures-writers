@@ -1,8 +1,17 @@
 "use client";
+
+import type { JSX, ReactNode } from "react";
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LibraryBig, Newspaper, School, Trophy } from "lucide-react";
+import {
+  FileTextIcon,
+  LibraryBigIcon,
+  NewspaperIcon,
+  SchoolIcon,
+  TrophyIcon,
+  VideoIcon,
+} from "lucide-react";
 
 import {
   NavigationMenu,
@@ -13,8 +22,6 @@ import {
 } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
 
-import type { JSX } from "react";
-
 const routes: { title: string; link: Route }[] = [
   {
     title: "Home",
@@ -22,7 +29,7 @@ const routes: { title: string; link: Route }[] = [
   },
   {
     title: "About",
-    link: "/about",
+    link: "/about/" as Route,
   },
   {
     title: "Formazione",
@@ -30,21 +37,145 @@ const routes: { title: string; link: Route }[] = [
   },
   {
     title: "Concorsi",
-    link: "/blog/concorsi-di-sceneggiatura" as Route,
+    link: "/blog/concorsi-di-sceneggiatura/" as Route,
   },
+  { title: "Servizi", link: "/shop/" as Route },
   {
     title: "Ebooks",
-    link: "/shop/ebooks" as Route,
+    link: "/shop/ebooks/" as Route,
   },
   {
     title: "Blog",
-    link: "/blog" as Route,
+    link: "/blog/" as Route,
   },
   {
     title: "Contatti",
-    link: "/contatti",
+    link: "/contatti/" as Route,
   },
 ];
+
+const resources: {
+  title: string;
+  description: string;
+  href: string;
+  Icon: ReactNode;
+}[] = [
+  {
+    title: "Formazione",
+    description:
+      "Esplora scuole, corsi e percorsi formativi dedicati alla scrittura per il cinema per orientarti nel mondo della sceneggiatura.",
+    href: "/blog/scuole-di-sceneggiatura/",
+    Icon: (
+      <SchoolIcon
+        className="absolute h-8 w-8 bottom-4 right-2 text-primary"
+        strokeWidth={1}
+      />
+    ),
+  },
+  {
+    title: "Concorsi",
+    description:
+      "Scopri bandi attivi, consigli per partecipare e storie di chi ce l'ha fatta nei concorsi di sceneggiatura in Italia.",
+    href: "/blog/concorsi-di-sceneggiatura/",
+    Icon: (
+      <TrophyIcon
+        className="absolute h-8 w-8 bottom-4 right-2 text-primary"
+        strokeWidth={1}
+      />
+    ),
+  },
+  {
+    title: "Ebooks & Guide",
+    description:
+      "Esplora una selezione di ebook e risorse esclusive sulla sceneggiatura cinematografica, ideali per scrittori e appassionati del settore.",
+    href: "/shop/ebooks/",
+    Icon: (
+      <LibraryBigIcon
+        className="absolute h-8 w-8 bottom-4 right-2 text-primary"
+        strokeWidth={1}
+      />
+    ),
+  },
+  {
+    title: "Blog",
+    description:
+      "Leggi articoli e approfondimenti sul mondo del cinema, con focus sulla scrittura di sceneggiature e le tecniche narrative utilizzate.",
+    href: "/blog/",
+    Icon: (
+      <NewspaperIcon
+        className="absolute h-8 w-8 bottom-4 right-2 text-primary"
+        strokeWidth={1}
+      />
+    ),
+  },
+];
+
+const services: {
+  title: string;
+  description: string;
+  href: string;
+  Icon: ReactNode;
+}[] = [
+  {
+    title: "Servizi Editoriali",
+    description: "Ottieni una valutazione tecnica profonda del tuo progetto.",
+    href: "/shop/servizi-editoriali/" as Route,
+    Icon: (
+      <FileTextIcon
+        className="absolute h-8 w-8 bottom-4 right-2 text-primary"
+        strokeWidth={1}
+      />
+    ),
+  },
+  {
+    title: "Corsi & Masterclass",
+    description:
+      "Percorsi formativi strutturati per una crescita professionale accelerata.",
+    href: "/shop/corsi-di-sceneggiatura/" as Route,
+    Icon: (
+      <VideoIcon
+        className="absolute h-8 w-8 bottom-4 right-2 text-primary"
+        strokeWidth={1}
+      />
+    ),
+  },
+];
+
+interface SubMenuItemProps {
+  pathname: string;
+  title: string;
+  description: string;
+  href: string;
+  Icon: ReactNode;
+}
+
+const SubMenuItem = ({
+  pathname,
+  title,
+  description,
+  href,
+  Icon,
+}: SubMenuItemProps) => {
+  return (
+    <li
+      className={cn(
+        "row-span-3",
+        pathname === href && "bg-accent rounded-md shadow-md",
+      )}
+    >
+      <Link
+        className="flex h-full w-full relative select-none flex-col justify-end rounded-md transition-all p-6 no-underline outline-hidden focus:bg-accent focus:shadow-md"
+        href={href as Route}
+      >
+        {Icon}
+        <div className="my-2 text-lg font-medium">{title}</div>
+        <p className="text-sm leading-tight text-muted-foreground">
+          {description}
+        </p>
+      </Link>
+    </li>
+  );
+};
 
 interface NavProps {
   isMobile?: boolean;
@@ -60,7 +191,7 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
     >
       <NavigationMenuList
         className={cn(
-          isMobile && "flex-col justify-center items-start space-x-0 gap-y-8"
+          isMobile && "flex-col justify-center items-start space-x-0 gap-y-8",
         )}
       >
         {isMobile &&
@@ -74,7 +205,7 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
                   className={cn(
                     "text-base py-2 px-4 rounded-md text-foreground hover:text-primary",
                     isMobile && "text-2xl font-light tr",
-                    pathname === route.link && "text-primary"
+                    pathname === route.link && "text-primary",
                   )}
                   onClick={() => {
                     if (isMobile && onLinkClick) onLinkClick();
@@ -83,7 +214,7 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
                   {route.title}
                 </Link>
               </NavigationMenuItem>
-            )
+            ),
           )}
         {!isMobile && (
           <>
@@ -94,7 +225,7 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
                 className={cn(
                   "text-base py-2 px-4 rounded-md hover:text-primary text-foreground",
                   isMobile && "text-2xl font-light tr",
-                  pathname === "/" && "text-primary"
+                  pathname === "/" && "text-primary",
                 )}
                 onClick={() => {
                   if (isMobile && onLinkClick) onLinkClick();
@@ -110,7 +241,7 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
                 className={cn(
                   "text-base py-2 px-4 rounded-md hover:text-primary text-foreground",
                   isMobile && "text-2xl font-light tr",
-                  pathname === "/about/" && "text-primary"
+                  pathname === "/about/" && "text-primary",
                 )}
                 onClick={() => {
                   if (isMobile && onLinkClick) onLinkClick();
@@ -124,83 +255,38 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
                 className={cn(
                   "text-base py-2 rounded-md text-foreground hover:text-primary bg-transparent",
                   isMobile && "text-2xl font-light tr",
+                  pathname.startsWith("/shop/") &&
+                    !pathname.endsWith("/ebooks/") &&
+                    "text-primary",
+                )}
+              >
+                Servizi
+              </NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <ul className="grid w-100 gap-3 p-4 md:w-125 md:grid-cols-2 lg:w-150 ">
+                  {services.map((s) => (
+                    <SubMenuItem key={s.title} pathname={pathname} {...s} />
+                  ))}
+                </ul>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuTrigger
+                className={cn(
+                  "text-base py-2 rounded-md text-foreground hover:text-primary bg-transparent",
+                  isMobile && "text-2xl font-light tr",
                   (pathname.startsWith("/shop/ebooks") ||
                     pathname.startsWith("/blog/")) &&
-                    "text-primary"
+                    "text-primary",
                 )}
               >
                 Risorse
               </NavigationMenuTrigger>
               <NavigationMenuContent>
-                <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-                  <li className="row-span-3">
-                    <Link
-                      className="flex h-full w-full relative select-none flex-col justify-end rounded-md transition-all p-6 no-underline outline-hidden focus:bg-accent focus:shadow-md"
-                      href="/blog/scuole-di-sceneggiatura"
-                    >
-                      <School
-                        className="absolute h-8 w-8 bottom-4 right-4 text-primary "
-                        strokeWidth={1}
-                      />
-                      <div className="my-2 text-lg font-medium">Formazione</div>
-                      <p className="text-sm leading-tight text-muted-foreground">
-                        Esplora scuole, corsi e percorsi formativi dedicati alla
-                        scrittura per il cinema per orientarti nel mondo della
-                        sceneggiatura.
-                      </p>
-                    </Link>
-                  </li>
-                  <li className="row-span-3">
-                    <Link
-                      className="flex h-full w-full relative select-none flex-col justify-end rounded-md transition-all p-6 no-underline outline-hidden focus:bg-accent focus:shadow-md"
-                      href="/blog/concorsi-di-sceneggiatura"
-                    >
-                      <Trophy
-                        className="absolute h-8 w-8 bottom-4 right-4 text-primary "
-                        strokeWidth={1}
-                      />
-                      <div className="my-2 text-lg font-medium">Concorsi</div>
-                      <p className="text-sm leading-tight text-muted-foreground">
-                        Scopri bandi attivi, consigli per partecipare e storie
-                        di chi ce l&apos;ha fatta nei concorsi di sceneggiatura
-                        in Italia e all&apos;estero.
-                      </p>
-                    </Link>
-                  </li>
-                  <li className="row-span-3">
-                    <Link
-                      className="flex h-full w-full relative select-none flex-col justify-end rounded-md transition-all p-6 no-underline outline-hidden focus:bg-accent focus:shadow-md"
-                      href="/shop/ebooks"
-                    >
-                      <LibraryBig
-                        className="absolute h-8 w-8 bottom-4 right-4 text-primary "
-                        strokeWidth={1}
-                      />
-                      <div className="my-2 text-lg font-medium">Ebooks</div>
-                      <p className="text-sm leading-tight text-muted-foreground">
-                        Esplora una selezione di ebook e risorse esclusive sulla
-                        sceneggiatura cinematografica, ideali per scrittori e
-                        appassionati del settore.
-                      </p>
-                    </Link>
-                  </li>
-                  <li className="row-span-3">
-                    <Link
-                      className="flex h-full w-full relative select-none flex-col justify-end rounded-md transition-all p-6 no-underline outline-hidden focus:bg-accent focus:shadow-md"
-                      href="/blog"
-                    >
-                      <Newspaper
-                        className="absolute h-8 w-8 bottom-4 right-4 text-primary "
-                        strokeWidth={1}
-                      />
-                      <div className="my-2 text-lg font-medium">Blog</div>
-                      <p className="text-sm leading-tight text-muted-foreground">
-                        Leggi articoli e approfondimenti sul mondo del cinema,
-                        con focus sulla scrittura di sceneggiature e le tecniche
-                        narrative utilizzate nei film.
-                      </p>
-                    </Link>
-                  </li>
+                <ul className="grid w-100 gap-3 p-4 md:w-125 md:grid-cols-2 lg:w-150 ">
+                  {resources.map((r) => (
+                    <SubMenuItem key={r.title} pathname={pathname} {...r} />
+                  ))}
                 </ul>
               </NavigationMenuContent>
             </NavigationMenuItem>
@@ -211,7 +297,7 @@ export const Nav = ({ isMobile = false, onLinkClick }: NavProps) => {
                 className={cn(
                   "text-base py-2 px-4 rounded-md text-foreground hover:text-primary",
                   isMobile && "text-2xl font-light tr",
-                  pathname === "/contatti/" && "text-primary"
+                  pathname === "/contatti/" && "text-primary",
                 )}
                 onClick={() => {
                   if (isMobile && onLinkClick) onLinkClick();

@@ -2,12 +2,17 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { formatPrice } from "@/lib/format";
-import { isEbookMetadata, isWebinarMetadata } from "@/type-guards";
+import {
+  isEbookMetadata,
+  isServiceMetadata,
+  isWebinarMetadata,
+} from "@/type-guards";
 
 import { GetProductsPaginatedByFiltersReturn } from "@/data/product";
 
 import { WebinarCard } from "./webinar-card";
 import { EbookCard } from "./ebook-card";
+import { ServiceCard } from "./service-card";
 
 interface ProductsListProps {
   categorySlug: string;
@@ -16,7 +21,7 @@ interface ProductsListProps {
 
 export const ProductsList = ({ categorySlug, products }: ProductsListProps) => {
   return (
-    <div className="flex flex-col flex-wrap items-center md:items-stretch md:flex-row gap-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       {products.map((p) => {
         if (p.metadata && isWebinarMetadata(p.metadata)) {
           return (
@@ -34,7 +39,6 @@ export const ProductsList = ({ categorySlug, products }: ProductsListProps) => {
             />
           );
         }
-
         if (p.metadata && isEbookMetadata(p.metadata)) {
           return (
             <EbookCard
@@ -47,6 +51,21 @@ export const ProductsList = ({ categorySlug, products }: ProductsListProps) => {
               authorLastName={p.metadata.author?.lastName!}
               price={p.price!}
               discountedPrice={p.discountedPrice!}
+            />
+          );
+        }
+        if (p.metadata && isServiceMetadata(p.metadata)) {
+          return (
+            <ServiceCard
+              key={p.title}
+              title={p.title}
+              categorySlug={categorySlug}
+              slug={p.slug}
+              serviceType={p.metadata.serviceType}
+              target={p.metadata.target}
+              competitorPrice={p.metadata.competitorPrice}
+              features={p.metadata.features}
+              price={p.price!}
             />
           );
         }

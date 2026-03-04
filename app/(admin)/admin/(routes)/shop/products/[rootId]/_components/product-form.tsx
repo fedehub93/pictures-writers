@@ -94,7 +94,7 @@ export const ProductForm = ({
         content: [],
       },
       categoryId: initialData.categoryId || undefined,
-      imageCoverId: initialData.imageCoverId || undefined,
+      imageCoverId: initialData.imageCoverId || null,
       formId: initialData.formId || undefined,
       price: initialData.price || 0,
       discountedPrice: initialData.discountedPrice || 0,

@@ -47,7 +47,7 @@ export const WebinarCard = async ({
       <div
         className={cn(
           "absolute -top-6 left-2 text-sm bg-primary pt-1 px-2 text-primary-foreground rounded-t-lg font-bold",
-          availableSeats < 1 && "bg-destructive"
+          availableSeats < 1 && "bg-destructive",
         )}
       >
         {availableSeats < 1 ? "Chiuso" : "Aperto"}
@@ -91,7 +91,7 @@ export const WebinarCard = async ({
           </div>
         </div>
         <div className="flex flex-col text-xl font-bold">
-          <Button asChild size="sm" className="w-1/2 self-center">
+          <Button asChild type="button" className="bg-foreground">
             <Link href={href} prefetch>
               Scopri
             </Link>

@@ -6,7 +6,7 @@ import { getAuthorsString } from "@/data/user";
 import { getSettings } from "@/data/settings";
 
 export async function getPostMetadataBySlug(
-  slug: string
+  slug: string,
 ): Promise<Metadata | null> {
   const { siteName, siteUrl } = await getSettings();
 
@@ -58,7 +58,6 @@ export async function getPostMetadataBySlug(
   }
 
   const authorsString = getAuthorsString(post.postAuthors.map((v) => v.user));
-
   return {
     title: post.seo.title,
     description: post.seo.description,
@@ -80,12 +79,14 @@ export async function getPostMetadataBySlug(
       description: post.seo.ogTwitterDescription || post.seo.description || "",
       url: post.seo.ogTwitterUrl || "",
       siteName: siteName!,
-      images: [
-        {
-          url: post.imageCover!.url,
-          alt: post.imageCover!.altText || "",
-        },
-      ],
+      images: post.imageCover
+        ? [
+            {
+              url: post.imageCover!.url,
+              alt: post.imageCover!.altText || "",
+            },
+          ]
+        : [],
       locale: "it_IT",
       type: "article",
       authors: [authorsString],
@@ -103,7 +104,7 @@ export async function getPostMetadataBySlug(
 }
 
 export async function getCategoryMetadataBySlug(
-  slug: string
+  slug: string,
 ): Promise<Metadata | null> {
   const { siteName, siteUrl } = await getSettings();
 
@@ -156,7 +157,7 @@ export async function getCategoryMetadataBySlug(
 }
 
 export async function getTagMetdataBySlug(
-  slug: string
+  slug: string,
 ): Promise<Metadata | null> {
   const { siteName, siteUrl } = await getSettings();
 
@@ -207,7 +208,7 @@ export async function getTagMetdataBySlug(
 }
 
 export async function getProductMetadataBySlug(
-  slug: string
+  slug: string,
 ): Promise<Metadata | null> {
   const { siteName, siteShopUrl } = await getSettings();
 
@@ -252,12 +253,14 @@ export async function getProductMetadataBySlug(
         product.seo.ogTwitterDescription || product.seo.description || "",
       url: product.seo.ogTwitterUrl || "",
       siteName: siteName!,
-      images: [
-        {
-          url: product.imageCover!.url,
-          alt: product.imageCover!.altText || "",
-        },
-      ],
+      images: product.imageCover
+        ? [
+            {
+              url: product.imageCover!.url,
+              alt: product.imageCover!.altText || "",
+            },
+          ]
+        : [],
       locale: "it_IT",
       type: "article",
       authors: [`${product.user!.firstName} ${product.user!.lastName}`],
@@ -267,7 +270,7 @@ export async function getProductMetadataBySlug(
       title: product.seo.ogTwitterTitle || product.seo.title,
       description:
         product.seo.ogTwitterDescription || product.seo.description || "",
-      images: [product.imageCover!.url],
+      images: product.imageCover ? [product.imageCover!.url] : [],
       creator: `${product.user!.firstName} ${product.user!.lastName}`,
     },
   };

@@ -36,7 +36,7 @@ export async function PATCH(
       return new NextResponse("Not found", { status: 404 });
     }
 
-    if (!product.title || !product.imageCoverId) {
+    if (!product.title || !product.slug || !product.categoryId) {
       return new NextResponse("Missing required fields!", { status: 400 });
     }
 

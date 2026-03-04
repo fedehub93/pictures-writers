@@ -11,7 +11,7 @@ interface FaqSectionProps {
 
 export const FaqSection = ({ faqs }: FaqSectionProps) => {
   return (
-    <div className="relative w-full max-w-3xl mx-auto">
+    <div className="relative w-full mx-auto">
       <div className="text-center">
         <div className="text-4xl uppercase font-extralight">FAQ</div>
         <p className="mt-1 text-muted-foreground">
@@ -19,7 +19,7 @@ export const FaqSection = ({ faqs }: FaqSectionProps) => {
         </p>
       </div>
 
-      <div className="max-w-3xl mt-6">
+      <div className="w-full mt-6">
         <Accordion type="single" collapsible className="w-full">
           {faqs.map((faq, index) => (
             <AccordionItem value={`item-${index}`} key={faq.question}>

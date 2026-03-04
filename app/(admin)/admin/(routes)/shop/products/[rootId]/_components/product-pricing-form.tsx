@@ -26,8 +26,7 @@ export const ProductPricingForm = ({
     name: "acquisitionMode",
   });
 
-  const isPriceDisabled =
-    isSubmitting || fieldAcquisition.value !== ProductAcquisitionMode.PAID;
+  const isPriceDisabled = isSubmitting;
 
   return (
     <Card>

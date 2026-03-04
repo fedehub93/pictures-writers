@@ -54,6 +54,7 @@
 }
 
 :root {
+  /*oklch(0.9821 0.0067 53.45)*/
   --background: oklch(0.9818 0.0054 95.0986);
   --foreground: oklch(0.3438 0.0269 95.7226);
   --card: oklch(0.9818 0.0054 95.0986);
@@ -403,7 +404,7 @@
 }
 
 @utility p-newsletter {
-  @apply relative mt-16 hidden w-[500px] flex-col  gap-6 rounded-lg border-2 border-primary bg-secondary px-8 py-10 transition-all duration-500 lg:fixed lg:right-4 lg:flex;
+  @apply relative mt-16 hidden w-125 flex-col  gap-6 rounded-lg border-2 border-primary bg-secondary px-8 py-10 transition-all duration-500 lg:fixed lg:right-4 lg:flex;
 
   & .p-newsletter__close {
     @apply absolute right-4 top-4 cursor-pointer;

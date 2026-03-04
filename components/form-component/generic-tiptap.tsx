@@ -6,7 +6,7 @@ import StarterKit from "@tiptap/starter-kit";
 import TextAlign from "@tiptap/extension-text-align";
 import Youtube from "@tiptap/extension-youtube";
 
-import { FormControl, FormField, FormItem } from "@/components/ui/form";
+import { FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 
 import { CustomLink } from "../tiptap-editor/extensions/link";
 import { CustomImage } from "../tiptap-editor/extensions/image";
@@ -84,7 +84,8 @@ export const GenericTiptap = <T extends FieldValues>({
         control={control}
         name={name}
         render={({ field }) => (
-          <FormItem className="space-y-0">
+          <FormItem className="flex-1 flex flex-col space-y-2">
+            <FormLabel>Description</FormLabel>
             <FormControl>
               <Tiptap key={id} editor={editor} value={field.value} />
             </FormControl>

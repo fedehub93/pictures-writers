@@ -10,7 +10,7 @@ export async function DELETE(
       rootId: string;
       productId: string;
     }>;
-  }
+  },
 ) {
   const params = await props.params;
   try {
@@ -53,7 +53,7 @@ export async function PATCH(
       rootId: string;
       productId: string;
     }>;
-  }
+  },
 ) {
   const params = await props.params;
   try {
@@ -104,7 +104,7 @@ export async function PATCH(
           question: v.question,
           answer: v.answer,
           sort: v.sort,
-        })
+        }),
       ),
     });
 
