@@ -22,9 +22,9 @@ type PresetCategory = {
 
 const PRESET_CATEGORIES: PresetCategory[] = [
   {
-    slug: "servizi-editoriali",
+    slug: "servizi-di-editing",
     badge: 'Analisi professionale "Double View"',
-    emphasized: "Servizi Editoriali",
+    emphasized: "Servizi di Editing",
     paragraph: (
       <>
         Il nostro servizio di analisi non è una semplice lettura, ma un check-up
@@ -121,7 +121,7 @@ const ShopCategoryPage = async (props: PageProps<"/shop/[categorySlug]">) => {
   const preset = PRESET_CATEGORIES.find((p) => p.slug === categorySlug);
 
   const badgeText = preset?.badge ?? 'Analisi Professionale "Double View"';
-  const emphasizedText = preset?.emphasized ?? "Servizi Editoriali";
+  const emphasizedText = preset?.emphasized ?? "Servizi di Editing";
   const paragraph = preset?.paragraph ?? (
     <>
       Il nostro servizio di analisi non è una semplice lettura, ma un check-up

@@ -44,7 +44,7 @@ export const ServiceSummary = ({
           {!image && (
             <Image
               src="/feedback-pana.png"
-              alt="Feedback da servizi editoriali"
+              alt="Feedback da servizi di editing"
               width={250}
               height={250}
               className="object-cover scale-110"

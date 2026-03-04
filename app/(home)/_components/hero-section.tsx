@@ -32,7 +32,7 @@ export const HeroSection = (): JSX.Element => {
               </span>{" "}
               alle{" "}
               <span className="rounded-md bg-accent p-1 font-bold">
-                consulenze editoriali
+                consulenze di editing
               </span>{" "}
               d'élite: ti accompagniamo dalla prima pagina al pitch finale.
             </p>
@@ -51,7 +51,7 @@ export const HeroSection = (): JSX.Element => {
 
             <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
               <Button asChild type="button" className="bg-foreground text-md" size="lg">
-                <Link href="/shop/servizi-editoriali">Servizi Editoriali</Link>
+                <Link href="/shop/servizi-di-editing">Servizi di Editing</Link>
               </Button>
               <Button asChild type="button" className="bg-foreground text-md" size="lg">
                 <Link href="/shop/corsi-di-sceneggiatura">
