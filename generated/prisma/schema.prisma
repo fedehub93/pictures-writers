@@ -605,7 +605,6 @@ model Product {
   metadata Json?          @db.JsonB
   extras   ProductExtra[]
 
-  // collegamento opzionale a un form
   formId String?
   form   Form?   @relation(fields: [formId], references: [id])
 
@@ -615,6 +614,7 @@ model Product {
 
   gallery ProductGallery[]
   faqs    ProductFAQ[]
+  reviews Reviews[]
 
   purchases Purchase[]
 
@@ -689,6 +689,29 @@ model ProductFAQ {
   question String
   answer   String
   sort     Int
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum ReviewStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model Reviews {
+  id String @id @default(uuid())
+
+  rating           Float
+  comment          String?
+  reviewerName     String?
+  date             DateTime @default(now())
+  verifiedPurchase Boolean  @default(false)
+
+  status Boolean @default(false)
 
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String

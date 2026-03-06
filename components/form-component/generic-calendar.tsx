@@ -1,5 +1,6 @@
 import React from "react";
 import { Control, FieldValues, Path } from "react-hook-form";
+import { CalendarIcon } from "lucide-react";
 
 import {
   FormControl,
@@ -18,13 +19,14 @@ import { Calendar } from "@/components/ui/calendar";
 
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/format";
-import { CalendarIcon } from "lucide-react";
 
-interface GenericCalendarProps<T extends FieldValues>
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface GenericCalendarProps<
+  T extends FieldValues,
+> extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   control: Control<T>;
   name: Path<T>;
   label: string;
+  onlyFutureDates?: boolean;
   containerProps?: React.HTMLAttributes<HTMLDivElement>;
 }
 
@@ -32,6 +34,7 @@ export const GenericCalendar = <T extends FieldValues>({
   control,
   name,
   label,
+  onlyFutureDates = true,
   onBlur,
   onChange,
   containerProps,
@@ -53,7 +56,7 @@ export const GenericCalendar = <T extends FieldValues>({
                   {...buttonProps}
                   className={cn(
                     "w-full pl-3 text-left font-normal",
-                    !field.value && "text-muted-foreground"
+                    !field.value && "text-muted-foreground",
                   )}
                 >
                   {field.value ? (
@@ -61,7 +64,7 @@ export const GenericCalendar = <T extends FieldValues>({
                   ) : (
                     <span>Pick a date</span>
                   )}
-                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  <CalendarIcon className="ml-auto size-4 opacity-50" />
                 </Button>
               </FormControl>
             </PopoverTrigger>
@@ -71,7 +74,9 @@ export const GenericCalendar = <T extends FieldValues>({
                 selected={field.value}
                 onSelect={field.onChange}
                 disabled={(date) =>
-                  date < new Date() || date < new Date("1900-01-01")
+                  onlyFutureDates
+                    ? date < new Date() || date < new Date("1900-01-01")
+                    : false
                 }
                 autoFocus
               />
