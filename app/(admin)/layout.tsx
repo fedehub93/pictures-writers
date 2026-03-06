@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import HolyLoader from "holy-loader";
 
 import "./admin.css";
 
@@ -15,8 +16,8 @@ import { ProgressLoader } from "./_components/progress-loader";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "./_components/sidebar-v2/app-sidebar";
 import { Header } from "./_components/header";
-import HolyLoader from "holy-loader";
-import { requireAdminAuth, requireAuth } from "@/lib/auth-utils";
+import { requireAdminAuth } from "@/lib/auth-utils";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -55,6 +56,7 @@ export default async function RootLayout({
               <ProgressLoader />
             </SidebarProvider>
           </QueryProvider>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

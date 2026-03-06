@@ -2,7 +2,6 @@
 
 import { ChevronRight, type LucideIcon } from "lucide-react";
 import Link from "next/link";
-import type { Route } from "next";
 
 import {
   Collapsible,

@@ -12,10 +12,7 @@ import {
   Box,
   Boxes,
   ClipboardPen,
-  ClipboardPenLine,
   Contact,
-  FilePenLine,
-  Inbox,
   LayoutDashboard,
   LayoutPanelTop,
   LibraryBig,
@@ -30,6 +27,7 @@ import {
   ReceiptText,
   Settings,
   ShoppingBag,
+  StarIcon,
   Tags,
   Users,
 } from "lucide-react";
@@ -45,7 +43,6 @@ import {
 } from "@/components/ui/sidebar";
 import Logo from "@/components/logo";
 import { NavMain } from "./nav-main";
-import { title } from "process";
 
 // This is sample data.
 
@@ -105,6 +102,11 @@ const data: Record<string, NavObject[]> = {
           title: "Categories",
           url: "/admin/shop/categories",
           Icon: Boxes,
+        },
+        {
+          title: "Reviews",
+          url: "/admin/shop/reviews",
+          Icon: StarIcon,
         },
       ],
     },

@@ -24,12 +24,12 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 7.4.1
- * Query Engine version: 55ae170b1ced7fc6ed07a15f110549408c501bb3
+ * Prisma Client JS version: 7.4.2
+ * Query Engine version: 94a226be1cf2967af2541cca5529f0f7ba866919
  */
 Prisma.prismaVersion = {
-  client: "7.4.1",
-  engine: "55ae170b1ced7fc6ed07a15f110549408c501bb3"
+  client: "7.4.2",
+  engine: "94a226be1cf2967af2541cca5529f0f7ba866919"
 }
 
 Prisma.PrismaClientKnownRequestError = () => {
@@ -477,6 +477,19 @@ exports.Prisma.ProductFAQScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.ReviewsScalarFieldEnum = {
+  id: 'id',
+  rating: 'rating',
+  comment: 'comment',
+  reviewerName: 'reviewerName',
+  date: 'date',
+  verifiedPurchase: 'verifiedPurchase',
+  status: 'status',
+  productId: 'productId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.AdCampaignScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -776,6 +789,7 @@ exports.Prisma.ModelName = {
   ProductGallery: 'ProductGallery',
   ProductExtra: 'ProductExtra',
   ProductFAQ: 'ProductFAQ',
+  Reviews: 'Reviews',
   AdCampaign: 'AdCampaign',
   AdBlock: 'AdBlock',
   AdItem: 'AdItem',

@@ -57,13 +57,13 @@ export const ProductsAction = ({
           }}
         >
           <span className="sr-only">Open menu</span>
-          <MoreHorizontal className="h-4 w-4" />
+          <MoreHorizontal className="size-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <Link href={`/admin/shop/products/${rootId}`}>
           <DropdownMenuItem>
-            <Pencil className="h-4 w-4 mr-2" />
+            <Pencil className="size-4 mr-2" />
             Edit
           </DropdownMenuItem>
         </Link>
@@ -73,7 +73,7 @@ export const ProductsAction = ({
             variant="ghost"
             className="text-destructive px-2 w-full justify-start"
           >
-            <Trash2 className="h-4 w-4 mr-2" />
+            <Trash2 className="size-4 mr-2" />
             Delete
           </Button>
         </ConfirmModal>

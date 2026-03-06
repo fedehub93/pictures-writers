@@ -347,6 +347,11 @@ export type ProductExtra = $Result.DefaultSelection<Prisma.$ProductExtraPayload>
  */
 export type ProductFAQ = $Result.DefaultSelection<Prisma.$ProductFAQPayload>
 /**
+ * Model Reviews
+ * 
+ */
+export type Reviews = $Result.DefaultSelection<Prisma.$ReviewsPayload>
+/**
  * Model AdCampaign
  * 
  */
@@ -508,6 +513,14 @@ export const ProductAcquisitionMode: {
 export type ProductAcquisitionMode = (typeof ProductAcquisitionMode)[keyof typeof ProductAcquisitionMode]
 
 
+export const ReviewStatus: {
+  DRAFT: 'DRAFT',
+  PUBLISHED: 'PUBLISHED'
+};
+
+export type ReviewStatus = (typeof ReviewStatus)[keyof typeof ReviewStatus]
+
+
 export const AdLayoutType: {
   SINGLE: 'SINGLE',
   GRID: 'GRID',
@@ -607,6 +620,10 @@ export type ProductAcquisitionMode = $Enums.ProductAcquisitionMode
 
 export const ProductAcquisitionMode: typeof $Enums.ProductAcquisitionMode
 
+export type ReviewStatus = $Enums.ReviewStatus
+
+export const ReviewStatus: typeof $Enums.ReviewStatus
+
 export type AdLayoutType = $Enums.AdLayoutType
 
 export const AdLayoutType: typeof $Enums.AdLayoutType
@@ -637,7 +654,9 @@ export const SocialEntityType: typeof $Enums.SocialEntityType
  * Type-safe database client for TypeScript & Node.js
  * @example
  * ```
- * const prisma = new PrismaClient()
+ * const prisma = new PrismaClient({
+ *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
+ * })
  * // Fetch zero or more Languages
  * const languages = await prisma.language.findMany()
  * ```
@@ -658,7 +677,9 @@ export class PrismaClient<
    * Type-safe database client for TypeScript & Node.js
    * @example
    * ```
-   * const prisma = new PrismaClient()
+   * const prisma = new PrismaClient({
+   *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
+   * })
    * // Fetch zero or more Languages
    * const languages = await prisma.language.findMany()
    * ```
@@ -1049,6 +1070,16 @@ export class PrismaClient<
   get productFAQ(): Prisma.ProductFAQDelegate<ExtArgs, ClientOptions>;
 
   /**
+   * `prisma.reviews`: Exposes CRUD operations for the **Reviews** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Reviews
+    * const reviews = await prisma.reviews.findMany()
+    * ```
+    */
+  get reviews(): Prisma.ReviewsDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.adCampaign`: Exposes CRUD operations for the **AdCampaign** model.
     * Example usage:
     * ```ts
@@ -1217,8 +1248,8 @@ export namespace Prisma {
   export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 7.4.1
-   * Query Engine version: 55ae170b1ced7fc6ed07a15f110549408c501bb3
+   * Prisma Client JS version: 7.4.2
+   * Query Engine version: 94a226be1cf2967af2541cca5529f0f7ba866919
    */
   export type PrismaVersion = {
     client: string
@@ -1631,6 +1662,7 @@ export namespace Prisma {
     ProductGallery: 'ProductGallery',
     ProductExtra: 'ProductExtra',
     ProductFAQ: 'ProductFAQ',
+    Reviews: 'Reviews',
     AdCampaign: 'AdCampaign',
     AdBlock: 'AdBlock',
     AdItem: 'AdItem',
@@ -1658,7 +1690,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "language" | "settings" | "widget" | "session" | "verification" | "user" | "account" | "verificationToken" | "passwordResetToken" | "media" | "seo" | "post" | "postAuthor" | "category" | "postCategory" | "tag" | "emailSetting" | "emailTemplate" | "emailAudience" | "emailContact" | "emailContactInteraction" | "emailSingleSend" | "emailSubscriptionToken" | "emailSendLog" | "emailSingleSendLog" | "product" | "productCategory" | "productGallery" | "productExtra" | "productFAQ" | "adCampaign" | "adBlock" | "adItem" | "purchase" | "contactForm" | "form" | "formSubmission" | "format" | "genre" | "impression" | "notification" | "socialChannel"
+      modelProps: "language" | "settings" | "widget" | "session" | "verification" | "user" | "account" | "verificationToken" | "passwordResetToken" | "media" | "seo" | "post" | "postAuthor" | "category" | "postCategory" | "tag" | "emailSetting" | "emailTemplate" | "emailAudience" | "emailContact" | "emailContactInteraction" | "emailSingleSend" | "emailSubscriptionToken" | "emailSendLog" | "emailSingleSendLog" | "product" | "productCategory" | "productGallery" | "productExtra" | "productFAQ" | "reviews" | "adCampaign" | "adBlock" | "adItem" | "purchase" | "contactForm" | "form" | "formSubmission" | "format" | "genre" | "impression" | "notification" | "socialChannel"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3882,6 +3914,80 @@ export namespace Prisma {
           }
         }
       }
+      Reviews: {
+        payload: Prisma.$ReviewsPayload<ExtArgs>
+        fields: Prisma.ReviewsFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ReviewsFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReviewsPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ReviewsFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReviewsPayload>
+          }
+          findFirst: {
+            args: Prisma.ReviewsFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReviewsPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ReviewsFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReviewsPayload>
+          }
+          findMany: {
+            args: Prisma.ReviewsFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReviewsPayload>[]
+          }
+          create: {
+            args: Prisma.ReviewsCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReviewsPayload>
+          }
+          createMany: {
+            args: Prisma.ReviewsCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ReviewsCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReviewsPayload>[]
+          }
+          delete: {
+            args: Prisma.ReviewsDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReviewsPayload>
+          }
+          update: {
+            args: Prisma.ReviewsUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReviewsPayload>
+          }
+          deleteMany: {
+            args: Prisma.ReviewsDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ReviewsUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ReviewsUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReviewsPayload>[]
+          }
+          upsert: {
+            args: Prisma.ReviewsUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ReviewsPayload>
+          }
+          aggregate: {
+            args: Prisma.ReviewsAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateReviews>
+          }
+          groupBy: {
+            args: Prisma.ReviewsGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ReviewsGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ReviewsCountArgs<ExtArgs>
+            result: $Utils.Optional<ReviewsCountAggregateOutputType> | number
+          }
+        }
+      }
       AdCampaign: {
         payload: Prisma.$AdCampaignPayload<ExtArgs>
         fields: Prisma.AdCampaignFieldRefs
@@ -4908,6 +5014,7 @@ export namespace Prisma {
     productGallery?: ProductGalleryOmit
     productExtra?: ProductExtraOmit
     productFAQ?: ProductFAQOmit
+    reviews?: ReviewsOmit
     adCampaign?: AdCampaignOmit
     adBlock?: AdBlockOmit
     adItem?: AdItemOmit
@@ -5548,6 +5655,7 @@ export namespace Prisma {
     rootChildren: number
     gallery: number
     faqs: number
+    reviews: number
     purchases: number
   }
 
@@ -5556,6 +5664,7 @@ export namespace Prisma {
     rootChildren?: boolean | ProductCountOutputTypeCountRootChildrenArgs
     gallery?: boolean | ProductCountOutputTypeCountGalleryArgs
     faqs?: boolean | ProductCountOutputTypeCountFaqsArgs
+    reviews?: boolean | ProductCountOutputTypeCountReviewsArgs
     purchases?: boolean | ProductCountOutputTypeCountPurchasesArgs
   }
 
@@ -5596,6 +5705,13 @@ export namespace Prisma {
    */
   export type ProductCountOutputTypeCountFaqsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ProductFAQWhereInput
+  }
+
+  /**
+   * ProductCountOutputType without action
+   */
+  export type ProductCountOutputTypeCountReviewsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ReviewsWhereInput
   }
 
   /**
@@ -34952,6 +35068,7 @@ export namespace Prisma {
     rootChildren?: boolean | Product$rootChildrenArgs<ExtArgs>
     gallery?: boolean | Product$galleryArgs<ExtArgs>
     faqs?: boolean | Product$faqsArgs<ExtArgs>
+    reviews?: boolean | Product$reviewsArgs<ExtArgs>
     purchases?: boolean | Product$purchasesArgs<ExtArgs>
     seo?: boolean | Product$seoArgs<ExtArgs>
     user?: boolean | Product$userArgs<ExtArgs>
@@ -35055,6 +35172,7 @@ export namespace Prisma {
     rootChildren?: boolean | Product$rootChildrenArgs<ExtArgs>
     gallery?: boolean | Product$galleryArgs<ExtArgs>
     faqs?: boolean | Product$faqsArgs<ExtArgs>
+    reviews?: boolean | Product$reviewsArgs<ExtArgs>
     purchases?: boolean | Product$purchasesArgs<ExtArgs>
     seo?: boolean | Product$seoArgs<ExtArgs>
     user?: boolean | Product$userArgs<ExtArgs>
@@ -35088,6 +35206,7 @@ export namespace Prisma {
       rootChildren: Prisma.$ProductPayload<ExtArgs>[]
       gallery: Prisma.$ProductGalleryPayload<ExtArgs>[]
       faqs: Prisma.$ProductFAQPayload<ExtArgs>[]
+      reviews: Prisma.$ReviewsPayload<ExtArgs>[]
       purchases: Prisma.$PurchasePayload<ExtArgs>[]
       seo: Prisma.$SeoPayload<ExtArgs> | null
       user: Prisma.$UserPayload<ExtArgs> | null
@@ -35526,6 +35645,7 @@ export namespace Prisma {
     rootChildren<T extends Product$rootChildrenArgs<ExtArgs> = {}>(args?: Subset<T, Product$rootChildrenArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     gallery<T extends Product$galleryArgs<ExtArgs> = {}>(args?: Subset<T, Product$galleryArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductGalleryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     faqs<T extends Product$faqsArgs<ExtArgs> = {}>(args?: Subset<T, Product$faqsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductFAQPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    reviews<T extends Product$reviewsArgs<ExtArgs> = {}>(args?: Subset<T, Product$reviewsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReviewsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     purchases<T extends Product$purchasesArgs<ExtArgs> = {}>(args?: Subset<T, Product$purchasesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PurchasePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     seo<T extends Product$seoArgs<ExtArgs> = {}>(args?: Subset<T, Product$seoArgs<ExtArgs>>): Prisma__SeoClient<$Result.GetResult<Prisma.$SeoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     user<T extends Product$userArgs<ExtArgs> = {}>(args?: Subset<T, Product$userArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -36145,6 +36265,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: ProductFAQScalarFieldEnum | ProductFAQScalarFieldEnum[]
+  }
+
+  /**
+   * Product.reviews
+   */
+  export type Product$reviewsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Reviews
+     */
+    select?: ReviewsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Reviews
+     */
+    omit?: ReviewsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReviewsInclude<ExtArgs> | null
+    where?: ReviewsWhereInput
+    orderBy?: ReviewsOrderByWithRelationInput | ReviewsOrderByWithRelationInput[]
+    cursor?: ReviewsWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ReviewsScalarFieldEnum | ReviewsScalarFieldEnum[]
   }
 
   /**
@@ -40848,6 +40992,1163 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: ProductFAQInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Reviews
+   */
+
+  export type AggregateReviews = {
+    _count: ReviewsCountAggregateOutputType | null
+    _avg: ReviewsAvgAggregateOutputType | null
+    _sum: ReviewsSumAggregateOutputType | null
+    _min: ReviewsMinAggregateOutputType | null
+    _max: ReviewsMaxAggregateOutputType | null
+  }
+
+  export type ReviewsAvgAggregateOutputType = {
+    rating: number | null
+  }
+
+  export type ReviewsSumAggregateOutputType = {
+    rating: number | null
+  }
+
+  export type ReviewsMinAggregateOutputType = {
+    id: string | null
+    rating: number | null
+    comment: string | null
+    reviewerName: string | null
+    date: Date | null
+    verifiedPurchase: boolean | null
+    status: boolean | null
+    productId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ReviewsMaxAggregateOutputType = {
+    id: string | null
+    rating: number | null
+    comment: string | null
+    reviewerName: string | null
+    date: Date | null
+    verifiedPurchase: boolean | null
+    status: boolean | null
+    productId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ReviewsCountAggregateOutputType = {
+    id: number
+    rating: number
+    comment: number
+    reviewerName: number
+    date: number
+    verifiedPurchase: number
+    status: number
+    productId: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ReviewsAvgAggregateInputType = {
+    rating?: true
+  }
+
+  export type ReviewsSumAggregateInputType = {
+    rating?: true
+  }
+
+  export type ReviewsMinAggregateInputType = {
+    id?: true
+    rating?: true
+    comment?: true
+    reviewerName?: true
+    date?: true
+    verifiedPurchase?: true
+    status?: true
+    productId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ReviewsMaxAggregateInputType = {
+    id?: true
+    rating?: true
+    comment?: true
+    reviewerName?: true
+    date?: true
+    verifiedPurchase?: true
+    status?: true
+    productId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ReviewsCountAggregateInputType = {
+    id?: true
+    rating?: true
+    comment?: true
+    reviewerName?: true
+    date?: true
+    verifiedPurchase?: true
+    status?: true
+    productId?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ReviewsAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Reviews to aggregate.
+     */
+    where?: ReviewsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Reviews to fetch.
+     */
+    orderBy?: ReviewsOrderByWithRelationInput | ReviewsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ReviewsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Reviews from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Reviews.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Reviews
+    **/
+    _count?: true | ReviewsCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ReviewsAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ReviewsSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ReviewsMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ReviewsMaxAggregateInputType
+  }
+
+  export type GetReviewsAggregateType<T extends ReviewsAggregateArgs> = {
+        [P in keyof T & keyof AggregateReviews]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateReviews[P]>
+      : GetScalarType<T[P], AggregateReviews[P]>
+  }
+
+
+
+
+  export type ReviewsGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ReviewsWhereInput
+    orderBy?: ReviewsOrderByWithAggregationInput | ReviewsOrderByWithAggregationInput[]
+    by: ReviewsScalarFieldEnum[] | ReviewsScalarFieldEnum
+    having?: ReviewsScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ReviewsCountAggregateInputType | true
+    _avg?: ReviewsAvgAggregateInputType
+    _sum?: ReviewsSumAggregateInputType
+    _min?: ReviewsMinAggregateInputType
+    _max?: ReviewsMaxAggregateInputType
+  }
+
+  export type ReviewsGroupByOutputType = {
+    id: string
+    rating: number
+    comment: string | null
+    reviewerName: string | null
+    date: Date
+    verifiedPurchase: boolean
+    status: boolean
+    productId: string
+    createdAt: Date
+    updatedAt: Date
+    _count: ReviewsCountAggregateOutputType | null
+    _avg: ReviewsAvgAggregateOutputType | null
+    _sum: ReviewsSumAggregateOutputType | null
+    _min: ReviewsMinAggregateOutputType | null
+    _max: ReviewsMaxAggregateOutputType | null
+  }
+
+  type GetReviewsGroupByPayload<T extends ReviewsGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ReviewsGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ReviewsGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ReviewsGroupByOutputType[P]>
+            : GetScalarType<T[P], ReviewsGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ReviewsSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    rating?: boolean
+    comment?: boolean
+    reviewerName?: boolean
+    date?: boolean
+    verifiedPurchase?: boolean
+    status?: boolean
+    productId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["reviews"]>
+
+  export type ReviewsSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    rating?: boolean
+    comment?: boolean
+    reviewerName?: boolean
+    date?: boolean
+    verifiedPurchase?: boolean
+    status?: boolean
+    productId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["reviews"]>
+
+  export type ReviewsSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    rating?: boolean
+    comment?: boolean
+    reviewerName?: boolean
+    date?: boolean
+    verifiedPurchase?: boolean
+    status?: boolean
+    productId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["reviews"]>
+
+  export type ReviewsSelectScalar = {
+    id?: boolean
+    rating?: boolean
+    comment?: boolean
+    reviewerName?: boolean
+    date?: boolean
+    verifiedPurchase?: boolean
+    status?: boolean
+    productId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ReviewsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "rating" | "comment" | "reviewerName" | "date" | "verifiedPurchase" | "status" | "productId" | "createdAt" | "updatedAt", ExtArgs["result"]["reviews"]>
+  export type ReviewsInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+  }
+  export type ReviewsIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+  }
+  export type ReviewsIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    product?: boolean | ProductDefaultArgs<ExtArgs>
+  }
+
+  export type $ReviewsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Reviews"
+    objects: {
+      product: Prisma.$ProductPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      rating: number
+      comment: string | null
+      reviewerName: string | null
+      date: Date
+      verifiedPurchase: boolean
+      status: boolean
+      productId: string
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["reviews"]>
+    composites: {}
+  }
+
+  type ReviewsGetPayload<S extends boolean | null | undefined | ReviewsDefaultArgs> = $Result.GetResult<Prisma.$ReviewsPayload, S>
+
+  type ReviewsCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ReviewsFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ReviewsCountAggregateInputType | true
+    }
+
+  export interface ReviewsDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Reviews'], meta: { name: 'Reviews' } }
+    /**
+     * Find zero or one Reviews that matches the filter.
+     * @param {ReviewsFindUniqueArgs} args - Arguments to find a Reviews
+     * @example
+     * // Get one Reviews
+     * const reviews = await prisma.reviews.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ReviewsFindUniqueArgs>(args: SelectSubset<T, ReviewsFindUniqueArgs<ExtArgs>>): Prisma__ReviewsClient<$Result.GetResult<Prisma.$ReviewsPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Reviews that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ReviewsFindUniqueOrThrowArgs} args - Arguments to find a Reviews
+     * @example
+     * // Get one Reviews
+     * const reviews = await prisma.reviews.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ReviewsFindUniqueOrThrowArgs>(args: SelectSubset<T, ReviewsFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ReviewsClient<$Result.GetResult<Prisma.$ReviewsPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Reviews that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReviewsFindFirstArgs} args - Arguments to find a Reviews
+     * @example
+     * // Get one Reviews
+     * const reviews = await prisma.reviews.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ReviewsFindFirstArgs>(args?: SelectSubset<T, ReviewsFindFirstArgs<ExtArgs>>): Prisma__ReviewsClient<$Result.GetResult<Prisma.$ReviewsPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Reviews that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReviewsFindFirstOrThrowArgs} args - Arguments to find a Reviews
+     * @example
+     * // Get one Reviews
+     * const reviews = await prisma.reviews.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ReviewsFindFirstOrThrowArgs>(args?: SelectSubset<T, ReviewsFindFirstOrThrowArgs<ExtArgs>>): Prisma__ReviewsClient<$Result.GetResult<Prisma.$ReviewsPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Reviews that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReviewsFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Reviews
+     * const reviews = await prisma.reviews.findMany()
+     * 
+     * // Get first 10 Reviews
+     * const reviews = await prisma.reviews.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const reviewsWithIdOnly = await prisma.reviews.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ReviewsFindManyArgs>(args?: SelectSubset<T, ReviewsFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReviewsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Reviews.
+     * @param {ReviewsCreateArgs} args - Arguments to create a Reviews.
+     * @example
+     * // Create one Reviews
+     * const Reviews = await prisma.reviews.create({
+     *   data: {
+     *     // ... data to create a Reviews
+     *   }
+     * })
+     * 
+     */
+    create<T extends ReviewsCreateArgs>(args: SelectSubset<T, ReviewsCreateArgs<ExtArgs>>): Prisma__ReviewsClient<$Result.GetResult<Prisma.$ReviewsPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Reviews.
+     * @param {ReviewsCreateManyArgs} args - Arguments to create many Reviews.
+     * @example
+     * // Create many Reviews
+     * const reviews = await prisma.reviews.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ReviewsCreateManyArgs>(args?: SelectSubset<T, ReviewsCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Reviews and returns the data saved in the database.
+     * @param {ReviewsCreateManyAndReturnArgs} args - Arguments to create many Reviews.
+     * @example
+     * // Create many Reviews
+     * const reviews = await prisma.reviews.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Reviews and only return the `id`
+     * const reviewsWithIdOnly = await prisma.reviews.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ReviewsCreateManyAndReturnArgs>(args?: SelectSubset<T, ReviewsCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReviewsPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Reviews.
+     * @param {ReviewsDeleteArgs} args - Arguments to delete one Reviews.
+     * @example
+     * // Delete one Reviews
+     * const Reviews = await prisma.reviews.delete({
+     *   where: {
+     *     // ... filter to delete one Reviews
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ReviewsDeleteArgs>(args: SelectSubset<T, ReviewsDeleteArgs<ExtArgs>>): Prisma__ReviewsClient<$Result.GetResult<Prisma.$ReviewsPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Reviews.
+     * @param {ReviewsUpdateArgs} args - Arguments to update one Reviews.
+     * @example
+     * // Update one Reviews
+     * const reviews = await prisma.reviews.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ReviewsUpdateArgs>(args: SelectSubset<T, ReviewsUpdateArgs<ExtArgs>>): Prisma__ReviewsClient<$Result.GetResult<Prisma.$ReviewsPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Reviews.
+     * @param {ReviewsDeleteManyArgs} args - Arguments to filter Reviews to delete.
+     * @example
+     * // Delete a few Reviews
+     * const { count } = await prisma.reviews.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ReviewsDeleteManyArgs>(args?: SelectSubset<T, ReviewsDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Reviews.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReviewsUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Reviews
+     * const reviews = await prisma.reviews.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ReviewsUpdateManyArgs>(args: SelectSubset<T, ReviewsUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Reviews and returns the data updated in the database.
+     * @param {ReviewsUpdateManyAndReturnArgs} args - Arguments to update many Reviews.
+     * @example
+     * // Update many Reviews
+     * const reviews = await prisma.reviews.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Reviews and only return the `id`
+     * const reviewsWithIdOnly = await prisma.reviews.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ReviewsUpdateManyAndReturnArgs>(args: SelectSubset<T, ReviewsUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ReviewsPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Reviews.
+     * @param {ReviewsUpsertArgs} args - Arguments to update or create a Reviews.
+     * @example
+     * // Update or create a Reviews
+     * const reviews = await prisma.reviews.upsert({
+     *   create: {
+     *     // ... data to create a Reviews
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Reviews we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ReviewsUpsertArgs>(args: SelectSubset<T, ReviewsUpsertArgs<ExtArgs>>): Prisma__ReviewsClient<$Result.GetResult<Prisma.$ReviewsPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Reviews.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReviewsCountArgs} args - Arguments to filter Reviews to count.
+     * @example
+     * // Count the number of Reviews
+     * const count = await prisma.reviews.count({
+     *   where: {
+     *     // ... the filter for the Reviews we want to count
+     *   }
+     * })
+    **/
+    count<T extends ReviewsCountArgs>(
+      args?: Subset<T, ReviewsCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ReviewsCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Reviews.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReviewsAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ReviewsAggregateArgs>(args: Subset<T, ReviewsAggregateArgs>): Prisma.PrismaPromise<GetReviewsAggregateType<T>>
+
+    /**
+     * Group by Reviews.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ReviewsGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ReviewsGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ReviewsGroupByArgs['orderBy'] }
+        : { orderBy?: ReviewsGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ReviewsGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetReviewsGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Reviews model
+   */
+  readonly fields: ReviewsFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Reviews.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ReviewsClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    product<T extends ProductDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProductDefaultArgs<ExtArgs>>): Prisma__ProductClient<$Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Reviews model
+   */
+  interface ReviewsFieldRefs {
+    readonly id: FieldRef<"Reviews", 'String'>
+    readonly rating: FieldRef<"Reviews", 'Float'>
+    readonly comment: FieldRef<"Reviews", 'String'>
+    readonly reviewerName: FieldRef<"Reviews", 'String'>
+    readonly date: FieldRef<"Reviews", 'DateTime'>
+    readonly verifiedPurchase: FieldRef<"Reviews", 'Boolean'>
+    readonly status: FieldRef<"Reviews", 'Boolean'>
+    readonly productId: FieldRef<"Reviews", 'String'>
+    readonly createdAt: FieldRef<"Reviews", 'DateTime'>
+    readonly updatedAt: FieldRef<"Reviews", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Reviews findUnique
+   */
+  export type ReviewsFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Reviews
+     */
+    select?: ReviewsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Reviews
+     */
+    omit?: ReviewsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReviewsInclude<ExtArgs> | null
+    /**
+     * Filter, which Reviews to fetch.
+     */
+    where: ReviewsWhereUniqueInput
+  }
+
+  /**
+   * Reviews findUniqueOrThrow
+   */
+  export type ReviewsFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Reviews
+     */
+    select?: ReviewsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Reviews
+     */
+    omit?: ReviewsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReviewsInclude<ExtArgs> | null
+    /**
+     * Filter, which Reviews to fetch.
+     */
+    where: ReviewsWhereUniqueInput
+  }
+
+  /**
+   * Reviews findFirst
+   */
+  export type ReviewsFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Reviews
+     */
+    select?: ReviewsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Reviews
+     */
+    omit?: ReviewsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReviewsInclude<ExtArgs> | null
+    /**
+     * Filter, which Reviews to fetch.
+     */
+    where?: ReviewsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Reviews to fetch.
+     */
+    orderBy?: ReviewsOrderByWithRelationInput | ReviewsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Reviews.
+     */
+    cursor?: ReviewsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Reviews from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Reviews.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Reviews.
+     */
+    distinct?: ReviewsScalarFieldEnum | ReviewsScalarFieldEnum[]
+  }
+
+  /**
+   * Reviews findFirstOrThrow
+   */
+  export type ReviewsFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Reviews
+     */
+    select?: ReviewsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Reviews
+     */
+    omit?: ReviewsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReviewsInclude<ExtArgs> | null
+    /**
+     * Filter, which Reviews to fetch.
+     */
+    where?: ReviewsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Reviews to fetch.
+     */
+    orderBy?: ReviewsOrderByWithRelationInput | ReviewsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Reviews.
+     */
+    cursor?: ReviewsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Reviews from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Reviews.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Reviews.
+     */
+    distinct?: ReviewsScalarFieldEnum | ReviewsScalarFieldEnum[]
+  }
+
+  /**
+   * Reviews findMany
+   */
+  export type ReviewsFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Reviews
+     */
+    select?: ReviewsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Reviews
+     */
+    omit?: ReviewsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReviewsInclude<ExtArgs> | null
+    /**
+     * Filter, which Reviews to fetch.
+     */
+    where?: ReviewsWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Reviews to fetch.
+     */
+    orderBy?: ReviewsOrderByWithRelationInput | ReviewsOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Reviews.
+     */
+    cursor?: ReviewsWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Reviews from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Reviews.
+     */
+    skip?: number
+    distinct?: ReviewsScalarFieldEnum | ReviewsScalarFieldEnum[]
+  }
+
+  /**
+   * Reviews create
+   */
+  export type ReviewsCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Reviews
+     */
+    select?: ReviewsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Reviews
+     */
+    omit?: ReviewsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReviewsInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Reviews.
+     */
+    data: XOR<ReviewsCreateInput, ReviewsUncheckedCreateInput>
+  }
+
+  /**
+   * Reviews createMany
+   */
+  export type ReviewsCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Reviews.
+     */
+    data: ReviewsCreateManyInput | ReviewsCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Reviews createManyAndReturn
+   */
+  export type ReviewsCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Reviews
+     */
+    select?: ReviewsSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Reviews
+     */
+    omit?: ReviewsOmit<ExtArgs> | null
+    /**
+     * The data used to create many Reviews.
+     */
+    data: ReviewsCreateManyInput | ReviewsCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReviewsIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Reviews update
+   */
+  export type ReviewsUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Reviews
+     */
+    select?: ReviewsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Reviews
+     */
+    omit?: ReviewsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReviewsInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Reviews.
+     */
+    data: XOR<ReviewsUpdateInput, ReviewsUncheckedUpdateInput>
+    /**
+     * Choose, which Reviews to update.
+     */
+    where: ReviewsWhereUniqueInput
+  }
+
+  /**
+   * Reviews updateMany
+   */
+  export type ReviewsUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Reviews.
+     */
+    data: XOR<ReviewsUpdateManyMutationInput, ReviewsUncheckedUpdateManyInput>
+    /**
+     * Filter which Reviews to update
+     */
+    where?: ReviewsWhereInput
+    /**
+     * Limit how many Reviews to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Reviews updateManyAndReturn
+   */
+  export type ReviewsUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Reviews
+     */
+    select?: ReviewsSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Reviews
+     */
+    omit?: ReviewsOmit<ExtArgs> | null
+    /**
+     * The data used to update Reviews.
+     */
+    data: XOR<ReviewsUpdateManyMutationInput, ReviewsUncheckedUpdateManyInput>
+    /**
+     * Filter which Reviews to update
+     */
+    where?: ReviewsWhereInput
+    /**
+     * Limit how many Reviews to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReviewsIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Reviews upsert
+   */
+  export type ReviewsUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Reviews
+     */
+    select?: ReviewsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Reviews
+     */
+    omit?: ReviewsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReviewsInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Reviews to update in case it exists.
+     */
+    where: ReviewsWhereUniqueInput
+    /**
+     * In case the Reviews found by the `where` argument doesn't exist, create a new Reviews with this data.
+     */
+    create: XOR<ReviewsCreateInput, ReviewsUncheckedCreateInput>
+    /**
+     * In case the Reviews was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ReviewsUpdateInput, ReviewsUncheckedUpdateInput>
+  }
+
+  /**
+   * Reviews delete
+   */
+  export type ReviewsDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Reviews
+     */
+    select?: ReviewsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Reviews
+     */
+    omit?: ReviewsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReviewsInclude<ExtArgs> | null
+    /**
+     * Filter which Reviews to delete.
+     */
+    where: ReviewsWhereUniqueInput
+  }
+
+  /**
+   * Reviews deleteMany
+   */
+  export type ReviewsDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Reviews to delete
+     */
+    where?: ReviewsWhereInput
+    /**
+     * Limit how many Reviews to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Reviews without action
+   */
+  export type ReviewsDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Reviews
+     */
+    select?: ReviewsSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Reviews
+     */
+    omit?: ReviewsOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ReviewsInclude<ExtArgs> | null
   }
 
 
@@ -54618,6 +55919,22 @@ export namespace Prisma {
   export type ProductFAQScalarFieldEnum = (typeof ProductFAQScalarFieldEnum)[keyof typeof ProductFAQScalarFieldEnum]
 
 
+  export const ReviewsScalarFieldEnum: {
+    id: 'id',
+    rating: 'rating',
+    comment: 'comment',
+    reviewerName: 'reviewerName',
+    date: 'date',
+    verifiedPurchase: 'verifiedPurchase',
+    status: 'status',
+    productId: 'productId',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ReviewsScalarFieldEnum = (typeof ReviewsScalarFieldEnum)[keyof typeof ReviewsScalarFieldEnum]
+
+
   export const AdCampaignScalarFieldEnum: {
     id: 'id',
     name: 'name',
@@ -57130,6 +58447,7 @@ export namespace Prisma {
     rootChildren?: ProductListRelationFilter
     gallery?: ProductGalleryListRelationFilter
     faqs?: ProductFAQListRelationFilter
+    reviews?: ReviewsListRelationFilter
     purchases?: PurchaseListRelationFilter
     seo?: XOR<SeoNullableScalarRelationFilter, SeoWhereInput> | null
     user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
@@ -57166,6 +58484,7 @@ export namespace Prisma {
     rootChildren?: ProductOrderByRelationAggregateInput
     gallery?: ProductGalleryOrderByRelationAggregateInput
     faqs?: ProductFAQOrderByRelationAggregateInput
+    reviews?: ReviewsOrderByRelationAggregateInput
     purchases?: PurchaseOrderByRelationAggregateInput
     seo?: SeoOrderByWithRelationInput
     user?: UserOrderByWithRelationInput
@@ -57205,6 +58524,7 @@ export namespace Prisma {
     rootChildren?: ProductListRelationFilter
     gallery?: ProductGalleryListRelationFilter
     faqs?: ProductFAQListRelationFilter
+    reviews?: ReviewsListRelationFilter
     purchases?: PurchaseListRelationFilter
     seo?: XOR<SeoNullableScalarRelationFilter, SeoWhereInput> | null
     user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
@@ -57562,6 +58882,88 @@ export namespace Prisma {
     productId?: StringWithAggregatesFilter<"ProductFAQ"> | string
     createdAt?: DateTimeWithAggregatesFilter<"ProductFAQ"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"ProductFAQ"> | Date | string
+  }
+
+  export type ReviewsWhereInput = {
+    AND?: ReviewsWhereInput | ReviewsWhereInput[]
+    OR?: ReviewsWhereInput[]
+    NOT?: ReviewsWhereInput | ReviewsWhereInput[]
+    id?: StringFilter<"Reviews"> | string
+    rating?: FloatFilter<"Reviews"> | number
+    comment?: StringNullableFilter<"Reviews"> | string | null
+    reviewerName?: StringNullableFilter<"Reviews"> | string | null
+    date?: DateTimeFilter<"Reviews"> | Date | string
+    verifiedPurchase?: BoolFilter<"Reviews"> | boolean
+    status?: BoolFilter<"Reviews"> | boolean
+    productId?: StringFilter<"Reviews"> | string
+    createdAt?: DateTimeFilter<"Reviews"> | Date | string
+    updatedAt?: DateTimeFilter<"Reviews"> | Date | string
+    product?: XOR<ProductScalarRelationFilter, ProductWhereInput>
+  }
+
+  export type ReviewsOrderByWithRelationInput = {
+    id?: SortOrder
+    rating?: SortOrder
+    comment?: SortOrderInput | SortOrder
+    reviewerName?: SortOrderInput | SortOrder
+    date?: SortOrder
+    verifiedPurchase?: SortOrder
+    status?: SortOrder
+    productId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    product?: ProductOrderByWithRelationInput
+  }
+
+  export type ReviewsWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: ReviewsWhereInput | ReviewsWhereInput[]
+    OR?: ReviewsWhereInput[]
+    NOT?: ReviewsWhereInput | ReviewsWhereInput[]
+    rating?: FloatFilter<"Reviews"> | number
+    comment?: StringNullableFilter<"Reviews"> | string | null
+    reviewerName?: StringNullableFilter<"Reviews"> | string | null
+    date?: DateTimeFilter<"Reviews"> | Date | string
+    verifiedPurchase?: BoolFilter<"Reviews"> | boolean
+    status?: BoolFilter<"Reviews"> | boolean
+    productId?: StringFilter<"Reviews"> | string
+    createdAt?: DateTimeFilter<"Reviews"> | Date | string
+    updatedAt?: DateTimeFilter<"Reviews"> | Date | string
+    product?: XOR<ProductScalarRelationFilter, ProductWhereInput>
+  }, "id">
+
+  export type ReviewsOrderByWithAggregationInput = {
+    id?: SortOrder
+    rating?: SortOrder
+    comment?: SortOrderInput | SortOrder
+    reviewerName?: SortOrderInput | SortOrder
+    date?: SortOrder
+    verifiedPurchase?: SortOrder
+    status?: SortOrder
+    productId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ReviewsCountOrderByAggregateInput
+    _avg?: ReviewsAvgOrderByAggregateInput
+    _max?: ReviewsMaxOrderByAggregateInput
+    _min?: ReviewsMinOrderByAggregateInput
+    _sum?: ReviewsSumOrderByAggregateInput
+  }
+
+  export type ReviewsScalarWhereWithAggregatesInput = {
+    AND?: ReviewsScalarWhereWithAggregatesInput | ReviewsScalarWhereWithAggregatesInput[]
+    OR?: ReviewsScalarWhereWithAggregatesInput[]
+    NOT?: ReviewsScalarWhereWithAggregatesInput | ReviewsScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Reviews"> | string
+    rating?: FloatWithAggregatesFilter<"Reviews"> | number
+    comment?: StringNullableWithAggregatesFilter<"Reviews"> | string | null
+    reviewerName?: StringNullableWithAggregatesFilter<"Reviews"> | string | null
+    date?: DateTimeWithAggregatesFilter<"Reviews"> | Date | string
+    verifiedPurchase?: BoolWithAggregatesFilter<"Reviews"> | boolean
+    status?: BoolWithAggregatesFilter<"Reviews"> | boolean
+    productId?: StringWithAggregatesFilter<"Reviews"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"Reviews"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Reviews"> | Date | string
   }
 
   export type AdCampaignWhereInput = {
@@ -60589,6 +61991,7 @@ export namespace Prisma {
     rootChildren?: ProductCreateNestedManyWithoutRootInput
     gallery?: ProductGalleryCreateNestedManyWithoutProductInput
     faqs?: ProductFAQCreateNestedManyWithoutProductInput
+    reviews?: ReviewsCreateNestedManyWithoutProductInput
     purchases?: PurchaseCreateNestedManyWithoutProductInput
     seo?: SeoCreateNestedOneWithoutProductsInput
     user?: UserCreateNestedOneWithoutProductsInput
@@ -60621,6 +62024,7 @@ export namespace Prisma {
     rootChildren?: ProductUncheckedCreateNestedManyWithoutRootInput
     gallery?: ProductGalleryUncheckedCreateNestedManyWithoutProductInput
     faqs?: ProductFAQUncheckedCreateNestedManyWithoutProductInput
+    reviews?: ReviewsUncheckedCreateNestedManyWithoutProductInput
     purchases?: PurchaseUncheckedCreateNestedManyWithoutProductInput
   }
 
@@ -60649,6 +62053,7 @@ export namespace Prisma {
     rootChildren?: ProductUpdateManyWithoutRootNestedInput
     gallery?: ProductGalleryUpdateManyWithoutProductNestedInput
     faqs?: ProductFAQUpdateManyWithoutProductNestedInput
+    reviews?: ReviewsUpdateManyWithoutProductNestedInput
     purchases?: PurchaseUpdateManyWithoutProductNestedInput
     seo?: SeoUpdateOneWithoutProductsNestedInput
     user?: UserUpdateOneWithoutProductsNestedInput
@@ -60681,6 +62086,7 @@ export namespace Prisma {
     rootChildren?: ProductUncheckedUpdateManyWithoutRootNestedInput
     gallery?: ProductGalleryUncheckedUpdateManyWithoutProductNestedInput
     faqs?: ProductFAQUncheckedUpdateManyWithoutProductNestedInput
+    reviews?: ReviewsUncheckedUpdateManyWithoutProductNestedInput
     purchases?: PurchaseUncheckedUpdateManyWithoutProductNestedInput
   }
 
@@ -61051,6 +62457,96 @@ export namespace Prisma {
     question?: StringFieldUpdateOperationsInput | string
     answer?: StringFieldUpdateOperationsInput | string
     sort?: IntFieldUpdateOperationsInput | number
+    productId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReviewsCreateInput = {
+    id?: string
+    rating: number
+    comment?: string | null
+    reviewerName?: string | null
+    date?: Date | string
+    verifiedPurchase?: boolean
+    status?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    product: ProductCreateNestedOneWithoutReviewsInput
+  }
+
+  export type ReviewsUncheckedCreateInput = {
+    id?: string
+    rating: number
+    comment?: string | null
+    reviewerName?: string | null
+    date?: Date | string
+    verifiedPurchase?: boolean
+    status?: boolean
+    productId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ReviewsUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    rating?: FloatFieldUpdateOperationsInput | number
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewerName?: NullableStringFieldUpdateOperationsInput | string | null
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    verifiedPurchase?: BoolFieldUpdateOperationsInput | boolean
+    status?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    product?: ProductUpdateOneRequiredWithoutReviewsNestedInput
+  }
+
+  export type ReviewsUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    rating?: FloatFieldUpdateOperationsInput | number
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewerName?: NullableStringFieldUpdateOperationsInput | string | null
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    verifiedPurchase?: BoolFieldUpdateOperationsInput | boolean
+    status?: BoolFieldUpdateOperationsInput | boolean
+    productId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReviewsCreateManyInput = {
+    id?: string
+    rating: number
+    comment?: string | null
+    reviewerName?: string | null
+    date?: Date | string
+    verifiedPurchase?: boolean
+    status?: boolean
+    productId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ReviewsUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    rating?: FloatFieldUpdateOperationsInput | number
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewerName?: NullableStringFieldUpdateOperationsInput | string | null
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    verifiedPurchase?: BoolFieldUpdateOperationsInput | boolean
+    status?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReviewsUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    rating?: FloatFieldUpdateOperationsInput | number
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewerName?: NullableStringFieldUpdateOperationsInput | string | null
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    verifiedPurchase?: BoolFieldUpdateOperationsInput | boolean
+    status?: BoolFieldUpdateOperationsInput | boolean
     productId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -63697,6 +65193,12 @@ export namespace Prisma {
     none?: ProductFAQWhereInput
   }
 
+  export type ReviewsListRelationFilter = {
+    every?: ReviewsWhereInput
+    some?: ReviewsWhereInput
+    none?: ReviewsWhereInput
+  }
+
   export type PurchaseListRelationFilter = {
     every?: PurchaseWhereInput
     some?: PurchaseWhereInput
@@ -63708,6 +65210,10 @@ export namespace Prisma {
   }
 
   export type ProductFAQOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ReviewsOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -64033,6 +65539,53 @@ export namespace Prisma {
 
   export type ProductFAQSumOrderByAggregateInput = {
     sort?: SortOrder
+  }
+
+  export type ReviewsCountOrderByAggregateInput = {
+    id?: SortOrder
+    rating?: SortOrder
+    comment?: SortOrder
+    reviewerName?: SortOrder
+    date?: SortOrder
+    verifiedPurchase?: SortOrder
+    status?: SortOrder
+    productId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ReviewsAvgOrderByAggregateInput = {
+    rating?: SortOrder
+  }
+
+  export type ReviewsMaxOrderByAggregateInput = {
+    id?: SortOrder
+    rating?: SortOrder
+    comment?: SortOrder
+    reviewerName?: SortOrder
+    date?: SortOrder
+    verifiedPurchase?: SortOrder
+    status?: SortOrder
+    productId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ReviewsMinOrderByAggregateInput = {
+    id?: SortOrder
+    rating?: SortOrder
+    comment?: SortOrder
+    reviewerName?: SortOrder
+    date?: SortOrder
+    verifiedPurchase?: SortOrder
+    status?: SortOrder
+    productId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ReviewsSumOrderByAggregateInput = {
+    rating?: SortOrder
   }
 
   export type AdBlockListRelationFilter = {
@@ -66634,6 +68187,13 @@ export namespace Prisma {
     connect?: ProductFAQWhereUniqueInput | ProductFAQWhereUniqueInput[]
   }
 
+  export type ReviewsCreateNestedManyWithoutProductInput = {
+    create?: XOR<ReviewsCreateWithoutProductInput, ReviewsUncheckedCreateWithoutProductInput> | ReviewsCreateWithoutProductInput[] | ReviewsUncheckedCreateWithoutProductInput[]
+    connectOrCreate?: ReviewsCreateOrConnectWithoutProductInput | ReviewsCreateOrConnectWithoutProductInput[]
+    createMany?: ReviewsCreateManyProductInputEnvelope
+    connect?: ReviewsWhereUniqueInput | ReviewsWhereUniqueInput[]
+  }
+
   export type PurchaseCreateNestedManyWithoutProductInput = {
     create?: XOR<PurchaseCreateWithoutProductInput, PurchaseUncheckedCreateWithoutProductInput> | PurchaseCreateWithoutProductInput[] | PurchaseUncheckedCreateWithoutProductInput[]
     connectOrCreate?: PurchaseCreateOrConnectWithoutProductInput | PurchaseCreateOrConnectWithoutProductInput[]
@@ -66679,6 +68239,13 @@ export namespace Prisma {
     connectOrCreate?: ProductFAQCreateOrConnectWithoutProductInput | ProductFAQCreateOrConnectWithoutProductInput[]
     createMany?: ProductFAQCreateManyProductInputEnvelope
     connect?: ProductFAQWhereUniqueInput | ProductFAQWhereUniqueInput[]
+  }
+
+  export type ReviewsUncheckedCreateNestedManyWithoutProductInput = {
+    create?: XOR<ReviewsCreateWithoutProductInput, ReviewsUncheckedCreateWithoutProductInput> | ReviewsCreateWithoutProductInput[] | ReviewsUncheckedCreateWithoutProductInput[]
+    connectOrCreate?: ReviewsCreateOrConnectWithoutProductInput | ReviewsCreateOrConnectWithoutProductInput[]
+    createMany?: ReviewsCreateManyProductInputEnvelope
+    connect?: ReviewsWhereUniqueInput | ReviewsWhereUniqueInput[]
   }
 
   export type PurchaseUncheckedCreateNestedManyWithoutProductInput = {
@@ -66800,6 +68367,20 @@ export namespace Prisma {
     deleteMany?: ProductFAQScalarWhereInput | ProductFAQScalarWhereInput[]
   }
 
+  export type ReviewsUpdateManyWithoutProductNestedInput = {
+    create?: XOR<ReviewsCreateWithoutProductInput, ReviewsUncheckedCreateWithoutProductInput> | ReviewsCreateWithoutProductInput[] | ReviewsUncheckedCreateWithoutProductInput[]
+    connectOrCreate?: ReviewsCreateOrConnectWithoutProductInput | ReviewsCreateOrConnectWithoutProductInput[]
+    upsert?: ReviewsUpsertWithWhereUniqueWithoutProductInput | ReviewsUpsertWithWhereUniqueWithoutProductInput[]
+    createMany?: ReviewsCreateManyProductInputEnvelope
+    set?: ReviewsWhereUniqueInput | ReviewsWhereUniqueInput[]
+    disconnect?: ReviewsWhereUniqueInput | ReviewsWhereUniqueInput[]
+    delete?: ReviewsWhereUniqueInput | ReviewsWhereUniqueInput[]
+    connect?: ReviewsWhereUniqueInput | ReviewsWhereUniqueInput[]
+    update?: ReviewsUpdateWithWhereUniqueWithoutProductInput | ReviewsUpdateWithWhereUniqueWithoutProductInput[]
+    updateMany?: ReviewsUpdateManyWithWhereWithoutProductInput | ReviewsUpdateManyWithWhereWithoutProductInput[]
+    deleteMany?: ReviewsScalarWhereInput | ReviewsScalarWhereInput[]
+  }
+
   export type PurchaseUpdateManyWithoutProductNestedInput = {
     create?: XOR<PurchaseCreateWithoutProductInput, PurchaseUncheckedCreateWithoutProductInput> | PurchaseCreateWithoutProductInput[] | PurchaseUncheckedCreateWithoutProductInput[]
     connectOrCreate?: PurchaseCreateOrConnectWithoutProductInput | PurchaseCreateOrConnectWithoutProductInput[]
@@ -66888,6 +68469,20 @@ export namespace Prisma {
     update?: ProductFAQUpdateWithWhereUniqueWithoutProductInput | ProductFAQUpdateWithWhereUniqueWithoutProductInput[]
     updateMany?: ProductFAQUpdateManyWithWhereWithoutProductInput | ProductFAQUpdateManyWithWhereWithoutProductInput[]
     deleteMany?: ProductFAQScalarWhereInput | ProductFAQScalarWhereInput[]
+  }
+
+  export type ReviewsUncheckedUpdateManyWithoutProductNestedInput = {
+    create?: XOR<ReviewsCreateWithoutProductInput, ReviewsUncheckedCreateWithoutProductInput> | ReviewsCreateWithoutProductInput[] | ReviewsUncheckedCreateWithoutProductInput[]
+    connectOrCreate?: ReviewsCreateOrConnectWithoutProductInput | ReviewsCreateOrConnectWithoutProductInput[]
+    upsert?: ReviewsUpsertWithWhereUniqueWithoutProductInput | ReviewsUpsertWithWhereUniqueWithoutProductInput[]
+    createMany?: ReviewsCreateManyProductInputEnvelope
+    set?: ReviewsWhereUniqueInput | ReviewsWhereUniqueInput[]
+    disconnect?: ReviewsWhereUniqueInput | ReviewsWhereUniqueInput[]
+    delete?: ReviewsWhereUniqueInput | ReviewsWhereUniqueInput[]
+    connect?: ReviewsWhereUniqueInput | ReviewsWhereUniqueInput[]
+    update?: ReviewsUpdateWithWhereUniqueWithoutProductInput | ReviewsUpdateWithWhereUniqueWithoutProductInput[]
+    updateMany?: ReviewsUpdateManyWithWhereWithoutProductInput | ReviewsUpdateManyWithWhereWithoutProductInput[]
+    deleteMany?: ReviewsScalarWhereInput | ReviewsScalarWhereInput[]
   }
 
   export type PurchaseUncheckedUpdateManyWithoutProductNestedInput = {
@@ -67082,6 +68677,20 @@ export namespace Prisma {
     upsert?: ProductUpsertWithoutFaqsInput
     connect?: ProductWhereUniqueInput
     update?: XOR<XOR<ProductUpdateToOneWithWhereWithoutFaqsInput, ProductUpdateWithoutFaqsInput>, ProductUncheckedUpdateWithoutFaqsInput>
+  }
+
+  export type ProductCreateNestedOneWithoutReviewsInput = {
+    create?: XOR<ProductCreateWithoutReviewsInput, ProductUncheckedCreateWithoutReviewsInput>
+    connectOrCreate?: ProductCreateOrConnectWithoutReviewsInput
+    connect?: ProductWhereUniqueInput
+  }
+
+  export type ProductUpdateOneRequiredWithoutReviewsNestedInput = {
+    create?: XOR<ProductCreateWithoutReviewsInput, ProductUncheckedCreateWithoutReviewsInput>
+    connectOrCreate?: ProductCreateOrConnectWithoutReviewsInput
+    upsert?: ProductUpsertWithoutReviewsInput
+    connect?: ProductWhereUniqueInput
+    update?: XOR<XOR<ProductUpdateToOneWithWhereWithoutReviewsInput, ProductUpdateWithoutReviewsInput>, ProductUncheckedUpdateWithoutReviewsInput>
   }
 
   export type AdBlockCreateNestedManyWithoutCampaignInput = {
@@ -68516,6 +70125,7 @@ export namespace Prisma {
     rootChildren?: ProductCreateNestedManyWithoutRootInput
     gallery?: ProductGalleryCreateNestedManyWithoutProductInput
     faqs?: ProductFAQCreateNestedManyWithoutProductInput
+    reviews?: ReviewsCreateNestedManyWithoutProductInput
     purchases?: PurchaseCreateNestedManyWithoutProductInput
     seo?: SeoCreateNestedOneWithoutProductsInput
   }
@@ -68546,6 +70156,7 @@ export namespace Prisma {
     rootChildren?: ProductUncheckedCreateNestedManyWithoutRootInput
     gallery?: ProductGalleryUncheckedCreateNestedManyWithoutProductInput
     faqs?: ProductFAQUncheckedCreateNestedManyWithoutProductInput
+    reviews?: ReviewsUncheckedCreateNestedManyWithoutProductInput
     purchases?: PurchaseUncheckedCreateNestedManyWithoutProductInput
   }
 
@@ -69053,6 +70664,7 @@ export namespace Prisma {
     rootChildren?: ProductCreateNestedManyWithoutRootInput
     gallery?: ProductGalleryCreateNestedManyWithoutProductInput
     faqs?: ProductFAQCreateNestedManyWithoutProductInput
+    reviews?: ReviewsCreateNestedManyWithoutProductInput
     purchases?: PurchaseCreateNestedManyWithoutProductInput
     seo?: SeoCreateNestedOneWithoutProductsInput
     user?: UserCreateNestedOneWithoutProductsInput
@@ -69084,6 +70696,7 @@ export namespace Prisma {
     rootChildren?: ProductUncheckedCreateNestedManyWithoutRootInput
     gallery?: ProductGalleryUncheckedCreateNestedManyWithoutProductInput
     faqs?: ProductFAQUncheckedCreateNestedManyWithoutProductInput
+    reviews?: ReviewsUncheckedCreateNestedManyWithoutProductInput
     purchases?: PurchaseUncheckedCreateNestedManyWithoutProductInput
   }
 
@@ -69730,6 +71343,7 @@ export namespace Prisma {
     rootChildren?: ProductCreateNestedManyWithoutRootInput
     gallery?: ProductGalleryCreateNestedManyWithoutProductInput
     faqs?: ProductFAQCreateNestedManyWithoutProductInput
+    reviews?: ReviewsCreateNestedManyWithoutProductInput
     purchases?: PurchaseCreateNestedManyWithoutProductInput
     user?: UserCreateNestedOneWithoutProductsInput
   }
@@ -69760,6 +71374,7 @@ export namespace Prisma {
     rootChildren?: ProductUncheckedCreateNestedManyWithoutRootInput
     gallery?: ProductGalleryUncheckedCreateNestedManyWithoutProductInput
     faqs?: ProductFAQUncheckedCreateNestedManyWithoutProductInput
+    reviews?: ReviewsUncheckedCreateNestedManyWithoutProductInput
     purchases?: PurchaseUncheckedCreateNestedManyWithoutProductInput
   }
 
@@ -72855,6 +74470,7 @@ export namespace Prisma {
     root?: ProductCreateNestedOneWithoutRootChildrenInput
     gallery?: ProductGalleryCreateNestedManyWithoutProductInput
     faqs?: ProductFAQCreateNestedManyWithoutProductInput
+    reviews?: ReviewsCreateNestedManyWithoutProductInput
     purchases?: PurchaseCreateNestedManyWithoutProductInput
     seo?: SeoCreateNestedOneWithoutProductsInput
     user?: UserCreateNestedOneWithoutProductsInput
@@ -72886,6 +74502,7 @@ export namespace Prisma {
     extras?: ProductExtraUncheckedCreateNestedManyWithoutProductInput
     gallery?: ProductGalleryUncheckedCreateNestedManyWithoutProductInput
     faqs?: ProductFAQUncheckedCreateNestedManyWithoutProductInput
+    reviews?: ReviewsUncheckedCreateNestedManyWithoutProductInput
     purchases?: PurchaseUncheckedCreateNestedManyWithoutProductInput
   }
 
@@ -72918,6 +74535,7 @@ export namespace Prisma {
     rootChildren?: ProductCreateNestedManyWithoutRootInput
     gallery?: ProductGalleryCreateNestedManyWithoutProductInput
     faqs?: ProductFAQCreateNestedManyWithoutProductInput
+    reviews?: ReviewsCreateNestedManyWithoutProductInput
     purchases?: PurchaseCreateNestedManyWithoutProductInput
     seo?: SeoCreateNestedOneWithoutProductsInput
     user?: UserCreateNestedOneWithoutProductsInput
@@ -72949,6 +74567,7 @@ export namespace Prisma {
     rootChildren?: ProductUncheckedCreateNestedManyWithoutRootInput
     gallery?: ProductGalleryUncheckedCreateNestedManyWithoutProductInput
     faqs?: ProductFAQUncheckedCreateNestedManyWithoutProductInput
+    reviews?: ReviewsUncheckedCreateNestedManyWithoutProductInput
     purchases?: PurchaseUncheckedCreateNestedManyWithoutProductInput
   }
 
@@ -73009,6 +74628,40 @@ export namespace Prisma {
 
   export type ProductFAQCreateManyProductInputEnvelope = {
     data: ProductFAQCreateManyProductInput | ProductFAQCreateManyProductInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ReviewsCreateWithoutProductInput = {
+    id?: string
+    rating: number
+    comment?: string | null
+    reviewerName?: string | null
+    date?: Date | string
+    verifiedPurchase?: boolean
+    status?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ReviewsUncheckedCreateWithoutProductInput = {
+    id?: string
+    rating: number
+    comment?: string | null
+    reviewerName?: string | null
+    date?: Date | string
+    verifiedPurchase?: boolean
+    status?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ReviewsCreateOrConnectWithoutProductInput = {
+    where: ReviewsWhereUniqueInput
+    create: XOR<ReviewsCreateWithoutProductInput, ReviewsUncheckedCreateWithoutProductInput>
+  }
+
+  export type ReviewsCreateManyProductInputEnvelope = {
+    data: ReviewsCreateManyProductInput | ReviewsCreateManyProductInput[]
     skipDuplicates?: boolean
   }
 
@@ -73333,6 +74986,7 @@ export namespace Prisma {
     root?: ProductUpdateOneWithoutRootChildrenNestedInput
     gallery?: ProductGalleryUpdateManyWithoutProductNestedInput
     faqs?: ProductFAQUpdateManyWithoutProductNestedInput
+    reviews?: ReviewsUpdateManyWithoutProductNestedInput
     purchases?: PurchaseUpdateManyWithoutProductNestedInput
     seo?: SeoUpdateOneWithoutProductsNestedInput
     user?: UserUpdateOneWithoutProductsNestedInput
@@ -73364,6 +75018,7 @@ export namespace Prisma {
     extras?: ProductExtraUncheckedUpdateManyWithoutProductNestedInput
     gallery?: ProductGalleryUncheckedUpdateManyWithoutProductNestedInput
     faqs?: ProductFAQUncheckedUpdateManyWithoutProductNestedInput
+    reviews?: ReviewsUncheckedUpdateManyWithoutProductNestedInput
     purchases?: PurchaseUncheckedUpdateManyWithoutProductNestedInput
   }
 
@@ -73426,6 +75081,38 @@ export namespace Prisma {
     productId?: StringFilter<"ProductFAQ"> | string
     createdAt?: DateTimeFilter<"ProductFAQ"> | Date | string
     updatedAt?: DateTimeFilter<"ProductFAQ"> | Date | string
+  }
+
+  export type ReviewsUpsertWithWhereUniqueWithoutProductInput = {
+    where: ReviewsWhereUniqueInput
+    update: XOR<ReviewsUpdateWithoutProductInput, ReviewsUncheckedUpdateWithoutProductInput>
+    create: XOR<ReviewsCreateWithoutProductInput, ReviewsUncheckedCreateWithoutProductInput>
+  }
+
+  export type ReviewsUpdateWithWhereUniqueWithoutProductInput = {
+    where: ReviewsWhereUniqueInput
+    data: XOR<ReviewsUpdateWithoutProductInput, ReviewsUncheckedUpdateWithoutProductInput>
+  }
+
+  export type ReviewsUpdateManyWithWhereWithoutProductInput = {
+    where: ReviewsScalarWhereInput
+    data: XOR<ReviewsUpdateManyMutationInput, ReviewsUncheckedUpdateManyWithoutProductInput>
+  }
+
+  export type ReviewsScalarWhereInput = {
+    AND?: ReviewsScalarWhereInput | ReviewsScalarWhereInput[]
+    OR?: ReviewsScalarWhereInput[]
+    NOT?: ReviewsScalarWhereInput | ReviewsScalarWhereInput[]
+    id?: StringFilter<"Reviews"> | string
+    rating?: FloatFilter<"Reviews"> | number
+    comment?: StringNullableFilter<"Reviews"> | string | null
+    reviewerName?: StringNullableFilter<"Reviews"> | string | null
+    date?: DateTimeFilter<"Reviews"> | Date | string
+    verifiedPurchase?: BoolFilter<"Reviews"> | boolean
+    status?: BoolFilter<"Reviews"> | boolean
+    productId?: StringFilter<"Reviews"> | string
+    createdAt?: DateTimeFilter<"Reviews"> | Date | string
+    updatedAt?: DateTimeFilter<"Reviews"> | Date | string
   }
 
   export type PurchaseUpsertWithWhereUniqueWithoutProductInput = {
@@ -73679,6 +75366,7 @@ export namespace Prisma {
     rootChildren?: ProductCreateNestedManyWithoutRootInput
     gallery?: ProductGalleryCreateNestedManyWithoutProductInput
     faqs?: ProductFAQCreateNestedManyWithoutProductInput
+    reviews?: ReviewsCreateNestedManyWithoutProductInput
     purchases?: PurchaseCreateNestedManyWithoutProductInput
     seo?: SeoCreateNestedOneWithoutProductsInput
     user?: UserCreateNestedOneWithoutProductsInput
@@ -73710,6 +75398,7 @@ export namespace Prisma {
     rootChildren?: ProductUncheckedCreateNestedManyWithoutRootInput
     gallery?: ProductGalleryUncheckedCreateNestedManyWithoutProductInput
     faqs?: ProductFAQUncheckedCreateNestedManyWithoutProductInput
+    reviews?: ReviewsUncheckedCreateNestedManyWithoutProductInput
     purchases?: PurchaseUncheckedCreateNestedManyWithoutProductInput
   }
 
@@ -73940,6 +75629,7 @@ export namespace Prisma {
     root?: ProductCreateNestedOneWithoutRootChildrenInput
     rootChildren?: ProductCreateNestedManyWithoutRootInput
     faqs?: ProductFAQCreateNestedManyWithoutProductInput
+    reviews?: ReviewsCreateNestedManyWithoutProductInput
     purchases?: PurchaseCreateNestedManyWithoutProductInput
     seo?: SeoCreateNestedOneWithoutProductsInput
     user?: UserCreateNestedOneWithoutProductsInput
@@ -73971,6 +75661,7 @@ export namespace Prisma {
     extras?: ProductExtraUncheckedCreateNestedManyWithoutProductInput
     rootChildren?: ProductUncheckedCreateNestedManyWithoutRootInput
     faqs?: ProductFAQUncheckedCreateNestedManyWithoutProductInput
+    reviews?: ReviewsUncheckedCreateNestedManyWithoutProductInput
     purchases?: PurchaseUncheckedCreateNestedManyWithoutProductInput
   }
 
@@ -74053,6 +75744,7 @@ export namespace Prisma {
     root?: ProductUpdateOneWithoutRootChildrenNestedInput
     rootChildren?: ProductUpdateManyWithoutRootNestedInput
     faqs?: ProductFAQUpdateManyWithoutProductNestedInput
+    reviews?: ReviewsUpdateManyWithoutProductNestedInput
     purchases?: PurchaseUpdateManyWithoutProductNestedInput
     seo?: SeoUpdateOneWithoutProductsNestedInput
     user?: UserUpdateOneWithoutProductsNestedInput
@@ -74084,6 +75776,7 @@ export namespace Prisma {
     extras?: ProductExtraUncheckedUpdateManyWithoutProductNestedInput
     rootChildren?: ProductUncheckedUpdateManyWithoutRootNestedInput
     faqs?: ProductFAQUncheckedUpdateManyWithoutProductNestedInput
+    reviews?: ReviewsUncheckedUpdateManyWithoutProductNestedInput
     purchases?: PurchaseUncheckedUpdateManyWithoutProductNestedInput
   }
 
@@ -74156,6 +75849,7 @@ export namespace Prisma {
     rootChildren?: ProductCreateNestedManyWithoutRootInput
     gallery?: ProductGalleryCreateNestedManyWithoutProductInput
     faqs?: ProductFAQCreateNestedManyWithoutProductInput
+    reviews?: ReviewsCreateNestedManyWithoutProductInput
     purchases?: PurchaseCreateNestedManyWithoutProductInput
     seo?: SeoCreateNestedOneWithoutProductsInput
     user?: UserCreateNestedOneWithoutProductsInput
@@ -74187,6 +75881,7 @@ export namespace Prisma {
     rootChildren?: ProductUncheckedCreateNestedManyWithoutRootInput
     gallery?: ProductGalleryUncheckedCreateNestedManyWithoutProductInput
     faqs?: ProductFAQUncheckedCreateNestedManyWithoutProductInput
+    reviews?: ReviewsUncheckedCreateNestedManyWithoutProductInput
     purchases?: PurchaseUncheckedCreateNestedManyWithoutProductInput
   }
 
@@ -74230,6 +75925,7 @@ export namespace Prisma {
     rootChildren?: ProductUpdateManyWithoutRootNestedInput
     gallery?: ProductGalleryUpdateManyWithoutProductNestedInput
     faqs?: ProductFAQUpdateManyWithoutProductNestedInput
+    reviews?: ReviewsUpdateManyWithoutProductNestedInput
     purchases?: PurchaseUpdateManyWithoutProductNestedInput
     seo?: SeoUpdateOneWithoutProductsNestedInput
     user?: UserUpdateOneWithoutProductsNestedInput
@@ -74261,6 +75957,7 @@ export namespace Prisma {
     rootChildren?: ProductUncheckedUpdateManyWithoutRootNestedInput
     gallery?: ProductGalleryUncheckedUpdateManyWithoutProductNestedInput
     faqs?: ProductFAQUncheckedUpdateManyWithoutProductNestedInput
+    reviews?: ReviewsUncheckedUpdateManyWithoutProductNestedInput
     purchases?: PurchaseUncheckedUpdateManyWithoutProductNestedInput
   }
 
@@ -74288,6 +75985,7 @@ export namespace Prisma {
     root?: ProductCreateNestedOneWithoutRootChildrenInput
     rootChildren?: ProductCreateNestedManyWithoutRootInput
     gallery?: ProductGalleryCreateNestedManyWithoutProductInput
+    reviews?: ReviewsCreateNestedManyWithoutProductInput
     purchases?: PurchaseCreateNestedManyWithoutProductInput
     seo?: SeoCreateNestedOneWithoutProductsInput
     user?: UserCreateNestedOneWithoutProductsInput
@@ -74319,6 +76017,7 @@ export namespace Prisma {
     extras?: ProductExtraUncheckedCreateNestedManyWithoutProductInput
     rootChildren?: ProductUncheckedCreateNestedManyWithoutRootInput
     gallery?: ProductGalleryUncheckedCreateNestedManyWithoutProductInput
+    reviews?: ReviewsUncheckedCreateNestedManyWithoutProductInput
     purchases?: PurchaseUncheckedCreateNestedManyWithoutProductInput
   }
 
@@ -74362,6 +76061,7 @@ export namespace Prisma {
     root?: ProductUpdateOneWithoutRootChildrenNestedInput
     rootChildren?: ProductUpdateManyWithoutRootNestedInput
     gallery?: ProductGalleryUpdateManyWithoutProductNestedInput
+    reviews?: ReviewsUpdateManyWithoutProductNestedInput
     purchases?: PurchaseUpdateManyWithoutProductNestedInput
     seo?: SeoUpdateOneWithoutProductsNestedInput
     user?: UserUpdateOneWithoutProductsNestedInput
@@ -74393,6 +76093,143 @@ export namespace Prisma {
     extras?: ProductExtraUncheckedUpdateManyWithoutProductNestedInput
     rootChildren?: ProductUncheckedUpdateManyWithoutRootNestedInput
     gallery?: ProductGalleryUncheckedUpdateManyWithoutProductNestedInput
+    reviews?: ReviewsUncheckedUpdateManyWithoutProductNestedInput
+    purchases?: PurchaseUncheckedUpdateManyWithoutProductNestedInput
+  }
+
+  export type ProductCreateWithoutReviewsInput = {
+    id?: string
+    title: string
+    slug: string
+    description:PrismaJson.BodyData
+    tiptapDescription?:PrismaJson.TipTapBodyData | NullableJsonNullValueInput
+    type: $Enums.ProductType
+    version: number
+    status?: $Enums.ContentStatus
+    isLatest?: boolean
+    acquisitionMode?: $Enums.ProductAcquisitionMode
+    price?: number | null
+    discountedPrice?: number | null
+    isFree?: boolean
+    metadata?:PrismaJson.ProductMetadata | NullableJsonNullValueInput
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    imageCover?: MediaCreateNestedOneWithoutProductInput
+    category?: ProductCategoryCreateNestedOneWithoutProductsInput
+    extras?: ProductExtraCreateNestedManyWithoutProductInput
+    form?: FormCreateNestedOneWithoutProductsInput
+    root?: ProductCreateNestedOneWithoutRootChildrenInput
+    rootChildren?: ProductCreateNestedManyWithoutRootInput
+    gallery?: ProductGalleryCreateNestedManyWithoutProductInput
+    faqs?: ProductFAQCreateNestedManyWithoutProductInput
+    purchases?: PurchaseCreateNestedManyWithoutProductInput
+    seo?: SeoCreateNestedOneWithoutProductsInput
+    user?: UserCreateNestedOneWithoutProductsInput
+  }
+
+  export type ProductUncheckedCreateWithoutReviewsInput = {
+    id?: string
+    title: string
+    slug: string
+    description:PrismaJson.BodyData
+    tiptapDescription?:PrismaJson.TipTapBodyData | NullableJsonNullValueInput
+    type: $Enums.ProductType
+    version: number
+    status?: $Enums.ContentStatus
+    isLatest?: boolean
+    imageCoverId?: string | null
+    categoryId?: string | null
+    acquisitionMode?: $Enums.ProductAcquisitionMode
+    price?: number | null
+    discountedPrice?: number | null
+    isFree?: boolean
+    metadata?:PrismaJson.ProductMetadata | NullableJsonNullValueInput
+    formId?: string | null
+    rootId?: string | null
+    seoId?: string | null
+    userId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    extras?: ProductExtraUncheckedCreateNestedManyWithoutProductInput
+    rootChildren?: ProductUncheckedCreateNestedManyWithoutRootInput
+    gallery?: ProductGalleryUncheckedCreateNestedManyWithoutProductInput
+    faqs?: ProductFAQUncheckedCreateNestedManyWithoutProductInput
+    purchases?: PurchaseUncheckedCreateNestedManyWithoutProductInput
+  }
+
+  export type ProductCreateOrConnectWithoutReviewsInput = {
+    where: ProductWhereUniqueInput
+    create: XOR<ProductCreateWithoutReviewsInput, ProductUncheckedCreateWithoutReviewsInput>
+  }
+
+  export type ProductUpsertWithoutReviewsInput = {
+    update: XOR<ProductUpdateWithoutReviewsInput, ProductUncheckedUpdateWithoutReviewsInput>
+    create: XOR<ProductCreateWithoutReviewsInput, ProductUncheckedCreateWithoutReviewsInput>
+    where?: ProductWhereInput
+  }
+
+  export type ProductUpdateToOneWithWhereWithoutReviewsInput = {
+    where?: ProductWhereInput
+    data: XOR<ProductUpdateWithoutReviewsInput, ProductUncheckedUpdateWithoutReviewsInput>
+  }
+
+  export type ProductUpdateWithoutReviewsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?:PrismaJson.BodyData
+    tiptapDescription?:PrismaJson.TipTapBodyData | NullableJsonNullValueInput
+    type?: EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType
+    version?: IntFieldUpdateOperationsInput | number
+    status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
+    isLatest?: BoolFieldUpdateOperationsInput | boolean
+    acquisitionMode?: EnumProductAcquisitionModeFieldUpdateOperationsInput | $Enums.ProductAcquisitionMode
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountedPrice?: NullableFloatFieldUpdateOperationsInput | number | null
+    isFree?: BoolFieldUpdateOperationsInput | boolean
+    metadata?:PrismaJson.ProductMetadata | NullableJsonNullValueInput
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    imageCover?: MediaUpdateOneWithoutProductNestedInput
+    category?: ProductCategoryUpdateOneWithoutProductsNestedInput
+    extras?: ProductExtraUpdateManyWithoutProductNestedInput
+    form?: FormUpdateOneWithoutProductsNestedInput
+    root?: ProductUpdateOneWithoutRootChildrenNestedInput
+    rootChildren?: ProductUpdateManyWithoutRootNestedInput
+    gallery?: ProductGalleryUpdateManyWithoutProductNestedInput
+    faqs?: ProductFAQUpdateManyWithoutProductNestedInput
+    purchases?: PurchaseUpdateManyWithoutProductNestedInput
+    seo?: SeoUpdateOneWithoutProductsNestedInput
+    user?: UserUpdateOneWithoutProductsNestedInput
+  }
+
+  export type ProductUncheckedUpdateWithoutReviewsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    description?:PrismaJson.BodyData
+    tiptapDescription?:PrismaJson.TipTapBodyData | NullableJsonNullValueInput
+    type?: EnumProductTypeFieldUpdateOperationsInput | $Enums.ProductType
+    version?: IntFieldUpdateOperationsInput | number
+    status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
+    isLatest?: BoolFieldUpdateOperationsInput | boolean
+    imageCoverId?: NullableStringFieldUpdateOperationsInput | string | null
+    categoryId?: NullableStringFieldUpdateOperationsInput | string | null
+    acquisitionMode?: EnumProductAcquisitionModeFieldUpdateOperationsInput | $Enums.ProductAcquisitionMode
+    price?: NullableFloatFieldUpdateOperationsInput | number | null
+    discountedPrice?: NullableFloatFieldUpdateOperationsInput | number | null
+    isFree?: BoolFieldUpdateOperationsInput | boolean
+    metadata?:PrismaJson.ProductMetadata | NullableJsonNullValueInput
+    formId?: NullableStringFieldUpdateOperationsInput | string | null
+    rootId?: NullableStringFieldUpdateOperationsInput | string | null
+    seoId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    extras?: ProductExtraUncheckedUpdateManyWithoutProductNestedInput
+    rootChildren?: ProductUncheckedUpdateManyWithoutRootNestedInput
+    gallery?: ProductGalleryUncheckedUpdateManyWithoutProductNestedInput
+    faqs?: ProductFAQUncheckedUpdateManyWithoutProductNestedInput
     purchases?: PurchaseUncheckedUpdateManyWithoutProductNestedInput
   }
 
@@ -74720,6 +76557,7 @@ export namespace Prisma {
     rootChildren?: ProductCreateNestedManyWithoutRootInput
     gallery?: ProductGalleryCreateNestedManyWithoutProductInput
     faqs?: ProductFAQCreateNestedManyWithoutProductInput
+    reviews?: ReviewsCreateNestedManyWithoutProductInput
     seo?: SeoCreateNestedOneWithoutProductsInput
     user?: UserCreateNestedOneWithoutProductsInput
   }
@@ -74751,6 +76589,7 @@ export namespace Prisma {
     rootChildren?: ProductUncheckedCreateNestedManyWithoutRootInput
     gallery?: ProductGalleryUncheckedCreateNestedManyWithoutProductInput
     faqs?: ProductFAQUncheckedCreateNestedManyWithoutProductInput
+    reviews?: ReviewsUncheckedCreateNestedManyWithoutProductInput
   }
 
   export type ProductCreateOrConnectWithoutPurchasesInput = {
@@ -74794,6 +76633,7 @@ export namespace Prisma {
     rootChildren?: ProductUpdateManyWithoutRootNestedInput
     gallery?: ProductGalleryUpdateManyWithoutProductNestedInput
     faqs?: ProductFAQUpdateManyWithoutProductNestedInput
+    reviews?: ReviewsUpdateManyWithoutProductNestedInput
     seo?: SeoUpdateOneWithoutProductsNestedInput
     user?: UserUpdateOneWithoutProductsNestedInput
   }
@@ -74825,6 +76665,7 @@ export namespace Prisma {
     rootChildren?: ProductUncheckedUpdateManyWithoutRootNestedInput
     gallery?: ProductGalleryUncheckedUpdateManyWithoutProductNestedInput
     faqs?: ProductFAQUncheckedUpdateManyWithoutProductNestedInput
+    reviews?: ReviewsUncheckedUpdateManyWithoutProductNestedInput
   }
 
   export type ProductCreateWithoutFormInput = {
@@ -74851,6 +76692,7 @@ export namespace Prisma {
     rootChildren?: ProductCreateNestedManyWithoutRootInput
     gallery?: ProductGalleryCreateNestedManyWithoutProductInput
     faqs?: ProductFAQCreateNestedManyWithoutProductInput
+    reviews?: ReviewsCreateNestedManyWithoutProductInput
     purchases?: PurchaseCreateNestedManyWithoutProductInput
     seo?: SeoCreateNestedOneWithoutProductsInput
     user?: UserCreateNestedOneWithoutProductsInput
@@ -74882,6 +76724,7 @@ export namespace Prisma {
     rootChildren?: ProductUncheckedCreateNestedManyWithoutRootInput
     gallery?: ProductGalleryUncheckedCreateNestedManyWithoutProductInput
     faqs?: ProductFAQUncheckedCreateNestedManyWithoutProductInput
+    reviews?: ReviewsUncheckedCreateNestedManyWithoutProductInput
     purchases?: PurchaseUncheckedCreateNestedManyWithoutProductInput
   }
 
@@ -75723,6 +77566,7 @@ export namespace Prisma {
     rootChildren?: ProductUpdateManyWithoutRootNestedInput
     gallery?: ProductGalleryUpdateManyWithoutProductNestedInput
     faqs?: ProductFAQUpdateManyWithoutProductNestedInput
+    reviews?: ReviewsUpdateManyWithoutProductNestedInput
     purchases?: PurchaseUpdateManyWithoutProductNestedInput
     seo?: SeoUpdateOneWithoutProductsNestedInput
   }
@@ -75753,6 +77597,7 @@ export namespace Prisma {
     rootChildren?: ProductUncheckedUpdateManyWithoutRootNestedInput
     gallery?: ProductGalleryUncheckedUpdateManyWithoutProductNestedInput
     faqs?: ProductFAQUncheckedUpdateManyWithoutProductNestedInput
+    reviews?: ReviewsUncheckedUpdateManyWithoutProductNestedInput
     purchases?: PurchaseUncheckedUpdateManyWithoutProductNestedInput
   }
 
@@ -76024,6 +77869,7 @@ export namespace Prisma {
     rootChildren?: ProductUpdateManyWithoutRootNestedInput
     gallery?: ProductGalleryUpdateManyWithoutProductNestedInput
     faqs?: ProductFAQUpdateManyWithoutProductNestedInput
+    reviews?: ReviewsUpdateManyWithoutProductNestedInput
     purchases?: PurchaseUpdateManyWithoutProductNestedInput
     seo?: SeoUpdateOneWithoutProductsNestedInput
     user?: UserUpdateOneWithoutProductsNestedInput
@@ -76055,6 +77901,7 @@ export namespace Prisma {
     rootChildren?: ProductUncheckedUpdateManyWithoutRootNestedInput
     gallery?: ProductGalleryUncheckedUpdateManyWithoutProductNestedInput
     faqs?: ProductFAQUncheckedUpdateManyWithoutProductNestedInput
+    reviews?: ReviewsUncheckedUpdateManyWithoutProductNestedInput
     purchases?: PurchaseUncheckedUpdateManyWithoutProductNestedInput
   }
 
@@ -76570,6 +78417,7 @@ export namespace Prisma {
     rootChildren?: ProductUpdateManyWithoutRootNestedInput
     gallery?: ProductGalleryUpdateManyWithoutProductNestedInput
     faqs?: ProductFAQUpdateManyWithoutProductNestedInput
+    reviews?: ReviewsUpdateManyWithoutProductNestedInput
     purchases?: PurchaseUpdateManyWithoutProductNestedInput
     user?: UserUpdateOneWithoutProductsNestedInput
   }
@@ -76600,6 +78448,7 @@ export namespace Prisma {
     rootChildren?: ProductUncheckedUpdateManyWithoutRootNestedInput
     gallery?: ProductGalleryUncheckedUpdateManyWithoutProductNestedInput
     faqs?: ProductFAQUncheckedUpdateManyWithoutProductNestedInput
+    reviews?: ReviewsUncheckedUpdateManyWithoutProductNestedInput
     purchases?: PurchaseUncheckedUpdateManyWithoutProductNestedInput
   }
 
@@ -77502,6 +79351,18 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type ReviewsCreateManyProductInput = {
+    id?: string
+    rating: number
+    comment?: string | null
+    reviewerName?: string | null
+    date?: Date | string
+    verifiedPurchase?: boolean
+    status?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type PurchaseCreateManyProductInput = {
     id?: string
     email: string
@@ -77561,6 +79422,7 @@ export namespace Prisma {
     rootChildren?: ProductUpdateManyWithoutRootNestedInput
     gallery?: ProductGalleryUpdateManyWithoutProductNestedInput
     faqs?: ProductFAQUpdateManyWithoutProductNestedInput
+    reviews?: ReviewsUpdateManyWithoutProductNestedInput
     purchases?: PurchaseUpdateManyWithoutProductNestedInput
     seo?: SeoUpdateOneWithoutProductsNestedInput
     user?: UserUpdateOneWithoutProductsNestedInput
@@ -77592,6 +79454,7 @@ export namespace Prisma {
     rootChildren?: ProductUncheckedUpdateManyWithoutRootNestedInput
     gallery?: ProductGalleryUncheckedUpdateManyWithoutProductNestedInput
     faqs?: ProductFAQUncheckedUpdateManyWithoutProductNestedInput
+    reviews?: ReviewsUncheckedUpdateManyWithoutProductNestedInput
     purchases?: PurchaseUncheckedUpdateManyWithoutProductNestedInput
   }
 
@@ -77660,6 +79523,42 @@ export namespace Prisma {
     question?: StringFieldUpdateOperationsInput | string
     answer?: StringFieldUpdateOperationsInput | string
     sort?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReviewsUpdateWithoutProductInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    rating?: FloatFieldUpdateOperationsInput | number
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewerName?: NullableStringFieldUpdateOperationsInput | string | null
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    verifiedPurchase?: BoolFieldUpdateOperationsInput | boolean
+    status?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReviewsUncheckedUpdateWithoutProductInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    rating?: FloatFieldUpdateOperationsInput | number
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewerName?: NullableStringFieldUpdateOperationsInput | string | null
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    verifiedPurchase?: BoolFieldUpdateOperationsInput | boolean
+    status?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ReviewsUncheckedUpdateManyWithoutProductInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    rating?: FloatFieldUpdateOperationsInput | number
+    comment?: NullableStringFieldUpdateOperationsInput | string | null
+    reviewerName?: NullableStringFieldUpdateOperationsInput | string | null
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    verifiedPurchase?: BoolFieldUpdateOperationsInput | boolean
+    status?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -77800,6 +79699,7 @@ export namespace Prisma {
     rootChildren?: ProductUpdateManyWithoutRootNestedInput
     gallery?: ProductGalleryUpdateManyWithoutProductNestedInput
     faqs?: ProductFAQUpdateManyWithoutProductNestedInput
+    reviews?: ReviewsUpdateManyWithoutProductNestedInput
     purchases?: PurchaseUpdateManyWithoutProductNestedInput
     seo?: SeoUpdateOneWithoutProductsNestedInput
     user?: UserUpdateOneWithoutProductsNestedInput
@@ -77831,6 +79731,7 @@ export namespace Prisma {
     rootChildren?: ProductUncheckedUpdateManyWithoutRootNestedInput
     gallery?: ProductGalleryUncheckedUpdateManyWithoutProductNestedInput
     faqs?: ProductFAQUncheckedUpdateManyWithoutProductNestedInput
+    reviews?: ReviewsUncheckedUpdateManyWithoutProductNestedInput
     purchases?: PurchaseUncheckedUpdateManyWithoutProductNestedInput
   }
 
@@ -78040,6 +79941,7 @@ export namespace Prisma {
     rootChildren?: ProductUpdateManyWithoutRootNestedInput
     gallery?: ProductGalleryUpdateManyWithoutProductNestedInput
     faqs?: ProductFAQUpdateManyWithoutProductNestedInput
+    reviews?: ReviewsUpdateManyWithoutProductNestedInput
     purchases?: PurchaseUpdateManyWithoutProductNestedInput
     seo?: SeoUpdateOneWithoutProductsNestedInput
     user?: UserUpdateOneWithoutProductsNestedInput
@@ -78071,6 +79973,7 @@ export namespace Prisma {
     rootChildren?: ProductUncheckedUpdateManyWithoutRootNestedInput
     gallery?: ProductGalleryUncheckedUpdateManyWithoutProductNestedInput
     faqs?: ProductFAQUncheckedUpdateManyWithoutProductNestedInput
+    reviews?: ReviewsUncheckedUpdateManyWithoutProductNestedInput
     purchases?: PurchaseUncheckedUpdateManyWithoutProductNestedInput
   }
 
