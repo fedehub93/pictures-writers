@@ -6,7 +6,7 @@ export const useGetProducts = (s?: string) => {
     enabled: true,
     queryKey: ["products", { s }],
     queryFn: async () => {
-      const response = await axios.get(`/api/admin/shop/products?s=${s}`);
+      const response = await axios.get(`/api/admin/shop/products?s=${s}&per_page=100`);
       return response.data as {
         items: {
           id: string;

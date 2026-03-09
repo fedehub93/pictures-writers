@@ -159,6 +159,17 @@ export const getPublishedProductBySlug = async (slug: string) => {
           lastName: true,
         },
       },
+      reviews: {
+        select: {
+          id: true,
+          reviewerName: true,
+          role: true,
+          rating: true,
+          comment: true,
+          date: true,
+          verifiedPurchase: true,
+        },
+      },
       createdAt: true,
       updatedAt: true,
     },
@@ -167,7 +178,22 @@ export const getPublishedProductBySlug = async (slug: string) => {
     },
   });
 
-  return product;
+  if (!product) {
+    return null;
+  }
+
+  const totalRating = product?.reviews.reduce((acc, r) => acc + r.rating, 0);
+
+  const average = totalRating / product?.reviews.length;
+  const best = Math.max(...product.reviews.map((r) => r.rating));
+
+  const aggregateRating = {
+    ratingValue: average,
+    bestRating: best,
+    ratingCount: product.reviews.length,
+  };
+
+  return { ...product, aggregateRating };
 };
 
 export type GetPublishedProductBySlug = Awaited<

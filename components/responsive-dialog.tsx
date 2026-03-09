@@ -16,6 +16,7 @@ import {
   DrawerTitle,
   DrawerDescription,
 } from "@/components/ui/drawer";
+import { ScrollArea } from "./ui/scroll-area";
 
 interface ResponsiveDialogProps {
   title: string;
@@ -36,13 +37,13 @@ export const ResponsiveDialog = ({
 
   if (isMobile) {
     return (
-      <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent>
+      <Drawer open={open} onOpenChange={onOpenChange} handleOnly>
+        <DrawerContent className="max-h-[90vh]">
           <DrawerHeader>
             <DrawerTitle>{title}</DrawerTitle>
             <DrawerDescription>{description}</DrawerDescription>
           </DrawerHeader>
-          <div className="p-4">{children}</div>
+          <ScrollArea className="p-4 max-h-[90vh] overflow-auto">{children}</ScrollArea>
         </DrawerContent>
       </Drawer>
     );
@@ -50,7 +51,7 @@ export const ResponsiveDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="lg:max-w-2xl">
+      <DialogContent className="lg:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
