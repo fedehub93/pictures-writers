@@ -513,14 +513,6 @@ export const ProductAcquisitionMode: {
 export type ProductAcquisitionMode = (typeof ProductAcquisitionMode)[keyof typeof ProductAcquisitionMode]
 
 
-export const ReviewStatus: {
-  DRAFT: 'DRAFT',
-  PUBLISHED: 'PUBLISHED'
-};
-
-export type ReviewStatus = (typeof ReviewStatus)[keyof typeof ReviewStatus]
-
-
 export const AdLayoutType: {
   SINGLE: 'SINGLE',
   GRID: 'GRID',
@@ -619,10 +611,6 @@ export const ProductType: typeof $Enums.ProductType
 export type ProductAcquisitionMode = $Enums.ProductAcquisitionMode
 
 export const ProductAcquisitionMode: typeof $Enums.ProductAcquisitionMode
-
-export type ReviewStatus = $Enums.ReviewStatus
-
-export const ReviewStatus: typeof $Enums.ReviewStatus
 
 export type AdLayoutType = $Enums.AdLayoutType
 
@@ -41018,6 +41006,7 @@ export namespace Prisma {
   export type ReviewsMinAggregateOutputType = {
     id: string | null
     rating: number | null
+    role: string | null
     comment: string | null
     reviewerName: string | null
     date: Date | null
@@ -41031,6 +41020,7 @@ export namespace Prisma {
   export type ReviewsMaxAggregateOutputType = {
     id: string | null
     rating: number | null
+    role: string | null
     comment: string | null
     reviewerName: string | null
     date: Date | null
@@ -41044,6 +41034,7 @@ export namespace Prisma {
   export type ReviewsCountAggregateOutputType = {
     id: number
     rating: number
+    role: number
     comment: number
     reviewerName: number
     date: number
@@ -41067,6 +41058,7 @@ export namespace Prisma {
   export type ReviewsMinAggregateInputType = {
     id?: true
     rating?: true
+    role?: true
     comment?: true
     reviewerName?: true
     date?: true
@@ -41080,6 +41072,7 @@ export namespace Prisma {
   export type ReviewsMaxAggregateInputType = {
     id?: true
     rating?: true
+    role?: true
     comment?: true
     reviewerName?: true
     date?: true
@@ -41093,6 +41086,7 @@ export namespace Prisma {
   export type ReviewsCountAggregateInputType = {
     id?: true
     rating?: true
+    role?: true
     comment?: true
     reviewerName?: true
     date?: true
@@ -41193,6 +41187,7 @@ export namespace Prisma {
   export type ReviewsGroupByOutputType = {
     id: string
     rating: number
+    role: string | null
     comment: string | null
     reviewerName: string | null
     date: Date
@@ -41225,6 +41220,7 @@ export namespace Prisma {
   export type ReviewsSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     rating?: boolean
+    role?: boolean
     comment?: boolean
     reviewerName?: boolean
     date?: boolean
@@ -41239,6 +41235,7 @@ export namespace Prisma {
   export type ReviewsSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     rating?: boolean
+    role?: boolean
     comment?: boolean
     reviewerName?: boolean
     date?: boolean
@@ -41253,6 +41250,7 @@ export namespace Prisma {
   export type ReviewsSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     rating?: boolean
+    role?: boolean
     comment?: boolean
     reviewerName?: boolean
     date?: boolean
@@ -41267,6 +41265,7 @@ export namespace Prisma {
   export type ReviewsSelectScalar = {
     id?: boolean
     rating?: boolean
+    role?: boolean
     comment?: boolean
     reviewerName?: boolean
     date?: boolean
@@ -41277,7 +41276,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type ReviewsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "rating" | "comment" | "reviewerName" | "date" | "verifiedPurchase" | "status" | "productId" | "createdAt" | "updatedAt", ExtArgs["result"]["reviews"]>
+  export type ReviewsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "rating" | "role" | "comment" | "reviewerName" | "date" | "verifiedPurchase" | "status" | "productId" | "createdAt" | "updatedAt", ExtArgs["result"]["reviews"]>
   export type ReviewsInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     product?: boolean | ProductDefaultArgs<ExtArgs>
   }
@@ -41296,6 +41295,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       rating: number
+      role: string | null
       comment: string | null
       reviewerName: string | null
       date: Date
@@ -41730,6 +41730,7 @@ export namespace Prisma {
   interface ReviewsFieldRefs {
     readonly id: FieldRef<"Reviews", 'String'>
     readonly rating: FieldRef<"Reviews", 'Float'>
+    readonly role: FieldRef<"Reviews", 'String'>
     readonly comment: FieldRef<"Reviews", 'String'>
     readonly reviewerName: FieldRef<"Reviews", 'String'>
     readonly date: FieldRef<"Reviews", 'DateTime'>
@@ -55922,6 +55923,7 @@ export namespace Prisma {
   export const ReviewsScalarFieldEnum: {
     id: 'id',
     rating: 'rating',
+    role: 'role',
     comment: 'comment',
     reviewerName: 'reviewerName',
     date: 'date',
@@ -58890,6 +58892,7 @@ export namespace Prisma {
     NOT?: ReviewsWhereInput | ReviewsWhereInput[]
     id?: StringFilter<"Reviews"> | string
     rating?: FloatFilter<"Reviews"> | number
+    role?: StringNullableFilter<"Reviews"> | string | null
     comment?: StringNullableFilter<"Reviews"> | string | null
     reviewerName?: StringNullableFilter<"Reviews"> | string | null
     date?: DateTimeFilter<"Reviews"> | Date | string
@@ -58904,6 +58907,7 @@ export namespace Prisma {
   export type ReviewsOrderByWithRelationInput = {
     id?: SortOrder
     rating?: SortOrder
+    role?: SortOrderInput | SortOrder
     comment?: SortOrderInput | SortOrder
     reviewerName?: SortOrderInput | SortOrder
     date?: SortOrder
@@ -58921,6 +58925,7 @@ export namespace Prisma {
     OR?: ReviewsWhereInput[]
     NOT?: ReviewsWhereInput | ReviewsWhereInput[]
     rating?: FloatFilter<"Reviews"> | number
+    role?: StringNullableFilter<"Reviews"> | string | null
     comment?: StringNullableFilter<"Reviews"> | string | null
     reviewerName?: StringNullableFilter<"Reviews"> | string | null
     date?: DateTimeFilter<"Reviews"> | Date | string
@@ -58935,6 +58940,7 @@ export namespace Prisma {
   export type ReviewsOrderByWithAggregationInput = {
     id?: SortOrder
     rating?: SortOrder
+    role?: SortOrderInput | SortOrder
     comment?: SortOrderInput | SortOrder
     reviewerName?: SortOrderInput | SortOrder
     date?: SortOrder
@@ -58956,6 +58962,7 @@ export namespace Prisma {
     NOT?: ReviewsScalarWhereWithAggregatesInput | ReviewsScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Reviews"> | string
     rating?: FloatWithAggregatesFilter<"Reviews"> | number
+    role?: StringNullableWithAggregatesFilter<"Reviews"> | string | null
     comment?: StringNullableWithAggregatesFilter<"Reviews"> | string | null
     reviewerName?: StringNullableWithAggregatesFilter<"Reviews"> | string | null
     date?: DateTimeWithAggregatesFilter<"Reviews"> | Date | string
@@ -62465,6 +62472,7 @@ export namespace Prisma {
   export type ReviewsCreateInput = {
     id?: string
     rating: number
+    role?: string | null
     comment?: string | null
     reviewerName?: string | null
     date?: Date | string
@@ -62478,6 +62486,7 @@ export namespace Prisma {
   export type ReviewsUncheckedCreateInput = {
     id?: string
     rating: number
+    role?: string | null
     comment?: string | null
     reviewerName?: string | null
     date?: Date | string
@@ -62491,6 +62500,7 @@ export namespace Prisma {
   export type ReviewsUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     rating?: FloatFieldUpdateOperationsInput | number
+    role?: NullableStringFieldUpdateOperationsInput | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
     reviewerName?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -62504,6 +62514,7 @@ export namespace Prisma {
   export type ReviewsUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     rating?: FloatFieldUpdateOperationsInput | number
+    role?: NullableStringFieldUpdateOperationsInput | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
     reviewerName?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -62517,6 +62528,7 @@ export namespace Prisma {
   export type ReviewsCreateManyInput = {
     id?: string
     rating: number
+    role?: string | null
     comment?: string | null
     reviewerName?: string | null
     date?: Date | string
@@ -62530,6 +62542,7 @@ export namespace Prisma {
   export type ReviewsUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     rating?: FloatFieldUpdateOperationsInput | number
+    role?: NullableStringFieldUpdateOperationsInput | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
     reviewerName?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -62542,6 +62555,7 @@ export namespace Prisma {
   export type ReviewsUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     rating?: FloatFieldUpdateOperationsInput | number
+    role?: NullableStringFieldUpdateOperationsInput | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
     reviewerName?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -65544,6 +65558,7 @@ export namespace Prisma {
   export type ReviewsCountOrderByAggregateInput = {
     id?: SortOrder
     rating?: SortOrder
+    role?: SortOrder
     comment?: SortOrder
     reviewerName?: SortOrder
     date?: SortOrder
@@ -65561,6 +65576,7 @@ export namespace Prisma {
   export type ReviewsMaxOrderByAggregateInput = {
     id?: SortOrder
     rating?: SortOrder
+    role?: SortOrder
     comment?: SortOrder
     reviewerName?: SortOrder
     date?: SortOrder
@@ -65574,6 +65590,7 @@ export namespace Prisma {
   export type ReviewsMinOrderByAggregateInput = {
     id?: SortOrder
     rating?: SortOrder
+    role?: SortOrder
     comment?: SortOrder
     reviewerName?: SortOrder
     date?: SortOrder
@@ -74634,6 +74651,7 @@ export namespace Prisma {
   export type ReviewsCreateWithoutProductInput = {
     id?: string
     rating: number
+    role?: string | null
     comment?: string | null
     reviewerName?: string | null
     date?: Date | string
@@ -74646,6 +74664,7 @@ export namespace Prisma {
   export type ReviewsUncheckedCreateWithoutProductInput = {
     id?: string
     rating: number
+    role?: string | null
     comment?: string | null
     reviewerName?: string | null
     date?: Date | string
@@ -75105,6 +75124,7 @@ export namespace Prisma {
     NOT?: ReviewsScalarWhereInput | ReviewsScalarWhereInput[]
     id?: StringFilter<"Reviews"> | string
     rating?: FloatFilter<"Reviews"> | number
+    role?: StringNullableFilter<"Reviews"> | string | null
     comment?: StringNullableFilter<"Reviews"> | string | null
     reviewerName?: StringNullableFilter<"Reviews"> | string | null
     date?: DateTimeFilter<"Reviews"> | Date | string
@@ -79354,6 +79374,7 @@ export namespace Prisma {
   export type ReviewsCreateManyProductInput = {
     id?: string
     rating: number
+    role?: string | null
     comment?: string | null
     reviewerName?: string | null
     date?: Date | string
@@ -79530,6 +79551,7 @@ export namespace Prisma {
   export type ReviewsUpdateWithoutProductInput = {
     id?: StringFieldUpdateOperationsInput | string
     rating?: FloatFieldUpdateOperationsInput | number
+    role?: NullableStringFieldUpdateOperationsInput | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
     reviewerName?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -79542,6 +79564,7 @@ export namespace Prisma {
   export type ReviewsUncheckedUpdateWithoutProductInput = {
     id?: StringFieldUpdateOperationsInput | string
     rating?: FloatFieldUpdateOperationsInput | number
+    role?: NullableStringFieldUpdateOperationsInput | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
     reviewerName?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -79554,6 +79577,7 @@ export namespace Prisma {
   export type ReviewsUncheckedUpdateManyWithoutProductInput = {
     id?: StringFieldUpdateOperationsInput | string
     rating?: FloatFieldUpdateOperationsInput | number
+    role?: NullableStringFieldUpdateOperationsInput | string | null
     comment?: NullableStringFieldUpdateOperationsInput | string | null
     reviewerName?: NullableStringFieldUpdateOperationsInput | string | null
     date?: DateTimeFieldUpdateOperationsInput | Date | string

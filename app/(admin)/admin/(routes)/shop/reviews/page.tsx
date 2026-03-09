@@ -25,6 +25,7 @@ const ReviewsPage = async () => {
       },
       rating: true,
       reviewerName: true,
+      role: true,
       comment: true,
       status: true,
       date: true,

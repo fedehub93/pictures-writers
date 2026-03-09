@@ -26,6 +26,7 @@ interface Props {
   placeholder?: string;
   isSearchable?: boolean;
   className?: string;
+  disabled?: boolean
 }
 
 export const CommandSelect = ({
@@ -36,6 +37,7 @@ export const CommandSelect = ({
   placeholder,
   isSearchable,
   className,
+  disabled
 }: Props) => {
   const [open, setOpen] = useState(false);
   const selectedOption = options.find((option) => option.value === value);
@@ -56,6 +58,7 @@ export const CommandSelect = ({
           !selectedOption && "text-muted-foreground",
           className,
         )}
+        disabled={disabled}
       >
         <div>{selectedOption?.children ?? placeholder}</div>
         <ChevronsUpDownIcon />

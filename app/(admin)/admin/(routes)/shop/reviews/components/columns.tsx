@@ -72,9 +72,9 @@ export const columns: ColumnDef<{
       return (
         <div className="flex gap-x-6 min-w-64">
           <div className="rounded-md bg-accent relative aspect-square size-20">
-            {product.imageCover && (
+            {product.imageCover && !!product.imageCover.url && (
               <Image
-                src={product.imageCover?.url!}
+                src={product.imageCover?.url}
                 alt={product.imageCover?.altText || "Product Image"}
                 fill
                 className="object-contain rounded-md p-2"
@@ -134,7 +134,7 @@ export const columns: ColumnDef<{
           {[...Array(5)].map((_, i) => (
             <StarIcon
               key={i}
-              className="size-8"
+              className="size-6"
               fill={i < rating ? "currentColor" : "none"}
             />
           ))}

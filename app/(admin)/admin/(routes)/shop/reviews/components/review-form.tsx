@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/form";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 
 import { GenericInput } from "@/components/form-component/generic-input";
 import { GenericTextarea } from "@/components/form-component/generic-textarea";
@@ -27,8 +28,8 @@ import { GenericCalendar } from "@/components/form-component/generic-calendar";
 import { CommandSelect } from "@/components/command-select";
 
 import { reviewsInsertSchema, reviewsUpdateSchema } from "../schema";
-import { RatingStars } from "./rating-stars";
 import { useGetProducts } from "../hooks/use-get-products";
+import { RatingStars } from "./rating-stars";
 
 interface ReviewFormProps {
   onSuccess?: () => void;
@@ -36,10 +37,12 @@ interface ReviewFormProps {
   initialValues?: {
     id: string;
     reviewerName: string;
+    role: string;
     rating: number;
     comment: string;
     date: Date;
     productId: string;
+    verifiedPurchase: boolean;
   };
 }
 
@@ -58,10 +61,15 @@ export const ReviewForm = ({
     resolver: zodResolver(reviewsInsertSchema),
     defaultValues: {
       reviewerName: initialValues?.reviewerName ?? "",
+      role: initialValues?.role ?? "",
       rating: initialValues?.rating ?? 5,
       comment: initialValues?.comment ?? "",
       date: initialValues?.date ?? new Date(),
       productId: initialValues?.productId ?? "",
+      verifiedPurchase:
+        initialValues?.verifiedPurchase !== undefined
+          ? initialValues.verifiedPurchase
+          : false,
     },
   });
 
@@ -109,7 +117,7 @@ export const ReviewForm = ({
   });
 
   const isEdit = !!initialValues?.id;
-  const isPending = updateReview.isPending;
+  const isPending = updateReview.isPending || createReview.isPending;
 
   const onSubmit = (values: z.infer<typeof reviewsInsertSchema>) => {
     if (isEdit) {
@@ -157,6 +165,7 @@ export const ReviewForm = ({
                   onSearch={setProductSearch}
                   value={field.value}
                   placeholder="Select a product"
+                  disabled={isPending}
                 />
               </FormControl>
 
@@ -171,6 +180,13 @@ export const ReviewForm = ({
           placeholder="John Doe"
           disabled={isPending}
         />
+        <GenericInput
+          control={form.control}
+          name="role"
+          label="Role"
+          placeholder="Aspirante sceneggiatore"
+          disabled={isPending}
+        />
         <FormField
           name="rating"
           control={form.control}
@@ -178,7 +194,11 @@ export const ReviewForm = ({
             <FormItem className="flex flex-col space-y-4">
               <FormLabel>Rating</FormLabel>
               <FormControl>
-                <RatingStars value={field.value} onChange={field.onChange} />
+                <RatingStars
+                  value={field.value}
+                  onChange={field.onChange}
+                  disabled={isPending}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -197,8 +217,25 @@ export const ReviewForm = ({
           onlyFutureDates={false}
           disabled={isPending}
         />
+        <FormField
+          control={form.control}
+          name="verifiedPurchase"
+          render={({ field }) => (
+            <FormItem className="flex items-center gap-x-4 mt-8">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={(checked) => field.onChange(checked)}
+                  disabled={isPending}
+                  className="size-5 accent-primary mb-0"
+                />
+              </FormControl>
+              <FormLabel>Verified Purchase</FormLabel>
+            </FormItem>
+          )}
+        />
 
-        <div className="flex justify-between gap-x-2">
+        <div className="flex justify-between gap-x-2 mt-8">
           {onCancel && (
             <Button
               variant="ghost"

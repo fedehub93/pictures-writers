@@ -697,15 +697,11 @@ model ProductFAQ {
   updatedAt DateTime @updatedAt
 }
 
-enum ReviewStatus {
-  DRAFT
-  PUBLISHED
-}
-
 model Reviews {
   id String @id @default(uuid())
 
   rating           Float
+  role             String?
   comment          String?
   reviewerName     String?
   date             DateTime @default(now())

@@ -72,7 +72,7 @@ export const WidgetProduct = async ({
                 {product.type === ProductType.WEBINAR &&
                   isWebinarMetadata(product.metadata) &&
                   "availableSeats" in product && (
-                    <div className="flex flex-col gap-y-4 text-sm">
+                    <div className="flex flex-col gap-y-4 text-sm mt-2">
                       <div className="font-bold text-center text-lg leading-5 hover:text-primary">
                         {product.title}
                       </div>

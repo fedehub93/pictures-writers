@@ -36,10 +36,15 @@ export const UpdateReviewDialog = () => {
           initialValues={{
             id: data?.id,
             reviewerName: data?.reviewerName ?? "",
+            role: data?.role ?? "",
             rating: data?.rating ?? 0,
             comment: data?.comment ?? "",
             date: data?.date,
             productId: data?.productId ?? "",
+            verifiedPurchase:
+              data?.verifiedPurchase !== undefined
+                ? data.verifiedPurchase
+                : false,
           }}
         />
       )}

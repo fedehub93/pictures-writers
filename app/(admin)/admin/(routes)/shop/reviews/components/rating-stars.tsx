@@ -3,17 +3,35 @@
 import { useState } from "react";
 import { StarIcon } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
+
 export const RatingStars = ({
   value,
   onChange,
+  disabled,
 }: {
   value: number;
   onChange: (rating: number) => void;
+  disabled: boolean;
 }) => {
   const [hover, setHover] = useState<number | null>(null);
 
   const handleClick = (star: number, isHalf: boolean) => {
-    onChange(isHalf ? star - 0.5 : star);
+    if (!disabled) {
+      onChange(isHalf ? star - 0.5 : star);
+    }
+  };
+
+  const onMouseEnter = (rating: number | null) => {
+    if (!disabled) {
+      setHover(rating);
+    }
+  };
+
+  const onMouseLeave = (rating: number | null) => {
+    if (!disabled) {
+      setHover(rating);
+    }
   };
 
   return (
@@ -41,17 +59,23 @@ export const RatingStars = ({
               />
             )}
             {/* Invisible overlays for half clicks */}
-            <div
-              className="absolute top-0 left-0 w-1/2 h-full cursor-pointer"
+            <Button
+              type="button"
+              variant="ghost"
+              className="absolute top-0 left-0 w-1/2 h-full cursor-pointer hover:bg-transparent p-0"
               onClick={() => handleClick(star, true)}
-              onMouseEnter={() => setHover(star - 0.5)}
-              onMouseLeave={() => setHover(null)}
+              onMouseEnter={() => onMouseEnter(star - 0.5)}
+              onMouseLeave={() => onMouseLeave(null)}
+              disabled={disabled}
             />
-            <div
-              className="absolute top-0 right-0 w-1/2 h-full cursor-pointer"
+            <Button
+              type="button"
+              variant="ghost"
+              className="absolute top-0 right-0 w-1/2 h-full cursor-pointer hover:bg-transparent p-0"
               onClick={() => handleClick(star, false)}
-              onMouseEnter={() => setHover(star)}
-              onMouseLeave={() => setHover(null)}
+              onMouseEnter={() => onMouseEnter(star)}
+              onMouseLeave={() => onMouseLeave(null)}
+              disabled={disabled}
             />
           </div>
         );

@@ -2,10 +2,7 @@ import { NextResponse } from "next/server";
 
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
-import {
-  reviewsInsertSchema,
-  reviewsUpdateSchema,
-} from "@/app/(admin)/admin/(routes)/shop/reviews/schema";
+import { reviewsInsertSchema } from "@/app/(admin)/admin/(routes)/shop/reviews/schema";
 
 export async function GET(
   req: Request,

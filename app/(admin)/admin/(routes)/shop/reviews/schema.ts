@@ -2,6 +2,7 @@ import * as z from "zod";
 
 export const reviewsInsertSchema = z.object({
   reviewerName: z.string().min(1, { error: "Reviewer name is required" }),
+  role: z.string().min(1, { error: "Role is required" }),
   rating: z
     .number()
     .min(1)
@@ -10,8 +11,9 @@ export const reviewsInsertSchema = z.object({
       message: "Rating must be in increments of 0.5",
     }),
   comment: z.string().optional(),
-  date: z.union([z.string(),z.date()]),
+  date: z.union([z.string(), z.date()]),
   productId: z.string().min(1, { error: "Product id is required" }),
+  verifiedPurchase: z.boolean(),
 });
 
 export const reviewsUpdateSchema = reviewsInsertSchema.extend({
