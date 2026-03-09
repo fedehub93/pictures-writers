@@ -327,6 +327,17 @@ export const getDraftProductBySlug = async (slug: string) => {
           sort: "asc",
         },
       },
+      reviews: {
+        select: {
+          id: true,
+          reviewerName: true,
+          role: true,
+          rating: true,
+          comment: true,
+          date: true,
+          verifiedPurchase: true,
+        },
+      },
       user: {
         select: {
           firstName: true,

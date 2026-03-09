@@ -130,6 +130,7 @@ const Page = async (
             discountedPrice={product.discountedPrice}
             acquisitionMode={product.acquisitionMode}
             data={product.metadata}
+            reviews={product.reviews}
             faqs={product.faqs}
           />
         )}
