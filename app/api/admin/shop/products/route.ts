@@ -115,6 +115,7 @@ export async function GET(req: Request) {
     const cursor = searchParams.get("cursor");
     const s = searchParams.get("s") || "";
     const page = Number(searchParams.get("page")) || 1;
+    const perPage = Number(searchParams.get("per_page")) || PRODUCT_BATCH
 
     if (!user) {
       return new NextResponse("Unauthorized", { status: 401 });
@@ -123,8 +124,8 @@ export async function GET(req: Request) {
     let products: Product[] = [];
     let totalProducts = 0;
 
-    const skip = (page - 1) * PRODUCT_BATCH;
-    const take = PRODUCT_BATCH;
+    const skip = (page - 1) * perPage;
+    const take = perPage;
 
     if (cursor) {
       const products = await db.product.findMany({
@@ -136,7 +137,7 @@ export async function GET(req: Request) {
         include: {
           imageCover: true,
         },
-        take: PRODUCT_BATCH,
+        take: perPage,
         skip: 1,
         cursor: { id: cursor },
         orderBy: {
@@ -146,8 +147,8 @@ export async function GET(req: Request) {
 
       let nextCursor = null;
 
-      if (products.length === PRODUCT_BATCH) {
-        nextCursor = products[PRODUCT_BATCH - 1].id;
+      if (products.length === perPage) {
+        nextCursor = products[perPage - 1].id;
       }
 
       return NextResponse.json({ items: products, nextCursor });
@@ -174,15 +175,15 @@ export async function GET(req: Request) {
 
     const pagination = {
       page,
-      perPage: PRODUCT_BATCH,
+      perPage: perPage,
       totalRecords: totalProducts,
-      totalPages: Math.ceil(totalProducts / PRODUCT_BATCH),
+      totalPages: Math.ceil(totalProducts / perPage),
     };
 
     let nextCursor = null;
 
-    if (products.length === PRODUCT_BATCH) {
-      nextCursor = products[PRODUCT_BATCH - 1].id;
+    if (products.length === perPage) {
+      nextCursor = products[perPage - 1].id;
     }
 
     return NextResponse.json({ items: products, pagination, nextCursor });

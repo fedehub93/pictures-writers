@@ -90,7 +90,7 @@ export const ContactUs = (): JSX.Element => {
   };
 
   return (
-    <section className="px-4 py-20 lg:px-6 bg-primary-foreground">
+    <section className="px-4 py-20 lg:px-6 bg-background">
       <div className="mx-auto max-w-lg md:max-w-(--breakpoint-md) lg:max-w-6xl">
         <h2 className="mb-4 text-center text-3xl font-bold">Contattaci</h2>
         <p className="mx-auto mb-12 max-w-lg text-center ">

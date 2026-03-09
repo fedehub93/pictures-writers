@@ -142,7 +142,7 @@ export const ReviewForm = ({
                     id: product.id,
                     value: product.id,
                     children: (
-                      <div className="flex items-center gap-x-2">
+                      <div className="flex items-center gap-x-2 w-full max-w-full relative">
                         {product.imageCover && (
                           <Image
                             src={product.imageCover.url}
@@ -157,7 +157,7 @@ export const ReviewForm = ({
                             N/I
                           </div>
                         )}
-                        <span>{product.title}</span>
+                        <span className="text-xs truncate max-w-70 md:text-base md:max-w-full">{product.title}</span>
                       </div>
                     ),
                   }))}

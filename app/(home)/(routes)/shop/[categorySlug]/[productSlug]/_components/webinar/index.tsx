@@ -1,10 +1,14 @@
 import { TiptapContent, WebinarMetadata } from "@/types";
-import { WebinarInfo } from "./webinar-info";
-import { WebinarSummary } from "./webinar-summary";
 import { ProductAcquisitionMode } from "@/generated/prisma";
+
 import { FaqSection } from "@/components/faq-section";
 import { Separator } from "@/components/ui/separator";
+
+import { WebinarInfo } from "./webinar-info";
+import { WebinarSummary } from "./webinar-summary";
+
 import { WebinarBottomCta } from "./webinar-bottom-cta";
+import { ProductReviews } from "../product-reviews";
 
 interface WebinarProps {
   id: string;
@@ -15,6 +19,15 @@ interface WebinarProps {
   discountedPrice: number | null;
   acquisitionMode: ProductAcquisitionMode;
   data: WebinarMetadata;
+  reviews: {
+    id: string;
+    reviewerName: string | null;
+    role: string | null;
+    rating: number;
+    comment: string | null;
+    date: Date;
+    verifiedPurchase: boolean;
+  }[];
   faqs: { question: string; answer: string }[];
 }
 
@@ -27,6 +40,7 @@ export const Webinar = ({
   discountedPrice,
   acquisitionMode,
   data,
+  reviews,
   faqs,
 }: WebinarProps) => {
   return (
@@ -39,6 +53,7 @@ export const Webinar = ({
             tiptapDescription={tiptapDescription}
           />
           <Separator />
+          <ProductReviews testimonials={reviews} />
           {faqs.length && <FaqSection faqs={faqs} />}
         </div>
 

@@ -1,10 +1,10 @@
-import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
-import React, { type JSX } from "react";
 
-export const CreativeFeatures = (): JSX.Element => (
-  <section className="px-4 py-20 lg:px-6 bg-primary-foreground">
+import { Button } from "@/components/ui/button";
+
+export const CreativeFeatures = () => (
+  <section className="px-4 py-20 lg:px-6 bg-background">
     <div className="mx-auto max-w-lg md:max-w-(--breakpoint-md) lg:max-w-6xl">
       <h2 className="mb-4 text-center text-3xl font-bold">I nostri servizi</h2>
       <p className="mx-auto max-w-lg text-center ">

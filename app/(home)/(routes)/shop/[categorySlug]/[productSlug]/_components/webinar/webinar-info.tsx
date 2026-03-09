@@ -35,7 +35,6 @@ export const WebinarInfo = async ({
           />
         ) : null}
       </div>
-      <Separator />
       <h1 className="text-4xl font-bold">{title}</h1>
       {tiptapDescription && <TipTapRendererV2 content={tiptapDescription} />}
     </div>

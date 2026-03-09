@@ -79,6 +79,8 @@ const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
           availability: "https://schema.org/InStock",
         }}
         images={galleryImages}
+        aggregateRating={product.aggregateRating}
+        reviews={product.reviews}
         authorName={`${product.user?.firstName} ${product.user?.lastName}`}
         datePublished={product.createdAt.toISOString()}
         dateModified={product.updatedAt.toISOString()}
@@ -124,6 +126,7 @@ const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
             discountedPrice={product.discountedPrice}
             acquisitionMode={product.acquisitionMode}
             data={product.metadata}
+            reviews={product.reviews}
             faqs={product.faqs}
           />
         )}
