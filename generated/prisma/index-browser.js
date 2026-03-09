@@ -480,6 +480,7 @@ exports.Prisma.ProductFAQScalarFieldEnum = {
 exports.Prisma.ReviewsScalarFieldEnum = {
   id: 'id',
   rating: 'rating',
+  role: 'role',
   comment: 'comment',
   reviewerName: 'reviewerName',
   date: 'date',

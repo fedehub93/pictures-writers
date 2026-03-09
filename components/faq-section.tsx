@@ -13,7 +13,7 @@ export const FaqSection = ({ faqs }: FaqSectionProps) => {
   return (
     <div className="relative w-full mx-auto">
       <div className="text-center">
-        <div className="text-4xl uppercase font-extralight">FAQ</div>
+        <div className="text-4xl uppercase">FAQ</div>
         <p className="mt-1 text-muted-foreground">
           Risposte alle domande più richieste.
         </p>
