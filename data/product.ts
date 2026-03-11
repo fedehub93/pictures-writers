@@ -169,6 +169,9 @@ export const getPublishedProductBySlug = async (slug: string) => {
           date: true,
           verifiedPurchase: true,
         },
+        orderBy: {
+          date: "desc",
+        },
       },
       createdAt: true,
       updatedAt: true,
@@ -182,16 +185,27 @@ export const getPublishedProductBySlug = async (slug: string) => {
     return null;
   }
 
-  const totalRating = product?.reviews.reduce((acc, r) => acc + r.rating, 0);
+  // const totalRating = product?.reviews.reduce((acc, r) => acc + r.rating, 0);
 
-  const average = totalRating / product?.reviews.length;
-  const best = Math.max(...product.reviews.map((r) => r.rating));
+  // const average = totalRating / product?.reviews.length;
+  // const best = Math.max(...product.reviews.map((r) => r.rating));
 
-  const aggregateRating = {
-    ratingValue: average,
-    bestRating: best,
-    ratingCount: product.reviews.length,
-  };
+  // const aggregateRating = {
+  //   ratingValue: average,
+  //   bestRating: best,
+  //   ratingCount: product.reviews.length,
+  // };
+
+  const reviewCount = product.reviews.length;
+  const aggregateRating =
+    reviewCount > 0
+      ? {
+          ratingValue:
+            product.reviews.reduce((acc, r) => acc + r.rating, 0) / reviewCount,
+          bestRating: Math.max(...product.reviews.map((r) => r.rating)),
+          ratingCount: reviewCount,
+        }
+      : undefined;
 
   return { ...product, aggregateRating };
 };
@@ -327,6 +341,12 @@ export const getDraftProductBySlug = async (slug: string) => {
           sort: "asc",
         },
       },
+      user: {
+        select: {
+          firstName: true,
+          lastName: true,
+        },
+      },
       reviews: {
         select: {
           id: true,
@@ -337,11 +357,8 @@ export const getDraftProductBySlug = async (slug: string) => {
           date: true,
           verifiedPurchase: true,
         },
-      },
-      user: {
-        select: {
-          firstName: true,
-          lastName: true,
+        orderBy: {
+          date: "desc",
         },
       },
       createdAt: true,

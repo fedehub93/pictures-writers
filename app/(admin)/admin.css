@@ -251,6 +251,15 @@
       margin-top: 0;
     }
   }
+
+  .custom-upload-button > label[data-state="ready"] {
+    background-color: var(--color-primary);
+  }
+
+  .custom-upload-dropzone > button[data-state="ready"] {
+    font-size: 14px;
+    background-color: var(--color-primary);
+  }
 }
 
 @utility blog-post {

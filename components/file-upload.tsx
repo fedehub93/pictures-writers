@@ -39,7 +39,7 @@ export const FileUpload = ({
         className={cn(
           "relative rounded-md overflow-hidden",
           size === "small" && "w-40 h-auto aspect-square",
-          size === "large" && "w-96 h-72 aspect-video"
+          size === "large" && "w-96 h-72 aspect-video",
         )}
       >
         <Image fill src={value} alt="Upload" className="object-cover" />
@@ -80,6 +80,7 @@ export const FileUpload = ({
   return (
     <div>
       <UploadDropzone
+        className="custom-upload-dropzone text-sm cursor-pointer"
         endpoint={endpoint}
         onBeforeUploadBegin={(files) => {
           setIsFocused && setIsFocused(true);

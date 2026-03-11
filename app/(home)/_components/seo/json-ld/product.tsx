@@ -92,10 +92,12 @@ export const ProductJsonLd: FC<ProductJsonLdProps> = ({
           }),
         }))
       : undefined,
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ...aggregateRating,
-    },
+    aggregateRating: aggregateRating
+      ? {
+          "@type": "AggregateRating",
+          ...aggregateRating,
+        }
+      : undefined,
     offers: {
       "@type": offers.type,
       priceCurrency: offers.priceCurrency,
