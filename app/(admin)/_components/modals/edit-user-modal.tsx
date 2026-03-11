@@ -10,25 +10,18 @@ import { useEffect } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 
 import { FileUpload, FileUploadOnChange } from "@/components/file-upload";
+import { GenericInput } from "@/components/form-component/generic-input";
+import { GenericTextarea } from "@/components/form-component/generic-textarea";
+
 import { useModal } from "../../_hooks/use-modal-store";
 
 const formSchema = z.object({
@@ -116,68 +109,30 @@ export const EditUserModal = () => {
                   )}
                 />
               </div>
-              <FormField
+              <GenericInput
                 control={form.control}
                 name="firstName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70">
-                      First name
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        disabled={isLoading}
-                        className="bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0"
-                        placeholder="Enter first name"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                label="First Name"
+                disabled={isLoading}
+                placeholder="Enter first name"
               />
-              <FormField
+              <GenericInput
                 control={form.control}
                 name="lastName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70">
-                      Last name
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        disabled={isLoading}
-                        className="bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0"
-                        placeholder="Enter last name"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                label="Last Name"
+                disabled={isLoading}
+                placeholder="Enter last name"
               />
-              <FormField
+
+              <GenericTextarea
                 control={form.control}
                 name="bio"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70">
-                      Bio
-                    </FormLabel>
-                    <FormControl>
-                      <Textarea
-                        disabled={isLoading}
-                        className="bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0"
-                        placeholder="About me..."
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                label="Bio"
+                disabled={isLoading}
+                placeholder="About me..."
               />
             </div>
-            <DialogFooter className="bg-gray-100 px-6 py-4">
+            <DialogFooter className="px-6 py-4">
               <Button disabled={isLoading}>Save</Button>
             </DialogFooter>
           </form>

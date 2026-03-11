@@ -115,7 +115,7 @@ export async function GET(req: Request) {
     const cursor = searchParams.get("cursor");
     const s = searchParams.get("s") || "";
     const page = Number(searchParams.get("page")) || 1;
-    const perPage = Number(searchParams.get("per_page")) || PRODUCT_BATCH
+    const perPage = Number(searchParams.get("per_page")) || PRODUCT_BATCH;
 
     if (!user) {
       return new NextResponse("Unauthorized", { status: 401 });
@@ -169,7 +169,13 @@ export async function GET(req: Request) {
             createdAt: "desc",
           },
         }),
-        db.product.count(),
+        db.product.count({
+          where: {
+            isLatest: true,
+            status: ContentStatus.PUBLISHED,
+            title: { contains: s, mode: "insensitive" },
+          },
+        }),
       ]);
     }
 
