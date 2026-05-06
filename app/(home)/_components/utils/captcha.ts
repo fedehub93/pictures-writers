@@ -1,3 +1,9 @@
+// Dichiariamo la struttura di grecaptcha per TypeScript
+declare var grecaptcha: {
+  ready: (callback: () => void) => void;
+  execute: (siteKey: string, options: { action: string }) => Promise<string>;
+};
+
 export const getCaptchaToken = async (action: string) => {
   return new Promise<string | null>((resolve) => {
     grecaptcha.ready(async () => {

@@ -65,7 +65,7 @@ export const EmailTesterForm = ({ templates }: EmailTesterFormProps) => {
   };
 
   return (
-    <div className="bg-slate-100 dark:bg-background p-4 w-full rounded-md flex flex-col">
+    <div className="border p-4 w-full rounded flex flex-col">
       <h2 className="text-base text-muted-foreground">Test email</h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 mt-8">

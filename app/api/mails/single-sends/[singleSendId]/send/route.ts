@@ -4,10 +4,13 @@ import Handlebars from "handlebars";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
-import { getEmailsSentToday, sendSendgridEmail } from "@/lib/mail";
+import { getEmailsSentToday, sendEmail } from "@/lib/mail";
 
 export const maxDuration = 60;
-export async function GET(req: Request, props: { params: Promise<{ singleSendId: string }> }) {
+export async function GET(
+  req: Request,
+  props: { params: Promise<{ singleSendId: string }> },
+) {
   const params = await props.params;
   try {
     const encoder = new TextEncoder();
@@ -87,12 +90,13 @@ export async function GET(req: Request, props: { params: Promise<{ singleSendId:
               email: contact.email,
             });
 
-            await sendSendgridEmail({
+            await sendEmail({
               to: contact.email,
               from: `${settings.emailSenderName} <${settings.emailSender}>`,
               subject,
               html,
               type: "single_send_email",
+              replyTo: settings.emailResponse!,
             });
 
             await db.emailSingleSendLog.create({

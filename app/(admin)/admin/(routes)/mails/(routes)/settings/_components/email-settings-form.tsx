@@ -10,16 +10,10 @@ import toast from "react-hot-toast";
 import { EmailProvider, EmailSetting } from "@/generated/prisma";
 
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
 import { Progress } from "@/components/ui/progress";
+import { GenericSelect } from "@/components/form-component/generic-select";
+import { GenericInput } from "@/components/form-component/generic-input";
 
 interface EmailSettingsFormProps {
   settings: EmailSetting | null;
@@ -81,124 +75,79 @@ export const EmailSettingsForm = ({
     }
   };
   return (
-    <div className="bg-slate-100 dark:bg-background p-4 w-full rounded-md">
+    <div className="border p-4 w-full rounded">
       <h2 className="text-base text-muted-foreground">Configure your email</h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 mt-8">
           <div className="flex flex-wrap gap-4">
-            <FormField
-              control={form.control}
+            <GenericInput
               name="emailSenderName"
-              render={({ field }) => (
-                <FormItem className="min-w-40 flex-auto">
-                  <FormLabel>Default sender name</FormLabel>
-                  <FormControl>
-                    <Input
-                      disabled={isLoading || isSubmitting}
-                      placeholder="support@pictureswriters.com"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
               control={form.control}
+              containerProps={{ className: "min-w-40 flex-auto" }}
+              label="Default sender name"
+              disabled={isLoading || isSubmitting}
+              placeholder="support@pictureswriters.com"
+            />
+
+            <GenericInput
               name="emailSender"
-              render={({ field }) => (
-                <FormItem className="min-w-40 flex-auto">
-                  <FormLabel>Default sender email</FormLabel>
-                  <FormControl>
-                    <Input
-                      disabled={isLoading || isSubmitting}
-                      placeholder="support@pictureswriters.com"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              control={form.control}
+              containerProps={{ className: "min-w-40 flex-auto" }}
+              label="Default sender email"
+              disabled={isLoading || isSubmitting}
+              placeholder="support@mail.pictureswriters.com"
             />
           </div>
-          <FormField
-            control={form.control}
+
+          <GenericInput
             name="emailResponse"
-            render={({ field }) => (
-              <FormItem className="min-w-40 flex-auto">
-                <FormLabel>Default response email</FormLabel>
-                <FormControl>
-                  <Input
-                    disabled={isLoading || isSubmitting}
-                    placeholder="support@pictureswriters.com"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            control={form.control}
+            containerProps={{ className: "min-w-40 flex-auto" }}
+            label="Default response email"
+            disabled={isLoading || isSubmitting}
+            placeholder="support@pictureswriters.com"
           />
           <div className="flex flex-wrap gap-4">
-            <FormField
+            <GenericSelect
               name="emailProvider"
               control={form.control}
-              render={({ field }) => (
-                <FormItem className="min-w-40">
-                  <FormLabel>Email provider</FormLabel>
-                  <FormControl>
-                    <Input disabled {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
+              label="Email Provider"
+              options={[EmailProvider.SENDGRID, EmailProvider.RESEND]}
+              containerProps={{ className: "min-w-40" }}
             />
-            <FormField
+
+            <GenericInput
               name="emailApiKey"
               control={form.control}
-              render={({ field }) => (
-                <FormItem className="grow">
-                  <FormLabel>Email API key</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      disabled={isLoading || isSubmitting}
-                      placeholder="API Key"
-                      {...field}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
+              containerProps={{ className: "grow" }}
+              label="Email API key"
+              type="password"
+              disabled={isLoading || isSubmitting}
+              placeholder="API Key"
             />
           </div>
           <div className="flex flex-wrap gap-4">
-            <FormField
+            <GenericInput
               name="maxEmailsPerDay"
               control={form.control}
-              render={({ field }) => (
-                <FormItem className="grow">
-                  <FormLabel>Max emails per day</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      disabled={isLoading || isSubmitting}
-                      placeholder="100"
-                      {...field}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
+              containerProps={{ className: "grow" }}
+              label="Max emails per day"
+              type="number"
+              disabled={isLoading || isSubmitting}
+              placeholder="100"
             />
             <div className="flex grow flex-col space-y-2">
               <label className="text-sm font-medium mt-1">
                 Today&apos;s emails sent
               </label>
-              <div className="flex items-center gap-x-8">
-                <div className="w-full">
+              <div className="flex gap-x-8">
+                <div className="flex-1">
                   <Progress
                     value={emailsSentPercentage}
                     className="bg-gray-300"
                   />
                 </div>
-                <div className="text-sm font-medium">
+                <div className="text-xs font-medium">
                   {emailsSentToday} / {settings?.maxEmailsPerDay || 0} emails
                 </div>
               </div>
