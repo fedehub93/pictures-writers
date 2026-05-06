@@ -401,6 +401,7 @@ model Tag {
 
 enum EmailProvider {
   SENDGRID
+  RESEND
 }
 
 model EmailSetting {

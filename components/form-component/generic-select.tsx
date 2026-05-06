@@ -10,9 +10,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ProductAcquisitionMode } from "@/generated/prisma";
+import { cn } from "@/lib/utils";
 
-interface GenericSelectProps<T extends FieldValues>
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+interface GenericSelectProps<
+  T extends FieldValues,
+> extends React.InputHTMLAttributes<HTMLInputElement> {
   control: Control<T>;
   name: Path<T>;
   label: string;
@@ -35,7 +37,12 @@ export const GenericSelect = <T extends FieldValues>({
       control={control}
       name={name}
       render={({ field }) => (
-        <FormItem className="flex flex-col space-y-2">
+        <FormItem
+          className={cn(
+            "flex flex-col space-y-2",
+            containerProps?.className ? containerProps.className : "",
+          )}
+        >
           <FormLabel>{label}</FormLabel>
           <Select
             value={field.value}
@@ -44,11 +51,23 @@ export const GenericSelect = <T extends FieldValues>({
             }}
           >
             <SelectTrigger className="w-full capitalize">
-              <SelectValue placeholder="Editor" />
+              <SelectValue
+                placeholder="Editor"
+                className={cn(
+                  inputProps?.className ? inputProps.className : "",
+                )}
+              />
             </SelectTrigger>
             <SelectContent>
               {options.map((a) => (
-                <SelectItem key={a} value={a} className="capitalize">
+                <SelectItem
+                  key={a}
+                  value={a}
+                  className={cn(
+                    "capitalize",
+                    containerProps?.className ? containerProps.className : "",
+                  )}
+                >
                   {a.toLowerCase()}
                 </SelectItem>
               ))}

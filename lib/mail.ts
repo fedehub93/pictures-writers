@@ -1,18 +1,20 @@
 import * as sgMail from "@sendgrid/mail";
+import { Resend } from "resend";
 import { endOfDay, startOfDay } from "date-fns";
 import handlebars from "handlebars";
 
-import { ContentStatus, ProductType } from "@/generated/prisma";
+import { ContentStatus, ProductType, EmailProvider } from "@/generated/prisma";
 import { db } from "@/lib/db";
 import { isEbookMetadata, isWebinarMetadata } from "@/type-guards";
 import { createContactByEmail } from "@/data/email-contact";
 import { handleProductPurchased } from "./event-handler";
 
-type SendgridEmail = {
+type GenericEmail = {
   to: string;
   from: string;
   subject: string;
   type: string;
+  replyTo?: string;
   text?: string;
   html?: string;
 };
@@ -22,9 +24,10 @@ export const sendSendgridEmail = async ({
   from,
   subject,
   type,
+  replyTo,
   text,
   html,
-}: SendgridEmail) => {
+}: GenericEmail) => {
   const settings = await db.emailSetting.findFirst();
 
   if (!settings || !settings.emailApiKey || !settings.emailSender) return false;
@@ -37,6 +40,7 @@ export const sendSendgridEmail = async ({
     from,
     subject,
     html,
+    replyTo,
   });
 
   await db.emailSendLog.create({
@@ -49,9 +53,59 @@ export const sendSendgridEmail = async ({
   });
 };
 
+export const sendResendEmail = async ({
+  to,
+  from,
+  subject,
+  type,
+  replyTo,
+  text,
+  html,
+}: GenericEmail) => {
+  const settings = await db.emailSetting.findFirst();
+
+  if (!settings || !settings.emailApiKey || !settings.emailSender) return false;
+
+  if (!html) return;
+
+  const resend = new Resend(process.env.NEXT_RESEND_KEY);
+
+  await resend.emails.send({
+    to,
+    from,
+    subject,
+    html,
+    replyTo,
+  });
+
+  await db.emailSendLog.create({
+    data: {
+      to,
+      from,
+      subject,
+      type,
+    },
+  });
+};
+
+export const sendEmail = async (emailData: GenericEmail) => {
+  const settings = await db.emailSetting.findFirst();
+
+  if (!settings || !settings.emailProvider) {
+    return false;
+  }
+  if (settings.emailProvider === EmailProvider.SENDGRID) {
+    return sendSendgridEmail(emailData);
+  } else if (settings.emailProvider === EmailProvider.RESEND) {
+    return sendResendEmail(emailData);
+  }
+
+  return false;
+};
+
 export const sendWebinarPurchaseEmail = async (
   email: string,
-  productRootId: string
+  productRootId: string,
 ) => {
   const settings = await db.emailSetting.findFirst();
 
@@ -84,7 +138,7 @@ export const sendWebinarPurchaseEmail = async (
 
   const template = handlebars.compile(webinarTemplate.bodyHtml);
 
-  await sendSendgridEmail({
+  await sendEmail({
     to: email,
     from: settings.emailSender,
     subject: `Webinar: ${webinar.title} acquistato con successo`,
@@ -96,6 +150,7 @@ export const sendWebinarPurchaseEmail = async (
       imageCoverUrl: webinar.imageCover?.url,
     }),
     type: "webinar_purchased",
+    replyTo: settings.emailResponse!,
   });
 
   await handleProductPurchased({ type: webinar.type });
@@ -119,19 +174,20 @@ export const sendSubscriptionEmail = async (email: string, token: string) => {
 
   const template = handlebars.compile(subscriptionTemplate.bodyHtml);
 
-  await sendSendgridEmail({
+  await sendEmail({
     to: email,
     from: settings.emailSender,
     subject: "Conferma sottoscrizione",
     html: template({ token, email }),
     type: "subscription_email",
+    replyTo: settings.emailResponse!,
   });
 };
 
 export const sendFreeEbookEmail = async (
   email: string,
   ebookId: string,
-  format: string
+  format: string,
 ) => {
   const settings = await db.emailSetting.findFirst();
 
@@ -162,7 +218,7 @@ export const sendFreeEbookEmail = async (
 
   const template = handlebars.compile(freeEbookTemplate.bodyHtml);
 
-  await sendSendgridEmail({
+  await sendEmail({
     to: email,
     from: settings.emailSender,
     subject: `Free ebook: ${ebook.title}`,
@@ -175,6 +231,7 @@ export const sendFreeEbookEmail = async (
       imageCoverUrl: ebook.imageCover?.url,
     }),
     type: "free_ebook_email",
+    replyTo: settings.emailResponse!,
   });
 
   return true;

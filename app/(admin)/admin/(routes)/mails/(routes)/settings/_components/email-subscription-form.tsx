@@ -71,7 +71,7 @@ export const EmailSubscriptionForm = ({
     }
   };
   return (
-    <div className="bg-slate-100 dark:bg-background p-4 w-full rounded-md">
+    <div className="border p-4 w-full rounded">
       <h2 className="text-base text-muted-foreground">
         Configure your subscription
       </h2>

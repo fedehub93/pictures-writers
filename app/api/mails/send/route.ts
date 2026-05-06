@@ -4,7 +4,7 @@ import Handlebars from "handlebars";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
-import { getEmailsSentToday, sendSendgridEmail } from "@/lib/mail";
+import { getEmailsSentToday, sendEmail } from "@/lib/mail";
 
 export async function POST(req: Request) {
   try {
@@ -52,12 +52,13 @@ export async function POST(req: Request) {
 
     const html = template({});
 
-    await sendSendgridEmail({
+    await sendEmail({
       to: emailRecipient,
       from: `${settings.emailSenderName} <${settings.emailSender}>`,
       subject: "Email test",
       html,
       type: "free_email",
+      replyTo: settings.emailResponse!,
     });
 
     return NextResponse.json({ status: "sent" });
