@@ -1,4 +1,4 @@
-import { Category, Post, Product, Tag } from "@/generated/prisma";
+import { Category, Page, Post, Product, Tag } from "@/generated/prisma";
 import { db } from "./db";
 
 const updateSeoRootId = async (seoId: string, rootId: string) => {
@@ -10,6 +10,31 @@ const updateSeoRootId = async (seoId: string, rootId: string) => {
   });
 
   return updatedPostSeo;
+};
+
+export const createPageSeo = async (page: Page) => {
+  const pageSeo = await db.seo.create({
+    data: {
+      title: page.title,
+      version: 1,
+      description: "",
+      ogTwitterTitle: page.title,
+      ogTwitterDescription: "",
+      ogTwitterType: "card",
+      ogTwitterLocale: "it_IT",
+      // ogTwitterImageId: post.imageCoverId,
+      pages: {
+        connect: { id: page.id },
+      },
+    },
+  });
+
+  if (!pageSeo) {
+    return null;
+  }
+
+  const updatedPageSeo = await updateSeoRootId(pageSeo.id, pageSeo.id);
+  return updatedPageSeo;
 };
 
 export const createPostSeo = async (post: Post) => {
@@ -59,7 +84,7 @@ export const createCategorySeo = async (category: Category) => {
 
   const updatedCategorySeo = await updateSeoRootId(
     categorySeo.id,
-    categorySeo.id
+    categorySeo.id,
   );
   return updatedCategorySeo;
 };
@@ -134,7 +159,7 @@ export const createProductCategorySeo = async (category: Category) => {
 
   const updatedCategorySeo = await updateSeoRootId(
     categorySeo.id,
-    categorySeo.id
+    categorySeo.id,
   );
   return updatedCategorySeo;
 };

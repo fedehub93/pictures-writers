@@ -2,14 +2,15 @@
 
 import { Control, useFieldArray } from "react-hook-form";
 import { User } from "@/generated/prisma";
+import { Trash2, Plus } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2, Plus } from "lucide-react";
 
 import { ProductFormValues } from "@/schemas/product";
 import { GenericInput } from "@/components/form-component/generic-input";
 import { GenericCalendar } from "@/components/form-component/generic-calendar";
+import { GenericSwitch } from "@/components/form-component/generic-switch";
 
 interface ProductWebinarFormProps {
   control: Control<ProductFormValues>;
@@ -33,7 +34,15 @@ export const ProductWebinarForm = ({
         <div className="absolute -top-6 text-sm bg-primary pt-1 px-2 text-white rounded-t-lg">
           Metadata
         </div>
-        <CardTitle className="text-base">Webinar Details</CardTitle>
+        <CardTitle className="text-base flex justify-between">
+          Webinar Details
+          <GenericSwitch
+            control={control}
+            name="metadata.isOpen"
+            label="Is Open?"
+            disabled={isSubmitting}
+          />
+        </CardTitle>
       </CardHeader>
 
       <CardContent className="space-y-6">

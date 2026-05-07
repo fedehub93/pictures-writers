@@ -143,6 +143,7 @@ export type WebinarMetadata = {
   seats: number;
   platform: string;
   lessons: WebinarLesson[];
+  isOpen: boolean;
 };
 
 export type ServiceMetadata = {

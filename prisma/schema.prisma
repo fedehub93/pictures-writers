@@ -141,6 +141,7 @@ model User {
 
   role UserRole @default(USER)
 
+  pages         Page[]
   posts         Post[]
   postAuthors   PostAuthor[]
   notifications Notification[]
@@ -250,6 +251,7 @@ model Seo {
 
   settings Settings[]
 
+  pages      Page[]
   posts      Post[]
   categories Category[]
 
@@ -260,6 +262,43 @@ model Seo {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum PageEditorType {
+  PUCK
+}
+
+model Page {
+  id String @id @default(uuid())
+
+  title String
+  slug  String
+
+  version Int
+
+  status   ContentStatus @default(DRAFT)
+  isLatest Boolean       @default(true)
+
+  editorType PageEditorType @default(PUCK)
+  puckData Json? @db.JsonB
+
+  rootId       String?
+  root         Page?   @relation("RootChildren", fields: [rootId], references: [id])
+  rootChildren Page[]  @relation("RootChildren")
+
+  seo   Seo?    @relation(fields: [seoId], references: [id])
+  seoId String?
+
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
+
+  firstPublishedAt DateTime @default(now())
+  publishedAt      DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([rootId])
+  @@index([slug])
 }
 
 enum EditorType {

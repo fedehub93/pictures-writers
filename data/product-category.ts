@@ -24,6 +24,7 @@ export const getPublishedProductCategoryBySlug = async ({
         rootId: true,
         title: true,
         description: true,
+        
         slug: true,
         seo: {
           select: {

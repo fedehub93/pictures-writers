@@ -253,6 +253,24 @@ exports.Prisma.SeoScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.PageScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  slug: 'slug',
+  version: 'version',
+  status: 'status',
+  isLatest: 'isLatest',
+  editorType: 'editorType',
+  puckData: 'puckData',
+  rootId: 'rootId',
+  seoId: 'seoId',
+  userId: 'userId',
+  firstPublishedAt: 'firstPublishedAt',
+  publishedAt: 'publishedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.PostScalarFieldEnum = {
   id: 'id',
   title: 'title',
@@ -691,6 +709,10 @@ exports.ContentStatus = exports.$Enums.ContentStatus = {
   PUBLISHED: 'PUBLISHED'
 };
 
+exports.PageEditorType = exports.$Enums.PageEditorType = {
+  PUCK: 'PUCK'
+};
+
 exports.EditorType = exports.$Enums.EditorType = {
   SLATE: 'SLATE',
   TIPTAP: 'TIPTAP'
@@ -772,6 +794,7 @@ exports.Prisma.ModelName = {
   PasswordResetToken: 'PasswordResetToken',
   Media: 'Media',
   Seo: 'Seo',
+  Page: 'Page',
   Post: 'Post',
   PostAuthor: 'PostAuthor',
   Category: 'Category',

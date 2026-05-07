@@ -65,6 +65,11 @@ const data: Record<string, NavObject[]> = {
       Icon: LayoutDashboard,
     },
     {
+      title: "Pages",
+      url: "/admin/pages",
+      Icon: LayoutPanelTop,
+    },
+    {
       title: "Contents",
       url: "#",
       Icon: LibraryBig,
