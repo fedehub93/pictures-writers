@@ -36,6 +36,7 @@ export const UpdatePageDialog = () => {
           initialValues={{
             id: data?.id,
             title: data?.title ?? "",
+            slug: data?.slug ?? "",
           }}
         />
       )}
