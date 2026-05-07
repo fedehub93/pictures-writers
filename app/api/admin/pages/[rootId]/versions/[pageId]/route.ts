@@ -47,3 +47,34 @@ export async function DELETE(
     return new NextResponse("Internal Error", { status: 500 });
   }
 }
+
+export async function PATCH(
+  req: Request,
+  props: {
+    params: Promise<{
+      rootId: string;
+      pageId: string;
+    }>;
+  },
+) {
+  const params = await props.params;
+  try {
+    const user = await authAdmin();
+    const { rootId, pageId } = params;
+    const values = await req.json();
+
+    if (!user) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    const page = await db.page.update({
+      where: { id: pageId, rootId },
+      data: { ...values },
+    });
+
+    return NextResponse.json(page);
+  } catch (error) {
+    console.log("[PAGES_ROOT_ID_VERSIONS_PAGE_ID_PATCH]", error);
+    return new NextResponse("Internal Error", { status: 500 });
+  }
+}

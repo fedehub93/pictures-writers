@@ -26,6 +26,7 @@ import { ContentStatus } from "@/generated/prisma";
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 
 import { useOpenPage } from "../hooks/use-open-page";
+import Link from "next/link";
 
 export const PagesActions = ({
   rootId,
@@ -121,10 +122,12 @@ export const PagesActions = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {/* <DropdownMenuItem onSelect={() => onOpen(id)} disabled={isPending}>
-          <Pencil className="size-4 mr-2" />
-          Edit
-        </DropdownMenuItem> */}
+        <Link href={`/admin/pages/${rootId}`}>
+          <DropdownMenuItem>
+            <Pencil className="size-4 mr-2" />
+            Edit
+          </DropdownMenuItem>
+        </Link>
         <DropdownMenuItem
           onSelect={() => {
             onTogglePublish();

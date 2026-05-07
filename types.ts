@@ -11,6 +11,7 @@ import {
   SocialKey,
   WidgetType,
 } from "@/generated/prisma";
+import { Data } from "@puckeditor/core";
 
 export type TiptapContent = HTMLContent | JSONContent | JSONContent[] | null;
 
@@ -18,6 +19,7 @@ declare global {
   namespace PrismaJson {
     type BodyData = CustomElement[];
     type TipTapBodyData = TiptapContent;
+    type PuckData = Data;
     type FormFields = any;
     type ProductMetadata =
       | EbookMetadata

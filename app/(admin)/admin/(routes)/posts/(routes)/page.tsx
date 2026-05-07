@@ -4,8 +4,8 @@ import { getPostsGroupedByRootId } from "@/data/post";
 
 import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
 
-import { DataTable } from "./_components/data-table";
-import { columns } from "./_components/columns";
+import { DataTable } from "../_components/data-table";
+import { columns } from "../_components/columns";
 
 const PostsPage = async () => {
   await requireAdminAuth();
