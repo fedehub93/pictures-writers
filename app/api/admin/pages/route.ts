@@ -22,7 +22,7 @@ export async function POST(req: Request) {
         slug,
         version: 1,
         status: ContentStatus.DRAFT,
-        puckData: {},
+        puckData: { root: {}, content: [] },
         userId: user.id,
       },
     });
