@@ -18850,7 +18850,7 @@ export namespace Prisma {
     status: number
     isLatest: number
     editorType: number
-    puckData: number
+    puckData:PrismaJson.PuckData
     rootId: number
     seoId: number
     userId: number
@@ -19017,7 +19017,7 @@ export namespace Prisma {
     status: $Enums.ContentStatus
     isLatest: boolean
     editorType: $Enums.PageEditorType
-    puckData:unknown | null
+    puckData:PrismaJson.PuckData | null
     rootId: string | null
     seoId: string | null
     userId: string | null
@@ -19164,7 +19164,10 @@ export namespace Prisma {
       status: $Enums.ContentStatus
       isLatest: boolean
       editorType: $Enums.PageEditorType
-      puckData:unknown | null
+      /**
+       * [PuckData]
+       */
+      puckData:PrismaJson.PuckData | null
       rootId: string | null
       seoId: string | null
       userId: string | null
@@ -62749,7 +62752,7 @@ export namespace Prisma {
     status?: $Enums.ContentStatus
     isLatest?: boolean
     editorType?: $Enums.PageEditorType
-    puckData?:unknown | NullableJsonNullValueInput
+    puckData?:PrismaJson.PuckData | NullableJsonNullValueInput
     firstPublishedAt?: Date | string
     publishedAt?: Date | string
     createdAt?: Date | string
@@ -62768,7 +62771,7 @@ export namespace Prisma {
     status?: $Enums.ContentStatus
     isLatest?: boolean
     editorType?: $Enums.PageEditorType
-    puckData?:unknown | NullableJsonNullValueInput
+    puckData?:PrismaJson.PuckData | NullableJsonNullValueInput
     rootId?: string | null
     seoId?: string | null
     userId?: string | null
@@ -62787,7 +62790,7 @@ export namespace Prisma {
     status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
     isLatest?: BoolFieldUpdateOperationsInput | boolean
     editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
-    puckData?:unknown | NullableJsonNullValueInput
+    puckData?:PrismaJson.PuckData | NullableJsonNullValueInput
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -62806,7 +62809,7 @@ export namespace Prisma {
     status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
     isLatest?: BoolFieldUpdateOperationsInput | boolean
     editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
-    puckData?:unknown | NullableJsonNullValueInput
+    puckData?:PrismaJson.PuckData | NullableJsonNullValueInput
     rootId?: NullableStringFieldUpdateOperationsInput | string | null
     seoId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -62825,7 +62828,7 @@ export namespace Prisma {
     status?: $Enums.ContentStatus
     isLatest?: boolean
     editorType?: $Enums.PageEditorType
-    puckData?:unknown | NullableJsonNullValueInput
+    puckData?:PrismaJson.PuckData | NullableJsonNullValueInput
     rootId?: string | null
     seoId?: string | null
     userId?: string | null
@@ -62843,7 +62846,7 @@ export namespace Prisma {
     status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
     isLatest?: BoolFieldUpdateOperationsInput | boolean
     editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
-    puckData?:unknown | NullableJsonNullValueInput
+    puckData?:PrismaJson.PuckData | NullableJsonNullValueInput
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -62858,7 +62861,7 @@ export namespace Prisma {
     status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
     isLatest?: BoolFieldUpdateOperationsInput | boolean
     editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
-    puckData?:unknown | NullableJsonNullValueInput
+    puckData?:PrismaJson.PuckData | NullableJsonNullValueInput
     rootId?: NullableStringFieldUpdateOperationsInput | string | null
     seoId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -72355,7 +72358,7 @@ export namespace Prisma {
     status?: $Enums.ContentStatus
     isLatest?: boolean
     editorType?: $Enums.PageEditorType
-    puckData?:unknown | NullableJsonNullValueInput
+    puckData?:PrismaJson.PuckData | NullableJsonNullValueInput
     firstPublishedAt?: Date | string
     publishedAt?: Date | string
     createdAt?: Date | string
@@ -72373,7 +72376,7 @@ export namespace Prisma {
     status?: $Enums.ContentStatus
     isLatest?: boolean
     editorType?: $Enums.PageEditorType
-    puckData?:unknown | NullableJsonNullValueInput
+    puckData?:PrismaJson.PuckData | NullableJsonNullValueInput
     rootId?: string | null
     seoId?: string | null
     firstPublishedAt?: Date | string
@@ -73628,7 +73631,7 @@ export namespace Prisma {
     status?: $Enums.ContentStatus
     isLatest?: boolean
     editorType?: $Enums.PageEditorType
-    puckData?:unknown | NullableJsonNullValueInput
+    puckData?:PrismaJson.PuckData | NullableJsonNullValueInput
     firstPublishedAt?: Date | string
     publishedAt?: Date | string
     createdAt?: Date | string
@@ -73646,7 +73649,7 @@ export namespace Prisma {
     status?: $Enums.ContentStatus
     isLatest?: boolean
     editorType?: $Enums.PageEditorType
-    puckData?:unknown | NullableJsonNullValueInput
+    puckData?:PrismaJson.PuckData | NullableJsonNullValueInput
     rootId?: string | null
     userId?: string | null
     firstPublishedAt?: Date | string
@@ -74242,7 +74245,7 @@ export namespace Prisma {
     status?: $Enums.ContentStatus
     isLatest?: boolean
     editorType?: $Enums.PageEditorType
-    puckData?:unknown | NullableJsonNullValueInput
+    puckData?:PrismaJson.PuckData | NullableJsonNullValueInput
     firstPublishedAt?: Date | string
     publishedAt?: Date | string
     createdAt?: Date | string
@@ -74260,7 +74263,7 @@ export namespace Prisma {
     status?: $Enums.ContentStatus
     isLatest?: boolean
     editorType?: $Enums.PageEditorType
-    puckData?:unknown | NullableJsonNullValueInput
+    puckData?:PrismaJson.PuckData | NullableJsonNullValueInput
     rootId?: string | null
     seoId?: string | null
     userId?: string | null
@@ -74283,7 +74286,7 @@ export namespace Prisma {
     status?: $Enums.ContentStatus
     isLatest?: boolean
     editorType?: $Enums.PageEditorType
-    puckData?:unknown | NullableJsonNullValueInput
+    puckData?:PrismaJson.PuckData | NullableJsonNullValueInput
     firstPublishedAt?: Date | string
     publishedAt?: Date | string
     createdAt?: Date | string
@@ -74301,7 +74304,7 @@ export namespace Prisma {
     status?: $Enums.ContentStatus
     isLatest?: boolean
     editorType?: $Enums.PageEditorType
-    puckData?:unknown | NullableJsonNullValueInput
+    puckData?:PrismaJson.PuckData | NullableJsonNullValueInput
     seoId?: string | null
     userId?: string | null
     firstPublishedAt?: Date | string
@@ -74448,7 +74451,7 @@ export namespace Prisma {
     status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
     isLatest?: BoolFieldUpdateOperationsInput | boolean
     editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
-    puckData?:unknown | NullableJsonNullValueInput
+    puckData?:PrismaJson.PuckData | NullableJsonNullValueInput
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -74466,7 +74469,7 @@ export namespace Prisma {
     status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
     isLatest?: BoolFieldUpdateOperationsInput | boolean
     editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
-    puckData?:unknown | NullableJsonNullValueInput
+    puckData?:PrismaJson.PuckData | NullableJsonNullValueInput
     rootId?: NullableStringFieldUpdateOperationsInput | string | null
     seoId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -80235,7 +80238,7 @@ export namespace Prisma {
     status?: $Enums.ContentStatus
     isLatest?: boolean
     editorType?: $Enums.PageEditorType
-    puckData?:unknown | NullableJsonNullValueInput
+    puckData?:PrismaJson.PuckData | NullableJsonNullValueInput
     rootId?: string | null
     seoId?: string | null
     firstPublishedAt?: Date | string
@@ -80385,7 +80388,7 @@ export namespace Prisma {
     status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
     isLatest?: BoolFieldUpdateOperationsInput | boolean
     editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
-    puckData?:unknown | NullableJsonNullValueInput
+    puckData?:PrismaJson.PuckData | NullableJsonNullValueInput
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -80403,7 +80406,7 @@ export namespace Prisma {
     status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
     isLatest?: BoolFieldUpdateOperationsInput | boolean
     editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
-    puckData?:unknown | NullableJsonNullValueInput
+    puckData?:PrismaJson.PuckData | NullableJsonNullValueInput
     rootId?: NullableStringFieldUpdateOperationsInput | string | null
     seoId?: NullableStringFieldUpdateOperationsInput | string | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -80421,7 +80424,7 @@ export namespace Prisma {
     status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
     isLatest?: BoolFieldUpdateOperationsInput | boolean
     editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
-    puckData?:unknown | NullableJsonNullValueInput
+    puckData?:PrismaJson.PuckData | NullableJsonNullValueInput
     rootId?: NullableStringFieldUpdateOperationsInput | string | null
     seoId?: NullableStringFieldUpdateOperationsInput | string | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -81047,7 +81050,7 @@ export namespace Prisma {
     status?: $Enums.ContentStatus
     isLatest?: boolean
     editorType?: $Enums.PageEditorType
-    puckData?:unknown | NullableJsonNullValueInput
+    puckData?:PrismaJson.PuckData | NullableJsonNullValueInput
     rootId?: string | null
     userId?: string | null
     firstPublishedAt?: Date | string
@@ -81256,7 +81259,7 @@ export namespace Prisma {
     status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
     isLatest?: BoolFieldUpdateOperationsInput | boolean
     editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
-    puckData?:unknown | NullableJsonNullValueInput
+    puckData?:PrismaJson.PuckData | NullableJsonNullValueInput
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -81274,7 +81277,7 @@ export namespace Prisma {
     status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
     isLatest?: BoolFieldUpdateOperationsInput | boolean
     editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
-    puckData?:unknown | NullableJsonNullValueInput
+    puckData?:PrismaJson.PuckData | NullableJsonNullValueInput
     rootId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -81292,7 +81295,7 @@ export namespace Prisma {
     status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
     isLatest?: BoolFieldUpdateOperationsInput | boolean
     editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
-    puckData?:unknown | NullableJsonNullValueInput
+    puckData?:PrismaJson.PuckData | NullableJsonNullValueInput
     rootId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -81608,7 +81611,7 @@ export namespace Prisma {
     status?: $Enums.ContentStatus
     isLatest?: boolean
     editorType?: $Enums.PageEditorType
-    puckData?:unknown | NullableJsonNullValueInput
+    puckData?:PrismaJson.PuckData | NullableJsonNullValueInput
     seoId?: string | null
     userId?: string | null
     firstPublishedAt?: Date | string
@@ -81625,7 +81628,7 @@ export namespace Prisma {
     status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
     isLatest?: BoolFieldUpdateOperationsInput | boolean
     editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
-    puckData?:unknown | NullableJsonNullValueInput
+    puckData?:PrismaJson.PuckData | NullableJsonNullValueInput
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -81643,7 +81646,7 @@ export namespace Prisma {
     status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
     isLatest?: BoolFieldUpdateOperationsInput | boolean
     editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
-    puckData?:unknown | NullableJsonNullValueInput
+    puckData?:PrismaJson.PuckData | NullableJsonNullValueInput
     seoId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -81661,7 +81664,7 @@ export namespace Prisma {
     status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
     isLatest?: BoolFieldUpdateOperationsInput | boolean
     editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
-    puckData?:unknown | NullableJsonNullValueInput
+    puckData?:PrismaJson.PuckData | NullableJsonNullValueInput
     seoId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string

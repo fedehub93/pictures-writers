@@ -280,6 +280,7 @@ model Page {
   isLatest Boolean       @default(true)
 
   editorType PageEditorType @default(PUCK)
+  /// [PuckData]
   puckData   Json?          @db.JsonB
 
   rootId       String?
@@ -297,7 +298,8 @@ model Page {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
-  @@index([rootId, slug])
+  @@index([rootId])
+  @@index([slug])
 }
 
 enum EditorType {

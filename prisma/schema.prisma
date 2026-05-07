@@ -280,7 +280,8 @@ model Page {
   isLatest Boolean       @default(true)
 
   editorType PageEditorType @default(PUCK)
-  puckData Json? @db.JsonB
+  /// [PuckData]
+  puckData   Json?          @db.JsonB
 
   rootId       String?
   root         Page?   @relation("RootChildren", fields: [rootId], references: [id])

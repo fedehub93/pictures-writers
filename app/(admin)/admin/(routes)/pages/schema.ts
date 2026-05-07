@@ -5,6 +5,14 @@ export const pageInsertSchema = z.object({
   slug: z.string().min(1, { error: "Slug is required" }),
 });
 
+export type PageInsertValues = z.infer<typeof pageInsertSchema>;
+
 export const pageUpdateSchema = pageInsertSchema.extend({
   id: z.string().min(1, { error: "Id is required" }),
+  puckData: z.any().optional(),
 });
+
+export type PageUpdateValues = Partial<
+  Omit<z.infer<typeof pageUpdateSchema>, "id">
+> &
+  Pick<z.infer<typeof pageUpdateSchema>, "id">;
