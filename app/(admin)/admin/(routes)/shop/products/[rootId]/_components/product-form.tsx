@@ -36,7 +36,7 @@ import {
 } from "@/types";
 import { ProductGalleryForm } from "./product-gallery-form";
 import { ProductAffiliateForm } from "./affiliate/product-affiliate-form";
-import { ProductWebinarForm } from "./product-webinar-form";
+import { ProductWebinarForm } from "./webinar/product-webinar-form";
 import { ProductServiceForm } from "./service/product-service-form";
 import { ProductFAQForm } from "./product-faq-form";
 

@@ -36,6 +36,7 @@ export const ProductsList = ({ categorySlug, products }: ProductsListProps) => {
               price={p.price!}
               discountedPrice={p.discountedPrice}
               lessons={p.metadata.lessons}
+              isOpen={p.metadata.isOpen}
             />
           );
         }

@@ -252,6 +252,11 @@ export type Media = $Result.DefaultSelection<Prisma.$MediaPayload>
  */
 export type Seo = $Result.DefaultSelection<Prisma.$SeoPayload>
 /**
+ * Model Page
+ * 
+ */
+export type Page = $Result.DefaultSelection<Prisma.$PagePayload>
+/**
  * Model Post
  * 
  */
@@ -470,6 +475,13 @@ export const ContentStatus: {
 export type ContentStatus = (typeof ContentStatus)[keyof typeof ContentStatus]
 
 
+export const PageEditorType: {
+  PUCK: 'PUCK'
+};
+
+export type PageEditorType = (typeof PageEditorType)[keyof typeof PageEditorType]
+
+
 export const EditorType: {
   SLATE: 'SLATE',
   TIPTAP: 'TIPTAP'
@@ -592,6 +604,10 @@ export const MediaType: typeof $Enums.MediaType
 export type ContentStatus = $Enums.ContentStatus
 
 export const ContentStatus: typeof $Enums.ContentStatus
+
+export type PageEditorType = $Enums.PageEditorType
+
+export const PageEditorType: typeof $Enums.PageEditorType
 
 export type EditorType = $Enums.EditorType
 
@@ -867,6 +883,16 @@ export class PrismaClient<
     * ```
     */
   get seo(): Prisma.SeoDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.page`: Exposes CRUD operations for the **Page** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Pages
+    * const pages = await prisma.page.findMany()
+    * ```
+    */
+  get page(): Prisma.PageDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.post`: Exposes CRUD operations for the **Post** model.
@@ -1632,6 +1658,7 @@ export namespace Prisma {
     PasswordResetToken: 'PasswordResetToken',
     Media: 'Media',
     Seo: 'Seo',
+    Page: 'Page',
     Post: 'Post',
     PostAuthor: 'PostAuthor',
     Category: 'Category',
@@ -1679,7 +1706,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "language" | "settings" | "widget" | "session" | "verification" | "user" | "account" | "verificationToken" | "passwordResetToken" | "media" | "seo" | "post" | "postAuthor" | "category" | "postCategory" | "tag" | "emailSetting" | "emailTemplate" | "emailAudience" | "emailContact" | "emailContactInteraction" | "emailSingleSend" | "emailSubscriptionToken" | "emailSendLog" | "emailSingleSendLog" | "product" | "productCategory" | "productGallery" | "productExtra" | "productFAQ" | "reviews" | "adCampaign" | "adBlock" | "adItem" | "purchase" | "contactForm" | "form" | "formSubmission" | "format" | "genre" | "impression" | "notification" | "socialChannel"
+      modelProps: "language" | "settings" | "widget" | "session" | "verification" | "user" | "account" | "verificationToken" | "passwordResetToken" | "media" | "seo" | "page" | "post" | "postAuthor" | "category" | "postCategory" | "tag" | "emailSetting" | "emailTemplate" | "emailAudience" | "emailContact" | "emailContactInteraction" | "emailSingleSend" | "emailSubscriptionToken" | "emailSendLog" | "emailSingleSendLog" | "product" | "productCategory" | "productGallery" | "productExtra" | "productFAQ" | "reviews" | "adCampaign" | "adBlock" | "adItem" | "purchase" | "contactForm" | "form" | "formSubmission" | "format" | "genre" | "impression" | "notification" | "socialChannel"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2494,6 +2521,80 @@ export namespace Prisma {
           count: {
             args: Prisma.SeoCountArgs<ExtArgs>
             result: $Utils.Optional<SeoCountAggregateOutputType> | number
+          }
+        }
+      }
+      Page: {
+        payload: Prisma.$PagePayload<ExtArgs>
+        fields: Prisma.PageFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PageFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PagePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PageFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PagePayload>
+          }
+          findFirst: {
+            args: Prisma.PageFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PagePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PageFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PagePayload>
+          }
+          findMany: {
+            args: Prisma.PageFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PagePayload>[]
+          }
+          create: {
+            args: Prisma.PageCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PagePayload>
+          }
+          createMany: {
+            args: Prisma.PageCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PageCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PagePayload>[]
+          }
+          delete: {
+            args: Prisma.PageDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PagePayload>
+          }
+          update: {
+            args: Prisma.PageUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PagePayload>
+          }
+          deleteMany: {
+            args: Prisma.PageDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PageUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PageUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PagePayload>[]
+          }
+          upsert: {
+            args: Prisma.PageUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PagePayload>
+          }
+          aggregate: {
+            args: Prisma.PageAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePage>
+          }
+          groupBy: {
+            args: Prisma.PageGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PageGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PageCountArgs<ExtArgs>
+            result: $Utils.Optional<PageCountAggregateOutputType> | number
           }
         }
       }
@@ -4984,6 +5085,7 @@ export namespace Prisma {
     passwordResetToken?: PasswordResetTokenOmit
     media?: MediaOmit
     seo?: SeoOmit
+    page?: PageOmit
     post?: PostOmit
     postAuthor?: PostAuthorOmit
     category?: CategoryOmit
@@ -5098,6 +5200,7 @@ export namespace Prisma {
   export type UserCountOutputType = {
     accounts: number
     sessions: number
+    pages: number
     posts: number
     postAuthors: number
     notifications: number
@@ -5107,6 +5210,7 @@ export namespace Prisma {
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     accounts?: boolean | UserCountOutputTypeCountAccountsArgs
     sessions?: boolean | UserCountOutputTypeCountSessionsArgs
+    pages?: boolean | UserCountOutputTypeCountPagesArgs
     posts?: boolean | UserCountOutputTypeCountPostsArgs
     postAuthors?: boolean | UserCountOutputTypeCountPostAuthorsArgs
     notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
@@ -5136,6 +5240,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: SessionWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountPagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PageWhereInput
   }
 
   /**
@@ -5241,6 +5352,7 @@ export namespace Prisma {
   export type SeoCountOutputType = {
     rootChildren: number
     settings: number
+    pages: number
     posts: number
     categories: number
     tags: number
@@ -5251,6 +5363,7 @@ export namespace Prisma {
   export type SeoCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     rootChildren?: boolean | SeoCountOutputTypeCountRootChildrenArgs
     settings?: boolean | SeoCountOutputTypeCountSettingsArgs
+    pages?: boolean | SeoCountOutputTypeCountPagesArgs
     posts?: boolean | SeoCountOutputTypeCountPostsArgs
     categories?: boolean | SeoCountOutputTypeCountCategoriesArgs
     tags?: boolean | SeoCountOutputTypeCountTagsArgs
@@ -5286,6 +5399,13 @@ export namespace Prisma {
   /**
    * SeoCountOutputType without action
    */
+  export type SeoCountOutputTypeCountPagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PageWhereInput
+  }
+
+  /**
+   * SeoCountOutputType without action
+   */
   export type SeoCountOutputTypeCountPostsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: PostWhereInput
   }
@@ -5316,6 +5436,37 @@ export namespace Prisma {
    */
   export type SeoCountOutputTypeCountProductCategoriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ProductCategoryWhereInput
+  }
+
+
+  /**
+   * Count Type PageCountOutputType
+   */
+
+  export type PageCountOutputType = {
+    rootChildren: number
+  }
+
+  export type PageCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    rootChildren?: boolean | PageCountOutputTypeCountRootChildrenArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * PageCountOutputType without action
+   */
+  export type PageCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PageCountOutputType
+     */
+    select?: PageCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * PageCountOutputType without action
+   */
+  export type PageCountOutputTypeCountRootChildrenArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PageWhereInput
   }
 
 
@@ -11530,6 +11681,7 @@ export namespace Prisma {
     profileImage?: boolean | User$profileImageArgs<ExtArgs>
     accounts?: boolean | User$accountsArgs<ExtArgs>
     sessions?: boolean | User$sessionsArgs<ExtArgs>
+    pages?: boolean | User$pagesArgs<ExtArgs>
     posts?: boolean | User$postsArgs<ExtArgs>
     postAuthors?: boolean | User$postAuthorsArgs<ExtArgs>
     notifications?: boolean | User$notificationsArgs<ExtArgs>
@@ -11595,6 +11747,7 @@ export namespace Prisma {
     profileImage?: boolean | User$profileImageArgs<ExtArgs>
     accounts?: boolean | User$accountsArgs<ExtArgs>
     sessions?: boolean | User$sessionsArgs<ExtArgs>
+    pages?: boolean | User$pagesArgs<ExtArgs>
     posts?: boolean | User$postsArgs<ExtArgs>
     postAuthors?: boolean | User$postAuthorsArgs<ExtArgs>
     notifications?: boolean | User$notificationsArgs<ExtArgs>
@@ -11614,6 +11767,7 @@ export namespace Prisma {
       profileImage: Prisma.$MediaPayload<ExtArgs> | null
       accounts: Prisma.$AccountPayload<ExtArgs>[]
       sessions: Prisma.$SessionPayload<ExtArgs>[]
+      pages: Prisma.$PagePayload<ExtArgs>[]
       posts: Prisma.$PostPayload<ExtArgs>[]
       postAuthors: Prisma.$PostAuthorPayload<ExtArgs>[]
       notifications: Prisma.$NotificationPayload<ExtArgs>[]
@@ -12031,6 +12185,7 @@ export namespace Prisma {
     profileImage<T extends User$profileImageArgs<ExtArgs> = {}>(args?: Subset<T, User$profileImageArgs<ExtArgs>>): Prisma__MediaClient<$Result.GetResult<Prisma.$MediaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     accounts<T extends User$accountsArgs<ExtArgs> = {}>(args?: Subset<T, User$accountsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     sessions<T extends User$sessionsArgs<ExtArgs> = {}>(args?: Subset<T, User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    pages<T extends User$pagesArgs<ExtArgs> = {}>(args?: Subset<T, User$pagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     posts<T extends User$postsArgs<ExtArgs> = {}>(args?: Subset<T, User$postsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PostPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     postAuthors<T extends User$postAuthorsArgs<ExtArgs> = {}>(args?: Subset<T, User$postAuthorsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PostAuthorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     notifications<T extends User$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -12543,6 +12698,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: SessionScalarFieldEnum | SessionScalarFieldEnum[]
+  }
+
+  /**
+   * User.pages
+   */
+  export type User$pagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Page
+     */
+    select?: PageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Page
+     */
+    omit?: PageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PageInclude<ExtArgs> | null
+    where?: PageWhereInput
+    orderBy?: PageOrderByWithRelationInput | PageOrderByWithRelationInput[]
+    cursor?: PageWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PageScalarFieldEnum | PageScalarFieldEnum[]
   }
 
   /**
@@ -17387,6 +17566,7 @@ export namespace Prisma {
     root?: boolean | Seo$rootArgs<ExtArgs>
     rootChildren?: boolean | Seo$rootChildrenArgs<ExtArgs>
     settings?: boolean | Seo$settingsArgs<ExtArgs>
+    pages?: boolean | Seo$pagesArgs<ExtArgs>
     posts?: boolean | Seo$postsArgs<ExtArgs>
     categories?: boolean | Seo$categoriesArgs<ExtArgs>
     tags?: boolean | Seo$tagsArgs<ExtArgs>
@@ -17462,6 +17642,7 @@ export namespace Prisma {
     root?: boolean | Seo$rootArgs<ExtArgs>
     rootChildren?: boolean | Seo$rootChildrenArgs<ExtArgs>
     settings?: boolean | Seo$settingsArgs<ExtArgs>
+    pages?: boolean | Seo$pagesArgs<ExtArgs>
     posts?: boolean | Seo$postsArgs<ExtArgs>
     categories?: boolean | Seo$categoriesArgs<ExtArgs>
     tags?: boolean | Seo$tagsArgs<ExtArgs>
@@ -17485,6 +17666,7 @@ export namespace Prisma {
       root: Prisma.$SeoPayload<ExtArgs> | null
       rootChildren: Prisma.$SeoPayload<ExtArgs>[]
       settings: Prisma.$SettingsPayload<ExtArgs>[]
+      pages: Prisma.$PagePayload<ExtArgs>[]
       posts: Prisma.$PostPayload<ExtArgs>[]
       categories: Prisma.$CategoryPayload<ExtArgs>[]
       tags: Prisma.$TagPayload<ExtArgs>[]
@@ -17906,6 +18088,7 @@ export namespace Prisma {
     root<T extends Seo$rootArgs<ExtArgs> = {}>(args?: Subset<T, Seo$rootArgs<ExtArgs>>): Prisma__SeoClient<$Result.GetResult<Prisma.$SeoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     rootChildren<T extends Seo$rootChildrenArgs<ExtArgs> = {}>(args?: Subset<T, Seo$rootChildrenArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SeoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     settings<T extends Seo$settingsArgs<ExtArgs> = {}>(args?: Subset<T, Seo$settingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SettingsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    pages<T extends Seo$pagesArgs<ExtArgs> = {}>(args?: Subset<T, Seo$pagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     posts<T extends Seo$postsArgs<ExtArgs> = {}>(args?: Subset<T, Seo$postsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PostPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     categories<T extends Seo$categoriesArgs<ExtArgs> = {}>(args?: Subset<T, Seo$categoriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CategoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     tags<T extends Seo$tagsArgs<ExtArgs> = {}>(args?: Subset<T, Seo$tagsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TagPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -18443,6 +18626,30 @@ export namespace Prisma {
   }
 
   /**
+   * Seo.pages
+   */
+  export type Seo$pagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Page
+     */
+    select?: PageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Page
+     */
+    omit?: PageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PageInclude<ExtArgs> | null
+    where?: PageWhereInput
+    orderBy?: PageOrderByWithRelationInput | PageOrderByWithRelationInput[]
+    cursor?: PageWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PageScalarFieldEnum | PageScalarFieldEnum[]
+  }
+
+  /**
    * Seo.posts
    */
   export type Seo$postsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -18578,6 +18785,1332 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: SeoInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Page
+   */
+
+  export type AggregatePage = {
+    _count: PageCountAggregateOutputType | null
+    _avg: PageAvgAggregateOutputType | null
+    _sum: PageSumAggregateOutputType | null
+    _min: PageMinAggregateOutputType | null
+    _max: PageMaxAggregateOutputType | null
+  }
+
+  export type PageAvgAggregateOutputType = {
+    version: number | null
+  }
+
+  export type PageSumAggregateOutputType = {
+    version: number | null
+  }
+
+  export type PageMinAggregateOutputType = {
+    id: string | null
+    title: string | null
+    slug: string | null
+    version: number | null
+    status: $Enums.ContentStatus | null
+    isLatest: boolean | null
+    editorType: $Enums.PageEditorType | null
+    rootId: string | null
+    seoId: string | null
+    userId: string | null
+    firstPublishedAt: Date | null
+    publishedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PageMaxAggregateOutputType = {
+    id: string | null
+    title: string | null
+    slug: string | null
+    version: number | null
+    status: $Enums.ContentStatus | null
+    isLatest: boolean | null
+    editorType: $Enums.PageEditorType | null
+    rootId: string | null
+    seoId: string | null
+    userId: string | null
+    firstPublishedAt: Date | null
+    publishedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PageCountAggregateOutputType = {
+    id: number
+    title: number
+    slug: number
+    version: number
+    status: number
+    isLatest: number
+    editorType: number
+    puckData: number
+    rootId: number
+    seoId: number
+    userId: number
+    firstPublishedAt: number
+    publishedAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type PageAvgAggregateInputType = {
+    version?: true
+  }
+
+  export type PageSumAggregateInputType = {
+    version?: true
+  }
+
+  export type PageMinAggregateInputType = {
+    id?: true
+    title?: true
+    slug?: true
+    version?: true
+    status?: true
+    isLatest?: true
+    editorType?: true
+    rootId?: true
+    seoId?: true
+    userId?: true
+    firstPublishedAt?: true
+    publishedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PageMaxAggregateInputType = {
+    id?: true
+    title?: true
+    slug?: true
+    version?: true
+    status?: true
+    isLatest?: true
+    editorType?: true
+    rootId?: true
+    seoId?: true
+    userId?: true
+    firstPublishedAt?: true
+    publishedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PageCountAggregateInputType = {
+    id?: true
+    title?: true
+    slug?: true
+    version?: true
+    status?: true
+    isLatest?: true
+    editorType?: true
+    puckData?: true
+    rootId?: true
+    seoId?: true
+    userId?: true
+    firstPublishedAt?: true
+    publishedAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type PageAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Page to aggregate.
+     */
+    where?: PageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Pages to fetch.
+     */
+    orderBy?: PageOrderByWithRelationInput | PageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Pages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Pages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Pages
+    **/
+    _count?: true | PageCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PageAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PageSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PageMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PageMaxAggregateInputType
+  }
+
+  export type GetPageAggregateType<T extends PageAggregateArgs> = {
+        [P in keyof T & keyof AggregatePage]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePage[P]>
+      : GetScalarType<T[P], AggregatePage[P]>
+  }
+
+
+
+
+  export type PageGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PageWhereInput
+    orderBy?: PageOrderByWithAggregationInput | PageOrderByWithAggregationInput[]
+    by: PageScalarFieldEnum[] | PageScalarFieldEnum
+    having?: PageScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PageCountAggregateInputType | true
+    _avg?: PageAvgAggregateInputType
+    _sum?: PageSumAggregateInputType
+    _min?: PageMinAggregateInputType
+    _max?: PageMaxAggregateInputType
+  }
+
+  export type PageGroupByOutputType = {
+    id: string
+    title: string
+    slug: string
+    version: number
+    status: $Enums.ContentStatus
+    isLatest: boolean
+    editorType: $Enums.PageEditorType
+    puckData:unknown | null
+    rootId: string | null
+    seoId: string | null
+    userId: string | null
+    firstPublishedAt: Date
+    publishedAt: Date
+    createdAt: Date
+    updatedAt: Date
+    _count: PageCountAggregateOutputType | null
+    _avg: PageAvgAggregateOutputType | null
+    _sum: PageSumAggregateOutputType | null
+    _min: PageMinAggregateOutputType | null
+    _max: PageMaxAggregateOutputType | null
+  }
+
+  type GetPageGroupByPayload<T extends PageGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PageGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PageGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PageGroupByOutputType[P]>
+            : GetScalarType<T[P], PageGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PageSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    title?: boolean
+    slug?: boolean
+    version?: boolean
+    status?: boolean
+    isLatest?: boolean
+    editorType?: boolean
+    puckData?: boolean
+    rootId?: boolean
+    seoId?: boolean
+    userId?: boolean
+    firstPublishedAt?: boolean
+    publishedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    root?: boolean | Page$rootArgs<ExtArgs>
+    rootChildren?: boolean | Page$rootChildrenArgs<ExtArgs>
+    seo?: boolean | Page$seoArgs<ExtArgs>
+    user?: boolean | Page$userArgs<ExtArgs>
+    _count?: boolean | PageCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["page"]>
+
+  export type PageSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    title?: boolean
+    slug?: boolean
+    version?: boolean
+    status?: boolean
+    isLatest?: boolean
+    editorType?: boolean
+    puckData?: boolean
+    rootId?: boolean
+    seoId?: boolean
+    userId?: boolean
+    firstPublishedAt?: boolean
+    publishedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    root?: boolean | Page$rootArgs<ExtArgs>
+    seo?: boolean | Page$seoArgs<ExtArgs>
+    user?: boolean | Page$userArgs<ExtArgs>
+  }, ExtArgs["result"]["page"]>
+
+  export type PageSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    title?: boolean
+    slug?: boolean
+    version?: boolean
+    status?: boolean
+    isLatest?: boolean
+    editorType?: boolean
+    puckData?: boolean
+    rootId?: boolean
+    seoId?: boolean
+    userId?: boolean
+    firstPublishedAt?: boolean
+    publishedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    root?: boolean | Page$rootArgs<ExtArgs>
+    seo?: boolean | Page$seoArgs<ExtArgs>
+    user?: boolean | Page$userArgs<ExtArgs>
+  }, ExtArgs["result"]["page"]>
+
+  export type PageSelectScalar = {
+    id?: boolean
+    title?: boolean
+    slug?: boolean
+    version?: boolean
+    status?: boolean
+    isLatest?: boolean
+    editorType?: boolean
+    puckData?: boolean
+    rootId?: boolean
+    seoId?: boolean
+    userId?: boolean
+    firstPublishedAt?: boolean
+    publishedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type PageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "slug" | "version" | "status" | "isLatest" | "editorType" | "puckData" | "rootId" | "seoId" | "userId" | "firstPublishedAt" | "publishedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["page"]>
+  export type PageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    root?: boolean | Page$rootArgs<ExtArgs>
+    rootChildren?: boolean | Page$rootChildrenArgs<ExtArgs>
+    seo?: boolean | Page$seoArgs<ExtArgs>
+    user?: boolean | Page$userArgs<ExtArgs>
+    _count?: boolean | PageCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type PageIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    root?: boolean | Page$rootArgs<ExtArgs>
+    seo?: boolean | Page$seoArgs<ExtArgs>
+    user?: boolean | Page$userArgs<ExtArgs>
+  }
+  export type PageIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    root?: boolean | Page$rootArgs<ExtArgs>
+    seo?: boolean | Page$seoArgs<ExtArgs>
+    user?: boolean | Page$userArgs<ExtArgs>
+  }
+
+  export type $PagePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Page"
+    objects: {
+      root: Prisma.$PagePayload<ExtArgs> | null
+      rootChildren: Prisma.$PagePayload<ExtArgs>[]
+      seo: Prisma.$SeoPayload<ExtArgs> | null
+      user: Prisma.$UserPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      title: string
+      slug: string
+      version: number
+      status: $Enums.ContentStatus
+      isLatest: boolean
+      editorType: $Enums.PageEditorType
+      puckData:unknown | null
+      rootId: string | null
+      seoId: string | null
+      userId: string | null
+      firstPublishedAt: Date
+      publishedAt: Date
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["page"]>
+    composites: {}
+  }
+
+  type PageGetPayload<S extends boolean | null | undefined | PageDefaultArgs> = $Result.GetResult<Prisma.$PagePayload, S>
+
+  type PageCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PageFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PageCountAggregateInputType | true
+    }
+
+  export interface PageDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Page'], meta: { name: 'Page' } }
+    /**
+     * Find zero or one Page that matches the filter.
+     * @param {PageFindUniqueArgs} args - Arguments to find a Page
+     * @example
+     * // Get one Page
+     * const page = await prisma.page.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PageFindUniqueArgs>(args: SelectSubset<T, PageFindUniqueArgs<ExtArgs>>): Prisma__PageClient<$Result.GetResult<Prisma.$PagePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Page that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PageFindUniqueOrThrowArgs} args - Arguments to find a Page
+     * @example
+     * // Get one Page
+     * const page = await prisma.page.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PageFindUniqueOrThrowArgs>(args: SelectSubset<T, PageFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PageClient<$Result.GetResult<Prisma.$PagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Page that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PageFindFirstArgs} args - Arguments to find a Page
+     * @example
+     * // Get one Page
+     * const page = await prisma.page.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PageFindFirstArgs>(args?: SelectSubset<T, PageFindFirstArgs<ExtArgs>>): Prisma__PageClient<$Result.GetResult<Prisma.$PagePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Page that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PageFindFirstOrThrowArgs} args - Arguments to find a Page
+     * @example
+     * // Get one Page
+     * const page = await prisma.page.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PageFindFirstOrThrowArgs>(args?: SelectSubset<T, PageFindFirstOrThrowArgs<ExtArgs>>): Prisma__PageClient<$Result.GetResult<Prisma.$PagePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Pages that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PageFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Pages
+     * const pages = await prisma.page.findMany()
+     * 
+     * // Get first 10 Pages
+     * const pages = await prisma.page.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const pageWithIdOnly = await prisma.page.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PageFindManyArgs>(args?: SelectSubset<T, PageFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Page.
+     * @param {PageCreateArgs} args - Arguments to create a Page.
+     * @example
+     * // Create one Page
+     * const Page = await prisma.page.create({
+     *   data: {
+     *     // ... data to create a Page
+     *   }
+     * })
+     * 
+     */
+    create<T extends PageCreateArgs>(args: SelectSubset<T, PageCreateArgs<ExtArgs>>): Prisma__PageClient<$Result.GetResult<Prisma.$PagePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Pages.
+     * @param {PageCreateManyArgs} args - Arguments to create many Pages.
+     * @example
+     * // Create many Pages
+     * const page = await prisma.page.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PageCreateManyArgs>(args?: SelectSubset<T, PageCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Pages and returns the data saved in the database.
+     * @param {PageCreateManyAndReturnArgs} args - Arguments to create many Pages.
+     * @example
+     * // Create many Pages
+     * const page = await prisma.page.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Pages and only return the `id`
+     * const pageWithIdOnly = await prisma.page.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PageCreateManyAndReturnArgs>(args?: SelectSubset<T, PageCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PagePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Page.
+     * @param {PageDeleteArgs} args - Arguments to delete one Page.
+     * @example
+     * // Delete one Page
+     * const Page = await prisma.page.delete({
+     *   where: {
+     *     // ... filter to delete one Page
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PageDeleteArgs>(args: SelectSubset<T, PageDeleteArgs<ExtArgs>>): Prisma__PageClient<$Result.GetResult<Prisma.$PagePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Page.
+     * @param {PageUpdateArgs} args - Arguments to update one Page.
+     * @example
+     * // Update one Page
+     * const page = await prisma.page.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PageUpdateArgs>(args: SelectSubset<T, PageUpdateArgs<ExtArgs>>): Prisma__PageClient<$Result.GetResult<Prisma.$PagePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Pages.
+     * @param {PageDeleteManyArgs} args - Arguments to filter Pages to delete.
+     * @example
+     * // Delete a few Pages
+     * const { count } = await prisma.page.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PageDeleteManyArgs>(args?: SelectSubset<T, PageDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Pages.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PageUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Pages
+     * const page = await prisma.page.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PageUpdateManyArgs>(args: SelectSubset<T, PageUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Pages and returns the data updated in the database.
+     * @param {PageUpdateManyAndReturnArgs} args - Arguments to update many Pages.
+     * @example
+     * // Update many Pages
+     * const page = await prisma.page.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Pages and only return the `id`
+     * const pageWithIdOnly = await prisma.page.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends PageUpdateManyAndReturnArgs>(args: SelectSubset<T, PageUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PagePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Page.
+     * @param {PageUpsertArgs} args - Arguments to update or create a Page.
+     * @example
+     * // Update or create a Page
+     * const page = await prisma.page.upsert({
+     *   create: {
+     *     // ... data to create a Page
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Page we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PageUpsertArgs>(args: SelectSubset<T, PageUpsertArgs<ExtArgs>>): Prisma__PageClient<$Result.GetResult<Prisma.$PagePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Pages.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PageCountArgs} args - Arguments to filter Pages to count.
+     * @example
+     * // Count the number of Pages
+     * const count = await prisma.page.count({
+     *   where: {
+     *     // ... the filter for the Pages we want to count
+     *   }
+     * })
+    **/
+    count<T extends PageCountArgs>(
+      args?: Subset<T, PageCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PageCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Page.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PageAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PageAggregateArgs>(args: Subset<T, PageAggregateArgs>): Prisma.PrismaPromise<GetPageAggregateType<T>>
+
+    /**
+     * Group by Page.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PageGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PageGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PageGroupByArgs['orderBy'] }
+        : { orderBy?: PageGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PageGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPageGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Page model
+   */
+  readonly fields: PageFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Page.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PageClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    root<T extends Page$rootArgs<ExtArgs> = {}>(args?: Subset<T, Page$rootArgs<ExtArgs>>): Prisma__PageClient<$Result.GetResult<Prisma.$PagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    rootChildren<T extends Page$rootChildrenArgs<ExtArgs> = {}>(args?: Subset<T, Page$rootChildrenArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    seo<T extends Page$seoArgs<ExtArgs> = {}>(args?: Subset<T, Page$seoArgs<ExtArgs>>): Prisma__SeoClient<$Result.GetResult<Prisma.$SeoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    user<T extends Page$userArgs<ExtArgs> = {}>(args?: Subset<T, Page$userArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Page model
+   */
+  interface PageFieldRefs {
+    readonly id: FieldRef<"Page", 'String'>
+    readonly title: FieldRef<"Page", 'String'>
+    readonly slug: FieldRef<"Page", 'String'>
+    readonly version: FieldRef<"Page", 'Int'>
+    readonly status: FieldRef<"Page", 'ContentStatus'>
+    readonly isLatest: FieldRef<"Page", 'Boolean'>
+    readonly editorType: FieldRef<"Page", 'PageEditorType'>
+    readonly puckData: FieldRef<"Page", 'Json'>
+    readonly rootId: FieldRef<"Page", 'String'>
+    readonly seoId: FieldRef<"Page", 'String'>
+    readonly userId: FieldRef<"Page", 'String'>
+    readonly firstPublishedAt: FieldRef<"Page", 'DateTime'>
+    readonly publishedAt: FieldRef<"Page", 'DateTime'>
+    readonly createdAt: FieldRef<"Page", 'DateTime'>
+    readonly updatedAt: FieldRef<"Page", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Page findUnique
+   */
+  export type PageFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Page
+     */
+    select?: PageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Page
+     */
+    omit?: PageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PageInclude<ExtArgs> | null
+    /**
+     * Filter, which Page to fetch.
+     */
+    where: PageWhereUniqueInput
+  }
+
+  /**
+   * Page findUniqueOrThrow
+   */
+  export type PageFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Page
+     */
+    select?: PageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Page
+     */
+    omit?: PageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PageInclude<ExtArgs> | null
+    /**
+     * Filter, which Page to fetch.
+     */
+    where: PageWhereUniqueInput
+  }
+
+  /**
+   * Page findFirst
+   */
+  export type PageFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Page
+     */
+    select?: PageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Page
+     */
+    omit?: PageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PageInclude<ExtArgs> | null
+    /**
+     * Filter, which Page to fetch.
+     */
+    where?: PageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Pages to fetch.
+     */
+    orderBy?: PageOrderByWithRelationInput | PageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Pages.
+     */
+    cursor?: PageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Pages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Pages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Pages.
+     */
+    distinct?: PageScalarFieldEnum | PageScalarFieldEnum[]
+  }
+
+  /**
+   * Page findFirstOrThrow
+   */
+  export type PageFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Page
+     */
+    select?: PageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Page
+     */
+    omit?: PageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PageInclude<ExtArgs> | null
+    /**
+     * Filter, which Page to fetch.
+     */
+    where?: PageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Pages to fetch.
+     */
+    orderBy?: PageOrderByWithRelationInput | PageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Pages.
+     */
+    cursor?: PageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Pages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Pages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Pages.
+     */
+    distinct?: PageScalarFieldEnum | PageScalarFieldEnum[]
+  }
+
+  /**
+   * Page findMany
+   */
+  export type PageFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Page
+     */
+    select?: PageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Page
+     */
+    omit?: PageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PageInclude<ExtArgs> | null
+    /**
+     * Filter, which Pages to fetch.
+     */
+    where?: PageWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Pages to fetch.
+     */
+    orderBy?: PageOrderByWithRelationInput | PageOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Pages.
+     */
+    cursor?: PageWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Pages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Pages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Pages.
+     */
+    distinct?: PageScalarFieldEnum | PageScalarFieldEnum[]
+  }
+
+  /**
+   * Page create
+   */
+  export type PageCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Page
+     */
+    select?: PageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Page
+     */
+    omit?: PageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PageInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Page.
+     */
+    data: XOR<PageCreateInput, PageUncheckedCreateInput>
+  }
+
+  /**
+   * Page createMany
+   */
+  export type PageCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Pages.
+     */
+    data: PageCreateManyInput | PageCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Page createManyAndReturn
+   */
+  export type PageCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Page
+     */
+    select?: PageSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Page
+     */
+    omit?: PageOmit<ExtArgs> | null
+    /**
+     * The data used to create many Pages.
+     */
+    data: PageCreateManyInput | PageCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PageIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Page update
+   */
+  export type PageUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Page
+     */
+    select?: PageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Page
+     */
+    omit?: PageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PageInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Page.
+     */
+    data: XOR<PageUpdateInput, PageUncheckedUpdateInput>
+    /**
+     * Choose, which Page to update.
+     */
+    where: PageWhereUniqueInput
+  }
+
+  /**
+   * Page updateMany
+   */
+  export type PageUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Pages.
+     */
+    data: XOR<PageUpdateManyMutationInput, PageUncheckedUpdateManyInput>
+    /**
+     * Filter which Pages to update
+     */
+    where?: PageWhereInput
+    /**
+     * Limit how many Pages to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Page updateManyAndReturn
+   */
+  export type PageUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Page
+     */
+    select?: PageSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Page
+     */
+    omit?: PageOmit<ExtArgs> | null
+    /**
+     * The data used to update Pages.
+     */
+    data: XOR<PageUpdateManyMutationInput, PageUncheckedUpdateManyInput>
+    /**
+     * Filter which Pages to update
+     */
+    where?: PageWhereInput
+    /**
+     * Limit how many Pages to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PageIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Page upsert
+   */
+  export type PageUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Page
+     */
+    select?: PageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Page
+     */
+    omit?: PageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PageInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Page to update in case it exists.
+     */
+    where: PageWhereUniqueInput
+    /**
+     * In case the Page found by the `where` argument doesn't exist, create a new Page with this data.
+     */
+    create: XOR<PageCreateInput, PageUncheckedCreateInput>
+    /**
+     * In case the Page was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PageUpdateInput, PageUncheckedUpdateInput>
+  }
+
+  /**
+   * Page delete
+   */
+  export type PageDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Page
+     */
+    select?: PageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Page
+     */
+    omit?: PageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PageInclude<ExtArgs> | null
+    /**
+     * Filter which Page to delete.
+     */
+    where: PageWhereUniqueInput
+  }
+
+  /**
+   * Page deleteMany
+   */
+  export type PageDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Pages to delete
+     */
+    where?: PageWhereInput
+    /**
+     * Limit how many Pages to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Page.root
+   */
+  export type Page$rootArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Page
+     */
+    select?: PageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Page
+     */
+    omit?: PageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PageInclude<ExtArgs> | null
+    where?: PageWhereInput
+  }
+
+  /**
+   * Page.rootChildren
+   */
+  export type Page$rootChildrenArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Page
+     */
+    select?: PageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Page
+     */
+    omit?: PageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PageInclude<ExtArgs> | null
+    where?: PageWhereInput
+    orderBy?: PageOrderByWithRelationInput | PageOrderByWithRelationInput[]
+    cursor?: PageWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PageScalarFieldEnum | PageScalarFieldEnum[]
+  }
+
+  /**
+   * Page.seo
+   */
+  export type Page$seoArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Seo
+     */
+    select?: SeoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Seo
+     */
+    omit?: SeoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SeoInclude<ExtArgs> | null
+    where?: SeoWhereInput
+  }
+
+  /**
+   * Page.user
+   */
+  export type Page$userArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+  }
+
+  /**
+   * Page without action
+   */
+  export type PageDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Page
+     */
+    select?: PageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Page
+     */
+    omit?: PageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PageInclude<ExtArgs> | null
   }
 
 
@@ -55855,6 +57388,27 @@ export namespace Prisma {
   export type SeoScalarFieldEnum = (typeof SeoScalarFieldEnum)[keyof typeof SeoScalarFieldEnum]
 
 
+  export const PageScalarFieldEnum: {
+    id: 'id',
+    title: 'title',
+    slug: 'slug',
+    version: 'version',
+    status: 'status',
+    isLatest: 'isLatest',
+    editorType: 'editorType',
+    puckData: 'puckData',
+    rootId: 'rootId',
+    seoId: 'seoId',
+    userId: 'userId',
+    firstPublishedAt: 'firstPublishedAt',
+    publishedAt: 'publishedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type PageScalarFieldEnum = (typeof PageScalarFieldEnum)[keyof typeof PageScalarFieldEnum]
+
+
   export const PostScalarFieldEnum: {
     id: 'id',
     title: 'title',
@@ -56508,6 +58062,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'PageEditorType'
+   */
+  export type EnumPageEditorTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PageEditorType'>
+    
+
+
+  /**
+   * Reference to a field of type 'PageEditorType[]'
+   */
+  export type ListEnumPageEditorTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PageEditorType[]'>
+    
+
+
+  /**
    * Reference to a field of type 'EditorType'
    */
   export type EnumEditorTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EditorType'>
@@ -57042,6 +58610,7 @@ export namespace Prisma {
     profileImage?: XOR<MediaNullableScalarRelationFilter, MediaWhereInput> | null
     accounts?: AccountListRelationFilter
     sessions?: SessionListRelationFilter
+    pages?: PageListRelationFilter
     posts?: PostListRelationFilter
     postAuthors?: PostAuthorListRelationFilter
     notifications?: NotificationListRelationFilter
@@ -57066,6 +58635,7 @@ export namespace Prisma {
     profileImage?: MediaOrderByWithRelationInput
     accounts?: AccountOrderByRelationAggregateInput
     sessions?: SessionOrderByRelationAggregateInput
+    pages?: PageOrderByRelationAggregateInput
     posts?: PostOrderByRelationAggregateInput
     postAuthors?: PostAuthorOrderByRelationAggregateInput
     notifications?: NotificationOrderByRelationAggregateInput
@@ -57093,6 +58663,7 @@ export namespace Prisma {
     profileImage?: XOR<MediaNullableScalarRelationFilter, MediaWhereInput> | null
     accounts?: AccountListRelationFilter
     sessions?: SessionListRelationFilter
+    pages?: PageListRelationFilter
     posts?: PostListRelationFilter
     postAuthors?: PostAuthorListRelationFilter
     notifications?: NotificationListRelationFilter
@@ -57446,6 +59017,7 @@ export namespace Prisma {
     root?: XOR<SeoNullableScalarRelationFilter, SeoWhereInput> | null
     rootChildren?: SeoListRelationFilter
     settings?: SettingsListRelationFilter
+    pages?: PageListRelationFilter
     posts?: PostListRelationFilter
     categories?: CategoryListRelationFilter
     tags?: TagListRelationFilter
@@ -57474,6 +59046,7 @@ export namespace Prisma {
     root?: SeoOrderByWithRelationInput
     rootChildren?: SeoOrderByRelationAggregateInput
     settings?: SettingsOrderByRelationAggregateInput
+    pages?: PageOrderByRelationAggregateInput
     posts?: PostOrderByRelationAggregateInput
     categories?: CategoryOrderByRelationAggregateInput
     tags?: TagOrderByRelationAggregateInput
@@ -57505,6 +59078,7 @@ export namespace Prisma {
     root?: XOR<SeoNullableScalarRelationFilter, SeoWhereInput> | null
     rootChildren?: SeoListRelationFilter
     settings?: SettingsListRelationFilter
+    pages?: PageListRelationFilter
     posts?: PostListRelationFilter
     categories?: CategoryListRelationFilter
     tags?: TagListRelationFilter
@@ -57556,6 +59130,122 @@ export namespace Prisma {
     rootId?: StringNullableWithAggregatesFilter<"Seo"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Seo"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Seo"> | Date | string
+  }
+
+  export type PageWhereInput = {
+    AND?: PageWhereInput | PageWhereInput[]
+    OR?: PageWhereInput[]
+    NOT?: PageWhereInput | PageWhereInput[]
+    id?: StringFilter<"Page"> | string
+    title?: StringFilter<"Page"> | string
+    slug?: StringFilter<"Page"> | string
+    version?: IntFilter<"Page"> | number
+    status?: EnumContentStatusFilter<"Page"> | $Enums.ContentStatus
+    isLatest?: BoolFilter<"Page"> | boolean
+    editorType?: EnumPageEditorTypeFilter<"Page"> | $Enums.PageEditorType
+    puckData?: JsonNullableFilter<"Page">
+    rootId?: StringNullableFilter<"Page"> | string | null
+    seoId?: StringNullableFilter<"Page"> | string | null
+    userId?: StringNullableFilter<"Page"> | string | null
+    firstPublishedAt?: DateTimeFilter<"Page"> | Date | string
+    publishedAt?: DateTimeFilter<"Page"> | Date | string
+    createdAt?: DateTimeFilter<"Page"> | Date | string
+    updatedAt?: DateTimeFilter<"Page"> | Date | string
+    root?: XOR<PageNullableScalarRelationFilter, PageWhereInput> | null
+    rootChildren?: PageListRelationFilter
+    seo?: XOR<SeoNullableScalarRelationFilter, SeoWhereInput> | null
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }
+
+  export type PageOrderByWithRelationInput = {
+    id?: SortOrder
+    title?: SortOrder
+    slug?: SortOrder
+    version?: SortOrder
+    status?: SortOrder
+    isLatest?: SortOrder
+    editorType?: SortOrder
+    puckData?: SortOrderInput | SortOrder
+    rootId?: SortOrderInput | SortOrder
+    seoId?: SortOrderInput | SortOrder
+    userId?: SortOrderInput | SortOrder
+    firstPublishedAt?: SortOrder
+    publishedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    root?: PageOrderByWithRelationInput
+    rootChildren?: PageOrderByRelationAggregateInput
+    seo?: SeoOrderByWithRelationInput
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type PageWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: PageWhereInput | PageWhereInput[]
+    OR?: PageWhereInput[]
+    NOT?: PageWhereInput | PageWhereInput[]
+    title?: StringFilter<"Page"> | string
+    slug?: StringFilter<"Page"> | string
+    version?: IntFilter<"Page"> | number
+    status?: EnumContentStatusFilter<"Page"> | $Enums.ContentStatus
+    isLatest?: BoolFilter<"Page"> | boolean
+    editorType?: EnumPageEditorTypeFilter<"Page"> | $Enums.PageEditorType
+    puckData?: JsonNullableFilter<"Page">
+    rootId?: StringNullableFilter<"Page"> | string | null
+    seoId?: StringNullableFilter<"Page"> | string | null
+    userId?: StringNullableFilter<"Page"> | string | null
+    firstPublishedAt?: DateTimeFilter<"Page"> | Date | string
+    publishedAt?: DateTimeFilter<"Page"> | Date | string
+    createdAt?: DateTimeFilter<"Page"> | Date | string
+    updatedAt?: DateTimeFilter<"Page"> | Date | string
+    root?: XOR<PageNullableScalarRelationFilter, PageWhereInput> | null
+    rootChildren?: PageListRelationFilter
+    seo?: XOR<SeoNullableScalarRelationFilter, SeoWhereInput> | null
+    user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
+  }, "id">
+
+  export type PageOrderByWithAggregationInput = {
+    id?: SortOrder
+    title?: SortOrder
+    slug?: SortOrder
+    version?: SortOrder
+    status?: SortOrder
+    isLatest?: SortOrder
+    editorType?: SortOrder
+    puckData?: SortOrderInput | SortOrder
+    rootId?: SortOrderInput | SortOrder
+    seoId?: SortOrderInput | SortOrder
+    userId?: SortOrderInput | SortOrder
+    firstPublishedAt?: SortOrder
+    publishedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: PageCountOrderByAggregateInput
+    _avg?: PageAvgOrderByAggregateInput
+    _max?: PageMaxOrderByAggregateInput
+    _min?: PageMinOrderByAggregateInput
+    _sum?: PageSumOrderByAggregateInput
+  }
+
+  export type PageScalarWhereWithAggregatesInput = {
+    AND?: PageScalarWhereWithAggregatesInput | PageScalarWhereWithAggregatesInput[]
+    OR?: PageScalarWhereWithAggregatesInput[]
+    NOT?: PageScalarWhereWithAggregatesInput | PageScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Page"> | string
+    title?: StringWithAggregatesFilter<"Page"> | string
+    slug?: StringWithAggregatesFilter<"Page"> | string
+    version?: IntWithAggregatesFilter<"Page"> | number
+    status?: EnumContentStatusWithAggregatesFilter<"Page"> | $Enums.ContentStatus
+    isLatest?: BoolWithAggregatesFilter<"Page"> | boolean
+    editorType?: EnumPageEditorTypeWithAggregatesFilter<"Page"> | $Enums.PageEditorType
+    puckData?: JsonNullableWithAggregatesFilter<"Page">
+    rootId?: StringNullableWithAggregatesFilter<"Page"> | string | null
+    seoId?: StringNullableWithAggregatesFilter<"Page"> | string | null
+    userId?: StringNullableWithAggregatesFilter<"Page"> | string | null
+    firstPublishedAt?: DateTimeWithAggregatesFilter<"Page"> | Date | string
+    publishedAt?: DateTimeWithAggregatesFilter<"Page"> | Date | string
+    createdAt?: DateTimeWithAggregatesFilter<"Page"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Page"> | Date | string
   }
 
   export type PostWhereInput = {
@@ -60442,6 +62132,7 @@ export namespace Prisma {
     profileImage?: MediaCreateNestedOneWithoutUserInput
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
+    pages?: PageCreateNestedManyWithoutUserInput
     posts?: PostCreateNestedManyWithoutUserInput
     postAuthors?: PostAuthorCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
@@ -60465,6 +62156,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    pages?: PageUncheckedCreateNestedManyWithoutUserInput
     posts?: PostUncheckedCreateNestedManyWithoutUserInput
     postAuthors?: PostAuthorUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
@@ -60488,6 +62180,7 @@ export namespace Prisma {
     profileImage?: MediaUpdateOneWithoutUserNestedInput
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
+    pages?: PageUpdateManyWithoutUserNestedInput
     posts?: PostUpdateManyWithoutUserNestedInput
     postAuthors?: PostAuthorUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
@@ -60511,6 +62204,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    pages?: PageUncheckedUpdateManyWithoutUserNestedInput
     posts?: PostUncheckedUpdateManyWithoutUserNestedInput
     postAuthors?: PostAuthorUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
@@ -60903,6 +62597,7 @@ export namespace Prisma {
     root?: SeoCreateNestedOneWithoutRootChildrenInput
     rootChildren?: SeoCreateNestedManyWithoutRootInput
     settings?: SettingsCreateNestedManyWithoutSeoInput
+    pages?: PageCreateNestedManyWithoutSeoInput
     posts?: PostCreateNestedManyWithoutSeoInput
     categories?: CategoryCreateNestedManyWithoutSeoInput
     tags?: TagCreateNestedManyWithoutSeoInput
@@ -60929,6 +62624,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     rootChildren?: SeoUncheckedCreateNestedManyWithoutRootInput
     settings?: SettingsUncheckedCreateNestedManyWithoutSeoInput
+    pages?: PageUncheckedCreateNestedManyWithoutSeoInput
     posts?: PostUncheckedCreateNestedManyWithoutSeoInput
     categories?: CategoryUncheckedCreateNestedManyWithoutSeoInput
     tags?: TagUncheckedCreateNestedManyWithoutSeoInput
@@ -60955,6 +62651,7 @@ export namespace Prisma {
     root?: SeoUpdateOneWithoutRootChildrenNestedInput
     rootChildren?: SeoUpdateManyWithoutRootNestedInput
     settings?: SettingsUpdateManyWithoutSeoNestedInput
+    pages?: PageUpdateManyWithoutSeoNestedInput
     posts?: PostUpdateManyWithoutSeoNestedInput
     categories?: CategoryUpdateManyWithoutSeoNestedInput
     tags?: TagUpdateManyWithoutSeoNestedInput
@@ -60981,6 +62678,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rootChildren?: SeoUncheckedUpdateManyWithoutRootNestedInput
     settings?: SettingsUncheckedUpdateManyWithoutSeoNestedInput
+    pages?: PageUncheckedUpdateManyWithoutSeoNestedInput
     posts?: PostUncheckedUpdateManyWithoutSeoNestedInput
     categories?: CategoryUncheckedUpdateManyWithoutSeoNestedInput
     tags?: TagUncheckedUpdateManyWithoutSeoNestedInput
@@ -61039,6 +62737,133 @@ export namespace Prisma {
     ogTwitterLocale?: NullableStringFieldUpdateOperationsInput | string | null
     ogTwitterUrl?: NullableStringFieldUpdateOperationsInput | string | null
     rootId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PageCreateInput = {
+    id?: string
+    title: string
+    slug: string
+    version: number
+    status?: $Enums.ContentStatus
+    isLatest?: boolean
+    editorType?: $Enums.PageEditorType
+    puckData?:unknown | NullableJsonNullValueInput
+    firstPublishedAt?: Date | string
+    publishedAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    root?: PageCreateNestedOneWithoutRootChildrenInput
+    rootChildren?: PageCreateNestedManyWithoutRootInput
+    seo?: SeoCreateNestedOneWithoutPagesInput
+    user?: UserCreateNestedOneWithoutPagesInput
+  }
+
+  export type PageUncheckedCreateInput = {
+    id?: string
+    title: string
+    slug: string
+    version: number
+    status?: $Enums.ContentStatus
+    isLatest?: boolean
+    editorType?: $Enums.PageEditorType
+    puckData?:unknown | NullableJsonNullValueInput
+    rootId?: string | null
+    seoId?: string | null
+    userId?: string | null
+    firstPublishedAt?: Date | string
+    publishedAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    rootChildren?: PageUncheckedCreateNestedManyWithoutRootInput
+  }
+
+  export type PageUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    version?: IntFieldUpdateOperationsInput | number
+    status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
+    isLatest?: BoolFieldUpdateOperationsInput | boolean
+    editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
+    puckData?:unknown | NullableJsonNullValueInput
+    firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    root?: PageUpdateOneWithoutRootChildrenNestedInput
+    rootChildren?: PageUpdateManyWithoutRootNestedInput
+    seo?: SeoUpdateOneWithoutPagesNestedInput
+    user?: UserUpdateOneWithoutPagesNestedInput
+  }
+
+  export type PageUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    version?: IntFieldUpdateOperationsInput | number
+    status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
+    isLatest?: BoolFieldUpdateOperationsInput | boolean
+    editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
+    puckData?:unknown | NullableJsonNullValueInput
+    rootId?: NullableStringFieldUpdateOperationsInput | string | null
+    seoId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    rootChildren?: PageUncheckedUpdateManyWithoutRootNestedInput
+  }
+
+  export type PageCreateManyInput = {
+    id?: string
+    title: string
+    slug: string
+    version: number
+    status?: $Enums.ContentStatus
+    isLatest?: boolean
+    editorType?: $Enums.PageEditorType
+    puckData?:unknown | NullableJsonNullValueInput
+    rootId?: string | null
+    seoId?: string | null
+    userId?: string | null
+    firstPublishedAt?: Date | string
+    publishedAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PageUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    version?: IntFieldUpdateOperationsInput | number
+    status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
+    isLatest?: BoolFieldUpdateOperationsInput | boolean
+    editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
+    puckData?:unknown | NullableJsonNullValueInput
+    firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PageUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    version?: IntFieldUpdateOperationsInput | number
+    status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
+    isLatest?: BoolFieldUpdateOperationsInput | boolean
+    editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
+    puckData?:unknown | NullableJsonNullValueInput
+    rootId?: NullableStringFieldUpdateOperationsInput | string | null
+    seoId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -64193,6 +66018,12 @@ export namespace Prisma {
     none?: SessionWhereInput
   }
 
+  export type PageListRelationFilter = {
+    every?: PageWhereInput
+    some?: PageWhereInput
+    none?: PageWhereInput
+  }
+
   export type PostListRelationFilter = {
     every?: PostWhereInput
     some?: PostWhereInput
@@ -64222,6 +66053,10 @@ export namespace Prisma {
   }
 
   export type SessionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type PageOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -64662,6 +66497,103 @@ export namespace Prisma {
     not?: NestedEnumContentStatusFilter<$PrismaModel> | $Enums.ContentStatus
   }
 
+  export type EnumPageEditorTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.PageEditorType | EnumPageEditorTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.PageEditorType[] | ListEnumPageEditorTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PageEditorType[] | ListEnumPageEditorTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumPageEditorTypeFilter<$PrismaModel> | $Enums.PageEditorType
+  }
+
+  export type PageNullableScalarRelationFilter = {
+    is?: PageWhereInput | null
+    isNot?: PageWhereInput | null
+  }
+
+  export type UserNullableScalarRelationFilter = {
+    is?: UserWhereInput | null
+    isNot?: UserWhereInput | null
+  }
+
+  export type PageCountOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    slug?: SortOrder
+    version?: SortOrder
+    status?: SortOrder
+    isLatest?: SortOrder
+    editorType?: SortOrder
+    puckData?: SortOrder
+    rootId?: SortOrder
+    seoId?: SortOrder
+    userId?: SortOrder
+    firstPublishedAt?: SortOrder
+    publishedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PageAvgOrderByAggregateInput = {
+    version?: SortOrder
+  }
+
+  export type PageMaxOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    slug?: SortOrder
+    version?: SortOrder
+    status?: SortOrder
+    isLatest?: SortOrder
+    editorType?: SortOrder
+    rootId?: SortOrder
+    seoId?: SortOrder
+    userId?: SortOrder
+    firstPublishedAt?: SortOrder
+    publishedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PageMinOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    slug?: SortOrder
+    version?: SortOrder
+    status?: SortOrder
+    isLatest?: SortOrder
+    editorType?: SortOrder
+    rootId?: SortOrder
+    seoId?: SortOrder
+    userId?: SortOrder
+    firstPublishedAt?: SortOrder
+    publishedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PageSumOrderByAggregateInput = {
+    version?: SortOrder
+  }
+
+  export type EnumContentStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContentStatus | EnumContentStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ContentStatus[] | ListEnumContentStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ContentStatus[] | ListEnumContentStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumContentStatusWithAggregatesFilter<$PrismaModel> | $Enums.ContentStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumContentStatusFilter<$PrismaModel>
+    _max?: NestedEnumContentStatusFilter<$PrismaModel>
+  }
+
+  export type EnumPageEditorTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.PageEditorType | EnumPageEditorTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.PageEditorType[] | ListEnumPageEditorTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PageEditorType[] | ListEnumPageEditorTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumPageEditorTypeWithAggregatesFilter<$PrismaModel> | $Enums.PageEditorType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumPageEditorTypeFilter<$PrismaModel>
+    _max?: NestedEnumPageEditorTypeFilter<$PrismaModel>
+  }
+
   export type EnumEditorTypeFilter<$PrismaModel = never> = {
     equals?: $Enums.EditorType | EnumEditorTypeFieldRefInput<$PrismaModel>
     in?: $Enums.EditorType[] | ListEnumEditorTypeFieldRefInput<$PrismaModel>
@@ -64678,11 +66610,6 @@ export namespace Prisma {
     every?: PostCategoryWhereInput
     some?: PostCategoryWhereInput
     none?: PostCategoryWhereInput
-  }
-
-  export type UserNullableScalarRelationFilter = {
-    is?: UserWhereInput | null
-    isNot?: UserWhereInput | null
   }
 
   export type PostCategoryOrderByRelationAggregateInput = {
@@ -64754,16 +66681,6 @@ export namespace Prisma {
 
   export type PostSumOrderByAggregateInput = {
     version?: SortOrder
-  }
-
-  export type EnumContentStatusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.ContentStatus | EnumContentStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.ContentStatus[] | ListEnumContentStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.ContentStatus[] | ListEnumContentStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumContentStatusWithAggregatesFilter<$PrismaModel> | $Enums.ContentStatus
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumContentStatusFilter<$PrismaModel>
-    _max?: NestedEnumContentStatusFilter<$PrismaModel>
   }
 
   export type EnumEditorTypeWithAggregatesFilter<$PrismaModel = never> = {
@@ -66496,6 +68413,13 @@ export namespace Prisma {
     connect?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
   }
 
+  export type PageCreateNestedManyWithoutUserInput = {
+    create?: XOR<PageCreateWithoutUserInput, PageUncheckedCreateWithoutUserInput> | PageCreateWithoutUserInput[] | PageUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PageCreateOrConnectWithoutUserInput | PageCreateOrConnectWithoutUserInput[]
+    createMany?: PageCreateManyUserInputEnvelope
+    connect?: PageWhereUniqueInput | PageWhereUniqueInput[]
+  }
+
   export type PostCreateNestedManyWithoutUserInput = {
     create?: XOR<PostCreateWithoutUserInput, PostUncheckedCreateWithoutUserInput> | PostCreateWithoutUserInput[] | PostUncheckedCreateWithoutUserInput[]
     connectOrCreate?: PostCreateOrConnectWithoutUserInput | PostCreateOrConnectWithoutUserInput[]
@@ -66536,6 +68460,13 @@ export namespace Prisma {
     connectOrCreate?: SessionCreateOrConnectWithoutUserInput | SessionCreateOrConnectWithoutUserInput[]
     createMany?: SessionCreateManyUserInputEnvelope
     connect?: SessionWhereUniqueInput | SessionWhereUniqueInput[]
+  }
+
+  export type PageUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<PageCreateWithoutUserInput, PageUncheckedCreateWithoutUserInput> | PageCreateWithoutUserInput[] | PageUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PageCreateOrConnectWithoutUserInput | PageCreateOrConnectWithoutUserInput[]
+    createMany?: PageCreateManyUserInputEnvelope
+    connect?: PageWhereUniqueInput | PageWhereUniqueInput[]
   }
 
   export type PostUncheckedCreateNestedManyWithoutUserInput = {
@@ -66606,6 +68537,20 @@ export namespace Prisma {
     update?: SessionUpdateWithWhereUniqueWithoutUserInput | SessionUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: SessionUpdateManyWithWhereWithoutUserInput | SessionUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: SessionScalarWhereInput | SessionScalarWhereInput[]
+  }
+
+  export type PageUpdateManyWithoutUserNestedInput = {
+    create?: XOR<PageCreateWithoutUserInput, PageUncheckedCreateWithoutUserInput> | PageCreateWithoutUserInput[] | PageUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PageCreateOrConnectWithoutUserInput | PageCreateOrConnectWithoutUserInput[]
+    upsert?: PageUpsertWithWhereUniqueWithoutUserInput | PageUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: PageCreateManyUserInputEnvelope
+    set?: PageWhereUniqueInput | PageWhereUniqueInput[]
+    disconnect?: PageWhereUniqueInput | PageWhereUniqueInput[]
+    delete?: PageWhereUniqueInput | PageWhereUniqueInput[]
+    connect?: PageWhereUniqueInput | PageWhereUniqueInput[]
+    update?: PageUpdateWithWhereUniqueWithoutUserInput | PageUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: PageUpdateManyWithWhereWithoutUserInput | PageUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: PageScalarWhereInput | PageScalarWhereInput[]
   }
 
   export type PostUpdateManyWithoutUserNestedInput = {
@@ -66690,6 +68635,20 @@ export namespace Prisma {
     update?: SessionUpdateWithWhereUniqueWithoutUserInput | SessionUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: SessionUpdateManyWithWhereWithoutUserInput | SessionUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: SessionScalarWhereInput | SessionScalarWhereInput[]
+  }
+
+  export type PageUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<PageCreateWithoutUserInput, PageUncheckedCreateWithoutUserInput> | PageCreateWithoutUserInput[] | PageUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PageCreateOrConnectWithoutUserInput | PageCreateOrConnectWithoutUserInput[]
+    upsert?: PageUpsertWithWhereUniqueWithoutUserInput | PageUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: PageCreateManyUserInputEnvelope
+    set?: PageWhereUniqueInput | PageWhereUniqueInput[]
+    disconnect?: PageWhereUniqueInput | PageWhereUniqueInput[]
+    delete?: PageWhereUniqueInput | PageWhereUniqueInput[]
+    connect?: PageWhereUniqueInput | PageWhereUniqueInput[]
+    update?: PageUpdateWithWhereUniqueWithoutUserInput | PageUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: PageUpdateManyWithWhereWithoutUserInput | PageUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: PageScalarWhereInput | PageScalarWhereInput[]
   }
 
   export type PostUncheckedUpdateManyWithoutUserNestedInput = {
@@ -67046,6 +69005,13 @@ export namespace Prisma {
     connect?: SettingsWhereUniqueInput | SettingsWhereUniqueInput[]
   }
 
+  export type PageCreateNestedManyWithoutSeoInput = {
+    create?: XOR<PageCreateWithoutSeoInput, PageUncheckedCreateWithoutSeoInput> | PageCreateWithoutSeoInput[] | PageUncheckedCreateWithoutSeoInput[]
+    connectOrCreate?: PageCreateOrConnectWithoutSeoInput | PageCreateOrConnectWithoutSeoInput[]
+    createMany?: PageCreateManySeoInputEnvelope
+    connect?: PageWhereUniqueInput | PageWhereUniqueInput[]
+  }
+
   export type PostCreateNestedManyWithoutSeoInput = {
     create?: XOR<PostCreateWithoutSeoInput, PostUncheckedCreateWithoutSeoInput> | PostCreateWithoutSeoInput[] | PostUncheckedCreateWithoutSeoInput[]
     connectOrCreate?: PostCreateOrConnectWithoutSeoInput | PostCreateOrConnectWithoutSeoInput[]
@@ -67093,6 +69059,13 @@ export namespace Prisma {
     connectOrCreate?: SettingsCreateOrConnectWithoutSeoInput | SettingsCreateOrConnectWithoutSeoInput[]
     createMany?: SettingsCreateManySeoInputEnvelope
     connect?: SettingsWhereUniqueInput | SettingsWhereUniqueInput[]
+  }
+
+  export type PageUncheckedCreateNestedManyWithoutSeoInput = {
+    create?: XOR<PageCreateWithoutSeoInput, PageUncheckedCreateWithoutSeoInput> | PageCreateWithoutSeoInput[] | PageUncheckedCreateWithoutSeoInput[]
+    connectOrCreate?: PageCreateOrConnectWithoutSeoInput | PageCreateOrConnectWithoutSeoInput[]
+    createMany?: PageCreateManySeoInputEnvelope
+    connect?: PageWhereUniqueInput | PageWhereUniqueInput[]
   }
 
   export type PostUncheckedCreateNestedManyWithoutSeoInput = {
@@ -67176,6 +69149,20 @@ export namespace Prisma {
     update?: SettingsUpdateWithWhereUniqueWithoutSeoInput | SettingsUpdateWithWhereUniqueWithoutSeoInput[]
     updateMany?: SettingsUpdateManyWithWhereWithoutSeoInput | SettingsUpdateManyWithWhereWithoutSeoInput[]
     deleteMany?: SettingsScalarWhereInput | SettingsScalarWhereInput[]
+  }
+
+  export type PageUpdateManyWithoutSeoNestedInput = {
+    create?: XOR<PageCreateWithoutSeoInput, PageUncheckedCreateWithoutSeoInput> | PageCreateWithoutSeoInput[] | PageUncheckedCreateWithoutSeoInput[]
+    connectOrCreate?: PageCreateOrConnectWithoutSeoInput | PageCreateOrConnectWithoutSeoInput[]
+    upsert?: PageUpsertWithWhereUniqueWithoutSeoInput | PageUpsertWithWhereUniqueWithoutSeoInput[]
+    createMany?: PageCreateManySeoInputEnvelope
+    set?: PageWhereUniqueInput | PageWhereUniqueInput[]
+    disconnect?: PageWhereUniqueInput | PageWhereUniqueInput[]
+    delete?: PageWhereUniqueInput | PageWhereUniqueInput[]
+    connect?: PageWhereUniqueInput | PageWhereUniqueInput[]
+    update?: PageUpdateWithWhereUniqueWithoutSeoInput | PageUpdateWithWhereUniqueWithoutSeoInput[]
+    updateMany?: PageUpdateManyWithWhereWithoutSeoInput | PageUpdateManyWithWhereWithoutSeoInput[]
+    deleteMany?: PageScalarWhereInput | PageScalarWhereInput[]
   }
 
   export type PostUpdateManyWithoutSeoNestedInput = {
@@ -67276,6 +69263,20 @@ export namespace Prisma {
     deleteMany?: SettingsScalarWhereInput | SettingsScalarWhereInput[]
   }
 
+  export type PageUncheckedUpdateManyWithoutSeoNestedInput = {
+    create?: XOR<PageCreateWithoutSeoInput, PageUncheckedCreateWithoutSeoInput> | PageCreateWithoutSeoInput[] | PageUncheckedCreateWithoutSeoInput[]
+    connectOrCreate?: PageCreateOrConnectWithoutSeoInput | PageCreateOrConnectWithoutSeoInput[]
+    upsert?: PageUpsertWithWhereUniqueWithoutSeoInput | PageUpsertWithWhereUniqueWithoutSeoInput[]
+    createMany?: PageCreateManySeoInputEnvelope
+    set?: PageWhereUniqueInput | PageWhereUniqueInput[]
+    disconnect?: PageWhereUniqueInput | PageWhereUniqueInput[]
+    delete?: PageWhereUniqueInput | PageWhereUniqueInput[]
+    connect?: PageWhereUniqueInput | PageWhereUniqueInput[]
+    update?: PageUpdateWithWhereUniqueWithoutSeoInput | PageUpdateWithWhereUniqueWithoutSeoInput[]
+    updateMany?: PageUpdateManyWithWhereWithoutSeoInput | PageUpdateManyWithWhereWithoutSeoInput[]
+    deleteMany?: PageScalarWhereInput | PageScalarWhereInput[]
+  }
+
   export type PostUncheckedUpdateManyWithoutSeoNestedInput = {
     create?: XOR<PostCreateWithoutSeoInput, PostUncheckedCreateWithoutSeoInput> | PostCreateWithoutSeoInput[] | PostUncheckedCreateWithoutSeoInput[]
     connectOrCreate?: PostCreateOrConnectWithoutSeoInput | PostCreateOrConnectWithoutSeoInput[]
@@ -67344,6 +69345,104 @@ export namespace Prisma {
     update?: ProductCategoryUpdateWithWhereUniqueWithoutSeoInput | ProductCategoryUpdateWithWhereUniqueWithoutSeoInput[]
     updateMany?: ProductCategoryUpdateManyWithWhereWithoutSeoInput | ProductCategoryUpdateManyWithWhereWithoutSeoInput[]
     deleteMany?: ProductCategoryScalarWhereInput | ProductCategoryScalarWhereInput[]
+  }
+
+  export type PageCreateNestedOneWithoutRootChildrenInput = {
+    create?: XOR<PageCreateWithoutRootChildrenInput, PageUncheckedCreateWithoutRootChildrenInput>
+    connectOrCreate?: PageCreateOrConnectWithoutRootChildrenInput
+    connect?: PageWhereUniqueInput
+  }
+
+  export type PageCreateNestedManyWithoutRootInput = {
+    create?: XOR<PageCreateWithoutRootInput, PageUncheckedCreateWithoutRootInput> | PageCreateWithoutRootInput[] | PageUncheckedCreateWithoutRootInput[]
+    connectOrCreate?: PageCreateOrConnectWithoutRootInput | PageCreateOrConnectWithoutRootInput[]
+    createMany?: PageCreateManyRootInputEnvelope
+    connect?: PageWhereUniqueInput | PageWhereUniqueInput[]
+  }
+
+  export type SeoCreateNestedOneWithoutPagesInput = {
+    create?: XOR<SeoCreateWithoutPagesInput, SeoUncheckedCreateWithoutPagesInput>
+    connectOrCreate?: SeoCreateOrConnectWithoutPagesInput
+    connect?: SeoWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutPagesInput = {
+    create?: XOR<UserCreateWithoutPagesInput, UserUncheckedCreateWithoutPagesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPagesInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type PageUncheckedCreateNestedManyWithoutRootInput = {
+    create?: XOR<PageCreateWithoutRootInput, PageUncheckedCreateWithoutRootInput> | PageCreateWithoutRootInput[] | PageUncheckedCreateWithoutRootInput[]
+    connectOrCreate?: PageCreateOrConnectWithoutRootInput | PageCreateOrConnectWithoutRootInput[]
+    createMany?: PageCreateManyRootInputEnvelope
+    connect?: PageWhereUniqueInput | PageWhereUniqueInput[]
+  }
+
+  export type EnumContentStatusFieldUpdateOperationsInput = {
+    set?: $Enums.ContentStatus
+  }
+
+  export type EnumPageEditorTypeFieldUpdateOperationsInput = {
+    set?: $Enums.PageEditorType
+  }
+
+  export type PageUpdateOneWithoutRootChildrenNestedInput = {
+    create?: XOR<PageCreateWithoutRootChildrenInput, PageUncheckedCreateWithoutRootChildrenInput>
+    connectOrCreate?: PageCreateOrConnectWithoutRootChildrenInput
+    upsert?: PageUpsertWithoutRootChildrenInput
+    disconnect?: PageWhereInput | boolean
+    delete?: PageWhereInput | boolean
+    connect?: PageWhereUniqueInput
+    update?: XOR<XOR<PageUpdateToOneWithWhereWithoutRootChildrenInput, PageUpdateWithoutRootChildrenInput>, PageUncheckedUpdateWithoutRootChildrenInput>
+  }
+
+  export type PageUpdateManyWithoutRootNestedInput = {
+    create?: XOR<PageCreateWithoutRootInput, PageUncheckedCreateWithoutRootInput> | PageCreateWithoutRootInput[] | PageUncheckedCreateWithoutRootInput[]
+    connectOrCreate?: PageCreateOrConnectWithoutRootInput | PageCreateOrConnectWithoutRootInput[]
+    upsert?: PageUpsertWithWhereUniqueWithoutRootInput | PageUpsertWithWhereUniqueWithoutRootInput[]
+    createMany?: PageCreateManyRootInputEnvelope
+    set?: PageWhereUniqueInput | PageWhereUniqueInput[]
+    disconnect?: PageWhereUniqueInput | PageWhereUniqueInput[]
+    delete?: PageWhereUniqueInput | PageWhereUniqueInput[]
+    connect?: PageWhereUniqueInput | PageWhereUniqueInput[]
+    update?: PageUpdateWithWhereUniqueWithoutRootInput | PageUpdateWithWhereUniqueWithoutRootInput[]
+    updateMany?: PageUpdateManyWithWhereWithoutRootInput | PageUpdateManyWithWhereWithoutRootInput[]
+    deleteMany?: PageScalarWhereInput | PageScalarWhereInput[]
+  }
+
+  export type SeoUpdateOneWithoutPagesNestedInput = {
+    create?: XOR<SeoCreateWithoutPagesInput, SeoUncheckedCreateWithoutPagesInput>
+    connectOrCreate?: SeoCreateOrConnectWithoutPagesInput
+    upsert?: SeoUpsertWithoutPagesInput
+    disconnect?: SeoWhereInput | boolean
+    delete?: SeoWhereInput | boolean
+    connect?: SeoWhereUniqueInput
+    update?: XOR<XOR<SeoUpdateToOneWithWhereWithoutPagesInput, SeoUpdateWithoutPagesInput>, SeoUncheckedUpdateWithoutPagesInput>
+  }
+
+  export type UserUpdateOneWithoutPagesNestedInput = {
+    create?: XOR<UserCreateWithoutPagesInput, UserUncheckedCreateWithoutPagesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPagesInput
+    upsert?: UserUpsertWithoutPagesInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutPagesInput, UserUpdateWithoutPagesInput>, UserUncheckedUpdateWithoutPagesInput>
+  }
+
+  export type PageUncheckedUpdateManyWithoutRootNestedInput = {
+    create?: XOR<PageCreateWithoutRootInput, PageUncheckedCreateWithoutRootInput> | PageCreateWithoutRootInput[] | PageUncheckedCreateWithoutRootInput[]
+    connectOrCreate?: PageCreateOrConnectWithoutRootInput | PageCreateOrConnectWithoutRootInput[]
+    upsert?: PageUpsertWithWhereUniqueWithoutRootInput | PageUpsertWithWhereUniqueWithoutRootInput[]
+    createMany?: PageCreateManyRootInputEnvelope
+    set?: PageWhereUniqueInput | PageWhereUniqueInput[]
+    disconnect?: PageWhereUniqueInput | PageWhereUniqueInput[]
+    delete?: PageWhereUniqueInput | PageWhereUniqueInput[]
+    connect?: PageWhereUniqueInput | PageWhereUniqueInput[]
+    update?: PageUpdateWithWhereUniqueWithoutRootInput | PageUpdateWithWhereUniqueWithoutRootInput[]
+    updateMany?: PageUpdateManyWithWhereWithoutRootInput | PageUpdateManyWithWhereWithoutRootInput[]
+    deleteMany?: PageScalarWhereInput | PageScalarWhereInput[]
   }
 
   export type PostCreateNestedOneWithoutRootChildrenInput = {
@@ -67422,10 +69521,6 @@ export namespace Prisma {
     connectOrCreate?: PostAuthorCreateOrConnectWithoutPostInput | PostAuthorCreateOrConnectWithoutPostInput[]
     createMany?: PostAuthorCreateManyPostInputEnvelope
     connect?: PostAuthorWhereUniqueInput | PostAuthorWhereUniqueInput[]
-  }
-
-  export type EnumContentStatusFieldUpdateOperationsInput = {
-    set?: $Enums.ContentStatus
   }
 
   export type EnumEditorTypeFieldUpdateOperationsInput = {
@@ -69669,11 +71764,11 @@ export namespace Prisma {
     not?: NestedEnumContentStatusFilter<$PrismaModel> | $Enums.ContentStatus
   }
 
-  export type NestedEnumEditorTypeFilter<$PrismaModel = never> = {
-    equals?: $Enums.EditorType | EnumEditorTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.EditorType[] | ListEnumEditorTypeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.EditorType[] | ListEnumEditorTypeFieldRefInput<$PrismaModel>
-    not?: NestedEnumEditorTypeFilter<$PrismaModel> | $Enums.EditorType
+  export type NestedEnumPageEditorTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.PageEditorType | EnumPageEditorTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.PageEditorType[] | ListEnumPageEditorTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PageEditorType[] | ListEnumPageEditorTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumPageEditorTypeFilter<$PrismaModel> | $Enums.PageEditorType
   }
 
   export type NestedEnumContentStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -69684,6 +71779,23 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumContentStatusFilter<$PrismaModel>
     _max?: NestedEnumContentStatusFilter<$PrismaModel>
+  }
+
+  export type NestedEnumPageEditorTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.PageEditorType | EnumPageEditorTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.PageEditorType[] | ListEnumPageEditorTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.PageEditorType[] | ListEnumPageEditorTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumPageEditorTypeWithAggregatesFilter<$PrismaModel> | $Enums.PageEditorType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumPageEditorTypeFilter<$PrismaModel>
+    _max?: NestedEnumPageEditorTypeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumEditorTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.EditorType | EnumEditorTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.EditorType[] | ListEnumEditorTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.EditorType[] | ListEnumEditorTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumEditorTypeFilter<$PrismaModel> | $Enums.EditorType
   }
 
   export type NestedEnumEditorTypeWithAggregatesFilter<$PrismaModel = never> = {
@@ -69916,6 +72028,7 @@ export namespace Prisma {
     ogTwitterImage?: MediaCreateNestedOneWithoutSeoInput
     root?: SeoCreateNestedOneWithoutRootChildrenInput
     rootChildren?: SeoCreateNestedManyWithoutRootInput
+    pages?: PageCreateNestedManyWithoutSeoInput
     posts?: PostCreateNestedManyWithoutSeoInput
     categories?: CategoryCreateNestedManyWithoutSeoInput
     tags?: TagCreateNestedManyWithoutSeoInput
@@ -69941,6 +72054,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     rootChildren?: SeoUncheckedCreateNestedManyWithoutRootInput
+    pages?: PageUncheckedCreateNestedManyWithoutSeoInput
     posts?: PostUncheckedCreateNestedManyWithoutSeoInput
     categories?: CategoryUncheckedCreateNestedManyWithoutSeoInput
     tags?: TagUncheckedCreateNestedManyWithoutSeoInput
@@ -69982,6 +72096,7 @@ export namespace Prisma {
     ogTwitterImage?: MediaUpdateOneWithoutSeoNestedInput
     root?: SeoUpdateOneWithoutRootChildrenNestedInput
     rootChildren?: SeoUpdateManyWithoutRootNestedInput
+    pages?: PageUpdateManyWithoutSeoNestedInput
     posts?: PostUpdateManyWithoutSeoNestedInput
     categories?: CategoryUpdateManyWithoutSeoNestedInput
     tags?: TagUpdateManyWithoutSeoNestedInput
@@ -70007,6 +72122,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rootChildren?: SeoUncheckedUpdateManyWithoutRootNestedInput
+    pages?: PageUncheckedUpdateManyWithoutSeoNestedInput
     posts?: PostUncheckedUpdateManyWithoutSeoNestedInput
     categories?: CategoryUncheckedUpdateManyWithoutSeoNestedInput
     tags?: TagUncheckedUpdateManyWithoutSeoNestedInput
@@ -70030,6 +72146,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     profileImage?: MediaCreateNestedOneWithoutUserInput
     accounts?: AccountCreateNestedManyWithoutUserInput
+    pages?: PageCreateNestedManyWithoutUserInput
     posts?: PostCreateNestedManyWithoutUserInput
     postAuthors?: PostAuthorCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
@@ -70052,6 +72169,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    pages?: PageUncheckedCreateNestedManyWithoutUserInput
     posts?: PostUncheckedCreateNestedManyWithoutUserInput
     postAuthors?: PostAuthorUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
@@ -70090,6 +72208,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profileImage?: MediaUpdateOneWithoutUserNestedInput
     accounts?: AccountUpdateManyWithoutUserNestedInput
+    pages?: PageUpdateManyWithoutUserNestedInput
     posts?: PostUpdateManyWithoutUserNestedInput
     postAuthors?: PostAuthorUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
@@ -70112,6 +72231,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    pages?: PageUncheckedUpdateManyWithoutUserNestedInput
     posts?: PostUncheckedUpdateManyWithoutUserNestedInput
     postAuthors?: PostAuthorUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
@@ -70224,6 +72344,52 @@ export namespace Prisma {
 
   export type SessionCreateManyUserInputEnvelope = {
     data: SessionCreateManyUserInput | SessionCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type PageCreateWithoutUserInput = {
+    id?: string
+    title: string
+    slug: string
+    version: number
+    status?: $Enums.ContentStatus
+    isLatest?: boolean
+    editorType?: $Enums.PageEditorType
+    puckData?:unknown | NullableJsonNullValueInput
+    firstPublishedAt?: Date | string
+    publishedAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    root?: PageCreateNestedOneWithoutRootChildrenInput
+    rootChildren?: PageCreateNestedManyWithoutRootInput
+    seo?: SeoCreateNestedOneWithoutPagesInput
+  }
+
+  export type PageUncheckedCreateWithoutUserInput = {
+    id?: string
+    title: string
+    slug: string
+    version: number
+    status?: $Enums.ContentStatus
+    isLatest?: boolean
+    editorType?: $Enums.PageEditorType
+    puckData?:unknown | NullableJsonNullValueInput
+    rootId?: string | null
+    seoId?: string | null
+    firstPublishedAt?: Date | string
+    publishedAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    rootChildren?: PageUncheckedCreateNestedManyWithoutRootInput
+  }
+
+  export type PageCreateOrConnectWithoutUserInput = {
+    where: PageWhereUniqueInput
+    create: XOR<PageCreateWithoutUserInput, PageUncheckedCreateWithoutUserInput>
+  }
+
+  export type PageCreateManyUserInputEnvelope = {
+    data: PageCreateManyUserInput | PageCreateManyUserInput[]
     skipDuplicates?: boolean
   }
 
@@ -70513,6 +72679,43 @@ export namespace Prisma {
     userId?: StringFilter<"Session"> | string
   }
 
+  export type PageUpsertWithWhereUniqueWithoutUserInput = {
+    where: PageWhereUniqueInput
+    update: XOR<PageUpdateWithoutUserInput, PageUncheckedUpdateWithoutUserInput>
+    create: XOR<PageCreateWithoutUserInput, PageUncheckedCreateWithoutUserInput>
+  }
+
+  export type PageUpdateWithWhereUniqueWithoutUserInput = {
+    where: PageWhereUniqueInput
+    data: XOR<PageUpdateWithoutUserInput, PageUncheckedUpdateWithoutUserInput>
+  }
+
+  export type PageUpdateManyWithWhereWithoutUserInput = {
+    where: PageScalarWhereInput
+    data: XOR<PageUpdateManyMutationInput, PageUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type PageScalarWhereInput = {
+    AND?: PageScalarWhereInput | PageScalarWhereInput[]
+    OR?: PageScalarWhereInput[]
+    NOT?: PageScalarWhereInput | PageScalarWhereInput[]
+    id?: StringFilter<"Page"> | string
+    title?: StringFilter<"Page"> | string
+    slug?: StringFilter<"Page"> | string
+    version?: IntFilter<"Page"> | number
+    status?: EnumContentStatusFilter<"Page"> | $Enums.ContentStatus
+    isLatest?: BoolFilter<"Page"> | boolean
+    editorType?: EnumPageEditorTypeFilter<"Page"> | $Enums.PageEditorType
+    puckData?: JsonNullableFilter<"Page">
+    rootId?: StringNullableFilter<"Page"> | string | null
+    seoId?: StringNullableFilter<"Page"> | string | null
+    userId?: StringNullableFilter<"Page"> | string | null
+    firstPublishedAt?: DateTimeFilter<"Page"> | Date | string
+    publishedAt?: DateTimeFilter<"Page"> | Date | string
+    createdAt?: DateTimeFilter<"Page"> | Date | string
+    updatedAt?: DateTimeFilter<"Page"> | Date | string
+  }
+
   export type PostUpsertWithWhereUniqueWithoutUserInput = {
     where: PostWhereUniqueInput
     update: XOR<PostUpdateWithoutUserInput, PostUncheckedUpdateWithoutUserInput>
@@ -70667,6 +72870,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     profileImage?: MediaCreateNestedOneWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
+    pages?: PageCreateNestedManyWithoutUserInput
     posts?: PostCreateNestedManyWithoutUserInput
     postAuthors?: PostAuthorCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
@@ -70689,6 +72893,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    pages?: PageUncheckedCreateNestedManyWithoutUserInput
     posts?: PostUncheckedCreateNestedManyWithoutUserInput
     postAuthors?: PostAuthorUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
@@ -70727,6 +72932,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profileImage?: MediaUpdateOneWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
+    pages?: PageUpdateManyWithoutUserNestedInput
     posts?: PostUpdateManyWithoutUserNestedInput
     postAuthors?: PostAuthorUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
@@ -70749,6 +72955,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    pages?: PageUncheckedUpdateManyWithoutUserNestedInput
     posts?: PostUncheckedUpdateManyWithoutUserNestedInput
     postAuthors?: PostAuthorUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
@@ -70831,6 +73038,7 @@ export namespace Prisma {
     root?: SeoCreateNestedOneWithoutRootChildrenInput
     rootChildren?: SeoCreateNestedManyWithoutRootInput
     settings?: SettingsCreateNestedManyWithoutSeoInput
+    pages?: PageCreateNestedManyWithoutSeoInput
     posts?: PostCreateNestedManyWithoutSeoInput
     categories?: CategoryCreateNestedManyWithoutSeoInput
     tags?: TagCreateNestedManyWithoutSeoInput
@@ -70856,6 +73064,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     rootChildren?: SeoUncheckedCreateNestedManyWithoutRootInput
     settings?: SettingsUncheckedCreateNestedManyWithoutSeoInput
+    pages?: PageUncheckedCreateNestedManyWithoutSeoInput
     posts?: PostUncheckedCreateNestedManyWithoutSeoInput
     categories?: CategoryUncheckedCreateNestedManyWithoutSeoInput
     tags?: TagUncheckedCreateNestedManyWithoutSeoInput
@@ -71012,6 +73221,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
+    pages?: PageCreateNestedManyWithoutUserInput
     posts?: PostCreateNestedManyWithoutUserInput
     postAuthors?: PostAuthorCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
@@ -71034,6 +73244,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    pages?: PageUncheckedCreateNestedManyWithoutUserInput
     posts?: PostUncheckedCreateNestedManyWithoutUserInput
     postAuthors?: PostAuthorUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
@@ -71276,6 +73487,7 @@ export namespace Prisma {
     ogTwitterImage?: MediaCreateNestedOneWithoutSeoInput
     root?: SeoCreateNestedOneWithoutRootChildrenInput
     settings?: SettingsCreateNestedManyWithoutSeoInput
+    pages?: PageCreateNestedManyWithoutSeoInput
     posts?: PostCreateNestedManyWithoutSeoInput
     categories?: CategoryCreateNestedManyWithoutSeoInput
     tags?: TagCreateNestedManyWithoutSeoInput
@@ -71301,6 +73513,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     settings?: SettingsUncheckedCreateNestedManyWithoutSeoInput
+    pages?: PageUncheckedCreateNestedManyWithoutSeoInput
     posts?: PostUncheckedCreateNestedManyWithoutSeoInput
     categories?: CategoryUncheckedCreateNestedManyWithoutSeoInput
     tags?: TagUncheckedCreateNestedManyWithoutSeoInput
@@ -71331,6 +73544,7 @@ export namespace Prisma {
     ogTwitterImage?: MediaCreateNestedOneWithoutSeoInput
     rootChildren?: SeoCreateNestedManyWithoutRootInput
     settings?: SettingsCreateNestedManyWithoutSeoInput
+    pages?: PageCreateNestedManyWithoutSeoInput
     posts?: PostCreateNestedManyWithoutSeoInput
     categories?: CategoryCreateNestedManyWithoutSeoInput
     tags?: TagCreateNestedManyWithoutSeoInput
@@ -71356,6 +73570,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     rootChildren?: SeoUncheckedCreateNestedManyWithoutRootInput
     settings?: SettingsUncheckedCreateNestedManyWithoutSeoInput
+    pages?: PageUncheckedCreateNestedManyWithoutSeoInput
     posts?: PostUncheckedCreateNestedManyWithoutSeoInput
     categories?: CategoryUncheckedCreateNestedManyWithoutSeoInput
     tags?: TagUncheckedCreateNestedManyWithoutSeoInput
@@ -71402,6 +73617,52 @@ export namespace Prisma {
 
   export type SettingsCreateManySeoInputEnvelope = {
     data: SettingsCreateManySeoInput | SettingsCreateManySeoInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type PageCreateWithoutSeoInput = {
+    id?: string
+    title: string
+    slug: string
+    version: number
+    status?: $Enums.ContentStatus
+    isLatest?: boolean
+    editorType?: $Enums.PageEditorType
+    puckData?:unknown | NullableJsonNullValueInput
+    firstPublishedAt?: Date | string
+    publishedAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    root?: PageCreateNestedOneWithoutRootChildrenInput
+    rootChildren?: PageCreateNestedManyWithoutRootInput
+    user?: UserCreateNestedOneWithoutPagesInput
+  }
+
+  export type PageUncheckedCreateWithoutSeoInput = {
+    id?: string
+    title: string
+    slug: string
+    version: number
+    status?: $Enums.ContentStatus
+    isLatest?: boolean
+    editorType?: $Enums.PageEditorType
+    puckData?:unknown | NullableJsonNullValueInput
+    rootId?: string | null
+    userId?: string | null
+    firstPublishedAt?: Date | string
+    publishedAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    rootChildren?: PageUncheckedCreateNestedManyWithoutRootInput
+  }
+
+  export type PageCreateOrConnectWithoutSeoInput = {
+    where: PageWhereUniqueInput
+    create: XOR<PageCreateWithoutSeoInput, PageUncheckedCreateWithoutSeoInput>
+  }
+
+  export type PageCreateManySeoInputEnvelope = {
+    data: PageCreateManySeoInput | PageCreateManySeoInput[]
     skipDuplicates?: boolean
   }
 
@@ -71739,6 +74000,7 @@ export namespace Prisma {
     ogTwitterImage?: MediaUpdateOneWithoutSeoNestedInput
     root?: SeoUpdateOneWithoutRootChildrenNestedInput
     settings?: SettingsUpdateManyWithoutSeoNestedInput
+    pages?: PageUpdateManyWithoutSeoNestedInput
     posts?: PostUpdateManyWithoutSeoNestedInput
     categories?: CategoryUpdateManyWithoutSeoNestedInput
     tags?: TagUpdateManyWithoutSeoNestedInput
@@ -71764,6 +74026,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     settings?: SettingsUncheckedUpdateManyWithoutSeoNestedInput
+    pages?: PageUncheckedUpdateManyWithoutSeoNestedInput
     posts?: PostUncheckedUpdateManyWithoutSeoNestedInput
     categories?: CategoryUncheckedUpdateManyWithoutSeoNestedInput
     tags?: TagUncheckedUpdateManyWithoutSeoNestedInput
@@ -71816,6 +74079,22 @@ export namespace Prisma {
     seoId?: StringNullableFilter<"Settings"> | string | null
     createdAt?: DateTimeFilter<"Settings"> | Date | string
     updatedAt?: DateTimeFilter<"Settings"> | Date | string
+  }
+
+  export type PageUpsertWithWhereUniqueWithoutSeoInput = {
+    where: PageWhereUniqueInput
+    update: XOR<PageUpdateWithoutSeoInput, PageUncheckedUpdateWithoutSeoInput>
+    create: XOR<PageCreateWithoutSeoInput, PageUncheckedCreateWithoutSeoInput>
+  }
+
+  export type PageUpdateWithWhereUniqueWithoutSeoInput = {
+    where: PageWhereUniqueInput
+    data: XOR<PageUpdateWithoutSeoInput, PageUncheckedUpdateWithoutSeoInput>
+  }
+
+  export type PageUpdateManyWithWhereWithoutSeoInput = {
+    where: PageScalarWhereInput
+    data: XOR<PageUpdateManyMutationInput, PageUncheckedUpdateManyWithoutSeoInput>
   }
 
   export type PostUpsertWithWhereUniqueWithoutSeoInput = {
@@ -71953,6 +74232,384 @@ export namespace Prisma {
     publishedAt?: DateTimeFilter<"ProductCategory"> | Date | string
     createdAt?: DateTimeFilter<"ProductCategory"> | Date | string
     updatedAt?: DateTimeFilter<"ProductCategory"> | Date | string
+  }
+
+  export type PageCreateWithoutRootChildrenInput = {
+    id?: string
+    title: string
+    slug: string
+    version: number
+    status?: $Enums.ContentStatus
+    isLatest?: boolean
+    editorType?: $Enums.PageEditorType
+    puckData?:unknown | NullableJsonNullValueInput
+    firstPublishedAt?: Date | string
+    publishedAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    root?: PageCreateNestedOneWithoutRootChildrenInput
+    seo?: SeoCreateNestedOneWithoutPagesInput
+    user?: UserCreateNestedOneWithoutPagesInput
+  }
+
+  export type PageUncheckedCreateWithoutRootChildrenInput = {
+    id?: string
+    title: string
+    slug: string
+    version: number
+    status?: $Enums.ContentStatus
+    isLatest?: boolean
+    editorType?: $Enums.PageEditorType
+    puckData?:unknown | NullableJsonNullValueInput
+    rootId?: string | null
+    seoId?: string | null
+    userId?: string | null
+    firstPublishedAt?: Date | string
+    publishedAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PageCreateOrConnectWithoutRootChildrenInput = {
+    where: PageWhereUniqueInput
+    create: XOR<PageCreateWithoutRootChildrenInput, PageUncheckedCreateWithoutRootChildrenInput>
+  }
+
+  export type PageCreateWithoutRootInput = {
+    id?: string
+    title: string
+    slug: string
+    version: number
+    status?: $Enums.ContentStatus
+    isLatest?: boolean
+    editorType?: $Enums.PageEditorType
+    puckData?:unknown | NullableJsonNullValueInput
+    firstPublishedAt?: Date | string
+    publishedAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    rootChildren?: PageCreateNestedManyWithoutRootInput
+    seo?: SeoCreateNestedOneWithoutPagesInput
+    user?: UserCreateNestedOneWithoutPagesInput
+  }
+
+  export type PageUncheckedCreateWithoutRootInput = {
+    id?: string
+    title: string
+    slug: string
+    version: number
+    status?: $Enums.ContentStatus
+    isLatest?: boolean
+    editorType?: $Enums.PageEditorType
+    puckData?:unknown | NullableJsonNullValueInput
+    seoId?: string | null
+    userId?: string | null
+    firstPublishedAt?: Date | string
+    publishedAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    rootChildren?: PageUncheckedCreateNestedManyWithoutRootInput
+  }
+
+  export type PageCreateOrConnectWithoutRootInput = {
+    where: PageWhereUniqueInput
+    create: XOR<PageCreateWithoutRootInput, PageUncheckedCreateWithoutRootInput>
+  }
+
+  export type PageCreateManyRootInputEnvelope = {
+    data: PageCreateManyRootInput | PageCreateManyRootInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type SeoCreateWithoutPagesInput = {
+    id?: string
+    title: string
+    description?: string | null
+    canonicalUrl?: string | null
+    version: number
+    noIndex?: boolean
+    noFollow?: boolean
+    ogTwitterType?: string | null
+    ogTwitterTitle?: string | null
+    ogTwitterDescription?: string | null
+    ogTwitterLocale?: string | null
+    ogTwitterUrl?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    ogTwitterImage?: MediaCreateNestedOneWithoutSeoInput
+    root?: SeoCreateNestedOneWithoutRootChildrenInput
+    rootChildren?: SeoCreateNestedManyWithoutRootInput
+    settings?: SettingsCreateNestedManyWithoutSeoInput
+    posts?: PostCreateNestedManyWithoutSeoInput
+    categories?: CategoryCreateNestedManyWithoutSeoInput
+    tags?: TagCreateNestedManyWithoutSeoInput
+    products?: ProductCreateNestedManyWithoutSeoInput
+    productCategories?: ProductCategoryCreateNestedManyWithoutSeoInput
+  }
+
+  export type SeoUncheckedCreateWithoutPagesInput = {
+    id?: string
+    title: string
+    description?: string | null
+    canonicalUrl?: string | null
+    version: number
+    noIndex?: boolean
+    noFollow?: boolean
+    ogTwitterType?: string | null
+    ogTwitterTitle?: string | null
+    ogTwitterDescription?: string | null
+    ogTwitterImageId?: string | null
+    ogTwitterLocale?: string | null
+    ogTwitterUrl?: string | null
+    rootId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    rootChildren?: SeoUncheckedCreateNestedManyWithoutRootInput
+    settings?: SettingsUncheckedCreateNestedManyWithoutSeoInput
+    posts?: PostUncheckedCreateNestedManyWithoutSeoInput
+    categories?: CategoryUncheckedCreateNestedManyWithoutSeoInput
+    tags?: TagUncheckedCreateNestedManyWithoutSeoInput
+    products?: ProductUncheckedCreateNestedManyWithoutSeoInput
+    productCategories?: ProductCategoryUncheckedCreateNestedManyWithoutSeoInput
+  }
+
+  export type SeoCreateOrConnectWithoutPagesInput = {
+    where: SeoWhereUniqueInput
+    create: XOR<SeoCreateWithoutPagesInput, SeoUncheckedCreateWithoutPagesInput>
+  }
+
+  export type UserCreateWithoutPagesInput = {
+    id?: string
+    name?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    password?: string | null
+    email?: string | null
+    emailVerified?: boolean
+    image?: string | null
+    bio?: string | null
+    imageUrl?: string | null
+    role?: $Enums.UserRole
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    profileImage?: MediaCreateNestedOneWithoutUserInput
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    sessions?: SessionCreateNestedManyWithoutUserInput
+    posts?: PostCreateNestedManyWithoutUserInput
+    postAuthors?: PostAuthorCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    products?: ProductCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutPagesInput = {
+    id?: string
+    name?: string | null
+    firstName?: string | null
+    lastName?: string | null
+    password?: string | null
+    email?: string | null
+    emailVerified?: boolean
+    image?: string | null
+    profileImageId?: string | null
+    bio?: string | null
+    imageUrl?: string | null
+    role?: $Enums.UserRole
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    posts?: PostUncheckedCreateNestedManyWithoutUserInput
+    postAuthors?: PostAuthorUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    products?: ProductUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutPagesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutPagesInput, UserUncheckedCreateWithoutPagesInput>
+  }
+
+  export type PageUpsertWithoutRootChildrenInput = {
+    update: XOR<PageUpdateWithoutRootChildrenInput, PageUncheckedUpdateWithoutRootChildrenInput>
+    create: XOR<PageCreateWithoutRootChildrenInput, PageUncheckedCreateWithoutRootChildrenInput>
+    where?: PageWhereInput
+  }
+
+  export type PageUpdateToOneWithWhereWithoutRootChildrenInput = {
+    where?: PageWhereInput
+    data: XOR<PageUpdateWithoutRootChildrenInput, PageUncheckedUpdateWithoutRootChildrenInput>
+  }
+
+  export type PageUpdateWithoutRootChildrenInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    version?: IntFieldUpdateOperationsInput | number
+    status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
+    isLatest?: BoolFieldUpdateOperationsInput | boolean
+    editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
+    puckData?:unknown | NullableJsonNullValueInput
+    firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    root?: PageUpdateOneWithoutRootChildrenNestedInput
+    seo?: SeoUpdateOneWithoutPagesNestedInput
+    user?: UserUpdateOneWithoutPagesNestedInput
+  }
+
+  export type PageUncheckedUpdateWithoutRootChildrenInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    version?: IntFieldUpdateOperationsInput | number
+    status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
+    isLatest?: BoolFieldUpdateOperationsInput | boolean
+    editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
+    puckData?:unknown | NullableJsonNullValueInput
+    rootId?: NullableStringFieldUpdateOperationsInput | string | null
+    seoId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PageUpsertWithWhereUniqueWithoutRootInput = {
+    where: PageWhereUniqueInput
+    update: XOR<PageUpdateWithoutRootInput, PageUncheckedUpdateWithoutRootInput>
+    create: XOR<PageCreateWithoutRootInput, PageUncheckedCreateWithoutRootInput>
+  }
+
+  export type PageUpdateWithWhereUniqueWithoutRootInput = {
+    where: PageWhereUniqueInput
+    data: XOR<PageUpdateWithoutRootInput, PageUncheckedUpdateWithoutRootInput>
+  }
+
+  export type PageUpdateManyWithWhereWithoutRootInput = {
+    where: PageScalarWhereInput
+    data: XOR<PageUpdateManyMutationInput, PageUncheckedUpdateManyWithoutRootInput>
+  }
+
+  export type SeoUpsertWithoutPagesInput = {
+    update: XOR<SeoUpdateWithoutPagesInput, SeoUncheckedUpdateWithoutPagesInput>
+    create: XOR<SeoCreateWithoutPagesInput, SeoUncheckedCreateWithoutPagesInput>
+    where?: SeoWhereInput
+  }
+
+  export type SeoUpdateToOneWithWhereWithoutPagesInput = {
+    where?: SeoWhereInput
+    data: XOR<SeoUpdateWithoutPagesInput, SeoUncheckedUpdateWithoutPagesInput>
+  }
+
+  export type SeoUpdateWithoutPagesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    canonicalUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    noIndex?: BoolFieldUpdateOperationsInput | boolean
+    noFollow?: BoolFieldUpdateOperationsInput | boolean
+    ogTwitterType?: NullableStringFieldUpdateOperationsInput | string | null
+    ogTwitterTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    ogTwitterDescription?: NullableStringFieldUpdateOperationsInput | string | null
+    ogTwitterLocale?: NullableStringFieldUpdateOperationsInput | string | null
+    ogTwitterUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    ogTwitterImage?: MediaUpdateOneWithoutSeoNestedInput
+    root?: SeoUpdateOneWithoutRootChildrenNestedInput
+    rootChildren?: SeoUpdateManyWithoutRootNestedInput
+    settings?: SettingsUpdateManyWithoutSeoNestedInput
+    posts?: PostUpdateManyWithoutSeoNestedInput
+    categories?: CategoryUpdateManyWithoutSeoNestedInput
+    tags?: TagUpdateManyWithoutSeoNestedInput
+    products?: ProductUpdateManyWithoutSeoNestedInput
+    productCategories?: ProductCategoryUpdateManyWithoutSeoNestedInput
+  }
+
+  export type SeoUncheckedUpdateWithoutPagesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    canonicalUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    version?: IntFieldUpdateOperationsInput | number
+    noIndex?: BoolFieldUpdateOperationsInput | boolean
+    noFollow?: BoolFieldUpdateOperationsInput | boolean
+    ogTwitterType?: NullableStringFieldUpdateOperationsInput | string | null
+    ogTwitterTitle?: NullableStringFieldUpdateOperationsInput | string | null
+    ogTwitterDescription?: NullableStringFieldUpdateOperationsInput | string | null
+    ogTwitterImageId?: NullableStringFieldUpdateOperationsInput | string | null
+    ogTwitterLocale?: NullableStringFieldUpdateOperationsInput | string | null
+    ogTwitterUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    rootId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    rootChildren?: SeoUncheckedUpdateManyWithoutRootNestedInput
+    settings?: SettingsUncheckedUpdateManyWithoutSeoNestedInput
+    posts?: PostUncheckedUpdateManyWithoutSeoNestedInput
+    categories?: CategoryUncheckedUpdateManyWithoutSeoNestedInput
+    tags?: TagUncheckedUpdateManyWithoutSeoNestedInput
+    products?: ProductUncheckedUpdateManyWithoutSeoNestedInput
+    productCategories?: ProductCategoryUncheckedUpdateManyWithoutSeoNestedInput
+  }
+
+  export type UserUpsertWithoutPagesInput = {
+    update: XOR<UserUpdateWithoutPagesInput, UserUncheckedUpdateWithoutPagesInput>
+    create: XOR<UserCreateWithoutPagesInput, UserUncheckedCreateWithoutPagesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutPagesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutPagesInput, UserUncheckedUpdateWithoutPagesInput>
+  }
+
+  export type UserUpdateWithoutPagesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    profileImage?: MediaUpdateOneWithoutUserNestedInput
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    sessions?: SessionUpdateManyWithoutUserNestedInput
+    posts?: PostUpdateManyWithoutUserNestedInput
+    postAuthors?: PostAuthorUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    products?: ProductUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutPagesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    profileImageId?: NullableStringFieldUpdateOperationsInput | string | null
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    imageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    posts?: PostUncheckedUpdateManyWithoutUserNestedInput
+    postAuthors?: PostAuthorUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    products?: ProductUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type PostCreateWithoutRootChildrenInput = {
@@ -72183,6 +74840,7 @@ export namespace Prisma {
     root?: SeoCreateNestedOneWithoutRootChildrenInput
     rootChildren?: SeoCreateNestedManyWithoutRootInput
     settings?: SettingsCreateNestedManyWithoutSeoInput
+    pages?: PageCreateNestedManyWithoutSeoInput
     categories?: CategoryCreateNestedManyWithoutSeoInput
     tags?: TagCreateNestedManyWithoutSeoInput
     products?: ProductCreateNestedManyWithoutSeoInput
@@ -72208,6 +74866,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     rootChildren?: SeoUncheckedCreateNestedManyWithoutRootInput
     settings?: SettingsUncheckedCreateNestedManyWithoutSeoInput
+    pages?: PageUncheckedCreateNestedManyWithoutSeoInput
     categories?: CategoryUncheckedCreateNestedManyWithoutSeoInput
     tags?: TagUncheckedCreateNestedManyWithoutSeoInput
     products?: ProductUncheckedCreateNestedManyWithoutSeoInput
@@ -72256,6 +74915,7 @@ export namespace Prisma {
     profileImage?: MediaCreateNestedOneWithoutUserInput
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
+    pages?: PageCreateNestedManyWithoutUserInput
     postAuthors?: PostAuthorCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     products?: ProductCreateNestedManyWithoutUserInput
@@ -72278,6 +74938,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    pages?: PageUncheckedCreateNestedManyWithoutUserInput
     postAuthors?: PostAuthorUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     products?: ProductUncheckedCreateNestedManyWithoutUserInput
@@ -72479,6 +75140,7 @@ export namespace Prisma {
     root?: SeoUpdateOneWithoutRootChildrenNestedInput
     rootChildren?: SeoUpdateManyWithoutRootNestedInput
     settings?: SettingsUpdateManyWithoutSeoNestedInput
+    pages?: PageUpdateManyWithoutSeoNestedInput
     categories?: CategoryUpdateManyWithoutSeoNestedInput
     tags?: TagUpdateManyWithoutSeoNestedInput
     products?: ProductUpdateManyWithoutSeoNestedInput
@@ -72504,6 +75166,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rootChildren?: SeoUncheckedUpdateManyWithoutRootNestedInput
     settings?: SettingsUncheckedUpdateManyWithoutSeoNestedInput
+    pages?: PageUncheckedUpdateManyWithoutSeoNestedInput
     categories?: CategoryUncheckedUpdateManyWithoutSeoNestedInput
     tags?: TagUncheckedUpdateManyWithoutSeoNestedInput
     products?: ProductUncheckedUpdateManyWithoutSeoNestedInput
@@ -72554,6 +75217,7 @@ export namespace Prisma {
     profileImage?: MediaUpdateOneWithoutUserNestedInput
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
+    pages?: PageUpdateManyWithoutUserNestedInput
     postAuthors?: PostAuthorUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     products?: ProductUpdateManyWithoutUserNestedInput
@@ -72576,6 +75240,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    pages?: PageUncheckedUpdateManyWithoutUserNestedInput
     postAuthors?: PostAuthorUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     products?: ProductUncheckedUpdateManyWithoutUserNestedInput
@@ -72651,6 +75316,7 @@ export namespace Prisma {
     profileImage?: MediaCreateNestedOneWithoutUserInput
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
+    pages?: PageCreateNestedManyWithoutUserInput
     posts?: PostCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     products?: ProductCreateNestedManyWithoutUserInput
@@ -72673,6 +75339,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    pages?: PageUncheckedCreateNestedManyWithoutUserInput
     posts?: PostUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     products?: ProductUncheckedCreateNestedManyWithoutUserInput
@@ -72770,6 +75437,7 @@ export namespace Prisma {
     profileImage?: MediaUpdateOneWithoutUserNestedInput
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
+    pages?: PageUpdateManyWithoutUserNestedInput
     posts?: PostUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     products?: ProductUpdateManyWithoutUserNestedInput
@@ -72792,6 +75460,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    pages?: PageUncheckedUpdateManyWithoutUserNestedInput
     posts?: PostUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     products?: ProductUncheckedUpdateManyWithoutUserNestedInput
@@ -72919,6 +75588,7 @@ export namespace Prisma {
     root?: SeoCreateNestedOneWithoutRootChildrenInput
     rootChildren?: SeoCreateNestedManyWithoutRootInput
     settings?: SettingsCreateNestedManyWithoutSeoInput
+    pages?: PageCreateNestedManyWithoutSeoInput
     posts?: PostCreateNestedManyWithoutSeoInput
     tags?: TagCreateNestedManyWithoutSeoInput
     products?: ProductCreateNestedManyWithoutSeoInput
@@ -72944,6 +75614,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     rootChildren?: SeoUncheckedCreateNestedManyWithoutRootInput
     settings?: SettingsUncheckedCreateNestedManyWithoutSeoInput
+    pages?: PageUncheckedCreateNestedManyWithoutSeoInput
     posts?: PostUncheckedCreateNestedManyWithoutSeoInput
     tags?: TagUncheckedCreateNestedManyWithoutSeoInput
     products?: ProductUncheckedCreateNestedManyWithoutSeoInput
@@ -73062,6 +75733,7 @@ export namespace Prisma {
     root?: SeoUpdateOneWithoutRootChildrenNestedInput
     rootChildren?: SeoUpdateManyWithoutRootNestedInput
     settings?: SettingsUpdateManyWithoutSeoNestedInput
+    pages?: PageUpdateManyWithoutSeoNestedInput
     posts?: PostUpdateManyWithoutSeoNestedInput
     tags?: TagUpdateManyWithoutSeoNestedInput
     products?: ProductUpdateManyWithoutSeoNestedInput
@@ -73087,6 +75759,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rootChildren?: SeoUncheckedUpdateManyWithoutRootNestedInput
     settings?: SettingsUncheckedUpdateManyWithoutSeoNestedInput
+    pages?: PageUncheckedUpdateManyWithoutSeoNestedInput
     posts?: PostUncheckedUpdateManyWithoutSeoNestedInput
     tags?: TagUncheckedUpdateManyWithoutSeoNestedInput
     products?: ProductUncheckedUpdateManyWithoutSeoNestedInput
@@ -73444,6 +76117,7 @@ export namespace Prisma {
     root?: SeoCreateNestedOneWithoutRootChildrenInput
     rootChildren?: SeoCreateNestedManyWithoutRootInput
     settings?: SettingsCreateNestedManyWithoutSeoInput
+    pages?: PageCreateNestedManyWithoutSeoInput
     posts?: PostCreateNestedManyWithoutSeoInput
     categories?: CategoryCreateNestedManyWithoutSeoInput
     products?: ProductCreateNestedManyWithoutSeoInput
@@ -73469,6 +76143,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     rootChildren?: SeoUncheckedCreateNestedManyWithoutRootInput
     settings?: SettingsUncheckedCreateNestedManyWithoutSeoInput
+    pages?: PageUncheckedCreateNestedManyWithoutSeoInput
     posts?: PostUncheckedCreateNestedManyWithoutSeoInput
     categories?: CategoryUncheckedCreateNestedManyWithoutSeoInput
     products?: ProductUncheckedCreateNestedManyWithoutSeoInput
@@ -73587,6 +76262,7 @@ export namespace Prisma {
     root?: SeoUpdateOneWithoutRootChildrenNestedInput
     rootChildren?: SeoUpdateManyWithoutRootNestedInput
     settings?: SettingsUpdateManyWithoutSeoNestedInput
+    pages?: PageUpdateManyWithoutSeoNestedInput
     posts?: PostUpdateManyWithoutSeoNestedInput
     categories?: CategoryUpdateManyWithoutSeoNestedInput
     products?: ProductUpdateManyWithoutSeoNestedInput
@@ -73612,6 +76288,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rootChildren?: SeoUncheckedUpdateManyWithoutRootNestedInput
     settings?: SettingsUncheckedUpdateManyWithoutSeoNestedInput
+    pages?: PageUncheckedUpdateManyWithoutSeoNestedInput
     posts?: PostUncheckedUpdateManyWithoutSeoNestedInput
     categories?: CategoryUncheckedUpdateManyWithoutSeoNestedInput
     products?: ProductUncheckedUpdateManyWithoutSeoNestedInput
@@ -74945,6 +77622,7 @@ export namespace Prisma {
     root?: SeoCreateNestedOneWithoutRootChildrenInput
     rootChildren?: SeoCreateNestedManyWithoutRootInput
     settings?: SettingsCreateNestedManyWithoutSeoInput
+    pages?: PageCreateNestedManyWithoutSeoInput
     posts?: PostCreateNestedManyWithoutSeoInput
     categories?: CategoryCreateNestedManyWithoutSeoInput
     tags?: TagCreateNestedManyWithoutSeoInput
@@ -74970,6 +77648,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     rootChildren?: SeoUncheckedCreateNestedManyWithoutRootInput
     settings?: SettingsUncheckedCreateNestedManyWithoutSeoInput
+    pages?: PageUncheckedCreateNestedManyWithoutSeoInput
     posts?: PostUncheckedCreateNestedManyWithoutSeoInput
     categories?: CategoryUncheckedCreateNestedManyWithoutSeoInput
     tags?: TagUncheckedCreateNestedManyWithoutSeoInput
@@ -74998,6 +77677,7 @@ export namespace Prisma {
     profileImage?: MediaCreateNestedOneWithoutUserInput
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
+    pages?: PageCreateNestedManyWithoutUserInput
     posts?: PostCreateNestedManyWithoutUserInput
     postAuthors?: PostAuthorCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
@@ -75020,6 +77700,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    pages?: PageUncheckedCreateNestedManyWithoutUserInput
     posts?: PostUncheckedCreateNestedManyWithoutUserInput
     postAuthors?: PostAuthorUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
@@ -75409,6 +78090,7 @@ export namespace Prisma {
     root?: SeoUpdateOneWithoutRootChildrenNestedInput
     rootChildren?: SeoUpdateManyWithoutRootNestedInput
     settings?: SettingsUpdateManyWithoutSeoNestedInput
+    pages?: PageUpdateManyWithoutSeoNestedInput
     posts?: PostUpdateManyWithoutSeoNestedInput
     categories?: CategoryUpdateManyWithoutSeoNestedInput
     tags?: TagUpdateManyWithoutSeoNestedInput
@@ -75434,6 +78116,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rootChildren?: SeoUncheckedUpdateManyWithoutRootNestedInput
     settings?: SettingsUncheckedUpdateManyWithoutSeoNestedInput
+    pages?: PageUncheckedUpdateManyWithoutSeoNestedInput
     posts?: PostUncheckedUpdateManyWithoutSeoNestedInput
     categories?: CategoryUncheckedUpdateManyWithoutSeoNestedInput
     tags?: TagUncheckedUpdateManyWithoutSeoNestedInput
@@ -75468,6 +78151,7 @@ export namespace Prisma {
     profileImage?: MediaUpdateOneWithoutUserNestedInput
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
+    pages?: PageUpdateManyWithoutUserNestedInput
     posts?: PostUpdateManyWithoutUserNestedInput
     postAuthors?: PostAuthorUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
@@ -75490,6 +78174,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    pages?: PageUncheckedUpdateManyWithoutUserNestedInput
     posts?: PostUncheckedUpdateManyWithoutUserNestedInput
     postAuthors?: PostAuthorUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
@@ -75667,6 +78352,7 @@ export namespace Prisma {
     root?: SeoCreateNestedOneWithoutRootChildrenInput
     rootChildren?: SeoCreateNestedManyWithoutRootInput
     settings?: SettingsCreateNestedManyWithoutSeoInput
+    pages?: PageCreateNestedManyWithoutSeoInput
     posts?: PostCreateNestedManyWithoutSeoInput
     categories?: CategoryCreateNestedManyWithoutSeoInput
     tags?: TagCreateNestedManyWithoutSeoInput
@@ -75692,6 +78378,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     rootChildren?: SeoUncheckedCreateNestedManyWithoutRootInput
     settings?: SettingsUncheckedCreateNestedManyWithoutSeoInput
+    pages?: PageUncheckedCreateNestedManyWithoutSeoInput
     posts?: PostUncheckedCreateNestedManyWithoutSeoInput
     categories?: CategoryUncheckedCreateNestedManyWithoutSeoInput
     tags?: TagUncheckedCreateNestedManyWithoutSeoInput
@@ -75810,6 +78497,7 @@ export namespace Prisma {
     root?: SeoUpdateOneWithoutRootChildrenNestedInput
     rootChildren?: SeoUpdateManyWithoutRootNestedInput
     settings?: SettingsUpdateManyWithoutSeoNestedInput
+    pages?: PageUpdateManyWithoutSeoNestedInput
     posts?: PostUpdateManyWithoutSeoNestedInput
     categories?: CategoryUpdateManyWithoutSeoNestedInput
     tags?: TagUpdateManyWithoutSeoNestedInput
@@ -75835,6 +78523,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rootChildren?: SeoUncheckedUpdateManyWithoutRootNestedInput
     settings?: SettingsUncheckedUpdateManyWithoutSeoNestedInput
+    pages?: PageUncheckedUpdateManyWithoutSeoNestedInput
     posts?: PostUncheckedUpdateManyWithoutSeoNestedInput
     categories?: CategoryUncheckedUpdateManyWithoutSeoNestedInput
     tags?: TagUncheckedUpdateManyWithoutSeoNestedInput
@@ -77422,6 +80111,7 @@ export namespace Prisma {
     profileImage?: MediaCreateNestedOneWithoutUserInput
     accounts?: AccountCreateNestedManyWithoutUserInput
     sessions?: SessionCreateNestedManyWithoutUserInput
+    pages?: PageCreateNestedManyWithoutUserInput
     posts?: PostCreateNestedManyWithoutUserInput
     postAuthors?: PostAuthorCreateNestedManyWithoutUserInput
     products?: ProductCreateNestedManyWithoutUserInput
@@ -77444,6 +80134,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    pages?: PageUncheckedCreateNestedManyWithoutUserInput
     posts?: PostUncheckedCreateNestedManyWithoutUserInput
     postAuthors?: PostAuthorUncheckedCreateNestedManyWithoutUserInput
     products?: ProductUncheckedCreateNestedManyWithoutUserInput
@@ -77482,6 +80173,7 @@ export namespace Prisma {
     profileImage?: MediaUpdateOneWithoutUserNestedInput
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
+    pages?: PageUpdateManyWithoutUserNestedInput
     posts?: PostUpdateManyWithoutUserNestedInput
     postAuthors?: PostAuthorUpdateManyWithoutUserNestedInput
     products?: ProductUpdateManyWithoutUserNestedInput
@@ -77504,6 +80196,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    pages?: PageUncheckedUpdateManyWithoutUserNestedInput
     posts?: PostUncheckedUpdateManyWithoutUserNestedInput
     postAuthors?: PostAuthorUncheckedUpdateManyWithoutUserNestedInput
     products?: ProductUncheckedUpdateManyWithoutUserNestedInput
@@ -77532,6 +80225,23 @@ export namespace Prisma {
     updatedAt?: Date | string
     ipAddress?: string | null
     userAgent?: string | null
+  }
+
+  export type PageCreateManyUserInput = {
+    id?: string
+    title: string
+    slug: string
+    version: number
+    status?: $Enums.ContentStatus
+    isLatest?: boolean
+    editorType?: $Enums.PageEditorType
+    puckData?:unknown | NullableJsonNullValueInput
+    rootId?: string | null
+    seoId?: string | null
+    firstPublishedAt?: Date | string
+    publishedAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type PostCreateManyUserInput = {
@@ -77665,6 +80375,59 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ipAddress?: NullableStringFieldUpdateOperationsInput | string | null
     userAgent?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type PageUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    version?: IntFieldUpdateOperationsInput | number
+    status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
+    isLatest?: BoolFieldUpdateOperationsInput | boolean
+    editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
+    puckData?:unknown | NullableJsonNullValueInput
+    firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    root?: PageUpdateOneWithoutRootChildrenNestedInput
+    rootChildren?: PageUpdateManyWithoutRootNestedInput
+    seo?: SeoUpdateOneWithoutPagesNestedInput
+  }
+
+  export type PageUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    version?: IntFieldUpdateOperationsInput | number
+    status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
+    isLatest?: BoolFieldUpdateOperationsInput | boolean
+    editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
+    puckData?:unknown | NullableJsonNullValueInput
+    rootId?: NullableStringFieldUpdateOperationsInput | string | null
+    seoId?: NullableStringFieldUpdateOperationsInput | string | null
+    firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    rootChildren?: PageUncheckedUpdateManyWithoutRootNestedInput
+  }
+
+  export type PageUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    version?: IntFieldUpdateOperationsInput | number
+    status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
+    isLatest?: BoolFieldUpdateOperationsInput | boolean
+    editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
+    puckData?:unknown | NullableJsonNullValueInput
+    rootId?: NullableStringFieldUpdateOperationsInput | string | null
+    seoId?: NullableStringFieldUpdateOperationsInput | string | null
+    firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type PostUpdateWithoutUserInput = {
@@ -78031,6 +80794,7 @@ export namespace Prisma {
     root?: SeoUpdateOneWithoutRootChildrenNestedInput
     rootChildren?: SeoUpdateManyWithoutRootNestedInput
     settings?: SettingsUpdateManyWithoutSeoNestedInput
+    pages?: PageUpdateManyWithoutSeoNestedInput
     posts?: PostUpdateManyWithoutSeoNestedInput
     categories?: CategoryUpdateManyWithoutSeoNestedInput
     tags?: TagUpdateManyWithoutSeoNestedInput
@@ -78056,6 +80820,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rootChildren?: SeoUncheckedUpdateManyWithoutRootNestedInput
     settings?: SettingsUncheckedUpdateManyWithoutSeoNestedInput
+    pages?: PageUncheckedUpdateManyWithoutSeoNestedInput
     posts?: PostUncheckedUpdateManyWithoutSeoNestedInput
     categories?: CategoryUncheckedUpdateManyWithoutSeoNestedInput
     tags?: TagUncheckedUpdateManyWithoutSeoNestedInput
@@ -78199,6 +80964,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUpdateManyWithoutUserNestedInput
     sessions?: SessionUpdateManyWithoutUserNestedInput
+    pages?: PageUpdateManyWithoutUserNestedInput
     posts?: PostUpdateManyWithoutUserNestedInput
     postAuthors?: PostAuthorUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
@@ -78221,6 +80987,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    pages?: PageUncheckedUpdateManyWithoutUserNestedInput
     posts?: PostUncheckedUpdateManyWithoutUserNestedInput
     postAuthors?: PostAuthorUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
@@ -78268,6 +81035,23 @@ export namespace Prisma {
     deployWebhookUrl?: string | null
     logoUrl?: string | null
     scripts?:PrismaJson.Scripts
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PageCreateManySeoInput = {
+    id?: string
+    title: string
+    slug: string
+    version: number
+    status?: $Enums.ContentStatus
+    isLatest?: boolean
+    editorType?: $Enums.PageEditorType
+    puckData?:unknown | NullableJsonNullValueInput
+    rootId?: string | null
+    userId?: string | null
+    firstPublishedAt?: Date | string
+    publishedAt?: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -78379,6 +81163,7 @@ export namespace Prisma {
     ogTwitterImage?: MediaUpdateOneWithoutSeoNestedInput
     rootChildren?: SeoUpdateManyWithoutRootNestedInput
     settings?: SettingsUpdateManyWithoutSeoNestedInput
+    pages?: PageUpdateManyWithoutSeoNestedInput
     posts?: PostUpdateManyWithoutSeoNestedInput
     categories?: CategoryUpdateManyWithoutSeoNestedInput
     tags?: TagUpdateManyWithoutSeoNestedInput
@@ -78404,6 +81189,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     rootChildren?: SeoUncheckedUpdateManyWithoutRootNestedInput
     settings?: SettingsUncheckedUpdateManyWithoutSeoNestedInput
+    pages?: PageUncheckedUpdateManyWithoutSeoNestedInput
     posts?: PostUncheckedUpdateManyWithoutSeoNestedInput
     categories?: CategoryUncheckedUpdateManyWithoutSeoNestedInput
     tags?: TagUncheckedUpdateManyWithoutSeoNestedInput
@@ -78458,6 +81244,59 @@ export namespace Prisma {
     deployWebhookUrl?: NullableStringFieldUpdateOperationsInput | string | null
     logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
     scripts?:PrismaJson.Scripts
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PageUpdateWithoutSeoInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    version?: IntFieldUpdateOperationsInput | number
+    status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
+    isLatest?: BoolFieldUpdateOperationsInput | boolean
+    editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
+    puckData?:unknown | NullableJsonNullValueInput
+    firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    root?: PageUpdateOneWithoutRootChildrenNestedInput
+    rootChildren?: PageUpdateManyWithoutRootNestedInput
+    user?: UserUpdateOneWithoutPagesNestedInput
+  }
+
+  export type PageUncheckedUpdateWithoutSeoInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    version?: IntFieldUpdateOperationsInput | number
+    status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
+    isLatest?: BoolFieldUpdateOperationsInput | boolean
+    editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
+    puckData?:unknown | NullableJsonNullValueInput
+    rootId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    rootChildren?: PageUncheckedUpdateManyWithoutRootNestedInput
+  }
+
+  export type PageUncheckedUpdateManyWithoutSeoInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    version?: IntFieldUpdateOperationsInput | number
+    status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
+    isLatest?: BoolFieldUpdateOperationsInput | boolean
+    editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
+    puckData?:unknown | NullableJsonNullValueInput
+    rootId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -78755,6 +81594,76 @@ export namespace Prisma {
     status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
     isLatest?: BoolFieldUpdateOperationsInput | boolean
     rootId?: NullableStringFieldUpdateOperationsInput | string | null
+    firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PageCreateManyRootInput = {
+    id?: string
+    title: string
+    slug: string
+    version: number
+    status?: $Enums.ContentStatus
+    isLatest?: boolean
+    editorType?: $Enums.PageEditorType
+    puckData?:unknown | NullableJsonNullValueInput
+    seoId?: string | null
+    userId?: string | null
+    firstPublishedAt?: Date | string
+    publishedAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PageUpdateWithoutRootInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    version?: IntFieldUpdateOperationsInput | number
+    status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
+    isLatest?: BoolFieldUpdateOperationsInput | boolean
+    editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
+    puckData?:unknown | NullableJsonNullValueInput
+    firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    rootChildren?: PageUpdateManyWithoutRootNestedInput
+    seo?: SeoUpdateOneWithoutPagesNestedInput
+    user?: UserUpdateOneWithoutPagesNestedInput
+  }
+
+  export type PageUncheckedUpdateWithoutRootInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    version?: IntFieldUpdateOperationsInput | number
+    status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
+    isLatest?: BoolFieldUpdateOperationsInput | boolean
+    editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
+    puckData?:unknown | NullableJsonNullValueInput
+    seoId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
+    firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    rootChildren?: PageUncheckedUpdateManyWithoutRootNestedInput
+  }
+
+  export type PageUncheckedUpdateManyWithoutRootInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    slug?: StringFieldUpdateOperationsInput | string
+    version?: IntFieldUpdateOperationsInput | number
+    status?: EnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus
+    isLatest?: BoolFieldUpdateOperationsInput | boolean
+    editorType?: EnumPageEditorTypeFieldUpdateOperationsInput | $Enums.PageEditorType
+    puckData?:unknown | NullableJsonNullValueInput
+    seoId?: NullableStringFieldUpdateOperationsInput | string | null
+    userId?: NullableStringFieldUpdateOperationsInput | string | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string

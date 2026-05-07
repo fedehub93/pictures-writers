@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Sofa } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -19,6 +18,7 @@ interface WebinarCardProps {
   price: number;
   discountedPrice: number | null;
   lessons: WebinarLesson[];
+  isOpen: boolean;
 }
 
 export const WebinarCard = async ({
@@ -31,13 +31,14 @@ export const WebinarCard = async ({
   price,
   discountedPrice,
   lessons,
+  isOpen,
 }: WebinarCardProps) => {
   const purchasedWebinar = await getPurchasedWebinar(rootId!);
-  const availableSeats = seats - purchasedWebinar;
+  // const availableSeats = seats - purchasedWebinar;
   const href = `/shop/${categorySlug}/${slug}` as const;
 
   const { start, end } = getLessonRange(lessons);
-  if (!start || !end) return null;
+  // if (!start || !end) return null;
 
   return (
     <div
@@ -47,10 +48,10 @@ export const WebinarCard = async ({
       <div
         className={cn(
           "absolute -top-6 left-2 text-sm bg-primary pt-1 px-2 text-primary-foreground rounded-t-lg font-bold",
-          availableSeats < 1 && "bg-destructive",
+          !isOpen && "bg-destructive",
         )}
       >
-        {availableSeats < 1 ? "Chiuso" : "Aperto"}
+        {!isOpen ? "Chiuso" : "Aperto"}
       </div>
       <div className="w-full border-b flex items-center justify-center group rounded-lg overflow-hidden">
         <Link
@@ -68,32 +69,34 @@ export const WebinarCard = async ({
       </div>
       <div className="p-4 flex flex-col gap-y-4 text-center">
         <div className="font-bold text-lg leading-5">{title}</div>
-        <div className="flex flex-col gap-y-2 text-sm text-muted-foreground">
-          <div className="text-sm text-muted-foreground mb-2">
-            Dal{" "}
-            <span className="text-foreground font-medium">
-              {formatDate({ date: start, month: "long" })}
-            </span>{" "}
-            al{" "}
-            <span className="text-foreground font-medium">
-              {formatDate({ date: end, month: "long" })}
-            </span>
-          </div>
-          <div>
-            {price !== discountedPrice && (
-              <span className="text-xs line-through text-black">
-                {formatPrice(discountedPrice!, true)}
+        {isOpen && start && end && (
+          <div className="flex flex-col gap-y-2 text-sm text-muted-foreground">
+            <div className="text-sm text-muted-foreground mb-2">
+              Dal{" "}
+              <span className="text-foreground font-medium">
+                {formatDate({ date: start, month: "long" })}
+              </span>{" "}
+              al{" "}
+              <span className="text-foreground font-medium">
+                {formatDate({ date: end, month: "long" })}
               </span>
-            )}
-            <span className="text-xl font-bold text-primary">
-              {formatPrice(price!, true)}
-            </span>
+            </div>
+            <div>
+              {price !== discountedPrice && (
+                <span className="text-xs line-through text-black">
+                  {formatPrice(discountedPrice!, true)}
+                </span>
+              )}
+              <span className="text-xl font-bold text-primary">
+                {formatPrice(price!, true)}
+              </span>
+            </div>
           </div>
-        </div>
+        )}
         <div className="flex flex-col text-xl font-bold">
           <Button asChild type="button" className="bg-foreground">
             <Link href={href} prefetch>
-              Scopri
+              {isOpen ? "Scopri" : "Iscriviti alla lista d'attesa"}
             </Link>
           </Button>
         </div>

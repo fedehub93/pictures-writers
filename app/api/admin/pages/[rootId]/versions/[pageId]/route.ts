@@ -1,0 +1,49 @@
+import { NextResponse } from "next/server";
+
+import { authAdmin } from "@/lib/auth-service";
+import { db } from "@/lib/db";
+
+export async function DELETE(
+  req: Request,
+  props: {
+    params: Promise<{
+      rootId: string;
+      pageId: string;
+    }>;
+  },
+) {
+  const params = await props.params;
+  try {
+    const user = await authAdmin();
+    const { rootId, pageId } = params;
+
+    if (!user) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    const page = await db.page.findUnique({
+      where: {
+        id: params.pageId,
+      },
+    });
+
+    if (!page) {
+      return new NextResponse("Not found", { status: 404 });
+    }
+
+    const deletedPage = await db.page.deleteMany({
+      where: { rootId },
+    });
+
+    if (page.seoId) {
+      await db.seo.delete({
+        where: { id: page.seoId },
+      });
+    }
+
+    return NextResponse.json(deletedPage);
+  } catch (error) {
+    console.log("[PAGES_ROOT_ID_VERSIONS_PAGE_ID_DELETE]", error);
+    return new NextResponse("Internal Error", { status: 500 });
+  }
+}

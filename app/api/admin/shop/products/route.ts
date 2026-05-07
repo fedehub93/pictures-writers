@@ -59,6 +59,7 @@ export async function POST(req: Request) {
         lessons: [],
         seats: 0,
         platform: "",
+        isOpen: false,
       };
     }
 
