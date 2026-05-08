@@ -168,13 +168,6 @@ const ShopCategoryPage = async (props: PageProps<"/shop/[categorySlug]">) => {
           <ProductsList products={products} categorySlug={categorySlug} />
         </div>
       </section>
-      <section className="border-t">
-        <div className="py-6 px-4 xl:px-0 lg:max-w-6xl mx-auto flex flex-col gap-y-4">
-          {category.description && (
-            <TipTapRendererV2 content={category.description} />
-          )}
-        </div>
-      </section>
     </div>
   );
 };

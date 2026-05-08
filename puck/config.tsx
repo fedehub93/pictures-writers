@@ -2,25 +2,32 @@ import { PageUpdateValues } from "@/app/(admin)/admin/(routes)/pages/schema";
 import { Config, Data, Puck } from "@puckeditor/core";
 import "@puckeditor/core/puck.css";
 
+import { Grid, GridProps } from "./blocks/Grid";
+import { Heading, HeadingProps } from "./blocks/Heading";
+
 type Components = {
-  HeadingBlock: {
-    children: string;
-  };
+  Grid: GridProps;
+  Heading: HeadingProps;
 };
 
 // Create Puck component config
 const config: Config<Components> = {
-  components: {
-    HeadingBlock: {
-      fields: {
-        children: {
-          type: "text",
-        },
-      },
-      render: ({ children }) => {
-        return <h1>{children}</h1>;
-      },
+  categories: {
+    layout: {
+      title: "Layout",
+      components: ["Grid"],
     },
+    typography: {
+      title: "Typography",
+      components: ["Heading"],
+    },
+    actions: {
+      title: "Actions",
+    },
+  },
+  components: {
+    Grid,
+    Heading,
   },
 };
 
