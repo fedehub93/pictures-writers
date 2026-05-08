@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { TypographyProps } from "../fields/typography";
 
 export function getTypographyProps(typography?: TypographyProps) {
@@ -8,6 +9,7 @@ export function getTypographyProps(typography?: TypographyProps) {
 
   const letterSpacing = typography.letterSpacing;
   const letterUnit = typography.letterSpacingUnit || "px";
+  const lineHeight = typography.lineHeight;
 
   return {
     className: [
@@ -25,6 +27,7 @@ export function getTypographyProps(typography?: TypographyProps) {
         letterSpacing !== undefined
           ? `${letterSpacing}${letterUnit}`
           : undefined,
-    } as React.CSSProperties,
+      lineHeight: lineHeight || undefined,
+    } as CSSProperties,
   };
 }

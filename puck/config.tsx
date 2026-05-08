@@ -1,6 +1,7 @@
 import { PageUpdateValues } from "@/app/(admin)/admin/(routes)/pages/schema";
-import { ActionBar, Config, Data, Puck, RichTextMenu } from "@puckeditor/core";
+import { Config, Data, Puck } from "@puckeditor/core";
 import "@puckeditor/core/puck.css";
+
 import { Grid, GridProps } from "./blocks/Grid";
 import { Heading, HeadingProps } from "./blocks/Heading";
 
@@ -16,8 +17,8 @@ const config: Config<Components> = {
       title: "Layout",
       components: ["Grid"],
     },
-    tipography: {
-      title: "Tipography",
+    typography: {
+      title: "Typography",
       components: ["Heading"],
     },
     actions: {

@@ -3,10 +3,10 @@ import {
   AlignJustify,
   AlignLeft,
   AlignRight,
+  LucideIcon,
   TypeIcon,
-  X,
 } from "lucide-react";
-// Aggiunto import di X
+
 import {
   Select,
   SelectContent,
@@ -61,7 +61,11 @@ export const TypographyField = withAccordionField(
       });
     };
 
-    const alignments = [
+    const alignments: {
+      value: "left" | "center" | "right" | "justify";
+      icon: LucideIcon;
+      title: string;
+    }[] = [
       { value: "left", icon: AlignLeft, title: "Left" },
       { value: "center", icon: AlignCenter, title: "Center" },
       { value: "right", icon: AlignRight, title: "Right" },

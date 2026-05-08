@@ -1,3 +1,5 @@
+import { ReactNode } from "react";
+
 import { CustomField, Field } from "@puckeditor/core";
 import {
   Accordion,
@@ -13,8 +15,8 @@ type CustomFieldRenderProps = Parameters<
 
 export function withAccordionField(
   label: string,
-  labelIcon: React.ReactNode | undefined,
-  renderContent: (props: CustomFieldRenderProps) => React.ReactNode,
+  labelIcon: ReactNode | undefined,
+  renderContent: (props: CustomFieldRenderProps) => ReactNode,
   defaultOpen: boolean = true, // Puoi decidere se aprirlo di default o no
 ): Field {
   const accordionValue = label.toLowerCase().replace(/\s+/g, "-");

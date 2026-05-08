@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import { ComponentConfig } from "@puckeditor/core";
 
 import { cn } from "@/lib/utils";
@@ -7,10 +8,8 @@ import { RichTextField } from "@/puck/fields/rich-text";
 import { getTypographyProps } from "@/puck/utils/typography";
 import { TypographyField, TypographyProps } from "@/puck/fields/typography";
 
-import { Heading as _Heading } from "../../components/Heading";
-
 export type HeadingProps = {
-  text?: string;
+  text?: ReactNode;
   typography?: TypographyProps;
 };
 
