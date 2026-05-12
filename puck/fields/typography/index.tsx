@@ -22,23 +22,19 @@ import { SegmentedControl } from "@/puck/components/segmented-control";
 
 export interface TypographyProps {
   fontFamily: string;
-  fontSize: number;
-  fontSizeUnit: string;
+  fontSize: string;
   fontWeight: string;
-  letterSpacing: number;
-  letterSpacingUnit: string;
+  letterSpacing: string;
   lineHeight: string;
   textAlign: "left" | "center" | "right" | "justify";
 }
 
 const defaultTypography: TypographyProps = {
   fontFamily: "inherit",
-  fontSize: 15,
-  fontSizeUnit: "px",
+  fontSize: "15",
   fontWeight: "font-normal",
-  letterSpacing: 0,
-  letterSpacingUnit: "px",
-  lineHeight: "30px",
+  letterSpacing: "0",
+  lineHeight: "normal",
   textAlign: "left",
 };
 
@@ -77,15 +73,17 @@ export const TypographyField = withAccordionField(
         {/* --- FONT FAMILY --- */}
         <div>
           <PropHeader
+            name="font-family"
             label="Font family"
             isModified={state.fontFamily !== defaultTypography.fontFamily}
             onReset={() => update({ fontFamily: defaultTypography.fontFamily })}
           />
           <Select
+            name="font-family"
             value={state.fontFamily}
             onValueChange={(val) => update({ fontFamily: val })}
           >
-            <SelectTrigger className="h-8 text-sm">
+            <SelectTrigger id="font-family" className="h-8 text-sm">
               <SelectValue placeholder="Select font" />
             </SelectTrigger>
             <SelectContent>
@@ -97,39 +95,37 @@ export const TypographyField = withAccordionField(
         {/* --- FONT SIZE --- */}
         <div>
           <PropHeader
+            name="font-size"
             label="Font size"
             // Modificato se il numero o l'unità sono diversi dal default
-            isModified={
-              state.fontSize !== defaultTypography.fontSize ||
-              state.fontSizeUnit !== defaultTypography.fontSizeUnit
-            }
+            isModified={state.fontSize !== defaultTypography.fontSize}
             onReset={() =>
               update({
                 fontSize: defaultTypography.fontSize,
-                fontSizeUnit: defaultTypography.fontSizeUnit,
               })
             }
           />
           <ValueUnitInput
+            name="font-size"
             value={state.fontSize}
-            onValueChange={(val) => update({ fontSize: val })}
-            unit={state.fontSizeUnit}
-            onUnitChange={(val) => update({ fontSizeUnit: val })}
+            onChange={(val) => update({ fontSize: val })}
           />
         </div>
 
         {/* --- FONT WEIGHT --- */}
         <div>
           <PropHeader
+            name="font-weight"
             label="Font weight"
             isModified={state.fontWeight !== defaultTypography.fontWeight}
             onReset={() => update({ fontWeight: defaultTypography.fontWeight })}
           />
           <Select
+            name="font-weight"
             value={state.fontWeight}
             onValueChange={(val) => update({ fontWeight: val })}
           >
-            <SelectTrigger className="h-8 text-sm">
+            <SelectTrigger id={"font-weight"} className="h-8 text-sm">
               <SelectValue placeholder="Select weight" />
             </SelectTrigger>
             <SelectContent>
@@ -144,33 +140,31 @@ export const TypographyField = withAccordionField(
         {/* --- LETTER SPACING --- */}
         <div>
           <PropHeader
+            name="letter-spacing"
             label="Letter spacing"
-            isModified={
-              state.letterSpacing !== defaultTypography.letterSpacing ||
-              state.letterSpacingUnit !== defaultTypography.letterSpacingUnit
-            }
+            isModified={state.letterSpacing !== defaultTypography.letterSpacing}
             onReset={() =>
               update({
                 letterSpacing: defaultTypography.letterSpacing,
-                letterSpacingUnit: defaultTypography.letterSpacingUnit,
               })
             }
           />
           <ValueUnitInput
+            name="letter-spacing"
             value={state.letterSpacing}
-            onValueChange={(val) => update({ letterSpacing: val })}
-            unit={state.letterSpacingUnit}
-            onUnitChange={(val) => update({ letterSpacingUnit: val })}
+            onChange={(val) => update({ letterSpacing: val })}
           />
         </div>
 
         <div>
           <PropHeader
+            name="text-align"
             label="Text align"
             isModified={state.textAlign !== defaultTypography.textAlign}
             onReset={() => update({ textAlign: defaultTypography.textAlign })}
           />
           <SegmentedControl
+            name="text-align"
             value={state.textAlign}
             onChange={(val) => update({ textAlign: val })}
             items={alignments}

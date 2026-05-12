@@ -17,7 +17,7 @@ export function withAccordionField(
   label: string,
   labelIcon: ReactNode | undefined,
   renderContent: (props: CustomFieldRenderProps) => ReactNode,
-  defaultOpen: boolean = true, // Puoi decidere se aprirlo di default o no
+  defaultOpen: boolean = false, // Puoi decidere se aprirlo di default o no
 ): Field {
   const accordionValue = label.toLowerCase().replace(/\s+/g, "-");
 
@@ -31,7 +31,7 @@ export function withAccordionField(
         className="w-full border-0"
       >
         <AccordionItem value={accordionValue} className="border-0">
-          <AccordionTrigger className="py-2 text-sm font-semibold hover:no-underline">
+          <AccordionTrigger className="py-0 text-sm font-semibold hover:no-underline">
             <div className="flex items-center gap-x-2">
               {labelIcon && labelIcon}
               {label}

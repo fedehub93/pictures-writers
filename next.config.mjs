@@ -47,7 +47,7 @@ const nextConfig = {
   },
   webpack: (config) => {
     config.resolve.alias["handlebars"] = path.resolve(
-      "./node_modules/handlebars/dist/handlebars.js"
+      "./node_modules/handlebars/dist/handlebars.js",
     );
     return config;
   },
@@ -56,6 +56,7 @@ const nextConfig = {
     "/api/**/*": ["./node_modules/.prisma/client/**/*"],
     "/*": ["./node_modules/.prisma/client/**/*"],
   },
+  reactCompiler: true,
 };
 
 const bundleAnalyzer = withBundleAnalyzer({

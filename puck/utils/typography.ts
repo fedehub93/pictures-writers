@@ -5,10 +5,8 @@ export function getTypographyProps(typography?: TypographyProps) {
   if (!typography) return { className: "", style: {} };
 
   const fontSize = typography.fontSize;
-  const fontUnit = typography.fontSizeUnit || "px";
 
   const letterSpacing = typography.letterSpacing;
-  const letterUnit = typography.letterSpacingUnit || "px";
   const lineHeight = typography.lineHeight;
 
   return {
@@ -21,12 +19,10 @@ export function getTypographyProps(typography?: TypographyProps) {
       .join(" "),
 
     style: {
-      fontSize: fontSize !== undefined ? `${fontSize}${fontUnit}` : undefined,
+      fontSize: fontSize !== undefined ? `${fontSize}` : undefined,
       // Se è 0 possiamo anche ometterlo o generare "0px"
       letterSpacing:
-        letterSpacing !== undefined
-          ? `${letterSpacing}${letterUnit}`
-          : undefined,
+        letterSpacing !== undefined ? `${letterSpacing}` : undefined,
       lineHeight: lineHeight || undefined,
     } as CSSProperties,
   };
