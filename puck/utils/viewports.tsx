@@ -27,11 +27,14 @@ export const viewports: Viewport[] = [
 ];
 
 export const getViewportKey = (width: number | string): Breakpoint => {
-  const numericWidth = typeof width === 'string' ? parseInt(width, 10) : width;
-  
-  // Ora la logica è dinamica e legata alla configurazione centrale
-  if (numericWidth <= BREAKPOINTS.mobile.puckCanvasWidth) return "mobile";
-  if (numericWidth <= BREAKPOINTS.tablet.puckCanvasWidth) return "tablet";
-  
+  const numericWidth = typeof width === "string" ? parseInt(width, 10) : width;
+
+  // Handle NaN case
+  if (isNaN(numericWidth)) return "desktop";
+
+  // Use < for upper bound so exact boundary values belong to wider viewport
+  if (numericWidth < BREAKPOINTS.mobile.puckCanvasWidth) return "mobile";
+  if (numericWidth < BREAKPOINTS.tablet.puckCanvasWidth) return "tablet";
+
   return "desktop";
 };
