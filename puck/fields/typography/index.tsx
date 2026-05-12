@@ -31,9 +31,9 @@ export interface TypographyProps {
 
 const defaultTypography: TypographyProps = {
   fontFamily: "inherit",
-  fontSize: "15",
+  fontSize: "15px",
   fontWeight: "font-normal",
-  letterSpacing: "0",
+  letterSpacing: "",
   lineHeight: "normal",
   textAlign: "left",
 };
