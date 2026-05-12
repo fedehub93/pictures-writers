@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { ComponentConfig } from "@puckeditor/core";
 
 // Placeholder SVG base64 - grigio chiaro con icona immagine

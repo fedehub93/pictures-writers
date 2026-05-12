@@ -26,6 +26,7 @@ import { SegmentedControl } from "@/puck/components/segmented-control";
 import { Responsive } from "@/puck/utils/responsive";
 import { getViewportKey } from "@/puck/utils/viewports";
 import { Breakpoint } from "@/puck/utils/breakpoints";
+import { cascadeViewportValues } from "@/puck/utils/cascade-viewport-valuets";
 
 export interface TypographyProps {
   fontFamily: string;
@@ -83,26 +84,17 @@ export const TypographyField = withAccordionField(
     // B. Gestione dello stato base
     const state = value || defaultTypography;
 
-    // C. Estraiamo i dati salvati per tutte le viewport
-    const desktopData = state.desktop || {};
-    const tabletData = state.tablet || {};
-    const mobileData = state.mobile || {};
-
-    // D. currentValues: override espliciti in questa viewport
+    // C. currentValues: override espliciti in questa viewport
     const currentValues: Partial<TypographyProps> = state[viewportKey] || {};
 
-    // E. renderValues: il valore calcolato a cascata da mostrare nell'interfaccia
-    let renderValues: TypographyProps;
+    // D. renderValues: il valore calcolato a cascata da mostrare nell'interfaccia
+    const renderValues = cascadeViewportValues(
+      viewportKey,
+      state,
+      defaultTypography,
+    );
 
-    if (viewportKey === "desktop") {
-      renderValues = { ...defaultTypography.desktop, ...desktopData } as TypographyProps;
-    } else if (viewportKey === "tablet") {
-      renderValues = { ...defaultTypography.tablet, ...desktopData, ...tabletData } as TypographyProps;
-    } else { // mobile
-      renderValues = { ...defaultTypography.mobile, ...desktopData, ...tabletData, ...mobileData } as TypographyProps;
-    }
-
-    // F. Funzione di aggiornamento mirato
+    // E. Funzione di aggiornamento mirato
     const update = useCallback(
       (updates: Partial<TypographyProps>) => {
         onChange({
@@ -113,10 +105,10 @@ export const TypographyField = withAccordionField(
           },
         });
       },
-      [onChange, state, viewportKey, currentValues]
+      [onChange, state, viewportKey, currentValues],
     );
 
-    // G. Funzione di reset mirato
+    // F. Funzione di reset mirato
     const resetProp = useCallback(
       (key: keyof TypographyProps) => {
         const newViewportState = { ...currentValues };
@@ -127,7 +119,7 @@ export const TypographyField = withAccordionField(
           [viewportKey]: newViewportState,
         });
       },
-      [onChange, state, viewportKey, currentValues]
+      [onChange, state, viewportKey, currentValues],
     );
 
     return (
@@ -227,5 +219,5 @@ export const TypographyField = withAccordionField(
         </div>
       </div>
     );
-  }
+  },
 );

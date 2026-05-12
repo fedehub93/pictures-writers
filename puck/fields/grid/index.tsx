@@ -22,6 +22,7 @@ import { Responsive } from "@/puck/utils/responsive";
 import { getViewportKey } from "@/puck/utils/viewports";
 import { Breakpoint } from "@/puck/utils/breakpoints";
 import { ValueUnitInput } from "@/puck/components/value-unit-input";
+import { cascadeViewportValues } from "@/puck/utils/cascade-viewport-valuets";
 
 // 1. Interfaccia completa per la griglia
 export interface GridProps {
@@ -87,36 +88,13 @@ export const GridField = withAccordionField(
     // B. Gestione dello stato base
     const state = value || defaultGrid;
 
-    // C. Estraiamo i dati salvati per tutte le viewport in modo sicuro
-    const desktopData = state.desktop || {};
-    const tabletData = state.tablet || {};
-    const mobileData = state.mobile || {};
-
-    // D. currentValues: i dati reali ESPLICITAMENTE salvati in questa viewport
+    // C. currentValues: i dati reali ESPLICITAMENTE salvati in questa viewport
     const currentValues: Partial<GridProps> = state[viewportKey] || {};
 
-    // E. renderValues: il valore finale (calcolato a cascata)
-    let renderValues: GridProps;
+    // D. renderValues: il valore finale (calcolato a cascata)
+    const renderValues = cascadeViewportValues(viewportKey, state, defaultGrid);
 
-    if (viewportKey === "desktop") {
-      renderValues = { ...defaultGrid.desktop, ...desktopData } as GridProps;
-    } else if (viewportKey === "tablet") {
-      renderValues = {
-        ...defaultGrid.tablet,
-        ...desktopData,
-        ...tabletData,
-      } as GridProps;
-    } else {
-      // mobile
-      renderValues = {
-        ...defaultGrid.mobile,
-        ...desktopData,
-        ...tabletData,
-        ...mobileData,
-      } as GridProps;
-    }
-
-    // F. Funzione di aggiornamento
+    // E. Funzione di aggiornamento
     const update = useCallback(
       (updates: Partial<GridProps>) => {
         onChange({
@@ -130,7 +108,7 @@ export const GridField = withAccordionField(
       [onChange, state, viewportKey, currentValues],
     );
 
-    // G. Funzione di reset
+    // F. Funzione di reset
     const resetProp = useCallback(
       (key: keyof GridProps) => {
         const newViewportState = { ...currentValues };
@@ -144,7 +122,7 @@ export const GridField = withAccordionField(
       [onChange, state, viewportKey, currentValues],
     );
 
-    // H. Helper per renderizzare i campi testuali velocemente
+    // G. Helper per renderizzare i campi testuali velocemente
     const renderTextInput = useCallback(
       ({ key, label, type }: FieldDef) => {
         // È modificato ESPLICITAMENTE in questa viewport?
@@ -201,7 +179,7 @@ export const GridField = withAccordionField(
               <SegmentedControl
                 name="alignItems"
                 value={renderValues.alignItems}
-                onChange={(val: any) => update({ alignItems: val })}
+                onChange={(val) => update({ alignItems: val })}
                 items={alignItemsOptions}
               />
             </div>
@@ -217,7 +195,7 @@ export const GridField = withAccordionField(
               <SegmentedControl
                 name="justifyItems"
                 value={renderValues.justifyItems}
-                onChange={(val: any) => update({ justifyItems: val })}
+                onChange={(val) => update({ justifyItems: val })}
                 items={justifyItemsOptions}
               />
             </div>

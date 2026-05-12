@@ -54,10 +54,7 @@ export const GridBlock: ComponentConfig<GridBlockProps> = {
     return (
       <>
         {/* 5. Iniettiamo le Media Queries nel DOM (solo se c'è effettivamente del CSS) */}
-        {combinedCss.trim() !== "" && (
-          <style dangerouslySetInnerHTML={{ __html: combinedCss }} />
-        )}
-
+        {combinedCss.trim() !== "" && <style>{combinedCss}</style>}
         {/* 6. Renderizziamo lo Slot applicando la nostra classe dinamica e rimuovendo style={{}} */}
         <Items
           className={cn(

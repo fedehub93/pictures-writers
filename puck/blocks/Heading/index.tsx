@@ -46,18 +46,17 @@ export const Heading: ComponentConfig<HeadingProps> = {
     return (
       <>
         {/* 5. Iniettiamo le Media Queries se presenti */}
-        {combinedCss.trim() !== "" && (
-          <style dangerouslySetInnerHTML={{ __html: combinedCss }} />
-        )}
-        
+        {combinedCss.trim() !== "" && <style>{combinedCss}</style>}
         {/* 6. Renderizziamo il tag, sostituendo style={{ display: "block" }} con la classe "block" */}
         <span
           className={cn(
             "block", // La struttura base
             blockClass, // Il collegamento dinamico al CSS
             // Aggiungiamo eventuali classi statiche ritornate dalle utility
-            dimensionData.className !== blockClass ? dimensionData.className : "",
-            typoData.className !== blockClass ? typoData.className : ""
+            dimensionData.className !== blockClass
+              ? dimensionData.className
+              : "",
+            typoData.className !== blockClass ? typoData.className : "",
           )}
         >
           {text}

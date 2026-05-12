@@ -10,6 +10,7 @@ import { ValueUnitInput } from "@/puck/components/value-unit-input";
 import { Responsive } from "@/puck/utils/responsive";
 import { getViewportKey } from "@/puck/utils/viewports";
 import { Breakpoint } from "@/puck/utils/breakpoints";
+import { cascadeViewportValues } from "@/puck/utils/cascade-viewport-valuets";
 
 export interface DimensionProps {
   width: string;
@@ -32,10 +33,22 @@ export interface DimensionProps {
 
 // Creiamo un oggetto base piatto per comodità, per non ripetere il codice
 const flatDefaultDimension: DimensionProps = {
-  width: "", height: "", maxWidth: "", minHeight: "",
-  top: "", left: "", right: "", bottom: "",
-  marginTop: "", marginLeft: "", marginRight: "", marginBottom: "",
-  paddingTop: "", paddingLeft: "", paddingRight: "", paddingBottom: "",
+  width: "",
+  height: "",
+  maxWidth: "",
+  minHeight: "",
+  top: "",
+  left: "",
+  right: "",
+  bottom: "",
+  marginTop: "",
+  marginLeft: "",
+  marginRight: "",
+  marginBottom: "",
+  paddingTop: "",
+  paddingLeft: "",
+  paddingRight: "",
+  paddingBottom: "",
 };
 
 // Default values per ogni viewport
@@ -85,28 +98,19 @@ export const DimensionField = withAccordionField(
     const viewportKey = getViewportKey(currentViewport.width);
 
     // B. Gestione dello stato base
-    const state = value || defaultDimension;
+    const state = value ?? {};
 
-    // C. Estraiamo i dati salvati per tutte le viewport
-    const desktopData = state.desktop || {};
-    const tabletData = state.tablet || {};
-    const mobileData = state.mobile || {};
+    // C. currentValues: i dati reali ESPLICITAMENTE salvati in questa viewport
+    const currentValues: Partial<DimensionProps> = state[viewportKey] ?? {};
 
-    // D. currentValues: i dati reali ESPLICITAMENTE salvati in questa viewport
-    const currentValues: Partial<DimensionProps> = state[viewportKey] || {};
+    // D. renderValues: il valore finale (calcolato a cascata)
+    const renderValues = cascadeViewportValues(
+      viewportKey,
+      state,
+      defaultDimension,
+    );
 
-    // E. renderValues: il valore finale (calcolato a cascata)
-    let renderValues: DimensionProps;
-
-    if (viewportKey === "desktop") {
-      renderValues = { ...defaultDimension.desktop, ...desktopData } as DimensionProps;
-    } else if (viewportKey === "tablet") {
-      renderValues = { ...defaultDimension.tablet, ...desktopData, ...tabletData } as DimensionProps;
-    } else {
-      renderValues = { ...defaultDimension.mobile, ...desktopData, ...tabletData, ...mobileData } as DimensionProps;
-    }
-
-    // F. Funzione di aggiornamento
+    // E. Funzione di aggiornamento
     const update = useCallback(
       (updates: Partial<DimensionProps>) => {
         onChange({
@@ -117,10 +121,10 @@ export const DimensionField = withAccordionField(
           },
         });
       },
-      [onChange, state, viewportKey, currentValues]
+      [onChange, state, viewportKey, currentValues],
     );
 
-    // G. Funzione di reset
+    // F. Funzione di reset
     const resetProp = useCallback(
       (key: keyof DimensionProps) => {
         const newViewportState = { ...currentValues };
@@ -131,10 +135,10 @@ export const DimensionField = withAccordionField(
           [viewportKey]: newViewportState,
         });
       },
-      [onChange, state, viewportKey, currentValues]
+      [onChange, state, viewportKey, currentValues],
     );
 
-    // H. Render ottimizzato del singolo field
+    // G. Render ottimizzato del singolo field
     const renderField = useCallback(
       ({ key, label }: FieldDef) => {
         // È modificato solo se esiste esplicitamente salvato per questo breakpoint
@@ -158,7 +162,7 @@ export const DimensionField = withAccordionField(
           </div>
         );
       },
-      [currentValues, renderValues, resetProp, update]
+      [currentValues, renderValues, resetProp, update],
     );
 
     return (
@@ -185,5 +189,5 @@ export const DimensionField = withAccordionField(
         </div>
       </>
     );
-  }
+  },
 );
