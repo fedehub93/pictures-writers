@@ -1,9 +1,15 @@
+import { useCallback } from "react";
 import { RulerDimensionLineIcon } from "lucide-react";
+import { createUsePuck } from "@puckeditor/core";
 
 import { withAccordionField } from "@/puck/utils/with-accordion-field";
-
 import { PropHeader } from "@/puck/components/prop-header";
 import { ValueUnitInput } from "@/puck/components/value-unit-input";
+
+// Utility per la responsività
+import { Responsive } from "@/puck/utils/responsive";
+import { getViewportKey } from "@/puck/utils/viewports";
+import { Breakpoint } from "@/puck/utils/breakpoints";
 
 export interface DimensionProps {
   width: string;
@@ -24,23 +30,19 @@ export interface DimensionProps {
   paddingBottom: string;
 }
 
-const defaultDimension: DimensionProps = {
-  width: "",
-  height: "",
-  maxWidth: "",
-  minHeight: "",
-  top: "",
-  left: "",
-  right: "",
-  bottom: "",
-  marginTop: "",
-  marginLeft: "",
-  marginRight: "",
-  marginBottom: "",
-  paddingTop: "",
-  paddingLeft: "",
-  paddingRight: "",
-  paddingBottom: "",
+// Creiamo un oggetto base piatto per comodità, per non ripetere il codice
+const flatDefaultDimension: DimensionProps = {
+  width: "", height: "", maxWidth: "", minHeight: "",
+  top: "", left: "", right: "", bottom: "",
+  marginTop: "", marginLeft: "", marginRight: "", marginBottom: "",
+  paddingTop: "", paddingLeft: "", paddingRight: "", paddingBottom: "",
+};
+
+// Default values per ogni viewport
+const defaultDimension: Record<Breakpoint, DimensionProps> = {
+  desktop: { ...flatDefaultDimension },
+  tablet: { ...flatDefaultDimension },
+  mobile: { ...flatDefaultDimension },
 };
 
 type FieldDef = { key: keyof DimensionProps; label: string };
@@ -66,6 +68,8 @@ const paddingFields: FieldDef[] = [
   { key: "paddingLeft", label: "Left" },
 ];
 
+const usePuck = createUsePuck();
+
 export const DimensionField = withAccordionField(
   "Dimension",
   <RulerDimensionLineIcon className="size-4 text-muted-foreground" />,
@@ -73,57 +77,113 @@ export const DimensionField = withAccordionField(
     onChange,
     value,
   }: {
-    onChange: (value: DimensionProps) => void;
-    value?: DimensionProps;
+    onChange: (value: Responsive<DimensionProps>) => void;
+    value?: Responsive<DimensionProps>;
   }) => {
+    // A. Intercettiamo la viewport attiva
+    const currentViewport = usePuck((s) => s.appState.ui.viewports.current);
+    const viewportKey = getViewportKey(currentViewport.width);
+
+    // B. Gestione dello stato base
     const state = value || defaultDimension;
 
-    const update = (updates: Partial<DimensionProps>) => {
-      onChange({
-        ...state,
-        ...updates,
-      });
-    };
+    // C. Estraiamo i dati salvati per tutte le viewport
+    const desktopData = state.desktop || {};
+    const tabletData = state.tablet || {};
+    const mobileData = state.mobile || {};
 
-    const renderField = ({ key, label }: FieldDef) => (
-      <div key={`container-${key}`} className="flex flex-col gap-y-1">
-        <PropHeader
-          key={`prop-${key}`}
-          name={key}
-          label={label}
-          isModified={state[key] !== defaultDimension[key]}
-          onReset={() => update({ [key]: defaultDimension[key] })}
-        />
-        <ValueUnitInput
-          key={`value-${key}`}
-          name={key}
-          value={state[key]}
-          onChange={(newVal) => update({ [key]: newVal })}
-        />
-      </div>
+    // D. currentValues: i dati reali ESPLICITAMENTE salvati in questa viewport
+    const currentValues: Partial<DimensionProps> = state[viewportKey] || {};
+
+    // E. renderValues: il valore finale (calcolato a cascata)
+    let renderValues: DimensionProps;
+
+    if (viewportKey === "desktop") {
+      renderValues = { ...defaultDimension.desktop, ...desktopData } as DimensionProps;
+    } else if (viewportKey === "tablet") {
+      renderValues = { ...defaultDimension.tablet, ...desktopData, ...tabletData } as DimensionProps;
+    } else {
+      renderValues = { ...defaultDimension.mobile, ...desktopData, ...tabletData, ...mobileData } as DimensionProps;
+    }
+
+    // F. Funzione di aggiornamento
+    const update = useCallback(
+      (updates: Partial<DimensionProps>) => {
+        onChange({
+          ...state,
+          [viewportKey]: {
+            ...currentValues,
+            ...updates,
+          },
+        });
+      },
+      [onChange, state, viewportKey, currentValues]
+    );
+
+    // G. Funzione di reset
+    const resetProp = useCallback(
+      (key: keyof DimensionProps) => {
+        const newViewportState = { ...currentValues };
+        delete newViewportState[key];
+
+        onChange({
+          ...state,
+          [viewportKey]: newViewportState,
+        });
+      },
+      [onChange, state, viewportKey, currentValues]
+    );
+
+    // H. Render ottimizzato del singolo field
+    const renderField = useCallback(
+      ({ key, label }: FieldDef) => {
+        // È modificato solo se esiste esplicitamente salvato per questo breakpoint
+        const isModified = currentValues[key] !== undefined;
+
+        return (
+          <div key={`container-${key}`} className="flex flex-col gap-y-1">
+            <PropHeader
+              key={`prop-${key}`}
+              name={key}
+              label={label}
+              isModified={isModified}
+              onReset={() => resetProp(key)}
+            />
+            <ValueUnitInput
+              key={`value-${key}`}
+              name={key}
+              value={renderValues[key]}
+              onChange={(newVal) => update({ [key]: newVal })}
+            />
+          </div>
+        );
+      },
+      [currentValues, renderValues, resetProp, update]
     );
 
     return (
       <>
+        {/* --- LAYOUT --- */}
         <div className="grid grid-cols-2 gap-x-4 gap-y-4 p-1">
           {layoutFields.map(renderField)}
         </div>
 
         {/* --- MARGIN --- */}
         <div className="mt-4">
-          <span>Margin</span>
+          <span className="text-sm font-medium">Margin</span>
           <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-4 p-2 bg-muted/60 rounded">
             {marginFields.map(renderField)}
           </div>
         </div>
+
         {/* --- PADDING --- */}
         <div className="mt-4">
-          <span>Padding</span>
+          <span className="text-sm font-medium">Padding</span>
           <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-4 p-2 bg-muted/60 rounded">
             {paddingFields.map(renderField)}
           </div>
         </div>
       </>
     );
-  },
+  }
 );

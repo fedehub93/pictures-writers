@@ -2,11 +2,14 @@ import { PageUpdateValues } from "@/app/(admin)/admin/(routes)/pages/schema";
 import { Config, Data, Puck } from "@puckeditor/core";
 import "@puckeditor/core/puck.css";
 
-import { Grid, GridProps } from "./blocks/Grid";
+import { GridBlock, GridBlockProps } from "./blocks/Grid";
 import { Heading, HeadingProps } from "./blocks/Heading";
+import { ImageBlock, ImageBlockProps } from "./blocks/Image";
+import { viewports } from "./utils/viewports";
 
 type Components = {
-  Grid: GridProps;
+  Grid: GridBlockProps;
+  Image: ImageBlockProps;
   Heading: HeadingProps;
 };
 
@@ -15,7 +18,7 @@ const config: Config<Components> = {
   categories: {
     layout: {
       title: "Layout",
-      components: ["Grid"],
+      components: ["Grid", "Image"],
     },
     typography: {
       title: "Typography",
@@ -26,7 +29,8 @@ const config: Config<Components> = {
     },
   },
   components: {
-    Grid,
+    Grid: GridBlock,
+    Image: ImageBlock,
     Heading,
   },
 };
@@ -43,5 +47,12 @@ export function PuckEditor({ id, initialData, onSavePage }: PuckEditorProps) {
     onSavePage({ id, puckData: data });
   };
 
-  return <Puck config={config} data={initialData} onPublish={onSave} />;
+  return (
+    <Puck
+      config={config}
+      data={initialData}
+      onPublish={onSave}
+      viewports={viewports}
+    />
+  );
 }
