@@ -5,15 +5,22 @@ import { Button } from "@/components/ui/button";
 
 interface ControlHeaderProps {
   label: string;
+  name: string;
   isModified: boolean;
   onReset: () => void;
 }
 
-export function PropHeader({ label, isModified, onReset }: ControlHeaderProps) {
+export function PropHeader({
+  label,
+  name,
+  isModified,
+  onReset,
+}: ControlHeaderProps) {
   return (
     // L'altezza fissa (h-5) evita che il layout "salti" quando appare/scompare la X
-    <div className="flex items-center justify-between mb-1.5 h-5">
+    <div className="flex items-center justify-between h-5">
       <Label
+        htmlFor={name}
         className={`text-xs transition-colors ${
           isModified ? "text-primary font-medium" : "text-muted-foreground"
         }`}
@@ -26,6 +33,7 @@ export function PropHeader({ label, isModified, onReset }: ControlHeaderProps) {
           className="size-4 p-0 text-muted-foreground hover:text-destructive transition-colors hover:bg-transparent"
           variant="ghost"
           title="Reset to default"
+          type="button"
         >
           <X className="size-4" />
         </Button>

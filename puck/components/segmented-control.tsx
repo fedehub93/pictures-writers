@@ -3,18 +3,21 @@ import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface SegmentedControlProps<T extends string> {
+  name: string;
   value: T;
   onChange: (val: T) => void;
   items: { value: T; icon: LucideIcon; title: string }[];
 }
 
 export function SegmentedControl<T extends string>({
+  name,
   value,
   onChange,
   items,
 }: SegmentedControlProps<T>) {
   return (
     <ToggleGroup
+      id={name}
       type="single"
       value={value}
       onValueChange={(val) => {
