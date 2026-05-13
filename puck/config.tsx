@@ -5,12 +5,15 @@ import "@puckeditor/core/puck.css";
 import { GridBlock, GridBlockProps } from "./blocks/Grid";
 import { SeparatorBlock, SeparatorBlockProps } from "./blocks/Separator";
 import { ImageBlock, ImageBlockProps } from "./blocks/Image";
+import { FormBlock, FormBlockProps } from "./blocks/Form";
 import { Heading, HeadingProps } from "./blocks/Heading";
+
 import { viewports } from "./utils/viewports";
 
 type Components = {
   Grid: GridBlockProps;
   Image: ImageBlockProps;
+  Form: FormBlockProps;
   Separator: SeparatorBlockProps;
   Heading: HeadingProps;
 };
@@ -20,7 +23,7 @@ const config: Config<Components> = {
   categories: {
     layout: {
       title: "Layout",
-      components: ["Grid", "Image", "Separator"],
+      components: ["Grid", "Image", "Form", "Separator"],
     },
     typography: {
       title: "Typography",
@@ -33,6 +36,7 @@ const config: Config<Components> = {
   components: {
     Grid: GridBlock,
     Image: ImageBlock,
+    Form: FormBlock,
     Separator: SeparatorBlock,
     Heading,
   },
