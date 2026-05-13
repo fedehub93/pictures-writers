@@ -31,7 +31,7 @@ export const getViewportKey = (width: number | string): Breakpoint => {
   // Handle NaN case
   if (isNaN(numericWidth)) return "desktop";
 
-  // Use < for upper bound so exact boundary values belong to wider viewport
+  // Use <= for upper bound so exact boundary values belong to wider viewport
   if (numericWidth <= BREAKPOINTS.mobile.puckCanvasWidth) return "mobile";
   if (numericWidth <= BREAKPOINTS.tablet.puckCanvasWidth) return "tablet";
 

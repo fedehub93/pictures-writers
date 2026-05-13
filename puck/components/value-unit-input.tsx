@@ -24,7 +24,7 @@ const parseCSSValue = (val: string | undefined, allowedUnits: string[]) => {
 
   const match = String(val)
     .trim()
-    .match(/^(-?\d*\.?\d+)(.*)$/);
+    .match(/^([-+]?(?:\d+\.?\d*|\.\d+))\s*(.*)$/);
 
   if (match) {
     const numPart = match[1];
@@ -89,7 +89,7 @@ export function ValueUnitInput({
     }
 
     // Controlla se l'utente ha scritto l'unità direttamente nell'input (es. "100px")
-    const match = rawValue.trim().match(/^(-?\d*\.?\d+)(.*)$/);
+    const match = rawValue.trim().match(/^([-+]?(?:\d+\.?\d*|\.\d+))\s*(.*)$/);
     if (match) {
       const numPart = match[1]; // "100" o "15.5" o "-20"
       const stringPart = match[2].trim(); // "px" o "rem" o "auto"

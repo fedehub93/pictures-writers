@@ -40,8 +40,6 @@ export interface DimensionProps {
   paddingBottom?: string;
 }
 
-const flatDefaultDimension: DimensionProps = {};
-
 const defaultDimension: Record<Breakpoint, DimensionProps> = {
   desktop: {},
   tablet: {},

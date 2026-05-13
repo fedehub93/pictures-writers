@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import HolyLoader from "holy-loader";
 
 import "./admin.css";
+import "@/puck/styles/puck-base.css";
 
 import { Container } from "./_components/container";
 
