@@ -83,7 +83,7 @@
   }
 }
 
-@media` (max-width: 767px) {
+@media (max-width: 767px) {
   .puck-dim {
     width: var(--w-m, var(--w-t, var(--w-d)));
     height: var(--h-m, var(--h-t, var(--h-d)));
