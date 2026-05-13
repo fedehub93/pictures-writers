@@ -1,13 +1,43 @@
+/* 
+   Puck Base CSS - Variable Guard Version
+   Questo sistema impedisce ai figli di ereditare i margini/padding dei padri.
+*/
+
 /* --- 1. DIMENSION & LAYOUT --- */
 .puck-dim {
-  /* Desktop (Base) */
+  /* Reset locale: se la variabile non è definita inline sull'elemento, 
+     viene resettata e non eredita quella del genitore */
+  --w-d: initial;
+  --h-d: initial;
+  --mw-d: initial;
+  --mh-d: initial;
+  --ratio-d: initial;
+  --mt-d: initial;
+  --mr-d: initial;
+  --mb-d: initial;
+  --ml-d: initial;
+  --pt-d: initial;
+  --pr-d: initial;
+  --pb-d: initial;
+  --pl-d: initial;
+  --top-d: initial;
+  --bottom-d: initial;
+  --left-d: initial;
+  --right-d: initial;
+
   width: var(--w-d);
   height: var(--h-d);
   max-width: var(--mw-d);
   min-height: var(--mh-d);
   aspect-ratio: var(--ratio-d);
-  margin: var(--mt-d) var(--mr-d) var(--mb-d) var(--ml-d);
-  padding: var(--pt-d) var(--pr-d) var(--pb-d) var(--pl-d);
+  margin-top: var(--mt-d);
+  margin-right: var(--mr-d);
+  margin-bottom: var(--mb-d);
+  margin-left: var(--ml-d);
+  padding-top: var(--pt-d);
+  padding-right: var(--pr-d);
+  padding-bottom: var(--pb-d);
+  padding-left: var(--pl-d);
   top: var(--top-d);
   bottom: var(--bottom-d);
   left: var(--left-d);
@@ -16,6 +46,13 @@
 
 /* --- 2. TYPOGRAPHY --- */
 .puck-typo {
+  --ff-d: initial;
+  --fs-d: initial;
+  --fw-d: initial;
+  --lh-d: initial;
+  --ls-d: initial;
+  --ta-d: initial;
+
   font-family: var(--ff-d);
   font-size: var(--fs-d);
   font-weight: var(--fw-d);
@@ -26,6 +63,11 @@
 
 /* --- 3. GRID --- */
 .puck-grid {
+  --cols-d: initial;
+  --gap-d: initial;
+  --ai-d: initial;
+  --ji-d: initial;
+
   display: grid;
   grid-template-columns: var(--cols-d);
   gap: var(--gap-d);
@@ -35,6 +77,12 @@
 
 /* --- 4. DECORATION --- */
 .puck-deco {
+  --op-d: initial;
+  --rtl-d: initial;
+  --rtr-d: initial;
+  --rbl-d: initial;
+  --rbr-d: initial;
+
   opacity: var(--op-d);
   border-top-left-radius: var(--rtl-d);
   border-top-right-radius: var(--rtr-d);
@@ -46,21 +94,51 @@
 
 @media (max-width: 1024px) {
   .puck-dim {
+    /* Reset variabili Tablet per evitare eredità */
+    --w-t: initial;
+    --h-t: initial;
+    --mw-t: initial;
+    --mh-t: initial;
+    --ratio-t: initial;
+    --mt-t: initial;
+    --mr-t: initial;
+    --mb-t: initial;
+    --ml-t: initial;
+    --pt-t: initial;
+    --pr-t: initial;
+    --pb-t: initial;
+    --pl-t: initial;
+    --top-t: initial;
+    --bottom-t: initial;
+    --left-t: initial;
+    --right-t: initial;
+
     width: var(--w-t, var(--w-d));
     height: var(--h-t, var(--h-d));
     max-width: var(--mw-t, var(--mw-d));
     min-height: var(--mh-t, var(--mh-d));
     aspect-ratio: var(--ratio-t, var(--ratio-d));
-    margin: var(--mt-t, var(--mt-d)) var(--mr-t, var(--mr-d))
-      var(--mb-t, var(--mb-d)) var(--ml-t, var(--ml-d));
-    padding: var(--pt-t, var(--pt-d)) var(--pr-t, var(--pr-d))
-      var(--pb-t, var(--pb-d)) var(--pl-t, var(--pl-d));
+    margin-top: var(--mt-t, var(--mt-d));
+    margin-right: var(--mr-t, var(--mr-d));
+    margin-bottom: var(--mb-t, var(--mb-d));
+    margin-left: var(--ml-t, var(--ml-d));
+    padding-top: var(--pt-t, var(--pt-d));
+    padding-right: var(--pr-t, var(--pr-d));
+    padding-bottom: var(--pb-t, var(--pb-d));
+    padding-left: var(--pl-t, var(--pl-d));
     top: var(--top-t, var(--top-d));
     bottom: var(--bottom-t, var(--bottom-d));
     left: var(--left-t, var(--left-d));
     right: var(--right-t, var(--right-d));
   }
   .puck-typo {
+    --ff-t: initial;
+    --fs-t: initial;
+    --fw-t: initial;
+    --lh-t: initial;
+    --ls-t: initial;
+    --ta-t: initial;
+
     font-family: var(--ff-t, var(--ff-d));
     font-size: var(--fs-t, var(--fs-d));
     font-weight: var(--fw-t, var(--fw-d));
@@ -69,12 +147,23 @@
     text-align: var(--ta-t, var(--ta-d));
   }
   .puck-grid {
+    --cols-t: initial;
+    --gap-t: initial;
+    --ai-t: initial;
+    --ji-t: initial;
+
     grid-template-columns: var(--cols-t, var(--cols-d));
     gap: var(--gap-t, var(--gap-d));
     align-items: var(--ai-t, var(--ai-d));
     justify-items: var(--ji-t, var(--ji-d));
   }
   .puck-deco {
+    --op-t: initial;
+    --rtl-t: initial;
+    --rtr-t: initial;
+    --rbl-t: initial;
+    --rbr-t: initial;
+
     opacity: var(--op-t, var(--op-d));
     border-top-left-radius: var(--rtl-t, var(--rtl-d));
     border-top-right-radius: var(--rtr-t, var(--rtr-d));
@@ -85,25 +174,51 @@
 
 @media (max-width: 767px) {
   .puck-dim {
+    /* Reset variabili Mobile */
+    --w-m: initial;
+    --h-m: initial;
+    --mw-m: initial;
+    --mh-m: initial;
+    --ratio-m: initial;
+    --mt-m: initial;
+    --mr-m: initial;
+    --mb-m: initial;
+    --ml-m: initial;
+    --pt-m: initial;
+    --pr-m: initial;
+    --pb-m: initial;
+    --pl-m: initial;
+    --top-m: initial;
+    --bottom-m: initial;
+    --left-m: initial;
+    --right-m: initial;
+
     width: var(--w-m, var(--w-t, var(--w-d)));
     height: var(--h-m, var(--h-t, var(--h-d)));
     max-width: var(--mw-m, var(--mw-t, var(--mw-d)));
     min-height: var(--mh-m, var(--mh-t, var(--mh-d)));
     aspect-ratio: var(--ratio-m, var(--ratio-t, var(--ratio-d)));
-    margin: var(--mt-m, var(--mt-t, var(--mt-d)))
-      var(--mr-m, var(--mr-t, var(--mr-d)))
-      var(--mb-m, var(--mb-t, var(--mb-d)))
-      var(--ml-m, var(--ml-t, var(--ml-d)));
-    padding: var(--pt-m, var(--pt-t, var(--pt-d)))
-      var(--pr-m, var(--pr-t, var(--pr-d)))
-      var(--pb-m, var(--pb-t, var(--pb-d)))
-      var(--pl-m, var(--pl-t, var(--pl-d)));
+    margin-top: var(--mt-m, var(--mt-t, var(--mt-d)));
+    margin-right: var(--mr-m, var(--mr-t, var(--mr-d)));
+    margin-bottom: var(--mb-m, var(--mb-t, var(--mb-d)));
+    margin-left: var(--ml-m, var(--ml-t, var(--ml-d)));
+    padding-top: var(--pt-m, var(--pt-t, var(--pt-d)));
+    padding-right: var(--pr-m, var(--pr-t, var(--pr-d)));
+    padding-bottom: var(--pb-m, var(--pb-t, var(--pb-d)));
+    padding-left: var(--pl-m, var(--pl-t, var(--pl-d)));
     top: var(--top-m, var(--top-t, var(--top-d)));
     bottom: var(--bottom-m, var(--bottom-t, var(--bottom-d)));
     left: var(--left-m, var(--left-t, var(--left-d)));
     right: var(--right-m, var(--right-t, var(--right-d)));
   }
   .puck-typo {
+    --ff-m: initial;
+    --fs-m: initial;
+    --fw-m: initial;
+    --lh-m: initial;
+    --ls-m: initial;
+    --ta-m: initial;
+
     font-family: var(--ff-m, var(--ff-t, var(--ff-d)));
     font-size: var(--fs-m, var(--fs-t, var(--fs-d)));
     font-weight: var(--fw-m, var(--fw-t, var(--fw-d)));
@@ -112,12 +227,23 @@
     text-align: var(--ta-m, var(--ta-t, var(--ta-d)));
   }
   .puck-grid {
+    --cols-m: initial;
+    --gap-m: initial;
+    --ai-m: initial;
+    --ji-m: initial;
+
     grid-template-columns: var(--cols-m, var(--cols-t, var(--cols-d)));
     gap: var(--gap-m, var(--gap-t, var(--gap-d)));
     align-items: var(--ai-m, var(--ai-t, var(--ai-d)));
     justify-items: var(--ji-m, var(--ji-t, var(--ji-d)));
   }
   .puck-deco {
+    --op-m: initial;
+    --rtl-m: initial;
+    --rtr-m: initial;
+    --rbl-m: initial;
+    --rbr-m: initial;
+
     opacity: var(--op-m, var(--op-t, var(--op-d)));
     border-top-left-radius: var(--rtl-m, var(--rtl-t, var(--rtl-d)));
     border-top-right-radius: var(--rtr-m, var(--rtr-t, var(--rtr-d)));

@@ -36,9 +36,9 @@ export const Heading: ComponentConfig<HeadingProps> = {
     };
 
     return (
-      <span className={cn("block puck-dim puck-typo")} style={styleVars}>
+      <div className={cn("block puck-dim puck-typo")} style={styleVars}>
         {text}
-      </span>
+      </div>
     );
   },
 };
