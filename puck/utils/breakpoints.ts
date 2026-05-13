@@ -6,7 +6,7 @@ export const BREAKPOINTS = {
     id: "mobile",
     label: "Mobile",
     puckCanvasWidth: 360, // La larghezza dell'iframe nell'editor
-    cssMaxWidth: 768, // Fino a quanti pixel vale questa regola in CSS
+    cssMaxWidth: 767, // Fino a quanti pixel vale questa regola in CSS
   },
   tablet: {
     id: "tablet",

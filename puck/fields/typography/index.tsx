@@ -28,30 +28,21 @@ import { getViewportKey } from "@/puck/utils/viewports";
 import { Breakpoint } from "@/puck/utils/breakpoints";
 import { cascadeViewportValues } from "@/puck/utils/cascade-viewport-valuets";
 
+// 1. Interfaccia con proprietà opzionali per un JSON leggero
 export interface TypographyProps {
-  fontFamily: string;
-  fontSize: string;
-  fontWeight: string;
-  letterSpacing: string;
-  lineHeight: string;
-  textAlign: "left" | "center" | "right" | "justify";
+  fontFamily?: string;
+  fontSize?: string;
+  fontWeight?: string;
+  letterSpacing?: string;
+  lineHeight?: string;
+  textAlign?: "left" | "center" | "right" | "justify";
 }
 
-// Creiamo un oggetto base piatto
-const flatDefaultTypography: TypographyProps = {
-  fontFamily: "inherit",
-  fontSize: "15px",
-  fontWeight: "font-normal",
-  letterSpacing: "",
-  lineHeight: "normal",
-  textAlign: "left",
-};
-
-// Default values per ogni viewport
+// 2. Default minimi (vuoti)
 const defaultTypography: Record<Breakpoint, TypographyProps> = {
-  desktop: { ...flatDefaultTypography },
-  tablet: { ...flatDefaultTypography },
-  mobile: { ...flatDefaultTypography },
+  desktop: {},
+  tablet: {},
+  mobile: {},
 };
 
 const alignments: {
@@ -77,24 +68,19 @@ export const TypographyField = withAccordionField(
     onChange: (value: Responsive<TypographyProps>) => void;
     value?: Responsive<TypographyProps>;
   }) => {
-    // A. Intercettiamo la viewport attiva
     const currentViewport = usePuck((s) => s.appState.ui.viewports.current);
     const viewportKey = getViewportKey(currentViewport.width);
 
-    // B. Gestione dello stato base
-    const state = value || defaultTypography;
-
-    // C. currentValues: override espliciti in questa viewport
+    const state = value || {};
     const currentValues: Partial<TypographyProps> = state[viewportKey] || {};
 
-    // D. renderValues: il valore calcolato a cascata da mostrare nell'interfaccia
+    // Il cascade recupera i valori mancanti dai breakpoint superiori
     const renderValues = cascadeViewportValues(
       viewportKey,
       state,
-      defaultTypography,
+      defaultTypography
     );
 
-    // E. Funzione di aggiornamento mirato
     const update = useCallback(
       (updates: Partial<TypographyProps>) => {
         onChange({
@@ -105,10 +91,9 @@ export const TypographyField = withAccordionField(
           },
         });
       },
-      [onChange, state, viewportKey, currentValues],
+      [onChange, state, viewportKey, currentValues]
     );
 
-    // F. Funzione di reset mirato
     const resetProp = useCallback(
       (key: keyof TypographyProps) => {
         const newViewportState = { ...currentValues };
@@ -119,7 +104,7 @@ export const TypographyField = withAccordionField(
           [viewportKey]: newViewportState,
         });
       },
-      [onChange, state, viewportKey, currentValues],
+      [onChange, state, viewportKey, currentValues]
     );
 
     return (
@@ -127,22 +112,22 @@ export const TypographyField = withAccordionField(
         {/* --- FONT FAMILY --- */}
         <div>
           <PropHeader
-            name="font-family"
+            name="fontFamily"
             label="Font family"
             isModified={currentValues.fontFamily !== undefined}
             onReset={() => resetProp("fontFamily")}
           />
           <Select
-            name="font-family"
-            value={renderValues.fontFamily}
-            onValueChange={(val) => update({ fontFamily: val })}
+            name="fontFamily"
+            value={renderValues.fontFamily ?? "inherit"}
+            onValueChange={(val) => update({ fontFamily: val === "inherit" ? undefined : val })}
           >
             <SelectTrigger id="font-family" className="h-8 text-sm">
               <SelectValue placeholder="Select font" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="inherit">Inherit</SelectItem>
-              {/* Aggiungi qui gli altri font che supporti */}
+              {/* Aggiungi qui gli altri font */}
             </SelectContent>
           </Select>
         </div>
@@ -150,29 +135,29 @@ export const TypographyField = withAccordionField(
         {/* --- FONT SIZE --- */}
         <div>
           <PropHeader
-            name="font-size"
+            name="fontSize"
             label="Font size"
             isModified={currentValues.fontSize !== undefined}
             onReset={() => resetProp("fontSize")}
           />
           <ValueUnitInput
-            name="font-size"
-            value={renderValues.fontSize}
-            onChange={(val) => update({ fontSize: val })}
+            name="fontSize"
+            value={renderValues.fontSize ?? ""}
+            onChange={(val) => update({ fontSize: val || undefined })}
           />
         </div>
 
         {/* --- FONT WEIGHT --- */}
         <div>
           <PropHeader
-            name="font-weight"
+            name="fontWeight"
             label="Font weight"
             isModified={currentValues.fontWeight !== undefined}
             onReset={() => resetProp("fontWeight")}
           />
           <Select
-            name="font-weight"
-            value={renderValues.fontWeight}
+            name="fontWeight"
+            value={renderValues.fontWeight ?? "font-normal"}
             onValueChange={(val) => update({ fontWeight: val })}
           >
             <SelectTrigger id="font-weight" className="h-8 text-sm">
@@ -190,34 +175,34 @@ export const TypographyField = withAccordionField(
         {/* --- LETTER SPACING --- */}
         <div>
           <PropHeader
-            name="letter-spacing"
+            name="letterSpacing"
             label="Letter spacing"
             isModified={currentValues.letterSpacing !== undefined}
             onReset={() => resetProp("letterSpacing")}
           />
           <ValueUnitInput
-            name="letter-spacing"
-            value={renderValues.letterSpacing}
-            onChange={(val) => update({ letterSpacing: val })}
+            name="letterSpacing"
+            value={renderValues.letterSpacing ?? ""}
+            onChange={(val) => update({ letterSpacing: val || undefined })}
           />
         </div>
 
         {/* --- TEXT ALIGN --- */}
         <div className="col-span-2">
           <PropHeader
-            name="text-align"
+            name="textAlign"
             label="Text align"
             isModified={currentValues.textAlign !== undefined}
             onReset={() => resetProp("textAlign")}
           />
           <SegmentedControl
-            name="text-align"
-            value={renderValues.textAlign}
+            name="textAlign"
+            value={renderValues.textAlign ?? "left"}
             onChange={(val: any) => update({ textAlign: val })}
             items={alignments}
           />
         </div>
       </div>
     );
-  },
+  }
 );

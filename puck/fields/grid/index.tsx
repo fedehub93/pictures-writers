@@ -17,44 +17,34 @@ import { SegmentedControl } from "@/puck/components/segmented-control";
 import { withAccordionField } from "@/puck/utils/with-accordion-field";
 import { PropHeader } from "@/puck/components/prop-header";
 
-// Importiamo le nostre utility per la responsività
 import { Responsive } from "@/puck/utils/responsive";
 import { getViewportKey } from "@/puck/utils/viewports";
 import { Breakpoint } from "@/puck/utils/breakpoints";
 import { ValueUnitInput } from "@/puck/components/value-unit-input";
 import { cascadeViewportValues } from "@/puck/utils/cascade-viewport-valuets";
 
-// 1. Interfaccia completa per la griglia
+// 1. Proprietà opzionali per un JSON leggero
 export interface GridProps {
-  columns: string;
-  gap: string;
-  alignItems: string;
-  justifyItems: string;
+  columns?: string;
+  gap?: string;
+  alignItems?: string;
+  justifyItems?: string;
 }
 
-// Creiamo un oggetto base piatto per i default
-const flatDefaultGrid: GridProps = {
-  columns: "",
-  gap: "",
-  alignItems: "stretch",
-  justifyItems: "stretch",
-};
-
-// 2. Default values per ogni viewport
+// 2. Default minimi (vuoti)
 const defaultGrid: Record<Breakpoint, GridProps> = {
-  desktop: { ...flatDefaultGrid },
-  tablet: { ...flatDefaultGrid },
-  mobile: { ...flatDefaultGrid },
+  desktop: {},
+  tablet: {},
+  mobile: {},
 };
 
-// Configurazioni per i campi testuali
-type FieldDef = { key: keyof GridProps; label: string; type?: string };
+type FieldDef = { key: keyof GridProps; label: string; type?: "unit" | "text" };
+
 const layoutFields: FieldDef[] = [
-  { key: "columns", label: "Columns (es. 1fr 1fr)" },
+  { key: "columns", label: "Columns (es. 1fr 1fr)", type: "text" },
   { key: "gap", label: "Gap (es. 16px)", type: "unit" },
 ];
 
-// Configurazioni per i SegmentedControl
 const alignItemsOptions = [
   { value: "start", icon: AlignStartVertical, title: "Start" },
   { value: "center", icon: AlignCenterVertical, title: "Center" },
@@ -81,20 +71,15 @@ export const GridField = withAccordionField(
     onChange: (value: Responsive<GridProps>) => void;
     value?: Responsive<GridProps>;
   }) => {
-    // A. Intercettiamo la viewport attiva
     const currentViewport = usePuck((s) => s.appState.ui.viewports.current);
     const viewportKey = getViewportKey(currentViewport.width);
 
-    // B. Gestione dello stato base
-    const state = value || defaultGrid;
-
-    // C. currentValues: i dati reali ESPLICITAMENTE salvati in questa viewport
+    const state = value || {};
     const currentValues: Partial<GridProps> = state[viewportKey] || {};
 
-    // D. renderValues: il valore finale (calcolato a cascata)
+    // Il nuovo cascade recupera i valori mancanti dai breakpoint superiori
     const renderValues = cascadeViewportValues(viewportKey, state, defaultGrid);
 
-    // E. Funzione di aggiornamento
     const update = useCallback(
       (updates: Partial<GridProps>) => {
         onChange({
@@ -108,7 +93,6 @@ export const GridField = withAccordionField(
       [onChange, state, viewportKey, currentValues],
     );
 
-    // F. Funzione di reset
     const resetProp = useCallback(
       (key: keyof GridProps) => {
         const newViewportState = { ...currentValues };
@@ -122,11 +106,11 @@ export const GridField = withAccordionField(
       [onChange, state, viewportKey, currentValues],
     );
 
-    // G. Helper per renderizzare i campi testuali velocemente
     const renderTextInput = useCallback(
       ({ key, label, type }: FieldDef) => {
-        // È modificato ESPLICITAMENTE in questa viewport?
         const isModified = currentValues[key] !== undefined;
+        // Fallback a stringa vuota per evitare warning di React su input uncontrolled
+        const displayValue = renderValues[key] ?? "";
 
         return (
           <div key={`container-${key}`} className="flex flex-col gap-y-1">
@@ -138,16 +122,15 @@ export const GridField = withAccordionField(
             />
             {type === "unit" ? (
               <ValueUnitInput
-                key={key}
                 name={key}
-                value={renderValues[key]}
-                onChange={(newVal) => update({ [key]: newVal })}
+                value={displayValue}
+                onChange={(newVal) => update({ [key]: newVal || undefined })}
               />
             ) : (
               <Input
                 id={key}
-                value={renderValues[key]}
-                onChange={(e) => update({ [key]: e.target.value })}
+                value={displayValue}
+                onChange={(e) => update({ [key]: e.target.value || undefined })}
                 className="h-8 text-sm px-2"
               />
             )}
@@ -168,7 +151,7 @@ export const GridField = withAccordionField(
         <div className="mt-4">
           <span className="text-sm font-medium">Alignment</span>
           <div className="mt-2 flex flex-col gap-y-4 p-2 bg-muted/60 rounded">
-            {/* Align Items (Verticale) */}
+            {/* Align Items */}
             <div className="flex flex-col gap-y-1">
               <PropHeader
                 name="alignItems"
@@ -178,13 +161,13 @@ export const GridField = withAccordionField(
               />
               <SegmentedControl
                 name="alignItems"
-                value={renderValues.alignItems}
+                value={renderValues.alignItems ?? "stretch"}
                 onChange={(val) => update({ alignItems: val })}
                 items={alignItemsOptions}
               />
             </div>
 
-            {/* Justify Items (Orizzontale) */}
+            {/* Justify Items */}
             <div className="flex flex-col gap-y-1">
               <PropHeader
                 name="justifyItems"
@@ -194,7 +177,7 @@ export const GridField = withAccordionField(
               />
               <SegmentedControl
                 name="justifyItems"
-                value={renderValues.justifyItems}
+                value={renderValues.justifyItems ?? "stretch"}
                 onChange={(val) => update({ justifyItems: val })}
                 items={justifyItemsOptions}
               />
