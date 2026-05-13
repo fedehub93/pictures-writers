@@ -1,8 +1,7 @@
-import { useCallback } from "react";
 import { LucidePuzzle } from "lucide-react";
 
 import { withAccordionField } from "@/puck/utils/with-accordion-field";
-import { FormView } from "./view/form-view";
+import { FormView } from "@/puck/fields/form/view/form-view";
 
 export interface FormProps {
   id: string;
@@ -30,15 +29,12 @@ export const FormField = withAccordionField(
       gtmEventName: "",
     };
 
-    const update = useCallback(
-      (updates: FormProps) => {
-        onChange({
-          ...state,
-          ...updates,
-        });
-      },
-      [onChange, state],
-    );
+    const update = (updates: FormProps) => {
+      onChange({
+        ...state,
+        ...updates,
+      });
+    };
 
     return (
       <div className="grid grid-cols-1 gap-y-4 p-1">

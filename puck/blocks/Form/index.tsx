@@ -5,8 +5,8 @@ import { Responsive } from "@/puck/utils/responsive";
 import { DimensionField, DimensionProps } from "@/puck/fields/dimension";
 
 import { getDimensionVars } from "@/puck/utils/get-style-vars";
-import { Separator } from "@/components/ui/separator";
 import { FormField, FormProps } from "@/puck/fields/form";
+
 import DyanamicForm from "@/components/form-component/dynamic-form";
 
 export type FormBlockProps = {

@@ -8,7 +8,7 @@ import { db } from "@/lib/db";
 
 export const submitForm = async (
   formId: string,
-  values: any,
+  values: Record<string, string>,
   recaptchaToken: string,
 ) => {
   try {
@@ -42,6 +42,13 @@ export const submitForm = async (
     }
 
     const emailFromBody = values.email || null;
+
+    if (!emailFromBody) {
+      return {
+        success: false,
+        message: "Email non valida! Riprovare.",
+      };
+    }
 
     // Salva la submission
     await db.formSubmission.create({

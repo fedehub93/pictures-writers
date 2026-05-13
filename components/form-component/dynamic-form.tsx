@@ -27,7 +27,7 @@ import { GoogleRecaptchaV3 } from "@/components/google-recaptchav3";
 import { getCaptchaToken } from "@/app/(home)/_components/utils/captcha";
 import { submitForm } from "@/actions/submit-form";
 
-interface DyanamicFormProps {
+interface DynamicFormProps {
   form: {
     id: string;
     name: string;
@@ -37,14 +37,19 @@ interface DyanamicFormProps {
   };
 }
 
-export default function DyanamicForm({ form: formDef }: DyanamicFormProps) {
+export default function DynamicForm({ form: formDef }: DynamicFormProps) {
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
   const [isRecaptchaLoading, setIsRecaptchaLoading] = useState(false);
 
-  const jsonFields = JSON.parse(formDef.fields as string);
-
+  let jsonFields;
+  try {
+    jsonFields = JSON.parse(formDef.fields as string);
+  } catch (error) {
+    console.error("Invalid form fields JSON:", error);
+    return <div className="text-destructive">Invalid form configuration</div>;
+  }
   const schema = useMemo(() => {
     const shape: Record<string, any> = {};
 
@@ -119,7 +124,7 @@ export default function DyanamicForm({ form: formDef }: DyanamicFormProps) {
 
   const { isSubmitting } = form.formState;
 
-  const onSubmit = async (values: any) => {
+  const onSubmit = async (values: Record<string, string>) => {
     try {
       setError("");
       setSuccess("");
@@ -145,13 +150,17 @@ export default function DyanamicForm({ form: formDef }: DyanamicFormProps) {
             setError("");
             setSuccess(data.message);
             if (!!formDef.gtmEventName) {
+              const emailDomain =
+                typeof values.email === "string" && values.email.includes("@")
+                  ? values.email.split("@")[1]
+                  : "unknown";
               sendGTMEvent({
                 event: formDef.gtmEventName,
                 form_type: "form_submission",
                 form_location: "*",
                 page_path: window.location.pathname,
                 page_title: document.title,
-                email_domain: values.email.split("@")[1],
+                email_domain: emailDomain,
               });
             }
           }
