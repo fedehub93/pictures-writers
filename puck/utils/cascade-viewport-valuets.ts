@@ -1,29 +1,34 @@
+// puck/utils/cascade-viewport-values.ts
+
 import { Breakpoint } from "./breakpoints";
 import { Responsive } from "./responsive";
 
-export function cascadeViewportValues<T>(
+export function cascadeViewportValues<T extends object>(
   viewportKey: Breakpoint,
   state: Responsive<T>,
   defaults: Record<Breakpoint, T>,
 ): T {
-  const desktopData = state.desktop || {};
-  const tabletData = state.tablet || {};
-  const mobileData = state.mobile || {};
+  // Creiamo un oggetto base partendo dai default del breakpoint corrente
+  const result = { ...defaults[viewportKey] } as T;
 
-  if (viewportKey === "desktop") {
-    return { ...defaults.desktop, ...desktopData } as T;
-  } else if (viewportKey === "tablet") {
-    return {
-      ...defaults.tablet,
-      ...desktopData,
-      ...tabletData,
-    } as T;
-  } else {
-    return {
-      ...defaults.mobile,
-      ...desktopData,
-      ...tabletData,
-      ...mobileData,
-    } as T;
+  // Definiamo l'ordine della cascata (Desktop -> Tablet -> Mobile)
+  const breakpoints: Breakpoint[] = ["desktop", "tablet", "mobile"];
+  const currentIndex = breakpoints.indexOf(viewportKey);
+
+  // Iteriamo attraverso i breakpoint fino a quello corrente
+  for (let i = 0; i <= currentIndex; i++) {
+    const key = breakpoints[i];
+    const data = state[key];
+
+    if (data) {
+      // Sovrapponiamo solo le proprietà che sono effettivamente definite (non undefined)
+      Object.entries(data).forEach(([propKey, propValue]) => {
+        if (propValue !== undefined) {
+          (result as any)[propKey] = propValue;
+        }
+      });
+    }
   }
+
+  return result;
 }

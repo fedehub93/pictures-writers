@@ -36,7 +36,7 @@ export const Heading: ComponentConfig<HeadingProps> = {
     // 3. Richiamiamo le utility passando la classe generata
     const dimensionData = getDimensionProps(dimension, blockClass);
     const typoData = getTypographyProps(typography, blockClass);
-
+    console.log(typoData)
     // 4. Combiniamo le stringhe CSS
     const combinedCss = `
       ${dimensionData.cssString || ""}
