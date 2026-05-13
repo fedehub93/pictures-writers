@@ -1,0 +1,74 @@
+/* --- 1. DIMENSION & LAYOUT --- */
+.puck-dim {
+  /* Desktop (Base) */
+  width: var(--w-d);
+  height: var(--h-d);
+  max-width: var(--mw-d);
+  min-height: var(--mh-d);
+  aspect-ratio: var(--ratio-d);
+  margin: var(--mt-d) var(--mr-d) var(--mb-d) var(--ml-d);
+  padding: var(--pt-d) var(--pr-d) var(--pb-d) var(--pl-d);
+  top: var(--top-d);
+  bottom: var(--bottom-d);
+  left: var(--left-d);
+  right: var(--right-d);
+}
+
+/* --- 2. TYPOGRAPHY --- */
+.puck-typo {
+  font-family: var(--ff-d);
+  font-size: var(--fs-d);
+  font-weight: var(--fw-d);
+  line-height: var(--lh-d);
+  letter-spacing: var(--ls-d);
+  text-align: var(--ta-d);
+}
+
+/* --- 3. GRID --- */
+.puck-grid {
+  display: grid;
+  grid-template-columns: var(--cols-d);
+  gap: var(--gap-d);
+  align-items: var(--ai-d);
+  justify-items: var(--ji-d);
+}
+
+/* --- 4. DECORATION --- */
+.puck-deco {
+  opacity: var(--op-d);
+  border-top-left-radius: var(--rtl-d);
+  border-top-right-radius: var(--rtr-d);
+  border-bottom-left-radius: var(--rbl-d);
+  border-bottom-right-radius: var(--rbr-d);
+}
+
+/* --- RESPONSIVE LOGIC (Desktop-First) --- */
+
+@media (max-width: 1024px) {
+  .puck-dim {
+    width: var(--w-t, var(--w-d));
+    height: var(--h-t, var(--h-d));
+    /* ... e così via per tutte le props ... */
+  }
+  .puck-typo {
+    font-size: var(--fs-t, var(--fs-d));
+    text-align: var(--ta-t, var(--ta-d));
+  }
+  .puck-grid {
+    grid-template-columns: var(--cols-t, var(--cols-d));
+    gap: var(--gap-t, var(--gap-d));
+  }
+}
+
+@media (max-width: 767px) {
+  .puck-dim {
+    width: var(--w-m, var(--w-t, var(--w-d)));
+    /* ... ereditarietà a tre livelli ... */
+  }
+  .puck-typo {
+    font-size: var(--fs-m, var(--fs-t, var(--fs-d)));
+  }
+  .puck-grid {
+    grid-template-columns: var(--cols-m, var(--cols-t, var(--cols-d)));
+  }
+}
