@@ -78,7 +78,7 @@ export const TypographyField = withAccordionField(
     const renderValues = cascadeViewportValues(
       viewportKey,
       state,
-      defaultTypography
+      defaultTypography,
     );
 
     const update = useCallback(
@@ -91,7 +91,7 @@ export const TypographyField = withAccordionField(
           },
         });
       },
-      [onChange, state, viewportKey, currentValues]
+      [onChange, state, viewportKey, currentValues],
     );
 
     const resetProp = useCallback(
@@ -104,13 +104,13 @@ export const TypographyField = withAccordionField(
           [viewportKey]: newViewportState,
         });
       },
-      [onChange, state, viewportKey, currentValues]
+      [onChange, state, viewportKey, currentValues],
     );
 
     return (
       <div className="grid grid-cols-2 gap-x-4 gap-y-6 p-1">
         {/* --- FONT FAMILY --- */}
-        <div>
+        <div className="flex flex-col gap-y-1">
           <PropHeader
             name="fontFamily"
             label="Font family"
@@ -120,7 +120,9 @@ export const TypographyField = withAccordionField(
           <Select
             name="fontFamily"
             value={renderValues.fontFamily ?? "inherit"}
-            onValueChange={(val) => update({ fontFamily: val === "inherit" ? undefined : val })}
+            onValueChange={(val) =>
+              update({ fontFamily: val === "inherit" ? undefined : val })
+            }
           >
             <SelectTrigger id="font-family" className="h-8 text-sm">
               <SelectValue placeholder="Select font" />
@@ -133,7 +135,7 @@ export const TypographyField = withAccordionField(
         </div>
 
         {/* --- FONT SIZE --- */}
-        <div>
+        <div className="flex flex-col gap-y-1">
           <PropHeader
             name="fontSize"
             label="Font size"
@@ -148,7 +150,7 @@ export const TypographyField = withAccordionField(
         </div>
 
         {/* --- FONT WEIGHT --- */}
-        <div>
+        <div className="flex flex-col gap-y-1">
           <PropHeader
             name="fontWeight"
             label="Font weight"
@@ -173,7 +175,7 @@ export const TypographyField = withAccordionField(
         </div>
 
         {/* --- LETTER SPACING --- */}
-        <div>
+        <div className="flex flex-col gap-y-1">
           <PropHeader
             name="letterSpacing"
             label="Letter spacing"
@@ -188,7 +190,7 @@ export const TypographyField = withAccordionField(
         </div>
 
         {/* --- TEXT ALIGN --- */}
-        <div className="col-span-2">
+        <div className="flex flex-col gap-y-1 col-span-2">
           <PropHeader
             name="textAlign"
             label="Text align"
@@ -204,5 +206,5 @@ export const TypographyField = withAccordionField(
         </div>
       </div>
     );
-  }
+  },
 );

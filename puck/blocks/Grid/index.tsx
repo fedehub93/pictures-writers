@@ -46,12 +46,12 @@ export const GridBlock: ComponentConfig<GridBlockProps> = {
       ...getDecorationVars(decoration),
     };
     return (
-      <>
-        <Items
-          className={cn("puck-grid puck-dim puck-typo puck-deco")}
-          style={styleVars}
-        />
-      </>
+      <Items
+        className={cn(
+          "puck-grid puck-dim puck-typo puck-deco *:min-w-0 *:justify-self-stretch",
+        )}
+        style={styleVars}
+      />
     );
   },
 };

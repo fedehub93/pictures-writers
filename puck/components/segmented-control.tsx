@@ -23,7 +23,7 @@ export function SegmentedControl<T extends string>({
       onValueChange={(val) => {
         if (val) onChange(val as T);
       }}
-      className="flex items-center justify-start bg-background p-1 rounded-md h-8 w-full gap-0 border border-input"
+      className="flex items-center justify-start bg-background rounded-md h-8 w-full gap-0 border border-input"
     >
       {items.map((item) => (
         <ToggleGroupItem
@@ -32,9 +32,9 @@ export function SegmentedControl<T extends string>({
           title={item.title}
           aria-label={item.title}
           className={cn(
-            "flex-1 h-full rounded-sm transition-all",
+            "flex-1 h-full rounded-sm transition-all py-0",
             value === item.value &&
-              "data-[state=on]:bg-primary-foreground shadow-sm text-foreground",
+              "data-[state=on]:bg-accent data-[state=on]:border-x text-foreground",
           )}
         >
           <item.icon className="h-4 w-4" strokeWidth={2.5} />
