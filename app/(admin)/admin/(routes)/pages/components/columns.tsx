@@ -12,9 +12,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/format";
 import { PagesActions } from "./actions";
-import { GetPages } from "../data";
+import { GetPagesGroupedByRootId } from "../data";
 
-export const columns: ColumnDef<GetPages>[] = [
+export const columns: ColumnDef<GetPagesGroupedByRootId>[] = [
   {
     id: "select",
     header: ({ table }) => (

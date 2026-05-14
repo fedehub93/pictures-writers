@@ -13,6 +13,7 @@ import {
   getDimensionVars,
   getTypographyVars,
 } from "@/puck/utils/get-style-vars";
+import { HeadingBlockUi } from "./ui/heading";
 
 export type HeadingProps = {
   text?: ReactNode;
@@ -35,10 +36,6 @@ export const Heading: ComponentConfig<HeadingProps> = {
       ...getTypographyVars(typography),
     };
 
-    return (
-      <div className={cn("block puck-dim puck-typo")} style={styleVars}>
-        {text}
-      </div>
-    );
+    return <HeadingBlockUi text={text} styleVars={styleVars} />;
   },
 };

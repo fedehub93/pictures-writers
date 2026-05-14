@@ -1,24 +1,34 @@
 import { db } from "@/lib/db";
 
-export const getPages = async () => {
-  const pages = await db.page.findMany({
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      status: true,
-      createdAt: true,
-      rootId: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-
-  return pages;
+export const getPagesGroupedByRootId = async () => {
+  try {
+    const pages = await db.page.findMany({
+      select: {
+        id: true,
+        rootId: true,
+        title: true,
+        slug: true,
+        status: true,
+        publishedAt: true,
+        firstPublishedAt: true,
+        editorType: true,
+        createdAt: true,
+      },
+      orderBy: {
+        publishedAt: "desc",
+      },
+      distinct: ["rootId"],
+    });
+    return pages;
+  } catch (error) {
+    console.error("GET_PAGES_GROUPED_BY_ROOT_ID", error);
+    return [];
+  }
 };
 
-export type GetPages = Awaited<ReturnType<typeof getPages>>[number];
+export type GetPagesGroupedByRootId = Awaited<
+  ReturnType<typeof getPagesGroupedByRootId>
+>[number];
 
 export const getLastPageByRootId = async (rootId: string) => {
   try {
