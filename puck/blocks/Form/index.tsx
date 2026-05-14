@@ -7,7 +7,7 @@ import { DimensionField, DimensionProps } from "@/puck/fields/dimension";
 import { getDimensionVars } from "@/puck/utils/get-style-vars";
 import { FormField, FormProps } from "@/puck/fields/form";
 
-import DyanamicForm from "@/components/form-component/dynamic-form";
+import { FormBlockUi } from "./ui/form";
 
 export type FormBlockProps = {
   form?: FormProps;
@@ -33,10 +33,6 @@ export const FormBlock: ComponentConfig<FormBlockProps> = {
       ...getDimensionVars(dimension),
     };
 
-    return (
-      <div className="puck-dim" style={styleVars}>
-        {form && <DyanamicForm form={form} />}
-      </div>
-    );
+    return <FormBlockUi form={form} styleVars={styleVars} />;
   },
 };

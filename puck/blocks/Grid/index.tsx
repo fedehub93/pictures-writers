@@ -1,4 +1,3 @@
-import { cn } from "@/lib/utils";
 import { type Slot, type ComponentConfig } from "@puckeditor/core";
 
 // Importiamo il tipo Responsive
@@ -15,6 +14,7 @@ import {
   getGridVars,
   getTypographyVars,
 } from "@/puck/utils/get-style-vars";
+import { GridBlockUi } from "./ui/grid";
 
 // 1. Aggiorniamo le prop per utilizzare il wrapper Responsive
 export type GridBlockProps = {
@@ -45,13 +45,6 @@ export const GridBlock: ComponentConfig<GridBlockProps> = {
       ...getTypographyVars(typography),
       ...getDecorationVars(decoration),
     };
-    return (
-      <Items
-        className={cn(
-          "puck-grid puck-dim puck-typo puck-deco *:min-w-0 *:justify-self-stretch",
-        )}
-        style={styleVars}
-      />
-    );
+    return <GridBlockUi Items={Items} styleVars={styleVars} />;
   },
 };

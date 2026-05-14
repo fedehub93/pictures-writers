@@ -9,49 +9,59 @@ import {
 
 import { db } from "@/lib/db";
 
-import {
-  getDraftPostBySlug,
-  getPostsPaginatedByFilters,
-  getPublishedDraftPostsBuilding,
-} from "@/data/post";
-
-import { getPublishedProductByRootId } from "@/data/product";
-
-import { getSettings } from "@/data/settings";
 import { isJSONContent, isWidgetProductPopMetadata } from "@/type-guards";
-import { getPostMetadataBySlug } from "@/app/(home)/_components/seo/content-metadata";
+
+import {
+  getPostsPaginatedByFilters,
+  getPublishedPostBySlug,
+} from "@/data/post";
+import { getPublishedProductByRootId } from "@/data/product";
+import { getSettings } from "@/data/settings";
+
+import { getPublishedPostsBuilding } from "@/lib/post";
+
+import {
+  getPageMetadataBySlug,
+  getPostMetadataBySlug,
+} from "@/app/(home)/_components/seo/content-metadata";
 import { BlogPostingJsonLd } from "@/app/(home)/_components/seo/json-ld/blog-posting";
 import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
-import { PostTemplate } from "@/app/(home)/(routes)/[slug]/_components/post-template";
+import { PostTemplate } from "@/app/(home)/(routes)/[...slug]/_components/post-template";
 import { PostList } from "@/app/(home)/(routes)/blog/_components/post-list";
 
 import { WidgetProductPop } from "@/components/widget/product-pop";
-
-export const dynamic = "force-dynamic";
+import { getPublishedPageBySlug, getPublishedPagesBuilding } from "@/lib/page";
+import { PuckRender } from "@/puck/render-config";
 
 export const revalidate = 86400;
 
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
-  const posts = await getPublishedDraftPostsBuilding();
+  const posts = await getPublishedPostsBuilding();
+  const pages = await getPublishedPagesBuilding();
 
-  return [{ slug: `blog` }, ...posts.map((post) => ({ slug: post.slug }))];
+  const postPaths = posts.map((post) => ({ slug: post.slug.split("/") }));
+  const pagePaths = pages.map((page) => ({ slug: page.slug.split("/") }));
+
+  return [{ slug: [`blog`] }, ...postPaths, ...pagePaths];
 }
 
 export async function generateMetadata(
-  props: PageProps<"/draft/[slug]">
+  props: PageProps<"/[...slug]">,
 ): Promise<Metadata | null> {
   const params = await props.params;
-  const { slug } = params;
+  const slugPath = params.slug.join("/");
 
-  if (slug === "blog") {
+  const { siteUrl } = await getSettings();
+
+  if (slugPath === "blog") {
     const metadata = await getHeadMetadata();
 
     const { posts } = await getPostsPaginatedByFilters({
       page: 1,
       where: {
-        status: ContentStatus.DRAFT,
+        status: ContentStatus.PUBLISHED,
         isLatest: true,
       },
     });
@@ -60,43 +70,35 @@ export async function generateMetadata(
       ...metadata,
       title: `News: ${posts[0].title}`,
       description: `Ultime notizie sulla sceneggiatura cinematografica. ${posts[0].title}`,
-      robots: {
-        index: false,
-        follow: false,
-        googleBot: {
-          index: false,
-          follow: false,
-        },
+      alternates: {
+        canonical: `${siteUrl}/${slugPath}/`,
       },
     };
   }
 
-  return {
-    ...(await getPostMetadataBySlug(slug)),
-    robots: {
-      index: false,
-      follow: false,
-      googleBot: {
-        index: false,
-        follow: false,
-      },
-    },
-  };
+  const pageMetadata = await getPageMetadataBySlug(slugPath);
+  if (pageMetadata) {
+    return pageMetadata;
+  }
+
+  return await getPostMetadataBySlug(slugPath);
 }
 
-const Page = async (props: PageProps<"/draft/[slug]">) => {
-  const { slug } = await props.params;
+const Page = async (props: PageProps<"/[...slug]">) => {
+  const params = await props.params;
+  const slugPath = params.slug.join("/");
+
   const { siteUrl } = await getSettings();
 
-  if (slug === "blog") {
+  if (slugPath === "blog") {
     const { posts, totalPages, currentPage } = await getPostsPaginatedByFilters(
       {
         page: 1,
         where: {
-          status: ContentStatus.DRAFT,
+          status: ContentStatus.PUBLISHED,
           isLatest: true,
         },
-      }
+      },
     );
     return (
       <section className="bg-background px-4 py-10 lg:px-6">
@@ -115,7 +117,12 @@ const Page = async (props: PageProps<"/draft/[slug]">) => {
     );
   }
 
-  const post = await getDraftPostBySlug(slug);
+  const page = await getPublishedPageBySlug(slugPath);
+  if (page && page.puckData) {
+    return <PuckRender initialData={page.puckData} />;
+  }
+
+  const post = await getPublishedPostBySlug(slugPath);
 
   if (!post) {
     return notFound();
@@ -128,14 +135,14 @@ const Page = async (props: PageProps<"/draft/[slug]">) => {
     bodyImages =
       post.bodyData
         .filter(
-          (image) => image.type === "image" && image.url && image.url !== ""
+          (image) => image.type === "image" && image.url && image.url !== "",
         )
         .map((image) => image.url || "") || [];
 
     bodyVideos =
       post.bodyData
         .filter(
-          (video) => video.type === "video" && video.url && video.url !== ""
+          (video) => video.type === "video" && video.url && video.url !== "",
         )
         .map((video) => video.url || "") || [];
   }
@@ -173,7 +180,7 @@ const Page = async (props: PageProps<"/draft/[slug]">) => {
 
   if (isValidWidgetPopup) {
     product = await getPublishedProductByRootId(
-      widgetPopup.metadata.productRootId
+      widgetPopup.metadata.productRootId,
     );
   }
 

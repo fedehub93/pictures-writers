@@ -4,6 +4,8 @@ import { Figtree } from "next/font/google";
 import { GoogleTagManager } from "@next/third-parties/google";
 
 import "./home.css";
+import "@/puck/styles/puck-base.css";
+
 
 import { cn } from "@/lib/utils";
 

@@ -5,6 +5,76 @@ import { ContentStatus } from "@/generated/prisma";
 import { getAuthorsString } from "@/data/user";
 import { getSettings } from "@/data/settings";
 
+export async function getPageMetadataBySlug(
+  slug: string,
+): Promise<Metadata | null> {
+  const { siteName, siteUrl } = await getSettings();
+
+  const page = await db.page.findFirst({
+    where: {
+      slug,
+      status: ContentStatus.PUBLISHED,
+      isLatest: true,
+    },
+    select: {
+      title: true,
+      slug: true,
+      seo: {
+        select: {
+          title: true,
+          description: true,
+          canonicalUrl: true,
+          noIndex: true,
+          noFollow: true,
+          ogTwitterTitle: true,
+          ogTwitterDescription: true,
+          ogTwitterUrl: true,
+        },
+      },
+      firstPublishedAt: true,
+      publishedAt: true,
+    },
+    orderBy: { firstPublishedAt: "desc" },
+  });
+
+  if (!page || !page.seo) {
+    return null;
+  }
+
+  return {
+    title: page.seo.title,
+    description: page.seo.description,
+    robots: {
+      index: !page.seo.noIndex,
+      follow: !page.seo.noFollow,
+      googleBot: {
+        index: !page.seo.noIndex,
+        follow: !page.seo.noFollow,
+      },
+    },
+    alternates: {
+      canonical: page.seo.canonicalUrl
+        ? page.seo.canonicalUrl
+        : `${siteUrl}/${page.slug}`,
+    },
+    openGraph: {
+      title: page.seo.ogTwitterTitle || page.seo.title,
+      description: page.seo.ogTwitterDescription || page.seo.description || "",
+      url: page.seo.ogTwitterUrl || "",
+      siteName: siteName!,
+      locale: "it_IT",
+      type: "article",
+      publishedTime: page.firstPublishedAt.toISOString(),
+      modifiedTime: page.publishedAt.toISOString(),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: page.seo.ogTwitterTitle || page.seo.title,
+      description: page.seo.ogTwitterDescription || page.seo.description || "",
+    },
+  };
+}
+
 export async function getPostMetadataBySlug(
   slug: string,
 ): Promise<Metadata | null> {

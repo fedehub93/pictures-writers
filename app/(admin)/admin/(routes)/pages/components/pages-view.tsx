@@ -4,9 +4,9 @@ import { ContentHeader } from "@/app/(admin)/_components/content/content-header"
 import { DataTable } from "./data-table";
 import { columns } from "./columns";
 import { UpdatePageDialog } from "./update-page-dialog";
-import { GetPages } from "../data";
+import { GetPagesGroupedByRootId } from "../data";
 
-export const PagesView = ({ pages }: { pages: GetPages[] }) => {
+export const PagesView = ({ pages }: { pages: GetPagesGroupedByRootId[] }) => {
   return (
     <>
       <UpdatePageDialog />

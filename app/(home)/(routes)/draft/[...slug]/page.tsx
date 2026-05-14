@@ -9,50 +9,51 @@ import {
 
 import { db } from "@/lib/db";
 
-import { isJSONContent, isWidgetProductPopMetadata } from "@/type-guards";
-
 import {
+  getDraftPostBySlug,
   getPostsPaginatedByFilters,
-  getPublishedPostBySlug,
+  getPublishedDraftPostsBuilding,
 } from "@/data/post";
+
 import { getPublishedProductByRootId } from "@/data/product";
+
 import { getSettings } from "@/data/settings";
-
-import { getPublishedPostsBuilding } from "@/lib/post";
-
+import { isJSONContent, isWidgetProductPopMetadata } from "@/type-guards";
 import { getPostMetadataBySlug } from "@/app/(home)/_components/seo/content-metadata";
 import { BlogPostingJsonLd } from "@/app/(home)/_components/seo/json-ld/blog-posting";
 import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
-import { PostTemplate } from "@/app/(home)/(routes)/[slug]/_components/post-template";
+import { PostTemplate } from "@/app/(home)/(routes)/[...slug]/_components/post-template";
 import { PostList } from "@/app/(home)/(routes)/blog/_components/post-list";
 
 import { WidgetProductPop } from "@/components/widget/product-pop";
+
+export const dynamic = "force-dynamic";
 
 export const revalidate = 86400;
 
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
-  const posts = await getPublishedPostsBuilding();
+  const posts = await getPublishedDraftPostsBuilding();
 
-  return [{ slug: `blog` }, ...posts.map((post) => ({ slug: post.slug }))];
+  const postPaths = posts.map((post) => ({ slug: post.slug.split("/") }));
+  const uniqueSlugs = [...new Set(postPaths)];
+  return [{ slug: [`blog`] }, ...uniqueSlugs];
 }
 
 export async function generateMetadata(
-  props: PageProps<"/[slug]">
+  props: PageProps<"/draft/[...slug]">,
 ): Promise<Metadata | null> {
   const params = await props.params;
-  const { slug } = params;
+  const slugPath = params.slug.join("/");
 
-  const { siteUrl } = await getSettings();
-
-  if (slug === "blog") {
+  if (slugPath === "blog") {
     const metadata = await getHeadMetadata();
 
     const { posts } = await getPostsPaginatedByFilters({
       page: 1,
       where: {
-        status: ContentStatus.PUBLISHED,
+        status: ContentStatus.DRAFT,
         isLatest: true,
       },
     });
@@ -61,28 +62,44 @@ export async function generateMetadata(
       ...metadata,
       title: `News: ${posts[0].title}`,
       description: `Ultime notizie sulla sceneggiatura cinematografica. ${posts[0].title}`,
-      alternates: {
-        canonical: `${siteUrl}/${slug}/`,
+      robots: {
+        index: false,
+        follow: false,
+        googleBot: {
+          index: false,
+          follow: false,
+        },
       },
     };
   }
 
-  return await getPostMetadataBySlug(slug);
+  return {
+    ...(await getPostMetadataBySlug(slugPath)),
+    robots: {
+      index: false,
+      follow: false,
+      googleBot: {
+        index: false,
+        follow: false,
+      },
+    },
+  };
 }
 
-const Page = async (props: PageProps<"/[slug]">) => {
-  const { slug } = await props.params;
+const Page = async (props: PageProps<"/draft/[...slug]">) => {
+  const params = await props.params;
+  const slugPath = params.slug.join("/");
   const { siteUrl } = await getSettings();
 
-  if (slug === "blog") {
+  if (slugPath === "blog") {
     const { posts, totalPages, currentPage } = await getPostsPaginatedByFilters(
       {
         page: 1,
         where: {
-          status: ContentStatus.PUBLISHED,
+          status: ContentStatus.DRAFT,
           isLatest: true,
         },
-      }
+      },
     );
     return (
       <section className="bg-background px-4 py-10 lg:px-6">
@@ -101,7 +118,7 @@ const Page = async (props: PageProps<"/[slug]">) => {
     );
   }
 
-  const post = await getPublishedPostBySlug(slug);
+  const post = await getDraftPostBySlug(slugPath);
 
   if (!post) {
     return notFound();
@@ -114,14 +131,14 @@ const Page = async (props: PageProps<"/[slug]">) => {
     bodyImages =
       post.bodyData
         .filter(
-          (image) => image.type === "image" && image.url && image.url !== ""
+          (image) => image.type === "image" && image.url && image.url !== "",
         )
         .map((image) => image.url || "") || [];
 
     bodyVideos =
       post.bodyData
         .filter(
-          (video) => video.type === "video" && video.url && video.url !== ""
+          (video) => video.type === "video" && video.url && video.url !== "",
         )
         .map((video) => video.url || "") || [];
   }
@@ -159,7 +176,7 @@ const Page = async (props: PageProps<"/[slug]">) => {
 
   if (isValidWidgetPopup) {
     product = await getPublishedProductByRootId(
-      widgetPopup.metadata.productRootId
+      widgetPopup.metadata.productRootId,
     );
   }
 

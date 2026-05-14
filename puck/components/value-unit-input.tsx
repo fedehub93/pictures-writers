@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { ChevronUp, ChevronDown } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
