@@ -52,13 +52,13 @@ export const PageIdView = ({
 
   return (
     <>
-      <Tabs defaultValue="editor" className="pt-1 mb-0">
-        <TabsList className="rounded-t-lg rounded-b-none h-10 [&>button]:bg-transparent [&>button]:h-full [&>button]:text-sm [&>button]:flex [&>button]:gap-x-2 overflow-hidden p-0 border border-b-0">
+      <Tabs defaultValue="editor" className="mb-0">
+        <TabsList className="rounded-none border-t-0 border-r-0 border-b h-full [&>button]:bg-transparent [&>button]:h-full [&>button]:text-sm [&>button]:flex [&>button]:gap-x-2 overflow-hidden p-0">
           <TabsTrigger value="editor">Editor</TabsTrigger>
           <TabsTrigger value="details">Details</TabsTrigger>
           <TabsTrigger value="seo">SEO</TabsTrigger>
         </TabsList>
-        <TabsContent value="editor" className="mt-0 border">
+        <TabsContent value="editor" className="mt-0">
           <PuckEditor
             id={pageId}
             initialData={initialData.puckData ?? { root: {}, content: [] }}

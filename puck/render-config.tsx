@@ -23,6 +23,7 @@ import { GridBlockUi } from "./blocks/Grid/ui/grid";
 import { ImageBlockUi } from "./blocks/Image/ui/image";
 import { FormBlockUi } from "./blocks/Form/ui/form";
 import { SeparatorBlockUi } from "./blocks/Separator/ui/separator";
+import { IconBlockUi } from "./blocks/Icon/ui/icon";
 
 const RootRender: RootConfig<RootProps> = {
   fields: {
@@ -81,6 +82,16 @@ const config: Config<any, RootProps> = {
         };
 
         return <SeparatorBlockUi styleVars={styleVars} />;
+      },
+    },
+    Icon: {
+      render: ({ icon, dimension, typography }) => {
+        const styleVars = {
+          ...getDimensionVars(dimension),
+          ...getTypographyVars(typography),
+        };
+
+        return <IconBlockUi icon={icon} styleVars={styleVars} />;
       },
     },
     Heading: {

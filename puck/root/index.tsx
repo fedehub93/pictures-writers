@@ -17,7 +17,7 @@ export type RootProps = {
 
 export const RootEditor: RootConfig<RootProps> = {
   fields: {
-    title: { type: "text" },
+    title: { type: "text", label:"Title" },
     dimension: DimensionField,
   },
   render: ({ children, dimension }) => {

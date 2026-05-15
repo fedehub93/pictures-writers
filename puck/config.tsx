@@ -1,5 +1,7 @@
-import { type Config, type Data, Puck } from "@puckeditor/core";
+import { type Config, createUsePuck, type Data, Puck } from "@puckeditor/core";
 import "@puckeditor/core/puck.css";
+
+import { Button } from "@/components/ui/button";
 
 import { PageUpdateValues } from "@/app/(admin)/admin/(routes)/pages/schema";
 
@@ -12,12 +14,14 @@ import { FormBlock, type FormBlockProps } from "./blocks/Form";
 import { Heading, type HeadingProps } from "./blocks/Heading";
 
 import { viewports } from "./utils/viewports";
+import { IconBlock, IconBlockProps } from "./blocks/Icon";
 
 type Components = {
   Grid: GridBlockProps;
+  Separator: SeparatorBlockProps;
+  Icon: IconBlockProps;
   Image: ImageBlockProps;
   Form: FormBlockProps;
-  Separator: SeparatorBlockProps;
   Heading: HeadingProps;
 };
 
@@ -26,7 +30,11 @@ const config: Config<Components, RootProps> = {
   categories: {
     layout: {
       title: "Layout",
-      components: ["Grid", "Image", "Form", "Separator"],
+      components: ["Grid"],
+    },
+    basic: {
+      title: "Basic",
+      components: ["Icon", "Image", "Form", "Separator"],
     },
     typography: {
       title: "Typography",
@@ -38,13 +46,16 @@ const config: Config<Components, RootProps> = {
   },
   components: {
     Grid: GridBlock,
+    Separator: SeparatorBlock,
+    Icon: IconBlock,
     Image: ImageBlock,
     Form: FormBlock,
-    Separator: SeparatorBlock,
     Heading,
   },
   root: RootEditor,
 };
+
+const usePuck = createUsePuck();
 
 export type PuckEditorProps = {
   id: string;
@@ -64,6 +75,19 @@ export function PuckEditor({ id, initialData, onSavePage }: PuckEditorProps) {
       data={initialData}
       onPublish={onSave}
       viewports={viewports}
+      overrides={{
+        headerActions: ({ children }) => {
+          const appState = usePuck((s) => s.appState);
+
+          return (
+            <>
+              <Button type="button" onClick={() => onSave(appState.data)}>
+                Save
+              </Button>
+            </>
+          );
+        },
+      }}
     />
   );
 }

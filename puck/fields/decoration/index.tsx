@@ -12,10 +12,18 @@ import { getViewportKey } from "@/puck/utils/viewports";
 import { Breakpoint } from "@/puck/utils/breakpoints";
 import { cascadeViewportValues } from "@/puck/utils/cascade-viewport-valuets";
 import { ValueColorInput } from "@/puck/components/value-color-input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export interface DecorationProps {
   opacity?: string;
   borderWidth?: string;
+  borderStyle?: string;
   borderColor?: string;
   borderTopLeftRadius?: string;
   borderTopRightRadius?: string;
@@ -110,9 +118,7 @@ export const DecorationField = withAccordionField(
             <ValueUnitInput
               key={`value-${key}`}
               name={key}
-              // Fallback a stringa vuota per l'input controllato
               value={renderValues[key] ?? ""}
-              // Se l'input è vuoto, salviamo undefined nel JSON
               onChange={(newVal) => update({ [key]: newVal || undefined })}
             />
           </div>
@@ -133,9 +139,36 @@ export const DecorationField = withAccordionField(
           <span className="text-sm font-medium">Border</span>
           <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-4 p-2 bg-muted/60 rounded">
             {renderField({ key: "borderWidth", label: "Width" })}
+            {/* ROW 1: Border Style (Col 2) */}
+            <div className="flex flex-col gap-y-1">
+              <PropHeader
+                name="borderStyle"
+                label="Style"
+                isModified={currentValues.borderStyle !== undefined}
+                onReset={() => resetProp("borderStyle")}
+              />
+              <Select
+                value={renderValues.borderStyle || "none"}
+                onValueChange={(val) =>
+                  update({ borderStyle: val === "none" ? undefined : val })
+                }
+              >
+                <SelectTrigger className="w-full h-9 bg-transparent border-input">
+                  <SelectValue placeholder="Style" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="solid">Solid</SelectItem>
+                  <SelectItem value="dashed">Dashed</SelectItem>
+                  <SelectItem value="dotted">Dotted</SelectItem>
+                  <SelectItem value="double">Double</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div
               key={`container-border-color`}
-              className="flex flex-col gap-y-1"
+              className="col-span-2 flex flex-col gap-y-1"
             >
               <PropHeader
                 key={`prop-border-color`}
