@@ -11,9 +11,12 @@ import { Responsive } from "@/puck/utils/responsive";
 import { getViewportKey } from "@/puck/utils/viewports";
 import { Breakpoint } from "@/puck/utils/breakpoints";
 import { cascadeViewportValues } from "@/puck/utils/cascade-viewport-valuets";
+import { ValueColorInput } from "@/puck/components/value-color-input";
 
 export interface DecorationProps {
   opacity?: string;
+  borderWidth?: string;
+  borderColor?: string;
   borderTopLeftRadius?: string;
   borderTopRightRadius?: string;
   borderBottomLeftRadius?: string;
@@ -123,6 +126,33 @@ export const DecorationField = withAccordionField(
         {/* --- OPACITY --- */}
         <div className="grid grid-cols-1 gap-y-4 p-1">
           {opacityFields.map(renderField)}
+        </div>
+
+        {/* --- BORDER --- */}
+        <div className="mt-4">
+          <span className="text-sm font-medium">Border</span>
+          <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-4 p-2 bg-muted/60 rounded">
+            {renderField({ key: "borderWidth", label: "Width" })}
+            <div
+              key={`container-border-color`}
+              className="flex flex-col gap-y-1"
+            >
+              <PropHeader
+                key={`prop-border-color`}
+                name="borderColor"
+                label="Color"
+                isModified={currentValues.borderColor !== undefined}
+                onReset={() => resetProp("borderColor")}
+              />
+              <ValueColorInput
+                name="borderColor"
+                value={renderValues.borderColor ?? ""}
+                onChange={(newVal) =>
+                  update({ borderColor: newVal || undefined })
+                }
+              />
+            </div>
+          </div>
         </div>
 
         {/* --- BORDER RADIUS --- */}

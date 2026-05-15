@@ -1,4 +1,10 @@
-import { Config, Data, Render } from "@puckeditor/core";
+import { Color, TextStyle } from "@tiptap/extension-text-style";
+import {
+  type Config,
+  type Data,
+  Render,
+  type RootConfig,
+} from "@puckeditor/core";
 import "@puckeditor/core/puck.css";
 
 import {
@@ -7,14 +13,31 @@ import {
   getGridVars,
   getTypographyVars,
 } from "./utils/get-style-vars";
+
+import { type RootProps } from "./root";
+
+import { RootBlockUi } from "./root/ui/root";
+
 import { HeadingBlockUi } from "./blocks/Heading/ui/heading";
 import { GridBlockUi } from "./blocks/Grid/ui/grid";
 import { ImageBlockUi } from "./blocks/Image/ui/image";
 import { FormBlockUi } from "./blocks/Form/ui/form";
-import { Separator } from "@/components/ui/separator";
+import { SeparatorBlockUi } from "./blocks/Separator/ui/separator";
 
-// Create Puck component config
-const config: Config = {
+const RootRender: RootConfig<RootProps> = {
+  fields: {
+    title: { type: "text" },
+  },
+  render: ({ children, dimension }) => {
+    const styleVars = {
+      ...getDimensionVars(dimension),
+    };
+
+    return <RootBlockUi styleVars={styleVars}>{children}</RootBlockUi>;
+  },
+};
+
+const config: Config<any, RootProps> = {
   components: {
     Grid: {
       fields: {
@@ -57,12 +80,17 @@ const config: Config = {
           ...getDimensionVars(dimension),
         };
 
-        return <Separator style={styleVars} className="puck-dim" />;
+        return <SeparatorBlockUi styleVars={styleVars} />;
       },
     },
     Heading: {
       fields: {
-        text: { type: "richtext" },
+        text: {
+          type: "richtext",
+          tiptap: {
+            extensions: [TextStyle, Color],
+          },
+        },
       },
 
       render: ({ text, dimension, typography }) => {
@@ -75,6 +103,7 @@ const config: Config = {
       },
     },
   },
+  root: RootRender,
 };
 
 export type PuckEditorProps = {

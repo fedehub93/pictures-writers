@@ -20,6 +20,16 @@ const themeColors = [
     value: "var(--secondary)",
     bgPreview: "var(--secondary)",
   },
+  {
+    label: "Muted Foreground",
+    value: "var(--muted-foreground)",
+    bgPreview: "var(--muted-foreground)",
+  },
+  {
+    label: "Accent Foreground",
+    value: "var(--accent-foreground)",
+    bgPreview: "var(--accent-foreground)",
+  },
 ];
 
 const paletteColors = [
