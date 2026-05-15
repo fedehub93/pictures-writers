@@ -35,9 +35,13 @@ interface DynamicFormProps {
     submitLabel: string | null;
     gtmEventName: string | null;
   };
+  title?: string;
 }
 
-export default function DynamicForm({ form: formDef }: DynamicFormProps) {
+export default function DynamicForm({
+  form: formDef,
+  title,
+}: DynamicFormProps) {
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
@@ -177,11 +181,11 @@ export default function DynamicForm({ form: formDef }: DynamicFormProps) {
 
   return (
     <div className="flex-1 flex flex-col gap-y-4">
-      <div className="text-2xl font-semibold">Informazioni sottoscrizione</div>
+      {title && <div className="text-2xl font-semibold">{title}</div>}
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="bg-card border rounded-lg shadow p-4 flex flex-col space-y-4"
+          className="bg-card rounded-lg flex flex-col space-y-4"
         >
           {jsonFields.map((field: any) => {
             switch (field.type) {
@@ -195,7 +199,6 @@ export default function DynamicForm({ form: formDef }: DynamicFormProps) {
                     placeholder={field.placeholder || ""}
                     disabled={isSubmitting}
                     className="w-full disabled:bg-muted"
-                    labelProps={{ className: "text-lg" }}
                   />
                 );
               case "textarea":
@@ -207,7 +210,6 @@ export default function DynamicForm({ form: formDef }: DynamicFormProps) {
                     label={field.label}
                     placeholder={field.placeholder || ""}
                     className="py-4 w-full h-20 disabled:bg-muted"
-                    labelProps={{ className: "text-lg" }}
                     disabled={isSubmitting}
                   />
                 );
