@@ -1,12 +1,15 @@
-import { PageUpdateValues } from "@/app/(admin)/admin/(routes)/pages/schema";
-import { Config, Data, Puck } from "@puckeditor/core";
+import { type Config, type Data, Puck } from "@puckeditor/core";
 import "@puckeditor/core/puck.css";
 
-import { GridBlock, GridBlockProps } from "./blocks/Grid";
-import { SeparatorBlock, SeparatorBlockProps } from "./blocks/Separator";
-import { ImageBlock, ImageBlockProps } from "./blocks/Image";
-import { FormBlock, FormBlockProps } from "./blocks/Form";
-import { Heading, HeadingProps } from "./blocks/Heading";
+import { PageUpdateValues } from "@/app/(admin)/admin/(routes)/pages/schema";
+
+import { RootEditor, type RootProps } from "./root";
+
+import { GridBlock, type GridBlockProps } from "./blocks/Grid";
+import { SeparatorBlock, type SeparatorBlockProps } from "./blocks/Separator";
+import { ImageBlock, type ImageBlockProps } from "./blocks/Image";
+import { FormBlock, type FormBlockProps } from "./blocks/Form";
+import { Heading, type HeadingProps } from "./blocks/Heading";
 
 import { viewports } from "./utils/viewports";
 
@@ -19,7 +22,7 @@ type Components = {
 };
 
 // Create Puck component config
-const config: Config<Components> = {
+const config: Config<Components, RootProps> = {
   categories: {
     layout: {
       title: "Layout",
@@ -40,6 +43,7 @@ const config: Config<Components> = {
     Separator: SeparatorBlock,
     Heading,
   },
+  root: RootEditor,
 };
 
 export type PuckEditorProps = {

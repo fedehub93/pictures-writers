@@ -108,6 +108,8 @@ export const getDecorationVars = (data?: Responsive<DecorationProps>) => {
     const s = getSuffix(bp);
 
     if (p.opacity) vars[`--op-${s}`] = p.opacity;
+    if (p.borderWidth) vars[`--bw-${s}`] = p.borderWidth;
+    if (p.borderColor) vars[`--bc-${s}`] = p.borderColor;
     if (p.borderTopLeftRadius) vars[`--rtl-${s}`] = p.borderTopLeftRadius;
     if (p.borderTopRightRadius) vars[`--rtr-${s}`] = p.borderTopRightRadius;
     if (p.borderBottomLeftRadius) vars[`--rbl-${s}`] = p.borderBottomLeftRadius;

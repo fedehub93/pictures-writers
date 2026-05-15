@@ -78,12 +78,16 @@
 /* --- 4. DECORATION --- */
 .puck-deco {
   --op-d: initial;
+  --bw-d: 0;
+  --bc-d: initial;
   --rtl-d: initial;
   --rtr-d: initial;
   --rbl-d: initial;
   --rbr-d: initial;
 
   opacity: var(--op-d);
+  border-width: var(--bw-d);
+  border-color: var(--bc-d);
   border-top-left-radius: var(--rtl-d);
   border-top-right-radius: var(--rtr-d);
   border-bottom-left-radius: var(--rbl-d);
@@ -159,12 +163,16 @@
   }
   .puck-deco {
     --op-t: initial;
+    --bw-t: 0;
+    --bw-color: initial;
     --rtl-t: initial;
     --rtr-t: initial;
     --rbl-t: initial;
     --rbr-t: initial;
 
     opacity: var(--op-t, var(--op-d));
+    border-width: var(--bw-t, var(--bw-d));
+    border-color: var(--bc-t, var(--bc-d));
     border-top-left-radius: var(--rtl-t, var(--rtl-d));
     border-top-right-radius: var(--rtr-t, var(--rtr-d));
     border-bottom-left-radius: var(--rbl-t, var(--rbl-d));
@@ -239,12 +247,16 @@
   }
   .puck-deco {
     --op-m: initial;
+    --bw-m: 0;
+    --bc-m: initial;
     --rtl-m: initial;
     --rtr-m: initial;
     --rbl-m: initial;
     --rbr-m: initial;
 
     opacity: var(--op-m, var(--op-t, var(--op-d)));
+    border-width: var(--bw-m, var(--bw-t, var(--bw-d)));
+    border-color: var(--bc-m, var(--bc-t, var(--bc-d)));
     border-top-left-radius: var(--rtl-m, var(--rtl-t, var(--rtl-d)));
     border-top-right-radius: var(--rtr-m, var(--rtr-t, var(--rtr-d)));
     border-bottom-left-radius: var(--rbl-m, var(--rbl-t, var(--rbl-d)));

@@ -40,13 +40,13 @@ const AboutPage = async () => {
             <span className="evidence">sceneggiatore di successo</span>e a
             nutrire la tua fiamma creativa.
           </p>
-          <div className="grid grid-cols-1 items-center gap-x-16 md:grid-cols-2">
-            <div className="md:order-1 aspect-square">
+          <div className="grid grid-cols-1 items-center justify-center gap-x-16 md:grid-cols-2">
+            <div className="md:order-1">
               <Image
                 src="/about-us.png"
                 alt="Feature"
                 width={2000}
-                height={2000}
+                height={1400}
                 className="h-auto w-full"
               />
             </div>
@@ -75,7 +75,7 @@ const AboutPage = async () => {
           </div>
         </div>
       </section>
-      <section className="px-4 py-20 lg:px-6">
+      <section className="px-4 pt-8 pb-20 lg:px-6">
         <div className="w-full text-center text-3xl font-bold mb-4">
           Gli autori
         </div>
