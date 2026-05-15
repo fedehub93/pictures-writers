@@ -164,7 +164,7 @@
   .puck-deco {
     --op-t: initial;
     --bw-t: 0;
-    --bw-color: initial;
+    --bc-t: initial;
     --rtl-t: initial;
     --rtr-t: initial;
     --rbl-t: initial;
