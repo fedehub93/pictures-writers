@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 import { stripe } from "@/lib/stripe";
 import { db } from "@/lib/db";
-import { sendWebinarPurchaseEmail } from "@/lib/mail";
+import { sendWebinarPurchaseEmail } from "@/lib/mail/mail";
 
 export async function POST(req: Request) {
   const body = await req.text();

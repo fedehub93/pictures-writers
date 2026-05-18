@@ -503,6 +503,7 @@ model EmailAudience {
   // emailSingleSend   EmailSingleSend? @relation(fields: [emailSingleSendId], references: [id])
   // emailSingleSendId String?
   emailSingleSends EmailSingleSend[]
+  externalId String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

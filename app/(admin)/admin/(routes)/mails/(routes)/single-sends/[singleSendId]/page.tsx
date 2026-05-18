@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { WriteForm } from "./_components/write-form";
 import { redirect } from "next/navigation";
-import { getTodayEmailsAvailable } from "@/lib/mail";
+import { getTodayEmailsAvailable } from "@/lib/mail/mail";
 
 const SingleSendIdPage = async (props: {
   params: Promise<{ singleSendId: string }>;
