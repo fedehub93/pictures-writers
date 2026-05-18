@@ -366,6 +366,7 @@ exports.Prisma.EmailAudienceScalarFieldEnum = {
   name: 'name',
   type: 'type',
   description: 'description',
+  externalId: 'externalId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

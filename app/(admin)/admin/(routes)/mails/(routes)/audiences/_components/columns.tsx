@@ -1,18 +1,12 @@
 "use client";
 
-import { AudienceType, EmailAudience } from "@/generated/prisma";
-import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, Eye, MoreHorizontal, Pencil } from "lucide-react";
+import { ArrowUpDownIcon } from "lucide-react";
+
+import { AudienceType, EmailAudience } from "@/generated/prisma";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { AudiencesAction } from "./actions";
 
 export const columns: ColumnDef<EmailAudience & { totalContacts: number }>[] = [
@@ -29,7 +23,7 @@ export const columns: ColumnDef<EmailAudience & { totalContacts: number }>[] = [
             cy={10}
             className={cn(
               "fill-emerald-500",
-              type === AudienceType.GLOBAL && "fill-slate-700"
+              type === AudienceType.GLOBAL && "fill-slate-700",
             )}
           />
         </svg>
@@ -45,7 +39,7 @@ export const columns: ColumnDef<EmailAudience & { totalContacts: number }>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Name
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <ArrowUpDownIcon className="ml-2 size-4" />
         </Button>
       );
     },

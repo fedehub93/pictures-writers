@@ -7,7 +7,7 @@ import { ContentStatus, ProductType, EmailProvider } from "@/generated/prisma";
 import { db } from "@/lib/db";
 import { isEbookMetadata, isWebinarMetadata } from "@/type-guards";
 import { createContactByEmail } from "@/data/email-contact";
-import { handleProductPurchased } from "./event-handler";
+import { handleProductPurchased } from "../event-handler";
 
 type GenericEmail = {
   to: string;

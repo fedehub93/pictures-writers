@@ -3,7 +3,7 @@
 import * as v from "valibot";
 
 import { FreeEbookSchemaValibot } from "@/schemas";
-import { sendFreeEbookEmail } from "@/lib/mail";
+import { sendFreeEbookEmail } from "@/lib/mail/mail";
 import { createContactByEmail } from "@/data/email-contact";
 import { handleEbookDownloaded } from "@/lib/event-handler";
 import { verifyRecaptcha } from "@/lib/recaptcha";

@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { requireAdminAuth } from "@/lib/auth-utils";
 
-import { getEmailsSentToday } from "@/lib/mail";
+import { getEmailsSentToday } from "@/lib/mail/mail";
 
 import { EmailSettingsForm } from "./_components/email-settings-form";
 import { EmailTesterForm } from "./_components/email-tester-form";

@@ -28795,6 +28795,7 @@ export namespace Prisma {
     name: string | null
     type: $Enums.AudienceType | null
     description: string | null
+    externalId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -28804,6 +28805,7 @@ export namespace Prisma {
     name: string | null
     type: $Enums.AudienceType | null
     description: string | null
+    externalId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -28813,6 +28815,7 @@ export namespace Prisma {
     name: number
     type: number
     description: number
+    externalId: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -28824,6 +28827,7 @@ export namespace Prisma {
     name?: true
     type?: true
     description?: true
+    externalId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -28833,6 +28837,7 @@ export namespace Prisma {
     name?: true
     type?: true
     description?: true
+    externalId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -28842,6 +28847,7 @@ export namespace Prisma {
     name?: true
     type?: true
     description?: true
+    externalId?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -28924,6 +28930,7 @@ export namespace Prisma {
     name: string
     type: $Enums.AudienceType
     description: string | null
+    externalId: string | null
     createdAt: Date
     updatedAt: Date
     _count: EmailAudienceCountAggregateOutputType | null
@@ -28950,6 +28957,7 @@ export namespace Prisma {
     name?: boolean
     type?: boolean
     description?: boolean
+    externalId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     contacts?: boolean | EmailAudience$contactsArgs<ExtArgs>
@@ -28962,6 +28970,7 @@ export namespace Prisma {
     name?: boolean
     type?: boolean
     description?: boolean
+    externalId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["emailAudience"]>
@@ -28971,6 +28980,7 @@ export namespace Prisma {
     name?: boolean
     type?: boolean
     description?: boolean
+    externalId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["emailAudience"]>
@@ -28980,11 +28990,12 @@ export namespace Prisma {
     name?: boolean
     type?: boolean
     description?: boolean
+    externalId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type EmailAudienceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "type" | "description" | "createdAt" | "updatedAt", ExtArgs["result"]["emailAudience"]>
+  export type EmailAudienceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "type" | "description" | "externalId" | "createdAt" | "updatedAt", ExtArgs["result"]["emailAudience"]>
   export type EmailAudienceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     contacts?: boolean | EmailAudience$contactsArgs<ExtArgs>
     emailSingleSends?: boolean | EmailAudience$emailSingleSendsArgs<ExtArgs>
@@ -29004,6 +29015,7 @@ export namespace Prisma {
       name: string
       type: $Enums.AudienceType
       description: string | null
+      externalId: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["emailAudience"]>
@@ -29435,6 +29447,7 @@ export namespace Prisma {
     readonly name: FieldRef<"EmailAudience", 'String'>
     readonly type: FieldRef<"EmailAudience", 'AudienceType'>
     readonly description: FieldRef<"EmailAudience", 'String'>
+    readonly externalId: FieldRef<"EmailAudience", 'String'>
     readonly createdAt: FieldRef<"EmailAudience", 'DateTime'>
     readonly updatedAt: FieldRef<"EmailAudience", 'DateTime'>
   }
@@ -57528,6 +57541,7 @@ export namespace Prisma {
     name: 'name',
     type: 'type',
     description: 'description',
+    externalId: 'externalId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -59885,6 +59899,7 @@ export namespace Prisma {
     name?: StringFilter<"EmailAudience"> | string
     type?: EnumAudienceTypeFilter<"EmailAudience"> | $Enums.AudienceType
     description?: StringNullableFilter<"EmailAudience"> | string | null
+    externalId?: StringNullableFilter<"EmailAudience"> | string | null
     createdAt?: DateTimeFilter<"EmailAudience"> | Date | string
     updatedAt?: DateTimeFilter<"EmailAudience"> | Date | string
     contacts?: EmailContactListRelationFilter
@@ -59896,6 +59911,7 @@ export namespace Prisma {
     name?: SortOrder
     type?: SortOrder
     description?: SortOrderInput | SortOrder
+    externalId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     contacts?: EmailContactOrderByRelationAggregateInput
@@ -59910,6 +59926,7 @@ export namespace Prisma {
     name?: StringFilter<"EmailAudience"> | string
     type?: EnumAudienceTypeFilter<"EmailAudience"> | $Enums.AudienceType
     description?: StringNullableFilter<"EmailAudience"> | string | null
+    externalId?: StringNullableFilter<"EmailAudience"> | string | null
     createdAt?: DateTimeFilter<"EmailAudience"> | Date | string
     updatedAt?: DateTimeFilter<"EmailAudience"> | Date | string
     contacts?: EmailContactListRelationFilter
@@ -59921,6 +59938,7 @@ export namespace Prisma {
     name?: SortOrder
     type?: SortOrder
     description?: SortOrderInput | SortOrder
+    externalId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: EmailAudienceCountOrderByAggregateInput
@@ -59936,6 +59954,7 @@ export namespace Prisma {
     name?: StringWithAggregatesFilter<"EmailAudience"> | string
     type?: EnumAudienceTypeWithAggregatesFilter<"EmailAudience"> | $Enums.AudienceType
     description?: StringNullableWithAggregatesFilter<"EmailAudience"> | string | null
+    externalId?: StringNullableWithAggregatesFilter<"EmailAudience"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"EmailAudience"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"EmailAudience"> | Date | string
   }
@@ -63535,6 +63554,7 @@ export namespace Prisma {
     name: string
     type?: $Enums.AudienceType
     description?: string | null
+    externalId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     contacts?: EmailContactCreateNestedManyWithoutAudiencesInput
@@ -63546,6 +63566,7 @@ export namespace Prisma {
     name: string
     type?: $Enums.AudienceType
     description?: string | null
+    externalId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     contacts?: EmailContactUncheckedCreateNestedManyWithoutAudiencesInput
@@ -63557,6 +63578,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumAudienceTypeFieldUpdateOperationsInput | $Enums.AudienceType
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     contacts?: EmailContactUpdateManyWithoutAudiencesNestedInput
@@ -63568,6 +63590,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumAudienceTypeFieldUpdateOperationsInput | $Enums.AudienceType
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     contacts?: EmailContactUncheckedUpdateManyWithoutAudiencesNestedInput
@@ -63579,6 +63602,7 @@ export namespace Prisma {
     name: string
     type?: $Enums.AudienceType
     description?: string | null
+    externalId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -63588,6 +63612,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumAudienceTypeFieldUpdateOperationsInput | $Enums.AudienceType
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -63597,6 +63622,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumAudienceTypeFieldUpdateOperationsInput | $Enums.AudienceType
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -67035,6 +67061,7 @@ export namespace Prisma {
     name?: SortOrder
     type?: SortOrder
     description?: SortOrder
+    externalId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -67044,6 +67071,7 @@ export namespace Prisma {
     name?: SortOrder
     type?: SortOrder
     description?: SortOrder
+    externalId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -67053,6 +67081,7 @@ export namespace Prisma {
     name?: SortOrder
     type?: SortOrder
     description?: SortOrder
+    externalId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -76792,6 +76821,7 @@ export namespace Prisma {
     name: string
     type?: $Enums.AudienceType
     description?: string | null
+    externalId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     emailSingleSends?: EmailSingleSendCreateNestedManyWithoutAudiencesInput
@@ -76802,6 +76832,7 @@ export namespace Prisma {
     name: string
     type?: $Enums.AudienceType
     description?: string | null
+    externalId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     emailSingleSends?: EmailSingleSendUncheckedCreateNestedManyWithoutAudiencesInput
@@ -76886,6 +76917,7 @@ export namespace Prisma {
     name?: StringFilter<"EmailAudience"> | string
     type?: EnumAudienceTypeFilter<"EmailAudience"> | $Enums.AudienceType
     description?: StringNullableFilter<"EmailAudience"> | string | null
+    externalId?: StringNullableFilter<"EmailAudience"> | string | null
     createdAt?: DateTimeFilter<"EmailAudience"> | Date | string
     updatedAt?: DateTimeFilter<"EmailAudience"> | Date | string
   }
@@ -77018,6 +77050,7 @@ export namespace Prisma {
     name: string
     type?: $Enums.AudienceType
     description?: string | null
+    externalId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     contacts?: EmailContactCreateNestedManyWithoutAudiencesInput
@@ -77028,6 +77061,7 @@ export namespace Prisma {
     name: string
     type?: $Enums.AudienceType
     description?: string | null
+    externalId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     contacts?: EmailContactUncheckedCreateNestedManyWithoutAudiencesInput
@@ -82325,6 +82359,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumAudienceTypeFieldUpdateOperationsInput | $Enums.AudienceType
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     emailSingleSends?: EmailSingleSendUpdateManyWithoutAudiencesNestedInput
@@ -82335,6 +82370,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumAudienceTypeFieldUpdateOperationsInput | $Enums.AudienceType
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     emailSingleSends?: EmailSingleSendUncheckedUpdateManyWithoutAudiencesNestedInput
@@ -82345,6 +82381,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumAudienceTypeFieldUpdateOperationsInput | $Enums.AudienceType
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -82406,6 +82443,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumAudienceTypeFieldUpdateOperationsInput | $Enums.AudienceType
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     contacts?: EmailContactUpdateManyWithoutAudiencesNestedInput
@@ -82416,6 +82454,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumAudienceTypeFieldUpdateOperationsInput | $Enums.AudienceType
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     contacts?: EmailContactUncheckedUpdateManyWithoutAudiencesNestedInput
@@ -82426,6 +82465,7 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     type?: EnumAudienceTypeFieldUpdateOperationsInput | $Enums.AudienceType
     description?: NullableStringFieldUpdateOperationsInput | string | null
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
