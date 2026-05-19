@@ -3,6 +3,7 @@
 import { db } from "@/lib/db";
 import { getSubscriptionTokenByToken } from "@/data/subscription-token";
 import { getContactByEmail } from "@/data/email-contact";
+import { createContactOnProvider } from "@/lib/mail/core";
 
 export const newSubscription = async (token: string) => {
   const existingToken = await getSubscriptionTokenByToken(token);
@@ -32,6 +33,12 @@ export const newSubscription = async (token: string) => {
   await db.emailSubscriptionToken.delete({
     where: { id: existingToken.id },
   });
+
+  try {
+    await createContactOnProvider(existingUser.id);
+  } catch (error) {
+    console.error("Provider contact sync failed after ebook send:", error);
+  }
 
   return { success: "Email verified!" };
 };

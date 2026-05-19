@@ -20,11 +20,11 @@ export const EmailTemplateActions = ({
   return (
     <div className="flex gap-x-2">
       <ConfirmModal onConfirm={onDelete}>
-        <Button size="sm" variant="destructive" disabled={isLoading}>
+        <Button variant="destructive" disabled={isLoading}>
           <Trash2 className="h-4 w-4" />
         </Button>
       </ConfirmModal>
-      <Button size="sm" onClick={onSave} disabled={isLoading}>
+      <Button onClick={onSave} disabled={isLoading}>
         Save template
       </Button>
     </div>

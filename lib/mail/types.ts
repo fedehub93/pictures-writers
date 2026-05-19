@@ -17,6 +17,15 @@ export type BatchSyncResult = {
   errors: SyncErrorDetail[]; // Dettaglio degli errori per il log o per la UI
 };
 
+export type CreateContactResult = {
+  errors: string[];
+  newExternalId?: string;
+};
+
+export type DeleteContactResult = {
+  errors: string[];
+};
+
 export interface EmailProviderAdapter {
   syncSegment(externalId: string | null, name: string): Promise<SyncResult>;
   syncContactsBatch(
@@ -28,4 +37,12 @@ export interface EmailProviderAdapter {
       isSubscriber?: boolean;
     }[],
   ): Promise<BatchSyncResult>;
+  createContact(
+    email: string,
+    firstName?: string | null,
+    lastName?: string | null,
+    isSubscriber?: boolean,
+    segments?: { id: string }[],
+  ): Promise<CreateContactResult>;
+  deleteContact(email: string): Promise<DeleteContactResult>;
 }
