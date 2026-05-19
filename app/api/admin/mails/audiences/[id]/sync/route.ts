@@ -17,8 +17,15 @@ export async function POST(
       return new NextResponse("Unauthorized", { status: 401 });
     }
     const { id: audienceId } = params;
+
+    const { skip, take } = await req.json();
+
     // 1. Recupera il segmento e i contatti dal tuo DB
-    const result = await syncAudienceWithProvider(audienceId);
+    const result = await syncAudienceWithProvider(
+      audienceId,
+      Number(skip),
+      Number(take),
+    );
 
     return NextResponse.json({
       message: "Sync successfully",

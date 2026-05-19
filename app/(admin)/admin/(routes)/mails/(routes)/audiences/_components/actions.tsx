@@ -77,6 +77,7 @@ export const AudiencesAction = ({
   };
 
   const onSyncWithProvider = async () => {
+    if (isProcessing) return;
     // Rimosso il try/catch/finally esterno per lasciare il controllo all'hook
     startBatch({
       getTotalItems: async () => {

@@ -3,7 +3,11 @@ import { db } from "@/lib/db";
 import { ResendAdapter } from "../adapters/resend-adapter";
 import { EmailProviderAdapter } from "../types";
 
-export async function syncAudienceWithProvider(audienceId: string) {
+export async function syncAudienceWithProvider(
+  audienceId: string,
+  skip: number,
+  take: number,
+) {
   // 1. Recupero Dati dal Database
   const audience = await db.emailAudience.findUnique({
     where: { id: audienceId },
@@ -12,6 +16,8 @@ export async function syncAudienceWithProvider(audienceId: string) {
       name: true,
       externalId: true,
       contacts: {
+        skip,
+        take,
         select: {
           id: true,
           email: true,
