@@ -92,7 +92,7 @@ export async function syncContactWithProvider(id: string) {
       externalId: true,
       audiences: {
         select: {
-          id: true,
+          externalId: true,
         },
       },
     },
@@ -114,12 +114,16 @@ export async function syncContactWithProvider(id: string) {
   // 3. Esecuzione granulare della sincronizzazione
   // A. Aggiorniamo i dettagli dell'Audience (es. cambio nome)
   if (!externalId) {
+    const filteredAudiences = contact.audiences
+      .filter((a) => !!a.externalId)
+      .map((a) => ({ id: a.externalId })) as { id: string }[];
+
     const contactResult = await adapter.createContact(
       contact.email,
       contact.firstName,
       contact.lastName,
       contact.isSubscriber,
-      contact.audiences,
+      filteredAudiences,
     );
 
     if (!contactResult.newExternalId) {
@@ -163,7 +167,7 @@ export async function createContactOnProvider(id: string) {
   // 2. Inizializzazione dinamica dell'Adapter (Factory)
   const adapter = getProviderAdapter(emailSettings.emailProvider);
 
-  const { newExternalId } = await adapter.createContact(
+  const { errors, newExternalId } = await adapter.createContact(
     contact.email,
     contact.firstName,
     contact.lastName,
@@ -172,6 +176,10 @@ export async function createContactOnProvider(id: string) {
 
   if (!newExternalId) {
     throw new Error("Contact not created");
+  }
+
+  if (errors.length > 0) {
+    throw new Error(`Contact not created: ${errors.join(", ")}`);
   }
 
   await db.emailContact.update({
@@ -210,8 +218,8 @@ export async function deleteContactOnProvider(id: string) {
 
   const { errors } = await adapter.deleteContact(contact.email);
 
-  if (errors) {
-    throw new Error(`Contact not deleted: ${errors}`);
+  if (errors.length > 0) {
+    throw new Error(`Contact not deleted: ${errors.join(", ")}`);
   }
 
   return errors;

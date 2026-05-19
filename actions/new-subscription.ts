@@ -30,11 +30,15 @@ export const newSubscription = async (token: string) => {
     },
   });
 
-  await createContactOnProvider(existingUser.id);
-
   await db.emailSubscriptionToken.delete({
     where: { id: existingToken.id },
   });
+
+  try {
+    await createContactOnProvider(existingUser.id);
+  } catch (error) {
+    console.error("Provider contact sync failed after ebook send:", error);
+  }
 
   return { success: "Email verified!" };
 };

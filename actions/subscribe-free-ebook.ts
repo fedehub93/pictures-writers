@@ -48,7 +48,11 @@ export const subscribeFreeEbook = async (
       };
     }
 
-    await createContactOnProvider(existingContact.id);
+    try {
+      await createContactOnProvider(existingContact.id);
+    } catch (error) {
+      console.error("Provider contact sync failed after ebook send:", error);
+    }
 
     return {
       success: true,

@@ -96,8 +96,8 @@ export const AudiencesAction = ({
         if (!res.ok) throw new Error(json.error || "Unknown error");
       },
       onSuccess: () => {
-        toast.success("Sincronizzazione completata al 100%!");
-        router.refresh(); // Il refresh va fatto SOLO quando ha finito davvero
+        toast.success("Synchronization completed 100%!");
+        router.refresh();
       },
       onError: (err) => {
         toast.error(`Processo interrotto: ${err}`);
