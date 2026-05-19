@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { syncAudienceWithProvider } from "@/lib/mail/core";
 import { authAdmin } from "@/lib/auth-service";
 
+export const maxDuration = 60;
+
 export async function POST(
   req: Request,
   props: { params: Promise<{ id: string }> },
