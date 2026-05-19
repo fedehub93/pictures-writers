@@ -1,9 +1,11 @@
-// lib/mail/adapters/resend-adapter.ts
 import { Resend } from "resend";
-import { BatchSyncResult, EmailProviderAdapter, SyncResult } from "../types";
-import { db } from "@/lib/db";
-
-// const resend = new Resend(process.env.NEXT_RESEND_KEY);
+import {
+  BatchSyncResult,
+  CreateContactResult,
+  DeleteContactResult,
+  EmailProviderAdapter,
+  SyncResult,
+} from "../types";
 
 // Helper utility per mettere in pausa l'esecuzione
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -35,15 +37,14 @@ export class ResendAdapter implements EmailProviderAdapter {
         });
         if (error || !data) {
           throw new Error(
-            error?.message ||
-              "Errore sconosciuto durante la creazione dell'Audience",
+            error?.message || "Unknown error during audience sync process",
           );
         }
 
         newExternalId = data.id; // Salviamo il nuovo ID per restituirlo al nostro CMS
       } catch (e: any) {
         return {
-          errors: [`Impossibile creare l'audience: ${e.message}`],
+          errors: [`Impossible to sync the audience: ${e.message}`],
         };
       }
     }
@@ -153,5 +154,59 @@ export class ResendAdapter implements EmailProviderAdapter {
     result.success = result.failedCount === 0;
 
     return result;
+  }
+  async createContact(
+    email: string,
+    firstName?: string | null,
+    lastName?: string | null,
+    isSubscriber?: boolean,
+    segments?: { id: string }[],
+  ): Promise<CreateContactResult> {
+    const errors: string[] = [];
+
+    try {
+      const { data, error } = await this.resendClient.contacts.create({
+        email: email,
+        firstName: firstName || undefined,
+        lastName: lastName || undefined,
+        unsubscribed: !isSubscriber,
+        segments: segments ? [...segments] : undefined,
+      });
+
+      if (error || !data) {
+        throw new Error(
+          error?.message || "Unknown error during contact creation",
+        );
+      }
+
+      const newExternalId = data.id;
+
+      return { errors, newExternalId };
+    } catch (e: any) {
+      return {
+        errors: [`Impossible to create the contact: ${e.message}`],
+      };
+    }
+  }
+  async deleteContact(email: string): Promise<DeleteContactResult> {
+    const errors: string[] = [];
+
+    try {
+      const { data, error } = await this.resendClient.contacts.remove({
+        email,
+      });
+
+      if (error || !data) {
+        throw new Error(
+          error?.message || "Unknown error during contact deletion",
+        );
+      }
+    } catch (e: any) {
+      return {
+        errors: [`Impossible to delete the contact: ${e.message}`],
+      };
+    }
+
+    return { errors };
   }
 }

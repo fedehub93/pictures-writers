@@ -503,7 +503,7 @@ model EmailAudience {
   // emailSingleSend   EmailSingleSend? @relation(fields: [emailSingleSendId], references: [id])
   // emailSingleSendId String?
   emailSingleSends EmailSingleSend[]
-  externalId String?
+  externalId       String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -518,6 +518,7 @@ model EmailContact {
   emailVerified DateTime?
 
   isSubscriber Boolean @default(true)
+  externalId   String?
 
   audiences           EmailAudience[]
   interactions        EmailContactInteraction[]

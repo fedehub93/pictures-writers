@@ -518,6 +518,7 @@ model EmailContact {
   emailVerified DateTime?
 
   isSubscriber Boolean @default(true)
+  externalId   String?
 
   audiences           EmailAudience[]
   interactions        EmailContactInteraction[]

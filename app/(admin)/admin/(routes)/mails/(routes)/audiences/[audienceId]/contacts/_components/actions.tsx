@@ -2,8 +2,15 @@
 
 import Link from "next/link";
 import axios from "axios";
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
-import toast from "react-hot-toast";
+import {
+  CloudSyncIcon,
+  MoreHorizontalIcon,
+  PencilIcon,
+  Trash2Icon,
+} from "lucide-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -13,8 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 
 export const EmailAudienceContactsAction = ({ id }: { id: string }) => {
@@ -38,6 +44,28 @@ export const EmailAudienceContactsAction = ({ id }: { id: string }) => {
     }
   };
 
+  const onSyncWithProvider = async () => {
+    try {
+      setIsLoading(true);
+
+      const res = await fetch(`/api/admin/mails/contacts/${id}/sync`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Unknown error");
+
+      toast.success("Sync completed");
+    } catch {
+      toast.error("Something went wrong");
+    } finally {
+      router.refresh();
+      setIsLoading(false);
+      setIsOpen(false);
+    }
+  };
+
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
@@ -49,23 +77,34 @@ export const EmailAudienceContactsAction = ({ id }: { id: string }) => {
           }}
         >
           <span className="sr-only">Open menu</span>
-          <MoreHorizontal className="h-4 w-4" />
+          <MoreHorizontalIcon className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <Link href={`/admin/mails/contacts/${id}`}>
-          <DropdownMenuItem>
-            <Pencil className="h-4 w-4 mr-2" />
+          <DropdownMenuItem disabled={isLoading}>
+            <PencilIcon className="h-4 w-4 mr-2" />
             Edit
           </DropdownMenuItem>
         </Link>
+        <ConfirmModal onConfirm={onSyncWithProvider}>
+          <Button
+            variant="ghost"
+            className="px-2! w-full justify-start gap-0"
+            disabled={isLoading}
+          >
+            <CloudSyncIcon className="size-4 mr-2" />
+            Sync with Provider
+          </Button>
+        </ConfirmModal>
         <DropdownMenuSeparator />
         <ConfirmModal onConfirm={onDelete}>
           <Button
             variant="ghost"
-            className="text-destructive px-2 w-full justify-start"
+            className="bg-destructive px-2! w-full justify-start text-destructive-foreground gap-0"
+            disabled={isLoading}
           >
-            <Trash2 className="h-4 w-4 mr-2" />
+            <Trash2Icon className="size-4 mr-2" />
             Delete
           </Button>
         </ConfirmModal>

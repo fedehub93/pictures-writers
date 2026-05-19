@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
+import { deleteContactOnProvider } from "@/lib/mail/core";
 
 export async function DELETE(
   req: Request,
-  props: { params: Promise<{ contactId: string }> }
+  props: { params: Promise<{ contactId: string }> },
 ) {
   const params = await props.params;
   try {
@@ -30,6 +31,8 @@ export async function DELETE(
       where: { id: contactId },
     });
 
+    await deleteContactOnProvider(deleteEmailContact.email);
+
     return NextResponse.json(deleteEmailContact);
   } catch (error) {
     console.log("[EMAIL_CONTACT_ID_DELETE]", error);
@@ -39,7 +42,7 @@ export async function DELETE(
 
 export async function PATCH(
   req: Request,
-  props: { params: Promise<{ contactId: string }> }
+  props: { params: Promise<{ contactId: string }> },
 ) {
   const params = await props.params;
   try {

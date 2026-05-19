@@ -7,16 +7,17 @@ import { sendFreeEbookEmail } from "@/lib/mail/mail";
 import { createContactByEmail } from "@/data/email-contact";
 import { handleEbookDownloaded } from "@/lib/event-handler";
 import { verifyRecaptcha } from "@/lib/recaptcha";
+import { createContactOnProvider } from "@/lib/mail/core";
 
 export const subscribeFreeEbook = async (
   values: v.InferInput<typeof FreeEbookSchemaValibot>,
-  recaptchaToken: string
+  recaptchaToken: string,
 ) => {
   try {
     // 1. Verify reCAPTCHA first
     const recaptchaResult = await verifyRecaptcha(
       recaptchaToken,
-      "subscribe_product"
+      "subscribe_product",
     );
     if (!recaptchaResult.success) {
       return {
@@ -33,7 +34,7 @@ export const subscribeFreeEbook = async (
 
     const existingContact = await createContactByEmail(
       email,
-      "ebook_downloaded"
+      "ebook_downloaded",
     );
 
     const isEmailSent = await sendFreeEbookEmail(email, rootId!, format);
@@ -46,6 +47,8 @@ export const subscribeFreeEbook = async (
         message: "C'è stato un errore durante l'invio della mail. Riprova.",
       };
     }
+
+    await createContactOnProvider(existingContact.id);
 
     return {
       success: true,

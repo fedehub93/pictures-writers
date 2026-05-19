@@ -116,7 +116,7 @@ export const EmailEditorForm = ({ template }: EmailEditorForm) => {
   };
 
   return (
-    <div className="py-2 px-6 max-w-7xl mx-auto h-full flex flex-col gap-y-4 overflow-auto">
+    <div className="py-4 px-6 mx-auto h-full flex flex-col gap-y-4 overflow-auto">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-medium">Email template setup</h1>
         <div className="flex items-center gap-x-2">
@@ -168,7 +168,9 @@ export const EmailEditorForm = ({ template }: EmailEditorForm) => {
           />
         </form>
       </Form>
-      <EmailEditor onReady={onReady} onLoad={onLoad} />
+      <div className="border h-full flex rounded">
+        <EmailEditor onReady={onReady} onLoad={onLoad} />
+      </div>
     </div>
   );
 };

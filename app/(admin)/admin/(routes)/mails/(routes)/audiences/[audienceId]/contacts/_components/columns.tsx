@@ -1,25 +1,22 @@
 "use client";
 
-import {
-  AudienceType,
-  EmailAudience,
-  EmailContact,
-  EmailContactInteraction,
-  EmailTemplate,
-  Media,
-  Post,
-} from "@/generated/prisma";
-import Link from "next/link";
+import { EmailContact, EmailContactInteraction } from "@/generated/prisma";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, Eye, MoreHorizontal, Pencil } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  ArrowUpDownIcon,
+  CircleAlertIcon,
+  CircleCheckIcon,
+} from "lucide-react";
+
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
+
+import { formatDate } from "@/lib/format";
+
 import { EmailAudienceContactsAction } from "./actions";
 
 type EmailContactWithInteractions = EmailContact & {
@@ -27,6 +24,41 @@ type EmailContactWithInteractions = EmailContact & {
 };
 
 export const columns: ColumnDef<EmailContactWithInteractions>[] = [
+  {
+    accessorKey: "email",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Email
+          <ArrowUpDownIcon className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      const { email, emailVerified } = row.original;
+      const isVerified = !!emailVerified;
+      return (
+        <div className="flex gap-x-2 items-center">
+          {isVerified ? (
+            <Tooltip>
+              <TooltipTrigger>
+                <CircleCheckIcon className="size-4 min-w-4 text-primary" />
+              </TooltipTrigger>
+              <TooltipContent side="left">
+                Verified on {formatDate({ date: emailVerified })}
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            <CircleAlertIcon className="size-4 text-muted-foreground" />
+          )}
+          {email}
+        </div>
+      );
+    },
+  },
   {
     accessorKey: "firstName",
     header: ({ column }) => {
@@ -36,7 +68,7 @@ export const columns: ColumnDef<EmailContactWithInteractions>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           First Name
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <ArrowUpDownIcon className="ml-2 h-4 w-4" />
         </Button>
       );
     },
@@ -50,25 +82,12 @@ export const columns: ColumnDef<EmailContactWithInteractions>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Last Name
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <ArrowUpDownIcon className="ml-2 h-4 w-4" />
         </Button>
       );
     },
   },
-  {
-    accessorKey: "email",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Email
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-  },
+
   {
     accessorKey: "Interaction Type",
     header: ({ column }) => {
@@ -78,7 +97,7 @@ export const columns: ColumnDef<EmailContactWithInteractions>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Interaction
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <ArrowUpDownIcon className="ml-2 h-4 w-4" />
         </Button>
       );
     },
@@ -97,7 +116,7 @@ export const columns: ColumnDef<EmailContactWithInteractions>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Created at
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <ArrowUpDownIcon className="ml-2 h-4 w-4" />
         </Button>
       );
     },

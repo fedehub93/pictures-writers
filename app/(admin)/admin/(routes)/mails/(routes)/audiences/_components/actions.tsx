@@ -93,7 +93,7 @@ export const AudiencesAction = ({
         });
 
         const json = await res.json();
-        if (!res.ok) throw new Error(json.error || "Errore sconosciuto");
+        if (!res.ok) throw new Error(json.error || "Unknown error");
       },
       onSuccess: () => {
         toast.success("Sincronizzazione completata al 100%!");

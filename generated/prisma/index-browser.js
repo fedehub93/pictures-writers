@@ -378,6 +378,7 @@ exports.Prisma.EmailContactScalarFieldEnum = {
   email: 'email',
   emailVerified: 'emailVerified',
   isSubscriber: 'isSubscriber',
+  externalId: 'externalId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

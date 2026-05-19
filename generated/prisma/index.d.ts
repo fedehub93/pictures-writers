@@ -29926,6 +29926,7 @@ export namespace Prisma {
     email: string | null
     emailVerified: Date | null
     isSubscriber: boolean | null
+    externalId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -29937,6 +29938,7 @@ export namespace Prisma {
     email: string | null
     emailVerified: Date | null
     isSubscriber: boolean | null
+    externalId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -29948,6 +29950,7 @@ export namespace Prisma {
     email: number
     emailVerified: number
     isSubscriber: number
+    externalId: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -29961,6 +29964,7 @@ export namespace Prisma {
     email?: true
     emailVerified?: true
     isSubscriber?: true
+    externalId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -29972,6 +29976,7 @@ export namespace Prisma {
     email?: true
     emailVerified?: true
     isSubscriber?: true
+    externalId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -29983,6 +29988,7 @@ export namespace Prisma {
     email?: true
     emailVerified?: true
     isSubscriber?: true
+    externalId?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -30067,6 +30073,7 @@ export namespace Prisma {
     email: string
     emailVerified: Date | null
     isSubscriber: boolean
+    externalId: string | null
     createdAt: Date
     updatedAt: Date
     _count: EmailContactCountAggregateOutputType | null
@@ -30095,6 +30102,7 @@ export namespace Prisma {
     email?: boolean
     emailVerified?: boolean
     isSubscriber?: boolean
+    externalId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     audiences?: boolean | EmailContact$audiencesArgs<ExtArgs>
@@ -30110,6 +30118,7 @@ export namespace Prisma {
     email?: boolean
     emailVerified?: boolean
     isSubscriber?: boolean
+    externalId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["emailContact"]>
@@ -30121,6 +30130,7 @@ export namespace Prisma {
     email?: boolean
     emailVerified?: boolean
     isSubscriber?: boolean
+    externalId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["emailContact"]>
@@ -30132,11 +30142,12 @@ export namespace Prisma {
     email?: boolean
     emailVerified?: boolean
     isSubscriber?: boolean
+    externalId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type EmailContactOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "firstName" | "lastName" | "email" | "emailVerified" | "isSubscriber" | "createdAt" | "updatedAt", ExtArgs["result"]["emailContact"]>
+  export type EmailContactOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "firstName" | "lastName" | "email" | "emailVerified" | "isSubscriber" | "externalId" | "createdAt" | "updatedAt", ExtArgs["result"]["emailContact"]>
   export type EmailContactInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     audiences?: boolean | EmailContact$audiencesArgs<ExtArgs>
     interactions?: boolean | EmailContact$interactionsArgs<ExtArgs>
@@ -30160,6 +30171,7 @@ export namespace Prisma {
       email: string
       emailVerified: Date | null
       isSubscriber: boolean
+      externalId: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["emailContact"]>
@@ -30594,6 +30606,7 @@ export namespace Prisma {
     readonly email: FieldRef<"EmailContact", 'String'>
     readonly emailVerified: FieldRef<"EmailContact", 'DateTime'>
     readonly isSubscriber: FieldRef<"EmailContact", 'Boolean'>
+    readonly externalId: FieldRef<"EmailContact", 'String'>
     readonly createdAt: FieldRef<"EmailContact", 'DateTime'>
     readonly updatedAt: FieldRef<"EmailContact", 'DateTime'>
   }
@@ -57556,6 +57569,7 @@ export namespace Prisma {
     email: 'email',
     emailVerified: 'emailVerified',
     isSubscriber: 'isSubscriber',
+    externalId: 'externalId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -59969,6 +59983,7 @@ export namespace Prisma {
     email?: StringFilter<"EmailContact"> | string
     emailVerified?: DateTimeNullableFilter<"EmailContact"> | Date | string | null
     isSubscriber?: BoolFilter<"EmailContact"> | boolean
+    externalId?: StringNullableFilter<"EmailContact"> | string | null
     createdAt?: DateTimeFilter<"EmailContact"> | Date | string
     updatedAt?: DateTimeFilter<"EmailContact"> | Date | string
     audiences?: EmailAudienceListRelationFilter
@@ -59983,6 +59998,7 @@ export namespace Prisma {
     email?: SortOrder
     emailVerified?: SortOrderInput | SortOrder
     isSubscriber?: SortOrder
+    externalId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     audiences?: EmailAudienceOrderByRelationAggregateInput
@@ -60000,6 +60016,7 @@ export namespace Prisma {
     lastName?: StringNullableFilter<"EmailContact"> | string | null
     emailVerified?: DateTimeNullableFilter<"EmailContact"> | Date | string | null
     isSubscriber?: BoolFilter<"EmailContact"> | boolean
+    externalId?: StringNullableFilter<"EmailContact"> | string | null
     createdAt?: DateTimeFilter<"EmailContact"> | Date | string
     updatedAt?: DateTimeFilter<"EmailContact"> | Date | string
     audiences?: EmailAudienceListRelationFilter
@@ -60014,6 +60031,7 @@ export namespace Prisma {
     email?: SortOrder
     emailVerified?: SortOrderInput | SortOrder
     isSubscriber?: SortOrder
+    externalId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: EmailContactCountOrderByAggregateInput
@@ -60031,6 +60049,7 @@ export namespace Prisma {
     email?: StringWithAggregatesFilter<"EmailContact"> | string
     emailVerified?: DateTimeNullableWithAggregatesFilter<"EmailContact"> | Date | string | null
     isSubscriber?: BoolWithAggregatesFilter<"EmailContact"> | boolean
+    externalId?: StringNullableWithAggregatesFilter<"EmailContact"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"EmailContact"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"EmailContact"> | Date | string
   }
@@ -63634,6 +63653,7 @@ export namespace Prisma {
     email: string
     emailVerified?: Date | string | null
     isSubscriber?: boolean
+    externalId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     audiences?: EmailAudienceCreateNestedManyWithoutContactsInput
@@ -63648,6 +63668,7 @@ export namespace Prisma {
     email: string
     emailVerified?: Date | string | null
     isSubscriber?: boolean
+    externalId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     audiences?: EmailAudienceUncheckedCreateNestedManyWithoutContactsInput
@@ -63662,6 +63683,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isSubscriber?: BoolFieldUpdateOperationsInput | boolean
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     audiences?: EmailAudienceUpdateManyWithoutContactsNestedInput
@@ -63676,6 +63698,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isSubscriber?: BoolFieldUpdateOperationsInput | boolean
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     audiences?: EmailAudienceUncheckedUpdateManyWithoutContactsNestedInput
@@ -63690,6 +63713,7 @@ export namespace Prisma {
     email: string
     emailVerified?: Date | string | null
     isSubscriber?: boolean
+    externalId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -63701,6 +63725,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isSubscriber?: BoolFieldUpdateOperationsInput | boolean
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -63712,6 +63737,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isSubscriber?: BoolFieldUpdateOperationsInput | boolean
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -67133,6 +67159,7 @@ export namespace Prisma {
     email?: SortOrder
     emailVerified?: SortOrder
     isSubscriber?: SortOrder
+    externalId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -67144,6 +67171,7 @@ export namespace Prisma {
     email?: SortOrder
     emailVerified?: SortOrder
     isSubscriber?: SortOrder
+    externalId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -67155,6 +67183,7 @@ export namespace Prisma {
     email?: SortOrder
     emailVerified?: SortOrder
     isSubscriber?: SortOrder
+    externalId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -76706,6 +76735,7 @@ export namespace Prisma {
     email: string
     emailVerified?: Date | string | null
     isSubscriber?: boolean
+    externalId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     interactions?: EmailContactInteractionCreateNestedManyWithoutContactInput
@@ -76719,6 +76749,7 @@ export namespace Prisma {
     email: string
     emailVerified?: Date | string | null
     isSubscriber?: boolean
+    externalId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     interactions?: EmailContactInteractionUncheckedCreateNestedManyWithoutContactInput
@@ -76783,6 +76814,7 @@ export namespace Prisma {
     email?: StringFilter<"EmailContact"> | string
     emailVerified?: DateTimeNullableFilter<"EmailContact"> | Date | string | null
     isSubscriber?: BoolFilter<"EmailContact"> | boolean
+    externalId?: StringNullableFilter<"EmailContact"> | string | null
     createdAt?: DateTimeFilter<"EmailContact"> | Date | string
     updatedAt?: DateTimeFilter<"EmailContact"> | Date | string
   }
@@ -76984,6 +77016,7 @@ export namespace Prisma {
     email: string
     emailVerified?: Date | string | null
     isSubscriber?: boolean
+    externalId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     audiences?: EmailAudienceCreateNestedManyWithoutContactsInput
@@ -76997,6 +77030,7 @@ export namespace Prisma {
     email: string
     emailVerified?: Date | string | null
     isSubscriber?: boolean
+    externalId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     audiences?: EmailAudienceUncheckedCreateNestedManyWithoutContactsInput
@@ -77026,6 +77060,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isSubscriber?: BoolFieldUpdateOperationsInput | boolean
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     audiences?: EmailAudienceUpdateManyWithoutContactsNestedInput
@@ -77039,6 +77074,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isSubscriber?: BoolFieldUpdateOperationsInput | boolean
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     audiences?: EmailAudienceUncheckedUpdateManyWithoutContactsNestedInput
@@ -77135,6 +77171,7 @@ export namespace Prisma {
     email: string
     emailVerified?: Date | string | null
     isSubscriber?: boolean
+    externalId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     audiences?: EmailAudienceCreateNestedManyWithoutContactsInput
@@ -77148,6 +77185,7 @@ export namespace Prisma {
     email: string
     emailVerified?: Date | string | null
     isSubscriber?: boolean
+    externalId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     audiences?: EmailAudienceUncheckedCreateNestedManyWithoutContactsInput
@@ -77204,6 +77242,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isSubscriber?: BoolFieldUpdateOperationsInput | boolean
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     audiences?: EmailAudienceUpdateManyWithoutContactsNestedInput
@@ -77217,6 +77256,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isSubscriber?: BoolFieldUpdateOperationsInput | boolean
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     audiences?: EmailAudienceUncheckedUpdateManyWithoutContactsNestedInput
@@ -82277,6 +82317,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isSubscriber?: BoolFieldUpdateOperationsInput | boolean
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     interactions?: EmailContactInteractionUpdateManyWithoutContactNestedInput
@@ -82290,6 +82331,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isSubscriber?: BoolFieldUpdateOperationsInput | boolean
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     interactions?: EmailContactInteractionUncheckedUpdateManyWithoutContactNestedInput
@@ -82303,6 +82345,7 @@ export namespace Prisma {
     email?: StringFieldUpdateOperationsInput | string
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isSubscriber?: BoolFieldUpdateOperationsInput | boolean
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

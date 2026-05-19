@@ -3,6 +3,7 @@
 import { db } from "@/lib/db";
 import { getSubscriptionTokenByToken } from "@/data/subscription-token";
 import { getContactByEmail } from "@/data/email-contact";
+import { createContactOnProvider } from "@/lib/mail/core";
 
 export const newSubscription = async (token: string) => {
   const existingToken = await getSubscriptionTokenByToken(token);
@@ -28,6 +29,8 @@ export const newSubscription = async (token: string) => {
       email: existingToken.email,
     },
   });
+
+  await createContactOnProvider(existingUser.id);
 
   await db.emailSubscriptionToken.delete({
     where: { id: existingToken.id },

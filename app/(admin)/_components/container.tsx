@@ -14,7 +14,7 @@ export const Container = ({ children }: ContainerProps) => {
       )}
     >
       <div className="flex flex-col h-full">
-        <div className="overflow-auto">{children}</div>
+        <div className="overflow-auto h-full">{children}</div>
       </div>
     </div>
   );
