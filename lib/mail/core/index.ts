@@ -107,7 +107,7 @@ export async function updateContactsAudience(
       },
       interactions: {
         some: {
-          interactionType: { in: [...interactions] },
+          interactionType: { in: interactions },
         },
       },
     },

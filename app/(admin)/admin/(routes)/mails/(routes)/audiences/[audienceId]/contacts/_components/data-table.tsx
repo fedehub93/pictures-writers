@@ -67,6 +67,12 @@ export function DataTable<TData, TValue>({
             .map((interaction) => interaction.id)
             .join(",")}`,
         );
+
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData.error || "Failed to fetch contact count");
+        }
+
         const data = await res.json();
         return data.totalContacts;
       },
