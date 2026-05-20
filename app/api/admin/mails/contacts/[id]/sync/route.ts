@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { syncContactWithProvider } from "@/lib/mail/core";
 import { authAdmin } from "@/lib/auth-service";
+import { db } from "@/lib/db";
 
 export const maxDuration = 60;
 
@@ -29,3 +30,4 @@ export async function POST(
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+

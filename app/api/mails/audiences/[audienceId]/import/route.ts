@@ -3,7 +3,10 @@ import { NextResponse } from "next/server";
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
 
-export async function PATCH(req: Request, props: { params: Promise<{ audienceId: string }> }) {
+export async function PATCH(
+  req: Request,
+  props: { params: Promise<{ audienceId: string }> },
+) {
   const params = await props.params;
   try {
     const user = await authAdmin();
@@ -18,18 +21,24 @@ export async function PATCH(req: Request, props: { params: Promise<{ audienceId:
       return new NextResponse("Bad request", { status: 400 });
     }
 
+    const skip = Number(values.skip);
+    const take = Number(values.take);
+    console.log(skip, take);
+    return NextResponse.json({ success: "Operazione eseguita" });
+
     const contacts = await db.emailContact.findMany({
       where: {
         audiences: {
           none: { id: audienceId },
         },
-
         interactions: {
           some: {
             interactionType: { in: [...values.interactions] },
           },
         },
       },
+      skip,
+      take,
     });
 
     for (const contact of contacts) {

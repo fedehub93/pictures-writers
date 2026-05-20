@@ -22,18 +22,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-// Importiamo i componenti per la modale di caricamento
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Progress } from "@/components/ui/progress";
-
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 import { useBatchProcessor } from "@/hooks/use-batch-processor";
+import { ProgressDialog } from "@/app/(admin)/_components/modals/progress-dialog";
 
 interface AudiencesAction {
   id: string;
@@ -160,34 +151,14 @@ export const AudiencesAction = ({
       </DropdownMenu>
 
       {/* MODALE DI PROGRESSO */}
-      <Dialog open={isProcessing}>
-        <DialogContent
-          className="sm:max-w-md [&>button]:hidden"
-          onInteractOutside={(e) => e.preventDefault()}
-        >
-          <DialogHeader>
-            <DialogTitle>Sync in progress</DialogTitle>
-            <DialogDescription>
-              We are syncing your contacts with the provider. Please do not
-              close this window.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-4 py-4">
-            <Progress value={percentage} className="h-3 w-full" />
-            <div className="flex justify-between text-sm text-muted-foreground">
-              <span>{percentage}% completed</span>
-              <span>
-                {progress.current} / {progress.total} contacts
-              </span>
-            </div>
-            {error && (
-              <div className="text-sm text-destructive mt-2">
-                Error: {error}
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ProgressDialog
+        title="Sync in progress"
+        description="We are syncing your contacts with the provider. Please do not close this window."
+        isProcessing={isProcessing}
+        percentage={percentage}
+        progress={progress}
+        error={error}
+      />
     </>
   );
 };
