@@ -79,6 +79,70 @@ export async function syncAudienceWithProvider(
   return result;
 }
 
+export async function updateContactsAudience(
+  audienceId: string,
+  interactions: string[],
+  skip: number,
+  take: number,
+) {
+  // 1. Recupero dati dal database
+
+  const audience = await db.emailAudience.findUnique({
+    where: { id: audienceId },
+    select: {
+      id: true,
+      name: true,
+      externalId: true,
+    },
+  });
+
+  if (!audience || !audience.externalId) {
+    throw new Error("Audience not found or not linked");
+  }
+
+  const contacts = await db.emailContact.findMany({
+    where: {
+      audiences: {
+        none: { id: audience.id },
+      },
+      interactions: {
+        some: {
+          interactionType: { in: interactions },
+        },
+      },
+    },
+    skip,
+    take,
+  });
+
+  const emailSettings = await db.emailSetting.findFirst();
+  if (!emailSettings || !emailSettings.emailProvider) {
+    throw new Error("Settings is incorrect");
+  }
+
+  // 2. Inizializzazione dinamica dell'Adapter (Factory)
+  const adapter = getProviderAdapter(emailSettings.emailProvider);
+
+  // 3. Aggiorno dati nel database
+  for (const contact of contacts) {
+    await db.emailContact.update({
+      where: { id: contact.id },
+      data: {
+        audiences: {
+          connect: {
+            id: audience.id,
+          },
+        },
+      },
+    });
+  }
+
+  // 4. Sincronizzo con il provider
+  const result = await adapter.syncContactsBatch(audience.externalId, contacts);
+
+  return result;
+}
+
 export async function syncContactWithProvider(id: string) {
   // 1. Recupero Dati dal Database
   const contact = await db.emailContact.findUnique({
