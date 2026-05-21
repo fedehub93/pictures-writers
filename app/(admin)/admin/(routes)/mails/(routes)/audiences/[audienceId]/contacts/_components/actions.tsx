@@ -32,7 +32,7 @@ export const EmailAudienceContactsAction = ({ id }: { id: string }) => {
     try {
       setIsLoading(true);
 
-      await axios.delete(`/api/mails/contacts/${id}`);
+      await axios.delete(`/api/admin/mails/contacts/${id}`);
 
       toast.success("Item deleted!");
     } catch {

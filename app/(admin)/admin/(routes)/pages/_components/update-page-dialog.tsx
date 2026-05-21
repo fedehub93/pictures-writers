@@ -3,8 +3,8 @@ import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { ResponsiveDialog } from "@/components/responsive-dialog";
-import { useOpenPage } from "../hooks/use-open-page";
-import { useGetPage } from "../hooks/use-get-page";
+import { useOpenPage } from "../_hooks/use-open-page";
+import { useGetPage } from "../_hooks/use-get-page";
 import { PageForm } from "./page-form";
 
 export const UpdatePageDialog = () => {

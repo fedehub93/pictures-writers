@@ -12,7 +12,7 @@ const fetchSubscriptionGrowth = async (
   from: string,
   to: string
 ): Promise<GrowthStats> => {
-  const response = await axios.get("/api/mails/contacts/stats", {
+  const response = await axios.get("/api/admin/mails/contacts/stats", {
     params: { from, to },
   });
 

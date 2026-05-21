@@ -56,7 +56,7 @@ export const EmailEditorForm = ({ template }: EmailEditorForm) => {
     try {
       setIsLoading(true);
 
-      await axios.delete(`/api/mails/templates/${template.id}`);
+      await axios.delete(`/api/admin/mails/templates/${template.id}`);
 
       toast.success("Item deleted!");
     } catch {
@@ -81,7 +81,7 @@ export const EmailEditorForm = ({ template }: EmailEditorForm) => {
 
         emailEditorRef.current.editor.exportHtml(async (data) => {
           const { design, html } = data;
-          await axios.patch(`/api/mails/templates/${template.id}`, {
+          await axios.patch(`/api/admin/mails/templates/${template.id}`, {
             name: form.getValues("name"),
             description: form.getValues("description"),
             designData: design,

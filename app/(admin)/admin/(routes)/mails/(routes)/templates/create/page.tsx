@@ -39,7 +39,7 @@ const TemplateCreatePage = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const response = await axios.post("/api/mails/templates", values);
+      const response = await axios.post("/api/admin/mails/templates", values);
       router.push(`/admin/mails/templates/${response.data.id}`);
 
       toast.success("Template created");

@@ -39,7 +39,7 @@ const CategoryCreatePage = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const response = await axios.post("/api/mails/audiences", values);
+      const response = await axios.post("/api/admin/mails/audiences", values);
       router.push(`/admin/mails/audiences/${response.data.id}`);
 
       toast.success("Audience created");

@@ -18,8 +18,31 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
+      { message: "EMAIL_AUDIENCES_GET" },
+      { status: 500 },
     );
+  }
+}
+
+export async function POST(req: Request) {
+  try {
+    const user = await authAdmin();
+
+    if (!user) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+    
+    const { name } = await req.json();
+
+    const audience = await db.emailAudience.create({
+      data: {
+        name,
+      },
+    });
+
+    return NextResponse.json(audience);
+  } catch (error) {
+    console.log("[EMAIL_AUDIENCES_POST]", error);
+    return new NextResponse("Internal Error", { status: 500 });
   }
 }

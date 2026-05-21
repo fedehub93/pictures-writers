@@ -20,7 +20,24 @@ export async function POST(req: Request) {
 
     return NextResponse.json(template);
   } catch (error) {
-    console.log("[EMAIL_TEMPLATES]", error);
+    console.log("[POST_EMAIL_TEMPLATES]", error);
+    return new NextResponse("Internal Error", { status: 500 });
+  }
+}
+
+export async function GET(req: Request) {
+  try {
+    const user = await authAdmin();
+
+    if (!user) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    const templates = await db.emailTemplate.findMany({});
+
+    return NextResponse.json(templates);
+  } catch (error) {
+    console.log("[GET_EMAIL_TEMPLATES]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }
