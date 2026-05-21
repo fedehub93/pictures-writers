@@ -94,7 +94,7 @@ export const WriteForm = ({
 
   const onDelete = async () => {
     try {
-      await axios.delete(`/api/mails/single-sends/${singleSend.id}`);
+      await axios.delete(`/api/admin/mails/single-sends/${singleSend.id}`);
 
       toast.success("Item deleted!");
     } catch {
@@ -113,7 +113,7 @@ export const WriteForm = ({
         const { design, html } = data;
         form.setValue("designData", design);
         form.setValue("bodyHtml", html);
-        await axios.patch(`/api/mails/single-sends/${singleSend.id}`, {
+        await axios.patch(`/api/admin/mails/single-sends/${singleSend.id}`, {
           name: values.name,
           audiences: values.audiences,
           subject: values.subject,
@@ -135,7 +135,7 @@ export const WriteForm = ({
       try {
         onOpen({ label: "Loading", progress: 0 });
 
-        const urlApi = `/api/mails/single-sends/${singleSend.id}/send`;
+        const urlApi = `/api/admin/mails/single-sends/${singleSend.id}/send`;
         const eventSource = new EventSource(urlApi);
 
         const { design, html } = data;
@@ -274,7 +274,7 @@ export const WriteForm = ({
             )}
           />
         </div>
-        <div className="h-full">
+        <div className="h-full border rounded overflow-hidden">
           <EmailEditor onReady={onReady} onLoad={onLoad} minHeight="100%" />
         </div>
       </form>

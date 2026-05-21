@@ -62,7 +62,7 @@ export const EmailSettingsForm = ({
     try {
       setIsLoading(true);
 
-      await axios.patch(`/api/mails/settings`, {
+      await axios.patch(`/api/admin/mails/settings`, {
         ...values,
       });
 

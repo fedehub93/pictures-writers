@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server";
 
-import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
+import { authAdmin } from "@/lib/auth-service";
 
-export async function DELETE(req: Request, props: { params: Promise<{ audienceId: string }> }) {
+export async function DELETE(
+  req: Request,
+  props: { params: Promise<{ id: string }> },
+) {
   const params = await props.params;
   try {
     const user = await authAdmin();
-    const { audienceId } = params;
+    const { id } = params;
 
     if (!user) {
       return new NextResponse("Unauthorized", { status: 401 });
@@ -15,7 +18,7 @@ export async function DELETE(req: Request, props: { params: Promise<{ audienceId
 
     const emailContact = await db.emailAudience.findUnique({
       where: {
-        id: audienceId,
+        id: id,
       },
     });
 
@@ -24,7 +27,7 @@ export async function DELETE(req: Request, props: { params: Promise<{ audienceId
     }
 
     const deleteEmailContact = await db.emailAudience.delete({
-      where: { id: audienceId },
+      where: { id: id },
     });
 
     return NextResponse.json(deleteEmailContact);
@@ -34,11 +37,14 @@ export async function DELETE(req: Request, props: { params: Promise<{ audienceId
   }
 }
 
-export async function PATCH(req: Request, props: { params: Promise<{ audienceId: string }> }) {
+export async function PATCH(
+  req: Request,
+  props: { params: Promise<{ id: string }> },
+) {
   const params = await props.params;
   try {
     const user = await authAdmin();
-    const { audienceId } = params;
+    const { id } = params;
     const values = await req.json();
 
     if (!user) {
@@ -47,7 +53,7 @@ export async function PATCH(req: Request, props: { params: Promise<{ audienceId:
 
     const contact = await db.emailAudience.update({
       where: {
-        id: audienceId,
+        id: id,
       },
       data: {
         ...values,

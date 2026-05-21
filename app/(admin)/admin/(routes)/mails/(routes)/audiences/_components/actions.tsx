@@ -45,7 +45,7 @@ export const AudiencesAction = ({
 
   const onDelete = async () => {
     try {
-      await axios.delete(`/api/mails/audiences/${id}`);
+      await axios.delete(`/api/admin/mails/audiences/${id}`);
       toast.success("Item deleted!");
     } catch {
       toast.error("Something went wrong");
@@ -56,7 +56,7 @@ export const AudiencesAction = ({
 
   const onExportToCSV = async () => {
     // ... (tuo codice originale immutato) ...
-    const response = await fetch("/api/mails/contacts/export-to-csv");
+    const response = await fetch("/api/admin/mails/contacts/export-to-csv");
     const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");

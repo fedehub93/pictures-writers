@@ -53,7 +53,7 @@ export const EmailTesterForm = ({ templates }: EmailTesterFormProps) => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       setIsLoading(true);
-      await axios.post(`/api/mails/send`, {
+      await axios.post(`/api/admin/mails/send`, {
         ...values,
       });
       toast.success("Sent mail successfully");

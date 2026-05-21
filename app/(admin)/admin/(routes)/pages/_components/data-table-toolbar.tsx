@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Table } from "@tanstack/react-table";
-import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 
@@ -20,7 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useOpenPage } from "../hooks/use-open-page";
+import { useOpenPage } from "../_hooks/use-open-page";
 import { DataTableFacetedFilter } from "./data-table-faceted-filter";
 import { ContentStatus } from "@/generated/prisma";
 
@@ -51,12 +50,10 @@ export function DataTableToolbar<TData>({
   table,
   data,
 }: DataTableToolbarProps<TData>) {
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+  const [isLoading, _] = useState(false);
   const { onOpen } = useOpenPage();
 
   const isFiltered = table.getState().columnFilters.length > 0;
-  const selectedRows = table.getState().rowSelection;
 
   return (
     <div className="flex items-center justify-between py-4">
@@ -75,7 +72,7 @@ export function DataTableToolbar<TData>({
             className="h-8 px-2 lg:px-3"
           >
             Reset
-            <XIcon className="ml-2 h-4 w-4" />
+            <XIcon className="ml-2 size-4" />
           </Button>
         )}
       </div>
@@ -83,12 +80,12 @@ export function DataTableToolbar<TData>({
         <DropdownMenuTrigger asChild disabled={isLoading}>
           <Button type="button" variant="outline" size="sm">
             Actions
-            <ArrowDownIcon className="h-4 w-4 ml-2" />
+            <ArrowDownIcon className="size-4 ml-2" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={() => onOpen()}>
-            <PlusCircleIcon className="h-4 w-4 mr-2" />
+            <PlusCircleIcon className="size-4 mr-2" />
             New page
           </DropdownMenuItem>
         </DropdownMenuContent>

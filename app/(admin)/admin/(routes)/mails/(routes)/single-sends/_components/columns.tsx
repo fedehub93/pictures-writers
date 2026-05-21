@@ -12,7 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { EmailSingleSendCustom } from "../page";
+import { EmailSingleSendCustom } from "../data";
 
 export const columns: ColumnDef<EmailSingleSendCustom>[] = [
   {
@@ -27,6 +27,12 @@ export const columns: ColumnDef<EmailSingleSendCustom>[] = [
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       );
+    },
+    filterFn: (row, id, value) => {
+      if (!value) return true;
+      return String(row.getValue(id))
+        .toLowerCase()
+        .includes(String(value).toLowerCase());
     },
   },
   {

@@ -101,7 +101,7 @@ export const EditContactForm = ({
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      await axios.patch(`/api/mails/contacts/${contact.id}`, {
+      await axios.patch(`/api/admin/mails/contacts/${contact.id}`, {
         ...values,
       });
 

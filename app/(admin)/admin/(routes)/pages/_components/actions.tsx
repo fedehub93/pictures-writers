@@ -25,7 +25,7 @@ import { ContentStatus } from "@/generated/prisma";
 
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 
-import { useOpenPage } from "../hooks/use-open-page";
+import { useOpenPage } from "../_hooks/use-open-page";
 import Link from "next/link";
 
 export const PagesActions = ({

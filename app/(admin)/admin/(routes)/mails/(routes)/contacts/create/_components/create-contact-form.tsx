@@ -61,7 +61,7 @@ export const CreateContactForm = ({}: CreateContactFormProps) => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const response = await axios.post("/api/mails/contacts", values);
+      const response = await axios.post("/api/admin/mails/contacts", values);
       form.reset();
       router.refresh();
 

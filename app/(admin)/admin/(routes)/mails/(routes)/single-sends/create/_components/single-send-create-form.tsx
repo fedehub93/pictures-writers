@@ -49,7 +49,7 @@ const SingleSendCreateForm = ({ templates }: SingleSendCreateFormProps) => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const response = await axios.post("/api/mails/single-sends", values);
+      const response = await axios.post("/api/admin/mails/single-sends", values);
       router.push(`/admin/mails/single-sends/${response.data.id}`);
 
       toast.success("Single send created");

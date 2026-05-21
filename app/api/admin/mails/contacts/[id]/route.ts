@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
 
-import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
+import { authAdmin } from "@/lib/auth-service";
 import { deleteContactOnProvider } from "@/lib/mail/core";
 
 export async function DELETE(
   req: Request,
-  props: { params: Promise<{ contactId: string }> },
+  props: { params: Promise<{ id: string }> },
 ) {
   const params = await props.params;
   try {
     const user = await authAdmin();
-    const { contactId } = params;
+    const { id } = params;
 
     if (!user) {
       return new NextResponse("Unauthorized", { status: 401 });
@@ -19,7 +19,7 @@ export async function DELETE(
 
     const emailContact = await db.emailContact.findUnique({
       where: {
-        id: params.contactId,
+        id: params.id,
       },
     });
 
@@ -28,7 +28,7 @@ export async function DELETE(
     }
 
     const deleteEmailContact = await db.emailContact.delete({
-      where: { id: contactId },
+      where: { id },
     });
 
     await deleteContactOnProvider(deleteEmailContact.email);
@@ -42,12 +42,12 @@ export async function DELETE(
 
 export async function PATCH(
   req: Request,
-  props: { params: Promise<{ contactId: string }> },
+  props: { params: Promise<{ id: string }> },
 ) {
   const params = await props.params;
   try {
     const user = await authAdmin();
-    const { contactId } = params;
+    const { id } = params;
     const values = await req.json();
 
     if (!user) {
@@ -64,7 +64,7 @@ export async function PATCH(
 
     const contact = await db.emailContact.update({
       where: {
-        id: contactId,
+        id: id,
       },
       data: {
         ...values,
