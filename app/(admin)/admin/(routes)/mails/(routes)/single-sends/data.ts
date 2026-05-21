@@ -6,6 +6,7 @@ type CustomEmailAudience = { _count: { contacts: number } };
 export type EmailSingleSendCustom = EmailSingleSend & {
   _count: { emailSingleSendLogs: number };
   audiences: CustomEmailAudience[];
+  totalSends: number;
   totalContacts: number;
 };
 

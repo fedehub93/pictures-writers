@@ -27,11 +27,12 @@ export async function GET(req: NextRequest) {
 export async function POST(req: Request) {
   try {
     const user = await authAdmin();
-    const { name } = await req.json();
 
     if (!user) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
+    
+    const { name } = await req.json();
 
     const audience = await db.emailAudience.create({
       data: {

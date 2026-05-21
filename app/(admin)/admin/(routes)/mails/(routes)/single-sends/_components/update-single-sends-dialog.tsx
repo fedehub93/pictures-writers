@@ -10,7 +10,7 @@ export const UpdateSingleSendDialog = () => {
   return (
     <ResponsiveDialog
       title={`${isEdit ? "Edit" : "Create"} single send`}
-      description={`${isEdit ? "Edit" : "Create"} the single send details"`}
+      description={`${isEdit ? "Edit" : "Create"} the single send details`}
       open={isOpen}
       onOpenChange={onClose}
     >
