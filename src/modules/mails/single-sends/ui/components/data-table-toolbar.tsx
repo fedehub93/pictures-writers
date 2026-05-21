@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 
-import { useOpenSingleSend } from "../_hooks/use-open-single-send";
+import { useOpenSingleSend } from "../../hooks/use-open-single-send";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;

@@ -1,6 +1,8 @@
 import { ResponsiveDialog } from "@/components/responsive-dialog";
+
 import { SingleSendForm } from "./single-send-form";
-import { useOpenSingleSend } from "../_hooks/use-open-single-send";
+
+import { useOpenSingleSend } from "../../hooks/use-open-single-send";
 
 export const UpdateSingleSendDialog = () => {
   const { isOpen, onClose, id } = useOpenSingleSend();

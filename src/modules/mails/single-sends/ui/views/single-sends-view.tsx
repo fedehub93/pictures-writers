@@ -1,10 +1,11 @@
-"use client"
+"use client";
 
 import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
-import { DataTable } from "./data-table";
-import { columns } from "./columns";
-import { GetSingleSends } from "../data";
-import { UpdateSingleSendDialog } from "./update-single-sends-dialog";
+
+import { DataTable } from "../components/data-table";
+import { columns } from "../components/columns";
+import { GetSingleSends } from "../../types";
+import { UpdateSingleSendDialog } from "../components/update-single-sends-dialog";
 
 export const SingleSendsView = ({
   singleSends,

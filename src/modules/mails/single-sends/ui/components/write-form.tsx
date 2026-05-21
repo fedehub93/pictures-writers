@@ -1,16 +1,14 @@
 "use client";
 
-import * as z from "zod";
-import { EmailAudience, EmailSingleSend, EmailTemplate } from "@/generated/prisma";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useController, useForm } from "react-hook-form";
 import axios from "axios";
-import toast from "react-hot-toast";
 import { EditorRef, EmailEditorProps } from "react-email-editor";
 import dynamic from "next/dynamic";
 import { useRef } from "react";
-import { Send, Trash2 } from "lucide-react";
+import { SendIcon, Trash2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import {
   Form,
@@ -21,40 +19,22 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+
 import { cn } from "@/lib/utils";
 
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 import { useProgressLoader } from "@/app/(admin)/_hooks/use-progress-loader-store";
 import { MultiSelectV2 } from "@/components/multi-select-v2";
 import { useAudiencesQuery } from "@/app/(admin)/_hooks/use-audiences-query";
-import { Skeleton } from "@/components/ui/skeleton";
+
+import { GetSingleSendById } from "../../types";
+import { SingleSendInsertValues, singleSendInsertSchema } from "../../schemas";
 
 interface WriteFormProps {
-  singleSend: EmailSingleSend & {
-    audiences: EmailAudience[];
-  };
+  singleSend: GetSingleSendById;
   todayEmailsAvailable: number;
-  templates: EmailTemplate[];
 }
-
-const optionSchema = z.object({
-  id: z.string(),
-});
-
-const formSchema = z.object({
-  name: z.string().min(1, {
-    error: "Name is required",
-  }),
-  subject: z.string().min(1, {
-    error: "Subject is required",
-  }),
-  audiences: z.array(optionSchema).min(1, {
-    error: "Almost one audience is required",
-  }),
-  designData: z.any().optional(),
-  bodyHtml: z.string().optional(),
-  emailTemplateId: z.string().optional(),
-});
 
 const EmailEditor = dynamic(() => import("react-email-editor"), {
   ssr: false,
@@ -63,7 +43,6 @@ const EmailEditor = dynamic(() => import("react-email-editor"), {
 export const WriteForm = ({
   singleSend,
   todayEmailsAvailable,
-  templates,
 }: WriteFormProps) => {
   const router = useRouter();
   const emailEditorRef = useRef<EditorRef>(null);
@@ -71,9 +50,9 @@ export const WriteForm = ({
   const { data: audiences, isLoading, isError } = useAudiencesQuery();
   const { onOpen, onClose, setData } = useProgressLoader();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
+  const form = useForm<SingleSendInsertValues>({
+    resolver: zodResolver(singleSendInsertSchema),
+    values: {
       name: singleSend.name || "",
       subject: singleSend.subject || "",
       audiences: singleSend.audiences.map((audience) => ({
@@ -81,7 +60,6 @@ export const WriteForm = ({
       })),
       designData: singleSend.designData,
       bodyHtml: singleSend.bodyHtml || "",
-      emailTemplateId: "",
     },
   });
 
@@ -96,7 +74,7 @@ export const WriteForm = ({
     try {
       await axios.delete(`/api/admin/mails/single-sends/${singleSend.id}`);
 
-      toast.success("Item deleted!");
+      toast.success("Single send deleted!");
     } catch {
       toast.error("Something went wrong");
     } finally {
@@ -105,7 +83,7 @@ export const WriteForm = ({
     }
   };
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const onSubmit = (values: SingleSendInsertValues) => {
     if (!emailEditorRef?.current?.editor) return;
 
     emailEditorRef.current.editor.exportHtml(async (data) => {
@@ -128,7 +106,7 @@ export const WriteForm = ({
     });
   };
 
-  const onSend = (values: z.infer<typeof formSchema>) => {
+  const onSend = (values: SingleSendInsertValues) => {
     if (!emailEditorRef?.current?.editor) return;
 
     emailEditorRef.current.editor.exportHtml(async (data) => {
@@ -202,7 +180,7 @@ export const WriteForm = ({
           <div
             className={cn(
               "text-emerald-700 font-medium",
-              todayEmailsAvailable <= 0 && "text-destructive"
+              todayEmailsAvailable <= 0 && "text-destructive",
             )}
           >
             You have{" "}
@@ -212,7 +190,7 @@ export const WriteForm = ({
           <div className="flex gap-x-2 itemscen">
             <ConfirmModal onConfirm={onDelete}>
               <Button variant="destructive">
-                <Trash2 className="h-4 w-4" />
+                <Trash2Icon className="h-4 w-4" />
               </Button>
             </ConfirmModal>
             <Button type="submit" disabled={isSubmitting || !isValid}>
@@ -224,7 +202,7 @@ export const WriteForm = ({
               onClick={() => onSend(form.getValues())}
               disabled={isSubmitting || !isValid || todayEmailsAvailable <= 0}
             >
-              <Send className="h-4 w-4 mr-2" />
+              <SendIcon className="h-4 w-4 mr-2" />
               Send
             </Button>
           </div>

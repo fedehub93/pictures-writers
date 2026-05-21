@@ -1,14 +1,4 @@
-import { EmailSingleSend } from "@/generated/prisma";
-import { db } from "@/lib/db";
-
-type CustomEmailAudience = { _count: { contacts: number } };
-
-export type EmailSingleSendCustom = EmailSingleSend & {
-  _count: { emailSingleSendLogs: number };
-  audiences: CustomEmailAudience[];
-  totalSends: number;
-  totalContacts: number;
-};
+import { db } from "@/shared/lib/db";
 
 export const getSingleSends = async () => {
   try {
@@ -26,7 +16,7 @@ export const getSingleSends = async () => {
       },
     });
 
-    const mappedSingleSends: EmailSingleSendCustom[] = singleSends.map((s) => ({
+    const mappedSingleSends = singleSends.map((s) => ({
       ...s, // Mantieni tutte le proprietà di 's'
       totalSends: s._count.emailSingleSendLogs,
       totalContacts: s.audiences.reduce(
@@ -42,4 +32,19 @@ export const getSingleSends = async () => {
   }
 };
 
-export type GetSingleSends = Awaited<ReturnType<typeof getSingleSends>>[number];
+export const getSingleSendById = async (id: string) => {
+  const existingSingleSend = await db.emailSingleSend.findUnique({
+    where: {
+      id,
+    },
+    include: {
+      audiences: true,
+    },
+  });
+
+  if (!existingSingleSend) {
+    throw new Error("Single send not found");
+  }
+
+  return existingSingleSend;
+};

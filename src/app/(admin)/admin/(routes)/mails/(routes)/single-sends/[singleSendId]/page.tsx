@@ -1,44 +1,13 @@
-import { db } from "@/lib/db";
-import { WriteForm } from "./_components/write-form";
-import { redirect } from "next/navigation";
-import { getTodayEmailsAvailable } from "@/lib/mail/mail";
+import { SingleSendIdView } from "@/modules/mails/single-sends/ui/views/single-send-id-view";
 
-const SingleSendIdPage = async (props: {
+const SingleSendIdPage = async ({
+  params,
+}: {
   params: Promise<{ singleSendId: string }>;
 }) => {
-  const params = await props.params;
-  const singleSend = await db.emailSingleSend.findUnique({
-    where: {
-      id: params.singleSendId,
-    },
-    include: {
-      audiences: true,
-    },
-  });
+  const { singleSendId } = await params;
 
-  if (!singleSend) {
-    return redirect(`/admin/mails/single-sends`);
-  }
-
-  const templates = await db.emailTemplate.findMany({
-    orderBy: { name: "asc" },
-  });
-
-  const audiences = await db.emailAudience.findMany({
-    orderBy: { name: "asc" },
-  });
-
-  const todayEmailsAvailable = await getTodayEmailsAvailable();
-
-  return (
-    <div className="py-2 px-6 mx-auto h-full flex flex-col overflow-auto">
-      <WriteForm
-        singleSend={singleSend}
-        todayEmailsAvailable={todayEmailsAvailable}
-        templates={templates}
-      />
-    </div>
-  );
+  return <SingleSendIdView singleSendId={singleSendId} />;
 };
 
 export default SingleSendIdPage;
