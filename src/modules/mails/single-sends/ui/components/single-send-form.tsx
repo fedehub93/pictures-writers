@@ -21,10 +21,9 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { GenericInput } from "@/components/form-component/generic-input";
-import { singleSendInsertSchema, singleSendUpdateSchema } from "../schema";
 import { ComboboxDemo } from "@/components/combo-box";
-
-import { useGetEmailTemplates } from "../../templates/_hooks/use-get-email-templates";
+import { useGetEmailTemplates } from "@/app/(admin)/admin/(routes)/mails/(routes)/templates/_hooks/use-get-email-templates";
+import { singleSendInsertSchema, SingleSendInsertValues } from "../../schemas";
 
 interface SingleSendFormProps {
   onSuccess?: () => void;
@@ -46,7 +45,7 @@ export const SingleSendForm = ({
 
   const { data: templates, isLoading, isError } = useGetEmailTemplates();
 
-  const form = useForm<z.infer<typeof singleSendInsertSchema>>({
+  const form = useForm<SingleSendInsertValues>({
     resolver: zodResolver(singleSendInsertSchema),
     defaultValues: {
       name: initialValues?.name ?? "",
@@ -58,7 +57,7 @@ export const SingleSendForm = ({
     mutationFn: ({
       id,
       ...payload
-    }: { id: string } & z.infer<typeof singleSendUpdateSchema>) => {
+    }: { id: string } & SingleSendInsertValues) => {
       return axios.patch(`/api/admin/mails/single-sends/${id}`, payload);
     },
     onSuccess: async () => {
@@ -104,7 +103,7 @@ export const SingleSendForm = ({
   const isEdit = !!initialValues?.id;
   const isPending = updatePage.isPending || createSingleSend.isPending;
 
-  const onSubmit = (values: z.infer<typeof singleSendInsertSchema>) => {
+  const onSubmit = (values: SingleSendInsertValues) => {
     if (isEdit) {
       updatePage.mutate({ ...values, id: initialValues.id });
     } else {
