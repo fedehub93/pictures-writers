@@ -2,7 +2,7 @@
 
 import { useSlate } from "slate-react";
 
-import { Toggle } from "@/components/ui/toggle";
+import { Toggle } from "@/shared/ui/toggle";
 import { CustomEditorHelper } from "../../utils/custom-editor";
 import { CustomElementType } from "../..";
 

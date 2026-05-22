@@ -10,12 +10,12 @@ import { WidgetSection } from "@/generated/prisma";
 import axios from "axios";
 import { Grip } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 
 import { useWidgetsQuery } from "@/app/(admin)/_hooks/use-widgets-query";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/shared/ui/skeleton";
 
 interface WidgetSortProps {
   label: string;

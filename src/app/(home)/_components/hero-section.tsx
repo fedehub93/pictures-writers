@@ -5,7 +5,7 @@ import Image from "next/image";
 
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 
 export const HeroSection = (): JSX.Element => {
   return (

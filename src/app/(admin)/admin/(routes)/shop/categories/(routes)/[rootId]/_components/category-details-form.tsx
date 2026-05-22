@@ -5,22 +5,22 @@ import { Control, useController } from "react-hook-form";
 import { Sparkles } from "lucide-react";
 import slugify from "slugify";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import {
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/shared/ui/form";
+import { Input } from "@/shared/ui/input";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 
 import { ProductCategoryFormValues } from "@/schemas/product-category";
 
-import { GenericTextarea } from "@/components/form-component/generic-textarea";
-import { GenericInput } from "@/components/form-component/generic-input";
+import { GenericTextarea } from "@/shared/components/form-component/generic-textarea";
+import { GenericInput } from "@/shared/components/form-component/generic-input";
 
 interface CategoryDetailsProps {
   control: Control<ProductCategoryFormValues>;

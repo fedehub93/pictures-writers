@@ -4,7 +4,7 @@ import Handlebars from "handlebars";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
-import { getEmailsSentToday, sendEmail } from "@/lib/mail/mail";
+import { getEmailsSentToday, sendEmail } from "@/modules/mails/lib/mail";
 
 export async function POST(req: Request) {
   try {

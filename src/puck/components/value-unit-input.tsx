@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { ChevronUp, ChevronDown } from "lucide-react";
 
-import { Input } from "@/components/ui/input";
+import { Input } from "@/shared/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/shared/ui/select";
 
 interface ValueUnitInputProps {
   name: string;

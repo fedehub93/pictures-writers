@@ -1,4 +1,4 @@
-import { Separator } from "@/components/ui/separator";
+import { Separator } from "@/shared/ui/separator";
 import LanguagesForm from "./_components/languages-form";
 import { db } from "@/lib/db";
 

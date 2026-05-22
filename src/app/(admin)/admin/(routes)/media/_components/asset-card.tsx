@@ -4,11 +4,11 @@ import { useState } from "react";
 import Image from "next/image";
 import { MediaType } from "@/generated/prisma";
 
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/shared/ui/checkbox";
+import { Badge } from "@/shared/ui/badge";
 import { formatBytes } from "@/lib/format";
 import { File } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 
 interface AssetCardProps {

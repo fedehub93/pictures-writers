@@ -1,7 +1,7 @@
 import { Menu } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/shared/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "@/shared/ui/sheet";
 
 import { Nav } from "./nav/nav";
 import { sideLinks } from "./data";

@@ -16,16 +16,16 @@ import {
   FormField,
   FormItem,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+} from "@/shared/ui/form";
+import { Input } from "@/shared/ui/input";
+import { Button } from "@/shared/ui/button";
+import { Skeleton } from "@/shared/ui/skeleton";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 import { useProgressLoader } from "@/app/(admin)/_hooks/use-progress-loader-store";
-import { MultiSelectV2 } from "@/components/multi-select-v2";
+import { MultiSelectV2 } from "@/shared/components/multi-select-v2";
 import { useAudiencesQuery } from "@/app/(admin)/_hooks/use-audiences-query";
 
 import { GetSingleSendById } from "../../types";

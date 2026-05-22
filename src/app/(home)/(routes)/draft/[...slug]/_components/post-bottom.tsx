@@ -8,9 +8,9 @@ import {
   isWidgetTagMetadata,
 } from "@/type-guards";
 
-import WidgetNewsletter from "@/components/widget/newsletter";
-import WidgetTags from "@/components/widget/tags";
-import WidgetAuthors from "@/components/widget/authors";
+import WidgetNewsletter from "@/shared/components/widget/newsletter";
+import WidgetTags from "@/shared/components/widget/tags";
+import WidgetAuthors from "@/shared/components/widget/authors";
 
 interface WidgetPostBottomProps {
   postId: string;

@@ -4,7 +4,7 @@ import { Trash2 } from "lucide-react";
 
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 
 interface EmailTemplateActionsProps {
   isLoading: boolean;

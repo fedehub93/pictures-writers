@@ -1,14 +1,14 @@
 import React, { useState } from "react";
 import { ReactEditor, RenderElementProps, useSlateStatic } from "slate-react";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+} from "@/shared/ui/dropdown-menu";
+import { Table, TableBody, TableCell, TableRow } from "@/shared/ui/table";
 import { CustomEditorHelper } from "../../utils/custom-editor";
 import { Transforms } from "slate";
 import { Ellipsis } from "lucide-react";

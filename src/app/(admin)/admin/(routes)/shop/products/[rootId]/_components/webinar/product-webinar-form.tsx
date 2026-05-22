@@ -4,13 +4,13 @@ import { Control, useFieldArray } from "react-hook-form";
 import { User } from "@/generated/prisma";
 import { Trash2, Plus } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Button } from "@/shared/ui/button";
 
 import { ProductFormValues } from "@/schemas/product";
-import { GenericInput } from "@/components/form-component/generic-input";
-import { GenericCalendar } from "@/components/form-component/generic-calendar";
-import { GenericSwitch } from "@/components/form-component/generic-switch";
+import { GenericInput } from "@/shared/components/form-component/generic-input";
+import { GenericCalendar } from "@/shared/components/form-component/generic-calendar";
+import { GenericSwitch } from "@/shared/components/form-component/generic-switch";
 
 interface ProductWebinarFormProps {
   control: Control<ProductFormValues>;

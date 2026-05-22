@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { EuroIcon, HelpCircleIcon } from "lucide-react";
 
-import { Separator } from "@/components/ui/separator";
+import { Separator } from "@/shared/ui/separator";
 
 import { formatPrice } from "@/lib/format";
 import {
@@ -9,7 +9,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "@/shared/ui/accordion";
 
 interface ServiceSummaryProps {
   id: string;

@@ -1,10 +1,10 @@
 import { Inter } from "next/font/google";
 
 import "./auth.css";
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@/shared/ui/sonner";
 
-import { ThemeProvider } from "@/components/providers/theme-provider";
-import { ToastProvider } from "@/components/providers/toast-provider";
+import { ThemeProvider } from "@/shared/providers/theme-provider";
+import { ToastProvider } from "@/shared/providers/toast-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 

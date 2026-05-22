@@ -1,4 +1,4 @@
-import { Icon } from "@/components/ui/icon-picker";
+import { Icon } from "@/shared/ui/icon-picker";
 
 import { IconProps } from "@/puck/fields/icon";
 

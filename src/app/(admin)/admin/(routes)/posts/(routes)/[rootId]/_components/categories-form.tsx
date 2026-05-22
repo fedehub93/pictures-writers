@@ -10,12 +10,12 @@ import { useRouter } from "next/navigation";
 
 import { ContentStatus } from "@/generated/prisma";
 
-import { cn } from "@/lib/utils";
-import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
-import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/shared/lib/utils";
+import { Form, FormField, FormItem, FormMessage } from "@/shared/ui/form";
+import { Skeleton } from "@/shared/ui/skeleton";
 
 import { useCategoriesQuery } from "@/app/(admin)/_hooks/use-categories";
-import { MultiSelectV2 } from "@/components/multi-select-v2";
+import { MultiSelectV2 } from "@/shared/components/multi-select-v2";
 
 interface CategoriesFormProps {
   initialData: {

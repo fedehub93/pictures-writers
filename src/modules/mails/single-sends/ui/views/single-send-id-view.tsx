@@ -1,4 +1,4 @@
-import { getTodayEmailsAvailable } from "@/lib/mail/mail";
+import { getTodayEmailsAvailable } from "@/modules/mails/lib/mail";
 
 import { WriteForm } from "../components/write-form";
 import { getSingleSendById } from "../../server/services/data";

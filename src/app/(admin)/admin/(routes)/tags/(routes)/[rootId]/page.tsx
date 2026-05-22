@@ -7,7 +7,7 @@ import { TitleForm } from "@/app/(admin)/_components/general-fields/title-form";
 import { SlugForm } from "@/app/(admin)/_components/general-fields/slug-form";
 import { DescriptionForm } from "@/app/(admin)/_components/general-fields/description-form";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { SeoEditView } from "@/app/(admin)/_components/seo/seo-edit-view";
 import { SeoContentTypeApi } from "@/app/(admin)/_components/seo/types";
 import { StatusView } from "@/app/(admin)/_components/content/status-view";

@@ -8,11 +8,11 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
+} from "@/shared/ui/dialog";
+import { Input } from "@/shared/ui/input";
+import { Separator } from "@/shared/ui/separator";
+import { ScrollArea } from "@/shared/ui/scroll-area";
+import { Button } from "@/shared/ui/button";
 
 import { GetPaginatedPosts } from "@/data/post";
 

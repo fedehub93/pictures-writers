@@ -16,15 +16,15 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/shared/ui/dialog";
 
-import { Form } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
+import { Form } from "@/shared/ui/form";
+import { Button } from "@/shared/ui/button";
 
 import { adBlockFormSchema, AdBlockFormValues } from "@/schemas/ads";
 
-import { GenericInput } from "@/components/form-component/generic-input";
-import { GenericRadioGroup } from "@/components/form-component/generic-radio-group";
+import { GenericInput } from "@/shared/components/form-component/generic-input";
+import { GenericRadioGroup } from "@/shared/components/form-component/generic-radio-group";
 
 import { useModal } from "../../_hooks/use-modal-store";
 

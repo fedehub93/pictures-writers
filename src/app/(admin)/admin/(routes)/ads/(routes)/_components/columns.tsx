@@ -10,11 +10,11 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+} from "@/shared/ui/dropdown-menu";
+import { Button } from "@/shared/ui/button";
+import { Badge } from "@/shared/ui/badge";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 export const columns: ColumnDef<AdCampaign>[] = [
   {

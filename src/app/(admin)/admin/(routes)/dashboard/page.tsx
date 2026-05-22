@@ -1,4 +1,4 @@
-import { DatePickerWithRange } from "@/components/date-range";
+import { DatePickerWithRange } from "@/shared/components/date-range";
 
 import { SubscriptionsWidget } from "./_components/subscriptions-widget";
 import { EbooksWidget } from "./_components/ebooks-widget";

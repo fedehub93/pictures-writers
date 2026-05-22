@@ -29,7 +29,7 @@ import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
 import { PostTemplate } from "@/app/(home)/(routes)/[...slug]/_components/post-template";
 import { PostList } from "@/app/(home)/(routes)/blog/_components/post-list";
 
-import { WidgetProductPop } from "@/components/widget/product-pop";
+import { WidgetProductPop } from "@/shared/components/widget/product-pop";
 import { getPublishedPageBySlug, getPublishedPagesBuilding } from "@/lib/page";
 import { PuckRender } from "@/puck/render-config";
 

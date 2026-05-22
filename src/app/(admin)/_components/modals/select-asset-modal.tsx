@@ -9,14 +9,14 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
+} from "@/shared/ui/dialog";
+import { Input } from "@/shared/ui/input";
+import { Separator } from "@/shared/ui/separator";
 
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 import { useAssetsQuery } from "../../_hooks/use-assets-query";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/shared/ui/scroll-area";
+import { Button } from "@/shared/ui/button";
 import { UploadButton } from "@/lib/uploadthing";
 import { MediaActions } from "../../admin/(routes)/media/_components/actions";
 

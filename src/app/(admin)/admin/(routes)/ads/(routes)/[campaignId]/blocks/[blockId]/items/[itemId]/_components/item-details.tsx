@@ -3,12 +3,12 @@ import { AdItemSourceType } from "@/generated/prisma";
 
 import { Control } from "react-hook-form";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 
 import { AdItemFormValues } from "@/schemas/ads";
 
-import { GenericInput } from "@/components/form-component/generic-input";
-import { GenericRadioGroup } from "@/components/form-component/generic-radio-group";
+import { GenericInput } from "@/shared/components/form-component/generic-input";
+import { GenericRadioGroup } from "@/shared/components/form-component/generic-radio-group";
 
 interface ItemDetailsProps {
   control: Control<AdItemFormValues>;

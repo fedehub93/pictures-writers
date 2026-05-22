@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { LucideIcon } from "lucide-react";
 
 import { useSidebar } from "@/store/use-sidebar";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 interface MenuItemProps {
   label: string;

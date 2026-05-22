@@ -7,12 +7,12 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "@/shared/ui/accordion";
 
 import { EbookFormat } from "@/types";
 import { ProductFormValues } from "@/schemas/product";
 
-import { GenericInput } from "@/components/form-component/generic-input";
+import { GenericInput } from "@/shared/components/form-component/generic-input";
 
 import { FileForm } from "./file-form";
 

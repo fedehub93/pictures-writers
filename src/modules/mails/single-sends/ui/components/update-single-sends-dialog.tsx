@@ -1,4 +1,4 @@
-import { ResponsiveDialog } from "@/components/responsive-dialog";
+import { ResponsiveDialog } from "@/shared/components/responsive-dialog";
 
 import { SingleSendForm } from "./single-send-form";
 

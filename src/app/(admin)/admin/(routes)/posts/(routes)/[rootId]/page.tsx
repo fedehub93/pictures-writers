@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 
 import { requireAdminAuth } from "@/lib/auth-utils";
 import { ContentStatus } from "@/generated/prisma";

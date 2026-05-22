@@ -9,15 +9,15 @@ import { Grip, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 
 import { AdBlock } from "@/generated/prisma";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Button } from "@/shared/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/shared/ui/dropdown-menu";
 
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";

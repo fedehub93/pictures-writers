@@ -12,7 +12,6 @@ import { getPublishedProductCategoryBySlug } from "@/data/product-category";
 import { getProductsPaginatedByFilters } from "@/data/product";
 
 import { ProductsList } from "./_components/products-list";
-import { TipTapRendererV2 } from "@/components/tiptap-renderer";
 
 type PresetCategory = {
   slug: string;

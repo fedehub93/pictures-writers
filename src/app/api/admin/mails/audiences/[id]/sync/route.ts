@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { syncAudienceWithProvider } from "@/lib/mail/core";
+import { syncAudienceWithProvider } from "@/modules/mails/lib/core";
 import { authAdmin } from "@/lib/auth-service";
 
 export const maxDuration = 60;

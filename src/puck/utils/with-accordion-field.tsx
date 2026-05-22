@@ -6,7 +6,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion"; // Assicurati del percorso corretto
+} from "@/shared/ui/accordion"; // Assicurati del percorso corretto
 
 // Estraiamo il tipo delle props che Puck passa alla funzione render di un custom field
 type CustomFieldRenderProps = Parameters<

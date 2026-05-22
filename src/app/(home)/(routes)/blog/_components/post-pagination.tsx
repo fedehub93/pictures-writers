@@ -3,14 +3,14 @@ import type { Route } from "next";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import {
   Pagination,
   PaginationContent,
   PaginationEllipsis,
   PaginationItem,
-} from "@/components/ui/pagination";
-import { cn } from "@/lib/utils";
+} from "@/shared/ui/pagination";
+import { cn } from "@/shared/lib/utils";
 
 interface PostPaginationProps {
   totalPages: number;

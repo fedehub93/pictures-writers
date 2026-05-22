@@ -8,8 +8,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { AdBlock, AdItem } from "@/generated/prisma";
 
-import { Form } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
+import { Form } from "@/shared/ui/form";
+import { Button } from "@/shared/ui/button";
 
 import { adBlockFormSchema, AdBlockFormValues } from "@/schemas/ads";
 

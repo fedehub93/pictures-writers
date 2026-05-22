@@ -9,11 +9,11 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { EmailProvider, EmailSetting } from "@/generated/prisma";
 
-import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
-import { Progress } from "@/components/ui/progress";
-import { GenericSelect } from "@/components/form-component/generic-select";
-import { GenericInput } from "@/components/form-component/generic-input";
+import { Button } from "@/shared/ui/button";
+import { Form } from "@/shared/ui/form";
+import { Progress } from "@/shared/ui/progress";
+import { GenericSelect } from "@/shared/components/form-component/generic-select";
+import { GenericInput } from "@/shared/components/form-component/generic-input";
 
 interface EmailSettingsFormProps {
   settings: EmailSetting | null;

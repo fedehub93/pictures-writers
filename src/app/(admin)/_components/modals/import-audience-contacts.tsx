@@ -10,7 +10,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/shared/ui/dialog";
 
 import {
   Form,
@@ -18,12 +18,12 @@ import {
   FormField,
   FormItem,
   FormMessage,
-} from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+} from "@/shared/ui/form";
+import { Button } from "@/shared/ui/button";
+import { Separator } from "@/shared/ui/separator";
 
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
-import { MultiSelectV2 } from "@/components/multi-select-v2";
+import { MultiSelectV2 } from "@/shared/components/multi-select-v2";
 
 const optionSchema = z.object({
   id: z.string(),

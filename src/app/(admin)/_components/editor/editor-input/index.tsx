@@ -8,7 +8,7 @@ import {
 } from "slate-react";
 import { isKeyHotkey } from "is-hotkey";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 import {
   EmbeddedAffiliateLinkElement,

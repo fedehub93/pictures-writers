@@ -4,8 +4,8 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { FileIcon } from "lucide-react";
 
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
+import { Card, CardHeader, CardTitle, CardContent } from "@/shared/ui/card";
+import { Label } from "@/shared/ui/label";
 
 import { GetFormSubmissionByIdReturn } from "@/data/form";
 import { formatBytes, formatDate } from "@/lib/format";

@@ -11,14 +11,14 @@ import {
 import { useState } from "react";
 import { Table } from "@tanstack/react-table";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/shared/ui/dropdown-menu";
 import { useOpenPage } from "../_hooks/use-open-page";
 import { DataTableFacetedFilter } from "./data-table-faceted-filter";
 import { ContentStatus } from "@/generated/prisma";

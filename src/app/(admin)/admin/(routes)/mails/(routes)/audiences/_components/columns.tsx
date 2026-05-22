@@ -5,8 +5,8 @@ import { ArrowUpDownIcon } from "lucide-react";
 
 import { AudienceType, EmailAudience } from "@/generated/prisma";
 
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/shared/lib/utils";
+import { Button } from "@/shared/ui/button";
 import { AudiencesAction } from "./actions";
 
 export const columns: ColumnDef<EmailAudience & { totalContacts: number }>[] = [

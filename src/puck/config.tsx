@@ -1,7 +1,7 @@
 import { type Config, createUsePuck, type Data, Puck } from "@puckeditor/core";
 import "@puckeditor/core/puck.css";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 
 import { PageUpdateValues } from "@/app/(admin)/admin/(routes)/pages/schema";
 

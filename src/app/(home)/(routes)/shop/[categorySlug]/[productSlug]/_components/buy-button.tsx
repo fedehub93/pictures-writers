@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import { Dispatch, SetStateAction } from "react";
 
 export const BuyButton = ({

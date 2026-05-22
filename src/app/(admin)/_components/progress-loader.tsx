@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import { useEffect, useState } from "react";
 import { useProgressLoader } from "../_hooks/use-progress-loader-store";
 

@@ -5,14 +5,14 @@ import axios from "axios";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/shared/ui/dropdown-menu";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";

@@ -8,8 +8,8 @@ import { redirect, useRouter } from "next/navigation";
 
 import { AdItem } from "@/generated/prisma";
 
-import { Form } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
+import { Form } from "@/shared/ui/form";
+import { Button } from "@/shared/ui/button";
 
 import { adItemFormSchema, AdItemFormValues } from "@/schemas/ads";
 import { ItemDetails } from "./item-details";

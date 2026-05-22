@@ -19,13 +19,13 @@ import {
   FormField,
   FormItem,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+} from "@/shared/ui/form";
+import { Input } from "@/shared/ui/input";
+import { Button } from "@/shared/ui/button";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
-import { CharsCounter } from "@/components/chars-counter";
+import { CharsCounter } from "@/shared/components/chars-counter";
 
 interface SlugFormProps {
   initialData: {

@@ -4,11 +4,11 @@ import { AdCampaign } from "@/generated/prisma";
 import * as z from "zod";
 import { Control } from "react-hook-form";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 
 import { AdCampaignFormValues } from "@/schemas/ads";
 
-import { GenericInput } from "@/components/form-component/generic-input";
+import { GenericInput } from "@/shared/components/form-component/generic-input";
 
 interface CampaignDetailsProps {
   control: Control<AdCampaignFormValues>;

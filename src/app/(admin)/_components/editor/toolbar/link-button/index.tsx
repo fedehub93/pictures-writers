@@ -4,7 +4,7 @@ import { Element } from "slate";
 import { useSlate } from "slate-react";
 import { Link, Unlink } from "lucide-react";
 
-import { Toggle } from "@/components/ui/toggle";
+import { Toggle } from "@/shared/ui/toggle";
 import { CustomEditorHelper } from "@/app/(admin)/_components/editor/utils/custom-editor";
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 

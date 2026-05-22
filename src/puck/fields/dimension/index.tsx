@@ -5,14 +5,14 @@ import { createUsePuck } from "@puckeditor/core";
 import { withAccordionField } from "@/puck/utils/with-accordion-field";
 import { PropHeader } from "@/puck/components/prop-header";
 import { ValueUnitInput } from "@/puck/components/value-unit-input";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/shared/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/shared/ui/select";
 
 // Utility per la responsività
 import { Responsive } from "@/puck/utils/responsive";

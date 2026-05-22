@@ -1,7 +1,7 @@
 import Link from "next/link";
 
-import Logo from "@/components/logo";
-import { Button } from "@/components/ui/button";
+import Logo from "@/shared/components/logo";
+import { Button } from "@/shared/ui/button";
 import { Nav } from "./_components/nav";
 import { MobileNavbar } from "./_components/mobile-navbar";
 

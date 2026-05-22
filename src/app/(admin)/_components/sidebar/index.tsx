@@ -1,10 +1,10 @@
 "use client";
 
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollArea } from "@/shared/ui/scroll-area";
 import Link from "next/link";
 
-import { cn } from "@/lib/utils";
-import Logo from "@/components/logo";
+import { cn } from "@/shared/lib/utils";
+import Logo from "@/shared/components/logo";
 import { useSidebar } from "@/store/use-sidebar";
 
 import { Wrapper } from "./wrapper";

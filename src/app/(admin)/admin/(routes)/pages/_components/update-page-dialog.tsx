@@ -2,7 +2,7 @@ import { Loader2Icon } from "lucide-react";
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { ResponsiveDialog } from "@/components/responsive-dialog";
+import { ResponsiveDialog } from "@/shared/components/responsive-dialog";
 import { useOpenPage } from "../_hooks/use-open-page";
 import { useGetPage } from "../_hooks/use-get-page";
 import { PageForm } from "./page-form";

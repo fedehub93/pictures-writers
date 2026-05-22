@@ -5,11 +5,11 @@ import { ArrowUpDown } from "lucide-react";
 
 import { ContentStatus } from "@/generated/prisma";
 
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/shared/ui/button";
+import { Badge } from "@/shared/ui/badge";
+import { Checkbox } from "@/shared/ui/checkbox";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import { formatDate } from "@/lib/format";
 import { PagesActions } from "./actions";
 import { GetPagesGroupedByRootId } from "../data";

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { db } from "@/lib/db";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 
 import { requireAdminAuth } from "@/lib/auth-utils";
 

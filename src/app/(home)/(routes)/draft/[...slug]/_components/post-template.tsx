@@ -6,14 +6,15 @@ import { getAdBlocks } from "@/data/ad-blocks";
 import type { GetPublishedPostBySlug } from "@/data/post";
 import { getPlaceholderImage } from "@/lib/image";
 
-import { SlateRendererV2 } from "@/components/editor/view/slate-renderer";
-import { normalizeContent } from "@/components/tiptap-renderer/helpers/normalize-content";
+import { normalizeContent } from "@/shared/components/tiptap-renderer/helpers/normalize-content";
+import { countWordsFromTiptap } from "@/shared/components/tiptap-renderer/helpers/words-counter";
+
+import { SlateRendererV2 } from "@/shared/components/editor/view/slate-renderer";
 
 import Sidebar from "@/app/(home)/_components/sidebar";
 import PostInfoV2 from "@/app/(home)/(routes)/blog/_components/post-info-v2";
 
 import { WidgetPostBottom } from "./post-bottom";
-import { countWordsFromTiptap } from "@/components/tiptap-renderer/helpers/words-counter";
 
 interface PostTemplateProps {
   post: NonNullable<GetPublishedPostBySlug>;

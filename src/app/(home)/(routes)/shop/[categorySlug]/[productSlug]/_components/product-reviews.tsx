@@ -10,10 +10,10 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "@/components/ui/carousel";
-import { Button } from "@/components/ui/button";
+} from "@/shared/ui/carousel";
+import { Button } from "@/shared/ui/button";
 
-import { ResponsiveDialog } from "@/components/responsive-dialog";
+import { ResponsiveDialog } from "@/shared/components/responsive-dialog";
 import { Review } from "@/app/(home)/_components/review";
 
 export const ProductReviews = ({

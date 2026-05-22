@@ -5,13 +5,13 @@ import { CalendarDays, Euro, Sofa } from "lucide-react";
 
 import { ProductAcquisitionMode } from "@/generated/prisma";
 
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@/shared/ui/button";
+import { Separator } from "@/shared/ui/separator";
 
 import { formatDate, formatPrice } from "@/lib/format";
 import { WebinarMetadata } from "@/types";
 
-import { BuyButton } from "@/components/checkout/buy-button";
+import { BuyButton } from "@/shared/components/checkout/buy-button";
 
 interface WebinarSummaryProps {
   id: string;

@@ -4,7 +4,7 @@ import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import { Input } from "@/components/ui/input";
+import { Input } from "@/shared/ui/input";
 import { useDebounce } from "@/app/(admin)/_hooks/use-debounce";
 
 export const SearchInput = () => {

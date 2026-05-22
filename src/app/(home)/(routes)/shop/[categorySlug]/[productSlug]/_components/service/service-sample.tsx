@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import { DownloadIcon, EyeIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";

@@ -22,15 +22,15 @@ import {
 } from "lucide-react";
 import { useSlate } from "slate-react";
 
-import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
+import { Separator } from "@/shared/ui/separator";
+import { Button } from "@/shared/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
+} from "@/shared/ui/dropdown-menu";
+import { cn } from "@/shared/lib/utils";
 
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 import { CustomEditorHelper } from "@/app/(admin)/_components/editor/utils/custom-editor";

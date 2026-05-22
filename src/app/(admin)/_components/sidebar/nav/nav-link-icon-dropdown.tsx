@@ -6,11 +6,11 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+} from "@/shared/ui/dropdown-menu";
+import { Button } from "@/shared/ui/button";
 import Link from "next/link";
 import { useCheckActiveNav } from "@/app/(admin)/_hooks/use-check-active-nav";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 export const NavLinkIconDropdown = ({
   title,

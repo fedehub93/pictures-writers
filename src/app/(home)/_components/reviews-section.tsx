@@ -3,8 +3,8 @@
 import { useState } from "react";
 
 import { Review } from "./review";
-import { ResponsiveDialog } from "@/components/responsive-dialog";
-import { Button } from "@/components/ui/button";
+import { ResponsiveDialog } from "@/shared/components/responsive-dialog";
+import { Button } from "@/shared/ui/button";
 
 export const ReviewsSection = ({
   testimonials,

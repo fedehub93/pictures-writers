@@ -17,15 +17,15 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from "@/shared/ui/form";
 
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/shared/ui/button";
+import { Checkbox } from "@/shared/ui/checkbox";
 
-import { GenericInput } from "@/components/form-component/generic-input";
-import { GenericTextarea } from "@/components/form-component/generic-textarea";
-import { GenericCalendar } from "@/components/form-component/generic-calendar";
-import { CommandSelect } from "@/components/command-select";
+import { GenericInput } from "@/shared/components/form-component/generic-input";
+import { GenericTextarea } from "@/shared/components/form-component/generic-textarea";
+import { GenericCalendar } from "@/shared/components/form-component/generic-calendar";
+import { CommandSelect } from "@/shared/components/command-select";
 
 import { reviewsInsertSchema, reviewsUpdateSchema } from "../schema";
 import { useGetProducts } from "../hooks/use-get-products";

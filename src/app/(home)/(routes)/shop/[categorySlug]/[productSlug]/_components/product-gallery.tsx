@@ -10,10 +10,10 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "@/components/ui/carousel";
-import { Card, CardContent } from "@/components/ui/card";
+} from "@/shared/ui/carousel";
+import { Card, CardContent } from "@/shared/ui/card";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import { Gallery } from "@/types";
 
 interface ProductGalleryProps {

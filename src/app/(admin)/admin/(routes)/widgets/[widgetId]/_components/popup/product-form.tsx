@@ -12,8 +12,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
+} from "@/shared/ui/form";
+import { Button } from "@/shared/ui/button";
 
 import { ProductWithImageCoverAndAuthor } from "@/types";
 

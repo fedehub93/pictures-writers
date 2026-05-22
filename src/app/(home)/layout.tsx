@@ -1,27 +1,26 @@
 import type { Metadata } from "next";
 import { Figtree } from "next/font/google";
-// import { SpeedInsights } from "@vercel/speed-insights/next";
 import { GoogleTagManager } from "@next/third-parties/google";
+import HolyLoader from "holy-loader";
+import Script from "next/script";
 
 import "./home.css";
 import "@/puck/styles/puck-base.css";
 
+import { cn } from "@/shared/lib/utils";
 
-import { cn } from "@/lib/utils";
-
-import { ToastProvider } from "@/components/providers/toast-provider";
+import { ToastProvider } from "@/shared/providers/toast-provider";
 import { getSettings } from "@/data/settings";
+
 import { Navbar } from "@/app/(home)/_components/navbar";
 import { Footer } from "@/app/(home)/_components/footer";
 import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
 
-import { QueryProvider } from "@/components/providers/query-provider";
-import { AppScripts } from "@/components/scripts";
+import { QueryProvider } from "@/shared/providers/query-provider";
+import { AppScripts } from "@/shared/components/scripts";
 
 import { OrganizationJsonLd } from "./_components/seo/json-ld/organization";
 import { BottomBanner } from "./_components/bottom-banner";
-import HolyLoader from "holy-loader";
-import Script from "next/script";
 
 const figtree = Figtree({ subsets: ["latin"] });
 

@@ -2,10 +2,10 @@
 
 import { Control } from "react-hook-form";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 
 import { AdCampaignFormValues } from "@/schemas/ads";
-import { GenericSwitch } from "@/components/form-component/generic-switch";
+import { GenericSwitch } from "@/shared/components/form-component/generic-switch";
 
 interface CampaignStatusProps {
   control: Control<AdCampaignFormValues>;

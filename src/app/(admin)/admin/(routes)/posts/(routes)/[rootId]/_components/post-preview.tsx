@@ -1,4 +1,4 @@
-import { SlateRendererV2 } from "@/components/editor/view/slate-renderer";
+import { SlateRendererV2 } from "@/shared/components/editor/view/slate-renderer";
 
 import { CustomElement } from "@/app/(admin)/_components/editor";
 

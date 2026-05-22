@@ -1,8 +1,6 @@
 import Image from "next/image";
 
-import { Separator } from "@/components/ui/separator";
-
-import { TipTapRendererV2 } from "@/components/tiptap-renderer";
+import { TipTapRendererV2 } from "@/shared/components/tiptap-renderer";
 
 import { getPlaceholderImage } from "@/lib/image";
 

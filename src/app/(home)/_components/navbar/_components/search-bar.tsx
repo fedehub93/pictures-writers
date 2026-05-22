@@ -8,10 +8,10 @@ import { formatDistance } from "date-fns";
 import { it } from "date-fns/locale";
 import Image from "next/image";
 
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/shared/lib/utils";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { ScrollArea } from "@/shared/ui/scroll-area";
 import { usePostsInfiniteQuery } from "@/hooks/use-posts-infinite-query";
 
 export const SearchBar = () => {

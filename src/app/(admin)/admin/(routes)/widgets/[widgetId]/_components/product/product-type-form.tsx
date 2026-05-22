@@ -16,20 +16,20 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from "@/shared/ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+} from "@/shared/ui/select";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
 
 import { API_ADMIN_PRODUCTS_FETCH } from "@/constants/api";
 import { widgetFormSchema } from "../widget-form";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 import { ProductWithImageCoverAndAuthor, WidgetProductType } from "@/types";
 

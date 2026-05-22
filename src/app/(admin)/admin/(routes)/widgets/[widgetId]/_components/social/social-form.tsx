@@ -11,17 +11,17 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from "@/shared/ui/form";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Input } from "@/shared/ui/input";
 
 import { widgetFormSchema } from "../widget-form";
 import { useSocialSettingsQuery } from "@/app/(admin)/_hooks/use-social-settings";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/shared/ui/skeleton";
 import { SocialIcon } from "react-social-icons";
-import { Switch } from "@/components/ui/switch";
-import { getFirstCharUppercase } from "@/lib/utils";
+import { Switch } from "@/shared/ui/switch";
+import { getFirstCharUppercase } from "@/shared/lib/utils";
 import { WidgetSocialMetadataSocial } from "@/types";
 
 interface WidgetSocialFormProps {

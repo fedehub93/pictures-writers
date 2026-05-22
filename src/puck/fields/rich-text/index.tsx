@@ -8,10 +8,10 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
+} from "@/shared/ui/popover";
+import { Button } from "@/shared/ui/button";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 const themeColors = [
   { label: "Primary", value: "var(--primary)", bgPreview: "var(--primary)" },

@@ -10,11 +10,11 @@ import {
 
 import StickyWrapper from "./sticky-wrapper";
 
-import { WidgetPost } from "@/components/widget/post";
-import { WidgetProduct } from "@/components/widget/product";
-import { WidgetSearchBox } from "@/components/widget/search-box";
-import { WidgetCategory } from "@/components/widget/category";
-import { WidgetSocial } from "@/components/widget/socials";
+import { WidgetPost } from "@/shared/components/widget/post";
+import { WidgetProduct } from "@/shared/components/widget/product";
+import { WidgetSearchBox } from "@/shared/components/widget/search-box";
+import { WidgetCategory } from "@/shared/components/widget/category";
+import { WidgetSocial } from "@/shared/components/widget/socials";
 
 interface PostSidebarProps {
   postId?: string;

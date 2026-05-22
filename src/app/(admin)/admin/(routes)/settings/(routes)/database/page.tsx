@@ -5,9 +5,9 @@ import axios from "axios";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import { Separator } from "@/shared/ui/separator";
 
 const DatabaseSettingsPage = () => {
   const router = useRouter();

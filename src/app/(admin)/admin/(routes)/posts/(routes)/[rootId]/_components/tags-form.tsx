@@ -9,13 +9,13 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
-import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Form, FormField, FormItem, FormMessage } from "@/shared/ui/form";
+import { Skeleton } from "@/shared/ui/skeleton";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 import { useTagssQuery } from "@/app/(admin)/_hooks/use-tags-query";
-import { MultiSelectV2 } from "@/components/multi-select-v2";
+import { MultiSelectV2 } from "@/shared/components/multi-select-v2";
 
 interface TagsFormProps {
   initialData: {

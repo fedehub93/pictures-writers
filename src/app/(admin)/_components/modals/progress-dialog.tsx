@@ -4,8 +4,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Progress } from "@/components/ui/progress";
+} from "@/shared/ui/dialog";
+import { Progress } from "@/shared/ui/progress";
 
 interface ProgressDialogProps {
   title: string;

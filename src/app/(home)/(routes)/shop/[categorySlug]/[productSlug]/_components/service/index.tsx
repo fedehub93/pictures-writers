@@ -3,7 +3,7 @@
 import { ServiceMetadata, TiptapContent } from "@/types";
 import { ProductAcquisitionMode } from "@/generated/prisma";
 
-import { FaqSection } from "@/components/faq-section";
+import { FaqSection } from "@/shared/components/faq-section";
 
 import { ServiceInfo } from "./service-info";
 import { ServiceBoxs } from "./service-boxs";

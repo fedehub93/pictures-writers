@@ -1,14 +1,14 @@
 import { PaletteIcon } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
-import { Input } from "@/components/ui/input";
+import { Input } from "@/shared/ui/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
+} from "@/shared/ui/popover";
+import { Button } from "@/shared/ui/button";
 
 interface ValueColorInputProps {
   name: string;

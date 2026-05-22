@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { BookOpenText, CalendarDays, Earth, Weight } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/shared/ui/badge";
+import { Separator } from "@/shared/ui/separator";
 import { formatBytes, formatDate, formatPrice } from "@/lib/format";
 import { EbookFormat } from "@/types";
 
 import { FreeEbookModal } from "@/app/(home)/_components/modals/free-ebook-modal";
-import { SlateRendererV2 } from "@/components/editor/view/slate-renderer";
+import { SlateRendererV2 } from "@/shared/components/editor/view/slate-renderer";
 import { BuyButton } from "./buy-button";
 import { BoxInfo } from "./box-info";
 import { ProductAcquisitionMode } from "@/generated/prisma";

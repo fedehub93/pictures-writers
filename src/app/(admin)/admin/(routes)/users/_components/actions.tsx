@@ -5,7 +5,7 @@ import { UserRole } from "@/generated/prisma";
 import {
   DropdownMenuContent,
   DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+} from "@/shared/ui/dropdown-menu";
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 
 interface ActionsProps {

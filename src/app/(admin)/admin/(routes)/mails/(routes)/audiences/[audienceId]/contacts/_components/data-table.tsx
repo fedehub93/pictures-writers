@@ -26,14 +26,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/shared/ui/table";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
 
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 import { ProgressDialog } from "@/app/(admin)/_components/modals/progress-dialog";
-import { useBatchProcessor } from "@/hooks/use-batch-processor";
+import { useBatchProcessor } from "@/shared/hooks/use-batch-processor";
 
 interface DataTableProps<TData, TValue> {
   audienceId: string;

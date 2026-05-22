@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { authAdmin } from "@/lib/auth-service";
-import { updateContactsAudience } from "@/lib/mail/core";
+import { updateContactsAudience } from "@/modules/mails/lib/core";
 
 export async function PATCH(
   req: Request,

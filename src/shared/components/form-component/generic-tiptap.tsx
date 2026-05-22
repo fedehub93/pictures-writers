@@ -1,0 +1,102 @@
+import React from "react";
+import { Control, FieldValues, Path, useController } from "react-hook-form";
+import { useEditor } from "@tiptap/react";
+
+import StarterKit from "@tiptap/starter-kit";
+import TextAlign from "@tiptap/extension-text-align";
+import Youtube from "@tiptap/extension-youtube";
+
+import { FormControl, FormField, FormItem, FormLabel } from "@/shared/ui/form";
+
+import { CustomLink } from "../tiptap-editor/extensions/link";
+import { CustomImage } from "../tiptap-editor/extensions/image";
+import { ProductNode } from "../tiptap-editor/extensions/product";
+import { InfoBoxNode } from "../tiptap-editor/extensions/info-box";
+
+import { cn } from "@/shared/lib/utils";
+
+import Tiptap from "../tiptap-editor";
+import { TableContentNode } from "../tiptap-editor/extensions/table-content";
+import { CustomBold } from "../tiptap-editor/extensions/bold";
+import { countWordsFromTiptap } from "../tiptap-renderer/helpers/words-counter";
+
+interface GenericTiptapProps<T extends FieldValues> {
+  id: string;
+  control: Control<T>;
+  name: Path<T>;
+  containerProps?: React.HTMLAttributes<HTMLDivElement>;
+  onUpdate?: () => void;
+}
+
+export const GenericTiptap = <T extends FieldValues>({
+  id,
+  control,
+  name,
+  containerProps,
+  onUpdate,
+  ...inputProps
+}: GenericTiptapProps<T>) => {
+  const { field } = useController({ control, name });
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        bold: false,
+        heading: {
+          levels: [1, 2, 3, 4],
+        },
+        link: false,
+        blockquote: {
+          HTMLAttributes: {
+            class: "not-prose",
+          },
+        },
+      }),
+      CustomBold,
+      TextAlign.configure({ types: ["heading", "paragraph"] }),
+      CustomLink.configure({ openOnClick: false }),
+      CustomImage,
+      Youtube.configure({
+        nocookie: true,
+      }),
+      ProductNode,
+      InfoBoxNode,
+      TableContentNode,
+    ],
+    content: field.value ?? "",
+    immediatelyRender: false,
+    editorProps: {
+      attributes: {
+        class: cn(`!outline-0`),
+      },
+    },
+    onUpdate: ({ editor }) => {
+      const json = editor.getJSON();
+      queueMicrotask(() => {
+        field.onChange(json);
+        if (onUpdate) onUpdate();
+      });
+    },
+  });
+
+  return (
+    <div className="flex flex-col space-y-2">
+      <FormField
+        control={control}
+        name={name}
+        render={({ field }) => (
+          <FormItem className="flex-1 flex flex-col space-y-2">
+            <FormLabel>Description</FormLabel>
+            <FormControl>
+              <Tiptap key={id} editor={editor} value={field.value} />
+            </FormControl>
+          </FormItem>
+        )}
+      />
+      <div className="flex items-center justify-between w-full pt-4">
+        <div className="text-sm text-muted-foreground">
+          {countWordsFromTiptap(field.value)} words
+        </div>
+      </div>
+    </div>
+  );
+};

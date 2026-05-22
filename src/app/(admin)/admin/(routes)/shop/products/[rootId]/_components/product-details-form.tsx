@@ -5,15 +5,15 @@ import slugify from "slugify";
 
 import { Product } from "@/generated/prisma";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Badge } from "@/shared/ui/badge";
 
 import { ProductFormValues } from "@/schemas/product";
 
-import { GenericInput } from "@/components/form-component/generic-input";
-import { SlugInput } from "@/components/form-component/slug-input";
+import { GenericInput } from "@/shared/components/form-component/generic-input";
+import { SlugInput } from "@/shared/components/form-component/slug-input";
 
-import { GenericTiptap } from "@/components/form-component/generic-tiptap";
+import { GenericTiptap } from "@/shared/components/form-component/generic-tiptap";
 
 import { ProductCategorySelect } from "./product-category-select";
 

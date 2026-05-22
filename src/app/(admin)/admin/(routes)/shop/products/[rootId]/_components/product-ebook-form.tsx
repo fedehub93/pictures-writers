@@ -11,7 +11,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from "@/shared/ui/form";
 
 import {
   Select,
@@ -19,13 +19,13 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+} from "@/shared/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 
 import { ProductFormValues } from "@/schemas/product";
 
-import { GenericInput } from "@/components/form-component/generic-input";
-import { GenericCalendar } from "@/components/form-component/generic-calendar";
+import { GenericInput } from "@/shared/components/form-component/generic-input";
+import { GenericCalendar } from "@/shared/components/form-component/generic-calendar";
 
 import { EbookFormatsForm } from "./ebook-formats-form";
 

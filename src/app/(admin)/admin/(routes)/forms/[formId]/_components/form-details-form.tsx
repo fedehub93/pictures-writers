@@ -2,11 +2,11 @@
 
 import { Control } from "react-hook-form";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 
-import { GenericInput } from "@/components/form-component/generic-input";
+import { GenericInput } from "@/shared/components/form-component/generic-input";
 import { FormFormValues } from "@/schemas/form";
-import { GenericTextarea } from "@/components/form-component/generic-textarea";
+import { GenericTextarea } from "@/shared/components/form-component/generic-textarea";
 
 interface FormDetailsProps {
   control: Control<FormFormValues>;

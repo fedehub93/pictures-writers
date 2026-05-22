@@ -4,12 +4,12 @@ import { Control, useController } from "react-hook-form";
 
 import { ProductAcquisitionMode } from "@/generated/prisma";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 
 import { ProductFormValues } from "@/schemas/product";
 
-import { GenericSelect } from "@/components/form-component/generic-select";
-import { GenericMoneyInput } from "@/components/form-component/generic-money-input";
+import { GenericSelect } from "@/shared/components/form-component/generic-select";
+import { GenericMoneyInput } from "@/shared/components/form-component/generic-money-input";
 import { ProductFormsSelect } from "./product-forms-select";
 
 interface ProductPricingFormProps {

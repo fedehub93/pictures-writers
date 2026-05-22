@@ -3,10 +3,10 @@
 import axios from "axios";
 import toast from "react-hot-toast";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 
-import { ExtendedUserButton } from "@/components/extended-user-button";
-import { ModeToggle } from "@/components/mode-toggle";
+import { ExtendedUserButton } from "@/shared/components/extended-user-button";
+import { ModeToggle } from "@/shared/components/mode-toggle";
 
 import { Notifications } from "./notifications";
 

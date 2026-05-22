@@ -4,7 +4,7 @@ import * as v from "valibot";
 
 import { SubscribeSchemaValibot } from "@/schemas";
 import { generateSubscriptionToken } from "@/lib/tokens";
-import { sendSubscriptionEmail } from "@/lib/mail/mail";
+import { sendSubscriptionEmail } from "@/modules/mails/lib/mail";
 import { createContactByEmail } from "@/data/email-contact";
 import { handleUserSubscribed } from "@/lib/event-handler";
 import { verifyRecaptcha } from "@/lib/recaptcha";

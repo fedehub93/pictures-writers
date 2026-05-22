@@ -17,8 +17,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Switch } from "@/components/ui/switch";
+} from "@/shared/ui/form";
+import { Switch } from "@/shared/ui/switch";
 
 interface NoFollowFormProps {
   initialData: Seo;

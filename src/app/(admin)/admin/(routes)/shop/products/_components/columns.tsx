@@ -11,13 +11,13 @@ import Image from "next/image";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { Badge } from "@/shared/ui/badge";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import { formatPrice } from "@/lib/format";
 import { ProductsAction } from "./actions";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox } from "@/shared/ui/checkbox";
 
 export const columns: ColumnDef<Product>[] = [
   {
