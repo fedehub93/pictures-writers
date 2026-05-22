@@ -21,6 +21,7 @@ import { SheetProvider } from "./_components/providers/sheet-provider";
 import { ProgressLoader } from "./_components/progress-loader";
 import { AppSidebar } from "./_components/sidebar-v2/app-sidebar";
 import { Header } from "./_components/header";
+import { TRPCReactProvider } from "@/trpc/client";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -47,7 +48,7 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <ToastProvider />
-          <QueryProvider>
+          <TRPCReactProvider>
             <SidebarProvider className="h-screen">
               <AppSidebar />
               <SidebarInset>
@@ -58,7 +59,7 @@ export default async function RootLayout({
               <SheetProvider />
               <ProgressLoader />
             </SidebarProvider>
-          </QueryProvider>
+          </TRPCReactProvider>
           <Toaster />
         </ThemeProvider>
       </body>
