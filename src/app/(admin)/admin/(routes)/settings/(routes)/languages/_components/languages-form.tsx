@@ -9,13 +9,13 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { X } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
+import { Button } from "@/shared/ui/button";
+import { Form } from "@/shared/ui/form";
 
 import { Language } from "@/generated/prisma";
-import { SlugInput } from "@/components/form-component/slug-input";
-import { GenericInput } from "@/components/form-component/generic-input";
-import { GenericSwitch } from "@/components/form-component/generic-switch";
+import { SlugInput } from "@/shared/components/form-component/slug-input";
+import { GenericInput } from "@/shared/components/form-component/generic-input";
+import { GenericSwitch } from "@/shared/components/form-component/generic-switch";
 
 const formSchema = z.object({
   languages: z.array(

@@ -7,8 +7,8 @@ import toast from "react-hot-toast";
 import { redirect, useRouter } from "next/navigation";
 import { AdBlock, AdCampaign } from "@/generated/prisma";
 
-import { Form } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
+import { Form } from "@/shared/ui/form";
+import { Button } from "@/shared/ui/button";
 
 import { adCampaignFormSchema, AdCampaignFormValues } from "@/schemas/ads";
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { syncContactWithProvider } from "@/lib/mail/core";
+import { syncContactWithProvider } from "@/modules/mails/lib/core";
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
 

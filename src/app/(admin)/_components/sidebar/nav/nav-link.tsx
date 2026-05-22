@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import { NavLinkProps } from "./types";
 import { useCheckActiveNav } from "@/app/(admin)/_hooks/use-check-active-nav";
 

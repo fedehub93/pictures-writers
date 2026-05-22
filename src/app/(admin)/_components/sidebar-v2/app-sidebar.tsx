@@ -40,8 +40,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from "@/components/ui/sidebar";
-import Logo from "@/components/logo";
+} from "@/shared/ui/sidebar";
+import Logo from "@/shared/components/logo";
 import { NavMain } from "./nav-main";
 
 // This is sample data.

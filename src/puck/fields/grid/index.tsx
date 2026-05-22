@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { createUsePuck } from "@puckeditor/core";
 
-import { Input } from "@/components/ui/input";
+import { Input } from "@/shared/ui/input";
 import { SegmentedControl } from "@/puck/components/segmented-control";
 import { withAccordionField } from "@/puck/utils/with-accordion-field";
 import { PropHeader } from "@/puck/components/prop-header";

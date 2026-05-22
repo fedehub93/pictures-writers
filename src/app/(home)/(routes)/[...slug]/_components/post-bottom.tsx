@@ -5,11 +5,11 @@ import {
   isWidgetNewsletterMetadata,
   isWidgetTagMetadata,
 } from "@/type-guards";
-import WidgetAuthor from "@/components/widget/author";
-import WidgetNewsletter from "@/components/widget/newsletter";
+import WidgetAuthor from "@/shared/components/widget/author";
+import WidgetNewsletter from "@/shared/components/widget/newsletter";
 import { db } from "@/lib/db";
-import WidgetTags from "@/components/widget/tags";
-import WidgetAuthors from "@/components/widget/authors";
+import WidgetTags from "@/shared/components/widget/tags";
+import WidgetAuthors from "@/shared/components/widget/authors";
 
 interface WidgetPostBottomProps {
   postId: string;

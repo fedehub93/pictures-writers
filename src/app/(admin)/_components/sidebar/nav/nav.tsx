@@ -7,7 +7,7 @@ import { NavLink } from "./nav-link";
 import { NavLinkDropdown } from "./nav-link-dropdown";
 import { NavLinkIcon } from "./nav-link-icon";
 import { NavLinkIconDropdown } from "./nav-link-icon-dropdown";
-import { Separator } from "@/components/ui/separator";
+import { Separator } from "@/shared/ui/separator";
 
 export const Nav = ({ links, isMobile = false }: NavProps) => {
   const { collapsed } = useSidebar((state) => state);

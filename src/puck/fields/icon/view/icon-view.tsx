@@ -1,7 +1,7 @@
 "use client";
 
 import { IconProps } from "@/puck/fields/icon";
-import { IconPicker } from "@/components/ui/icon-picker";
+import { IconPicker } from "@/shared/ui/icon-picker";
 
 interface IconViewProps {
   state?: IconProps;

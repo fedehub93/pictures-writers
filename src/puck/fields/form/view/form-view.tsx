@@ -6,8 +6,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
+} from "@/shared/ui/select";
+import { Skeleton } from "@/shared/ui/skeleton";
 
 import { useFormsQuery } from "@/app/(admin)/_hooks/use-forms-query";
 import { FormProps } from "@/puck/fields/form";

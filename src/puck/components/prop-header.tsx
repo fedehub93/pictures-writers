@@ -1,7 +1,7 @@
 import { X } from "lucide-react";
 
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import { Label } from "@/shared/ui/label";
+import { Button } from "@/shared/ui/button";
 
 interface ControlHeaderProps {
   label: string;

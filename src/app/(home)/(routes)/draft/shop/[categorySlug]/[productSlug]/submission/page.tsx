@@ -4,7 +4,7 @@ import { CalendarDays, Euro, Sofa } from "lucide-react";
 
 import Image from "next/image";
 
-import { Separator } from "@/components/ui/separator";
+import { Separator } from "@/shared/ui/separator";
 
 import { db } from "@/lib/db";
 

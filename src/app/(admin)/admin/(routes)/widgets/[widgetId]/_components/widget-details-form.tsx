@@ -5,16 +5,16 @@ import { Control } from "react-hook-form";
 
 import { Widget } from "@/generated/prisma";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import {
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+} from "@/shared/ui/form";
+import { Input } from "@/shared/ui/input";
+import { Badge } from "@/shared/ui/badge";
 
 import { widgetFormSchema } from "./widget-form";
 

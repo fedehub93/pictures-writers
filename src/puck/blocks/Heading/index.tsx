@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { ComponentConfig } from "@puckeditor/core";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 import { Responsive } from "@/puck/utils/responsive";
 

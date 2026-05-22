@@ -3,11 +3,11 @@
 import * as v from "valibot";
 
 import { FreeEbookSchemaValibot } from "@/schemas";
-import { sendFreeEbookEmail } from "@/lib/mail/mail";
+import { sendFreeEbookEmail } from "@/modules/mails/lib/mail";
 import { createContactByEmail } from "@/data/email-contact";
 import { handleEbookDownloaded } from "@/lib/event-handler";
 import { verifyRecaptcha } from "@/lib/recaptcha";
-import { createContactOnProvider } from "@/lib/mail/core";
+import { createContactOnProvider } from "@/modules/mails/lib/core";
 
 export const subscribeFreeEbook = async (
   values: v.InferInput<typeof FreeEbookSchemaValibot>,

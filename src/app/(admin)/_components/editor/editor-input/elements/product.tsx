@@ -4,14 +4,14 @@ import { ReactEditor, RenderElementProps, useSlateStatic } from "slate-react";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 
 import { EmbeddedProductElement } from "@/app/(admin)/_components/editor";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import { useSheet } from "@/app/(admin)/_hooks/use-sheet-store";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/shared/ui/dropdown-menu";
 
 interface ImageElementProps extends RenderElementProps {
   element: EmbeddedProductElement;

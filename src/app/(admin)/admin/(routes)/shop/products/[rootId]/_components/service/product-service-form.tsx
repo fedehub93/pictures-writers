@@ -7,16 +7,16 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from "@/shared/ui/form";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Input } from "@/shared/ui/input";
+import { Button } from "@/shared/ui/button";
 import { Plus, Trash } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 
 import { ProductFormValues } from "@/schemas/product";
-import { Textarea } from "@/components/ui/textarea";
+import { Textarea } from "@/shared/ui/textarea";
 
 interface ProductServiceFormProps {
   control: Control<ProductFormValues>;

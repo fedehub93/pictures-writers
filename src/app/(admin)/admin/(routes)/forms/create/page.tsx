@@ -7,11 +7,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
 
-import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
+import { Button } from "@/shared/ui/button";
+import { Form } from "@/shared/ui/form";
 
 import { formFormSchema, FormFormValues } from "@/schemas/form";
-import { GenericInput } from "@/components/form-component/generic-input";
+import { GenericInput } from "@/shared/components/form-component/generic-input";
 
 const FormCreatePage = () => {
   const router = useRouter();

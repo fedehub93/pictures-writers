@@ -7,13 +7,13 @@ import { Bell, Loader2, Mail } from "lucide-react";
 import { Notification } from "@/generated/prisma";
 import { useRouter } from "next/navigation";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { Separator } from "@/components/ui/separator";
+} from "@/shared/ui/popover";
+import { Separator } from "@/shared/ui/separator";
 import { useNotificationsQuery } from "../../_hooks/use-notifications-query";
 
 export const Notifications = ({ userId }: { userId: string }) => {

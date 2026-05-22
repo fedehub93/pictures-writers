@@ -14,16 +14,16 @@ import {
   FormField,
   FormItem,
   FormLabel,
-} from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+} from "@/shared/ui/form";
+import { Button } from "@/shared/ui/button";
+import { Checkbox } from "@/shared/ui/checkbox";
 
-import { GenericInput } from "@/components/form-component/generic-input";
-import { GenericTextarea } from "@/components/form-component/generic-textarea";
+import { GenericInput } from "@/shared/components/form-component/generic-input";
+import { GenericTextarea } from "@/shared/components/form-component/generic-textarea";
 
-import { FileUploadButton } from "@/components/file-upload-button";
+import { FileUploadButton } from "@/shared/components/file-upload-button";
 import { submitProductForm } from "@/actions/submit-product-form";
-import { GoogleRecaptchaV3 } from "@/components/google-recaptchav3";
+import { GoogleRecaptchaV3 } from "@/shared/components/google-recaptchav3";
 
 import { getCaptchaToken } from "@/app/(home)/_components/utils/captcha";
 

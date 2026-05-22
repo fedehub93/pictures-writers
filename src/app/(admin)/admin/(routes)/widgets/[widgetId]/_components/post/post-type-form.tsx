@@ -16,9 +16,9 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+} from "@/shared/ui/form";
+import { Button } from "@/shared/ui/button";
+import { cn } from "@/shared/lib/utils";
 
 import {
   Select,
@@ -26,8 +26,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
+} from "@/shared/ui/select";
+import { Input } from "@/shared/ui/input";
 
 import { WidgetPostMetadataPosts, WidgetPostType } from "@/types";
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";

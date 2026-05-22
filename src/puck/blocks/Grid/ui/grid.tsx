@@ -1,6 +1,6 @@
 import { SlotComponent } from "@puckeditor/core";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 export const GridBlockUi = ({
   Items,

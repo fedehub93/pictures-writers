@@ -10,11 +10,11 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Switch } from "@/components/ui/switch";
+} from "@/shared/ui/form";
+import { Switch } from "@/shared/ui/switch";
 
 import { widgetFormSchema } from "./widget-form";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 
 interface WidgetStatusViewProps {
   control: Control<z.infer<typeof widgetFormSchema>>;

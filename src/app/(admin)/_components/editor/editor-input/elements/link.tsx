@@ -8,19 +8,19 @@ import {
   Popover,
   PopoverTrigger,
   PopoverContent,
-} from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
+} from "@/shared/ui/popover";
+import { Button } from "@/shared/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/shared/ui/tooltip";
 import { CustomEditorHelper } from "../../utils/custom-editor";
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 import toast from "react-hot-toast";
 import { isCustomText } from "../..";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 interface LinkProps extends RenderElementProps {}
 

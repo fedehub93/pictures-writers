@@ -4,7 +4,7 @@ import { Element } from "slate";
 import { ReactEditor, useSlate } from "slate-react";
 import { ChevronDown } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 import {
   DropdownMenu,
@@ -12,8 +12,8 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+} from "@/shared/ui/dropdown-menu";
+import { Button } from "@/shared/ui/button";
 
 import { CustomElementType } from "@/app/(admin)/_components/editor";
 import { CustomEditorHelper } from "@/app/(admin)/_components/editor/utils/custom-editor";

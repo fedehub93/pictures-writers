@@ -7,11 +7,11 @@ import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { ContentStatus } from "@/generated/prisma";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { Separator } from "@/shared/ui/separator";
 import { SeoContentTypeApi } from "@/app/(admin)/_components/seo/types";
 
 interface StatusViewProps {

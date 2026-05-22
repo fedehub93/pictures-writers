@@ -8,13 +8,13 @@ import axios from "axios";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
-import { Form, FormMessage } from "@/components/ui/form";
+import { Form, FormMessage } from "@/shared/ui/form";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 
-import { GenericInput } from "@/components/form-component/generic-input";
+import { GenericInput } from "@/shared/components/form-component/generic-input";
 import { pageInsertSchema, pageUpdateSchema } from "../schema";
-import { SlugInput } from "@/components/form-component/slug-input";
+import { SlugInput } from "@/shared/components/form-component/slug-input";
 import slugify from "slugify";
 
 interface PageFormProps {

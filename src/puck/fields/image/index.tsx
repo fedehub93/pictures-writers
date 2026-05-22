@@ -1,14 +1,14 @@
 import { useCallback } from "react";
 import { ImageIcon, RabbitIcon, SnailIcon } from "lucide-react";
 
-import { Input } from "@/components/ui/input";
+import { Input } from "@/shared/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/shared/ui/select";
 import { SegmentedControl } from "@/puck/components/segmented-control";
 
 import { withAccordionField } from "@/puck/utils/with-accordion-field";

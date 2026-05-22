@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import { ImageProps } from "@/puck/fields/image";
 
 const PLACEHOLDER_IMAGE =

@@ -19,8 +19,8 @@ import {
   NavigationMenuItem,
   NavigationMenuList,
   NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
-import { cn } from "@/lib/utils";
+} from "@/shared/ui/navigation-menu";
+import { cn } from "@/shared/lib/utils";
 
 const routes: { title: string; link: Route }[] = [
   {

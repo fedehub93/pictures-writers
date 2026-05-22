@@ -12,15 +12,15 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/shared/ui/dialog";
 
-import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem } from "@/shared/ui/form";
+import { Button } from "@/shared/ui/button";
 
-import { FileUpload, FileUploadOnChange } from "@/components/file-upload";
+import { FileUpload, FileUploadOnChange } from "@/shared/components/file-upload";
 import { useModal } from "../../_hooks/use-modal-store";
-import { GenericInput } from "@/components/form-component/generic-input";
-import { GenericTextarea } from "@/components/form-component/generic-textarea";
+import { GenericInput } from "@/shared/components/form-component/generic-input";
+import { GenericTextarea } from "@/shared/components/form-component/generic-textarea";
 
 const formSchema = z.object({
   firstName: z.string().optional(),

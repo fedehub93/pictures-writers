@@ -7,10 +7,10 @@ import { useRouter } from "next/navigation";
 import { Media } from "@/generated/prisma";
 import toast from "react-hot-toast";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import { AssetCard } from "./asset-card";
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
-import { ExtendedPagination } from "@/components/extended-pagination";
+import { ExtendedPagination } from "@/shared/components/extended-pagination";
 import { SearchInput } from "@/app/(admin)/_components/search-input";
 import { MediaActions } from "./actions";
 

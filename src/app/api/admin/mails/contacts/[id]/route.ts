@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
-import { deleteContactOnProvider } from "@/lib/mail/core";
+import { deleteContactOnProvider } from "@/modules/mails/lib/core";
 
 export async function DELETE(
   req: Request,

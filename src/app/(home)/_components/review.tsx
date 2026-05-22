@@ -3,8 +3,8 @@
 import { CircleCheckIcon, StarIcon } from "lucide-react";
 
 import { formatDate } from "@/lib/format";
-import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
+import { cn } from "@/shared/lib/utils";
+import { Badge } from "@/shared/ui/badge";
 
 export const ReviewStars = ({ rating }: { rating: number }) => {
   return (

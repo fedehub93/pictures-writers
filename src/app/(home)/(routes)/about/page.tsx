@@ -3,7 +3,7 @@ import Image from "next/image";
 import { SocialIcon } from "react-social-icons";
 import { UserRole } from "@/generated/prisma";
 import { db } from "@/lib/db";
-import { Separator } from "@/components/ui/separator";
+import { Separator } from "@/shared/ui/separator";
 import { getHeadMetadata } from "../../_components/seo/head-metadata";
 import { getSettings } from "@/data/settings";
 

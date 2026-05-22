@@ -1,8 +1,8 @@
 import { TiptapContent, WebinarMetadata } from "@/types";
 import { ProductAcquisitionMode } from "@/generated/prisma";
 
-import { FaqSection } from "@/components/faq-section";
-import { Separator } from "@/components/ui/separator";
+import { FaqSection } from "@/shared/components/faq-section";
+import { Separator } from "@/shared/ui/separator";
 
 import { WebinarInfo } from "./webinar-info";
 import { WebinarSummary } from "./webinar-summary";

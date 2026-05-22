@@ -9,17 +9,17 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormMessage,
-} from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
+} from "@/shared/ui/form";
+import { Textarea } from "@/shared/ui/textarea";
 
-import { CharsCounter } from "@/components/chars-counter";
+import { CharsCounter } from "@/shared/components/chars-counter";
 import { SeoField } from "./types";
 
 interface TextareaSeoFormProps {

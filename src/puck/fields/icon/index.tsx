@@ -1,6 +1,6 @@
 import { LucidePuzzle } from "lucide-react";
 
-import { IconName } from "@/components/ui/icon-picker";
+import { IconName } from "@/shared/ui/icon-picker";
 
 import { withAccordionField } from "@/puck/utils/with-accordion-field";
 import { IconView } from "./view/icon-view";

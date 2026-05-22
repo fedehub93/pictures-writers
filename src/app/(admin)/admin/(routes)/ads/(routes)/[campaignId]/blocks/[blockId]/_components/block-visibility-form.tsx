@@ -2,13 +2,13 @@
 
 import { Control } from "react-hook-form";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 
 import { AdBlockFormValues } from "@/schemas/ads";
 
-import { GenericInput } from "@/components/form-component/generic-input";
+import { GenericInput } from "@/shared/components/form-component/generic-input";
 import { useCategoriesQuery } from "@/app/(admin)/_hooks/use-categories";
-import { GenericMultiSelect } from "@/components/form-component/generic-multi-select";
+import { GenericMultiSelect } from "@/shared/components/form-component/generic-multi-select";
 import { useTagssQuery } from "@/app/(admin)/_hooks/use-tags-query";
 import { usePostsQuery } from "@/app/(admin)/_hooks/use-posts-query";
 

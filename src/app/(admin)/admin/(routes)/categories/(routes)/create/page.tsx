@@ -10,7 +10,7 @@ import slugify from "slugify";
 import toast from "react-hot-toast";
 import { Sparkles } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import {
   Form,
   FormControl,
@@ -18,8 +18,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "@/shared/ui/form";
+import { Input } from "@/shared/ui/input";
 
 const formSchema = z.object({
   title: z.string().min(1, {

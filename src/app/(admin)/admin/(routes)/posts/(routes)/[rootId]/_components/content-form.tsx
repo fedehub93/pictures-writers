@@ -12,18 +12,18 @@ import { useDebouncedCallback } from "use-debounce";
 
 import { ContentStatus, EditorType } from "@/generated/prisma";
 
-import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem } from "@/shared/ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/shared/ui/select";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import Editor from "@/app/(admin)/_components/editor";
-import { GenericTiptap } from "@/components/form-component/generic-tiptap";
+import { GenericTiptap } from "@/shared/components/form-component/generic-tiptap";
 
 interface BodyFormProps {
   initialData: {

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 
 export const CreativeFeatures = () => (
   <section className="px-4 py-20 lg:px-6 bg-background">

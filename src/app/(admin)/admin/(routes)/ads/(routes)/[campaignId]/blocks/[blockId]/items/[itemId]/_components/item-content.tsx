@@ -5,17 +5,17 @@ import { Control, useController, useWatch } from "react-hook-form";
 import { X } from "lucide-react";
 
 import { AdItemSourceType } from "@/generated/prisma";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Button } from "@/shared/ui/button";
+import { Skeleton } from "@/shared/ui/skeleton";
 
 import { AdItemFormValues } from "@/schemas/ads";
 
 import type { GetPublishedProductByRootId } from "@/data/product";
 import type { GetPublishedPostByRootId } from "@/data/post";
 
-import { GenericInput } from "@/components/form-component/generic-input";
-import { GenericTextarea } from "@/components/form-component/generic-textarea";
+import { GenericInput } from "@/shared/components/form-component/generic-input";
+import { GenericTextarea } from "@/shared/components/form-component/generic-textarea";
 
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 import { usePostRootIdQuery } from "@/app/(admin)/_hooks/use-post-root-id-query";

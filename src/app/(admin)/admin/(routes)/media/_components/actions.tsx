@@ -2,7 +2,7 @@
 
 import { Plus } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 

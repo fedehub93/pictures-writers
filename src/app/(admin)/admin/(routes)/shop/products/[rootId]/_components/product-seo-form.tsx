@@ -7,12 +7,12 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "@/shared/ui/accordion";
 
 import { ProductFormValues } from "@/schemas/product";
 
-import { GenericInput } from "@/components/form-component/generic-input";
-import { GenericTextarea } from "@/components/form-component/generic-textarea";
+import { GenericInput } from "@/shared/components/form-component/generic-input";
+import { GenericTextarea } from "@/shared/components/form-component/generic-textarea";
 
 interface ProductSeoFormProps {
   control: Control<ProductFormValues>;

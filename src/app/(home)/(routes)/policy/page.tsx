@@ -4,7 +4,7 @@ import type { JSX } from "react";
 
 import { getHeadMetadata } from "../../_components/seo/head-metadata";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import { getSettings } from "@/data/settings";
 
 export async function generateMetadata(): Promise<Metadata | null> {

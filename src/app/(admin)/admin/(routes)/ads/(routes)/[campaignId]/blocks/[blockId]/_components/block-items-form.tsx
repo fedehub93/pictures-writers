@@ -11,21 +11,21 @@ import { Control, useWatch } from "react-hook-form";
 
 import { AdItem, AdLayoutType } from "@/generated/prisma";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Button } from "@/shared/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/shared/ui/dropdown-menu";
 
 import { AdBlockFormValues } from "@/schemas/ads";
 
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 interface BlockItemsProps {
   control: Control<AdBlockFormValues>;

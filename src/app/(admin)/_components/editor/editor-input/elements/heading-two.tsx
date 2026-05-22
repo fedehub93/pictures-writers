@@ -1,6 +1,6 @@
 import { RenderElementProps } from "slate-react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 
 interface HeadingTwoProps extends RenderElementProps {}
 

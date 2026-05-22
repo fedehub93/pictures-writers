@@ -7,8 +7,8 @@ import toast from "react-hot-toast";
 import { redirect, useRouter } from "next/navigation";
 import { Form } from "@/generated/prisma";
 
-import { Form as UiForm } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
+import { Form as UiForm } from "@/shared/ui/form";
+import { Button } from "@/shared/ui/button";
 
 import { formFormSchema, FormFormValues } from "@/schemas/form";
 import { FormDetails } from "./form-details-form";

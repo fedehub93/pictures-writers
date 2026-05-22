@@ -9,13 +9,13 @@ import {
 import { Transforms } from "slate";
 import { useState } from "react";
 
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/shared/lib/utils";
+import { Button } from "@/shared/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@/shared/ui/popover";
 import { X } from "lucide-react";
 
 interface InfoBoxProps extends RenderElementProps {}

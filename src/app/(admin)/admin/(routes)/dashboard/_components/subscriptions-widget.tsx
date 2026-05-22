@@ -2,14 +2,14 @@
 
 import { Users } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { useSubscriptionStatsQuery } from "@/app/(admin)/_hooks/use-subscription-stats-query";
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
+} from "@/shared/ui/chart";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 
 export const SubscriptionsWidget = () => {

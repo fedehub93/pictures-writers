@@ -4,8 +4,8 @@ import { PenIcon, SettingsIcon } from "lucide-react";
 import { Control, useController } from "react-hook-form";
 import { useState } from "react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Button } from "@/shared/ui/button";
 
 import { ProductType } from "@/generated/prisma";
 import { ProductFormValues } from "@/schemas/product";

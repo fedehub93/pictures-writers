@@ -5,14 +5,14 @@ import * as z from "zod";
 import { useEffect, useState } from "react";
 import { Control, useController } from "react-hook-form";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 
 import { WidgetPostType } from "@/types";
 
 import { widgetFormSchema } from "../widget-form";
 import { PostTypeForm } from "./post-type-form";
 import { SpecificCategoryForm } from "./post-category-form";
-import { GenericInput } from "@/components/form-component/generic-input";
+import { GenericInput } from "@/shared/components/form-component/generic-input";
 
 interface WidgetPostFormProps {
   control: Control<z.infer<typeof widgetFormSchema>>;

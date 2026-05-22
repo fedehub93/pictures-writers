@@ -1,5 +1,5 @@
 import { getSettings } from "@/data/settings";
-import { Separator } from "@/components/ui/separator";
+import { Separator } from "@/shared/ui/separator";
 import { SidebarMenu } from "./_components/sidebar-menu";
 import { SettingsProvider } from "./_components/providers/settings-provider";
 

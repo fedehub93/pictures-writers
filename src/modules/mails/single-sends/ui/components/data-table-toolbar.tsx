@@ -4,15 +4,15 @@ import { ArrowDownIcon, PlusCircleIcon, XIcon } from "lucide-react";
 import { useState } from "react";
 import { Table } from "@tanstack/react-table";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
+} from "@/shared/ui/dropdown-menu";
+import { Input } from "@/shared/ui/input";
 
 import { useOpenSingleSend } from "../../hooks/use-open-single-send";
 

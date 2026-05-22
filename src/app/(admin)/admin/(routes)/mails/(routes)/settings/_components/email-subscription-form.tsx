@@ -9,21 +9,21 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { EmailSetting, EmailTemplate } from "@/generated/prisma";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
-} from "@/components/ui/form";
+} from "@/shared/ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/shared/ui/select";
 
 interface EmailSubscriptionFormProps {
   settings: EmailSetting | null;

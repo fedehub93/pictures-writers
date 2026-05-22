@@ -18,7 +18,7 @@ import {
   getPublishedProductsBuilding,
 } from "@/data/product";
 
-import { FaqSection } from "@/components/faq-section";
+import { FaqSection } from "@/shared/components/faq-section";
 
 import { ProductGallery } from "./_components/product-gallery";
 import { EbookInfo } from "./_components/ebook-info";

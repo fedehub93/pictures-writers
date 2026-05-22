@@ -13,17 +13,17 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/shared/ui/dropdown-menu";
 
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
-import { useBatchProcessor } from "@/hooks/use-batch-processor";
+import { useBatchProcessor } from "@/shared/hooks/use-batch-processor";
 import { ProgressDialog } from "@/app/(admin)/_components/modals/progress-dialog";
 
 interface AudiencesAction {

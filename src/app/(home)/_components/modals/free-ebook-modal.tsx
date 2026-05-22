@@ -10,7 +10,7 @@ import { useForm } from "react-hook-form";
 import { sendGTMEvent } from "@next/third-parties/google";
 import toast from "react-hot-toast";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -19,16 +19,16 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Form } from "@/components/ui/form";
+} from "@/shared/ui/dialog";
+import { Form } from "@/shared/ui/form";
 
 import { EbookType } from "@/types";
 import { FreeEbookSchemaValibot } from "@/schemas";
 
 import { subscribeFreeEbook } from "@/actions/subscribe-free-ebook";
-import { GoogleRecaptchaV3 } from "@/components/google-recaptchav3";
+import { GoogleRecaptchaV3 } from "@/shared/components/google-recaptchav3";
 
-import { GenericInput } from "@/components/form-component/generic-input";
+import { GenericInput } from "@/shared/components/form-component/generic-input";
 
 import { getCaptchaToken } from "../utils/captcha";
 

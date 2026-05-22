@@ -15,13 +15,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from "@/shared/ui/form";
 
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/shared/ui/button";
+import { Skeleton } from "@/shared/ui/skeleton";
 
-import { GenericInput } from "@/components/form-component/generic-input";
-import { ComboboxDemo } from "@/components/combo-box";
+import { GenericInput } from "@/shared/components/form-component/generic-input";
+import { ComboboxDemo } from "@/shared/components/combo-box";
 import { useGetEmailTemplates } from "@/app/(admin)/admin/(routes)/mails/(routes)/templates/_hooks/use-get-email-templates";
 import { singleSendInsertSchema, SingleSendInsertValues } from "../../schemas";
 

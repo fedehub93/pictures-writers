@@ -11,17 +11,17 @@ import { useDebounceCallback } from "usehooks-ts";
 
 import { ContentStatus } from "@/generated/prisma";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormMessage,
-} from "@/components/ui/form";
+} from "@/shared/ui/form";
 
-import { CharsCounter } from "@/components/chars-counter";
-import { Textarea } from "@/components/ui/textarea";
+import { CharsCounter } from "@/shared/components/chars-counter";
+import { Textarea } from "@/shared/ui/textarea";
 
 interface DescriptionFormProps {
   initialData: {

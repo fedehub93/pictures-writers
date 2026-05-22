@@ -3,13 +3,13 @@
 import { Download } from "lucide-react";
 
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart";
+} from "@/shared/ui/chart";
 
 import { useEbookStatsQuery } from "@/app/(admin)/_hooks/use-ebook-stats-query";
 

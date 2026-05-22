@@ -11,7 +11,7 @@ import { SocialIcon } from "react-social-icons";
 
 import { SocialKey } from "@/generated/prisma";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 import {
   Form,
   FormControl,
@@ -19,11 +19,11 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
+} from "@/shared/ui/form";
+import { Input } from "@/shared/ui/input";
+import { Separator } from "@/shared/ui/separator";
 import { useSettings } from "../../_components/providers/settings-provider";
-import { getFirstCharUppercase } from "@/lib/utils";
+import { getFirstCharUppercase } from "@/shared/lib/utils";
 import { DEFAULT_SOCIAL_CHANNEL_VALUES } from "@/constants";
 
 const SocialKeyZ = z.enum([

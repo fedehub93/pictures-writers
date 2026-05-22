@@ -1,9 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import { getLessonRange, getPurchasedWebinar } from "@/data/webinars";
 import { formatDate, formatPrice } from "@/lib/format";
 import { WebinarLesson } from "@/types";

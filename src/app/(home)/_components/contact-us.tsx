@@ -10,17 +10,17 @@ import { BeatLoader } from "react-spinners";
 import { sendGTMEvent } from "@next/third-parties/google";
 import toast from "react-hot-toast";
 
-import { Form } from "@/components/ui/form";
+import { Form } from "@/shared/ui/form";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 
 import { contact } from "@/actions/contact";
 import { ContactSchemaValibot } from "@/schemas";
 
-import { GoogleRecaptchaV3 } from "@/components/google-recaptchav3";
+import { GoogleRecaptchaV3 } from "@/shared/components/google-recaptchav3";
 
-import { GenericInput } from "@/components/form-component/generic-input";
-import { GenericTextarea } from "@/components/form-component/generic-textarea";
+import { GenericInput } from "@/shared/components/form-component/generic-input";
+import { GenericTextarea } from "@/shared/components/form-component/generic-textarea";
 
 import { getCaptchaToken } from "./utils/captcha";
 

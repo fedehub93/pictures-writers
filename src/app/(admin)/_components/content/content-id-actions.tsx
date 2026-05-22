@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 import { SeoContentTypeApi } from "@/app/(admin)/_components/seo/types";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/shared/ui/button";
 
 interface ContentIdActionsProps {
   contentType:

@@ -12,8 +12,8 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Button } from "@/components/ui/button";
+} from "@/shared/ui/tooltip";
+import { Button } from "@/shared/ui/button";
 
 import { formatDate } from "@/lib/format";
 
