@@ -2,6 +2,7 @@
 
 import { db } from "@/lib/db";
 import { getContactById } from "@/data/email-contact";
+import { deleteContactOnProvider } from "@/modules/mails/lib/core";
 
 export const removeSubscription = async (id: string) => {
   const existingContact = await getContactById(id);
@@ -15,6 +16,8 @@ export const removeSubscription = async (id: string) => {
       isSubscriber: false,
     },
   });
+
+  await deleteContactOnProvider(existingContact.id);
 
   return { success: "Email removed!" };
 };

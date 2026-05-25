@@ -12,9 +12,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
-import { EmailSingleSendCustom } from "../../types";
 
-export const columns: ColumnDef<EmailSingleSendCustom>[] = [
+import { SingleSendsGetMany } from "../../types";
+
+export const columns: ColumnDef<SingleSendsGetMany[number]>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => {
@@ -24,7 +25,7 @@ export const columns: ColumnDef<EmailSingleSendCustom>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Name
-          <ArrowUpDownIcon className="ml-2 h-4 w-4" />
+          <ArrowUpDownIcon className="ml-2 size-4" />
         </Button>
       );
     },
@@ -44,7 +45,7 @@ export const columns: ColumnDef<EmailSingleSendCustom>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Subject
-          <ArrowUpDownIcon className="ml-2 h-4 w-4" />
+          <ArrowUpDownIcon className="ml-2 size-4" />
         </Button>
       );
     },
@@ -66,13 +67,13 @@ export const columns: ColumnDef<EmailSingleSendCustom>[] = [
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-4 w-8 p-0">
               <span className="sr-only">Open menu</span>
-              <MoreHorizontalIcon className="h-4 w-4" />
+              <MoreHorizontalIcon className="size-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <Link href={`/admin/mails/single-sends/${id}`}>
               <DropdownMenuItem>
-                <PencilIcon className="h-4 w-4 mr-2" />
+                <PencilIcon className="size-4 mr-2" />
                 Edit
               </DropdownMenuItem>
             </Link>

@@ -209,4 +209,47 @@ export class ResendAdapter implements EmailProviderAdapter {
 
     return { errors };
   }
+  async sendBulk({
+    segmentExternalId,
+    subject,
+    html,
+    from,
+    replyTo,
+  }: {
+    segmentExternalId: string;
+    subject: string;
+    html: string;
+    from: string;
+    replyTo?: string;
+  }) {
+    try {
+      // Chiamata all'endpoint Broadcast di Resend vedi documentazione 2026
+      const { data, error } = await this.resendClient.broadcasts.create({
+        name: subject,
+        segmentId: segmentExternalId,
+        from: from,
+        subject: subject,
+        html: html,
+        send: true,
+        replyTo: replyTo ? [replyTo] : undefined,
+      });
+
+      if (error) {
+        return {
+          success: false,
+          error: error.message,
+        };
+      }
+
+      return {
+        success: true,
+        externalCampaignId: data?.id,
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        error: err?.message || "Unknown error during Resend broadcast creation",
+      };
+    }
+  }
 }

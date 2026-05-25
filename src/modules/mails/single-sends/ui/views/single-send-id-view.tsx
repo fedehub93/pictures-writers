@@ -1,22 +1,35 @@
-import { getTodayEmailsAvailable } from "@/modules/mails/lib/mail";
+"use client";
 
+import { LoadingState } from "@/shared/components/loading-state";
+import { useSuspenseSingleSend } from "../../hooks/use-single-sends";
 import { WriteForm } from "../components/write-form";
-import { getSingleSendById } from "../../server/services/data";
+import { ErrorState } from "@/shared/components/error-state";
 
-export const SingleSendIdView = async ({
+export const SingleSendIdView = ({
   singleSendId,
 }: {
   singleSendId: string;
 }) => {
-  const singleSend = await getSingleSendById(singleSendId);
-  const todayEmailsAvailable = await getTodayEmailsAvailable();
+  const { data: singleSend } = useSuspenseSingleSend(singleSendId);
 
   return (
     <div className="py-2 px-6 mx-auto h-full flex flex-col overflow-auto">
-      <WriteForm
-        singleSend={singleSend}
-        todayEmailsAvailable={todayEmailsAvailable}
-      />
+      <WriteForm singleSend={singleSend} />
     </div>
+  );
+};
+
+export const SingleSendViewLoading = () => {
+  return (
+    <LoadingState
+      title="Loading Single Send"
+      description="This may take a few seconds"
+    />
+  );
+};
+
+export const SingleSendViewError = () => {
+  return (
+    <ErrorState title="Error Single Send" description="Something went wrong" />
   );
 };

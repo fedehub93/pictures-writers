@@ -288,3 +288,34 @@ export async function deleteContactOnProvider(id: string) {
 
   return errors;
 }
+
+export async function sendBulk({
+  segmentExternalId,
+  subject,
+  html,
+  from,
+  replyTo,
+}: {
+  segmentExternalId: string;
+  subject: string;
+  html: string;
+  from: string;
+  replyTo?: string;
+}) {
+  const emailSettings = await db.emailSetting.findFirst();
+  if (!emailSettings || !emailSettings.emailProvider) {
+    throw new Error("Settings is incorrect");
+  }
+  // 4. Inizializzazione del tuo Adapter (es. ResendAdapter, MailchimpAdapter, ecc.)
+  const adapter = getProviderAdapter(emailSettings.emailProvider);
+  // mailProviderAdapter cambierà l'istanza in base alla tua configurazione injector/factory
+  const providerResult = await adapter.sendBulk({
+    segmentExternalId,
+    subject,
+    html,
+    from,
+    replyTo,
+  });
+
+  return providerResult;
+}

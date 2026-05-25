@@ -56,4 +56,15 @@ export interface EmailProviderAdapter {
     segments?: { id: string }[],
   ): Promise<CreateContactResult>;
   deleteContact(email: string): Promise<DeleteContactResult>;
+  sendBulk(params: {
+    segmentExternalId: string;
+    subject: string;
+    html: string;
+    from: string;
+    replyTo?: string;
+  }): Promise<{
+    success: boolean;
+    externalCampaignId?: string;
+    error?: string;
+  }>;
 }
