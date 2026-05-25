@@ -231,7 +231,7 @@ export class ResendAdapter implements EmailProviderAdapter {
         subject: subject,
         html: html,
         send: true,
-        replyTo: replyTo ? [replyTo] : undefined,
+        replyTo: replyTo ? [replyTo] : undefined, 
       });
 
       if (error) {
