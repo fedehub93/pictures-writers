@@ -4,7 +4,7 @@ import { SingleSendForm } from "./single-send-form";
 
 import { useOpenSingleSend } from "../../hooks/use-open-single-send";
 
-export const UpdateSingleSendDialog = () => {
+export const CreateSingleSendDialog = () => {
   const { isOpen, onClose, id } = useOpenSingleSend();
 
   const isEdit = !!id;

@@ -398,6 +398,7 @@ exports.Prisma.EmailSingleSendScalarFieldEnum = {
   subject: 'subject',
   designData: 'designData',
   bodyHtml: 'bodyHtml',
+  externalId: 'externalId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

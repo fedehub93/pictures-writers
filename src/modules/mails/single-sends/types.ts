@@ -1,18 +1,8 @@
-import { EmailSingleSend } from "@/generated/prisma";
+import { inferRouterOutputs } from "@trpc/server";
+import { AppRouter } from "@/trpc/routers/_app";
 
-import {
-  getSingleSendById,
-  getSingleSends,
-} from "./server/services/data";
+export type SingleSendsGetMany =
+  inferRouterOutputs<AppRouter>["singleSends"]["getMany"];
 
-type CustomEmailAudience = { _count: { contacts: number } };
-
-export type EmailSingleSendCustom = EmailSingleSend & {
-  _count: { emailSingleSendLogs: number };
-  audiences: CustomEmailAudience[];
-  totalSends: number;
-  totalContacts: number;
-};
-
-export type GetSingleSends = Awaited<ReturnType<typeof getSingleSends>>[number];
-export type GetSingleSendById = Awaited<ReturnType<typeof getSingleSendById>>;
+export type GetSingleSendGetOne =
+  inferRouterOutputs<AppRouter>["singleSends"]["getOne"];

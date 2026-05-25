@@ -36,7 +36,7 @@ export function ComboboxDemo({ options, value, onChange }: ComboboxProps) {
           aria-expanded={open}
           className={cn(
             "w-full justify-between",
-            value && "text-muted-foreground"
+            value
           )}
         >
           {value

@@ -556,6 +556,8 @@ model EmailSingleSend {
   audiences           EmailAudience[]
   emailSingleSendLogs EmailSingleSendLog[]
 
+  externalId String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

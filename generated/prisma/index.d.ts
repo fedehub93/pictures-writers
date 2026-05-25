@@ -32183,6 +32183,7 @@ export namespace Prisma {
     name: string | null
     subject: string | null
     bodyHtml: string | null
+    externalId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -32192,6 +32193,7 @@ export namespace Prisma {
     name: string | null
     subject: string | null
     bodyHtml: string | null
+    externalId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -32202,6 +32204,7 @@ export namespace Prisma {
     subject: number
     designData:PrismaJson.EmailDesignData
     bodyHtml: number
+    externalId: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -32213,6 +32216,7 @@ export namespace Prisma {
     name?: true
     subject?: true
     bodyHtml?: true
+    externalId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -32222,6 +32226,7 @@ export namespace Prisma {
     name?: true
     subject?: true
     bodyHtml?: true
+    externalId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -32232,6 +32237,7 @@ export namespace Prisma {
     subject?: true
     designData?: true
     bodyHtml?: true
+    externalId?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -32315,6 +32321,7 @@ export namespace Prisma {
     subject: string | null
     designData:PrismaJson.EmailDesignData | null
     bodyHtml: string | null
+    externalId: string | null
     createdAt: Date
     updatedAt: Date
     _count: EmailSingleSendCountAggregateOutputType | null
@@ -32342,6 +32349,7 @@ export namespace Prisma {
     subject?: boolean
     designData?: boolean
     bodyHtml?: boolean
+    externalId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     audiences?: boolean | EmailSingleSend$audiencesArgs<ExtArgs>
@@ -32355,6 +32363,7 @@ export namespace Prisma {
     subject?: boolean
     designData?: boolean
     bodyHtml?: boolean
+    externalId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["emailSingleSend"]>
@@ -32365,6 +32374,7 @@ export namespace Prisma {
     subject?: boolean
     designData?: boolean
     bodyHtml?: boolean
+    externalId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["emailSingleSend"]>
@@ -32375,11 +32385,12 @@ export namespace Prisma {
     subject?: boolean
     designData?: boolean
     bodyHtml?: boolean
+    externalId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type EmailSingleSendOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "subject" | "designData" | "bodyHtml" | "createdAt" | "updatedAt", ExtArgs["result"]["emailSingleSend"]>
+  export type EmailSingleSendOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "subject" | "designData" | "bodyHtml" | "externalId" | "createdAt" | "updatedAt", ExtArgs["result"]["emailSingleSend"]>
   export type EmailSingleSendInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     audiences?: boolean | EmailSingleSend$audiencesArgs<ExtArgs>
     emailSingleSendLogs?: boolean | EmailSingleSend$emailSingleSendLogsArgs<ExtArgs>
@@ -32403,6 +32414,7 @@ export namespace Prisma {
        */
       designData:PrismaJson.EmailDesignData | null
       bodyHtml: string | null
+      externalId: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["emailSingleSend"]>
@@ -32835,6 +32847,7 @@ export namespace Prisma {
     readonly subject: FieldRef<"EmailSingleSend", 'String'>
     readonly designData: FieldRef<"EmailSingleSend", 'Json'>
     readonly bodyHtml: FieldRef<"EmailSingleSend", 'String'>
+    readonly externalId: FieldRef<"EmailSingleSend", 'String'>
     readonly createdAt: FieldRef<"EmailSingleSend", 'DateTime'>
     readonly updatedAt: FieldRef<"EmailSingleSend", 'DateTime'>
   }
@@ -57595,6 +57608,7 @@ export namespace Prisma {
     subject: 'subject',
     designData: 'designData',
     bodyHtml: 'bodyHtml',
+    externalId: 'externalId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -60124,6 +60138,7 @@ export namespace Prisma {
     subject?: StringNullableFilter<"EmailSingleSend"> | string | null
     designData?: JsonNullableFilter<"EmailSingleSend">
     bodyHtml?: StringNullableFilter<"EmailSingleSend"> | string | null
+    externalId?: StringNullableFilter<"EmailSingleSend"> | string | null
     createdAt?: DateTimeFilter<"EmailSingleSend"> | Date | string
     updatedAt?: DateTimeFilter<"EmailSingleSend"> | Date | string
     audiences?: EmailAudienceListRelationFilter
@@ -60136,6 +60151,7 @@ export namespace Prisma {
     subject?: SortOrderInput | SortOrder
     designData?: SortOrderInput | SortOrder
     bodyHtml?: SortOrderInput | SortOrder
+    externalId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     audiences?: EmailAudienceOrderByRelationAggregateInput
@@ -60151,6 +60167,7 @@ export namespace Prisma {
     subject?: StringNullableFilter<"EmailSingleSend"> | string | null
     designData?: JsonNullableFilter<"EmailSingleSend">
     bodyHtml?: StringNullableFilter<"EmailSingleSend"> | string | null
+    externalId?: StringNullableFilter<"EmailSingleSend"> | string | null
     createdAt?: DateTimeFilter<"EmailSingleSend"> | Date | string
     updatedAt?: DateTimeFilter<"EmailSingleSend"> | Date | string
     audiences?: EmailAudienceListRelationFilter
@@ -60163,6 +60180,7 @@ export namespace Prisma {
     subject?: SortOrderInput | SortOrder
     designData?: SortOrderInput | SortOrder
     bodyHtml?: SortOrderInput | SortOrder
+    externalId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: EmailSingleSendCountOrderByAggregateInput
@@ -60179,6 +60197,7 @@ export namespace Prisma {
     subject?: StringNullableWithAggregatesFilter<"EmailSingleSend"> | string | null
     designData?: JsonNullableWithAggregatesFilter<"EmailSingleSend">
     bodyHtml?: StringNullableWithAggregatesFilter<"EmailSingleSend"> | string | null
+    externalId?: StringNullableWithAggregatesFilter<"EmailSingleSend"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"EmailSingleSend"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"EmailSingleSend"> | Date | string
   }
@@ -63810,6 +63829,7 @@ export namespace Prisma {
     subject?: string | null
     designData?:PrismaJson.EmailDesignData | NullableJsonNullValueInput
     bodyHtml?: string | null
+    externalId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     audiences?: EmailAudienceCreateNestedManyWithoutEmailSingleSendsInput
@@ -63822,6 +63842,7 @@ export namespace Prisma {
     subject?: string | null
     designData?:PrismaJson.EmailDesignData | NullableJsonNullValueInput
     bodyHtml?: string | null
+    externalId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     audiences?: EmailAudienceUncheckedCreateNestedManyWithoutEmailSingleSendsInput
@@ -63834,6 +63855,7 @@ export namespace Prisma {
     subject?: NullableStringFieldUpdateOperationsInput | string | null
     designData?:PrismaJson.EmailDesignData | NullableJsonNullValueInput
     bodyHtml?: NullableStringFieldUpdateOperationsInput | string | null
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     audiences?: EmailAudienceUpdateManyWithoutEmailSingleSendsNestedInput
@@ -63846,6 +63868,7 @@ export namespace Prisma {
     subject?: NullableStringFieldUpdateOperationsInput | string | null
     designData?:PrismaJson.EmailDesignData | NullableJsonNullValueInput
     bodyHtml?: NullableStringFieldUpdateOperationsInput | string | null
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     audiences?: EmailAudienceUncheckedUpdateManyWithoutEmailSingleSendsNestedInput
@@ -63858,6 +63881,7 @@ export namespace Prisma {
     subject?: string | null
     designData?:PrismaJson.EmailDesignData | NullableJsonNullValueInput
     bodyHtml?: string | null
+    externalId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -63868,6 +63892,7 @@ export namespace Prisma {
     subject?: NullableStringFieldUpdateOperationsInput | string | null
     designData?:PrismaJson.EmailDesignData | NullableJsonNullValueInput
     bodyHtml?: NullableStringFieldUpdateOperationsInput | string | null
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -63878,6 +63903,7 @@ export namespace Prisma {
     subject?: NullableStringFieldUpdateOperationsInput | string | null
     designData?:PrismaJson.EmailDesignData | NullableJsonNullValueInput
     bodyHtml?: NullableStringFieldUpdateOperationsInput | string | null
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -67231,6 +67257,7 @@ export namespace Prisma {
     subject?: SortOrder
     designData?: SortOrder
     bodyHtml?: SortOrder
+    externalId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -67240,6 +67267,7 @@ export namespace Prisma {
     name?: SortOrder
     subject?: SortOrder
     bodyHtml?: SortOrder
+    externalId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -67249,6 +67277,7 @@ export namespace Prisma {
     name?: SortOrder
     subject?: SortOrder
     bodyHtml?: SortOrder
+    externalId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -76767,6 +76796,7 @@ export namespace Prisma {
     subject?: string | null
     designData?:PrismaJson.EmailDesignData | NullableJsonNullValueInput
     bodyHtml?: string | null
+    externalId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     emailSingleSendLogs?: EmailSingleSendLogCreateNestedManyWithoutSingleSendInput
@@ -76778,6 +76808,7 @@ export namespace Prisma {
     subject?: string | null
     designData?:PrismaJson.EmailDesignData | NullableJsonNullValueInput
     bodyHtml?: string | null
+    externalId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     emailSingleSendLogs?: EmailSingleSendLogUncheckedCreateNestedManyWithoutSingleSendInput
@@ -76844,6 +76875,7 @@ export namespace Prisma {
     subject?: StringNullableFilter<"EmailSingleSend"> | string | null
     designData?: JsonNullableFilter<"EmailSingleSend">
     bodyHtml?: StringNullableFilter<"EmailSingleSend"> | string | null
+    externalId?: StringNullableFilter<"EmailSingleSend"> | string | null
     createdAt?: DateTimeFilter<"EmailSingleSend"> | Date | string
     updatedAt?: DateTimeFilter<"EmailSingleSend"> | Date | string
   }
@@ -77203,6 +77235,7 @@ export namespace Prisma {
     subject?: string | null
     designData?:PrismaJson.EmailDesignData | NullableJsonNullValueInput
     bodyHtml?: string | null
+    externalId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     audiences?: EmailAudienceCreateNestedManyWithoutEmailSingleSendsInput
@@ -77214,6 +77247,7 @@ export namespace Prisma {
     subject?: string | null
     designData?:PrismaJson.EmailDesignData | NullableJsonNullValueInput
     bodyHtml?: string | null
+    externalId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     audiences?: EmailAudienceUncheckedCreateNestedManyWithoutEmailSingleSendsInput
@@ -77280,6 +77314,7 @@ export namespace Prisma {
     subject?: NullableStringFieldUpdateOperationsInput | string | null
     designData?:PrismaJson.EmailDesignData | NullableJsonNullValueInput
     bodyHtml?: NullableStringFieldUpdateOperationsInput | string | null
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     audiences?: EmailAudienceUpdateManyWithoutEmailSingleSendsNestedInput
@@ -77291,6 +77326,7 @@ export namespace Prisma {
     subject?: NullableStringFieldUpdateOperationsInput | string | null
     designData?:PrismaJson.EmailDesignData | NullableJsonNullValueInput
     bodyHtml?: NullableStringFieldUpdateOperationsInput | string | null
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     audiences?: EmailAudienceUncheckedUpdateManyWithoutEmailSingleSendsNestedInput
@@ -82356,6 +82392,7 @@ export namespace Prisma {
     subject?: NullableStringFieldUpdateOperationsInput | string | null
     designData?:PrismaJson.EmailDesignData | NullableJsonNullValueInput
     bodyHtml?: NullableStringFieldUpdateOperationsInput | string | null
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     emailSingleSendLogs?: EmailSingleSendLogUpdateManyWithoutSingleSendNestedInput
@@ -82367,6 +82404,7 @@ export namespace Prisma {
     subject?: NullableStringFieldUpdateOperationsInput | string | null
     designData?:PrismaJson.EmailDesignData | NullableJsonNullValueInput
     bodyHtml?: NullableStringFieldUpdateOperationsInput | string | null
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     emailSingleSendLogs?: EmailSingleSendLogUncheckedUpdateManyWithoutSingleSendNestedInput
@@ -82378,6 +82416,7 @@ export namespace Prisma {
     subject?: NullableStringFieldUpdateOperationsInput | string | null
     designData?:PrismaJson.EmailDesignData | NullableJsonNullValueInput
     bodyHtml?: NullableStringFieldUpdateOperationsInput | string | null
+    externalId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

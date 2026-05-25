@@ -1,12 +1,9 @@
 "use client";
 
-import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 
 import {
   Form,
@@ -20,9 +17,13 @@ import {
 import { Button } from "@/shared/ui/button";
 import { Skeleton } from "@/shared/ui/skeleton";
 
+import { useTRPC } from "@/trpc/client";
+
 import { GenericInput } from "@/shared/components/form-component/generic-input";
 import { ComboboxDemo } from "@/shared/components/combo-box";
+
 import { useGetEmailTemplates } from "@/app/(admin)/admin/(routes)/mails/(routes)/templates/_hooks/use-get-email-templates";
+
 import { singleSendInsertSchema, SingleSendInsertValues } from "../../schemas";
 
 interface SingleSendFormProps {
@@ -40,8 +41,8 @@ export const SingleSendForm = ({
   onCancel,
   initialValues,
 }: SingleSendFormProps) => {
+  const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const router = useRouter();
 
   const { data: templates, isLoading, isError } = useGetEmailTemplates();
 
@@ -50,65 +51,29 @@ export const SingleSendForm = ({
     defaultValues: {
       name: initialValues?.name ?? "",
       emailTemplateId: initialValues?.emailTemplateId ?? "",
+      audiences: [],
     },
   });
 
-  const updatePage = useMutation({
-    mutationFn: ({
-      id,
-      ...payload
-    }: { id: string } & SingleSendInsertValues) => {
-      return axios.patch(`/api/admin/mails/single-sends/${id}`, payload);
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: ["single-sends"],
-      });
+  const createSingleSend = useMutation(
+    trpc.singleSends.create.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries(
+          trpc.singleSends.getMany.queryOptions(),
+        );
 
-      if (initialValues?.id) {
-        await queryClient.invalidateQueries({
-          queryKey: ["single-send", { id: initialValues.id }],
-        });
-      }
+        onSuccess?.();
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    }),
+  );
 
-      toast.success("Single send updated successfully");
-      router.refresh();
-      onSuccess?.();
-    },
-    onError: (error: any) => {
-      toast.error(
-        error?.response?.data?.message || "Failed to update the single send",
-      );
-    },
-  });
-
-  const createSingleSend = useMutation({
-    mutationFn: (payload: z.infer<typeof singleSendInsertSchema>) => {
-      return axios.post(`/api/admin/mails/single-sends`, payload);
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["single-sends"] });
-
-      router.refresh();
-      toast.success("Single send created successfully");
-      onSuccess?.();
-    },
-    onError: (error: any) => {
-      toast.error(
-        error?.response?.data?.message || "Failed to create the single send",
-      );
-    },
-  });
-
-  const isEdit = !!initialValues?.id;
-  const isPending = updatePage.isPending || createSingleSend.isPending;
+  const isPending = createSingleSend.isPending;
 
   const onSubmit = (values: SingleSendInsertValues) => {
-    if (isEdit) {
-      updatePage.mutate({ ...values, id: initialValues.id });
-    } else {
-      createSingleSend.mutate(values);
-    }
+    createSingleSend.mutate(values);
   };
 
   if (isError) {
@@ -133,7 +98,7 @@ export const SingleSendForm = ({
             control={form.control}
             name="emailTemplateId"
             render={({ field }) => (
-              <FormItem className="flex-auto">
+              <FormItem className="flex-auto flex flex-col">
                 <FormLabel>Email template</FormLabel>
                 <FormControl>
                   <ComboboxDemo
@@ -163,7 +128,7 @@ export const SingleSendForm = ({
             </Button>
           )}
           <Button disabled={isPending} type="submit">
-            {isEdit ? "Update" : "Create"}
+            Create
           </Button>
         </div>
       </form>
