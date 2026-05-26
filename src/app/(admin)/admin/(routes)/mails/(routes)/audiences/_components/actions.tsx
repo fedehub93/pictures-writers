@@ -84,6 +84,7 @@ export const AudiencesAction = ({
         });
 
         const json = await res.json();
+        console.log(res, json);
         if (!res.ok) throw new Error(json.error || "Unknown error");
       },
       onSuccess: () => {
@@ -91,7 +92,8 @@ export const AudiencesAction = ({
         router.refresh();
       },
       onError: (err) => {
-        toast.error(`Processo interrotto: ${err}`);
+        console.log(err);
+        toast.error(`${err}`);
       },
     });
   };

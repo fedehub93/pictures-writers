@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { syncAudienceWithProvider } from "@/modules/mails/lib/core";
 import { authAdmin } from "@/lib/auth-service";
+import { syncContactsWithProvider } from "@/modules/mails/lib/core";
 
 export const maxDuration = 60;
 
@@ -20,12 +20,20 @@ export async function POST(
 
     const { skip, take } = await req.json();
 
-    // 1. Recupera il segmento e i contatti dal tuo DB
-    const result = await syncAudienceWithProvider(
+    const result = await syncContactsWithProvider({
+      skip: Number(skip),
+      take: Number(take),
       audienceId,
-      Number(skip),
-      Number(take),
-    );
+    });
+
+    if (!result.success) {
+      return NextResponse.json(
+        {
+          message: `Errors: ${result.errors[0].email}: ${result.errors[0].reason}`,
+        },
+        { status: 400 },
+      );
+    }
 
     return NextResponse.json({
       message: "Sync successfully",
