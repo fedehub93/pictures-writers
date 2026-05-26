@@ -40,20 +40,22 @@ export type DeleteContactResult = {
 export interface EmailProviderAdapter {
   syncSegment(externalId: string | null, name: string): Promise<SyncResult>;
   syncContactsBatch(
-    segmentExternalId: string,
     contacts: {
       email: string;
+      id: string;
       firstName?: string | null;
       lastName?: string | null;
       isSubscriber?: boolean;
+      audiences?: { externalId: string | null }[];
     }[],
   ): Promise<BatchSyncResult>;
   createContact(
     email: string,
+    id: string,
     firstName?: string | null,
     lastName?: string | null,
     isSubscriber?: boolean,
-    segments?: { id: string }[],
+    audiences?: { externalId: string | null }[],
   ): Promise<CreateContactResult>;
   deleteContact(email: string): Promise<DeleteContactResult>;
   sendBulk(params: {

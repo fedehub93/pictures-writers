@@ -13,68 +13,88 @@ function getProviderAdapter(providerType: string): EmailProviderAdapter {
       throw new Error("Provider not supported");
   }
 }
-
-export async function syncAudienceWithProvider(
-  audienceId: string,
-  skip: number,
-  take: number,
-) {
-  // 1. Recupero Dati dal Database
-  const audience = await db.emailAudience.findUnique({
-    where: { id: audienceId },
-    select: {
-      id: true,
-      name: true,
-      externalId: true,
-      contacts: {
-        skip,
-        take,
-        select: {
-          id: true,
-          email: true,
-          firstName: true,
-          lastName: true,
-          isSubscriber: true,
-        },
-      },
-    },
-  });
-
-  if (!audience) {
-    throw new Error("Audience not found or not linked");
-  }
-
+export async function syncContactsWithProvider({
+  skip,
+  take,
+  audienceId,
+}: {
+  skip: number;
+  take: number;
+  audienceId?: string;
+}) {
   const emailSettings = await db.emailSetting.findFirst();
   if (!emailSettings || !emailSettings.emailProvider) {
     throw new Error("Settings is incorrect");
   }
 
-  let externalId = audience.externalId;
-
-  // 2. Inizializzazione dinamica dell'Adapter (Factory)
+  // 1. Inizializzazione dinamica dell'Adapter (Factory)
   const adapter = getProviderAdapter(emailSettings.emailProvider);
-  // 3. Esecuzione granulare della sincronizzazione
-  // A. Aggiorniamo i dettagli dell'Audience (es. cambio nome)
-  if (!externalId) {
-    const segmentResult = await adapter.syncSegment(
+
+  // 2. Se esiste un audience id, prima sincronizzo quello
+  if (audienceId) {
+    const audience = await db.emailAudience.findUnique({
+      where: { id: audienceId },
+    });
+
+    if (!audience) {
+      throw new Error("Audience not found");
+    }
+
+    const resultAudience = await adapter.syncSegment(
       audience.externalId,
       audience.name,
     );
-
-    if (!segmentResult.newExternalId) {
-      throw new Error("Segment not created");
+    if (resultAudience.errors.length > 0) {
+      throw new Error(
+        `Segment not synced: ${resultAudience.errors.join(", ")}`,
+      );
     }
 
-    externalId = segmentResult.newExternalId;
-
-    await db.emailAudience.update({
-      where: { id: audience.id },
-      data: { externalId },
-    });
+    if (resultAudience.newExternalId) {
+      await db.emailAudience.update({
+        where: { id: audienceId },
+        data: { externalId: resultAudience.newExternalId },
+      });
+    }
   }
 
-  // B. Aggiorniamo l'elenco contatti associato
-  const result = await adapter.syncContactsBatch(externalId, audience.contacts);
+  // 3. Recupero Dati dal Database
+  const contacts = await db.emailContact.findMany({
+    where: {
+      audiences: {
+        some: { id: audienceId },
+      },
+    },
+    select: {
+      id: true,
+      email: true,
+      firstName: true,
+      lastName: true,
+      isSubscriber: true,
+      externalId: true,
+      audiences: {
+        where: {
+          externalId: {
+            not: null,
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          externalId: true,
+        },
+      },
+    },
+    skip,
+    take,
+  });
+
+  if (!contacts || contacts.length === 0) {
+    throw new Error("Contacts not found");
+  }
+
+  // 4. Aggiorniamo l'elenco contatti associato
+  const result = await adapter.syncContactsBatch(contacts);
 
   return result;
 }
@@ -87,17 +107,36 @@ export async function updateContactsAudience(
 ) {
   // 1. Recupero dati dal database
 
+  const emailSettings = await db.emailSetting.findFirst();
+  if (!emailSettings || !emailSettings.emailProvider) {
+    throw new Error("Settings is incorrect");
+  }
+
+  // 1. Inizializzazione dinamica dell'Adapter (Factory)
+  const adapter = getProviderAdapter(emailSettings.emailProvider);
+
+  // 2. Se esiste un audience id, prima sincronizzo quello
   const audience = await db.emailAudience.findUnique({
     where: { id: audienceId },
-    select: {
-      id: true,
-      name: true,
-      externalId: true,
-    },
   });
 
-  if (!audience || !audience.externalId) {
-    throw new Error("Audience not found or not linked");
+  if (!audience) {
+    throw new Error("Audience not found");
+  }
+
+  const resultAudience = await adapter.syncSegment(
+    audience.externalId,
+    audience.name,
+  );
+  if (resultAudience.errors.length > 0) {
+    throw new Error(`Segment not synced: ${resultAudience.errors.join(", ")}`);
+  }
+
+  if (resultAudience.newExternalId) {
+    await db.emailAudience.update({
+      where: { id: audienceId },
+      data: { externalId: resultAudience.newExternalId },
+    });
   }
 
   const contacts = await db.emailContact.findMany({
@@ -115,15 +154,7 @@ export async function updateContactsAudience(
     take,
   });
 
-  const emailSettings = await db.emailSetting.findFirst();
-  if (!emailSettings || !emailSettings.emailProvider) {
-    throw new Error("Settings is incorrect");
-  }
-
-  // 2. Inizializzazione dinamica dell'Adapter (Factory)
-  const adapter = getProviderAdapter(emailSettings.emailProvider);
-
-  // 3. Aggiorno dati nel database
+  // 2. Aggiorno dati nel database
   for (const contact of contacts) {
     await db.emailContact.update({
       where: { id: contact.id },
@@ -137,8 +168,9 @@ export async function updateContactsAudience(
     });
   }
 
-  // 4. Sincronizzo con il provider
-  const result = await adapter.syncContactsBatch(audience.externalId, contacts);
+  // 3. Sincronizzo con il provider
+
+  const result = await syncContactsWithProvider({ skip, take, audienceId });
 
   return result;
 }
@@ -178,12 +210,11 @@ export async function syncContactWithProvider(id: string) {
   // 3. Esecuzione granulare della sincronizzazione
   // A. Aggiorniamo i dettagli dell'Audience (es. cambio nome)
   if (!externalId) {
-    const filteredAudiences = contact.audiences
-      .filter((a) => !!a.externalId)
-      .map((a) => ({ id: a.externalId })) as { id: string }[];
+    const filteredAudiences = contact.audiences.filter((a) => !!a.externalId);
 
     const contactResult = await adapter.createContact(
       contact.email,
+      contact.id,
       contact.firstName,
       contact.lastName,
       contact.isSubscriber,
@@ -233,6 +264,7 @@ export async function createContactOnProvider(id: string) {
 
   const { errors, newExternalId } = await adapter.createContact(
     contact.email,
+    contact.id,
     contact.firstName,
     contact.lastName,
     contact.isSubscriber,
