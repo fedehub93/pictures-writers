@@ -25,7 +25,7 @@ import {
 } from "@/shared/ui/table";
 
 import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
+import { DataTableToolbar } from "./data-table-toolbar";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -38,7 +38,7 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+    [],
   );
 
   const table = useReactTable({
@@ -56,32 +56,16 @@ export function DataTable<TData, TValue>({
     },
   });
 
+  const nameFilterValue =
+    (table.getColumn("name")?.getFilterValue() as string) ?? "";
+
   return (
     <div>
-      <div className="flex items-center py-4 justify-between">
-        <Input
-          placeholder="Filter contacts..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
-        <div className="flex items-center gap-x-4">
-          <Link href="/admin/mails/audiences/create">
-            <Button variant="outline">
-              <PlusCircle className="h-4 w-4 mr-2" />
-              New Audience
-            </Button>
-          </Link>
-          <Link href="/admin/mails/contacts/create">
-            <Button>
-              <PlusCircle className="h-4 w-4 mr-2" />
-              New Contact
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <DataTableToolbar
+        table={table}
+        data={data}
+        nameFilterValue={nameFilterValue}
+      />
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -94,7 +78,7 @@ export function DataTable<TData, TValue>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -113,7 +97,7 @@ export function DataTable<TData, TValue>({
                     <TableCell key={cell.id} className="max-w-40">
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}
