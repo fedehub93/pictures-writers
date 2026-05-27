@@ -3,13 +3,15 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDownIcon } from "lucide-react";
 
-import { AudienceType, EmailAudience } from "@/generated/prisma";
+import { AudienceType } from "@/generated/prisma";
 
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
-import { AudiencesAction } from "./actions";
 
-export const columns: ColumnDef<EmailAudience & { totalContacts: number }>[] = [
+import { AudiencesAction } from "./actions";
+import { AudiencesGetMany } from "../../types";
+
+export const columns: ColumnDef<AudiencesGetMany[number]>[] = [
   {
     accessorKey: "type",
     header: "Type",
@@ -56,10 +58,13 @@ export const columns: ColumnDef<EmailAudience & { totalContacts: number }>[] = [
       const isAllContactsAudience = type === AudienceType.GLOBAL;
 
       return (
-        <AudiencesAction
-          id={id}
-          isAllContactsAudience={isAllContactsAudience}
-        />
+        <>
+          <AudiencesAction
+            id={id}
+            data={row.original}
+            isAllContactsAudience={isAllContactsAudience}
+          />
+        </>
       );
     },
   },

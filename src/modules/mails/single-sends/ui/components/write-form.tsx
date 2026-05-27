@@ -27,7 +27,7 @@ import { MultiSelectV2 } from "@/shared/components/multi-select-v2";
 import { useTRPC } from "@/trpc/client";
 
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
-import { useProgressLoader } from "@/app/(admin)/_hooks/use-progress-loader-store";
+
 import { useAudiencesQuery } from "@/app/(admin)/_hooks/use-audiences-query";
 
 import { singleSendUpdateSchema, SingleSendUpdateValues } from "../../schemas";
@@ -49,7 +49,6 @@ export const WriteForm = ({ singleSend }: WriteFormProps) => {
   const emailEditorRef = useRef<EditorRef>(null);
 
   const { data: audiences, isLoading, isError } = useAudiencesQuery();
-  const { onOpen, onClose, setData } = useProgressLoader();
 
   const form = useForm<SingleSendUpdateValues>({
     resolver: zodResolver(singleSendUpdateSchema),

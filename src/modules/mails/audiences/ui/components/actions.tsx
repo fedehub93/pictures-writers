@@ -10,8 +10,9 @@ import {
   Trash2Icon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import { toast } from "sonner";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTRPC, useTRPCClient } from "@/trpc/client";
 
 import { Button } from "@/shared/ui/button";
 import {
@@ -22,20 +23,30 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 
-import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 import { useBatchProcessor } from "@/shared/hooks/use-batch-processor";
+
+import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 import { ProgressDialog } from "@/app/(admin)/_components/modals/progress-dialog";
+import { useOpenAudience } from "../../hooks/use-open-audience";
+import { AudiencesGetMany } from "../../types";
 
 interface AudiencesAction {
   id: string;
+  data: AudiencesGetMany[number];
   isAllContactsAudience: boolean;
 }
 
 export const AudiencesAction = ({
   id,
+  data,
   isAllContactsAudience,
 }: AudiencesAction) => {
+  const trpc = useTRPC();
+  const trpcClient = useTRPCClient();
+  const queryClient = useQueryClient();
   const router = useRouter();
+
+  const { onOpen } = useOpenAudience();
 
   const { startBatch, isProcessing, percentage, progress, error } =
     useBatchProcessor({
@@ -43,15 +54,22 @@ export const AudiencesAction = ({
       delayMs: 1200,
     });
 
+  const onEdit = () => {
+    onOpen(data);
+  };
+
+  const removeAudience = useMutation(
+    trpc.audiences.remove.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries(trpc.audiences.getMany.queryOptions());
+        toast.success("Audience deleted successfully!");
+        router.refresh();
+      },
+    }),
+  );
+
   const onDelete = async () => {
-    try {
-      await axios.delete(`/api/admin/mails/audiences/${id}`);
-      toast.success("Item deleted!");
-    } catch {
-      toast.error("Something went wrong");
-    } finally {
-      router.refresh();
-    }
+    removeAudience.mutate({ id });
   };
 
   const onExportToCSV = async () => {
@@ -72,20 +90,17 @@ export const AudiencesAction = ({
     // Rimosso il try/catch/finally esterno per lasciare il controllo all'hook
     startBatch({
       getTotalItems: async () => {
-        const res = await fetch(`/api/admin/mails/audiences/${id}/sync/count`);
-        const data = await res.json();
+        const data = await trpcClient.audiences.getContactCount.query({
+          audienceId: id,
+        });
         return data.totalContacts;
       },
       processChunk: async (skip, take) => {
-        const res = await fetch(`/api/admin/mails/audiences/${id}/sync`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ skip, take }),
+        await trpcClient.audiences.syncContacts.mutate({
+          audienceId: id,
+          skip,
+          take,
         });
-
-        const json = await res.json();
-        console.log(res, json);
-        if (!res.ok) throw new Error(json.error || "Unknown error");
       },
       onSuccess: () => {
         toast.success("Synchronization completed 100%!");
@@ -109,12 +124,10 @@ export const AudiencesAction = ({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           {!isAllContactsAudience && (
-            <Link href={`/admin/mails/audiences/${id}`}>
-              <DropdownMenuItem>
-                <PencilIcon className="size-4 mr-2" />
-                Edit
-              </DropdownMenuItem>
-            </Link>
+            <DropdownMenuItem onClick={onEdit}>
+              <PencilIcon className="size-4 mr-2" />
+              Edit
+            </DropdownMenuItem>
           )}
           <Link href={`/admin/mails/audiences/${id}/contacts`}>
             <DropdownMenuItem>

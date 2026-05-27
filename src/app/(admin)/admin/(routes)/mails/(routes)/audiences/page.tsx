@@ -1,50 +1,30 @@
-import { AudienceType } from "@/generated/prisma";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 
-import { db } from "@/lib/db";
+import { HydrateClient } from "@/trpc/server";
 
-import { requireAdminAuth } from "@/lib/auth-utils";
+import { requireAdminAuth } from "@/shared/lib/auth-utils";
 
-import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
-import { DataTable } from "./_components/data-table";
-import { columns } from "./_components/columns";
+import { prefetchAudiences } from "@/modules/mails/audiences/server/prefetch";
+import {
+  AudiencesView,
+  AudiencesViewError,
+  AudiencesViewLoading,
+} from "@/modules/mails/audiences/ui/views/audiences-view";
 
 const ContactsPage = async () => {
   await requireAdminAuth();
 
-  const lists = await db.emailAudience.findMany({
-    include: {
-      _count: {
-        select: { contacts: true },
-      },
-    },
-    orderBy: { name: "asc" },
-  });
-
-  const totalContacts = await db.emailContact.count();
-
-  lists.unshift({
-    id: "all",
-    name: "All contacts",
-    description: "All contacts",
-    type: AudienceType.GLOBAL,
-    externalId: "",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    _count: {
-      contacts: totalContacts,
-    },
-  });
-
-  const mappedLists = lists.map((list) => ({
-    ...list,
-    totalContacts: list._count.contacts,
-  }));
+  prefetchAudiences();
 
   return (
-    <div className="h-full w-full flex flex-col gap-y-4 px-6 py-3">
-      <ContentHeader label="Audiences" totalEntries={mappedLists.length} />
-      <DataTable columns={columns} data={mappedLists} />
-    </div>
+    <HydrateClient>
+      <Suspense fallback={<AudiencesViewLoading />}>
+        <ErrorBoundary fallback={<AudiencesViewError />}>
+          <AudiencesView />
+        </ErrorBoundary>
+      </Suspense>
+    </HydrateClient>
   );
 };
 
