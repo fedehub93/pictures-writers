@@ -4,13 +4,13 @@ import { useQuery } from "@tanstack/react-query";
 import { startOfMonth, endOfMonth } from "date-fns"; // Per gestire date di default
 import axios from "axios";
 
-import { useDateRangeStore } from "@/app/(admin)/_hooks/use-date-range-store";
+import { useDateRangeStore } from "@/shared/hooks/use-date-range-store";
 import { GrowthStats } from "@/data/email-contact";
 
 // Funzione fetcher per chiamare l'API con Axios
 const fetchEbookDownloadGrowth = async (
   from: string,
-  to: string
+  to: string,
 ): Promise<GrowthStats> => {
   const response = await axios.get("/api/ebooks/stats", {
     params: { from, to },

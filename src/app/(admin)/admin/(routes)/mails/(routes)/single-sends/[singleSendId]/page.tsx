@@ -9,12 +9,14 @@ import {
   SingleSendViewError,
   SingleSendViewLoading,
 } from "@/modules/mails/single-sends/ui/views/single-send-id-view";
+import { requireAdminAuth } from "@/shared/lib/auth-utils";
 
 const SingleSendIdPage = async ({
   params,
 }: {
   params: Promise<{ singleSendId: string }>;
 }) => {
+  await requireAdminAuth();
   const { singleSendId } = await params;
   prefetchSingleSendById(singleSendId);
 

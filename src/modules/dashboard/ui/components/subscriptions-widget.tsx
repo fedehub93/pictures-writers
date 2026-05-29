@@ -1,16 +1,12 @@
 "use client";
 
+import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import { Users } from "lucide-react";
 
+import { ChartConfig, ChartContainer, ChartTooltip } from "@/shared/ui/chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { useSubscriptionStatsQuery } from "@/app/(admin)/_hooks/use-subscription-stats-query";
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/shared/ui/chart";
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+
+import { useSubscriptionStatsQuery } from "@/modules/mails/contacts";
 
 export const SubscriptionsWidget = () => {
   const {
@@ -19,20 +15,16 @@ export const SubscriptionsWidget = () => {
     isError,
   } = useSubscriptionStatsQuery();
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (isError || !subscriptionStats) {
-    return <div>Error fetching data.</div>;
-  }
-
   const chartConfig = {
     download: {
       label: "Download",
       color: "hsl(var(--chart-1))",
     },
   } satisfies ChartConfig;
+
+  if (!subscriptionStats || isLoading) {
+    return <>Loading...</>;
+  }
 
   return (
     <Card x-chunk="dashboard-01-chunk-2">

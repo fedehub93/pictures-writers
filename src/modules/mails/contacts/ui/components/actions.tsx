@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import axios from "axios";
 import {
   CloudSyncIcon,
   MoreHorizontalIcon,
@@ -9,7 +7,6 @@ import {
   Trash2Icon,
 } from "lucide-react";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { Button } from "@/shared/ui/button";
@@ -21,49 +18,63 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTRPC } from "@/trpc/client";
+
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 
-export const EmailAudienceContactsAction = ({ id }: { id: string }) => {
+import { useOpenContact } from "../../hooks/use-open-contact";
+import { ContactsGetMany } from "../../types";
+
+export const EmailAudienceContactsAction = ({
+  id,
+  data,
+}: {
+  id: string;
+  data: ContactsGetMany[number];
+}) => {
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
 
-  const onDelete = async () => {
-    try {
-      setIsLoading(true);
+  const { onOpen } = useOpenContact();
 
-      await axios.delete(`/api/admin/mails/contacts/${id}`);
-
-      toast.success("Item deleted!");
-    } catch {
-      toast.error("Something went wrong");
-    } finally {
-      router.refresh();
-      setIsLoading(false);
-      setIsOpen(false);
-    }
+  const onEdit = () => {
+    onOpen(data);
   };
 
+  const removeContact = useMutation(
+    trpc.contacts.remove.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries(trpc.contacts.getMany.queryOptions({}));
+        toast.success("Contact deleted successfully!");
+      },
+    }),
+  );
+
+  const onDelete = async () => {
+    removeContact.mutate({ id });
+  };
+
+  const syncWithProvider = useMutation(
+    trpc.contacts.sync.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries(trpc.contacts.getMany.query);
+        toast.success("Sync completed!");
+      },
+      onError: (err) => {
+        toast.error(err.message);
+      },
+      onSettled: () => {
+        setIsOpen(false);
+      },
+    }),
+  );
+
+  const isPending = syncWithProvider.isPending;
+
   const onSyncWithProvider = async () => {
-    try {
-      setIsLoading(true);
-
-      const res = await fetch(`/api/admin/mails/contacts/${id}/sync`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Unknown error");
-
-      toast.success("Sync completed");
-    } catch {
-      toast.error("Something went wrong");
-    } finally {
-      router.refresh();
-      setIsLoading(false);
-      setIsOpen(false);
-    }
+    syncWithProvider.mutate({ id });
   };
 
   return (
@@ -81,17 +92,15 @@ export const EmailAudienceContactsAction = ({ id }: { id: string }) => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <Link href={`/admin/mails/contacts/${id}`}>
-          <DropdownMenuItem disabled={isLoading}>
-            <PencilIcon className="h-4 w-4 mr-2" />
-            Edit
-          </DropdownMenuItem>
-        </Link>
+        <DropdownMenuItem onClick={onEdit} disabled={isPending}>
+          <PencilIcon className="size-4 mr-2" />
+          Edit
+        </DropdownMenuItem>
         <ConfirmModal onConfirm={onSyncWithProvider}>
           <Button
             variant="ghost"
             className="px-2! w-full justify-start gap-0"
-            disabled={isLoading}
+            disabled={isPending}
           >
             <CloudSyncIcon className="size-4 mr-2" />
             Sync with Provider
@@ -102,7 +111,7 @@ export const EmailAudienceContactsAction = ({ id }: { id: string }) => {
           <Button
             variant="ghost"
             className="bg-destructive px-2! w-full justify-start text-destructive-foreground gap-0"
-            disabled={isLoading}
+            disabled={isPending}
           >
             <Trash2Icon className="size-4 mr-2" />
             Delete

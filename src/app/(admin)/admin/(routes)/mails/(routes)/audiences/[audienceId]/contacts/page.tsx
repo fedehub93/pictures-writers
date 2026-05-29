@@ -1,42 +1,36 @@
-import { db } from "@/lib/db";
-import { requireAdminAuth } from "@/lib/auth-utils";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 
-import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
+import { HydrateClient } from "@/trpc/server";
 
-import { DataTable } from "./_components/data-table";
-import { columns } from "./_components/columns";
+import { requireAdminAuth } from "@/shared/lib/auth-utils";
 
-const AudienceIdContactsPage = async (props: {
+import { prefetchContacts } from "@/modules/mails/contacts/server/prefetch";
+
+import {
+  ContactsView,
+  ContactsViewError,
+  ContactsViewLoading,
+} from "@/modules/mails/contacts/ui/views/contacts-view";
+
+const AudienceIdContactsPage = async ({
+  params,
+}: {
   params: Promise<{ audienceId: string }>;
 }) => {
   await requireAdminAuth();
+  const { audienceId } = await params;
 
-  const params = await props.params;
-
-  const contacts = await db.emailContact.findMany({
-    where: {
-      audiences:
-        params.audienceId.toUpperCase() !== "ALL"
-          ? {
-              some: {
-                id: params.audienceId,
-              },
-            }
-          : undefined,
-    },
-    include: { interactions: true },
-    orderBy: { createdAt: "desc" },
-  });
+  prefetchContacts({ audienceId: audienceId });
 
   return (
-    <div className="h-full w-full flex flex-col gap-y-4 px-6 py-3">
-      <ContentHeader label="Contacts" totalEntries={contacts.length} />
-      <DataTable
-        audienceId={params.audienceId}
-        columns={columns}
-        data={contacts}
-      />
-    </div>
+    <HydrateClient>
+      <Suspense fallback={<ContactsViewLoading />}>
+        <ErrorBoundary fallback={<ContactsViewError />}>
+          <ContactsView audienceId={audienceId} />
+        </ErrorBoundary>
+      </Suspense>
+    </HydrateClient>
   );
 };
 
