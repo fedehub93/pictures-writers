@@ -58,13 +58,11 @@ export const columns: ColumnDef<AudiencesGetMany[number]>[] = [
       const isAllContactsAudience = type === AudienceType.GLOBAL;
 
       return (
-        <>
-          <AudiencesAction
-            id={id}
-            data={row.original}
-            isAllContactsAudience={isAllContactsAudience}
-          />
-        </>
+        <AudiencesAction
+          id={id}
+          data={row.original}
+          isAllContactsAudience={isAllContactsAudience}
+        />
       );
     },
   },

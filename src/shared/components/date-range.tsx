@@ -7,12 +7,8 @@ import { Calendar as CalendarIcon } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Calendar } from "@/shared/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/shared/ui/popover";
-import { useDateRangeStore } from "@/app/(admin)/_hooks/use-date-range-store";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
+import { useDateRangeStore } from "../hooks/use-date-range-store";
 
 export function DatePickerWithRange({
   className,
@@ -27,8 +23,8 @@ export function DatePickerWithRange({
             id="date"
             variant={"outline"}
             className={cn(
-              "w-[300px] justify-start text-left font-normal",
-              !dateRange && "text-muted-foreground"
+              "w-75 justify-start text-left font-normal",
+              !dateRange && "text-muted-foreground",
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />

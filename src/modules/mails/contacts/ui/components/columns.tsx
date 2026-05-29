@@ -1,6 +1,5 @@
 "use client";
 
-import { EmailContact, EmailContactInteraction } from "@/generated/prisma";
 import { ColumnDef } from "@tanstack/react-table";
 import {
   ArrowUpDownIcon,
@@ -8,22 +7,15 @@ import {
   CircleCheckIcon,
 } from "lucide-react";
 
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/shared/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
 import { Button } from "@/shared/ui/button";
 
 import { formatDate } from "@/lib/format";
 
 import { EmailAudienceContactsAction } from "./actions";
+import { ContactsGetMany } from "../../types";
 
-type EmailContactWithInteractions = EmailContact & {
-  interactions: EmailContactInteraction[];
-};
-
-export const columns: ColumnDef<EmailContactWithInteractions>[] = [
+export const columns: ColumnDef<ContactsGetMany[number]>[] = [
   {
     accessorKey: "email",
     header: ({ column }) => {
@@ -52,7 +44,12 @@ export const columns: ColumnDef<EmailContactWithInteractions>[] = [
               </TooltipContent>
             </Tooltip>
           ) : (
-            <CircleAlertIcon className="size-4 text-muted-foreground" />
+            <Tooltip>
+              <TooltipTrigger>
+                <CircleAlertIcon className="size-4 min-w-4 text-muted-foreground" />
+              </TooltipTrigger>
+              <TooltipContent side="left">Not verified yet</TooltipContent>
+            </Tooltip>
           )}
           {email}
         </div>
@@ -136,7 +133,7 @@ export const columns: ColumnDef<EmailContactWithInteractions>[] = [
     cell: ({ row }) => {
       const { id } = row.original;
 
-      return <EmailAudienceContactsAction id={id} />;
+      return <EmailAudienceContactsAction id={id} data={row.original} />;
     },
   },
 ];

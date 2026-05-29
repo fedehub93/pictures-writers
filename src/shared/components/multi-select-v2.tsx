@@ -46,6 +46,8 @@ export const MultiSelectV2 = ({
   showValuesInButton = false,
   showValues = false,
 }: MultiSelectV2Props) => {
+
+  console.log("ehi", values, options)
   return (
     <Popover>
       <PopoverTrigger asChild>

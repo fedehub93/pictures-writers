@@ -38,7 +38,7 @@ export const GenericSwitch = <T extends FieldValues>({
           )}
         >
           {label && <FormLabel className="mb-0">{label}</FormLabel>}
-          {description && <FormDescription>{description}</FormDescription>}
+          {description && <FormDescription className="mb-0">{description}</FormDescription>}
           <FormControl>
             <Switch
               {...field}

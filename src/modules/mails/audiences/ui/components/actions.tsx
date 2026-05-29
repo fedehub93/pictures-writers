@@ -3,7 +3,6 @@
 import Link from "next/link";
 import {
   CloudSyncIcon,
-  DownloadIcon,
   EyeIcon,
   MoreHorizontalIcon,
   PencilIcon,
@@ -72,19 +71,6 @@ export const AudiencesAction = ({
     removeAudience.mutate({ id });
   };
 
-  const onExportToCSV = async () => {
-    // ... (tuo codice originale immutato) ...
-    const response = await fetch("/api/admin/mails/contacts/export-to-csv");
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "export.csv";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  };
-
   const onSyncWithProvider = async () => {
     if (isProcessing) return;
     // Rimosso il try/catch/finally esterno per lasciare il controllo all'hook
@@ -135,12 +121,6 @@ export const AudiencesAction = ({
               View contacts
             </DropdownMenuItem>
           </Link>
-          {isAllContactsAudience && (
-            <DropdownMenuItem onClick={onExportToCSV}>
-              <DownloadIcon className="size-4 mr-2" />
-              Export to CSV
-            </DropdownMenuItem>
-          )}
           {!isAllContactsAudience && (
             <>
               <DropdownMenuItem

@@ -209,7 +209,7 @@ export async function syncContactWithProvider(id: string) {
   const adapter = getProviderAdapter(emailSettings.emailProvider);
   // 3. Esecuzione granulare della sincronizzazione
   // A. Aggiorniamo i dettagli dell'Audience (es. cambio nome)
-  if (!externalId) {
+  // if (!externalId) {
     const filteredAudiences = contact.audiences.filter((a) => !!a.externalId);
 
     const contactResult = await adapter.createContact(
@@ -231,7 +231,7 @@ export async function syncContactWithProvider(id: string) {
       where: { id: contact.id },
       data: { externalId },
     });
-  }
+  // }
 
   return { externalId };
 }
