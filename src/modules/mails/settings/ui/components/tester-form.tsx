@@ -1,8 +1,10 @@
 "use client";
 
-import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { useMutation } from "@tanstack/react-query";
+import { useTRPC } from "@/trpc/client";
 
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
@@ -14,7 +16,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/shared/ui/form";
-import { EmailTemplate } from "@/generated/prisma";
 import {
   Select,
   SelectContent,
@@ -22,26 +23,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
-import { useState } from "react";
-import axios from "axios";
-import toast from "react-hot-toast";
+
+import { settingsTesterSchema, SettingsTesterValues } from "../../schemas";
+import { SettingsGet } from "../../types";
 
 interface EmailTesterFormProps {
-  templates: EmailTemplate[];
+  settings: SettingsGet;
 }
 
-const formSchema = z.object({
-  emailRecipient: z
-    .email({ error: "This is not a valid email." })
-    .min(1, { message: "Email recipient is required" }),
-  emailTemplateId: z.string().optional(),
-});
+export const EmailTesterForm = ({ settings }: EmailTesterFormProps) => {
+  const trpc = useTRPC();
 
-export const EmailTesterForm = ({ templates }: EmailTesterFormProps) => {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<SettingsTesterValues>({
+    resolver: zodResolver(settingsTesterSchema),
     defaultValues: {
       emailRecipient: "",
       emailTemplateId: "",
@@ -50,19 +44,22 @@ export const EmailTesterForm = ({ templates }: EmailTesterFormProps) => {
 
   const { isValid, isSubmitting } = form.formState;
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    try {
-      setIsLoading(true);
-      await axios.post(`/api/admin/mails/send`, {
-        ...values,
-      });
-      toast.success("Sent mail successfully");
-    } catch {
-      toast.error("Failed to send mail");
-    } finally {
-      setIsLoading(false);
-    }
+  const testSettings = useMutation(
+    trpc.mailSettings.test.mutationOptions({
+      onSuccess: async () => {
+        toast.success("Test email sent successfully!");
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    }),
+  );
+
+  const onSubmit = async (values: SettingsTesterValues) => {
+    testSettings.mutate(values);
   };
+
+  const isPending = testSettings.isPending;
 
   return (
     <div className="border p-4 w-full rounded flex flex-col">
@@ -100,7 +97,7 @@ export const EmailTesterForm = ({ templates }: EmailTesterFormProps) => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {templates.map((template) => (
+                      {settings.templates.map((template) => (
                         <SelectItem key={template.name} value={template.id}>
                           {template.name}
                         </SelectItem>
@@ -112,7 +109,7 @@ export const EmailTesterForm = ({ templates }: EmailTesterFormProps) => {
             />
           </div>
           <div className="flex items-center gap-x-2 justify-end">
-            <Button type="submit" disabled={isLoading || !isValid}>
+            <Button type="submit" disabled={isPending || !isValid}>
               Send Email
             </Button>
           </div>

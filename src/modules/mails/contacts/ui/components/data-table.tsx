@@ -1,10 +1,8 @@
 "use client";
 import * as React from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { Import, PlusCircle } from "lucide-react";
-
+import { useTRPCClient } from "@/trpc/client";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -29,7 +27,6 @@ import {
 } from "@/shared/ui/table";
 
 import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
 
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 import { ProgressDialog } from "@/app/(admin)/_components/modals/progress-dialog";
@@ -47,6 +44,8 @@ export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
+  "use no memo";
+  const trpcClient = useTRPCClient();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -63,38 +62,23 @@ export function DataTable<TData, TValue>({
     if (isProcessing) return;
     startBatch({
       getTotalItems: async () => {
-        const res = await fetch(
-          `/api/admin/mails/audiences/${audienceId}/import/count?interactions=${values.interactions
-            .map((interaction) => interaction.id)
-            .join(",")}`,
-        );
-
-        if (!res.ok) {
-          const errorData = await res.json().catch(() => ({}));
-          throw new Error(errorData.error || "Failed to fetch contact count");
-        }
-
-        const data = await res.json();
+        const data = await trpcClient.audiences.getFilteredContactCount.query({
+          id: audienceId,
+          interactions: values.interactions.map(
+            (interaction) => interaction.id,
+          ),
+        });
         return data.totalContacts;
       },
-      processChunk: async () => {
-        const res = await fetch(
-          `/api/admin/mails/audiences/${audienceId}/import`,
-          {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              interactions: values.interactions.map(
-                (interaction) => interaction.id,
-              ),
-              skip: 0,
-              take: 10,
-            }),
-          },
-        );
-
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.error || "Unknown error");
+      processChunk: async (skip, take) => {
+        await trpcClient.audiences.importContacts.mutate({
+          id: audienceId,
+          interactions: values.interactions.map(
+            (interaction) => interaction.id,
+          ),
+          skip,
+          take,
+        });
       },
       onSuccess: () => {
         toast.success("Import completed 100%!");

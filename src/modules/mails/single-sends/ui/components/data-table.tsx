@@ -35,6 +35,7 @@ export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
+  "use no memo";
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -55,12 +56,13 @@ export function DataTable<TData, TValue>({
     },
   });
 
-  const nameFilterValue = (table.getColumn("name")?.getFilterValue() as string) ?? "";
+  const nameFilterValue =
+    (table.getColumn("name")?.getFilterValue() as string) ?? "";
 
   return (
     <div>
-      <DataTableToolbar 
-        table={table} 
+      <DataTableToolbar
+        table={table}
         data={data}
         nameFilterValue={nameFilterValue}
       />
