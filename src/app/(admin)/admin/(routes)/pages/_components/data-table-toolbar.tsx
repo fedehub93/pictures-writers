@@ -25,7 +25,6 @@ import { ContentStatus } from "@/generated/prisma";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
-  data: TData[];
 }
 
 const statuses = [
@@ -48,8 +47,8 @@ const statuses = [
 
 export function DataTableToolbar<TData>({
   table,
-  data,
 }: DataTableToolbarProps<TData>) {
+  "use no memo";
   const [isLoading, _] = useState(false);
   const { onOpen } = useOpenPage();
 
@@ -60,6 +59,9 @@ export function DataTableToolbar<TData>({
       <div className="flex flex-1 items-center space-x-2">
         {table.getColumn("status") && (
           <DataTableFacetedFilter
+            key={JSON.stringify(
+              table.getColumn("status")?.getFilterValue() ?? "",
+            )}
             column={table.getColumn("status")}
             title="Status"
             options={statuses}

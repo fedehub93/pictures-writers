@@ -1,13 +1,10 @@
 "use client";
 
-import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
-import axios from "axios";
-import { useState } from "react";
-import toast from "react-hot-toast";
-import { EmailSetting, EmailTemplate } from "@/generated/prisma";
+import { useTRPC } from "@/trpc/client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import { Button } from "@/shared/ui/button";
 import {
@@ -25,51 +22,49 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 
-interface EmailSubscriptionFormProps {
-  settings: EmailSetting | null;
-  templates: EmailTemplate[];
-}
+import { settingsUpdateSchema, SettingsUpdateValues } from "../../schemas";
+import { SettingsGet } from "../../types";
 
-const formSchema = z.object({
-  subscriptionTemplateId: z.string().optional(),
-  freeEbookTemplateId: z.string().optional(),
-  webinarTemplateId: z.string().optional(),
-});
+interface EmailSubscriptionFormProps {
+  settings: SettingsGet;
+}
 
 export const EmailSubscriptionForm = ({
   settings,
-  templates,
 }: EmailSubscriptionFormProps) => {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<SettingsUpdateValues>({
+    resolver: zodResolver(settingsUpdateSchema),
     defaultValues: {
-      subscriptionTemplateId: settings?.subscriptionTemplateId || "",
-      freeEbookTemplateId: settings?.freeEbookTemplateId || "",
-      webinarTemplateId: settings?.webinarTemplateId || "",
+      id: settings.id,
+      subscriptionTemplateId: settings.subscriptionTemplateId ?? null,
+      freeEbookTemplateId: settings.freeEbookTemplateId ?? null,
+      webinarTemplateId: settings.webinarTemplateId ?? null,
     },
   });
 
   const { isValid, isSubmitting } = form.formState;
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    try {
-      setIsLoading(true);
+  const updateSettings = useMutation(
+    trpc.mailSettings.update.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries(
+          trpc.mailSettings.get.queryOptions(),
+        );
+        toast.success("Subscriptions updated successfully!");
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    }),
+  );
 
-      await axios.patch(`/api/admin/mails/settings`, {
-        ...values,
-      });
-
-      toast.success("Settings updated successfully");
-    } catch {
-      toast.error("Something went wrong");
-    } finally {
-      router.refresh();
-      setIsLoading(false);
-    }
+  const onSubmit = async (values: SettingsUpdateValues) => {
+    updateSettings.mutate(values);
   };
+
   return (
     <div className="border p-4 w-full rounded">
       <h2 className="text-base text-muted-foreground">
@@ -84,14 +79,19 @@ export const EmailSubscriptionForm = ({
               render={({ field }) => (
                 <FormItem className="flex-auto min-w-40">
                   <FormLabel>Subscription Template</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select
+                    value={field.value ?? ""}
+                    onValueChange={(value) =>
+                      field.onChange(value === "" ? null : value)
+                    }
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select an email template" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {templates.map((template) => (
+                      {settings.templates.map((template) => (
                         <SelectItem key={template.name} value={template.id}>
                           {template.name}
                         </SelectItem>
@@ -107,14 +107,19 @@ export const EmailSubscriptionForm = ({
               render={({ field }) => (
                 <FormItem className="flex-auto min-w-40">
                   <FormLabel>Free Ebook Template</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select
+                    value={field.value ?? ""}
+                    onValueChange={(value) =>
+                      field.onChange(value === "" ? null : value)
+                    }
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select an email template" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {templates.map((template) => (
+                      {settings.templates.map((template) => (
                         <SelectItem key={template.name} value={template.id}>
                           {template.name}
                         </SelectItem>
@@ -124,22 +129,25 @@ export const EmailSubscriptionForm = ({
                 </FormItem>
               )}
             />
-          </div>
-          <div className="flex flex-wrap gap-4">
             <FormField
               control={form.control}
               name="webinarTemplateId"
               render={({ field }) => (
                 <FormItem className="flex-auto min-w-40">
                   <FormLabel>Webinar Template</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select
+                    value={field.value ?? ""}
+                    onValueChange={(value) =>
+                      field.onChange(value === "" ? null : value)
+                    }
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select an email template" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {templates.map((template) => (
+                      {settings.templates.map((template) => (
                         <SelectItem key={template.name} value={template.id}>
                           {template.name}
                         </SelectItem>
@@ -153,7 +161,7 @@ export const EmailSubscriptionForm = ({
           <div className="flex items-center gap-x-2 justify-end">
             <Button
               type="submit"
-              disabled={!isValid || isSubmitting || isLoading}
+              disabled={!isValid || isSubmitting || updateSettings.isPending}
             >
               Save
             </Button>
