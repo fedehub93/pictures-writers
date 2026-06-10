@@ -1,18 +1,8 @@
 "use client";
 
-import {
-  ArrowDownIcon,
-  CheckCircleIcon,
-  CircleIcon,
-  PencilIcon,
-  PlusCircleIcon,
-  XIcon,
-} from "lucide-react";
+import { ArrowDownIcon, PlusCircleIcon, XIcon } from "lucide-react";
 import { useState } from "react";
 import { Table } from "@tanstack/react-table";
-import axios from "axios";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 
 import { Button } from "@/shared/ui/button";
 
@@ -22,50 +12,36 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
+import { Input } from "@/shared/ui/input";
 
-import { DataTableFacetedFilter } from "./data-table-faceted-filter";
-import { useOpenReview } from "../hooks/use-open-review";
+import { useOpenTemplate } from "../../hooks/use-open-template";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;
   data: TData[];
+  nameFilterValue: string;
 }
-
-const statuses = [
-  {
-    value: false,
-    label: "Unpublished",
-    icon: CircleIcon,
-  },
-
-  {
-    value: true,
-    label: "Published",
-    icon: CheckCircleIcon,
-  },
-];
 
 export function DataTableToolbar<TData>({
   table,
-  data,
+  nameFilterValue,
 }: DataTableToolbarProps<TData>) {
-  "use no memo";
-  const [isLoading, setIsLoading] = useState(false);
-  const { onOpen } = useOpenReview();
+  const [isLoading, _] = useState(false);
+  const { onOpen } = useOpenTemplate();
 
   const isFiltered = table.getState().columnFilters.length > 0;
-  // const selectedRows = table.getState().rowSelection;
 
   return (
     <div className="flex items-center justify-between py-4">
       <div className="flex flex-1 items-center space-x-2">
-        {table.getColumn("status") && (
-          <DataTableFacetedFilter
-            column={table.getColumn("status")}
-            title="Status"
-            options={statuses}
-          />
-        )}
+        <Input
+          placeholder="Filter templates..."
+          value={nameFilterValue}
+          onChange={(event) =>
+            table.getColumn("name")?.setFilterValue(event.target.value)
+          }
+          className="h-8 w-37.5 lg:w-62.5"
+        />
         {isFiltered && (
           <Button
             variant="ghost"
@@ -73,7 +49,7 @@ export function DataTableToolbar<TData>({
             className="h-8 px-2 lg:px-3"
           >
             Reset
-            <XIcon className="ml-2 h-4 w-4" />
+            <XIcon className="ml-2 size-4" />
           </Button>
         )}
       </div>
@@ -81,13 +57,13 @@ export function DataTableToolbar<TData>({
         <DropdownMenuTrigger asChild disabled={isLoading}>
           <Button type="button" variant="outline" size="sm">
             Actions
-            <ArrowDownIcon className="h-4 w-4 ml-2" />
+            <ArrowDownIcon className="size-4 ml-2" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={() => onOpen()}>
-            <PlusCircleIcon className="h-4 w-4 mr-2" />
-            New review
+            <PlusCircleIcon className="size-4 mr-2" />
+            New template
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

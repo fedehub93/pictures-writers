@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
+import { Suspense } from "react";
 
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
@@ -23,16 +24,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
+import { Skeleton } from "@/shared/ui/skeleton";
 
 import { settingsTesterSchema, SettingsTesterValues } from "../../schemas";
 import { SettingsGet } from "../../types";
+import { useSuspenseTemplates } from "@/modules/mails/templates";
 
 interface EmailTesterFormProps {
   settings: SettingsGet;
 }
 
-export const EmailTesterForm = ({ settings }: EmailTesterFormProps) => {
+const EmailTesterFormContent = ({ settings }: EmailTesterFormProps) => {
   const trpc = useTRPC();
+  const { data: templates } = useSuspenseTemplates();
 
   const form = useForm<SettingsTesterValues>({
     resolver: zodResolver(settingsTesterSchema),
@@ -97,7 +101,7 @@ export const EmailTesterForm = ({ settings }: EmailTesterFormProps) => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {settings.templates.map((template) => (
+                      {templates.map((template) => (
                         <SelectItem key={template.name} value={template.id}>
                           {template.name}
                         </SelectItem>
@@ -116,5 +120,13 @@ export const EmailTesterForm = ({ settings }: EmailTesterFormProps) => {
         </form>
       </Form>
     </div>
+  );
+};
+
+export const EmailTesterForm = ({ settings }: EmailTesterFormProps) => {
+  return (
+    <Suspense fallback={<Skeleton className="w-full h-40" />}>
+      <EmailTesterFormContent settings={settings} />
+    </Suspense>
   );
 };

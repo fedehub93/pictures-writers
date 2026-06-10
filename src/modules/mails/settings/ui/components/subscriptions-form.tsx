@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { useTRPC } from "@/trpc/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { Suspense } from "react";
 
 import { Button } from "@/shared/ui/button";
 import {
@@ -21,19 +22,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
+import { Skeleton } from "@/shared/ui/skeleton";
 
 import { settingsUpdateSchema, SettingsUpdateValues } from "../../schemas";
 import { SettingsGet } from "../../types";
+import { useSuspenseTemplates } from "@/modules/mails/templates";
 
 interface EmailSubscriptionFormProps {
   settings: SettingsGet;
 }
 
-export const EmailSubscriptionForm = ({
+const EmailSubscriptionFormContent = ({
   settings,
 }: EmailSubscriptionFormProps) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const { data: templates } = useSuspenseTemplates();
 
   const form = useForm<SettingsUpdateValues>({
     resolver: zodResolver(settingsUpdateSchema),
@@ -91,7 +95,7 @@ export const EmailSubscriptionForm = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {settings.templates.map((template) => (
+                      {templates.map((template) => (
                         <SelectItem key={template.name} value={template.id}>
                           {template.name}
                         </SelectItem>
@@ -119,7 +123,7 @@ export const EmailSubscriptionForm = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {settings.templates.map((template) => (
+                      {templates.map((template) => (
                         <SelectItem key={template.name} value={template.id}>
                           {template.name}
                         </SelectItem>
@@ -147,7 +151,7 @@ export const EmailSubscriptionForm = ({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {settings.templates.map((template) => (
+                      {templates.map((template) => (
                         <SelectItem key={template.name} value={template.id}>
                           {template.name}
                         </SelectItem>
@@ -169,5 +173,15 @@ export const EmailSubscriptionForm = ({
         </form>
       </Form>
     </div>
+  );
+};
+
+export const EmailSubscriptionForm = ({
+  settings,
+}: EmailSubscriptionFormProps) => {
+  return (
+    <Suspense fallback={<Skeleton className="w-full h-64" />}>
+      <EmailSubscriptionFormContent settings={settings} />
+    </Suspense>
   );
 };

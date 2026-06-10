@@ -1,6 +1,5 @@
 "use client";
 
-import { EmailTemplate, Media, Post } from "@/generated/prisma";
 import Link from "next/link";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, MoreHorizontal, Pencil } from "lucide-react";
@@ -13,7 +12,9 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 
-export const columns: ColumnDef<EmailTemplate>[] = [
+import { TemplatesGetMany } from "../../types";
+
+export const columns: ColumnDef<TemplatesGetMany[number]>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => {

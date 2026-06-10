@@ -47,6 +47,7 @@ const sections = [
 export function DataTableToolbar<TData>({
   table,
 }: DataTableToolbarProps<TData>) {
+  "use no memo";
   const isFiltered = table.getState().columnFilters.length > 0;
 
   return (

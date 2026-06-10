@@ -1,27 +1,30 @@
-import { db } from "@/lib/db";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 
-import { requireAdminAuth } from "@/lib/auth-utils";
+import { HydrateClient } from "@/trpc/server";
+import { requireAdminAuth } from "@/shared/lib/auth-utils";
 
-import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
+import {
+  TemplatesView,
+  TemplatesViewError,
+  TemplatesViewLoading,
+} from "@/modules/mails/templates";
+import { prefetchTemplates } from "@/modules/mails/templates/server";
 
-import { DataTable } from "./_components/data-table";
-import { columns } from "./_components/columns";
-
-const EmailTemplates = async () => {
+const TemplatesPage = async () => {
   await requireAdminAuth();
 
-  const templates = await db.emailTemplate.findMany({
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  prefetchTemplates();
 
   return (
-    <div className="h-full w-full flex flex-col gap-y-4 px-6 py-3">
-      <ContentHeader label="Email Templates" totalEntries={templates.length} />
-      <DataTable columns={columns} data={templates} />
-    </div>
+    <HydrateClient>
+      <Suspense fallback={<TemplatesViewLoading />}>
+        <ErrorBoundary fallback={<TemplatesViewError />}>
+          <TemplatesView />
+        </ErrorBoundary>
+      </Suspense>
+    </HydrateClient>
   );
 };
 
-export default EmailTemplates;
+export default TemplatesPage;

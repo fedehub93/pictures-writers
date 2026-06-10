@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -22,7 +23,7 @@ import { useTRPC } from "@/trpc/client";
 import { GenericInput } from "@/shared/components/form-component/generic-input";
 import { ComboboxDemo } from "@/shared/components/combo-box";
 
-import { useGetEmailTemplates } from "@/app/(admin)/admin/(routes)/mails/(routes)/templates/_hooks/use-get-email-templates";
+import { useSuspenseTemplates } from "@/modules/mails/templates/hooks/use-templates";
 
 import { singleSendInsertSchema, SingleSendInsertValues } from "../../schemas";
 
@@ -36,7 +37,7 @@ interface SingleSendFormProps {
   };
 }
 
-export const SingleSendForm = ({
+const SingleSendFormContent = ({
   onSuccess,
   onCancel,
   initialValues,
@@ -44,7 +45,7 @@ export const SingleSendForm = ({
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  const { data: templates, isLoading, isError } = useGetEmailTemplates();
+  const { data: templates } = useSuspenseTemplates();
 
   const form = useForm<SingleSendInsertValues>({
     resolver: zodResolver(singleSendInsertSchema),
@@ -76,10 +77,6 @@ export const SingleSendForm = ({
     createSingleSend.mutate(values);
   };
 
-  if (isError) {
-    return <div className="flex flex-col gap-2">Error fetching templates.</div>;
-  }
-
   return (
     <Form {...form}>
       <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
@@ -91,29 +88,25 @@ export const SingleSendForm = ({
           disabled={isPending}
         />
 
-        {!templates || isLoading ? (
-          <Skeleton className="w-full h-10" />
-        ) : (
-          <FormField
-            control={form.control}
-            name="emailTemplateId"
-            render={({ field }) => (
-              <FormItem className="flex-auto flex flex-col">
-                <FormLabel>Email template</FormLabel>
-                <FormControl>
-                  <ComboboxDemo
-                    {...field}
-                    options={templates.map((template) => ({
-                      label: template.name,
-                      value: template.id,
-                    }))}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
+        <FormField
+          control={form.control}
+          name="emailTemplateId"
+          render={({ field }) => (
+            <FormItem className="flex-auto flex flex-col">
+              <FormLabel>Email template</FormLabel>
+              <FormControl>
+                <ComboboxDemo
+                  {...field}
+                  options={templates.map((template) => ({
+                    label: template.name,
+                    value: template.id,
+                  }))}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <div className="flex justify-between gap-x-2 mt-8">
           {onCancel && (
@@ -133,5 +126,21 @@ export const SingleSendForm = ({
         </div>
       </form>
     </Form>
+  );
+};
+
+export const SingleSendForm = ({
+  onSuccess,
+  onCancel,
+  initialValues,
+}: SingleSendFormProps) => {
+  return (
+    <Suspense fallback={<Skeleton className="w-full h-40" />}>
+      <SingleSendFormContent
+        onSuccess={onSuccess}
+        onCancel={onCancel}
+        initialValues={initialValues}
+      />
+    </Suspense>
   );
 };

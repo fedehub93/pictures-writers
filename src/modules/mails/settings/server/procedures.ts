@@ -26,9 +26,6 @@ export const settingsRouter = createTRPCRouter({
     }),
   get: protectedProcedure.query(async () => {
     const settings = await db.emailSetting.findFirst({});
-    const templates = await db.emailTemplate.findMany({
-      orderBy: { name: "asc" },
-    });
     const emailSentToday = await getEmailsSentToday();
 
     if (!settings) {
@@ -38,7 +35,7 @@ export const settingsRouter = createTRPCRouter({
       });
     }
 
-    return { ...settings, templates, emailsSentToday: emailSentToday };
+    return { ...settings, emailsSentToday: emailSentToday };
   }),
   test: protectedProcedure
     .input(settingsTesterSchema)
