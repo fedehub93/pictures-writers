@@ -85,6 +85,7 @@ export function DataTableToolbar<TData>({
   table,
   data,
 }: DataTableToolbarProps<TData>) {
+  "use no memo";
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const isFiltered = table.getState().columnFilters.length > 0;

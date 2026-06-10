@@ -1,11 +1,7 @@
 import Image from "next/image";
 import { Check, PlusCircle } from "lucide-react";
 
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/shared/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 import { FormControl } from "@/shared/ui/form";
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
@@ -46,8 +42,6 @@ export const MultiSelectV2 = ({
   showValuesInButton = false,
   showValues = false,
 }: MultiSelectV2Props) => {
-
-  console.log("ehi", values, options)
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -83,7 +77,7 @@ export const MultiSelectV2 = ({
                     ) : (
                       options
                         .filter((option) =>
-                          values.find((v) => v.id === option.id)
+                          values.find((v) => v.id === option.id),
                         )
                         .map((option) => (
                           <Badge
@@ -96,7 +90,7 @@ export const MultiSelectV2 = ({
                               option?.status === ContentStatus.CHANGED &&
                                 "bg-sky-700 hover:bg-sky-700/60",
                               option?.status === ContentStatus.PUBLISHED &&
-                                "bg-emerald-700 hover:bg-emerald-700/60"
+                                "bg-emerald-700 hover:bg-emerald-700/60",
                             )}
                           >
                             {option.label}
@@ -142,7 +136,7 @@ export const MultiSelectV2 = ({
             const isFound = options.find(
               (o) =>
                 o.id === value &&
-                o.label.toLowerCase().includes(search.toLowerCase())
+                o.label.toLowerCase().includes(search.toLowerCase()),
             );
             if (isFound) return 1;
             return 0;
@@ -170,7 +164,7 @@ export const MultiSelectV2 = ({
                       "ml-auto",
                       values.find((v) => v.id === o.id!)
                         ? "opacity-100"
-                        : "opacity-0"
+                        : "opacity-0",
                     )}
                   />
                 </CommandItem>

@@ -1,9 +1,9 @@
 "use client";
 
 import { LoadingState } from "@/shared/components/loading-state";
+import { ErrorState } from "@/shared/components/error-state";
 import { useSuspenseSingleSend } from "../../hooks/use-single-sends";
 import { WriteForm } from "../components/write-form";
-import { ErrorState } from "@/shared/components/error-state";
 
 export const SingleSendIdView = ({
   singleSendId,

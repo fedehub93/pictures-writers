@@ -9,6 +9,8 @@ import {
   SingleSendViewError,
   SingleSendViewLoading,
 } from "@/modules/mails/single-sends/ui/views/single-send-id-view";
+import { prefetchAudiences } from "@/modules/mails/audiences/server/prefetch";
+
 import { requireAdminAuth } from "@/shared/lib/auth-utils";
 
 const SingleSendIdPage = async ({
@@ -17,8 +19,11 @@ const SingleSendIdPage = async ({
   params: Promise<{ singleSendId: string }>;
 }) => {
   await requireAdminAuth();
+
   const { singleSendId } = await params;
+
   prefetchSingleSendById(singleSendId);
+  prefetchAudiences();
 
   return (
     <HydrateClient>

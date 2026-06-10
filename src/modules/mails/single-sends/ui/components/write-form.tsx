@@ -10,6 +10,8 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { useTRPC } from "@/trpc/client";
+
 import {
   Form,
   FormControl,
@@ -24,11 +26,9 @@ import { Skeleton } from "@/shared/ui/skeleton";
 import { GenericInput } from "@/shared/components/form-component/generic-input";
 import { MultiSelectV2 } from "@/shared/components/multi-select-v2";
 
-import { useTRPC } from "@/trpc/client";
+import { useSuspenseAudiences } from "@/modules/mails/audiences";
 
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
-
-import { useAudiencesQuery } from "@/app/(admin)/_hooks/use-audiences-query";
 
 import { singleSendUpdateSchema, SingleSendUpdateValues } from "../../schemas";
 import { GetSingleSendGetOne } from "../../types";
@@ -48,7 +48,8 @@ export const WriteForm = ({ singleSend }: WriteFormProps) => {
   const queryClient = useQueryClient();
   const emailEditorRef = useRef<EditorRef>(null);
 
-  const { data: audiences, isLoading, isError } = useAudiencesQuery();
+  // const { data: audiences, isLoading, isError } = useAudiencesQuery();
+  const { data: audiences, isLoading, isError } = useSuspenseAudiences();
 
   const form = useForm<SingleSendUpdateValues>({
     resolver: zodResolver(singleSendUpdateSchema),

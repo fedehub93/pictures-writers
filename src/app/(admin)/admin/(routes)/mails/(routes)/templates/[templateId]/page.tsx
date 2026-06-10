@@ -1,28 +1,38 @@
-import { redirect } from "next/navigation";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 
-import { authAdmin } from "@/lib/auth-service";
-import { db } from "@/lib/db";
-import { EmailEditorForm } from "./_components/email-editor-form";
-import { requireAdminAuth } from "@/lib/auth-utils";
+import { HydrateClient } from "@/trpc/server";
 
-const EmailTemplateIdPage = async (props: {
+import { requireAdminAuth } from "@/shared/lib/auth-utils";
+
+import { prefetchTemplateById } from "@/modules/mails/templates/server";
+
+import {
+  TemplateIdView,
+  TemplateIdViewLoading,
+  TemplateIdViewError,
+} from "@/modules/mails/templates";
+
+const TemplateIdPage = async ({
+  params,
+}: {
   params: Promise<{ templateId: string }>;
 }) => {
   await requireAdminAuth();
-  
-  const params = await props.params;
 
-  const template = await db.emailTemplate.findUnique({
-    where: {
-      id: params.templateId,
-    },
-  });
+  const { templateId } = await params;
 
-  if (!template) {
-    redirect("/admin/mails/templates");
-  }
+  prefetchTemplateById(templateId);
 
-  return <EmailEditorForm template={template} />;
+  return (
+    <HydrateClient>
+      <ErrorBoundary fallback={<TemplateIdViewError />}>
+        <Suspense fallback={<TemplateIdViewLoading />}>
+          <TemplateIdView templateId={templateId} />
+        </Suspense>
+      </ErrorBoundary>
+    </HydrateClient>
+  );
 };
 
-export default EmailTemplateIdPage;
+export default TemplateIdPage;

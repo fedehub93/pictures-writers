@@ -4,11 +4,7 @@ import { Check, PlusCircle } from "lucide-react";
 import { ContentStatus } from "@/generated/prisma";
 
 import { cn } from "@/shared/lib/utils";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/shared/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 import { Button } from "@/shared/ui/button";
 import { Separator } from "@/shared/ui/separator";
 import { Badge } from "@/shared/ui/badge";
@@ -37,6 +33,7 @@ export function DataTableFacetedFilter<TData, TValue>({
   title,
   options,
 }: DataTableFacetedFilterProps<TData, TValue>) {
+  "use no memo";
   const facets = column?.getFacetedUniqueValues();
   const selectedValues = new Set(column?.getFilterValue() as string[]);
 
