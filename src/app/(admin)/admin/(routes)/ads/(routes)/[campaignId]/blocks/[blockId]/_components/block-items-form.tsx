@@ -58,7 +58,7 @@ export const BlockItems = ({
   const onDeleteItem = async (itemId: string) => {
     try {
       await axios.delete(
-        `/api/admin/ads/${campaignId}/blocks/${blockId}/items/${itemId}`
+        `/api/admin/ads/${campaignId}/blocks/${blockId}/items/${itemId}`,
       );
       toast.success("Block deleted!");
     } catch (error: any) {
@@ -83,7 +83,7 @@ export const BlockItems = ({
     try {
       await axios.put(
         `/api/admin/ads/${campaignId}/blocks/${blockId}/items/reorder`,
-        { blockId, items: updatedOrder }
+        { blockId, items: updatedOrder },
       );
     } catch (error) {
       console.log(error);
@@ -118,6 +118,9 @@ export const BlockItems = ({
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
+                          style={
+                            provided.draggableProps.style as React.CSSProperties
+                          }
                         >
                           <div className="p-4 bg-secondary">
                             <Grip className="h-5 w-5" />
@@ -171,7 +174,7 @@ export const BlockItems = ({
         <div
           className={cn(
             `p-4 border-dashed border rounded-md flex justify-center`,
-            hideAddNewItemButton && "hidden"
+            hideAddNewItemButton && "hidden",
           )}
         >
           <Button

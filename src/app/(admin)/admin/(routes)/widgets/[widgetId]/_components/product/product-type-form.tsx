@@ -80,7 +80,7 @@ export const ProductTypeForm = ({
   const fetchProducts = async (ids: string[]) => {
     const { data } = await axios.post<ProductWithImageCoverAndAuthor[]>(
       `${API_ADMIN_PRODUCTS_FETCH}`,
-      { ids }
+      { ids },
     );
     return data;
   };
@@ -90,8 +90,8 @@ export const ProductTypeForm = ({
     queryFn: () =>
       fetchProducts(
         fieldProducts.value.map(
-          (v: { rootId: string; sort: number }) => v.rootId
-        )
+          (v: { rootId: string; sort: number }) => v.rootId,
+        ),
       ),
     enabled: fieldProducts.value.length > 0,
   });
@@ -117,7 +117,7 @@ export const ProductTypeForm = ({
 
   const onDeleteProduct = (rootId: string) => {
     const newProducts = fieldProducts.value.filter(
-      (v: { rootId: string; sort: number }) => v.rootId !== rootId
+      (v: { rootId: string; sort: number }) => v.rootId !== rootId,
     );
     fieldProducts.onChange(newProducts);
   };
@@ -149,7 +149,7 @@ export const ProductTypeForm = ({
               className={cn(
                 "w-full",
                 field.value !== WidgetProductType.SPECIFIC &&
-                  "flex-1 flex flex-col w-4/5"
+                  "flex-1 flex flex-col w-4/5",
               )}
             >
               <FormLabel className="block">Type</FormLabel>
@@ -185,7 +185,7 @@ export const ProductTypeForm = ({
               className={cn(
                 "hidden",
                 fieldProductType.value !== WidgetProductType.SPECIFIC &&
-                  "flex flex-col w-1/5"
+                  "flex flex-col w-1/5",
               )}
             >
               <FormLabel className="block">Limit</FormLabel>
@@ -216,7 +216,7 @@ export const ProductTypeForm = ({
                       <div
                         className={cn(
                           "w-full border rounded-md p-4",
-                          fieldProducts.value.length === 0 && "hidden"
+                          fieldProducts.value.length === 0 && "hidden",
                         )}
                         ref={provided.innerRef}
                         {...provided.droppableProps}
@@ -225,7 +225,7 @@ export const ProductTypeForm = ({
                           fieldProducts.value.map(
                             (
                               v: { rootId: string; sort: number },
-                              index: number
+                              index: number,
                             ) => {
                               const p = data.find((d) => d.rootId === v.rootId);
                               if (!p) return null;
@@ -241,6 +241,10 @@ export const ProductTypeForm = ({
                                       className="flex items-center gap-y-2 w-full border hover:shadow-xl duration-500 transition-all rounded-md shadow-md mb-4"
                                       ref={provided.innerRef}
                                       {...provided.draggableProps}
+                                      style={
+                                        provided.draggableProps
+                                          .style as React.CSSProperties
+                                      }
                                     >
                                       <div
                                         className="h-16 w-8 border-r bg-muted flex justify-center items-center cursor-pointer"
@@ -274,7 +278,7 @@ export const ProductTypeForm = ({
                                   )}
                                 </Draggable>
                               );
-                            }
+                            },
                           )}
                       </div>
                     )}
