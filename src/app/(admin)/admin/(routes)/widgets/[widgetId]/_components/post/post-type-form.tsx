@@ -103,7 +103,7 @@ export const PostTypeForm = ({
     queryKey: ["postsFetch", fieldPosts.value.length],
     queryFn: () =>
       fetchPosts(
-        fieldPosts.value.map((v: WidgetPostMetadataPosts) => v.rootId)
+        fieldPosts.value.map((v: WidgetPostMetadataPosts) => v.rootId),
       ),
     enabled: fieldPosts.value.length > 0,
   });
@@ -125,7 +125,7 @@ export const PostTypeForm = ({
 
   const onDeletePost = (rootId: string) => {
     const newPosts = fieldPosts.value.filter(
-      (v: WidgetPostMetadataPosts) => v.rootId !== rootId
+      (v: WidgetPostMetadataPosts) => v.rootId !== rootId,
     );
     fieldPosts.onChange(newPosts);
   };
@@ -156,7 +156,7 @@ export const PostTypeForm = ({
               className={cn(
                 "w-full",
                 field.value !== WidgetPostType.SPECIFIC &&
-                  "flex-1 flex flex-col w-4/5"
+                  "flex-1 flex flex-col w-4/5",
               )}
             >
               <FormLabel className="block">Type</FormLabel>
@@ -192,7 +192,7 @@ export const PostTypeForm = ({
               className={cn(
                 "hidden",
                 fieldPostType.value !== WidgetPostType.SPECIFIC &&
-                  "flex flex-col w-1/5"
+                  "flex flex-col w-1/5",
               )}
             >
               <FormLabel className="block">Limit</FormLabel>
@@ -223,7 +223,7 @@ export const PostTypeForm = ({
                       <div
                         className={cn(
                           "w-full border rounded-md p-4",
-                          fieldPosts.value.length === 0 && "hidden"
+                          fieldPosts.value.length === 0 && "hidden",
                         )}
                         ref={provided.innerRef}
                         {...provided.droppableProps}
@@ -245,6 +245,10 @@ export const PostTypeForm = ({
                                       className="flex items-center gap-y-2 w-full border hover:shadow-xl duration-500 transition-all rounded-md shadow-md mb-4"
                                       ref={provided.innerRef}
                                       {...provided.draggableProps}
+                                      style={
+                                        provided.draggableProps
+                                          .style as React.CSSProperties
+                                      }
                                     >
                                       <div
                                         className="h-16 w-8 border-r bg-muted flex justify-center items-center cursor-pointer"
@@ -276,7 +280,7 @@ export const PostTypeForm = ({
                                   )}
                                 </Draggable>
                               );
-                            }
+                            },
                           )}
                       </div>
                     )}

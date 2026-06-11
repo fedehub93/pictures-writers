@@ -101,7 +101,10 @@ export const ProductGalleryForm = ({
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
-                          className="relative h-24 w-24 min-w-24 border rounded-lg overflow-hidden flex items-center justify-center group"
+                          className="relative size-24 min-w-24 border rounded-lg overflow-hidden flex items-center justify-center group"
+                          style={
+                            provided.draggableProps.style as React.CSSProperties
+                          }
                         >
                           <div className="absolute top-0 left-0 w-0 h-full bg-black z-20 opacity-0 group-hover:opacity-50 group-hover:w-full transition-opacity">
                             <Button

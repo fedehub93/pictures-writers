@@ -75,14 +75,17 @@ export const WidgetSort = ({ label, section }: WidgetSortProps) => {
                     {(provided) => (
                       <div
                         className={cn(
-                          "flex items-center gap-x-2 bg-slate-200 border-slate-200 border text-slate-700 rounded-md mb-4 text-sm"
+                          "flex items-center gap-x-2 bg-slate-200 border-slate-200 border text-slate-700 rounded-md mb-4 text-sm",
                         )}
                         ref={provided.innerRef}
                         {...provided.draggableProps}
+                        style={
+                          provided.draggableProps.style as React.CSSProperties
+                        }
                       >
                         <div
                           className={cn(
-                            "px-2 py-3 border-r border-r-slate-200 hover:bg-slate-300 rounded-l-md transition"
+                            "px-2 py-3 border-r border-r-slate-200 hover:bg-slate-300 rounded-l-md transition",
                           )}
                           {...provided.dragHandleProps}
                         >
