@@ -1,6 +1,7 @@
 "use client";
 import * as React from "react";
 import Link from "next/link";
+import { PlusCircleIcon } from "lucide-react";
 
 import {
   ColumnDef,
@@ -25,7 +26,7 @@ import {
 
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
-import { PlusCircle } from "lucide-react";
+import { DataTableToolbar } from "./data-table-toolbar";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -38,7 +39,7 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+    [],
   );
 
   const table = useReactTable({
@@ -56,24 +57,16 @@ export function DataTable<TData, TValue>({
     },
   });
 
+  const nameFilterValue =
+    (table.getColumn("name")?.getFilterValue() as string) ?? "";
+
   return (
     <div>
-      <div className="flex items-center py-4 justify-between">
-        <Input
-          placeholder="Filter forms..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("name")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
-        <Link href="/admin/forms/create">
-          <Button>
-            <PlusCircle className="h-4 w-4 mr-2" />
-            New form
-          </Button>
-        </Link>
-      </div>
+      <DataTableToolbar
+        table={table}
+        data={data}
+        nameFilterValue={nameFilterValue}
+      />
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -86,7 +79,7 @@ export function DataTable<TData, TValue>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -105,7 +98,7 @@ export function DataTable<TData, TValue>({
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}

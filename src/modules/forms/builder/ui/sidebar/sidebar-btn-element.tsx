@@ -1,0 +1,31 @@
+import { useDraggable } from "@dnd-kit/react";
+
+import { Button } from "@/shared/ui/button";
+
+import { type DragData, type FormNode } from "../../types";
+import { cn } from "@/shared/lib/utils";
+
+export const SidebarBtnElement = ({ formNode }: { formNode: FormNode }) => {
+  const { icon: Icon, label } = formNode.designerBtnElement;
+
+  const { ref, isDragging } = useDraggable<DragData>({
+    id: `designer-btn-${formNode.type}`,
+    data: {
+      type: formNode.type,
+      isDesignerBtnElement: true,
+    },
+  });
+  return (
+    <Button
+      ref={ref}
+      variant="outline"
+      className={cn(
+        "flex flex-col gap-2 size-30 cursor-grab",
+        isDragging && "ring-2 ring-primary",
+      )}
+    >
+      <Icon className="size-8 text-primary cursor-grab" />
+      <p className="text-xs">{label}</p>
+    </Button>
+  );
+};

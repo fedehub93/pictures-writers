@@ -1,20 +1,28 @@
-import { requireAdminAuth } from "@/lib/auth-utils";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 
-import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
-import { getFormsByFilters } from "@/data/form";
-import { DataTable } from "./_components/data-table";
-import { columns } from "./_components/column";
+import { HydrateClient } from "@/trpc/server";
+
+import { requireAdminAuth } from "@/shared/lib/auth-utils";
+
+import { FormsView, FormsViewError, FormsViewLoading } from "@/modules/forms";
+import { prefetchForms } from "@/modules/forms/server";
 
 const FormsPage = async () => {
   await requireAdminAuth();
 
-  const forms = await getFormsByFilters({ where: {} });
+  prefetchForms();
+
+  // const forms = await getFormsByFilters({ where: {} });
 
   return (
-    <div className="h-full w-full flex flex-col gap-y-4 px-6 py-3">
-      <ContentHeader label="Forms" totalEntries={forms.length} />
-      <DataTable columns={columns} data={forms} />
-    </div>
+    <HydrateClient>
+      <Suspense fallback={<FormsViewLoading />}>
+        <ErrorBoundary fallback={<FormsViewError />}>
+          <FormsView />
+        </ErrorBoundary>
+      </Suspense>
+    </HydrateClient>
   );
 };
 
