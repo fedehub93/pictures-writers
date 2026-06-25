@@ -13,8 +13,6 @@ const FormsPage = async () => {
 
   prefetchForms();
 
-  // const forms = await getFormsByFilters({ where: {} });
-
   return (
     <HydrateClient>
       <Suspense fallback={<FormsViewLoading />}>

@@ -5,7 +5,12 @@ import { ErrorBoundary } from "react-error-boundary";
 import { requireAdminAuth } from "@/shared/lib/auth-utils";
 
 import { prefetchFormById } from "@/modules/forms/server/prefetch";
-import { FormBuilderView } from "@/modules/forms/ui/views/form-builder-view";
+
+import {
+  FormBuilderView,
+  FormBuilderViewError,
+  FormBuilderViewLoading,
+} from "@/modules/forms/ui/views/form-builder-view";
 
 const FormBuilderPage = async ({
   params,
@@ -20,8 +25,8 @@ const FormBuilderPage = async ({
 
   return (
     <HydrateClient>
-      <Suspense fallback={<div>Loading</div>}>
-        <ErrorBoundary fallback={<div>Error</div>}>
+      <Suspense fallback={<FormBuilderViewLoading />}>
+        <ErrorBoundary fallback={<FormBuilderViewError />}>
           <FormBuilderView id={formId} />
         </ErrorBoundary>
       </Suspense>

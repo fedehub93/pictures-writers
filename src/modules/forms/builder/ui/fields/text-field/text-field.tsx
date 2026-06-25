@@ -9,6 +9,7 @@ import {
 } from "../../../types";
 
 import { DesignerComponent } from "./designer-component";
+import { GROUP_ELEMENT } from "../../../constants";
 
 const type: ElementsType = "TextField";
 
@@ -19,9 +20,11 @@ const properties: TextFieldProperties = {
 };
 
 export const TextFieldFormElement: FormElement = {
+  group: "element",
   type,
   construct: (id: string) => ({
     id,
+    group: GROUP_ELEMENT,
     type,
     properties,
   }),

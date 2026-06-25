@@ -10,6 +10,7 @@ export const SidebarBtnElement = ({ formNode }: { formNode: FormNode }) => {
 
   const { ref, isDragging } = useDraggable<DragData>({
     id: `designer-btn-${formNode.type}`,
+    type: formNode.group,
     data: {
       type: formNode.type,
       isDesignerBtnElement: true,

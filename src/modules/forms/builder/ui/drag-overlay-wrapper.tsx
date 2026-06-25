@@ -13,13 +13,25 @@ export const DragOverlayWrapper = () => {
 
   let node = <div>No drag overlay</div>;
 
-  const getSource = (source: Draggable) => {
-    if (source.data?.isDesignerBtnElement) {
-      const type = source.data?.type as NodesType;
-      node = <SidebarBtnElementDragOverlay formNode={FormNodes[type]} />;
-    }
-    return node;
-  };
+  // const getSource = (source: Draggable) => {
+  //   console.log(source.data)
+  //   if (source.data?.isDesignerBtnElement) {
+  //     const type = source.data?.type as NodesType;
+  //     node = <SidebarBtnElementDragOverlay formNode={FormNodes[type]} />;
+  //   }
+  //   return node;
+  // };
 
-  return <DragOverlay>{getSource}</DragOverlay>;
+  // return <DragOverlay>{getSource}</DragOverlay>;
+
+  return (
+    <DragOverlay>
+      {(source) => {
+        if (source.data?.isDesignerBtnElement) {
+          const type = source.data?.type as NodesType;
+          return <SidebarBtnElementDragOverlay formNode={FormNodes[type]} />;
+        }
+      }}
+    </DragOverlay>
+  );
 };

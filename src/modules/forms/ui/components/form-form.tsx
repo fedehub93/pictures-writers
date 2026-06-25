@@ -47,7 +47,6 @@ export const FormForm = ({
         onSuccess?.();
       },
       onError: (error) => {
-        console.log(error)
         toast.error(error.message);
       },
     }),
@@ -78,7 +77,6 @@ export const FormForm = ({
     if (isEdit) {
       updateForm.mutate({ ...values, id: initialValues.id });
     } else {
-      console.log(values)
       createForm.mutate(values);
     }
   };
@@ -103,7 +101,6 @@ export const FormForm = ({
               onClick={onCancel}
             >
               Cancel
-              <FormMessage />
             </Button>
           )}
           <Button disabled={isPending} type="submit">

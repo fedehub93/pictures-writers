@@ -9,6 +9,7 @@ import {
 } from "../../../types";
 
 import { DesignerComponent } from "./designer-component";
+import { GROUP_LAYOUT } from "../../../constants";
 
 const type: LayoutsType = "Grid";
 
@@ -19,9 +20,11 @@ const properties: GridLayoutProperties = {
 };
 
 export const GridFormLayout: FormLayout = {
+  group: "layout",
   type,
   construct: (id: string) => ({
     id,
+    group: GROUP_LAYOUT,
     type,
     properties,
     children: [],

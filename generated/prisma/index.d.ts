@@ -7147,7 +7147,7 @@ export namespace Prisma {
     siteUrl: number
     deployWebhookUrl: number
     logoUrl: number
-    scripts:PrismaJson.Scripts
+    scripts: number
     seoId: number
     createdAt: number
     updatedAt: number
@@ -8291,7 +8291,7 @@ export namespace Prisma {
     type: number
     sort: number
     isEnabled: number
-    metadata:PrismaJson.WidgetMetadata
+    metadata: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -18850,7 +18850,7 @@ export namespace Prisma {
     status: number
     isLatest: number
     editorType: number
-    puckData:PrismaJson.PuckData
+    puckData: number
     rootId: number
     seoId: number
     userId: number
@@ -20184,8 +20184,8 @@ export namespace Prisma {
     status: number
     isLatest: number
     editorType: number
-    bodyData:PrismaJson.BodyData
-    tiptapBodyData:PrismaJson.TipTapBodyData
+    bodyData: number
+    tiptapBodyData: number
     rootId: number
     imageCoverId: number
     seoId: number
@@ -27656,7 +27656,7 @@ export namespace Prisma {
     id: number
     name: number
     description: number
-    designData:PrismaJson.EmailDesignData
+    designData: number
     bodyHtml: number
     createdAt: number
     updatedAt: number
@@ -32202,7 +32202,7 @@ export namespace Prisma {
     id: number
     name: number
     subject: number
-    designData:PrismaJson.EmailDesignData
+    designData: number
     bodyHtml: number
     externalId: number
     createdAt: number
@@ -36491,8 +36491,8 @@ export namespace Prisma {
     id: number
     title: number
     slug: number
-    description:PrismaJson.BodyData
-    tiptapDescription:PrismaJson.TipTapBodyData
+    description: number
+    tiptapDescription: number
     type: number
     version: number
     status: number
@@ -36503,7 +36503,7 @@ export namespace Prisma {
     price: number
     discountedPrice: number
     isFree: number
-    metadata:PrismaJson.ProductMetadata
+    metadata: number
     formId: number
     rootId: number
     seoId: number
@@ -49572,7 +49572,7 @@ export namespace Prisma {
   export type FormCountAggregateOutputType = {
     id: number
     name: number
-    fields:PrismaJson.FormFields
+    fields: number
     submitLabel: number
     gtmEventName: number
     gtmCategory: number

@@ -51,12 +51,17 @@ export const FormsActions = ({ id, data }: FormsActions) => {
         toast.success("Form deleted successfully!");
         router.refresh();
       },
+      onError: (error) => {
+        toast.error(error.message);
+      },
     }),
   );
 
   const onDelete = async () => {
     removeForm.mutate({ id });
   };
+
+  const { isPending } = removeForm;
 
   return (
     <>
@@ -72,17 +77,18 @@ export const FormsActions = ({ id, data }: FormsActions) => {
             <PencilIcon className="size-4 mr-2" />
             Edit
           </DropdownMenuItem>
-          <Link href={`/admin/forms/${id}/builder`}>
-            <DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href={`/admin/forms/${id}/builder`}>
               <BlocksIcon className="size-4 mr-2" />
               Form Builder
-            </DropdownMenuItem>
-          </Link>
+            </Link>
+          </DropdownMenuItem>
 
           <DropdownMenuSeparator />
           <ConfirmModal onConfirm={onDelete}>
             <Button
               variant="ghost"
+              disabled={isPending}
               className="bg-destructive px-2! w-full justify-start text-destructive-foreground gap-0"
             >
               <Trash2Icon className="size-4 mr-2" />
