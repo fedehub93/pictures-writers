@@ -133,7 +133,7 @@ export const FreeEbookModal = ({
             width={150}
             height={150}
             sizes="(max-width: 1280px) 90vw, 20vw"
-            quality={50}
+            quality={75}
           />
           {error && (
             <div className="p-4 bg-destructive shadow-2xs rounded-md font-bold">

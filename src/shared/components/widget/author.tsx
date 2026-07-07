@@ -31,7 +31,7 @@ const WidgetAuthor = ({
             className="object-cover"
             width={400}
             height={400}
-            quality={50}
+            quality={75}
             style={{ height: "100%", width: "auto" }}
           />
         </div>

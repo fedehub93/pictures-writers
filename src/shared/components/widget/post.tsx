@@ -58,7 +58,7 @@ export const WidgetPost = async ({
                     className="object-cover"
                     fill
                     sizes="(max-width:1280px) 90vw, 25vw"
-                    quality={50}
+                    quality={75}
                   />
                 </div>
               ) : null}
