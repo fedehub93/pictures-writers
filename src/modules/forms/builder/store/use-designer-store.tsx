@@ -5,8 +5,8 @@ import { immer } from "zustand/middleware/immer";
 
 import {
   type FormNodeDynamicInstance,
-  FormNodeInstance,
-  FormRootInstance,
+  type FormNodeInstance,
+  type FormRootInstance,
 } from "../types";
 
 import {
@@ -67,7 +67,7 @@ const initialRoot: FormRootInstance = {
       },
     },
     {
-      id: "Layout",
+      id: "pippo",
       group: "layout",
       type: "Grid",
       children: [],

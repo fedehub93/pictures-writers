@@ -7,19 +7,24 @@ import {
 } from "@dnd-kit/react";
 
 import { isSortable } from "@dnd-kit/react/sortable";
-import { CollisionPriority } from "@dnd-kit/abstract";
 
 import { MouseEvent } from "react";
 
+import { cn } from "@/shared/lib/utils";
+
 import { DesignerSidebar } from "../sidebar/designer-sidebar";
-import { DropAreaZone, FormNodes, isDragData, isDropData } from "../../types";
+import {
+  DropAreaZone,
+  FormNodes,
+  isDragData,
+  isGenericData,
+} from "../../types";
 
 import { generateId } from "../../lib/generator";
 import { useDesigner } from "../../store/use-designer-store";
 
-import { Droppable } from "./droppable";
 import { DesignerTree } from "./designer-tree";
-import { cn } from "@/shared/lib/utils";
+import { Root } from "../layouts/root/designer-component";
 
 export const Designer = () => {
   const {
@@ -77,30 +82,30 @@ export const Designer = () => {
       const { source, target } = event.operation;
 
       if (!source || !target) return;
-
       setActiveNodeId(String(source.id));
 
-      if (source.id === target.id) return;
+      // 1. RIMOSSO il blocco globale: if (source.id === target.id) return;
 
+      // 2. Gestione degli inserimenti dall'esterno (es. Sidebar)
       if (isDragData(source.data)) {
         const { isDesignerBtnElement, type } = source.data;
 
         if (isDesignerBtnElement) {
-          if (!isDropData(target.data)) {
+          // In questo caso specifico, target e source devono essere diversi
+          if (source.id === target.id) return;
+
+          if (!isGenericData(target.data)) {
             console.error("Dropped datas are incorrect!");
             return;
           }
 
           const { area, id: targetId } = target.data;
 
-          if (isDesignerBtnElement && area === DropAreaZone.ROOT) {
+          if (area === DropAreaZone.ROOT) {
             const newElement = FormNodes[type].construct(generateId());
             addNode(newElement, undefined, "root");
             setActiveNodeId(newElement.id);
-          }
-
-          if (
-            isDesignerBtnElement &&
+          } else if (
             source.data.type !== "Grid" &&
             area === DropAreaZone.GRID
           ) {
@@ -111,8 +116,13 @@ export const Designer = () => {
         }
       }
 
+      // 3. Gestione del riordinamento (Sortable)
       if (!isSortable(source)) return;
+
       const { initialIndex, index, initialGroup, group } = source;
+
+      // Verifica se l'elemento è stato effettivamente spostato in una nuova posizione/gruppo
+      if (initialIndex === index && initialGroup === group) return;
 
       moveNodeInTree(
         initialIndex,
@@ -138,16 +148,7 @@ export const Designer = () => {
         )}
         onClick={onWrapperClick}
       >
-        <Droppable
-          id={"root"}
-          area={DropAreaZone.ROOT}
-          nodes={root.children}
-          droppableProps={{
-            id: "root",
-            type: "root",
-            collisionPriority: CollisionPriority.Lowest,
-          }}
-        />
+        <Root nodes={root.children} />
       </div>
       <DesignerSidebar />
     </div>

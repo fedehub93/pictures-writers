@@ -1,10 +1,7 @@
 import { Label } from "@/shared/ui/label";
 import { Input } from "@/shared/ui/input";
 
-import { DropData, type FormElementInstance } from "../../../types";
-import { useSortable } from "@dnd-kit/react/sortable";
-import { Button } from "@/shared/ui/button";
-import { GripIcon, XIcon } from "lucide-react";
+import { type FormElementInstance } from "../../../types";
 
 export const DesignerComponent = ({
   elementInstance,

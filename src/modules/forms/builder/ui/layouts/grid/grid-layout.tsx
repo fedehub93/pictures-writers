@@ -8,8 +8,9 @@ import {
   type FormLayout,
 } from "../../../types";
 
-import { DesignerComponent } from "./designer-component";
 import { GROUP_LAYOUT } from "../../../constants";
+
+import { DesignerComponent } from "./designer-component";
 
 const type: LayoutsType = "Grid";
 

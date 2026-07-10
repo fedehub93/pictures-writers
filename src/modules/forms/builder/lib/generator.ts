@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from "uuid";
+
 export const generateId = () => {
-  return Math.floor(Math.random() * 10001).toString();
+  return uuidv4();
 };

@@ -10,7 +10,9 @@ export const DesignerTree = ({ root }: DesignerTreeProps) => {
   return (
     <div className="bg-background rounded p-2">
       <div className="max-w-60">
-        <Tree data={root.children}>{TreeNode}</Tree>
+        <Tree data={root.children} className="max-w-full">
+          {TreeNode}
+        </Tree>
       </div>
     </div>
   );
@@ -18,8 +20,15 @@ export const DesignerTree = ({ root }: DesignerTreeProps) => {
 
 const TreeNode = ({ node, style, dragHandle }: NodeRendererProps<any>) => {
   return (
-    <div style={style} ref={dragHandle} onClick={() => node.toggle()}>
-      {node.isLeaf ? "🍁" : "🗀"} {node.data.id}
+    <div className="max-w-60">
+      <div
+        style={style}
+        ref={dragHandle}
+        onClick={() => node.toggle()}
+        className="line-clamp-1 truncate max-w-full"
+      >
+        {node.isLeaf ? "🍁" : "🗀"} {node.data.id}
+      </div>
     </div>
   );
 };

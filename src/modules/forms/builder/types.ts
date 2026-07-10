@@ -102,7 +102,7 @@ export interface FormLayoutInstance<
   group: typeof GROUP_LAYOUT;
   type: TType;
   properties: GridLayoutPropertiesByType[TType];
-  children: FormNodeDynamicInstance[]; // Layouts can contain other nodes
+  children: FormElementInstance[]; // Layouts can contain other nodes
 }
 
 export type FormLayout<TType extends LayoutsType = LayoutsType> = {
@@ -142,7 +142,9 @@ export type FormNodeInstance =
   | FormRootInstance
   | FormElementInstance
   | FormLayoutInstance;
+
 export type FormNodeDynamicInstance = FormElementInstance | FormLayoutInstance;
+export type FormNodeContainerInstance = FormRootInstance | FormLayoutInstance;
 
 export const FormNodes = {
   ...FormElements,
@@ -172,12 +174,31 @@ export enum DropAreaZone {
 }
 export type DropAreaType = DropAreaZone.ROOT | DropAreaZone.GRID;
 
-export type DropData = {
-  area: DropAreaType;
+export type DesignerWrapperData = {
   id: string | "root";
+  isDesignerBtnElement: boolean;
+  type: ElementsType | LayoutsType;
+  area: DropAreaType;
 };
 
-export const isDropData = (data: unknown): data is DropData => {
+export const isDesignerWrapperData = (
+  data: unknown,
+): data is DesignerWrapperData => {
+  if (!data || typeof data !== "object") return false;
+  return (
+    "area" in data &&
+    "id" in data &&
+    "isDesignerBtnElement" in data &&
+    "type" in data
+  );
+};
+
+export type GenericData = {
+  id: string | "root";
+  area: DropAreaType;
+};
+
+export const isGenericData = (data: unknown): data is GenericData => {
   if (!data || typeof data !== "object") return false;
   return "area" in data && "id" in data;
 };

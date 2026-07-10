@@ -1,45 +1,55 @@
 import { useSortable } from "@dnd-kit/react/sortable";
 import { CollisionPriority } from "@dnd-kit/abstract";
+import { shapeIntersection } from "@dnd-kit/collision";
+import { MouseEvent } from "react";
 
 import { GripIcon, XIcon } from "lucide-react";
-import { MouseEvent } from "react";
 
 import { cn } from "@/shared/lib/utils";
 
 import { Button } from "@/shared/ui/button";
 
-import { DragData, type FormNodeDynamicInstance, FormNodes } from "../../types";
-import { GROUP_ELEMENT, GROUP_LAYOUT } from "../../constants";
+import {
+  DropAreaZone,
+  DesignerWrapperData,
+  FormNodes,
+  type FormNodeDynamicInstance,
+} from "../../types";
 import { useDesigner } from "../../store/use-designer-store";
 
-interface DesignerNodeWrapperProps {
-  node: FormNodeDynamicInstance;
+interface DesignerWrapperProps {
   index: number;
+  type: string;
   group: string;
+  node: FormNodeDynamicInstance;
 }
 
-export const DesignerNodeWrapper = ({
+export const DesignerWrapper = ({
   node,
-  index,
+  type,
   group,
-}: DesignerNodeWrapperProps) => {
-  const { removeNodeById, activeNodeId, setActiveNodeId } = useDesigner();
-  const { ref, handleRef, isDragging } = useSortable<DragData>({
+  index,
+}: DesignerWrapperProps) => {
+  const { removeNodeById, activeNodeId, setActiveNodeId, root } = useDesigner();
+  const { ref: sortableRef, handleRef } = useSortable<DesignerWrapperData>({
     id: node.id,
     index,
-    type: "element",
+    type,
+    group,
     accept: (source) => {
       const canAcceptColumn = source.type === "layout" && group === "root";
       const canAcceptItem =
         source.type === "element" && !source.data.isDesignerBtnElement;
       return canAcceptColumn || canAcceptItem;
     },
-    group,
-    collisionPriority: CollisionPriority.Highest,
     data: {
-      type: node.type,
+      id: node.id,
       isDesignerBtnElement: false,
+      type: node.type,
+      area: DropAreaZone.GRID,
     },
+    collisionDetector: shapeIntersection,
+    collisionPriority: CollisionPriority.High,
   });
 
   const DesignerNode = FormNodes[node.type].designerComponent as React.FC<{
@@ -57,12 +67,12 @@ export const DesignerNodeWrapper = ({
 
   return (
     <div
-      ref={ref}
-      className="flex flex-col p-4 w-full"
+      ref={sortableRef}
+      className="flex flex-col p-4 px-8 w-full"
       onClick={onWrapperClick}
     >
       <div className="flex justify-center group">
-        <div className="flex gap-x-4 rounded-t py-1.5 px-3 bg-accent hover:scale-103 transition-all duration-150">
+        <div className="flex gap-x-4 rounded-t py-1.5 px-3 bg-accent hover:scale-103 transition-all duration-300">
           <Button ref={handleRef} variant="outline" size="icon-sm">
             <GripIcon />
           </Button>
@@ -73,18 +83,11 @@ export const DesignerNodeWrapper = ({
       </div>
       <div
         className={cn(
-          "flex gap-4 w-full min-h-30 items-center rounded bg-accent/40 px-4 py-2 border-l-3 shadow transition-all duration-150",
-          isDragging && "scale-103 bg-background shadow-xl",
-          activeNodeId === node.id && " border-l-primary",
-          node.group === GROUP_LAYOUT && "min-h-100",
+          "flex gap-4 w-full  items-center rounded bg-accent/40 px-4 py-2 shadow border-l-3 transition-all duration-300",
+          activeNodeId === node.id && "border-l-primary",
         )}
       >
-        <div
-          className={cn(
-            "flex-1",
-            node.group === GROUP_ELEMENT && "pointer-events-none ",
-          )}
-        >
+        <div className="flex flex-col gap-2 w-full">
           <DesignerNode elementInstance={node} />
         </div>
       </div>

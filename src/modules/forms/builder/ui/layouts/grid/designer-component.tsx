@@ -1,30 +1,56 @@
+import { useDragOperation, useDroppable } from "@dnd-kit/react";
+import { CollisionPriority } from "@dnd-kit/abstract";
+import { pointerIntersection } from "@dnd-kit/collision";
+
 import { Label } from "@/shared/ui/label";
 
 import { cn } from "@/shared/lib/utils";
 
-import { type FormLayoutInstance } from "../../../types";
+import {
+  DropAreaZone,
+  GenericData,
+  isDragData,
+  type FormLayoutInstance,
+} from "../../../types";
 
-import { DesignerNodeWrapper } from "../../canvas/designer-node-wrapper";
+import { DesignerWrapper } from "../../canvas/designer-wrapper";
 
 export const DesignerComponent = ({
   elementInstance,
   ref,
-  isDropTarget,
 }: {
   elementInstance: FormLayoutInstance<"Grid">;
   ref: (element: Element | null) => void;
-  isDropTarget: boolean;
 }) => {
   const { id, children, properties } = elementInstance;
   const { label, column, gap } = properties;
 
+  const { ref: droppableRef, isDropTarget } = useDroppable<GenericData>({
+    id: `layout-droppable-node-${id}`,
+    type: "layout-droppable",
+    accept: "element",
+    collisionDetector: pointerIntersection,
+    collisionPriority: CollisionPriority.High,
+    data: {
+      area: DropAreaZone.GRID,
+      id,
+    },
+  });
+
+  const { source } = useDragOperation();
+  const showPlaceholder =
+    isDropTarget &&
+    source &&
+    isDragData(source.data) &&
+    source.data.isDesignerBtnElement;
+
   return (
-    <div className="flex flex-col gap-2 w-full">
+    <div ref={droppableRef} className="flex flex-col gap-2 w-full">
       <Label>{label}</Label>
       <div
         className={cn(
-          "max-w-230 h-full m-0 rounded flex flex-col grow items-center justify-start flex-1 overflow-y-auto transition-all",
-          isDropTarget && "ring-2 ring-primary/20",
+          "max-w-230 h-full m-0 rounded flex flex-col grow items-center justify-start flex-1 overflow-y-auto transition-all min-h-40 border-2 border-dashed",
+          isDropTarget && "border-primary",
         )}
       >
         {!isDropTarget && children.length === 0 && (
@@ -41,16 +67,17 @@ export const DesignerComponent = ({
             )}
           >
             {children.map((node, index) => (
-              <DesignerNodeWrapper
+              <DesignerWrapper
                 key={node.id}
                 node={node}
                 index={index}
-                group={node.id}
+                type={node.group}
+                group={id}
               />
             ))}
           </div>
         )}
-        {isDropTarget && (
+        {showPlaceholder && (
           <div className="p-4 w-full">
             <div className="h-30 rounded bg-primary/20"></div>
           </div>
