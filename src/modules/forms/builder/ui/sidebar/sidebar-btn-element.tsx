@@ -12,10 +12,11 @@ export const SidebarBtnElement = ({ formNode }: { formNode: FormNode }) => {
     id: `designer-btn-${formNode.type}`,
     type: formNode.group,
     data: {
-      type: formNode.type,
       isDesignerBtnElement: true,
+      type: formNode.type,
     },
   });
+
   return (
     <Button
       ref={ref}

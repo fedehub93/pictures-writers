@@ -1,131 +1,194 @@
 "use client";
 
-import { FormNodeInstance } from "../types";
-
 import { create } from "zustand";
-import { GROUP_ELEMENT, GROUP_LAYOUT } from "../constants";
+import { immer } from "zustand/middleware/immer";
+
+import {
+  type FormNodeDynamicInstance,
+  FormNodeInstance,
+  FormRootInstance,
+} from "../types";
+
+import {
+  addNodeToChildren,
+  extractNodeById,
+  extractNodeFromParent,
+  findNodeRecursively,
+  removeNodeFromChildren,
+} from "../helpers";
 
 interface DesignerStore {
   // --- STATE ---
-  nodes: FormNodeInstance[];
+  root: FormRootInstance;
   activeNodeId: string | null;
 
   // --- ACTIONS ---
   setActiveNodeId: (id: string | null) => void;
 
+  // --- NODE GETTERS ---
+  // Note: Since this is a pure function, you could export it directly from a helper file
+  // rather than keeping it in the store, but it's fine here if you prefer.
+  findNodeById: (id: string) => FormNodeInstance | null;
+
   // --- NODE MUTATIONS ---
   addNode: (
-    node: FormNodeInstance,
+    node: FormNodeDynamicInstance,
     index?: number,
-    parentId?: string | null,
+    parentId?: string | "root",
   ) => void;
-  removeNode: (id: string) => void;
-  updateNode: (id: string, properties: any) => void;
 
-  setNodes: (nodes: FormNodeInstance[]) => void;
+  removeNodeById: (id: string) => void;
+
+  moveNodeToContainer: (sourceId: string, targetContainerId: string) => void;
+  moveNodeInTree: (
+    initialIndex: number,
+    index: number,
+    initialParentId?: string,
+    targetParentId?: string,
+  ) => void;
+
+  setRoot: (root: FormRootInstance) => void;
 }
 
-export const useDesigner = create<DesignerStore>((set) => ({
-  nodes: [],
-  activeNodeId: null,
+const initialRoot: FormRootInstance = {
+  id: "root",
+  group: "layout",
+  type: "Root",
+  properties: {}, // Aggiungi qui eventuali proprietà globali del form
+  children: [
+    {
+      id: "A",
+      group: "element",
+      type: "TextField",
+      properties: {
+        label: "Label",
+        helperText: "Helper",
+        placeHolder: "Placeholder",
+      },
+    },
+    {
+      id: "Layout",
+      group: "layout",
+      type: "Grid",
+      children: [],
+      properties: {
+        label: "Label",
+        column: 2,
+        gap: "2px",
+      },
+    },
+    {
+      id: "B",
+      group: "element",
+      type: "TextField",
+      properties: {
+        label: "Label",
+        helperText: "Helper",
+        placeHolder: "Placeholder",
+      },
+    },
+  ],
+};
 
-  setActiveNodeId: (id) => set({ activeNodeId: id }),
+// Wrap the creator function with immer()
+export const useDesigner = create<DesignerStore>()(
+  immer((set, get) => ({
+    root: initialRoot,
+    activeNodeId: null,
 
-  setNodes: (nodes) => set({ nodes }),
+    // Basic state updates with Immer
+    setActiveNodeId: (id) =>
+      set((draft) => {
+        draft.activeNodeId = id;
+      }),
 
-  addNode: (node, index, parentId) =>
-    set((state) => {
-      const newNodes = [...state.nodes];
+    setRoot: (root) =>
+      set((draft) => {
+        draft.root = root;
+      }),
 
-      const isAddToLayout = parentId && node.group === GROUP_ELEMENT;
+    // Accessing current state safely using get()
+    findNodeById: (id) => {
+      const currentState = get();
+      return findNodeRecursively(currentState.root, id);
+    },
 
-      // Add to layout
-      if (isAddToLayout) {
-        const parentIndex = newNodes.findIndex((n) => n.id === parentId);
-
-        if (parentIndex > -1 && newNodes[parentIndex].group === GROUP_LAYOUT) {
-          const parent = newNodes[parentIndex];
-
-          const newChildren = [...parent.children];
+    // Complex mutations powered by Immer
+    addNode: (node, index, parentId = "root") =>
+      set((draft) => {
+        if (parentId === "root") {
           if (index !== undefined) {
-            newChildren.splice(index, 0, node);
+            draft.root.children.splice(index, 0, node);
           } else {
-            newChildren.push(node);
+            draft.root.children.push(node);
           }
-
-          newNodes[parentIndex] = {
-            ...parent,
-            children: newChildren,
-          };
+          return; // Early return to avoid further processing
         }
-        return { nodes: newNodes };
-      }
 
-      //  Add to root
-      if (index != undefined) {
-        newNodes.splice(index, 0, node);
-      } else {
-        newNodes.push(node);
-      }
+        // Delegate nested logic to the helper, passing the draft children array
+        addNodeToChildren(draft.root.children, parentId, node, index);
+      }),
 
-      return { nodes: newNodes };
-    }),
-  removeNode: (id) =>
-    set((state) => {
-      // Get all other nodes
-      console.log(id);
-      const filteredRoot = state.nodes.filter((node) => node.id !== id);
+    removeNodeById: (id) =>
+      set((draft) => {
+        removeNodeFromChildren(draft.root.children, id);
 
-      // 1. If length is difference we have removed the node
-      if (filteredRoot.length !== state.nodes.length) {
-        const newActiveNodeId =
-          state.activeNodeId === id ? null : state.activeNodeId;
-        return { nodes: filteredRoot, activeNodeId: newActiveNodeId };
-      }
+        // Optional: If the deleted node was active, reset activeNodeId
+        if (draft.activeNodeId === id) {
+          draft.activeNodeId = null;
+        }
+      }),
+    moveNodeToContainer: (sourceId, targetContainerId) =>
+      set((draft) => {
+        // 1. Identify and extract the node from the tree
+        const nodeToMove = extractNodeById(draft.root.children, sourceId);
 
-      // 2. If node not found I will search inside the layout nodes
-      const newNodes = state.nodes.map((node) => {
-        if (node.group === GROUP_LAYOUT) {
-          const filteredChildren = node.children.filter(
-            (child) => child.id !== id,
+        if (!nodeToMove) {
+          return; // Node not found, abort mutation
+        }
+
+        // 2. Insert the extracted node into the new destination
+        if (targetContainerId === "root") {
+          draft.root.children.push(nodeToMove);
+        } else {
+          // addNodeToChildren handles recursive searching for the target container
+          // and pushes the node into its children array.
+          addNodeToChildren(draft.root.children, targetContainerId, nodeToMove);
+        }
+      }),
+    moveNodeInTree: (
+      initialIndex,
+      index,
+      initialParentId = "root",
+      targetParentId = "root",
+    ) =>
+      set((draft) => {
+        let nodeToMove: FormNodeDynamicInstance | undefined;
+
+        // 1. EXTRACT
+        if (initialParentId === "root") {
+          nodeToMove = draft.root.children.splice(initialIndex, 1)[0];
+        } else {
+          nodeToMove = extractNodeFromParent(
+            draft.root.children,
+            initialParentId,
+            initialIndex,
           );
-
-          // If length is difference we have removed the node
-          if (filteredChildren.length !== node.children.length) {
-            return { ...node, children: filteredChildren };
-          }
-        }
-        return node;
-      });
-
-      const newActiveNodeId =
-        state.activeNodeId === id ? null : state.activeNodeId;
-      return { nodes: newNodes, activeNodeId: newActiveNodeId };
-    }),
-  updateNode: (id, properties) =>
-    set((state) => {
-      const newNodes = state.nodes.map((node) => {
-        // Root update
-        if (node.id === id) {
-          return { ...node, properties: { ...node.properties, ...properties } };
         }
 
-        // Within layout update
-        if (node.group === GROUP_LAYOUT) {
-          const childIndex = node.children.findIndex((node) => node.id === id);
-          if (childIndex > -1) {
-            const newChildren = [...node.children];
-            newChildren[childIndex] = {
-              ...newChildren[childIndex].properties,
-              ...properties,
-            };
-            return { ...node, children: newChildren };
-          }
+        if (!nodeToMove) return;
+
+        // 2. INSERT
+        if (targetParentId === "root") {
+          draft.root.children.splice(index, 0, nodeToMove);
+        } else {
+          addNodeToChildren(
+            draft.root.children,
+            targetParentId,
+            nodeToMove,
+            index,
+          );
         }
-
-        return node;
-      });
-
-      return { nodes: newNodes };
-    }),
-}));
+      }),
+  })),
+);
