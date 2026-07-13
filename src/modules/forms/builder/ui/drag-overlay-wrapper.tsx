@@ -1,6 +1,8 @@
 import { DragOverlay, useDragDropMonitor } from "@dnd-kit/react";
 
-import { type LayoutsType, type ElementsType, FormNodes } from "../types";
+import type { LayoutsType, ElementsType } from "../types";
+import { FormNodes } from "../registry";
+
 import { SidebarBtnElementDragOverlay } from "./sidebar/sidebar-btn-element-drag-overlay";
 
 export const DragOverlayWrapper = () => {

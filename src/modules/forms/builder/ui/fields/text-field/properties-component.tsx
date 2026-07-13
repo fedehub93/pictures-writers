@@ -39,7 +39,11 @@ export const TextFieldPropertiesForm = ({
 
   return (
     <Form {...form}>
-      <form onBlur={form.handleSubmit(onApplyChanges)} className="space-y-3">
+      <form
+        onSubmit={(e) => e.preventDefault()}
+        onBlur={form.handleSubmit(onApplyChanges)}
+        className="space-y-3"
+      >
         <GenericInput
           control={form.control}
           label="Label"

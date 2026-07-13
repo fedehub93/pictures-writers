@@ -1,8 +1,10 @@
 import { XIcon } from "lucide-react";
 import { Button } from "@/shared/ui/button";
+
 import { useDesigner } from "../../store/use-designer-store";
 import { findNodeRecursively } from "../../helpers";
-import { type FormNodeDynamicInstance, FormNodes } from "../../types";
+import type { FormNodeDynamicInstance } from "../../types";
+import { FormNodes } from "../../registry";
 
 export const SidebarNodeProperties = () => {
   const { activeNodeId, setActiveNodeId } = useDesigner();

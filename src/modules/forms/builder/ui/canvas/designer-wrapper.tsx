@@ -12,9 +12,11 @@ import { Button } from "@/shared/ui/button";
 import {
   DropAreaZone,
   DesignerWrapperData,
-  FormNodes,
   type FormNodeDynamicInstance,
 } from "../../types";
+
+import { FormNodes } from "../../registry";
+
 import { useDesigner } from "../../store/use-designer-store";
 
 interface DesignerWrapperProps {
@@ -56,7 +58,8 @@ export const DesignerWrapper = ({
     elementInstance: FormNodeDynamicInstance;
   }>;
 
-  const onRemoveNode = () => {
+  const onRemoveNode = (e: MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
     removeNodeById(node.id);
   };
 

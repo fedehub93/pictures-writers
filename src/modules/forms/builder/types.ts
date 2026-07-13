@@ -1,8 +1,5 @@
 import React from "react";
-import { type LucideIcon } from "lucide-react";
-
-import { TextFieldFormElement } from "./ui/fields/text-field/text-field";
-import { GridFormLayout } from "./ui/layouts/grid/grid-layout";
+import type { LucideIcon } from "lucide-react";
 
 // --- 1. Base Node Types ---
 export type RootType = "Root";
@@ -10,6 +7,24 @@ export type ElementsType = "TextField";
 export type LayoutsType = "Grid";
 
 export type NodesType = RootType | ElementsType | LayoutsType;
+
+export type DesignerBtnElement = {
+  icon: LucideIcon;
+  label: string;
+};
+
+export type BaseFormBlueprint<
+  TType extends NodesType,
+  TNodeInstance extends BaseNodeInstance,
+> = {
+  type: TType;
+  isContainer: boolean;
+  construct: (id: string) => TNodeInstance;
+  designerBtnElement: DesignerBtnElement;
+  designerComponent: React.ComponentType<{ elementInstance: TNodeInstance }>;
+  formComponent: React.ComponentType<{ elementInstance: TNodeInstance }>;
+  propertiesComponent: React.ComponentType<{ elementInstance: TNodeInstance }>;
+};
 
 export interface BaseNodeInstance {
   id: string;
@@ -51,34 +66,14 @@ export interface FormElementInstance<
   properties: FormElementPropertiesByType[TType];
 }
 
-export type FormElement<TType extends ElementsType = ElementsType> = {
-  isContainer: false;
-  type: TType;
-  construct: (id: string) => FormElementInstance<TType>;
-  designerBtnElement: {
-    icon: LucideIcon;
-    label: string;
+export type FormElement<TType extends ElementsType = ElementsType> =
+  BaseFormBlueprint<TType, FormElementInstance<TType>> & {
+    isContainer: false;
   };
-  // Using React.ComponentType instead of React.FC for passing component references
-  designerComponent: React.ComponentType<{
-    index: number;
-    elementInstance: FormElementInstance<TType>;
-  }>;
-  formComponent: React.ComponentType<{
-    elementInstance: FormElementInstance<TType>;
-  }>;
-  propertiesComponent: React.ComponentType<{
-    elementInstance: FormElementInstance<TType>;
-  }>;
-};
 
 export type FormElementsType = {
   [K in ElementsType]: FormElement<K>;
 };
-
-export const FormElements = {
-  TextField: TextFieldFormElement,
-} satisfies FormElementsType;
 
 // --- 4. Layouts ---
 export interface GridLayoutProperties {
@@ -87,7 +82,6 @@ export interface GridLayoutProperties {
   gap: string;
 }
 
-// Renamed for consistency with FormElementPropertiesByType
 export type FormLayoutPropertiesByType = {
   Grid: GridLayoutProperties;
 };
@@ -101,36 +95,17 @@ export interface FormLayoutInstance<
   children: FormElementInstance[]; // Layouts can strictly contain only other Elements
 }
 
-export type FormLayout<TType extends LayoutsType = LayoutsType> = {
-  isContainer: true;
-  type: TType;
-  construct: (id: string) => FormLayoutInstance<TType>;
-  designerBtnElement: {
-    icon: LucideIcon;
-    label: string;
+// --- 3. Layout Blueprint ---
+export type FormLayout<TType extends LayoutsType = LayoutsType> =
+  BaseFormBlueprint<TType, FormLayoutInstance<TType>> & {
+    isContainer: true;
   };
-  designerComponent: React.ComponentType<{
-    elementInstance: FormLayoutInstance<TType>;
-    isDropTarget: boolean;
-  }>;
-  formComponent: React.ComponentType<{
-    elementInstance: FormLayoutInstance<TType>;
-  }>;
-  propertiesComponent: React.ComponentType<{
-    elementInstance: FormLayoutInstance<TType>;
-  }>;
-};
 
 export type FormLayoutsType = {
   [K in LayoutsType]: FormLayout<K>;
 };
 
-export const FormLayouts = {
-  Grid: GridFormLayout,
-} satisfies FormLayoutsType;
-
 // --- 5. Unions & Collections ---
-// FormNode and FormNodeInstance ONLY include dynamic items (Layouts and Elements).
 
 export type FormNode = FormElement | FormLayout;
 export type FormNodeInstance =
@@ -140,11 +115,6 @@ export type FormNodeInstance =
 
 export type FormNodeDynamicInstance = FormElementInstance | FormLayoutInstance;
 export type FormNodeContainerInstance = FormRootInstance | FormLayoutInstance;
-
-export const FormNodes = {
-  ...FormElements,
-  ...FormLayouts,
-};
 
 // --- 6. State Definition ---
 // Main type for the state manager (e.g., Zustand or Redux)

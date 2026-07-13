@@ -13,18 +13,14 @@ import { MouseEvent } from "react";
 import { cn } from "@/shared/lib/utils";
 
 import { DesignerSidebar } from "../sidebar/designer-sidebar";
-import {
-  DropAreaZone,
-  FormNodes,
-  isDragData,
-  isGenericData,
-} from "../../types";
+import { DropAreaZone, isDragData, isGenericData } from "../../types";
+import { FormNodes } from "../../registry";
 
 import { generateId } from "../../lib/generator";
 import { useDesigner } from "../../store/use-designer-store";
+import { Root } from "../layouts/root/designer-component";
 
 import { DesignerTree } from "./designer-tree";
-import { Root } from "../layouts/root/designer-component";
 
 export const Designer = () => {
   const {

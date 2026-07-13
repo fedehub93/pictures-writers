@@ -1,6 +1,6 @@
 import { Separator } from "@/shared/ui/separator";
 
-import { FormElements, FormLayouts } from "../../types";
+import { FormElements, FormLayouts } from "../../registry";
 
 import { SidebarBtnElement } from "./sidebar-btn-element";
 
