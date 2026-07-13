@@ -2,7 +2,6 @@ import {
   type FormNodeDynamicInstance,
   type FormElementInstance,
 } from "../types";
-import { GROUP_LAYOUT, GROUP_ELEMENT } from "../constants";
 
 /**
  * Cerca un nodo Layout tra i figli del Root e aggiunge un Element.
@@ -16,9 +15,9 @@ export function addNodeToChildren(
 ): boolean {
   for (const node of children) {
     // Troviamo il Layout di destinazione
-    if (node.id === parentId && node.group === GROUP_LAYOUT) {
+    if (node.id === parentId && node.isContainer) {
       // Controllo di dominio: impedisce l'inserimento di Layout dentro Layout
-      if (nodeToAdd.group !== GROUP_ELEMENT) {
+      if (nodeToAdd.isContainer) {
         console.error(
           "Errore di dominio: Un Layout può contenere esclusivamente Elementi.",
         );

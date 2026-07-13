@@ -9,22 +9,22 @@ import {
 } from "../../../types";
 
 import { DesignerComponent } from "./designer-component";
-import { GROUP_ELEMENT } from "../../../constants";
+import { TextFieldPropertiesForm } from "./properties-component";
 
 const type: ElementsType = "TextField";
 
 const properties: TextFieldProperties = {
   label: "Text field",
   helperText: "Helper text",
-  placeHolder: "Value here...",
+  placeholder: "Value here...",
 };
 
 export const TextFieldFormElement: FormElement = {
-  group: "element",
+  isContainer: false,
   type,
   construct: (id: string) => ({
     id,
-    group: GROUP_ELEMENT,
+    isContainer: false,
     type,
     properties,
   }),
@@ -34,5 +34,5 @@ export const TextFieldFormElement: FormElement = {
   },
   designerComponent: DesignerComponent,
   formComponent: () => <div>Form Component</div>,
-  propertiesComponent: () => <div>Properties Component</div>,
+  propertiesComponent: TextFieldPropertiesForm,
 };

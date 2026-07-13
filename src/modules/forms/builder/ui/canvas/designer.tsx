@@ -82,7 +82,6 @@ export const Designer = () => {
       const { source, target } = event.operation;
 
       if (!source || !target) return;
-      setActiveNodeId(String(source.id));
 
       // 1. RIMOSSO il blocco globale: if (source.id === target.id) return;
 
@@ -104,14 +103,12 @@ export const Designer = () => {
           if (area === DropAreaZone.ROOT) {
             const newElement = FormNodes[type].construct(generateId());
             addNode(newElement, undefined, "root");
-            setActiveNodeId(newElement.id);
           } else if (
             source.data.type !== "Grid" &&
             area === DropAreaZone.GRID
           ) {
             const newElement = FormNodes[type].construct(generateId());
             addNode(newElement, undefined, targetId ?? "root"); // Fallback di sicurezza
-            setActiveNodeId(newElement.id);
           }
         }
       }

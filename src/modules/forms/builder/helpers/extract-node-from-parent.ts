@@ -1,5 +1,4 @@
 import { type FormNodeDynamicInstance } from "../types";
-import { GROUP_LAYOUT } from "../constants";
 
 /**
  * Recursively searches for a layout node by its ID, extracts a child node at the given index,
@@ -11,11 +10,11 @@ export function extractNodeFromParent(
   index: number,
 ): FormNodeDynamicInstance | undefined {
   for (const node of children) {
-    if (node.id === parentId && node.group === GROUP_LAYOUT) {
+    if (node.id === parentId && node.isContainer) {
       return node.children.splice(index, 1)[0];
     }
 
-    if (node.group === GROUP_LAYOUT) {
+    if (node.isContainer) {
       const extractedNode = extractNodeFromParent(
         node.children,
         parentId,

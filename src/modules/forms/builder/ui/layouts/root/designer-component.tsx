@@ -55,7 +55,7 @@ export const Root = (props: RootProps) => {
                 key={node.id}
                 node={node}
                 index={index}
-                type={node.group}
+                type={node.isContainer ? "layout" : "element"}
                 group="root"
               />
             ))}

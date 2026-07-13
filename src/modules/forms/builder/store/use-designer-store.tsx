@@ -3,11 +3,7 @@
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
-import {
-  type FormNodeDynamicInstance,
-  type FormNodeInstance,
-  type FormRootInstance,
-} from "../types";
+import { type FormNodeDynamicInstance, type FormRootInstance } from "../types";
 
 import {
   addNodeToChildren,
@@ -25,17 +21,13 @@ interface DesignerStore {
   // --- ACTIONS ---
   setActiveNodeId: (id: string | null) => void;
 
-  // --- NODE GETTERS ---
-  // Note: Since this is a pure function, you could export it directly from a helper file
-  // rather than keeping it in the store, but it's fine here if you prefer.
-  findNodeById: (id: string) => FormNodeInstance | null;
-
   // --- NODE MUTATIONS ---
   addNode: (
     node: FormNodeDynamicInstance,
     index?: number,
     parentId?: string | "root",
   ) => void;
+  updateNodeProperties: (id: string, properties: Record<string, any>) => void;
 
   removeNodeById: (id: string) => void;
 
@@ -52,23 +44,25 @@ interface DesignerStore {
 
 const initialRoot: FormRootInstance = {
   id: "root",
-  group: "layout",
+  // group: "layout",
+  isContainer: true,
   type: "Root",
   properties: {}, // Aggiungi qui eventuali proprietà globali del form
   children: [
     {
       id: "A",
-      group: "element",
+      // group: "element",
+      isContainer: false,
       type: "TextField",
       properties: {
         label: "Label",
         helperText: "Helper",
-        placeHolder: "Placeholder",
+        placeholder: "Placeholder",
       },
     },
     {
       id: "pippo",
-      group: "layout",
+      isContainer: true,
       type: "Grid",
       children: [],
       properties: {
@@ -79,12 +73,13 @@ const initialRoot: FormRootInstance = {
     },
     {
       id: "B",
-      group: "element",
+      // group: "element",
+      isContainer: false,
       type: "TextField",
       properties: {
         label: "Label",
         helperText: "Helper",
-        placeHolder: "Placeholder",
+        placeholder: "Placeholder",
       },
     },
   ],
@@ -107,12 +102,6 @@ export const useDesigner = create<DesignerStore>()(
         draft.root = root;
       }),
 
-    // Accessing current state safely using get()
-    findNodeById: (id) => {
-      const currentState = get();
-      return findNodeRecursively(currentState.root, id);
-    },
-
     // Complex mutations powered by Immer
     addNode: (node, index, parentId = "root") =>
       set((draft) => {
@@ -128,7 +117,19 @@ export const useDesigner = create<DesignerStore>()(
         // Delegate nested logic to the helper, passing the draft children array
         addNodeToChildren(draft.root.children, parentId, node, index);
       }),
+    updateNodeProperties: (id, properties) =>
+      set((draft) => {
+        if (id === "root") {
+          Object.assign(draft.root.properties, properties);
+          return;
+        }
 
+        const node = findNodeRecursively(draft.root, id);
+
+        if (node) {
+          Object.assign(node.properties, properties);
+        }
+      }),
     removeNodeById: (id) =>
       set((draft) => {
         removeNodeFromChildren(draft.root.children, id);

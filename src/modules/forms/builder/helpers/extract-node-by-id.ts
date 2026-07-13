@@ -1,5 +1,4 @@
 import { type FormNodeDynamicInstance } from "../types";
-import { GROUP_LAYOUT } from "../constants";
 
 /**
  * Recursively searches for a node by its ID, removes it from its current position,
@@ -17,7 +16,7 @@ export function extractNodeById(
   }
 
   for (const node of children) {
-    if (node.group === GROUP_LAYOUT) {
+    if (node.isContainer) {
       const extractedNode = extractNodeById(node.children, id);
       if (extractedNode) return extractedNode;
     }

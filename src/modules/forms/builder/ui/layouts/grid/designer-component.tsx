@@ -17,10 +17,8 @@ import { DesignerWrapper } from "../../canvas/designer-wrapper";
 
 export const DesignerComponent = ({
   elementInstance,
-  ref,
 }: {
   elementInstance: FormLayoutInstance<"Grid">;
-  ref: (element: Element | null) => void;
 }) => {
   const { id, children, properties } = elementInstance;
   const { label, column, gap } = properties;
@@ -71,7 +69,7 @@ export const DesignerComponent = ({
                 key={node.id}
                 node={node}
                 index={index}
-                type={node.group}
+                type={node.isContainer ? "layout" : "element"}
                 group={id}
               />
             ))}

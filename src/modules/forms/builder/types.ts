@@ -1,46 +1,40 @@
+import React from "react";
 import { type LucideIcon } from "lucide-react";
 
 import { TextFieldFormElement } from "./ui/fields/text-field/text-field";
 import { GridFormLayout } from "./ui/layouts/grid/grid-layout";
-import { GROUP_ELEMENT, GROUP_LAYOUT } from "./constants";
 
 // --- 1. Base Node Types ---
 export type RootType = "Root";
 export type ElementsType = "TextField";
 export type LayoutsType = "Grid";
 
-// Nota: RootType non è incluso in NodesType perché il Root non
-// è un nodo "generico" scambiabile o annidabile.
 export type NodesType = RootType | ElementsType | LayoutsType;
-
-export type DroppableNodes = Omit<NodesType, RootType>;
 
 export interface BaseNodeInstance {
   id: string;
-  group: typeof GROUP_ELEMENT | typeof GROUP_LAYOUT;
+  isContainer: boolean;
   type: NodesType;
 }
 
 // --- 2. Root ---
 export interface RootProperties {
-  // Qui puoi inserire impostazioni globali del form
-  // es: theme: "light" | "dark", actionUrl: string, ecc.
   theme?: string;
 }
 
 export interface FormRootInstance extends BaseNodeInstance {
-  id: "root"; // ID letterale fisso
-  group: typeof GROUP_LAYOUT; // Il Root è considerato un layout speciale
+  id: "root"; // Fixed literal ID
+  isContainer: true; // The root is always a container
   type: RootType;
   properties: RootProperties;
-  children: FormNodeDynamicInstance[]; // Può contenere Layouts o Elements
+  children: FormNodeDynamicInstance[]; // Can contain Layouts or Elements
 }
 
 // --- 3. Elements ---
 export interface BaseFieldProperties {
   label: string;
   helperText: string;
-  placeHolder: string;
+  placeholder: string;
 }
 
 export interface TextFieldProperties extends BaseFieldProperties {}
@@ -52,27 +46,28 @@ export type FormElementPropertiesByType = {
 export interface FormElementInstance<
   TType extends ElementsType = ElementsType,
 > extends BaseNodeInstance {
-  group: typeof GROUP_ELEMENT;
+  isContainer: false; // Elements cannot have children
   type: TType;
   properties: FormElementPropertiesByType[TType];
 }
 
 export type FormElement<TType extends ElementsType = ElementsType> = {
-  group: typeof GROUP_ELEMENT;
+  isContainer: false;
   type: TType;
   construct: (id: string) => FormElementInstance<TType>;
   designerBtnElement: {
     icon: LucideIcon;
     label: string;
   };
-  designerComponent: React.FC<{
+  // Using React.ComponentType instead of React.FC for passing component references
+  designerComponent: React.ComponentType<{
     index: number;
     elementInstance: FormElementInstance<TType>;
   }>;
-  formComponent: React.FC<{
+  formComponent: React.ComponentType<{
     elementInstance: FormElementInstance<TType>;
   }>;
-  propertiesComponent: React.FC<{
+  propertiesComponent: React.ComponentType<{
     elementInstance: FormElementInstance<TType>;
   }>;
 };
@@ -92,36 +87,36 @@ export interface GridLayoutProperties {
   gap: string;
 }
 
-export type GridLayoutPropertiesByType = {
+// Renamed for consistency with FormElementPropertiesByType
+export type FormLayoutPropertiesByType = {
   Grid: GridLayoutProperties;
 };
 
 export interface FormLayoutInstance<
   TType extends LayoutsType = LayoutsType,
 > extends BaseNodeInstance {
-  group: typeof GROUP_LAYOUT;
+  isContainer: true; // Layouts can have children
   type: TType;
-  properties: GridLayoutPropertiesByType[TType];
-  children: FormElementInstance[]; // Layouts can contain other nodes
+  properties: FormLayoutPropertiesByType[TType];
+  children: FormElementInstance[]; // Layouts can strictly contain only other Elements
 }
 
 export type FormLayout<TType extends LayoutsType = LayoutsType> = {
-  group: typeof GROUP_LAYOUT;
+  isContainer: true;
   type: TType;
   construct: (id: string) => FormLayoutInstance<TType>;
   designerBtnElement: {
     icon: LucideIcon;
     label: string;
   };
-  designerComponent: React.FC<{
+  designerComponent: React.ComponentType<{
     elementInstance: FormLayoutInstance<TType>;
-    ref: (element: Element | null) => void;
     isDropTarget: boolean;
   }>;
-  formComponent: React.FC<{
+  formComponent: React.ComponentType<{
     elementInstance: FormLayoutInstance<TType>;
   }>;
-  propertiesComponent: React.FC<{
+  propertiesComponent: React.ComponentType<{
     elementInstance: FormLayoutInstance<TType>;
   }>;
 };
@@ -135,7 +130,7 @@ export const FormLayouts = {
 } satisfies FormLayoutsType;
 
 // --- 5. Unions & Collections ---
-// FormNode e FormNodeInstance includono SOLO gli elementi dinamici (Layout e Elements).
+// FormNode and FormNodeInstance ONLY include dynamic items (Layouts and Elements).
 
 export type FormNode = FormElement | FormLayout;
 export type FormNodeInstance =
@@ -151,8 +146,8 @@ export const FormNodes = {
   ...FormLayouts,
 };
 
-// --- 6. State Definition (Esempio) ---
-// Questo sarà il tipo principale del tuo store (es. Zustand o Redux)
+// --- 6. State Definition ---
+// Main type for the state manager (e.g., Zustand or Redux)
 export type FormBuilderState = {
   root: FormRootInstance;
 };
@@ -163,9 +158,13 @@ export type DragData = {
   isDesignerBtnElement: boolean;
 };
 
+// Strengthened type guard: verifies both key existence and primitive type
 export const isDragData = (data: unknown): data is DragData => {
   if (!data || typeof data !== "object") return false;
-  return "type" in data && "isDesignerBtnElement" in data;
+  const d = data as Record<string, unknown>;
+  return (
+    typeof d.type === "string" && typeof d.isDesignerBtnElement === "boolean"
+  );
 };
 
 export enum DropAreaZone {
@@ -181,15 +180,17 @@ export type DesignerWrapperData = {
   area: DropAreaType;
 };
 
+// Strengthened type guard
 export const isDesignerWrapperData = (
   data: unknown,
 ): data is DesignerWrapperData => {
   if (!data || typeof data !== "object") return false;
+  const d = data as Record<string, unknown>;
   return (
-    "area" in data &&
-    "id" in data &&
-    "isDesignerBtnElement" in data &&
-    "type" in data
+    typeof d.id === "string" &&
+    typeof d.isDesignerBtnElement === "boolean" &&
+    typeof d.type === "string" &&
+    typeof d.area === "string"
   );
 };
 
@@ -198,7 +199,9 @@ export type GenericData = {
   area: DropAreaType;
 };
 
+// Strengthened type guard
 export const isGenericData = (data: unknown): data is GenericData => {
   if (!data || typeof data !== "object") return false;
-  return "area" in data && "id" in data;
+  const d = data as Record<string, unknown>;
+  return typeof d.id === "string" && typeof d.area === "string";
 };

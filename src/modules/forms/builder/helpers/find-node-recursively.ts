@@ -1,12 +1,12 @@
-import { FormNodeInstance, FormRootInstance } from "../types";
+import { type FormNodeInstance } from "../types";
 
 export const findNodeRecursively = (
   node: FormNodeInstance,
-  id: string,
+  id: string | null,
 ): FormNodeInstance | null => {
-  if (node.id === id) return node as FormNodeInstance;
+  if (node.id === id) return node;
 
-  if (node.group === "element" || !node.children) return null;
+  if (!node.isContainer || !node.children) return null;
 
   for (const child of node.children) {
     const result = findNodeRecursively(child, id);

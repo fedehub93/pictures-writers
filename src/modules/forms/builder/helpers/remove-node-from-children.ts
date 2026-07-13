@@ -1,4 +1,3 @@
-import { GROUP_LAYOUT } from "../constants";
 import { type FormNodeDynamicInstance } from "../types";
 
 /**
@@ -17,7 +16,7 @@ export function removeNodeFromChildren(
   }
 
   for (const node of children) {
-    if (node.group === GROUP_LAYOUT) {
+    if (node.isContainer) {
       const removed = removeNodeFromChildren(node.children, id);
       if (removed) return true;
     }

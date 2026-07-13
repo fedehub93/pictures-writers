@@ -30,7 +30,7 @@ export const DesignerWrapper = ({
   group,
   index,
 }: DesignerWrapperProps) => {
-  const { removeNodeById, activeNodeId, setActiveNodeId, root } = useDesigner();
+  const { removeNodeById, activeNodeId, setActiveNodeId } = useDesigner();
   const { ref: sortableRef, handleRef } = useSortable<DesignerWrapperData>({
     id: node.id,
     index,
