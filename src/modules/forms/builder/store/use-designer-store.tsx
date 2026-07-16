@@ -69,8 +69,8 @@ const initialRoot: FormRootInstance = {
       children: [],
       properties: {
         label: "Label",
-        column: 2,
-        gap: "2px",
+        columns: 1,
+        gap: 0,
       },
     },
     {

@@ -15,13 +15,13 @@ import {
 
 import { DesignerWrapper } from "../../canvas/designer-wrapper";
 
-export const DesignerComponent = ({
+export const GridDesignerComponent = ({
   elementInstance,
 }: {
   elementInstance: FormLayoutInstance<"Grid">;
 }) => {
   const { id, children, properties } = elementInstance;
-  const { label, column, gap } = properties;
+  const { label, columns, gap } = properties;
 
   const { ref: droppableRef, isDropTarget } = useDroppable<GenericData>({
     id: `layout-droppable-node-${id}`,
@@ -44,10 +44,9 @@ export const DesignerComponent = ({
 
   return (
     <div ref={droppableRef} className="flex flex-col gap-2 w-full">
-      <Label>{label}</Label>
       <div
         className={cn(
-          "max-w-230 h-full m-0 rounded flex flex-col grow items-center justify-start flex-1 overflow-y-auto transition-all min-h-40 border-2 border-dashed",
+          "max-w-230 h-full m-0 rounded flex flex-col grow items-center justify-start flex-1 overflow-y-auto transition-all min-h-40",
           isDropTarget && "border-primary",
         )}
       >
@@ -59,10 +58,13 @@ export const DesignerComponent = ({
 
         {children.length > 0 && (
           <div
-            className={cn(
-              "flex flex-col w-full gap-2 p-4",
-              // area === DropAreaZone.GRID && "flex-row flex-1",
-            )}
+            className={cn("w-full grid")}
+            style={{
+              gridTemplateColumns: columns
+                ? `repeat(${columns}, minmax(0, 1fr))`
+                : undefined,
+              gap: gap ? `calc(var(--spacing) * ${gap})` : undefined,
+            }}
           >
             {children.map((node, index) => (
               <DesignerWrapper

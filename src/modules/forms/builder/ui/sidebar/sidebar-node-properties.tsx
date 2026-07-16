@@ -26,7 +26,9 @@ export const SidebarNodeProperties = () => {
   return (
     <div className="flex flex-col p-2 gap-y-4">
       <div className="flex justify-between items-center h-8">
-        <p className="text-sm text-foreground">Element properties</p>
+        <p className="text-sm text-foreground">
+          {node.isContainer ? "Layout" : "Field"} properties
+        </p>
         <Button size="icon" variant="ghost" onClick={onClose}>
           <XIcon className="size-4" />
         </Button>

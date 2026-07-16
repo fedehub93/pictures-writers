@@ -98,10 +98,13 @@ export type FormElementsType = {
 };
 
 // --- 4. Layouts ---
-export interface GridLayoutProperties {
+export interface BaseLayoutProperties {
   label: string;
-  column: number;
-  gap: string;
+}
+
+export interface GridLayoutProperties extends BaseLayoutProperties {
+  columns?: number;
+  gap?: number;
 }
 
 export type FormLayoutPropertiesByType = {

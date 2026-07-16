@@ -8,7 +8,8 @@ import type {
   FormLayout,
 } from "../../../types";
 
-import { DesignerComponent } from "./designer-component";
+import { GridDesignerComponent } from "./designer-component";
+import { GridPropertiesComponent } from "./properties-component";
 
 const type: LayoutsType = "Grid";
 
@@ -18,7 +19,7 @@ const properties: GridLayoutProperties = {
   gap: "2px",
 };
 
-export const GridFormLayout: FormLayout = {
+export const GridFormLayout = {
   isContainer: true,
   type,
   construct: (id: string) => ({
@@ -32,7 +33,7 @@ export const GridFormLayout: FormLayout = {
     icon: GridIcon,
     label: "Grid",
   },
-  designerComponent: DesignerComponent,
+  designerComponent: GridDesignerComponent,
   formComponent: () => <div>Form Component</div>,
-  propertiesComponent: () => <div>Properties Component</div>,
-};
+  propertiesComponent: GridPropertiesComponent,
+} satisfies FormLayout<"Grid">;

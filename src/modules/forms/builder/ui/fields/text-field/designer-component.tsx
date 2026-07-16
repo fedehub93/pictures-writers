@@ -19,7 +19,7 @@ export const DesignerComponent = ({
 
   return (
     <div className="flex flex-col gap-2 w-full">
-      <div className="flex justify-between">
+      <div className="flex items-center justify-between">
         <Label>{label}</Label>
         {required && <Badge>Required</Badge>}
       </div>
