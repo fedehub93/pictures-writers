@@ -11,12 +11,14 @@ import {
 import { Switch } from "@/shared/ui/switch";
 import { cn } from "@/shared/lib/utils";
 
-interface GenericSwitchProps<T extends FieldValues>
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface GenericSwitchProps<
+  T extends FieldValues,
+> extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   control: Control<T>;
   name: Path<T>;
   label?: string;
   description?: string;
+  onCheckedChange?: (checked: boolean) => void;
 }
 
 export const GenericSwitch = <T extends FieldValues>({
@@ -24,6 +26,7 @@ export const GenericSwitch = <T extends FieldValues>({
   name,
   label,
   description,
+  onCheckedChange,
   ...buttonProps
 }: GenericSwitchProps<T>) => {
   return (
@@ -34,17 +37,22 @@ export const GenericSwitch = <T extends FieldValues>({
         <FormItem
           className={cn(
             "flex flex-row justify-between gap-x-4",
-            label && "items-center"
+            label && "items-center",
           )}
         >
           {label && <FormLabel className="mb-0">{label}</FormLabel>}
-          {description && <FormDescription className="mb-0">{description}</FormDescription>}
+          {description && (
+            <FormDescription className="mb-0">{description}</FormDescription>
+          )}
           <FormControl>
             <Switch
               {...field}
               {...buttonProps}
               checked={field.value}
-              onCheckedChange={field.onChange}
+              onCheckedChange={(checked) => {
+                field.onChange(checked);
+                onCheckedChange?.(checked);
+              }}
               className="mb-0"
             />
           </FormControl>

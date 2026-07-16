@@ -1,5 +1,5 @@
-import { TextFieldFormElement } from "./ui/fields/text-field/text-field";
-import { GridFormLayout } from "./ui/layouts/grid/grid-layout";
+import { TextFieldFormElement } from "./ui/fields/text-field";
+import { GridFormLayout } from "./ui/layouts/grid";
 
 import type { FormElementsType, FormLayoutsType } from "./types";
 

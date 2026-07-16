@@ -86,7 +86,7 @@ export const DesignerWrapper = ({
       </div>
       <div
         className={cn(
-          "flex gap-4 w-full  items-center rounded bg-accent/40 px-4 py-2 shadow border-l-3 transition-all duration-300",
+          "flex gap-4 w-full  items-center rounded bg-accent/40 px-4 py- shadow border-l-3 transition-all duration-300",
           activeNodeId === node.id && "border-l-primary",
         )}
       >

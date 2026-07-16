@@ -12,7 +12,7 @@ import {
 import { Input } from "@/shared/ui/input";
 import { cn } from "@/shared/lib/utils";
 
-interface GenericInputProps<
+interface GenericNumberProps<
   T extends FieldValues,
 > extends React.InputHTMLAttributes<HTMLInputElement> {
   control: Control<T>;
@@ -23,7 +23,7 @@ interface GenericInputProps<
   labelProps?: React.ComponentProps<typeof LabelPrimitive.Root>;
 }
 
-export const GenericInput = <T extends FieldValues>({
+export const GenericNumber = <T extends FieldValues>({
   control,
   name,
   label,
@@ -33,7 +33,7 @@ export const GenericInput = <T extends FieldValues>({
   containerProps,
   labelProps,
   ...inputProps
-}: GenericInputProps<T>) => {
+}: GenericNumberProps<T>) => {
   return (
     <FormField
       control={control}
@@ -50,6 +50,8 @@ export const GenericInput = <T extends FieldValues>({
             <Input
               {...field}
               {...inputProps}
+              type="number"
+              value={field.value ?? ""}
               className={cn(
                 `disabled:cursor-not-allowed`,
                 inputProps.className && inputProps.className,
@@ -59,7 +61,11 @@ export const GenericInput = <T extends FieldValues>({
                 onBlur?.(e); // Chiama anche il tuo onBlur personalizzato se presente
               }}
               onChange={(e) => {
-                field.onChange(e); // Mantiene la gestione di react-hook-form
+                field.onChange(
+                  e.target.value === "" || Number(e.target.value) === 0
+                    ? undefined
+                    : parseInt(e.target.value, 10),
+                ); // Mantiene la gestione di react-hook-form
                 onChange?.(e); // Chiama anche il tuo onChange personalizzato se presente
               }}
             />

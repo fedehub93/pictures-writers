@@ -1,4 +1,4 @@
-import React from "react";
+import z from "zod";
 import type { LucideIcon } from "lucide-react";
 
 // --- 1. Base Node Types ---
@@ -32,6 +32,11 @@ export interface BaseNodeInstance {
   type: NodesType;
 }
 
+// --- 2. Validation ---
+export interface BaseValidation {
+  required: boolean;
+}
+
 // --- 2. Root ---
 export interface RootProperties {
   theme?: string;
@@ -47,15 +52,28 @@ export interface FormRootInstance extends BaseNodeInstance {
 
 // --- 3. Elements ---
 export interface BaseFieldProperties {
+  name: string;
   label: string;
   helperText: string;
   placeholder: string;
+  validation: BaseValidation;
 }
 
-export interface TextFieldProperties extends BaseFieldProperties {}
+export interface TextFieldValidation extends BaseValidation {
+  minLength?: number;
+  maxLength?: number;
+}
+
+export interface TextFieldProperties extends BaseFieldProperties {
+  validation: TextFieldValidation;
+}
 
 export type FormElementPropertiesByType = {
   TextField: TextFieldProperties;
+};
+
+export type FormElementValueByType = {
+  TextField: string;
 };
 
 export interface FormElementInstance<
@@ -69,6 +87,10 @@ export interface FormElementInstance<
 export type FormElement<TType extends ElementsType = ElementsType> =
   BaseFormBlueprint<TType, FormElementInstance<TType>> & {
     isContainer: false;
+    buildSchema: (properties: FormElementPropertiesByType[TType]) => z.ZodType;
+    getInitialValue: (
+      properties: FormElementPropertiesByType[TType],
+    ) => FormElementValueByType[TType];
   };
 
 export type FormElementsType = {

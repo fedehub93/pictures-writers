@@ -44,20 +44,22 @@ interface DesignerStore {
 
 const initialRoot: FormRootInstance = {
   id: "root",
-  // group: "layout",
   isContainer: true,
   type: "Root",
-  properties: {}, // Aggiungi qui eventuali proprietà globali del form
+  properties: {},
   children: [
     {
       id: "A",
-      // group: "element",
       isContainer: false,
       type: "TextField",
       properties: {
+        name: "label",
         label: "Label",
         helperText: "Helper",
         placeholder: "Placeholder",
+        validation: {
+          required: false,
+        },
       },
     },
     {
@@ -77,9 +79,13 @@ const initialRoot: FormRootInstance = {
       isContainer: false,
       type: "TextField",
       properties: {
+        name: "label-2",
         label: "Label",
         helperText: "Helper",
         placeholder: "Placeholder",
+        validation: {
+          required: false,
+        },
       },
     },
   ],

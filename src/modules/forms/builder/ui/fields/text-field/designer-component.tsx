@@ -1,18 +1,28 @@
 import { Label } from "@/shared/ui/label";
 import { Input } from "@/shared/ui/input";
 
-import { type FormElementInstance } from "../../../types";
+import { Badge } from "@/shared/ui/badge";
+
+import type { FormElementInstance } from "../../../types";
 
 export const DesignerComponent = ({
   elementInstance,
 }: {
   elementInstance: FormElementInstance<"TextField">;
 }) => {
-  const { label, placeholder, helperText } = elementInstance.properties;
+  const {
+    label,
+    placeholder,
+    helperText,
+    validation: { required },
+  } = elementInstance.properties;
 
   return (
     <div className="flex flex-col gap-2 w-full">
-      <Label>{label}</Label>
+      <div className="flex justify-between">
+        <Label>{label}</Label>
+        {required && <Badge>Required</Badge>}
+      </div>
       <Input
         readOnly
         disabled
