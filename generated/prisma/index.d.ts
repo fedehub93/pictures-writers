@@ -49573,6 +49573,7 @@ export namespace Prisma {
     id: number
     name: number
     fields: number
+    content: number
     submitLabel: number
     gtmEventName: number
     gtmCategory: number
@@ -49609,6 +49610,7 @@ export namespace Prisma {
     id?: true
     name?: true
     fields?: true
+    content?: true
     submitLabel?: true
     gtmEventName?: true
     gtmCategory?: true
@@ -49694,6 +49696,7 @@ export namespace Prisma {
     id: string
     name: string
     fields:PrismaJson.FormFields | null
+    content:PrismaJson.FormContentState | null
     submitLabel: string | null
     gtmEventName: string | null
     gtmCategory: string | null
@@ -49723,6 +49726,7 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     fields?: boolean
+    content?: boolean
     submitLabel?: boolean
     gtmEventName?: boolean
     gtmCategory?: boolean
@@ -49738,6 +49742,7 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     fields?: boolean
+    content?: boolean
     submitLabel?: boolean
     gtmEventName?: boolean
     gtmCategory?: boolean
@@ -49750,6 +49755,7 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     fields?: boolean
+    content?: boolean
     submitLabel?: boolean
     gtmEventName?: boolean
     gtmCategory?: boolean
@@ -49762,6 +49768,7 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     fields?: boolean
+    content?: boolean
     submitLabel?: boolean
     gtmEventName?: boolean
     gtmCategory?: boolean
@@ -49770,7 +49777,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type FormOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "fields" | "submitLabel" | "gtmEventName" | "gtmCategory" | "gtmLabel" | "createdAt" | "updatedAt", ExtArgs["result"]["form"]>
+  export type FormOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "fields" | "content" | "submitLabel" | "gtmEventName" | "gtmCategory" | "gtmLabel" | "createdAt" | "updatedAt", ExtArgs["result"]["form"]>
   export type FormInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     products?: boolean | Form$productsArgs<ExtArgs>
     submissions?: boolean | Form$submissionsArgs<ExtArgs>
@@ -49792,6 +49799,10 @@ export namespace Prisma {
        * [FormFields]
        */
       fields:PrismaJson.FormFields | null
+      /**
+       * [FormContentState]
+       */
+      content:PrismaJson.FormContentState | null
       submitLabel: string | null
       gtmEventName: string | null
       gtmCategory: string | null
@@ -50226,6 +50237,7 @@ export namespace Prisma {
     readonly id: FieldRef<"Form", 'String'>
     readonly name: FieldRef<"Form", 'String'>
     readonly fields: FieldRef<"Form", 'Json'>
+    readonly content: FieldRef<"Form", 'Json'>
     readonly submitLabel: FieldRef<"Form", 'String'>
     readonly gtmEventName: FieldRef<"Form", 'String'>
     readonly gtmCategory: FieldRef<"Form", 'String'>
@@ -57834,6 +57846,7 @@ export namespace Prisma {
     id: 'id',
     name: 'name',
     fields: 'fields',
+    content: 'content',
     submitLabel: 'submitLabel',
     gtmEventName: 'gtmEventName',
     gtmCategory: 'gtmCategory',
@@ -61340,6 +61353,7 @@ export namespace Prisma {
     id?: StringFilter<"Form"> | string
     name?: StringFilter<"Form"> | string
     fields?: JsonNullableFilter<"Form">
+    content?: JsonNullableFilter<"Form">
     submitLabel?: StringNullableFilter<"Form"> | string | null
     gtmEventName?: StringNullableFilter<"Form"> | string | null
     gtmCategory?: StringNullableFilter<"Form"> | string | null
@@ -61354,6 +61368,7 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     fields?: SortOrderInput | SortOrder
+    content?: SortOrderInput | SortOrder
     submitLabel?: SortOrderInput | SortOrder
     gtmEventName?: SortOrderInput | SortOrder
     gtmCategory?: SortOrderInput | SortOrder
@@ -61371,6 +61386,7 @@ export namespace Prisma {
     NOT?: FormWhereInput | FormWhereInput[]
     name?: StringFilter<"Form"> | string
     fields?: JsonNullableFilter<"Form">
+    content?: JsonNullableFilter<"Form">
     submitLabel?: StringNullableFilter<"Form"> | string | null
     gtmEventName?: StringNullableFilter<"Form"> | string | null
     gtmCategory?: StringNullableFilter<"Form"> | string | null
@@ -61385,6 +61401,7 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     fields?: SortOrderInput | SortOrder
+    content?: SortOrderInput | SortOrder
     submitLabel?: SortOrderInput | SortOrder
     gtmEventName?: SortOrderInput | SortOrder
     gtmCategory?: SortOrderInput | SortOrder
@@ -61403,6 +61420,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"Form"> | string
     name?: StringWithAggregatesFilter<"Form"> | string
     fields?: JsonNullableWithAggregatesFilter<"Form">
+    content?: JsonNullableWithAggregatesFilter<"Form">
     submitLabel?: StringNullableWithAggregatesFilter<"Form"> | string | null
     gtmEventName?: StringNullableWithAggregatesFilter<"Form"> | string | null
     gtmCategory?: StringNullableWithAggregatesFilter<"Form"> | string | null
@@ -65138,6 +65156,7 @@ export namespace Prisma {
     id?: string
     name: string
     fields?:PrismaJson.FormFields | NullableJsonNullValueInput
+    content?:PrismaJson.FormContentState | NullableJsonNullValueInput
     submitLabel?: string | null
     gtmEventName?: string | null
     gtmCategory?: string | null
@@ -65152,6 +65171,7 @@ export namespace Prisma {
     id?: string
     name: string
     fields?:PrismaJson.FormFields | NullableJsonNullValueInput
+    content?:PrismaJson.FormContentState | NullableJsonNullValueInput
     submitLabel?: string | null
     gtmEventName?: string | null
     gtmCategory?: string | null
@@ -65166,6 +65186,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     fields?:PrismaJson.FormFields | NullableJsonNullValueInput
+    content?:PrismaJson.FormContentState | NullableJsonNullValueInput
     submitLabel?: NullableStringFieldUpdateOperationsInput | string | null
     gtmEventName?: NullableStringFieldUpdateOperationsInput | string | null
     gtmCategory?: NullableStringFieldUpdateOperationsInput | string | null
@@ -65180,6 +65201,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     fields?:PrismaJson.FormFields | NullableJsonNullValueInput
+    content?:PrismaJson.FormContentState | NullableJsonNullValueInput
     submitLabel?: NullableStringFieldUpdateOperationsInput | string | null
     gtmEventName?: NullableStringFieldUpdateOperationsInput | string | null
     gtmCategory?: NullableStringFieldUpdateOperationsInput | string | null
@@ -65194,6 +65216,7 @@ export namespace Prisma {
     id?: string
     name: string
     fields?:PrismaJson.FormFields | NullableJsonNullValueInput
+    content?:PrismaJson.FormContentState | NullableJsonNullValueInput
     submitLabel?: string | null
     gtmEventName?: string | null
     gtmCategory?: string | null
@@ -65206,6 +65229,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     fields?:PrismaJson.FormFields | NullableJsonNullValueInput
+    content?:PrismaJson.FormContentState | NullableJsonNullValueInput
     submitLabel?: NullableStringFieldUpdateOperationsInput | string | null
     gtmEventName?: NullableStringFieldUpdateOperationsInput | string | null
     gtmCategory?: NullableStringFieldUpdateOperationsInput | string | null
@@ -65218,6 +65242,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     fields?:PrismaJson.FormFields | NullableJsonNullValueInput
+    content?:PrismaJson.FormContentState | NullableJsonNullValueInput
     submitLabel?: NullableStringFieldUpdateOperationsInput | string | null
     gtmEventName?: NullableStringFieldUpdateOperationsInput | string | null
     gtmCategory?: NullableStringFieldUpdateOperationsInput | string | null
@@ -68149,6 +68174,7 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     fields?: SortOrder
+    content?: SortOrder
     submitLabel?: SortOrder
     gtmEventName?: SortOrder
     gtmCategory?: SortOrder
@@ -77442,6 +77468,7 @@ export namespace Prisma {
     id?: string
     name: string
     fields?:PrismaJson.FormFields | NullableJsonNullValueInput
+    content?:PrismaJson.FormContentState | NullableJsonNullValueInput
     submitLabel?: string | null
     gtmEventName?: string | null
     gtmCategory?: string | null
@@ -77455,6 +77482,7 @@ export namespace Prisma {
     id?: string
     name: string
     fields?:PrismaJson.FormFields | NullableJsonNullValueInput
+    content?:PrismaJson.FormContentState | NullableJsonNullValueInput
     submitLabel?: string | null
     gtmEventName?: string | null
     gtmCategory?: string | null
@@ -77958,6 +77986,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     fields?:PrismaJson.FormFields | NullableJsonNullValueInput
+    content?:PrismaJson.FormContentState | NullableJsonNullValueInput
     submitLabel?: NullableStringFieldUpdateOperationsInput | string | null
     gtmEventName?: NullableStringFieldUpdateOperationsInput | string | null
     gtmCategory?: NullableStringFieldUpdateOperationsInput | string | null
@@ -77971,6 +78000,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     fields?:PrismaJson.FormFields | NullableJsonNullValueInput
+    content?:PrismaJson.FormContentState | NullableJsonNullValueInput
     submitLabel?: NullableStringFieldUpdateOperationsInput | string | null
     gtmEventName?: NullableStringFieldUpdateOperationsInput | string | null
     gtmCategory?: NullableStringFieldUpdateOperationsInput | string | null
@@ -79850,6 +79880,7 @@ export namespace Prisma {
     id?: string
     name: string
     fields?:PrismaJson.FormFields | NullableJsonNullValueInput
+    content?:PrismaJson.FormContentState | NullableJsonNullValueInput
     submitLabel?: string | null
     gtmEventName?: string | null
     gtmCategory?: string | null
@@ -79863,6 +79894,7 @@ export namespace Prisma {
     id?: string
     name: string
     fields?:PrismaJson.FormFields | NullableJsonNullValueInput
+    content?:PrismaJson.FormContentState | NullableJsonNullValueInput
     submitLabel?: string | null
     gtmEventName?: string | null
     gtmCategory?: string | null
@@ -79892,6 +79924,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     fields?:PrismaJson.FormFields | NullableJsonNullValueInput
+    content?:PrismaJson.FormContentState | NullableJsonNullValueInput
     submitLabel?: NullableStringFieldUpdateOperationsInput | string | null
     gtmEventName?: NullableStringFieldUpdateOperationsInput | string | null
     gtmCategory?: NullableStringFieldUpdateOperationsInput | string | null
@@ -79905,6 +79938,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     fields?:PrismaJson.FormFields | NullableJsonNullValueInput
+    content?:PrismaJson.FormContentState | NullableJsonNullValueInput
     submitLabel?: NullableStringFieldUpdateOperationsInput | string | null
     gtmEventName?: NullableStringFieldUpdateOperationsInput | string | null
     gtmCategory?: NullableStringFieldUpdateOperationsInput | string | null

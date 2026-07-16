@@ -10,7 +10,7 @@ import {
   GenericData,
 } from "../../../types";
 
-import { useDesigner } from "../../../store/use-designer-store";
+import { useDesigner } from "../../../store/designer-provider";
 
 import { DesignerWrapper } from "../../canvas/designer-wrapper";
 
@@ -32,10 +32,10 @@ export const Root = (props: RootProps) => {
     },
   });
 
-  const { activeNodeId } = useDesigner();
+  const { activeNodeId } = useDesigner((state) => state);
 
   return (
-    <div ref={ref} className="h-full bg-background">
+    <div ref={ref} className="h-full bg-background p-4">
       <div
         className={cn(
           "w-full h-full  rounded flex flex-col grow items-center justify-start flex-1 overflow-y-auto transition-all m-0",

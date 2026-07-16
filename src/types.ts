@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { CustomElement } from "./app/(admin)/_components/editor";
 import { HTMLContent, JSONContent } from "@tiptap/core";
-import {
+import type {
   Media,
   Product,
   ProductType,
@@ -12,6 +12,7 @@ import {
   WidgetType,
 } from "@/generated/prisma";
 import { Data } from "@puckeditor/core";
+import type { FormRootInstance } from "./modules/forms/builder/types";
 
 export type TiptapContent = HTMLContent | JSONContent | JSONContent[] | null;
 
@@ -21,6 +22,7 @@ declare global {
     type TipTapBodyData = TiptapContent;
     type PuckData = Data;
     type FormFields = any;
+    type FormContentState = FormRootInstance;
     type ProductMetadata =
       | EbookMetadata
       | AffiliateMetadata

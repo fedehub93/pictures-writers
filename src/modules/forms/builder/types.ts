@@ -142,10 +142,6 @@ export type FormNodeDynamicInstance = FormElementInstance | FormLayoutInstance;
 export type FormNodeContainerInstance = FormRootInstance | FormLayoutInstance;
 
 // --- 6. State Definition ---
-// Main type for the state manager (e.g., Zustand or Redux)
-export type FormBuilderState = {
-  root: FormRootInstance;
-};
 
 // --- 7. dnd-kit ---
 export type DragData = {

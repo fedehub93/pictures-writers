@@ -10,7 +10,7 @@ import { GenericSwitch } from "@/shared/components/form-component/generic-switch
 import { GenericNumber } from "@/shared/components/form-component/generic-number";
 
 import type { FormElementInstance } from "../../../types";
-import { useDesigner } from "../../../store/use-designer-store";
+import { useDesigner } from "../../../store/designer-provider";
 
 import { PropertiesFormSchemaType, propertiesSchema } from "./schemas";
 
@@ -19,7 +19,7 @@ export const TextFieldPropertiesForm = ({
 }: {
   elementInstance: FormElementInstance<"TextField">;
 }) => {
-  const { updateNodeProperties } = useDesigner();
+  const { updateNodeProperties } = useDesigner((state) => state);
 
   const { name, label, placeholder, helperText, validation } =
     elementInstance.properties;

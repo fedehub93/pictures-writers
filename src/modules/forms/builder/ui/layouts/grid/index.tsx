@@ -15,8 +15,6 @@ const type: LayoutsType = "Grid";
 
 const properties: GridLayoutProperties = {
   label: "Grid",
-  column: 2,
-  gap: "2px",
 };
 
 export const GridFormLayout = {

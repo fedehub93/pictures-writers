@@ -9,7 +9,7 @@ import { GenericNumber } from "@/shared/components/form-component/generic-number
 import type { FormLayoutInstance } from "../../../types";
 
 import { PropertiesFormSchemaType, propertiesSchema } from "./schemas";
-import { useDesigner } from "../../../store/use-designer-store";
+import { useDesigner } from "../../../store/designer-provider";
 
 export const GridPropertiesComponent = ({
   elementInstance,
@@ -18,7 +18,7 @@ export const GridPropertiesComponent = ({
 }) => {
   const { id, properties } = elementInstance;
 
-  const { updateNodeProperties } = useDesigner();
+  const { updateNodeProperties } = useDesigner((state) => state);
 
   const form = useForm<PropertiesFormSchemaType>({
     resolver: zodResolver(propertiesSchema),

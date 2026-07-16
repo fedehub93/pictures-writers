@@ -27,7 +27,7 @@ const TreeNode = ({ node, style, dragHandle }: NodeRendererProps<any>) => {
         onClick={() => node.toggle()}
         className="line-clamp-1 truncate max-w-full"
       >
-        {node.isLeaf ? "🍁" : "🗀"} {node.data.id}
+        {node.isLeaf ? "🍁" : "🗀"} {node.data.properties.label}
       </div>
     </div>
   );

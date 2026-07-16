@@ -44,9 +44,10 @@ export const GridDesignerComponent = ({
 
   return (
     <div ref={droppableRef} className="flex flex-col gap-2 w-full">
+      <Label>Grid</Label>
       <div
         className={cn(
-          "max-w-230 h-full m-0 rounded flex flex-col grow items-center justify-start flex-1 overflow-y-auto transition-all min-h-40",
+          "max-w-230 h-full m-0 rounded flex flex-col grow items-center justify-start flex-1 overflow-y-auto transition-all min-h-40 border border-dashed",
           isDropTarget && "border-primary",
         )}
       >

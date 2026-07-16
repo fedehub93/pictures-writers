@@ -883,6 +883,8 @@ model Form {
   name        String
   /// [FormFields]
   fields      Json?   @db.JsonB
+  /// [FormContentState]
+  content     Json?   @db.JsonB
   submitLabel String?
 
   gtmEventName String? // es: "form_submission_laboratorio"

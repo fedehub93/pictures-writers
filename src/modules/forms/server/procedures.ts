@@ -5,6 +5,7 @@ import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 
 import { formInsertSchema, formUpdateSchema } from "../schemas";
+import type { FormRootInstance } from "../builder/types";
 
 export const formsRouter = createTRPCRouter({
   create: protectedProcedure
@@ -32,6 +33,22 @@ export const formsRouter = createTRPCRouter({
         });
       }
 
+      return updatedForm;
+    }),
+  updateContent: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        content: z.custom<FormRootInstance>(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const updatedForm = await db.form.update({
+        where: { id: input.id },
+        data: { content: input.content },
+      });
+
+      if (!updatedForm) throw new TRPCError({ code: "NOT_FOUND" });
       return updatedForm;
     }),
   remove: protectedProcedure

@@ -9,6 +9,8 @@ import { cn } from "@/shared/lib/utils";
 
 import { Button } from "@/shared/ui/button";
 
+import { useDesigner } from "../../store/designer-provider";
+
 import {
   DropAreaZone,
   DesignerWrapperData,
@@ -16,8 +18,6 @@ import {
 } from "../../types";
 
 import { FormNodes } from "../../registry";
-
-import { useDesigner } from "../../store/use-designer-store";
 
 interface DesignerWrapperProps {
   index: number;
@@ -32,7 +32,9 @@ export const DesignerWrapper = ({
   group,
   index,
 }: DesignerWrapperProps) => {
-  const { removeNodeById, activeNodeId, setActiveNodeId } = useDesigner();
+  const { removeNodeById, activeNodeId, setActiveNodeId } = useDesigner(
+    (state) => state,
+  );
   const { ref: sortableRef, handleRef } = useSortable<DesignerWrapperData>({
     id: node.id,
     index,
@@ -71,7 +73,7 @@ export const DesignerWrapper = ({
   return (
     <div
       ref={sortableRef}
-      className="flex flex-col p-4 px-8 w-full"
+      className="flex flex-col p-2 w-full"
       onClick={onWrapperClick}
     >
       <div className="flex justify-center group">

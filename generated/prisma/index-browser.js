@@ -579,6 +579,7 @@ exports.Prisma.FormScalarFieldEnum = {
   id: 'id',
   name: 'name',
   fields: 'fields',
+  content: 'content',
   submitLabel: 'submitLabel',
   gtmEventName: 'gtmEventName',
   gtmCategory: 'gtmCategory',
