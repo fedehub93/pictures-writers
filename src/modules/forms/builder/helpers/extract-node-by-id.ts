@@ -1,4 +1,4 @@
-import { type FormNodeDynamicInstance } from "../types";
+import type { FormNodeDynamicInstance } from "../types";
 
 /**
  * Recursively searches for a node by its ID, removes it from its current position,

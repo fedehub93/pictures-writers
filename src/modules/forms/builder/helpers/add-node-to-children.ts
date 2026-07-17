@@ -1,6 +1,6 @@
-import {
-  type FormNodeDynamicInstance,
-  type FormElementInstance,
+import type {
+  FormNodeDynamicInstance,
+  FormElementInstanceUnion,
 } from "../types";
 
 /**
@@ -26,7 +26,7 @@ export function addNodeToChildren(
 
       // Type Narrowing: a questo punto siamo certi che nodeToAdd è un Elemento.
       // Eseguiamo il cast per assecondare la firma node.children (FormElementInstance[])
-      const elementToAdd = nodeToAdd as FormElementInstance;
+      const elementToAdd = nodeToAdd as FormElementInstanceUnion;
 
       if (index !== undefined) {
         node.children.splice(index, 0, elementToAdd);

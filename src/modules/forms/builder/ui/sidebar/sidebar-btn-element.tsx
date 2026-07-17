@@ -1,9 +1,10 @@
 import { useDraggable } from "@dnd-kit/react";
 
+import { cn } from "@/shared/lib/utils";
+
 import { Button } from "@/shared/ui/button";
 
-import { type DragData, type FormNode } from "../../types";
-import { cn } from "@/shared/lib/utils";
+import type { DragData, FormNode } from "../../types";
 
 export const SidebarBtnElement = ({ formNode }: { formNode: FormNode }) => {
   const { icon: Icon, label } = formNode.designerBtnElement;

@@ -1,14 +1,13 @@
 import { Label } from "@/shared/ui/label";
-import { Input } from "@/shared/ui/input";
-
 import { Badge } from "@/shared/ui/badge";
+import { Textarea } from "@/shared/ui/textarea";
 
 import type { FormElementInstance } from "../../../types";
 
-export const TextFieldDesignerComponent = ({
+export const TextareaFieldDesignerComponent = ({
   elementInstance,
 }: {
-  elementInstance: FormElementInstance<"TextField">;
+  elementInstance: FormElementInstance<"TextareaField">;
 }) => {
   const {
     label,
@@ -25,7 +24,7 @@ export const TextFieldDesignerComponent = ({
           <Badge className="h-5 font-normal text-[10px]">Required</Badge>
         )}
       </div>
-      <Input
+      <Textarea
         readOnly
         disabled
         placeholder={placeholder}

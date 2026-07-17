@@ -3,7 +3,7 @@ import type { LucideIcon } from "lucide-react";
 
 // --- 1. Base Node Types ---
 export type RootType = "Root";
-export type ElementsType = "TextField";
+export type ElementsType = "TextField" | "TextareaField";
 export type LayoutsType = "Grid";
 
 export type NodesType = RootType | ElementsType | LayoutsType;
@@ -74,12 +74,23 @@ export interface TextFieldProperties extends BaseFieldProperties {
   validation: TextFieldValidation;
 }
 
+export interface TextareaFieldValidation extends BaseValidation {
+  minLength?: number;
+  maxLength?: number;
+}
+
+export interface TextareaFieldProperties extends BaseFieldProperties {
+  validation: TextareaFieldValidation;
+}
+
 export type FormElementPropertiesByType = {
   TextField: TextFieldProperties;
+  TextareaField: TextareaFieldProperties;
 };
 
 export type FormElementValueByType = {
   TextField: string;
+  TextareaField: string;
 };
 
 export interface FormElementInstance<
@@ -123,7 +134,7 @@ export interface FormLayoutInstance<
   isContainer: true; // Layouts can have children
   type: TType;
   properties: FormLayoutPropertiesByType[TType];
-  children: FormElementInstance[]; // Layouts can strictly contain only other Elements
+  children: FormElementInstanceUnion[]; // Layouts can strictly contain only other Elements
 }
 
 // --- 3. Layout Blueprint ---
@@ -138,14 +149,31 @@ export type FormLayoutsType = {
 
 // --- 5. Unions & Collections ---
 
-export type FormNode = FormElement | FormLayout;
+export type AnyFormElement = FormElementsType[ElementsType];
+
+export type AnyFormLayout = FormLayoutsType[LayoutsType];
+
+export type FormNode = AnyFormElement | AnyFormLayout;
+
+export type FormElementInstanceUnion = {
+  [K in ElementsType]: FormElementInstance<K>;
+}[ElementsType];
+
+export type FormLayoutInstanceUnion = {
+  [K in LayoutsType]: FormLayoutInstance<K>;
+}[LayoutsType];
+
 export type FormNodeInstance =
   | FormRootInstance
-  | FormElementInstance
-  | FormLayoutInstance;
+  | FormElementInstanceUnion
+  | FormLayoutInstanceUnion;
 
-export type FormNodeDynamicInstance = FormElementInstance | FormLayoutInstance;
-export type FormNodeContainerInstance = FormRootInstance | FormLayoutInstance;
+export type FormNodeDynamicInstance =
+  | FormElementInstanceUnion
+  | FormLayoutInstanceUnion;
+export type FormNodeContainerInstance =
+  | FormRootInstance
+  | FormLayoutInstanceUnion;
 
 // --- 7. dnd-kit ---
 export type DragData = {

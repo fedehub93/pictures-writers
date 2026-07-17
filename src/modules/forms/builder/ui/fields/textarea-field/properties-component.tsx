@@ -7,21 +7,20 @@ import { Form } from "@/shared/ui/form";
 import { GenericInput } from "@/shared/components/form-component/generic-input";
 import { GenericNumber } from "@/shared/components/form-component/generic-number";
 import { GenericSwitch } from "@/shared/components/form-component/generic-switch";
-import { GenericSelect } from "@/shared/components/form-component/generic-select";
 
-import { TextInputEnum, type FormElementInstance } from "../../../types";
+import type { FormElementInstance } from "../../../types";
 import { useDesigner } from "../../../store/designer-provider";
 
 import { PropertiesFormSchemaType, propertiesSchema } from "./schemas";
 
-export const TextFieldPropertiesComponent = ({
+export const TextareaFieldPropertiesComponent = ({
   elementInstance,
 }: {
-  elementInstance: FormElementInstance<"TextField">;
+  elementInstance: FormElementInstance<"TextareaField">;
 }) => {
   const { updateNodeProperties } = useDesigner((state) => state);
 
-  const { name, label, placeholder, helperText, inputType, validation } =
+  const { name, label, placeholder, helperText, validation } =
     elementInstance.properties;
 
   const form = useForm<PropertiesFormSchemaType>({
@@ -32,7 +31,6 @@ export const TextFieldPropertiesComponent = ({
       label,
       helperText,
       placeholder,
-      inputType: inputType ? inputType : TextInputEnum.Text,
       validation: {
         required: validation.required ?? false,
         minLength: validation.minLength,
@@ -53,13 +51,6 @@ export const TextFieldPropertiesComponent = ({
         className="space-y-3"
       >
         <GenericInput control={form.control} label="Name" name="name" />
-        <GenericSelect
-          control={form.control}
-          name="inputType"
-          label="Type"
-          placeholder="text"
-          options={Object.values(TextInputEnum)}
-        />
         <GenericInput control={form.control} label="Label" name="label" />
         <GenericInput
           control={form.control}

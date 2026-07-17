@@ -19,8 +19,9 @@ export const SidebarNodes = () => {
       <Separator />
       <div className="flex flex-col space-y-2">
         <p className="text-sm font-medium">Elements</p>
-        <div className="flex">
+        <div className="flex gap-x-4">
           <SidebarBtnElement formNode={FormElements.TextField} />
+          <SidebarBtnElement formNode={FormElements.TextareaField} />
         </div>
       </div>
     </div>

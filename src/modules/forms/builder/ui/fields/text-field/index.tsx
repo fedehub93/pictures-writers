@@ -2,15 +2,16 @@
 
 import { TypeIcon } from "lucide-react";
 
-import type {
-  TextFieldProperties,
-  ElementsType,
-  FormElement,
+import {
+  type TextFieldProperties,
+  type ElementsType,
+  type FormElement,
+  TextInputEnum,
 } from "../../../types";
 
-import { DesignerComponent } from "./designer-component";
+import { TextFieldDesignerComponent } from "./designer-component";
 import { TextFieldFormComponent } from "./form-component";
-import { TextFieldPropertiesForm } from "./properties-component";
+import { TextFieldPropertiesComponent } from "./properties-component";
 
 import { buildSchema } from "./schemas";
 
@@ -18,6 +19,7 @@ const type: ElementsType = "TextField";
 
 const properties: TextFieldProperties = {
   name: "text-field",
+  inputType: TextInputEnum.Text,
   label: "Text field",
   helperText: "",
   placeholder: "",
@@ -39,11 +41,9 @@ export const TextFieldFormElement = {
     icon: TypeIcon,
     label: "Text field",
   },
-  designerComponent: DesignerComponent,
+  designerComponent: TextFieldDesignerComponent,
   formComponent: TextFieldFormComponent,
-  propertiesComponent: TextFieldPropertiesForm,
+  propertiesComponent: TextFieldPropertiesComponent,
   buildSchema,
-  getInitialValue: () => {
-    return "";
-  },
+  getInitialValue: () => "",
 } satisfies FormElement<"TextField">;

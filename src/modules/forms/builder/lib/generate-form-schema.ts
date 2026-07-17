@@ -13,8 +13,13 @@ export function generateFormSchema(state: FormRootInstance): z.ZodObject<any> {
     const blueprint = FormElements[field.type];
     const fieldName = field.properties.name;
 
+    // Correlated union error
+    const buildSchema = blueprint.buildSchema as (
+      properties: typeof field.properties,
+    ) => z.ZodType;
+
     if (fieldName) {
-      schemaShape[fieldName] = blueprint.buildSchema(field.properties);
+      schemaShape[fieldName] = buildSchema(field.properties);
     }
   }
 

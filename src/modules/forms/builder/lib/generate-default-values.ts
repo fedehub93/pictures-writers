@@ -14,8 +14,13 @@ export function generateDefaultValues(
     const blueprint = FormElements[field.type];
     const fieldName = field.properties.name;
 
-    if (blueprint.getInitialValue && fieldName) {
-      defaultValues[fieldName] = blueprint.getInitialValue(field.properties);
+    // Correlated union error
+    const getInitialValue = blueprint.getInitialValue as (
+      properties: typeof field.properties,
+    ) => any;
+
+    if (getInitialValue && fieldName) {
+      defaultValues[fieldName] = getInitialValue(field.properties);
     }
   }
 
