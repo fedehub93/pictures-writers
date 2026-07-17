@@ -10,6 +10,7 @@ import type {
 
 import { GridDesignerComponent } from "./designer-component";
 import { GridPropertiesComponent } from "./properties-component";
+import { GridFormComponent } from "./form-component";
 
 const type: LayoutsType = "Grid";
 
@@ -32,6 +33,6 @@ export const GridFormLayout = {
     label: "Grid",
   },
   designerComponent: GridDesignerComponent,
-  formComponent: () => <div>Form Component</div>,
+  formComponent: GridFormComponent,
   propertiesComponent: GridPropertiesComponent,
 } satisfies FormLayout<"Grid">;

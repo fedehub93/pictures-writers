@@ -9,7 +9,9 @@ import type {
 } from "../../../types";
 
 import { DesignerComponent } from "./designer-component";
+import { TextFieldFormComponent } from "./form-component";
 import { TextFieldPropertiesForm } from "./properties-component";
+
 import { buildSchema } from "./schemas";
 
 const type: ElementsType = "TextField";
@@ -38,11 +40,10 @@ export const TextFieldFormElement = {
     label: "Text field",
   },
   designerComponent: DesignerComponent,
-  formComponent: () => <div>Form Component</div>,
+  formComponent: TextFieldFormComponent,
   propertiesComponent: TextFieldPropertiesForm,
   buildSchema,
   getInitialValue: () => {
-    // If it will be a default value in the future put here
     return "";
   },
 } satisfies FormElement<"TextField">;

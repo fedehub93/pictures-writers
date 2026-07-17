@@ -9,10 +9,11 @@ import { GenericInput } from "@/shared/components/form-component/generic-input";
 import { GenericSwitch } from "@/shared/components/form-component/generic-switch";
 import { GenericNumber } from "@/shared/components/form-component/generic-number";
 
-import type { FormElementInstance } from "../../../types";
+import { TextInputEnum, type FormElementInstance } from "../../../types";
 import { useDesigner } from "../../../store/designer-provider";
 
 import { PropertiesFormSchemaType, propertiesSchema } from "./schemas";
+import { GenericSelect } from "@/shared/components/form-component/generic-select";
 
 export const TextFieldPropertiesForm = ({
   elementInstance,
@@ -21,7 +22,7 @@ export const TextFieldPropertiesForm = ({
 }) => {
   const { updateNodeProperties } = useDesigner((state) => state);
 
-  const { name, label, placeholder, helperText, validation } =
+  const { name, label, placeholder, helperText, inputType, validation } =
     elementInstance.properties;
 
   const form = useForm<PropertiesFormSchemaType>({
@@ -32,6 +33,7 @@ export const TextFieldPropertiesForm = ({
       label,
       helperText,
       placeholder,
+      inputType: inputType ? inputType : TextInputEnum.Text,
       validation: {
         required: validation.required ?? false,
         minLength: validation.minLength,
@@ -56,6 +58,13 @@ export const TextFieldPropertiesForm = ({
         className="space-y-3"
       >
         <GenericInput control={form.control} label="Name" name="name" />
+        <GenericSelect
+          control={form.control}
+          name="inputType"
+          label="Type"
+          placeholder="text"
+          options={Object.values(TextInputEnum)}
+        />
         <GenericInput control={form.control} label="Label" name="label" />
         <GenericInput
           control={form.control}
@@ -67,10 +76,10 @@ export const TextFieldPropertiesForm = ({
           label="Helper text"
           name="helperText"
         />
-        {/* --- SEZIONE VALIDATORI --- */}
-        <div className="pt-4 mt-4 border-t border-dashed">
-          <h4 className="text-sm mb-3">Validation Rules</h4>
 
+        {/* --- SEZIONE VALIDATORI --- */}
+        <div className="flex flex-col space-y-4 pt-4 mt-4 border-t border-dashed">
+          <h4 className="text-sm mb-3">Validation Rules</h4>
           <GenericSwitch
             control={form.control}
             name="validation.required"
@@ -78,7 +87,7 @@ export const TextFieldPropertiesForm = ({
             onCheckedChange={() => form.handleSubmit(onApplyChanges)()}
           />
 
-          <div className="flex gap-3 mt-3">
+          <div className="flex gap-3">
             <GenericNumber
               control={form.control}
               name="validation.minLength"

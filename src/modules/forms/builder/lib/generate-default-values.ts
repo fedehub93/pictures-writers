@@ -1,13 +1,13 @@
-import type { FormNodeDynamicInstance } from "../types";
+import type { FormRootInstance } from "../types";
 
 import { FormElements } from "../registry";
 
 import { getFlatFields } from "../helpers/get-flat-fields";
 
 export function generateDefaultValues(
-  nodes: FormNodeDynamicInstance[],
+  state: FormRootInstance,
 ): Record<string, any> {
-  const fields = getFlatFields(nodes);
+  const fields = getFlatFields(state.children);
   const defaultValues: Record<string, any> = {};
 
   for (const field of fields) {

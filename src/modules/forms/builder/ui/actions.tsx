@@ -9,6 +9,7 @@ import { useTRPC } from "@/trpc/client";
 import { Button } from "@/shared/ui/button";
 
 import { useDesigner } from "../store/designer-provider";
+import { PreviewBtn } from "./preview-btn";
 
 interface FormActionsProps {
   id: string;
@@ -45,9 +46,7 @@ export const FormActions = ({ id }: FormActionsProps) => {
 
   return (
     <div className="flex items-center gap-2">
-      <Button type="button" variant="ghost" disabled={isPending}>
-        Preview
-      </Button>
+      <PreviewBtn />
       {true === true && (
         <>
           <Button

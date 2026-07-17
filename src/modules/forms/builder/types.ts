@@ -64,7 +64,13 @@ export interface TextFieldValidation extends BaseValidation {
   maxLength?: number;
 }
 
+export enum TextInputEnum {
+  Text = "text",
+  Email = "email",
+}
+
 export interface TextFieldProperties extends BaseFieldProperties {
+  inputType: TextInputEnum;
   validation: TextFieldValidation;
 }
 
@@ -140,8 +146,6 @@ export type FormNodeInstance =
 
 export type FormNodeDynamicInstance = FormElementInstance | FormLayoutInstance;
 export type FormNodeContainerInstance = FormRootInstance | FormLayoutInstance;
-
-// --- 6. State Definition ---
 
 // --- 7. dnd-kit ---
 export type DragData = {

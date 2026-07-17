@@ -21,7 +21,7 @@ export const FormBuilderView = ({ id }: FormBuilderViewProps) => {
     <DesignerProvider initialContent={data.content}>
       <DragDropProvider>
         <main className="flex flex-col size-full">
-          <nav className="flex justify-between border-b p-4 gap-3 items-center">
+          <nav className="flex justify-between border-b p-4 py-2 gap-3 items-center">
             <h2>
               <span>Form: </span>
               {data.name}
