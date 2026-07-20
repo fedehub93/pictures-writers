@@ -1,4 +1,4 @@
-import { type FormNodeInstance } from "../types";
+import type { FormNodeInstance } from "../types/core";
 
 export const findNodeRecursively = (
   node: FormNodeInstance,

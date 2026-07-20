@@ -11,11 +11,8 @@ import { Button } from "@/shared/ui/button";
 
 import { useDesigner } from "../../store/designer-provider";
 
-import {
-  DropAreaZone,
-  DesignerWrapperData,
-  type FormNodeDynamicInstance,
-} from "../../types";
+import type { FormNodeDynamicInstance } from "../../types/core";
+import { DropAreaZone, type DesignerWrapperData } from "../../types/dnd";
 
 import { FormNodes } from "../../registry";
 
@@ -56,7 +53,8 @@ export const DesignerWrapper = ({
     collisionPriority: CollisionPriority.High,
   });
 
-  const DesignerNode = FormNodes[node.type].designerComponent as React.FC<{
+  const DesignerNode = FormNodes[node.type]
+    .designerComponent as React.ComponentType<{
     elementInstance: FormNodeDynamicInstance;
   }>;
 

@@ -6,7 +6,7 @@ import { Form } from "@/shared/ui/form";
 import { GenericInput } from "@/shared/components/form-component/generic-input";
 import { GenericNumber } from "@/shared/components/form-component/generic-number";
 
-import type { FormLayoutInstance } from "../../../types";
+import type { FormLayoutInstance } from "../../../types/core";
 
 import { PropertiesFormSchemaType, propertiesSchema } from "./schemas";
 import { useDesigner } from "../../../store/designer-provider";

@@ -2,7 +2,7 @@ import { Label } from "@/shared/ui/label";
 import { Badge } from "@/shared/ui/badge";
 import { Textarea } from "@/shared/ui/textarea";
 
-import type { FormElementInstance } from "../../../types";
+import type { FormElementInstance } from "../../../types/core";
 
 export const TextareaFieldDesignerComponent = ({
   elementInstance,

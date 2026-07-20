@@ -8,7 +8,7 @@ import { Button } from "@/shared/ui/button";
 import { generateFormSchema } from "../lib/generate-form-schema";
 import { generateDefaultValues } from "../lib/generate-default-values";
 
-import type { FormRootInstance } from "../types";
+import type { FormRootInstance } from "../types/core";
 import { FormNodeRenderer } from "./form-node-renderer";
 
 interface FormRunnerProps {

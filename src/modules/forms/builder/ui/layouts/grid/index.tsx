@@ -2,11 +2,8 @@
 
 import { GridIcon } from "lucide-react";
 
-import type {
-  GridLayoutProperties,
-  LayoutsType,
-  FormLayout,
-} from "../../../types";
+import type { LayoutsType, FormLayout } from "../../../types/core";
+import type { GridLayoutProperties } from "../../../types/properties";
 
 import { GridDesignerComponent } from "./designer-component";
 import { GridPropertiesComponent } from "./properties-component";

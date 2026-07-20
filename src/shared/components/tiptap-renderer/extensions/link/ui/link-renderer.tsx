@@ -1,8 +1,6 @@
 import NextLink from "next/link";
 
-import { Mark, Node } from "@tiptap/pm/model";
-
-import { cn } from "@/shared/lib/utils";
+import { Mark } from "@tiptap/pm/model";
 
 interface LinkProps {
   mark: Mark;
@@ -29,12 +27,7 @@ export const LinkRenderer = ({ mark, children }: LinkProps) => {
   let target = isExternalLink ? "_blank" : undefined;
 
   return (
-    <NextLink
-      href={mark.attrs.href}
-      rel={rel}
-      target={target}
-      prefetch
-    >
+    <NextLink href={mark.attrs.href} rel={rel} target={target} prefetch className="underline text-primary">
       {children}
     </NextLink>
   );

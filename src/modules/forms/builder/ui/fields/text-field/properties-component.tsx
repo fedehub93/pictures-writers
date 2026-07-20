@@ -9,7 +9,9 @@ import { GenericNumber } from "@/shared/components/form-component/generic-number
 import { GenericSwitch } from "@/shared/components/form-component/generic-switch";
 import { GenericSelect } from "@/shared/components/form-component/generic-select";
 
-import { TextInputEnum, type FormElementInstance } from "../../../types";
+import type { FormElementInstance } from "../../../types/core";
+import { TextInputEnum } from "../../../types/properties";
+
 import { useDesigner } from "../../../store/designer-provider";
 
 import { PropertiesFormSchemaType, propertiesSchema } from "./schemas";

@@ -13,7 +13,7 @@ import { MouseEvent } from "react";
 import { cn } from "@/shared/lib/utils";
 
 import { DesignerSidebar } from "../sidebar/designer-sidebar";
-import { DropAreaZone, isDragData, isGenericData } from "../../types";
+import { DropAreaZone, isDragData, isGenericData } from "../../types/dnd";
 import { FormNodes } from "../../registry";
 import { useDesigner } from "../../store/designer-provider";
 

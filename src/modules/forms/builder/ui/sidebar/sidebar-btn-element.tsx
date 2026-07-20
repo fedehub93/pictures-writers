@@ -4,7 +4,8 @@ import { cn } from "@/shared/lib/utils";
 
 import { Button } from "@/shared/ui/button";
 
-import type { DragData, FormNode } from "../../types";
+import type { FormNode } from "../../types/core";
+import type { DragData } from "../../types/dnd";
 
 export const SidebarBtnElement = ({ formNode }: { formNode: FormNode }) => {
   const { icon: Icon, label } = formNode.designerBtnElement;

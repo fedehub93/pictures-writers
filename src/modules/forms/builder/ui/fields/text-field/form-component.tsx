@@ -10,7 +10,7 @@ import {
   FieldLabel,
 } from "@/shared/ui/field";
 
-import type { FormElementInstance } from "../../../types";
+import type { FormElementInstance } from "../../../types/core";
 
 export function TextFieldFormComponent({
   elementInstance,

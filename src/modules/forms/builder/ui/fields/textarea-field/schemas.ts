@@ -1,6 +1,6 @@
 import z from "zod";
 
-import type { TextareaFieldProperties } from "../../../types";
+import type { TextareaFieldProperties } from "../../../types/properties";
 
 export const propertiesSchema = z.object({
   name: z.string().min(1, { error: "Name is required" }),

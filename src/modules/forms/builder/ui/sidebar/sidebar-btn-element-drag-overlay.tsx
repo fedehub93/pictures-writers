@@ -1,6 +1,6 @@
 import { Button } from "@/shared/ui/button";
 
-import { type FormNode } from "../../types";
+import type { FormNode } from "../../types/core";
 
 export const SidebarBtnElementDragOverlay = ({
   formNode,

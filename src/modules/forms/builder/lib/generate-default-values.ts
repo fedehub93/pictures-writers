@@ -1,4 +1,4 @@
-import type { FormRootInstance } from "../types";
+import type { FormRootInstance } from "../types/core";
 
 import { FormElements } from "../registry";
 

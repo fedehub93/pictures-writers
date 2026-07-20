@@ -5,7 +5,7 @@ import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 
 import { formInsertSchema, formUpdateSchema } from "../schemas";
-import type { FormRootInstance } from "../builder/types";
+import type { FormRootInstance } from "../builder/types/core";
 
 export const formsRouter = createTRPCRouter({
   create: protectedProcedure

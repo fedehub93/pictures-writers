@@ -1,9 +1,10 @@
 // modules/forms/builder/ui/layouts/grid/form-component.tsx
 "use client";
 
-import { FormLayoutInstance } from "../../../types";
-import { FormNodeRenderer } from "../../../runner/form-node-renderer";
 import { FieldGroup } from "@/shared/ui/field";
+
+import type { FormLayoutInstance } from "../../../types/core";
+import { FormNodeRenderer } from "../../../runner/form-node-renderer";
 
 export function GridFormComponent({
   elementInstance,

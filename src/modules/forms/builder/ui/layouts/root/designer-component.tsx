@@ -4,11 +4,8 @@ import { pointerIntersection } from "@dnd-kit/collision";
 
 import { cn } from "@/shared/lib/utils";
 
-import {
-  DropAreaZone,
-  type FormNodeDynamicInstance,
-  GenericData,
-} from "../../../types";
+import type { FormNodeDynamicInstance } from "../../../types/core";
+import { DropAreaZone, GenericData } from "../../../types/dnd";
 
 import { useDesigner } from "../../../store/designer-provider";
 

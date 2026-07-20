@@ -69,7 +69,7 @@ export const LinkButton = ({ editor, mark }: MarkViewRendererProps) => {
         <a
           href="#"
           className={cn(
-            "relative text-blue-700 underline underline-offset-2 cursor-pointer",
+            "relative text-primary underline underline-offset-2 cursor-pointer",
             isFollow && "mr-4"
           )}
         >
@@ -88,7 +88,7 @@ export const LinkButton = ({ editor, mark }: MarkViewRendererProps) => {
         }}
       >
         <div className="flex items-center justify-between">
-          <p className="text-sm font-medium leading-none text-blue-700 underline underline-offset-2 cursor-default">
+          <p className="text-sm font-medium leading-none text-primary underline underline-offset-2 cursor-default">
             {mark.attrs.href}
           </p>
           <div className="ml-8 flex">

@@ -3,7 +3,7 @@ import { Input } from "@/shared/ui/input";
 
 import { Badge } from "@/shared/ui/badge";
 
-import type { FormElementInstance } from "../../../types";
+import type { FormElementInstance } from "../../../types/core";
 
 export const TextFieldDesignerComponent = ({
   elementInstance,

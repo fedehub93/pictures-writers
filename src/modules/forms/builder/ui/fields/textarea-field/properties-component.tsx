@@ -8,7 +8,8 @@ import { GenericInput } from "@/shared/components/form-component/generic-input";
 import { GenericNumber } from "@/shared/components/form-component/generic-number";
 import { GenericSwitch } from "@/shared/components/form-component/generic-switch";
 
-import type { FormElementInstance } from "../../../types";
+import type { FormElementInstance } from "../../../types/core";
+
 import { useDesigner } from "../../../store/designer-provider";
 
 import { PropertiesFormSchemaType, propertiesSchema } from "./schemas";

@@ -1,7 +1,7 @@
 import type {
   FormNodeDynamicInstance,
   FormElementInstanceUnion,
-} from "../types";
+} from "../types/core";
 
 /**
  * Cerca un nodo Layout tra i figli del Root e aggiunge un Element.

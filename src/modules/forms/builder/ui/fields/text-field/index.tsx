@@ -2,12 +2,12 @@
 
 import { TypeIcon } from "lucide-react";
 
+import type { ElementsType, FormElement } from "../../../types/core";
+
 import {
   type TextFieldProperties,
-  type ElementsType,
-  type FormElement,
   TextInputEnum,
-} from "../../../types";
+} from "../../../types/properties";
 
 import { TextFieldDesignerComponent } from "./designer-component";
 import { TextFieldFormComponent } from "./form-component";

@@ -1,10 +1,7 @@
 import { MessageSquareTextIcon } from "lucide-react";
 
-import {
-  ElementsType,
-  FormElement,
-  TextareaFieldProperties,
-} from "../../../types";
+import type { ElementsType, FormElement } from "../../../types/core";
+import type { TextareaFieldProperties } from "../../../types/properties";
 
 import { TextareaFieldDesignerComponent } from "./designer-component";
 import { TextareaFieldPropertiesComponent } from "./properties-component";

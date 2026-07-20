@@ -12,7 +12,7 @@ import type {
   WidgetType,
 } from "@/generated/prisma";
 import { Data } from "@puckeditor/core";
-import type { FormRootInstance } from "./modules/forms/builder/types";
+import type { FormRootInstance } from "./modules/forms/builder/types/core";
 
 export type TiptapContent = HTMLContent | JSONContent | JSONContent[] | null;
 

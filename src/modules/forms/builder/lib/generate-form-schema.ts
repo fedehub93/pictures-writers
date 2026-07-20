@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import type { FormRootInstance } from "../types";
+import type { FormRootInstance } from "../types/core";
 import { FormElements } from "../registry";
 import { getFlatFields } from "../helpers/get-flat-fields";
 

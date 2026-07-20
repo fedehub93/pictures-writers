@@ -1,4 +1,4 @@
-import { type FormNodeDynamicInstance } from "../types";
+import { type FormNodeDynamicInstance } from "../types/core";
 
 /**
  * Recursively searches for a layout node by its ID, extracts a child node at the given index,

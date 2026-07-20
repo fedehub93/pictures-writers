@@ -6,12 +6,8 @@ import { Label } from "@/shared/ui/label";
 
 import { cn } from "@/shared/lib/utils";
 
-import {
-  DropAreaZone,
-  GenericData,
-  isDragData,
-  type FormLayoutInstance,
-} from "../../../types";
+import type { FormLayoutInstance } from "../../../types/core";
+import { DropAreaZone, GenericData, isDragData } from "../../../types/dnd";
 
 import { DesignerWrapper } from "../../canvas/designer-wrapper";
 

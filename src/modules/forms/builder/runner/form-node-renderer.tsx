@@ -1,7 +1,11 @@
 "use client";
 
-import { FormNodeDynamicInstance } from "../types";
-import { FormElements, FormLayouts } from "../registry";
+import type {
+  ElementsType,
+  DisplayType,
+  FormNodeDynamicInstance,
+} from "../types/core";
+import { FormElements, FormLayouts, FormDisplay } from "../registry";
 
 export const FormNodeRenderer = ({
   node,
@@ -9,30 +13,40 @@ export const FormNodeRenderer = ({
   node: FormNodeDynamicInstance;
 }) => {
   if (node.isContainer) {
-    // Correlated union error
-    const LayoutComponent = FormLayouts[node.type]
+    const LayoutComponent = FormLayouts[node.type]?.formComponent as
+      | React.ComponentType<{
+          elementInstance: typeof node;
+        }>
+      | undefined;
+
+    if (!LayoutComponent) return null;
+    return <LayoutComponent elementInstance={node} />;
+  }
+
+  // 1. Gestione degli Input
+  if (node.type in FormElements) {
+    // IL TRUCCO È QUI: Diciamo a TS che questa stringa è sicuramente un ElementsType
+    const type = node.type as ElementsType;
+
+    const ElementComponent = FormElements[type]
       .formComponent as React.ComponentType<{
       elementInstance: typeof node;
     }>;
 
-    if (!LayoutComponent) {
-      console.warn(`Nessun Layout trovato per il tipo: ${node.type}`);
-      return null;
-    }
-
-    return <LayoutComponent elementInstance={node} />;
+    return <ElementComponent elementInstance={node} />;
   }
 
-  // Correlated union error
-  const ElementComponent = FormElements[node.type]
-    .formComponent as React.ComponentType<{
-    elementInstance: typeof node;
-  }>;
+  // 2. Gestione dei Display
+  if (node.type in FormDisplay) {
+    const type = node.type as DisplayType;
 
-  if (!ElementComponent) {
-    console.warn(`Nessun Elemento trovato per il tipo: ${node.type}`);
-    return null;
+    const DisplayComponent = FormDisplay[type]
+      .formComponent as React.ComponentType<{
+      elementInstance: typeof node;
+    }>;
+
+    return <DisplayComponent elementInstance={node} />;
   }
 
-  return <ElementComponent elementInstance={node} />;
+  return null;
 };

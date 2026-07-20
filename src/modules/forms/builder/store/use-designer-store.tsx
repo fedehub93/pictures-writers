@@ -3,7 +3,7 @@
 import { createStore } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
-import type { FormNodeDynamicInstance, FormRootInstance } from "../types";
+import type { FormNodeDynamicInstance, FormRootInstance } from "../types/core";
 
 import {
   addNodeToChildren,
