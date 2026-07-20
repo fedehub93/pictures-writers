@@ -13,7 +13,6 @@ export interface BaseFieldProperties {
   name: string;
   label: string;
   helperText: string;
-  placeholder: string;
   validation: BaseValidation;
 }
 
@@ -29,6 +28,7 @@ export enum TextInputEnum {
 }
 
 export interface TextFieldProperties extends BaseFieldProperties {
+  placeholder: string;
   inputType: TextInputEnum;
   validation: TextFieldValidation;
 }
@@ -39,11 +39,23 @@ export interface TextareaFieldValidation extends BaseValidation {
 }
 
 export interface TextareaFieldProperties extends BaseFieldProperties {
+  placeholder: string;
   validation: TextareaFieldValidation;
 }
 
 export interface SelectFieldProperties extends BaseFieldProperties {
+  placeholder: string;
   options: string[];
+}
+
+export interface UploadFieldProperties extends BaseFieldProperties {
+  files: {
+    key: string;
+    name: string;
+    url: string;
+    size: number;
+    type: string;
+  }[];
 }
 
 // --- Layouts ---

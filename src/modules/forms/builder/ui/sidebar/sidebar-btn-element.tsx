@@ -24,7 +24,7 @@ export const SidebarBtnElement = ({ formNode }: { formNode: FormNode }) => {
       ref={ref}
       variant="outline"
       className={cn(
-        "flex flex-col gap-2 size-30 cursor-grab",
+        "flex flex-col gap-2 size-26 cursor-grab",
         isDragging && "ring-2 ring-primary",
       )}
     >

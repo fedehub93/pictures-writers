@@ -9,11 +9,16 @@ import type {
   GridLayoutProperties,
   ParagraphProperties,
   SelectFieldProperties,
+  UploadFieldProperties,
 } from "./properties";
 
 // --- 1. Base Node Types ---
 export type RootType = "Root";
-export type ElementsType = "TextField" | "TextareaField" | "SelectField";
+export type ElementsType =
+  | "TextField"
+  | "TextareaField"
+  | "SelectField"
+  | "UploadField";
 export type DisplayType = "Paragraph";
 export type LayoutsType = "Grid";
 
@@ -48,12 +53,14 @@ export type FormElementPropertiesByType = {
   TextField: TextFieldProperties;
   TextareaField: TextareaFieldProperties;
   SelectField: SelectFieldProperties;
+  UploadField: UploadFieldProperties;
 };
 
 export type FormElementValueByType = {
   TextField: string;
   TextareaField: string;
   SelectField: string;
+  UploadField: [];
 };
 
 export type FormLayoutPropertiesByType = {

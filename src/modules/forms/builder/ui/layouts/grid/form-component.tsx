@@ -18,12 +18,13 @@ export function GridFormComponent({
 
   return (
     <FieldGroup
-      className="@container/field-group w-full border-none p-0 m-0"
-      style={{
-        display: "grid",
-        gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-        gap: `${gap}px`,
-      }}
+      className="@container/field-group w-full border-none p-0 m-0 grid grid-cols-1 md:grid-cols-[repeat(var(--dynamic-cols),minmax(0,1fr))]"
+      style={
+        {
+          "--dynamic-cols": columns,
+          gap: `${gap}px`,
+        } as React.CSSProperties
+      }
     >
       {children.map((childNode) => (
         <div key={childNode.id} className="w-full">

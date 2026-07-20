@@ -9,13 +9,13 @@ import { Form } from "@/shared/ui/form";
 import { cn } from "@/shared/lib/utils";
 
 import { CustomLink } from "@/shared/components/tiptap-editor/extensions/link";
+import { GenericInput } from "@/shared/components/form-component/generic-input";
 
 import type { FormDisplayInstance } from "../../../types/core";
 import { useDesigner } from "../../../store/designer-provider";
 import { MenuBar } from "../../../tiptap/menu-bar";
 
 import { PropertiesFormSchemaType, propertiesSchema } from "./schemas";
-import { GenericInput } from "@/shared/components/form-component/generic-input";
 
 export const ParagraphPropertiesComponent = ({
   elementInstance,
@@ -69,7 +69,11 @@ export const ParagraphPropertiesComponent = ({
 
   return (
     <Form {...form}>
-      <form onSubmit={(e) => e.preventDefault()} className="space-y-3">
+      <form
+        onSubmit={(e) => e.preventDefault()}
+        onBlur={form.handleSubmit(onApplyChanges)}
+        className="space-y-3"
+      >
         <GenericInput control={form.control} label="Label" name="label" />
         <div className="border rounded">
           <MenuBar editor={editor} />

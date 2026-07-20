@@ -28,7 +28,7 @@ const TreeNode = ({ node, style, dragHandle }: NodeRendererProps<any>) => {
   const type = node.data.type as ElementsType | LayoutsType | DisplayType;
   const Icon = FormNodes[type].designerBtnElement.icon;
   return (
-    <div className="max-w-60">
+    <div className="max-w-60 p-4">
       <div
         style={style}
         ref={dragHandle}
