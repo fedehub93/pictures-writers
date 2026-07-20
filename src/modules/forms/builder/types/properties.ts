@@ -42,6 +42,10 @@ export interface TextareaFieldProperties extends BaseFieldProperties {
   validation: TextareaFieldValidation;
 }
 
+export interface SelectFieldProperties extends BaseFieldProperties {
+  options: string[];
+}
+
 // --- Layouts ---
 export interface BaseLayoutProperties {
   label: string;

@@ -8,11 +8,12 @@ import type {
   TextareaFieldProperties,
   GridLayoutProperties,
   ParagraphProperties,
+  SelectFieldProperties,
 } from "./properties";
 
 // --- 1. Base Node Types ---
 export type RootType = "Root";
-export type ElementsType = "TextField" | "TextareaField";
+export type ElementsType = "TextField" | "TextareaField" | "SelectField";
 export type DisplayType = "Paragraph";
 export type LayoutsType = "Grid";
 
@@ -46,11 +47,13 @@ export interface BaseNodeInstance {
 export type FormElementPropertiesByType = {
   TextField: TextFieldProperties;
   TextareaField: TextareaFieldProperties;
+  SelectField: SelectFieldProperties;
 };
 
 export type FormElementValueByType = {
   TextField: string;
   TextareaField: string;
+  SelectField: string;
 };
 
 export type FormLayoutPropertiesByType = {

@@ -23,6 +23,7 @@ export const SidebarNodes = () => {
         <div className="flex flex-wrap gap-4">
           <SidebarBtnElement formNode={FormElements.TextField} />
           <SidebarBtnElement formNode={FormElements.TextareaField} />
+          <SidebarBtnElement formNode={FormElements.SelectField} />
         </div>
       </div>
     </div>
