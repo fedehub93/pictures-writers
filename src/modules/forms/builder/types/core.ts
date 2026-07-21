@@ -11,6 +11,7 @@ import type {
   SelectFieldProperties,
   UploadFieldProperties,
   ButtonProperties,
+  CheckboxFieldProperties,
 } from "./properties";
 
 // --- 1. Base Node Types ---
@@ -19,6 +20,7 @@ export type ElementsType =
   | "TextField"
   | "TextareaField"
   | "SelectField"
+  | "CheckboxField"
   | "UploadField";
 export type DisplayType = "Paragraph" | "Button";
 export type LayoutsType = "Grid";
@@ -54,6 +56,7 @@ export type FormElementPropertiesByType = {
   TextField: TextFieldProperties;
   TextareaField: TextareaFieldProperties;
   SelectField: SelectFieldProperties;
+  CheckboxField: CheckboxFieldProperties;
   UploadField: UploadFieldProperties;
 };
 
@@ -61,6 +64,7 @@ export type FormElementValueByType = {
   TextField: string;
   TextareaField: string;
   SelectField: string;
+  CheckboxField: boolean;
   UploadField: [];
 };
 

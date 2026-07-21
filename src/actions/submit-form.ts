@@ -6,11 +6,16 @@ import { handleFormSubmitted } from "@/lib/event-handler";
 import { verifyRecaptcha } from "@/lib/recaptcha";
 import { db } from "@/lib/db";
 
+export type FormActionResponse = {
+  success: boolean;
+  message: string;
+};
+
 export const submitForm = async (
   formId: string,
   values: Record<string, any>,
   recaptchaToken: string,
-) => {
+): Promise<FormActionResponse> => {
   try {
     // 1. Verify reCAPTCHA first
     const recaptchaResult = await verifyRecaptcha(

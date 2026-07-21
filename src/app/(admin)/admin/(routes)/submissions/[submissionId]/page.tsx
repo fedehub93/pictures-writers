@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { requireAdminAuth } from "@/lib/auth-utils";
 import { getFormSubmissionById } from "@/data/form";
 
-import { SubmissionForm } from "./_components/submission-form";
+import { FormSubmissionViewer } from "@/modules/forms/viewer/ui/form-submission-viewer";
 
 const FormSubmissionIdPage = async (props: {
   params: Promise<{ submissionId: string }>;
@@ -14,11 +14,21 @@ const FormSubmissionIdPage = async (props: {
 
   const submission = await getFormSubmissionById(submissionId);
 
-  if (!submission || !submission.id) {
+  if (
+    !submission ||
+    !submission.id ||
+    !submission.form.content ||
+    !submission.data
+  ) {
     redirect("/admin/submissions");
   }
 
-  return <SubmissionForm initialData={submission} />;
+  return (
+    <FormSubmissionViewer
+      rootInstance={submission.form.content}
+      submittedData={submission.data}
+    />
+  );
 };
 
 export default FormSubmissionIdPage;

@@ -4,12 +4,12 @@ import type { Route } from "next";
 
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { getCaptchaToken } from "@/app/(home)/_components/utils/captcha";
-import { submitForm } from "@/actions/submit-form";
+import { toast } from "sonner";
 import { sendGTMEvent } from "@next/third-parties/google";
+
+import type { FormActionResponse } from "@/actions/submit-form";
 
 import type { FormRootInstance } from "../../../types/core";
 
@@ -19,17 +19,18 @@ import { generateDefaultValues } from "../../../lib/generate-default-values";
 
 export function RootFormComponent({
   id,
-  gtmEventName,
   elementInstance,
+  onSubmitHandler,
+  gtmEventName,
 }: {
   id: string;
-  gtmEventName: string | null;
   elementInstance: FormRootInstance;
+  onSubmitHandler: (values: Record<string, any>) => Promise<FormActionResponse>;
+  gtmEventName: string | null;
 }) {
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
-  const [isRecaptchaLoading, setIsRecaptchaLoading] = useState(false);
 
   const router = useRouter();
   const { submission } = elementInstance.properties;
@@ -43,66 +44,44 @@ export function RootFormComponent({
   });
 
   const onSubmit = async (values: Record<string, any>) => {
-    try {
-      setError("");
-      setSuccess("");
+    setError("");
+    setSuccess("");
 
-      startTransition(async () => {
-        // Execute reCAPTCHA first
-        setIsRecaptchaLoading(true);
-        const recaptchaToken = await getCaptchaToken("submit_form");
-        setIsRecaptchaLoading(false);
+    startTransition(async () => {
+      try {
+        // Deleghiamo tutta la logica di business al parent
+        const result = await onSubmitHandler(values);
 
-        if (!recaptchaToken) {
-          toast.error("Security verification failed. Please try again.");
-          return;
+        if (!result.success) {
+          setError(result.message);
+        } else {
+          const emailDomain =
+            typeof values.email === "string" && values.email.includes("@")
+              ? values.email.split("@")[1]
+              : "unknown";
+
+          sendGTMEvent({
+            event: gtmEventName,
+            form_type: "form_submission",
+            form_location: "*",
+            page_path: window.location.pathname,
+            page_title: document.title,
+            email_domain: emailDomain,
+          });
+          setSuccess(result.message);
+
+          if (submission.onSuccess.type === "toast") {
+            toast.success(submission.onSuccess.successMessage);
+          } else if (submission.onSuccess.type === "redirect") {
+            router.push(submission.onSuccess.url as Route);
+          }
         }
-
-        submitForm(id, values, recaptchaToken).then((data) => {
-          if (!data.success) {
-            setError(data.message);
-            setSuccess("");
-          }
-
-          if (data.success && typeof window !== "undefined") {
-            setError("");
-            setSuccess(data.message);
-            if (!!gtmEventName) {
-              const emailDomain =
-                typeof values.email === "string" && values.email.includes("@")
-                  ? values.email.split("@")[1]
-                  : "unknown";
-              sendGTMEvent({
-                event: gtmEventName,
-                form_type: "form_submission",
-                form_location: "*",
-                page_path: window.location.pathname,
-                page_title: document.title,
-                email_domain: emailDomain,
-              });
-            }
-
-            const { onSuccess } = submission;
-
-            switch (onSuccess.type) {
-              case "toast":
-                toast.success(onSuccess.successMessage);
-                break;
-
-              case "redirect":
-                router.push(onSuccess.url as Route);
-                break;
-            }
-          }
-        });
-      });
-    } catch (error) {
-      setIsRecaptchaLoading(false);
-      setError(
-        "Qualcosa è andato storto. Prego riprovare o contattare il supporto.",
-      );
-      setSuccess("");
-    }
+      } catch (err) {
+        setError(
+          "Qualcosa è andato storto. Prego riprovare o contattare il supporto.",
+        );
+      }
+    });
   };
 
   return (
@@ -114,6 +93,13 @@ export function RootFormComponent({
         {elementInstance.children.map((node) => (
           <FormNodeRenderer key={node.id} node={node} />
         ))}
+
+        {error && <div className="p-4 mb-4 bg-accent rounded">{error}</div>}
+        {success && (
+          <div className="p-4 mb-4 bg-primary text-primary-foreground shadow-2xs rounded">
+            {success}
+          </div>
+        )}
       </form>
     </FormProvider>
   );

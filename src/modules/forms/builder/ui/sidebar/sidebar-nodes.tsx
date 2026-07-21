@@ -25,6 +25,7 @@ export const SidebarNodes = () => {
           <SidebarBtnElement formNode={FormElements.TextField} />
           <SidebarBtnElement formNode={FormElements.TextareaField} />
           <SidebarBtnElement formNode={FormElements.SelectField} />
+          <SidebarBtnElement formNode={FormElements.CheckboxField} />
           <SidebarBtnElement formNode={FormElements.UploadField} />
         </div>
       </div>

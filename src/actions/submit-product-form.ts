@@ -2,23 +2,24 @@
 
 import { ProductAcquisitionMode } from "@/generated/prisma";
 
+import { db } from "@/shared/lib/db";
+
 import { createContactByEmail } from "@/data/email-contact";
 import { handleFormSubmitted } from "@/lib/event-handler";
 
 import { verifyRecaptcha } from "@/lib/recaptcha";
 import { getPublishedProductByRootId } from "@/data/product";
-import { db } from "@/lib/db";
 
 export const submitProductForm = async (
   rootId: string,
-  values: any,
-  recaptchaToken: string
+  values: Record<string, any>,
+  recaptchaToken: string,
 ) => {
   try {
     // 1. Verify reCAPTCHA first
     const recaptchaResult = await verifyRecaptcha(
       recaptchaToken,
-      "submit_product_form"
+      "submit_product_form",
     );
 
     if (!recaptchaResult.success) {

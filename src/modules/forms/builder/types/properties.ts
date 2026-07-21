@@ -54,6 +54,10 @@ export interface SelectFieldProperties extends BaseFieldProperties {
   options: string[];
 }
 
+export interface CheckboxFieldProperties extends BaseFieldProperties {
+  description?: any;
+}
+
 export interface UploadFieldProperties extends BaseFieldProperties {
   files: {
     key: string;
