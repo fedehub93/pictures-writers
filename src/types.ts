@@ -11,8 +11,11 @@ import type {
   SocialKey,
   WidgetType,
 } from "@/generated/prisma";
-import { Data } from "@puckeditor/core";
+
+import type { Data } from "@puckeditor/core";
+
 import type { FormRootInstance } from "./modules/forms/builder/types/core";
+import type { SavedComponents } from "./puck/config";
 
 export type TiptapContent = HTMLContent | JSONContent | JSONContent[] | null;
 
@@ -20,7 +23,7 @@ declare global {
   namespace PrismaJson {
     type BodyData = CustomElement[];
     type TipTapBodyData = TiptapContent;
-    type PuckData = Data;
+    type PuckData = Data<SavedComponents>;
     type FormFields = any;
     type FormContentState = FormRootInstance;
     type ProductMetadata =

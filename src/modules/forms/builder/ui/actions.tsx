@@ -9,13 +9,21 @@ import { useTRPC } from "@/trpc/client";
 import { Button } from "@/shared/ui/button";
 
 import { useDesigner } from "../store/designer-provider";
+import type { FormRootInstance } from "../types/core";
+
 import { PreviewBtn } from "./preview-btn";
 
 interface FormActionsProps {
   id: string;
+  gtmEventName: string | null;
+  content: FormRootInstance | null;
 }
 
-export const FormActions = ({ id }: FormActionsProps) => {
+export const FormActions = ({
+  id,
+  gtmEventName,
+  content,
+}: FormActionsProps) => {
   const { root } = useDesigner((state) => state);
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -46,7 +54,9 @@ export const FormActions = ({ id }: FormActionsProps) => {
 
   return (
     <div className="flex items-center gap-2">
-      <PreviewBtn />
+      {content && (
+        <PreviewBtn id={id} gtmEventName={gtmEventName} content={content} />
+      )}
       {true === true && (
         <>
           <Button

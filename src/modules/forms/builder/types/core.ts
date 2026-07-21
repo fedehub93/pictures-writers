@@ -10,6 +10,7 @@ import type {
   ParagraphProperties,
   SelectFieldProperties,
   UploadFieldProperties,
+  ButtonProperties,
 } from "./properties";
 
 // --- 1. Base Node Types ---
@@ -19,7 +20,7 @@ export type ElementsType =
   | "TextareaField"
   | "SelectField"
   | "UploadField";
-export type DisplayType = "Paragraph";
+export type DisplayType = "Paragraph" | "Button";
 export type LayoutsType = "Grid";
 
 export type NodesType = RootType | ElementsType | DisplayType | LayoutsType;
@@ -69,6 +70,7 @@ export type FormLayoutPropertiesByType = {
 
 export type FormDisplayPropertiesByType = {
   Paragraph: ParagraphProperties;
+  Button: ButtonProperties;
 };
 
 // --- 3. Node Instances ---
@@ -106,6 +108,13 @@ export interface FormDisplayInstance<
 }
 
 // --- 4. Blueprints ---
+export type FormRoot<TType extends RootType = RootType> = BaseFormBlueprint<
+  TType,
+  FormRootInstance
+> & {
+  isContainer: true;
+};
+
 export type FormElement<TType extends ElementsType = ElementsType> =
   BaseFormBlueprint<TType, FormElementInstance<TType>> & {
     isContainer: false;

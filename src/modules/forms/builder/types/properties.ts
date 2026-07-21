@@ -1,11 +1,17 @@
+import type { ActionConfigUnion } from "./action";
+
 // --- Validation Base ---
 export interface BaseValidation {
   required: boolean;
 }
 
 // --- Root ---
+interface FormSubmissionConfig {
+  onSuccess: ActionConfigUnion;
+}
 export interface RootProperties {
   theme?: string;
+  submission: FormSubmissionConfig;
 }
 
 // --- Elements Base ---
@@ -73,6 +79,10 @@ export interface BaseDisplayProperties {
   label: string;
 }
 
-export interface ParagraphProperties extends BaseLayoutProperties {
+export interface ParagraphProperties extends BaseDisplayProperties {
   content: any; // Da tipizzare meglio quando aggancerai i dati del Rich Text
+}
+
+export interface ButtonProperties extends BaseDisplayProperties {
+  label: string;
 }

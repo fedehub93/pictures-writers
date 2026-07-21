@@ -46,7 +46,14 @@ const initialRoot: FormRootInstance = {
   id: "root",
   isContainer: true,
   type: "Root",
-  properties: {},
+  properties: {
+    submission: {
+      onSuccess: {
+        type: "toast",
+        successMessage: "Form inviato correttamente",
+      },
+    },
+  },
   children: [],
 };
 

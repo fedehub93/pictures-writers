@@ -15,8 +15,20 @@ import { Heading, type HeadingProps } from "./blocks/Heading";
 
 import { viewports } from "./utils/viewports";
 import { IconBlock, IconBlockProps } from "./blocks/Icon";
+import type { FormProps } from "./fields/form";
 
-type Components = {
+export type SavedComponents = {
+  Grid: GridBlockProps;
+  Separator: SeparatorBlockProps;
+  Icon: IconBlockProps;
+  Image: ImageBlockProps;
+  Form: Omit<FormBlockProps, "form"> & {
+    form: FormProps;
+  };
+  Heading: HeadingProps;
+};
+
+export type HydratedComponents = {
   Grid: GridBlockProps;
   Separator: SeparatorBlockProps;
   Icon: IconBlockProps;
@@ -26,7 +38,7 @@ type Components = {
 };
 
 // Create Puck component config
-const config: Config<Components, RootProps> = {
+const config: Config<HydratedComponents, RootProps> = {
   categories: {
     layout: {
       title: "Layout",

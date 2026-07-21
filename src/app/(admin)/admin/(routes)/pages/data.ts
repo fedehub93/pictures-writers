@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { hydratePuckForms } from "@/puck/utils/hydrate-puck-forms";
 
 export const getPagesGroupedByRootId = async () => {
   try {
@@ -49,7 +50,14 @@ export const getLastPageByRootId = async (rootId: string) => {
       },
     });
 
-    return page;
+    if (!page) return null;
+
+    const hydratedPage = {
+      ...page,
+      puckData: page.puckData ? await hydratePuckForms(page.puckData) : null,
+    };
+
+    return hydratedPage;
   } catch (error) {
     console.error("GET_LAST_PUBLISHED_PAGE_BY_ROOT_ID", error);
     return null;

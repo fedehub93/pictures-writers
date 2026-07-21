@@ -8,7 +8,7 @@ import { db } from "@/lib/db";
 
 export const submitForm = async (
   formId: string,
-  values: Record<string, string>,
+  values: Record<string, any>,
   recaptchaToken: string,
 ) => {
   try {
@@ -30,7 +30,7 @@ export const submitForm = async (
     // Recupera il form per validare che esista
     const form = await db.form.findUnique({
       where: { id: formId },
-      select: { id: true, fields: true },
+      select: { id: true },
     });
 
     if (!form) {

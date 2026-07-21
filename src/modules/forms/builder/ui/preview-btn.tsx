@@ -1,10 +1,22 @@
+"use client";
+
 import { Dialog, DialogContent, DialogTrigger } from "@/shared/ui/dialog";
 import { EyeIcon } from "lucide-react";
 
 import { FormRunner } from "../runner/form-runner";
 import { useDesigner } from "../store/designer-provider";
 
-export const PreviewBtn = () => {
+import type { FormRootInstance } from "../types/core";
+
+export const PreviewBtn = ({
+  id,
+  gtmEventName,
+  content,
+}: {
+  id: string;
+  gtmEventName: string | null;
+  content: FormRootInstance;
+}) => {
   const root = useDesigner((state) => state.root);
 
   const onSubmit = (values: Record<string, any>) => {
@@ -26,7 +38,7 @@ export const PreviewBtn = () => {
         </div>
         <div className="bg-accent flex flex-col grow items-center justify-center p-4 overflow-y-auto">
           <div className="max-w-155 flex flex-col gap-4 grow bg-background h-full w-full rounded p-8 overflow-y-auto">
-            <FormRunner root={root} onSubmit={onSubmit} />
+            <FormRunner id={id} content={content} gtmEventName={gtmEventName} />
           </div>
         </div>
       </DialogContent>

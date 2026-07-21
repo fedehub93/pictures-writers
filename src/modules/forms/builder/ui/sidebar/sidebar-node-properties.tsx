@@ -1,7 +1,7 @@
 import { XIcon } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 
-import type { FormNodeDynamicInstance } from "../../types/core";
+import type { FormNodeInstance } from "../../types/core";
 import { useDesigner } from "../../store/designer-provider";
 import { findNodeRecursively } from "../../helpers";
 import { FormNodes } from "../../registry";
@@ -13,11 +13,11 @@ export const SidebarNodeProperties = () => {
     findNodeRecursively(state.root, activeNodeId),
   );
 
-  if (!node || node.type === "Root") return null;
+  if (!node) return null;
 
   const PropertiesForm = FormNodes[node.type]
     .propertiesComponent as React.ComponentType<{
-    elementInstance: FormNodeDynamicInstance;
+    elementInstance: FormNodeInstance;
   }>;
 
   const onClose = () => {

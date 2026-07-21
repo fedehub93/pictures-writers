@@ -15,6 +15,7 @@ export const SidebarNodes = () => {
         <div className="flex flex-wrap gap-4">
           <SidebarBtnElement formNode={FormLayouts.Grid} />
           <SidebarBtnElement formNode={FormDisplay.Paragraph} />
+          <SidebarBtnElement formNode={FormDisplay.Button} />
         </div>
       </div>
       <Separator />

@@ -4,19 +4,22 @@ import { pointerIntersection } from "@dnd-kit/collision";
 
 import { cn } from "@/shared/lib/utils";
 
-import type { FormNodeDynamicInstance } from "../../../types/core";
+import type {
+  FormNodeDynamicInstance,
+  FormRootInstance,
+} from "../../../types/core";
 import { DropAreaZone, GenericData } from "../../../types/dnd";
 
 import { useDesigner } from "../../../store/designer-provider";
 
 import { DesignerWrapper } from "../../canvas/designer-wrapper";
 
-interface RootProps {
-  nodes: FormNodeDynamicInstance[];
-}
-
-export const Root = (props: RootProps) => {
-  const { nodes } = props;
+export const RootDesignerComponent = ({
+  elementInstance,
+}: {
+  elementInstance: FormRootInstance;
+}) => {
+  const { children: nodes } = elementInstance;
 
   const { ref, isDropTarget } = useDroppable<GenericData>({
     id: "root",

@@ -18,7 +18,7 @@ import { FormNodes } from "../../registry";
 import { useDesigner } from "../../store/designer-provider";
 
 import { generateId } from "../../lib/generator";
-import { Root } from "../layouts/root/designer-component";
+import { RootDesignerComponent } from "../layouts/root/designer-component";
 
 import { DesignerTree } from "./designer-tree";
 
@@ -141,7 +141,7 @@ export const Designer = () => {
         )}
         onClick={onWrapperClick}
       >
-        <Root nodes={root.children} />
+        <RootDesignerComponent elementInstance={root} />
       </div>
       <DesignerSidebar />
     </div>

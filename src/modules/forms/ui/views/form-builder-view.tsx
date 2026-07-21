@@ -26,7 +26,11 @@ export const FormBuilderView = ({ id }: FormBuilderViewProps) => {
               <span>Form: </span>
               {data.name}
             </h2>
-            <FormActions id={id} />
+            <FormActions
+              id={id}
+              gtmEventName={data.gtmEventName}
+              content={data.content}
+            />
           </nav>
           <div className="flex w-full grow items-center justify-center relative overflow-y-auto h-50 bg-accent">
             <Designer />
