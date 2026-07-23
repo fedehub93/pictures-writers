@@ -6,6 +6,7 @@ import { contactsRouter } from "@/modules/mails/contacts/server/procedures";
 import { settingsRouter } from "@/modules/mails/settings/server/procedures";
 import { templatesRouter } from "@/modules/mails/templates/server/procedures";
 import { formsRouter } from "@/modules/forms/server/procedures";
+import { formSubmissionsRouter } from "@/modules/forms/submissions/server/procedures";
 
 export const appRouter = createTRPCRouter({
   singleSends: singleSendsRouter,
@@ -14,6 +15,7 @@ export const appRouter = createTRPCRouter({
   mailSettings: settingsRouter,
   templates: templatesRouter,
   forms: formsRouter,
+  submissions: formSubmissionsRouter,
 });
 
 // export type definition of API

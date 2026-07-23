@@ -4,7 +4,7 @@ import axios from "axios";
 export const useNotificationsQuery = (userId: string) => {
   const fetchNotifications = async ({ pageParam = undefined }) => {
     const paramsObj = { cursor: pageParam };
-    const res = await axios.get(`/api/users/${userId}/notifications`, {
+    const res = await axios.get(`/api/users/${userId}/notifications/`, {
       params: pageParam ? { cursor: pageParam } : {},
     });
     return res.data;

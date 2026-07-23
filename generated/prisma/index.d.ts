@@ -50842,7 +50842,7 @@ export namespace Prisma {
     id: string
     formId: string
     email: string | null
-    data:unknown
+    data:PrismaJson.SubmissionData
     createdAt: Date
     updatedAt: Date
     _count: FormSubmissionCountAggregateOutputType | null
@@ -50923,7 +50923,10 @@ export namespace Prisma {
       id: string
       formId: string
       email: string | null
-      data:unknown
+      /**
+       * [SubmissionData]
+       */
+      data:PrismaJson.SubmissionData
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["formSubmission"]>
@@ -65254,7 +65257,7 @@ export namespace Prisma {
   export type FormSubmissionCreateInput = {
     id?: string
     email?: string | null
-    data:unknown
+    data:PrismaJson.SubmissionData
     createdAt?: Date | string
     updatedAt?: Date | string
     form: FormCreateNestedOneWithoutSubmissionsInput
@@ -65264,7 +65267,7 @@ export namespace Prisma {
     id?: string
     formId: string
     email?: string | null
-    data:unknown
+    data:PrismaJson.SubmissionData
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -65272,7 +65275,7 @@ export namespace Prisma {
   export type FormSubmissionUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
-    data?:unknown
+    data?:PrismaJson.SubmissionData
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     form?: FormUpdateOneRequiredWithoutSubmissionsNestedInput
@@ -65282,7 +65285,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     formId?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
-    data?:unknown
+    data?:PrismaJson.SubmissionData
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -65291,7 +65294,7 @@ export namespace Prisma {
     id?: string
     formId: string
     email?: string | null
-    data:unknown
+    data:PrismaJson.SubmissionData
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -65299,7 +65302,7 @@ export namespace Prisma {
   export type FormSubmissionUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
-    data?:unknown
+    data?:PrismaJson.SubmissionData
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -65308,7 +65311,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     formId?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
-    data?:unknown
+    data?:PrismaJson.SubmissionData
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -79809,7 +79812,7 @@ export namespace Prisma {
   export type FormSubmissionCreateWithoutFormInput = {
     id?: string
     email?: string | null
-    data:unknown
+    data:PrismaJson.SubmissionData
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -79817,7 +79820,7 @@ export namespace Prisma {
   export type FormSubmissionUncheckedCreateWithoutFormInput = {
     id?: string
     email?: string | null
-    data:unknown
+    data:PrismaJson.SubmissionData
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -83220,7 +83223,7 @@ export namespace Prisma {
   export type FormSubmissionCreateManyFormInput = {
     id?: string
     email?: string | null
-    data:unknown
+    data:PrismaJson.SubmissionData
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -83312,7 +83315,7 @@ export namespace Prisma {
   export type FormSubmissionUpdateWithoutFormInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
-    data?:unknown
+    data?:PrismaJson.SubmissionData
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -83320,7 +83323,7 @@ export namespace Prisma {
   export type FormSubmissionUncheckedUpdateWithoutFormInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
-    data?:unknown
+    data?:PrismaJson.SubmissionData
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -83328,7 +83331,7 @@ export namespace Prisma {
   export type FormSubmissionUncheckedUpdateManyWithoutFormInput = {
     id?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
-    data?:unknown
+    data?:PrismaJson.SubmissionData
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

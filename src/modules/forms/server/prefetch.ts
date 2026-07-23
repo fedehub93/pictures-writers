@@ -6,8 +6,8 @@ type Input = inferInput<typeof trpc.forms.getMany>;
 /**
  * Prefetch all Email Audiences
  */
-export const prefetchForms = (params?: Input) => {
-  return prefetch(trpc.forms.getMany.queryOptions(params));
+export const prefetchForms = (params: Input) => {
+  return prefetch(trpc.forms.getMany.queryOptions({ ...params }));
 };
 
 /**

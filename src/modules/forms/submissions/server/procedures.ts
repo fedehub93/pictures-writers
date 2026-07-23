@@ -4,9 +4,10 @@ import { db } from "@/shared/lib/db";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 
-import { formInsertSchema, formUpdateSchema } from "../schemas";
-import type { FormRootInstance } from "../builder/types/core";
-
+import {
+  formSubmissionInsertSchema,
+  formSubmissionUpdateSchema,
+} from "../schemas";
 import {
   DEFAULT_PAGE,
   DEFAULT_PAGE_SIZE,
@@ -14,54 +15,36 @@ import {
   MIN_PAGE_SIZE,
 } from "../constants";
 
-export const formsRouter = createTRPCRouter({
+export const formSubmissionsRouter = createTRPCRouter({
   create: protectedProcedure
-    .input(formInsertSchema)
+    .input(formSubmissionInsertSchema)
     .mutation(async ({ input }) => {
-      const form = await db.form.create({
-        data: {
-          name: input.name,
-        },
+      const submission = await db.formSubmission.create({
+        data: { ...input },
       });
-      return form;
+      return submission;
     }),
   update: protectedProcedure
-    .input(formUpdateSchema)
+    .input(formSubmissionUpdateSchema)
     .mutation(async ({ input }) => {
-      const updatedForm = await db.form.update({
+      const updatedSubmission = await db.form.update({
         where: { id: input.id },
         data: { ...input },
       });
 
-      if (!updatedForm) {
+      if (!updatedSubmission) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Form not found",
+          message: "Form submission not found",
         });
       }
 
-      return updatedForm;
-    }),
-  updateContent: protectedProcedure
-    .input(
-      z.object({
-        id: z.string(),
-        content: z.custom<FormRootInstance>(),
-      }),
-    )
-    .mutation(async ({ input }) => {
-      const updatedForm = await db.form.update({
-        where: { id: input.id },
-        data: { content: input.content },
-      });
-
-      if (!updatedForm) throw new TRPCError({ code: "NOT_FOUND" });
-      return updatedForm;
+      return updatedSubmission;
     }),
   remove: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
-      return await db.form.delete({
+      return await db.formSubmission.delete({
         where: {
           id: input.id,
         },
@@ -70,20 +53,23 @@ export const formsRouter = createTRPCRouter({
   getOne: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ input }) => {
-      const form = await db.form.findUnique({
+      const submission = await db.formSubmission.findUnique({
         where: {
           id: input.id,
         },
+        include: {
+          form: true,
+        },
       });
 
-      if (!form) {
+      if (!submission) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Form not found",
+          message: "Form submission not found",
         });
       }
 
-      return form;
+      return submission;
     }),
   getMany: protectedProcedure
     .input(
@@ -95,17 +81,23 @@ export const formsRouter = createTRPCRouter({
           .max(MAX_PAGE_SIZE)
           .default(DEFAULT_PAGE_SIZE),
         search: z.string().nullish(),
+        formId: z.string().nullish(),
       }),
     )
     .query(async ({ input }) => {
-      const forms = await db.form.findMany({
+      const submissions = await db.formSubmission.findMany({
         where: {
-          name: input.search ? { contains: input.search } : undefined,
+          formId: input.formId ? input.formId : undefined,
+          email: input.search ? { contains: input.search } : undefined,
+        },
+        include: {
+          form: true,
         },
         orderBy: { createdAt: "desc" },
         take: input.pageSize,
         skip: (input.page - 1) * input.pageSize,
       });
-      return forms;
+
+      return submissions;
     }),
 });

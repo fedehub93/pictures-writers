@@ -24,6 +24,7 @@ declare global {
     type BodyData = CustomElement[];
     type TipTapBodyData = TiptapContent;
     type PuckData = Data<SavedComponents>;
+    type SubmissionData = Record<string, unknown>;
     type FormFields = any;
     type FormContentState = FormRootInstance;
     type ProductMetadata =

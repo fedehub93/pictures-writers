@@ -9,9 +9,11 @@ import { DataTable } from "../components/data-table";
 import { useSuspenseForms } from "../../hooks/use-forms";
 import { columns } from "../components/column";
 import { UpdateFormDialog } from "../components/update-form-dialog";
+import { useFormFilters } from "../../hooks/use-forms-filter";
 
 export const FormsView = () => {
-  const { data } = useSuspenseForms();
+  const [filters, setFilters] = useFormFilters();
+  const { data } = useSuspenseForms(filters);
 
   return (
     <>

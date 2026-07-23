@@ -12,6 +12,7 @@ import { useDesigner } from "../store/designer-provider";
 import type { FormRootInstance } from "../types/core";
 
 import { PreviewBtn } from "./preview-btn";
+import { useFormFilters } from "../../hooks/use-forms-filter";
 
 interface FormActionsProps {
   id: string;
@@ -27,11 +28,14 @@ export const FormActions = ({
   const { root } = useDesigner((state) => state);
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const [filters, setFilters] = useFormFilters();
 
   const updateForm = useMutation(
     trpc.forms.updateContent.mutationOptions({
       onSuccess: async () => {
-        await queryClient.invalidateQueries(trpc.forms.getMany.queryOptions());
+        await queryClient.invalidateQueries(
+          trpc.forms.getMany.queryOptions(filters),
+        );
         if (id) {
           await queryClient.invalidateQueries(
             trpc.forms.getOne.queryOptions({ id }),

@@ -4,7 +4,7 @@ import { SubmissionNodeRenderer } from "./submission-node-renderer";
 
 interface FormSubmissionViewerProps {
   rootInstance: FormRootInstance;
-  submittedData: Record<string, any>;
+  submittedData: Record<string, unknown>;
 }
 
 export function FormSubmissionViewer({

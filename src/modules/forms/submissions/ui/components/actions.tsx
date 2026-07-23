@@ -2,6 +2,7 @@
 
 import {
   BlocksIcon,
+  EyeIcon,
   MoreHorizontalIcon,
   PencilIcon,
   Trash2Icon,
@@ -24,33 +25,28 @@ import {
 
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 
-import { FormsGetMany } from "../../types";
-import { useOpenForm } from "../../hooks/use-open-form";
-import { useFormFilters } from "../../hooks/use-forms-filter";
+import { FormSubmissionsGetMany } from "../../types";
 
-interface FormsActions {
+interface SubmissionsActions {
   id: string;
-  data: FormsGetMany[number];
+  data: FormSubmissionsGetMany[number];
 }
 
-export const FormsActions = ({ id, data }: FormsActions) => {
+export const SubmissionsActions = ({ id, data }: SubmissionsActions) => {
   const trpc = useTRPC();
 
   const queryClient = useQueryClient();
-  const [filters, setFilters] = useFormFilters();
   const router = useRouter();
 
-  const { onOpen } = useOpenForm();
-
-  const onEdit = () => {
-    onOpen(data);
-  };
+  const onEdit = () => {};
 
   const removeForm = useMutation(
-    trpc.forms.remove.mutationOptions({
+    trpc.submissions.remove.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries(trpc.forms.getMany.queryOptions(filters));
-        toast.success("Form deleted successfully!");
+        queryClient.invalidateQueries(
+          trpc.submissions.getMany.queryOptions({}),
+        );
+        toast.success("Form submission deleted successfully!");
         router.refresh();
       },
       onError: (error) => {
@@ -75,16 +71,12 @@ export const FormsActions = ({ id, data }: FormsActions) => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={onEdit}>
-            <PencilIcon className="size-4 mr-2" />
-            Edit
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link href={`/admin/forms/${id}/builder`}>
-              <BlocksIcon className="size-4 mr-2" />
-              Form Builder
-            </Link>
-          </DropdownMenuItem>
+          <Link href={`/admin/submissions/${id}`}>
+            <DropdownMenuItem>
+              <EyeIcon className="size-4 mr-2" />
+              View
+            </DropdownMenuItem>
+          </Link>
 
           <DropdownMenuSeparator />
           <ConfirmModal onConfirm={onDelete}>
