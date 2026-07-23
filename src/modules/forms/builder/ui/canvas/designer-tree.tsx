@@ -27,6 +27,7 @@ export const DesignerTree = ({ root }: DesignerTreeProps) => {
 const TreeNode = ({ node, style, dragHandle }: NodeRendererProps<any>) => {
   const type = node.data.type as ElementsType | LayoutsType | DisplayType;
   const Icon = FormNodes[type].designerBtnElement.icon;
+
   return (
     <div className="max-w-60 p-4">
       <div
@@ -35,7 +36,7 @@ const TreeNode = ({ node, style, dragHandle }: NodeRendererProps<any>) => {
         onClick={() => node.toggle()}
         className="line-clamp-1 truncate max-w-full flex gap-x-2 items-center"
       >
-        <Icon className="size-5 text-primary" />{" "}
+        <Icon className="size-5 text-primary" />
         <span className="text-sm">{node.data.properties.label}</span>
       </div>
     </div>

@@ -38,6 +38,9 @@ export const FormForm = ({
     resolver: zodResolver(formInsertSchema),
     values: {
       name: initialValues?.name ?? "",
+      gtmLabel: initialValues?.gtmLabel ?? "",
+      gtmEventName: initialValues?.gtmEventName ?? "",
+      gtmCategory: initialValues?.gtmCategory ?? "",
     },
   });
 
@@ -95,6 +98,27 @@ export const FormForm = ({
           name="name"
           label="Name"
           placeholder="John Doe"
+          disabled={isPending}
+        />
+        <GenericInput
+          control={form.control}
+          name="gtmLabel"
+          label="GTM Label"
+          placeholder="Form free download"
+          disabled={isPending}
+        />
+        <GenericInput
+          control={form.control}
+          name="gtmEventName"
+          label="GTM Event Name"
+          placeholder="form_free_download"
+          disabled={isPending}
+        />
+        <GenericInput
+          control={form.control}
+          name="gtmCategory"
+          label="GTM Category"
+          placeholder="lead"
           disabled={isPending}
         />
 

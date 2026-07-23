@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
-
 import { zodResolver } from "@hookform/resolvers/zod";
+import slugify from "slugify";
 
 import { Form } from "@/shared/ui/form";
 
@@ -54,7 +54,33 @@ export const TextFieldPropertiesComponent = ({
         onBlur={form.handleSubmit(onApplyChanges)}
         className="space-y-3"
       >
-        <GenericInput control={form.control} label="Name" name="name" />
+        <div className="flex gap-x-4">
+          <GenericInput
+            control={form.control}
+            label="Label"
+            name="label"
+            onChange={(e) => {
+              form.setValue(
+                "name",
+                slugify(e.target.value, {
+                  replacement: "_",
+                  remove: /[*+~.()'"!:@]/g,
+                  lower: true,
+                }),
+                {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                },
+              );
+            }}
+          />
+          <GenericInput
+            control={form.control}
+            label="Name"
+            name="name"
+            disabled
+          />
+        </div>
         <GenericSelect
           control={form.control}
           name="inputType"
@@ -62,7 +88,7 @@ export const TextFieldPropertiesComponent = ({
           placeholder="text"
           options={Object.values(TextInputEnum)}
         />
-        <GenericInput control={form.control} label="Label" name="label" />
+
         <GenericInput
           control={form.control}
           label="Placeholder"

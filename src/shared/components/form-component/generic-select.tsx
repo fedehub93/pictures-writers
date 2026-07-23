@@ -43,7 +43,7 @@ export const GenericSelect = <T extends FieldValues>({
             containerProps?.className ? containerProps.className : "",
           )}
         >
-          <FormLabel>{label}</FormLabel>
+          <FormLabel htmlFor={`rhf_select_${field.name}`}>{label}</FormLabel>
           <Select
             {...field}
             value={field.value}
@@ -51,7 +51,10 @@ export const GenericSelect = <T extends FieldValues>({
               field.onChange(val);
             }}
           >
-            <SelectTrigger className="w-full capitalize mb-0">
+            <SelectTrigger
+              id={`rhf_select_${field.name}`}
+              className="w-full capitalize mb-0"
+            >
               <SelectValue
                 placeholder={inputProps.placeholder}
                 className={cn(

@@ -36,7 +36,6 @@ export const CheckboxFieldDesignerComponent = ({
         />
 
         <div className="space-y-1 self-center leading-none text-sm">
-          {/* <div dangerouslySetInnerHTML={{ __html: field.label }} /> */}
           <TipTapRenderer content={description} />
         </div>
       </div>

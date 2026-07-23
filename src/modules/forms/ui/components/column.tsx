@@ -25,6 +25,48 @@ export const columns: ColumnDef<FormsGetMany[number]>[] = [
     },
   },
   {
+    accessorKey: "gtmLabel",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          GTM Label
+          <ArrowUpDownIcon className="ml-2 size-4" />
+        </Button>
+      );
+    },
+  },
+  {
+    accessorKey: "gtmEventName",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          GTM Event Name
+          <ArrowUpDownIcon className="ml-2 size-4" />
+        </Button>
+      );
+    },
+  },
+  {
+    accessorKey: "gtmCategory",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          GTM Category
+          <ArrowUpDownIcon className="ml-2 size-4" />
+        </Button>
+      );
+    },
+  },
+  {
     id: "actions",
     cell: ({ row }) => {
       const { id } = row.original;

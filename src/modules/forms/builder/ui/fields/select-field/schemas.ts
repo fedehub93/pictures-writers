@@ -18,12 +18,13 @@ export const propertiesSchema = z.object({
 export type PropertiesFormSchemaType = z.infer<typeof propertiesSchema>;
 
 export const buildSchema = ({
+  label,
   validation: { required },
 }: SelectFieldProperties): z.ZodType => {
   let schema = z.string();
 
   if (required) {
-    schema = schema.min(1, { error: "This field is required!" });
+    schema = schema.min(1, { error: `${label} is required!` });
   }
 
   return schema;

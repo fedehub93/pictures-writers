@@ -39,7 +39,7 @@ export function CheckboxFieldFormComponent({
           >
             <div className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
               <Checkbox
-                id={`form-rhf-checkbox-${field.name}`}
+                id={`rhf-checkbox-${field.name}`}
                 name={field.name}
                 aria-invalid={fieldState.invalid}
                 checked={field.value || false}
@@ -49,7 +49,7 @@ export function CheckboxFieldFormComponent({
               />
               <div className="space-y-1 self-center leading-none">
                 <FieldLabel
-                  htmlFor={name}
+                  htmlFor={`rhf-checkbox-${field.name}`}
                   className={cn(`text-xs`, errorMessage && "text-destructive")}
                 >
                   <TipTapRenderer content={description} />

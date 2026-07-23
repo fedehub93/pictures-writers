@@ -79,6 +79,7 @@ export const getTypographyVars = (data?: Responsive<TypographyProps>) => {
  */
 export const getGridVars = (data?: Responsive<GridProps>) => {
   if (!data) return {};
+
   const vars: Record<string, string> = {};
 
   for (const bp of BREAKPOINTS) {

@@ -20,7 +20,21 @@ export const formsRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       const form = await db.form.create({
         data: {
-          name: input.name,
+          ...input,
+          content: {
+            id: "root",
+            type: "Root",
+            isContainer: true,
+            children: [],
+            properties: {
+              submission: {
+                onSuccess: {
+                  type: "toast",
+                  successMessage: "Form submitted successfully!",
+                },
+              },
+            },
+          },
         },
       });
       return form;

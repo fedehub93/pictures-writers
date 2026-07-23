@@ -34,7 +34,7 @@ export const SidebarNodeProperties = () => {
           <XIcon className="size-4" />
         </Button>
       </div>
-      <PropertiesForm elementInstance={node} />
+      <PropertiesForm key={node.id} elementInstance={node} />
     </div>
   );
 };
