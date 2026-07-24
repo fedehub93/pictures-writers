@@ -7,37 +7,36 @@ import { ScrollArea, ScrollBar } from "@/shared/ui/scroll-area";
 
 import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
 
-import { useSubmissionsFilters } from "../../hooks/use-submissions-filters";
 import { DEFAULT_PAGE } from "../../constants";
+import { usePagesFilters } from "../../hooks/use-pages-filters";
 
-import { SubmissionsSearchFilter } from "./submissions-search-filters";
-import { FormIdFilter } from "./form-id-filter";
-import { useSuspenseFormSubmissions } from "../../hooks/use-submissions";
+import { PagesSearchFilter } from "./pages-search-filters";
+import { StatusFilter } from "./pages-status-filters";
+import { useSuspensePages } from "../../hooks/use-pages";
 
-export const SubmissionsListHeader = () => {
-  const [filters, setFilters] = useSubmissionsFilters();
-  const { data } = useSuspenseFormSubmissions(filters);
+export const PagesListHeader = () => {
+  const [filters, setFilters] = usePagesFilters();
+  const { data } = useSuspensePages(filters);
 
-  const isanyFilterModified = !!filters.search || !!filters.formId;
+  const isAnyFilterModified = !!filters.search || !!filters.status;
 
   const onClearFilters = () => {
     setFilters({
       search: "",
-      formId: "",
       page: DEFAULT_PAGE,
+      status: null,
     });
   };
 
   return (
     <>
       <div className="flex flex-col gap-y-4 px-6 pt-3">
-        <ContentHeader label="Submissions" totalEntries={data.length} />
+        <ContentHeader label="Pages" totalEntries={data.length} />
         <ScrollArea>
           <div className="flex items-center gap-x-2 px-1">
-            <SubmissionsSearchFilter />
-            <FormIdFilter />
-
-            {isanyFilterModified && (
+            <PagesSearchFilter />
+            <StatusFilter />
+            {isAnyFilterModified && (
               <Button variant="outline" size="sm" onClick={onClearFilters}>
                 <XCircleIcon />
                 Clear

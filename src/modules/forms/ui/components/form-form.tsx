@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 import { useTRPC } from "@/trpc/client";
 
-import { Form, FormMessage } from "@/shared/ui/form";
+import { Form } from "@/shared/ui/form";
 import { Button } from "@/shared/ui/button";
 
 import { GenericInput } from "@/shared/components/form-component/generic-input";

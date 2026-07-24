@@ -1,20 +1,21 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown } from "lucide-react";
 
-import { ContentStatus } from "@/generated/prisma";
+import { ArrowUpDownIcon } from "lucide-react";
 
 import { Button } from "@/shared/ui/button";
-import { Badge } from "@/shared/ui/badge";
 import { Checkbox } from "@/shared/ui/checkbox";
 
-import { cn } from "@/shared/lib/utils";
-import { formatDate } from "@/lib/format";
-import { PagesActions } from "./actions";
-import { GetPagesGroupedByRootId } from "../data";
+import type { PagesGetMany } from "../../types";
 
-export const columns: ColumnDef<GetPagesGroupedByRootId>[] = [
+import { PagesActions } from "./actions";
+import { formatDate } from "@/lib/format";
+import { Badge } from "@/shared/ui/badge";
+import { ContentStatus } from "@/generated/prisma";
+import { cn } from "@/shared/lib/utils";
+
+export const columns: ColumnDef<PagesGetMany[number]>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -39,6 +40,7 @@ export const columns: ColumnDef<GetPagesGroupedByRootId>[] = [
     enableSorting: false,
     enableHiding: false,
   },
+
   {
     accessorKey: "title",
     header: ({ column }) => {
@@ -48,7 +50,7 @@ export const columns: ColumnDef<GetPagesGroupedByRootId>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Title
-          <ArrowUpDown className="ml-2 size-4" />
+          <ArrowUpDownIcon className="ml-2 size-4" />
         </Button>
       );
     },
@@ -62,7 +64,7 @@ export const columns: ColumnDef<GetPagesGroupedByRootId>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Slug
-          <ArrowUpDown className="ml-2 size-4" />
+          <ArrowUpDownIcon className="ml-2 size-4" />
         </Button>
       );
     },
@@ -76,7 +78,7 @@ export const columns: ColumnDef<GetPagesGroupedByRootId>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Created At
-          <ArrowUpDown className="ml-2 size-4" />
+          <ArrowUpDownIcon className="ml-2 size-4" />
         </Button>
       );
     },
@@ -99,7 +101,7 @@ export const columns: ColumnDef<GetPagesGroupedByRootId>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Status
-          <ArrowUpDown className="ml-2 size-4" />
+          <ArrowUpDownIcon className="ml-2 size-4" />
         </Button>
       );
     },
@@ -127,7 +129,14 @@ export const columns: ColumnDef<GetPagesGroupedByRootId>[] = [
     cell: ({ row }) => {
       const { rootId, id, status } = row.original;
       if (!rootId) return null;
-      return <PagesActions rootId={rootId} id={id} status={status} />;
+      return (
+        <PagesActions
+          rootId={rootId}
+          id={id}
+          status={status}
+          data={row.original}
+        />
+      );
     },
   },
 ];

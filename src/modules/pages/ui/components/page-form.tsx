@@ -4,27 +4,30 @@ import { z } from "zod";
 import { useController, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import slugify from "slugify";
+
+import { useTRPC } from "@/trpc/client";
 
 import { Form, FormMessage } from "@/shared/ui/form";
 
 import { Button } from "@/shared/ui/button";
 
 import { GenericInput } from "@/shared/components/form-component/generic-input";
-import { pageInsertSchema, pageUpdateSchema } from "../schema";
 import { SlugInput } from "@/shared/components/form-component/slug-input";
-import slugify from "slugify";
+
+import {
+  pageInsertSchema,
+  PageInsertValues,
+  PageUpdateValues,
+} from "../../schemas";
+
+import { usePagesFilters } from "../../hooks/use-pages-filters";
 
 interface PageFormProps {
   onSuccess?: () => void;
   onCancel?: () => void;
-  initialValues?: {
-    id: string;
-    title: string;
-    slug: string;
-  };
+  initialValues?: PageUpdateValues;
 }
 
 export const PageForm = ({
@@ -32,8 +35,9 @@ export const PageForm = ({
   onCancel,
   initialValues,
 }: PageFormProps) => {
+  const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const router = useRouter();
+  const [filters, setFilters] = usePagesFilters();
 
   const form = useForm<z.infer<typeof pageInsertSchema>>({
     resolver: zodResolver(pageInsertSchema),
@@ -43,55 +47,51 @@ export const PageForm = ({
     },
   });
 
-  const updatePage = useMutation({
-    mutationFn: ({
-      id,
-      ...payload
-    }: { id: string } & z.infer<typeof pageUpdateSchema>) => {
-      return axios.patch(`/api/admin/pages/${id}`, payload);
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: ["pages"],
-      });
+  const createPage = useMutation(
+    trpc.pages.create.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries(
+          trpc.pages.getMany.queryOptions(filters),
+        );
+        toast.success("Page created successfully!");
+        onSuccess?.();
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    }),
+  );
 
-      if (initialValues?.id) {
-        await queryClient.invalidateQueries({
-          queryKey: ["page", { id: initialValues.id }],
-        });
-      }
-
-      toast.success("Page updated successfully");
-      router.refresh();
-      onSuccess?.();
-    },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || "Failed to update page");
-    },
-  });
-
-  const createPage = useMutation({
-    mutationFn: (payload: z.infer<typeof pageInsertSchema>) => {
-      return axios.post(`/api/admin/pages`, payload);
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["pages"] });
-
-      router.refresh();
-      toast.success("Page created successfully");
-      onSuccess?.();
-    },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || "Failed to create page");
-    },
-  });
+  const updatePage = useMutation(
+    trpc.pages.update.mutationOptions({
+      onSuccess: async () => {
+        await queryClient.invalidateQueries(
+          trpc.pages.getMany.queryOptions(filters),
+        );
+        if (initialValues?.id) {
+          await queryClient.invalidateQueries(
+            trpc.pages.getOne.queryOptions({ id: initialValues.id }),
+          );
+        }
+        toast.success("Page updated successfully!");
+        onSuccess?.();
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    }),
+  );
 
   const isEdit = !!initialValues?.id;
-  const isPending = updatePage.isPending || createPage.isPending;
+  const isPending = createPage.isPending || updatePage.isPending;
 
-  const onSubmit = (values: z.infer<typeof pageInsertSchema>) => {
+  const onSubmit = (values: PageInsertValues) => {
     if (isEdit) {
-      updatePage.mutate({ ...values, id: initialValues.id });
+      updatePage.mutate({
+        ...values,
+        id: initialValues.id,
+        rootId: initialValues.rootId,
+      });
     } else {
       createPage.mutate(values);
     }

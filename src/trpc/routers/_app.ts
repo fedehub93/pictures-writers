@@ -7,6 +7,7 @@ import { settingsRouter } from "@/modules/mails/settings/server/procedures";
 import { templatesRouter } from "@/modules/mails/templates/server/procedures";
 import { formsRouter } from "@/modules/forms/server/procedures";
 import { formSubmissionsRouter } from "@/modules/forms/submissions/server/procedures";
+import { pagesRouter } from "@/modules/pages/server/procedures";
 
 export const appRouter = createTRPCRouter({
   singleSends: singleSendsRouter,
@@ -14,6 +15,7 @@ export const appRouter = createTRPCRouter({
   contacts: contactsRouter,
   mailSettings: settingsRouter,
   templates: templatesRouter,
+  pages: pagesRouter,
   forms: formsRouter,
   submissions: formSubmissionsRouter,
 });

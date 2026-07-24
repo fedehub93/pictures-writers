@@ -23,7 +23,6 @@ import {
 } from "@/shared/ui/table";
 
 import { Button } from "@/shared/ui/button";
-import { DataTableToolbar } from "./data-table-toolbar";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -34,7 +33,6 @@ export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-  "use no memo";
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -57,7 +55,6 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <DataTableToolbar table={table} />
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -86,7 +83,7 @@ export function DataTable<TData, TValue>({
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="max-w-64">
+                    <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),
