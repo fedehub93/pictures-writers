@@ -12,11 +12,9 @@ import { DEFAULT_PAGE } from "../../constants";
 
 import { SubmissionsSearchFilter } from "./submissions-search-filters";
 import { FormIdFilter } from "./form-id-filter";
-import { useSuspenseFormSubmissions } from "../../hooks/use-submissions";
 
 export const SubmissionsListHeader = () => {
   const [filters, setFilters] = useSubmissionsFilters();
-  const { data } = useSuspenseFormSubmissions(filters);
 
   const isanyFilterModified = !!filters.search || !!filters.formId;
 
@@ -31,7 +29,7 @@ export const SubmissionsListHeader = () => {
   return (
     <>
       <div className="flex flex-col gap-y-4 px-6 pt-3">
-        <ContentHeader label="Submissions" totalEntries={data.length} />
+        <ContentHeader label="Submissions" totalEntries={0} />
         <ScrollArea>
           <div className="flex items-center gap-x-2 px-1">
             <SubmissionsSearchFilter />

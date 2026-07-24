@@ -6,8 +6,6 @@ import { PageForm } from "./page-form";
 export const UpdatePageDialog = () => {
   const { isOpen, onClose, data } = useOpenPage();
 
-  if (!data?.rootId) return <>Something went wrong</>;
-
   return (
     <ResponsiveDialog
       title="Edit Form"
@@ -18,7 +16,13 @@ export const UpdatePageDialog = () => {
       <PageForm
         onSuccess={() => onClose()}
         onCancel={() => onClose()}
-        initialValues={{ ...data, rootId: data.rootId }}
+        initialValues={{
+          ...data,
+          id: data?.id ?? "",
+          rootId: data?.rootId ?? "",
+          title: data?.title ?? "",
+          slug: data?.slug ?? "",
+        }}
       />
     </ResponsiveDialog>
   );

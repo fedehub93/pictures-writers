@@ -7,6 +7,5 @@ export const useFormFilters = () => {
     page: parseAsInteger
       .withDefault(DEFAULT_PAGE)
       .withOptions({ clearOnDefault: true }),
-    formId: parseAsString.withDefault("").withOptions({ clearOnDefault: true }),
   });
 };

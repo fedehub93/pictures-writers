@@ -11,7 +11,6 @@ import { SidebarInset, SidebarProvider } from "@/shared/ui/sidebar";
 
 import { ThemeProvider } from "@/shared/providers/theme-provider";
 import { ToastProvider } from "@/shared/providers/toast-provider";
-import { QueryProvider } from "@/shared/providers/query-provider";
 import { requireAdminAuth } from "@/shared/lib/auth-utils";
 
 import { getSettings } from "@/data/settings";

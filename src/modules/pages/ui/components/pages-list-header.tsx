@@ -12,11 +12,9 @@ import { usePagesFilters } from "../../hooks/use-pages-filters";
 
 import { PagesSearchFilter } from "./pages-search-filters";
 import { StatusFilter } from "./pages-status-filters";
-import { useSuspensePages } from "../../hooks/use-pages";
 
 export const PagesListHeader = () => {
   const [filters, setFilters] = usePagesFilters();
-  const { data } = useSuspensePages(filters);
 
   const isAnyFilterModified = !!filters.search || !!filters.status;
 
@@ -31,7 +29,7 @@ export const PagesListHeader = () => {
   return (
     <>
       <div className="flex flex-col gap-y-4 px-6 pt-3">
-        <ContentHeader label="Pages" totalEntries={data.length} />
+        <ContentHeader label="Pages" totalEntries={0} />
         <ScrollArea>
           <div className="flex items-center gap-x-2 px-1">
             <PagesSearchFilter />

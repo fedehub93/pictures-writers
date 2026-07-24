@@ -5,10 +5,10 @@ import { useTRPC } from "@/trpc/client";
 
 import { CommandSelect } from "@/shared/components/command-select";
 
-import { useFormFilters } from "@/modules/forms/hooks/use-forms-filter";
+import { useSubmissionsFilters } from "../../hooks/use-submissions-filters";
 
 export const FormIdFilter = () => {
-  const [filters, setFilters] = useFormFilters();
+  const [filters, setFilters] = useSubmissionsFilters();
 
   const trpc = useTRPC();
   const [formSearch, setFormSearch] = useState("");

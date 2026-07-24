@@ -5,8 +5,9 @@ import {
   parseAsStringEnum,
 } from "nuqs/server";
 
-import { DEFAULT_PAGE } from "./constants";
 import { ContentStatus } from "@/generated/prisma";
+
+import { DEFAULT_PAGE } from "./constants";
 
 export const filtersSearchParams = {
   search: parseAsString.withDefault("").withOptions({ clearOnDefault: true }),
