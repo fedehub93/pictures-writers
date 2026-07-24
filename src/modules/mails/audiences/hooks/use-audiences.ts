@@ -9,7 +9,7 @@ export const useSuspenseAudiences = () => {
 };
 
 // Hook to fetch a audience using suspense
-export const useSuspenseSingleSend = (id: string) => {
+export const useSuspenseAudience = (id: string) => {
   const trpc = useTRPC();
 
   return useSuspenseQuery(trpc.audiences.getOne.queryOptions({ id }));

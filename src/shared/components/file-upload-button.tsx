@@ -52,7 +52,7 @@ export const FileUploadButton = ({
           key={file.key + idx}
           className={cn(
             "relative p-2 border rounded-md flex items-center justify-between",
-            disabled && "bg-muted"
+            disabled && "bg-muted",
           )}
         >
           <Link
@@ -83,6 +83,24 @@ export const FileUploadButton = ({
       <div className="py-4 border border-dashed rounded-md">
         <UploadButton
           className="custom-upload-button mt-0!"
+          appearance={{
+            button: {
+              color: disabled ? "var(--color-primary)" : "var(--color-primary-foreground)",
+              cursor: disabled ? "default" : "pointer",
+            },
+          }}
+          content={{
+            button({ ready }) {
+              if (ready) return <div>Carica file</div>;
+
+              return "In preparazione";
+            },
+            allowedContent({ ready, fileTypes, isUploading }) {
+              if (!ready) return "Controlla il tipo di file";
+              if (isUploading) return "In caricamento...";
+              return `File permessi: ${fileTypes.join(", ")}`;
+            },
+          }}
           endpoint={endpoint}
           onBeforeUploadBegin={(files) => {
             setIsFocused && setIsFocused(true);

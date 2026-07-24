@@ -1,0 +1,40 @@
+import { XIcon } from "lucide-react";
+import { Button } from "@/shared/ui/button";
+
+import type { FormNodeInstance } from "../../types/core";
+import { useDesigner } from "../../store/designer-provider";
+import { findNodeRecursively } from "../../helpers";
+import { FormNodes } from "../../registry";
+
+export const SidebarNodeProperties = () => {
+  const { activeNodeId, setActiveNodeId } = useDesigner((state) => state);
+
+  const node = useDesigner((state) =>
+    findNodeRecursively(state.root, activeNodeId),
+  );
+
+  if (!node) return null;
+
+  const PropertiesForm = FormNodes[node.type]
+    .propertiesComponent as React.ComponentType<{
+    elementInstance: FormNodeInstance;
+  }>;
+
+  const onClose = () => {
+    setActiveNodeId(null);
+  };
+
+  return (
+    <div className="flex flex-col p-2 gap-y-4">
+      <div className="flex justify-between items-center h-8">
+        <p className="text-sm text-foreground">
+          {node.isContainer ? "Layout" : "Field"} properties
+        </p>
+        <Button size="icon" variant="ghost" onClick={onClose}>
+          <XIcon className="size-4" />
+        </Button>
+      </div>
+      <PropertiesForm key={node.id} elementInstance={node} />
+    </div>
+  );
+};

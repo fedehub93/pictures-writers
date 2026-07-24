@@ -10,11 +10,12 @@ import {
 import { Skeleton } from "@/shared/ui/skeleton";
 
 import { useFormsQuery } from "@/app/(admin)/_hooks/use-forms-query";
-import { FormProps } from "@/puck/fields/form";
+
+import type { HydratedFormProps } from "@/puck/fields/form";
 
 interface FormViewProps {
-  state: FormProps;
-  onUpdate: (values: FormProps) => void;
+  state: HydratedFormProps;
+  onUpdate: (values: HydratedFormProps) => void;
 }
 
 export const FormView = ({ state, onUpdate }: FormViewProps) => {
@@ -33,15 +34,17 @@ export const FormView = ({ state, onUpdate }: FormViewProps) => {
           onValueChange={(val) => {
             const selectedForm = forms.find((f) => f.id === val);
             if (selectedForm) {
-              onUpdate({ ...selectedForm });
+              onUpdate({
+                id: selectedForm.id,
+                content: selectedForm.content,
+                gtmEventName: selectedForm.gtmEventName,
+              });
             }
             if (!selectedForm) {
               onUpdate({
                 id: "",
-                name: "",
-                fields: "",
-                submitLabel: "",
-                gtmEventName: "",
+                content: null,
+                gtmEventName: null,
               });
             }
           }}
