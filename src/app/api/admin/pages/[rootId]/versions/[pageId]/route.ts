@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
+import { dehydratePuckForms } from "@/puck/utils/dehydrate-puck-forms";
 
 export async function DELETE(
   req: Request,
@@ -67,9 +68,13 @@ export async function PATCH(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    const dehydratedPuckData = values.puckData
+      ? dehydratePuckForms(values.puckData)
+      : null;
+
     const page = await db.page.update({
       where: { id: pageId, rootId },
-      data: { ...values },
+      data: { ...values, puckData: dehydratedPuckData },
     });
 
     return NextResponse.json(page);

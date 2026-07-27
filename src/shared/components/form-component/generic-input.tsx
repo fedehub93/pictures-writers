@@ -3,20 +3,22 @@ import * as LabelPrimitive from "@radix-ui/react-label";
 
 import {
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";
-import React from "react";
 import { cn } from "@/shared/lib/utils";
 
-interface GenericInputProps<T extends FieldValues>
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+interface GenericInputProps<
+  T extends FieldValues,
+> extends React.InputHTMLAttributes<HTMLInputElement> {
   control: Control<T>;
   name: Path<T>;
   label: string;
+  description?: string;
   containerProps?: React.HTMLAttributes<HTMLDivElement>;
   labelProps?: React.ComponentProps<typeof LabelPrimitive.Root>;
 }
@@ -25,11 +27,11 @@ export const GenericInput = <T extends FieldValues>({
   control,
   name,
   label,
+  description,
   onBlur,
   onChange,
   containerProps,
   labelProps,
-
   ...inputProps
 }: GenericInputProps<T>) => {
   return (
@@ -40,7 +42,7 @@ export const GenericInput = <T extends FieldValues>({
         <FormItem
           className={cn(
             `flex-1 flex flex-col space-y-2`,
-            containerProps?.className && containerProps.className
+            containerProps?.className && containerProps.className,
           )}
         >
           <FormLabel {...labelProps}>{label}</FormLabel>
@@ -50,7 +52,7 @@ export const GenericInput = <T extends FieldValues>({
               {...inputProps}
               className={cn(
                 `disabled:cursor-not-allowed`,
-                inputProps.className && inputProps.className
+                inputProps.className && inputProps.className,
               )}
               onBlur={(e) => {
                 field.onBlur(); // Mantiene la gestione di react-hook-form
@@ -62,6 +64,7 @@ export const GenericInput = <T extends FieldValues>({
               }}
             />
           </FormControl>
+          {description && <FormDescription>{description}</FormDescription>}
           <FormMessage />
         </FormItem>
       )}

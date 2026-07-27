@@ -119,7 +119,7 @@ export const TemplateEditorForm = ({ template }: EmailEditorFormProps) => {
   };
 
   return (
-    <div className="py-4 px-6 mx-auto h-full flex flex-col gap-y-4 overflow-auto">
+    <div className="py-4 px-6 mx-auto w-full h-full flex flex-col gap-y-4 overflow-auto">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-medium">Email template setup</h1>
         <div className="flex items-center gap-x-2">

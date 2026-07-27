@@ -13,6 +13,8 @@ import {
   Boxes,
   ClipboardPen,
   Contact,
+  FormIcon,
+  InboxIcon,
   LayoutDashboard,
   LayoutPanelTop,
   LibraryBig,
@@ -157,7 +159,7 @@ const data: Record<string, NavObject[]> = {
     {
       title: "Forms",
       url: "#",
-      Icon: Puzzle,
+      Icon: FormIcon,
       items: [
         {
           title: "All forms",
@@ -167,7 +169,7 @@ const data: Record<string, NavObject[]> = {
         {
           title: "Submissions",
           url: "/admin/submissions",
-          Icon: Mail,
+          Icon: InboxIcon,
         },
       ],
     },

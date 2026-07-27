@@ -1,7 +1,7 @@
+import React from "react";
 import { Control, FieldValues, Path } from "react-hook-form";
 
 import { FormField, FormItem, FormLabel } from "@/shared/ui/form";
-import React from "react";
 import {
   Select,
   SelectContent,
@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
-import { ProductAcquisitionMode } from "@/generated/prisma";
+
 import { cn } from "@/shared/lib/utils";
 
 interface GenericSelectProps<
@@ -43,16 +43,20 @@ export const GenericSelect = <T extends FieldValues>({
             containerProps?.className ? containerProps.className : "",
           )}
         >
-          <FormLabel>{label}</FormLabel>
+          <FormLabel htmlFor={`rhf_select_${field.name}`}>{label}</FormLabel>
           <Select
+            {...field}
             value={field.value}
             onValueChange={(val) => {
               field.onChange(val);
             }}
           >
-            <SelectTrigger className="w-full capitalize">
+            <SelectTrigger
+              id={`rhf_select_${field.name}`}
+              className="w-full capitalize mb-0"
+            >
               <SelectValue
-                placeholder="Editor"
+                placeholder={inputProps.placeholder}
                 className={cn(
                   inputProps?.className ? inputProps.className : "",
                 )}

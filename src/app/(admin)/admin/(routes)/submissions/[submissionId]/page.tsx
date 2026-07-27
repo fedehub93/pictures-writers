@@ -1,24 +1,38 @@
-import { redirect } from "next/navigation";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 
-import { requireAdminAuth } from "@/lib/auth-utils";
-import { getFormSubmissionById } from "@/data/form";
+import { HydrateClient } from "@/trpc/server";
 
-import { SubmissionForm } from "./_components/submission-form";
+import { requireAdminAuth } from "@/shared/lib/auth-utils";
 
-const FormSubmissionIdPage = async (props: {
+import { prefetchFormSubmissionById } from "@/modules/forms/submissions/server";
+
+import {
+  FormSubmissionIdView,
+  FormSubmissionIdViewError,
+  FormSubmissionIdViewLoading,
+} from "@/modules/forms/submissions/ui/views/submission-id-view";
+
+const FormSubmissionIdPage = async ({
+  params,
+}: {
   params: Promise<{ submissionId: string }>;
 }) => {
   await requireAdminAuth();
 
-  const { submissionId } = await props.params;
+  const { submissionId } = await params;
 
-  const submission = await getFormSubmissionById(submissionId);
+  prefetchFormSubmissionById(submissionId);
 
-  if (!submission || !submission.id) {
-    redirect("/admin/submissions");
-  }
-
-  return <SubmissionForm initialData={submission} />;
+  return (
+    <HydrateClient>
+      <Suspense fallback={<FormSubmissionIdViewLoading />}>
+        <ErrorBoundary fallback={<FormSubmissionIdViewError />}>
+          <FormSubmissionIdView id={submissionId} />
+        </ErrorBoundary>
+      </Suspense>
+    </HydrateClient>
+  );
 };
 
 export default FormSubmissionIdPage;

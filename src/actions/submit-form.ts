@@ -6,11 +6,16 @@ import { handleFormSubmitted } from "@/lib/event-handler";
 import { verifyRecaptcha } from "@/lib/recaptcha";
 import { db } from "@/lib/db";
 
+export type FormActionResponse = {
+  success: boolean;
+  message: string;
+};
+
 export const submitForm = async (
   formId: string,
-  values: Record<string, string>,
+  values: Record<string, any>,
   recaptchaToken: string,
-) => {
+): Promise<FormActionResponse> => {
   try {
     // 1. Verify reCAPTCHA first
     const recaptchaResult = await verifyRecaptcha(
@@ -30,7 +35,7 @@ export const submitForm = async (
     // Recupera il form per validare che esista
     const form = await db.form.findUnique({
       where: { id: formId },
-      select: { id: true, fields: true },
+      select: { id: true },
     });
 
     if (!form) {

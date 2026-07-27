@@ -5,12 +5,12 @@ import { Responsive } from "@/puck/utils/responsive";
 import { DimensionField, DimensionProps } from "@/puck/fields/dimension";
 
 import { getDimensionVars } from "@/puck/utils/get-style-vars";
-import { FormField, FormProps } from "@/puck/fields/form";
+import { FormField, type HydratedFormProps } from "@/puck/fields/form";
 
 import { FormBlockUi } from "./ui/form";
 
 export type FormBlockProps = {
-  form?: FormProps;
+  form?: HydratedFormProps;
   dimension?: Responsive<DimensionProps>;
 };
 
@@ -22,9 +22,7 @@ export const FormBlock: ComponentConfig<FormBlockProps> = {
   defaultProps: {
     form: {
       id: "",
-      name: "",
-      fields: "",
-      submitLabel: "",
+      content: null,
       gtmEventName: "",
     },
   },

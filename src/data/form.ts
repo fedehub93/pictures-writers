@@ -77,6 +77,7 @@ export const getFormSubmissionById = async (id: string) => {
           select: {
             name: true,
             fields: true,
+            content: true,
           },
         },
         data: true,

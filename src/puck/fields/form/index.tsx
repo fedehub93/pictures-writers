@@ -3,11 +3,14 @@ import { LucidePuzzle } from "lucide-react";
 import { withAccordionField } from "@/puck/utils/with-accordion-field";
 import { FormView } from "@/puck/fields/form/view/form-view";
 
+import type { FormRootInstance } from "@/modules/forms/builder/types/core";
+
 export interface FormProps {
   id: string;
-  name: string;
-  fields: string;
-  submitLabel: string | null;
+}
+
+export interface HydratedFormProps extends FormProps {
+  content: FormRootInstance | null;
   gtmEventName: string | null;
 }
 
@@ -18,18 +21,16 @@ export const FormField = withAccordionField(
     onChange,
     value,
   }: {
-    onChange: (value: FormProps) => void;
-    value?: FormProps;
+    onChange: (value: HydratedFormProps) => void;
+    value?: HydratedFormProps;
   }) => {
     const state = value ?? {
       id: "",
-      name: "",
-      fields: "",
-      submitLabel: "",
-      gtmEventName: "",
+      content: null,
+      gtmEventName: null,
     };
 
-    const update = (updates: FormProps) => {
+    const update = (updates: HydratedFormProps) => {
       onChange({
         ...state,
         ...updates,

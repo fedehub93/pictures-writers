@@ -1,6 +1,7 @@
 import { ContentStatus } from "@/generated/prisma";
 
-import { db } from "./db";
+import { db } from "@/shared/lib/db";
+import { hydratePuckForms } from "@/puck/utils/hydrate-puck-forms";
 
 export const getPublishedPagesBuilding = async () => {
   const pages = await db.page.findMany({
@@ -55,7 +56,14 @@ export const getPublishedPageBySlug = async (slug: string) => {
     },
   });
 
-  return page;
+  if (!page) return null;
+
+  const hydratedPage = {
+    ...page,
+    puckData: page.puckData ? await hydratePuckForms(page.puckData) : null,
+  };
+
+  return hydratedPage;
 };
 
 export type GetPublishedPageBySlug = Awaited<

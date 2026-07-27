@@ -1,4 +1,4 @@
-import { LucidePuzzle } from "lucide-react";
+import { ImageIcon } from "lucide-react";
 
 import { IconName } from "@/shared/ui/icon-picker";
 
@@ -10,8 +10,8 @@ export interface IconProps {
 }
 
 export const IconField = withAccordionField(
-  "Form",
-  <LucidePuzzle className="size-4 text-muted-foreground" />,
+  "Icon",
+  <ImageIcon className="size-4 text-muted-foreground" />,
   ({
     onChange,
     value,
@@ -22,7 +22,6 @@ export const IconField = withAccordionField(
     const state = value ?? {};
 
     const update = (updates: IconProps) => {
-      console.log(updates);
       onChange({
         ...state,
         ...updates,

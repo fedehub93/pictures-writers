@@ -9,10 +9,3 @@ export const useSuspenseContacts = (params: ContactsGetManyInput) => {
 
   return useSuspenseQuery(trpc.contacts.getMany.queryOptions(params));
 };
-
-// Hook to fetch a single single send using suspense
-// export const useSuspenseSingleSend = (id: string) => {
-//   const trpc = useTRPC();
-
-//   return useSuspenseQuery(trpc.singleSends.getOne.queryOptions({ id }));
-// };

@@ -35,7 +35,7 @@ export const Notifications = ({ userId }: { userId: string }) => {
     try {
       setIsLoading(id);
 
-      await axios.patch(`/api/users/${userId}/notifications/${id}`, {
+      await axios.patch(`/api/users/${userId}/notifications/${id}/`, {
         isRead: true,
       });
       toast.success("Notification Read");

@@ -1,20 +1,35 @@
-import { requireAdminAuth } from "@/lib/auth-utils";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import type { SearchParams } from "nuqs";
 
-import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
-import { getFormsByFilters } from "@/data/form";
-import { DataTable } from "./_components/data-table";
-import { columns } from "./_components/column";
+import { HydrateClient } from "@/trpc/server";
 
-const FormsPage = async () => {
+import { requireAdminAuth } from "@/shared/lib/auth-utils";
+
+import { FormsView, FormsViewError, FormsViewLoading } from "@/modules/forms";
+
+import { prefetchForms } from "@/modules/forms/server/prefetch";
+import { loadSearchParams } from "@/modules/forms/params";
+
+interface Props {
+  searchParams: Promise<SearchParams>;
+}
+
+const FormsPage = async ({ searchParams }: Props) => {
   await requireAdminAuth();
 
-  const forms = await getFormsByFilters({ where: {} });
+  const filters = await loadSearchParams(searchParams);
+
+  prefetchForms(filters);
 
   return (
-    <div className="h-full w-full flex flex-col gap-y-4 px-6 py-3">
-      <ContentHeader label="Forms" totalEntries={forms.length} />
-      <DataTable columns={columns} data={forms} />
-    </div>
+    <HydrateClient>
+      <Suspense fallback={<FormsViewLoading />}>
+        <ErrorBoundary fallback={<FormsViewError />}>
+          <FormsView />
+        </ErrorBoundary>
+      </Suspense>
+    </HydrateClient>
   );
 };
 
