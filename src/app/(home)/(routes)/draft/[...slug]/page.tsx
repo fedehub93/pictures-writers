@@ -19,7 +19,17 @@ import { getPublishedProductByRootId } from "@/data/product";
 
 import { getSettings } from "@/data/settings";
 import { isJSONContent, isWidgetProductPopMetadata } from "@/type-guards";
-import { getPostMetadataBySlug } from "@/app/(home)/_components/seo/content-metadata";
+
+import {
+  getDraftPageBySlug,
+  getPublishedDraftPagesBuilding,
+} from "@/modules/pages/server/queries";
+import { PuckRender } from "@/puck/render-config";
+
+import {
+  getPageMetadataBySlug,
+  getPostMetadataBySlug,
+} from "@/app/(home)/_components/seo/content-metadata";
 import { BlogPostingJsonLd } from "@/app/(home)/_components/seo/json-ld/blog-posting";
 import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
 import { PostTemplate } from "@/app/(home)/(routes)/[...slug]/_components/post-template";
@@ -35,9 +45,13 @@ export const dynamicParams = true;
 
 export async function generateStaticParams() {
   const posts = await getPublishedDraftPostsBuilding();
+  const pages = await getPublishedDraftPagesBuilding();
 
   const postPaths = posts.map((post) => ({ slug: post.slug.split("/") }));
-  const uniqueSlugs = [...new Set(postPaths)];
+  const pagePaths = pages.map((page) => ({ slug: page.slug.split("/") }));
+
+  const uniqueSlugs = [...new Set(postPaths), ...new Set(pagePaths)];
+
   return [{ slug: [`blog`] }, ...uniqueSlugs];
 }
 
@@ -62,6 +76,21 @@ export async function generateMetadata(
       ...metadata,
       title: `News: ${posts[0].title}`,
       description: `Ultime notizie sulla sceneggiatura cinematografica. ${posts[0].title}`,
+      robots: {
+        index: false,
+        follow: false,
+        googleBot: {
+          index: false,
+          follow: false,
+        },
+      },
+    };
+  }
+
+  const pageMetadata = await getPageMetadataBySlug(slugPath);
+  if (pageMetadata) {
+    return {
+      ...pageMetadata,
       robots: {
         index: false,
         follow: false,
@@ -116,6 +145,11 @@ const Page = async (props: PageProps<"/draft/[...slug]">) => {
         />
       </section>
     );
+  }
+
+  const page = await getDraftPageBySlug(slugPath);
+  if (page && page.puckData) {
+    return <PuckRender initialData={page.puckData} />;
   }
 
   const post = await getDraftPostBySlug(slugPath);

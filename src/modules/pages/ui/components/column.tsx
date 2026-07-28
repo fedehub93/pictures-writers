@@ -4,16 +4,17 @@ import { ColumnDef } from "@tanstack/react-table";
 
 import { ArrowUpDownIcon } from "lucide-react";
 
+import { ContentStatus } from "@/generated/prisma";
+
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
+import { Badge } from "@/shared/ui/badge";
+import { cn } from "@/shared/lib/utils";
+import { formatDate } from "@/shared/lib/format";
 
 import type { PagesGetMany } from "../../types";
 
 import { PagesActions } from "./actions";
-import { formatDate } from "@/lib/format";
-import { Badge } from "@/shared/ui/badge";
-import { ContentStatus } from "@/generated/prisma";
-import { cn } from "@/shared/lib/utils";
 
 export const columns: ColumnDef<PagesGetMany[number]>[] = [
   {

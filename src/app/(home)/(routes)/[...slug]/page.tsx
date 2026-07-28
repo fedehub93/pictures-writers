@@ -12,6 +12,12 @@ import { db } from "@/lib/db";
 import { isJSONContent, isWidgetProductPopMetadata } from "@/type-guards";
 
 import {
+  getPublishedPageBySlug,
+  getPublishedPagesBuilding,
+} from "@/modules/pages/server/queries";
+import { PuckRender } from "@/puck/render-config";
+
+import {
   getPostsPaginatedByFilters,
   getPublishedPostBySlug,
 } from "@/data/post";
@@ -30,8 +36,6 @@ import { PostTemplate } from "@/app/(home)/(routes)/[...slug]/_components/post-t
 import { PostList } from "@/app/(home)/(routes)/blog/_components/post-list";
 
 import { WidgetProductPop } from "@/shared/components/widget/product-pop";
-import { getPublishedPageBySlug, getPublishedPagesBuilding } from "@/lib/page";
-import { PuckRender } from "@/puck/render-config";
 
 export const revalidate = 86400;
 

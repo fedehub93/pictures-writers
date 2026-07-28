@@ -5,13 +5,14 @@ import { useController, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import slugify from "slugify";
 
 import { useTRPC } from "@/trpc/client";
 
 import { Form, FormMessage } from "@/shared/ui/form";
 
 import { Button } from "@/shared/ui/button";
+
+import { generateSlug } from "@/shared/lib/slug";
 
 import { GenericInput } from "@/shared/components/form-component/generic-input";
 import { SlugInput } from "@/shared/components/form-component/slug-input";
@@ -107,11 +108,7 @@ export const PageForm = ({
   });
 
   const onSlugCreate = () => {
-    fieldSlug.onChange(
-      slugify(fieldTitle.value, {
-        lower: true,
-      }),
-    );
+    fieldSlug.onChange(generateSlug(fieldTitle.value));
   };
 
   return (

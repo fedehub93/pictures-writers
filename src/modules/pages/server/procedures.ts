@@ -7,30 +7,51 @@ import { TRPCError } from "@trpc/server";
 import { ContentStatus } from "@/generated/prisma";
 
 import { hydratePuckForms } from "@/puck/utils/hydrate-puck-forms";
+import { dehydratePuckForms } from "@/puck/utils/dehydrate-puck-forms";
+
+import { createPageSeo } from "@/lib/seo";
 
 import {
   pageInsertSchema,
   pageUpdateContentSchema,
   pageUpdateSchema,
 } from "../schemas";
+
 import {
   DEFAULT_PAGE,
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,
   MIN_PAGE_SIZE,
 } from "../constants";
-import { dehydratePuckForms } from "@/puck/utils/dehydrate-puck-forms";
 
 export const pagesRouter = createTRPCRouter({
   create: protectedProcedure
     .input(pageInsertSchema)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const page = await db.page.create({
         data: {
           ...input,
-          version: 0,
+          version: 1,
+          status: ContentStatus.DRAFT,
+          puckData: { root: {}, content: [] },
+          userId: ctx.auth.id,
         },
       });
+
+      if (!page) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Missing required parameters!",
+        });
+      }
+
+      const updatedPage = await db.page.update({
+        where: { id: page.id },
+        data: { rootId: page.id },
+      });
+
+      await createPageSeo(updatedPage);
+
       return page;
     }),
   createNewVersion: protectedProcedure
@@ -129,11 +150,30 @@ export const pagesRouter = createTRPCRouter({
   remove: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
-      return await db.page.delete({
+      const page = await db.page.findUnique({
         where: {
           id: input.id,
         },
       });
+
+      if (!page) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Page not found",
+        });
+      }
+
+      const deletedPage = await db.page.deleteMany({
+        where: { rootId: page.rootId },
+      });
+
+      if (page.seoId) {
+        await db.seo.delete({
+          where: { id: page.seoId },
+        });
+      }
+
+      return deletedPage;
     }),
   getOne: protectedProcedure
     .input(z.object({ id: z.string() }))
@@ -213,7 +253,6 @@ export const pagesRouter = createTRPCRouter({
             ? { contains: input.search, mode: "insensitive" }
             : undefined,
           status: input.status ? { in: [input.status] } : undefined,
-          isLatest: true,
         },
         distinct: ["rootId"],
         orderBy: {

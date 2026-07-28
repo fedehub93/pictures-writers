@@ -11,6 +11,7 @@ import type { FormElementInstance } from "../../../types/core";
 
 import { useDesigner } from "../../../store/designer-provider";
 import { PropertiesFormSchemaType, propertiesSchema } from "./schemas";
+import { generateSlug } from "@/shared/lib/slug";
 
 export const UploadFieldPropertiesComponent = ({
   elementInstance,
@@ -52,18 +53,10 @@ export const UploadFieldPropertiesComponent = ({
             label="Label"
             name="label"
             onChange={(e) => {
-              form.setValue(
-                "name",
-                slugify(e.target.value, {
-                  replacement: "_",
-                  remove: /[*+~.()'"!:@]/g,
-                  lower: true,
-                }),
-                {
-                  shouldValidate: true,
-                  shouldDirty: true,
-                },
-              );
+              form.setValue("name", generateSlug(e.target.value), {
+                shouldValidate: true,
+                shouldDirty: true,
+              });
             }}
           />
           <GenericInput

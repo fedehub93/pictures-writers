@@ -18,6 +18,7 @@ import { Heading, type HeadingProps } from "./blocks/Heading";
 import { viewports } from "./utils/viewports";
 import { IconBlock, IconBlockProps } from "./blocks/Icon";
 import type { FormProps } from "./fields/form";
+import Link from "next/link";
 
 export type SavedComponents = {
   Grid: GridBlockProps;
@@ -121,6 +122,13 @@ export function PuckEditor({
               <div className="flex items-center gap-2">
                 {true === true && (
                   <>
+                    <Button type="button" variant="ghost" asChild>
+                      <Link href={`/draft/${initialData.slug}`} target="_blank">
+                        <EyeIcon className="size-4" />
+                        Preview
+                      </Link>
+                    </Button>
+
                     <Button
                       type="button"
                       variant="ghost"
