@@ -76,10 +76,10 @@ export const DesignerWrapper = ({
     >
       <div className="flex justify-center group">
         <div className="flex gap-x-4 rounded-t py-1.5 px-3 bg-accent hover:scale-103 transition-all duration-300">
-          <Button ref={handleRef} variant="outline" size="icon-sm">
+          <Button ref={handleRef} variant="outline" size="icon">
             <GripIcon />
           </Button>
-          <Button variant="destructive" size="icon-sm" onClick={onRemoveNode}>
+          <Button variant="destructive" size="icon" onClick={onRemoveNode}>
             <XIcon />
           </Button>
         </div>
