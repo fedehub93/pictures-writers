@@ -21,10 +21,11 @@ export function cascadeViewportValues<T extends object>(
     const data = state[key];
 
     if (data) {
-      // Sovrapponiamo solo le proprietà che sono effettivamente definite (non undefined)
-      Object.entries(data).forEach(([propKey, propValue]) => {
+      (Object.keys(data) as Array<keyof T>).forEach((propKey) => {
+        const propValue = data[propKey];
+
         if (propValue !== undefined) {
-          (result as any)[propKey] = propValue;
+          result[propKey] = propValue as T[keyof T];
         }
       });
     }

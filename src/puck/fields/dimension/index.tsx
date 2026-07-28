@@ -1,10 +1,6 @@
-import { useCallback } from "react";
 import { RulerDimensionLineIcon } from "lucide-react";
 import { createUsePuck } from "@puckeditor/core";
 
-import { withAccordionField } from "@/puck/utils/with-accordion-field";
-import { PropHeader } from "@/puck/components/prop-header";
-import { ValueUnitInput } from "@/puck/components/value-unit-input";
 import { Input } from "@/shared/ui/input";
 import {
   Select,
@@ -14,11 +10,16 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 
+import { withAccordionField } from "@/puck/utils/with-accordion-field";
+import { PropHeader } from "@/puck/components/prop-header";
+
 // Utility per la responsività
 import { Responsive } from "@/puck/utils/responsive";
 import { getViewportKey } from "@/puck/utils/viewports";
 import { Breakpoint } from "@/puck/utils/breakpoints";
 import { cascadeViewportValues } from "@/puck/utils/cascade-viewport-valuets";
+import { InputTextField } from "@/puck/components/text-field";
+import { FieldDef } from "@/puck/types";
 
 export interface DimensionProps {
   width?: string;
@@ -46,27 +47,25 @@ const defaultDimension: Record<Breakpoint, DimensionProps> = {
   mobile: {},
 };
 
-type FieldDef = { key: keyof DimensionProps; label: string };
-
-const layoutFields: FieldDef[] = [
-  { key: "width", label: "Width" },
-  { key: "height", label: "Height" },
-  { key: "maxWidth", label: "Max width" },
-  { key: "minHeight", label: "Min height" },
+const layoutFields: FieldDef<DimensionProps>[] = [
+  { key: "width", label: "Width", type: "unit", placeholder: "auto" },
+  { key: "height", label: "Height", type: "unit", placeholder: "auto" },
+  { key: "maxWidth", label: "Max width", type: "unit", placeholder: "auto" },
+  { key: "minHeight", label: "Min height", type: "unit", placeholder: "auto" },
 ];
 
-const marginFields: FieldDef[] = [
-  { key: "marginTop", label: "Top" },
-  { key: "marginRight", label: "Right" },
-  { key: "marginBottom", label: "Bottom" },
-  { key: "marginLeft", label: "Left" },
+const marginFields: FieldDef<DimensionProps>[] = [
+  { key: "marginTop", label: "Top", type: "unit", placeholder: "0" },
+  { key: "marginRight", label: "Right", type: "unit", placeholder: "0" },
+  { key: "marginBottom", label: "Bottom", type: "unit", placeholder: "0" },
+  { key: "marginLeft", label: "Left", type: "unit", placeholder: "0" },
 ];
 
-const paddingFields: FieldDef[] = [
-  { key: "paddingTop", label: "Top" },
-  { key: "paddingRight", label: "Right" },
-  { key: "paddingBottom", label: "Bottom" },
-  { key: "paddingLeft", label: "Left" },
+const paddingFields: FieldDef<DimensionProps>[] = [
+  { key: "paddingTop", label: "Top", type: "unit", placeholder: "0" },
+  { key: "paddingRight", label: "Right", type: "unit", placeholder: "0" },
+  { key: "paddingBottom", label: "Bottom", type: "unit", placeholder: "0" },
+  { key: "paddingLeft", label: "Left", type: "unit", placeholder: "0" },
 ];
 
 // Array di opzioni predefinite per l'aspect ratio
@@ -102,57 +101,25 @@ export const DimensionField = withAccordionField(
       defaultDimension,
     );
 
-    const update = useCallback(
-      (updates: Partial<DimensionProps>) => {
-        onChange({
-          ...state,
-          [viewportKey]: {
-            ...currentValues,
-            ...updates,
-          },
-        });
-      },
-      [onChange, state, viewportKey, currentValues],
-    );
+    const update = (updates: Partial<DimensionProps>) => {
+      onChange({
+        ...state,
+        [viewportKey]: {
+          ...currentValues,
+          ...updates,
+        },
+      });
+    };
 
-    const resetProp = useCallback(
-      (key: keyof DimensionProps) => {
-        const newViewportState = { ...currentValues };
-        delete newViewportState[key]; // Rimuovendo la chiave, Puck non la salverà nel JSON
+    const resetProp = (key: keyof DimensionProps) => {
+      const newViewportState = { ...currentValues };
+      delete newViewportState[key]; // Rimuovendo la chiave, Puck non la salverà nel JSON
 
-        onChange({
-          ...state,
-          [viewportKey]: newViewportState,
-        });
-      },
-      [onChange, state, viewportKey, currentValues],
-    );
-
-    // Render ottimizzato del singolo field (usato per le dimensioni con ValueUnitInput)
-    const renderField = useCallback(
-      ({ key, label }: FieldDef) => {
-        const isModified = currentValues[key] !== undefined;
-
-        return (
-          <div key={`container-${key}`} className="flex flex-col gap-y-1">
-            <PropHeader
-              key={`prop-${key}`}
-              name={key}
-              label={label}
-              isModified={isModified}
-              onReset={() => resetProp(key)}
-            />
-            <ValueUnitInput
-              key={`value-${key}`}
-              name={key}
-              value={renderValues[key] ?? ""}
-              onChange={(newVal) => update({ [key]: newVal || undefined })}
-            />
-          </div>
-        );
-      },
-      [currentValues, renderValues, resetProp, update],
-    );
+      onChange({
+        ...state,
+        [viewportKey]: newViewportState,
+      });
+    };
 
     // --- Gestione specifica dell'Aspect Ratio ---
     const isAspectRatioModified = currentValues.aspectRatio !== undefined;
@@ -171,7 +138,19 @@ export const DimensionField = withAccordionField(
       <>
         {/* --- LAYOUT --- */}
         <div className="grid grid-cols-2 gap-x-4 gap-y-4 p-1">
-          {layoutFields.map(renderField)}
+          {layoutFields.map((field) => (
+            <InputTextField
+              key={field.key}
+              name={field.key}
+              label={field.label}
+              placeholder={field.placeholder}
+              type={field.type}
+              currentValues={currentValues}
+              renderValues={renderValues}
+              resetProp={resetProp}
+              update={update}
+            />
+          ))}
 
           {/* Render dedicato per Aspect Ratio che occupa 2 colonne */}
           <div className="col-span-2 flex flex-col gap-y-1">
@@ -194,7 +173,7 @@ export const DimensionField = withAccordionField(
                   }
                 }}
               >
-                <SelectTrigger className="h-8 text-sm flex-1">
+                <SelectTrigger className="h-8 text-xs flex-1">
                   <SelectValue placeholder="Auto" />
                 </SelectTrigger>
                 <SelectContent>
@@ -210,7 +189,7 @@ export const DimensionField = withAccordionField(
               {/* Mostra l'input manuale solo se l'utente ha selezionato "Custom" */}
               {isCustomRatio && (
                 <Input
-                  className="h-8 text-sm w-1/2"
+                  className="h-8 text-xs w-1/2 placeholder:text-xs"
                   value={currentRatioValue}
                   onChange={(e) => update({ aspectRatio: e.target.value })}
                   placeholder="es. 3 / 2"
@@ -224,7 +203,19 @@ export const DimensionField = withAccordionField(
         <div className="mt-4">
           <span className="text-sm font-medium">Margin</span>
           <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-4 p-2 bg-muted/60 rounded">
-            {marginFields.map(renderField)}
+            {marginFields.map((field) => (
+              <InputTextField
+                key={field.key}
+                name={field.key}
+                label={field.label}
+                placeholder={field.placeholder}
+                type={field.type}
+                currentValues={currentValues}
+                renderValues={renderValues}
+                resetProp={resetProp}
+                update={update}
+              />
+            ))}
           </div>
         </div>
 
@@ -232,7 +223,19 @@ export const DimensionField = withAccordionField(
         <div className="mt-4">
           <span className="text-sm font-medium">Padding</span>
           <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-4 p-2 bg-muted/60 rounded">
-            {paddingFields.map(renderField)}
+            {paddingFields.map((field) => (
+              <InputTextField
+                key={field.key}
+                name={field.key}
+                label={field.label}
+                placeholder={field.placeholder}
+                type={field.type}
+                currentValues={currentValues}
+                renderValues={renderValues}
+                resetProp={resetProp}
+                update={update}
+              />
+            ))}
           </div>
         </div>
       </>

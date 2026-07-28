@@ -1,6 +1,8 @@
-import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
-import { LucideIcon } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+
 import { cn } from "@/shared/lib/utils";
+
+import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
 
 interface SegmentedControlProps<T extends string> {
   name: string;

@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import {
   AlignCenter,
   AlignJustify,
@@ -19,7 +18,6 @@ import {
 
 import { withAccordionField } from "@/puck/utils/with-accordion-field";
 import { PropHeader } from "@/puck/components/prop-header";
-import { ValueUnitInput } from "@/puck/components/value-unit-input";
 import { SegmentedControl } from "@/puck/components/segmented-control";
 
 // Utility per la responsività
@@ -27,15 +25,18 @@ import { Responsive } from "@/puck/utils/responsive";
 import { getViewportKey } from "@/puck/utils/viewports";
 import { Breakpoint } from "@/puck/utils/breakpoints";
 import { cascadeViewportValues } from "@/puck/utils/cascade-viewport-valuets";
+import { InputTextField } from "@/puck/components/text-field";
 
 // 1. Interfaccia con proprietà opzionali per un JSON leggero
+type AlignType = "left" | "center" | "right" | "justify";
+
 export interface TypographyProps {
   fontFamily?: string;
   fontSize?: string;
   fontWeight?: string;
   letterSpacing?: string;
   lineHeight?: string;
-  textAlign?: "left" | "center" | "right" | "justify";
+  textAlign?: AlignType;
 }
 
 // 2. Default minimi (vuoti)
@@ -46,7 +47,7 @@ const defaultTypography: Record<Breakpoint, TypographyProps> = {
 };
 
 const alignments: {
-  value: "left" | "center" | "right" | "justify";
+  value: AlignType;
   icon: LucideIcon;
   title: string;
 }[] = [
@@ -81,31 +82,25 @@ export const TypographyField = withAccordionField(
       defaultTypography,
     );
 
-    const update = useCallback(
-      (updates: Partial<TypographyProps>) => {
-        onChange({
-          ...state,
-          [viewportKey]: {
-            ...currentValues,
-            ...updates,
-          },
-        });
-      },
-      [onChange, state, viewportKey, currentValues],
-    );
+    const update = (updates: Partial<TypographyProps>) => {
+      onChange({
+        ...state,
+        [viewportKey]: {
+          ...currentValues,
+          ...updates,
+        },
+      });
+    };
 
-    const resetProp = useCallback(
-      (key: keyof TypographyProps) => {
-        const newViewportState = { ...currentValues };
-        delete newViewportState[key];
+    const resetProp = (key: keyof TypographyProps) => {
+      const newViewportState = { ...currentValues };
+      delete newViewportState[key];
 
-        onChange({
-          ...state,
-          [viewportKey]: newViewportState,
-        });
-      },
-      [onChange, state, viewportKey, currentValues],
-    );
+      onChange({
+        ...state,
+        [viewportKey]: newViewportState,
+      });
+    };
 
     return (
       <div className="grid grid-cols-2 gap-x-4 gap-y-6 p-1">
@@ -124,7 +119,7 @@ export const TypographyField = withAccordionField(
               update({ fontFamily: val === "inherit" ? undefined : val })
             }
           >
-            <SelectTrigger id="font-family" className="h-8 text-sm">
+            <SelectTrigger id="font-family" className="h-8 text-xs">
               <SelectValue placeholder="Select font" />
             </SelectTrigger>
             <SelectContent>
@@ -135,21 +130,20 @@ export const TypographyField = withAccordionField(
         </div>
 
         {/* --- FONT SIZE --- */}
-        <div className="flex flex-col gap-y-1">
-          <PropHeader
-            name="fontSize"
-            label="Font size"
-            isModified={currentValues.fontSize !== undefined}
-            onReset={() => resetProp("fontSize")}
-          />
-          <ValueUnitInput
-            name="fontSize"
-            value={renderValues.fontSize ?? ""}
-            onChange={(val) => update({ fontSize: val || undefined })}
-          />
-        </div>
+        <InputTextField
+          key="fontSize"
+          name="fontSize"
+          label="Font Size"
+          placeholder="16"
+          type="unit"
+          currentValues={currentValues}
+          renderValues={renderValues}
+          resetProp={resetProp}
+          update={update}
+        />
 
         {/* --- FONT WEIGHT --- */}
+
         <div className="flex flex-col gap-y-1">
           <PropHeader
             name="fontWeight"
@@ -162,7 +156,7 @@ export const TypographyField = withAccordionField(
             value={renderValues.fontWeight ?? "font-normal"}
             onValueChange={(val) => update({ fontWeight: val })}
           >
-            <SelectTrigger id="font-weight" className="h-8 text-sm">
+            <SelectTrigger id="font-weight" className="h-8 text-xs">
               <SelectValue placeholder="Select weight" />
             </SelectTrigger>
             <SelectContent>
@@ -175,19 +169,17 @@ export const TypographyField = withAccordionField(
         </div>
 
         {/* --- LETTER SPACING --- */}
-        <div className="flex flex-col gap-y-1">
-          <PropHeader
-            name="letterSpacing"
-            label="Letter spacing"
-            isModified={currentValues.letterSpacing !== undefined}
-            onReset={() => resetProp("letterSpacing")}
-          />
-          <ValueUnitInput
-            name="letterSpacing"
-            value={renderValues.letterSpacing ?? ""}
-            onChange={(val) => update({ letterSpacing: val || undefined })}
-          />
-        </div>
+        <InputTextField
+          key="letterSpacing"
+          name="letterSpacing"
+          label="Letter Spacing"
+          placeholder="normal"
+          type="unit"
+          currentValues={currentValues}
+          renderValues={renderValues}
+          resetProp={resetProp}
+          update={update}
+        />
 
         {/* --- TEXT ALIGN --- */}
         <div className="flex flex-col gap-y-1 col-span-2">
@@ -200,7 +192,7 @@ export const TypographyField = withAccordionField(
           <SegmentedControl
             name="textAlign"
             value={renderValues.textAlign ?? "left"}
-            onChange={(val: any) => update({ textAlign: val })}
+            onChange={(val: AlignType) => update({ textAlign: val })}
             items={alignments}
           />
         </div>

@@ -1,7 +1,10 @@
-import { useCallback } from "react";
-import { ImageIcon, RabbitIcon, SnailIcon } from "lucide-react";
+import {
+  type LucideIcon,
+  ImageIcon,
+  RabbitIcon,
+  SnailIcon,
+} from "lucide-react";
 
-import { Input } from "@/shared/ui/input";
 import {
   Select,
   SelectContent,
@@ -13,26 +16,41 @@ import { SegmentedControl } from "@/puck/components/segmented-control";
 
 import { withAccordionField } from "@/puck/utils/with-accordion-field";
 import { PropHeader } from "@/puck/components/prop-header";
+import { InputTextField } from "@/puck/components/text-field";
+
+type ObjectFitType = "fill" | "contain" | "cover" | "none" | "scale-down";
+type LoadingType = "lazy" | "eager";
 
 export interface ImageProps {
   src?: string;
   alt?: string;
   href?: string;
-  objectFit?: "fill" | "contain" | "cover" | "none" | "scale-down";
-  loading?: "lazy" | "eager";
+  objectFit?: ObjectFitType;
+  loading?: LoadingType;
 }
 
+type FitOptionsType = {
+  label: string;
+  value: ObjectFitType;
+};
+
 const objectFitOptions = [
-  { label: "Cover (Riempe, taglia)", value: "cover" },
-  { label: "Contain (Intera)", value: "contain" },
-  { label: "Fill (Deforma)", value: "fill" },
+  { label: "Cover", value: "cover" },
+  { label: "Contain", value: "contain" },
+  { label: "Fill ", value: "fill" },
   { label: "None", value: "none" },
-];
+] satisfies FitOptionsType[];
+
+type LoadingOptionsType = {
+  title: string;
+  value: LoadingType;
+  icon: LucideIcon;
+};
 
 const loadingOptions = [
   { title: "Lazy", value: "lazy", icon: SnailIcon },
   { title: "Eager", value: "eager", icon: RabbitIcon },
-];
+] satisfies LoadingOptionsType[];
 
 export const ImageField = withAccordionField(
   "Image",
@@ -46,62 +64,54 @@ export const ImageField = withAccordionField(
   }) => {
     const state = value ?? {};
 
-    const update = useCallback(
-      (updates: Partial<ImageProps>) => {
-        onChange({
-          ...state,
-          ...updates,
-        });
-      },
-      [onChange, state],
-    );
+    const update = (updates: Partial<ImageProps>) => {
+      onChange({
+        ...state,
+        ...updates,
+      });
+    };
 
-    const resetProp = useCallback(
-      (key: keyof ImageProps) => {
-        const newState = { ...state };
-        delete newState[key];
+    const resetProp = (key: keyof ImageProps) => {
+      const newState = { ...state };
+      delete newState[key];
 
-        // Salviamo il nuovo stato da cui abbiamo rimosso la chiave
-        onChange(newState);
-      },
-      [onChange, state],
-    );
-
-    const renderTextInput = (
-      key: keyof ImageProps,
-      label: string,
-      placeholder?: string,
-    ) => {
-      const isModified = state[key] !== undefined;
-      return (
-        <div key={`container-${key}`} className="flex flex-col gap-y-1">
-          <PropHeader
-            name={key}
-            label={label}
-            isModified={isModified}
-            onReset={() => resetProp(key)}
-          />
-          <Input
-            id={key}
-            // Fallback a stringa vuota per evitare warning di React
-            value={state[key] ?? ""}
-            onChange={(e) => update({ [key]: e.target.value || undefined })}
-            placeholder={placeholder}
-            className="h-8 text-sm px-2"
-          />
-        </div>
-      );
+      // Salviamo il nuovo stato da cui abbiamo rimosso la chiave
+      onChange(newState);
     };
 
     return (
       <>
         {/* --- CONTENT --- */}
         <div className="flex flex-col gap-y-4 p-1">
-          {renderTextInput("src", "Image URL", "https://...")}
+          <InputTextField
+            key="src"
+            name="src"
+            label="Image URL"
+            currentValues={state}
+            renderValues={state}
+            resetProp={resetProp}
+            update={update}
+          />
 
           <div className="grid grid-cols-2 gap-x-4">
-            {renderTextInput("alt", "Alt Text", "Descrizione...")}
-            {renderTextInput("href", "Link (Opzionale)", "https://...")}
+            <InputTextField
+              key="alt"
+              name="alt"
+              label="Alt Text"
+              currentValues={state}
+              renderValues={state}
+              resetProp={resetProp}
+              update={update}
+            />
+            <InputTextField
+              key="href"
+              name="href"
+              label="Link (Opzionale)"
+              currentValues={state}
+              renderValues={state}
+              resetProp={resetProp}
+              update={update}
+            />
           </div>
         </div>
 
@@ -117,9 +127,9 @@ export const ImageField = withAccordionField(
             />
             <Select
               value={state.objectFit ?? "cover"}
-              onValueChange={(val: any) => update({ objectFit: val })}
+              onValueChange={(val: ObjectFitType) => update({ objectFit: val })}
             >
-              <SelectTrigger className="h-8 text-sm">
+              <SelectTrigger className="h-8 text-xs">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -143,7 +153,7 @@ export const ImageField = withAccordionField(
             <SegmentedControl
               name="loading"
               value={state.loading ?? "lazy"}
-              onChange={(val: any) => update({ loading: val })}
+              onChange={(val: LoadingType) => update({ loading: val })}
               items={loadingOptions}
             />
           </div>

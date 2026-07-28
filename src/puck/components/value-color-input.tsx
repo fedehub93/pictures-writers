@@ -3,11 +3,7 @@ import { PaletteIcon } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 
 import { Input } from "@/shared/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/shared/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 import { Button } from "@/shared/ui/button";
 
 interface ValueColorInputProps {
@@ -63,7 +59,7 @@ export const ValueColorInput = ({
       <Input
         name={name}
         type="text"
-        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        className="flex h-8 w-fullpx-3 py-1 text-xs placeholder:text-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         value={value}
         onChange={handleInputChange}
         placeholder="#000000"
@@ -74,7 +70,7 @@ export const ValueColorInput = ({
         <PopoverTrigger asChild>
           <Button
             title="Choose color"
-            className="h-9 w-9 shrink-0 rounded-md border border-input flex items-center justify-center overflow-hidden cursor-pointer"
+            className="size-8 shrink-0 rounded-md border border-input flex items-center justify-center overflow-hidden cursor-pointer"
             style={{
               backgroundColor: value || "transparent",
             }}

@@ -2,13 +2,19 @@ import React, { useState } from "react";
 import { ChevronUp, ChevronDown } from "lucide-react";
 
 import { Input } from "@/shared/ui/input";
+import { Button } from "@/shared/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/ui/select";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/shared/ui/dropdown-menu";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@/shared/ui/input-group";
 
 interface ValueUnitInputProps {
   name: string;
@@ -46,7 +52,7 @@ export function ValueUnitInput({
   value = "",
   onChange,
   units = ["-", "px", "rem", "em", "%", "vw", "vh"],
-  placeholder = "auto",
+  placeholder,
 }: ValueUnitInputProps) {
   const [localNum, setLocalNum] = useState(
     () => parseCSSValue(value, units).num,
@@ -153,25 +159,49 @@ export function ValueUnitInput({
   };
 
   return (
-    <div className="flex items-center gap-1">
-      <div className="relative flex-1">
-        <Input
-          id={name}
-          name={name}
-          type="text"
-          className="h-8 text-sm w-full pr-5 bg-background"
-          value={localNum}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-        />
+    <InputGroup className="h-8 bg-background flex shadow-none focus-within:ring-2! focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background">
+      <InputGroupInput
+        id={name}
+        name={name}
+        type="text"
+        value={localNum}
+        onChange={handleInputChange}
+        onKeyDown={handleKeyDown}
+        placeholder={placeholder}
+        autoComplete="off"
+        // 3. Forziamo la rimozione del ring di default dell'input
+        className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 text-xs!"
+      />
+      <InputGroupAddon align="inline-end">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <InputGroupButton
+              variant="ghost"
+              // 4. Manteniamo il margine (portato a 5 per sicurezza con le frecce) ma togliamo il focus
+              className="mr-5 border-none focus-visible:ring-0 focus-visible:ring-offset-0 hover:bg-muted text-xs"
+            >
+              {localUnit}
+            </InputGroupButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="min-w-16">
+            {units.map((u) => (
+              <DropdownMenuItem
+                key={u}
+                onClick={() => handleUnitChange(u)}
+                className="text-xs"
+              >
+                {u}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {/* Pulsanti Spin */}
-        <div className="absolute right-0.5 top-0 flex h-full flex-col items-center justify-center space-y-0 pr-1 opacity-50 hover:opacity-100 transition-opacity">
+        <div className="absolute right-0.5 top-0 flex h-full flex-col items-center justify-center space-y-0 pr-1 opacity-50 transition-opacity hover:opacity-100">
           <button
             type="button"
             tabIndex={-1}
-            className="hover:bg-muted rounded px-0.5 cursor-pointer pb-px"
+            className="cursor-pointer rounded px-0.5 pb-px hover:bg-muted focus:outline-none"
             onClick={(e) => handleStep(1, e)}
           >
             <ChevronUp className="size-2.5" />
@@ -179,26 +209,13 @@ export function ValueUnitInput({
           <button
             type="button"
             tabIndex={-1}
-            className="hover:bg-muted rounded px-0.5 cursor-pointer pt-px"
+            className="cursor-pointer rounded px-0.5 pt-px hover:bg-muted focus:outline-none"
             onClick={(e) => handleStep(-1, e)}
           >
             <ChevronDown className="size-2.5" />
           </button>
         </div>
-      </div>
-
-      <Select value={localUnit} onValueChange={handleUnitChange}>
-        <SelectTrigger className="h-8 text-sm w-16 px-2">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {units.map((u) => (
-            <SelectItem key={u} value={u}>
-              {u}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+      </InputGroupAddon>
+    </InputGroup>
   );
 }
