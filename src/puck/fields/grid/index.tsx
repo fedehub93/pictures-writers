@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import {
   GridIcon,
   AlignStartVertical,
@@ -10,9 +9,9 @@ import {
   AlignEndHorizontal,
   StretchHorizontal,
 } from "lucide-react";
+
 import { createUsePuck } from "@puckeditor/core";
 
-import { Input } from "@/shared/ui/input";
 import { SegmentedControl } from "@/puck/components/segmented-control";
 import { withAccordionField } from "@/puck/utils/with-accordion-field";
 import { PropHeader } from "@/puck/components/prop-header";
@@ -20,8 +19,9 @@ import { PropHeader } from "@/puck/components/prop-header";
 import { Responsive } from "@/puck/utils/responsive";
 import { getViewportKey } from "@/puck/utils/viewports";
 import { Breakpoint } from "@/puck/utils/breakpoints";
-import { ValueUnitInput } from "@/puck/components/value-unit-input";
 import { cascadeViewportValues } from "@/puck/utils/cascade-viewport-valuets";
+import { InputTextField } from "@/puck/components/text-field";
+import { FieldDef } from "@/puck/types";
 
 // 1. Proprietà opzionali per un JSON leggero
 export interface GridProps {
@@ -38,11 +38,9 @@ const defaultGrid: Record<Breakpoint, GridProps> = {
   mobile: {},
 };
 
-type FieldDef = { key: keyof GridProps; label: string; type?: "unit" | "text" };
-
-const layoutFields: FieldDef[] = [
-  { key: "columns", label: "Columns (es. 1fr 1fr)", type: "text" },
-  { key: "gap", label: "Gap (es. 16px)", type: "unit" },
+const layoutFields: FieldDef<GridProps>[] = [
+  { key: "columns", label: "Columns", placeholder: "none", type: "text" },
+  { key: "gap", label: "Gap", placeholder: "0", type: "unit" },
 ];
 
 const alignItemsOptions = [
@@ -80,77 +78,48 @@ export const GridField = withAccordionField(
     // Il nuovo cascade recupera i valori mancanti dai breakpoint superiori
     const renderValues = cascadeViewportValues(viewportKey, state, defaultGrid);
 
-    const update = useCallback(
-      (updates: Partial<GridProps>) => {
-        onChange({
-          ...state,
-          [viewportKey]: {
-            ...currentValues,
-            ...updates,
-          },
-        });
-      },
-      [onChange, state, viewportKey, currentValues],
-    );
+    const update = (updates: Partial<GridProps>) => {
+      onChange({
+        ...state,
+        [viewportKey]: {
+          ...currentValues,
+          ...updates,
+        },
+      });
+    };
 
-    const resetProp = useCallback(
-      (key: keyof GridProps) => {
-        const newViewportState = { ...currentValues };
-        delete newViewportState[key];
+    const resetProp = (key: keyof GridProps) => {
+      const newViewportState = { ...currentValues };
+      delete newViewportState[key];
 
-        onChange({
-          ...state,
-          [viewportKey]: newViewportState,
-        });
-      },
-      [onChange, state, viewportKey, currentValues],
-    );
-
-    const renderTextInput = useCallback(
-      ({ key, label, type }: FieldDef) => {
-        const isModified = currentValues[key] !== undefined;
-        // Fallback a stringa vuota per evitare warning di React su input uncontrolled
-        const displayValue = renderValues[key] ?? "";
-
-        return (
-          <div key={`container-${key}`} className="flex flex-col gap-y-1">
-            <PropHeader
-              name={key}
-              label={label}
-              isModified={isModified}
-              onReset={() => resetProp(key)}
-            />
-            {type === "unit" ? (
-              <ValueUnitInput
-                name={key}
-                value={displayValue}
-                onChange={(newVal) => update({ [key]: newVal || undefined })}
-              />
-            ) : (
-              <Input
-                id={key}
-                value={displayValue}
-                onChange={(e) => update({ [key]: e.target.value || undefined })}
-                className="h-8 text-sm px-2"
-              />
-            )}
-          </div>
-        );
-      },
-      [renderValues, currentValues, update, resetProp],
-    );
+      onChange({
+        ...state,
+        [viewportKey]: newViewportState,
+      });
+    };
 
     return (
       <>
         {/* --- COLUMNS & GAP --- */}
         <div className="grid grid-cols-2 gap-x-4 gap-y-4 p-1">
-          {layoutFields.map(renderTextInput)}
+          {layoutFields.map((field) => (
+            <InputTextField
+              key={field.key}
+              name={field.key}
+              label={field.label}
+              type={field.type}
+              currentValues={currentValues}
+              renderValues={renderValues}
+              resetProp={resetProp}
+              update={update}
+            />
+          ))}
         </div>
 
         {/* --- ALIGNMENT --- */}
         <div className="mt-4">
           <span className="text-sm font-medium">Alignment</span>
-          <div className="mt-2 flex flex-col gap-y-4 p-2 bg-muted/60 rounded">
+          <div className="mt-2 flex flex-col gap-y-4 rounded bg-muted/60 p-2">
             {/* Align Items */}
             <div className="flex flex-col gap-y-1">
               <PropHeader

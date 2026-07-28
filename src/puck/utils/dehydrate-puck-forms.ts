@@ -11,7 +11,9 @@ export function dehydratePuckForms(
   const dehydrateBlocks = (blocks: Content<SavedComponents>) => {
     for (const block of blocks) {
       if (block.type === "Form" && block.props.form) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delete (block.props.form as any).content;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delete (block.props.form as any).gtmEventName;
       }
 

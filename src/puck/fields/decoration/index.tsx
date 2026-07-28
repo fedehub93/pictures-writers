@@ -1,17 +1,6 @@
-import { useCallback } from "react";
 import { PaletteIcon } from "lucide-react";
 import { createUsePuck } from "@puckeditor/core";
 
-import { withAccordionField } from "@/puck/utils/with-accordion-field";
-import { PropHeader } from "@/puck/components/prop-header";
-import { ValueUnitInput } from "@/puck/components/value-unit-input";
-
-// Utility per la responsività
-import { Responsive } from "@/puck/utils/responsive";
-import { getViewportKey } from "@/puck/utils/viewports";
-import { Breakpoint } from "@/puck/utils/breakpoints";
-import { cascadeViewportValues } from "@/puck/utils/cascade-viewport-valuets";
-import { ValueColorInput } from "@/puck/components/value-color-input";
 import {
   Select,
   SelectContent,
@@ -19,6 +8,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
+
+import { withAccordionField } from "@/puck/utils/with-accordion-field";
+import { PropHeader } from "@/puck/components/prop-header";
+
+// Utility per la responsività
+import { Responsive } from "@/puck/utils/responsive";
+import { getViewportKey } from "@/puck/utils/viewports";
+import { Breakpoint } from "@/puck/utils/breakpoints";
+import { cascadeViewportValues } from "@/puck/utils/cascade-viewport-valuets";
+import { ValueColorInput } from "@/puck/components/value-color-input";
+import { InputTextField } from "@/puck/components/text-field";
+import { FieldDef } from "@/puck/types";
 
 export interface DecorationProps {
   opacity?: string;
@@ -38,17 +39,20 @@ const defaultDecoration: Record<Breakpoint, DecorationProps> = {
   mobile: {},
 };
 
-type FieldDef = { key: keyof DecorationProps; label: string };
-
-const opacityFields: FieldDef[] = [
-  { key: "opacity", label: "Opacity (es. 0.5 o 50%)" },
+const opacityFields: FieldDef<DecorationProps>[] = [
+  {
+    key: "opacity",
+    label: "Opacity (es. 0.5 o 50%)",
+    placeholder: "0",
+    type: "unit",
+  },
 ];
 
-const radiusFields: FieldDef[] = [
-  { key: "borderTopLeftRadius", label: "Top Left" },
-  { key: "borderTopRightRadius", label: "Top Right" },
-  { key: "borderBottomLeftRadius", label: "Bottom Left" },
-  { key: "borderBottomRightRadius", label: "Bottom Right" },
+const radiusFields: FieldDef<DecorationProps>[] = [
+  { key: "borderTopLeftRadius", label: "Top Left", type: "unit" },
+  { key: "borderTopRightRadius", label: "Top Right", type: "unit" },
+  { key: "borderBottomLeftRadius", label: "Bottom Left", type: "unit" },
+  { key: "borderBottomRightRadius", label: "Bottom Right", type: "unit" },
 ];
 
 const usePuck = createUsePuck();
@@ -76,69 +80,58 @@ export const DecorationField = withAccordionField(
       defaultDecoration,
     );
 
-    const update = useCallback(
-      (updates: Partial<DecorationProps>) => {
-        onChange({
-          ...state,
-          [viewportKey]: {
-            ...currentValues,
-            ...updates,
-          },
-        });
-      },
-      [onChange, state, viewportKey, currentValues],
-    );
+    const update = (updates: Partial<DecorationProps>) => {
+      onChange({
+        ...state,
+        [viewportKey]: {
+          ...currentValues,
+          ...updates,
+        },
+      });
+    };
 
-    const resetProp = useCallback(
-      (key: keyof DecorationProps) => {
-        const newViewportState = { ...currentValues };
-        delete newViewportState[key];
+    const resetProp = (key: keyof DecorationProps) => {
+      const newViewportState = { ...currentValues };
+      delete newViewportState[key];
 
-        onChange({
-          ...state,
-          [viewportKey]: newViewportState,
-        });
-      },
-      [onChange, state, viewportKey, currentValues],
-    );
-
-    const renderField = useCallback(
-      ({ key, label }: FieldDef) => {
-        const isModified = currentValues[key] !== undefined;
-
-        return (
-          <div key={`container-${key}`} className="flex flex-col gap-y-1">
-            <PropHeader
-              key={`prop-${key}`}
-              name={key}
-              label={label}
-              isModified={isModified}
-              onReset={() => resetProp(key)}
-            />
-            <ValueUnitInput
-              key={`value-${key}`}
-              name={key}
-              value={renderValues[key] ?? ""}
-              onChange={(newVal) => update({ [key]: newVal || undefined })}
-            />
-          </div>
-        );
-      },
-      [currentValues, renderValues, resetProp, update],
-    );
+      onChange({
+        ...state,
+        [viewportKey]: newViewportState,
+      });
+    };
 
     return (
       <>
         {/* --- OPACITY --- */}
         <div className="grid grid-cols-1 gap-y-4 p-1">
-          {opacityFields.map(renderField)}
+          {opacityFields.map((field) => (
+            <InputTextField
+              key={field.key}
+              name={field.key}
+              label={field.label}
+              type="unit"
+              currentValues={currentValues}
+              renderValues={renderValues}
+              resetProp={resetProp}
+              update={update}
+            />
+          ))}
         </div>
 
         {/* --- BORDER --- */}
         <div className="mt-4">
           <span className="text-sm font-medium">Border</span>
           <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-4 p-2 bg-muted/60 rounded">
-            {renderField({ key: "borderWidth", label: "Width" })}
+            <InputTextField
+              key="borderWidth"
+              name="borderWidth"
+              label="Border Width"
+              type="unit"
+              currentValues={currentValues}
+              renderValues={renderValues}
+              resetProp={resetProp}
+              update={update}
+            />
             {/* ROW 1: Border Style (Col 2) */}
             <div className="flex flex-col gap-y-1">
               <PropHeader
@@ -153,7 +146,7 @@ export const DecorationField = withAccordionField(
                   update({ borderStyle: val === "none" ? undefined : val })
                 }
               >
-                <SelectTrigger className="w-full h-9 bg-transparent border-input">
+                <SelectTrigger className="w-full h-8 border-input text-xs">
                   <SelectValue placeholder="Style" />
                 </SelectTrigger>
                 <SelectContent>
@@ -192,7 +185,18 @@ export const DecorationField = withAccordionField(
         <div className="mt-4">
           <span className="text-sm font-medium">Border Radius</span>
           <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-4 p-2 bg-muted/60 rounded">
-            {radiusFields.map(renderField)}
+            {radiusFields.map((field) => (
+              <InputTextField
+                key={field.key}
+                name={field.key}
+                label={field.label}
+                type={field.type}
+                currentValues={currentValues}
+                renderValues={renderValues}
+                resetProp={resetProp}
+                update={update}
+              />
+            ))}
           </div>
         </div>
       </>
