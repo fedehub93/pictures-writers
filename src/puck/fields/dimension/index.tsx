@@ -50,8 +50,8 @@ const defaultDimension: Record<Breakpoint, DimensionProps> = {
 const layoutFields: FieldDef<DimensionProps>[] = [
   { key: "width", label: "Width", type: "unit", placeholder: "auto" },
   { key: "height", label: "Height", type: "unit", placeholder: "auto" },
-  { key: "maxWidth", label: "Max width", type: "unit", placeholder: "none" },
-  { key: "minHeight", label: "Min height", type: "unit", placeholder: "none" },
+  { key: "maxWidth", label: "Max width", type: "unit", placeholder: "auto" },
+  { key: "minHeight", label: "Min height", type: "unit", placeholder: "auto" },
 ];
 
 const marginFields: FieldDef<DimensionProps>[] = [

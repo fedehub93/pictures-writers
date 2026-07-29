@@ -113,7 +113,7 @@ export const ImageField = withAccordionField(
             key="objectFit"
             name="objectFit"
             label="Object Fit"
-            placeholder="Fill"
+            placeholder="fill"
             options={objectFitOptions.map((o) => o.value)}
             currentValues={state}
             renderValues={state}
