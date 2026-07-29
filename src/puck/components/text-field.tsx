@@ -51,6 +51,7 @@ export const InputTextField = <T,>({
         <Input
           id={name}
           value={displayValue}
+          placeholder={placeholder}
           onChange={(e) =>
             update({ [name]: e.target.value || undefined } as Partial<T>)
           }

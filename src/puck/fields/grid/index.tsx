@@ -107,6 +107,7 @@ export const GridField = withAccordionField(
               key={field.key}
               name={field.key}
               label={field.label}
+              placeholder={field.placeholder}
               type={field.type}
               currentValues={currentValues}
               renderValues={renderValues}
