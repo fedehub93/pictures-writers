@@ -47,6 +47,7 @@ const paletteColors = [
 export const ValueColorInput = ({
   name,
   value,
+  placeholder,
   onChange,
 }: ValueColorInputProps) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,7 +63,7 @@ export const ValueColorInput = ({
         className="flex h-8 w-fullpx-3 py-1 text-xs placeholder:text-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
         value={value}
         onChange={handleInputChange}
-        placeholder="#000000"
+        placeholder={placeholder}
       />
 
       {/* Popover con il color picker */}

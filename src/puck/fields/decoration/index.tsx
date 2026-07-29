@@ -1,14 +1,6 @@
 import { PaletteIcon } from "lucide-react";
 import { createUsePuck } from "@puckeditor/core";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/ui/select";
-
 import { withAccordionField } from "@/puck/utils/with-accordion-field";
 import { PropHeader } from "@/puck/components/prop-header";
 
@@ -20,6 +12,7 @@ import { cascadeViewportValues } from "@/puck/utils/cascade-viewport-valuets";
 import { ValueColorInput } from "@/puck/components/value-color-input";
 import { InputTextField } from "@/puck/components/text-field";
 import { FieldDef } from "@/puck/types";
+import { SelectField } from "@/puck/components/select-field";
 
 export interface DecorationProps {
   opacity?: string;
@@ -42,17 +35,39 @@ const defaultDecoration: Record<Breakpoint, DecorationProps> = {
 const opacityFields: FieldDef<DecorationProps>[] = [
   {
     key: "opacity",
-    label: "Opacity (es. 0.5 o 50%)",
-    placeholder: "0",
+    label: "Opacity",
+    placeholder: "1",
     type: "unit",
   },
 ];
 
+const borderStyles = ["none", "solid", "dashed", "dotted", "double"];
+
 const radiusFields: FieldDef<DecorationProps>[] = [
-  { key: "borderTopLeftRadius", label: "Top Left", type: "unit" },
-  { key: "borderTopRightRadius", label: "Top Right", type: "unit" },
-  { key: "borderBottomLeftRadius", label: "Bottom Left", type: "unit" },
-  { key: "borderBottomRightRadius", label: "Bottom Right", type: "unit" },
+  {
+    key: "borderTopLeftRadius",
+    label: "Top Left",
+    type: "unit",
+    placeholder: "0",
+  },
+  {
+    key: "borderTopRightRadius",
+    label: "Top Right",
+    type: "unit",
+    placeholder: "0",
+  },
+  {
+    key: "borderBottomLeftRadius",
+    label: "Bottom Left",
+    type: "unit",
+    placeholder: "0",
+  },
+  {
+    key: "borderBottomRightRadius",
+    label: "Bottom Right",
+    type: "unit",
+    placeholder: "0",
+  },
 ];
 
 const usePuck = createUsePuck();
@@ -109,6 +124,7 @@ export const DecorationField = withAccordionField(
               key={field.key}
               name={field.key}
               label={field.label}
+              placeholder={field.placeholder}
               type="unit"
               currentValues={currentValues}
               renderValues={renderValues}
@@ -126,6 +142,7 @@ export const DecorationField = withAccordionField(
               key="borderWidth"
               name="borderWidth"
               label="Border Width"
+              placeholder="3"
               type="unit"
               currentValues={currentValues}
               renderValues={renderValues}
@@ -133,31 +150,17 @@ export const DecorationField = withAccordionField(
               update={update}
             />
             {/* ROW 1: Border Style (Col 2) */}
-            <div className="flex flex-col gap-y-1">
-              <PropHeader
-                name="borderStyle"
-                label="Style"
-                isModified={currentValues.borderStyle !== undefined}
-                onReset={() => resetProp("borderStyle")}
-              />
-              <Select
-                value={renderValues.borderStyle || "none"}
-                onValueChange={(val) =>
-                  update({ borderStyle: val === "none" ? undefined : val })
-                }
-              >
-                <SelectTrigger className="w-full h-8 border-input text-xs">
-                  <SelectValue placeholder="Style" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="solid">Solid</SelectItem>
-                  <SelectItem value="dashed">Dashed</SelectItem>
-                  <SelectItem value="dotted">Dotted</SelectItem>
-                  <SelectItem value="double">Double</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <SelectField
+              key="borderStyle"
+              name="borderStyle"
+              label="Border Style"
+              placeholder="none"
+              options={borderStyles}
+              currentValues={currentValues}
+              renderValues={renderValues}
+              resetProp={resetProp}
+              update={update}
+            />
 
             <div
               key={`container-border-color`}
@@ -172,6 +175,7 @@ export const DecorationField = withAccordionField(
               />
               <ValueColorInput
                 name="borderColor"
+                placeholder="currentcolor"
                 value={renderValues.borderColor ?? ""}
                 onChange={(newVal) =>
                   update({ borderColor: newVal || undefined })
@@ -190,6 +194,7 @@ export const DecorationField = withAccordionField(
                 key={field.key}
                 name={field.key}
                 label={field.label}
+                placeholder={field.placeholder}
                 type={field.type}
                 currentValues={currentValues}
                 renderValues={renderValues}

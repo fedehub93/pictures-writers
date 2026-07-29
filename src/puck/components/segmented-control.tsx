@@ -39,7 +39,7 @@ export function SegmentedControl<T extends string>({
               "data-[state=on]:bg-accent data-[state=on]:border-x text-foreground",
           )}
         >
-          <item.icon className="h-4 w-4" strokeWidth={2.5} />
+          <item.icon className="size-4" strokeWidth={2.5} />
         </ToggleGroupItem>
       ))}
     </ToggleGroup>

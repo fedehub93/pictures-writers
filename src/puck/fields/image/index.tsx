@@ -5,18 +5,12 @@ import {
   SnailIcon,
 } from "lucide-react";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/ui/select";
 import { SegmentedControl } from "@/puck/components/segmented-control";
 
 import { withAccordionField } from "@/puck/utils/with-accordion-field";
 import { PropHeader } from "@/puck/components/prop-header";
 import { InputTextField } from "@/puck/components/text-field";
+import { SelectField } from "@/puck/components/select-field";
 
 type ObjectFitType = "fill" | "contain" | "cover" | "none" | "scale-down";
 type LoadingType = "lazy" | "eager";
@@ -81,7 +75,6 @@ export const ImageField = withAccordionField(
 
     return (
       <>
-        {/* --- CONTENT --- */}
         <div className="flex flex-col gap-y-4 p-1">
           <InputTextField
             key="src"
@@ -115,32 +108,18 @@ export const ImageField = withAccordionField(
           </div>
         </div>
 
-        {/* --- BEHAVIOR --- */}
         <div className="mt-4 p-1 flex flex-col gap-y-4">
-          {/* Object Fit */}
-          <div className="flex flex-col gap-y-1">
-            <PropHeader
-              name="objectFit"
-              label="Object Fit"
-              isModified={state.objectFit !== undefined}
-              onReset={() => resetProp("objectFit")}
-            />
-            <Select
-              value={state.objectFit ?? "cover"}
-              onValueChange={(val: ObjectFitType) => update({ objectFit: val })}
-            >
-              <SelectTrigger className="h-8 text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {objectFitOptions.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <SelectField
+            key="objectFit"
+            name="objectFit"
+            label="Object Fit"
+            placeholder="fill"
+            options={objectFitOptions.map((o) => o.value)}
+            currentValues={state}
+            renderValues={state}
+            resetProp={resetProp}
+            update={update}
+          />
 
           {/* Loading */}
           <div className="flex flex-col gap-y-1">

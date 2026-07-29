@@ -76,7 +76,7 @@ export const PageBuilderView = ({ rootId }: PageBuilderViewProps) => {
 
   const publishPage = useMutation(
     trpc.pages.publish.mutationOptions({
-      onSuccess: (data) => {
+      onSuccess: () => {
         queryClient.invalidateQueries(trpc.pages.getMany.queryFilter(filters));
         if (rootId) {
           queryClient.invalidateQueries(
@@ -85,17 +85,15 @@ export const PageBuilderView = ({ rootId }: PageBuilderViewProps) => {
         }
         toast.success("Page published successfully");
       },
-      onError: async (error: any) => {
-        toast.error(
-          error?.response?.data?.message || "Failed to publish the page",
-        );
+      onError: async (error) => {
+        toast.error(error.message || "Failed to publish the page");
       },
     }),
   );
 
   const unPublishPage = useMutation(
     trpc.pages.unpublish.mutationOptions({
-      onSuccess: (data) => {
+      onSuccess: () => {
         queryClient.invalidateQueries(trpc.pages.getMany.queryFilter(filters));
         if (rootId) {
           queryClient.invalidateQueries(
@@ -104,10 +102,8 @@ export const PageBuilderView = ({ rootId }: PageBuilderViewProps) => {
         }
         toast.success("Page unpublished successfully");
       },
-      onError: async (error: any) => {
-        toast.error(
-          error?.response?.data?.message || "Failed to unpublish the page",
-        );
+      onError: async (error) => {
+        toast.error(error.message || "Failed to unpublish the page");
       },
     }),
   );

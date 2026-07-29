@@ -1,33 +1,24 @@
 import {
-  AlignCenter,
-  AlignJustify,
-  AlignLeft,
-  AlignRight,
+  AlignCenterIcon,
+  AlignJustifyIcon,
+  AlignLeftIcon,
+  AlignRightIcon,
   LucideIcon,
   TypeIcon,
 } from "lucide-react";
 import { createUsePuck } from "@puckeditor/core";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/ui/select";
-
 import { withAccordionField } from "@/puck/utils/with-accordion-field";
 import { PropHeader } from "@/puck/components/prop-header";
 import { SegmentedControl } from "@/puck/components/segmented-control";
 
-// Utility per la responsività
 import { Responsive } from "@/puck/utils/responsive";
 import { getViewportKey } from "@/puck/utils/viewports";
 import { Breakpoint } from "@/puck/utils/breakpoints";
 import { cascadeViewportValues } from "@/puck/utils/cascade-viewport-valuets";
 import { InputTextField } from "@/puck/components/text-field";
+import { SelectField } from "@/puck/components/select-field";
 
-// 1. Interfaccia con proprietà opzionali per un JSON leggero
 type AlignType = "left" | "center" | "right" | "justify";
 
 export interface TypographyProps {
@@ -46,15 +37,17 @@ const defaultTypography: Record<Breakpoint, TypographyProps> = {
   mobile: {},
 };
 
+const weightOptions = ["300", "400", "500", "600", "700", "800"];
+
 const alignments: {
   value: AlignType;
   icon: LucideIcon;
   title: string;
 }[] = [
-  { value: "left", icon: AlignLeft, title: "Left" },
-  { value: "center", icon: AlignCenter, title: "Center" },
-  { value: "right", icon: AlignRight, title: "Right" },
-  { value: "justify", icon: AlignJustify, title: "Justify" },
+  { value: "left", icon: AlignLeftIcon, title: "Left" },
+  { value: "center", icon: AlignCenterIcon, title: "Center" },
+  { value: "right", icon: AlignRightIcon, title: "Right" },
+  { value: "justify", icon: AlignJustifyIcon, title: "Justify" },
 ];
 
 const usePuck = createUsePuck();
@@ -105,29 +98,17 @@ export const TypographyField = withAccordionField(
     return (
       <div className="grid grid-cols-2 gap-x-4 gap-y-6 p-1">
         {/* --- FONT FAMILY --- */}
-        <div className="flex flex-col gap-y-1">
-          <PropHeader
-            name="fontFamily"
-            label="Font family"
-            isModified={currentValues.fontFamily !== undefined}
-            onReset={() => resetProp("fontFamily")}
-          />
-          <Select
-            name="fontFamily"
-            value={renderValues.fontFamily ?? "inherit"}
-            onValueChange={(val) =>
-              update({ fontFamily: val === "inherit" ? undefined : val })
-            }
-          >
-            <SelectTrigger id="font-family" className="h-8 text-xs">
-              <SelectValue placeholder="Select font" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="inherit">Inherit</SelectItem>
-              {/* Aggiungi qui gli altri font */}
-            </SelectContent>
-          </Select>
-        </div>
+        <SelectField
+          key="fontFamily"
+          name="fontFamily"
+          label="Font Family"
+          placeholder="inherit"
+          options={["inherit"]}
+          currentValues={currentValues}
+          renderValues={renderValues}
+          resetProp={resetProp}
+          update={update}
+        />
 
         {/* --- FONT SIZE --- */}
         <InputTextField
@@ -143,30 +124,17 @@ export const TypographyField = withAccordionField(
         />
 
         {/* --- FONT WEIGHT --- */}
-
-        <div className="flex flex-col gap-y-1">
-          <PropHeader
-            name="fontWeight"
-            label="Font weight"
-            isModified={currentValues.fontWeight !== undefined}
-            onReset={() => resetProp("fontWeight")}
-          />
-          <Select
-            name="fontWeight"
-            value={renderValues.fontWeight ?? "font-normal"}
-            onValueChange={(val) => update({ fontWeight: val })}
-          >
-            <SelectTrigger id="font-weight" className="h-8 text-xs">
-              <SelectValue placeholder="Select weight" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="font-light">Light (300)</SelectItem>
-              <SelectItem value="font-normal">Normal (400)</SelectItem>
-              <SelectItem value="font-medium">Medium (500)</SelectItem>
-              <SelectItem value="font-bold">Bold (700)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <SelectField
+          key="fontWeight"
+          name="fontWeight"
+          label="Font Weight"
+          placeholder="normal"
+          options={weightOptions}
+          currentValues={currentValues}
+          renderValues={renderValues}
+          resetProp={resetProp}
+          update={update}
+        />
 
         {/* --- LETTER SPACING --- */}
         <InputTextField

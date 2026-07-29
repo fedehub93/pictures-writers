@@ -43,12 +43,6 @@ export const getDimensionVars = (data?: Responsive<DimensionProps>) => {
 /**
  * UTILITY: TYPOGRAPHY
  */
-const fontWeightMap: Record<string, string> = {
-  "font-light": "300",
-  "font-normal": "400",
-  "font-medium": "500",
-  "font-bold": "700",
-};
 
 export const getTypographyVars = (data?: Responsive<TypographyProps>) => {
   if (!data) return {};
@@ -67,7 +61,7 @@ export const getTypographyVars = (data?: Responsive<TypographyProps>) => {
     if (p.textAlign) vars[`--ta-${s}`] = p.textAlign;
 
     if (p.fontWeight) {
-      vars[`--fw-${s}`] = fontWeightMap[p.fontWeight] || p.fontWeight;
+      vars[`--fw-${s}`] = p.fontWeight;
     }
   }
 

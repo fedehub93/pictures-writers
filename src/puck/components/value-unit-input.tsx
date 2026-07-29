@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { ChevronUp, ChevronDown } from "lucide-react";
 
-import { Input } from "@/shared/ui/input";
-import { Button } from "@/shared/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -169,7 +167,6 @@ export function ValueUnitInput({
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         autoComplete="off"
-        // 3. Forziamo la rimozione del ring di default dell'input
         className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 text-xs!"
       />
       <InputGroupAddon align="inline-end">
@@ -177,7 +174,6 @@ export function ValueUnitInput({
           <DropdownMenuTrigger asChild>
             <InputGroupButton
               variant="ghost"
-              // 4. Manteniamo il margine (portato a 5 per sicurezza con le frecce) ma togliamo il focus
               className="mr-5 border-none focus-visible:ring-0 focus-visible:ring-offset-0 hover:bg-muted text-xs"
             >
               {localUnit}
@@ -196,7 +192,6 @@ export function ValueUnitInput({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Pulsanti Spin */}
         <div className="absolute right-0.5 top-0 flex h-full flex-col items-center justify-center space-y-0 pr-1 opacity-50 transition-opacity hover:opacity-100">
           <button
             type="button"
