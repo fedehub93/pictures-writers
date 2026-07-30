@@ -39,7 +39,6 @@ export const HeaderActions = ({
   return (
     <>
       <div className="flex items-center gap-2">
-        (
         <>
           <Button type="button" variant="ghost" asChild>
             <Link href={`/draft/${initialData.slug}`} target="_blank">
