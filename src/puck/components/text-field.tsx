@@ -2,6 +2,7 @@ import { Input } from "@/shared/ui/input";
 
 import { PropHeader } from "./prop-header";
 import { ValueUnitInput } from "./value-unit-input";
+import { ValueUnitPreset } from "./value-unit-input/types";
 
 export type InputTextFieldProps<T> = {
   name: Extract<keyof T, string>;
@@ -12,6 +13,7 @@ export type InputTextFieldProps<T> = {
   renderValues: T;
   resetProp: (key: Extract<keyof T, string>) => void;
   update: (updates: Partial<T>) => void;
+  presets?: ValueUnitPreset[];
 };
 
 // Componente React generico
@@ -24,6 +26,7 @@ export const InputTextField = <T,>({
   renderValues,
   resetProp,
   update,
+  presets,
 }: InputTextFieldProps<T>) => {
   const isModified = currentValues[name] !== undefined;
 
@@ -46,6 +49,7 @@ export const InputTextField = <T,>({
             update({ [name]: newVal || undefined } as Partial<T>)
           }
           placeholder={placeholder}
+          presets={presets}
         />
       ) : (
         <Input

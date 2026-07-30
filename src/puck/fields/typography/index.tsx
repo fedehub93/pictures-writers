@@ -18,6 +18,7 @@ import { Breakpoint } from "@/puck/utils/breakpoints";
 import { cascadeViewportValues } from "@/puck/utils/cascade-viewport-valuets";
 import { InputTextField } from "@/puck/components/text-field";
 import { SelectField } from "@/puck/components/select-field";
+import { FONT_SIZE_PRESETS } from "./presets";
 
 type AlignType = "left" | "center" | "right" | "justify";
 
@@ -121,6 +122,7 @@ export const TypographyField = withAccordionField(
           renderValues={renderValues}
           resetProp={resetProp}
           update={update}
+          presets={FONT_SIZE_PRESETS}
         />
 
         {/* --- FONT WEIGHT --- */}
