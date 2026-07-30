@@ -62,5 +62,5 @@ export const calculateStepValue = (
 
   const parsedNum = parseFloat(currentNumStr);
   const currentNum = isNaN(parsedNum) ? 0 : parsedNum;
-  return String(parseFloat((currentNum + direction * stepAmount).toFixed(1)));
+  return String(parseFloat((currentNum + direction * stepAmount).toFixed(10)));
 };

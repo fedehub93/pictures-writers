@@ -15,6 +15,7 @@ import {
   pageInsertSchema,
   pageUpdateContentSchema,
   pageUpdateSchema,
+  pageUpdateSeoSchema,
 } from "../schemas";
 
 import {
@@ -146,6 +147,30 @@ export const pagesRouter = createTRPCRouter({
 
       return updatedPage;
     }),
+  updateSeo: protectedProcedure
+    .input(pageUpdateSeoSchema)
+    .mutation(async ({ input }) => {
+      const page = await db.page.findUnique({
+        where: {
+          id: input.id,
+          rootId: input.rootId,
+        },
+      });
+
+      if (!page || !page.seoId) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Page not found",
+        });
+      }
+
+      const updatedSeo = await db.seo.update({
+        where: { id: page.seoId },
+        data: { ...input, id: undefined, rootId: undefined },
+      });
+
+      return updatedSeo;
+    }),
 
   remove: protectedProcedure
     .input(z.object({ id: z.string() }))
@@ -210,6 +235,18 @@ export const pagesRouter = createTRPCRouter({
           slug: true,
           puckData: true,
           status: true,
+          seo: {
+            select: {
+              id: true,
+              rootId: true,
+              title: true,
+              description: true,
+              ogTwitterTitle: true,
+              ogTwitterDescription: true,
+              noIndex: true,
+              noFollow: true,
+            },
+          },
         },
       });
 
@@ -255,6 +292,9 @@ export const pagesRouter = createTRPCRouter({
           status: input.status ? { in: [input.status] } : undefined,
         },
         distinct: ["rootId"],
+        include: {
+          seo: true,
+        },
         orderBy: {
           publishedAt: "desc",
         },

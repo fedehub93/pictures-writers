@@ -175,15 +175,17 @@ export function ValueUnitInput({
             </InputGroupButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="min-w-16">
-            {units.map((u) => (
-              <DropdownMenuItem
-                key={u}
-                onClick={() => handleUnitChange(u)}
-                className="text-xs"
-              >
-                {u}
-              </DropdownMenuItem>
-            ))}
+            {units
+              .filter((u) => u !== "-")
+              .map((u) => (
+                <DropdownMenuItem
+                  key={u}
+                  onClick={() => handleUnitChange(u)}
+                  className="text-xs"
+                >
+                  {u}
+                </DropdownMenuItem>
+              ))}
           </DropdownMenuContent>
         </DropdownMenu>
 

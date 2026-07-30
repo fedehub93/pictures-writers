@@ -29,7 +29,7 @@ import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 
 import { PagesGetMany } from "../../types";
 import { usePagesFilters } from "../../hooks/use-pages-filters";
-import { useOpenPage } from "../../hooks/use-open-page";
+import { useOpenPageSettings } from "../../hooks/use-open-page-settings";
 
 interface PagesAction {
   id: string;
@@ -45,7 +45,7 @@ export const PagesActions = ({ id, rootId, status, data }: PagesAction) => {
   const [filters, setFilters] = usePagesFilters();
   const router = useRouter();
 
-  const { onOpen } = useOpenPage();
+  const { onOpen } = useOpenPageSettings();
 
   const onEdit = () => {
     onOpen(data);
@@ -53,7 +53,7 @@ export const PagesActions = ({ id, rootId, status, data }: PagesAction) => {
 
   const publishPage = useMutation(
     trpc.pages.publish.mutationOptions({
-      onSuccess: (data) => {
+      onSuccess: () => {
         queryClient.invalidateQueries(trpc.pages.getMany.queryFilter(filters));
         if (rootId) {
           queryClient.invalidateQueries(
@@ -62,17 +62,15 @@ export const PagesActions = ({ id, rootId, status, data }: PagesAction) => {
         }
         toast.success("Page published successfully");
       },
-      onError: async (error: any) => {
-        toast.error(
-          error?.response?.data?.message || "Failed to publish the page",
-        );
+      onError: async (error) => {
+        toast.error(error.message || "Failed to publish the page");
       },
     }),
   );
 
   const unPublishPage = useMutation(
     trpc.pages.unpublish.mutationOptions({
-      onSuccess: (data) => {
+      onSuccess: () => {
         queryClient.invalidateQueries(trpc.pages.getMany.queryFilter(filters));
         if (rootId) {
           queryClient.invalidateQueries(
@@ -81,10 +79,8 @@ export const PagesActions = ({ id, rootId, status, data }: PagesAction) => {
         }
         toast.success("Page unpublished successfully");
       },
-      onError: async (error: any) => {
-        toast.error(
-          error?.response?.data?.message || "Failed to unpublish the page",
-        );
+      onError: async (error) => {
+        toast.error(error.message || "Failed to unpublish the page");
       },
     }),
   );

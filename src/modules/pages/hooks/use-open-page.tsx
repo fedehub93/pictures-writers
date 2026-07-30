@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { PageGetOne } from "../types";
+import type { PageGetOne } from "../types";
 
 type OpenPageState = {
   data?: PageGetOne;

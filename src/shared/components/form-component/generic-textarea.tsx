@@ -13,13 +13,17 @@ import { Textarea } from "@/shared/ui/textarea";
 
 import { cn } from "@/shared/lib/utils";
 
-interface GenericTextareaProps<T extends FieldValues>
-  extends React.ComponentProps<"textarea"> {
+import { CharsCounter } from "../chars-counter";
+
+interface GenericTextareaProps<
+  T extends FieldValues,
+> extends React.ComponentProps<"textarea"> {
   control: Control<T>;
   name: Path<T>;
   label: string;
   containerProps?: React.HTMLAttributes<HTMLDivElement>;
   labelProps?: React.ComponentProps<typeof LabelPrimitive.Root>;
+  charsCounter?: boolean;
 }
 
 export const GenericTextarea = <T extends FieldValues>({
@@ -30,6 +34,7 @@ export const GenericTextarea = <T extends FieldValues>({
   onChange,
   containerProps,
   labelProps,
+  charsCounter = false,
   ...textareaProps
 }: GenericTextareaProps<T>) => {
   return (
@@ -40,24 +45,29 @@ export const GenericTextarea = <T extends FieldValues>({
         <FormItem
           className={cn(
             `flex-1 flex flex-col space-y-2`,
-            containerProps?.className && containerProps.className
+            containerProps?.className && containerProps.className,
           )}
         >
           <FormLabel {...labelProps}>{label}</FormLabel>
           <FormControl>
-            <Textarea
-              {...field}
-              {...textareaProps}
-              className={cn(textareaProps.className && textareaProps.className)}
-              onBlur={(e) => {
-                field.onBlur(); // Mantiene la gestione di react-hook-form
-                onBlur?.(e); // Chiama anche il tuo onBlur personalizzato se presente
-              }}
-              onChange={(e) => {
-                field.onChange(e); // Mantiene la gestione di react-hook-form
-                onChange?.(e); // Chiama anche il tuo onChange personalizzato se presente
-              }}
-            />
+            <div>
+              <Textarea
+                {...field}
+                {...textareaProps}
+                className={cn(
+                  textareaProps.className && textareaProps.className,
+                )}
+                onBlur={(e) => {
+                  field.onBlur();
+                  onBlur?.(e);
+                }}
+                onChange={(e) => {
+                  field.onChange(e);
+                  onChange?.(e);
+                }}
+              />
+              {charsCounter && <CharsCounter value={field.value || ""} />}
+            </div>
           </FormControl>
           <FormMessage />
         </FormItem>

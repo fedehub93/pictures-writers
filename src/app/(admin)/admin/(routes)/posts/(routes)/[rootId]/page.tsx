@@ -18,7 +18,6 @@ import { ContentIdActions } from "@/app/(admin)/_components/content/content-id-a
 import { ImageForm } from "./_components/image-form";
 import { ContentForm } from "./_components/content-form";
 
-import { PostPreview } from "./_components/post-preview";
 import { AuthorsForm } from "./_components/authors-form";
 import { CategoriesForm } from "./_components/categories-form";
 import { TagsForm } from "./_components/tags-form";
@@ -78,7 +77,6 @@ const PostIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
             <TabsList className="mb-4">
               <TabsTrigger value="post">Post</TabsTrigger>
               <TabsTrigger value="seo">SEO</TabsTrigger>
-              <TabsTrigger value="preview">Preview</TabsTrigger>
             </TabsList>
             <TabsContent
               value="post"
@@ -124,7 +122,7 @@ const PostIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
             <TabsContent
               value="seo"
               forceMount
-              className="hidden data-[state=active]:block"
+              className="hidden data-[state=active]:flex"
             >
               <SeoEditView
                 initialData={post.seo}
@@ -132,13 +130,6 @@ const PostIdPage = async (props: { params: Promise<{ rootId: string }> }) => {
                 contentRootId={post.rootId}
                 contentId={post.id}
               />
-            </TabsContent>
-            <TabsContent
-              value="preview"
-              forceMount
-              className="hidden data-[state=active]:block"
-            >
-              <PostPreview post={post} />
             </TabsContent>
           </Tabs>
         </div>
