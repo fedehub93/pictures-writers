@@ -65,6 +65,10 @@ export const pagesRouter = createTRPCRouter({
 
         return page;
       } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+
         if (error instanceof Error && error.message === "PAGE_NOT_FOUND") {
           throw new TRPCError({
             code: "NOT_FOUND",
@@ -110,6 +114,10 @@ export const pagesRouter = createTRPCRouter({
 
         return updatedSeo;
       } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+
         if (error instanceof Error && error.message === "PAGE_NOT_FOUND") {
           throw new TRPCError({
             code: "NOT_FOUND",
@@ -259,7 +267,7 @@ export const pagesRouter = createTRPCRouter({
         skip: (input.page - 1) * input.pageSize,
       });
 
-      const hydratedPages = Promise.all(
+      const hydratedPages = await Promise.all(
         pages.map(async (p) => ({
           ...p,
           puckData: p.puckData ? await hydratePuckForms(p.puckData) : null,
