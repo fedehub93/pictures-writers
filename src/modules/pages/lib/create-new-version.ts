@@ -7,33 +7,31 @@ import type { PageUpdateValues } from "../schemas";
 import { INITIAL_PUCK_DATA } from "../constants";
 
 export const createNewVersion = async (input: Partial<PageUpdateValues>) => {
-  const publishedPage = await db.page.findFirst({
+  const latestPage = await db.page.findFirst({
     where: {
       rootId: input.rootId,
-      status: ContentStatus.PUBLISHED,
-      isLatest: true,
     },
     orderBy: { createdAt: "desc" },
   });
 
-  if (!publishedPage) {
+  if (!latestPage) {
     throw new Error("PAGE_NOT_FOUND");
   }
 
   const dehydratedPuckData = input.puckData
     ? dehydratePuckForms(input.puckData)
-    : publishedPage.puckData
-      ? publishedPage.puckData
+    : latestPage.puckData
+      ? latestPage.puckData
       : INITIAL_PUCK_DATA;
 
-  let pageToUpdate = publishedPage;
+  let pageToUpdate = latestPage;
 
-  if (publishedPage.status === ContentStatus.PUBLISHED) {
+  if (latestPage.status === ContentStatus.PUBLISHED) {
     pageToUpdate = await db.page.create({
       data: {
-        title: input.title || publishedPage.title,
-        slug: input.slug || publishedPage.slug,
-        version: publishedPage.version + 1,
+        title: input.title || latestPage.title,
+        slug: input.slug || latestPage.slug,
+        version: latestPage.version + 1,
         status: ContentStatus.CHANGED,
         isLatest: false,
       },
@@ -43,7 +41,7 @@ export const createNewVersion = async (input: Partial<PageUpdateValues>) => {
   return await db.page.update({
     where: { id: pageToUpdate.id },
     data: {
-      ...publishedPage,
+      ...latestPage,
       ...input,
       puckData: dehydratedPuckData,
       id: undefined,
