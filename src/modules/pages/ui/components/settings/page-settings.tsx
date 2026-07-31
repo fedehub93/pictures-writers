@@ -19,7 +19,7 @@ export const PageSettings = ({
   initialValues,
 }: PageSettingsProps) => {
   return (
-    <Tabs defaultValue="overview" >
+    <Tabs defaultValue="overview">
       <TabsList className="mb-4">
         <TabsTrigger value="overview">Overview</TabsTrigger>
         <TabsTrigger value="seo">SEO</TabsTrigger>
@@ -45,18 +45,6 @@ export const PageSettings = ({
             ...initialValues?.seo,
             id: initialValues?.id ?? "",
             rootId: initialValues?.rootId ?? "",
-            description: initialValues?.seo?.description
-              ? initialValues.seo.description
-              : "",
-            canonicalUrl: initialValues?.seo?.canonicalUrl
-              ? initialValues.seo.canonicalUrl
-              : "",
-            ogTwitterTitle: initialValues?.seo?.ogTwitterTitle
-              ? initialValues.seo.ogTwitterTitle
-              : "",
-            ogTwitterDescription: initialValues?.seo?.ogTwitterDescription
-              ? initialValues.seo.ogTwitterDescription
-              : "",
             noIndex: initialValues?.seo ? initialValues.seo?.noIndex : false,
             noFollow: initialValues?.seo ? initialValues.seo?.noFollow : false,
           }}

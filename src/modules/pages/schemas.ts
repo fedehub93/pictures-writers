@@ -12,26 +12,24 @@ export type PageInsertValues = z.infer<typeof pageInsertSchema>;
 export const pageUpdateSchema = pageInsertSchema.extend({
   id: z.string().min(1, { error: "Id is required" }),
   rootId: z.string().min(1, { error: "Root Id is required" }),
+  puckData: z.custom<Data<HydratedComponents>>().nullable().optional(),
+  seoId: z
+    .string()
+    .min(1, { error: "SEO Id is required" })
+    .nullable()
+    .optional(),
 });
 
 export type PageUpdateValues = z.infer<typeof pageUpdateSchema>;
-
-export const pageUpdateContentSchema = pageInsertSchema.extend({
-  id: z.string().min(1, { error: "Id is required" }),
-  rootId: z.string().min(1, { error: "Root Id is required" }),
-  puckData: z.custom<Data<HydratedComponents>>(),
-});
-
-export type PageUpdateContentValues = z.infer<typeof pageUpdateContentSchema>;
 
 export const pageUpdateSeoSchema = z.object({
   id: z.string().min(1, { error: "Id is required" }),
   rootId: z.string().min(1, { error: "Root Id is required" }),
   title: z.string().optional(),
-  description: z.string().optional(),
-  canonicalUrl: z.string().optional(),
-  ogTwitterTitle: z.string().optional(),
-  ogTwitterDescription: z.string().optional(),
+  description: z.string().nullable().optional(),
+  canonicalUrl: z.string().nullable().optional(),
+  ogTwitterTitle: z.string().nullable().optional(),
+  ogTwitterDescription: z.string().nullable().optional(),
   noIndex: z.boolean(),
   noFollow: z.boolean(),
 });

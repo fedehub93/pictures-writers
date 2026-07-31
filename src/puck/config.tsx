@@ -3,7 +3,7 @@ import "@puckeditor/core/puck.css";
 
 import { ContentStatus } from "@/generated/prisma";
 
-import { PageUpdateContentValues } from "@/modules/pages/schemas";
+import type { PageUpdateValues } from "@/modules/pages/schemas";
 
 import { RootEditor, type RootProps } from "./root";
 
@@ -79,7 +79,7 @@ export type PuckEditorProps = {
   };
   isSaving: boolean;
   isPublishing: boolean;
-  onSavePage: (values: PageUpdateContentValues) => void;
+  onSavePage: (values: PageUpdateValues) => void;
   onPublish: (id: string, rootId: string) => void;
 };
 
