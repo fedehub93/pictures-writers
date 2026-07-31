@@ -7,13 +7,11 @@ import { TRPCError } from "@trpc/server";
 import { ContentStatus } from "@/generated/prisma";
 
 import { hydratePuckForms } from "@/puck/utils/hydrate-puck-forms";
-import { dehydratePuckForms } from "@/puck/utils/dehydrate-puck-forms";
 
 import { createPageSeo } from "@/lib/seo";
 
 import {
   pageInsertSchema,
-  pageUpdateContentSchema,
   pageUpdateSchema,
   pageUpdateSeoSchema,
 } from "../schemas";
@@ -21,9 +19,12 @@ import {
 import {
   DEFAULT_PAGE,
   DEFAULT_PAGE_SIZE,
+  INITIAL_PUCK_DATA,
   MAX_PAGE_SIZE,
   MIN_PAGE_SIZE,
 } from "../constants";
+
+import { createNewVersion } from "../lib/create-new-version";
 
 export const pagesRouter = createTRPCRouter({
   create: protectedProcedure
@@ -34,7 +35,7 @@ export const pagesRouter = createTRPCRouter({
           ...input,
           version: 1,
           status: ContentStatus.DRAFT,
-          puckData: { root: {}, content: [] },
+          puckData: INITIAL_PUCK_DATA,
           userId: ctx.auth.id,
         },
       });
@@ -55,121 +56,72 @@ export const pagesRouter = createTRPCRouter({
 
       return page;
     }),
-  createNewVersion: protectedProcedure
-    .input(pageUpdateContentSchema)
-    .mutation(async ({ input }) => {
-      const publishedPage = await db.page.findFirst({
-        where: {
-          rootId: input.rootId,
-          status: ContentStatus.PUBLISHED,
-          isLatest: true,
-        },
-        orderBy: { createdAt: "desc" },
-      });
 
-      if (!publishedPage) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Page not found",
-        });
-      }
-
-      const dehydratedPuckData = dehydratePuckForms(input.puckData);
-
-      // Creo nuova versione
-      const page = await db.page.create({
-        data: {
-          title: input.title || publishedPage.title,
-          slug: input.slug || publishedPage.slug,
-          version: publishedPage.version + 1,
-          status: ContentStatus.CHANGED,
-          isLatest: false,
-        },
-      });
-
-      const updatePage = await db.page.update({
-        where: { id: page.id },
-        data: {
-          ...publishedPage,
-          ...input,
-          puckData: dehydratedPuckData,
-          id: undefined,
-          version: undefined,
-          status: undefined,
-          isLatest: undefined,
-          createdAt: undefined,
-          updatedAt: undefined,
-          publishedAt: undefined,
-        },
-      });
-
-      return updatePage;
-    }),
   update: protectedProcedure
     .input(pageUpdateSchema)
     .mutation(async ({ input }) => {
-      const updatedPage = await db.page.update({
-        where: {
-          id: input.id,
-          rootId: input.rootId,
-        },
-        data: { ...input },
-      });
+      try {
+        const page = await createNewVersion(input);
 
-      if (!updatedPage) {
+        return page;
+      } catch (error) {
+        if (error instanceof Error && error.message === "PAGE_NOT_FOUND") {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "La pagina richiesta non esiste.",
+          });
+        }
+
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Page not found",
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Errore durante il salvataggio della pagina.",
         });
       }
-
-      return updatedPage;
     }),
-  updateContent: protectedProcedure
-    .input(pageUpdateContentSchema)
-    .mutation(async ({ input }) => {
-      const dehydratedPuckData = dehydratePuckForms(input.puckData);
 
-      const updatedPage = await db.page.update({
-        where: {
-          id: input.id,
-          rootId: input.rootId,
-        },
-        data: { ...input, puckData: dehydratedPuckData },
-      });
-
-      if (!updatedPage) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Page not found",
-        });
-      }
-
-      return updatedPage;
-    }),
   updateSeo: protectedProcedure
     .input(pageUpdateSeoSchema)
     .mutation(async ({ input }) => {
-      const page = await db.page.findUnique({
-        where: {
-          id: input.id,
-          rootId: input.rootId,
-        },
-      });
+      try {
+        const page = await db.page.findUnique({
+          where: {
+            id: input.id,
+            rootId: input.rootId,
+          },
+        });
 
-      if (!page || !page.seoId) {
+        if (!page || !page.rootId || !page.seoId) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Page not found",
+          });
+        }
+
+        const updatedSeo = await db.seo.update({
+          where: { id: page.seoId },
+          data: { ...input, id: undefined, rootId: undefined },
+        });
+
+        await createNewVersion({
+          id: page.id,
+          rootId: page.rootId,
+          seoId: updatedSeo.id,
+        });
+
+        return updatedSeo;
+      } catch (error) {
+        if (error instanceof Error && error.message === "PAGE_NOT_FOUND") {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "La pagina richiesta non esiste.",
+          });
+        }
+
         throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Page not found",
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Errore durante il salvataggio della pagina.",
         });
       }
-
-      const updatedSeo = await db.seo.update({
-        where: { id: page.seoId },
-        data: { ...input, id: undefined, rootId: undefined },
-      });
-
-      return updatedSeo;
     }),
 
   remove: protectedProcedure
@@ -216,7 +168,12 @@ export const pagesRouter = createTRPCRouter({
         });
       }
 
-      return page;
+      const hydratedPage = {
+        ...page,
+        puckData: page.puckData ? await hydratePuckForms(page.puckData) : null,
+      };
+
+      return hydratedPage;
     }),
   getLastByRootId: protectedProcedure
     .input(z.object({ rootId: z.string() }))
@@ -301,7 +258,15 @@ export const pagesRouter = createTRPCRouter({
         take: input.pageSize,
         skip: (input.page - 1) * input.pageSize,
       });
-      return pages;
+
+      const hydratedPages = Promise.all(
+        pages.map(async (p) => ({
+          ...p,
+          puckData: p.puckData ? await hydratePuckForms(p.puckData) : null,
+        })),
+      );
+
+      return hydratedPages;
     }),
   publish: protectedProcedure
     .input(z.object({ id: z.string(), rootId: z.string() }))

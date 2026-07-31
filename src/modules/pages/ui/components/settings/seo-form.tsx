@@ -33,7 +33,7 @@ export const PageSeoForm = ({
 }: PageSeoFormProps) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const [filters, setFilters] = usePagesFilters();
+  const [filters, _] = usePagesFilters();
 
   const form = useForm<z.infer<typeof pageUpdateSeoSchema>>({
     resolver: zodResolver(pageUpdateSeoSchema),
@@ -111,14 +111,14 @@ export const PageSeoForm = ({
           control={form.control}
           name="ogTwitterTitle"
           label="Open Graph / Twitter Title"
-          placeholder={process.env.NEXT_PUBLIC_APP_URL}
+          placeholder="About Us"
           disabled={isPending}
         />
         <GenericTextarea
           control={form.control}
           name="ogTwitterDescription"
           label="Open Graph / Twitter Description"
-          placeholder={process.env.NEXT_PUBLIC_APP_URL}
+          placeholder="This article shows you how to write..."
           disabled={isPending}
         />
         <div className="p-4 border rounded">
