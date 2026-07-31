@@ -17,35 +17,49 @@ import { generateSlug } from "@/shared/lib/slug";
 import { GenericInput } from "@/shared/components/form-component/generic-input";
 import { SlugInput } from "@/shared/components/form-component/slug-input";
 
-import { pageInsertSchema, PageInsertValues } from "../../schemas";
+import {
+  pageInsertSchema,
+  PageInsertValues,
+  PageUpdateValues,
+} from "../../../schemas";
 
-import { usePagesFilters } from "../../hooks/use-pages-filters";
+import { usePagesFilters } from "../../../hooks/use-pages-filters";
 
-interface PageFormProps {
+interface PageDetailsFormProps {
   onSuccess?: () => void;
   onCancel?: () => void;
+  initialValues?: PageUpdateValues;
 }
 
-export const PageForm = ({ onSuccess, onCancel }: PageFormProps) => {
+export const PageDetailsForm = ({
+  onSuccess,
+  onCancel,
+  initialValues,
+}: PageDetailsFormProps) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const [filters, setFilters] = usePagesFilters();
 
   const form = useForm<z.infer<typeof pageInsertSchema>>({
     resolver: zodResolver(pageInsertSchema),
-    defaultValues: {
-      title: "",
-      slug: "",
+    values: {
+      title: initialValues?.title ?? "",
+      slug: initialValues?.slug ?? "",
     },
   });
 
-  const createPage = useMutation(
-    trpc.pages.create.mutationOptions({
+  const updatePage = useMutation(
+    trpc.pages.update.mutationOptions({
       onSuccess: async () => {
         await queryClient.invalidateQueries(
           trpc.pages.getMany.queryOptions(filters),
         );
-        toast.success("Page created successfully!");
+        if (initialValues?.id) {
+          await queryClient.invalidateQueries(
+            trpc.pages.getOne.queryOptions({ id: initialValues.id }),
+          );
+        }
+        toast.success("Page updated successfully!");
         onSuccess?.();
       },
       onError: (error) => {
@@ -54,39 +68,17 @@ export const PageForm = ({ onSuccess, onCancel }: PageFormProps) => {
     }),
   );
 
-  // const updatePage = useMutation(
-  //   trpc.pages.update.mutationOptions({
-  //     onSuccess: async () => {
-  //       await queryClient.invalidateQueries(
-  //         trpc.pages.getMany.queryOptions(filters),
-  //       );
-  //       if (initialValues?.id) {
-  //         await queryClient.invalidateQueries(
-  //           trpc.pages.getOne.queryOptions({ id: initialValues.id }),
-  //         );
-  //       }
-  //       toast.success("Page updated successfully!");
-  //       onSuccess?.();
-  //     },
-  //     onError: (error) => {
-  //       toast.error(error.message);
-  //     },
-  //   }),
-  // );
-
-  // const isEdit = !!initialValues?.id;
-  const isPending = createPage.isPending;
+  const isEdit = !!initialValues?.id;
+  const isPending = updatePage.isPending;
 
   const onSubmit = (values: PageInsertValues) => {
-    // if (isEdit) {
-    //   updatePage.mutate({
-    //     ...values,
-    //     id: initialValues.id,
-    //     rootId: initialValues.rootId,
-    //   });
-    // } else {
-    createPage.mutate(values);
-    // }
+    if (isEdit) {
+      updatePage.mutate({
+        ...values,
+        id: initialValues.id,
+        rootId: initialValues.rootId,
+      });
+    }
   };
 
   const { field: fieldTitle } = useController({
@@ -134,7 +126,7 @@ export const PageForm = ({ onSuccess, onCancel }: PageFormProps) => {
             </Button>
           )}
           <Button disabled={isPending} type="submit">
-            Create
+            {isEdit ? "Update" : "Create"}
           </Button>
         </div>
       </form>

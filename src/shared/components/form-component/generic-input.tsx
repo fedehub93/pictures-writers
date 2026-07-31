@@ -12,6 +12,8 @@ import {
 import { Input } from "@/shared/ui/input";
 import { cn } from "@/shared/lib/utils";
 
+import { CharsCounter } from "../chars-counter";
+
 interface GenericInputProps<
   T extends FieldValues,
 > extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -21,6 +23,7 @@ interface GenericInputProps<
   description?: string;
   containerProps?: React.HTMLAttributes<HTMLDivElement>;
   labelProps?: React.ComponentProps<typeof LabelPrimitive.Root>;
+  charsCounter?: boolean;
 }
 
 export const GenericInput = <T extends FieldValues>({
@@ -32,6 +35,7 @@ export const GenericInput = <T extends FieldValues>({
   onChange,
   containerProps,
   labelProps,
+  charsCounter = false,
   ...inputProps
 }: GenericInputProps<T>) => {
   return (
@@ -47,22 +51,25 @@ export const GenericInput = <T extends FieldValues>({
         >
           <FormLabel {...labelProps}>{label}</FormLabel>
           <FormControl>
-            <Input
-              {...field}
-              {...inputProps}
-              className={cn(
-                `disabled:cursor-not-allowed`,
-                inputProps.className && inputProps.className,
-              )}
-              onBlur={(e) => {
-                field.onBlur(); // Mantiene la gestione di react-hook-form
-                onBlur?.(e); // Chiama anche il tuo onBlur personalizzato se presente
-              }}
-              onChange={(e) => {
-                field.onChange(e); // Mantiene la gestione di react-hook-form
-                onChange?.(e); // Chiama anche il tuo onChange personalizzato se presente
-              }}
-            />
+            <div>
+              <Input
+                {...field}
+                {...inputProps}
+                className={cn(
+                  `disabled:cursor-not-allowed`,
+                  inputProps.className && inputProps.className,
+                )}
+                onBlur={(e) => {
+                  field.onBlur(); // Mantiene la gestione di react-hook-form
+                  onBlur?.(e); // Chiama anche il tuo onBlur personalizzato se presente
+                }}
+                onChange={(e) => {
+                  field.onChange(e); // Mantiene la gestione di react-hook-form
+                  onChange?.(e); // Chiama anche il tuo onChange personalizzato se presente
+                }}
+              />
+              {charsCounter && <CharsCounter value={field.value || ""} />}
+            </div>
           </FormControl>
           {description && <FormDescription>{description}</FormDescription>}
           <FormMessage />

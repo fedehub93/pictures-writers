@@ -207,7 +207,7 @@ const Page = async (props: PageProps<"/[...slug]">) => {
           rootId={product.rootId!}
           title={product.title}
           slug={product.slug}
-          imageCoverUrl={product.imageCover?.url!}
+          imageCoverUrl={product.imageCover?.url ?? ""}
           label={widgetPopup.metadata.label}
           actionType={widgetPopup.metadata.actionType}
           autoOpenDelay={widgetPopup.metadata.autoOpenDelay}
