@@ -59,6 +59,7 @@ export const getTypographyVars = (data?: Responsive<TypographyProps>) => {
     if (p.lineHeight) vars[`--lh-${s}`] = p.lineHeight;
     if (p.letterSpacing) vars[`--ls-${s}`] = p.letterSpacing;
     if (p.textAlign) vars[`--ta-${s}`] = p.textAlign;
+    if (p.color) vars[`--tc-${s}`] = p.color;
 
     if (p.fontWeight) {
       vars[`--fw-${s}`] = p.fontWeight;
@@ -103,6 +104,7 @@ export const getDecorationVars = (data?: Responsive<DecorationProps>) => {
     const s = getSuffix(bp);
 
     if (p.opacity) vars[`--op-${s}`] = p.opacity;
+    if (p.backgroundColor) vars[`--bgc-${s}`] = p.backgroundColor;
     if (p.borderWidth) vars[`--bw-${s}`] = p.borderWidth;
     if (p.borderStyle) vars[`--bs-${s}`] = p.borderStyle;
     if (p.borderColor) vars[`--bc-${s}`] = p.borderColor;

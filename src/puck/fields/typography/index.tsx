@@ -18,6 +18,8 @@ import { Breakpoint } from "@/puck/utils/breakpoints";
 import { cascadeViewportValues } from "@/puck/utils/cascade-viewport-valuets";
 import { InputTextField } from "@/puck/components/text-field";
 import { SelectField } from "@/puck/components/select-field";
+import { ValueColorInput } from "@/puck/components/value-color-input";
+
 import { FONT_SIZE_PRESETS } from "./presets";
 
 type AlignType = "left" | "center" | "right" | "justify";
@@ -29,6 +31,7 @@ export interface TypographyProps {
   letterSpacing?: string;
   lineHeight?: string;
   textAlign?: AlignType;
+  color?: string;
 }
 
 // 2. Default minimi (vuoti)
@@ -164,6 +167,26 @@ export const TypographyField = withAccordionField(
             value={renderValues.textAlign ?? "left"}
             onChange={(val: AlignType) => update({ textAlign: val })}
             items={alignments}
+          />
+        </div>
+
+        {/* --- COLOR */}
+        <div
+          key={`container-text-color`}
+          className="flex flex-col gap-y-1 col-span-2"
+        >
+          <PropHeader
+            key={`prop-text-color`}
+            name="color"
+            label="Color"
+            isModified={currentValues.color !== undefined}
+            onReset={() => resetProp("color")}
+          />
+          <ValueColorInput
+            name="color"
+            placeholder="currentColor"
+            value={renderValues.color ?? ""}
+            onChange={(newVal) => update({ color: newVal || undefined })}
           />
         </div>
       </div>

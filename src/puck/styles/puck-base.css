@@ -25,7 +25,7 @@
   --left-d: initial;
   --right-d: initial;
 
-  width: var(--w-d)!important;
+  width: var(--w-d) !important;
   height: var(--h-d);
   max-width: var(--mw-d);
   min-height: var(--mh-d);
@@ -52,6 +52,7 @@
   --lh-d: initial;
   --ls-d: initial;
   --ta-d: initial;
+  --tc-d: initial;
 
   font-family: var(--ff-d);
   font-size: var(--fs-d);
@@ -59,6 +60,7 @@
   line-height: var(--lh-d);
   letter-spacing: var(--ls-d);
   text-align: var(--ta-d);
+  color: var(--tc-d);
 }
 
 /* --- 3. GRID --- */
@@ -78,6 +80,7 @@
 /* --- 4. DECORATION --- */
 .puck-deco {
   --op-d: initial;
+  --bgc-d: initial;
   --bw-d: initial;
   --bs-d: initial;
   --bc-d: initial;
@@ -87,6 +90,7 @@
   --rbr-d: initial;
 
   opacity: var(--op-d);
+  background-color: var(--bgc-d) !important;
   border-width: var(--bw-d);
   border-style: var(--bs-d);
   border-color: var(--bc-d);
@@ -119,7 +123,7 @@
     --left-t: initial;
     --right-t: initial;
 
-    width: var(--w-t, var(--w-d))!important;
+    width: var(--w-t, var(--w-d)) !important;
     height: var(--h-t, var(--h-d));
     max-width: var(--mw-t, var(--mw-d));
     min-height: var(--mh-t, var(--mh-d));
@@ -144,6 +148,7 @@
     --lh-t: initial;
     --ls-t: initial;
     --ta-t: initial;
+    --tc-t: initial;
 
     font-family: var(--ff-t, var(--ff-d));
     font-size: var(--fs-t, var(--fs-d));
@@ -151,6 +156,7 @@
     line-height: var(--lh-t, var(--lh-d));
     letter-spacing: var(--ls-t, var(--ls-d));
     text-align: var(--ta-t, var(--ta-d));
+    color: var(--tc-t, var(--tc-d));
   }
   .puck-grid {
     --cols-t: initial;
@@ -165,6 +171,7 @@
   }
   .puck-deco {
     --op-t: initial;
+    --bgc-t: initial;
     --bw-t: initial;
     --bs-t: initial;
     --bc-t: initial;
@@ -174,6 +181,7 @@
     --rbr-t: initial;
 
     opacity: var(--op-t, var(--op-d));
+    background-color: var(--bgc-t, var(--bgc-d));
     border-width: var(--bw-t, var(--bw-d));
     border-style: var(--bs-t, var(--bs-d));
     border-color: var(--bc-t, var(--bc-d));
@@ -205,7 +213,7 @@
     --left-m: initial;
     --right-m: initial;
 
-    width: var(--w-m, var(--w-t, var(--w-d)))!important;
+    width: var(--w-m, var(--w-t, var(--w-d))) !important;
     height: var(--h-m, var(--h-t, var(--h-d)));
     max-width: var(--mw-m, var(--mw-t, var(--mw-d)));
     min-height: var(--mh-m, var(--mh-t, var(--mh-d)));
@@ -230,6 +238,7 @@
     --lh-m: initial;
     --ls-m: initial;
     --ta-m: initial;
+    --tc-m: initial;
 
     font-family: var(--ff-m, var(--ff-t, var(--ff-d)));
     font-size: var(--fs-m, var(--fs-t, var(--fs-d)));
@@ -237,6 +246,7 @@
     line-height: var(--lh-m, var(--lh-t, var(--lh-d)));
     letter-spacing: var(--ls-m, var(--ls-t, var(--ls-d)));
     text-align: var(--ta-m, var(--ta-t, var(--ta-d)));
+    color: var(--tc-m, var(--tc-t, var(--tc-d)));
   }
   .puck-grid {
     --cols-m: initial;
@@ -251,6 +261,7 @@
   }
   .puck-deco {
     --op-m: initial;
+    --bgc-m: initial;
     --bw-m: initial;
     --bs-m: initial;
     --bc-m: initial;
@@ -260,6 +271,7 @@
     --rbr-m: initial;
 
     opacity: var(--op-m, var(--op-t, var(--op-d)));
+    background-color: var(--bgc-m, var(--bgc-t, var(--bgc-d)));
     border-width: var(--bw-m, var(--bw-t, var(--bw-d)));
     border-style: var(--bs-m, var(--bs-t, var(--bs-d)));
     border-color: var(--bc-m, var(--bc-t, var(--bc-d)));

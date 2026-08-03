@@ -12,6 +12,7 @@ import { SeparatorBlock, type SeparatorBlockProps } from "./blocks/Separator";
 import { ImageBlock, type ImageBlockProps } from "./blocks/Image";
 import { FormBlock, type FormBlockProps } from "./blocks/Form";
 import { Heading, type HeadingProps } from "./blocks/Heading";
+import { LinkBlock, type LinkBlockProps } from "./blocks/Link";
 
 import { viewports } from "./utils/viewports";
 import { IconBlock, IconBlockProps } from "./blocks/Icon";
@@ -27,6 +28,7 @@ export type SavedComponents = {
     form: FormProps;
   };
   Heading: HeadingProps;
+  Link: LinkBlockProps;
 };
 
 export type HydratedComponents = {
@@ -36,6 +38,7 @@ export type HydratedComponents = {
   Image: ImageBlockProps;
   Form: FormBlockProps;
   Heading: HeadingProps;
+  Link: LinkBlockProps;
 };
 
 // Create Puck component config
@@ -47,7 +50,7 @@ export const config: Config<HydratedComponents, RootProps> = {
     },
     basic: {
       title: "Basic",
-      components: ["Icon", "Image", "Form", "Separator"],
+      components: ["Link", "Icon", "Image", "Form", "Separator"],
     },
     typography: {
       title: "Typography",
@@ -64,6 +67,7 @@ export const config: Config<HydratedComponents, RootProps> = {
     Image: ImageBlock,
     Form: FormBlock,
     Heading,
+    Link: LinkBlock,
   },
   root: RootEditor,
 };
