@@ -24,6 +24,7 @@ import { ImageBlockUi } from "./blocks/Image/ui/image";
 import { FormBlockUi } from "./blocks/Form/ui/form";
 import { SeparatorBlockUi } from "./blocks/Separator/ui/separator";
 import { IconBlockUi } from "./blocks/Icon/ui/icon";
+import { LinkBlockUi } from "./blocks/Link/ui/link";
 
 const RootRender: RootConfig<RootProps> = {
   fields: {
@@ -111,6 +112,17 @@ const config: Config<any, RootProps> = {
         };
 
         return <HeadingBlockUi text={text} styleVars={styleVars} />;
+      },
+    },
+    Link: {
+      render: ({ link, dimension, typography, decoration }) => {
+        const styleVars = {
+          ...getDimensionVars(dimension),
+          ...getTypographyVars(typography),
+          ...getDecorationVars(decoration),
+        };
+
+        return <LinkBlockUi link={link} styleVars={styleVars} />;
       },
     },
   },

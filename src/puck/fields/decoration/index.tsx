@@ -16,6 +16,7 @@ import { SelectField } from "@/puck/components/select-field";
 
 export interface DecorationProps {
   opacity?: string;
+  backgroundColor?: string;
   borderWidth?: string;
   borderStyle?: string;
   borderColor?: string;
@@ -118,7 +119,7 @@ export const DecorationField = withAccordionField(
     return (
       <>
         {/* --- OPACITY --- */}
-        <div className="grid grid-cols-1 gap-y-4 p-1">
+        <div className="grid grid-cols-1 gap-y-4">
           {opacityFields.map((field) => (
             <InputTextField
               key={field.key}
@@ -132,6 +133,28 @@ export const DecorationField = withAccordionField(
               update={update}
             />
           ))}
+        </div>
+
+        {/* --- BACKGROUND COLOR */}
+        <div
+          key={`container-background-color`}
+          className="flex flex-col gap-y-1 mt-4"
+        >
+          <PropHeader
+            key={`prop-background-color`}
+            name="backgroundColor"
+            label="Background Color"
+            isModified={currentValues.backgroundColor !== undefined}
+            onReset={() => resetProp("backgroundColor")}
+          />
+          <ValueColorInput
+            name="backgroundColor"
+            placeholder="transparent"
+            value={renderValues.backgroundColor ?? ""}
+            onChange={(newVal) =>
+              update({ backgroundColor: newVal || undefined })
+            }
+          />
         </div>
 
         {/* --- BORDER --- */}
