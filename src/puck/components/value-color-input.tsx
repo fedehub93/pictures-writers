@@ -60,7 +60,7 @@ export const ValueColorInput = ({
       <Input
         name={name}
         type="text"
-        className="flex h-8 w-fullpx-3 py-1 text-xs placeholder:text-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex h-8 w-full px-3 py-1 text-xs placeholder:text-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         value={value}
         onChange={handleInputChange}
         placeholder={placeholder}

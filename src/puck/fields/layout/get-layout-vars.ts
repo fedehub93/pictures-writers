@@ -42,7 +42,7 @@ export const getLayoutVars = (data?: Responsive<LayoutProps>) => {
     if (p.display !== undefined) vars[`--disp-${s}`] = String(p.display);
     if (p.flexDirection !== undefined)
       vars[`--fd-${s}`] = String(p.flexDirection);
-    if (p.flexWrap !== undefined) vars[`--fw-${s}`] = String(p.flexWrap);
+    if (p.flexWrap !== undefined) vars[`--fwrap-${s}`] = String(p.flexWrap);
     if (p.justifyContent !== undefined)
       vars[`--jc-${s}`] = String(p.justifyContent);
     if (p.alignItems !== undefined) vars[`--ai-${s}`] = String(p.alignItems);
@@ -57,15 +57,6 @@ export const getLayoutVars = (data?: Responsive<LayoutProps>) => {
       vars[`--gtc-${s}`] = formatGridTrack(p.gridTemplateColumns);
     if (p.gridTemplateRows !== undefined)
       vars[`--gtr-${s}`] = formatGridTrack(p.gridTemplateRows);
-
-    // if (p.gridColumn !== undefined) vars[`--gc-${s}`] = String(p.gridColumn);
-    // if (p.gridRow !== undefined) vars[`--gr-${s}`] = String(p.gridRow);
-
-    // Convertiti a stringa nel caso vengano passati come numeri
-    // if (p.order !== undefined) vars[`--ord-${s}`] = String(p.order);
-    // if (p.flexGrow !== undefined) vars[`--fg-${s}`] = String(p.flexGrow);
-    // if (p.flexShrink !== undefined) vars[`--fs-${s}`] = String(p.flexShrink);
-    // if (p.flexBasis !== undefined) vars[`--fb-${s}`] = String(p.flexBasis);
   }
 
   return vars;
