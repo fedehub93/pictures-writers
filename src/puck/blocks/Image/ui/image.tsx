@@ -20,16 +20,18 @@ export const ImageBlockUi = ({
   };
 
   const ImageContent = (
-    <img
-      src={imgData.src}
-      alt={imgData.alt}
-      loading={imgData.loading as "lazy" | "eager"}
-      className={cn("puck-dim puck-deco max-w-full")}
-      style={{
-        objectFit: imgData.objectFit as any,
-        ...styleVars,
-      }}
-    />
+    <div className="w-full">
+      <img
+        src={imgData.src}
+        alt={imgData.alt}
+        loading={imgData.loading as "lazy" | "eager"}
+        className={cn("puck-dim puck-deco")}
+        style={{
+          objectFit: imgData.objectFit as any,
+          ...styleVars,
+        }}
+      />
+    </div>
   );
 
   return (

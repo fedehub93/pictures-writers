@@ -10,15 +10,18 @@ import "@puckeditor/core/puck.css";
 import {
   getDecorationVars,
   getDimensionVars,
-  getGridVars,
   getTypographyVars,
 } from "./utils/get-style-vars";
+import { getLayoutVars } from "./fields/layout/get-layout-vars";
 
 import { type RootProps } from "./root";
 
 import { RootBlockUi } from "./root/ui/root";
 
 import { HeadingBlockUi } from "./blocks/Heading/ui/heading";
+
+import { ContainerBlockUi } from "./blocks/Container/ui/container-block-ui";
+import { FlexBlockUi } from "./blocks/Flex/ui/flex-block-ui";
 import { GridBlockUi } from "./blocks/Grid/ui/grid";
 import { ImageBlockUi } from "./blocks/Image/ui/image";
 import { FormBlockUi } from "./blocks/Form/ui/form";
@@ -41,15 +44,47 @@ const RootRender: RootConfig<RootProps> = {
 
 const config: Config<any, RootProps> = {
   components: {
+    Container: {
+      fields: {
+        items: {
+          type: "slot",
+        },
+      },
+      render: ({ layout, dimension, typography, decoration, items: Items }) => {
+        const styleVars = {
+          ...getLayoutVars(layout),
+          ...getDimensionVars(dimension),
+          ...getTypographyVars(typography),
+          ...getDecorationVars(decoration),
+        };
+        return <ContainerBlockUi Items={Items} styleVars={styleVars} />;
+      },
+    },
+    Flex: {
+      fields: {
+        items: {
+          type: "slot",
+        },
+      },
+      render: ({ layout, dimension, typography, decoration, items: Items }) => {
+        const styleVars = {
+          ...getLayoutVars(layout),
+          ...getDimensionVars(dimension),
+          ...getTypographyVars(typography),
+          ...getDecorationVars(decoration),
+        };
+        return <FlexBlockUi Items={Items} styleVars={styleVars} />;
+      },
+    },
     Grid: {
       fields: {
         items: {
           type: "slot",
         },
       },
-      render: ({ grid, dimension, typography, decoration, items: Items }) => {
+      render: ({ layout, dimension, typography, decoration, items: Items }) => {
         const styleVars = {
-          ...getGridVars(grid),
+          ...getLayoutVars(layout),
           ...getDimensionVars(dimension),
           ...getTypographyVars(typography),
           ...getDecorationVars(decoration),

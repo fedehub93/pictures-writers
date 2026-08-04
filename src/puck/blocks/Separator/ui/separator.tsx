@@ -5,5 +5,9 @@ export const SeparatorBlockUi = ({
 }: {
   styleVars: Record<string, string>;
 }) => {
-  return <Separator style={styleVars} className="puck-dim" />;
+  return (
+    <div className="w-full min-w-full">
+      <Separator style={styleVars} className="puck-dim" />
+    </div>
+  );
 };

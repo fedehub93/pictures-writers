@@ -3,7 +3,37 @@
    Questo sistema impedisce ai figli di ereditare i margini/padding dei padri.
 */
 
-/* --- 1. DIMENSION & LAYOUT --- */
+/* --- 0. LAYOUT --- */
+.puck-layout {
+  /* Reset locale Desktop */
+  --disp-d: initial;
+  --fd-d: initial;
+  --fwrap-d: initial;
+  --jc-d: initial;
+  --ai-d: initial;
+  --ac-d: initial;
+  --ji-d: initial;
+  --as-d: initial;
+  --rgap-d: initial;
+  --cgap-d: initial;
+  --gtc-d: initial;
+  --gtr-d: initial;
+
+  display: var(--disp-d);
+  flex-direction: var(--fd-d);
+  flex-wrap: var(--fwrap-d);
+  justify-content: var(--jc-d);
+  align-items: var(--ai-d);
+  align-content: var(--ac-d);
+  justify-items: var(--ji-d);
+  align-self: var(--as-d);
+  row-gap: var(--rgap-d);
+  column-gap: var(--cgap-d);
+  grid-template-columns: var(--gtc-d);
+  grid-template-rows: var(--gtr-d);
+}
+
+/* --- 1. DIMENSION --- */
 .puck-dim {
   /* Reset locale: se la variabile non è definita inline sull'elemento, 
      viene resettata e non eredita quella del genitore */
@@ -26,7 +56,7 @@
   --right-d: initial;
 
   width: var(--w-d) !important;
-  height: var(--h-d);
+  height: var(--h-d) !important;
   max-width: var(--mw-d);
   min-height: var(--mh-d);
   aspect-ratio: var(--ratio-d);
@@ -63,20 +93,6 @@
   color: var(--tc-d);
 }
 
-/* --- 3. GRID --- */
-.puck-grid {
-  --cols-d: initial;
-  --gap-d: initial;
-  --ai-d: initial;
-  --ji-d: initial;
-
-  display: grid;
-  grid-template-columns: var(--cols-d);
-  gap: var(--gap-d);
-  align-items: var(--ai-d);
-  justify-items: var(--ji-d);
-}
-
 /* --- 4. DECORATION --- */
 .puck-deco {
   --op-d: initial;
@@ -103,6 +119,35 @@
 /* --- RESPONSIVE LOGIC (Desktop-First) --- */
 
 @media (max-width: 1024px) {
+  .puck-layout {
+    /* Reset locale Tablet */
+    --disp-t: initial;
+    --fd-t: initial;
+    --fwrap-t: initial;
+    --jc-t: initial;
+    --ai-t: initial;
+    --ac-t: initial;
+    --ji-t: initial;
+    --as-t: initial;
+    --rgap-t: initial;
+    --cgap-t: initial;
+    --gtc-t: initial;
+    --gtr-t: initial;
+
+    display: var(--disp-t, var(--disp-d));
+    flex-direction: var(--fd-t, var(--fd-d));
+    flex-wrap: var(--fwrap-t, var(--fwrap-d));
+    justify-content: var(--jc-t, var(--jc-d));
+    align-items: var(--ai-t, var(--ai-d));
+    align-content: var(--ac-t, var(--ac-d));
+    justify-items: var(--ji-t, var(--ji-d));
+    align-self: var(--as-t, var(--as-d));
+    row-gap: var(--rgap-t, var(--rgap-d));
+    column-gap: var(--cgap-t, var(--cgap-d));
+    grid-template-columns: var(--gtc-t, var(--gtc-d));
+    grid-template-rows: var(--gtr-t, var(--gtr-d));
+  }
+
   .puck-dim {
     /* Reset variabili Tablet per evitare eredità */
     --w-t: initial;
@@ -124,7 +169,7 @@
     --right-t: initial;
 
     width: var(--w-t, var(--w-d)) !important;
-    height: var(--h-t, var(--h-d));
+    height: var(--h-t, var(--h-d)) !important;
     max-width: var(--mw-t, var(--mw-d));
     min-height: var(--mh-t, var(--mh-d));
     aspect-ratio: var(--ratio-t, var(--ratio-d));
@@ -158,17 +203,7 @@
     text-align: var(--ta-t, var(--ta-d));
     color: var(--tc-t, var(--tc-d));
   }
-  .puck-grid {
-    --cols-t: initial;
-    --gap-t: initial;
-    --ai-t: initial;
-    --ji-t: initial;
 
-    grid-template-columns: var(--cols-t, var(--cols-d));
-    gap: var(--gap-t, var(--gap-d));
-    align-items: var(--ai-t, var(--ai-d));
-    justify-items: var(--ji-t, var(--ji-d));
-  }
   .puck-deco {
     --op-t: initial;
     --bgc-t: initial;
@@ -193,6 +228,35 @@
 }
 
 @media (max-width: 767px) {
+  .puck-layout {
+    /* Reset locale Mobile */
+    --disp-m: initial;
+    --fd-m: initial;
+    --fwrap-m: initial;
+    --jc-m: initial;
+    --ai-m: initial;
+    --ac-m: initial;
+    --ji-m: initial;
+    --as-m: initial;
+    --rgap-m: initial;
+    --cgap-m: initial;
+    --gtc-m: initial;
+    --gtr-m: initial;
+
+    display: var(--disp-m, var(--disp-t, var(--disp-d)));
+    flex-direction: var(--fd-m, var(--fd-t, var(--fd-d)));
+    flex-wrap: var(--fwrap-m, var(--fwrap-t, var(--fwrap-d)));
+    justify-content: var(--jc-m, var(--jc-t, var(--jc-d)));
+    align-items: var(--ai-m, var(--ai-t, var(--ai-d)));
+    align-content: var(--ac-m, var(--ac-t, var(--ac-d)));
+    justify-items: var(--ji-m, var(--ji-t, var(--ji-d)));
+    align-self: var(--as-m, var(--as-t, var(--as-d)));
+    row-gap: var(--rgap-m, var(--rgap-t, var(--rgap-d)));
+    column-gap: var(--cgap-m, var(--cgap-t, var(--cgap-d)));
+    grid-template-columns: var(--gtc-m, var(--gtc-t, var(--gtc-d)));
+    grid-template-rows: var(--gtr-m, var(--gtr-t, var(--gtr-d)));
+  }
+
   .puck-dim {
     /* Reset variabili Mobile */
     --w-m: initial;
@@ -214,7 +278,7 @@
     --right-m: initial;
 
     width: var(--w-m, var(--w-t, var(--w-d))) !important;
-    height: var(--h-m, var(--h-t, var(--h-d)));
+    height: var(--h-m, var(--h-t, var(--h-d))) !important;
     max-width: var(--mw-m, var(--mw-t, var(--mw-d)));
     min-height: var(--mh-m, var(--mh-t, var(--mh-d)));
     aspect-ratio: var(--ratio-m, var(--ratio-t, var(--ratio-d)));
@@ -248,17 +312,7 @@
     text-align: var(--ta-m, var(--ta-t, var(--ta-d)));
     color: var(--tc-m, var(--tc-t, var(--tc-d)));
   }
-  .puck-grid {
-    --cols-m: initial;
-    --gap-m: initial;
-    --ai-m: initial;
-    --ji-m: initial;
 
-    grid-template-columns: var(--cols-m, var(--cols-t, var(--cols-d)));
-    gap: var(--gap-m, var(--gap-t, var(--gap-d)));
-    align-items: var(--ai-m, var(--ai-t, var(--ai-d)));
-    justify-items: var(--ji-m, var(--ji-t, var(--ji-d)));
-  }
   .puck-deco {
     --op-m: initial;
     --bgc-m: initial;

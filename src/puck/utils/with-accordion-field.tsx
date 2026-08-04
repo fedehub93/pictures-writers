@@ -1,14 +1,14 @@
 import { ReactNode } from "react";
 
 import { CustomField, Field } from "@puckeditor/core";
+
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/shared/ui/accordion"; // Assicurati del percorso corretto
+} from "@/shared/ui/accordion";
 
-// Estraiamo il tipo delle props che Puck passa alla funzione render di un custom field
 type CustomFieldRenderProps = Parameters<
   NonNullable<CustomField<any>["render"]>
 >[0];
@@ -17,7 +17,7 @@ export function withAccordionField(
   label: string,
   labelIcon: ReactNode | undefined,
   renderContent: (props: CustomFieldRenderProps) => ReactNode,
-  defaultOpen: boolean = false, // Puoi decidere se aprirlo di default o no
+  defaultOpen: boolean = false,
 ): Field {
   const accordionValue = label.toLowerCase().replace(/\s+/g, "-");
 
@@ -38,7 +38,6 @@ export function withAccordionField(
             </div>
           </AccordionTrigger>
           <AccordionContent className="pt-4 pb-2">
-            {/* Qui viene iniettato il contenuto specifico del field! */}
             {renderContent(props)}
           </AccordionContent>
         </AccordionItem>

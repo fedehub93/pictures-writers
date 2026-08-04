@@ -13,6 +13,8 @@ export type InputTextFieldProps<T> = {
   renderValues: T;
   resetProp: (key: Extract<keyof T, string>) => void;
   update: (updates: Partial<T>) => void;
+  units?: string[];
+  defaultUnit?: string;
   presets?: ValueUnitPreset[];
 };
 
@@ -22,6 +24,8 @@ export const InputTextField = <T,>({
   label,
   placeholder,
   type = "text",
+  units,
+  defaultUnit,
   currentValues,
   renderValues,
   resetProp,
@@ -49,6 +53,8 @@ export const InputTextField = <T,>({
             update({ [name]: newVal || undefined } as Partial<T>)
           }
           placeholder={placeholder}
+          units={units}
+          defaultUnit={defaultUnit}
           presets={presets}
         />
       ) : (

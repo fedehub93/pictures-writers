@@ -2,7 +2,7 @@ import { SlotComponent } from "@puckeditor/core";
 
 import { cn } from "@/shared/lib/utils";
 
-export const GridBlockUi = ({
+export const ContainerBlockUi = ({
   Items,
   styleVars,
   className,
@@ -12,14 +12,12 @@ export const GridBlockUi = ({
   className?: string;
 }) => {
   return (
-    <div>
-      <Items
-        className={cn(
-          "puck-layout puck-dim puck-typo puck-deco",
-          className ? className : "",
-        )}
-        style={styleVars}
-      />
-    </div>
+    <Items
+      className={cn(
+        "puck-layout puck-dim puck-typo puck-deco",
+        className ? className : "",
+      )}
+      style={styleVars}
+    />
   );
 };

@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { EyeIcon, EyeOffIcon, Loader2Icon, SaveIcon } from "lucide-react";
+import { createUsePuck, Data } from "@puckeditor/core";
 
 import { ContentStatus } from "@/generated/prisma";
 
 import { Button } from "@/shared/ui/button";
-import { createUsePuck, Data } from "@puckeditor/core";
 
 import { config, HydratedComponents } from "./config";
 
