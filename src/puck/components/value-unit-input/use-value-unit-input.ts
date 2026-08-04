@@ -9,6 +9,7 @@ export interface UseValueUnitInputOptions {
   value?: string;
   onChange: (val: string) => void;
   units: string[];
+  defaultUnit?: string;
   allowedKeywords: string[];
 }
 
@@ -16,19 +17,20 @@ export function useValueUnitInput({
   value = "",
   onChange,
   units,
+  defaultUnit = DEFAULT_UNIT,
   allowedKeywords,
 }: UseValueUnitInputOptions) {
   const [textInput, setTextInput] = useState(
-    () => parseCSSValue(value, units, allowedKeywords, DEFAULT_UNIT).num,
+    () => parseCSSValue(value, units, allowedKeywords, defaultUnit).num,
   );
   const [selectedUnit, setSelectedUnit] = useState(
-    () => parseCSSValue(value, units, allowedKeywords, DEFAULT_UNIT).unit,
+    () => parseCSSValue(value, units, allowedKeywords, defaultUnit).unit,
   );
 
   const [prevPropValue, setPrevPropValue] = useState(value);
 
   if (value !== prevPropValue) {
-    const parsed = parseCSSValue(value, units, allowedKeywords, DEFAULT_UNIT);
+    const parsed = parseCSSValue(value, units, allowedKeywords, defaultUnit);
     setTextInput(parsed.num);
     setSelectedUnit(parsed.unit);
     setPrevPropValue(value);
@@ -40,7 +42,7 @@ export function useValueUnitInput({
 
   const handleCommit = () => {
     const currentFallback =
-      selectedUnit === "-" || !selectedUnit ? DEFAULT_UNIT : selectedUnit;
+      selectedUnit === "-" || !selectedUnit ? defaultUnit : selectedUnit;
     const parsed = parseCSSValue(
       textInput,
       units,
@@ -57,7 +59,7 @@ export function useValueUnitInput({
         value,
         units,
         allowedKeywords,
-        DEFAULT_UNIT,
+        defaultUnit,
       );
       setTextInput(fallback.num);
       setSelectedUnit(fallback.unit);
@@ -83,7 +85,7 @@ export function useValueUnitInput({
   ) => {
     const nextNumStr = calculateStepValue(textInput, direction, modifiers);
     const finalUnit =
-      selectedUnit === "-" || !selectedUnit ? DEFAULT_UNIT : selectedUnit;
+      selectedUnit === "-" || !selectedUnit ? defaultUnit : selectedUnit;
 
     setTextInput(nextNumStr);
     setSelectedUnit(finalUnit);

@@ -16,10 +16,10 @@ import {
   getDimensionVars,
   getTypographyVars,
 } from "@/puck/utils/get-style-vars";
-import { GridBlockUi } from "./ui/grid";
 
-// 1. Aggiorniamo le prop per utilizzare il wrapper Responsive
-export type GridBlockProps = {
+import { FlexBlockUi } from "./ui/flex-block-ui";
+
+export type FlexBlockProps = {
   layout?: Responsive<LayoutProps>;
   dimension?: Responsive<DimensionProps>;
   typography?: Responsive<TypographyProps>;
@@ -27,7 +27,7 @@ export type GridBlockProps = {
   items: Slot;
 };
 
-export const GridBlock: ComponentConfig<GridBlockProps> = {
+export const FlexBlock: ComponentConfig<FlexBlockProps> = {
   fields: {
     layout: LayoutField,
     dimension: DimensionField,
@@ -41,7 +41,7 @@ export const GridBlock: ComponentConfig<GridBlockProps> = {
     items: [],
     layout: {
       desktop: {
-        display: "grid",
+        display: "flex",
       },
     },
   },
@@ -53,7 +53,7 @@ export const GridBlock: ComponentConfig<GridBlockProps> = {
       ...getDecorationVars(decoration),
     };
     return (
-      <GridBlockUi
+      <FlexBlockUi
         Items={Items}
         styleVars={styleVars}
         className="[&>[data-puck-component^='Separator']]:self-stretch [&>[data-puck-component]]:flex-1"

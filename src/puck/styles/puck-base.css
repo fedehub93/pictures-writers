@@ -3,7 +3,49 @@
    Questo sistema impedisce ai figli di ereditare i margini/padding dei padri.
 */
 
-/* --- 1. DIMENSION & LAYOUT --- */
+/* --- 0. LAYOUT --- */
+.puck-layout {
+  /* Reset locale Desktop */
+  --disp-d: initial;
+  --fd-d: initial;
+  --fw-d: initial;
+  --jc-d: initial;
+  --ai-d: initial;
+  --ac-d: initial;
+  --ji-d: initial;
+  --as-d: initial;
+  --rgap-d: initial;
+  --cgap-d: initial;
+  --gtc-d: initial;
+  --gtr-d: initial;
+  /* --gc-d: initial;
+  --gr-d: initial;
+  --ord-d: initial;
+  --fg-d: initial;
+  --fs-d: initial;
+  --fb-d: initial; */
+
+  display: var(--disp-d);
+  flex-direction: var(--fd-d);
+  flex-wrap: var(--fw-d);
+  justify-content: var(--jc-d);
+  align-items: var(--ai-d);
+  align-content: var(--ac-d);
+  justify-items: var(--ji-d);
+  align-self: var(--as-d);
+  row-gap: var(--rgap-d);
+  column-gap: var(--cgap-d);
+  grid-template-columns: var(--gtc-d);
+  grid-template-rows: var(--gtr-d);
+  /* grid-column: var(--gc-d);
+  grid-row: var(--gr-d);
+  order: var(--ord-d);
+  flex-grow: var(--fg-d);
+  flex-shrink: var(--fs-d);
+  flex-basis: var(--fb-d); */
+}
+
+/* --- 1. DIMENSION --- */
 .puck-dim {
   /* Reset locale: se la variabile non è definita inline sull'elemento, 
      viene resettata e non eredita quella del genitore */
@@ -26,7 +68,7 @@
   --right-d: initial;
 
   width: var(--w-d) !important;
-  height: var(--h-d);
+  height: var(--h-d) !important;
   max-width: var(--mw-d);
   min-height: var(--mh-d);
   aspect-ratio: var(--ratio-d);
@@ -65,7 +107,7 @@
 
 /* --- 3. GRID --- */
 .puck-grid {
-  --cols-d: initial;
+  /* --cols-d: initial;
   --gap-d: initial;
   --ai-d: initial;
   --ji-d: initial;
@@ -74,7 +116,7 @@
   grid-template-columns: var(--cols-d);
   gap: var(--gap-d);
   align-items: var(--ai-d);
-  justify-items: var(--ji-d);
+  justify-items: var(--ji-d); */
 }
 
 /* --- 4. DECORATION --- */
@@ -103,6 +145,47 @@
 /* --- RESPONSIVE LOGIC (Desktop-First) --- */
 
 @media (max-width: 1024px) {
+  .puck-layout {
+    /* Reset locale Tablet */
+    --disp-t: initial;
+    --fd-t: initial;
+    --fw-t: initial;
+    --jc-t: initial;
+    --ai-t: initial;
+    --ac-t: initial;
+    --ji-t: initial;
+    --as-t: initial;
+    --rgap-t: initial;
+    --cgap-t: initial;
+    --gtc-t: initial;
+    --gtr-t: initial;
+    /* --gc-t: initial;
+    --gr-t: initial;
+    --ord-t: initial;
+    --fg-t: initial;
+    --fs-t: initial;
+    --fb-t: initial; */
+
+    display: var(--disp-t, var(--disp-d));
+    flex-direction: var(--fd-t, var(--fd-d));
+    flex-wrap: var(--fw-t, var(--fw-d));
+    justify-content: var(--jc-t, var(--jc-d));
+    align-items: var(--ai-t, var(--ai-d));
+    align-content: var(--ac-t, var(--ac-d));
+    justify-items: var(--ji-t, var(--ji-d));
+    align-self: var(--as-t, var(--as-d));
+    row-gap: var(--rgap-t, var(--rgap-d));
+    column-gap: var(--cgap-t, var(--cgap-d));
+    grid-template-columns: var(--gtc-t, var(--gtc-d));
+    grid-template-rows: var(--gtr-t, var(--gtr-d));
+    /* grid-column: var(--gc-t, var(--gc-d));
+    grid-row: var(--gr-t, var(--gr-d));
+    order: var(--ord-t, var(--ord-d));
+    flex-grow: var(--fg-t, var(--fg-d));
+    flex-shrink: var(--fs-t, var(--fs-d));
+    flex-basis: var(--fb-t, var(--fb-d)); */
+  }
+
   .puck-dim {
     /* Reset variabili Tablet per evitare eredità */
     --w-t: initial;
@@ -159,7 +242,7 @@
     color: var(--tc-t, var(--tc-d));
   }
   .puck-grid {
-    --cols-t: initial;
+    /* --cols-t: initial;
     --gap-t: initial;
     --ai-t: initial;
     --ji-t: initial;
@@ -167,7 +250,7 @@
     grid-template-columns: var(--cols-t, var(--cols-d));
     gap: var(--gap-t, var(--gap-d));
     align-items: var(--ai-t, var(--ai-d));
-    justify-items: var(--ji-t, var(--ji-d));
+    justify-items: var(--ji-t, var(--ji-d)); */
   }
   .puck-deco {
     --op-t: initial;
@@ -193,6 +276,47 @@
 }
 
 @media (max-width: 767px) {
+  .puck-layout {
+    /* Reset locale Mobile */
+    --disp-m: initial;
+    --fd-m: initial;
+    --fw-m: initial;
+    --jc-m: initial;
+    --ai-m: initial;
+    --ac-m: initial;
+    --ji-m: initial;
+    --as-m: initial;
+    --rgap-m: initial;
+    --cgap-m: initial;
+    --gtc-m: initial;
+    --gtr-m: initial;
+    /* --gc-m: initial;
+    --gr-m: initial;
+    --ord-m: initial;
+    --fg-m: initial;
+    --fs-m: initial;
+    --fb-m: initial; */
+
+    display: var(--disp-m, var(--disp-t, var(--disp-d)));
+    flex-direction: var(--fd-m, var(--fd-t, var(--fd-d)));
+    flex-wrap: var(--fw-m, var(--fw-t, var(--fw-d)));
+    justify-content: var(--jc-m, var(--jc-t, var(--jc-d)));
+    align-items: var(--ai-m, var(--ai-t, var(--ai-d)));
+    align-content: var(--ac-m, var(--ac-t, var(--ac-d)));
+    justify-items: var(--ji-m, var(--ji-t, var(--ji-d)));
+    align-self: var(--as-m, var(--as-t, var(--as-d)));
+    row-gap: var(--rgap-m, var(--rgap-t, var(--rgap-d)));
+    column-gap: var(--cgap-m, var(--cgap-t, var(--cgap-d)));
+    grid-template-columns: var(--gtc-m, var(--gtc-t, var(--gtc-d)));
+    grid-template-rows: var(--gtr-m, var(--gtr-t, var(--gtr-d)));
+    /* grid-column: var(--gc-m, var(--gc-t, var(--gc-d)));
+    grid-row: var(--gr-m, var(--gr-t, var(--gr-d)));
+    order: var(--ord-m, var(--ord-t, var(--ord-d)));
+    flex-grow: var(--fg-m, var(--fg-t, var(--fg-d)));
+    flex-shrink: var(--fs-m, var(--fs-t, var(--fs-d)));
+    flex-basis: var(--fb-m, var(--fb-t, var(--fb-d))); */
+  }
+
   .puck-dim {
     /* Reset variabili Mobile */
     --w-m: initial;
@@ -249,7 +373,7 @@
     color: var(--tc-m, var(--tc-t, var(--tc-d)));
   }
   .puck-grid {
-    --cols-m: initial;
+    /* --cols-m: initial;
     --gap-m: initial;
     --ai-m: initial;
     --ji-m: initial;
@@ -257,7 +381,7 @@
     grid-template-columns: var(--cols-m, var(--cols-t, var(--cols-d)));
     gap: var(--gap-m, var(--gap-t, var(--gap-d)));
     align-items: var(--ai-m, var(--ai-t, var(--ai-d)));
-    justify-items: var(--ji-m, var(--ji-t, var(--ji-d)));
+    justify-items: var(--ji-m, var(--ji-t, var(--ji-d))); */
   }
   .puck-deco {
     --op-m: initial;

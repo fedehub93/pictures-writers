@@ -72,7 +72,6 @@ export const TypographyField = withAccordionField(
     const state = value || {};
     const currentValues: Partial<TypographyProps> = state[viewportKey] || {};
 
-    // Il cascade recupera i valori mancanti dai breakpoint superiori
     const renderValues = cascadeViewportValues(
       viewportKey,
       state,

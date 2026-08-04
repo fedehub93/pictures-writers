@@ -27,6 +27,7 @@ export interface ValueUnitInputProps {
   value?: string;
   onChange: (val: string) => void;
   units?: string[];
+  defaultUnit?: string;
   allowedKeywords?: string[];
   placeholder?: string;
   presets?: ValueUnitPreset[];
@@ -40,6 +41,7 @@ export function ValueUnitInput({
   value = "",
   onChange,
   units = DEFAULT_UNITS,
+  defaultUnit,
   allowedKeywords = DEFAULT_KEYWORDS,
   placeholder,
   presets,
@@ -59,6 +61,7 @@ export function ValueUnitInput({
     value,
     onChange,
     units,
+    defaultUnit,
     allowedKeywords,
   });
 

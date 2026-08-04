@@ -117,7 +117,7 @@ export const DecorationField = withAccordionField(
     };
 
     return (
-      <>
+      <div className="flex flex-col space-y-2 p-1">
         {/* --- OPACITY --- */}
         <div className="grid grid-cols-1 gap-y-4">
           {opacityFields.map((field) => (
@@ -227,7 +227,7 @@ export const DecorationField = withAccordionField(
             ))}
           </div>
         </div>
-      </>
+      </div>
     );
   },
 );

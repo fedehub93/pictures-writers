@@ -1,14 +1,15 @@
-import type { LucideIcon } from "lucide-react";
+import type { LucideProps } from "lucide-react";
 
 import { cn } from "@/shared/lib/utils";
 
 import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
+import { ComponentType } from "react";
 
 interface SegmentedControlProps<T extends string> {
   name: string;
   value: T;
   onChange: (val: T) => void;
-  items: { value: T; icon: LucideIcon; title: string }[];
+  items: { value: T; icon?: ComponentType<LucideProps>; title: string }[];
 }
 
 export function SegmentedControl<T extends string>({
@@ -39,7 +40,8 @@ export function SegmentedControl<T extends string>({
               "data-[state=on]:bg-accent data-[state=on]:border-x text-foreground",
           )}
         >
-          <item.icon className="size-4" strokeWidth={2.5} />
+          {item.icon && <item.icon className="size-4" strokeWidth={2.5} />}
+          {!item.icon && <span>{item.title}</span>}
         </ToggleGroupItem>
       ))}
     </ToggleGroup>

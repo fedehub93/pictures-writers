@@ -39,7 +39,7 @@ export const LinkBlock: ComponentConfig<LinkBlockProps> = {
     },
     typography: {
       desktop: {
-        fontSize: "700",
+        fontWeight: "700",
         color: "var(--primary)",
       },
     },

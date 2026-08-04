@@ -7,6 +7,8 @@ import type { PageUpdateValues } from "@/modules/pages/schemas";
 
 import { RootEditor, type RootProps } from "./root";
 
+import { ContainerBlock, ContainerBlockProps } from "./blocks/Container";
+import { FlexBlock, type FlexBlockProps } from "./blocks/Flex";
 import { GridBlock, type GridBlockProps } from "./blocks/Grid";
 import { SeparatorBlock, type SeparatorBlockProps } from "./blocks/Separator";
 import { ImageBlock, type ImageBlockProps } from "./blocks/Image";
@@ -20,6 +22,8 @@ import type { FormProps } from "./fields/form";
 import { HeaderActions } from "./header-actions";
 
 export type SavedComponents = {
+  Container: ContainerBlockProps;
+  Flex: FlexBlockProps;
   Grid: GridBlockProps;
   Separator: SeparatorBlockProps;
   Icon: IconBlockProps;
@@ -32,6 +36,8 @@ export type SavedComponents = {
 };
 
 export type HydratedComponents = {
+  Container: ContainerBlockProps;
+  Flex: FlexBlockProps;
   Grid: GridBlockProps;
   Separator: SeparatorBlockProps;
   Icon: IconBlockProps;
@@ -46,7 +52,7 @@ export const config: Config<HydratedComponents, RootProps> = {
   categories: {
     layout: {
       title: "Layout",
-      components: ["Grid"],
+      components: ["Container"],
     },
     basic: {
       title: "Basic",
@@ -61,6 +67,8 @@ export const config: Config<HydratedComponents, RootProps> = {
     },
   },
   components: {
+    Container: ContainerBlock,
+    Flex: FlexBlock,
     Grid: GridBlock,
     Separator: SeparatorBlock,
     Icon: IconBlock,

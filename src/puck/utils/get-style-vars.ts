@@ -1,7 +1,6 @@
 import { Responsive } from "@/puck/utils/responsive";
 import { DimensionProps } from "@/puck/fields/dimension";
 import { TypographyProps } from "@/puck/fields/typography";
-import { GridProps } from "@/puck/fields/grid";
 import { DecorationProps } from "@/puck/fields/decoration";
 import { Breakpoint } from "@/puck/utils/breakpoints";
 
@@ -64,28 +63,6 @@ export const getTypographyVars = (data?: Responsive<TypographyProps>) => {
     if (p.fontWeight) {
       vars[`--fw-${s}`] = p.fontWeight;
     }
-  }
-
-  return vars;
-};
-
-/**
- * UTILITY: GRID
- */
-export const getGridVars = (data?: Responsive<GridProps>) => {
-  if (!data) return {};
-
-  const vars: Record<string, string> = {};
-
-  for (const bp of BREAKPOINTS) {
-    const p = data[bp];
-    if (!p) continue;
-    const s = getSuffix(bp);
-
-    if (p.columns) vars[`--cols-${s}`] = p.columns;
-    if (p.gap) vars[`--gap-${s}`] = p.gap;
-    if (p.alignItems) vars[`--ai-${s}`] = p.alignItems;
-    if (p.justifyItems) vars[`--ji-${s}`] = p.justifyItems;
   }
 
   return vars;
