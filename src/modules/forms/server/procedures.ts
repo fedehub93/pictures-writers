@@ -114,12 +114,15 @@ export const formsRouter = createTRPCRouter({
     .query(async ({ input }) => {
       const forms = await db.form.findMany({
         where: {
-          name: input.search ? { contains: input.search } : undefined,
+          name: input.search
+            ? { contains: input.search, mode: "insensitive" }
+            : undefined,
         },
         orderBy: { createdAt: "desc" },
         take: input.pageSize,
         skip: (input.page - 1) * input.pageSize,
       });
+
       return forms;
     }),
 });

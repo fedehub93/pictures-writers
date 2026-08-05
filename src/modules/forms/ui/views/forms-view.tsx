@@ -12,7 +12,7 @@ import { UpdateFormDialog } from "../components/update-form-dialog";
 import { useFormFilters } from "../../hooks/use-forms-filter";
 
 export const FormsView = () => {
-  const [filters, setFilters] = useFormFilters();
+  const [filters, _] = useFormFilters();
   const { data } = useSuspenseForms(filters);
 
   return (
