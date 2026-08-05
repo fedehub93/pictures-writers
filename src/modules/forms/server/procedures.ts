@@ -123,7 +123,6 @@ export const formsRouter = createTRPCRouter({
         skip: (input.page - 1) * input.pageSize,
       });
 
-      console.log(input.search, forms.length);
       return forms;
     }),
 });
