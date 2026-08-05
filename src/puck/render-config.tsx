@@ -107,7 +107,6 @@ const config: Config<any, RootProps> = {
         const styleVars = {
           ...getDimensionVars(dimension),
         };
-
         return <FormBlockUi form={form} styleVars={styleVars} />;
       },
     },
