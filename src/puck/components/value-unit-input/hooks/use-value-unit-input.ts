@@ -1,46 +1,64 @@
 import { useState } from "react";
-
-import type { ValueUnitPreset } from "./types";
-
-import { parseCSSValue, formatCSSValue, calculateStepValue } from "./utils";
-import { DEFAULT_UNIT } from "./constants";
+import type { ValueUnitPreset } from "../types";
+import { parseCSSValue, formatCSSValue, calculateStepValue } from "../utils";
+import {
+  CUSTOM_UNIT,
+  DEFAULT_KEYWORDS,
+  DEFAULT_UNIT,
+  DEFAULT_UNITS,
+} from "../constants";
 
 export interface UseValueUnitInputOptions {
   value?: string;
   onChange: (val: string) => void;
-  units: string[];
+  units?: string[];
   defaultUnit?: string;
-  allowedKeywords: string[];
+  allowedKeywords?: string[];
 }
 
 export function useValueUnitInput({
   value = "",
   onChange,
-  units,
+  units = DEFAULT_UNITS,
   defaultUnit = DEFAULT_UNIT,
-  allowedKeywords,
+  allowedKeywords = DEFAULT_KEYWORDS,
 }: UseValueUnitInputOptions) {
-  const [textInput, setTextInput] = useState(
-    () => parseCSSValue(value, units, allowedKeywords, defaultUnit).num,
-  );
-  const [selectedUnit, setSelectedUnit] = useState(
-    () => parseCSSValue(value, units, allowedKeywords, defaultUnit).unit,
-  );
+  // DA RIFATTORIZZARE
+  const getInitialState = (val: string) => {
+    const parsed = parseCSSValue(val, units, allowedKeywords, defaultUnit);
+    if (!parsed.isValid && val.trim() !== "") {
+      return { num: val, unit: CUSTOM_UNIT };
+    }
+    return { num: parsed.num, unit: parsed.unit };
+  };
 
+  const initialState = getInitialState(value);
+
+  const [textInput, setTextInput] = useState(initialState.num);
+  const [selectedUnit, setSelectedUnit] = useState(initialState.unit);
   const [prevPropValue, setPrevPropValue] = useState(value);
 
   if (value !== prevPropValue) {
-    const parsed = parseCSSValue(value, units, allowedKeywords, defaultUnit);
-    setTextInput(parsed.num);
-    setSelectedUnit(parsed.unit);
+    const state = getInitialState(value);
+    setTextInput(state.num);
+    setSelectedUnit(state.unit);
     setPrevPropValue(value);
   }
 
   const commitValue = (numStr: string, unitStr: string) => {
-    onChange(formatCSSValue(numStr, unitStr, allowedKeywords));
+    if (unitStr === CUSTOM_UNIT) {
+      onChange(numStr);
+    } else {
+      onChange(formatCSSValue(numStr, unitStr, allowedKeywords));
+    }
   };
 
   const handleCommit = () => {
+    if (selectedUnit === CUSTOM_UNIT) {
+      commitValue(textInput, CUSTOM_UNIT);
+      return;
+    }
+
     const currentFallback =
       selectedUnit === "-" || !selectedUnit ? defaultUnit : selectedUnit;
     const parsed = parseCSSValue(
@@ -55,12 +73,7 @@ export function useValueUnitInput({
       setSelectedUnit(parsed.unit);
       commitValue(parsed.num, parsed.unit);
     } else {
-      const fallback = parseCSSValue(
-        value,
-        units,
-        allowedKeywords,
-        defaultUnit,
-      );
+      const fallback = getInitialState(value);
       setTextInput(fallback.num);
       setSelectedUnit(fallback.unit);
     }
@@ -71,8 +84,14 @@ export function useValueUnitInput({
   };
 
   const handleUnitChange = (newUnit: string) => {
+    if (newUnit === CUSTOM_UNIT) {
+      setSelectedUnit(CUSTOM_UNIT);
+      commitValue(textInput, CUSTOM_UNIT);
+      return;
+    }
+
     const parsedNum = parseFloat(textInput);
-    const validNum = isNaN(parsedNum) ? "0" : textInput;
+    const validNum = isNaN(parsedNum) ? "1" : String(parsedNum);
 
     setSelectedUnit(newUnit);
     setTextInput(validNum);
@@ -83,6 +102,8 @@ export function useValueUnitInput({
     direction: 1 | -1,
     modifiers: { shiftKey?: boolean; altKey?: boolean; metaKey?: boolean } = {},
   ) => {
+    if (selectedUnit === CUSTOM_UNIT) return;
+
     const nextNumStr = calculateStepValue(textInput, direction, modifiers);
     const finalUnit =
       selectedUnit === "-" || !selectedUnit ? defaultUnit : selectedUnit;

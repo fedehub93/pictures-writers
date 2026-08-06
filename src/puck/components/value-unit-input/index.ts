@@ -1,4 +1,4 @@
-export { ValueUnitInput } from "./value-unit-input";
-export type { ValueUnitInputProps } from "./value-unit-input";
+export { ValueUnitInput } from "./ui";
+export type { ValueUnitInputProps } from "./types";
 
 export { parseCSSValue, formatCSSValue } from "./utils";

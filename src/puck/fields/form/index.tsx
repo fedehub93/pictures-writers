@@ -1,7 +1,7 @@
 import { LucidePuzzle } from "lucide-react";
 
 import { withAccordionField } from "@/puck/utils/with-accordion-field";
-import { FormView } from "@/puck/fields/form/view/form-view";
+import { FormView } from "./ui/view/form-view";
 
 import type { FormRootInstance } from "@/modules/forms/builder/types/core";
 
@@ -37,10 +37,6 @@ export const FormField = withAccordionField(
       });
     };
 
-    return (
-      <div className="grid grid-cols-1 gap-y-4 p-1">
-        <FormView state={state} onUpdate={update} />
-      </div>
-    );
+    return <FormView state={state} onUpdate={update} />;
   },
 );

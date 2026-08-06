@@ -3,7 +3,7 @@ import { ImageIcon } from "lucide-react";
 import { IconName } from "@/shared/ui/icon-picker";
 
 import { withAccordionField } from "@/puck/utils/with-accordion-field";
-import { IconView } from "./view/icon-view";
+import { IconView } from "./ui/view/icon-view";
 
 export interface IconProps {
   name?: IconName;
@@ -28,11 +28,7 @@ export const IconField = withAccordionField(
       });
     };
 
-    return (
-      <div className="grid grid-cols-1 gap-y-4 p-1">
-        <IconView state={state} onUpdate={update} />
-      </div>
-    );
+    return <IconView state={state} onUpdate={update} />;
   },
   true,
 );

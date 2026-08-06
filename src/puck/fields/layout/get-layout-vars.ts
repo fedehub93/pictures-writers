@@ -2,7 +2,7 @@ import { getSuffix } from "@/puck/utils/get-suffix";
 import { Responsive } from "@/puck/utils/responsive";
 import { Breakpoint } from "@/puck/utils/breakpoints";
 
-import { LayoutProps } from "./types";
+import type { LayoutProps } from "./index";
 
 const BREAKPOINTS: Breakpoint[] = ["desktop", "tablet", "mobile"];
 

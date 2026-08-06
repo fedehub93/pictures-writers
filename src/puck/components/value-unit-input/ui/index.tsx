@@ -1,12 +1,15 @@
 // ValueUnitInput.tsx
 import { useState } from "react";
 import { ChevronUpIcon, ChevronDownIcon } from "lucide-react";
+import { PopoverAnchor } from "@radix-ui/react-popover";
 
 import { cn } from "@/shared/lib/utils";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import {
@@ -17,24 +20,11 @@ import {
 } from "@/shared/ui/input-group";
 import { Button } from "@/shared/ui/button";
 import { Popover, PopoverContent } from "@/shared/ui/popover";
-import { PopoverAnchor } from "@radix-ui/react-popover";
 
-import type { ValueUnitPreset } from "./types";
-import { useValueUnitInput } from "./use-value-unit-input";
+import type { ValueUnitInputProps } from "../types";
 
-export interface ValueUnitInputProps {
-  name: string;
-  value?: string;
-  onChange: (val: string) => void;
-  units?: string[];
-  defaultUnit?: string;
-  allowedKeywords?: string[];
-  placeholder?: string;
-  presets?: ValueUnitPreset[];
-}
-
-const DEFAULT_UNITS = ["-", "px", "rem", "em", "%", "vw", "vh"];
-const DEFAULT_KEYWORDS = ["auto"];
+import { useValueUnitInput } from "../hooks/use-value-unit-input";
+import { CUSTOM_UNIT, DEFAULT_UNITS } from "../constants";
 
 export function ValueUnitInput({
   name,
@@ -42,7 +32,7 @@ export function ValueUnitInput({
   onChange,
   units = DEFAULT_UNITS,
   defaultUnit,
-  allowedKeywords = DEFAULT_KEYWORDS,
+  allowedKeywords,
   placeholder,
   presets,
 }: ValueUnitInputProps) {
@@ -64,6 +54,8 @@ export function ValueUnitInput({
     defaultUnit,
     allowedKeywords,
   });
+
+  const isCustom = selectedUnit === CUSTOM_UNIT;
 
   const onType = (e: React.ChangeEvent<HTMLInputElement>) => {
     handleInputChange(e);
@@ -172,7 +164,10 @@ export function ValueUnitInput({
           <DropdownMenuTrigger asChild>
             <InputGroupButton
               variant="ghost"
-              className="mr-5 border-none focus-visible:ring-0 focus-visible:ring-offset-0 hover:bg-muted text-xs"
+              className={cn(
+                "border-none focus-visible:ring-0 focus-visible:ring-offset-0 hover:bg-muted text-xs",
+                !isCustom && "mr-5",
+              )}
             >
               {selectedUnit}
             </InputGroupButton>
@@ -189,27 +184,38 @@ export function ValueUnitInput({
                   {u}
                 </DropdownMenuItem>
               ))}
+            {/* Elementor UX: f(x) visivamente separato in fondo */}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => handleUnitChange(CUSTOM_UNIT)}
+              className="text-xs font-semibold text-blue-600"
+            >
+              {CUSTOM_UNIT}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <div className="absolute right-0.5 top-0 flex h-full flex-col items-center justify-center space-y-0 pr-1 opacity-50 transition-opacity hover:opacity-100">
-          <button
-            type="button"
-            tabIndex={-1}
-            className="cursor-pointer rounded px-0.5 pb-px hover:bg-muted focus:outline-none"
-            onClick={(e) => handleStep(1, e)}
-          >
-            <ChevronUpIcon className="size-2.5" />
-          </button>
-          <button
-            type="button"
-            tabIndex={-1}
-            className="cursor-pointer rounded px-0.5 pt-px hover:bg-muted focus:outline-none"
-            onClick={(e) => handleStep(-1, e)}
-          >
-            <ChevronDownIcon className="size-2.5" />
-          </button>
-        </div>
+        {/* Nascondiamo i controlli di step se siamo in modalità custom */}
+        {!isCustom && (
+          <div className="absolute right-0.5 top-0 flex h-full flex-col items-center justify-center space-y-0 pr-1 opacity-50 transition-opacity hover:opacity-100">
+            <button
+              type="button"
+              tabIndex={-1}
+              className="cursor-pointer rounded px-0.5 pb-px hover:bg-muted focus:outline-none"
+              onClick={(e) => handleStep(1, e)}
+            >
+              <ChevronUpIcon className="size-2.5" />
+            </button>
+            <button
+              type="button"
+              tabIndex={-1}
+              className="cursor-pointer rounded px-0.5 pt-px hover:bg-muted focus:outline-none"
+              onClick={(e) => handleStep(-1, e)}
+            >
+              <ChevronDownIcon className="size-2.5" />
+            </button>
+          </div>
+        )}
       </InputGroupAddon>
     </InputGroup>
   );
