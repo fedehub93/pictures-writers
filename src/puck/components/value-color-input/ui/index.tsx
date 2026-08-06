@@ -6,43 +6,9 @@ import { Input } from "@/shared/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 import { Button } from "@/shared/ui/button";
 
-interface ValueColorInputProps {
-  name: string;
-  value?: string;
-  onChange: (val: string) => void;
-  units?: string[];
-  placeholder?: string;
-}
+import { PALETTE_COLORS, THEME_COLORS } from "@/puck/constants";
 
-const themeColors = [
-  { label: "Primary", value: "var(--primary)", bgPreview: "var(--primary)" },
-  {
-    label: "Secondary",
-    value: "var(--secondary)",
-    bgPreview: "var(--secondary)",
-  },
-  {
-    label: "Muted Foreground",
-    value: "var(--muted-foreground)",
-    bgPreview: "var(--muted-foreground)",
-  },
-  {
-    label: "Accent Foreground",
-    value: "var(--accent-foreground)",
-    bgPreview: "var(--accent-foreground)",
-  },
-];
-
-const paletteColors = [
-  "#ef4444", // Red
-  "#f97316", // Orange
-  "#eab308", // Yellow
-  "#22c55e", // Green
-  "#3b82f6", // Blue
-  "#a855f7", // Purple
-  "#000000", // Black
-  "#ffffff", // White
-];
+import type { ValueColorInputProps } from "../types";
 
 export const ValueColorInput = ({
   name,
@@ -56,7 +22,6 @@ export const ValueColorInput = ({
 
   return (
     <div className="flex gap-2 items-center">
-      {/* Input testuale */}
       <Input
         name={name}
         type="text"
@@ -66,7 +31,6 @@ export const ValueColorInput = ({
         placeholder={placeholder}
       />
 
-      {/* Popover con il color picker */}
       <Popover>
         <PopoverTrigger asChild>
           <Button
@@ -76,7 +40,6 @@ export const ValueColorInput = ({
               backgroundColor: value || "transparent",
             }}
           >
-            {/* Mostra l'icona solo se non c'è un colore impostato per non nasconderlo */}
             {!value && <PaletteIcon className="size-4 text-muted-foreground" />}
           </Button>
         </PopoverTrigger>
@@ -89,7 +52,7 @@ export const ValueColorInput = ({
           <div className="space-y-1.5">
             <p className="text-xs font-medium text-muted-foreground">Theme</p>
             <div className="flex flex-wrap gap-2">
-              {themeColors.map((color) => (
+              {THEME_COLORS.map((color) => (
                 <Button
                   key={color.value}
                   type="button"
@@ -108,7 +71,7 @@ export const ValueColorInput = ({
           <div className="space-y-1.5">
             <p className="text-xs font-medium text-muted-foreground">Palette</p>
             <div className="flex flex-wrap gap-2">
-              {paletteColors.map((color) => (
+              {PALETTE_COLORS.map((color) => (
                 <Button
                   key={color}
                   type="button"
@@ -127,7 +90,6 @@ export const ValueColorInput = ({
           <div className="space-y-1.5">
             <p className="text-xs font-medium text-muted-foreground">Custom</p>
 
-            {/* Input color nativo del browser */}
             <Input
               type="color"
               className="w-full h-10 rounded cursor-pointer border-0 p-0"

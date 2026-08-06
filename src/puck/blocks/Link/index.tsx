@@ -13,10 +13,10 @@ import {
   getDimensionVars,
   getTypographyVars,
 } from "@/puck/utils/get-style-vars";
-
-import { LinkBlockUi } from "./ui/link";
 import { TypographyField, TypographyProps } from "@/puck/fields/typography";
 import { LinkField, LinkProps } from "@/puck/fields/link";
+
+import { LinkBlockUi } from "./ui/link";
 
 export type LinkBlockProps = {
   link?: LinkProps;
@@ -34,7 +34,7 @@ export const LinkBlock: ComponentConfig<LinkBlockProps> = {
   },
   defaultProps: {
     link: {
-      label: "Link",
+      label: "Inserisci il tuo link",
       href: "",
     },
     typography: {

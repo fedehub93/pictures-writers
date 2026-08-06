@@ -18,18 +18,18 @@ import {
 
 import { SegmentedControl } from "@/puck/components/segmented-control";
 import { PropHeader } from "@/puck/components/prop-header";
+import { ValueUnitInput } from "@/puck/components/value-unit-input";
 
-import type { SegmentedOption } from "../../../types";
+import type { SegmentedOption } from "../../../../types";
 
 import type {
   AlignItems,
   FlexDirection,
   JustifyContent,
   LayoutSubComponentProps,
-} from "../types";
+} from "../../types";
 
 import { MorphIcon } from "./morph-icon";
-import { InputTextField } from "@/puck/components/text-field";
 
 // Le opzioni della direction restano statiche
 const flexDirectionOptions = [
@@ -219,28 +219,34 @@ export const FlexProps = ({
       <div className="mt-4">
         <span className="text-sm font-medium">Gap</span>
         <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-4 p-2 bg-muted/60 rounded">
-          <InputTextField
-            key="columnGap"
-            name="columnGap"
-            label="Column Gap"
-            placeholder="0"
-            type="unit"
-            currentValues={values}
-            renderValues={values}
-            resetProp={resetProp}
-            update={update}
-          />
-          <InputTextField
-            key="rowGap"
-            name="rowGap"
-            label="Row Gap"
-            placeholder="0"
-            type="unit"
-            currentValues={values}
-            renderValues={values}
-            resetProp={resetProp}
-            update={update}
-          />
+          <div className="flex flex-col gap-y-1">
+            <PropHeader
+              name="columnGap"
+              label="Column Gap"
+              isModified={values.columnGap !== undefined}
+              onReset={() => resetProp("columnGap")}
+            />
+            <ValueUnitInput
+              name="columnGap"
+              value={values.columnGap ?? ""}
+              onChange={(newVal) => update({ columnGap: newVal ?? undefined })}
+              placeholder="0"
+            />
+          </div>
+          <div className="flex flex-col gap-y-1">
+            <PropHeader
+              name="rowGap"
+              label="Row Gap"
+              isModified={values.rowGap !== undefined}
+              onReset={() => resetProp("rowGap")}
+            />
+            <ValueUnitInput
+              name="rowGap"
+              value={values.rowGap ?? ""}
+              onChange={(newVal) => update({ rowGap: newVal ?? undefined })}
+              placeholder="0"
+            />
+          </div>
         </div>
       </div>
     </div>

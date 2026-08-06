@@ -9,16 +9,15 @@ import {
   StretchVerticalIcon,
 } from "lucide-react";
 
-import { SegmentedControl } from "@/puck/components/segmented-control";
 import { PropHeader } from "@/puck/components/prop-header";
-import { InputTextField } from "@/puck/components/text-field";
+import { SegmentedControl } from "@/puck/components/segmented-control";
+import { ValueUnitInput } from "@/puck/components/value-unit-input";
 
-import type { SegmentedOption } from "../../../types";
+import type { SegmentedOption } from "../../../../types";
 
-import type { AlignItems, LayoutSubComponentProps } from "../types";
+import type { AlignItems, LayoutSubComponentProps } from "../../types";
 
 const alignItemsOptions = [
-  // Nota: per alignItems le assegnazioni Row/Col sono invertite come avevamo stabilito
   {
     title: "Start",
     value: "start",
@@ -55,19 +54,25 @@ export const GridUiProps = ({
 }: LayoutSubComponentProps) => {
   return (
     <div className="flex flex-col space-y-2 group/flex">
-      <InputTextField
-        key="gridTemplateColumns"
-        name="gridTemplateColumns"
-        label="Columns"
-        placeholder="none"
-        type="unit"
-        units={["fr"]}
-        defaultUnit="fr"
-        currentValues={values}
-        renderValues={values}
-        resetProp={resetProp}
-        update={update}
-      />
+      {/* --- COLUMNS --- */}
+      <div className="flex flex-col gap-y-1">
+        <PropHeader
+          name="gridTemplateColumns"
+          label="Columns"
+          isModified={values.gridTemplateColumns !== undefined}
+          onReset={() => resetProp("gridTemplateColumns")}
+        />
+        <ValueUnitInput
+          name="gridTemplateColumns"
+          value={values.gridTemplateColumns ?? ""}
+          onChange={(newVal) =>
+            update({ gridTemplateColumns: newVal ?? undefined })
+          }
+          placeholder="0"
+          units={["fr"]}
+          defaultUnit="fr"
+        />
+      </div>
 
       {/* --- ALIGNMENT --- */}
       <div className="mt-4">
@@ -109,28 +114,34 @@ export const GridUiProps = ({
       <div className="mt-4">
         <span className="text-sm font-medium">Gap</span>
         <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-4 p-2 bg-muted/60 rounded">
-          <InputTextField
-            key="columnGap"
-            name="columnGap"
-            label="Column Gap"
-            placeholder="0"
-            type="unit"
-            currentValues={values}
-            renderValues={values}
-            resetProp={resetProp}
-            update={update}
-          />
-          <InputTextField
-            key="rowGap"
-            name="rowGap"
-            label="Row Gap"
-            placeholder="0"
-            type="unit"
-            currentValues={values}
-            renderValues={values}
-            resetProp={resetProp}
-            update={update}
-          />
+          <div className="flex flex-col gap-y-1">
+            <PropHeader
+              name="columnGap"
+              label="Column Gap"
+              isModified={values.columnGap !== undefined}
+              onReset={() => resetProp("columnGap")}
+            />
+            <ValueUnitInput
+              name="columnGap"
+              value={values.columnGap ?? ""}
+              onChange={(newVal) => update({ columnGap: newVal ?? undefined })}
+              placeholder="0"
+            />
+          </div>
+          <div className="flex flex-col gap-y-1">
+            <PropHeader
+              name="rowGap"
+              label="Row Gap"
+              isModified={values.rowGap !== undefined}
+              onReset={() => resetProp("rowGap")}
+            />
+            <ValueUnitInput
+              name="rowGap"
+              value={values.rowGap ?? ""}
+              onChange={(newVal) => update({ rowGap: newVal ?? undefined })}
+              placeholder="0"
+            />
+          </div>
         </div>
       </div>
     </div>

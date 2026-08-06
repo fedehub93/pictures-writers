@@ -6,7 +6,7 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 
-import { PropHeader } from "./prop-header";
+import { PropHeader } from "../prop-header";
 
 export type SelectFieldProps<T> = {
   name: Extract<keyof T, string>;
@@ -30,7 +30,6 @@ export const SelectField = <T,>({
   update,
 }: SelectFieldProps<T>) => {
   const isModified = currentValues[name] !== undefined;
-
   const displayValue = (renderValues[name] ?? "") as string;
 
   return (
