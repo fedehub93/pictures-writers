@@ -15,7 +15,7 @@ export const LinkView = ({ state, onUpdate, resetProp }: LinkViewProps) => {
       <div className="flex flex-col gap-y-1">
         <PropHeader
           name="label"
-          label="Alt Text"
+          label="Label"
           isModified={state.label !== undefined}
           onReset={() => resetProp("label")}
         />

@@ -72,6 +72,7 @@ export const LayoutField = withAccordionField(
 
     const updateDisplay = (display?: DisplayType) => {
       onChange({
+        ...state,
         [viewportKey]: {
           display,
         },

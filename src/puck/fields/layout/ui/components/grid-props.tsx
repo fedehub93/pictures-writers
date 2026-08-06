@@ -117,7 +117,7 @@ export const GridUiProps = ({
           <div className="flex flex-col gap-y-1">
             <PropHeader
               name="columnGap"
-              label="Row Gap"
+              label="Column Gap"
               isModified={values.columnGap !== undefined}
               onReset={() => resetProp("columnGap")}
             />
