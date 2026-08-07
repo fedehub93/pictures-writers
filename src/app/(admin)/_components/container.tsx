@@ -13,9 +13,7 @@ export const Container = ({ children }: ContainerProps) => {
         "overflow-x-hidden transition-[margin] md:pt-0 overflow-y-hidden relative h-full ",
       )}
     >
-      <div className="flex flex-col h-full">
-        <div className="flex flex-col overflow-auto h-full">{children}</div>
-      </div>
+      <div className="flex flex-col overflow-auto h-full">{children}</div>
     </div>
   );
 };

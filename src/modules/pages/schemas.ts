@@ -9,7 +9,7 @@ export const pageInsertSchema = z.object({
 
 export type PageInsertValues = z.infer<typeof pageInsertSchema>;
 
-export const pageUpdateSchema = pageInsertSchema.extend({
+export const pageUpdateSchema = pageInsertSchema.partial().extend({
   id: z.string().min(1, { error: "Id is required" }),
   rootId: z.string().min(1, { error: "Root Id is required" }),
   puckData: z.custom<Data<HydratedComponents>>().nullable().optional(),

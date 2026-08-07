@@ -1,8 +1,6 @@
 import { type Config, type Data, Puck } from "@puckeditor/core";
 import "@puckeditor/core/puck.css";
 
-import { ContentStatus } from "@/generated/prisma";
-
 import { RootEditor, type RootProps } from "./root";
 
 import { ContainerBlock, type ContainerBlockProps } from "./blocks/Container";
@@ -14,10 +12,12 @@ import { FormBlock, type FormBlockProps } from "./blocks/Form";
 import { Heading, type HeadingProps } from "./blocks/Heading";
 import { LinkBlock, type LinkBlockProps } from "./blocks/Link";
 import { IconBlock, type IconBlockProps } from "./blocks/Icon";
-import { HeaderActions } from "./editor/ui/components/header-actions";
 
 import { viewports } from "./utils/viewports";
 import type { FormProps } from "./fields/form";
+
+import { BREAKPOINTS } from "./utils/breakpoints";
+import { Editor } from "./editor/ui/view/editor";
 
 export type SavedComponents = {
   Container: ContainerBlockProps;
@@ -80,25 +80,29 @@ export const config: Config<HydratedComponents, RootProps> = {
 
 export type PuckEditorProps = {
   initialData: {
-    id: string;
-    rootId: string;
-    status: ContentStatus;
-    slug: string;
     puckData: Data<HydratedComponents>;
   };
 };
 
+// Render Puck editor
 export function PuckEditor({ initialData }: PuckEditorProps) {
   return (
     <Puck
       config={config}
       data={initialData.puckData}
       viewports={viewports}
-      overrides={{
-        headerActions: () => {
-          return <HeaderActions page={initialData} />;
+      ui={{
+        viewports: {
+          current: {
+            width: BREAKPOINTS.desktop.puckCanvasWidth,
+            height: "auto",
+          },
+          options: viewports,
+          controlsVisible: true,
         },
       }}
-    />
+    >
+      <Editor />
+    </Puck>
   );
 }
