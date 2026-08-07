@@ -29,7 +29,7 @@ interface PageFormProps {
 export const PageForm = ({ onSuccess, onCancel }: PageFormProps) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const [filters, setFilters] = usePagesFilters();
+  const [filters, _] = usePagesFilters();
 
   const form = useForm<z.infer<typeof pageInsertSchema>>({
     resolver: zodResolver(pageInsertSchema),

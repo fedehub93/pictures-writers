@@ -13,7 +13,7 @@ import { CreatePageDialog } from "../components/create-page-dialog";
 import { UpdatePageDialog } from "../components/settings/update-page-dialog";
 
 export const PagesView = () => {
-  const [filters, setFilters] = usePagesFilters();
+  const [filters, _] = usePagesFilters();
   const { data } = useSuspensePages(filters);
 
   return (

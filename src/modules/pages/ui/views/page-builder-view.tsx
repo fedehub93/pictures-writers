@@ -1,20 +1,14 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-
-import { useTRPC } from "@/trpc/client";
-
-import { ContentStatus } from "@/generated/prisma";
+import { useEffect } from "react";
 
 import { LoadingState } from "@/shared/components/loading-state";
 import { ErrorState } from "@/shared/components/error-state";
+import { useSidebar } from "@/shared/ui/sidebar";
 
-import { PuckEditor } from "@/puck/config";
+import { PuckEditor } from "@/puck/custom-config";
 
 import { useSuspensePage } from "../../hooks/use-pages";
-import type { PageUpdateValues } from "../../schemas";
-import { usePagesFilters } from "../../hooks/use-pages-filters";
 
 import { INITIAL_PUCK_DATA } from "../../constants";
 
@@ -24,95 +18,22 @@ interface PageBuilderViewProps {
 
 export const PageBuilderView = ({ rootId }: PageBuilderViewProps) => {
   const { data } = useSuspensePage(rootId);
-  const trpc = useTRPC();
-  const queryClient = useQueryClient();
-  const [filters, _] = usePagesFilters();
+  const { setOpen } = useSidebar();
 
-  const updatePage = useMutation(
-    trpc.pages.update.mutationOptions({
-      onSuccess: async () => {
-        await queryClient.invalidateQueries(
-          trpc.pages.getMany.queryOptions(filters),
-        );
-        if (data.rootId) {
-          await queryClient.invalidateQueries(
-            trpc.pages.getLastByRootId.queryOptions({ rootId }),
-          );
-        }
-        toast.success("Page updated successfully!");
-      },
-      onError: (error) => {
-        toast.error(error.message);
-      },
-    }),
-  );
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setOpen(false);
+    }, 50);
 
-  const onSave = async (values: PageUpdateValues) => {
-    return updatePage.mutate(values);
-  };
-
-  const publishPage = useMutation(
-    trpc.pages.publish.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries(trpc.pages.getMany.queryFilter(filters));
-        if (rootId) {
-          queryClient.invalidateQueries(
-            trpc.pages.getLastByRootId.queryFilter({ rootId }),
-          );
-        }
-        toast.success("Page published successfully");
-      },
-      onError: async (error) => {
-        toast.error(error.message || "Failed to publish the page");
-      },
-    }),
-  );
-
-  const unPublishPage = useMutation(
-    trpc.pages.unpublish.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries(trpc.pages.getMany.queryFilter(filters));
-        if (rootId) {
-          queryClient.invalidateQueries(
-            trpc.pages.getLastByRootId.queryFilter({ rootId }),
-          );
-        }
-        toast.success("Page unpublished successfully");
-      },
-      onError: async (error) => {
-        toast.error(error.message || "Failed to unpublish the page");
-      },
-    }),
-  );
-
-  const onTogglePublish = () => {
-    const mustPublish = data.status !== ContentStatus.PUBLISHED;
-    if (mustPublish) {
-      return publishPage.mutate({ id: data.id, rootId });
-    }
-    return unPublishPage.mutate({ id: data.id });
-  };
-
-  const isSaving = updatePage.isPending;
-  const isPublishing = publishPage.isPending || unPublishPage.isPending;
+    return () => clearTimeout(timeout);
+  }, [setOpen]);
 
   return (
-    <div>
-      <PuckEditor
-        id={data.id}
-        rootId={rootId}
-        initialData={{
-          title: data.title,
-          slug: data.slug,
-          status: data.status,
-          puckData: data.puckData ?? INITIAL_PUCK_DATA,
-        }}
-        isSaving={isSaving}
-        isPublishing={isPublishing}
-        onSavePage={onSave}
-        onPublish={onTogglePublish}
-      />
-    </div>
+    <PuckEditor
+      initialData={{
+        puckData: data.puckData ?? INITIAL_PUCK_DATA,
+      }}
+    />
   );
 };
 
