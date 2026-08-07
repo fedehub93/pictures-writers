@@ -164,7 +164,7 @@ export const BuilderHeader = () => {
             variant="ghost"
             onClick={enableAutoZoom}
             className="h-8 px-2 text-xs text-slate-700 hover:bg-muted font-normal flex items-center gap-1"
-            title="Ripristina Zoom Automatico"
+            title="Reset automatic zoom"
           >
             {Math.round(scale * 100)}% {isAutoZoom ? "(Auto)" : ""}
             <ChevronDownIcon className="size-3 text-muted-foreground opacity-70" />

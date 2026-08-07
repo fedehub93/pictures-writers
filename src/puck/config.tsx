@@ -1,6 +1,8 @@
 import { type Config, type Data, Puck } from "@puckeditor/core";
 import "@puckeditor/core/puck.css";
 
+import { ContentStatus } from "@/generated/prisma";
+
 import { RootEditor, type RootProps } from "./root";
 
 import { ContainerBlock, type ContainerBlockProps } from "./blocks/Container";
@@ -78,6 +80,10 @@ export const config: Config<HydratedComponents, RootProps> = {
 
 export type PuckEditorProps = {
   initialData: {
+    id: string;
+    rootId: string;
+    status: ContentStatus;
+    slug: string;
     puckData: Data<HydratedComponents>;
   };
 };
@@ -90,7 +96,7 @@ export function PuckEditor({ initialData }: PuckEditorProps) {
       viewports={viewports}
       overrides={{
         headerActions: () => {
-          return <HeaderActions />;
+          return <HeaderActions page={initialData} />;
         },
       }}
     />

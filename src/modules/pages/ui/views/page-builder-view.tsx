@@ -21,10 +21,12 @@ export const PageBuilderView = ({ rootId }: PageBuilderViewProps) => {
   const { setOpen } = useSidebar();
 
   useEffect(() => {
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       setOpen(false);
     }, 50);
-  }, []);
+
+    return () => clearTimeout(timeout);
+  }, [setOpen]);
 
   return (
     <PuckEditor
