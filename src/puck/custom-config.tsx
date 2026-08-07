@@ -12,10 +12,12 @@ import { FormBlock, type FormBlockProps } from "./blocks/Form";
 import { Heading, type HeadingProps } from "./blocks/Heading";
 import { LinkBlock, type LinkBlockProps } from "./blocks/Link";
 import { IconBlock, type IconBlockProps } from "./blocks/Icon";
-import { HeaderActions } from "./editor/ui/components/header-actions";
 
 import { viewports } from "./utils/viewports";
 import type { FormProps } from "./fields/form";
+
+import { BREAKPOINTS } from "./utils/breakpoints";
+import { Editor } from "./editor/ui/view/editor";
 
 export type SavedComponents = {
   Container: ContainerBlockProps;
@@ -82,17 +84,25 @@ export type PuckEditorProps = {
   };
 };
 
+// Render Puck editor
 export function PuckEditor({ initialData }: PuckEditorProps) {
   return (
     <Puck
       config={config}
       data={initialData.puckData}
       viewports={viewports}
-      overrides={{
-        headerActions: () => {
-          return <HeaderActions />;
+      ui={{
+        viewports: {
+          current: {
+            width: BREAKPOINTS.desktop.puckCanvasWidth,
+            height: "auto",
+          },
+          options: viewports,
+          controlsVisible: true,
         },
       }}
-    />
+    >
+      <Editor />
+    </Puck>
   );
 }

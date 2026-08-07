@@ -41,6 +41,7 @@ export const PageSeoForm = ({
       ...initialValues,
       id: initialValues?.id ?? "",
       rootId: initialValues?.rootId ?? "",
+      canonicalUrl: initialValues?.canonicalUrl ?? "",
       noIndex: initialValues ? initialValues.noIndex : false,
       noFollow: initialValues ? initialValues.noFollow : false,
     },
