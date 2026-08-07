@@ -26,7 +26,7 @@ export const PageBuilderView = ({ rootId }: PageBuilderViewProps) => {
     }, 50);
 
     return () => clearTimeout(timeout);
-  }, [setOpen]);
+  }, []);
 
   return (
     <PuckEditor

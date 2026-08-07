@@ -6,32 +6,29 @@ import type { Route } from "next";
 import Link from "next/link";
 
 import {
-  Blocks,
-  BookImage,
-  BookUp,
-  Box,
-  Boxes,
-  ClipboardPen,
-  Contact,
+  BlocksIcon,
+  BookImageIcon,
+  BookUpIcon,
+  BoxIcon,
+  BoxesIcon,
+  ClipboardPenIcon,
+  ContactIcon,
   FormIcon,
   InboxIcon,
-  LayoutDashboard,
-  LayoutPanelTop,
-  LibraryBig,
-  List,
+  LayoutDashboardIcon,
+  LayoutPanelTopIcon,
+  LibraryBigIcon,
+  ListIcon,
   LucideIcon,
-  Mail,
-  MailPlus,
-  Mails,
-  Megaphone,
-  NotebookPen,
-  Puzzle,
-  ReceiptText,
-  Settings,
-  ShoppingBag,
+  MailPlusIcon,
+  MailsIcon,
+  MegaphoneIcon,
+  NotebookPenIcon,
+  SettingsIcon,
+  ShoppingBagIcon,
   StarIcon,
-  Tags,
-  Users,
+  TagsIcon,
+  UsersIcon,
 } from "lucide-react";
 
 import {
@@ -64,32 +61,32 @@ const data: Record<string, NavObject[]> = {
     {
       title: "Dashboard",
       url: "/admin/dashboard",
-      Icon: LayoutDashboard,
+      Icon: LayoutDashboardIcon,
     },
     {
       title: "Pages",
       url: "/admin/pages",
-      Icon: LayoutPanelTop,
+      Icon: LayoutPanelTopIcon,
     },
     {
       title: "Contents",
       url: "#",
-      Icon: LibraryBig,
+      Icon: LibraryBigIcon,
       items: [
         {
           title: "Posts",
           url: "/admin/posts",
-          Icon: NotebookPen,
+          Icon: NotebookPenIcon,
         },
         {
           title: "Categories",
           url: "/admin/categories",
-          Icon: Boxes,
+          Icon: BoxesIcon,
         },
         {
           title: "Tags",
           url: "/admin/tags",
-          Icon: Tags,
+          Icon: TagsIcon,
         },
       ],
     },
@@ -98,17 +95,17 @@ const data: Record<string, NavObject[]> = {
     {
       title: "Shop",
       url: "#",
-      Icon: ShoppingBag,
+      Icon: ShoppingBagIcon,
       items: [
         {
           title: "Products",
           url: "/admin/shop/products",
-          Icon: Box,
+          Icon: BoxIcon,
         },
         {
           title: "Categories",
           url: "/admin/shop/categories",
-          Icon: Boxes,
+          Icon: BoxesIcon,
         },
         {
           title: "Reviews",
@@ -122,39 +119,39 @@ const data: Record<string, NavObject[]> = {
     {
       title: "Mails",
       url: "#",
-      Icon: Mails,
+      Icon: MailsIcon,
       items: [
         {
           title: "Single Sends",
           url: "/admin/mails/single-sends",
-          Icon: MailPlus,
+          Icon: MailPlusIcon,
         },
         {
           title: "Contacts",
           url: "/admin/mails/audiences",
-          Icon: Contact,
+          Icon: ContactIcon,
         },
         {
           title: "Email templates",
           url: "/admin/mails/templates",
-          Icon: LayoutPanelTop,
+          Icon: LayoutPanelTopIcon,
         },
         {
           title: "Settings",
           url: "/admin/mails/settings",
-          Icon: Settings,
+          Icon: SettingsIcon,
         },
       ],
     },
     {
       title: "Widgets",
       url: "/admin/widgets",
-      Icon: Blocks,
+      Icon: BlocksIcon,
     },
     {
       title: "Ads",
       url: "/admin/ads",
-      Icon: Megaphone,
+      Icon: MegaphoneIcon,
     },
     {
       title: "Forms",
@@ -164,7 +161,7 @@ const data: Record<string, NavObject[]> = {
         {
           title: "All forms",
           url: "/admin/forms",
-          Icon: List,
+          Icon: ListIcon,
         },
         {
           title: "Submissions",
@@ -176,37 +173,31 @@ const data: Record<string, NavObject[]> = {
     {
       title: "Settings",
       url: "/admin/settings",
-      Icon: Settings,
+      Icon: SettingsIcon,
     },
   ],
   others: [
     {
       title: "Media",
       url: "/admin/media",
-      Icon: BookImage,
+      Icon: BookImageIcon,
     },
     {
       title: "Coverage",
       url: "#",
-      Icon: BookUp,
+      Icon: BookUpIcon,
       items: [
         {
           title: "First impressions",
           url: "/admin/coverage/impressions",
-          Icon: ClipboardPen,
+          Icon: ClipboardPenIcon,
         },
       ],
     },
     {
-      title: "Contact Requests",
-      url: "/admin/contacts",
-      Icon: ReceiptText,
-    },
-
-    {
       title: "Users",
       url: "/admin/users",
-      Icon: Users,
+      Icon: UsersIcon,
     },
   ],
 };

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import HolyLoader from "holy-loader";
 import { NuqsAdapter } from "nuqs/adapters/next";
+import { TRPCReactProvider } from "@/trpc/client";
 
 import "./admin.css";
 import "@/puck/styles/puck-base.css";
@@ -19,9 +20,8 @@ import { Container } from "./_components/container";
 import { ModalProvider } from "./_components/providers/modal-provider";
 import { SheetProvider } from "./_components/providers/sheet-provider";
 import { ProgressLoader } from "./_components/progress-loader";
-import { AppSidebar } from "./_components/sidebar-v2/app-sidebar";
+import { AppSidebar } from "./_components/sidebar/app-sidebar";
 import { Header } from "./_components/header";
-import { TRPCReactProvider } from "@/trpc/client";
 
 const inter = Inter({ subsets: ["latin"] });
 
