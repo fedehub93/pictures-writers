@@ -1,6 +1,6 @@
 "use client";
 
-import { useFormContext } from "react-hook-form";
+import { useFormContext, useFormState } from "react-hook-form";
 import { Loader2Icon } from "lucide-react";
 
 import { Button } from "@/shared/ui/button";
@@ -12,14 +12,13 @@ export function ButtonFormComponent({
 }: {
   elementInstance: FormDisplayInstance<"Button">;
 }) {
-  const { formState } = useFormContext();
+  const { control } = useFormContext();
+  const { isSubmitting } = useFormState({ control });
   const { label } = elementInstance.properties;
 
   return (
     <Button type="submit" className="self-end">
-      {formState.isSubmitting && (
-        <Loader2Icon className="size-4 animate-spin" />
-      )}
+      {isSubmitting && <Loader2Icon className="size-4 animate-spin" />}
       {label}
     </Button>
   );

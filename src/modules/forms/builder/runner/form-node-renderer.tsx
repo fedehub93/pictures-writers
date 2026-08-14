@@ -25,7 +25,6 @@ export const FormNodeRenderer = ({
 
   // 1. Gestione degli Input
   if (node.type in FormElements) {
-    // IL TRUCCO È QUI: Diciamo a TS che questa stringa è sicuramente un ElementsType
     const type = node.type as ElementsType;
 
     const ElementComponent = FormElements[type]

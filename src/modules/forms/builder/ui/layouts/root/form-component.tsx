@@ -5,7 +5,7 @@ import type { Route } from "next";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { sendGTMEvent } from "@next/third-parties/google";
 
@@ -30,7 +30,6 @@ export function RootFormComponent({
 }) {
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
-  const [isPending, startTransition] = useTransition();
 
   const router = useRouter();
   const { submission } = elementInstance.properties;
@@ -47,41 +46,39 @@ export function RootFormComponent({
     setError("");
     setSuccess("");
 
-    startTransition(async () => {
-      try {
-        // Deleghiamo tutta la logica di business al parent
-        const result = await onSubmitHandler(values);
+    try {
+      // Deleghiamo tutta la logica di business al parent
+      const result = await onSubmitHandler(values);
 
-        if (!result.success) {
-          setError(result.message);
-        } else {
-          const emailDomain =
-            typeof values.email === "string" && values.email.includes("@")
-              ? values.email.split("@")[1]
-              : "unknown";
+      if (!result.success) {
+        setError(result.message);
+      } else {
+        const emailDomain =
+          typeof values.email === "string" && values.email.includes("@")
+            ? values.email.split("@")[1]
+            : "unknown";
 
-          sendGTMEvent({
-            event: gtmEventName,
-            form_type: "form_submission",
-            form_location: "*",
-            page_path: window.location.pathname,
-            page_title: document.title,
-            email_domain: emailDomain,
-          });
-          setSuccess(result.message);
+        sendGTMEvent({
+          event: gtmEventName,
+          form_type: "form_submission",
+          form_location: "*",
+          page_path: window.location.pathname,
+          page_title: document.title,
+          email_domain: emailDomain,
+        });
+        setSuccess(result.message);
 
-          if (submission.onSuccess.type === "toast") {
-            toast.success(submission.onSuccess.successMessage);
-          } else if (submission.onSuccess.type === "redirect") {
-            router.push(submission.onSuccess.url as Route);
-          }
+        if (submission.onSuccess.type === "toast") {
+          toast.success(submission.onSuccess.successMessage);
+        } else if (submission.onSuccess.type === "redirect") {
+          router.push(submission.onSuccess.url as Route);
         }
-      } catch (err) {
-        setError(
-          "Qualcosa è andato storto. Prego riprovare o contattare il supporto.",
-        );
       }
-    });
+    } catch (err) {
+      setError(
+        "Qualcosa è andato storto. Prego riprovare o contattare il supporto.",
+      );
+    }
   };
 
   return (
