@@ -7,9 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { AdBlockFormValues } from "@/schemas/ads";
 
 import { GenericInput } from "@/shared/components/form-component/generic-input";
-import { useCategoriesQuery } from "@/app/(admin)/_hooks/use-categories";
 import { GenericMultiSelect } from "@/shared/components/form-component/generic-multi-select";
-import { useTagssQuery } from "@/app/(admin)/_hooks/use-tags-query";
+
+import { useCategoriesQuery } from "@/modules/blog/categories/hooks/use-categories";
+import { useTagsQuery } from "@/modules/blog/tags/hooks/use-tags";
+
 import { usePostsQuery } from "@/app/(admin)/_hooks/use-posts-query";
 
 interface BlockVisibilityFormProps {
@@ -35,7 +37,7 @@ export const BlockVisibilityForm = ({
     data: tags,
     isError: isTagsError,
     isLoading: isTagsLoading,
-  } = useTagssQuery();
+  } = useTagsQuery();
 
   return (
     <Card>

@@ -14,8 +14,9 @@ import { Skeleton } from "@/shared/ui/skeleton";
 
 import { cn } from "@/shared/lib/utils";
 
-import { useTagssQuery } from "@/app/(admin)/_hooks/use-tags-query";
 import { MultiSelectV2 } from "@/shared/components/multi-select-v2";
+
+import { useTagsQuery } from "@/modules/blog/tags/hooks/use-tags";
 
 interface TagsFormProps {
   initialData: {
@@ -32,7 +33,7 @@ const formSchema = z.object({
   tags: z.array(
     z.object({
       id: z.string().min(1),
-    })
+    }),
   ),
 });
 
@@ -40,7 +41,7 @@ export const TagsForm = ({ initialData, rootId, postId }: TagsFormProps) => {
   const router = useRouter();
   const [isFocused, setIsFocused] = useState(false);
 
-  const { data: tags, isError, isLoading } = useTagssQuery();
+  const { data: tags, isError, isLoading } = useTagsQuery();
 
   const form = useForm<z.infer<typeof formSchema>>({
     mode: "all",
@@ -106,7 +107,7 @@ export const TagsForm = ({ initialData, rootId, postId }: TagsFormProps) => {
     <div
       className={cn(
         "border-l-4  dark:bg-slate-900 p-4 transition-all",
-        isFocused && "border-l-blue-500"
+        isFocused && "border-l-blue-500",
       )}
     >
       <div className="flex items-center justify-between">Tags</div>

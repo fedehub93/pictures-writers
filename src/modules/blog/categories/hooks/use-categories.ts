@@ -1,6 +1,6 @@
 import { useTRPC } from "@/trpc/client";
 import { trpc } from "@/trpc/server";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { inferInput } from "@trpc/tanstack-react-query";
 
 type Input = inferInput<typeof trpc.categories.getMany>;
@@ -19,4 +19,21 @@ export const useSuspenseCategory = (rootId: string) => {
   return useSuspenseQuery(
     trpc.categories.getLastByRootId.queryOptions({ rootId }),
   );
+};
+
+export const useCategoriesQuery = () => {
+  const trpc = useTRPC();
+
+  const { data, isLoading, isError } = useQuery({
+    ...trpc.categories.getMany.queryOptions({}),
+    enabled: true,
+    refetchOnMount: true,
+    staleTime: 0,
+  });
+
+  return {
+    data,
+    isLoading,
+    isError,
+  };
 };

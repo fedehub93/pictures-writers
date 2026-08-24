@@ -14,8 +14,9 @@ import { cn } from "@/shared/lib/utils";
 import { Form, FormField, FormItem, FormMessage } from "@/shared/ui/form";
 import { Skeleton } from "@/shared/ui/skeleton";
 
-import { useCategoriesQuery } from "@/app/(admin)/_hooks/use-categories";
 import { MultiSelectV2 } from "@/shared/components/multi-select-v2";
+
+import { useCategoriesQuery } from "@/modules/blog/categories/hooks/use-categories";
 
 interface CategoriesFormProps {
   initialData: {
@@ -37,7 +38,7 @@ const formSchema = z.object({
     z.object({
       id: z.string().min(1),
       sort: z.coerce.number<number>(),
-    })
+    }),
   ),
 });
 
@@ -118,7 +119,7 @@ export const CategoriesForm = ({
         "border-l-4  dark:bg-slate-900 p-4 transition-all",
         isFocused && "border-l-blue-500",
         !isValid ||
-          (initialData.postCategories.length === 0 && "border-l-red-500")
+          (initialData.postCategories.length === 0 && "border-l-red-500"),
       )}
     >
       <div className="flex items-center justify-between">Categories</div>
