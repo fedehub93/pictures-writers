@@ -331,6 +331,7 @@ exports.Prisma.TagScalarFieldEnum = {
   isLatest: 'isLatest',
   rootId: 'rootId',
   seoId: 'seoId',
+  userId: 'userId',
   firstPublishedAt: 'firstPublishedAt',
   publishedAt: 'publishedAt',
   createdAt: 'createdAt',

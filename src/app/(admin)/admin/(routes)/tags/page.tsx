@@ -1,27 +1,41 @@
-import { db } from "@/lib/db";
+import type { SearchParams } from "nuqs";
+import { HydrateClient } from "@/trpc/server";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 
-import { requireAdminAuth } from "@/lib/auth-utils";
+import { requireAdminAuth } from "@/shared/lib/auth-utils";
 
-import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
+import { loadSearchParams } from "@/modules/blog/tags/params";
+import { prefetchTags } from "@/modules/blog/tags/server/prefetch";
+import {
+  TagsListHeader,
+  TagsView,
+  TagsViewError,
+  TagsViewLoading,
+} from "@/modules/blog/tags";
 
-import { DataTable } from "./(routes)/_components/data-table";
-import { columns } from "./(routes)/_components/columns";
+interface Props {
+  searchParams: Promise<SearchParams>;
+}
 
-const TagsPage = async () => {
+const TagsPage = async ({ searchParams }: Props) => {
   await requireAdminAuth();
 
-  const tags = await db.tag.findMany({
-    orderBy: {
-      createdAt: "desc",
-    },
-    distinct: ["rootId"],
-  });
+  const filters = await loadSearchParams(searchParams);
+
+  prefetchTags(filters);
 
   return (
-    <div className="h-full w-full flex flex-col gap-y-4 px-6 py-3">
-      <ContentHeader label="Tags" totalEntries={tags.length} />
-      <DataTable columns={columns} data={tags} />
-    </div>
+    <>
+      <TagsListHeader />
+      <HydrateClient>
+        <Suspense fallback={<TagsViewLoading />}>
+          <ErrorBoundary fallback={<TagsViewError />}>
+            <TagsView />
+          </ErrorBoundary>
+        </Suspense>
+      </HydrateClient>
+    </>
   );
 };
 

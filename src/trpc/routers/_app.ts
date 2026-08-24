@@ -9,6 +9,7 @@ import { templatesRouter } from "@/modules/mails/templates/server/procedures";
 import { formsRouter } from "@/modules/forms/server/procedures";
 import { formSubmissionsRouter } from "@/modules/forms/submissions/server/procedures";
 import { pagesRouter } from "@/modules/pages/server/procedures";
+import { tagsRouter } from "@/modules/blog/tags/server/procedures";
 
 export const appRouter = createTRPCRouter({
   categories: categoriesRouter,
@@ -20,6 +21,7 @@ export const appRouter = createTRPCRouter({
   pages: pagesRouter,
   forms: formsRouter,
   submissions: formSubmissionsRouter,
+  tags: tagsRouter,
 });
 
 // export type definition of API

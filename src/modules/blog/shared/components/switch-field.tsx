@@ -24,6 +24,7 @@ export const SwitchField = <T extends FieldValues>({
   disabled,
   description,
 }: SwitchFieldProps<T>) => {
+  const id = `form-rhf-input-${name}`;
   return (
     <Controller
       control={control}
@@ -35,13 +36,13 @@ export const SwitchField = <T extends FieldValues>({
         >
           <div className="flex flex-row items-center justify-between w-full gap-4">
             <div className="space-y-0.5">
-              <FieldLabel htmlFor="form-rhf-input-title">{label}</FieldLabel>
+              <FieldLabel htmlFor={id}>{label}</FieldLabel>
               <FieldDescription>{description}</FieldDescription>
             </div>
 
             <div className="shrink-0">
               <Switch
-                id="form-rhf-switch-twoFactor"
+                id={id}
                 name={field.name}
                 checked={field.value}
                 onCheckedChange={field.onChange}
