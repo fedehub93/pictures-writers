@@ -1,26 +1,41 @@
-import { db } from "@/lib/db";
+import type { SearchParams } from "nuqs";
+import { HydrateClient } from "@/trpc/server";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 
-import { requireAdminAuth } from "@/lib/auth-utils";
+import { requireAdminAuth } from "@/shared/lib/auth-utils";
 
-import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
-import { DataTable } from "./(routes)/_components/data-table";
-import { columns } from "./(routes)/_components/columns";
+import { loadSearchParams } from "@/modules/blog/categories/params";
+import { prefetchCategories } from "@/modules/blog/categories/server/prefetch";
+import {
+  CategoriesListHeader,
+  CategoriesView,
+  CategoriesViewError,
+  CategoriesViewLoading,
+} from "@/modules/blog/categories";
 
-const CategoriesPage = async () => {
+interface Props {
+  searchParams: Promise<SearchParams>;
+}
+
+const CategoriesPage = async ({ searchParams }: Props) => {
   await requireAdminAuth();
 
-  const categories = await db.category.findMany({
-    orderBy: {
-      createdAt: "desc",
-    },
-    distinct: ["rootId"],
-  });
+  const filters = await loadSearchParams(searchParams);
+
+  prefetchCategories(filters);
 
   return (
-    <div className="h-full w-full flex flex-col gap-y-4 px-6 py-3">
-      <ContentHeader label="Categories" totalEntries={categories.length} />
-      <DataTable columns={columns} data={categories} />
-    </div>
+    <>
+      <CategoriesListHeader />
+      <HydrateClient>
+        <Suspense fallback={<CategoriesViewLoading />}>
+          <ErrorBoundary fallback={<CategoriesViewError />}>
+            <CategoriesView />
+          </ErrorBoundary>
+        </Suspense>
+      </HydrateClient>
+    </>
   );
 };
 

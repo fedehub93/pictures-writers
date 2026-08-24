@@ -17,35 +17,35 @@ import { generateSlug } from "@/shared/lib/slug";
 import { GenericInput } from "@/shared/components/form-component/generic-input";
 import { SlugInput } from "@/shared/components/form-component/slug-input";
 
-import { pageInsertSchema, PageInsertValues } from "../../schemas";
+import { categoryInsertSchema, CategoryInsertValues } from "../../schemas";
 
-import { usePagesFilters } from "../../hooks/use-pages-filters";
+import { useCategoriesFilters } from "../../hooks/use-categories-filters";
 
-interface PageFormProps {
+interface CategoryFormProps {
   onSuccess?: () => void;
   onCancel?: () => void;
 }
 
-export const PageForm = ({ onSuccess, onCancel }: PageFormProps) => {
+export const CategoryForm = ({ onSuccess, onCancel }: CategoryFormProps) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const [filters, _] = usePagesFilters();
+  const [filters, _] = useCategoriesFilters();
 
-  const form = useForm<z.infer<typeof pageInsertSchema>>({
-    resolver: zodResolver(pageInsertSchema),
+  const form = useForm<CategoryInsertValues>({
+    resolver: zodResolver(categoryInsertSchema),
     defaultValues: {
       title: "",
       slug: "",
     },
   });
 
-  const createPage = useMutation(
-    trpc.pages.create.mutationOptions({
+  const createCategory = useMutation(
+    trpc.categories.create.mutationOptions({
       onSuccess: async () => {
         await queryClient.invalidateQueries(
-          trpc.pages.getMany.queryOptions(filters),
+          trpc.categories.getMany.queryOptions(filters),
         );
-        toast.success("Page created successfully!");
+        toast.success("Category created successfully!");
         onSuccess?.();
       },
       onError: (error) => {
@@ -54,10 +54,10 @@ export const PageForm = ({ onSuccess, onCancel }: PageFormProps) => {
     }),
   );
 
-  const isPending = createPage.isPending;
+  const isPending = createCategory.isPending;
 
-  const onSubmit = (values: PageInsertValues) => {
-    createPage.mutate(values);
+  const onSubmit = (values: CategoryInsertValues) => {
+    createCategory.mutate(values);
   };
 
   const { field: fieldTitle } = useController({

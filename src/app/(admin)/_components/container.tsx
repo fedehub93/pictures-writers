@@ -10,10 +10,10 @@ export const Container = ({ children }: ContainerProps) => {
   return (
     <div
       className={cn(
-        "overflow-x-hidden transition-[margin] md:pt-0 overflow-y-hidden relative h-full ",
+        "relative flex flex-col flex-1 min-h-0 transition-[margin] md:pt-0",
       )}
     >
-      <div className="flex flex-col overflow-auto h-full">{children}</div>
+      <div className="flex-1 overflow-y-auto">{children}</div>
     </div>
   );
 };

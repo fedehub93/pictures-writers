@@ -1,5 +1,6 @@
 import { createTRPCRouter } from "../init";
 
+import { categoriesRouter } from "@/modules/blog/categories/server/procedures";
 import { singleSendsRouter } from "@/modules/mails/single-sends/server/procedures";
 import { audiencesRouter } from "@/modules/mails/audiences/server/procedures";
 import { contactsRouter } from "@/modules/mails/contacts/server/procedures";
@@ -10,6 +11,7 @@ import { formSubmissionsRouter } from "@/modules/forms/submissions/server/proced
 import { pagesRouter } from "@/modules/pages/server/procedures";
 
 export const appRouter = createTRPCRouter({
+  categories: categoriesRouter,
   singleSends: singleSendsRouter,
   audiences: audiencesRouter,
   contacts: contactsRouter,

@@ -15,6 +15,7 @@ import { SegmentedControl } from "@/puck/components/segmented-control";
 import type { TypographyProps } from "../../index";
 
 import type { AlignType } from "../../types";
+import { FONT_SIZE_PRESETS } from "../../presets";
 
 const weightOptions = ["300", "400", "500", "600", "700", "800"];
 
@@ -70,6 +71,7 @@ export const TypographyView = ({
           value={renderValues.fontSize ?? ""}
           onChange={(newVal) => onUpdate({ fontSize: newVal ?? undefined })}
           placeholder="16"
+          presets={FONT_SIZE_PRESETS}
         />
       </div>
 

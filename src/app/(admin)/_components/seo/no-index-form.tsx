@@ -21,7 +21,7 @@ import {
 import { Switch } from "@/shared/ui/switch";
 
 interface NoIndexFormProps {
-  initialData: Seo;
+  initialData: { noIndex: boolean };
   apiUrl: string;
 }
 

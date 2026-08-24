@@ -7,7 +7,15 @@ import { SeoContentTypeApi, SeoField } from "./types";
 import { TextareaSeoForm } from "./textarea-seo-form";
 
 interface SeoProps {
-  initialData: Seo | null;
+  initialData: {
+    title: string;
+    description: string | null;
+    canonicalUrl: string | null;
+    ogTwitterTitle: string | null;
+    ogTwitterDescription: string | null;
+    noIndex: boolean;
+    noFollow: boolean;
+  } | null;
   contentType: SeoContentTypeApi;
   contentRootId: string;
   contentId: string;

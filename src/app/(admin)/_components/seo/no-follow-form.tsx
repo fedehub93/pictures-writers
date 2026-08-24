@@ -21,7 +21,7 @@ import {
 import { Switch } from "@/shared/ui/switch";
 
 interface NoFollowFormProps {
-  initialData: Seo;
+  initialData: { noFollow: boolean };
   apiUrl: string;
 }
 
