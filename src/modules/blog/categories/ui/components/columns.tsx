@@ -130,7 +130,7 @@ export const columns: ColumnDef<CategoriesGetMany[number]>[] = [
     id: "actions",
     cell: ({ row }) => {
       const { rootId, id, status } = row.original;
-      console.log(status)
+
       if (!rootId) return null;
       return (
         <CategoriesActions

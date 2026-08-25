@@ -130,7 +130,6 @@ export const columns: ColumnDef<TagsGetMany[number]>[] = [
     id: "actions",
     cell: ({ row }) => {
       const { rootId, id, status } = row.original;
-      console.log(status);
       if (!rootId) return null;
       return <TagsActions rootId={rootId} id={id} status={status} />;
     },

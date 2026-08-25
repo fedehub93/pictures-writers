@@ -130,7 +130,7 @@ export const MultiSelectV2 = ({
           </div>
         </FormControl>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0">
+      <PopoverContent className="w-full p-0" align="end">
         <Command
           filter={(value, search) => {
             const isFound = options.find(

@@ -1,22 +1,42 @@
-import { requireAdminAuth } from "@/lib/auth-utils";
+import type { SearchParams } from "nuqs";
+import { HydrateClient } from "@/trpc/server";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 
-import { getPostsGroupedByRootId } from "@/data/post";
+import { requireAdminAuth } from "@/shared/lib/auth-utils";
 
-import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
+import { loadSearchParams } from "@/modules/blog/posts/params";
+import { prefetchPosts } from "@/modules/blog/posts/server/prefetch";
 
-import { DataTable } from "../_components/data-table";
-import { columns } from "../_components/columns";
+import {
+  PostsListHeader,
+  PostsView,
+  PostsViewError,
+  PostsViewLoading,
+} from "@/modules/blog/posts";
 
-const PostsPage = async () => {
+interface Props {
+  searchParams: Promise<SearchParams>;
+}
+
+const PostsPage = async ({ searchParams }: Props) => {
   await requireAdminAuth();
 
-  const posts = await getPostsGroupedByRootId();
+  const filters = await loadSearchParams(searchParams);
+
+  prefetchPosts(filters);
 
   return (
-    <div className="h-full w-full flex flex-col gap-y-4 px-6 py-3">
-      <ContentHeader label="Posts" totalEntries={posts.length} />
-      <DataTable columns={columns} data={posts} />
-    </div>
+    <>
+      <PostsListHeader />
+      <HydrateClient>
+        <Suspense fallback={<PostsViewLoading />}>
+          <ErrorBoundary fallback={<PostsViewError />}>
+            <PostsView />
+          </ErrorBoundary>
+        </Suspense>
+      </HydrateClient>
+    </>
   );
 };
 
