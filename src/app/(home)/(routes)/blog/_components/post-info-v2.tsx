@@ -1,10 +1,12 @@
-import { getCategoriesString } from "@/data/category";
-import { getAuthorsString } from "@/data/user";
 import { User } from "@/generated/prisma";
+
 import { formatDistance } from "date-fns";
 import { it } from "date-fns/locale";
 
 import type { JSX } from "react";
+
+import { getAuthorsString } from "@/data/user";
+import { getCategoriesString } from "@/modules/blog/categories/utils/get-categories-string";
 
 interface PostInfoV2Props {
   categories: { title: string; slug: string }[];
@@ -28,7 +30,7 @@ const PostInfoV2 = ({
         {
           addSuffix: true,
           locale: it,
-        }
+        },
       )} / ${categoriesString} `}
     </div>
   );
