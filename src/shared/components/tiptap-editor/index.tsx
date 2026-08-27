@@ -14,7 +14,7 @@ const Tiptap = ({ editor, value }: TiptapProps) => {
       <MenuBar editor={editor} sticky />
       <EditorContent
         editor={editor}
-        className="max-w-full p-4 border border-t-0 prose rounded-b-lg"
+        className="max-w-full p-4 prose rounded-b-lg"
       />
     </div>
   );

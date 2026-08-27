@@ -86,12 +86,12 @@ export const MenuBar = ({
         textAlign: editor.isActive({ textAlign: "left" })
           ? "left"
           : editor.isActive({ textAlign: "center" })
-          ? "center"
-          : editor.isActive({ textAlign: "right" })
-          ? "right"
-          : editor.isActive({ textAlign: "justify" })
-          ? "justify"
-          : null,
+            ? "center"
+            : editor.isActive({ textAlign: "right" })
+              ? "right"
+              : editor.isActive({ textAlign: "justify" })
+                ? "justify"
+                : null,
       };
     },
   });
@@ -142,10 +142,10 @@ export const MenuBar = ({
   return (
     <div
       className={cn(
-        "bg-accent border rounded-t-md top-0 z-10 p-2 h-full flex flex-col space-y-4",
+        "bg-accent border-y drop-shadow top-0 z-10 p-2 h-full flex flex-col space-y-4",
         padding === "xs" && "p-1",
         padding === "lg" && "p-4",
-        sticky && "sticky"
+        sticky && "sticky",
       )}
     >
       <div className="flex items-center flex-wrap gap-x-1 h-full gap-y-2">
@@ -215,49 +215,35 @@ export const MenuBar = ({
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button type="button" variant="outline">
+            <Button type="button" size="sm" variant="outline">
               Insert Embed
-              <ChevronDown className="h-4 w-4 ml-2" />
+              <ChevronDown className="size-4 ml-2" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
             <DropdownMenuItem onClick={() => onOpen("selectAsset", getImage)}>
-              <LucideImage className="h-4 w-4 mr-2" />
+              <LucideImage className="size-4 mr-2" />
               Image
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onOpen("selectUrl", getVideo)}>
-              <Video className="h-4 w-4 mr-2" />
+              <Video className="size-4 mr-2" />
               Video
             </DropdownMenuItem>
-            {/* <DropdownMenuItem
-              onClick={() => onOpen("editLink", getAffiliateLink)}
-            >
-              <Link className="h-4 w-4 mr-2" />
-              Affiliate link
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={insertSponsorFirstImpression}>
-              <Blocks className="h-4 w-4 mr-2" />
-              Sponsor first impression
-            </DropdownMenuItem> */}
             <DropdownMenuItem
               onClick={() => onOpen("selectProduct", getProduct)}
             >
-              <Box className="h-4 w-4 mr-2" />
+              <Box className="size-4 mr-2" />
               Product
             </DropdownMenuItem>
 
             <DropdownMenuItem onClick={insertInfoBoxNode}>
-              <Info className="h-4 w-4 mr-2" />
+              <Info className="size-4 mr-2" />
               Info box
             </DropdownMenuItem>
             <DropdownMenuItem onClick={insertTableContentNode}>
-              <ListOrderedIcon className="h-4 w-4 mr-2" />
+              <ListOrderedIcon className="size-4 mr-2" />
               Table of Contents
             </DropdownMenuItem>
-            {/* <DropdownMenuItem onClick={insertTable}>
-                <Table className="h-4 w-4 mr-2" />
-                Table
-              </DropdownMenuItem> */}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

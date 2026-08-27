@@ -54,39 +54,10 @@ export const PageForm = ({ onSuccess, onCancel }: PageFormProps) => {
     }),
   );
 
-  // const updatePage = useMutation(
-  //   trpc.pages.update.mutationOptions({
-  //     onSuccess: async () => {
-  //       await queryClient.invalidateQueries(
-  //         trpc.pages.getMany.queryOptions(filters),
-  //       );
-  //       if (initialValues?.id) {
-  //         await queryClient.invalidateQueries(
-  //           trpc.pages.getOne.queryOptions({ id: initialValues.id }),
-  //         );
-  //       }
-  //       toast.success("Page updated successfully!");
-  //       onSuccess?.();
-  //     },
-  //     onError: (error) => {
-  //       toast.error(error.message);
-  //     },
-  //   }),
-  // );
-
-  // const isEdit = !!initialValues?.id;
   const isPending = createPage.isPending;
 
   const onSubmit = (values: PageInsertValues) => {
-    // if (isEdit) {
-    //   updatePage.mutate({
-    //     ...values,
-    //     id: initialValues.id,
-    //     rootId: initialValues.rootId,
-    //   });
-    // } else {
     createPage.mutate(values);
-    // }
   };
 
   const { field: fieldTitle } = useController({

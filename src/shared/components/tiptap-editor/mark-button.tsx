@@ -16,6 +16,8 @@ export const MarkButton = ({ onClick, isActive, Icon }: MarkButtonProps) => {
       pressed={isActive}
       onClick={onClick}
       aria-label="Toggle"
+      size="sm"
+      className="bg-background"
     >
       <Icon className="size-4" />
     </Toggle>

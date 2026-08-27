@@ -13,7 +13,7 @@ export const SingleSendIdView = ({
   const { data: singleSend } = useSuspenseSingleSend(singleSendId);
 
   return (
-    <div className="py-2 px-6 mx-auto h-full flex flex-col overflow-auto">
+    <div className="py-2 px-6 h-full flex flex-col overflow-auto">
       <WriteForm singleSend={singleSend} />
     </div>
   );

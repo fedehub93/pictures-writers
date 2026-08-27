@@ -1,6 +1,8 @@
+import { useEffect, useState } from "react";
 import * as z from "zod";
 
-import { useCategoriesQuery } from "@/app/(admin)/_hooks/use-categories";
+import { useCategoriesQuery } from "@/modules/blog/categories/hooks/use-categories";
+
 import {
   FormControl,
   FormDescription,
@@ -19,11 +21,7 @@ import {
 import { Control, useController } from "react-hook-form";
 import { widgetFormSchema } from "../widget-form";
 import { WidgetPostCategoryFilter } from "@/types";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/shared/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 import { Button } from "@/shared/ui/button";
 import { cn } from "@/shared/lib/utils";
 import { Check, PlusCircle } from "lucide-react";
@@ -37,7 +35,6 @@ import {
 } from "@/shared/ui/command";
 import { Badge } from "@/shared/ui/badge";
 import { Separator } from "@/shared/ui/separator";
-import { useEffect, useState } from "react";
 
 interface SpecificCategoryFormProps {
   control: Control<z.infer<typeof widgetFormSchema>>;
@@ -104,7 +101,7 @@ export const SpecificCategoryForm = ({
 
   useEffect(() => {
     setIsDisabledSpecificCategory(
-      fieldCategoryFilter.value !== WidgetPostCategoryFilter.SPECIFIC
+      fieldCategoryFilter.value !== WidgetPostCategoryFilter.SPECIFIC,
     );
   }, [fieldCategoryFilter.value]);
 
@@ -227,7 +224,7 @@ export const SpecificCategoryForm = ({
                               "ml-auto",
                               field.value.includes(category.rootId!)
                                 ? "opacity-100"
-                                : "opacity-0"
+                                : "opacity-0",
                             )}
                           />
                         </CommandItem>

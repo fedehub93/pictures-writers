@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import type { GetPaginatedPosts } from "@/data/post";
+
+import type { GetPaginatedPosts } from "@/modules/blog/posts/server/queries";
 
 type UsePostsInfiniteQueryProps = {
   s: string;
@@ -13,7 +14,6 @@ export const usePostsInfiniteQuery = ({
   minChar = true,
   windowIsOpen = false,
 }: UsePostsInfiniteQueryProps) => {
-  // ✅ Nota bene: pageParam è unknown perché React Query lo fornisce così
   const fetchPosts = async ({
     pageParam,
   }: {
@@ -35,7 +35,9 @@ export const usePostsInfiniteQuery = ({
     }
 
     const params = { cursor, s };
-    const { data } = await axios.get<GetPaginatedPosts>("/api/posts", { params });
+    const { data } = await axios.get<GetPaginatedPosts>("/api/posts", {
+      params,
+    });
 
     return data;
   };

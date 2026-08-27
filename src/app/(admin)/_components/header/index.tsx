@@ -28,21 +28,32 @@ export const Header = ({ user }: HeaderProps) => {
   const pathname = usePathname();
 
   const segments = pathname.split("/").filter((seg) => seg !== "");
-  // const routes = getRouteNameMap();
+  const totalSegments = segments.length;
 
   const breadcrumbs = segments.map((seg, index) => {
     const href = "/" + segments.slice(0, index + 1).join("/");
     const name = seg;
-    const isLast = index === segments.length - 1;
+    const isLast = index === totalSegments - 1;
+    const isSecondToLast = index === totalSegments - 2;
+
+    // In mobile mostra SOLO il penultimo elemento. Su desktop mostra TUTTI gli elementi.
+    const itemVisibility = isSecondToLast
+      ? "flex md:flex"
+      : "hidden md:flex";
+
+    // Su mobile i separatori sono sempre nascosti. Su desktop sono visibili tranne l'ultimo.
+    const separatorVisibility = !isLast ? "hidden md:flex" : "hidden";
 
     return (
       <React.Fragment key={href}>
-        <BreadcrumbItem className="block">
+        <BreadcrumbItem className={itemVisibility}>
           <BreadcrumbLink href={href} className="capitalize">
             {name}
           </BreadcrumbLink>
         </BreadcrumbItem>
-        {!isLast && <BreadcrumbSeparator className="block" />}
+        {!isLast && (
+          <BreadcrumbSeparator className={separatorVisibility} />
+        )}
       </React.Fragment>
     );
   });

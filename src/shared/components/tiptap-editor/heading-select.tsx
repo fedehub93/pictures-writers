@@ -51,7 +51,7 @@ export const HeadingSelect = ({ editor }: { editor: Editor }) => {
 
   return (
     <Select value={editorState.heading} onValueChange={handleChange}>
-      <SelectTrigger className="w-[140px]">
+      <SelectTrigger className="w-35 h-9">
         <SelectValue placeholder="Heading" />
       </SelectTrigger>
       <SelectContent>

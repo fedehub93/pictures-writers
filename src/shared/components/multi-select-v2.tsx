@@ -50,13 +50,12 @@ export const MultiSelectV2 = ({
             <Button
               type="button"
               variant="outline"
-              className="border-dashed w-full flex gap-x-2 justify-start"
+              // Aggiunto: h-auto, min-h-10, py-2, items-center e flex-wrap
+              className="border-dashed w-full flex flex-wrap items-center gap-2 justify-start h-auto min-h-10 py-2"
               disabled={isSubmitting}
             >
-              <PlusCircle className="h-4 w-4" />
               {showValuesInButton && (
                 <>
-                  <Separator orientation="vertical" className="mx-2 h-4" />
                   {values.length === 0 && <div>Select {label}</div>}
                   {values.length > 0 && (
                     <Badge
@@ -66,7 +65,8 @@ export const MultiSelectV2 = ({
                       {values.length} {label} selected
                     </Badge>
                   )}
-                  <div className="hidden space-x-1 lg:flex">
+                  {/* Modificato: rimosso space-x-1, aggiunto flex-wrap e gap-1 */}
+                  <div className="hidden flex-wrap gap-1 lg:flex items-center">
                     {values.length > 8 ? (
                       <Badge
                         variant="secondary"
@@ -96,6 +96,15 @@ export const MultiSelectV2 = ({
                             {option.label}
                           </Badge>
                         ))
+                    )}
+                    {values.length > 0 && (
+                      <>
+                        <Separator
+                          orientation="vertical"
+                          className="mx-2 h-4"
+                        />
+                        <PlusCircle className="h-4 w-4 shrink-0" />
+                      </>
                     )}
                   </div>
                 </>
@@ -130,7 +139,7 @@ export const MultiSelectV2 = ({
           </div>
         </FormControl>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0">
+      <PopoverContent className="w-full p-0" align="end">
         <Command
           filter={(value, search) => {
             const isFound = options.find(

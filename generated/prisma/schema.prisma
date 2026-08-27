@@ -141,9 +141,13 @@ model User {
 
   role UserRole @default(USER)
 
-  pages         Page[]
-  posts         Post[]
-  postAuthors   PostAuthor[]
+  pages Page[]
+
+  posts       Post[]
+  categories  Category[]
+  tags        Tag[]
+  postAuthors PostAuthor[]
+
   notifications Notification[]
   products      Product[]
 
@@ -388,6 +392,9 @@ model Category {
   seo   Seo?    @relation(fields: [seoId], references: [id])
   seoId String?
 
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
+
   firstPublishedAt DateTime @default(now())
   publishedAt      DateTime @default(now())
   createdAt        DateTime @default(now())
@@ -430,11 +437,13 @@ model Tag {
   seo   Seo?    @relation(fields: [seoId], references: [id])
   seoId String?
 
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
+
   firstPublishedAt DateTime @default(now())
   publishedAt      DateTime @default(now())
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   @@index([rootId])
 }

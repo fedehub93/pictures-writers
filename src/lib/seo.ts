@@ -1,4 +1,11 @@
-import { Category, Page, Post, Product, Tag } from "@/generated/prisma";
+import {
+  Category,
+  Page,
+  Post,
+  Product,
+  ProductCategory,
+  Tag,
+} from "@/generated/prisma";
 import { db } from "./db";
 
 const updateSeoRootId = async (seoId: string, rootId: string) => {
@@ -137,7 +144,7 @@ export const createProductSeo = async (product: Product) => {
   return productUPdatedSeo;
 };
 
-export const createProductCategorySeo = async (category: Category) => {
+export const createProductCategorySeo = async (category: ProductCategory) => {
   const categorySeo = await db.seo.create({
     data: {
       title: category.title,
