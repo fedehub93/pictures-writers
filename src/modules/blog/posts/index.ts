@@ -2,12 +2,15 @@ export {
   PostsView,
   PostsViewLoading,
   PostsViewError,
-} from "./ui/views/posts-view";
+} from "./ui/admin/views/posts-view";
 
 export {
   PostIdView,
   PostIdViewLoading,
   PostIdViewError,
-} from "./ui/views/post-id-view";
+} from "./ui/admin/views/post-id-view";
 
-export { PostsListHeader } from "./ui/components/posts-list-header";
+export { PostSlugView } from "./ui/public/views/post-slug-view";
+export { PostDraftSlugView } from "./ui/public/views/post-draft-slug-view";
+
+export { PostsListHeader } from "./ui/admin/components/posts-list-header";
