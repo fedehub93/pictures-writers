@@ -8,13 +8,7 @@ import { toast } from "sonner";
 
 import { ContentStatus, EditorType, type User } from "@/generated/prisma";
 
-import { useAutoSave } from "@/modules/blog/shared/hooks/use-auto-save";
-
-import { usePostsFilters } from "../../hooks/use-posts-filters";
-import { postUpdateSchema, type PostUpdateValues } from "../../schemas";
-import { ContentForm } from "./content-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Separator } from "@/shared/ui/separator";
 import { Field } from "@/shared/ui/field";
 import {
   Select,
@@ -24,7 +18,12 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 import { Form } from "@/shared/ui/form";
-import { ScrollArea } from "@/shared/ui/scroll-area";
+
+import { useAutoSave } from "@/modules/blog/shared/hooks/use-auto-save";
+
+import { usePostsFilters } from "../../hooks/use-posts-filters";
+import { postUpdateSchema, type PostUpdateValues } from "../../schemas";
+import { ContentForm } from "./content-form";
 
 interface PostDetailsFormProps {
   id: string;

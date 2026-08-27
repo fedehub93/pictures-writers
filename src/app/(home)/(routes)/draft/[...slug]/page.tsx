@@ -153,6 +153,7 @@ const Page = async (props: PageProps<"/draft/[...slug]">) => {
   }
 
   const post = await getDraftPostBySlug(slugPath);
+  console.log(post)
 
   if (!post) {
     return notFound();

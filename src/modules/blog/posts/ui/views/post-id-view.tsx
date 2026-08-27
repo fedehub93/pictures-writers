@@ -31,6 +31,7 @@ import { PostStatusIndicator } from "../components/post-status-indicator";
 import { CategoriesForm } from "../components/categories-form";
 import { TagsForm } from "../components/tags-form";
 import { ImageForm } from "../components/image-form";
+import { SlugPreviewForm } from "../components/slug-preview-form";
 
 interface PostIdViewProps {
   rootId: string;
@@ -98,9 +99,11 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
             trpc.posts.getLastByRootId.queryFilter({ rootId }),
           );
         }
+        setStatus("saved");
         toast.success("Post updated successfully!");
       },
       onError: (error) => {
+        setStatus("error");
         toast.error(error.message || "Impossibile aggiornare");
       },
     }),
@@ -154,25 +157,6 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
             required
             disabled={disabled}
           />
-          <div className="flex items-center gap-x-1 -ml-1">
-            <span className="text-xs">{process.env.NEXT_PUBLIC_APP_URL}/</span>
-            <EditableField
-              initialValue={post.slug}
-              onSave={async (value) => {
-                setStatus("saving");
-                await updatePost.mutateAsync({
-                  id: post.id,
-                  rootId,
-                  slug: value,
-                });
-                setStatus("saved");
-              }}
-              textClassName="!text-xs font-medium"
-              placeholder="Post slug..."
-              required
-              disabled={disabled}
-            />
-          </div>
 
           <EditableTextareaField
             initialValue={post.description ?? ""}
@@ -214,10 +198,8 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
         </div>
       </div>
 
-      {/* 3. Area Contenuto: occupa lo spazio rimanente */}
       <Tabs defaultValue="post" className="flex-1 flex flex-col min-h-0 w-full">
         <div className="flex-1 grid grid-cols-1 xl:grid-cols-24 gap-8 xl:gap-8 pt-6 xl:overflow-hidden">
-          {/* Sidebar Sinistra (Tabs Trigger) - Stabile in alto */}
           <div className="xl:col-span-4 shrink-0">
             <TabsList className="flex flex-row xl:flex-col h-auto w-full justify-start bg-transparent p-0">
               <TabsTrigger
@@ -235,7 +217,6 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
             </TabsList>
           </div>
 
-          {/* Colonna Centrale (Editor) - UNICA AD AVERE LO SCROLL (`overflow-y-auto`) */}
           <ScrollArea className="xl:col-span-13 min-w-0 h-[90vh] min-h-112.5 xl:h-full rounded-xl px-4">
             <TabsContent
               value="post"
@@ -257,16 +238,13 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
             </TabsContent>
           </ScrollArea>
 
-          {/* Sidebar Destra (Metadati e Form aggiuntivi) - Stabile o scrollabile autonomamente */}
           <ScrollArea className="xl:col-span-7 shrink-0 h-auto xl:h-full xl:overflow-y-auto px-4 rounded-xl">
             <div className="space-y-4 pb-12">
-              {/* <StatusBox
-                status={post.status}
-                lastSavedAt={post.updatedAt}
-                disabled={disabled}
-                canPublish={isComplete}
-                onToggleStatus={onTogglePublish}
-              /> */}
+              <SlugPreviewForm
+                postId={post.id}
+                rootId={rootId}
+                initialData={post}
+              />
               <ImageForm postId={post.id} rootId={rootId} initialData={post} />
               <AuthorsForm
                 postId={post.id}

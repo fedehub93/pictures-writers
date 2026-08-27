@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { MoreHorizontal, Trash2 } from "lucide-react";
+import { MoreHorizontalIcon, Trash2Icon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -78,7 +78,7 @@ export const ImageForm = ({ initialData, rootId, postId }: ImageFormProps) => {
     (dirtyData) => {
       setStatus("saving");
       updatePost({
-        ...dirtyData, // conterrà imageCoverId invece di imageCover
+        ...dirtyData,
         id: postId,
         rootId: rootId,
       });
@@ -87,7 +87,7 @@ export const ImageForm = ({ initialData, rootId, postId }: ImageFormProps) => {
   );
 
   const getImage = (media: Media) => {
-    setPreviewMedia(media); // Aggiorna la UI
+    setPreviewMedia(media);
     form.setValue("imageCoverId", media.id, {
       shouldDirty: true,
       shouldValidate: true,
@@ -96,7 +96,7 @@ export const ImageForm = ({ initialData, rootId, postId }: ImageFormProps) => {
   };
 
   const onHandleRemove = () => {
-    setPreviewMedia(null); // Aggiorna la UI
+    setPreviewMedia(null);
     form.setValue("imageCoverId", null, {
       shouldDirty: true,
       shouldValidate: true,
@@ -113,21 +113,24 @@ export const ImageForm = ({ initialData, rootId, postId }: ImageFormProps) => {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="h-8 w-8 p-0"
+                className="size-8 p-0"
                 disabled={isPending}
               >
                 <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
+                <MoreHorizontalIcon className="size-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                className="cursor-pointer text-destructive"
-                onClick={onHandleRemove}
-                disabled={isPending}
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Remove
+              <DropdownMenuItem asChild>
+                <Button
+                  variant="ghost"
+                  onClick={onHandleRemove}
+                  disabled={isPending}
+                  className="bg-destructive px-2! w-full justify-start text-destructive-foreground gap-0"
+                >
+                  <Trash2Icon className="size-4 mr-2" />
+                  Remove
+                </Button>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -135,7 +138,7 @@ export const ImageForm = ({ initialData, rootId, postId }: ImageFormProps) => {
       </CardHeader>
       <CardContent>
         {!previewMedia ? (
-          <div className="flex w-full items-center justify-center h-56 border border-slate-300 border-dashed rounded-md">
+          <div className="flex w-full items-center justify-center h-56 border border-dashed rounded-md">
             <Button
               type="button"
               disabled={isPending}

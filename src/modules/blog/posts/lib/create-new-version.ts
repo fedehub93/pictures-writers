@@ -65,8 +65,6 @@ export const createNewVersion = async (input: Partial<PostUpdateValues>) => {
         ...oldPostData,
         ...inputData,
         id: undefined,
-        rootId: undefined,
-        seoId: undefined,
         title: input.title || latestPost.title,
         slug: input.slug || latestPost.slug,
         version: latestPost.version + 1,
