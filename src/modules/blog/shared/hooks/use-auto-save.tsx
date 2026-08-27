@@ -4,6 +4,7 @@ import { UseFormReturn, FieldValues } from "react-hook-form";
 export function useAutoSave<T extends FieldValues>(
   form: UseFormReturn<T>,
   saveAction: (dirtyData: Partial<T>) => void,
+  delay: number = 1000,
 ) {
   const performSave = () => {
     const { dirtyFields } = form.formState;
@@ -19,5 +20,5 @@ export function useAutoSave<T extends FieldValues>(
     saveAction(dirtyData);
   };
 
-  return useDebounceCallback(performSave, 1000);
+  return useDebounceCallback(performSave, delay);
 }

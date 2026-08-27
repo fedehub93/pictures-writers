@@ -44,6 +44,7 @@ export const createNewVersion = async (input: Partial<PostUpdateValues>) => {
     } = latestPost;
 
     // Gestione differenziata per le mappature (Risoluzione Punto 2)
+
     const tagsToConnect = inputTags
       ? inputTags.map((t) => ({ id: t.id }))
       : latestPost.tags.map((t) => ({ id: t.id }));
@@ -64,6 +65,8 @@ export const createNewVersion = async (input: Partial<PostUpdateValues>) => {
         ...oldPostData,
         ...inputData,
         id: undefined,
+        rootId: undefined,
+        seoId: undefined,
         title: input.title || latestPost.title,
         slug: input.slug || latestPost.slug,
         version: latestPost.version + 1,
@@ -74,7 +77,6 @@ export const createNewVersion = async (input: Partial<PostUpdateValues>) => {
             { type: "paragraph", children: [{ text: "" }] },
           ],
         tiptapBodyData: input.tiptapBodyData || latestPost.tiptapBodyData,
-
         tags: { connect: tagsToConnect },
         postCategories: { create: categoriesToCreate },
         postAuthors: { create: authorsToCreate },

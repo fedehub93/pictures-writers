@@ -8,11 +8,7 @@ import { Notification } from "@/generated/prisma";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/shared/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/shared/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 import { Separator } from "@/shared/ui/separator";
 import { useNotificationsQuery } from "../../_hooks/use-notifications-query";
 
@@ -50,9 +46,7 @@ export const Notifications = ({ userId }: { userId: string }) => {
   if (status === "error") {
     return (
       <div className="flex h-full flex-col flex-1 justify-center items-center">
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          Something went wrong
-        </p>
+        <p className="text-xs">Something went wrong</p>
       </div>
     );
   }
@@ -63,7 +57,7 @@ export const Notifications = ({ userId }: { userId: string }) => {
         <Button variant="ghost" size="icon">
           <Bell className="h-6 w-6" strokeWidth={1.5} />
           {totalNotifications > 0 && (
-            <span className="absolute rounded-full bg-indigo-500 text-white text-xs w-5 h-5 -top-1 -right-1  flex items-center justify-center ">
+            <span className="absolute rounded-full bg-primary text-white text-xs w-5 h-5 -top-1 -right-1  flex items-center justify-center ">
               {totalNotifications}
             </span>
           )}
@@ -112,8 +106,8 @@ export const Notifications = ({ userId }: { userId: string }) => {
                 {isFetchingNextPage
                   ? "Loading more..."
                   : hasNextPage
-                  ? "Load More"
-                  : "Nothing more to load"}
+                    ? "Load More"
+                    : "Nothing more to load"}
               </Button>
             </div>
           </>

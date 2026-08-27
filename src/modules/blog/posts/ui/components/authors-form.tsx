@@ -8,7 +8,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import { toast } from "sonner";
 
-import { ContentStatus, User } from "@/generated/prisma";
+import type { User } from "@/generated/prisma";
 import { Form } from "@/shared/ui/form";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
@@ -34,9 +34,11 @@ import { useAuthorsQuery } from "@/app/(admin)/_hooks/use-authors-query";
 
 import { postUpdateSchema, type PostUpdateValues } from "../../schemas";
 import { usePostsFilters } from "../../hooks/use-posts-filters";
+import { usePostStore } from "../../store/use-post-store";
 
 interface AuthorsFormProps {
-  initialData: { status: ContentStatus; firstPublishedAt: Date } & {
+  initialData: {
+    firstPublishedAt: Date;
     postAuthors: {
       user: User;
       sort: number;
@@ -54,6 +56,7 @@ export const AuthorsForm = ({
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const [filters] = usePostsFilters();
+  const { setStatus, reset } = usePostStore();
 
   const form = useForm<PostUpdateValues>({
     resolver: zodResolver(postUpdateSchema),
@@ -84,15 +87,18 @@ export const AuthorsForm = ({
             trpc.posts.getLastByRootId.queryFilter({ rootId }),
           );
         }
+        setStatus("saved");
         toast.success("Post updated successfully");
       },
       onError: (error) => {
+        setStatus("error");
         toast.error(error.message);
       },
     }),
   );
 
   const onSelectAuthor = (a: { id: string; sort: number }) => {
+    setStatus("saving");
     const current = form.getValues("authors") || [];
     const exists = current.some((v) => v.id === a.id);
 
@@ -138,9 +144,8 @@ export const AuthorsForm = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Separator />
         <Form {...form}>
-          <form className="space-y-4 mt-4">
+          <form className="space-y-4">
             <Controller
               control={form.control}
               name="authors"

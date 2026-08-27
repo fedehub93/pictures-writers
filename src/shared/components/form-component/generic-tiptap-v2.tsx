@@ -16,6 +16,7 @@ import { cn } from "@/shared/lib/utils";
 import Tiptap from "../tiptap-editor";
 import { TableContentNode } from "../tiptap-editor/extensions/table-content";
 import { CustomBold } from "../tiptap-editor/extensions/bold";
+import { countWordsFromTiptap } from "../tiptap-renderer/helpers/words-counter";
 
 interface GenericTiptapProps<T extends FieldValues> {
   id: string;

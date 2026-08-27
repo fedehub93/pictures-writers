@@ -92,12 +92,13 @@ export const EditableTextareaField = ({
                     value={field.value || ""}
                     className={cn(
                       "border-0 shadow-none focus-visible:ring-0 rounded-none",
-                      "h-auto p-2 -ml-2 pr-16 border-b border-border bg-transparent w-full",
+                      "min-h-0 p-1 h-auto  resize-y -ml-2 pr-16 border-b border-border bg-transparent w-full leading-tight",
                       textClassName,
                     )}
                     placeholder={placeholder}
                     disabled={disabled || isSubmitting}
                     autoFocus
+                    rows={1}
                   />
 
                   <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
@@ -139,7 +140,7 @@ export const EditableTextareaField = ({
       onClick={() => !disabled && setIsEditing(true)}
       onKeyDown={(e) => e.key === "Enter" && !disabled && setIsEditing(true)}
       className={cn(
-        "relative inline-block max-w-full group p-2 -ml-2 rounded-md border-b border-transparent transition-all duration-200",
+        "relative inline-block max-w-full group p-1 -ml-2 rounded-md border-b border-transparent transition-all duration-200",
         disabled ? "opacity-70 cursor-not-allowed" : "cursor-text!",
       )}
     >

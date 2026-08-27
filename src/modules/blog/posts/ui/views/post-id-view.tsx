@@ -9,28 +9,28 @@ import { Trash2Icon } from "lucide-react";
 import { ContentStatus } from "@/generated/prisma";
 
 import { Button } from "@/shared/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+import { ScrollArea } from "@/shared/ui/scroll-area";
 
 import { LoadingState } from "@/shared/components/loading-state";
 import { ErrorState } from "@/shared/components/error-state";
 
 import { EditableField } from "@/modules/blog/shared/components/editable-field";
 import { EditableTextareaField } from "@/modules/blog/shared/components/editable-textarea-field";
-import { StatusBox } from "@/modules/blog/shared/components/status-box";
 
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 
-import { PostDetailsForm } from "../components/post-details-form";
 import { useSuspensePost } from "../../hooks/use-posts";
 import { usePostsFilters } from "../../hooks/use-posts-filters";
+import { usePostStore } from "../../store/use-post-store";
 
+import { PostDetailsForm } from "../components/post-details-form";
 import { SeoForm } from "../components/seo-form";
 import { AuthorsForm } from "../components/authors-form";
 import { PostStatusIndicator } from "../components/post-status-indicator";
-import { usePostStore } from "../../store/use-post-store";
 import { CategoriesForm } from "../components/categories-form";
-import { ScrollArea } from "@/shared/ui/scroll-area";
+import { TagsForm } from "../components/tags-form";
+import { ImageForm } from "../components/image-form";
 
 interface PostIdViewProps {
   rootId: string;
@@ -154,25 +154,42 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
             required
             disabled={disabled}
           />
-
-          <div className="max-w-2xl">
-            <EditableTextareaField
-              initialValue={post.description ?? ""}
+          <div className="flex items-center gap-x-1 -ml-1">
+            <span className="text-xs">{process.env.NEXT_PUBLIC_APP_URL}/</span>
+            <EditableField
+              initialValue={post.slug}
               onSave={async (value) => {
                 setStatus("saving");
                 await updatePost.mutateAsync({
                   id: post.id,
                   rootId,
-                  description: value,
+                  slug: value,
                 });
                 setStatus("saved");
               }}
-              textClassName="!text-xs text-muted-foreground"
-              placeholder="Post description..."
+              textClassName="!text-xs font-medium"
+              placeholder="Post slug..."
               required
               disabled={disabled}
             />
           </div>
+
+          <EditableTextareaField
+            initialValue={post.description ?? ""}
+            onSave={async (value) => {
+              setStatus("saving");
+              await updatePost.mutateAsync({
+                id: post.id,
+                rootId,
+                description: value,
+              });
+              setStatus("saved");
+            }}
+            textClassName="!text-xs text-muted-foreground"
+            placeholder="Post description..."
+            required
+            disabled={disabled}
+          />
         </div>
 
         <div className="flex justify-between gap-x-4 shrink-0">
@@ -219,7 +236,7 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
           </div>
 
           {/* Colonna Centrale (Editor) - UNICA AD AVERE LO SCROLL (`overflow-y-auto`) */}
-          <ScrollArea className="xl:col-span-13 min-w-0 h-[65vh] min-h-112.5 xl:h-full rounded-xl px-4">
+          <ScrollArea className="xl:col-span-13 min-w-0 h-[90vh] min-h-112.5 xl:h-full rounded-xl px-4">
             <TabsContent
               value="post"
               className="mt-0 outline-none max-w-4xl mx-auto pb-12"
@@ -241,15 +258,16 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
           </ScrollArea>
 
           {/* Sidebar Destra (Metadati e Form aggiuntivi) - Stabile o scrollabile autonomamente */}
-          <div className="xl:col-span-7 shrink-0 h-auto xl:h-full xl:overflow-y-auto px-4">
+          <ScrollArea className="xl:col-span-7 shrink-0 h-auto xl:h-full xl:overflow-y-auto px-4 rounded-xl">
             <div className="space-y-4 pb-12">
-              <StatusBox
+              {/* <StatusBox
                 status={post.status}
                 lastSavedAt={post.updatedAt}
                 disabled={disabled}
                 canPublish={isComplete}
                 onToggleStatus={onTogglePublish}
-              />
+              /> */}
+              <ImageForm postId={post.id} rootId={rootId} initialData={post} />
               <AuthorsForm
                 postId={post.id}
                 rootId={rootId}
@@ -260,8 +278,9 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
                 rootId={rootId}
                 initialData={post}
               />
+              <TagsForm postId={post.id} rootId={rootId} initialData={post} />
             </div>
-          </div>
+          </ScrollArea>
         </div>
       </Tabs>
     </div>

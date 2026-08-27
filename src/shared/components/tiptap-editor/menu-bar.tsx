@@ -142,7 +142,7 @@ export const MenuBar = ({
   return (
     <div
       className={cn(
-        "bg-secondary border-y drop-shadow top-0 z-10 p-2 h-full flex flex-col space-y-4",
+        "bg-accent border-y drop-shadow top-0 z-10 p-2 h-full flex flex-col space-y-4",
         padding === "xs" && "p-1",
         padding === "lg" && "p-4",
         sticky && "sticky",

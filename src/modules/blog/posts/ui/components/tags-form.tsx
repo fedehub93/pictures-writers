@@ -19,29 +19,19 @@ import { useAutoSave } from "@/modules/blog/shared/hooks/use-auto-save";
 import { postUpdateSchema, type PostUpdateValues } from "../../schemas";
 import { usePostsFilters } from "../../hooks/use-posts-filters";
 import { usePostStore } from "../../store/use-post-store";
+import { useTagsQuery } from "@/modules/blog/tags/hooks/use-tags";
 
-interface CategoriesFormProps {
+interface TagsFormProps {
   initialData: {
-    postCategories: {
-      category: {
-        id: string;
-        rootId: string | null;
-        title: string;
-        slug: string;
-        status: string;
-      };
-      sort: number;
+    tags: {
+      id: string;
     }[];
   };
   rootId: string;
   postId: string;
 }
 
-export const CategoriesForm = ({
-  initialData,
-  rootId,
-  postId,
-}: CategoriesFormProps) => {
+export const TagsForm = ({ initialData, rootId, postId }: TagsFormProps) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const [filters] = usePostsFilters();
@@ -49,21 +39,19 @@ export const CategoriesForm = ({
 
   const form = useForm<PostUpdateValues>({
     resolver: zodResolver(postUpdateSchema),
-    defaultValues: {
-      categories:
-        initialData?.postCategories?.map((a) => ({
-          id: a.category.id,
-          sort: a.sort,
-        })) ?? [],
+    values: {
+      tags: initialData.tags
+        ? [
+            ...initialData.tags.map((t) => ({
+              id: t.id,
+            })),
+          ]
+        : [],
     },
     mode: "onChange",
   });
 
-  const {
-    data: categories,
-    isError: isCategoryError,
-    isLoading,
-  } = useCategoriesQuery();
+  const { data: tags, isError: isTagError, isLoading } = useTagsQuery();
 
   const { mutate: updatePost, isPending } = useMutation(
     trpc.posts.update.mutationOptions({
@@ -91,20 +79,19 @@ export const CategoriesForm = ({
         ...dirtyData,
         id: postId,
         rootId: rootId,
-        categories: dirtyData.categories ?? [],
+        tags: dirtyData.tags ?? [],
       });
     },
     0,
   );
 
-  const isLoadingSkeleton =
-    isLoading && (!categories || categories.length === 0);
+  const isLoadingSkeleton = isLoading && (!tags || tags.length === 0);
 
   if (isLoadingSkeleton) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Categories</CardTitle>
+          <CardTitle className="text-base">Tags</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Separator />
@@ -114,26 +101,23 @@ export const CategoriesForm = ({
     );
   }
 
-  if (!categories || isCategoryError)
-    return <div>Error loading categories...</div>;
+  if (!tags || isTagError) return <div>Error loading tags...</div>;
 
   return (
     <Card className="rounded-xl">
       <CardHeader>
-        <CardTitle className="text-base flex justify-between">
-          Categories
-        </CardTitle>
+        <CardTitle className="text-base flex justify-between">Tags</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <Form {...form}>
           <form className="space-y-4">
             <MultiSelectField
               control={form.control}
-              name="categories"
+              name="tags"
               disabled={isPending}
               options={
-                categories
-                  ? categories.map((c) => ({
+                tags
+                  ? tags.map((c) => ({
                       id: c.id,
                       title: c.title,
                       status: c.status,

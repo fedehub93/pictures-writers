@@ -1,4 +1,3 @@
-// store/use-editor-status.ts
 import { create } from "zustand";
 
 export type PostStatus =
@@ -7,7 +6,8 @@ export type PostStatus =
   | "saving"
   | "saved"
   | "publishing"
-  | "published";
+  | "published"
+  | "error";
 
 interface PostStoreState {
   status: PostStatus;
@@ -17,6 +17,11 @@ interface PostStoreState {
 
 export const usePostStore = create<PostStoreState>((set) => ({
   status: "no_change",
-  setStatus: (status) => set({ status }),
+  setStatus: (status) => {
+    set({ status });
+    setTimeout(() => {
+      set({ status: "no_change" });
+    }, 5000);
+  },
   reset: () => set({ status: "no_change" }),
 }));

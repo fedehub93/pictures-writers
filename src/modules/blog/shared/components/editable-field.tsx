@@ -91,7 +91,7 @@ export const EditableField = ({
                     value={field.value || ""}
                     className={cn(
                       "border-0 shadow-none focus-visible:ring-0 rounded-none",
-                      "h-auto p-1 -ml-2 pr-16 border-b border-border bg-transparent w-full",
+                      "h-auto p-1 -ml-2 pr-16 border-b border-primary bg-transparent w-full",
                       textClassName,
                     )}
                     placeholder={placeholder}

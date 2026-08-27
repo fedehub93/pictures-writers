@@ -231,13 +231,7 @@ export const postsRouter = createTRPCRouter({
               isLatest: true,
             },
           },
-          imageCover: {
-            select: {
-              url: true,
-              name: true,
-              altText: true,
-            },
-          },
+          imageCover: true,
           postAuthors: {
             select: {
               user: true,
