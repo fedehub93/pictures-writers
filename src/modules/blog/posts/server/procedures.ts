@@ -19,9 +19,12 @@ import {
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,
   MIN_PAGE_SIZE,
+  POST_BATCH,
 } from "../constants";
 
 import { createNewVersion } from "../lib/create-new-version";
+
+import { getPaginatedPosts } from "./queries";
 
 export const postsRouter = createTRPCRouter({
   create: protectedProcedure
@@ -315,6 +318,63 @@ export const postsRouter = createTRPCRouter({
         },
         take: input.pageSize,
         skip: (input.page - 1) * input.pageSize,
+      });
+
+      return posts;
+    }),
+  getPaginated: protectedProcedure
+    .input(
+      z.object({
+        cursor: z.string().nullish(),
+        s: z.string().optional().default(""),
+        page: z.number().optional().default(1),
+      }),
+    )
+    .query(async ({ input }) => {
+      try {
+        const { cursor, s, page } = input;
+
+        const { posts, pagination, nextCursor } = await getPaginatedPosts({
+          cursor: cursor ?? null,
+          searchString: s,
+          page,
+          postBatch: POST_BATCH,
+        });
+
+        return {
+          posts,
+          pagination,
+          nextCursor,
+        };
+      } catch (error) {
+        console.error("[POST_GET]", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Errore interno durante il recupero dei post",
+        });
+      }
+    }),
+  getPublishedByIds: protectedProcedure
+    .input(
+      z.object({
+        ids: z.array(z.uuid()).nonempty(),
+      }),
+    )
+
+    .query(async ({ input }) => {
+      const posts = await db.post.findMany({
+        where: {
+          status: ContentStatus.PUBLISHED,
+          isLatest: true,
+          rootId: { in: input.ids },
+        },
+        select: {
+          id: true,
+          rootId: true,
+          title: true,
+          imageCover: { select: { url: true } },
+          slug: true,
+        },
       });
 
       return posts;

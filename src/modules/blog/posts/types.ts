@@ -4,6 +4,9 @@ import { AppRouter } from "@/trpc/routers/_app";
 
 export type PostsGetMany = inferRouterOutputs<AppRouter>["posts"]["getMany"];
 
+export type PostsByIds =
+  inferRouterOutputs<AppRouter>["posts"]["getPublishedByIds"];
+
 export type PostGetOne = inferRouterOutputs<AppRouter>["posts"]["getOne"];
 
 export type PostGetLastByRootId =

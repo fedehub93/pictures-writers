@@ -12,6 +12,7 @@ import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { ScrollArea } from "@/shared/ui/scroll-area";
+
 import { usePostsInfiniteQuery } from "@/hooks/use-posts-infinite-query";
 
 export const SearchBar = () => {
@@ -38,7 +39,7 @@ export const SearchBar = () => {
       <div
         className={cn(
           "bg-white fixed top-20 left-0 h-0 w-screen transition-all duration-500 overflow-hidden px-6 shadow-xl opacity-0 md:hidden",
-          isOpen && "h-auto min-h-20 opacity-100"
+          isOpen && "h-auto min-h-20 opacity-100",
         )}
       >
         <div className="w-full">
@@ -108,8 +109,8 @@ export const SearchBar = () => {
                     {isFetchingNextPage
                       ? "Loading more..."
                       : hasNextPage
-                      ? "Load More"
-                      : "Nothing more to load"}
+                        ? "Load More"
+                        : "Nothing more to load"}
                   </Button>
                 </div>
               )}

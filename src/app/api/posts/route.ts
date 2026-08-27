@@ -5,35 +5,8 @@ import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
 
 import { createPostSeo } from "@/lib/seo";
-import { getPaginatedPosts } from "@/data/post";
 
-const POST_BATCH = 5;
-
-export async function GET(req: Request) {
-  try {
-    const { searchParams } = new URL(req.url);
-
-    const cursor = searchParams.get("cursor");
-    const s = searchParams.get("s") || "";
-    const page = Number(searchParams.get("page")) || 1;
-
-    const { posts, pagination, nextCursor } = await getPaginatedPosts({
-      cursor,
-      searchString: s,
-      page,
-      postBatch: POST_BATCH,
-    });
-
-    return NextResponse.json({
-      posts,
-      pagination,
-      nextCursor,
-    });
-  } catch (error) {
-    console.log("[POST_GET]", error);
-    return new NextResponse("Internal Error", { status: 500 });
-  }
-}
+export { GET } from "@/modules/blog/posts/server/api/get-infinite-query";
 
 export async function POST(req: Request) {
   try {

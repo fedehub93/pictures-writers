@@ -19,6 +19,10 @@ const statusConfig: Record<
     label: "No change",
     Icon: <CircleIcon className="size-3 fill-current" />,
   },
+  error: {
+    label: "Error",
+    Icon: <AlertCircleIcon className="size-4 fill-current" />,
+  },
   edited: {
     label: "Edited",
     Icon: <AlertCircleIcon className="size-4 fill-current" />,

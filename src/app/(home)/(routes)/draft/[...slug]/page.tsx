@@ -7,13 +7,13 @@ import {
   WidgetType,
 } from "@/generated/prisma";
 
-import { db } from "@/lib/db";
-
 import {
   getDraftPostBySlug,
-  getPostsPaginatedByFilters,
+  getPaginatedPostsByFilters,
   getPublishedDraftPostsBuilding,
-} from "@/data/post";
+} from "@/modules/blog/posts/server/queries";
+
+import { db } from "@/shared/lib/db";
 
 import { getPublishedProductByRootId } from "@/data/product";
 
@@ -64,7 +64,7 @@ export async function generateMetadata(
   if (slugPath === "blog") {
     const metadata = await getHeadMetadata();
 
-    const { posts } = await getPostsPaginatedByFilters({
+    const { posts } = await getPaginatedPostsByFilters({
       page: 1,
       where: {
         status: ContentStatus.DRAFT,
@@ -121,7 +121,7 @@ const Page = async (props: PageProps<"/draft/[...slug]">) => {
   const { siteUrl } = await getSettings();
 
   if (slugPath === "blog") {
-    const { posts, totalPages, currentPage } = await getPostsPaginatedByFilters(
+    const { posts, totalPages, currentPage } = await getPaginatedPostsByFilters(
       {
         page: 1,
         where: {
@@ -153,7 +153,6 @@ const Page = async (props: PageProps<"/draft/[...slug]">) => {
   }
 
   const post = await getDraftPostBySlug(slugPath);
-  console.log(post)
 
   if (!post) {
     return notFound();

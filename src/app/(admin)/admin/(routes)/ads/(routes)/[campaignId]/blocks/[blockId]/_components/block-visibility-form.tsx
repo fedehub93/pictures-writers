@@ -11,8 +11,7 @@ import { GenericMultiSelect } from "@/shared/components/form-component/generic-m
 
 import { useCategoriesQuery } from "@/modules/blog/categories/hooks/use-categories";
 import { useTagsQuery } from "@/modules/blog/tags/hooks/use-tags";
-
-import { usePostsQuery } from "@/app/(admin)/_hooks/use-posts-query";
+import { usePostsQuery } from "@/modules/blog/posts/hooks/use-posts";
 
 interface BlockVisibilityFormProps {
   control: Control<AdBlockFormValues>;

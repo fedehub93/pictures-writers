@@ -12,13 +12,14 @@ import { Skeleton } from "@/shared/ui/skeleton";
 import { AdItemFormValues } from "@/schemas/ads";
 
 import type { GetPublishedProductByRootId } from "@/data/product";
-import type { GetPublishedPostByRootId } from "@/data/post";
 
 import { GenericInput } from "@/shared/components/form-component/generic-input";
 import { GenericTextarea } from "@/shared/components/form-component/generic-textarea";
 
+import { usePostRootIdQuery } from "@/modules/blog/posts/hooks/use-posts";
+import type { GetPublishedPostByRootId } from "@/modules/blog/posts/server/queries";
+
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
-import { usePostRootIdQuery } from "@/app/(admin)/_hooks/use-post-root-id-query";
 import { useProductRootIdQuery } from "@/app/(admin)/_hooks/use-product-root-id-query";
 
 interface ItemContentProps {

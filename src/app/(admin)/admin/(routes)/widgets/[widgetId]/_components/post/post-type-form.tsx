@@ -3,12 +3,12 @@
 import * as z from "zod";
 import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { ChangeEvent } from "react";
 
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 import { Control, useController } from "react-hook-form";
 import { Grip, Trash2 } from "lucide-react";
+import { useTRPC } from "@/trpc/client";
 
 import {
   FormControl,
@@ -30,10 +30,12 @@ import {
 import { Input } from "@/shared/ui/input";
 
 import { WidgetPostMetadataPosts, WidgetPostType } from "@/types";
+
+import type { PostsByIds } from "@/modules/blog/posts/types";
+
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 
 import { widgetFormSchema } from "../widget-form";
-import { GetPostsByIds } from "@/data/post";
 
 interface PostTypeFormProps {
   control: Control<z.infer<typeof widgetFormSchema>>;
@@ -74,6 +76,7 @@ export const PostTypeForm = ({
   isSubmitting,
   isDisabled = true,
 }: PostTypeFormProps) => {
+  const trpc = useTRPC();
   const { onOpen } = useModal();
   const { field: fieldPostType } = useController({
     control,
@@ -92,20 +95,15 @@ export const PostTypeForm = ({
     fieldLimit.onChange(Number.parseInt(e.target.value));
   };
 
-  const fetchPosts = async (ids: string[]) => {
-    const { data } = await axios.post<GetPostsByIds>("/api/admin/posts/fetch", {
-      ids,
-    });
-    return data;
-  };
-
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["postsFetch", fieldPosts.value.length],
-    queryFn: () =>
-      fetchPosts(
-        fieldPosts.value.map((v: WidgetPostMetadataPosts) => v.rootId),
-      ),
-    enabled: fieldPosts.value.length > 0,
+    ...trpc.posts.getPublishedByIds.queryOptions(
+      {
+        ids: fieldPosts.value.map((v: WidgetPostMetadataPosts) => v.rootId),
+      },
+      {
+        enabled: fieldPosts.value.length,
+      },
+    ),
   });
 
   if (isLoading) return <div>Loading...</div>;
@@ -116,7 +114,7 @@ export const PostTypeForm = ({
     onOpen("selectPost", onSelectPost);
   };
 
-  const onSelectPost = (post: GetPostsByIds[number]) => {
+  const onSelectPost = (post: PostsByIds[number]) => {
     fieldPosts.onChange([
       ...fieldPosts.value,
       { rootId: post.rootId, sort: fieldPosts.value.length },

@@ -14,10 +14,11 @@ import { Separator } from "@/shared/ui/separator";
 import { ScrollArea } from "@/shared/ui/scroll-area";
 import { Button } from "@/shared/ui/button";
 
-import { GetPaginatedPosts } from "@/data/post";
+import type { GetPaginatedPosts } from "@/modules/blog/posts/server/queries";
+
+import { usePostsInfiniteQuery } from "@/hooks/use-posts-infinite-query";
 
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
-import { usePostsInfiniteQuery } from "@/hooks/use-posts-infinite-query";
 
 export const SelectPostModal = () => {
   const { isOpen, onClose, type, onCallback } = useModal();
@@ -114,8 +115,8 @@ export const SelectPostModal = () => {
                 {isFetchingNextPage
                   ? "Loading more..."
                   : hasNextPage
-                  ? "Load More"
-                  : "Nothing more to load"}
+                    ? "Load More"
+                    : "Nothing more to load"}
               </Button>
             </div>
           )}

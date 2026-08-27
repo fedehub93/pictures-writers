@@ -1,9 +1,11 @@
 import { Metadata } from "next";
 
 import { ContentStatus } from "@/generated/prisma";
-import { PostList } from "./post-list";
+
+import { getPaginatedPostsByFilters } from "@/modules/blog/posts/server/queries";
+
 import { getHeadMetadata } from "../../../_components/seo/head-metadata";
-import { getPostsPaginatedByFilters } from "@/data/post";
+import { PostList } from "./post-list";
 
 type Props = {
   searchParams: Promise<{ page: string }>;
@@ -15,7 +17,7 @@ export async function generateMetadata(props: Props): Promise<Metadata | null> {
 
   const currentPage = Number(searchParams?.page) || 1;
 
-  const { posts } = await getPostsPaginatedByFilters({
+  const { posts } = await getPaginatedPostsByFilters({
     page: currentPage,
     where: {
       status: ContentStatus.PUBLISHED,
@@ -31,7 +33,7 @@ export async function generateMetadata(props: Props): Promise<Metadata | null> {
 }
 
 const Page = async () => {
-  const { posts, totalPages, currentPage } = await getPostsPaginatedByFilters({
+  const { posts, totalPages, currentPage } = await getPaginatedPostsByFilters({
     page: 1,
     where: {
       status: ContentStatus.PUBLISHED,

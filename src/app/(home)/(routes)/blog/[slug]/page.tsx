@@ -2,14 +2,20 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { ContentStatus } from "@/generated/prisma";
-import { db } from "@/lib/db";
 
+import { getPaginatedPostsByFilters } from "@/modules/blog/posts/server/queries";
+import { getPostsByFilters } from "@/modules/blog/posts/server/queries";
 import {
   getPublishedCategoriesBuilding,
   getPublishedCategoryBySlug,
-} from "@/lib/category";
-import { getPublishedTagBySlug, getPublishedTagsBuilding } from "@/lib/tag";
-import { getPostsByFilters, getPostsPaginatedByFilters } from "@/data/post";
+} from "@/modules/blog/categories/server/queries";
+import {
+  getPublishedTagBySlug,
+  getPublishedTagsBuilding,
+} from "@/modules/blog/tags/server/queries";
+
+import { db } from "@/shared/lib/db";
+
 import { getSettings } from "@/data/settings";
 
 import {
@@ -45,7 +51,7 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata(
-  props: PageProps<"/blog/[slug]">
+  props: PageProps<"/blog/[slug]">,
 ): Promise<Metadata | null> {
   const params = await props.params;
   const { slug } = params;
@@ -68,7 +74,7 @@ export async function generateMetadata(
   const metadata = await getHeadMetadata();
 
   if (!isNaN(slugPage) && isFinite(slugPage) && slugPage > 0) {
-    const { posts } = await getPostsPaginatedByFilters({
+    const { posts } = await getPaginatedPostsByFilters({
       page: slugPage,
       where: {
         status: ContentStatus.PUBLISHED,
@@ -99,7 +105,7 @@ const Page = async (props: PageProps<"/blog/[slug]">) => {
   const slugPage = typeof slug === "string" ? Number.parseInt(slug) : 1;
 
   if (!isNaN(slugPage) && isFinite(slugPage) && slugPage > 0) {
-    result = await getPostsPaginatedByFilters({
+    result = await getPaginatedPostsByFilters({
       page: slugPage,
       where: { status: ContentStatus.PUBLISHED, isLatest: true },
     });

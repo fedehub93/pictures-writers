@@ -35,3 +35,26 @@ export const usePostsQuery = () => {
     isError,
   };
 };
+
+export const usePostRootIdQuery = ({
+  rootId,
+  enabled = true,
+}: {
+  rootId?: string | null;
+  enabled?: boolean;
+}) => {
+  const trpc = useTRPC();
+
+  const { data, isLoading, isError } = useQuery({
+    ...trpc.posts.getLastByRootId.queryOptions({ rootId: rootId ?? "" }),
+    enabled,
+    refetchOnMount: true,
+    staleTime: 0,
+  });
+
+  return {
+    data,
+    isLoading,
+    isError,
+  };
+};

@@ -1,4 +1,4 @@
-import type { GetPostsByFiltersReturn } from "@/data/post";
+import type { GetPostsByFiltersReturn } from "@/modules/blog/posts/server/queries";
 
 import PostCard from "./post-card";
 

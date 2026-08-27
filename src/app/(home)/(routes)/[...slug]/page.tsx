@@ -18,13 +18,13 @@ import {
 import { PuckRender } from "@/puck/render-config";
 
 import {
-  getPostsPaginatedByFilters,
+  getPaginatedPostsByFilters,
   getPublishedPostBySlug,
-} from "@/data/post";
+  getPublishedPostsBuilding,
+} from "@/modules/blog/posts/server/queries";
+
 import { getPublishedProductByRootId } from "@/data/product";
 import { getSettings } from "@/data/settings";
-
-import { getPublishedPostsBuilding } from "@/lib/post";
 
 import {
   getPageMetadataBySlug,
@@ -62,7 +62,7 @@ export async function generateMetadata(
   if (slugPath === "blog") {
     const metadata = await getHeadMetadata();
 
-    const { posts } = await getPostsPaginatedByFilters({
+    const { posts } = await getPaginatedPostsByFilters({
       page: 1,
       where: {
         status: ContentStatus.PUBLISHED,
@@ -95,7 +95,7 @@ const Page = async (props: PageProps<"/[...slug]">) => {
   const { siteUrl } = await getSettings();
 
   if (slugPath === "blog") {
-    const { posts, totalPages, currentPage } = await getPostsPaginatedByFilters(
+    const { posts, totalPages, currentPage } = await getPaginatedPostsByFilters(
       {
         page: 1,
         where: {

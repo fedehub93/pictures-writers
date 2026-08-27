@@ -2,8 +2,9 @@ import Image from "next/image";
 
 import { EditorType } from "@/generated/prisma";
 
+import type { GetPublishedPostBySlug } from "@/modules/blog/posts/server/queries";
+
 import { getAdBlocks } from "@/data/ad-blocks";
-import type { GetPublishedPostBySlug } from "@/data/post";
 import { getPlaceholderImage } from "@/lib/image";
 
 import { normalizeContent } from "@/shared/components/tiptap-renderer/helpers/normalize-content";

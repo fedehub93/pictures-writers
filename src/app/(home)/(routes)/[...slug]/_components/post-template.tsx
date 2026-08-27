@@ -4,7 +4,6 @@ import { EditorType } from "@/generated/prisma";
 import { getAdBlocks } from "@/data/ad-blocks";
 
 import { getPlaceholderImage } from "@/lib/image";
-import type { GetDraftPostBySlug } from "@/data/post";
 
 import { SlateRendererV2 } from "@/shared/components/editor/view/slate-renderer";
 
@@ -14,6 +13,8 @@ import PostInfoV2 from "@/app/(home)/(routes)/blog/_components/post-info-v2";
 import { TipTapRendererV2 } from "@/shared/components/tiptap-renderer";
 import { normalizeContent } from "@/shared/components/tiptap-renderer/helpers/normalize-content";
 import { countWordsFromTiptap } from "@/shared/components/tiptap-renderer/helpers/words-counter";
+
+import type { GetDraftPostBySlug } from "@/modules/blog/posts/server/queries/draft";
 
 import { WidgetPostBottom } from "./post-bottom";
 

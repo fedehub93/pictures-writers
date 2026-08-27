@@ -1,13 +1,13 @@
-import Sidebar from "@/app/(home)/_components/sidebar";
+import type { GetPaginatedPostsByFiltersReturn } from "@/modules/blog/posts/server/queries";
 
-import type { GetPostsPaginatedByFiltersReturn } from "@/data/post";
+import Sidebar from "@/app/(home)/_components/sidebar";
 
 import PostCard from "./post-card";
 
 import { PostPagination } from "./post-pagination";
 
 interface PostListProps {
-  posts: GetPostsPaginatedByFiltersReturn["posts"];
+  posts: GetPaginatedPostsByFiltersReturn["posts"];
   currentPage: number;
   totalPages: number;
 }

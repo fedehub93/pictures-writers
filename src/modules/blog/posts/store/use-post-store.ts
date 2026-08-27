@@ -17,11 +17,6 @@ interface PostStoreState {
 
 export const usePostStore = create<PostStoreState>((set) => ({
   status: "no_change",
-  setStatus: (status) => {
-    set({ status });
-    setTimeout(() => {
-      set({ status: "no_change" });
-    }, 5000);
-  },
+  setStatus: (status) => set({ status }),
   reset: () => set({ status: "no_change" }),
 }));
