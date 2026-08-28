@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Control, FieldValues, Path, useController } from "react-hook-form";
 import { useEditor } from "@tiptap/react";
+import type { Editor } from "@tiptap/core";
 
 import StarterKit from "@tiptap/starter-kit";
 import TextAlign from "@tiptap/extension-text-align";
@@ -23,6 +24,7 @@ interface GenericTiptapProps<T extends FieldValues> {
   control: Control<T>;
   name: Path<T>;
   onUpdate?: () => void;
+  onEditorReady?: (editor: Editor | null) => void;
 }
 
 export const GenericTiptapV2 = <T extends FieldValues>({
@@ -30,6 +32,7 @@ export const GenericTiptapV2 = <T extends FieldValues>({
   control,
   name,
   onUpdate,
+  onEditorReady,
 }: GenericTiptapProps<T>) => {
   const { field } = useController({ control, name });
   const editor = useEditor({
@@ -72,6 +75,14 @@ export const GenericTiptapV2 = <T extends FieldValues>({
       });
     },
   });
+
+  useEffect(() => {
+    onEditorReady?.(editor);
+
+    return () => {
+      onEditorReady?.(null);
+    };
+  }, [editor, onEditorReady]);
 
   return <Tiptap key={id} editor={editor} value={field.value} />;
 };

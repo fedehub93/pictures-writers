@@ -4,6 +4,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Descendant } from "slate";
+import type { Editor as TiptapEditor } from "@tiptap/core";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import { toast } from "sonner";
@@ -30,6 +31,7 @@ interface BodyFormProps {
   };
   rootId: string;
   postId: string;
+  onEditorReady?: (editor: TiptapEditor | null) => void;
 }
 
 const formSchema = z.object({
@@ -37,7 +39,12 @@ const formSchema = z.object({
   tiptapBodyData: z.any().optional(),
 });
 
-export const ContentForm = ({ initialData, rootId, postId }: BodyFormProps) => {
+export const ContentForm = ({
+  initialData,
+  rootId,
+  postId,
+  onEditorReady,
+}: BodyFormProps) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const [filters] = usePostsFilters();
@@ -126,6 +133,7 @@ export const ContentForm = ({ initialData, rootId, postId }: BodyFormProps) => {
               control={form.control}
               name="tiptapBodyData"
               onUpdate={handleAutoSave}
+              onEditorReady={onEditorReady}
             />
           )}
         </form>

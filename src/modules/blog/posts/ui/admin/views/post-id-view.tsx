@@ -1,16 +1,19 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
+import type { Editor as TiptapEditor } from "@tiptap/core";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Trash2Icon } from "lucide-react";
 
-import { ContentStatus } from "@/generated/prisma";
+import { ContentStatus, EditorType } from "@/generated/prisma";
 
 import { Button } from "@/shared/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { ScrollArea } from "@/shared/ui/scroll-area";
+import { PostOutline } from "../components/post-outline";
 
 import { LoadingState } from "@/shared/components/loading-state";
 import { ErrorState } from "@/shared/components/error-state";
@@ -33,6 +36,8 @@ import { TagsForm } from "../components/tags-form";
 import { ImageForm } from "../components/image-form";
 import { SlugPreviewForm } from "../components/slug-preview-form";
 
+import { cn } from "@/shared/lib/utils";
+
 interface PostIdViewProps {
   rootId: string;
 }
@@ -44,6 +49,18 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
   const queryClient = useQueryClient();
   const [filters, _] = usePostsFilters();
   const { setStatus } = usePostStore();
+  const [activeTab, setActiveTab] = useState("post");
+  const [tiptapEditor, setTiptapEditor] = useState<TiptapEditor | null>(null);
+
+  const handleEditorReady = useCallback((editor: TiptapEditor | null) => {
+    setTiptapEditor(editor);
+  }, []);
+
+  useEffect(() => {
+    if (post.editorType !== EditorType.TIPTAP) {
+      setTiptapEditor(null);
+    }
+  }, [post.editorType]);
 
   const publishPost = useMutation(
     trpc.posts.publish.mutationOptions({
@@ -198,26 +215,56 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
         </div>
       </div>
 
-      <Tabs defaultValue="post" className="flex-1 flex flex-col min-h-0 w-full">
-        <div className="flex-1 grid grid-cols-1 xl:grid-cols-24 gap-8 xl:gap-8 pt-6 xl:overflow-hidden">
-          <div className="xl:col-span-4 shrink-0">
-            <TabsList className="flex flex-row xl:flex-col h-auto w-full justify-start bg-transparent p-0">
-              <TabsTrigger
-                value="post"
-                className="w-full justify-start rounded-none border-b-2 xl:border-b-0 xl:border-l-2 border-border px-4 py-2.5 transition-colors hover:text-secondary-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
-              >
-                Post
-              </TabsTrigger>
-              <TabsTrigger
-                value="seo"
-                className="w-full justify-start rounded-none border-b-2 xl:border-b-0 xl:border-l-2 border-border px-4 py-2.5 transition-colors hover:text-secondary-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
-              >
-                SEO
-              </TabsTrigger>
-            </TabsList>
-          </div>
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="flex-1 flex flex-col min-h-0 w-full"
+      >
+        <div className="shrink-0 px-8 pt-4">
+          <TabsList className="flex h-auto w-full flex-row justify-start bg-transparent p-0">
+            <TabsTrigger
+              value="post"
+              className="w-auto justify-start rounded-none border-b-2 border-border px-4 py-2.5 transition-colors hover:text-secondary-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
+            >
+              Post
+            </TabsTrigger>
+            <TabsTrigger
+              value="seo"
+              className="w-auto justify-start rounded-none border-b-2 border-border px-4 py-2.5 transition-colors hover:text-secondary-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
+            >
+              SEO
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
-          <ScrollArea className="xl:col-span-13 min-w-0 h-[90vh] min-h-112.5 xl:h-full rounded-xl px-4">
+        <div className="flex-1 grid grid-cols-1 xl:grid-cols-24 gap-8 xl:gap-8 pt-6 xl:overflow-hidden">
+          {post.editorType === EditorType.TIPTAP && (
+            <TabsContent
+              value="post"
+              className="mt-0 hidden min-h-0 outline-none xl:col-span-4 xl:block"
+            >
+              <PostOutline editor={tiptapEditor} />
+            </TabsContent>
+          )}
+
+          <TabsContent
+            value="seo"
+            className="mt-0 hidden min-h-0 outline-none xl:col-span-4 xl:block"
+          >
+            <div className="sticky top-0 px-4 pt-2 text-sm text-muted-foreground">
+              Optimize the title, description and metadata of this post for
+              search engines.
+            </div>
+          </TabsContent>
+
+          <ScrollArea
+            className={cn(
+              "min-w-0 h-[90vh] min-h-112.5 rounded-xl px-4 xl:h-full",
+              activeTab === "post" && post.editorType !== EditorType.TIPTAP
+                ? "xl:col-span-17"
+                : "xl:col-span-13",
+            )}
+          >
             <TabsContent
               value="post"
               className="mt-0 outline-none max-w-4xl mx-auto pb-12"
@@ -226,6 +273,7 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
                 id={post.id}
                 rootId={rootId}
                 initialData={post}
+                onEditorReady={handleEditorReady}
               />
             </TabsContent>
 
@@ -238,7 +286,7 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
             </TabsContent>
           </ScrollArea>
 
-          <ScrollArea className="xl:col-span-7 shrink-0 h-auto xl:h-full xl:overflow-y-auto px-4 rounded-xl">
+          <ScrollArea className="xl:col-span-7 shrink-0 h-auto rounded-xl px-4 xl:h-full xl:overflow-y-auto">
             <div className="space-y-4 pb-12">
               <SlugPreviewForm
                 postId={post.id}

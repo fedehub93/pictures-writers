@@ -1,6 +1,7 @@
 "use client";
 
 import { Controller, useForm } from "react-hook-form";
+import type { Editor as TiptapEditor } from "@tiptap/core";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTRPC } from "@/trpc/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -49,12 +50,14 @@ interface PostDetailsFormProps {
     bodyData: any;
     tiptapBodyData: any;
   } | null;
+  onEditorReady?: (editor: TiptapEditor | null) => void;
 }
 
 export const PostDetailsForm = ({
   id,
   rootId,
   initialData,
+  onEditorReady,
 }: PostDetailsFormProps) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -133,7 +136,12 @@ export const PostDetailsForm = ({
         </Form>
       </CardHeader>
       <CardContent className="p-0 mt-0">
-        <ContentForm postId={id} rootId={rootId} initialData={initialData} />
+        <ContentForm
+          postId={id}
+          rootId={rootId}
+          initialData={initialData}
+          onEditorReady={onEditorReady}
+        />
       </CardContent>
     </Card>
   );
