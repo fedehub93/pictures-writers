@@ -10,13 +10,13 @@ import { verifyRecaptcha } from "@/lib/recaptcha";
 
 export const contact = async (
   values: v.InferInput<typeof ContactSchemaValibot>,
-  recaptchaToken: string
+  recaptchaToken: string,
 ) => {
   try {
     // 1. Verify reCAPTCHA first
     const recaptchaResult = await verifyRecaptcha(
       recaptchaToken,
-      "contact_form"
+      "contact_form",
     );
     if (!recaptchaResult.success) {
       return {
@@ -31,19 +31,21 @@ export const contact = async (
     const validatedFields = v.parse(ContactSchemaValibot, values);
     const { name, email, subject, message } = validatedFields;
 
-    await db.contactForm.create({
+    await db.formSubmission.create({
       data: {
-        name,
+        formId: "cad10953-192a-423f-9d75-852a2b26034f",
+        // formId: "e8972c06-44ce-47c0-b206-5e18f1f4ee6d",
         email,
-        subject,
-        message,
+        data: {
+          name,
+          email,
+          subject,
+          message,
+        },
       },
     });
 
-    const existingContact = await createContactByEmail(
-      email,
-      "contact_requested"
-    );
+    await createContactByEmail(email, "contact_requested");
 
     //  Send notification to admins
     await handleContactRequested();

@@ -58,6 +58,7 @@ const nextConfig = {
     "/*": ["./node_modules/.prisma/client/**/*"],
   },
   reactCompiler: true,
+  allowedDevOrigins: ["127.0.0.1"]
 };
 
 const bundleAnalyzer = withBundleAnalyzer({

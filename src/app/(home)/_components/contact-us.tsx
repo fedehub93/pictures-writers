@@ -154,7 +154,7 @@ export const ContactUs = (): JSX.Element => {
               <GoogleRecaptchaV3 />
               {error && <div className="p-4 mb-4 bg-destructive">{error}</div>}
               {success && (
-                <div className="p-4 mb-4 bg-primary shadow-2xs rounded-md">
+                <div className="p-4 my-4 bg-primary text-primary-foreground shadow-2xs rounded-md">
                   {success}
                 </div>
               )}
