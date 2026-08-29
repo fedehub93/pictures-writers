@@ -10,10 +10,11 @@ import { Trash2Icon } from "lucide-react";
 
 import { ContentStatus, EditorType } from "@/generated/prisma";
 
+import { cn } from "@/shared/lib/utils";
+
 import { Button } from "@/shared/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { ScrollArea } from "@/shared/ui/scroll-area";
-import { PostOutline } from "../components/post-outline";
 
 import { LoadingState } from "@/shared/components/loading-state";
 import { ErrorState } from "@/shared/components/error-state";
@@ -35,8 +36,7 @@ import { CategoriesForm } from "../components/categories-form";
 import { TagsForm } from "../components/tags-form";
 import { ImageForm } from "../components/image-form";
 import { SlugPreviewForm } from "../components/slug-preview-form";
-
-import { cn } from "@/shared/lib/utils";
+import { PostOutline } from "../components/post-outline";
 
 interface PostIdViewProps {
   rootId: string;
@@ -237,11 +237,11 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
           </TabsList>
         </div>
 
-        <div className="flex-1 grid grid-cols-1 xl:grid-cols-24 gap-8 xl:gap-8 pt-6 xl:overflow-hidden">
+        <div className="flex-1 grid grid-cols-1 xl:grid-cols-24 gap-8 xl:gap-4 pt-6 xl:overflow-hidden">
           {post.editorType === EditorType.TIPTAP && (
             <TabsContent
               value="post"
-              className="mt-0 hidden min-h-0 outline-none xl:col-span-4 xl:block"
+              className="mt-0 hidden min-h-0 outline-none xl:col-span-5 xl:block pl-4"
             >
               <PostOutline editor={tiptapEditor} />
             </TabsContent>
@@ -249,7 +249,7 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
 
           <TabsContent
             value="seo"
-            className="mt-0 hidden min-h-0 outline-none xl:col-span-4 xl:block"
+            className="mt-0 hidden min-h-0 outline-none xl:col-span-5 xl:block"
           >
             <div className="sticky top-0 px-4 pt-2 text-sm text-muted-foreground">
               Optimize the title, description and metadata of this post for
@@ -262,7 +262,7 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
               "min-w-0 h-[90vh] min-h-112.5 rounded-xl px-4 xl:h-full",
               activeTab === "post" && post.editorType !== EditorType.TIPTAP
                 ? "xl:col-span-17"
-                : "xl:col-span-13",
+                : "xl:col-span-12",
             )}
           >
             <TabsContent

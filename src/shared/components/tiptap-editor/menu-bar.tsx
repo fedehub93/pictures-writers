@@ -216,7 +216,7 @@ export const MenuBar = ({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button type="button" size="sm" variant="outline">
-              Insert Embed
+              Embed
               <ChevronDown className="size-4 ml-2" />
             </Button>
           </DropdownMenuTrigger>
