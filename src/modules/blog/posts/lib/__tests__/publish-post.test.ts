@@ -1,8 +1,9 @@
 import { randomUUID } from "node:crypto";
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
 
 import { db } from "@/shared/lib/db";
 import { ContentStatus } from "@/generated/prisma";
+
 import { publishPost, PublishPostError } from "../publish-post";
 
 describe("publishPost workflow", () => {
@@ -65,7 +66,10 @@ describe("publishPost workflow", () => {
   describe("happy path", () => {
     it("publishes a DRAFT post and marks it as the latest version", async () => {
       const now = new Date("2025-06-01T10:00:00.000Z");
-      const post = await createPost({ status: ContentStatus.DRAFT, version: 1 });
+      const post = await createPost({
+        status: ContentStatus.DRAFT,
+        version: 1,
+      });
 
       const published = await publishPost({
         postId: post.id,
@@ -95,17 +99,14 @@ describe("publishPost workflow", () => {
       });
 
       const versionTwoFirstPublishedAt = new Date("2025-02-01T00:00:00.000Z");
-      const versionTwo = await db.post.create({
-        data: {
-          rootId,
-          title: "Test Post",
-          slug: "test-post",
-          version: 2,
-          status: ContentStatus.CHANGED,
-          bodyData: [{ type: "paragraph", children: [{ text: "" }] }],
-          firstPublishedAt: versionTwoFirstPublishedAt,
-          publishedAt: versionTwoFirstPublishedAt,
-        },
+      const versionTwo = await createPost({
+        rootId,
+        title: "Test Post",
+        slug: "test-post",
+        version: 2,
+        status: ContentStatus.CHANGED,
+        firstPublishedAt: versionTwoFirstPublishedAt,
+        publishedAt: versionTwoFirstPublishedAt,
       });
       trackRootId(rootId);
 
@@ -137,7 +138,10 @@ describe("publishPost workflow", () => {
   describe("idempotency", () => {
     it("does not publish a second time when called repeatedly on the same version", async () => {
       const now = new Date("2025-06-01T10:00:00.000Z");
-      const post = await createPost({ status: ContentStatus.DRAFT, version: 1 });
+      const post = await createPost({
+        status: ContentStatus.DRAFT,
+        version: 1,
+      });
 
       const firstResult = await publishPost({
         postId: post.id,
@@ -162,7 +166,10 @@ describe("publishPost workflow", () => {
 
     it("handles concurrent publish requests on the same version without duplicate publications", async () => {
       const now = new Date("2025-06-01T10:00:00.000Z");
-      const post = await createPost({ status: ContentStatus.DRAFT, version: 1 });
+      const post = await createPost({
+        status: ContentStatus.DRAFT,
+        version: 1,
+      });
 
       const results = await Promise.all([
         publishPost({ postId: post.id, rootId: post.rootId!, now }),
@@ -214,18 +221,15 @@ describe("publishPost workflow", () => {
         now: firstPublishAt,
       });
 
-      const versionTwo = await db.post.create({
-        data: {
-          rootId,
-          title: "Test Post",
-          slug: "test-post",
-          version: 2,
-          status: ContentStatus.PUBLISHED,
-          isLatest: true,
-          bodyData: [{ type: "paragraph", children: [{ text: "" }] }],
-          firstPublishedAt: firstPublishAt,
-          publishedAt: firstPublishAt,
-        },
+      const versionTwo = await createPost({
+        rootId,
+        title: "Test Post",
+        slug: "test-post",
+        version: 2,
+        status: ContentStatus.PUBLISHED,
+        isLatest: true,
+        firstPublishedAt: firstPublishAt,
+        publishedAt: firstPublishAt,
       });
       trackRootId(rootId);
 
@@ -258,7 +262,10 @@ describe("publishPost workflow", () => {
   describe("observable state for repeated manual publish", () => {
     it("keeps publishedAt and isLatest stable after a no-op publish", async () => {
       const now = new Date("2025-03-15T08:30:00.000Z");
-      const post = await createPost({ status: ContentStatus.DRAFT, version: 1 });
+      const post = await createPost({
+        status: ContentStatus.DRAFT,
+        version: 1,
+      });
 
       const published = await publishPost({
         postId: post.id,

@@ -48,27 +48,26 @@ export async function publishPost({
   return db.$transaction(async (tx) => {
     // Lock every version of the post root in a deterministic order to avoid
     // deadlocks and race conditions between concurrent publishers.
-    const rows = await tx.$queryRaw<
-      Array<{
-        id: string;
-        status: ContentStatus;
-        version: number;
-        isLatest: boolean;
-        title: string | null;
-      }>
-    >`SELECT id, status, version, "isLatest", title FROM "Post" WHERE "rootId" = ${rootId} ORDER BY id ASC FOR UPDATE`;
+    const posts = await tx.post.findMany({
+      where: { rootId },
+      select: {
+        id: true,
+        status: true,
+        version: true,
+        isLatest: true,
+        title: true,
+      },
+      orderBy: { id: "asc" },
+    });
 
-    const target = rows.find((row) => row.id === postId);
+    const target = posts.find((post) => post.id === postId);
 
     if (!target) {
       throw new PublishPostError("NOT_FOUND", "Post not found");
     }
 
     if (!target.title) {
-      throw new PublishPostError(
-        "VALIDATION_ERROR",
-        "Missing required fields",
-      );
+      throw new PublishPostError("VALIDATION_ERROR", "Missing required fields");
     }
 
     // Already published -> idempotent no-op. This keeps publishedAt,
@@ -87,10 +86,7 @@ export async function publishPost({
       target.status !== ContentStatus.DRAFT &&
       target.status !== ContentStatus.CHANGED
     ) {
-      throw new PublishPostError(
-        "INVALID_STATE",
-        "Post cannot be published",
-      );
+      throw new PublishPostError("INVALID_STATE", "Post cannot be published");
     }
 
     // Demote every version of the root so only the target becomes latest.

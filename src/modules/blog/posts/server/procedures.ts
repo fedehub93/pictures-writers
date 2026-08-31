@@ -23,7 +23,7 @@ import {
 } from "../constants";
 
 import { createNewVersion } from "../lib/create-new-version";
-import { publishPost, PublishPostError } from "../workflows/publish-post";
+import { publishPost, PublishPostError } from "../lib/publish-post";
 
 import { getPaginatedPosts } from "./queries";
 
