@@ -92,7 +92,7 @@ export const EditableTextareaField = ({
                     value={field.value || ""}
                     className={cn(
                       "border-0 shadow-none focus-visible:ring-0 rounded-none",
-                      "min-h-0 p-1 h-auto  resize-y -ml-2 pr-16 border-b border-border bg-transparent w-full leading-tight",
+                      "min-h-0 p-1 h-auto  pr-16 border-b border-border bg-transparent w-full leading-tight",
                       textClassName,
                     )}
                     placeholder={placeholder}
@@ -140,7 +140,7 @@ export const EditableTextareaField = ({
       onClick={() => !disabled && setIsEditing(true)}
       onKeyDown={(e) => e.key === "Enter" && !disabled && setIsEditing(true)}
       className={cn(
-        "relative inline-block max-w-full group p-1 -ml-2 rounded-md border-b border-transparent transition-all duration-200",
+        "relative inline-block max-w-full group rounded-md border-b border-transparent transition-all duration-200",
         disabled ? "opacity-70 cursor-not-allowed" : "cursor-text!",
       )}
     >
@@ -148,7 +148,7 @@ export const EditableTextareaField = ({
         <Edit2Icon className="size-4 text-muted-foreground" />
       </div>
 
-      <div className={cn("pr-8 wrap-break-words", textClassName)}>
+      <div className={cn("wrap-break-words", textClassName)}>
         {initialValue || (
           <span className="text-muted-foreground/70 italic">{placeholder}</span>
         )}

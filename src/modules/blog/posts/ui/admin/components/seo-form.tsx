@@ -84,14 +84,14 @@ export const SeoForm = ({ id, rootId, initialData }: SeoFormProps) => {
 
   return (
     <Card className="rounded-xl shadow-sm">
-      <CardHeader className="px-4 py-4 md:px-6 flex justify-between items-center flex-row border-b pb-6">
-        <CardTitle className="w-full text-xl font-normal text-foreground mb-0">
+      <CardHeader>
+        <CardTitle className="text-base flex justify-between">
           SEO
         </CardTitle>
       </CardHeader>
       <CardContent className="px-4 md:px-6">
         <Form {...form}>
-          <form onChange={handleAutoSave} className="p-2 flex flex-col gap-y-4">
+          <form onChange={handleAutoSave} className="py-4 flex flex-col gap-y-4">
             <InputField
               control={form.control}
               name="title"

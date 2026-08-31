@@ -7,24 +7,25 @@ import { useTRPC } from "@/trpc/client";
 import { toast } from "sonner";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { EditableField } from "@/modules/blog/shared/components/editable-field";
+
+import { EditableTextareaField } from "@/modules/blog/shared/components/editable-textarea-field";
 
 import { usePostStore } from "../../../store/use-post-store";
 import { usePostsFilters } from "../../../hooks/use-posts-filters";
 
-interface SlugPreviewFormProps {
+interface DescriptionFormProps {
   initialData: {
-    slug: string;
+    description: string | null;
   };
   rootId: string;
   postId: string;
 }
 
-export const SlugPreviewForm = ({
+export const DescriptionForm = ({
   initialData,
   rootId,
   postId,
-}: SlugPreviewFormProps) => {
+}: DescriptionFormProps) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const [filters] = usePostsFilters();
@@ -47,32 +48,27 @@ export const SlugPreviewForm = ({
     }),
   );
 
-  const previewLink = `${process.env.NEXT_PUBLIC_APP_URL}/draft/${initialData.slug}`;
-
   return (
     <Card className="rounded-xl">
       <CardHeader>
         <CardTitle className="text-base flex justify-between">
-          Slug & Preview
+          Description
         </CardTitle>
       </CardHeader>
       <CardContent className="flex items-center gap-x-1">
-        <Link href={previewLink as Route} target="_blank" className="text-xs">
-          {process.env.NEXT_PUBLIC_APP_URL}/
-        </Link>
-        <EditableField
-          initialValue={initialData.slug}
+        <EditableTextareaField
+          initialValue={initialData.description ?? ""}
           onSave={async (value) => {
             setStatus("saving");
             await updatePost.mutateAsync({
               id: postId,
               rootId,
-              slug: value,
+              description: value,
             });
             setStatus("saved");
           }}
-          textClassName="!text-xs font-medium"
-          placeholder="Post slug..."
+          textClassName="!text-xs"
+          placeholder="Post description..."
           required
         />
       </CardContent>

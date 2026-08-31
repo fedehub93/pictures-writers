@@ -7,20 +7,20 @@ import { useTRPC } from "@/trpc/client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Trash2Icon } from "lucide-react";
+import Link from "next/link";
+import { Route } from "next";
 
 import { ContentStatus, EditorType } from "@/generated/prisma";
 
 import { cn } from "@/shared/lib/utils";
 
 import { Button } from "@/shared/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { ScrollArea } from "@/shared/ui/scroll-area";
 
 import { LoadingState } from "@/shared/components/loading-state";
 import { ErrorState } from "@/shared/components/error-state";
 
 import { EditableField } from "@/modules/blog/shared/components/editable-field";
-import { EditableTextareaField } from "@/modules/blog/shared/components/editable-textarea-field";
 
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 
@@ -35,7 +35,7 @@ import { PostStatusIndicator } from "../components/post-status-indicator";
 import { CategoriesForm } from "../components/categories-form";
 import { TagsForm } from "../components/tags-form";
 import { ImageForm } from "../components/image-form";
-import { SlugPreviewForm } from "../components/slug-preview-form";
+import { DescriptionForm } from "../components/description-form";
 import { PostOutline } from "../components/post-outline";
 
 interface PostIdViewProps {
@@ -152,12 +152,14 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
   const disabled =
     publishPost.isPending || unpublishPost.isPending || updatePost.isPending;
 
+  const previewLink = `${process.env.NEXT_PUBLIC_APP_URL}/draft/${post.slug}`;
+
   return (
     // 1. Il contenitore principale occupa l'altezza disponibile dell'area lavoro ed evita lo scroll globale della finestra
     <div className="flex flex-col h-auto xl:h-[calc(100vh-64px)] xl:overflow-hidden bg-background">
       {/* 2. Topbar Fissa in alto con z-index elevato e border-b */}
       <div className="shrink-0 flex flex-col lg:flex-row gap-4 items-center justify-between border-b px-8 py-1 bg-background z-20">
-        <div className="flex-1 flex flex-col max-w-2xl">
+        <div className="flex-1 flex flex-col max-w-3xl">
           <EditableField
             initialValue={post.title}
             onSave={async (value) => {
@@ -174,23 +176,30 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
             required
             disabled={disabled}
           />
-
-          <EditableTextareaField
-            initialValue={post.description ?? ""}
-            onSave={async (value) => {
-              setStatus("saving");
-              await updatePost.mutateAsync({
-                id: post.id,
-                rootId,
-                description: value,
-              });
-              setStatus("saved");
-            }}
-            textClassName="!text-xs text-muted-foreground"
-            placeholder="Post description..."
-            required
-            disabled={disabled}
-          />
+          <div className="flex items-center gap-x-1">
+            <Link
+              href={previewLink as Route}
+              target="_blank"
+              className="text-xs"
+            >
+              {process.env.NEXT_PUBLIC_APP_URL}/
+            </Link>
+            <EditableField
+              initialValue={post.slug}
+              onSave={async (value) => {
+                setStatus("saving");
+                await updatePost.mutateAsync({
+                  id: post.id,
+                  rootId,
+                  slug: value,
+                });
+                setStatus("saved");
+              }}
+              textClassName="!text-xs font-medium"
+              placeholder="Post slug..."
+              required
+            />
+          </div>
         </div>
 
         <div className="flex justify-between gap-x-4 shrink-0">
@@ -215,47 +224,11 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
         </div>
       </div>
 
-      <Tabs
-        value={activeTab}
-        onValueChange={setActiveTab}
-        className="flex-1 flex flex-col min-h-0 w-full"
-      >
-        <div className="shrink-0 px-8 pt-4">
-          <TabsList className="flex h-auto w-full flex-row justify-start bg-transparent p-0">
-            <TabsTrigger
-              value="post"
-              className="w-auto justify-start rounded-none border-b-2 border-border px-4 py-2.5 transition-colors hover:text-secondary-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
-            >
-              Post
-            </TabsTrigger>
-            <TabsTrigger
-              value="seo"
-              className="w-auto justify-start rounded-none border-b-2 border-border px-4 py-2.5 transition-colors hover:text-secondary-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:shadow-none"
-            >
-              SEO
-            </TabsTrigger>
-          </TabsList>
-        </div>
-
+      <div className="flex-1 flex flex-col min-h-0 w-full">
         <div className="flex-1 grid grid-cols-1 xl:grid-cols-24 gap-8 xl:gap-4 pt-6 xl:overflow-hidden">
-          {post.editorType === EditorType.TIPTAP && (
-            <TabsContent
-              value="post"
-              className="mt-0 hidden min-h-0 outline-none xl:col-span-5 xl:block pl-4"
-            >
-              <PostOutline editor={tiptapEditor} />
-            </TabsContent>
-          )}
-
-          <TabsContent
-            value="seo"
-            className="mt-0 hidden min-h-0 outline-none xl:col-span-5 xl:block"
-          >
-            <div className="sticky top-0 px-4 pt-2 text-sm text-muted-foreground">
-              Optimize the title, description and metadata of this post for
-              search engines.
-            </div>
-          </TabsContent>
+          <div className="mt-0 hidden min-h-0 outline-none xl:col-span-5 xl:flex xl:flex-col pl-4 h-full">
+            <PostOutline editor={tiptapEditor} />
+          </div>
 
           <ScrollArea
             className={cn(
@@ -265,30 +238,19 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
                 : "xl:col-span-12",
             )}
           >
-            <TabsContent
-              value="post"
-              className="mt-0 outline-none max-w-4xl mx-auto pb-12"
-            >
+            <div className="mt-0 outline-none max-w-4xl mx-auto pb-12">
               <PostDetailsForm
                 id={post.id}
                 rootId={rootId}
                 initialData={post}
                 onEditorReady={handleEditorReady}
               />
-            </TabsContent>
-
-            <TabsContent value="seo" className="mt-0 outline-none pb-12">
-              <SeoForm
-                id={post.id}
-                rootId={post.rootId!}
-                initialData={post.seo}
-              />
-            </TabsContent>
+            </div>
           </ScrollArea>
 
-          <ScrollArea className="xl:col-span-7 shrink-0 h-auto rounded-xl px-4 xl:h-full xl:overflow-y-auto">
+          <ScrollArea className="xl:col-span-7 shrink-0 h-auto rounded-xl px-4 xl:h-full">
             <div className="space-y-4 pb-12">
-              <SlugPreviewForm
+              <DescriptionForm
                 postId={post.id}
                 rootId={rootId}
                 initialData={post}
@@ -305,10 +267,12 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
                 initialData={post}
               />
               <TagsForm postId={post.id} rootId={rootId} initialData={post} />
+
+              <SeoForm id={post.id} rootId={rootId} initialData={post.seo} />
             </div>
           </ScrollArea>
         </div>
-      </Tabs>
+      </div>
     </div>
   );
 };
