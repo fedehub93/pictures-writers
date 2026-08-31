@@ -40,7 +40,7 @@ export const EditableField = ({
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
+    values: {
       value: initialValue,
     },
   });

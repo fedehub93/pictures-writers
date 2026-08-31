@@ -38,7 +38,7 @@ export const PostsListHeader = () => {
   return (
     <>
       <div className="flex flex-col gap-y-4 px-6 pt-3">
-        <ContentHeader label="Categories" totalEntries={0} />
+        <ContentHeader label="Posts" totalEntries={0} />
         <div className="flex justify-between">
           <ScrollArea>
             <div className="flex items-center gap-x-2 px-1">
