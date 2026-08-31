@@ -10,6 +10,8 @@
     "build:analyze": "cross-env ANALYZE=true next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest",
+    "test:run": "vitest run",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -132,7 +134,7 @@
     "@types/is-hotkey": "^0.1.10",
     "@types/is-url": "^1.2.32",
     "@types/js-cookie": "^3.0.6",
-    "@types/node": "^26.1.2",
+    "@types/node": "^26.4.0",
     "@types/pg": "^8.20.4",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
@@ -147,7 +149,10 @@
     "prisma-json-types-generator": "^5.1.1",
     "sass": "^1.102.0",
     "tailwindcss": "^4.3.0",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vite": "^8.2.2",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.1.11"
   },
   "allowScripts": {
     "sharp@0.34.5": true,

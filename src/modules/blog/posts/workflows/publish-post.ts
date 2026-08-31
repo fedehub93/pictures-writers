@@ -1,0 +1,117 @@
+import "server-only";
+
+import { db } from "@/shared/lib/db";
+import { ContentStatus, type Post, type Seo } from "@/generated/prisma";
+
+export type PublishPostResult = Post & {
+  seo: Seo | null;
+};
+
+export class PublishPostError extends Error {
+  constructor(
+    public readonly code: "NOT_FOUND" | "VALIDATION_ERROR" | "INVALID_STATE",
+    message: string,
+  ) {
+    super(message);
+  }
+}
+
+export interface PublishPostInput {
+  postId: string;
+  rootId: string;
+  now?: Date;
+}
+
+/**
+ * Shared, idempotent publication workflow for Posts.
+ *
+ * The workflow can be invoked from multiple entry points (e.g. the admin tRPC
+ * procedure, a future scheduled-publication job, etc.) without duplicating the
+ * transition logic.
+ *
+ * It is safe to call concurrently for the same post: a repeated or racing
+ * request on a version that is already published and latest is a no-op and
+ * will not mutate `publishedAt`, `firstPublishedAt` or `isLatest`.
+ */
+export async function publishPost({
+  postId,
+  rootId,
+  now = new Date(),
+}: PublishPostInput): Promise<PublishPostResult> {
+  if (!postId || !rootId) {
+    throw new PublishPostError(
+      "VALIDATION_ERROR",
+      "postId and rootId are required",
+    );
+  }
+
+  return db.$transaction(async (tx) => {
+    // Lock every version of the post root in a deterministic order to avoid
+    // deadlocks and race conditions between concurrent publishers.
+    const rows = await tx.$queryRaw<
+      Array<{
+        id: string;
+        status: ContentStatus;
+        version: number;
+        isLatest: boolean;
+        title: string | null;
+      }>
+    >`SELECT id, status, version, "isLatest", title FROM "Post" WHERE "rootId" = ${rootId} ORDER BY id ASC FOR UPDATE`;
+
+    const target = rows.find((row) => row.id === postId);
+
+    if (!target) {
+      throw new PublishPostError("NOT_FOUND", "Post not found");
+    }
+
+    if (!target.title) {
+      throw new PublishPostError(
+        "VALIDATION_ERROR",
+        "Missing required fields",
+      );
+    }
+
+    // Already published -> idempotent no-op. This keeps publishedAt,
+    // firstPublishedAt and isLatest stable across repeated or concurrent calls.
+    if (target.status === ContentStatus.PUBLISHED) {
+      const current = await tx.post.findUnique({
+        where: { id: postId },
+        include: { seo: true },
+      });
+
+      // current is guaranteed to exist because we just locked the row
+      return current as PublishPostResult;
+    }
+
+    if (
+      target.status !== ContentStatus.DRAFT &&
+      target.status !== ContentStatus.CHANGED
+    ) {
+      throw new PublishPostError(
+        "INVALID_STATE",
+        "Post cannot be published",
+      );
+    }
+
+    // Demote every version of the root so only the target becomes latest.
+    await tx.post.updateMany({
+      where: { rootId },
+      data: { isLatest: false },
+    });
+
+    const firstPublishedAt = target.version === 1 ? now : undefined;
+
+    const publishedPost = await tx.post.update({
+      where: { id: postId },
+      data: {
+        status: ContentStatus.PUBLISHED,
+        isLatest: true,
+        publishedAt: now,
+        ...(firstPublishedAt && { firstPublishedAt: now }),
+      },
+      include: { seo: true },
+    });
+
+    return publishedPost;
+  });
+}

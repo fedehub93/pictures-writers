@@ -23,6 +23,7 @@ import {
 } from "../constants";
 
 import { createNewVersion } from "../lib/create-new-version";
+import { publishPost, PublishPostError } from "../workflows/publish-post";
 
 import { getPaginatedPosts } from "./queries";
 
@@ -382,52 +383,28 @@ export const postsRouter = createTRPCRouter({
   publish: protectedProcedure
     .input(z.object({ id: z.string(), rootId: z.string() }))
     .mutation(async ({ input }) => {
-      const post = await db.post.findFirst({
-        where: {
-          id: input.id,
+      try {
+        return await publishPost({
+          postId: input.id,
           rootId: input.rootId,
-        },
-        select: {
-          title: true,
-          version: true,
-        },
-      });
-
-      if (!post) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Post not found",
         });
+      } catch (error) {
+        if (error instanceof PublishPostError) {
+          const code =
+            error.code === "NOT_FOUND"
+              ? "NOT_FOUND"
+              : error.code === "VALIDATION_ERROR"
+                ? "BAD_REQUEST"
+                : "BAD_REQUEST";
+
+          throw new TRPCError({
+            code,
+            message: error.message,
+          });
+        }
+
+        throw error;
       }
-
-      if (!post.title) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Missing required fields",
-        });
-      }
-
-      await db.post.updateMany({
-        where: { rootId: input.rootId },
-        data: { isLatest: false },
-      });
-
-      const publishedPost = await db.post.update({
-        where: {
-          id: input.id,
-        },
-        data: {
-          status: ContentStatus.PUBLISHED,
-          isLatest: true,
-          firstPublishedAt: post.version === 1 ? new Date() : undefined,
-          publishedAt: new Date(),
-        },
-        include: {
-          seo: true,
-        },
-      });
-
-      return publishedPost;
     }),
   unpublish: protectedProcedure
     .input(z.object({ id: z.string() }))
