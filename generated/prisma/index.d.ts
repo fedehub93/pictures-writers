@@ -1263,8 +1263,8 @@ export namespace Prisma {
   export import Exact = $Public.Exact
 
   /**
-   * Prisma Client JS version: 7.9.1
-   * Query Engine version: e922089b7d7502aff4249d5da3420f6fa55fc6ad
+   * Prisma Client JS version: 7.10.0
+   * Query Engine version: 0edf323efd1d98336f3f0a68684b56f689b900d3
    */
   export type PrismaVersion = {
     client: string
@@ -12956,6 +12956,7 @@ export namespace Prisma {
     userId: string | null
     accountId: string | null
     providerId: string | null
+    issuer: string | null
     accessToken: string | null
     refreshToken: string | null
     idToken: string | null
@@ -12972,6 +12973,7 @@ export namespace Prisma {
     userId: string | null
     accountId: string | null
     providerId: string | null
+    issuer: string | null
     accessToken: string | null
     refreshToken: string | null
     idToken: string | null
@@ -12988,6 +12990,7 @@ export namespace Prisma {
     userId: number
     accountId: number
     providerId: number
+    issuer: number
     accessToken: number
     refreshToken: number
     idToken: number
@@ -13006,6 +13009,7 @@ export namespace Prisma {
     userId?: true
     accountId?: true
     providerId?: true
+    issuer?: true
     accessToken?: true
     refreshToken?: true
     idToken?: true
@@ -13022,6 +13026,7 @@ export namespace Prisma {
     userId?: true
     accountId?: true
     providerId?: true
+    issuer?: true
     accessToken?: true
     refreshToken?: true
     idToken?: true
@@ -13038,6 +13043,7 @@ export namespace Prisma {
     userId?: true
     accountId?: true
     providerId?: true
+    issuer?: true
     accessToken?: true
     refreshToken?: true
     idToken?: true
@@ -13127,6 +13133,7 @@ export namespace Prisma {
     userId: string
     accountId: string
     providerId: string
+    issuer: string
     accessToken: string | null
     refreshToken: string | null
     idToken: string | null
@@ -13160,6 +13167,7 @@ export namespace Prisma {
     userId?: boolean
     accountId?: boolean
     providerId?: boolean
+    issuer?: boolean
     accessToken?: boolean
     refreshToken?: boolean
     idToken?: boolean
@@ -13177,6 +13185,7 @@ export namespace Prisma {
     userId?: boolean
     accountId?: boolean
     providerId?: boolean
+    issuer?: boolean
     accessToken?: boolean
     refreshToken?: boolean
     idToken?: boolean
@@ -13194,6 +13203,7 @@ export namespace Prisma {
     userId?: boolean
     accountId?: boolean
     providerId?: boolean
+    issuer?: boolean
     accessToken?: boolean
     refreshToken?: boolean
     idToken?: boolean
@@ -13211,6 +13221,7 @@ export namespace Prisma {
     userId?: boolean
     accountId?: boolean
     providerId?: boolean
+    issuer?: boolean
     accessToken?: boolean
     refreshToken?: boolean
     idToken?: boolean
@@ -13222,7 +13233,7 @@ export namespace Prisma {
     scope?: boolean
   }
 
-  export type AccountOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "accountId" | "providerId" | "accessToken" | "refreshToken" | "idToken" | "accessTokenExpiresAt" | "refreshTokenExpiresAt" | "password" | "createdAt" | "updatedAt" | "scope", ExtArgs["result"]["account"]>
+  export type AccountOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "accountId" | "providerId" | "issuer" | "accessToken" | "refreshToken" | "idToken" | "accessTokenExpiresAt" | "refreshTokenExpiresAt" | "password" | "createdAt" | "updatedAt" | "scope", ExtArgs["result"]["account"]>
   export type AccountInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -13243,6 +13254,7 @@ export namespace Prisma {
       userId: string
       accountId: string
       providerId: string
+      issuer: string
       accessToken: string | null
       refreshToken: string | null
       idToken: string | null
@@ -13680,6 +13692,7 @@ export namespace Prisma {
     readonly userId: FieldRef<"Account", 'String'>
     readonly accountId: FieldRef<"Account", 'String'>
     readonly providerId: FieldRef<"Account", 'String'>
+    readonly issuer: FieldRef<"Account", 'String'>
     readonly accessToken: FieldRef<"Account", 'String'>
     readonly refreshToken: FieldRef<"Account", 'String'>
     readonly idToken: FieldRef<"Account", 'String'>
@@ -20518,8 +20531,8 @@ export namespace Prisma {
     imageCover?: boolean | Post$imageCoverArgs<ExtArgs>
     postCategories?: boolean | Post$postCategoriesArgs<ExtArgs>
     tags?: boolean | Post$tagsArgs<ExtArgs>
-    seo?: boolean | Post$seoArgs<ExtArgs>
     postAuthors?: boolean | Post$postAuthorsArgs<ExtArgs>
+    seo?: boolean | Post$seoArgs<ExtArgs>
     user?: boolean | Post$userArgs<ExtArgs>
     _count?: boolean | PostCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["post"]>
@@ -20602,8 +20615,8 @@ export namespace Prisma {
     imageCover?: boolean | Post$imageCoverArgs<ExtArgs>
     postCategories?: boolean | Post$postCategoriesArgs<ExtArgs>
     tags?: boolean | Post$tagsArgs<ExtArgs>
-    seo?: boolean | Post$seoArgs<ExtArgs>
     postAuthors?: boolean | Post$postAuthorsArgs<ExtArgs>
+    seo?: boolean | Post$seoArgs<ExtArgs>
     user?: boolean | Post$userArgs<ExtArgs>
     _count?: boolean | PostCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -20628,8 +20641,8 @@ export namespace Prisma {
       imageCover: Prisma.$MediaPayload<ExtArgs> | null
       postCategories: Prisma.$PostCategoryPayload<ExtArgs>[]
       tags: Prisma.$TagPayload<ExtArgs>[]
-      seo: Prisma.$SeoPayload<ExtArgs> | null
       postAuthors: Prisma.$PostAuthorPayload<ExtArgs>[]
+      seo: Prisma.$SeoPayload<ExtArgs> | null
       user: Prisma.$UserPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -21056,8 +21069,8 @@ export namespace Prisma {
     imageCover<T extends Post$imageCoverArgs<ExtArgs> = {}>(args?: Subset<T, Post$imageCoverArgs<ExtArgs>>): Prisma__MediaClient<$Result.GetResult<Prisma.$MediaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     postCategories<T extends Post$postCategoriesArgs<ExtArgs> = {}>(args?: Subset<T, Post$postCategoriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PostCategoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     tags<T extends Post$tagsArgs<ExtArgs> = {}>(args?: Subset<T, Post$tagsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TagPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    seo<T extends Post$seoArgs<ExtArgs> = {}>(args?: Subset<T, Post$seoArgs<ExtArgs>>): Prisma__SeoClient<$Result.GetResult<Prisma.$SeoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     postAuthors<T extends Post$postAuthorsArgs<ExtArgs> = {}>(args?: Subset<T, Post$postAuthorsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PostAuthorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    seo<T extends Post$seoArgs<ExtArgs> = {}>(args?: Subset<T, Post$seoArgs<ExtArgs>>): Prisma__SeoClient<$Result.GetResult<Prisma.$SeoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     user<T extends Post$userArgs<ExtArgs> = {}>(args?: Subset<T, Post$userArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -21617,25 +21630,6 @@ export namespace Prisma {
   }
 
   /**
-   * Post.seo
-   */
-  export type Post$seoArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Seo
-     */
-    select?: SeoSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Seo
-     */
-    omit?: SeoOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: SeoInclude<ExtArgs> | null
-    where?: SeoWhereInput
-  }
-
-  /**
    * Post.postAuthors
    */
   export type Post$postAuthorsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -21657,6 +21651,25 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: PostAuthorScalarFieldEnum | PostAuthorScalarFieldEnum[]
+  }
+
+  /**
+   * Post.seo
+   */
+  export type Post$seoArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Seo
+     */
+    select?: SeoSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Seo
+     */
+    omit?: SeoOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: SeoInclude<ExtArgs> | null
+    where?: SeoWhereInput
   }
 
   /**
@@ -57556,6 +57569,7 @@ export namespace Prisma {
     userId: 'userId',
     accountId: 'accountId',
     providerId: 'providerId',
+    issuer: 'issuer',
     accessToken: 'accessToken',
     refreshToken: 'refreshToken',
     idToken: 'idToken',
@@ -58969,6 +58983,7 @@ export namespace Prisma {
     userId?: StringFilter<"Account"> | string
     accountId?: StringFilter<"Account"> | string
     providerId?: StringFilter<"Account"> | string
+    issuer?: StringFilter<"Account"> | string
     accessToken?: StringNullableFilter<"Account"> | string | null
     refreshToken?: StringNullableFilter<"Account"> | string | null
     idToken?: StringNullableFilter<"Account"> | string | null
@@ -58986,6 +59001,7 @@ export namespace Prisma {
     userId?: SortOrder
     accountId?: SortOrder
     providerId?: SortOrder
+    issuer?: SortOrder
     accessToken?: SortOrderInput | SortOrder
     refreshToken?: SortOrderInput | SortOrder
     idToken?: SortOrderInput | SortOrder
@@ -59000,12 +59016,14 @@ export namespace Prisma {
 
   export type AccountWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    issuer_accountId?: AccountIssuerAccountIdCompoundUniqueInput
     AND?: AccountWhereInput | AccountWhereInput[]
     OR?: AccountWhereInput[]
     NOT?: AccountWhereInput | AccountWhereInput[]
     userId?: StringFilter<"Account"> | string
     accountId?: StringFilter<"Account"> | string
     providerId?: StringFilter<"Account"> | string
+    issuer?: StringFilter<"Account"> | string
     accessToken?: StringNullableFilter<"Account"> | string | null
     refreshToken?: StringNullableFilter<"Account"> | string | null
     idToken?: StringNullableFilter<"Account"> | string | null
@@ -59016,13 +59034,14 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Account"> | Date | string
     scope?: StringNullableFilter<"Account"> | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
-  }, "id">
+  }, "id" | "issuer_accountId">
 
   export type AccountOrderByWithAggregationInput = {
     id?: SortOrder
     userId?: SortOrder
     accountId?: SortOrder
     providerId?: SortOrder
+    issuer?: SortOrder
     accessToken?: SortOrderInput | SortOrder
     refreshToken?: SortOrderInput | SortOrder
     idToken?: SortOrderInput | SortOrder
@@ -59045,6 +59064,7 @@ export namespace Prisma {
     userId?: StringWithAggregatesFilter<"Account"> | string
     accountId?: StringWithAggregatesFilter<"Account"> | string
     providerId?: StringWithAggregatesFilter<"Account"> | string
+    issuer?: StringWithAggregatesFilter<"Account"> | string
     accessToken?: StringNullableWithAggregatesFilter<"Account"> | string | null
     refreshToken?: StringNullableWithAggregatesFilter<"Account"> | string | null
     idToken?: StringNullableWithAggregatesFilter<"Account"> | string | null
@@ -59526,8 +59546,8 @@ export namespace Prisma {
     imageCover?: XOR<MediaNullableScalarRelationFilter, MediaWhereInput> | null
     postCategories?: PostCategoryListRelationFilter
     tags?: TagListRelationFilter
-    seo?: XOR<SeoNullableScalarRelationFilter, SeoWhereInput> | null
     postAuthors?: PostAuthorListRelationFilter
+    seo?: XOR<SeoNullableScalarRelationFilter, SeoWhereInput> | null
     user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
   }
 
@@ -59555,8 +59575,8 @@ export namespace Prisma {
     imageCover?: MediaOrderByWithRelationInput
     postCategories?: PostCategoryOrderByRelationAggregateInput
     tags?: TagOrderByRelationAggregateInput
-    seo?: SeoOrderByWithRelationInput
     postAuthors?: PostAuthorOrderByRelationAggregateInput
+    seo?: SeoOrderByWithRelationInput
     user?: UserOrderByWithRelationInput
   }
 
@@ -59587,8 +59607,8 @@ export namespace Prisma {
     imageCover?: XOR<MediaNullableScalarRelationFilter, MediaWhereInput> | null
     postCategories?: PostCategoryListRelationFilter
     tags?: TagListRelationFilter
-    seo?: XOR<SeoNullableScalarRelationFilter, SeoWhereInput> | null
     postAuthors?: PostAuthorListRelationFilter
+    seo?: XOR<SeoNullableScalarRelationFilter, SeoWhereInput> | null
     user?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
   }, "id">
 
@@ -62560,6 +62580,7 @@ export namespace Prisma {
     id?: string
     accountId: string
     providerId: string
+    issuer: string
     accessToken?: string | null
     refreshToken?: string | null
     idToken?: string | null
@@ -62577,6 +62598,7 @@ export namespace Prisma {
     userId: string
     accountId: string
     providerId: string
+    issuer: string
     accessToken?: string | null
     refreshToken?: string | null
     idToken?: string | null
@@ -62592,6 +62614,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     accountId?: StringFieldUpdateOperationsInput | string
     providerId?: StringFieldUpdateOperationsInput | string
+    issuer?: StringFieldUpdateOperationsInput | string
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
     idToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -62609,6 +62632,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     accountId?: StringFieldUpdateOperationsInput | string
     providerId?: StringFieldUpdateOperationsInput | string
+    issuer?: StringFieldUpdateOperationsInput | string
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
     idToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -62625,6 +62649,7 @@ export namespace Prisma {
     userId: string
     accountId: string
     providerId: string
+    issuer: string
     accessToken?: string | null
     refreshToken?: string | null
     idToken?: string | null
@@ -62640,6 +62665,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     accountId?: StringFieldUpdateOperationsInput | string
     providerId?: StringFieldUpdateOperationsInput | string
+    issuer?: StringFieldUpdateOperationsInput | string
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
     idToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -62656,6 +62682,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     accountId?: StringFieldUpdateOperationsInput | string
     providerId?: StringFieldUpdateOperationsInput | string
+    issuer?: StringFieldUpdateOperationsInput | string
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
     idToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -63183,8 +63210,8 @@ export namespace Prisma {
     imageCover?: MediaCreateNestedOneWithoutPostInput
     postCategories?: PostCategoryCreateNestedManyWithoutPostInput
     tags?: TagCreateNestedManyWithoutPostsInput
-    seo?: SeoCreateNestedOneWithoutPostsInput
     postAuthors?: PostAuthorCreateNestedManyWithoutPostInput
+    seo?: SeoCreateNestedOneWithoutPostsInput
     user?: UserCreateNestedOneWithoutPostsInput
   }
 
@@ -63233,8 +63260,8 @@ export namespace Prisma {
     imageCover?: MediaUpdateOneWithoutPostNestedInput
     postCategories?: PostCategoryUpdateManyWithoutPostNestedInput
     tags?: TagUpdateManyWithoutPostsNestedInput
-    seo?: SeoUpdateOneWithoutPostsNestedInput
     postAuthors?: PostAuthorUpdateManyWithoutPostNestedInput
+    seo?: SeoUpdateOneWithoutPostsNestedInput
     user?: UserUpdateOneWithoutPostsNestedInput
   }
 
@@ -66503,11 +66530,17 @@ export namespace Prisma {
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
   }
 
+  export type AccountIssuerAccountIdCompoundUniqueInput = {
+    issuer: string
+    accountId: string
+  }
+
   export type AccountCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
     accountId?: SortOrder
     providerId?: SortOrder
+    issuer?: SortOrder
     accessToken?: SortOrder
     refreshToken?: SortOrder
     idToken?: SortOrder
@@ -66524,6 +66557,7 @@ export namespace Prisma {
     userId?: SortOrder
     accountId?: SortOrder
     providerId?: SortOrder
+    issuer?: SortOrder
     accessToken?: SortOrder
     refreshToken?: SortOrder
     idToken?: SortOrder
@@ -66540,6 +66574,7 @@ export namespace Prisma {
     userId?: SortOrder
     accountId?: SortOrder
     providerId?: SortOrder
+    issuer?: SortOrder
     accessToken?: SortOrder
     refreshToken?: SortOrder
     idToken?: SortOrder
@@ -69912,17 +69947,17 @@ export namespace Prisma {
     connect?: TagWhereUniqueInput | TagWhereUniqueInput[]
   }
 
-  export type SeoCreateNestedOneWithoutPostsInput = {
-    create?: XOR<SeoCreateWithoutPostsInput, SeoUncheckedCreateWithoutPostsInput>
-    connectOrCreate?: SeoCreateOrConnectWithoutPostsInput
-    connect?: SeoWhereUniqueInput
-  }
-
   export type PostAuthorCreateNestedManyWithoutPostInput = {
     create?: XOR<PostAuthorCreateWithoutPostInput, PostAuthorUncheckedCreateWithoutPostInput> | PostAuthorCreateWithoutPostInput[] | PostAuthorUncheckedCreateWithoutPostInput[]
     connectOrCreate?: PostAuthorCreateOrConnectWithoutPostInput | PostAuthorCreateOrConnectWithoutPostInput[]
     createMany?: PostAuthorCreateManyPostInputEnvelope
     connect?: PostAuthorWhereUniqueInput | PostAuthorWhereUniqueInput[]
+  }
+
+  export type SeoCreateNestedOneWithoutPostsInput = {
+    create?: XOR<SeoCreateWithoutPostsInput, SeoUncheckedCreateWithoutPostsInput>
+    connectOrCreate?: SeoCreateOrConnectWithoutPostsInput
+    connect?: SeoWhereUniqueInput
   }
 
   export type UserCreateNestedOneWithoutPostsInput = {
@@ -70023,16 +70058,6 @@ export namespace Prisma {
     deleteMany?: TagScalarWhereInput | TagScalarWhereInput[]
   }
 
-  export type SeoUpdateOneWithoutPostsNestedInput = {
-    create?: XOR<SeoCreateWithoutPostsInput, SeoUncheckedCreateWithoutPostsInput>
-    connectOrCreate?: SeoCreateOrConnectWithoutPostsInput
-    upsert?: SeoUpsertWithoutPostsInput
-    disconnect?: SeoWhereInput | boolean
-    delete?: SeoWhereInput | boolean
-    connect?: SeoWhereUniqueInput
-    update?: XOR<XOR<SeoUpdateToOneWithWhereWithoutPostsInput, SeoUpdateWithoutPostsInput>, SeoUncheckedUpdateWithoutPostsInput>
-  }
-
   export type PostAuthorUpdateManyWithoutPostNestedInput = {
     create?: XOR<PostAuthorCreateWithoutPostInput, PostAuthorUncheckedCreateWithoutPostInput> | PostAuthorCreateWithoutPostInput[] | PostAuthorUncheckedCreateWithoutPostInput[]
     connectOrCreate?: PostAuthorCreateOrConnectWithoutPostInput | PostAuthorCreateOrConnectWithoutPostInput[]
@@ -70045,6 +70070,16 @@ export namespace Prisma {
     update?: PostAuthorUpdateWithWhereUniqueWithoutPostInput | PostAuthorUpdateWithWhereUniqueWithoutPostInput[]
     updateMany?: PostAuthorUpdateManyWithWhereWithoutPostInput | PostAuthorUpdateManyWithWhereWithoutPostInput[]
     deleteMany?: PostAuthorScalarWhereInput | PostAuthorScalarWhereInput[]
+  }
+
+  export type SeoUpdateOneWithoutPostsNestedInput = {
+    create?: XOR<SeoCreateWithoutPostsInput, SeoUncheckedCreateWithoutPostsInput>
+    connectOrCreate?: SeoCreateOrConnectWithoutPostsInput
+    upsert?: SeoUpsertWithoutPostsInput
+    disconnect?: SeoWhereInput | boolean
+    delete?: SeoWhereInput | boolean
+    connect?: SeoWhereUniqueInput
+    update?: XOR<XOR<SeoUpdateToOneWithWhereWithoutPostsInput, SeoUpdateWithoutPostsInput>, SeoUncheckedUpdateWithoutPostsInput>
   }
 
   export type UserUpdateOneWithoutPostsNestedInput = {
@@ -72756,6 +72791,7 @@ export namespace Prisma {
     id?: string
     accountId: string
     providerId: string
+    issuer: string
     accessToken?: string | null
     refreshToken?: string | null
     idToken?: string | null
@@ -72771,6 +72807,7 @@ export namespace Prisma {
     id?: string
     accountId: string
     providerId: string
+    issuer: string
     accessToken?: string | null
     refreshToken?: string | null
     idToken?: string | null
@@ -72888,8 +72925,8 @@ export namespace Prisma {
     imageCover?: MediaCreateNestedOneWithoutPostInput
     postCategories?: PostCategoryCreateNestedManyWithoutPostInput
     tags?: TagCreateNestedManyWithoutPostsInput
-    seo?: SeoCreateNestedOneWithoutPostsInput
     postAuthors?: PostAuthorCreateNestedManyWithoutPostInput
+    seo?: SeoCreateNestedOneWithoutPostsInput
   }
 
   export type PostUncheckedCreateWithoutUserInput = {
@@ -73205,6 +73242,7 @@ export namespace Prisma {
     userId?: StringFilter<"Account"> | string
     accountId?: StringFilter<"Account"> | string
     providerId?: StringFilter<"Account"> | string
+    issuer?: StringFilter<"Account"> | string
     accessToken?: StringNullableFilter<"Account"> | string | null
     refreshToken?: StringNullableFilter<"Account"> | string | null
     idToken?: StringNullableFilter<"Account"> | string | null
@@ -73628,8 +73666,8 @@ export namespace Prisma {
     rootChildren?: PostCreateNestedManyWithoutRootInput
     postCategories?: PostCategoryCreateNestedManyWithoutPostInput
     tags?: TagCreateNestedManyWithoutPostsInput
-    seo?: SeoCreateNestedOneWithoutPostsInput
     postAuthors?: PostAuthorCreateNestedManyWithoutPostInput
+    seo?: SeoCreateNestedOneWithoutPostsInput
     user?: UserCreateNestedOneWithoutPostsInput
   }
 
@@ -75256,8 +75294,8 @@ export namespace Prisma {
     imageCover?: MediaCreateNestedOneWithoutPostInput
     postCategories?: PostCategoryCreateNestedManyWithoutPostInput
     tags?: TagCreateNestedManyWithoutPostsInput
-    seo?: SeoCreateNestedOneWithoutPostsInput
     postAuthors?: PostAuthorCreateNestedManyWithoutPostInput
+    seo?: SeoCreateNestedOneWithoutPostsInput
     user?: UserCreateNestedOneWithoutPostsInput
   }
 
@@ -75309,8 +75347,8 @@ export namespace Prisma {
     imageCover?: MediaCreateNestedOneWithoutPostInput
     postCategories?: PostCategoryCreateNestedManyWithoutPostInput
     tags?: TagCreateNestedManyWithoutPostsInput
-    seo?: SeoCreateNestedOneWithoutPostsInput
     postAuthors?: PostAuthorCreateNestedManyWithoutPostInput
+    seo?: SeoCreateNestedOneWithoutPostsInput
     user?: UserCreateNestedOneWithoutPostsInput
   }
 
@@ -75448,6 +75486,26 @@ export namespace Prisma {
     create: XOR<TagCreateWithoutPostsInput, TagUncheckedCreateWithoutPostsInput>
   }
 
+  export type PostAuthorCreateWithoutPostInput = {
+    sort: number
+    user: UserCreateNestedOneWithoutPostAuthorsInput
+  }
+
+  export type PostAuthorUncheckedCreateWithoutPostInput = {
+    userId: string
+    sort: number
+  }
+
+  export type PostAuthorCreateOrConnectWithoutPostInput = {
+    where: PostAuthorWhereUniqueInput
+    create: XOR<PostAuthorCreateWithoutPostInput, PostAuthorUncheckedCreateWithoutPostInput>
+  }
+
+  export type PostAuthorCreateManyPostInputEnvelope = {
+    data: PostAuthorCreateManyPostInput | PostAuthorCreateManyPostInput[]
+    skipDuplicates?: boolean
+  }
+
   export type SeoCreateWithoutPostsInput = {
     id?: string
     title: string
@@ -75503,26 +75561,6 @@ export namespace Prisma {
   export type SeoCreateOrConnectWithoutPostsInput = {
     where: SeoWhereUniqueInput
     create: XOR<SeoCreateWithoutPostsInput, SeoUncheckedCreateWithoutPostsInput>
-  }
-
-  export type PostAuthorCreateWithoutPostInput = {
-    sort: number
-    user: UserCreateNestedOneWithoutPostAuthorsInput
-  }
-
-  export type PostAuthorUncheckedCreateWithoutPostInput = {
-    userId: string
-    sort: number
-  }
-
-  export type PostAuthorCreateOrConnectWithoutPostInput = {
-    where: PostAuthorWhereUniqueInput
-    create: XOR<PostAuthorCreateWithoutPostInput, PostAuthorUncheckedCreateWithoutPostInput>
-  }
-
-  export type PostAuthorCreateManyPostInputEnvelope = {
-    data: PostAuthorCreateManyPostInput | PostAuthorCreateManyPostInput[]
-    skipDuplicates?: boolean
   }
 
   export type UserCreateWithoutPostsInput = {
@@ -75610,8 +75648,8 @@ export namespace Prisma {
     imageCover?: MediaUpdateOneWithoutPostNestedInput
     postCategories?: PostCategoryUpdateManyWithoutPostNestedInput
     tags?: TagUpdateManyWithoutPostsNestedInput
-    seo?: SeoUpdateOneWithoutPostsNestedInput
     postAuthors?: PostAuthorUpdateManyWithoutPostNestedInput
+    seo?: SeoUpdateOneWithoutPostsNestedInput
     user?: UserUpdateOneWithoutPostsNestedInput
   }
 
@@ -75741,6 +75779,22 @@ export namespace Prisma {
     data: XOR<TagUpdateManyMutationInput, TagUncheckedUpdateManyWithoutPostsInput>
   }
 
+  export type PostAuthorUpsertWithWhereUniqueWithoutPostInput = {
+    where: PostAuthorWhereUniqueInput
+    update: XOR<PostAuthorUpdateWithoutPostInput, PostAuthorUncheckedUpdateWithoutPostInput>
+    create: XOR<PostAuthorCreateWithoutPostInput, PostAuthorUncheckedCreateWithoutPostInput>
+  }
+
+  export type PostAuthorUpdateWithWhereUniqueWithoutPostInput = {
+    where: PostAuthorWhereUniqueInput
+    data: XOR<PostAuthorUpdateWithoutPostInput, PostAuthorUncheckedUpdateWithoutPostInput>
+  }
+
+  export type PostAuthorUpdateManyWithWhereWithoutPostInput = {
+    where: PostAuthorScalarWhereInput
+    data: XOR<PostAuthorUpdateManyMutationInput, PostAuthorUncheckedUpdateManyWithoutPostInput>
+  }
+
   export type SeoUpsertWithoutPostsInput = {
     update: XOR<SeoUpdateWithoutPostsInput, SeoUncheckedUpdateWithoutPostsInput>
     create: XOR<SeoCreateWithoutPostsInput, SeoUncheckedCreateWithoutPostsInput>
@@ -75802,22 +75856,6 @@ export namespace Prisma {
     tags?: TagUncheckedUpdateManyWithoutSeoNestedInput
     products?: ProductUncheckedUpdateManyWithoutSeoNestedInput
     productCategories?: ProductCategoryUncheckedUpdateManyWithoutSeoNestedInput
-  }
-
-  export type PostAuthorUpsertWithWhereUniqueWithoutPostInput = {
-    where: PostAuthorWhereUniqueInput
-    update: XOR<PostAuthorUpdateWithoutPostInput, PostAuthorUncheckedUpdateWithoutPostInput>
-    create: XOR<PostAuthorCreateWithoutPostInput, PostAuthorUncheckedCreateWithoutPostInput>
-  }
-
-  export type PostAuthorUpdateWithWhereUniqueWithoutPostInput = {
-    where: PostAuthorWhereUniqueInput
-    data: XOR<PostAuthorUpdateWithoutPostInput, PostAuthorUncheckedUpdateWithoutPostInput>
-  }
-
-  export type PostAuthorUpdateManyWithWhereWithoutPostInput = {
-    where: PostAuthorScalarWhereInput
-    data: XOR<PostAuthorUpdateManyMutationInput, PostAuthorUncheckedUpdateManyWithoutPostInput>
   }
 
   export type UserUpsertWithoutPostsInput = {
@@ -76550,8 +76588,8 @@ export namespace Prisma {
     rootChildren?: PostCreateNestedManyWithoutRootInput
     imageCover?: MediaCreateNestedOneWithoutPostInput
     tags?: TagCreateNestedManyWithoutPostsInput
-    seo?: SeoCreateNestedOneWithoutPostsInput
     postAuthors?: PostAuthorCreateNestedManyWithoutPostInput
+    seo?: SeoCreateNestedOneWithoutPostsInput
     user?: UserCreateNestedOneWithoutPostsInput
   }
 
@@ -76655,8 +76693,8 @@ export namespace Prisma {
     rootChildren?: PostUpdateManyWithoutRootNestedInput
     imageCover?: MediaUpdateOneWithoutPostNestedInput
     tags?: TagUpdateManyWithoutPostsNestedInput
-    seo?: SeoUpdateOneWithoutPostsNestedInput
     postAuthors?: PostAuthorUpdateManyWithoutPostNestedInput
+    seo?: SeoUpdateOneWithoutPostsNestedInput
     user?: UserUpdateOneWithoutPostsNestedInput
   }
 
@@ -76837,8 +76875,8 @@ export namespace Prisma {
     rootChildren?: PostCreateNestedManyWithoutRootInput
     imageCover?: MediaCreateNestedOneWithoutPostInput
     postCategories?: PostCategoryCreateNestedManyWithoutPostInput
-    seo?: SeoCreateNestedOneWithoutPostsInput
     postAuthors?: PostAuthorCreateNestedManyWithoutPostInput
+    seo?: SeoCreateNestedOneWithoutPostsInput
     user?: UserCreateNestedOneWithoutPostsInput
   }
 
@@ -81144,6 +81182,7 @@ export namespace Prisma {
     id?: string
     accountId: string
     providerId: string
+    issuer: string
     accessToken?: string | null
     refreshToken?: string | null
     idToken?: string | null
@@ -81276,6 +81315,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     accountId?: StringFieldUpdateOperationsInput | string
     providerId?: StringFieldUpdateOperationsInput | string
+    issuer?: StringFieldUpdateOperationsInput | string
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
     idToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -81291,6 +81331,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     accountId?: StringFieldUpdateOperationsInput | string
     providerId?: StringFieldUpdateOperationsInput | string
+    issuer?: StringFieldUpdateOperationsInput | string
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
     idToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -81306,6 +81347,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     accountId?: StringFieldUpdateOperationsInput | string
     providerId?: StringFieldUpdateOperationsInput | string
+    issuer?: StringFieldUpdateOperationsInput | string
     accessToken?: NullableStringFieldUpdateOperationsInput | string | null
     refreshToken?: NullableStringFieldUpdateOperationsInput | string | null
     idToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -81420,8 +81462,8 @@ export namespace Prisma {
     imageCover?: MediaUpdateOneWithoutPostNestedInput
     postCategories?: PostCategoryUpdateManyWithoutPostNestedInput
     tags?: TagUpdateManyWithoutPostsNestedInput
-    seo?: SeoUpdateOneWithoutPostsNestedInput
     postAuthors?: PostAuthorUpdateManyWithoutPostNestedInput
+    seo?: SeoUpdateOneWithoutPostsNestedInput
   }
 
   export type PostUncheckedUpdateWithoutUserInput = {
@@ -81801,8 +81843,8 @@ export namespace Prisma {
     rootChildren?: PostUpdateManyWithoutRootNestedInput
     postCategories?: PostCategoryUpdateManyWithoutPostNestedInput
     tags?: TagUpdateManyWithoutPostsNestedInput
-    seo?: SeoUpdateOneWithoutPostsNestedInput
     postAuthors?: PostAuthorUpdateManyWithoutPostNestedInput
+    seo?: SeoUpdateOneWithoutPostsNestedInput
     user?: UserUpdateOneWithoutPostsNestedInput
   }
 
@@ -82805,8 +82847,8 @@ export namespace Prisma {
     imageCover?: MediaUpdateOneWithoutPostNestedInput
     postCategories?: PostCategoryUpdateManyWithoutPostNestedInput
     tags?: TagUpdateManyWithoutPostsNestedInput
-    seo?: SeoUpdateOneWithoutPostsNestedInput
     postAuthors?: PostAuthorUpdateManyWithoutPostNestedInput
+    seo?: SeoUpdateOneWithoutPostsNestedInput
     user?: UserUpdateOneWithoutPostsNestedInput
   }
 
@@ -83112,8 +83154,8 @@ export namespace Prisma {
     rootChildren?: PostUpdateManyWithoutRootNestedInput
     imageCover?: MediaUpdateOneWithoutPostNestedInput
     postCategories?: PostCategoryUpdateManyWithoutPostNestedInput
-    seo?: SeoUpdateOneWithoutPostsNestedInput
     postAuthors?: PostAuthorUpdateManyWithoutPostNestedInput
+    seo?: SeoUpdateOneWithoutPostsNestedInput
     user?: UserUpdateOneWithoutPostsNestedInput
   }
 

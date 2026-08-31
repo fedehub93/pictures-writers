@@ -163,6 +163,7 @@ model Account {
 
   accountId             String
   providerId            String
+  issuer                String
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -174,6 +175,7 @@ model Account {
 
   scope String?
 
+  @@unique([issuer, accountId], map: "account_issuer_accountId_uidx")
   @@index([userId])
 }
 
@@ -339,13 +341,11 @@ model Post {
   imageCoverId String?
 
   postCategories PostCategory[]
-
-  tags Tag[]
+  tags           Tag[]
+  postAuthors    PostAuthor[]
 
   seo   Seo?    @relation(fields: [seoId], references: [id])
   seoId String?
-
-  postAuthors PostAuthor[]
 
   user   User?   @relation(fields: [userId], references: [id])
   userId String?
