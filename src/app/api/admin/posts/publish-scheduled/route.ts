@@ -3,8 +3,9 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 
 import { publishDuePosts } from "@/modules/blog/posts/lib/publish-due-posts";
-
-const SECRET_HEADER = "x-scheduled-publication-secret";
+import { SECRET_HEADER } from "@/modules/blog/posts/constants"
+;
+import { triggerWebhookBuild } from "@/lib/vercel";
 
 function hashSecret(secret: string) {
   return createHash("sha256").update(secret).digest();
@@ -28,6 +29,7 @@ export async function POST(req: Request) {
     }
 
     const result = await publishDuePosts();
+    await triggerWebhookBuild();
 
     return NextResponse.json(result);
   } catch (error) {

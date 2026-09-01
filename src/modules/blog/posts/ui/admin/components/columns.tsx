@@ -8,7 +8,7 @@ import { format } from "date-fns";
 
 import { ContentStatus } from "@/generated/prisma";
 
-import { cn } from "@/shared/lib/utils";
+import { cn, getFirstCharUppercase } from "@/shared/lib/utils";
 
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
@@ -156,7 +156,7 @@ export const columns: ColumnDef<PostsGetMany[number]>[] = [
       );
     },
     cell: ({ row }) => {
-      const status = row.getValue("status") || false;
+      const status = row.original.status;
       return (
         <Badge
           className={cn(
@@ -166,13 +166,7 @@ export const columns: ColumnDef<PostsGetMany[number]>[] = [
             status === ContentStatus.SCHEDULED && "bg-primary",
           )}
         >
-          {status === ContentStatus.DRAFT
-            ? "Draft"
-            : status === ContentStatus.CHANGED
-              ? "Changed"
-              : status === ContentStatus.SCHEDULED
-                ? "Scheduled"
-                : "Published"}
+          {getFirstCharUppercase(status.toLowerCase())}
         </Badge>
       );
     },
