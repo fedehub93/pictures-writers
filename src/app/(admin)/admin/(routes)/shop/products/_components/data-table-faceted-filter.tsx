@@ -1,7 +1,8 @@
+"use client";
+
 import * as React from "react";
-import { Column } from "@tanstack/react-table";
+import { type Column, type RowData } from "@tanstack/react-table";
 import { Check, PlusCircle } from "lucide-react";
-import { ContentStatus } from "@/generated/prisma";
 
 import { cn } from "@/shared/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
@@ -18,8 +19,10 @@ import {
   CommandSeparator,
 } from "@/shared/ui/command";
 
-interface DataTableFacetedFilterProps<TData, TValue> {
-  column?: Column<TData, TValue>;
+import { type DataTableFeatures } from "./data-table-features";
+
+interface DataTableFacetedFilterProps<TData extends RowData, TValue> {
+  column?: Column<DataTableFeatures, TData, TValue>;
   title?: string;
   options: {
     label: string;
@@ -28,12 +31,11 @@ interface DataTableFacetedFilterProps<TData, TValue> {
   }[];
 }
 
-export function DataTableFacetedFilter<TData, TValue>({
+export function DataTableFacetedFilter<TData extends RowData, TValue>({
   column,
   title,
   options,
 }: DataTableFacetedFilterProps<TData, TValue>) {
-  "use no memo";
   const facets = column?.getFacetedUniqueValues();
   const selectedValues = new Set(column?.getFilterValue() as string[]);
 
@@ -41,7 +43,7 @@ export function DataTableFacetedFilter<TData, TValue>({
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="h-8 border-dashed">
-          <PlusCircle className="h-4 w-4 mr-2" />
+          <PlusCircle data-icon="inline-start" />
           {title}
           {selectedValues?.size > 0 && (
             <>
@@ -52,7 +54,7 @@ export function DataTableFacetedFilter<TData, TValue>({
               >
                 {selectedValues.size}
               </Badge>
-              <div className="hidden space-x-1 lg:flex">
+              <div className="hidden gap-1 lg:flex">
                 {selectedValues.size > 2 ? (
                   <Badge
                     variant="secondary"

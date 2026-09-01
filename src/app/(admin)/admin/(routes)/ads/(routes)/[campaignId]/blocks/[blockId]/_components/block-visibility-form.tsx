@@ -22,21 +22,10 @@ export const BlockVisibilityForm = ({
   control,
   isSubmitting,
 }: BlockVisibilityFormProps) => {
-  const {
-    data: posts,
-    isError: isPostsQuery,
-    isLoading: isPostsLoading,
-  } = usePostsQuery();
-  const {
-    data: categories,
-    isError: isCategoriesError,
-    isLoading: isCategoriesLoading,
-  } = useCategoriesQuery();
-  const {
-    data: tags,
-    isError: isTagsError,
-    isLoading: isTagsLoading,
-  } = useTagsQuery();
+  const { data: posts, isLoading: isPostsLoading } = usePostsQuery();
+  const { data: categories, isLoading: isCategoriesLoading } =
+    useCategoriesQuery();
+  const { data: tags, isLoading: isTagsLoading } = useTagsQuery();
 
   return (
     <Card>
@@ -59,7 +48,9 @@ export const BlockVisibilityForm = ({
           name="excludedPostIds"
           label="Excluded posts"
           data={
-            posts ? posts.map((c) => ({ id: c.rootId!, label: c.title })) : []
+            posts
+              ? posts.items.map((c) => ({ id: c.rootId!, label: c.title }))
+              : []
           }
           isLoading={isPostsLoading}
           disabled={isSubmitting}

@@ -3,7 +3,6 @@
 import {
   ArrowDownIcon,
   PlusCircleIcon,
-  PlusIcon,
   XCircleIcon,
 } from "lucide-react";
 
@@ -40,41 +39,39 @@ export const PagesListHeader = () => {
   };
 
   return (
-    <>
-      <div className="flex flex-col gap-y-4 px-6 pt-3">
-        <ContentHeader label="Pages" totalEntries={0} />
-        <div className="flex justify-between">
-          <ScrollArea>
-            <div className="flex items-center gap-x-2 px-1">
-              <PagesSearchFilter />
-              <StatusFilter />
-              {isAnyFilterModified && (
-                <Button variant="outline" size="sm" onClick={onClearFilters}>
-                  <XCircleIcon />
-                  Clear
-                </Button>
-              )}
-            </div>
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
-          <div className="flex items-center justify-between">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button type="button" variant="outline" size="sm">
-                  Actions
-                  <ArrowDownIcon className="size-4 ml-2" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onOpen()}>
-                  <PlusCircleIcon className="size-4 mr-2" />
-                  New Page
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+    <div className="flex flex-col gap-y-4 px-6 pt-4">
+      <ContentHeader label="Pages" totalEntries={0} />
+      <div className="flex justify-between">
+        <ScrollArea>
+          <div className="flex items-center gap-x-2 px-1">
+            <PagesSearchFilter />
+            <StatusFilter />
+            {isAnyFilterModified && (
+              <Button variant="outline" size="sm" onClick={onClearFilters}>
+                <XCircleIcon data-icon="inline-start" />
+                Clear
+              </Button>
+            )}
           </div>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
+        <div className="flex items-center justify-between">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button type="button" variant="outline" size="sm">
+                Actions
+                <ArrowDownIcon data-icon="inline-end" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => onOpen()}>
+                <PlusCircleIcon />
+                New Page
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
-    </>
+    </div>
   );
 };

@@ -1,17 +1,26 @@
+"use client";
+
 import { SearchIcon } from "lucide-react";
 import { debounce } from "nuqs";
 
-import { Input } from "@/shared/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/shared/ui/input-group";
+
 import { usePagesFilters } from "../../hooks/use-pages-filters";
 
 export const PagesSearchFilter = () => {
   const [filters, setFilters] = usePagesFilters();
 
   return (
-    <div className="relative py-4">
-      <Input
+    <InputGroup className="h-8 w-37.5 lg:w-62.5">
+      <InputGroupAddon>
+        <SearchIcon />
+      </InputGroupAddon>
+      <InputGroupInput
         placeholder="Filter by title"
-        className="h-8 w-37.5 lg:w-62.5 pl-7"
         value={filters.search}
         onChange={(e) =>
           setFilters(
@@ -20,7 +29,6 @@ export const PagesSearchFilter = () => {
           )
         }
       />
-      <SearchIcon className="size-4 absolute left-2 top-1/2 -translate-y-1/2" />
-    </div>
+    </InputGroup>
   );
 };

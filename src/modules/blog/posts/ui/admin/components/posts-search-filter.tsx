@@ -1,17 +1,23 @@
+"use client";
+
 import { SearchIcon } from "lucide-react";
 import { debounce } from "nuqs";
 
-import { Input } from "@/shared/ui/input";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/shared/ui/input-group";
+
 import { usePostsFilters } from "../../../hooks/use-posts-filters";
 
 export const PostsSearchFilter = () => {
   const [filters, setFilters] = usePostsFilters();
 
   return (
-    <div className="relative py-4">
-      <Input
+    <InputGroup className="max-w-xs h-8">
+      <InputGroupInput
         placeholder="Filter by title"
-        className="h-8 w-37.5 lg:w-62.5 pl-7"
         value={filters.search}
         onChange={(e) =>
           setFilters(
@@ -19,8 +25,10 @@ export const PostsSearchFilter = () => {
             { limitUrlUpdates: debounce(500) },
           )
         }
-      />
-      <SearchIcon className="size-4 absolute left-2 top-1/2 -translate-y-1/2" />
-    </div>
+      />{" "}
+      <InputGroupAddon>
+        <SearchIcon />
+      </InputGroupAddon>
+    </InputGroup>
   );
 };

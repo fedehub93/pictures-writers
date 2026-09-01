@@ -1,35 +1,48 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
-
-import { ArrowUpDownIcon } from "lucide-react";
+import { createColumnHelper } from "@tanstack/react-table";
 
 import { ContentStatus } from "@/generated/prisma";
 
-import { Button } from "@/shared/ui/button";
-import { Checkbox } from "@/shared/ui/checkbox";
+import { cn, getFirstCharUppercase } from "@/shared/lib/utils";
+
 import { Badge } from "@/shared/ui/badge";
-import { cn } from "@/shared/lib/utils";
+import { Checkbox } from "@/shared/ui/checkbox";
+
 import { formatDate } from "@/shared/lib/format";
+
+import { DataTableColumnHeader } from "@/shared/components/data-table-column-header";
 
 import type { PagesGetMany } from "../../types";
 
 import { PagesActions } from "./actions";
+import { type DataTableFeatures } from "./data-table-features";
 
-export const columns: ColumnDef<PagesGetMany[number]>[] = [
-  {
+type Page = PagesGetMany[number];
+
+const columnHelper = createColumnHelper<DataTableFeatures, Page>();
+
+export const columns = columnHelper.columns([
+  columnHelper.display({
     id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-        className="translate-y-0.5"
-      />
-    ),
+    header: ({ table }) => {
+      const isAllSelected = table.getIsAllPageRowsSelected();
+      const isSomeSelected = table.getIsSomePageRowsSelected();
+
+      return (
+        <Checkbox
+          checked={
+            isAllSelected ||
+            (isSomeSelected && !isAllSelected && "indeterminate")
+          }
+          onCheckedChange={(value) =>
+            table.toggleAllPageRowsSelected(!!value)
+          }
+          aria-label="Select all"
+          className="translate-y-0.5"
+        />
+      );
+    },
     cell: ({ row }) => (
       <Checkbox
         checked={row.getIsSelected()}
@@ -40,74 +53,37 @@ export const columns: ColumnDef<PagesGetMany[number]>[] = [
     ),
     enableSorting: false,
     enableHiding: false,
-  },
-
-  {
-    accessorKey: "title",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Title
-          <ArrowUpDownIcon className="ml-2 size-4" />
-        </Button>
-      );
-    },
-  },
-  {
-    accessorKey: "slug",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Slug
-          <ArrowUpDownIcon className="ml-2 size-4" />
-        </Button>
-      );
-    },
-  },
-  {
-    accessorKey: "createdAt",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Created At
-          <ArrowUpDownIcon className="ml-2 size-4" />
-        </Button>
-      );
-    },
+  }),
+  columnHelper.accessor("title", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Title" />
+    ),
+    sortFn: "text",
+  }),
+  columnHelper.accessor("slug", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Slug" />
+    ),
+    sortFn: "text",
+  }),
+  columnHelper.accessor("createdAt", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Created At" />
+    ),
+    sortFn: "datetime",
     cell: ({ row }) => {
       const date = formatDate({ date: row.original.createdAt });
       return <div>{date}</div>;
     },
-  },
-
-  {
-    accessorKey: "status",
-    filterFn: (row, id, value) => {
-      if (!value?.length) return true;
-      return value.includes(row.getValue(id));
-    },
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Status
-          <ArrowUpDownIcon className="ml-2 size-4" />
-        </Button>
-      );
-    },
+  }),
+  columnHelper.accessor("status", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
+    sortFn: "text",
     cell: ({ row }) => {
-      const status = row.getValue("status") || false;
+      const status = row.original.status;
+
       return (
         <Badge
           className={cn(
@@ -116,20 +92,17 @@ export const columns: ColumnDef<PagesGetMany[number]>[] = [
             status === ContentStatus.PUBLISHED && "bg-emerald-700",
           )}
         >
-          {status === ContentStatus.DRAFT
-            ? "Draft"
-            : status === ContentStatus.CHANGED
-              ? "Changed"
-              : "Published"}
+          {getFirstCharUppercase(status.toLowerCase())}
         </Badge>
       );
     },
-  },
-  {
+  }),
+  columnHelper.display({
     id: "actions",
     cell: ({ row }) => {
       const { rootId, id, status } = row.original;
       if (!rootId) return null;
+
       return (
         <PagesActions
           rootId={rootId}
@@ -139,5 +112,6 @@ export const columns: ColumnDef<PagesGetMany[number]>[] = [
         />
       );
     },
-  },
-];
+    enableHiding: false,
+  }),
+]);

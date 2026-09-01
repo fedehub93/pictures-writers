@@ -1,9 +1,11 @@
 "use client";
 
 import { AdCampaign } from "@/generated/prisma";
-import { ColumnDef } from "@tanstack/react-table";
+import { createColumnHelper } from "@tanstack/react-table";
 import Link from "next/link";
-import { ArrowUpDown, MoreHorizontal, Pencil } from "lucide-react";
+import { MoreHorizontalIcon, PencilIcon } from "lucide-react";
+
+import { cn } from "@/shared/lib/utils";
 
 import {
   DropdownMenu,
@@ -14,61 +16,50 @@ import {
 import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 
-import { cn } from "@/shared/lib/utils";
+import { DataTableColumnHeader } from "@/shared/components/data-table-column-header";
 
-export const columns: ColumnDef<AdCampaign>[] = [
-  {
-    accessorKey: "name",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Name
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-  },
-  {
-    accessorKey: "isActive",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Status
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+import { type DataTableFeatures } from "./data-table-features";
+
+const columnHelper = createColumnHelper<DataTableFeatures, AdCampaign>();
+
+export const columns = columnHelper.columns([
+  columnHelper.accessor("name", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Name" />
+    ),
+    sortFn: "text",
+    filterFn: "includesString",
+  }),
+  columnHelper.accessor("isActive", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
+    sortFn: "alphanumeric",
     cell: ({ row }) => {
-      const isActive = row.getValue("isActive") || false;
+      const isActive = row.original.isActive;
       return (
         <Badge className={cn("bg-slate-700", isActive && "bg-emerald-700")}>
           {isActive ? "Active" : "Inactive"}
         </Badge>
       );
     },
-  },
-  {
+  }),
+  columnHelper.display({
     id: "actions",
     cell: ({ row }) => {
       const { id } = row.original;
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-4 w-8 p-0">
+            <Button variant="ghost" size="icon" className="size-8">
               <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
+              <MoreHorizontalIcon />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <Link href={`/admin/ads/${id}`}>
               <DropdownMenuItem>
-                <Pencil className="h-4 w-4 mr-2" />
+                <PencilIcon />
                 Edit
               </DropdownMenuItem>
             </Link>
@@ -76,5 +67,6 @@ export const columns: ColumnDef<AdCampaign>[] = [
         </DropdownMenu>
       );
     },
-  },
-];
+    enableHiding: false,
+  }),
+]);

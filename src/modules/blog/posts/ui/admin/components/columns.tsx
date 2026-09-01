@@ -1,18 +1,16 @@
 "use client";
 
 import Image from "next/image";
-import { ColumnDef } from "@tanstack/react-table";
-
-import { ArrowUpDownIcon, CalendarClockIcon } from "lucide-react";
+import { createColumnHelper } from "@tanstack/react-table";
 import { format } from "date-fns";
+import { CalendarClockIcon } from "lucide-react";
 
 import { ContentStatus } from "@/generated/prisma";
 
 import { cn, getFirstCharUppercase } from "@/shared/lib/utils";
 
-import { Button } from "@/shared/ui/button";
-import { Checkbox } from "@/shared/ui/checkbox";
 import { Badge } from "@/shared/ui/badge";
+import { Checkbox } from "@/shared/ui/checkbox";
 import {
   Tooltip,
   TooltipContent,
@@ -22,22 +20,36 @@ import {
 
 import type { PostsGetMany } from "../../../types";
 
-import { PostsActions } from "./actions";
+import { DataTableColumnHeader } from "@/shared/components/data-table-column-header";
 
-export const columns: ColumnDef<PostsGetMany[number]>[] = [
-  {
+import { PostsActions } from "./actions";
+import { type DataTableFeatures } from "./data-table-features";
+
+type Post = PostsGetMany["items"][number];
+
+const columnHelper = createColumnHelper<DataTableFeatures, Post>();
+
+export const columns = columnHelper.columns([
+  columnHelper.display({
     id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-        className="translate-y-0.5"
-      />
-    ),
+    header: ({ table }) => {
+      const isAllSelected = table.getIsAllPageRowsSelected();
+      const isSomeSelected = table.getIsSomePageRowsSelected();
+
+      return (
+        <Checkbox
+          checked={
+            isAllSelected ||
+            (isSomeSelected && !isAllSelected && "indeterminate")
+          }
+          onCheckedChange={(value) =>
+            table.toggleAllPageRowsSelected(!!value)
+          }
+          aria-label="Select all"
+          className="translate-y-0.5"
+        />
+      );
+    },
     cell: ({ row }) => (
       <Checkbox
         checked={row.getIsSelected()}
@@ -48,23 +60,19 @@ export const columns: ColumnDef<PostsGetMany[number]>[] = [
     ),
     enableSorting: false,
     enableHiding: false,
-  },
-  {
-    accessorKey: "imageCover",
-    header: () => {
-      return <span>Image</span>;
-    },
+  }),
+  columnHelper.accessor("imageCover", {
+    header: () => <span>Image</span>,
+    enableSorting: false,
     cell: ({ row }) => {
-      const imageCover = (row.getValue("imageCover") || null) as {
-        url: string;
-        altText: string | null;
-      } | null;
+      const imageCover = row.original.imageCover;
       if (!imageCover) return null;
+
       return (
         <div className="relative max-w-60 aspect-video">
           <Image
             src={imageCover.url}
-            alt={imageCover.altText || ""}
+            alt={imageCover.altText ?? ""}
             fill
             sizes="20vw"
             className="rounded-md object-cover"
@@ -72,91 +80,52 @@ export const columns: ColumnDef<PostsGetMany[number]>[] = [
         </div>
       );
     },
-  },
-  {
-    accessorKey: "title",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="-ml-4"
-        >
-          Title
-          <ArrowUpDownIcon className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-  },
-  {
-    accessorKey: "postAuthors",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="-ml-4"
-        >
-          Authors
-          <ArrowUpDownIcon className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+  }),
+  columnHelper.accessor("title", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Title" />
+    ),
+    sortFn: "text",
+  }),
+  columnHelper.accessor("postAuthors", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Authors" />
+    ),
+    enableSorting: false,
     cell: ({ row }) => {
-      const authors = row.getValue("postAuthors") as {
-        user: { email: string; imageUrl: string | null };
-      }[];
+      const authors = row.original.postAuthors;
 
       return (
         <div className="flex items-center gap-x-4">
-          {authors.map((a) => {
-            return (
-              <Image
-                key={a.user.email}
-                src={a.user.imageUrl!}
-                width={40}
-                height={40}
-                className="rounded-full w-10 h-10 object-cover"
-                alt={`Foto profilo ${a.user.email}`}
-                unoptimized
-              />
-            );
-          })}
+          {authors.map((author) => (
+            <Image
+              key={author.user.email}
+              src={author.user.imageUrl ?? ""}
+              width={40}
+              height={40}
+              className="size-10 rounded-full object-cover"
+              alt={`Foto profilo ${author.user.email}`}
+              unoptimized
+            />
+          ))}
         </div>
       );
     },
-  },
-  {
-    accessorKey: "editorType",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="-ml-4"
-        >
-          Editor Type
-          <ArrowUpDownIcon className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-  },
-  {
-    accessorKey: "status",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="-ml-4"
-        >
-          Status
-          <ArrowUpDownIcon className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+  }),
+  columnHelper.accessor("editorType", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Editor Type" />
+    ),
+    sortFn: "text",
+  }),
+  columnHelper.accessor("status", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
+    sortFn: "text",
     cell: ({ row }) => {
       const status = row.original.status;
+
       return (
         <Badge
           className={cn(
@@ -170,52 +139,32 @@ export const columns: ColumnDef<PostsGetMany[number]>[] = [
         </Badge>
       );
     },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id));
-    },
-  },
-  {
-    accessorKey: "firstPublishedAt",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="-ml-4"
-        >
-          Published at
-          <ArrowUpDownIcon className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+  }),
+  columnHelper.accessor("firstPublishedAt", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Published at" />
+    ),
+    sortFn: "datetime",
     cell: ({ row }) => {
-      const { firstPublishedAt } = row.original;
-      const date = new Date(firstPublishedAt);
+      const date = new Date(row.original.firstPublishedAt);
       const formattedDate = date.toLocaleDateString("it-IT", {
         year: "numeric",
         month: "short",
         day: "numeric",
       });
+
       return <div>{formattedDate}</div>;
     },
-  },
-  {
-    accessorKey: "scheduledAt",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="-ml-4"
-        >
-          Scheduled for
-          <ArrowUpDownIcon className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+  }),
+  columnHelper.accessor("scheduledAt", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Scheduled for" />
+    ),
+    sortFn: "datetime",
     cell: ({ row }) => {
       const { scheduledAt, status } = row.original;
       if (!scheduledAt) return null;
+
       const date = new Date(scheduledAt);
       const isOverdue =
         status === ContentStatus.SCHEDULED && date.getTime() < Date.now();
@@ -249,21 +198,23 @@ export const columns: ColumnDef<PostsGetMany[number]>[] = [
         </TooltipProvider>
       );
     },
-  },
-  {
+  }),
+  columnHelper.display({
     id: "actions",
     cell: ({ row }) => {
-      const { rootId, id, status } = row.original;
+      const { rootId, id, status, scheduledAt } = row.original;
 
       if (!rootId) return null;
+
       return (
         <PostsActions
           rootId={rootId}
           id={id}
           status={status}
-          scheduledAt={row.original.scheduledAt}
+          scheduledAt={scheduledAt}
         />
       );
     },
-  },
-];
+    enableHiding: false,
+  }),
+]);

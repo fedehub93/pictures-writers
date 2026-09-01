@@ -1,73 +1,51 @@
 "use client";
 
 import { ContentStatus, ProductCategory } from "@/generated/prisma";
-import { ColumnDef } from "@tanstack/react-table";
-import Link from "next/link";
-import { ArrowUpDown, MoreHorizontal, Pencil } from "lucide-react";
-
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
-import { Button } from "@/shared/ui/button";
+import { createColumnHelper } from "@tanstack/react-table";
+import { cn, getFirstCharUppercase } from "@/shared/lib/utils";
 import { Badge } from "@/shared/ui/badge";
-import { cn } from "@/shared/lib/utils";
-import { ProductCategoriesAction } from "./actions";
 
-export const columns: ColumnDef<ProductCategory>[] = [
-  {
-    accessorKey: "title",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Title
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-  },
-  {
-    accessorKey: "status",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Status
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+import { DataTableColumnHeader } from "@/shared/components/data-table-column-header";
+
+import { ProductCategoriesAction } from "./actions";
+import { type DataTableFeatures } from "./data-table-features";
+
+const columnHelper = createColumnHelper<DataTableFeatures, ProductCategory>();
+
+export const columns = columnHelper.columns([
+  columnHelper.accessor("title", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Title" />
+    ),
+    sortFn: "text",
+    filterFn: "includesString",
+  }),
+  columnHelper.accessor("status", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
+    sortFn: "text",
     cell: ({ row }) => {
-      const status = row.getValue("status") || false;
+      const status = row.original.status;
       return (
         <Badge
           className={cn(
             status === ContentStatus.DRAFT && "bg-slate-700",
             status === ContentStatus.CHANGED && "bg-sky-700",
-            status === ContentStatus.PUBLISHED && "bg-emerald-700"
+            status === ContentStatus.PUBLISHED && "bg-emerald-700",
           )}
         >
-          {status === ContentStatus.DRAFT
-            ? "Draft"
-            : status === ContentStatus.CHANGED
-            ? "Changed"
-            : "Published"}
+          {getFirstCharUppercase(status.toLowerCase())}
         </Badge>
       );
     },
-  },
-  {
+  }),
+  columnHelper.display({
     id: "actions",
     cell: ({ row }) => {
       const { rootId, id } = row.original;
       return <ProductCategoriesAction rootId={rootId!} id={id} />;
     },
-  },
-];
+    enableHiding: false,
+  }),
+]);

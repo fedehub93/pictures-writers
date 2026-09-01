@@ -37,7 +37,7 @@ export const FormsActions = ({ id, data }: FormsActions) => {
   const trpc = useTRPC();
 
   const queryClient = useQueryClient();
-  const [filters, setFilters] = useFormFilters();
+  const [filters, _setFilters] = useFormFilters();
   const router = useRouter();
 
   const { onOpen } = useOpenForm();
@@ -69,19 +69,19 @@ export const FormsActions = ({ id, data }: FormsActions) => {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-4 w-8 p-0">
+          <Button variant="ghost" size="icon" className="size-8">
             <span className="sr-only">Open menu</span>
-            <MoreHorizontalIcon className="size-4" />
+            <MoreHorizontalIcon />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={onEdit}>
-            <PencilIcon className="size-4 mr-2" />
+            <PencilIcon />
             Edit
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href={`/admin/forms/${id}/builder`}>
-              <BlocksIcon className="size-4 mr-2" />
+              <BlocksIcon />
               Form Builder
             </Link>
           </DropdownMenuItem>
@@ -91,9 +91,9 @@ export const FormsActions = ({ id, data }: FormsActions) => {
             <Button
               variant="ghost"
               disabled={isPending}
-              className="bg-destructive px-2! w-full justify-start text-destructive-foreground gap-0"
+              className="bg-destructive px-2! w-full justify-start text-destructive-foreground"
             >
-              <Trash2Icon className="size-4 mr-2" />
+              <Trash2Icon data-icon="inline-start" />
               Delete
             </Button>
           </ConfirmModal>

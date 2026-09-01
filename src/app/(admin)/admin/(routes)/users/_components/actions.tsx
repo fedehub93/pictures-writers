@@ -1,11 +1,6 @@
 "use client";
 
-import { UserRole } from "@/generated/prisma";
-
-import {
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/shared/ui/dropdown-menu";
+import { DropdownMenuContent, DropdownMenuItem } from "@/shared/ui/dropdown-menu";
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 
 interface ActionsProps {
@@ -14,7 +9,6 @@ interface ActionsProps {
   lastName?: string | null;
   bio?: string | null;
   imageUrl?: string | null;
-  role: UserRole;
 }
 
 export const Actions = ({
@@ -23,7 +17,6 @@ export const Actions = ({
   lastName,
   bio,
   imageUrl,
-  role,
 }: ActionsProps) => {
   const { onOpen } = useModal();
   return (

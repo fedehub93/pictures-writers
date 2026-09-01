@@ -1,99 +1,65 @@
 "use client";
 
 import { Widget } from "@/generated/prisma";
-import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, CheckCircle, CircleOff } from "lucide-react";
+import { createColumnHelper } from "@tanstack/react-table";
+import { CheckCircle, CircleOff } from "lucide-react";
 
-import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 
-import { WidgetActions } from "./actions";
+import { DataTableColumnHeader } from "@/shared/components/data-table-column-header";
 
-export const columns: ColumnDef<Widget>[] = [
-  {
-    accessorKey: "name",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="-ml-4"
-        >
-          Name
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-  },
-  {
-    accessorKey: "section",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="-ml-4"
-        >
-          Section
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+import { WidgetActions } from "./actions";
+import { type DataTableFeatures } from "./data-table-features";
+
+const columnHelper = createColumnHelper<DataTableFeatures, Widget>();
+
+export const columns = columnHelper.columns([
+  columnHelper.accessor("name", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Name" />
+    ),
+    sortFn: "text",
+    filterFn: "includesString",
+  }),
+  columnHelper.accessor("section", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Section" />
+    ),
+    sortFn: "text",
+    filterFn: "arrIncludes",
     cell: ({ row }) => {
-      const section = row.getValue("section") as string;
+      const section = row.original.section;
       return <Badge>{section}</Badge>;
     },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id));
-    },
-  },
-  {
-    accessorKey: "type",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="-ml-4"
-        >
-          Type
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+  }),
+  columnHelper.accessor("type", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Type" />
+    ),
+    sortFn: "text",
+    filterFn: "arrIncludes",
     cell: ({ row }) => {
-      const type = (row.getValue("type") as string) || false;
+      const type = row.original.type;
       return <Badge>{type}</Badge>;
     },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id));
-    },
-  },
-  {
-    accessorKey: "isEnabled",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="-ml-4"
-        >
-          Is enabled?
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+  }),
+  columnHelper.accessor("isEnabled", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Is enabled?" />
+    ),
+    sortFn: "alphanumeric",
     cell: ({ row }) => {
-      const isEnabled = row.getValue("isEnabled") || false;
+      const isEnabled = row.original.isEnabled;
       if (isEnabled) return <CheckCircle className="text-emerald-700" />;
       return <CircleOff className="text-destructive" />;
     },
-  },
-  {
+  }),
+  columnHelper.display({
     id: "actions",
     cell: ({ row }) => {
       const { id } = row.original;
       return <WidgetActions id={id} />;
     },
-  },
-];
+    enableHiding: false,
+  }),
+]);

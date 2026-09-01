@@ -1,39 +1,34 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
-import {
-  ArrowUpDownIcon,
-  CircleAlertIcon,
-  CircleCheckIcon,
-} from "lucide-react";
+import { createColumnHelper } from "@tanstack/react-table";
+import { CircleAlertIcon, CircleCheckIcon } from "lucide-react";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/shared/ui/tooltip";
-import { Button } from "@/shared/ui/button";
 
 import { formatDate } from "@/lib/format";
 
+import { DataTableColumnHeader } from "@/shared/components/data-table-column-header";
+
 import { EmailAudienceContactsAction } from "./actions";
 import { ContactsGetMany } from "../../types";
+import { type DataTableFeatures } from "./data-table-features";
 
-export const columns: ColumnDef<ContactsGetMany[number]>[] = [
-  {
-    accessorKey: "email",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Email
-          <ArrowUpDownIcon className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+type Contact = ContactsGetMany[number];
+
+const columnHelper = createColumnHelper<DataTableFeatures, Contact>();
+
+export const columns = columnHelper.columns([
+  columnHelper.accessor("email", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Email" />
+    ),
+    sortFn: "text",
+    filterFn: "includesString",
     cell: ({ row }) => {
       const { email, emailVerified } = row.original;
       const isVerified = !!emailVerified;
       return (
-        <div className="flex gap-x-2 items-center">
+        <div className="flex items-center gap-x-2">
           {isVerified ? (
             <Tooltip>
               <TooltipTrigger>
@@ -55,68 +50,34 @@ export const columns: ColumnDef<ContactsGetMany[number]>[] = [
         </div>
       );
     },
-  },
-  {
-    accessorKey: "firstName",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          First Name
-          <ArrowUpDownIcon className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-  },
-  {
-    accessorKey: "lastName",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Last Name
-          <ArrowUpDownIcon className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-  },
-
-  {
-    accessorKey: "Interaction Type",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Interaction
-          <ArrowUpDownIcon className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+  }),
+  columnHelper.accessor("firstName", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="First Name" />
+    ),
+    sortFn: "text",
+  }),
+  columnHelper.accessor("lastName", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Last Name" />
+    ),
+    sortFn: "text",
+  }),
+  columnHelper.display({
+    id: "interactions",
+    header: "Interaction",
+    enableSorting: false,
     cell: ({ row }) => {
       const { interactions } = row.original;
       if (!interactions) return null;
       return <div>{interactions.map((i) => i.interactionType).join()}</div>;
     },
-  },
-  {
-    accessorKey: "createdAt",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Created at
-          <ArrowUpDownIcon className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+  }),
+  columnHelper.accessor("createdAt", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Created at" />
+    ),
+    sortFn: "datetime",
     cell: ({ row }) => {
       const { createdAt } = row.original;
       const date = new Date(createdAt);
@@ -127,13 +88,13 @@ export const columns: ColumnDef<ContactsGetMany[number]>[] = [
       });
       return <div>{formattedDate}</div>;
     },
-  },
-  {
+  }),
+  columnHelper.display({
     id: "actions",
     cell: ({ row }) => {
       const { id } = row.original;
-
       return <EmailAudienceContactsAction id={id} data={row.original} />;
     },
-  },
-];
+    enableHiding: false,
+  }),
+]);

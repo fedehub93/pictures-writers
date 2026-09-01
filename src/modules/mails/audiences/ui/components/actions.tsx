@@ -103,21 +103,21 @@ export const AudiencesAction = ({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-4 w-8 p-0">
+          <Button variant="ghost" size="icon" className="size-8">
             <span className="sr-only">Open menu</span>
-            <MoreHorizontalIcon className="size-4" />
+            <MoreHorizontalIcon />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           {!isAllContactsAudience && (
             <DropdownMenuItem onClick={onEdit}>
-              <PencilIcon className="size-4 mr-2" />
+              <PencilIcon />
               Edit
             </DropdownMenuItem>
           )}
           <Link href={`/admin/mails/audiences/${id}/contacts`}>
             <DropdownMenuItem>
-              <EyeIcon className="size-4 mr-2" />
+              <EyeIcon />
               View contacts
             </DropdownMenuItem>
           </Link>
@@ -125,18 +125,18 @@ export const AudiencesAction = ({
             <>
               <DropdownMenuItem
                 onClick={onSyncWithProvider}
-                disabled={isProcessing} // Previene doppi click
+                disabled={isProcessing}
               >
-                <CloudSyncIcon className="size-4 mr-2" />
+                <CloudSyncIcon />
                 Sync with Provider
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <ConfirmModal onConfirm={onDelete}>
                 <Button
                   variant="ghost"
-                  className="bg-destructive px-2! w-full justify-start text-destructive-foreground gap-0"
+                  className="bg-destructive px-2! w-full justify-start text-destructive-foreground"
                 >
-                  <Trash2Icon className="size-4 mr-2" />
+                  <Trash2Icon data-icon="inline-start" />
                   Delete
                 </Button>
               </ConfirmModal>

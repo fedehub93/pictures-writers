@@ -107,15 +107,15 @@ export const TagsActions = ({ id, rootId, status }: TagsActionProps) => {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-4 w-8 p-0">
+          <Button variant="ghost" size="icon" className="size-8">
             <span className="sr-only">Open menu</span>
-            <MoreHorizontalIcon className="size-4" />
+            <MoreHorizontalIcon />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <Link href={`/admin/tags/${rootId}`}>
             <DropdownMenuItem>
-              <PencilIcon className="size-4 mr-2" />
+              <PencilIcon />
               Edit
             </DropdownMenuItem>
           </Link>
@@ -128,13 +128,13 @@ export const TagsActions = ({ id, rootId, status }: TagsActionProps) => {
           >
             {status !== ContentStatus.PUBLISHED && (
               <>
-                <EyeIcon className="size-4 mr-2" />
+                <EyeIcon />
                 Publish
               </>
             )}
             {status === ContentStatus.PUBLISHED && (
               <>
-                <EyeOffIcon className="size-4 mr-2" />
+                <EyeOffIcon />
                 Unpublish
               </>
             )}
@@ -144,9 +144,9 @@ export const TagsActions = ({ id, rootId, status }: TagsActionProps) => {
             <Button
               variant="ghost"
               disabled={isPending}
-              className="bg-destructive px-2! w-full justify-start text-destructive-foreground gap-0"
+              className="bg-destructive px-2! w-full justify-start text-destructive-foreground"
             >
-              <Trash2Icon className="size-4 mr-2" />
+              <Trash2Icon data-icon="inline-start" />
               Delete
             </Button>
           </ConfirmModal>

@@ -43,7 +43,7 @@ export const CategoriesListHeader = () => {
               <StatusFilter />
               {isAnyFilterModified && (
                 <Button variant="outline" size="sm" onClick={onClearFilters}>
-                  <XCircleIcon />
+                  <XCircleIcon data-icon="inline-start" />
                   Clear
                 </Button>
               )}
@@ -55,12 +55,12 @@ export const CategoriesListHeader = () => {
               <DropdownMenuTrigger asChild>
                 <Button type="button" variant="outline" size="sm">
                   Actions
-                  <ArrowDownIcon className="size-4 ml-2" />
+                  <ArrowDownIcon data-icon="inline-end" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => onOpen()}>
-                  <PlusCircleIcon className="size-4 mr-2" />
+                  <PlusCircleIcon />
                   New Category
                 </DropdownMenuItem>
               </DropdownMenuContent>

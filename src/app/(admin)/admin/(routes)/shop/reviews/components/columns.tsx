@@ -1,18 +1,21 @@
 "use client";
 
 import Image from "next/image";
-import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, StarIcon } from "lucide-react";
+import { createColumnHelper } from "@tanstack/react-table";
+import { StarIcon } from "lucide-react";
 
-import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 import { Checkbox } from "@/shared/ui/checkbox";
 
 import { cn } from "@/shared/lib/utils";
 import { formatDate } from "@/lib/format";
-import { ReviewsActions } from "./actions";
 
-export const columns: ColumnDef<{
+import { DataTableColumnHeader } from "@/shared/components/data-table-column-header";
+
+import { ReviewsActions } from "./actions";
+import { type DataTableFeatures } from "./data-table-features";
+
+type Review = {
   id: string;
   product: {
     id: string;
@@ -23,20 +26,31 @@ export const columns: ColumnDef<{
   reviewerName: string | null;
   date: Date;
   status: boolean;
-}>[] = [
-  {
+};
+
+const columnHelper = createColumnHelper<DataTableFeatures, Review>();
+
+export const columns = columnHelper.columns([
+  columnHelper.display({
     id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-        className="translate-y-0.5"
-      />
-    ),
+    header: ({ table }) => {
+      const isAllSelected = table.getIsAllPageRowsSelected();
+      const isSomeSelected = table.getIsSomePageRowsSelected();
+
+      return (
+        <Checkbox
+          checked={
+            isAllSelected ||
+            (isSomeSelected && !isAllSelected && "indeterminate")
+          }
+          onCheckedChange={(value) =>
+            table.toggleAllPageRowsSelected(!!value)
+          }
+          aria-label="Select all"
+          className="translate-y-0.5"
+        />
+      );
+    },
     cell: ({ row }) => (
       <Checkbox
         checked={row.getIsSelected()}
@@ -47,47 +61,34 @@ export const columns: ColumnDef<{
     ),
     enableSorting: false,
     enableHiding: false,
-  },
-  {
-    accessorKey: "product",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Product
-          <ArrowUpDown className="ml-2 size-4" />
-        </Button>
-      );
-    },
+  }),
+  columnHelper.accessor("product", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Product" />
+    ),
+    enableSorting: false,
     cell: ({ row }) => {
-      const product =
-        (row.getValue("product") as {
-          id: string;
-          title: string;
-          imageCover: { url: string; altText: string | null } | null;
-        } | null) || false;
+      const product = row.original.product;
       if (!product) return <div>N/D</div>;
       return (
-        <div className="flex gap-x-6 min-w-64">
-          <div className="rounded-md bg-accent relative aspect-square size-20">
+        <div className="flex min-w-64 gap-x-6">
+          <div className="relative aspect-square size-20 rounded-md bg-accent">
             {product.imageCover && !!product.imageCover.url && (
               <Image
-                src={product.imageCover?.url}
-                alt={product.imageCover?.altText || "Product Image"}
+                src={product.imageCover.url}
+                alt={product.imageCover.altText || "Product Image"}
                 fill
-                className="object-contain rounded-md p-2"
+                className="rounded-md object-contain p-2"
                 unoptimized
               />
             )}
             {!product.imageCover && (
-              <div className="flex items-center justify-center h-full w-full text-muted-foreground">
+              <div className="flex h-full w-full items-center justify-center text-muted-foreground">
                 No image
               </div>
             )}
           </div>
-          <div className="flex flex-col space-y-1 justify-center">
+          <div className="flex flex-col justify-center space-y-1">
             <span className="text-sm line-clamp-1">{product.title}</span>
             <span className="text-xs text-muted-foreground line-clamp-2">
               Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi,
@@ -97,40 +98,23 @@ export const columns: ColumnDef<{
         </div>
       );
     },
-  },
-  {
-    accessorKey: "reviewerName",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Reviewer
-          <ArrowUpDown className="ml-2 size-4" />
-        </Button>
-      );
-    },
-  },
-
-  {
-    accessorKey: "rating",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Rating
-          <ArrowUpDown className="ml-2 size-4" />
-        </Button>
-      );
-    },
+  }),
+  columnHelper.accessor("reviewerName", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Reviewer" />
+    ),
+    sortFn: "text",
+  }),
+  columnHelper.accessor("rating", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Rating" />
+    ),
+    sortFn: "alphanumeric",
     cell: ({ row }) => {
       const rating = row.original.rating;
       if (!rating) return <div>N/D</div>;
       return (
-        <div className="flex text-primary items-center">
+        <div className="flex items-center text-primary">
           {[...Array(5)].map((_, i) => (
             <StarIcon
               key={i}
@@ -141,45 +125,25 @@ export const columns: ColumnDef<{
         </div>
       );
     },
-  },
-  {
-    accessorKey: "date",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Date
-          <ArrowUpDown className="ml-2 size-4" />
-        </Button>
-      );
-    },
+  }),
+  columnHelper.accessor("date", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Date" />
+    ),
+    sortFn: "datetime",
     cell: ({ row }) => {
       const date = formatDate({ date: row.original.date });
       return <div>{date}</div>;
     },
-  },
-
-  {
-    accessorKey: "status",
-    filterFn: (row, id, value) => {
-      if (!value?.length) return true;
-      return value.includes(row.getValue(id));
-    },
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Status
-          <ArrowUpDown className="ml-2 size-4" />
-        </Button>
-      );
-    },
+  }),
+  columnHelper.accessor("status", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
+    sortFn: "alphanumeric",
+    filterFn: "arrIncludes",
     cell: ({ row }) => {
-      const status = row.getValue("status") || false;
+      const status = row.original.status;
       return (
         <Badge
           className={cn(
@@ -191,12 +155,13 @@ export const columns: ColumnDef<{
         </Badge>
       );
     },
-  },
-  {
+  }),
+  columnHelper.display({
     id: "actions",
     cell: ({ row }) => {
       const { id, status } = row.original;
       return <ReviewsActions id={id} status={status} />;
     },
-  },
-];
+    enableHiding: false,
+  }),
+]);

@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  BlocksIcon,
-  EyeIcon,
-  MoreHorizontalIcon,
-  PencilIcon,
-  Trash2Icon,
-} from "lucide-react";
+import { EyeIcon, MoreHorizontalIcon, Trash2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -25,20 +19,15 @@ import {
 
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 
-import { FormSubmissionsGetMany } from "../../types";
-
 interface SubmissionsActions {
   id: string;
-  data: FormSubmissionsGetMany[number];
 }
 
-export const SubmissionsActions = ({ id, data }: SubmissionsActions) => {
+export const SubmissionsActions = ({ id }: SubmissionsActions) => {
   const trpc = useTRPC();
 
   const queryClient = useQueryClient();
   const router = useRouter();
-
-  const onEdit = () => {};
 
   const removeForm = useMutation(
     trpc.submissions.remove.mutationOptions({
@@ -65,15 +54,15 @@ export const SubmissionsActions = ({ id, data }: SubmissionsActions) => {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-4 w-8 p-0">
+          <Button variant="ghost" size="icon" className="size-8">
             <span className="sr-only">Open menu</span>
-            <MoreHorizontalIcon className="size-4" />
+            <MoreHorizontalIcon />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <Link href={`/admin/submissions/${id}`}>
             <DropdownMenuItem>
-              <EyeIcon className="size-4 mr-2" />
+              <EyeIcon />
               View
             </DropdownMenuItem>
           </Link>
@@ -83,9 +72,9 @@ export const SubmissionsActions = ({ id, data }: SubmissionsActions) => {
             <Button
               variant="ghost"
               disabled={isPending}
-              className="bg-destructive px-2! w-full justify-start text-destructive-foreground gap-0"
+              className="bg-destructive px-2! w-full justify-start text-destructive-foreground"
             >
-              <Trash2Icon className="size-4 mr-2" />
+              <Trash2Icon data-icon="inline-start" />
               Delete
             </Button>
           </ConfirmModal>

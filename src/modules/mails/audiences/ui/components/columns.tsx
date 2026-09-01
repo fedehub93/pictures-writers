@@ -1,20 +1,25 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDownIcon } from "lucide-react";
+import { createColumnHelper } from "@tanstack/react-table";
 
 import { AudienceType } from "@/generated/prisma";
 
 import { cn } from "@/shared/lib/utils";
-import { Button } from "@/shared/ui/button";
+
+import { DataTableColumnHeader } from "@/shared/components/data-table-column-header";
 
 import { AudiencesAction } from "./actions";
 import { AudiencesGetMany } from "../../types";
+import { type DataTableFeatures } from "./data-table-features";
 
-export const columns: ColumnDef<AudiencesGetMany[number]>[] = [
-  {
-    accessorKey: "type",
+type Audience = AudiencesGetMany[number];
+
+const columnHelper = createColumnHelper<DataTableFeatures, Audience>();
+
+export const columns = columnHelper.columns([
+  columnHelper.accessor("type", {
     header: "Type",
+    enableSorting: false,
     cell: ({ row }) => {
       const { type } = row.original;
       return (
@@ -31,30 +36,22 @@ export const columns: ColumnDef<AudiencesGetMany[number]>[] = [
         </svg>
       );
     },
-  },
-  {
-    accessorKey: "name",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Name
-          <ArrowUpDownIcon className="ml-2 size-4" />
-        </Button>
-      );
-    },
-  },
-  {
-    accessorKey: "totalContacts",
+  }),
+  columnHelper.accessor("name", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Name" />
+    ),
+    sortFn: "text",
+    filterFn: "includesString",
+  }),
+  columnHelper.accessor("totalContacts", {
     header: "Count",
-  },
-  {
+    sortFn: "alphanumeric",
+  }),
+  columnHelper.display({
     id: "actions",
     cell: ({ row }) => {
       const { id, type } = row.original;
-
       const isAllContactsAudience = type === AudienceType.GLOBAL;
 
       return (
@@ -65,5 +62,6 @@ export const columns: ColumnDef<AudiencesGetMany[number]>[] = [
         />
       );
     },
-  },
-];
+    enableHiding: false,
+  }),
+]);

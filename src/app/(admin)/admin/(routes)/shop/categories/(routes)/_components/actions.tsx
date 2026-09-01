@@ -26,7 +26,7 @@ export const ProductCategoriesAction = ({
   rootId: string;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [_isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const onDelete = async () => {
@@ -50,19 +50,20 @@ export const ProductCategoriesAction = ({
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="h-4 w-8 p-0"
+          size="icon"
+          className="size-8"
           onClick={() => {
             setIsOpen(true);
           }}
         >
           <span className="sr-only">Open menu</span>
-          <MoreHorizontal className="h-4 w-4" />
+          <MoreHorizontal />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <Link href={`/admin/shop/categories/${rootId}`}>
           <DropdownMenuItem>
-            <Pencil className="h-4 w-4 mr-2" />
+            <Pencil />
             Edit
           </DropdownMenuItem>
         </Link>
@@ -72,7 +73,7 @@ export const ProductCategoriesAction = ({
             variant="ghost"
             className="text-destructive px-2 w-full justify-start"
           >
-            <Trash2 className="h-4 w-4 mr-2" />
+            <Trash2 data-icon="inline-start" />
             Delete
           </Button>
         </ConfirmModal>

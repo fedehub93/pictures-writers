@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, MoreHorizontal, Pencil } from "lucide-react";
+import { createColumnHelper } from "@tanstack/react-table";
+import { MoreHorizontalIcon, PencilIcon } from "lucide-react";
 
 import { Button } from "@/shared/ui/button";
 import {
@@ -12,53 +12,45 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 
-import { TemplatesGetMany } from "../../types";
+import { DataTableColumnHeader } from "@/shared/components/data-table-column-header";
 
-export const columns: ColumnDef<TemplatesGetMany[number]>[] = [
-  {
-    accessorKey: "name",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Name
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-  },
-  {
-    accessorKey: "description",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Description
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-  },
-  {
+import { TemplatesGetMany } from "../../types";
+import { type DataTableFeatures } from "./data-table-features";
+
+type Template = TemplatesGetMany[number];
+
+const columnHelper = createColumnHelper<DataTableFeatures, Template>();
+
+export const columns = columnHelper.columns([
+  columnHelper.accessor("name", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Name" />
+    ),
+    sortFn: "text",
+    filterFn: "includesString",
+  }),
+  columnHelper.accessor("description", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Description" />
+    ),
+    sortFn: "text",
+  }),
+  columnHelper.display({
     id: "actions",
     cell: ({ row }) => {
       const { id } = row.original;
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-4 w-8 p-0">
+            <Button variant="ghost" size="icon" className="size-8">
               <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
+              <MoreHorizontalIcon />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <Link href={`/admin/mails/templates/${id}`}>
               <DropdownMenuItem>
-                <Pencil className="h-4 w-4 mr-2" />
+                <PencilIcon />
                 Edit
               </DropdownMenuItem>
             </Link>
@@ -66,5 +58,6 @@ export const columns: ColumnDef<TemplatesGetMany[number]>[] = [
         </DropdownMenu>
       );
     },
-  },
-];
+    enableHiding: false,
+  }),
+]);

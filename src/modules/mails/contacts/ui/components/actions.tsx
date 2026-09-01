@@ -82,27 +82,28 @@ export const EmailAudienceContactsAction = ({
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="h-4 w-8 p-0"
+          size="icon"
+          className="size-8"
           onClick={() => {
             setIsOpen(true);
           }}
         >
           <span className="sr-only">Open menu</span>
-          <MoreHorizontalIcon className="h-4 w-4" />
+          <MoreHorizontalIcon />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={onEdit} disabled={isPending}>
-          <PencilIcon className="size-4 mr-2" />
+          <PencilIcon />
           Edit
         </DropdownMenuItem>
         <ConfirmModal onConfirm={onSyncWithProvider}>
           <Button
             variant="ghost"
-            className="px-2! w-full justify-start gap-0"
+            className="px-2! w-full justify-start"
             disabled={isPending}
           >
-            <CloudSyncIcon className="size-4 mr-2" />
+            <CloudSyncIcon data-icon="inline-start" />
             Sync with Provider
           </Button>
         </ConfirmModal>
@@ -110,10 +111,10 @@ export const EmailAudienceContactsAction = ({
         <ConfirmModal onConfirm={onDelete}>
           <Button
             variant="ghost"
-            className="bg-destructive px-2! w-full justify-start text-destructive-foreground gap-0"
+            className="bg-destructive px-2! w-full justify-start text-destructive-foreground"
             disabled={isPending}
           >
-            <Trash2Icon className="size-4 mr-2" />
+            <Trash2Icon data-icon="inline-start" />
             Delete
           </Button>
         </ConfirmModal>

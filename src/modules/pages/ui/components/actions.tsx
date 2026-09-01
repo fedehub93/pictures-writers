@@ -42,7 +42,7 @@ export const PagesActions = ({ id, rootId, status, data }: PagesAction) => {
   const trpc = useTRPC();
 
   const queryClient = useQueryClient();
-  const [filters, setFilters] = usePagesFilters();
+  const [filters, _setFilters] = usePagesFilters();
   const router = useRouter();
 
   const { onOpen } = useOpenPageSettings();
@@ -116,20 +116,20 @@ export const PagesActions = ({ id, rootId, status, data }: PagesAction) => {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-4 w-8 p-0">
+          <Button variant="ghost" size="icon" className="size-8">
             <span className="sr-only">Open menu</span>
-            <MoreHorizontalIcon className="size-4" />
+            <MoreHorizontalIcon />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={onEdit}>
-            <PencilIcon className="size-4 mr-2" />
+            <PencilIcon />
             Edit
           </DropdownMenuItem>
 
           <DropdownMenuItem asChild>
             <Link href={`/admin/pages/${rootId}/builder`}>
-              <BlocksIcon className="size-4 mr-2" />
+              <BlocksIcon />
               Page Builder
             </Link>
           </DropdownMenuItem>
@@ -141,13 +141,13 @@ export const PagesActions = ({ id, rootId, status, data }: PagesAction) => {
           >
             {status !== ContentStatus.PUBLISHED && (
               <>
-                <EyeIcon className="size-4 mr-2" />
+                <EyeIcon />
                 Publish
               </>
             )}
             {status === ContentStatus.PUBLISHED && (
               <>
-                <EyeOffIcon className="size-4 mr-2" />
+                <EyeOffIcon />
                 Unpublish
               </>
             )}
@@ -157,9 +157,9 @@ export const PagesActions = ({ id, rootId, status, data }: PagesAction) => {
             <Button
               variant="ghost"
               disabled={isPending}
-              className="bg-destructive px-2! w-full justify-start text-destructive-foreground gap-0"
+              className="bg-destructive px-2! w-full justify-start text-destructive-foreground"
             >
-              <Trash2Icon className="size-4 mr-2" />
+              <Trash2Icon data-icon="inline-start" />
               Delete
             </Button>
           </ConfirmModal>

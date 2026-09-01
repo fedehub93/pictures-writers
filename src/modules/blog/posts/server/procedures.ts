@@ -332,7 +332,23 @@ export const postsRouter = createTRPCRouter({
         skip: (input.page - 1) * input.pageSize,
       });
 
-      return posts;
+      const distinctPosts = await db.post.groupBy({
+        by: ["rootId"],
+        where: {
+          title: input.search
+            ? { contains: input.search, mode: "insensitive" }
+            : undefined,
+          status: input.status ? { in: [input.status] } : undefined,
+        },
+      });
+
+      const totalPages = Math.ceil(distinctPosts.length / input.pageSize);
+
+      return {
+        items: posts,
+        total: distinctPosts.length,
+        totalPages,
+      };
     }),
   getPaginated: protectedProcedure
     .input(

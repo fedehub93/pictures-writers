@@ -4,15 +4,11 @@ import {
   ArrowDownIcon,
   CheckCircleIcon,
   CircleIcon,
-  PencilIcon,
   PlusCircleIcon,
   XIcon,
 } from "lucide-react";
 import { useState } from "react";
-import { Table } from "@tanstack/react-table";
-import axios from "axios";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { type ReactTable, type RowData } from "@tanstack/react-table";
 
 import { Button } from "@/shared/ui/button";
 
@@ -25,9 +21,10 @@ import {
 
 import { DataTableFacetedFilter } from "./data-table-faceted-filter";
 import { useOpenReview } from "../hooks/use-open-review";
+import { type DataTableFeatures } from "./data-table-features";
 
-interface DataTableToolbarProps<TData> {
-  table: Table<TData>;
+interface DataTableToolbarProps<TData extends RowData> {
+  table: ReactTable<DataTableFeatures, TData>;
   data: TData[];
 }
 
@@ -37,7 +34,6 @@ const statuses = [
     label: "Unpublished",
     icon: CircleIcon,
   },
-
   {
     value: true,
     label: "Published",
@@ -45,20 +41,17 @@ const statuses = [
   },
 ];
 
-export function DataTableToolbar<TData>({
+export function DataTableToolbar<TData extends RowData>({
   table,
-  data,
 }: DataTableToolbarProps<TData>) {
-  "use no memo";
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, _] = useState(false);
   const { onOpen } = useOpenReview();
 
-  const isFiltered = table.getState().columnFilters.length > 0;
-  // const selectedRows = table.getState().rowSelection;
+  const isFiltered = table.state.columnFilters.length > 0;
 
   return (
     <div className="flex items-center justify-between py-4">
-      <div className="flex flex-1 items-center space-x-2">
+      <div className="flex flex-1 items-center gap-2">
         {table.getColumn("status") && (
           <DataTableFacetedFilter
             column={table.getColumn("status")}
@@ -73,7 +66,7 @@ export function DataTableToolbar<TData>({
             className="h-8 px-2 lg:px-3"
           >
             Reset
-            <XIcon className="ml-2 h-4 w-4" />
+            <XIcon data-icon="inline-end" />
           </Button>
         )}
       </div>
@@ -81,12 +74,12 @@ export function DataTableToolbar<TData>({
         <DropdownMenuTrigger asChild disabled={isLoading}>
           <Button type="button" variant="outline" size="sm">
             Actions
-            <ArrowDownIcon className="h-4 w-4 ml-2" />
+            <ArrowDownIcon data-icon="inline-end" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={() => onOpen()}>
-            <PlusCircleIcon className="h-4 w-4 mr-2" />
+            <PlusCircleIcon />
             New review
           </DropdownMenuItem>
         </DropdownMenuContent>

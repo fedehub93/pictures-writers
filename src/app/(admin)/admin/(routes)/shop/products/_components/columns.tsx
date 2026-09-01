@@ -8,31 +8,47 @@ import {
   ProductType,
 } from "@/generated/prisma";
 import Image from "next/image";
-import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown } from "lucide-react";
+import { createColumnHelper } from "@tanstack/react-table";
+import { cn, getFirstCharUppercase } from "@/shared/lib/utils";
 
-import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
-
-import { cn } from "@/shared/lib/utils";
-import { formatPrice } from "@/lib/format";
-import { ProductsAction } from "./actions";
 import { Checkbox } from "@/shared/ui/checkbox";
 
-export const columns: ColumnDef<Product>[] = [
-  {
+import { formatPrice } from "@/lib/format";
+
+import { DataTableColumnHeader } from "@/shared/components/data-table-column-header";
+
+import { ProductsAction } from "./actions";
+import { type DataTableFeatures } from "./data-table-features";
+
+type ProductRow = Product & {
+  imageCover: Media | null;
+  category: ProductCategory | null;
+};
+
+const columnHelper = createColumnHelper<DataTableFeatures, ProductRow>();
+
+export const columns = columnHelper.columns([
+  columnHelper.display({
     id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-        className="translate-y-0.5"
-      />
-    ),
+    header: ({ table }) => {
+      const isAllSelected = table.getIsAllPageRowsSelected();
+      const isSomeSelected = table.getIsSomePageRowsSelected();
+
+      return (
+        <Checkbox
+          checked={
+            isAllSelected ||
+            (isSomeSelected && !isAllSelected && "indeterminate")
+          }
+          onCheckedChange={(value) =>
+            table.toggleAllPageRowsSelected(!!value)
+          }
+          aria-label="Select all"
+          className="translate-y-0.5"
+        />
+      );
+    },
     cell: ({ row }) => (
       <Checkbox
         checked={row.getIsSelected()}
@@ -43,14 +59,12 @@ export const columns: ColumnDef<Product>[] = [
     ),
     enableSorting: false,
     enableHiding: false,
-  },
-  {
-    accessorKey: "imageCover",
-    header: () => {
-      return <span>Image</span>;
-    },
+  }),
+  columnHelper.accessor("imageCover", {
+    header: () => <span>Image</span>,
+    enableSorting: false,
     cell: ({ row }) => {
-      const imageCover = (row.getValue("imageCover") || null) as Media | null;
+      const imageCover = row.original.imageCover;
       if (!imageCover) return null;
       return (
         <div className="relative h-20 aspect-1/2">
@@ -64,119 +78,78 @@ export const columns: ColumnDef<Product>[] = [
         </div>
       );
     },
-  },
-  {
-    accessorKey: "title",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Title
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-  },
-  {
-    accessorKey: "category",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Category
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+  }),
+  columnHelper.accessor("title", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Title" />
+    ),
+    sortFn: "text",
+    filterFn: "includesString",
+  }),
+  columnHelper.accessor("category", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Category" />
+    ),
+    enableSorting: false,
     cell: ({ row }) => {
-      const category =
-        (row.getValue("category") as ProductCategory | null) || false;
+      const category = row.original.category;
       if (!category) return <div>N/D</div>;
       return <div>{category.title}</div>;
     },
-  },
-  {
-    accessorKey: "type",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Type
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+  }),
+  columnHelper.accessor("type", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Type" />
+    ),
+    sortFn: "text",
+    filterFn: "arrIncludes",
     cell: ({ row }) => {
-      const type = (row.getValue("type") as string) || false;
+      const type = row.original.type;
       return <Badge>{type}</Badge>;
     },
-  },
-  {
-    accessorKey: "price",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Price
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+  }),
+  columnHelper.accessor("price", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Price" />
+    ),
+    sortFn: "alphanumeric",
     cell: ({ row }) => {
-      const price = (row.getValue("price") || 0.0) as number;
-      const type = row.getValue("type") || false;
+      const price = row.original.price ?? 0.0;
+      const type = row.original.type;
 
       if (type === ProductType.AFFILIATE) {
         return <span className="font-bold">N/D</span>;
       }
       return <span className="font-bold">{formatPrice(price, true)}</span>;
     },
-  },
-  {
-    accessorKey: "status",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Status
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+  }),
+  columnHelper.accessor("status", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
+    sortFn: "text",
+    filterFn: "arrIncludes",
     cell: ({ row }) => {
-      const status = row.getValue("status") || false;
+      const status = row.original.status;
       return (
         <Badge
           className={cn(
             status === ContentStatus.DRAFT && "bg-slate-700",
             status === ContentStatus.CHANGED && "bg-sky-700",
-            status === ContentStatus.PUBLISHED && "bg-emerald-700"
+            status === ContentStatus.PUBLISHED && "bg-emerald-700",
           )}
         >
-          {status === ContentStatus.DRAFT
-            ? "Draft"
-            : status === ContentStatus.CHANGED
-            ? "Changed"
-            : "Published"}
+          {getFirstCharUppercase(status.toLowerCase())}
         </Badge>
       );
     },
-  },
-  {
+  }),
+  columnHelper.display({
     id: "actions",
     cell: ({ row }) => {
       const { rootId, id } = row.original;
       return <ProductsAction rootId={rootId!} id={id} />;
     },
-  },
-];
+    enableHiding: false,
+  }),
+]);

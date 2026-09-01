@@ -58,7 +58,9 @@ export const ReviewsActions = ({
           : "Review unpublished successfully",
       );
     },
-    onError: async (error: any) => {
+    onError: async (error: {
+      response?: { data?: { message?: string } };
+    }) => {
       toast.error(
         error?.response?.data?.message || "Failed to change publication status",
       );
@@ -79,7 +81,9 @@ export const ReviewsActions = ({
       router.refresh();
       toast.success("Review deleted successfully");
     },
-    onError: async (error: any) => {
+    onError: async (error: {
+      response?: { data?: { message?: string } };
+    }) => {
       toast.error(error?.response?.data?.message || "Failed to delete review");
     },
   });
@@ -101,18 +105,19 @@ export const ReviewsActions = ({
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="h-4 w-8 p-0"
+          size="icon"
+          className="size-8"
           onClick={() => {
             setIsOpen(true);
           }}
         >
           <span className="sr-only">Open menu</span>
-          <MoreHorizontal className="size-4" />
+          <MoreHorizontal />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onSelect={() => onOpen(id)} disabled={isPending}>
-          <Pencil className="size-4 mr-2" />
+          <Pencil />
           Edit
         </DropdownMenuItem>
         <DropdownMenuItem
@@ -123,13 +128,13 @@ export const ReviewsActions = ({
         >
           {!status && (
             <>
-              <EyeIcon className="size-4 mr-2" />
+              <EyeIcon />
               Publish
             </>
           )}
           {status && (
             <>
-              <EyeOffIcon className="size-4 mr-2" />
+              <EyeOffIcon />
               Unpublish
             </>
           )}
@@ -137,10 +142,10 @@ export const ReviewsActions = ({
         <DropdownMenuSeparator />
         <ConfirmModal onConfirm={onDelete}>
           <Button
-            className="bg-destructive px-2! w-full justify-start text-destructive-foreground gap-0"
+            className="bg-destructive px-2! w-full justify-start text-destructive-foreground"
             disabled={isPending}
           >
-            <Trash2 className="size-4 mr-2" />
+            <Trash2 data-icon="inline-start" />
             Delete
           </Button>
         </ConfirmModal>

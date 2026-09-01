@@ -25,35 +25,25 @@ import {
 
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 
-import { CategoriesGetMany } from "../../types";
 import { useCategoriesFilters } from "../../hooks/use-categories-filters";
-import { useOpenCategory } from "../../hooks/use-open-category";
 import Link from "next/link";
 
 interface CategoriesAction {
   id: string;
   rootId: string;
   status: ContentStatus;
-  data: CategoriesGetMany[number];
 }
 
 export const CategoriesActions = ({
   id,
   rootId,
   status,
-  data,
 }: CategoriesAction) => {
   const trpc = useTRPC();
 
   const queryClient = useQueryClient();
-  const [filters, setFilters] = useCategoriesFilters();
+  const [filters, _setFilters] = useCategoriesFilters();
   const router = useRouter();
-
-  const { onOpen } = useOpenCategory();
-
-  const onEdit = () => {
-    onOpen(data);
-  };
 
   const publishCategory = useMutation(
     trpc.categories.publish.mutationOptions({
@@ -126,15 +116,15 @@ export const CategoriesActions = ({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-4 w-8 p-0">
+          <Button variant="ghost" size="icon" className="size-8">
             <span className="sr-only">Open menu</span>
-            <MoreHorizontalIcon className="size-4" />
+            <MoreHorizontalIcon />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <Link href={`/admin/categories/${rootId}`}>
             <DropdownMenuItem>
-              <PencilIcon className="size-4 mr-2" />
+              <PencilIcon />
               Edit
             </DropdownMenuItem>
           </Link>
@@ -147,13 +137,13 @@ export const CategoriesActions = ({
           >
             {status !== ContentStatus.PUBLISHED && (
               <>
-                <EyeIcon className="size-4 mr-2" />
+                <EyeIcon />
                 Publish
               </>
             )}
             {status === ContentStatus.PUBLISHED && (
               <>
-                <EyeOffIcon className="size-4 mr-2" />
+                <EyeOffIcon />
                 Unpublish
               </>
             )}
@@ -163,9 +153,9 @@ export const CategoriesActions = ({
             <Button
               variant="ghost"
               disabled={isPending}
-              className="bg-destructive px-2! w-full justify-start text-destructive-foreground gap-0"
+              className="bg-destructive px-2! w-full justify-start text-destructive-foreground"
             >
-              <Trash2Icon className="size-4 mr-2" />
+              <Trash2Icon data-icon="inline-start" />
               Delete
             </Button>
           </ConfirmModal>

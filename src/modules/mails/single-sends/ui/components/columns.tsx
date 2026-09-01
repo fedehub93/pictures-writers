@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDownIcon, MoreHorizontalIcon, PencilIcon } from "lucide-react";
+import { createColumnHelper } from "@tanstack/react-table";
+import { MoreHorizontalIcon, PencilIcon } from "lucide-react";
 
 import { Button } from "@/shared/ui/button";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,67 +12,53 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 
-import { SingleSendsGetMany } from "../../types";
+import { DataTableColumnHeader } from "@/shared/components/data-table-column-header";
 
-export const columns: ColumnDef<SingleSendsGetMany[number]>[] = [
-  {
-    accessorKey: "name",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Name
-          <ArrowUpDownIcon className="ml-2 size-4" />
-        </Button>
-      );
-    },
-    filterFn: (row, id, value) => {
-      if (!value) return true;
-      return String(row.getValue(id))
-        .toLowerCase()
-        .includes(String(value).toLowerCase());
-    },
-  },
-  {
-    accessorKey: "subject",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Subject
-          <ArrowUpDownIcon className="ml-2 size-4" />
-        </Button>
-      );
-    },
-  },
-  {
-    accessorKey: "totalContacts",
+import { SingleSendsGetMany } from "../../types";
+import { type DataTableFeatures } from "./data-table-features";
+
+type SingleSend = SingleSendsGetMany[number];
+
+const columnHelper = createColumnHelper<DataTableFeatures, SingleSend>();
+
+export const columns = columnHelper.columns([
+  columnHelper.accessor("name", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Name" />
+    ),
+    sortFn: "text",
+    filterFn: "includesString",
+  }),
+  columnHelper.accessor("subject", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Subject" />
+    ),
+    sortFn: "text",
+  }),
+  columnHelper.accessor("totalContacts", {
     header: "Total Contacts",
-  },
-  {
-    accessorKey: "totalSends",
+    sortFn: "alphanumeric",
+  }),
+  columnHelper.accessor("totalSends", {
     header: "Total Sends",
-  },
-  {
+    sortFn: "alphanumeric",
+  }),
+  columnHelper.display({
     id: "actions",
     cell: ({ row }) => {
       const { id } = row.original;
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-4 w-8 p-0">
+            <Button variant="ghost" size="icon" className="size-8">
               <span className="sr-only">Open menu</span>
-              <MoreHorizontalIcon className="size-4" />
+              <MoreHorizontalIcon />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <Link href={`/admin/mails/single-sends/${id}`}>
               <DropdownMenuItem>
-                <PencilIcon className="size-4 mr-2" />
+                <PencilIcon />
                 Edit
               </DropdownMenuItem>
             </Link>
@@ -81,5 +66,6 @@ export const columns: ColumnDef<SingleSendsGetMany[number]>[] = [
         </DropdownMenu>
       );
     },
-  },
-];
+    enableHiding: false,
+  }),
+]);

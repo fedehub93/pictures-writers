@@ -10,15 +10,16 @@ import {
   X,
 } from "lucide-react";
 import { WidgetSection } from "@/generated/prisma";
-import { Table } from "@tanstack/react-table";
+import { type ReactTable, type RowData } from "@tanstack/react-table";
 
 import { Input } from "@/shared/ui/input";
 import { Button } from "@/shared/ui/button";
 
 import { DataTableFacetedFilter } from "./data-table-faceted-filter";
+import { type DataTableFeatures } from "./data-table-features";
 
-interface DataTableToolbarProps<TData> {
-  table: Table<TData>;
+interface DataTableToolbarProps<TData extends RowData> {
+  table: ReactTable<DataTableFeatures, TData>;
 }
 
 const sections = [
@@ -44,15 +45,14 @@ const sections = [
   },
 ];
 
-export function DataTableToolbar<TData>({
+export function DataTableToolbar<TData extends RowData>({
   table,
 }: DataTableToolbarProps<TData>) {
-  "use no memo";
-  const isFiltered = table.getState().columnFilters.length > 0;
+  const isFiltered = table.state.columnFilters.length > 0;
 
   return (
     <div className="flex items-center justify-between py-4">
-      <div className="flex flex-1 items-center space-x-2">
+      <div className="flex flex-1 items-center gap-2">
         <Input
           placeholder="Filter posts..."
           value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
@@ -75,13 +75,13 @@ export function DataTableToolbar<TData>({
             className="h-8 px-2 lg:px-3"
           >
             Reset
-            <X className="ml-2 h-4 w-4" />
+            <X data-icon="inline-end" />
           </Button>
         )}
       </div>
       <Link href="/admin/widgets/create">
-        <Button role="button" size="default">
-          <PlusCircle className="h-4 w-4 mr-2" />
+        <Button role="button">
+          <PlusCircle data-icon="inline-start" />
           New widget
         </Button>
       </Link>
