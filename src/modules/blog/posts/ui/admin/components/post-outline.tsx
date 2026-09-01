@@ -1,16 +1,11 @@
 "use client";
 
 import type { Editor } from "@tiptap/core";
-import { ListTree } from "lucide-react";
+import { Heading2Icon, Heading3Icon, Heading4Icon, ListTree } from "lucide-react";
 
 import { cn } from "@/shared/lib/utils";
 import { ScrollArea } from "@/shared/ui/scroll-area";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/shared/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/shared/ui/card";
 
 import { usePostOutline } from "@/modules/blog/posts/hooks/use-post-outline";
 
@@ -44,13 +39,16 @@ export const PostOutline = ({ editor }: PostOutlineProps) => {
                     }
                     onClick={() => navigateToHeading(heading)}
                     className={cn(
-                      "block w-full min-w-0 truncate rounded-md px-2 py-1 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
+                      "flex items-center gap-x-2 w-full min-w-0 truncate rounded-md px-2 py-1 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
                       activeHeadingId === heading.id &&
                         "bg-accent font-medium text-accent-foreground",
                       heading.level === 3 && "pl-5",
                       heading.level === 4 && "pl-8",
                     )}
                   >
+                    {heading.level === 2 && <Heading2Icon className="size-4 text-muted-foreground" />}
+                    {heading.level === 3 && <Heading3Icon className="size-4 text-muted-foreground" />}
+                    {heading.level === 4 && <Heading4Icon className="size-4 text-muted-foreground" />}
                     {heading.label}
                   </button>
                 </li>

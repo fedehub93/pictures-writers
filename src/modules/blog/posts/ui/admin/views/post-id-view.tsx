@@ -62,9 +62,9 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
   const router = useRouter();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const [filters, _] = usePostsFilters();
+  const [filters] = usePostsFilters();
   const { setStatus } = usePostStore();
-  const [activeTab, setActiveTab] = useState("post");
+  const [activeTab] = useState("post");
   const [tiptapEditor, setTiptapEditor] = useState<TiptapEditor | null>(null);
 
   const handleEditorReady = useCallback((editor: TiptapEditor | null) => {
