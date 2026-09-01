@@ -1,12 +1,20 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import type { Editor as TiptapEditor } from "@tiptap/core";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { Trash2Icon } from "lucide-react";
+import {
+  CalendarClockIcon,
+  ChevronDownIcon,
+  ClockIcon,
+  EyeIcon,
+  EyeOffIcon,
+  Trash2Icon,
+  XIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { Route } from "next";
 
@@ -15,6 +23,12 @@ import { ContentStatus, EditorType } from "@/generated/prisma";
 import { cn } from "@/shared/lib/utils";
 
 import { Button } from "@/shared/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/shared/ui/dropdown-menu";
 import { ScrollArea } from "@/shared/ui/scroll-area";
 
 import { LoadingState } from "@/shared/components/loading-state";
@@ -37,6 +51,7 @@ import { TagsForm } from "../components/tags-form";
 import { ImageForm } from "../components/image-form";
 import { DescriptionForm } from "../components/description-form";
 import { PostOutline } from "../components/post-outline";
+import { SchedulePostDialog } from "../components/schedule-post-dialog";
 
 interface PostIdViewProps {
   rootId: string;
@@ -56,11 +71,8 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
     setTiptapEditor(editor);
   }, []);
 
-  useEffect(() => {
-    if (post.editorType !== EditorType.TIPTAP) {
-      setTiptapEditor(null);
-    }
-  }, [post.editorType]);
+  const activeEditor =
+    post.editorType === EditorType.TIPTAP ? tiptapEditor : null;
 
   const publishPost = useMutation(
     trpc.posts.publish.mutationOptions({
@@ -92,6 +104,23 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
       },
       onError: async (error) => {
         toast.error(error.message || "Failed to unpublish the Post");
+      },
+    }),
+  );
+
+  const cancelSchedulePost = useMutation(
+    trpc.posts.cancelSchedule.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries(trpc.posts.getMany.queryFilter(filters));
+        if (rootId) {
+          queryClient.invalidateQueries(
+            trpc.posts.getLastByRootId.queryFilter({ rootId }),
+          );
+        }
+        toast.success("Schedule cancelled successfully");
+      },
+      onError: async (error) => {
+        toast.error(error.message || "Failed to cancel the schedule");
       },
     }),
   );
@@ -150,7 +179,10 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
   const isComplete = requiredFields.every(Boolean);
 
   const disabled =
-    publishPost.isPending || unpublishPost.isPending || updatePost.isPending;
+    publishPost.isPending ||
+    unpublishPost.isPending ||
+    updatePost.isPending ||
+    cancelSchedulePost.isPending;
 
   const previewLink = `${process.env.NEXT_PUBLIC_APP_URL}/draft/${post.slug}`;
 
@@ -204,18 +236,97 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
 
         <div className="flex justify-between gap-x-4 shrink-0">
           <PostStatusIndicator />
-          <Button
-            disabled={
-              disabled ||
-              (post.status !== ContentStatus.PUBLISHED && !isComplete)
-            }
-            type="button"
-            role="button"
-            size="sm"
-            onClick={onTogglePublish}
-          >
-            {post.status === ContentStatus.PUBLISHED ? "Unpublish" : "Publish"}
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" disabled={disabled}>
+                {post.status === ContentStatus.SCHEDULED
+                  ? "Scheduled"
+                  : post.status === ContentStatus.PUBLISHED
+                    ? "Published"
+                    : "Draft"}
+                <ChevronDownIcon data-icon="inline-end" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {post.status === ContentStatus.SCHEDULED ? (
+                <>
+                  <DropdownMenuItem
+                    onSelect={() => onTogglePublish()}
+                    disabled={disabled || !isComplete}
+                  >
+                    <EyeIcon className="size-4 mr-2" />
+                    Publish now
+                  </DropdownMenuItem>
+                  <SchedulePostDialog
+                    postId={post.id}
+                    rootId={rootId}
+                    mode="reschedule"
+                    currentScheduledAt={post.scheduledAt}
+                    trigger={
+                      <DropdownMenuItem
+                        onSelect={(event) => event.preventDefault()}
+                        disabled={disabled}
+                      >
+                        <ClockIcon className="size-4 mr-2" />
+                        Reschedule
+                      </DropdownMenuItem>
+                    }
+                  />
+                  <ConfirmModal
+                    onConfirm={() =>
+                      cancelSchedulePost.mutate({ id: post.id, rootId })
+                    }
+                  >
+                    <DropdownMenuItem
+                      onSelect={(event) => event.preventDefault()}
+                      disabled={disabled}
+                    >
+                      <XIcon className="size-4 mr-2" />
+                      Cancel schedule
+                    </DropdownMenuItem>
+                  </ConfirmModal>
+                </>
+              ) : (
+                <>
+                  <DropdownMenuItem
+                    onSelect={() => onTogglePublish()}
+                    disabled={
+                      disabled ||
+                      (post.status !== ContentStatus.PUBLISHED && !isComplete)
+                    }
+                  >
+                    {post.status === ContentStatus.PUBLISHED ? (
+                      <>
+                        <EyeOffIcon className="size-4 mr-2" />
+                        Unpublish
+                      </>
+                    ) : (
+                      <>
+                        <EyeIcon className="size-4 mr-2" />
+                        Publish
+                      </>
+                    )}
+                  </DropdownMenuItem>
+                  {post.status !== ContentStatus.PUBLISHED && (
+                    <SchedulePostDialog
+                      postId={post.id}
+                      rootId={rootId}
+                      mode="schedule"
+                      trigger={
+                        <DropdownMenuItem
+                          onSelect={(event) => event.preventDefault()}
+                          disabled={disabled || !isComplete}
+                        >
+                          <CalendarClockIcon className="size-4 mr-2" />
+                          Schedule publication
+                        </DropdownMenuItem>
+                      }
+                    />
+                  )}
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <ConfirmModal onConfirm={onDelete}>
             <Button size="sm" variant="destructive" disabled={disabled}>
               <Trash2Icon className="size-4" />
@@ -227,7 +338,7 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
       <div className="flex-1 flex flex-col min-h-0 w-full">
         <div className="flex-1 grid grid-cols-1 xl:grid-cols-24 gap-8 xl:gap-4 pt-6 xl:overflow-hidden">
           <div className="mt-0 hidden min-h-0 outline-none xl:col-span-5 xl:flex xl:flex-col pl-4 h-full">
-            <PostOutline editor={tiptapEditor} />
+            <PostOutline editor={activeEditor} />
           </div>
 
           <ScrollArea

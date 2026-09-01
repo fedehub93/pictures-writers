@@ -84,7 +84,8 @@ export async function publishPost({
 
     if (
       target.status !== ContentStatus.DRAFT &&
-      target.status !== ContentStatus.CHANGED
+      target.status !== ContentStatus.CHANGED &&
+      target.status !== ContentStatus.SCHEDULED
     ) {
       throw new PublishPostError("INVALID_STATE", "Post cannot be published");
     }
@@ -103,6 +104,8 @@ export async function publishPost({
         status: ContentStatus.PUBLISHED,
         isLatest: true,
         publishedAt: now,
+        scheduledAt: null,
+        preSchedulingStatus: null,
         ...(firstPublishedAt && { firstPublishedAt: now }),
       },
       include: { seo: true },

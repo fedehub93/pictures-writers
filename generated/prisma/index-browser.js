@@ -287,6 +287,8 @@ exports.Prisma.PostScalarFieldEnum = {
   imageCoverId: 'imageCoverId',
   seoId: 'seoId',
   userId: 'userId',
+  scheduledAt: 'scheduledAt',
+  preSchedulingStatus: 'preSchedulingStatus',
   firstPublishedAt: 'firstPublishedAt',
   publishedAt: 'publishedAt',
   createdAt: 'createdAt',
@@ -713,7 +715,8 @@ exports.MediaType = exports.$Enums.MediaType = {
 exports.ContentStatus = exports.$Enums.ContentStatus = {
   DRAFT: 'DRAFT',
   CHANGED: 'CHANGED',
-  PUBLISHED: 'PUBLISHED'
+  PUBLISHED: 'PUBLISHED',
+  SCHEDULED: 'SCHEDULED'
 };
 
 exports.PageEditorType = exports.$Enums.PageEditorType = {

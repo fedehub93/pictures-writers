@@ -469,7 +469,8 @@ export type MediaType = (typeof MediaType)[keyof typeof MediaType]
 export const ContentStatus: {
   DRAFT: 'DRAFT',
   CHANGED: 'CHANGED',
-  PUBLISHED: 'PUBLISHED'
+  PUBLISHED: 'PUBLISHED',
+  SCHEDULED: 'SCHEDULED'
 };
 
 export type ContentStatus = (typeof ContentStatus)[keyof typeof ContentStatus]
@@ -20265,6 +20266,8 @@ export namespace Prisma {
     imageCoverId: string | null
     seoId: string | null
     userId: string | null
+    scheduledAt: Date | null
+    preSchedulingStatus: $Enums.ContentStatus | null
     firstPublishedAt: Date | null
     publishedAt: Date | null
     createdAt: Date | null
@@ -20284,6 +20287,8 @@ export namespace Prisma {
     imageCoverId: string | null
     seoId: string | null
     userId: string | null
+    scheduledAt: Date | null
+    preSchedulingStatus: $Enums.ContentStatus | null
     firstPublishedAt: Date | null
     publishedAt: Date | null
     createdAt: Date | null
@@ -20305,6 +20310,8 @@ export namespace Prisma {
     imageCoverId: number
     seoId: number
     userId: number
+    scheduledAt: number
+    preSchedulingStatus: number
     firstPublishedAt: number
     publishedAt: number
     createdAt: number
@@ -20334,6 +20341,8 @@ export namespace Prisma {
     imageCoverId?: true
     seoId?: true
     userId?: true
+    scheduledAt?: true
+    preSchedulingStatus?: true
     firstPublishedAt?: true
     publishedAt?: true
     createdAt?: true
@@ -20353,6 +20362,8 @@ export namespace Prisma {
     imageCoverId?: true
     seoId?: true
     userId?: true
+    scheduledAt?: true
+    preSchedulingStatus?: true
     firstPublishedAt?: true
     publishedAt?: true
     createdAt?: true
@@ -20374,6 +20385,8 @@ export namespace Prisma {
     imageCoverId?: true
     seoId?: true
     userId?: true
+    scheduledAt?: true
+    preSchedulingStatus?: true
     firstPublishedAt?: true
     publishedAt?: true
     createdAt?: true
@@ -20482,6 +20495,8 @@ export namespace Prisma {
     imageCoverId: string | null
     seoId: string | null
     userId: string | null
+    scheduledAt: Date | null
+    preSchedulingStatus: $Enums.ContentStatus | null
     firstPublishedAt: Date
     publishedAt: Date
     createdAt: Date
@@ -20522,6 +20537,8 @@ export namespace Prisma {
     imageCoverId?: boolean
     seoId?: boolean
     userId?: boolean
+    scheduledAt?: boolean
+    preSchedulingStatus?: boolean
     firstPublishedAt?: boolean
     publishedAt?: boolean
     createdAt?: boolean
@@ -20552,6 +20569,8 @@ export namespace Prisma {
     imageCoverId?: boolean
     seoId?: boolean
     userId?: boolean
+    scheduledAt?: boolean
+    preSchedulingStatus?: boolean
     firstPublishedAt?: boolean
     publishedAt?: boolean
     createdAt?: boolean
@@ -20577,6 +20596,8 @@ export namespace Prisma {
     imageCoverId?: boolean
     seoId?: boolean
     userId?: boolean
+    scheduledAt?: boolean
+    preSchedulingStatus?: boolean
     firstPublishedAt?: boolean
     publishedAt?: boolean
     createdAt?: boolean
@@ -20602,13 +20623,15 @@ export namespace Prisma {
     imageCoverId?: boolean
     seoId?: boolean
     userId?: boolean
+    scheduledAt?: boolean
+    preSchedulingStatus?: boolean
     firstPublishedAt?: boolean
     publishedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type PostOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "slug" | "description" | "version" | "status" | "isLatest" | "editorType" | "bodyData" | "tiptapBodyData" | "rootId" | "imageCoverId" | "seoId" | "userId" | "firstPublishedAt" | "publishedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["post"]>
+  export type PostOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "slug" | "description" | "version" | "status" | "isLatest" | "editorType" | "bodyData" | "tiptapBodyData" | "rootId" | "imageCoverId" | "seoId" | "userId" | "scheduledAt" | "preSchedulingStatus" | "firstPublishedAt" | "publishedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["post"]>
   export type PostInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     root?: boolean | Post$rootArgs<ExtArgs>
     rootChildren?: boolean | Post$rootChildrenArgs<ExtArgs>
@@ -20666,6 +20689,8 @@ export namespace Prisma {
       imageCoverId: string | null
       seoId: string | null
       userId: string | null
+      scheduledAt: Date | null
+      preSchedulingStatus: $Enums.ContentStatus | null
       firstPublishedAt: Date
       publishedAt: Date
       createdAt: Date
@@ -21115,6 +21140,8 @@ export namespace Prisma {
     readonly imageCoverId: FieldRef<"Post", 'String'>
     readonly seoId: FieldRef<"Post", 'String'>
     readonly userId: FieldRef<"Post", 'String'>
+    readonly scheduledAt: FieldRef<"Post", 'DateTime'>
+    readonly preSchedulingStatus: FieldRef<"Post", 'ContentStatus'>
     readonly firstPublishedAt: FieldRef<"Post", 'DateTime'>
     readonly publishedAt: FieldRef<"Post", 'DateTime'>
     readonly createdAt: FieldRef<"Post", 'DateTime'>
@@ -57677,6 +57704,8 @@ export namespace Prisma {
     imageCoverId: 'imageCoverId',
     seoId: 'seoId',
     userId: 'userId',
+    scheduledAt: 'scheduledAt',
+    preSchedulingStatus: 'preSchedulingStatus',
     firstPublishedAt: 'firstPublishedAt',
     publishedAt: 'publishedAt',
     createdAt: 'createdAt',
@@ -59537,6 +59566,8 @@ export namespace Prisma {
     imageCoverId?: StringNullableFilter<"Post"> | string | null
     seoId?: StringNullableFilter<"Post"> | string | null
     userId?: StringNullableFilter<"Post"> | string | null
+    scheduledAt?: DateTimeNullableFilter<"Post"> | Date | string | null
+    preSchedulingStatus?: EnumContentStatusNullableFilter<"Post"> | $Enums.ContentStatus | null
     firstPublishedAt?: DateTimeFilter<"Post"> | Date | string
     publishedAt?: DateTimeFilter<"Post"> | Date | string
     createdAt?: DateTimeFilter<"Post"> | Date | string
@@ -59566,6 +59597,8 @@ export namespace Prisma {
     imageCoverId?: SortOrderInput | SortOrder
     seoId?: SortOrderInput | SortOrder
     userId?: SortOrderInput | SortOrder
+    scheduledAt?: SortOrderInput | SortOrder
+    preSchedulingStatus?: SortOrderInput | SortOrder
     firstPublishedAt?: SortOrder
     publishedAt?: SortOrder
     createdAt?: SortOrder
@@ -59598,6 +59631,8 @@ export namespace Prisma {
     imageCoverId?: StringNullableFilter<"Post"> | string | null
     seoId?: StringNullableFilter<"Post"> | string | null
     userId?: StringNullableFilter<"Post"> | string | null
+    scheduledAt?: DateTimeNullableFilter<"Post"> | Date | string | null
+    preSchedulingStatus?: EnumContentStatusNullableFilter<"Post"> | $Enums.ContentStatus | null
     firstPublishedAt?: DateTimeFilter<"Post"> | Date | string
     publishedAt?: DateTimeFilter<"Post"> | Date | string
     createdAt?: DateTimeFilter<"Post"> | Date | string
@@ -59627,6 +59662,8 @@ export namespace Prisma {
     imageCoverId?: SortOrderInput | SortOrder
     seoId?: SortOrderInput | SortOrder
     userId?: SortOrderInput | SortOrder
+    scheduledAt?: SortOrderInput | SortOrder
+    preSchedulingStatus?: SortOrderInput | SortOrder
     firstPublishedAt?: SortOrder
     publishedAt?: SortOrder
     createdAt?: SortOrder
@@ -59656,6 +59693,8 @@ export namespace Prisma {
     imageCoverId?: StringNullableWithAggregatesFilter<"Post"> | string | null
     seoId?: StringNullableWithAggregatesFilter<"Post"> | string | null
     userId?: StringNullableWithAggregatesFilter<"Post"> | string | null
+    scheduledAt?: DateTimeNullableWithAggregatesFilter<"Post"> | Date | string | null
+    preSchedulingStatus?: EnumContentStatusNullableWithAggregatesFilter<"Post"> | $Enums.ContentStatus | null
     firstPublishedAt?: DateTimeWithAggregatesFilter<"Post"> | Date | string
     publishedAt?: DateTimeWithAggregatesFilter<"Post"> | Date | string
     createdAt?: DateTimeWithAggregatesFilter<"Post"> | Date | string
@@ -63201,6 +63240,8 @@ export namespace Prisma {
     editorType?: $Enums.EditorType
     bodyData:PrismaJson.BodyData
     tiptapBodyData?:PrismaJson.TipTapBodyData | NullableJsonNullValueInput
+    scheduledAt?: Date | string | null
+    preSchedulingStatus?: $Enums.ContentStatus | null
     firstPublishedAt?: Date | string
     publishedAt?: Date | string
     createdAt?: Date | string
@@ -63230,6 +63271,8 @@ export namespace Prisma {
     imageCoverId?: string | null
     seoId?: string | null
     userId?: string | null
+    scheduledAt?: Date | string | null
+    preSchedulingStatus?: $Enums.ContentStatus | null
     firstPublishedAt?: Date | string
     publishedAt?: Date | string
     createdAt?: Date | string
@@ -63251,6 +63294,8 @@ export namespace Prisma {
     editorType?: EnumEditorTypeFieldUpdateOperationsInput | $Enums.EditorType
     bodyData?:PrismaJson.BodyData
     tiptapBodyData?:PrismaJson.TipTapBodyData | NullableJsonNullValueInput
+    scheduledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    preSchedulingStatus?: NullableEnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -63280,6 +63325,8 @@ export namespace Prisma {
     imageCoverId?: NullableStringFieldUpdateOperationsInput | string | null
     seoId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    scheduledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    preSchedulingStatus?: NullableEnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -63305,6 +63352,8 @@ export namespace Prisma {
     imageCoverId?: string | null
     seoId?: string | null
     userId?: string | null
+    scheduledAt?: Date | string | null
+    preSchedulingStatus?: $Enums.ContentStatus | null
     firstPublishedAt?: Date | string
     publishedAt?: Date | string
     createdAt?: Date | string
@@ -63322,6 +63371,8 @@ export namespace Prisma {
     editorType?: EnumEditorTypeFieldUpdateOperationsInput | $Enums.EditorType
     bodyData?:PrismaJson.BodyData
     tiptapBodyData?:PrismaJson.TipTapBodyData | NullableJsonNullValueInput
+    scheduledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    preSchedulingStatus?: NullableEnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -63343,6 +63394,8 @@ export namespace Prisma {
     imageCoverId?: NullableStringFieldUpdateOperationsInput | string | null
     seoId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    scheduledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    preSchedulingStatus?: NullableEnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -66971,6 +67024,13 @@ export namespace Prisma {
     not?: NestedEnumEditorTypeFilter<$PrismaModel> | $Enums.EditorType
   }
 
+  export type EnumContentStatusNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContentStatus | EnumContentStatusFieldRefInput<$PrismaModel> | null
+    in?: $Enums.ContentStatus[] | ListEnumContentStatusFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.ContentStatus[] | ListEnumContentStatusFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumContentStatusNullableFilter<$PrismaModel> | $Enums.ContentStatus | null
+  }
+
   export type PostNullableScalarRelationFilter = {
     is?: PostWhereInput | null
     isNot?: PostWhereInput | null
@@ -67001,6 +67061,8 @@ export namespace Prisma {
     imageCoverId?: SortOrder
     seoId?: SortOrder
     userId?: SortOrder
+    scheduledAt?: SortOrder
+    preSchedulingStatus?: SortOrder
     firstPublishedAt?: SortOrder
     publishedAt?: SortOrder
     createdAt?: SortOrder
@@ -67024,6 +67086,8 @@ export namespace Prisma {
     imageCoverId?: SortOrder
     seoId?: SortOrder
     userId?: SortOrder
+    scheduledAt?: SortOrder
+    preSchedulingStatus?: SortOrder
     firstPublishedAt?: SortOrder
     publishedAt?: SortOrder
     createdAt?: SortOrder
@@ -67043,6 +67107,8 @@ export namespace Prisma {
     imageCoverId?: SortOrder
     seoId?: SortOrder
     userId?: SortOrder
+    scheduledAt?: SortOrder
+    preSchedulingStatus?: SortOrder
     firstPublishedAt?: SortOrder
     publishedAt?: SortOrder
     createdAt?: SortOrder
@@ -67061,6 +67127,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumEditorTypeFilter<$PrismaModel>
     _max?: NestedEnumEditorTypeFilter<$PrismaModel>
+  }
+
+  export type EnumContentStatusNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContentStatus | EnumContentStatusFieldRefInput<$PrismaModel> | null
+    in?: $Enums.ContentStatus[] | ListEnumContentStatusFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.ContentStatus[] | ListEnumContentStatusFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumContentStatusNullableWithAggregatesFilter<$PrismaModel> | $Enums.ContentStatus | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumContentStatusNullableFilter<$PrismaModel>
+    _max?: NestedEnumContentStatusNullableFilter<$PrismaModel>
   }
 
   export type PostScalarRelationFilter = {
@@ -69997,6 +70073,10 @@ export namespace Prisma {
     set?: $Enums.EditorType
   }
 
+  export type NullableEnumContentStatusFieldUpdateOperationsInput = {
+    set?: $Enums.ContentStatus | null
+  }
+
   export type PostUpdateOneWithoutRootChildrenNestedInput = {
     create?: XOR<PostCreateWithoutRootChildrenInput, PostUncheckedCreateWithoutRootChildrenInput>
     connectOrCreate?: PostCreateOrConnectWithoutRootChildrenInput
@@ -72300,6 +72380,13 @@ export namespace Prisma {
     not?: NestedEnumEditorTypeFilter<$PrismaModel> | $Enums.EditorType
   }
 
+  export type NestedEnumContentStatusNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContentStatus | EnumContentStatusFieldRefInput<$PrismaModel> | null
+    in?: $Enums.ContentStatus[] | ListEnumContentStatusFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.ContentStatus[] | ListEnumContentStatusFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumContentStatusNullableFilter<$PrismaModel> | $Enums.ContentStatus | null
+  }
+
   export type NestedEnumEditorTypeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.EditorType | EnumEditorTypeFieldRefInput<$PrismaModel>
     in?: $Enums.EditorType[] | ListEnumEditorTypeFieldRefInput<$PrismaModel>
@@ -72308,6 +72395,16 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumEditorTypeFilter<$PrismaModel>
     _max?: NestedEnumEditorTypeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumContentStatusNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ContentStatus | EnumContentStatusFieldRefInput<$PrismaModel> | null
+    in?: $Enums.ContentStatus[] | ListEnumContentStatusFieldRefInput<$PrismaModel> | null
+    notIn?: $Enums.ContentStatus[] | ListEnumContentStatusFieldRefInput<$PrismaModel> | null
+    not?: NestedEnumContentStatusNullableWithAggregatesFilter<$PrismaModel> | $Enums.ContentStatus | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumContentStatusNullableFilter<$PrismaModel>
+    _max?: NestedEnumContentStatusNullableFilter<$PrismaModel>
   }
 
   export type NestedEnumEmailProviderNullableFilter<$PrismaModel = never> = {
@@ -72916,6 +73013,8 @@ export namespace Prisma {
     editorType?: $Enums.EditorType
     bodyData:PrismaJson.BodyData
     tiptapBodyData?:PrismaJson.TipTapBodyData | NullableJsonNullValueInput
+    scheduledAt?: Date | string | null
+    preSchedulingStatus?: $Enums.ContentStatus | null
     firstPublishedAt?: Date | string
     publishedAt?: Date | string
     createdAt?: Date | string
@@ -72943,6 +73042,8 @@ export namespace Prisma {
     rootId?: string | null
     imageCoverId?: string | null
     seoId?: string | null
+    scheduledAt?: Date | string | null
+    preSchedulingStatus?: $Enums.ContentStatus | null
     firstPublishedAt?: Date | string
     publishedAt?: Date | string
     createdAt?: Date | string
@@ -73355,6 +73456,8 @@ export namespace Prisma {
     imageCoverId?: StringNullableFilter<"Post"> | string | null
     seoId?: StringNullableFilter<"Post"> | string | null
     userId?: StringNullableFilter<"Post"> | string | null
+    scheduledAt?: DateTimeNullableFilter<"Post"> | Date | string | null
+    preSchedulingStatus?: EnumContentStatusNullableFilter<"Post"> | $Enums.ContentStatus | null
     firstPublishedAt?: DateTimeFilter<"Post"> | Date | string
     publishedAt?: DateTimeFilter<"Post"> | Date | string
     createdAt?: DateTimeFilter<"Post"> | Date | string
@@ -73658,6 +73761,8 @@ export namespace Prisma {
     editorType?: $Enums.EditorType
     bodyData:PrismaJson.BodyData
     tiptapBodyData?:PrismaJson.TipTapBodyData | NullableJsonNullValueInput
+    scheduledAt?: Date | string | null
+    preSchedulingStatus?: $Enums.ContentStatus | null
     firstPublishedAt?: Date | string
     publishedAt?: Date | string
     createdAt?: Date | string
@@ -73685,6 +73790,8 @@ export namespace Prisma {
     rootId?: string | null
     seoId?: string | null
     userId?: string | null
+    scheduledAt?: Date | string | null
+    preSchedulingStatus?: $Enums.ContentStatus | null
     firstPublishedAt?: Date | string
     publishedAt?: Date | string
     createdAt?: Date | string
@@ -74366,6 +74473,8 @@ export namespace Prisma {
     editorType?: $Enums.EditorType
     bodyData:PrismaJson.BodyData
     tiptapBodyData?:PrismaJson.TipTapBodyData | NullableJsonNullValueInput
+    scheduledAt?: Date | string | null
+    preSchedulingStatus?: $Enums.ContentStatus | null
     firstPublishedAt?: Date | string
     publishedAt?: Date | string
     createdAt?: Date | string
@@ -74393,6 +74502,8 @@ export namespace Prisma {
     rootId?: string | null
     imageCoverId?: string | null
     userId?: string | null
+    scheduledAt?: Date | string | null
+    preSchedulingStatus?: $Enums.ContentStatus | null
     firstPublishedAt?: Date | string
     publishedAt?: Date | string
     createdAt?: Date | string
@@ -75286,6 +75397,8 @@ export namespace Prisma {
     editorType?: $Enums.EditorType
     bodyData:PrismaJson.BodyData
     tiptapBodyData?:PrismaJson.TipTapBodyData | NullableJsonNullValueInput
+    scheduledAt?: Date | string | null
+    preSchedulingStatus?: $Enums.ContentStatus | null
     firstPublishedAt?: Date | string
     publishedAt?: Date | string
     createdAt?: Date | string
@@ -75314,6 +75427,8 @@ export namespace Prisma {
     imageCoverId?: string | null
     seoId?: string | null
     userId?: string | null
+    scheduledAt?: Date | string | null
+    preSchedulingStatus?: $Enums.ContentStatus | null
     firstPublishedAt?: Date | string
     publishedAt?: Date | string
     createdAt?: Date | string
@@ -75339,6 +75454,8 @@ export namespace Prisma {
     editorType?: $Enums.EditorType
     bodyData:PrismaJson.BodyData
     tiptapBodyData?:PrismaJson.TipTapBodyData | NullableJsonNullValueInput
+    scheduledAt?: Date | string | null
+    preSchedulingStatus?: $Enums.ContentStatus | null
     firstPublishedAt?: Date | string
     publishedAt?: Date | string
     createdAt?: Date | string
@@ -75366,6 +75483,8 @@ export namespace Prisma {
     imageCoverId?: string | null
     seoId?: string | null
     userId?: string | null
+    scheduledAt?: Date | string | null
+    preSchedulingStatus?: $Enums.ContentStatus | null
     firstPublishedAt?: Date | string
     publishedAt?: Date | string
     createdAt?: Date | string
@@ -75640,6 +75759,8 @@ export namespace Prisma {
     editorType?: EnumEditorTypeFieldUpdateOperationsInput | $Enums.EditorType
     bodyData?:PrismaJson.BodyData
     tiptapBodyData?:PrismaJson.TipTapBodyData | NullableJsonNullValueInput
+    scheduledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    preSchedulingStatus?: NullableEnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -75668,6 +75789,8 @@ export namespace Prisma {
     imageCoverId?: NullableStringFieldUpdateOperationsInput | string | null
     seoId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    scheduledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    preSchedulingStatus?: NullableEnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -75930,6 +76053,8 @@ export namespace Prisma {
     editorType?: $Enums.EditorType
     bodyData:PrismaJson.BodyData
     tiptapBodyData?:PrismaJson.TipTapBodyData | NullableJsonNullValueInput
+    scheduledAt?: Date | string | null
+    preSchedulingStatus?: $Enums.ContentStatus | null
     firstPublishedAt?: Date | string
     publishedAt?: Date | string
     createdAt?: Date | string
@@ -75958,6 +76083,8 @@ export namespace Prisma {
     imageCoverId?: string | null
     seoId?: string | null
     userId?: string | null
+    scheduledAt?: Date | string | null
+    preSchedulingStatus?: $Enums.ContentStatus | null
     firstPublishedAt?: Date | string
     publishedAt?: Date | string
     createdAt?: Date | string
@@ -76049,6 +76176,8 @@ export namespace Prisma {
     editorType?: EnumEditorTypeFieldUpdateOperationsInput | $Enums.EditorType
     bodyData?:PrismaJson.BodyData
     tiptapBodyData?:PrismaJson.TipTapBodyData | NullableJsonNullValueInput
+    scheduledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    preSchedulingStatus?: NullableEnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -76077,6 +76206,8 @@ export namespace Prisma {
     imageCoverId?: NullableStringFieldUpdateOperationsInput | string | null
     seoId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    scheduledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    preSchedulingStatus?: NullableEnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -76580,6 +76711,8 @@ export namespace Prisma {
     editorType?: $Enums.EditorType
     bodyData:PrismaJson.BodyData
     tiptapBodyData?:PrismaJson.TipTapBodyData | NullableJsonNullValueInput
+    scheduledAt?: Date | string | null
+    preSchedulingStatus?: $Enums.ContentStatus | null
     firstPublishedAt?: Date | string
     publishedAt?: Date | string
     createdAt?: Date | string
@@ -76608,6 +76741,8 @@ export namespace Prisma {
     imageCoverId?: string | null
     seoId?: string | null
     userId?: string | null
+    scheduledAt?: Date | string | null
+    preSchedulingStatus?: $Enums.ContentStatus | null
     firstPublishedAt?: Date | string
     publishedAt?: Date | string
     createdAt?: Date | string
@@ -76685,6 +76820,8 @@ export namespace Prisma {
     editorType?: EnumEditorTypeFieldUpdateOperationsInput | $Enums.EditorType
     bodyData?:PrismaJson.BodyData
     tiptapBodyData?:PrismaJson.TipTapBodyData | NullableJsonNullValueInput
+    scheduledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    preSchedulingStatus?: NullableEnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -76713,6 +76850,8 @@ export namespace Prisma {
     imageCoverId?: NullableStringFieldUpdateOperationsInput | string | null
     seoId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    scheduledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    preSchedulingStatus?: NullableEnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -76867,6 +77006,8 @@ export namespace Prisma {
     editorType?: $Enums.EditorType
     bodyData:PrismaJson.BodyData
     tiptapBodyData?:PrismaJson.TipTapBodyData | NullableJsonNullValueInput
+    scheduledAt?: Date | string | null
+    preSchedulingStatus?: $Enums.ContentStatus | null
     firstPublishedAt?: Date | string
     publishedAt?: Date | string
     createdAt?: Date | string
@@ -76895,6 +77036,8 @@ export namespace Prisma {
     imageCoverId?: string | null
     seoId?: string | null
     userId?: string | null
+    scheduledAt?: Date | string | null
+    preSchedulingStatus?: $Enums.ContentStatus | null
     firstPublishedAt?: Date | string
     publishedAt?: Date | string
     createdAt?: Date | string
@@ -81235,6 +81378,8 @@ export namespace Prisma {
     rootId?: string | null
     imageCoverId?: string | null
     seoId?: string | null
+    scheduledAt?: Date | string | null
+    preSchedulingStatus?: $Enums.ContentStatus | null
     firstPublishedAt?: Date | string
     publishedAt?: Date | string
     createdAt?: Date | string
@@ -81453,6 +81598,8 @@ export namespace Prisma {
     editorType?: EnumEditorTypeFieldUpdateOperationsInput | $Enums.EditorType
     bodyData?:PrismaJson.BodyData
     tiptapBodyData?:PrismaJson.TipTapBodyData | NullableJsonNullValueInput
+    scheduledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    preSchedulingStatus?: NullableEnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -81480,6 +81627,8 @@ export namespace Prisma {
     rootId?: NullableStringFieldUpdateOperationsInput | string | null
     imageCoverId?: NullableStringFieldUpdateOperationsInput | string | null
     seoId?: NullableStringFieldUpdateOperationsInput | string | null
+    scheduledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    preSchedulingStatus?: NullableEnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -81504,6 +81653,8 @@ export namespace Prisma {
     rootId?: NullableStringFieldUpdateOperationsInput | string | null
     imageCoverId?: NullableStringFieldUpdateOperationsInput | string | null
     seoId?: NullableStringFieldUpdateOperationsInput | string | null
+    scheduledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    preSchedulingStatus?: NullableEnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -81754,6 +81905,8 @@ export namespace Prisma {
     rootId?: string | null
     seoId?: string | null
     userId?: string | null
+    scheduledAt?: Date | string | null
+    preSchedulingStatus?: $Enums.ContentStatus | null
     firstPublishedAt?: Date | string
     publishedAt?: Date | string
     createdAt?: Date | string
@@ -81835,6 +81988,8 @@ export namespace Prisma {
     editorType?: EnumEditorTypeFieldUpdateOperationsInput | $Enums.EditorType
     bodyData?:PrismaJson.BodyData
     tiptapBodyData?:PrismaJson.TipTapBodyData | NullableJsonNullValueInput
+    scheduledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    preSchedulingStatus?: NullableEnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -81862,6 +82017,8 @@ export namespace Prisma {
     rootId?: NullableStringFieldUpdateOperationsInput | string | null
     seoId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    scheduledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    preSchedulingStatus?: NullableEnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -81886,6 +82043,8 @@ export namespace Prisma {
     rootId?: NullableStringFieldUpdateOperationsInput | string | null
     seoId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    scheduledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    preSchedulingStatus?: NullableEnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -82190,6 +82349,8 @@ export namespace Prisma {
     rootId?: string | null
     imageCoverId?: string | null
     userId?: string | null
+    scheduledAt?: Date | string | null
+    preSchedulingStatus?: $Enums.ContentStatus | null
     firstPublishedAt?: Date | string
     publishedAt?: Date | string
     createdAt?: Date | string
@@ -82434,6 +82595,8 @@ export namespace Prisma {
     editorType?: EnumEditorTypeFieldUpdateOperationsInput | $Enums.EditorType
     bodyData?:PrismaJson.BodyData
     tiptapBodyData?:PrismaJson.TipTapBodyData | NullableJsonNullValueInput
+    scheduledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    preSchedulingStatus?: NullableEnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -82461,6 +82624,8 @@ export namespace Prisma {
     rootId?: NullableStringFieldUpdateOperationsInput | string | null
     imageCoverId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    scheduledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    preSchedulingStatus?: NullableEnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -82485,6 +82650,8 @@ export namespace Prisma {
     rootId?: NullableStringFieldUpdateOperationsInput | string | null
     imageCoverId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    scheduledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    preSchedulingStatus?: NullableEnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -82812,6 +82979,8 @@ export namespace Prisma {
     imageCoverId?: string | null
     seoId?: string | null
     userId?: string | null
+    scheduledAt?: Date | string | null
+    preSchedulingStatus?: $Enums.ContentStatus | null
     firstPublishedAt?: Date | string
     publishedAt?: Date | string
     createdAt?: Date | string
@@ -82839,6 +83008,8 @@ export namespace Prisma {
     editorType?: EnumEditorTypeFieldUpdateOperationsInput | $Enums.EditorType
     bodyData?:PrismaJson.BodyData
     tiptapBodyData?:PrismaJson.TipTapBodyData | NullableJsonNullValueInput
+    scheduledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    preSchedulingStatus?: NullableEnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -82866,6 +83037,8 @@ export namespace Prisma {
     imageCoverId?: NullableStringFieldUpdateOperationsInput | string | null
     seoId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    scheduledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    preSchedulingStatus?: NullableEnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -82890,6 +83063,8 @@ export namespace Prisma {
     imageCoverId?: NullableStringFieldUpdateOperationsInput | string | null
     seoId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    scheduledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    preSchedulingStatus?: NullableEnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -83146,6 +83321,8 @@ export namespace Prisma {
     editorType?: EnumEditorTypeFieldUpdateOperationsInput | $Enums.EditorType
     bodyData?:PrismaJson.BodyData
     tiptapBodyData?:PrismaJson.TipTapBodyData | NullableJsonNullValueInput
+    scheduledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    preSchedulingStatus?: NullableEnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -83174,6 +83351,8 @@ export namespace Prisma {
     imageCoverId?: NullableStringFieldUpdateOperationsInput | string | null
     seoId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    scheduledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    preSchedulingStatus?: NullableEnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -83198,6 +83377,8 @@ export namespace Prisma {
     imageCoverId?: NullableStringFieldUpdateOperationsInput | string | null
     seoId?: NullableStringFieldUpdateOperationsInput | string | null
     userId?: NullableStringFieldUpdateOperationsInput | string | null
+    scheduledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    preSchedulingStatus?: NullableEnumContentStatusFieldUpdateOperationsInput | $Enums.ContentStatus | null
     firstPublishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     publishedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string

@@ -3,7 +3,8 @@
 import Image from "next/image";
 import { ColumnDef } from "@tanstack/react-table";
 
-import { ArrowUpDownIcon } from "lucide-react";
+import { ArrowUpDownIcon, CalendarClockIcon } from "lucide-react";
+import { format } from "date-fns";
 
 import { ContentStatus } from "@/generated/prisma";
 
@@ -156,13 +157,16 @@ export const columns: ColumnDef<PostsGetMany[number]>[] = [
             status === ContentStatus.DRAFT && "bg-slate-700",
             status === ContentStatus.CHANGED && "bg-sky-700",
             status === ContentStatus.PUBLISHED && "bg-emerald-700",
+            status === ContentStatus.SCHEDULED && "bg-primary",
           )}
         >
           {status === ContentStatus.DRAFT
             ? "Draft"
             : status === ContentStatus.CHANGED
               ? "Changed"
-              : "Published"}
+              : status === ContentStatus.SCHEDULED
+                ? "Scheduled"
+                : "Published"}
         </Badge>
       );
     },
@@ -196,12 +200,45 @@ export const columns: ColumnDef<PostsGetMany[number]>[] = [
     },
   },
   {
+    accessorKey: "scheduledAt",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          className="-ml-4"
+        >
+          Scheduled for
+          <ArrowUpDownIcon className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      const { scheduledAt } = row.original;
+      if (!scheduledAt) return null;
+      const date = new Date(scheduledAt);
+      return (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <CalendarClockIcon className="size-4" />
+          <span>{format(date, "PP p")}</span>
+        </div>
+      );
+    },
+  },
+  {
     id: "actions",
     cell: ({ row }) => {
       const { rootId, id, status } = row.original;
 
       if (!rootId) return null;
-      return <PostsActions rootId={rootId} id={id} status={status} />;
+      return (
+        <PostsActions
+          rootId={rootId}
+          id={id}
+          status={status}
+          scheduledAt={row.original.scheduledAt}
+        />
+      );
     },
   },
 ];

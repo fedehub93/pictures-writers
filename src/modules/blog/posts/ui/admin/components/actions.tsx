@@ -3,11 +3,14 @@
 import Link from "next/link";
 
 import {
+  CalendarClockIcon,
+  ClockIcon,
   EyeIcon,
   EyeOffIcon,
   MoreHorizontalIcon,
   PencilIcon,
   Trash2Icon,
+  XIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -29,14 +32,21 @@ import {
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 
 import { usePostsFilters } from "../../../hooks/use-posts-filters";
+import { SchedulePostDialog } from "./schedule-post-dialog";
 
 interface PostsActionsProps {
   id: string;
   rootId: string;
   status: ContentStatus;
+  scheduledAt: Date | null;
 }
 
-export const PostsActions = ({ id, rootId, status }: PostsActionsProps) => {
+export const PostsActions = ({
+  id,
+  rootId,
+  status,
+  scheduledAt,
+}: PostsActionsProps) => {
   const trpc = useTRPC();
 
   const queryClient = useQueryClient();
@@ -85,6 +95,23 @@ export const PostsActions = ({ id, rootId, status }: PostsActionsProps) => {
     return unpublishPost.mutate({ id });
   };
 
+  const cancelSchedulePost = useMutation(
+    trpc.posts.cancelSchedule.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries(trpc.posts.getMany.queryFilter(filters));
+        if (rootId) {
+          queryClient.invalidateQueries(
+            trpc.posts.getLastByRootId.queryFilter({ rootId }),
+          );
+        }
+        toast.success("Schedule cancelled successfully");
+      },
+      onError: async (error) => {
+        toast.error(error.message || "Failed to cancel the schedule");
+      },
+    }),
+  );
+
   const removePost = useMutation(
     trpc.posts.remove.mutationOptions({
       onSuccess: () => {
@@ -100,6 +127,10 @@ export const PostsActions = ({ id, rootId, status }: PostsActionsProps) => {
 
   const onDelete = async () => {
     removePost.mutate({ id });
+  };
+
+  const onCancelSchedule = async () => {
+    cancelSchedulePost.mutate({ id, rootId });
   };
 
   const { isPending } = removePost;
@@ -121,25 +152,79 @@ export const PostsActions = ({ id, rootId, status }: PostsActionsProps) => {
             </DropdownMenuItem>
           </Link>
 
-          <DropdownMenuItem
-            onSelect={() => {
-              onTogglePublish();
-            }}
-            disabled={isPending}
-          >
-            {status !== ContentStatus.PUBLISHED && (
-              <>
+          {status === ContentStatus.SCHEDULED ? (
+            <>
+              <DropdownMenuItem
+                onSelect={() => {
+                  publishPost.mutate({ id, rootId });
+                }}
+                disabled={isPending}
+              >
                 <EyeIcon className="size-4 mr-2" />
-                Publish
-              </>
-            )}
-            {status === ContentStatus.PUBLISHED && (
-              <>
-                <EyeOffIcon className="size-4 mr-2" />
-                Unpublish
-              </>
-            )}
-          </DropdownMenuItem>
+                Publish now
+              </DropdownMenuItem>
+              <SchedulePostDialog
+                postId={id}
+                rootId={rootId}
+                mode="reschedule"
+                currentScheduledAt={scheduledAt}
+                trigger={
+                  <DropdownMenuItem
+                    onSelect={(event) => event.preventDefault()}
+                    disabled={isPending}
+                  >
+                    <ClockIcon className="size-4 mr-2" />
+                    Reschedule
+                  </DropdownMenuItem>
+                }
+              />
+              <ConfirmModal onConfirm={onCancelSchedule}>
+                <DropdownMenuItem
+                  onSelect={(event) => event.preventDefault()}
+                  disabled={isPending}
+                >
+                  <XIcon className="size-4 mr-2" />
+                  Cancel schedule
+                </DropdownMenuItem>
+              </ConfirmModal>
+            </>
+          ) : (
+            <>
+              <DropdownMenuItem
+                onSelect={() => {
+                  onTogglePublish();
+                }}
+                disabled={isPending}
+              >
+                {status !== ContentStatus.PUBLISHED && (
+                  <>
+                    <EyeIcon className="size-4 mr-2" />
+                    Publish
+                  </>
+                )}
+                {status === ContentStatus.PUBLISHED && (
+                  <>
+                    <EyeOffIcon className="size-4 mr-2" />
+                    Unpublish
+                  </>
+                )}
+              </DropdownMenuItem>
+              <SchedulePostDialog
+                postId={id}
+                rootId={rootId}
+                mode="schedule"
+                trigger={
+                  <DropdownMenuItem
+                    onSelect={(event) => event.preventDefault()}
+                    disabled={isPending}
+                  >
+                    <CalendarClockIcon className="size-4 mr-2" />
+                    Schedule publication
+                  </DropdownMenuItem>
+                }
+              />
+            </>
+          )}
           <DropdownMenuSeparator />
           <ConfirmModal onConfirm={onDelete}>
             <Button

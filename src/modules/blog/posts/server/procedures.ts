@@ -24,6 +24,12 @@ import {
 
 import { createNewVersion } from "../lib/create-new-version";
 import { publishPost, PublishPostError } from "../lib/publish-post";
+import {
+  cancelSchedule,
+  reschedulePost,
+  schedulePost,
+  ScheduledPostError,
+} from "../lib/schedule-post";
 
 import { getPaginatedPosts } from "./queries";
 
@@ -208,7 +214,9 @@ export const postsRouter = createTRPCRouter({
           tiptapBodyData: true,
           publishedAt: true,
           firstPublishedAt: true,
+          scheduledAt: true,
           updatedAt: true,
+          version: true,
           seo: true,
           postCategories: {
             select: {
@@ -272,6 +280,7 @@ export const postsRouter = createTRPCRouter({
             ContentStatus.DRAFT,
             ContentStatus.CHANGED,
             ContentStatus.PUBLISHED,
+            ContentStatus.SCHEDULED,
           ])
           .nullish(),
       }),
@@ -286,6 +295,8 @@ export const postsRouter = createTRPCRouter({
           status: true,
           publishedAt: true,
           firstPublishedAt: true,
+          scheduledAt: true,
+          version: true,
           editorType: true,
           imageCover: {
             select: {
@@ -395,6 +406,98 @@ export const postsRouter = createTRPCRouter({
               ? "NOT_FOUND"
               : error.code === "VALIDATION_ERROR"
                 ? "BAD_REQUEST"
+                : "BAD_REQUEST";
+
+          throw new TRPCError({
+            code,
+            message: error.message,
+          });
+        }
+
+        throw error;
+      }
+    }),
+  schedule: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        rootId: z.string(),
+        scheduledAt: z.coerce.date(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      try {
+        return await schedulePost({
+          postId: input.id,
+          rootId: input.rootId,
+          scheduledAt: input.scheduledAt,
+        });
+      } catch (error) {
+        if (error instanceof ScheduledPostError) {
+          const code =
+            error.code === "NOT_FOUND"
+              ? "NOT_FOUND"
+              : error.code === "CONFLICT"
+                ? "CONFLICT"
+                : "BAD_REQUEST";
+
+          throw new TRPCError({
+            code,
+            message: error.message,
+          });
+        }
+
+        throw error;
+      }
+    }),
+  reschedule: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        rootId: z.string(),
+        scheduledAt: z.coerce.date(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      try {
+        return await reschedulePost({
+          postId: input.id,
+          rootId: input.rootId,
+          scheduledAt: input.scheduledAt,
+        });
+      } catch (error) {
+        if (error instanceof ScheduledPostError) {
+          const code =
+            error.code === "NOT_FOUND"
+              ? "NOT_FOUND"
+              : error.code === "CONFLICT"
+                ? "CONFLICT"
+                : "BAD_REQUEST";
+
+          throw new TRPCError({
+            code,
+            message: error.message,
+          });
+        }
+
+        throw error;
+      }
+    }),
+  cancelSchedule: protectedProcedure
+    .input(z.object({ id: z.string(), rootId: z.string() }))
+    .mutation(async ({ input }) => {
+      try {
+        return await cancelSchedule({
+          postId: input.id,
+          rootId: input.rootId,
+        });
+      } catch (error) {
+        if (error instanceof ScheduledPostError) {
+          const code =
+            error.code === "NOT_FOUND"
+              ? "NOT_FOUND"
+              : error.code === "CONFLICT"
+                ? "CONFLICT"
                 : "BAD_REQUEST";
 
           throw new TRPCError({

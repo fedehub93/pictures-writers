@@ -1,4 +1,9 @@
-import { CheckCircleIcon, CircleIcon, TimerIcon } from "lucide-react";
+import {
+  CheckCircleIcon,
+  CircleIcon,
+  ClockIcon,
+  TimerIcon,
+} from "lucide-react";
 
 import { ContentStatus } from "@/generated/prisma";
 
@@ -24,6 +29,16 @@ const options = [
       <div className="flex items-center gap-x-2 capitalize">
         <TimerIcon />
         {ContentStatus.CHANGED}
+      </div>
+    ),
+  },
+  {
+    id: ContentStatus.SCHEDULED,
+    value: ContentStatus.SCHEDULED,
+    children: (
+      <div className="flex items-center gap-x-2 capitalize">
+        <ClockIcon />
+        {ContentStatus.SCHEDULED}
       </div>
     ),
   },

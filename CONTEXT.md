@@ -8,6 +8,10 @@ Glossary for the blog post editing context, including editorial content, editor 
 An editorial document managed in the blog CMS, including its content, metadata, SEO settings, and publishing state.
 _Avoid_: Article when referring to the CMS entity.
 
+**Scheduled publication**:
+A publication instruction that makes the latest saved eligible version of a Post public at a future date and time chosen by the editor.
+_Avoid_: Delayed post, queued article.
+
 **Heading**:
 A structural title inside post content. For the admin outline, headings are the Tiptap `h2`, `h3`, and `h4` blocks.
 _Avoid_: Section title when referring to the content node.
