@@ -50,8 +50,8 @@ export const SeoForm = ({ id, rootId, initialData }: SeoFormProps) => {
       canonicalUrl: initialData?.canonicalUrl ?? "",
       ogTwitterTitle: initialData?.ogTwitterTitle ?? "",
       ogTwitterDescription: initialData?.ogTwitterDescription ?? "",
-      noIndex: initialData?.noIndex === false ? false : true,
-      noFollow: initialData?.noFollow === false ? false : true,
+      noIndex: initialData?.noIndex === true ? true : false,
+      noFollow: initialData?.noFollow === true ? true : false,
     },
     mode: "onChange",
   });
@@ -75,8 +75,8 @@ export const SeoForm = ({ id, rootId, initialData }: SeoFormProps) => {
       ...dirtyData,
       id,
       rootId,
-      noIndex: dirtyData.noIndex === false ? false : true,
-      noFollow: dirtyData.noFollow === false ? false : true,
+      noIndex: dirtyData.noIndex === true ? true : false,
+      noFollow: dirtyData.noFollow === true ? true : false,
     });
   });
 
@@ -85,13 +85,14 @@ export const SeoForm = ({ id, rootId, initialData }: SeoFormProps) => {
   return (
     <Card className="rounded-xl shadow-sm">
       <CardHeader>
-        <CardTitle className="text-base flex justify-between">
-          SEO
-        </CardTitle>
+        <CardTitle className="text-base flex justify-between">SEO</CardTitle>
       </CardHeader>
       <CardContent className="px-4 md:px-6">
         <Form {...form}>
-          <form onChange={handleAutoSave} className="py-4 flex flex-col gap-y-4">
+          <form
+            onChange={handleAutoSave}
+            className="py-4 flex flex-col gap-y-4"
+          >
             <InputField
               control={form.control}
               name="title"
