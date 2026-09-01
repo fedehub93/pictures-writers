@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Control, useController } from "react-hook-form";
+import { type Control, useController } from "react-hook-form";
 
 import {
   FormControl,
@@ -21,8 +20,7 @@ import { Skeleton } from "@/shared/ui/skeleton";
 
 import { ProductFormValues } from "@/schemas/product";
 
-import { useFormsQuery } from "@/app/(admin)/_hooks/use-forms-query";
-import { Form } from "@/generated/prisma";
+import { useFormsQuery } from "@/modules/forms/hooks/use-forms";
 
 interface ProductFormsSelectProps {
   control: Control<ProductFormValues>;
@@ -39,20 +37,9 @@ export const ProductFormsSelect = ({
     name: "formId",
   });
 
-  const [selectedOption, setSelectedOptions] = useState<
-    Form | null | undefined
-  >(null);
-
   const onChangeForm = (value: string) => {
     fieldFormId.onChange(value);
-    setSelectedOptions(forms?.find((f) => f.id === value));
   };
-
-  useEffect(() => {
-    setSelectedOptions(
-      forms ? forms.find((option) => fieldFormId.value === option.id) : null
-    );
-  }, [forms, fieldFormId]);
 
   if (isError) {
     return <div className="flex flex-col gap-2">Error fetching forms.</div>;

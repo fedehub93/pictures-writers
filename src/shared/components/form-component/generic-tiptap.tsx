@@ -87,7 +87,9 @@ export const GenericTiptap = <T extends FieldValues>({
           <FormItem className="flex-1 flex flex-col space-y-2">
             <FormLabel>Description</FormLabel>
             <FormControl>
-              <Tiptap key={id} editor={editor} value={field.value} />
+              <div className="border-l border-r border-b rounded-xl overflow-hidden">
+                <Tiptap key={id} editor={editor} value={field.value} />
+              </div>
             </FormControl>
           </FormItem>
         )}

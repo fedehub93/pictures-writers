@@ -85,5 +85,27 @@ export const createNewVersionProduct = async (rootId: string, values: any) => {
     });
   }
 
+  /**
+   * Reviews
+   */
+  const publishedReviews = await db.reviews.findMany({
+    where: { productId: publishedProduct.id },
+  });
+
+  if (publishedReviews.length > 0) {
+    await db.reviews.createMany({
+      data: publishedReviews.map((review) => ({
+        productId: product.id,
+        rating: review.rating,
+        role: review.role,
+        comment: review.comment,
+        reviewerName: review.reviewerName,
+        date: review.date,
+        verifiedPurchase: review.verifiedPurchase,
+        status: review.status,
+      })),
+    });
+  }
+
   return { message: "", status: 200, product: updatedProduct };
 };

@@ -1,6 +1,6 @@
 import { useTRPC } from "@/trpc/client";
 import { trpc } from "@/trpc/server";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { inferInput } from "@trpc/tanstack-react-query";
 
 type Input = inferInput<typeof trpc.forms.getMany>;
@@ -17,4 +17,17 @@ export const useSuspenseForm = (id: string) => {
   const trpc = useTRPC();
 
   return useSuspenseQuery(trpc.forms.getOne.queryOptions({ id }));
+};
+
+export const useFormsQuery = () => {
+  const trpc = useTRPC();
+  const { data, isLoading, isError } = useQuery(
+    trpc.forms.getMany.queryOptions({}),
+  );
+
+  return {
+    data,
+    isLoading,
+    isError,
+  };
 };

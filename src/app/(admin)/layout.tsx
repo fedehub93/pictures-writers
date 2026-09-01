@@ -50,9 +50,9 @@ export default async function RootLayout({
           <ToastProvider />
           <NuqsAdapter>
             <TRPCReactProvider>
-              <SidebarProvider className="h-screen">
+              <SidebarProvider className="h-screen overflow-hidden">
                 <AppSidebar />
-                <SidebarInset>
+                <SidebarInset className="min-h-0">
                   <Header user={user} />
                   <Container>{children}</Container>
                 </SidebarInset>
