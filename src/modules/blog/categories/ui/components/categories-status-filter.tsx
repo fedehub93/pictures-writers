@@ -1,39 +1,37 @@
 import { CheckCircleIcon, CircleIcon, TimerIcon } from "lucide-react";
 
-import { ContentStatus } from "@/generated/prisma";
-
 import { CommandSelect } from "@/shared/components/command-select";
 
 import { useCategoriesFilters } from "../../hooks/use-categories-filters";
 
 const options = [
   {
-    id: ContentStatus.DRAFT,
-    value: ContentStatus.DRAFT,
+    id: "DRAFT",
+    value: "DRAFT",
     children: (
       <div className="flex items-center gap-x-2 capitalize">
         <CircleIcon />
-        {ContentStatus.DRAFT}
+        Draft
       </div>
     ),
   },
   {
-    id: ContentStatus.CHANGED,
-    value: ContentStatus.CHANGED,
+    id: "CHANGED",
+    value: "CHANGED",
     children: (
       <div className="flex items-center gap-x-2 capitalize">
         <TimerIcon />
-        {ContentStatus.CHANGED}
+        Changed
       </div>
     ),
   },
   {
-    id: ContentStatus.PUBLISHED,
-    value: ContentStatus.PUBLISHED,
+    id: "PUBLISHED",
+    value: "PUBLISHED",
     children: (
       <div className="flex items-center gap-x-2 capitalize">
         <CheckCircleIcon />
-        {ContentStatus.PUBLISHED}
+        Published
       </div>
     ),
   },
@@ -47,7 +45,9 @@ export const StatusFilter = () => {
       placeholder="Status"
       className="h-8"
       options={options}
-      onSelect={(value) => setFilters({ status: value as ContentStatus })}
+      onSelect={(value) =>
+        setFilters({ status: value as "DRAFT" | "CHANGED" | "PUBLISHED" })
+      }
       value={filters.status ?? ""}
     />
   );

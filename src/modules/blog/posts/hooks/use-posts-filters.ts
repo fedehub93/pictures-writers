@@ -5,8 +5,6 @@ import {
   useQueryStates,
 } from "nuqs";
 
-import { ContentStatus } from "@/generated/prisma";
-
 import { DEFAULT_PAGE } from "../constants";
 
 export const usePostsFilters = () => {
@@ -15,6 +13,8 @@ export const usePostsFilters = () => {
     page: parseAsInteger
       .withDefault(DEFAULT_PAGE)
       .withOptions({ clearOnDefault: true }),
-    status: parseAsStringEnum(Object.values(ContentStatus)),
+    status: parseAsStringEnum(
+      ["DRAFT", "CHANGED", "PUBLISHED", "SCHEDULED"] as const,
+    ),
   });
 };

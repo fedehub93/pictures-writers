@@ -13,6 +13,12 @@ import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { Badge } from "@/shared/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared/ui/tooltip";
 
 import type { PostsGetMany } from "../../../types";
 
@@ -214,14 +220,39 @@ export const columns: ColumnDef<PostsGetMany[number]>[] = [
       );
     },
     cell: ({ row }) => {
-      const { scheduledAt } = row.original;
+      const { scheduledAt, status } = row.original;
       if (!scheduledAt) return null;
       const date = new Date(scheduledAt);
+      const isOverdue =
+        status === ContentStatus.SCHEDULED && date.getTime() < Date.now();
+
       return (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <CalendarClockIcon className="size-4" />
-          <span>{format(date, "PP p")}</span>
-        </div>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div
+                className={cn(
+                  "flex items-center gap-2 text-sm",
+                  isOverdue
+                    ? "font-medium text-destructive"
+                    : "text-muted-foreground",
+                )}
+              >
+                <CalendarClockIcon
+                  className={cn("size-4", isOverdue && "text-destructive")}
+                />
+                <span>{format(date, "PP p")}</span>
+              </div>
+            </TooltipTrigger>
+            {isOverdue && (
+              <TooltipContent>
+                <p>
+                  This scheduled publication is overdue and should be reviewed.
+                </p>
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
       );
     },
   },
