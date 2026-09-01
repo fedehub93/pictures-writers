@@ -7,7 +7,7 @@ export const getPublishedDraftPostsBuilding = async () => {
       OR: [
         {
           isLatest: true,
-          status: ContentStatus.DRAFT,
+          status: { in: [ContentStatus.DRAFT, ContentStatus.SCHEDULED] },
         },
         {
           isLatest: false,
@@ -41,7 +41,7 @@ export const getDraftPostBySlug = async (slug: string) => {
       OR: [
         {
           isLatest: true,
-          status: ContentStatus.DRAFT,
+          status: { in: [ContentStatus.DRAFT, ContentStatus.SCHEDULED] },
         },
         {
           isLatest: false,
