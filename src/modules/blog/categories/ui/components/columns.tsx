@@ -18,7 +18,7 @@ import type { CategoriesGetMany } from "../../types";
 import { CategoriesActions } from "./actions";
 import { type DataTableFeatures } from "./data-table-features";
 
-type Category = CategoriesGetMany[number];
+type Category = CategoriesGetMany["items"][number];
 
 const columnHelper = createColumnHelper<DataTableFeatures, Category>();
 
