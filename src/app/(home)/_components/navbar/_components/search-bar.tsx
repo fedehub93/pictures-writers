@@ -50,11 +50,12 @@ export const SearchBar = () => {
               setDebouncedSearch(e.target.value);
             }}
             className="my-4 shadow-lg border-2 border-primary"
+            placeholder="Cerca..."
           />
         </div>
         <div className="md:hidden">
           {debouncedSearch && (
-            <ScrollArea className="max-h-[600px] md:max-h-[400px] overflow-auto">
+            <ScrollArea className="max-h-150 md:max-h-100 overflow-auto">
               {status === "pending" ? (
                 <div className="flex h-full flex-col flex-1 justify-center items-center py-8">
                   <BeatLoader />
@@ -76,7 +77,7 @@ export const SearchBar = () => {
                         >
                           <div className="relative w-14 h-14 aspect-square top-0 transition-all duration-300 self-start">
                             <Image
-                              src={item.imageCover?.url!}
+                              src={item.imageCover?.url ?? ""}
                               alt={item.imageCover?.altText || ""}
                               fill
                               className="object-cover rounded-md"

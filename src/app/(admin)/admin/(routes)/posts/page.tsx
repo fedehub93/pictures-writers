@@ -28,8 +28,8 @@ const PostsPage = async ({ searchParams }: Props) => {
 
   return (
     <>
-      <PostsListHeader />
       <HydrateClient>
+        <PostsListHeader />
         <Suspense fallback={<PostsViewLoading />}>
           <ErrorBoundary fallback={<PostsViewError />}>
             <PostsView />

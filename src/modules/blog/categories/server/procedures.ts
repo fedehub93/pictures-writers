@@ -255,7 +255,23 @@ export const categoriesRouter = createTRPCRouter({
         skip: (input.page - 1) * input.pageSize,
       });
 
-      return categories;
+      const distinctCategories = await db.category.groupBy({
+        by: ["rootId"],
+        where: {
+          title: input.search
+            ? { contains: input.search, mode: "insensitive" }
+            : undefined,
+          status: input.status ? { in: [input.status] } : undefined,
+        },
+      });
+
+      const totalPages = Math.ceil(distinctCategories.length / input.pageSize);
+
+      return {
+        items: categories,
+        total: distinctCategories.length,
+        totalPages,
+      };
     }),
   publish: protectedProcedure
     .input(z.object({ id: z.string(), rootId: z.string() }))

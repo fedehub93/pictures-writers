@@ -10,15 +10,21 @@ import { DataTable } from "../components/data-table";
 import { columns } from "../components/columns";
 
 import { CreateCategoryDialog } from "../components/create-category-dialog";
+import { DataPagination } from "@/shared/components/data-pagination";
 
 export const CategoriesView = () => {
-  const [filters, _] = useCategoriesFilters();
+  const [filters, setFilters] = useCategoriesFilters();
   const { data } = useSuspenseCategories(filters);
   return (
     <>
       <CreateCategoryDialog />
       <div className="px-6">
-        <DataTable columns={columns} data={data} />
+        <DataTable columns={columns} data={data.items} />
+        <DataPagination
+          page={filters.page}
+          totalPages={data.totalPages}
+          onPageChange={(page) => setFilters({ page })}
+        />
       </div>
     </>
   );

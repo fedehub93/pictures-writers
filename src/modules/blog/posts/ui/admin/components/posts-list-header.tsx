@@ -1,10 +1,8 @@
 "use client";
 
-import {
-  ArrowDownIcon,
-  PlusCircleIcon,
-  XCircleIcon,
-} from "lucide-react";
+import { ArrowDownIcon, PlusCircleIcon, XCircleIcon } from "lucide-react";
+import { useTRPC } from "@/trpc/client";
+import { useQuery } from "@tanstack/react-query";
 
 import { Button } from "@/shared/ui/button";
 import { ScrollArea, ScrollBar } from "@/shared/ui/scroll-area";
@@ -28,7 +26,9 @@ import { PostsSearchFilter } from "./posts-search-filter";
 export const PostsListHeader = () => {
   const [filters, setFilters] = usePostsFilters();
   const { onOpen } = useOpenPost();
+  const trpc = useTRPC();
 
+  const { data } = useQuery(trpc.posts.getMany.queryOptions(filters));
 
   const isAnyFilterModified = !!filters.search || !!filters.status;
 
@@ -42,25 +42,27 @@ export const PostsListHeader = () => {
 
   return (
     <div className="flex flex-col gap-y-4 px-6 py-4">
-      <ContentHeader label="Posts" totalEntries={0} />
+      <ContentHeader label="Posts" totalEntries={data?.total ?? 0} />
       <div className="flex justify-between">
-        <ScrollArea>
-          <div className="flex items-center gap-x-2 px-1">
-            <PostsSearchFilter />
-            <StatusFilter />
-            {isAnyFilterModified && (
-              <Button variant="outline" size="sm" onClick={onClearFilters}>
-                <XCircleIcon data-icon="inline-start" />
-                Clear
-              </Button>
-            )}
-          </div>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+        <div className="flex items-center gap-x-2 px-1">
+          <PostsSearchFilter />
+          <StatusFilter />
+          {isAnyFilterModified && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onClearFilters}
+              className="h-8"
+            >
+              <XCircleIcon data-icon="inline-start" />
+              Clear
+            </Button>
+          )}
+        </div>
         <div className="flex items-center justify-between">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button type="button" variant="outline" size="sm">
+              <Button type="button" variant="outline" size="sm" className="h-8">
                 Actions
                 <ArrowDownIcon data-icon="inline-end" />
               </Button>

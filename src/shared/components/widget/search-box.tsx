@@ -1,6 +1,6 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { SearchIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useDebounceValue } from "usehooks-ts";
@@ -10,9 +10,13 @@ import { it } from "date-fns/locale";
 
 import { usePostsInfiniteQuery } from "@/hooks/use-posts-infinite-query";
 
-import { Input } from "@/shared/ui/input";
 import { ScrollArea } from "@/shared/ui/scroll-area";
 import { Button } from "@/shared/ui/button";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/shared/ui/input-group";
 
 export const WidgetSearchBox = () => {
   const [debouncedSearch, setDebouncedSearch] = useDebounceValue("", 500);
@@ -29,18 +33,20 @@ export const WidgetSearchBox = () => {
         Cerca
       </label>
       <div className="relative mb-4">
-        <Search className="h-4 w-4 absolute top-3 left-3 text-slate-600" />
-        <Input
-          id="search"
-          name="search"
-          onChange={(e) => {
-            setDebouncedSearch(e.target.value);
-          }}
-          className="pl-9"
-        />
+        <InputGroup>
+          <InputGroupInput
+            placeholder="Search..."
+            onChange={(e) => {
+              setDebouncedSearch(e.target.value);
+            }}
+          />
+          <InputGroupAddon>
+            <SearchIcon />
+          </InputGroupAddon>
+        </InputGroup>
       </div>
       {debouncedSearch && (
-        <ScrollArea className=" max-h-[400px] overflow-auto">
+        <ScrollArea className=" max-h-100 overflow-auto">
           {status === "pending" ? (
             <div className="flex h-full flex-col flex-1 justify-center items-center py-8">
               <BeatLoader />
@@ -64,7 +70,7 @@ export const WidgetSearchBox = () => {
                     >
                       <div className="relative w-14 h-14 aspect-square top-0 transition-all duration-300 self-start">
                         <Image
-                          src={item.imageCover?.url!}
+                          src={item.imageCover?.url ?? ""}
                           alt={item.imageCover?.altText || ""}
                           fill
                           sizes="10vw"
@@ -98,8 +104,8 @@ export const WidgetSearchBox = () => {
                 {isFetchingNextPage
                   ? "Loading more..."
                   : hasNextPage
-                  ? "Load More"
-                  : "Nothing more to load"}
+                    ? "Load More"
+                    : "Nothing more to load"}
               </Button>
             </div>
           )}

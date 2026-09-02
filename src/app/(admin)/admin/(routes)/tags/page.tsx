@@ -27,8 +27,8 @@ const TagsPage = async ({ searchParams }: Props) => {
 
   return (
     <>
-      <TagsListHeader />
       <HydrateClient>
+        <TagsListHeader />
         <Suspense fallback={<TagsViewLoading />}>
           <ErrorBoundary fallback={<TagsViewError />}>
             <TagsView />

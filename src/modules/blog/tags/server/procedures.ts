@@ -237,7 +237,7 @@ export const tagsRouter = createTRPCRouter({
       }),
     )
     .query(async ({ input }) => {
-      const categories = await db.tag.findMany({
+      const tags = await db.tag.findMany({
         where: {
           title: input.search
             ? { contains: input.search, mode: "insensitive" }
@@ -255,7 +255,23 @@ export const tagsRouter = createTRPCRouter({
         skip: (input.page - 1) * input.pageSize,
       });
 
-      return categories;
+      const distinctTags = await db.tag.groupBy({
+        by: ["rootId"],
+        where: {
+          title: input.search
+            ? { contains: input.search, mode: "insensitive" }
+            : undefined,
+          status: input.status ? { in: [input.status] } : undefined,
+        },
+      });
+
+      const totalPages = Math.ceil(distinctTags.length / input.pageSize);
+
+      return {
+        items: tags,
+        total: distinctTags.length,
+        totalPages,
+      };
     }),
   publish: protectedProcedure
     .input(z.object({ id: z.string(), rootId: z.string() }))

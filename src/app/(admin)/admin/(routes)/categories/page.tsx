@@ -27,8 +27,8 @@ const CategoriesPage = async ({ searchParams }: Props) => {
 
   return (
     <>
-      <CategoriesListHeader />
       <HydrateClient>
+        <CategoriesListHeader />
         <Suspense fallback={<CategoriesViewLoading />}>
           <ErrorBoundary fallback={<CategoriesViewError />}>
             <CategoriesView />

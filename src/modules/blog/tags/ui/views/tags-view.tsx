@@ -2,6 +2,7 @@
 
 import { LoadingState } from "@/shared/components/loading-state";
 import { ErrorState } from "@/shared/components/error-state";
+import { DataPagination } from "@/shared/components/data-pagination";
 
 import { useTagsFilters } from "../../hooks/use-tags-filters";
 import { useSuspenseTags } from "../../hooks/use-tags";
@@ -12,13 +13,18 @@ import { columns } from "../components/columns";
 import { CreateTagDialog } from "../components/create-tag-dialog";
 
 export const TagsView = () => {
-  const [filters, _] = useTagsFilters();
+  const [filters, setFilters] = useTagsFilters();
   const { data } = useSuspenseTags(filters);
   return (
     <>
       <CreateTagDialog />
       <div className="px-6">
-        <DataTable columns={columns} data={data} />
+        <DataTable columns={columns} data={data.items} />
+        <DataPagination
+          page={filters.page}
+          totalPages={data.totalPages}
+          onPageChange={(page) => setFilters({ page })}
+        />
       </div>
     </>
   );

@@ -85,7 +85,7 @@ export const TagsForm = ({ initialData, rootId, postId }: TagsFormProps) => {
     0,
   );
 
-  const isLoadingSkeleton = isLoading && (!tags || tags.length === 0);
+  const isLoadingSkeleton = isLoading && (!tags || tags.items.length === 0);
 
   if (isLoadingSkeleton) {
     return (
@@ -117,7 +117,7 @@ export const TagsForm = ({ initialData, rootId, postId }: TagsFormProps) => {
               disabled={isPending}
               options={
                 tags
-                  ? tags.map((c) => ({
+                  ? tags.items.map((c) => ({
                       id: c.id,
                       title: c.title,
                       status: c.status,

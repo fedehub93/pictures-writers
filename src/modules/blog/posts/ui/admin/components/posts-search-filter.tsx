@@ -15,7 +15,7 @@ export const PostsSearchFilter = () => {
   const [filters, setFilters] = usePostsFilters();
 
   return (
-    <InputGroup className="max-w-xs h-8">
+    <InputGroup>
       <InputGroupInput
         placeholder="Filter by title"
         value={filters.search}
@@ -25,7 +25,7 @@ export const PostsSearchFilter = () => {
             { limitUrlUpdates: debounce(500) },
           )
         }
-      />{" "}
+      />
       <InputGroupAddon>
         <SearchIcon />
       </InputGroupAddon>

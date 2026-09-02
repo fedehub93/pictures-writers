@@ -181,7 +181,7 @@ export const SpecificCategoryForm = ({
                               {field.value.length} selected
                             </Badge>
                           ) : (
-                            categories
+                            categories.items
                               .filter((option) => {
                                 return field.value.includes(option.rootId!);
                               })
@@ -209,7 +209,7 @@ export const SpecificCategoryForm = ({
                   <CommandList>
                     <CommandEmpty>No language found.</CommandEmpty>
                     <CommandGroup>
-                      {categories.map((category) => (
+                      {categories.items.map((category) => (
                         <CommandItem
                           value={category.title}
                           key={category.rootId}

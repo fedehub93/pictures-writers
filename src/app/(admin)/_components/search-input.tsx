@@ -1,11 +1,16 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { Search, SearchIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { Input } from "@/shared/ui/input";
 import { useDebounce } from "@/app/(admin)/_hooks/use-debounce";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/shared/ui/input-group";
 
 export const SearchInput = () => {
   const searchParams = useSearchParams();
@@ -22,13 +27,16 @@ export const SearchInput = () => {
 
   return (
     <div className="relative">
-      <Search className="h-4 w-4 absolute top-3 left-3 text-slate-600" />
-      <Input
-        onChange={(e) => setValue(e.target.value)}
-        value={value}
-        className="pl-9 max-w-sm"
-        placeholder="Search for a asset..."
-      />
+      <InputGroup>
+        <InputGroupInput
+          placeholder="Search..."
+          onChange={(e) => setValue(e.target.value)}
+          value={value}
+        />
+        <InputGroupAddon>
+          <SearchIcon />
+        </InputGroupAddon>
+      </InputGroup>
     </div>
   );
 };

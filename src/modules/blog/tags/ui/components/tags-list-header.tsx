@@ -1,18 +1,11 @@
 "use client";
 
 import { ArrowDownIcon, PlusCircleIcon, XCircleIcon } from "lucide-react";
+import { useTRPC } from "@/trpc/client";
+import { useQuery } from "@tanstack/react-query";
 
 import { Button } from "@/shared/ui/button";
 import { ScrollArea, ScrollBar } from "@/shared/ui/scroll-area";
-
-import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
-
-import { DEFAULT_PAGE } from "../../constants";
-
-import { StatusFilter } from "./tags-status-filter";
-import { useTagsFilters } from "../../hooks/use-tags-filters";
-import { useOpenTag } from "../../hooks/use-open-tag";
-import { useSuspenseTags } from "../../hooks/use-tags";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,10 +13,21 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 
+import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
+
+import { DEFAULT_PAGE } from "../../constants";
+
+import { useTagsFilters } from "../../hooks/use-tags-filters";
+import { useOpenTag } from "../../hooks/use-open-tag";
+
+import { StatusFilter } from "./tags-status-filter";
+
 export const TagsListHeader = () => {
   const [filters, setFilters] = useTagsFilters();
   const { onOpen } = useOpenTag();
-  const { data } = useSuspenseTags(filters);
+  const trpc = useTRPC();
+
+  const { data } = useQuery(trpc.tags.getMany.queryOptions(filters));
 
   const isAnyFilterModified = !!filters.search || !!filters.status;
 
@@ -37,13 +41,18 @@ export const TagsListHeader = () => {
 
   return (
     <div className="flex flex-col gap-y-4 px-6 pt-4">
-      <ContentHeader label="Tags" totalEntries={data.length} />
+      <ContentHeader label="Tags" totalEntries={data?.total ?? 0} />
       <div className="flex justify-between">
         <ScrollArea>
           <div className="flex items-center gap-x-2 px-1 py-4">
             <StatusFilter />
             {isAnyFilterModified && (
-              <Button variant="outline" size="sm" onClick={onClearFilters}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onClearFilters}
+                className="h-8"
+              >
                 <XCircleIcon data-icon="inline-start" />
                 Clear
               </Button>
@@ -54,7 +63,7 @@ export const TagsListHeader = () => {
         <div className="flex items-center justify-between">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button type="button" variant="outline" size="sm">
+              <Button type="button" variant="outline" size="sm" className="h-8">
                 Actions
                 <ArrowDownIcon data-icon="inline-end" />
               </Button>

@@ -98,7 +98,7 @@ export const CategoriesForm = ({
   );
 
   const isLoadingSkeleton =
-    isLoading && (!categories || categories.length === 0);
+    isLoading && (!categories || categories.items.length === 0);
 
   if (isLoadingSkeleton) {
     return (
@@ -133,7 +133,7 @@ export const CategoriesForm = ({
               disabled={isPending}
               options={
                 categories
-                  ? categories.map((c) => ({
+                  ? categories.items.map((c) => ({
                       id: c.id,
                       title: c.title,
                       status: c.status,
