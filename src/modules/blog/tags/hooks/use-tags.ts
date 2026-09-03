@@ -23,7 +23,7 @@ export const useTagsQuery = () => {
   const trpc = useTRPC();
 
   const { data, isLoading, isError } = useQuery({
-    ...trpc.tags.getMany.queryOptions({}),
+    ...trpc.tags.getMany.queryOptions({ pageSize: 100 }),
     enabled: true,
     refetchOnMount: true,
     staleTime: 0,
