@@ -1,5 +1,6 @@
 import {
   CheckCircleIcon,
+  CircleDashedIcon,
   CircleIcon,
   ClockIcon,
   TimerIcon,
@@ -13,11 +14,21 @@ import { usePostsFilters } from "../../../hooks/use-posts-filters";
 
 const options = [
   {
+    id: "all",
+    value: null,
+    children: (
+      <div className="flex items-center gap-x-2 capitalize">
+        <CircleIcon />
+        All
+      </div>
+    ),
+  },
+  {
     id: ContentStatus.DRAFT,
     value: ContentStatus.DRAFT,
     children: (
       <div className="flex items-center gap-x-2 capitalize">
-        <CircleIcon />
+        <CircleDashedIcon />
         {ContentStatus.DRAFT}
       </div>
     ),

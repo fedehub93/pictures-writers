@@ -18,7 +18,7 @@ import type { PagesGetMany } from "../../types";
 import { PagesActions } from "./actions";
 import { type DataTableFeatures } from "./data-table-features";
 
-type Page = PagesGetMany[number];
+type Page = PagesGetMany["items"][number];
 
 const columnHelper = createColumnHelper<DataTableFeatures, Page>();
 
@@ -35,9 +35,7 @@ export const columns = columnHelper.columns([
             isAllSelected ||
             (isSomeSelected && !isAllSelected && "indeterminate")
           }
-          onCheckedChange={(value) =>
-            table.toggleAllPageRowsSelected(!!value)
-          }
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label="Select all"
           className="translate-y-0.5"
         />

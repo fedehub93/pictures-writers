@@ -10,7 +10,7 @@ import { PageSeoForm } from "./seo-form";
 interface PageSettingsProps {
   onSuccess?: () => void;
   onCancel?: () => void;
-  initialValues?: PagesGetMany[number];
+  initialValues?: PagesGetMany["items"][number];
 }
 
 export const PageSettings = ({

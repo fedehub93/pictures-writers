@@ -274,7 +274,23 @@ export const pagesRouter = createTRPCRouter({
         })),
       );
 
-      return hydratedPages;
+      const distinctPages = await db.page.groupBy({
+        by: ["rootId"],
+        where: {
+          title: input.search
+            ? { contains: input.search, mode: "insensitive" }
+            : undefined,
+          status: input.status ? { in: [input.status] } : undefined,
+        },
+      });
+
+      const totalPages = Math.ceil(distinctPages.length / input.pageSize);
+
+      return {
+        items: hydratedPages,
+        total: distinctPages.length,
+        totalPages,
+      };
     }),
   publish: protectedProcedure
     .input(z.object({ id: z.string(), rootId: z.string() }))

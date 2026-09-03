@@ -1,10 +1,9 @@
 "use client";
 
-import {
-  ArrowDownIcon,
-  PlusCircleIcon,
-  XCircleIcon,
-} from "lucide-react";
+import { ArrowDownIcon, PlusCircleIcon, XCircleIcon } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+
+import { useTRPC } from "@/trpc/client";
 
 import { Button } from "@/shared/ui/button";
 import { ScrollArea, ScrollBar } from "@/shared/ui/scroll-area";
@@ -27,6 +26,9 @@ import {
 export const PagesListHeader = () => {
   const [filters, setFilters] = usePagesFilters();
   const { onOpen } = useOpenPage();
+  const trpc = useTRPC();
+
+  const { data } = useQuery(trpc.pages.getMany.queryOptions(filters));
 
   const isAnyFilterModified = !!filters.search || !!filters.status;
 
@@ -39,11 +41,11 @@ export const PagesListHeader = () => {
   };
 
   return (
-    <div className="flex flex-col gap-y-4 px-6 pt-4">
-      <ContentHeader label="Pages" totalEntries={0} />
+    <div className="flex flex-col gap-y-4 px-6 py-4">
+      <ContentHeader label="Pages" totalEntries={data?.items.length ?? 0} />
       <div className="flex justify-between">
         <ScrollArea>
-          <div className="flex items-center gap-x-2 px-1">
+          <div className="flex items-center gap-x-2 p-1">
             <PagesSearchFilter />
             <StatusFilter />
             {isAnyFilterModified && (

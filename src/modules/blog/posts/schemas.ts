@@ -1,10 +1,11 @@
 import * as z from "zod";
 
-import { EditorType, Media } from "@/generated/prisma";
+import { EditorType } from "@/generated/prisma";
 
 export const postInsertSchema = z.object({
   title: z.string().min(1, { error: "Title name is required" }),
   slug: z.string().min(1, { error: "Slug is required" }),
+  scheduledAt: z.date().nullable().optional(),
 });
 
 export type PostInsertValues = z.infer<typeof postInsertSchema>;

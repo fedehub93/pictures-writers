@@ -22,7 +22,7 @@ export const BlockVisibilityForm = ({
   control,
   isSubmitting,
 }: BlockVisibilityFormProps) => {
-  const { data: posts, isLoading: isPostsLoading } = usePostsQuery();
+  const { data: posts, isLoading: isPostsLoading } = usePostsQuery({});
   const { data: categories, isLoading: isCategoriesLoading } =
     useCategoriesQuery();
   const { data: tags, isLoading: isTagsLoading } = useTagsQuery();

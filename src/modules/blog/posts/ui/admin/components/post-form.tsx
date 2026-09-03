@@ -4,6 +4,8 @@ import { useController, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useState } from "react";
+import { parse, set } from "date-fns";
 
 import { useTRPC } from "@/trpc/client";
 
@@ -15,17 +17,23 @@ import { generateSlug } from "@/shared/lib/slug";
 
 import { GenericInput } from "@/shared/components/form-component/generic-input";
 import { SlugInput } from "@/shared/components/form-component/slug-input";
+import { ScheduleDatePicker } from "@/shared/components/schedule-date-picker";
 
 import { postInsertSchema, type PostInsertValues } from "../../../schemas";
 
 import { usePostsFilters } from "../../../hooks/use-posts-filters";
 
 interface PostFormProps {
+  data?: Partial<{ scheduledAt: Date | null }>;
   onSuccess?: () => void;
   onCancel?: () => void;
 }
 
-export const PostForm = ({ onSuccess, onCancel }: PostFormProps) => {
+export const PostForm = ({ data, onSuccess, onCancel }: PostFormProps) => {
+  const [date, setDate] = useState<Date | undefined>(
+    data?.scheduledAt ?? undefined,
+  );
+  const [time, setTime] = useState("");
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const [filters, _] = usePostsFilters();
@@ -35,6 +43,7 @@ export const PostForm = ({ onSuccess, onCancel }: PostFormProps) => {
     defaultValues: {
       title: "",
       slug: "",
+      scheduledAt: null,
     },
   });
 
@@ -56,7 +65,19 @@ export const PostForm = ({ onSuccess, onCancel }: PostFormProps) => {
   const isPending = createPost.isPending;
 
   const onSubmit = (values: PostInsertValues) => {
-    createPost.mutate(values);
+    let scheduledAt: Date | null = null;
+    if (date) {
+      const parsedTime = parse(time, "h:mm a", new Date());
+      if (!Number.isNaN(parsedTime.getTime())) {
+        scheduledAt = set(date, {
+          hours: parsedTime.getHours(),
+          minutes: parsedTime.getMinutes(),
+          seconds: 0,
+          milliseconds: 0,
+        });
+      }
+    }
+    createPost.mutate({ ...values, scheduledAt });
   };
 
   const { field: fieldTitle } = useController({
@@ -77,6 +98,9 @@ export const PostForm = ({ onSuccess, onCancel }: PostFormProps) => {
       <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
         <GenericInput
           control={form.control}
+          onBlur={() => {
+            onSlugCreate();
+          }}
           name="title"
           label="Title"
           placeholder="About Us"
@@ -90,6 +114,16 @@ export const PostForm = ({ onSuccess, onCancel }: PostFormProps) => {
           disabled={isPending}
           buttonOnClick={onSlugCreate}
         />
+        {data?.scheduledAt && (
+          <ScheduleDatePicker
+            date={date}
+            setDate={setDate}
+            time={time}
+            setTime={setTime}
+            align="center"
+            
+          />
+        )}
 
         <div className="flex justify-between gap-x-2 mt-8">
           {onCancel && (

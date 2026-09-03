@@ -5,7 +5,7 @@ import { useOpenPost } from "../../../hooks/use-open-post";
 import { PostForm } from "./post-form";
 
 export const CreatePostDialog = () => {
-  const { isOpen, onClose } = useOpenPost();
+  const { isOpen, onClose, data } = useOpenPost();
 
   return (
     <ResponsiveDialog
@@ -14,7 +14,7 @@ export const CreatePostDialog = () => {
       open={isOpen}
       onOpenChange={onClose}
     >
-      <PostForm onSuccess={() => onClose()} onCancel={() => onClose()} />
+      <PostForm data={data} onSuccess={() => onClose()} onCancel={() => onClose()} />
     </ResponsiveDialog>
   );
 };

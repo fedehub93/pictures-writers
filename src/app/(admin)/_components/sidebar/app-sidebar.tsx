@@ -11,6 +11,7 @@ import {
   BookUpIcon,
   BoxIcon,
   BoxesIcon,
+  CalendarCheckIcon,
   ClipboardPenIcon,
   ContactIcon,
   FormIcon,
@@ -67,6 +68,11 @@ const data: Record<string, NavObject[]> = {
       title: "Pages",
       url: "/admin/pages",
       Icon: LayoutPanelTopIcon,
+    },
+    {
+      title: "Schedule",
+      url: "/admin/schedule",
+      Icon: CalendarCheckIcon,
     },
     {
       title: "Contents",
