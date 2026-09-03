@@ -37,11 +37,16 @@ export const postsRouter = createTRPCRouter({
   create: protectedProcedure
     .input(postInsertSchema)
     .mutation(async ({ input, ctx }) => {
+      const isScheduled = input.scheduledAt && input.scheduledAt > new Date();
+      const status = isScheduled
+        ? ContentStatus.SCHEDULED
+        : ContentStatus.DRAFT;
       const post = await db.post.create({
         data: {
           ...input,
           version: 1,
-          status: ContentStatus.DRAFT,
+          status,
+          scheduledAt: input.scheduledAt,
           bodyData: [{ type: "paragraph", children: [{ text: "" }] }],
           userId: ctx.auth.id,
           postAuthors: {

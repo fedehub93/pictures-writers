@@ -17,16 +17,15 @@ import {
 interface Props {
   options: Array<{
     id: string;
-    value: string;
+    value: string | null;
     children: ReactNode;
   }>;
-  onSelect: (value: string) => void;
+  onSelect: (value: string | null) => void;
   onSearch?: (value: string) => void;
   value: string;
   placeholder?: string;
-  isSearchable?: boolean;
   className?: string;
-  disabled?: boolean
+  disabled?: boolean;
 }
 
 export const CommandSelect = ({
@@ -35,9 +34,8 @@ export const CommandSelect = ({
   onSearch,
   value,
   placeholder,
-  isSearchable,
   className,
-  disabled
+  disabled,
 }: Props) => {
   const [open, setOpen] = useState(false);
   const selectedOption = options.find((option) => option.value === value);

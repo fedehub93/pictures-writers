@@ -8,9 +8,9 @@ import {
   setHours,
   setMinutes,
   setSeconds,
+  addMinutes,
   isBefore,
 } from "date-fns";
-import { ClockIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import { useTRPC } from "@/trpc/client";
@@ -27,11 +27,8 @@ import {
 } from "@/shared/ui/dialog";
 import { Calendar } from "@/shared/ui/calendar";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field";
-import {
-  InputGroup,
-  InputGroupInput,
-  InputGroupAddon,
-} from "@/shared/ui/input-group";
+
+import { TimePicker } from "@/shared/components/time-picker";
 
 interface SchedulePostDialogProps {
   postId: string;
@@ -46,6 +43,10 @@ function roundUpToNextFiveMinutes(date: Date): Date {
   const ms = 1000 * 60 * 5;
   return new Date(Math.ceil(date.getTime() / ms) * ms);
 }
+
+const timeOptions = Array.from({ length: 24 * 12 }, (_, i) =>
+  format(addMinutes(startOfDay(new Date()), i * 5), "HH:mm"),
+);
 
 function buildScheduledAt(date: Date, time: string): Date | null {
   const [hours, minutes] = time.split(":").map(Number);
@@ -192,18 +193,11 @@ export const SchedulePostDialog = ({
 
           <Field>
             <FieldLabel>Time</FieldLabel>
-            <InputGroup>
-              <InputGroupAddon>
-                <ClockIcon />
-              </InputGroupAddon>
-              <InputGroupInput
-                type="time"
-                step="300"
-                value={time}
-                onChange={(event) => setTime(event.target.value)}
-                aria-label="Publication time"
-              />
-            </InputGroup>
+            <TimePicker
+              value={time}
+              onValueChange={setTime}
+              options={timeOptions}
+            />
           </Field>
 
           {validationError && <FieldError>{validationError}</FieldError>}

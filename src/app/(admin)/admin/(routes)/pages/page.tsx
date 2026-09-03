@@ -30,8 +30,8 @@ const PagesPage = async ({ searchParams }: Props) => {
 
   return (
     <>
-      <PagesListHeader />
       <HydrateClient>
+        <PagesListHeader />
         <Suspense fallback={<PagesViewLoading />}>
           <ErrorBoundary fallback={<PagesViewError />}>
             <PagesView />

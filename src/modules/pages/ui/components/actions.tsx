@@ -35,7 +35,7 @@ interface PagesAction {
   id: string;
   rootId: string;
   status: ContentStatus;
-  data: PagesGetMany[number];
+  data: PagesGetMany["items"][number];
 }
 
 export const PagesActions = ({ id, rootId, status, data }: PagesAction) => {

@@ -19,11 +19,11 @@ export const useSuspensePost = (rootId: string) => {
   return useSuspenseQuery(trpc.posts.getLastByRootId.queryOptions({ rootId }));
 };
 
-export const usePostsQuery = () => {
+export const usePostsQuery = (params: Input) => {
   const trpc = useTRPC();
 
   const { data, isLoading, isError } = useQuery({
-    ...trpc.posts.getMany.queryOptions({}),
+    ...trpc.posts.getMany.queryOptions({ ...params }),
     enabled: true,
     refetchOnMount: true,
     staleTime: 0,
