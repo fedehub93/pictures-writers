@@ -2,7 +2,7 @@
 
 **What to build:** permettere all’editor di schedulare un `EmailSingleSend`, modificarne o annullarne l’invio, eseguirlo automaticamente tramite il worker comune e consultarlo nello stesso calendario dei Post.
 
-**Blocked by:** 02 — Portare la Scheduled publication dei Post su ScheduledAction; 03 — Rendere il calendario range-based e consultabile
+**Blocked by:** None (Ticket 03: Rendere il calendario range-based e consultabile risolto)
 
 **Status:** ready-for-agent
 
