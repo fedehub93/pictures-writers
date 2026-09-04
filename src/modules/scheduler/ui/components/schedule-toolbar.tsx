@@ -45,7 +45,11 @@ const actionTypeOptions = [
 
 const statusOptions = [
   { value: "all", label: "All statuses", Icon: CircleIcon },
-  { value: ScheduledActionStatus.SCHEDULED, label: "Scheduled", Icon: ClockIcon },
+  {
+    value: ScheduledActionStatus.SCHEDULED,
+    label: "Scheduled",
+    Icon: ClockIcon,
+  },
   {
     value: ScheduledActionStatus.PROCESSING,
     label: "Processing",

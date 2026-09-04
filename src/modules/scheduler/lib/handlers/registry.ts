@@ -6,22 +6,18 @@ import type { ScheduledAction } from "@/generated/prisma";
 import { ScheduledActionHandlerError } from "../../constants";
 
 import { handlePublishPost } from "./post-publish-handler";
+import { handleSendEmail } from "./send-email-handler";
 
 export type ScheduledActionHandler = (
   action: ScheduledAction,
   context: { now?: Date },
-) => Promise<void>;
+) => Promise<void | { providerId?: string }>;
 
 export type HandlerRegistry = Record<ScheduledActionType, ScheduledActionHandler>;
 
 const handlers: HandlerRegistry = {
   PUBLISH_POST: handlePublishPost,
-  SEND_EMAIL: async () => {
-    throw new ScheduledActionHandlerError(
-      "Email handler not implemented in this iteration",
-      false,
-    );
-  },
+  SEND_EMAIL: handleSendEmail,
 };
 
 export function getHandler(type: ScheduledActionType): ScheduledActionHandler {

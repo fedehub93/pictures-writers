@@ -1039,6 +1039,11 @@ model ScheduledAction {
 
   status ScheduledActionStatus @default(SCHEDULED)
 
+  /// True while the action is eligible for execution. Terminal states flip
+  /// this to false so a target can have a durable history and still accept a
+  /// new active action later (e.g. a reusable EmailSingleSend).
+  active Boolean @default(true)
+
   /// Number of execution attempts already performed.
   attempts Int @default(0)
 
@@ -1074,4 +1079,5 @@ model ScheduledAction {
   @@index([status, plannedAt, retryAt])
   @@index([targetType, targetId, status])
   @@index([leaseExpiresAt, status])
+  @@index([active])
 }

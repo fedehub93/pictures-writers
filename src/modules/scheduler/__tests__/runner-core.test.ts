@@ -2,10 +2,7 @@ import { randomUUID } from "node:crypto";
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 import { db } from "@/shared/lib/db";
-import {
-  ScheduledActionStatus,
-  ScheduledActionType,
-} from "@/generated/prisma";
+import { ScheduledActionStatus, ScheduledActionType } from "@/generated/prisma";
 import { runScheduledActionsWithHandlers } from "@/modules/scheduler/lib/scheduler-runner";
 import {
   createScheduledAction,
@@ -80,9 +77,11 @@ describe("scheduler runner core", () => {
 
   it("retries transient errors with bounded attempts", async () => {
     const now = new Date("2025-06-01T10:00:00.000Z");
-    const handler = vi.fn().mockRejectedValue(
-      new ScheduledActionHandlerError("provider timeout", true),
-    );
+    const handler = vi
+      .fn()
+      .mockRejectedValue(
+        new ScheduledActionHandlerError("provider timeout", true),
+      );
     const handlers: HandlerRegistry = {
       PUBLISH_POST: handler,
       SEND_EMAIL: async () => {},
@@ -134,9 +133,11 @@ describe("scheduler runner core", () => {
 
   it("applies a non-zero backoff on the first retry", async () => {
     const now = new Date("2025-06-01T10:00:00.000Z");
-    const handler = vi.fn().mockRejectedValue(
-      new ScheduledActionHandlerError("provider timeout", true),
-    );
+    const handler = vi
+      .fn()
+      .mockRejectedValue(
+        new ScheduledActionHandlerError("provider timeout", true),
+      );
     const handlers: HandlerRegistry = {
       PUBLISH_POST: handler,
       SEND_EMAIL: async () => {},
@@ -158,9 +159,11 @@ describe("scheduler runner core", () => {
 
   it("permanent errors become FAILED without retry", async () => {
     const now = new Date("2025-06-01T10:00:00.000Z");
-    const handler = vi.fn().mockRejectedValue(
-      new ScheduledActionHandlerError("invalid content", false),
-    );
+    const handler = vi
+      .fn()
+      .mockRejectedValue(
+        new ScheduledActionHandlerError("invalid content", false),
+      );
     const handlers: HandlerRegistry = {
       PUBLISH_POST: handler,
       SEND_EMAIL: async () => {},

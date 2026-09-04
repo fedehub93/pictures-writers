@@ -3,7 +3,7 @@ import { ErrorState } from "@/shared/components/error-state";
 
 import { Calendar } from "../components/calendar";
 
-export const SchedulerView = () => {
+export const ScheduleView = () => {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-hidden">
@@ -13,7 +13,7 @@ export const SchedulerView = () => {
   );
 };
 
-export const SchedulerViewLoading = () => {
+export const ScheduleViewLoading = () => {
   return (
     <LoadingState
       title="Loading Calendar"
@@ -22,7 +22,7 @@ export const SchedulerViewLoading = () => {
   );
 };
 
-export const SchedulerViewError = () => {
+export const ScheduleViewError = () => {
   return (
     <ErrorState title="Error Calendar" description="Something went wrong" />
   );

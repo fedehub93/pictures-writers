@@ -7,6 +7,14 @@ import { TRPCError } from "@trpc/server";
 
 import { singleSendInsertSchema, singleSendUpdateSchema } from "../schemas";
 import { sendBulk } from "../../lib/core";
+import {
+  scheduleSingleSend,
+  rescheduleSingleSend,
+  cancelScheduledSingleSend,
+  SingleSendScheduleError,
+} from "../lib/schedule-single-send";
+import { getActiveScheduledActionByTarget } from "@/modules/scheduler/lib/scheduled-action-repository";
+import { SCHEDULER_TARGET_TYPES } from "@/modules/scheduler/constants";
 
 export const singleSendsRouter = createTRPCRouter({
   create: protectedProcedure
@@ -114,6 +122,103 @@ export const singleSendsRouter = createTRPCRouter({
 
     return mappedSingleSends;
   }),
+  getSchedule: protectedProcedure
+    .input(z.object({ singleSendId: z.string() }))
+    .query(async ({ input }) => {
+      const action = await getActiveScheduledActionByTarget(
+        SCHEDULER_TARGET_TYPES.EMAIL_SINGLE_SEND,
+        input.singleSendId,
+      );
+      return action;
+    }),
+
+  schedule: protectedProcedure
+    .input(
+      z.object({
+        singleSendId: z.string(),
+        scheduledAt: z.coerce.date(),
+        timezone: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      try {
+        return await scheduleSingleSend({
+          singleSendId: input.singleSendId,
+          scheduledAt: input.scheduledAt,
+          timezone: input.timezone,
+        });
+      } catch (error) {
+        if (error instanceof SingleSendScheduleError) {
+          const code =
+            error.code === "NOT_FOUND"
+              ? "NOT_FOUND"
+              : error.code === "CONFLICT"
+                ? "CONFLICT"
+                : "BAD_REQUEST";
+
+          throw new TRPCError({
+            code,
+            message: error.message,
+          });
+        }
+
+        throw error;
+      }
+    }),
+
+  reschedule: protectedProcedure
+    .input(
+      z.object({
+        singleSendId: z.string(),
+        scheduledAt: z.coerce.date(),
+        timezone: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      try {
+        return await rescheduleSingleSend({
+          singleSendId: input.singleSendId,
+          scheduledAt: input.scheduledAt,
+          timezone: input.timezone,
+        });
+      } catch (error) {
+        if (error instanceof SingleSendScheduleError) {
+          const code =
+            error.code === "NOT_FOUND"
+              ? "NOT_FOUND"
+              : error.code === "CONFLICT"
+                ? "CONFLICT"
+                : "BAD_REQUEST";
+
+          throw new TRPCError({
+            code,
+            message: error.message,
+          });
+        }
+
+        throw error;
+      }
+    }),
+
+  cancelSchedule: protectedProcedure
+    .input(z.object({ singleSendId: z.string() }))
+    .mutation(async ({ input }) => {
+      try {
+        return await cancelScheduledSingleSend({
+          singleSendId: input.singleSendId,
+        });
+      } catch (error) {
+        if (error instanceof SingleSendScheduleError) {
+          throw new TRPCError({
+            code: error.code === "NOT_FOUND" ? "NOT_FOUND" : "BAD_REQUEST",
+            message: error.message,
+          });
+        }
+
+        throw error;
+      }
+    }),
+
   sendBulk: protectedProcedure
     .input(
       z.object({

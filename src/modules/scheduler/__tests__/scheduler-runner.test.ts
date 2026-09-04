@@ -217,7 +217,9 @@ describe("scheduler runner", () => {
       expect(claimed).not.toBeNull();
 
       const beforeExpiry = new Date(now.getTime() + leaseMs - 1000);
-      const recoveredEarly = await claimDueScheduledAction({ now: beforeExpiry });
+      const recoveredEarly = await claimDueScheduledAction({
+        now: beforeExpiry,
+      });
       expect(recoveredEarly).toBeNull();
 
       const afterExpiry = new Date(now.getTime() + leaseMs + 1000);

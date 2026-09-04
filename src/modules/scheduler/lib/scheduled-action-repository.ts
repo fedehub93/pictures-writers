@@ -7,6 +7,7 @@ import {
   ContentStatus,
   ScheduledActionStatus,
   ScheduledActionType,
+  type Prisma,
   type ScheduledAction,
 } from "@/generated/prisma";
 
@@ -61,7 +62,18 @@ export function createIdempotencyKey(
 export async function createScheduledAction(
   input: CreateScheduledActionInput,
 ): Promise<ScheduledAction> {
-  return db.scheduledAction.create({
+  return createScheduledActionTx(db, input);
+}
+
+/**
+ * Create a scheduled action inside an existing transaction. Use this when the
+ * caller already holds a row lock that serializes scheduling for the target.
+ */
+export async function createScheduledActionTx(
+  tx: Prisma.TransactionClient,
+  input: CreateScheduledActionInput,
+): Promise<ScheduledAction> {
+  return tx.scheduledAction.create({
     data: {
       type: input.type,
       targetType: input.targetType,
@@ -71,6 +83,7 @@ export async function createScheduledAction(
       idempotencyKey: input.idempotencyKey,
       maxAttempts: input.maxAttempts ?? SCHEDULER_MAX_ATTEMPTS,
       status: ScheduledActionStatus.SCHEDULED,
+      active: true,
     },
   });
 }
@@ -89,6 +102,7 @@ export async function getActiveScheduledActionByTarget(
     where: {
       targetType,
       targetId,
+      active: true,
       status: { in: [ScheduledActionStatus.SCHEDULED, ScheduledActionStatus.RETRY_WAIT] },
     },
   });
@@ -181,10 +195,16 @@ export async function updateScheduledActionResult(
   id: string,
   input: UpdateResultInput,
 ): Promise<ScheduledAction> {
+  const isTerminal =
+    input.status === ScheduledActionStatus.SUCCEEDED ||
+    input.status === ScheduledActionStatus.FAILED ||
+    input.status === ScheduledActionStatus.CANCELED;
+
   return db.scheduledAction.update({
     where: { id },
     data: {
       status: input.status,
+      active: !isTerminal,
       ...(input.attempts !== undefined && { attempts: input.attempts }),
       ...(input.retryAt !== undefined && { retryAt: input.retryAt }),
       ...(input.executedAt !== undefined && { executedAt: input.executedAt }),
@@ -204,6 +224,7 @@ export async function cancelScheduledAction(
     where: { id },
     data: {
       status: ScheduledActionStatus.CANCELED,
+      active: false,
       canceledAt: now,
       leaseId: null,
       leaseExpiresAt: null,
@@ -224,6 +245,7 @@ export async function rescheduleScheduledAction(
       plannedAt,
       timezone,
       status: ScheduledActionStatus.SCHEDULED,
+      active: true,
       retryAt: null,
       attempts: 0,
       leaseId: null,
@@ -242,6 +264,7 @@ export async function countActiveScheduledActionsByTarget(
     where: {
       targetType,
       targetId,
+      active: true,
       status: { in: [ScheduledActionStatus.SCHEDULED, ScheduledActionStatus.RETRY_WAIT] },
     },
   });

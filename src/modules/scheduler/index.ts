@@ -1,5 +1,5 @@
 export {
-  SchedulerView,
-  SchedulerViewLoading,
-  SchedulerViewError,
-} from "./ui/views/scheduler-view";
+  ScheduleView,
+  ScheduleViewLoading,
+  ScheduleViewError,
+} from "./ui/views/schedule-view";

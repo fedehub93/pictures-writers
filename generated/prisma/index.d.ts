@@ -57636,6 +57636,7 @@ export namespace Prisma {
     plannedAt: Date | null
     timezone: string | null
     status: $Enums.ScheduledActionStatus | null
+    active: boolean | null
     attempts: number | null
     maxAttempts: number | null
     retryAt: Date | null
@@ -57658,6 +57659,7 @@ export namespace Prisma {
     plannedAt: Date | null
     timezone: string | null
     status: $Enums.ScheduledActionStatus | null
+    active: boolean | null
     attempts: number | null
     maxAttempts: number | null
     retryAt: Date | null
@@ -57680,6 +57682,7 @@ export namespace Prisma {
     plannedAt: number
     timezone: number
     status: number
+    active: number
     attempts: number
     maxAttempts: number
     retryAt: number
@@ -57714,6 +57717,7 @@ export namespace Prisma {
     plannedAt?: true
     timezone?: true
     status?: true
+    active?: true
     attempts?: true
     maxAttempts?: true
     retryAt?: true
@@ -57736,6 +57740,7 @@ export namespace Prisma {
     plannedAt?: true
     timezone?: true
     status?: true
+    active?: true
     attempts?: true
     maxAttempts?: true
     retryAt?: true
@@ -57758,6 +57763,7 @@ export namespace Prisma {
     plannedAt?: true
     timezone?: true
     status?: true
+    active?: true
     attempts?: true
     maxAttempts?: true
     retryAt?: true
@@ -57867,6 +57873,7 @@ export namespace Prisma {
     plannedAt: Date
     timezone: string
     status: $Enums.ScheduledActionStatus
+    active: boolean
     attempts: number
     maxAttempts: number
     retryAt: Date | null
@@ -57908,6 +57915,7 @@ export namespace Prisma {
     plannedAt?: boolean
     timezone?: boolean
     status?: boolean
+    active?: boolean
     attempts?: boolean
     maxAttempts?: boolean
     retryAt?: boolean
@@ -57930,6 +57938,7 @@ export namespace Prisma {
     plannedAt?: boolean
     timezone?: boolean
     status?: boolean
+    active?: boolean
     attempts?: boolean
     maxAttempts?: boolean
     retryAt?: boolean
@@ -57952,6 +57961,7 @@ export namespace Prisma {
     plannedAt?: boolean
     timezone?: boolean
     status?: boolean
+    active?: boolean
     attempts?: boolean
     maxAttempts?: boolean
     retryAt?: boolean
@@ -57974,6 +57984,7 @@ export namespace Prisma {
     plannedAt?: boolean
     timezone?: boolean
     status?: boolean
+    active?: boolean
     attempts?: boolean
     maxAttempts?: boolean
     retryAt?: boolean
@@ -57988,7 +57999,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type ScheduledActionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "type" | "targetType" | "targetId" | "plannedAt" | "timezone" | "status" | "attempts" | "maxAttempts" | "retryAt" | "leaseId" | "leaseExpiresAt" | "idempotencyKey" | "providerId" | "lastError" | "executedAt" | "canceledAt" | "createdAt" | "updatedAt", ExtArgs["result"]["scheduledAction"]>
+  export type ScheduledActionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "type" | "targetType" | "targetId" | "plannedAt" | "timezone" | "status" | "active" | "attempts" | "maxAttempts" | "retryAt" | "leaseId" | "leaseExpiresAt" | "idempotencyKey" | "providerId" | "lastError" | "executedAt" | "canceledAt" | "createdAt" | "updatedAt", ExtArgs["result"]["scheduledAction"]>
 
   export type $ScheduledActionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "ScheduledAction"
@@ -58007,6 +58018,12 @@ export namespace Prisma {
        */
       timezone: string
       status: $Enums.ScheduledActionStatus
+      /**
+       * True while the action is eligible for execution. Terminal states flip
+       * this to false so a target can have a durable history and still accept a
+       * new active action later (e.g. a reusable EmailSingleSend).
+       */
+      active: boolean
       /**
        * Number of execution attempts already performed.
        */
@@ -58476,6 +58493,7 @@ export namespace Prisma {
     readonly plannedAt: FieldRef<"ScheduledAction", 'DateTime'>
     readonly timezone: FieldRef<"ScheduledAction", 'String'>
     readonly status: FieldRef<"ScheduledAction", 'ScheduledActionStatus'>
+    readonly active: FieldRef<"ScheduledAction", 'Boolean'>
     readonly attempts: FieldRef<"ScheduledAction", 'Int'>
     readonly maxAttempts: FieldRef<"ScheduledAction", 'Int'>
     readonly retryAt: FieldRef<"ScheduledAction", 'DateTime'>
@@ -59543,6 +59561,7 @@ export namespace Prisma {
     plannedAt: 'plannedAt',
     timezone: 'timezone',
     status: 'status',
+    active: 'active',
     attempts: 'attempts',
     maxAttempts: 'maxAttempts',
     retryAt: 'retryAt',
@@ -63514,6 +63533,7 @@ export namespace Prisma {
     plannedAt?: DateTimeFilter<"ScheduledAction"> | Date | string
     timezone?: StringFilter<"ScheduledAction"> | string
     status?: EnumScheduledActionStatusFilter<"ScheduledAction"> | $Enums.ScheduledActionStatus
+    active?: BoolFilter<"ScheduledAction"> | boolean
     attempts?: IntFilter<"ScheduledAction"> | number
     maxAttempts?: IntFilter<"ScheduledAction"> | number
     retryAt?: DateTimeNullableFilter<"ScheduledAction"> | Date | string | null
@@ -63536,6 +63556,7 @@ export namespace Prisma {
     plannedAt?: SortOrder
     timezone?: SortOrder
     status?: SortOrder
+    active?: SortOrder
     attempts?: SortOrder
     maxAttempts?: SortOrder
     retryAt?: SortOrderInput | SortOrder
@@ -63561,6 +63582,7 @@ export namespace Prisma {
     plannedAt?: DateTimeFilter<"ScheduledAction"> | Date | string
     timezone?: StringFilter<"ScheduledAction"> | string
     status?: EnumScheduledActionStatusFilter<"ScheduledAction"> | $Enums.ScheduledActionStatus
+    active?: BoolFilter<"ScheduledAction"> | boolean
     attempts?: IntFilter<"ScheduledAction"> | number
     maxAttempts?: IntFilter<"ScheduledAction"> | number
     retryAt?: DateTimeNullableFilter<"ScheduledAction"> | Date | string | null
@@ -63583,6 +63605,7 @@ export namespace Prisma {
     plannedAt?: SortOrder
     timezone?: SortOrder
     status?: SortOrder
+    active?: SortOrder
     attempts?: SortOrder
     maxAttempts?: SortOrder
     retryAt?: SortOrderInput | SortOrder
@@ -63613,6 +63636,7 @@ export namespace Prisma {
     plannedAt?: DateTimeWithAggregatesFilter<"ScheduledAction"> | Date | string
     timezone?: StringWithAggregatesFilter<"ScheduledAction"> | string
     status?: EnumScheduledActionStatusWithAggregatesFilter<"ScheduledAction"> | $Enums.ScheduledActionStatus
+    active?: BoolWithAggregatesFilter<"ScheduledAction"> | boolean
     attempts?: IntWithAggregatesFilter<"ScheduledAction"> | number
     maxAttempts?: IntWithAggregatesFilter<"ScheduledAction"> | number
     retryAt?: DateTimeNullableWithAggregatesFilter<"ScheduledAction"> | Date | string | null
@@ -67519,6 +67543,7 @@ export namespace Prisma {
     plannedAt: Date | string
     timezone: string
     status?: $Enums.ScheduledActionStatus
+    active?: boolean
     attempts?: number
     maxAttempts?: number
     retryAt?: Date | string | null
@@ -67541,6 +67566,7 @@ export namespace Prisma {
     plannedAt: Date | string
     timezone: string
     status?: $Enums.ScheduledActionStatus
+    active?: boolean
     attempts?: number
     maxAttempts?: number
     retryAt?: Date | string | null
@@ -67563,6 +67589,7 @@ export namespace Prisma {
     plannedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     timezone?: StringFieldUpdateOperationsInput | string
     status?: EnumScheduledActionStatusFieldUpdateOperationsInput | $Enums.ScheduledActionStatus
+    active?: BoolFieldUpdateOperationsInput | boolean
     attempts?: IntFieldUpdateOperationsInput | number
     maxAttempts?: IntFieldUpdateOperationsInput | number
     retryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -67585,6 +67612,7 @@ export namespace Prisma {
     plannedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     timezone?: StringFieldUpdateOperationsInput | string
     status?: EnumScheduledActionStatusFieldUpdateOperationsInput | $Enums.ScheduledActionStatus
+    active?: BoolFieldUpdateOperationsInput | boolean
     attempts?: IntFieldUpdateOperationsInput | number
     maxAttempts?: IntFieldUpdateOperationsInput | number
     retryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -67607,6 +67635,7 @@ export namespace Prisma {
     plannedAt: Date | string
     timezone: string
     status?: $Enums.ScheduledActionStatus
+    active?: boolean
     attempts?: number
     maxAttempts?: number
     retryAt?: Date | string | null
@@ -67629,6 +67658,7 @@ export namespace Prisma {
     plannedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     timezone?: StringFieldUpdateOperationsInput | string
     status?: EnumScheduledActionStatusFieldUpdateOperationsInput | $Enums.ScheduledActionStatus
+    active?: BoolFieldUpdateOperationsInput | boolean
     attempts?: IntFieldUpdateOperationsInput | number
     maxAttempts?: IntFieldUpdateOperationsInput | number
     retryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -67651,6 +67681,7 @@ export namespace Prisma {
     plannedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     timezone?: StringFieldUpdateOperationsInput | string
     status?: EnumScheduledActionStatusFieldUpdateOperationsInput | $Enums.ScheduledActionStatus
+    active?: BoolFieldUpdateOperationsInput | boolean
     attempts?: IntFieldUpdateOperationsInput | number
     maxAttempts?: IntFieldUpdateOperationsInput | number
     retryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -70518,6 +70549,7 @@ export namespace Prisma {
     plannedAt?: SortOrder
     timezone?: SortOrder
     status?: SortOrder
+    active?: SortOrder
     attempts?: SortOrder
     maxAttempts?: SortOrder
     retryAt?: SortOrder
@@ -70545,6 +70577,7 @@ export namespace Prisma {
     plannedAt?: SortOrder
     timezone?: SortOrder
     status?: SortOrder
+    active?: SortOrder
     attempts?: SortOrder
     maxAttempts?: SortOrder
     retryAt?: SortOrder
@@ -70567,6 +70600,7 @@ export namespace Prisma {
     plannedAt?: SortOrder
     timezone?: SortOrder
     status?: SortOrder
+    active?: SortOrder
     attempts?: SortOrder
     maxAttempts?: SortOrder
     retryAt?: SortOrder

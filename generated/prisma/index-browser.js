@@ -658,6 +658,7 @@ exports.Prisma.ScheduledActionScalarFieldEnum = {
   plannedAt: 'plannedAt',
   timezone: 'timezone',
   status: 'status',
+  active: 'active',
   attempts: 'attempts',
   maxAttempts: 'maxAttempts',
   retryAt: 'retryAt',

@@ -327,12 +327,14 @@ export class ResendAdapter implements EmailProviderAdapter {
     html,
     from,
     replyTo,
+    idempotencyKey: _idempotencyKey,
   }: {
     segmentExternalId: string;
     subject: string;
     html: string;
     from: string;
     replyTo?: string;
+    idempotencyKey?: string;
   }) {
     try {
       // Chiamata all'endpoint Broadcast di Resend vedi documentazione 2026

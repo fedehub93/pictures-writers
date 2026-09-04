@@ -4,10 +4,7 @@ import { db } from "@/shared/lib/db";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 
-import {
-  ContentStatus,
-  ScheduledActionType,
-} from "@/generated/prisma";
+import { ContentStatus, ScheduledActionType } from "@/generated/prisma";
 
 import { createPostSeo } from "@/lib/seo";
 import {

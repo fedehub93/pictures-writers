@@ -1,10 +1,7 @@
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
-import {
-  ScheduledActionStatus,
-  ScheduledActionType,
-} from "@/generated/prisma";
+import { ScheduledActionStatus, ScheduledActionType } from "@/generated/prisma";
 
 import { getCalendarEvents } from "../lib/calendar-query";
 import type { CalendarEventStatus, CalendarEventType } from "../types";

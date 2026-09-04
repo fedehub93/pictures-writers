@@ -99,10 +99,7 @@ function findTarget(
   }
 
   if (!target.title || !target.slug) {
-    throw new ScheduledPostError(
-      "VALIDATION_ERROR",
-      "Missing required fields",
-    );
+    throw new ScheduledPostError("VALIDATION_ERROR", "Missing required fields");
   }
 
   return target;
@@ -144,72 +141,74 @@ export async function schedulePost({
     rootId,
   );
 
-  return db.$transaction(async (tx) => {
-    const posts = await loadRootPosts(tx, rootId);
-    const target = findTarget(posts, postId);
+  return db
+    .$transaction(async (tx) => {
+      const posts = await loadRootPosts(tx, rootId);
+      const target = findTarget(posts, postId);
 
-    assertCurrentVersion(posts, target);
+      assertCurrentVersion(posts, target);
 
-    const activeSchedule = posts.find(
-      (post) => post.status === ContentStatus.SCHEDULED,
-    );
-
-    if (activeSchedule) {
-      throw new ScheduledPostError(
-        "CONFLICT",
-        "An active schedule already exists for this post",
+      const activeSchedule = posts.find(
+        (post) => post.status === ContentStatus.SCHEDULED,
       );
-    }
 
-    if (
-      target.status !== ContentStatus.DRAFT &&
-      target.status !== ContentStatus.CHANGED
-    ) {
-      throw new ScheduledPostError(
-        "INVALID_STATE",
-        "Only draft or changed posts can be scheduled",
+      if (activeSchedule) {
+        throw new ScheduledPostError(
+          "CONFLICT",
+          "An active schedule already exists for this post",
+        );
+      }
+
+      if (
+        target.status !== ContentStatus.DRAFT &&
+        target.status !== ContentStatus.CHANGED
+      ) {
+        throw new ScheduledPostError(
+          "INVALID_STATE",
+          "Only draft or changed posts can be scheduled",
+        );
+      }
+
+      const scheduledPost = await tx.post.update({
+        where: { id: postId },
+        data: {
+          status: ContentStatus.SCHEDULED,
+          scheduledAt,
+          preSchedulingStatus: target.status,
+        },
+        include: { seo: true },
+      });
+
+      // Compatibility: create the new ScheduledAction representation. The
+      // transaction does not block on the external scheduling table because
+      // ScheduledAction is a separate aggregate; we use the idempotency key
+      // to detect an existing active action outside this transaction.
+      return scheduledPost;
+    })
+    .then(async (scheduledPost) => {
+      const existing = await getActiveScheduledActionByTarget(
+        SCHEDULER_TARGET_TYPES.POST_ROOT,
+        rootId,
       );
-    }
 
-    const scheduledPost = await tx.post.update({
-      where: { id: postId },
-      data: {
-        status: ContentStatus.SCHEDULED,
-        scheduledAt,
-        preSchedulingStatus: target.status,
-      },
-      include: { seo: true },
+      if (existing) {
+        throw new ScheduledPostError(
+          "CONFLICT",
+          "An active schedule already exists for this post",
+        );
+      }
+
+      await createScheduledAction({
+        type: ScheduledActionType.PUBLISH_POST,
+        targetType: SCHEDULER_TARGET_TYPES.POST_ROOT,
+        targetId: rootId,
+        plannedAt: scheduledAt,
+        timezone,
+        idempotencyKey,
+      });
+
+      return scheduledPost;
     });
-
-    // Compatibility: create the new ScheduledAction representation. The
-    // transaction does not block on the external scheduling table because
-    // ScheduledAction is a separate aggregate; we use the idempotency key
-    // to detect an existing active action outside this transaction.
-    return scheduledPost;
-  }).then(async (scheduledPost) => {
-    const existing = await getActiveScheduledActionByTarget(
-      SCHEDULER_TARGET_TYPES.POST_ROOT,
-      rootId,
-    );
-
-    if (existing) {
-      throw new ScheduledPostError(
-        "CONFLICT",
-        "An active schedule already exists for this post",
-      );
-    }
-
-    await createScheduledAction({
-      type: ScheduledActionType.PUBLISH_POST,
-      targetType: SCHEDULER_TARGET_TYPES.POST_ROOT,
-      targetId: rootId,
-      plannedAt: scheduledAt,
-      timezone,
-      idempotencyKey,
-    });
-
-    return scheduledPost;
-  });
 }
 
 export async function reschedulePost({
@@ -228,38 +227,40 @@ export async function reschedulePost({
 
   assertFutureScheduledAt(scheduledAt, now);
 
-  return db.$transaction(async (tx) => {
-    const posts = await loadRootPosts(tx, rootId);
-    const target = findTarget(posts, postId);
+  return db
+    .$transaction(async (tx) => {
+      const posts = await loadRootPosts(tx, rootId);
+      const target = findTarget(posts, postId);
 
-    if (target.status !== ContentStatus.SCHEDULED) {
-      throw new ScheduledPostError(
-        "INVALID_STATE",
-        "Only scheduled posts can be rescheduled",
+      if (target.status !== ContentStatus.SCHEDULED) {
+        throw new ScheduledPostError(
+          "INVALID_STATE",
+          "Only scheduled posts can be rescheduled",
+        );
+      }
+
+      const rescheduledPost = await tx.post.update({
+        where: { id: postId },
+        data: {
+          scheduledAt,
+        },
+        include: { seo: true },
+      });
+
+      return rescheduledPost;
+    })
+    .then(async (rescheduledPost) => {
+      const action = await getActiveScheduledActionByTarget(
+        SCHEDULER_TARGET_TYPES.POST_ROOT,
+        rootId,
       );
-    }
 
-    const rescheduledPost = await tx.post.update({
-      where: { id: postId },
-      data: {
-        scheduledAt,
-      },
-      include: { seo: true },
+      if (action) {
+        await rescheduleScheduledAction(action.id, scheduledAt, timezone, now);
+      }
+
+      return rescheduledPost;
     });
-
-    return rescheduledPost;
-  }).then(async (rescheduledPost) => {
-    const action = await getActiveScheduledActionByTarget(
-      SCHEDULER_TARGET_TYPES.POST_ROOT,
-      rootId,
-    );
-
-    if (action) {
-      await rescheduleScheduledAction(action.id, scheduledAt, timezone, now);
-    }
-
-    return rescheduledPost;
-  });
 }
 
 export async function cancelSchedule({
@@ -273,41 +274,42 @@ export async function cancelSchedule({
     );
   }
 
-  return db.$transaction(async (tx) => {
-    const posts = await loadRootPosts(tx, rootId);
-    const target = findTarget(posts, postId);
+  return db
+    .$transaction(async (tx) => {
+      const posts = await loadRootPosts(tx, rootId);
+      const target = findTarget(posts, postId);
 
-    if (target.status !== ContentStatus.SCHEDULED) {
-      throw new ScheduledPostError(
-        "INVALID_STATE",
-        "Only scheduled posts can be unscheduled",
+      if (target.status !== ContentStatus.SCHEDULED) {
+        throw new ScheduledPostError(
+          "INVALID_STATE",
+          "Only scheduled posts can be unscheduled",
+        );
+      }
+
+      const restoredStatus = target.preSchedulingStatus ?? ContentStatus.DRAFT;
+
+      const restoredPost = await tx.post.update({
+        where: { id: postId },
+        data: {
+          status: restoredStatus,
+          scheduledAt: null,
+          preSchedulingStatus: null,
+        },
+        include: { seo: true },
+      });
+
+      return restoredPost;
+    })
+    .then(async (restoredPost) => {
+      const action = await getActiveScheduledActionByTarget(
+        SCHEDULER_TARGET_TYPES.POST_ROOT,
+        rootId,
       );
-    }
 
-    const restoredStatus =
-      target.preSchedulingStatus ?? ContentStatus.DRAFT;
+      if (action) {
+        await cancelScheduledAction(action.id);
+      }
 
-    const restoredPost = await tx.post.update({
-      where: { id: postId },
-      data: {
-        status: restoredStatus,
-        scheduledAt: null,
-        preSchedulingStatus: null,
-      },
-      include: { seo: true },
+      return restoredPost;
     });
-
-    return restoredPost;
-  }).then(async (restoredPost) => {
-    const action = await getActiveScheduledActionByTarget(
-      SCHEDULER_TARGET_TYPES.POST_ROOT,
-      rootId,
-    );
-
-    if (action) {
-      await cancelScheduledAction(action.id);
-    }
-
-    return restoredPost;
-  });
 }

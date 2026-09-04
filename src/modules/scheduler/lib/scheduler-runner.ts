@@ -61,13 +61,18 @@ async function executeAction(
   }
 
   try {
-    await handler(action, { now });
+    const handlerResult = await handler(action, { now });
+    const providerId =
+      handlerResult && typeof handlerResult === "object"
+        ? (handlerResult.providerId ?? null)
+        : null;
 
     await updateScheduledActionResult(action.id, {
       status: ScheduledActionStatus.SUCCEEDED,
       attempts: action.attempts + 1,
       executedAt: now,
       retryAt: null,
+      providerId,
       lastError: null,
     });
 

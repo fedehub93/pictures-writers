@@ -64,6 +64,7 @@ export interface EmailProviderAdapter {
     html: string;
     from: string;
     replyTo?: string;
+    idempotencyKey?: string;
   }): Promise<{
     success: boolean;
     externalCampaignId?: string;

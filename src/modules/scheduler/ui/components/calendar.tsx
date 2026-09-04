@@ -27,7 +27,7 @@ import type {
 } from "@/modules/scheduler/types";
 
 import { PostCalendar } from "./post-calendar";
-import { SchedulerToolbar } from "./scheduler-toolbar";
+import { SchedulerToolbar } from "./schedule-toolbar";
 
 type ViewType = "month" | "week";
 
