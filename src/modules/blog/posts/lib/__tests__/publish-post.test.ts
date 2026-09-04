@@ -5,6 +5,7 @@ import { db } from "@/shared/lib/db";
 import { ContentStatus } from "@/generated/prisma";
 
 import { publishPost, PublishPostError } from "../publish-post";
+import { cancelSchedule, schedulePost } from "../schedule-post";
 
 describe("publishPost workflow", () => {
   const createdRootIds: string[] = [];
@@ -56,6 +57,9 @@ describe("publishPost workflow", () => {
 
   afterEach(async () => {
     if (createdRootIds.length > 0) {
+      await db.scheduledAction.deleteMany({
+        where: { targetId: { in: createdRootIds } },
+      });
       await db.post.deleteMany({
         where: { rootId: { in: createdRootIds } },
       });
@@ -207,6 +211,17 @@ describe("publishPost workflow", () => {
       });
     });
 
+    it("throws when the post slug is missing", async () => {
+      const post = await createPost({ slug: "" });
+
+      await expect(
+        publishPost({ postId: post.id, rootId: post.rootId! }),
+      ).rejects.toMatchObject({
+        code: "VALIDATION_ERROR",
+        message: "Missing required fields",
+      });
+    });
+
     it("is a no-op when the target version is already published", async () => {
       const firstPublishAt = new Date("2025-01-01T00:00:00.000Z");
       const versionOne = await createPost({
@@ -282,6 +297,86 @@ describe("publishPost workflow", () => {
       expect(republished.status).toBe(ContentStatus.PUBLISHED);
       expect(republished.isLatest).toBe(true);
       expect(republished.publishedAt.toISOString()).toBe(now.toISOString());
+    });
+  });
+
+  describe("scheduled mode", () => {
+    it("publishes a due scheduled post in scheduled mode", async () => {
+      const scheduleNow = new Date("2025-06-01T10:00:00.000Z");
+      const publishNow = new Date("2025-06-01T12:00:00.000Z");
+      const post = await createPost({ status: ContentStatus.DRAFT });
+
+      await schedulePost({
+        postId: post.id,
+        rootId: post.rootId!,
+        scheduledAt: new Date("2025-06-01T11:00:00.000Z"),
+        now: scheduleNow,
+      });
+
+      const published = await publishPost({
+        postId: post.id,
+        rootId: post.rootId!,
+        now: publishNow,
+        mode: "scheduled",
+      });
+
+      expect(published.status).toBe(ContentStatus.PUBLISHED);
+      expect(published.scheduledAt).toBeNull();
+      expect(published.publishedAt.toISOString()).toBe(publishNow.toISOString());
+    });
+
+    it("rejects publishing a scheduled post whose time is still in the future", async () => {
+      const scheduleNow = new Date("2025-06-01T10:00:00.000Z");
+      const post = await createPost({ status: ContentStatus.DRAFT });
+
+      await schedulePost({
+        postId: post.id,
+        rootId: post.rootId!,
+        scheduledAt: new Date("2025-06-01T11:00:00.000Z"),
+        now: scheduleNow,
+      });
+
+      await expect(
+        publishPost({
+          postId: post.id,
+          rootId: post.rootId!,
+          now: scheduleNow,
+          mode: "scheduled",
+        }),
+      ).rejects.toMatchObject({
+        code: "INVALID_STATE",
+        message: "Scheduled time is in the future",
+      });
+    });
+
+    it("rejects publishing a post that is no longer scheduled", async () => {
+      const scheduleNow = new Date("2025-06-01T10:00:00.000Z");
+      const publishNow = new Date("2025-06-01T12:00:00.000Z");
+      const post = await createPost({ status: ContentStatus.DRAFT });
+
+      await schedulePost({
+        postId: post.id,
+        rootId: post.rootId!,
+        scheduledAt: new Date("2025-06-01T11:00:00.000Z"),
+        now: scheduleNow,
+      });
+
+      await cancelSchedule({
+        postId: post.id,
+        rootId: post.rootId!,
+      });
+
+      await expect(
+        publishPost({
+          postId: post.id,
+          rootId: post.rootId!,
+          now: publishNow,
+          mode: "scheduled",
+        }),
+      ).rejects.toMatchObject({
+        code: "INVALID_STATE",
+        message: "Post is no longer scheduled",
+      });
     });
   });
 });

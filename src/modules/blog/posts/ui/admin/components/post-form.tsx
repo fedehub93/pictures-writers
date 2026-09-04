@@ -4,12 +4,13 @@ import { useController, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { parse, set } from "date-fns";
 
 import { useTRPC } from "@/trpc/client";
 
 import { Form, FormMessage } from "@/shared/ui/form";
+import { Field, FieldLabel } from "@/shared/ui/field";
 
 import { Button } from "@/shared/ui/button";
 
@@ -18,6 +19,7 @@ import { generateSlug } from "@/shared/lib/slug";
 import { GenericInput } from "@/shared/components/form-component/generic-input";
 import { SlugInput } from "@/shared/components/form-component/slug-input";
 import { ScheduleDatePicker } from "@/shared/components/schedule-date-picker";
+import { TIME_PICKER_FORMAT } from "@/shared/components/time-picker";
 
 import { postInsertSchema, type PostInsertValues } from "../../../schemas";
 
@@ -38,6 +40,11 @@ export const PostForm = ({ data, onSuccess, onCancel }: PostFormProps) => {
   const queryClient = useQueryClient();
   const [filters, _] = usePostsFilters();
 
+  const timeZone = useMemo(
+    () => Intl.DateTimeFormat().resolvedOptions().timeZone,
+    [],
+  );
+
   const form = useForm<PostInsertValues>({
     resolver: zodResolver(postInsertSchema),
     defaultValues: {
@@ -53,6 +60,11 @@ export const PostForm = ({ data, onSuccess, onCancel }: PostFormProps) => {
         await queryClient.invalidateQueries(
           trpc.posts.getMany.queryOptions(filters),
         );
+        // The calendar shows scheduled actions and published posts; a post
+        // created from the schedule page must appear immediately.
+        await queryClient.invalidateQueries(
+          trpc.scheduler.getCalendarEvents.queryFilter(),
+        );
         toast.success("Post created successfully!");
         onSuccess?.();
       },
@@ -67,7 +79,7 @@ export const PostForm = ({ data, onSuccess, onCancel }: PostFormProps) => {
   const onSubmit = (values: PostInsertValues) => {
     let scheduledAt: Date | null = null;
     if (date) {
-      const parsedTime = parse(time, "h:mm a", new Date());
+      const parsedTime = parse(time, TIME_PICKER_FORMAT, new Date());
       if (!Number.isNaN(parsedTime.getTime())) {
         scheduledAt = set(date, {
           hours: parsedTime.getHours(),
@@ -77,7 +89,7 @@ export const PostForm = ({ data, onSuccess, onCancel }: PostFormProps) => {
         });
       }
     }
-    createPost.mutate({ ...values, scheduledAt });
+    createPost.mutate({ ...values, scheduledAt, timezone: timeZone });
   };
 
   const { field: fieldTitle } = useController({
@@ -115,14 +127,16 @@ export const PostForm = ({ data, onSuccess, onCancel }: PostFormProps) => {
           buttonOnClick={onSlugCreate}
         />
         {data?.scheduledAt && (
-          <ScheduleDatePicker
-            date={date}
-            setDate={setDate}
-            time={time}
-            setTime={setTime}
-            align="center"
-            
-          />
+          <Field className="gap-2">
+            <FieldLabel>Date & Time</FieldLabel>
+            <ScheduleDatePicker
+              date={date}
+              setDate={setDate}
+              time={time}
+              setTime={setTime}
+              align="center"
+            />
+          </Field>
         )}
 
         <div className="flex justify-between gap-x-2 mt-8">

@@ -51,8 +51,8 @@ export const SlugInput = <T extends FieldValues>({
                   onChange?.(e); // Chiama anche il tuo onChange personalizzato se presente
                 }}
               />
-              <Button type="button" variant="secondary" onClick={buttonOnClick}>
-                <Sparkles className="h-4 w-4" />
+              <Button type="button" variant="secondary" className="h-8" onClick={buttonOnClick}>
+                <Sparkles className="size-4" />
               </Button>
             </div>
           </FormControl>

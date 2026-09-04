@@ -416,6 +416,11 @@ export type Notification = $Result.DefaultSelection<Prisma.$NotificationPayload>
  * 
  */
 export type SocialChannel = $Result.DefaultSelection<Prisma.$SocialChannelPayload>
+/**
+ * Model ScheduledAction
+ * 
+ */
+export type ScheduledAction = $Result.DefaultSelection<Prisma.$ScheduledActionPayload>
 
 /**
  * Enums
@@ -584,6 +589,26 @@ export const SocialEntityType: {
 
 export type SocialEntityType = (typeof SocialEntityType)[keyof typeof SocialEntityType]
 
+
+export const ScheduledActionType: {
+  PUBLISH_POST: 'PUBLISH_POST',
+  SEND_EMAIL: 'SEND_EMAIL'
+};
+
+export type ScheduledActionType = (typeof ScheduledActionType)[keyof typeof ScheduledActionType]
+
+
+export const ScheduledActionStatus: {
+  SCHEDULED: 'SCHEDULED',
+  PROCESSING: 'PROCESSING',
+  RETRY_WAIT: 'RETRY_WAIT',
+  SUCCEEDED: 'SUCCEEDED',
+  FAILED: 'FAILED',
+  CANCELED: 'CANCELED'
+};
+
+export type ScheduledActionStatus = (typeof ScheduledActionStatus)[keyof typeof ScheduledActionStatus]
+
 }
 
 export type WidgetSection = $Enums.WidgetSection
@@ -653,6 +678,14 @@ export const SocialKey: typeof $Enums.SocialKey
 export type SocialEntityType = $Enums.SocialEntityType
 
 export const SocialEntityType: typeof $Enums.SocialEntityType
+
+export type ScheduledActionType = $Enums.ScheduledActionType
+
+export const ScheduledActionType: typeof $Enums.ScheduledActionType
+
+export type ScheduledActionStatus = $Enums.ScheduledActionStatus
+
+export const ScheduledActionStatus: typeof $Enums.ScheduledActionStatus
 
 /**
  * ##  Prisma Client ʲˢ
@@ -1214,6 +1247,16 @@ export class PrismaClient<
     * ```
     */
   get socialChannel(): Prisma.SocialChannelDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.scheduledAction`: Exposes CRUD operations for the **ScheduledAction** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ScheduledActions
+    * const scheduledActions = await prisma.scheduledAction.findMany()
+    * ```
+    */
+  get scheduledAction(): Prisma.ScheduledActionDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1704,7 +1747,8 @@ export namespace Prisma {
     Genre: 'Genre',
     Impression: 'Impression',
     Notification: 'Notification',
-    SocialChannel: 'SocialChannel'
+    SocialChannel: 'SocialChannel',
+    ScheduledAction: 'ScheduledAction'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1720,7 +1764,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "language" | "settings" | "widget" | "session" | "verification" | "user" | "account" | "verificationToken" | "passwordResetToken" | "media" | "seo" | "page" | "post" | "postAuthor" | "category" | "postCategory" | "tag" | "emailSetting" | "emailTemplate" | "emailAudience" | "emailContact" | "emailContactInteraction" | "emailSingleSend" | "emailSubscriptionToken" | "emailSendLog" | "emailSingleSendLog" | "product" | "productCategory" | "productGallery" | "productExtra" | "productFAQ" | "reviews" | "adCampaign" | "adBlock" | "adItem" | "purchase" | "contactForm" | "form" | "formSubmission" | "format" | "genre" | "impression" | "notification" | "socialChannel"
+      modelProps: "language" | "settings" | "widget" | "session" | "verification" | "user" | "account" | "verificationToken" | "passwordResetToken" | "media" | "seo" | "page" | "post" | "postAuthor" | "category" | "postCategory" | "tag" | "emailSetting" | "emailTemplate" | "emailAudience" | "emailContact" | "emailContactInteraction" | "emailSingleSend" | "emailSubscriptionToken" | "emailSendLog" | "emailSingleSendLog" | "product" | "productCategory" | "productGallery" | "productExtra" | "productFAQ" | "reviews" | "adCampaign" | "adBlock" | "adItem" | "purchase" | "contactForm" | "form" | "formSubmission" | "format" | "genre" | "impression" | "notification" | "socialChannel" | "scheduledAction"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -4980,6 +5024,80 @@ export namespace Prisma {
           }
         }
       }
+      ScheduledAction: {
+        payload: Prisma.$ScheduledActionPayload<ExtArgs>
+        fields: Prisma.ScheduledActionFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ScheduledActionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduledActionPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ScheduledActionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduledActionPayload>
+          }
+          findFirst: {
+            args: Prisma.ScheduledActionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduledActionPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ScheduledActionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduledActionPayload>
+          }
+          findMany: {
+            args: Prisma.ScheduledActionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduledActionPayload>[]
+          }
+          create: {
+            args: Prisma.ScheduledActionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduledActionPayload>
+          }
+          createMany: {
+            args: Prisma.ScheduledActionCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ScheduledActionCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduledActionPayload>[]
+          }
+          delete: {
+            args: Prisma.ScheduledActionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduledActionPayload>
+          }
+          update: {
+            args: Prisma.ScheduledActionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduledActionPayload>
+          }
+          deleteMany: {
+            args: Prisma.ScheduledActionDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ScheduledActionUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ScheduledActionUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduledActionPayload>[]
+          }
+          upsert: {
+            args: Prisma.ScheduledActionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ScheduledActionPayload>
+          }
+          aggregate: {
+            args: Prisma.ScheduledActionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateScheduledAction>
+          }
+          groupBy: {
+            args: Prisma.ScheduledActionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ScheduledActionGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ScheduledActionCountArgs<ExtArgs>
+            result: $Utils.Optional<ScheduledActionCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -5147,6 +5265,7 @@ export namespace Prisma {
     impression?: ImpressionOmit
     notification?: NotificationOmit
     socialChannel?: SocialChannelOmit
+    scheduledAction?: ScheduledActionOmit
   }
 
   /* Types for Logging */
@@ -57488,6 +57607,1277 @@ export namespace Prisma {
 
 
   /**
+   * Model ScheduledAction
+   */
+
+  export type AggregateScheduledAction = {
+    _count: ScheduledActionCountAggregateOutputType | null
+    _avg: ScheduledActionAvgAggregateOutputType | null
+    _sum: ScheduledActionSumAggregateOutputType | null
+    _min: ScheduledActionMinAggregateOutputType | null
+    _max: ScheduledActionMaxAggregateOutputType | null
+  }
+
+  export type ScheduledActionAvgAggregateOutputType = {
+    attempts: number | null
+    maxAttempts: number | null
+  }
+
+  export type ScheduledActionSumAggregateOutputType = {
+    attempts: number | null
+    maxAttempts: number | null
+  }
+
+  export type ScheduledActionMinAggregateOutputType = {
+    id: string | null
+    type: $Enums.ScheduledActionType | null
+    targetType: string | null
+    targetId: string | null
+    plannedAt: Date | null
+    timezone: string | null
+    status: $Enums.ScheduledActionStatus | null
+    active: boolean | null
+    attempts: number | null
+    maxAttempts: number | null
+    retryAt: Date | null
+    leaseId: string | null
+    leaseExpiresAt: Date | null
+    idempotencyKey: string | null
+    providerId: string | null
+    lastError: string | null
+    executedAt: Date | null
+    canceledAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ScheduledActionMaxAggregateOutputType = {
+    id: string | null
+    type: $Enums.ScheduledActionType | null
+    targetType: string | null
+    targetId: string | null
+    plannedAt: Date | null
+    timezone: string | null
+    status: $Enums.ScheduledActionStatus | null
+    active: boolean | null
+    attempts: number | null
+    maxAttempts: number | null
+    retryAt: Date | null
+    leaseId: string | null
+    leaseExpiresAt: Date | null
+    idempotencyKey: string | null
+    providerId: string | null
+    lastError: string | null
+    executedAt: Date | null
+    canceledAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ScheduledActionCountAggregateOutputType = {
+    id: number
+    type: number
+    targetType: number
+    targetId: number
+    plannedAt: number
+    timezone: number
+    status: number
+    active: number
+    attempts: number
+    maxAttempts: number
+    retryAt: number
+    leaseId: number
+    leaseExpiresAt: number
+    idempotencyKey: number
+    providerId: number
+    lastError: number
+    executedAt: number
+    canceledAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ScheduledActionAvgAggregateInputType = {
+    attempts?: true
+    maxAttempts?: true
+  }
+
+  export type ScheduledActionSumAggregateInputType = {
+    attempts?: true
+    maxAttempts?: true
+  }
+
+  export type ScheduledActionMinAggregateInputType = {
+    id?: true
+    type?: true
+    targetType?: true
+    targetId?: true
+    plannedAt?: true
+    timezone?: true
+    status?: true
+    active?: true
+    attempts?: true
+    maxAttempts?: true
+    retryAt?: true
+    leaseId?: true
+    leaseExpiresAt?: true
+    idempotencyKey?: true
+    providerId?: true
+    lastError?: true
+    executedAt?: true
+    canceledAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ScheduledActionMaxAggregateInputType = {
+    id?: true
+    type?: true
+    targetType?: true
+    targetId?: true
+    plannedAt?: true
+    timezone?: true
+    status?: true
+    active?: true
+    attempts?: true
+    maxAttempts?: true
+    retryAt?: true
+    leaseId?: true
+    leaseExpiresAt?: true
+    idempotencyKey?: true
+    providerId?: true
+    lastError?: true
+    executedAt?: true
+    canceledAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ScheduledActionCountAggregateInputType = {
+    id?: true
+    type?: true
+    targetType?: true
+    targetId?: true
+    plannedAt?: true
+    timezone?: true
+    status?: true
+    active?: true
+    attempts?: true
+    maxAttempts?: true
+    retryAt?: true
+    leaseId?: true
+    leaseExpiresAt?: true
+    idempotencyKey?: true
+    providerId?: true
+    lastError?: true
+    executedAt?: true
+    canceledAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ScheduledActionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ScheduledAction to aggregate.
+     */
+    where?: ScheduledActionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ScheduledActions to fetch.
+     */
+    orderBy?: ScheduledActionOrderByWithRelationInput | ScheduledActionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ScheduledActionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ScheduledActions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ScheduledActions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ScheduledActions
+    **/
+    _count?: true | ScheduledActionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ScheduledActionAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ScheduledActionSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ScheduledActionMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ScheduledActionMaxAggregateInputType
+  }
+
+  export type GetScheduledActionAggregateType<T extends ScheduledActionAggregateArgs> = {
+        [P in keyof T & keyof AggregateScheduledAction]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateScheduledAction[P]>
+      : GetScalarType<T[P], AggregateScheduledAction[P]>
+  }
+
+
+
+
+  export type ScheduledActionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ScheduledActionWhereInput
+    orderBy?: ScheduledActionOrderByWithAggregationInput | ScheduledActionOrderByWithAggregationInput[]
+    by: ScheduledActionScalarFieldEnum[] | ScheduledActionScalarFieldEnum
+    having?: ScheduledActionScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ScheduledActionCountAggregateInputType | true
+    _avg?: ScheduledActionAvgAggregateInputType
+    _sum?: ScheduledActionSumAggregateInputType
+    _min?: ScheduledActionMinAggregateInputType
+    _max?: ScheduledActionMaxAggregateInputType
+  }
+
+  export type ScheduledActionGroupByOutputType = {
+    id: string
+    type: $Enums.ScheduledActionType
+    targetType: string
+    targetId: string
+    plannedAt: Date
+    timezone: string
+    status: $Enums.ScheduledActionStatus
+    active: boolean
+    attempts: number
+    maxAttempts: number
+    retryAt: Date | null
+    leaseId: string | null
+    leaseExpiresAt: Date | null
+    idempotencyKey: string
+    providerId: string | null
+    lastError: string | null
+    executedAt: Date | null
+    canceledAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: ScheduledActionCountAggregateOutputType | null
+    _avg: ScheduledActionAvgAggregateOutputType | null
+    _sum: ScheduledActionSumAggregateOutputType | null
+    _min: ScheduledActionMinAggregateOutputType | null
+    _max: ScheduledActionMaxAggregateOutputType | null
+  }
+
+  type GetScheduledActionGroupByPayload<T extends ScheduledActionGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ScheduledActionGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ScheduledActionGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ScheduledActionGroupByOutputType[P]>
+            : GetScalarType<T[P], ScheduledActionGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ScheduledActionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    type?: boolean
+    targetType?: boolean
+    targetId?: boolean
+    plannedAt?: boolean
+    timezone?: boolean
+    status?: boolean
+    active?: boolean
+    attempts?: boolean
+    maxAttempts?: boolean
+    retryAt?: boolean
+    leaseId?: boolean
+    leaseExpiresAt?: boolean
+    idempotencyKey?: boolean
+    providerId?: boolean
+    lastError?: boolean
+    executedAt?: boolean
+    canceledAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["scheduledAction"]>
+
+  export type ScheduledActionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    type?: boolean
+    targetType?: boolean
+    targetId?: boolean
+    plannedAt?: boolean
+    timezone?: boolean
+    status?: boolean
+    active?: boolean
+    attempts?: boolean
+    maxAttempts?: boolean
+    retryAt?: boolean
+    leaseId?: boolean
+    leaseExpiresAt?: boolean
+    idempotencyKey?: boolean
+    providerId?: boolean
+    lastError?: boolean
+    executedAt?: boolean
+    canceledAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["scheduledAction"]>
+
+  export type ScheduledActionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    type?: boolean
+    targetType?: boolean
+    targetId?: boolean
+    plannedAt?: boolean
+    timezone?: boolean
+    status?: boolean
+    active?: boolean
+    attempts?: boolean
+    maxAttempts?: boolean
+    retryAt?: boolean
+    leaseId?: boolean
+    leaseExpiresAt?: boolean
+    idempotencyKey?: boolean
+    providerId?: boolean
+    lastError?: boolean
+    executedAt?: boolean
+    canceledAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["scheduledAction"]>
+
+  export type ScheduledActionSelectScalar = {
+    id?: boolean
+    type?: boolean
+    targetType?: boolean
+    targetId?: boolean
+    plannedAt?: boolean
+    timezone?: boolean
+    status?: boolean
+    active?: boolean
+    attempts?: boolean
+    maxAttempts?: boolean
+    retryAt?: boolean
+    leaseId?: boolean
+    leaseExpiresAt?: boolean
+    idempotencyKey?: boolean
+    providerId?: boolean
+    lastError?: boolean
+    executedAt?: boolean
+    canceledAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ScheduledActionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "type" | "targetType" | "targetId" | "plannedAt" | "timezone" | "status" | "active" | "attempts" | "maxAttempts" | "retryAt" | "leaseId" | "leaseExpiresAt" | "idempotencyKey" | "providerId" | "lastError" | "executedAt" | "canceledAt" | "createdAt" | "updatedAt", ExtArgs["result"]["scheduledAction"]>
+
+  export type $ScheduledActionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ScheduledAction"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      type: $Enums.ScheduledActionType
+      targetType: string
+      targetId: string
+      /**
+       * Absolute instant at which the action should execute.
+       */
+      plannedAt: Date
+      /**
+       * IANA timezone identifier captured from the browser when scheduling.
+       */
+      timezone: string
+      status: $Enums.ScheduledActionStatus
+      /**
+       * True while the action is eligible for execution. Terminal states flip
+       * this to false so a target can have a durable history and still accept a
+       * new active action later (e.g. a reusable EmailSingleSend).
+       */
+      active: boolean
+      /**
+       * Number of execution attempts already performed.
+       */
+      attempts: number
+      /**
+       * Maximum number of attempts before the action is marked FAILED.
+       */
+      maxAttempts: number
+      /**
+       * When the action should become eligible for the next retry.
+       */
+      retryAt: Date | null
+      /**
+       * Opaque identifier of the current worker claim/lease.
+       */
+      leaseId: string | null
+      /**
+       * Lease expiration time; an expired lease makes the action recoverable.
+       */
+      leaseExpiresAt: Date | null
+      /**
+       * Stable idempotency key reused across retries for the same action.
+       */
+      idempotencyKey: string
+      /**
+       * Provider-side identifier when applicable (e.g. email provider send id).
+       */
+      providerId: string | null
+      /**
+       * Human-readable failure reason from the last attempt.
+       */
+      lastError: string | null
+      /**
+       * Actual execution time.
+       */
+      executedAt: Date | null
+      canceledAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["scheduledAction"]>
+    composites: {}
+  }
+
+  type ScheduledActionGetPayload<S extends boolean | null | undefined | ScheduledActionDefaultArgs> = $Result.GetResult<Prisma.$ScheduledActionPayload, S>
+
+  type ScheduledActionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ScheduledActionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ScheduledActionCountAggregateInputType | true
+    }
+
+  export interface ScheduledActionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ScheduledAction'], meta: { name: 'ScheduledAction' } }
+    /**
+     * Find zero or one ScheduledAction that matches the filter.
+     * @param {ScheduledActionFindUniqueArgs} args - Arguments to find a ScheduledAction
+     * @example
+     * // Get one ScheduledAction
+     * const scheduledAction = await prisma.scheduledAction.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ScheduledActionFindUniqueArgs>(args: SelectSubset<T, ScheduledActionFindUniqueArgs<ExtArgs>>): Prisma__ScheduledActionClient<$Result.GetResult<Prisma.$ScheduledActionPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ScheduledAction that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ScheduledActionFindUniqueOrThrowArgs} args - Arguments to find a ScheduledAction
+     * @example
+     * // Get one ScheduledAction
+     * const scheduledAction = await prisma.scheduledAction.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ScheduledActionFindUniqueOrThrowArgs>(args: SelectSubset<T, ScheduledActionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ScheduledActionClient<$Result.GetResult<Prisma.$ScheduledActionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ScheduledAction that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduledActionFindFirstArgs} args - Arguments to find a ScheduledAction
+     * @example
+     * // Get one ScheduledAction
+     * const scheduledAction = await prisma.scheduledAction.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ScheduledActionFindFirstArgs>(args?: SelectSubset<T, ScheduledActionFindFirstArgs<ExtArgs>>): Prisma__ScheduledActionClient<$Result.GetResult<Prisma.$ScheduledActionPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ScheduledAction that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduledActionFindFirstOrThrowArgs} args - Arguments to find a ScheduledAction
+     * @example
+     * // Get one ScheduledAction
+     * const scheduledAction = await prisma.scheduledAction.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ScheduledActionFindFirstOrThrowArgs>(args?: SelectSubset<T, ScheduledActionFindFirstOrThrowArgs<ExtArgs>>): Prisma__ScheduledActionClient<$Result.GetResult<Prisma.$ScheduledActionPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ScheduledActions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduledActionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ScheduledActions
+     * const scheduledActions = await prisma.scheduledAction.findMany()
+     * 
+     * // Get first 10 ScheduledActions
+     * const scheduledActions = await prisma.scheduledAction.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const scheduledActionWithIdOnly = await prisma.scheduledAction.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ScheduledActionFindManyArgs>(args?: SelectSubset<T, ScheduledActionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScheduledActionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ScheduledAction.
+     * @param {ScheduledActionCreateArgs} args - Arguments to create a ScheduledAction.
+     * @example
+     * // Create one ScheduledAction
+     * const ScheduledAction = await prisma.scheduledAction.create({
+     *   data: {
+     *     // ... data to create a ScheduledAction
+     *   }
+     * })
+     * 
+     */
+    create<T extends ScheduledActionCreateArgs>(args: SelectSubset<T, ScheduledActionCreateArgs<ExtArgs>>): Prisma__ScheduledActionClient<$Result.GetResult<Prisma.$ScheduledActionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ScheduledActions.
+     * @param {ScheduledActionCreateManyArgs} args - Arguments to create many ScheduledActions.
+     * @example
+     * // Create many ScheduledActions
+     * const scheduledAction = await prisma.scheduledAction.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ScheduledActionCreateManyArgs>(args?: SelectSubset<T, ScheduledActionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ScheduledActions and returns the data saved in the database.
+     * @param {ScheduledActionCreateManyAndReturnArgs} args - Arguments to create many ScheduledActions.
+     * @example
+     * // Create many ScheduledActions
+     * const scheduledAction = await prisma.scheduledAction.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ScheduledActions and only return the `id`
+     * const scheduledActionWithIdOnly = await prisma.scheduledAction.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ScheduledActionCreateManyAndReturnArgs>(args?: SelectSubset<T, ScheduledActionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScheduledActionPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ScheduledAction.
+     * @param {ScheduledActionDeleteArgs} args - Arguments to delete one ScheduledAction.
+     * @example
+     * // Delete one ScheduledAction
+     * const ScheduledAction = await prisma.scheduledAction.delete({
+     *   where: {
+     *     // ... filter to delete one ScheduledAction
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ScheduledActionDeleteArgs>(args: SelectSubset<T, ScheduledActionDeleteArgs<ExtArgs>>): Prisma__ScheduledActionClient<$Result.GetResult<Prisma.$ScheduledActionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ScheduledAction.
+     * @param {ScheduledActionUpdateArgs} args - Arguments to update one ScheduledAction.
+     * @example
+     * // Update one ScheduledAction
+     * const scheduledAction = await prisma.scheduledAction.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ScheduledActionUpdateArgs>(args: SelectSubset<T, ScheduledActionUpdateArgs<ExtArgs>>): Prisma__ScheduledActionClient<$Result.GetResult<Prisma.$ScheduledActionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ScheduledActions.
+     * @param {ScheduledActionDeleteManyArgs} args - Arguments to filter ScheduledActions to delete.
+     * @example
+     * // Delete a few ScheduledActions
+     * const { count } = await prisma.scheduledAction.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ScheduledActionDeleteManyArgs>(args?: SelectSubset<T, ScheduledActionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ScheduledActions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduledActionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ScheduledActions
+     * const scheduledAction = await prisma.scheduledAction.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ScheduledActionUpdateManyArgs>(args: SelectSubset<T, ScheduledActionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ScheduledActions and returns the data updated in the database.
+     * @param {ScheduledActionUpdateManyAndReturnArgs} args - Arguments to update many ScheduledActions.
+     * @example
+     * // Update many ScheduledActions
+     * const scheduledAction = await prisma.scheduledAction.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ScheduledActions and only return the `id`
+     * const scheduledActionWithIdOnly = await prisma.scheduledAction.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ScheduledActionUpdateManyAndReturnArgs>(args: SelectSubset<T, ScheduledActionUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ScheduledActionPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ScheduledAction.
+     * @param {ScheduledActionUpsertArgs} args - Arguments to update or create a ScheduledAction.
+     * @example
+     * // Update or create a ScheduledAction
+     * const scheduledAction = await prisma.scheduledAction.upsert({
+     *   create: {
+     *     // ... data to create a ScheduledAction
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ScheduledAction we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ScheduledActionUpsertArgs>(args: SelectSubset<T, ScheduledActionUpsertArgs<ExtArgs>>): Prisma__ScheduledActionClient<$Result.GetResult<Prisma.$ScheduledActionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ScheduledActions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduledActionCountArgs} args - Arguments to filter ScheduledActions to count.
+     * @example
+     * // Count the number of ScheduledActions
+     * const count = await prisma.scheduledAction.count({
+     *   where: {
+     *     // ... the filter for the ScheduledActions we want to count
+     *   }
+     * })
+    **/
+    count<T extends ScheduledActionCountArgs>(
+      args?: Subset<T, ScheduledActionCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ScheduledActionCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ScheduledAction.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduledActionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ScheduledActionAggregateArgs>(args: Subset<T, ScheduledActionAggregateArgs>): Prisma.PrismaPromise<GetScheduledActionAggregateType<T>>
+
+    /**
+     * Group by ScheduledAction.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ScheduledActionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ScheduledActionGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ScheduledActionGroupByArgs['orderBy'] }
+        : { orderBy?: ScheduledActionGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ScheduledActionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetScheduledActionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ScheduledAction model
+   */
+  readonly fields: ScheduledActionFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ScheduledAction.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ScheduledActionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ScheduledAction model
+   */
+  interface ScheduledActionFieldRefs {
+    readonly id: FieldRef<"ScheduledAction", 'String'>
+    readonly type: FieldRef<"ScheduledAction", 'ScheduledActionType'>
+    readonly targetType: FieldRef<"ScheduledAction", 'String'>
+    readonly targetId: FieldRef<"ScheduledAction", 'String'>
+    readonly plannedAt: FieldRef<"ScheduledAction", 'DateTime'>
+    readonly timezone: FieldRef<"ScheduledAction", 'String'>
+    readonly status: FieldRef<"ScheduledAction", 'ScheduledActionStatus'>
+    readonly active: FieldRef<"ScheduledAction", 'Boolean'>
+    readonly attempts: FieldRef<"ScheduledAction", 'Int'>
+    readonly maxAttempts: FieldRef<"ScheduledAction", 'Int'>
+    readonly retryAt: FieldRef<"ScheduledAction", 'DateTime'>
+    readonly leaseId: FieldRef<"ScheduledAction", 'String'>
+    readonly leaseExpiresAt: FieldRef<"ScheduledAction", 'DateTime'>
+    readonly idempotencyKey: FieldRef<"ScheduledAction", 'String'>
+    readonly providerId: FieldRef<"ScheduledAction", 'String'>
+    readonly lastError: FieldRef<"ScheduledAction", 'String'>
+    readonly executedAt: FieldRef<"ScheduledAction", 'DateTime'>
+    readonly canceledAt: FieldRef<"ScheduledAction", 'DateTime'>
+    readonly createdAt: FieldRef<"ScheduledAction", 'DateTime'>
+    readonly updatedAt: FieldRef<"ScheduledAction", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ScheduledAction findUnique
+   */
+  export type ScheduledActionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduledAction
+     */
+    select?: ScheduledActionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduledAction
+     */
+    omit?: ScheduledActionOmit<ExtArgs> | null
+    /**
+     * Filter, which ScheduledAction to fetch.
+     */
+    where: ScheduledActionWhereUniqueInput
+  }
+
+  /**
+   * ScheduledAction findUniqueOrThrow
+   */
+  export type ScheduledActionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduledAction
+     */
+    select?: ScheduledActionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduledAction
+     */
+    omit?: ScheduledActionOmit<ExtArgs> | null
+    /**
+     * Filter, which ScheduledAction to fetch.
+     */
+    where: ScheduledActionWhereUniqueInput
+  }
+
+  /**
+   * ScheduledAction findFirst
+   */
+  export type ScheduledActionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduledAction
+     */
+    select?: ScheduledActionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduledAction
+     */
+    omit?: ScheduledActionOmit<ExtArgs> | null
+    /**
+     * Filter, which ScheduledAction to fetch.
+     */
+    where?: ScheduledActionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ScheduledActions to fetch.
+     */
+    orderBy?: ScheduledActionOrderByWithRelationInput | ScheduledActionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ScheduledActions.
+     */
+    cursor?: ScheduledActionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ScheduledActions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ScheduledActions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ScheduledActions.
+     */
+    distinct?: ScheduledActionScalarFieldEnum | ScheduledActionScalarFieldEnum[]
+  }
+
+  /**
+   * ScheduledAction findFirstOrThrow
+   */
+  export type ScheduledActionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduledAction
+     */
+    select?: ScheduledActionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduledAction
+     */
+    omit?: ScheduledActionOmit<ExtArgs> | null
+    /**
+     * Filter, which ScheduledAction to fetch.
+     */
+    where?: ScheduledActionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ScheduledActions to fetch.
+     */
+    orderBy?: ScheduledActionOrderByWithRelationInput | ScheduledActionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ScheduledActions.
+     */
+    cursor?: ScheduledActionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ScheduledActions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ScheduledActions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ScheduledActions.
+     */
+    distinct?: ScheduledActionScalarFieldEnum | ScheduledActionScalarFieldEnum[]
+  }
+
+  /**
+   * ScheduledAction findMany
+   */
+  export type ScheduledActionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduledAction
+     */
+    select?: ScheduledActionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduledAction
+     */
+    omit?: ScheduledActionOmit<ExtArgs> | null
+    /**
+     * Filter, which ScheduledActions to fetch.
+     */
+    where?: ScheduledActionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ScheduledActions to fetch.
+     */
+    orderBy?: ScheduledActionOrderByWithRelationInput | ScheduledActionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ScheduledActions.
+     */
+    cursor?: ScheduledActionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ScheduledActions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ScheduledActions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ScheduledActions.
+     */
+    distinct?: ScheduledActionScalarFieldEnum | ScheduledActionScalarFieldEnum[]
+  }
+
+  /**
+   * ScheduledAction create
+   */
+  export type ScheduledActionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduledAction
+     */
+    select?: ScheduledActionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduledAction
+     */
+    omit?: ScheduledActionOmit<ExtArgs> | null
+    /**
+     * The data needed to create a ScheduledAction.
+     */
+    data: XOR<ScheduledActionCreateInput, ScheduledActionUncheckedCreateInput>
+  }
+
+  /**
+   * ScheduledAction createMany
+   */
+  export type ScheduledActionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ScheduledActions.
+     */
+    data: ScheduledActionCreateManyInput | ScheduledActionCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ScheduledAction createManyAndReturn
+   */
+  export type ScheduledActionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduledAction
+     */
+    select?: ScheduledActionSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduledAction
+     */
+    omit?: ScheduledActionOmit<ExtArgs> | null
+    /**
+     * The data used to create many ScheduledActions.
+     */
+    data: ScheduledActionCreateManyInput | ScheduledActionCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ScheduledAction update
+   */
+  export type ScheduledActionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduledAction
+     */
+    select?: ScheduledActionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduledAction
+     */
+    omit?: ScheduledActionOmit<ExtArgs> | null
+    /**
+     * The data needed to update a ScheduledAction.
+     */
+    data: XOR<ScheduledActionUpdateInput, ScheduledActionUncheckedUpdateInput>
+    /**
+     * Choose, which ScheduledAction to update.
+     */
+    where: ScheduledActionWhereUniqueInput
+  }
+
+  /**
+   * ScheduledAction updateMany
+   */
+  export type ScheduledActionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ScheduledActions.
+     */
+    data: XOR<ScheduledActionUpdateManyMutationInput, ScheduledActionUncheckedUpdateManyInput>
+    /**
+     * Filter which ScheduledActions to update
+     */
+    where?: ScheduledActionWhereInput
+    /**
+     * Limit how many ScheduledActions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ScheduledAction updateManyAndReturn
+   */
+  export type ScheduledActionUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduledAction
+     */
+    select?: ScheduledActionSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduledAction
+     */
+    omit?: ScheduledActionOmit<ExtArgs> | null
+    /**
+     * The data used to update ScheduledActions.
+     */
+    data: XOR<ScheduledActionUpdateManyMutationInput, ScheduledActionUncheckedUpdateManyInput>
+    /**
+     * Filter which ScheduledActions to update
+     */
+    where?: ScheduledActionWhereInput
+    /**
+     * Limit how many ScheduledActions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ScheduledAction upsert
+   */
+  export type ScheduledActionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduledAction
+     */
+    select?: ScheduledActionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduledAction
+     */
+    omit?: ScheduledActionOmit<ExtArgs> | null
+    /**
+     * The filter to search for the ScheduledAction to update in case it exists.
+     */
+    where: ScheduledActionWhereUniqueInput
+    /**
+     * In case the ScheduledAction found by the `where` argument doesn't exist, create a new ScheduledAction with this data.
+     */
+    create: XOR<ScheduledActionCreateInput, ScheduledActionUncheckedCreateInput>
+    /**
+     * In case the ScheduledAction was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ScheduledActionUpdateInput, ScheduledActionUncheckedUpdateInput>
+  }
+
+  /**
+   * ScheduledAction delete
+   */
+  export type ScheduledActionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduledAction
+     */
+    select?: ScheduledActionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduledAction
+     */
+    omit?: ScheduledActionOmit<ExtArgs> | null
+    /**
+     * Filter which ScheduledAction to delete.
+     */
+    where: ScheduledActionWhereUniqueInput
+  }
+
+  /**
+   * ScheduledAction deleteMany
+   */
+  export type ScheduledActionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ScheduledActions to delete
+     */
+    where?: ScheduledActionWhereInput
+    /**
+     * Limit how many ScheduledActions to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ScheduledAction without action
+   */
+  export type ScheduledActionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ScheduledAction
+     */
+    select?: ScheduledActionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ScheduledAction
+     */
+    omit?: ScheduledActionOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -58163,6 +59553,32 @@ export namespace Prisma {
   export type SocialChannelScalarFieldEnum = (typeof SocialChannelScalarFieldEnum)[keyof typeof SocialChannelScalarFieldEnum]
 
 
+  export const ScheduledActionScalarFieldEnum: {
+    id: 'id',
+    type: 'type',
+    targetType: 'targetType',
+    targetId: 'targetId',
+    plannedAt: 'plannedAt',
+    timezone: 'timezone',
+    status: 'status',
+    active: 'active',
+    attempts: 'attempts',
+    maxAttempts: 'maxAttempts',
+    retryAt: 'retryAt',
+    leaseId: 'leaseId',
+    leaseExpiresAt: 'leaseExpiresAt',
+    idempotencyKey: 'idempotencyKey',
+    providerId: 'providerId',
+    lastError: 'lastError',
+    executedAt: 'executedAt',
+    canceledAt: 'canceledAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ScheduledActionScalarFieldEnum = (typeof ScheduledActionScalarFieldEnum)[keyof typeof ScheduledActionScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -58528,6 +59944,34 @@ export namespace Prisma {
    * Reference to a field of type 'SocialEntityType[]'
    */
   export type ListEnumSocialEntityTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SocialEntityType[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'ScheduledActionType'
+   */
+  export type EnumScheduledActionTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ScheduledActionType'>
+    
+
+
+  /**
+   * Reference to a field of type 'ScheduledActionType[]'
+   */
+  export type ListEnumScheduledActionTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ScheduledActionType[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'ScheduledActionStatus'
+   */
+  export type EnumScheduledActionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ScheduledActionStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'ScheduledActionStatus[]'
+   */
+  export type ListEnumScheduledActionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ScheduledActionStatus[]'>
     
   /**
    * Deep Input Types
@@ -62076,6 +63520,135 @@ export namespace Prisma {
     entityType?: EnumSocialEntityTypeWithAggregatesFilter<"SocialChannel"> | $Enums.SocialEntityType
     createdAt?: DateTimeWithAggregatesFilter<"SocialChannel"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"SocialChannel"> | Date | string
+  }
+
+  export type ScheduledActionWhereInput = {
+    AND?: ScheduledActionWhereInput | ScheduledActionWhereInput[]
+    OR?: ScheduledActionWhereInput[]
+    NOT?: ScheduledActionWhereInput | ScheduledActionWhereInput[]
+    id?: StringFilter<"ScheduledAction"> | string
+    type?: EnumScheduledActionTypeFilter<"ScheduledAction"> | $Enums.ScheduledActionType
+    targetType?: StringFilter<"ScheduledAction"> | string
+    targetId?: StringFilter<"ScheduledAction"> | string
+    plannedAt?: DateTimeFilter<"ScheduledAction"> | Date | string
+    timezone?: StringFilter<"ScheduledAction"> | string
+    status?: EnumScheduledActionStatusFilter<"ScheduledAction"> | $Enums.ScheduledActionStatus
+    active?: BoolFilter<"ScheduledAction"> | boolean
+    attempts?: IntFilter<"ScheduledAction"> | number
+    maxAttempts?: IntFilter<"ScheduledAction"> | number
+    retryAt?: DateTimeNullableFilter<"ScheduledAction"> | Date | string | null
+    leaseId?: StringNullableFilter<"ScheduledAction"> | string | null
+    leaseExpiresAt?: DateTimeNullableFilter<"ScheduledAction"> | Date | string | null
+    idempotencyKey?: StringFilter<"ScheduledAction"> | string
+    providerId?: StringNullableFilter<"ScheduledAction"> | string | null
+    lastError?: StringNullableFilter<"ScheduledAction"> | string | null
+    executedAt?: DateTimeNullableFilter<"ScheduledAction"> | Date | string | null
+    canceledAt?: DateTimeNullableFilter<"ScheduledAction"> | Date | string | null
+    createdAt?: DateTimeFilter<"ScheduledAction"> | Date | string
+    updatedAt?: DateTimeFilter<"ScheduledAction"> | Date | string
+  }
+
+  export type ScheduledActionOrderByWithRelationInput = {
+    id?: SortOrder
+    type?: SortOrder
+    targetType?: SortOrder
+    targetId?: SortOrder
+    plannedAt?: SortOrder
+    timezone?: SortOrder
+    status?: SortOrder
+    active?: SortOrder
+    attempts?: SortOrder
+    maxAttempts?: SortOrder
+    retryAt?: SortOrderInput | SortOrder
+    leaseId?: SortOrderInput | SortOrder
+    leaseExpiresAt?: SortOrderInput | SortOrder
+    idempotencyKey?: SortOrder
+    providerId?: SortOrderInput | SortOrder
+    lastError?: SortOrderInput | SortOrder
+    executedAt?: SortOrderInput | SortOrder
+    canceledAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ScheduledActionWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: ScheduledActionWhereInput | ScheduledActionWhereInput[]
+    OR?: ScheduledActionWhereInput[]
+    NOT?: ScheduledActionWhereInput | ScheduledActionWhereInput[]
+    type?: EnumScheduledActionTypeFilter<"ScheduledAction"> | $Enums.ScheduledActionType
+    targetType?: StringFilter<"ScheduledAction"> | string
+    targetId?: StringFilter<"ScheduledAction"> | string
+    plannedAt?: DateTimeFilter<"ScheduledAction"> | Date | string
+    timezone?: StringFilter<"ScheduledAction"> | string
+    status?: EnumScheduledActionStatusFilter<"ScheduledAction"> | $Enums.ScheduledActionStatus
+    active?: BoolFilter<"ScheduledAction"> | boolean
+    attempts?: IntFilter<"ScheduledAction"> | number
+    maxAttempts?: IntFilter<"ScheduledAction"> | number
+    retryAt?: DateTimeNullableFilter<"ScheduledAction"> | Date | string | null
+    leaseId?: StringNullableFilter<"ScheduledAction"> | string | null
+    leaseExpiresAt?: DateTimeNullableFilter<"ScheduledAction"> | Date | string | null
+    idempotencyKey?: StringFilter<"ScheduledAction"> | string
+    providerId?: StringNullableFilter<"ScheduledAction"> | string | null
+    lastError?: StringNullableFilter<"ScheduledAction"> | string | null
+    executedAt?: DateTimeNullableFilter<"ScheduledAction"> | Date | string | null
+    canceledAt?: DateTimeNullableFilter<"ScheduledAction"> | Date | string | null
+    createdAt?: DateTimeFilter<"ScheduledAction"> | Date | string
+    updatedAt?: DateTimeFilter<"ScheduledAction"> | Date | string
+  }, "id">
+
+  export type ScheduledActionOrderByWithAggregationInput = {
+    id?: SortOrder
+    type?: SortOrder
+    targetType?: SortOrder
+    targetId?: SortOrder
+    plannedAt?: SortOrder
+    timezone?: SortOrder
+    status?: SortOrder
+    active?: SortOrder
+    attempts?: SortOrder
+    maxAttempts?: SortOrder
+    retryAt?: SortOrderInput | SortOrder
+    leaseId?: SortOrderInput | SortOrder
+    leaseExpiresAt?: SortOrderInput | SortOrder
+    idempotencyKey?: SortOrder
+    providerId?: SortOrderInput | SortOrder
+    lastError?: SortOrderInput | SortOrder
+    executedAt?: SortOrderInput | SortOrder
+    canceledAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ScheduledActionCountOrderByAggregateInput
+    _avg?: ScheduledActionAvgOrderByAggregateInput
+    _max?: ScheduledActionMaxOrderByAggregateInput
+    _min?: ScheduledActionMinOrderByAggregateInput
+    _sum?: ScheduledActionSumOrderByAggregateInput
+  }
+
+  export type ScheduledActionScalarWhereWithAggregatesInput = {
+    AND?: ScheduledActionScalarWhereWithAggregatesInput | ScheduledActionScalarWhereWithAggregatesInput[]
+    OR?: ScheduledActionScalarWhereWithAggregatesInput[]
+    NOT?: ScheduledActionScalarWhereWithAggregatesInput | ScheduledActionScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ScheduledAction"> | string
+    type?: EnumScheduledActionTypeWithAggregatesFilter<"ScheduledAction"> | $Enums.ScheduledActionType
+    targetType?: StringWithAggregatesFilter<"ScheduledAction"> | string
+    targetId?: StringWithAggregatesFilter<"ScheduledAction"> | string
+    plannedAt?: DateTimeWithAggregatesFilter<"ScheduledAction"> | Date | string
+    timezone?: StringWithAggregatesFilter<"ScheduledAction"> | string
+    status?: EnumScheduledActionStatusWithAggregatesFilter<"ScheduledAction"> | $Enums.ScheduledActionStatus
+    active?: BoolWithAggregatesFilter<"ScheduledAction"> | boolean
+    attempts?: IntWithAggregatesFilter<"ScheduledAction"> | number
+    maxAttempts?: IntWithAggregatesFilter<"ScheduledAction"> | number
+    retryAt?: DateTimeNullableWithAggregatesFilter<"ScheduledAction"> | Date | string | null
+    leaseId?: StringNullableWithAggregatesFilter<"ScheduledAction"> | string | null
+    leaseExpiresAt?: DateTimeNullableWithAggregatesFilter<"ScheduledAction"> | Date | string | null
+    idempotencyKey?: StringWithAggregatesFilter<"ScheduledAction"> | string
+    providerId?: StringNullableWithAggregatesFilter<"ScheduledAction"> | string | null
+    lastError?: StringNullableWithAggregatesFilter<"ScheduledAction"> | string | null
+    executedAt?: DateTimeNullableWithAggregatesFilter<"ScheduledAction"> | Date | string | null
+    canceledAt?: DateTimeNullableWithAggregatesFilter<"ScheduledAction"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"ScheduledAction"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ScheduledAction"> | Date | string
   }
 
   export type LanguageCreateInput = {
@@ -65962,6 +67535,167 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ScheduledActionCreateInput = {
+    id?: string
+    type: $Enums.ScheduledActionType
+    targetType: string
+    targetId: string
+    plannedAt: Date | string
+    timezone: string
+    status?: $Enums.ScheduledActionStatus
+    active?: boolean
+    attempts?: number
+    maxAttempts?: number
+    retryAt?: Date | string | null
+    leaseId?: string | null
+    leaseExpiresAt?: Date | string | null
+    idempotencyKey: string
+    providerId?: string | null
+    lastError?: string | null
+    executedAt?: Date | string | null
+    canceledAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ScheduledActionUncheckedCreateInput = {
+    id?: string
+    type: $Enums.ScheduledActionType
+    targetType: string
+    targetId: string
+    plannedAt: Date | string
+    timezone: string
+    status?: $Enums.ScheduledActionStatus
+    active?: boolean
+    attempts?: number
+    maxAttempts?: number
+    retryAt?: Date | string | null
+    leaseId?: string | null
+    leaseExpiresAt?: Date | string | null
+    idempotencyKey: string
+    providerId?: string | null
+    lastError?: string | null
+    executedAt?: Date | string | null
+    canceledAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ScheduledActionUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumScheduledActionTypeFieldUpdateOperationsInput | $Enums.ScheduledActionType
+    targetType?: StringFieldUpdateOperationsInput | string
+    targetId?: StringFieldUpdateOperationsInput | string
+    plannedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    timezone?: StringFieldUpdateOperationsInput | string
+    status?: EnumScheduledActionStatusFieldUpdateOperationsInput | $Enums.ScheduledActionStatus
+    active?: BoolFieldUpdateOperationsInput | boolean
+    attempts?: IntFieldUpdateOperationsInput | number
+    maxAttempts?: IntFieldUpdateOperationsInput | number
+    retryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseId?: NullableStringFieldUpdateOperationsInput | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
+    providerId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    executedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    canceledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ScheduledActionUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumScheduledActionTypeFieldUpdateOperationsInput | $Enums.ScheduledActionType
+    targetType?: StringFieldUpdateOperationsInput | string
+    targetId?: StringFieldUpdateOperationsInput | string
+    plannedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    timezone?: StringFieldUpdateOperationsInput | string
+    status?: EnumScheduledActionStatusFieldUpdateOperationsInput | $Enums.ScheduledActionStatus
+    active?: BoolFieldUpdateOperationsInput | boolean
+    attempts?: IntFieldUpdateOperationsInput | number
+    maxAttempts?: IntFieldUpdateOperationsInput | number
+    retryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseId?: NullableStringFieldUpdateOperationsInput | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
+    providerId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    executedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    canceledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ScheduledActionCreateManyInput = {
+    id?: string
+    type: $Enums.ScheduledActionType
+    targetType: string
+    targetId: string
+    plannedAt: Date | string
+    timezone: string
+    status?: $Enums.ScheduledActionStatus
+    active?: boolean
+    attempts?: number
+    maxAttempts?: number
+    retryAt?: Date | string | null
+    leaseId?: string | null
+    leaseExpiresAt?: Date | string | null
+    idempotencyKey: string
+    providerId?: string | null
+    lastError?: string | null
+    executedAt?: Date | string | null
+    canceledAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ScheduledActionUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumScheduledActionTypeFieldUpdateOperationsInput | $Enums.ScheduledActionType
+    targetType?: StringFieldUpdateOperationsInput | string
+    targetId?: StringFieldUpdateOperationsInput | string
+    plannedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    timezone?: StringFieldUpdateOperationsInput | string
+    status?: EnumScheduledActionStatusFieldUpdateOperationsInput | $Enums.ScheduledActionStatus
+    active?: BoolFieldUpdateOperationsInput | boolean
+    attempts?: IntFieldUpdateOperationsInput | number
+    maxAttempts?: IntFieldUpdateOperationsInput | number
+    retryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseId?: NullableStringFieldUpdateOperationsInput | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
+    providerId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    executedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    canceledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ScheduledActionUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: EnumScheduledActionTypeFieldUpdateOperationsInput | $Enums.ScheduledActionType
+    targetType?: StringFieldUpdateOperationsInput | string
+    targetId?: StringFieldUpdateOperationsInput | string
+    plannedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    timezone?: StringFieldUpdateOperationsInput | string
+    status?: EnumScheduledActionStatusFieldUpdateOperationsInput | $Enums.ScheduledActionStatus
+    active?: BoolFieldUpdateOperationsInput | boolean
+    attempts?: IntFieldUpdateOperationsInput | number
+    maxAttempts?: IntFieldUpdateOperationsInput | number
+    retryAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseId?: NullableStringFieldUpdateOperationsInput | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
+    providerId?: NullableStringFieldUpdateOperationsInput | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    executedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    canceledAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -68791,6 +70525,119 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumSocialEntityTypeFilter<$PrismaModel>
     _max?: NestedEnumSocialEntityTypeFilter<$PrismaModel>
+  }
+
+  export type EnumScheduledActionTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.ScheduledActionType | EnumScheduledActionTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ScheduledActionType[] | ListEnumScheduledActionTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ScheduledActionType[] | ListEnumScheduledActionTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumScheduledActionTypeFilter<$PrismaModel> | $Enums.ScheduledActionType
+  }
+
+  export type EnumScheduledActionStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ScheduledActionStatus | EnumScheduledActionStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ScheduledActionStatus[] | ListEnumScheduledActionStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ScheduledActionStatus[] | ListEnumScheduledActionStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumScheduledActionStatusFilter<$PrismaModel> | $Enums.ScheduledActionStatus
+  }
+
+  export type ScheduledActionCountOrderByAggregateInput = {
+    id?: SortOrder
+    type?: SortOrder
+    targetType?: SortOrder
+    targetId?: SortOrder
+    plannedAt?: SortOrder
+    timezone?: SortOrder
+    status?: SortOrder
+    active?: SortOrder
+    attempts?: SortOrder
+    maxAttempts?: SortOrder
+    retryAt?: SortOrder
+    leaseId?: SortOrder
+    leaseExpiresAt?: SortOrder
+    idempotencyKey?: SortOrder
+    providerId?: SortOrder
+    lastError?: SortOrder
+    executedAt?: SortOrder
+    canceledAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ScheduledActionAvgOrderByAggregateInput = {
+    attempts?: SortOrder
+    maxAttempts?: SortOrder
+  }
+
+  export type ScheduledActionMaxOrderByAggregateInput = {
+    id?: SortOrder
+    type?: SortOrder
+    targetType?: SortOrder
+    targetId?: SortOrder
+    plannedAt?: SortOrder
+    timezone?: SortOrder
+    status?: SortOrder
+    active?: SortOrder
+    attempts?: SortOrder
+    maxAttempts?: SortOrder
+    retryAt?: SortOrder
+    leaseId?: SortOrder
+    leaseExpiresAt?: SortOrder
+    idempotencyKey?: SortOrder
+    providerId?: SortOrder
+    lastError?: SortOrder
+    executedAt?: SortOrder
+    canceledAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ScheduledActionMinOrderByAggregateInput = {
+    id?: SortOrder
+    type?: SortOrder
+    targetType?: SortOrder
+    targetId?: SortOrder
+    plannedAt?: SortOrder
+    timezone?: SortOrder
+    status?: SortOrder
+    active?: SortOrder
+    attempts?: SortOrder
+    maxAttempts?: SortOrder
+    retryAt?: SortOrder
+    leaseId?: SortOrder
+    leaseExpiresAt?: SortOrder
+    idempotencyKey?: SortOrder
+    providerId?: SortOrder
+    lastError?: SortOrder
+    executedAt?: SortOrder
+    canceledAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ScheduledActionSumOrderByAggregateInput = {
+    attempts?: SortOrder
+    maxAttempts?: SortOrder
+  }
+
+  export type EnumScheduledActionTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ScheduledActionType | EnumScheduledActionTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ScheduledActionType[] | ListEnumScheduledActionTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ScheduledActionType[] | ListEnumScheduledActionTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumScheduledActionTypeWithAggregatesFilter<$PrismaModel> | $Enums.ScheduledActionType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumScheduledActionTypeFilter<$PrismaModel>
+    _max?: NestedEnumScheduledActionTypeFilter<$PrismaModel>
+  }
+
+  export type EnumScheduledActionStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ScheduledActionStatus | EnumScheduledActionStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ScheduledActionStatus[] | ListEnumScheduledActionStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ScheduledActionStatus[] | ListEnumScheduledActionStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumScheduledActionStatusWithAggregatesFilter<$PrismaModel> | $Enums.ScheduledActionStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumScheduledActionStatusFilter<$PrismaModel>
+    _max?: NestedEnumScheduledActionStatusFilter<$PrismaModel>
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -72024,6 +73871,14 @@ export namespace Prisma {
     set?: $Enums.SocialEntityType
   }
 
+  export type EnumScheduledActionTypeFieldUpdateOperationsInput = {
+    set?: $Enums.ScheduledActionType
+  }
+
+  export type EnumScheduledActionStatusFieldUpdateOperationsInput = {
+    set?: $Enums.ScheduledActionStatus
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -72607,6 +74462,40 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumSocialEntityTypeFilter<$PrismaModel>
     _max?: NestedEnumSocialEntityTypeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumScheduledActionTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.ScheduledActionType | EnumScheduledActionTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ScheduledActionType[] | ListEnumScheduledActionTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ScheduledActionType[] | ListEnumScheduledActionTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumScheduledActionTypeFilter<$PrismaModel> | $Enums.ScheduledActionType
+  }
+
+  export type NestedEnumScheduledActionStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.ScheduledActionStatus | EnumScheduledActionStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ScheduledActionStatus[] | ListEnumScheduledActionStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ScheduledActionStatus[] | ListEnumScheduledActionStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumScheduledActionStatusFilter<$PrismaModel> | $Enums.ScheduledActionStatus
+  }
+
+  export type NestedEnumScheduledActionTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ScheduledActionType | EnumScheduledActionTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.ScheduledActionType[] | ListEnumScheduledActionTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ScheduledActionType[] | ListEnumScheduledActionTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumScheduledActionTypeWithAggregatesFilter<$PrismaModel> | $Enums.ScheduledActionType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumScheduledActionTypeFilter<$PrismaModel>
+    _max?: NestedEnumScheduledActionTypeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumScheduledActionStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.ScheduledActionStatus | EnumScheduledActionStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.ScheduledActionStatus[] | ListEnumScheduledActionStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.ScheduledActionStatus[] | ListEnumScheduledActionStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumScheduledActionStatusWithAggregatesFilter<$PrismaModel> | $Enums.ScheduledActionStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumScheduledActionStatusFilter<$PrismaModel>
+    _max?: NestedEnumScheduledActionStatusFilter<$PrismaModel>
   }
 
   export type SeoCreateWithoutSettingsInput = {

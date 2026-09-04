@@ -13,6 +13,9 @@ function getProviderAdapter(providerType: string): EmailProviderAdapter {
       throw new Error("Provider not supported");
   }
 }
+
+export { getProviderAdapter };
+
 export async function syncContactsWithProvider({
   skip,
   take,
@@ -327,12 +330,14 @@ export async function sendBulk({
   html,
   from,
   replyTo,
+  idempotencyKey,
 }: {
   segmentExternalId: string;
   subject: string;
   html: string;
   from: string;
   replyTo?: string;
+  idempotencyKey?: string;
 }) {
   const emailSettings = await db.emailSetting.findFirst();
   if (!emailSettings || !emailSettings.emailProvider) {
@@ -347,6 +352,7 @@ export async function sendBulk({
     html,
     from,
     replyTo,
+    idempotencyKey,
   });
 
   return providerResult;

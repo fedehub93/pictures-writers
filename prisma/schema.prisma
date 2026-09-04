@@ -1009,3 +1009,75 @@ model SocialChannel {
 
   @@unique([key, entityId, entityType])
 }
+
+enum ScheduledActionType {
+  PUBLISH_POST
+  SEND_EMAIL
+}
+
+enum ScheduledActionStatus {
+  SCHEDULED
+  PROCESSING
+  RETRY_WAIT
+  SUCCEEDED
+  FAILED
+  CANCELED
+}
+
+model ScheduledAction {
+  id String @id @default(uuid())
+
+  type       ScheduledActionType
+  targetType String
+  targetId   String
+
+  /// Absolute instant at which the action should execute.
+  plannedAt DateTime
+
+  /// IANA timezone identifier captured from the browser when scheduling.
+  timezone String
+
+  status ScheduledActionStatus @default(SCHEDULED)
+
+  /// True while the action is eligible for execution. Terminal states flip
+  /// this to false so a target can have a durable history and still accept a
+  /// new active action later (e.g. a reusable EmailSingleSend).
+  active Boolean @default(true)
+
+  /// Number of execution attempts already performed.
+  attempts Int @default(0)
+
+  /// Maximum number of attempts before the action is marked FAILED.
+  maxAttempts Int @default(3)
+
+  /// When the action should become eligible for the next retry.
+  retryAt DateTime?
+
+  /// Opaque identifier of the current worker claim/lease.
+  leaseId String?
+
+  /// Lease expiration time; an expired lease makes the action recoverable.
+  leaseExpiresAt DateTime?
+
+  /// Stable idempotency key reused across retries for the same action.
+  idempotencyKey String
+
+  /// Provider-side identifier when applicable (e.g. email provider send id).
+  providerId String?
+
+  /// Human-readable failure reason from the last attempt.
+  lastError String?
+
+  /// Actual execution time.
+  executedAt DateTime?
+
+  canceledAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, plannedAt, retryAt])
+  @@index([targetType, targetId, status])
+  @@index([leaseExpiresAt, status])
+  @@index([active])
+}

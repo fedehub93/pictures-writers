@@ -1,9 +1,8 @@
 import "server-only";
 
-import { db } from "@/shared/lib/db";
-import { ContentStatus } from "@/generated/prisma";
-
-import { publishPost, PublishPostError } from "./publish-post";
+import { ScheduledActionStatus } from "@/generated/prisma";
+import { runScheduledActions } from "@/modules/scheduler/lib/scheduler-runner";
+import { backfillScheduledPosts } from "@/modules/scheduler/lib/scheduled-action-repository";
 
 import { SCHEDULED_PUBLICATION_BATCH } from "../constants";
 
@@ -25,72 +24,61 @@ export interface PublishDuePostsResult {
   }>;
 }
 
+/**
+ * Backward-compatible boundary for the existing scheduled-publication cron.
+ *
+ * The actual scheduling logic now lives in the scheduler worker. This function
+ * backfills any legacy scheduled Post rows into ScheduledAction records and
+ * then runs the common worker.
+ */
 export async function publishDuePosts({
   now = new Date(),
   batchSize = SCHEDULED_PUBLICATION_BATCH,
 }: PublishDuePostsInput = {}): Promise<PublishDuePostsResult> {
-  const duePosts = await db.post.findMany({
-    where: {
-      status: ContentStatus.SCHEDULED,
-      scheduledAt: { lte: now },
-    },
-    select: {
-      id: true,
-      rootId: true,
-      title: true,
-    },
-    orderBy: { scheduledAt: "asc" },
-    take: batchSize,
-  });
+  await backfillScheduledPosts(now, batchSize);
 
-  const result: PublishDuePostsResult = {
-    processed: duePosts.length,
-    succeeded: 0,
-    failed: 0,
-    skipped: 0,
-    details: [],
+  const runnerResult = await runScheduledActions({ now, batchSize });
+
+  const details: PublishDuePostsResult["details"] = runnerResult.details.map(
+    (item) => ({
+      postId: item.actionId,
+      rootId: item.targetId,
+      status:
+        item.status === "succeeded"
+          ? "published"
+          : item.status === "skipped"
+            ? "skipped"
+            : "failed",
+      error: item.error,
+    }),
+  );
+
+  return {
+    processed: runnerResult.processed,
+    succeeded: runnerResult.succeeded,
+    failed: runnerResult.failed,
+    skipped: runnerResult.skipped,
+    details,
   };
+}
 
-  for (const post of duePosts) {
-    if (!post.rootId) {
-      result.skipped++;
-      result.details.push({
-        postId: post.id,
-        rootId: null,
-        status: "skipped",
-        error: "Missing rootId",
-      });
-      console.error(`[PUBLISH_DUE_POSTS] Post ${post.id} missing rootId`);
-      continue;
-    }
-
-    try {
-      await publishPost({ postId: post.id, rootId: post.rootId, now });
-      result.succeeded++;
-      result.details.push({
-        postId: post.id,
-        rootId: post.rootId,
-        status: "published",
-      });
-    } catch (error) {
-      result.failed++;
-      const message =
-        error instanceof PublishPostError
-          ? `${error.code}: ${error.message}`
-          : error instanceof Error
-            ? error.message
-            : "Unknown error";
-      result.details.push({
-        postId: post.id,
-        rootId: post.rootId,
-        status: "failed",
-        error: message,
-      });
-      console.error(
-        `[PUBLISH_DUE_POSTS] Failed to publish post ${post.id}: ${message}`,
-      );
-    }
-  }
-
-  return result;
+/**
+ * Compatibility helper used by tests and internal callers to determine
+ * whether a post root still has a pending scheduled action.
+ */
+export async function hasPendingScheduledAction(
+  rootId: string,
+): Promise<boolean> {
+  // Avoid a direct dependency on the scheduler repository in the public
+  // publishDuePosts signature, but expose this for tests.
+  const { getActiveScheduledActionByTarget } = await import(
+    "@/modules/scheduler/lib/scheduled-action-repository"
+  );
+  const action = await getActiveScheduledActionByTarget("POST_ROOT", rootId);
+  return (
+    action !== null &&
+    action.status !== ScheduledActionStatus.SUCCEEDED &&
+    action.status !== ScheduledActionStatus.FAILED &&
+    action.status !== ScheduledActionStatus.CANCELED
+  );
 }

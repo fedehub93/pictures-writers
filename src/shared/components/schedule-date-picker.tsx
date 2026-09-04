@@ -2,14 +2,16 @@
 
 import * as React from "react";
 import { CalendarDays, ChevronDown, Check } from "lucide-react";
+import { format, startOfDay, isSameDay, isBefore } from "date-fns";
+
+import { cn } from "@/shared/lib/utils";
+
 import { Button } from "@/shared/ui/button";
 import { Calendar } from "@/shared/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
-import { cn } from "@/shared/lib/utils";
 
-import { TimePicker } from "@/shared/components/time-picker";
+import { TimePicker, TIME_OPTIONS, TIME_PICKER_FORMAT } from "@/shared/components/time-picker";
 
-import { format, startOfDay, addMinutes, isSameDay, isBefore } from "date-fns";
 
 interface ScheduleDatePickerProps {
   date: Date | undefined;
@@ -24,17 +26,6 @@ interface ScheduleDatePickerProps {
   ) => React.ReactNode;
 }
 
-const generateTimeOptions = () => {
-  const options: string[] = [];
-  const baseDate = startOfDay(new Date());
-  for (let i = 0; i < 24 * 12; i++) {
-    options.push(format(addMinutes(baseDate, i * 5), "h:mm a"));
-  }
-  return options;
-};
-
-const timeOptions = generateTimeOptions();
-
 export function ScheduleDatePicker({
   date,
   setDate,
@@ -48,31 +39,37 @@ export function ScheduleDatePicker({
   const today = React.useMemo(() => startOfDay(new Date()), []);
 
   const availableTimeOptions = React.useMemo(() => {
-    if (!date || !isSameDay(date, new Date())) return timeOptions;
+    if (!date || !isSameDay(date, new Date())) return TIME_OPTIONS;
     const now = new Date();
-    return timeOptions.filter((slot) => {
-      const [timeValue, meridiem] = slot.split(" ");
-      const [rawHour, rawMinute] = timeValue.split(":").map(Number);
-      // hour -
-      const hour =
-        meridiem === "PM" && rawHour !== 12
-          ? rawHour + 12
-          : meridiem === "AM" && rawHour === 12
-            ? 0
-            : rawHour;
+    return TIME_OPTIONS.filter((slot) => {
+      const [rawHour, rawMinute] = slot.split(":").map(Number);
       const candidate = new Date(date);
-      candidate.setHours(hour, rawMinute, 0, 0);
+      candidate.setHours(rawHour, rawMinute, 0, 0);
       return !isBefore(candidate, now);
     });
   }, [date]);
 
   React.useEffect(() => {
-    if (!time && availableTimeOptions.length > 0) {
-      setTime(availableTimeOptions[0]);
-      return;
-    }
-    if (time) {
-      setTime(time);
+    if (availableTimeOptions.length === 0) return;
+
+    // Default to the next five-minute slot from now instead of the first
+    // slot of the day (midnight), and repair selections that are no longer
+    // available for the chosen date (e.g. a past slot on today).
+    const minuteMs = 1000 * 60 * 5;
+    const defaultTime = format(
+      new Date(Math.ceil(new Date().getTime() / minuteMs) * minuteMs),
+      TIME_PICKER_FORMAT,
+    );
+
+    const nextTime =
+      !time || !availableTimeOptions.includes(time)
+        ? (availableTimeOptions.includes(defaultTime)
+            ? defaultTime
+            : availableTimeOptions[0]!)!
+        : time;
+
+    if (nextTime !== time) {
+      setTime(nextTime);
     }
   }, [availableTimeOptions, setTime, time]);
 

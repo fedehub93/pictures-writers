@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Clock } from "lucide-react";
+import { addMinutes, format, startOfDay } from "date-fns";
 import {
   Select,
   SelectContent,
@@ -10,6 +11,17 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 import { cn } from "@/shared/lib/utils";
+
+/**
+ * Shared 24h time format used by every scheduling dialog so picks are
+ * consistent across the UI.
+ */
+export const TIME_PICKER_FORMAT = "HH:mm";
+
+/** Five-minute time slots for the whole day, in 24h format. */
+export const TIME_OPTIONS: string[] = Array.from({ length: 24 * 12 }, (_, i) =>
+  format(addMinutes(startOfDay(new Date()), i * 5), TIME_PICKER_FORMAT),
+);
 
 interface TimePickerProps {
   value: string;
