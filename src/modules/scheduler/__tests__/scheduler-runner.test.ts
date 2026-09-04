@@ -72,7 +72,8 @@ describe("scheduler runner", () => {
 
   beforeEach(async () => {
     // Remove scheduled posts left behind by other test files so the backfill
-    // tests see a clean state.
+    // tests see a clean state. Safe: this file runs only against the
+    // dedicated test database (.env.test).
     await db.post.deleteMany({
       where: { status: ContentStatus.SCHEDULED },
     });

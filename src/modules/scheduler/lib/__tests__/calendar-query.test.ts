@@ -122,8 +122,8 @@ describe("calendar query", () => {
   };
 
   beforeEach(async () => {
-    // Other test files may leave rows behind; start every calendar test
-    // from a clean state so assertions are not affected by leftovers.
+    // Wipe the tables used by this file. Safe: this file runs only against
+    // the dedicated test database (.env.test).
     await db.scheduledAction.deleteMany({});
     await db.emailSingleSend.deleteMany({});
     await db.post.deleteMany({});

@@ -140,6 +140,8 @@ There are currently **no automated tests** in this project. If you add tests:
 - Place test files alongside source files or in a `__tests__` directory
 - The project uses TypeScript — consider Vitest or Jest with `ts-jest`
 
+> **IMPORTANT**: Vitest runs only against a dedicated test database defined in `.env.test` (its `DATABASE_URL` database name must contain `test`); it refuses to touch the dev/production `DATABASE_URL` in `.env`. To keep test isolation, test files may clean the tables they use on that test database.
+
 Before committing, always run:
 
 ```bash

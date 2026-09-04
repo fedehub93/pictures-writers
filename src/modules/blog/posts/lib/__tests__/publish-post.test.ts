@@ -57,6 +57,9 @@ describe("publishPost workflow", () => {
 
   afterEach(async () => {
     if (createdRootIds.length > 0) {
+      await db.scheduledAction.deleteMany({
+        where: { targetId: { in: createdRootIds } },
+      });
       await db.post.deleteMany({
         where: { rootId: { in: createdRootIds } },
       });
