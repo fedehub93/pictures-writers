@@ -13,7 +13,6 @@ import {
   parse,
   startOfWeek,
   getDay,
-  addHours,
   isBefore,
   startOfDay,
   endOfDay,
@@ -33,9 +32,14 @@ import "./post-calendar.css";
 import { ScheduledActionStatus, ScheduledActionType } from "@/generated/prisma";
 
 import { cn } from "@/shared/lib/utils";
-import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Skeleton } from "@/shared/ui/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared/ui/tooltip";
 
 import type { CalendarEvent, CalendarEventStatus } from "@/modules/scheduler/types";
 
@@ -60,14 +64,14 @@ interface PostCalendarProps {
   rightActions?: React.ReactNode;
 }
 
-const statusVariantMap: Record<CalendarEventStatus, "default" | "secondary" | "destructive" | "outline"> = {
-  [ScheduledActionStatus.SCHEDULED]: "secondary",
-  [ScheduledActionStatus.PROCESSING]: "default",
-  [ScheduledActionStatus.RETRY_WAIT]: "default",
-  [ScheduledActionStatus.SUCCEEDED]: "outline",
-  [ScheduledActionStatus.FAILED]: "destructive",
-  [ScheduledActionStatus.CANCELED]: "outline",
-  PUBLISHED: "outline",
+const statusBorderClass: Record<CalendarEventStatus, string> = {
+  [ScheduledActionStatus.SCHEDULED]: "border-l-primary",
+  [ScheduledActionStatus.PROCESSING]: "border-l-amber-500",
+  [ScheduledActionStatus.RETRY_WAIT]: "border-l-amber-500",
+  [ScheduledActionStatus.SUCCEEDED]: "border-l-emerald-500",
+  [ScheduledActionStatus.FAILED]: "border-l-red-500",
+  [ScheduledActionStatus.CANCELED]: "border-l-zinc-400",
+  PUBLISHED: "border-l-emerald-500",
 };
 
 const statusLabelMap: Record<CalendarEventStatus, string> = {
@@ -176,7 +180,8 @@ export function PostCalendar({
 
   return (
     <div className={cn("h-full relative flex flex-col min-h-150")}>
-      <Calendar
+      <TooltipProvider delayDuration={200}>
+        <Calendar
         localizer={localizer}
         events={calendarEvents}
         date={currentDate}
@@ -196,59 +201,85 @@ export function PostCalendar({
             const displayTime = event.start;
 
             return (
-              <div
-                className={cn(
-                  "flex flex-col gap-0.5 p-1 h-full cursor-pointer",
-                  event.status === ScheduledActionStatus.SUCCEEDED &&
-                    "text-muted-foreground",
-                  event.status === "PUBLISHED" && "text-muted-foreground",
-                  event.overdue &&
-                    "border-l-2 border-l-destructive bg-destructive/5",
-                )}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEventClick(event);
-                }}
-                title={
-                  event.plannedAt && event.executedAt
-                    ? `Planned: ${format(event.plannedAt, "PPpp")}\nExecuted: ${format(event.executedAt, "PPpp")}`
-                    : event.plannedAt
-                      ? `Planned: ${format(event.plannedAt, "PPpp")}`
-                      : undefined
-                }
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex gap-2 min-w-0">
-                    {isEmail ? (
-                      <MailIcon size={14} />
-                    ) : (
-                      <NotebookPenIcon size={14} />
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div
+                    className={cn(
+                      "flex flex-col gap-0.5 p-1 h-full cursor-pointer border border-border border-l-2 rounded-lg bg-white",
+                      statusBorderClass[event.status],
+                      event.status === ScheduledActionStatus.SUCCEEDED &&
+                        "text-muted-foreground",
+                      event.status === "PUBLISHED" &&
+                        "text-muted-foreground",
+                      event.overdue && "border-l-red-500 bg-red-500/5",
                     )}
-                    <span className="text-xs truncate max-w-20 xl:max-w-35">
-                      {event.title}
-                    </span>
-                  </div>
-                  <span className="font-semibold text-xs shrink-0">
-                    {format(displayTime, "HH:mm")}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Badge
-                    variant={statusVariantMap[event.status]}
-                    className="text-[9px] px-1 py-0 h-auto"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEventClick(event);
+                    }}
                   >
-                    {statusLabelMap[event.status]}
-                  </Badge>
-                  {event.overdue && (
-                    <Badge
-                      variant="destructive"
-                      className="text-[9px] px-1 py-0 h-auto"
-                    >
-                      Overdue
-                    </Badge>
-                  )}
-                </div>
-              </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex gap-2 min-w-0 flex-1">
+                        {isEmail ? (
+                          <MailIcon size={14} />
+                        ) : (
+                          <NotebookPenIcon size={14} />
+                        )}
+                        <span className="text-xs flex-1 min-w-0 truncate">
+                          {event.title}
+                        </span>
+                      </div>
+                      <span className="font-semibold text-xs shrink-0">
+                        {format(displayTime, "HH:mm")}
+                      </span>
+                    </div>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" align="start" className="max-w-90">
+                  <div className="space-y-2 text-xs min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      {isEmail ? (
+                        <MailIcon className="size-4 shrink-0" />
+                      ) : (
+                        <NotebookPenIcon className="size-4 shrink-0" />
+                      )}
+                      <p className="font-semibold text-sm truncate min-w-0 flex-1">
+                        {event.title}
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5">
+                      <span className="text-muted-foreground">Type</span>
+                      <span>{isEmail ? "Email send" : "Post publication"}</span>
+                      <span className="text-muted-foreground">Status</span>
+                      <span
+                        className={cn(
+                          "capitalize",
+                          event.overdue && "text-red-500 font-medium",
+                        )}
+                      >
+                        {statusLabelMap[event.status]}
+                        {event.overdue ? " (overdue)" : ""}
+                      </span>
+                      {event.plannedAt && (
+                        <>
+                          <span className="text-muted-foreground">
+                            Planned
+                          </span>
+                          <span>{format(event.plannedAt, "PPpp")}</span>
+                        </>
+                      )}
+                      {event.executedAt && (
+                        <>
+                          <span className="text-muted-foreground">
+                            Executed
+                          </span>
+                          <span>{format(event.executedAt, "PPpp")}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
             );
           },
 
@@ -300,6 +331,7 @@ export function PostCalendar({
           },
         }}
       />
+      </TooltipProvider>
     </div>
   );
 }

@@ -8,7 +8,6 @@ import {
   setHours,
   setMinutes,
   setSeconds,
-  addMinutes,
   isBefore,
 } from "date-fns";
 import { toast } from "sonner";
@@ -28,7 +27,11 @@ import {
 import { Calendar } from "@/shared/ui/calendar";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/shared/ui/field";
 
-import { TimePicker } from "@/shared/components/time-picker";
+import {
+  TimePicker,
+  TIME_OPTIONS,
+  TIME_PICKER_FORMAT,
+} from "@/shared/components/time-picker";
 
 interface SchedulePostDialogProps {
   postId: string;
@@ -43,10 +46,6 @@ function roundUpToNextFiveMinutes(date: Date): Date {
   const ms = 1000 * 60 * 5;
   return new Date(Math.ceil(date.getTime() / ms) * ms);
 }
-
-const timeOptions = Array.from({ length: 24 * 12 }, (_, i) =>
-  format(addMinutes(startOfDay(new Date()), i * 5), "HH:mm"),
-);
 
 function buildScheduledAt(date: Date, time: string): Date | null {
   const [hours, minutes] = time.split(":").map(Number);
@@ -83,7 +82,7 @@ export const SchedulePostDialog = ({
       : roundUpToNextFiveMinutes(now);
 
     setDate(startOfDay(defaultScheduledAt));
-    setTime(format(defaultScheduledAt, "HH:mm"));
+    setTime(format(defaultScheduledAt, TIME_PICKER_FORMAT));
     setValidationError(null);
   }, [currentScheduledAt]);
 
@@ -199,7 +198,7 @@ export const SchedulePostDialog = ({
             <TimePicker
               value={time}
               onValueChange={setTime}
-              options={timeOptions}
+              options={TIME_OPTIONS}
             />
           </Field>
 

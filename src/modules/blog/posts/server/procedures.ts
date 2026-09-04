@@ -43,15 +43,16 @@ import { getPaginatedPosts } from "./queries";
 
 export const postsRouter = createTRPCRouter({
   create: protectedProcedure
-    .input(postInsertSchema)
+    .input(postInsertSchema.extend({ timezone: z.string().optional() }))
     .mutation(async ({ input, ctx }) => {
+      const { timezone, ...postData } = input;
       const isScheduled = input.scheduledAt && input.scheduledAt > new Date();
       const status = isScheduled
         ? ContentStatus.SCHEDULED
         : ContentStatus.DRAFT;
       const post = await db.post.create({
         data: {
-          ...input,
+          ...postData,
           version: 1,
           status,
           scheduledAt: input.scheduledAt,
@@ -89,8 +90,7 @@ export const postsRouter = createTRPCRouter({
           targetId: updatedPost.id,
           plannedAt: input.scheduledAt,
           timezone:
-            input.timezone ??
-            Intl.DateTimeFormat().resolvedOptions().timeZone,
+            timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone,
           idempotencyKey: createIdempotencyKey(
             ScheduledActionType.PUBLISH_POST,
             SCHEDULER_TARGET_TYPES.POST_ROOT,

@@ -27,7 +27,7 @@ import type {
 } from "@/modules/scheduler/types";
 
 import { PostCalendar } from "./post-calendar";
-import { ScheduleToolbar } from "./schedule-toolbar";
+import { SchedulerToolbar } from "./scheduler-toolbar";
 
 type ViewType = "month" | "week";
 
@@ -36,7 +36,7 @@ export const Calendar = () => {
   const trpc = useTRPC();
   const [view, setView] = useQueryState("view", { defaultValue: "month" });
   const { onOpen } = useOpenPost();
-  const [filters, setFilters] = useCalendarFilters();
+  const [filters] = useCalendarFilters();
 
   const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -105,18 +105,7 @@ export const Calendar = () => {
             onDateChange={setCurrentDate}
             onEventClick={handleEventClick}
             onCreatePost={handleCreatePost}
-            rightActions={
-              <ScheduleToolbar
-                selectedActionType={filters.actionType}
-                setSelectedActionType={(actionType) =>
-                  setFilters({ actionType: actionType ?? CALENDAR_FILTER_ALL })
-                }
-                selectedStatus={filters.status}
-                setSelectedStatus={(status) =>
-                  setFilters({ status: status ?? CALENDAR_FILTER_ALL })
-                }
-              />
-            }
+            rightActions={<SchedulerToolbar />}
           />
         </div>
       </div>

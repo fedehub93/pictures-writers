@@ -1,17 +1,12 @@
 import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import { HydrateClient } from "@/trpc/server";
 
-import { Calendar } from "@/shared/components/calendar";
-
-const SchedulePageContent = () => {
-  return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-hidden">
-        <Calendar />
-      </div>
-    </div>
-  );
-};
+import {
+  SchedulerView,
+  SchedulerViewError,
+  SchedulerViewLoading,
+} from "@/modules/scheduler";
 
 const SchedulePage = () => {
   return (
@@ -23,8 +18,10 @@ const SchedulePage = () => {
           </div>
         </div>
       </div>
-      <Suspense fallback={<div>Loading...</div>}>
-        <SchedulePageContent />
+      <Suspense fallback={<SchedulerViewLoading />}>
+        <ErrorBoundary fallback={<SchedulerViewError />}>
+          <SchedulerView />
+        </ErrorBoundary>
       </Suspense>
     </HydrateClient>
   );
