@@ -149,6 +149,71 @@ describe("scheduled post lifecycle", () => {
       });
     });
 
+    it("rejects an invalid scheduled date", async () => {
+      const now = new Date("2025-06-01T10:00:00.000Z");
+      const post = await createPost({ status: ContentStatus.DRAFT });
+
+      await expect(
+        schedulePost({
+          postId: post.id,
+          rootId: post.rootId!,
+          scheduledAt: new Date("invalid"),
+          now,
+        }),
+      ).rejects.toMatchObject({
+        code: "VALIDATION_ERROR",
+        message: "Scheduled time must be in the future",
+      });
+    });
+
+    it("rejects scheduling a post with a missing slug", async () => {
+      const now = new Date("2025-06-01T10:00:00.000Z");
+      const scheduledAt = new Date("2025-06-01T11:00:00.000Z");
+      const post = await createPost({ slug: "" });
+
+      await expect(
+        schedulePost({
+          postId: post.id,
+          rootId: post.rootId!,
+          scheduledAt,
+          now,
+        }),
+      ).rejects.toMatchObject({
+        code: "VALIDATION_ERROR",
+        message: "Missing required fields",
+      });
+    });
+
+    it("rejects scheduling a non-current version", async () => {
+      const now = new Date("2025-06-01T10:00:00.000Z");
+      const scheduledAt = new Date("2025-06-01T11:00:00.000Z");
+      const firstPost = await createPost({
+        status: ContentStatus.DRAFT,
+        version: 1,
+      });
+      const rootId = firstPost.rootId;
+
+      await createPost({
+        rootId,
+        title: "Test Post",
+        slug: "test-post",
+        version: 2,
+        status: ContentStatus.DRAFT,
+      });
+
+      await expect(
+        schedulePost({
+          postId: firstPost.id,
+          rootId,
+          scheduledAt,
+          now,
+        }),
+      ).rejects.toMatchObject({
+        code: "INVALID_STATE",
+        message: "Only the current version can be scheduled",
+      });
+    });
+
     it("rejects scheduling a post with missing required fields", async () => {
       const now = new Date("2025-06-01T10:00:00.000Z");
       const scheduledAt = new Date("2025-06-01T11:00:00.000Z");
@@ -214,6 +279,49 @@ describe("scheduled post lifecycle", () => {
           now,
         }),
       ).rejects.toMatchObject({
+        code: "CONFLICT",
+        message: "An active schedule already exists for this post",
+      });
+    });
+
+    it("allows at most one active schedule when two requests arrive concurrently", async () => {
+      const now = new Date("2025-06-01T10:00:00.000Z");
+      const scheduledAt = new Date("2025-06-01T11:00:00.000Z");
+      const post = await createPost({ status: ContentStatus.DRAFT });
+
+      const [first, second] = await Promise.allSettled([
+        schedulePost({
+          postId: post.id,
+          rootId: post.rootId!,
+          scheduledAt,
+          now,
+        }),
+        schedulePost({
+          postId: post.id,
+          rootId: post.rootId!,
+          scheduledAt: new Date("2025-06-01T12:00:00.000Z"),
+          now,
+        }),
+      ]);
+
+      const succeeded = [first, second].filter(
+        (result) => result.status === "fulfilled",
+      );
+      const failed = [first, second].filter(
+        (result) => result.status === "rejected",
+      );
+
+      expect(succeeded).toHaveLength(1);
+      expect(failed).toHaveLength(1);
+
+      const scheduledInDb = await db.post.findUnique({
+        where: { id: post.id },
+      });
+
+      expect(scheduledInDb?.status).toBe(ContentStatus.SCHEDULED);
+
+      const rejected = failed[0] as PromiseRejectedResult;
+      expect(rejected.reason).toMatchObject({
         code: "CONFLICT",
         message: "An active schedule already exists for this post",
       });
@@ -456,6 +564,51 @@ describe("scheduled post lifecycle", () => {
 
       const publicVersion = await getPublishedPostByRootId(rootId);
       expect(publicVersion?.id).toBe(versionOne.id);
+    });
+
+    it("keeps the current public version unchanged until the scheduled one is published", async () => {
+      const now = new Date("2025-06-01T10:00:00.000Z");
+      const firstPublishAt = new Date("2025-01-01T00:00:00.000Z");
+
+      const versionOne = await createPost({
+        status: ContentStatus.DRAFT,
+        version: 1,
+      });
+      const rootId = versionOne.rootId;
+
+      await publishPost({
+        postId: versionOne.id,
+        rootId,
+        now: firstPublishAt,
+      });
+
+      const versionTwo = await createPost({
+        rootId,
+        title: "Test Post",
+        slug: "test-post",
+        version: 2,
+        status: ContentStatus.CHANGED,
+        firstPublishedAt: firstPublishAt,
+        publishedAt: firstPublishAt,
+      });
+      trackRootId(rootId);
+
+      await schedulePost({
+        postId: versionTwo.id,
+        rootId,
+        scheduledAt: new Date("2025-06-02T12:00:00.000Z"),
+        now,
+      });
+
+      const publicVersion = await db.post.findUnique({
+        where: { id: versionOne.id },
+      });
+
+      expect(publicVersion?.status).toBe(ContentStatus.PUBLISHED);
+      expect(publicVersion?.isLatest).toBe(true);
+      expect(publicVersion?.publishedAt.toISOString()).toBe(
+        firstPublishAt.toISOString(),
+      );
     });
   });
 });

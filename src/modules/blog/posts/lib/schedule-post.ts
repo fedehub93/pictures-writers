@@ -3,6 +3,8 @@ import "server-only";
 import { db } from "@/shared/lib/db";
 import { Prisma, ContentStatus, type Post, type Seo } from "@/generated/prisma";
 
+import { acquireRootLock } from "./lock-root-posts";
+
 export type ScheduledPostResult = Post & {
   seo: Seo | null;
 };
@@ -40,7 +42,10 @@ export interface CancelScheduleInput {
 }
 
 function assertFutureScheduledAt(scheduledAt: Date, now: Date) {
-  if (scheduledAt.getTime() <= now.getTime()) {
+  if (
+    Number.isNaN(scheduledAt.getTime()) ||
+    scheduledAt.getTime() <= now.getTime()
+  ) {
     throw new ScheduledPostError(
       "VALIDATION_ERROR",
       "Scheduled time must be in the future",
@@ -48,7 +53,9 @@ function assertFutureScheduledAt(scheduledAt: Date, now: Date) {
   }
 }
 
-async function lockRootPosts(tx: Prisma.TransactionClient, rootId: string) {
+async function loadRootPosts(tx: Prisma.TransactionClient, rootId: string) {
+  await acquireRootLock(tx, rootId);
+
   return tx.post.findMany({
     where: { rootId },
     select: {
@@ -56,6 +63,7 @@ async function lockRootPosts(tx: Prisma.TransactionClient, rootId: string) {
       status: true,
       version: true,
       title: true,
+      slug: true,
       scheduledAt: true,
       preSchedulingStatus: true,
     },
@@ -64,7 +72,7 @@ async function lockRootPosts(tx: Prisma.TransactionClient, rootId: string) {
 }
 
 function findTarget(
-  posts: Awaited<ReturnType<typeof lockRootPosts>>,
+  posts: Awaited<ReturnType<typeof loadRootPosts>>,
   postId: string,
 ) {
   const target = posts.find((post) => post.id === postId);
@@ -73,7 +81,7 @@ function findTarget(
     throw new ScheduledPostError("NOT_FOUND", "Post not found");
   }
 
-  if (!target.title) {
+  if (!target.title || !target.slug) {
     throw new ScheduledPostError(
       "VALIDATION_ERROR",
       "Missing required fields",
@@ -81,6 +89,20 @@ function findTarget(
   }
 
   return target;
+}
+
+function assertCurrentVersion(
+  posts: Awaited<ReturnType<typeof loadRootPosts>>,
+  target: { id: string; version: number },
+) {
+  const maxVersion = Math.max(...posts.map((post) => post.version));
+
+  if (target.version !== maxVersion) {
+    throw new ScheduledPostError(
+      "INVALID_STATE",
+      "Only the current version can be scheduled",
+    );
+  }
 }
 
 export async function schedulePost({
@@ -99,18 +121,10 @@ export async function schedulePost({
   assertFutureScheduledAt(scheduledAt, now);
 
   return db.$transaction(async (tx) => {
-    const posts = await lockRootPosts(tx, rootId);
+    const posts = await loadRootPosts(tx, rootId);
     const target = findTarget(posts, postId);
 
-    if (
-      target.status !== ContentStatus.DRAFT &&
-      target.status !== ContentStatus.CHANGED
-    ) {
-      throw new ScheduledPostError(
-        "INVALID_STATE",
-        "Only draft or changed posts can be scheduled",
-      );
-    }
+    assertCurrentVersion(posts, target);
 
     const activeSchedule = posts.find(
       (post) => post.status === ContentStatus.SCHEDULED,
@@ -120,6 +134,16 @@ export async function schedulePost({
       throw new ScheduledPostError(
         "CONFLICT",
         "An active schedule already exists for this post",
+      );
+    }
+
+    if (
+      target.status !== ContentStatus.DRAFT &&
+      target.status !== ContentStatus.CHANGED
+    ) {
+      throw new ScheduledPostError(
+        "INVALID_STATE",
+        "Only draft or changed posts can be scheduled",
       );
     }
 
@@ -153,7 +177,7 @@ export async function reschedulePost({
   assertFutureScheduledAt(scheduledAt, now);
 
   return db.$transaction(async (tx) => {
-    const posts = await lockRootPosts(tx, rootId);
+    const posts = await loadRootPosts(tx, rootId);
     const target = findTarget(posts, postId);
 
     if (target.status !== ContentStatus.SCHEDULED) {
@@ -187,7 +211,7 @@ export async function cancelSchedule({
   }
 
   return db.$transaction(async (tx) => {
-    const posts = await lockRootPosts(tx, rootId);
+    const posts = await loadRootPosts(tx, rootId);
     const target = findTarget(posts, postId);
 
     if (target.status !== ContentStatus.SCHEDULED) {

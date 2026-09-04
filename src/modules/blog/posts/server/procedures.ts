@@ -47,6 +47,8 @@ export const postsRouter = createTRPCRouter({
           version: 1,
           status,
           scheduledAt: input.scheduledAt,
+          preSchedulingStatus:
+            status === ContentStatus.SCHEDULED ? ContentStatus.DRAFT : null,
           bodyData: [{ type: "paragraph", children: [{ text: "" }] }],
           userId: ctx.auth.id,
           postAuthors: {

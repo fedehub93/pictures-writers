@@ -65,7 +65,12 @@ export async function publishDuePosts({
     }
 
     try {
-      await publishPost({ postId: post.id, rootId: post.rootId, now });
+      await publishPost({
+        postId: post.id,
+        rootId: post.rootId,
+        now,
+        mode: "scheduled",
+      });
       result.succeeded++;
       result.details.push({
         postId: post.id,

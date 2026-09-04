@@ -3,6 +3,8 @@ import "server-only";
 import { db } from "@/shared/lib/db";
 import { ContentStatus, type Post, type Seo } from "@/generated/prisma";
 
+import { acquireRootLock } from "./lock-root-posts";
+
 export type PublishPostResult = Post & {
   seo: Seo | null;
 };
@@ -16,10 +18,13 @@ export class PublishPostError extends Error {
   }
 }
 
+export type PublishMode = "manual" | "scheduled";
+
 export interface PublishPostInput {
   postId: string;
   rootId: string;
   now?: Date;
+  mode?: PublishMode;
 }
 
 /**
@@ -37,6 +42,7 @@ export async function publishPost({
   postId,
   rootId,
   now = new Date(),
+  mode = "manual",
 }: PublishPostInput): Promise<PublishPostResult> {
   if (!postId || !rootId) {
     throw new PublishPostError(
@@ -48,6 +54,8 @@ export async function publishPost({
   return db.$transaction(async (tx) => {
     // Lock every version of the post root in a deterministic order to avoid
     // deadlocks and race conditions between concurrent publishers.
+    await acquireRootLock(tx, rootId);
+
     const posts = await tx.post.findMany({
       where: { rootId },
       select: {
@@ -56,6 +64,8 @@ export async function publishPost({
         version: true,
         isLatest: true,
         title: true,
+        slug: true,
+        scheduledAt: true,
       },
       orderBy: { id: "asc" },
     });
@@ -66,7 +76,7 @@ export async function publishPost({
       throw new PublishPostError("NOT_FOUND", "Post not found");
     }
 
-    if (!target.title) {
+    if (!target.title || !target.slug) {
       throw new PublishPostError("VALIDATION_ERROR", "Missing required fields");
     }
 
@@ -80,6 +90,22 @@ export async function publishPost({
 
       // current is guaranteed to exist because we just locked the row
       return current as PublishPostResult;
+    }
+
+    if (mode === "scheduled") {
+      if (target.status !== ContentStatus.SCHEDULED) {
+        throw new PublishPostError(
+          "INVALID_STATE",
+          "Post is no longer scheduled",
+        );
+      }
+
+      if (!target.scheduledAt || target.scheduledAt.getTime() > now.getTime()) {
+        throw new PublishPostError(
+          "INVALID_STATE",
+          "Scheduled time is in the future",
+        );
+      }
     }
 
     if (
