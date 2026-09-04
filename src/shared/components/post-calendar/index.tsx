@@ -16,20 +16,28 @@ import {
   addHours,
   isBefore,
   startOfDay,
+  endOfDay,
 } from "date-fns";
 import { enUS } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, NotebookPenIcon, Plus } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  MailIcon,
+  NotebookPenIcon,
+  Plus,
+} from "lucide-react";
 
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./post-calendar.css";
 
-import { ContentStatus } from "@/generated/prisma";
+import { ScheduledActionStatus, ScheduledActionType } from "@/generated/prisma";
 
 import { cn } from "@/shared/lib/utils";
+import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Skeleton } from "@/shared/ui/skeleton";
 
-import { PostsGetMany } from "@/modules/blog/posts/types";
+import type { CalendarEvent, CalendarEventStatus } from "@/modules/scheduler/types";
 
 const locales = { "en-US": enUS };
 const localizer = dateFnsLocalizer({
@@ -41,41 +49,59 @@ const localizer = dateFnsLocalizer({
 });
 
 interface PostCalendarProps {
-  posts: (PostsGetMany["items"][number] & {
-    date: Date;
-  })[];
+  events: CalendarEvent[];
   isPending: boolean;
   currentDate: Date;
   view: "month" | "week";
   onViewChange: (view: string) => void;
   onDateChange: (date: Date) => void;
-  onPostClick: (post: PostsGetMany["items"][number]) => void;
+  onEventClick: (event: CalendarEvent) => void;
   onCreatePost: (date: Date) => void;
   rightActions?: React.ReactNode;
 }
 
+const statusVariantMap: Record<CalendarEventStatus, "default" | "secondary" | "destructive" | "outline"> = {
+  [ScheduledActionStatus.SCHEDULED]: "secondary",
+  [ScheduledActionStatus.PROCESSING]: "default",
+  [ScheduledActionStatus.RETRY_WAIT]: "default",
+  [ScheduledActionStatus.SUCCEEDED]: "outline",
+  [ScheduledActionStatus.FAILED]: "destructive",
+  [ScheduledActionStatus.CANCELED]: "outline",
+  PUBLISHED: "outline",
+};
+
+const statusLabelMap: Record<CalendarEventStatus, string> = {
+  [ScheduledActionStatus.SCHEDULED]: "Scheduled",
+  [ScheduledActionStatus.PROCESSING]: "Processing",
+  [ScheduledActionStatus.RETRY_WAIT]: "Retry",
+  [ScheduledActionStatus.SUCCEEDED]: "Done",
+  [ScheduledActionStatus.FAILED]: "Failed",
+  [ScheduledActionStatus.CANCELED]: "Canceled",
+  PUBLISHED: "Published",
+};
+
 export function PostCalendar({
-  posts,
+  events,
   isPending,
   currentDate,
   view,
   onViewChange,
   onDateChange,
-  onPostClick,
+  onEventClick,
   onCreatePost,
   rightActions,
 }: PostCalendarProps) {
-  const events = React.useMemo(
+  const calendarEvents = React.useMemo(
     () =>
       isPending
         ? []
-        : posts.map((p) => ({
-            ...p,
-            title: p.title,
-            start: new Date(p.date!),
-            end: addHours(new Date(p.date!), 1),
+        : events.map((event) => ({
+            ...event,
+            title: event.title,
+            start: event.start,
+            end: event.end,
           })),
-    [posts, isPending],
+    [events, isPending],
   );
 
   const formats = React.useMemo(
@@ -95,9 +121,7 @@ export function PostCalendar({
     [],
   );
 
-  const CustomToolbar = (
-    toolbar: ToolbarProps<PostsGetMany["items"][number]>,
-  ) => {
+  const CustomToolbar = (toolbar: ToolbarProps<CalendarEvent>) => {
     return (
       <div className="flex flex-col gap-4 mb-4">
         <div className="flex items-center justify-between">
@@ -154,77 +178,88 @@ export function PostCalendar({
     <div className={cn("h-full relative flex flex-col min-h-150")}>
       <Calendar
         localizer={localizer}
-        events={events}
+        events={calendarEvents}
         date={currentDate}
         formats={formats}
         step={15}
         timeslots={4}
         min={startOfDay(new Date())}
-        max={addHours(startOfDay(new Date()), 22)}
+        max={endOfDay(new Date())}
         onNavigate={onDateChange}
         view={view === "month" ? Views.MONTH : Views.WEEK}
         onView={(v) => onViewChange(v === Views.MONTH ? "month" : "week")}
-        onSelectEvent={(event: PostsGetMany["items"][number]) =>
-          onPostClick(event)
-        }
-        //onSelectSlot={({ start }) => onCreatePost(start)}
-
-        // In week view, disable past time slots
-        // and style them differently
-        slotPropGetter={(date) => {
-          const isPastSlot = isBefore(date, new Date());
-          return isPastSlot
-            ? {
-                className: "rbc-time-slot-disabled",
-                style: {
-                  backgroundColor: "hsl(var(--muted) / 0.35)",
-                  pointerEvents: "none",
-                },
-              }
-            : {};
-        }}
-        // In month view, disable past dates and style them differently
-        dayPropGetter={(date: Date) => {
-          const isPastDate = isBefore(startOfDay(date), startOfDay(new Date()));
-          return isPastDate
-            ? {
-                className: "pointer-events-none",
-                style: { backgroundColor: "hsl(var(--muted) / 0.5)" },
-              }
-            : {};
-        }}
+        onSelectEvent={(event: CalendarEvent) => onEventClick(event)}
         components={{
           toolbar: CustomToolbar,
           event: ({ event }) => {
+            const isEmail = event.type === ScheduledActionType.SEND_EMAIL;
+            const displayTime = event.start;
+
             return (
-              <>
-                <div
-                  className={cn(
-                    "flex items-center justify-between gap-2 p-1 h-full",
-                    event.status === ContentStatus.PUBLISHED &&
-                      "text-muted-foreground",
-                  )}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onPostClick(event);
-                  }}
-                >
-                  <div className="flex gap-2">
-                    <NotebookPenIcon size={16} />
+              <div
+                className={cn(
+                  "flex flex-col gap-0.5 p-1 h-full cursor-pointer",
+                  event.status === ScheduledActionStatus.SUCCEEDED &&
+                    "text-muted-foreground",
+                  event.status === "PUBLISHED" && "text-muted-foreground",
+                  event.overdue &&
+                    "border-l-2 border-l-destructive bg-destructive/5",
+                )}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEventClick(event);
+                }}
+                title={
+                  event.plannedAt && event.executedAt
+                    ? `Planned: ${format(event.plannedAt, "PPpp")}\nExecuted: ${format(event.executedAt, "PPpp")}`
+                    : event.plannedAt
+                      ? `Planned: ${format(event.plannedAt, "PPpp")}`
+                      : undefined
+                }
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex gap-2 min-w-0">
+                    {isEmail ? (
+                      <MailIcon size={14} />
+                    ) : (
+                      <NotebookPenIcon size={14} />
+                    )}
                     <span className="text-xs truncate max-w-20 xl:max-w-35">
-                      {event?.title}
+                      {event.title}
                     </span>
                   </div>
-                  <span className="font-semibold">
-                    {format(event.scheduledAt!, "HH:mm")}
+                  <span className="font-semibold text-xs shrink-0">
+                    {format(displayTime, "HH:mm")}
                   </span>
                 </div>
-              </>
+                <div className="flex items-center gap-1">
+                  <Badge
+                    variant={statusVariantMap[event.status]}
+                    className="text-[9px] px-1 py-0 h-auto"
+                  >
+                    {statusLabelMap[event.status]}
+                  </Badge>
+                  {event.overdue && (
+                    <Badge
+                      variant="destructive"
+                      className="text-[9px] px-1 py-0 h-auto"
+                    >
+                      Overdue
+                    </Badge>
+                  )}
+                </div>
+              </div>
             );
           },
 
           month: {
-            dateHeader: ({ label, date: cellDate }: any) => {
+            dateHeader: ({
+              label,
+              date: cellDate,
+            }: {
+              label: string;
+              date: Date;
+            }) => {
               const isCellToday =
                 format(cellDate, "yyyy-MM-dd") ===
                 format(new Date(), "yyyy-MM-dd");
@@ -251,7 +286,6 @@ export function PostCalendar({
                         className="p-px! size-6! mt-1 mb-0.5"
                         onClick={(e) => {
                           e.stopPropagation();
-                          console.log(cellDate);
                           onCreatePost(cellDate);
                         }}
                       >

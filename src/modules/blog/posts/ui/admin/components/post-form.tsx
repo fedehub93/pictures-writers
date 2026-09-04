@@ -4,7 +4,7 @@ import { useController, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { parse, set } from "date-fns";
 
 import { useTRPC } from "@/trpc/client";
@@ -37,6 +37,11 @@ export const PostForm = ({ data, onSuccess, onCancel }: PostFormProps) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const [filters, _] = usePostsFilters();
+
+  const timeZone = useMemo(
+    () => Intl.DateTimeFormat().resolvedOptions().timeZone,
+    [],
+  );
 
   const form = useForm<PostInsertValues>({
     resolver: zodResolver(postInsertSchema),
@@ -77,7 +82,7 @@ export const PostForm = ({ data, onSuccess, onCancel }: PostFormProps) => {
         });
       }
     }
-    createPost.mutate({ ...values, scheduledAt });
+    createPost.mutate({ ...values, scheduledAt, timezone: timeZone });
   };
 
   const { field: fieldTitle } = useController({

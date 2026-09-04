@@ -41,6 +41,7 @@ export interface SchedulePostInput {
   postId: string;
   rootId: string;
   scheduledAt: Date;
+  timezone?: string;
   now?: Date;
 }
 
@@ -48,6 +49,7 @@ export interface ReschedulePostInput {
   postId: string;
   rootId: string;
   scheduledAt: Date;
+  timezone?: string;
   now?: Date;
 }
 
@@ -124,6 +126,7 @@ export async function schedulePost({
   postId,
   rootId,
   scheduledAt,
+  timezone = Intl.DateTimeFormat().resolvedOptions().timeZone,
   now = new Date(),
 }: SchedulePostInput): Promise<ScheduledPostResult> {
   if (!postId || !rootId) {
@@ -201,7 +204,7 @@ export async function schedulePost({
       targetType: SCHEDULER_TARGET_TYPES.POST_ROOT,
       targetId: rootId,
       plannedAt: scheduledAt,
-      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      timezone,
       idempotencyKey,
     });
 
@@ -213,6 +216,7 @@ export async function reschedulePost({
   postId,
   rootId,
   scheduledAt,
+  timezone = Intl.DateTimeFormat().resolvedOptions().timeZone,
   now = new Date(),
 }: ReschedulePostInput): Promise<ScheduledPostResult> {
   if (!postId || !rootId) {
@@ -251,7 +255,7 @@ export async function reschedulePost({
     );
 
     if (action) {
-      await rescheduleScheduledAction(action.id, scheduledAt, action.timezone, now);
+      await rescheduleScheduledAction(action.id, scheduledAt, timezone, now);
     }
 
     return rescheduledPost;

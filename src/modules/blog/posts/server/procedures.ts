@@ -4,9 +4,17 @@ import { db } from "@/shared/lib/db";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 
-import { ContentStatus } from "@/generated/prisma";
+import {
+  ContentStatus,
+  ScheduledActionType,
+} from "@/generated/prisma";
 
 import { createPostSeo } from "@/lib/seo";
+import {
+  createScheduledAction,
+  createIdempotencyKey,
+} from "@/modules/scheduler/lib/scheduled-action-repository";
+import { SCHEDULER_TARGET_TYPES } from "@/modules/scheduler/constants";
 
 import {
   postInsertSchema,
@@ -73,6 +81,23 @@ export const postsRouter = createTRPCRouter({
       });
 
       await createPostSeo(updatedPost);
+
+      if (isScheduled && input.scheduledAt) {
+        await createScheduledAction({
+          type: ScheduledActionType.PUBLISH_POST,
+          targetType: SCHEDULER_TARGET_TYPES.POST_ROOT,
+          targetId: updatedPost.id,
+          plannedAt: input.scheduledAt,
+          timezone:
+            input.timezone ??
+            Intl.DateTimeFormat().resolvedOptions().timeZone,
+          idempotencyKey: createIdempotencyKey(
+            ScheduledActionType.PUBLISH_POST,
+            SCHEDULER_TARGET_TYPES.POST_ROOT,
+            updatedPost.id,
+          ),
+        });
+      }
 
       return post;
     }),
@@ -446,6 +471,7 @@ export const postsRouter = createTRPCRouter({
         id: z.string(),
         rootId: z.string(),
         scheduledAt: z.coerce.date(),
+        timezone: z.string().optional(),
       }),
     )
     .mutation(async ({ input }) => {
@@ -454,6 +480,7 @@ export const postsRouter = createTRPCRouter({
           postId: input.id,
           rootId: input.rootId,
           scheduledAt: input.scheduledAt,
+          timezone: input.timezone,
         });
       } catch (error) {
         if (error instanceof ScheduledPostError) {
@@ -479,6 +506,7 @@ export const postsRouter = createTRPCRouter({
         id: z.string(),
         rootId: z.string(),
         scheduledAt: z.coerce.date(),
+        timezone: z.string().optional(),
       }),
     )
     .mutation(async ({ input }) => {
@@ -487,6 +515,7 @@ export const postsRouter = createTRPCRouter({
           postId: input.id,
           rootId: input.rootId,
           scheduledAt: input.scheduledAt,
+          timezone: input.timezone,
         });
       } catch (error) {
         if (error instanceof ScheduledPostError) {

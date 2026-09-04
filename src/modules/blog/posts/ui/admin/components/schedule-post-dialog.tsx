@@ -99,6 +99,9 @@ export const SchedulePostDialog = ({
     queryClient.invalidateQueries(
       trpc.posts.getLastByRootId.queryFilter({ rootId }),
     );
+    queryClient.invalidateQueries(
+      trpc.scheduler.getCalendarEvents.queryFilter(),
+    );
   };
 
   const scheduleMutation = useMutation(
@@ -157,9 +160,9 @@ export const SchedulePostDialog = ({
     }
 
     if (mode === "reschedule") {
-      rescheduleMutation.mutate({ id: postId, rootId, scheduledAt });
+      rescheduleMutation.mutate({ id: postId, rootId, scheduledAt, timezone: timeZone });
     } else {
-      scheduleMutation.mutate({ id: postId, rootId, scheduledAt });
+      scheduleMutation.mutate({ id: postId, rootId, scheduledAt, timezone: timeZone });
     }
   };
 
