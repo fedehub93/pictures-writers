@@ -1,7 +1,22 @@
 import "server-only";
 
 import { db } from "@/shared/lib/db";
-import { Prisma, ContentStatus, type Post, type Seo } from "@/generated/prisma";
+import {
+  Prisma,
+  ContentStatus,
+  ScheduledActionType,
+  type Post,
+  type Seo,
+} from "@/generated/prisma";
+
+import {
+  createScheduledAction,
+  createIdempotencyKey,
+  rescheduleScheduledAction,
+  cancelScheduledAction,
+  getActiveScheduledActionByTarget,
+} from "@/modules/scheduler/lib/scheduled-action-repository";
+import { SCHEDULER_TARGET_TYPES } from "@/modules/scheduler/constants";
 
 import { acquireRootLock } from "./lock-root-posts";
 
@@ -120,6 +135,12 @@ export async function schedulePost({
 
   assertFutureScheduledAt(scheduledAt, now);
 
+  const idempotencyKey = createIdempotencyKey(
+    ScheduledActionType.PUBLISH_POST,
+    SCHEDULER_TARGET_TYPES.POST_ROOT,
+    rootId,
+  );
+
   return db.$transaction(async (tx) => {
     const posts = await loadRootPosts(tx, rootId);
     const target = findTarget(posts, postId);
@@ -155,6 +176,33 @@ export async function schedulePost({
         preSchedulingStatus: target.status,
       },
       include: { seo: true },
+    });
+
+    // Compatibility: create the new ScheduledAction representation. The
+    // transaction does not block on the external scheduling table because
+    // ScheduledAction is a separate aggregate; we use the idempotency key
+    // to detect an existing active action outside this transaction.
+    return scheduledPost;
+  }).then(async (scheduledPost) => {
+    const existing = await getActiveScheduledActionByTarget(
+      SCHEDULER_TARGET_TYPES.POST_ROOT,
+      rootId,
+    );
+
+    if (existing) {
+      throw new ScheduledPostError(
+        "CONFLICT",
+        "An active schedule already exists for this post",
+      );
+    }
+
+    await createScheduledAction({
+      type: ScheduledActionType.PUBLISH_POST,
+      targetType: SCHEDULER_TARGET_TYPES.POST_ROOT,
+      targetId: rootId,
+      plannedAt: scheduledAt,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      idempotencyKey,
     });
 
     return scheduledPost;
@@ -196,6 +244,17 @@ export async function reschedulePost({
     });
 
     return rescheduledPost;
+  }).then(async (rescheduledPost) => {
+    const action = await getActiveScheduledActionByTarget(
+      SCHEDULER_TARGET_TYPES.POST_ROOT,
+      rootId,
+    );
+
+    if (action) {
+      await rescheduleScheduledAction(action.id, scheduledAt, action.timezone, now);
+    }
+
+    return rescheduledPost;
   });
 }
 
@@ -233,6 +292,17 @@ export async function cancelSchedule({
       },
       include: { seo: true },
     });
+
+    return restoredPost;
+  }).then(async (restoredPost) => {
+    const action = await getActiveScheduledActionByTarget(
+      SCHEDULER_TARGET_TYPES.POST_ROOT,
+      rootId,
+    );
+
+    if (action) {
+      await cancelScheduledAction(action.id);
+    }
 
     return restoredPost;
   });

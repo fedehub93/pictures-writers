@@ -1,7 +1,18 @@
 import "server-only";
 
 import { db } from "@/shared/lib/db";
-import { ContentStatus, type Post, type Seo } from "@/generated/prisma";
+import {
+  ContentStatus,
+  ScheduledActionStatus,
+  type Post,
+  type Seo,
+} from "@/generated/prisma";
+
+import {
+  getActiveScheduledActionByTarget,
+  updateScheduledActionResult,
+} from "@/modules/scheduler/lib/scheduled-action-repository";
+import { SCHEDULER_TARGET_TYPES } from "@/modules/scheduler/constants";
 
 import { acquireRootLock } from "./lock-root-posts";
 
@@ -136,6 +147,24 @@ export async function publishPost({
       },
       include: { seo: true },
     });
+
+    return publishedPost;
+  }).then(async (publishedPost) => {
+    // During migration, also invalidate any pending ScheduledAction so the
+    // worker does not process this post again.
+    const action = await getActiveScheduledActionByTarget(
+      SCHEDULER_TARGET_TYPES.POST_ROOT,
+      rootId,
+    );
+
+    if (action) {
+      await updateScheduledActionResult(action.id, {
+        status: ScheduledActionStatus.SUCCEEDED,
+        attempts: action.attempts + 1,
+        executedAt: now,
+        lastError: null,
+      });
+    }
 
     return publishedPost;
   });

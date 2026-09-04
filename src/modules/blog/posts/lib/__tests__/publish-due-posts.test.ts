@@ -57,6 +57,9 @@ describe("publishDuePosts workflow", () => {
 
   afterEach(async () => {
     if (createdRootIds.length > 0) {
+      await db.scheduledAction.deleteMany({
+        where: { targetId: { in: createdRootIds } },
+      });
       await db.post.deleteMany({
         where: { rootId: { in: createdRootIds } },
       });
@@ -189,8 +192,8 @@ describe("publishDuePosts workflow", () => {
     });
   });
 
-  describe("retry", () => {
-    it("publishes a previously failing post after the validation issue is fixed", async () => {
+  describe("permanent failures", () => {
+    it("marks a validation failure as FAILED and does not retry", async () => {
       const scheduleNow = new Date("2025-06-01T10:00:00.000Z");
       const publishNow = new Date("2025-06-01T12:00:00.000Z");
 
@@ -218,11 +221,14 @@ describe("publishDuePosts workflow", () => {
       const second = await publishDuePosts({
         now: new Date("2025-06-01T13:00:00.000Z"),
       });
-      expect(second.succeeded).toBe(1);
+      // Validation errors are permanent; the failed scheduled action is not
+      // retried even after the content is fixed.
+      expect(second.succeeded).toBe(0);
       expect(second.failed).toBe(0);
+      expect(second.processed).toBe(0);
 
       const published = await db.post.findUnique({ where: { id: post.id } });
-      expect(published?.status).toBe(ContentStatus.PUBLISHED);
+      expect(published?.status).toBe(ContentStatus.SCHEDULED);
       expect(published?.title).toBe("Fixed Title");
     });
   });
@@ -250,7 +256,7 @@ describe("publishDuePosts workflow", () => {
       expect(result.succeeded).toBe(0);
     });
 
-    it("ignores deleted scheduled posts", async () => {
+    it("marks the scheduled action as FAILED when the target post is deleted", async () => {
       const scheduleNow = new Date("2025-06-01T10:00:00.000Z");
       const publishNow = new Date("2025-06-01T12:00:00.000Z");
 
@@ -266,11 +272,12 @@ describe("publishDuePosts workflow", () => {
 
       const result = await publishDuePosts({ now: publishNow });
 
-      expect(result.processed).toBe(0);
+      expect(result.processed).toBe(1);
       expect(result.succeeded).toBe(0);
+      expect(result.failed).toBe(1);
     });
 
-    it("skips scheduled posts that are missing a rootId", async () => {
+    it("ignores legacy scheduled posts that are missing a rootId", async () => {
       const publishNow = new Date("2025-06-01T12:00:00.000Z");
 
       const post = await db.post.create({
@@ -284,10 +291,12 @@ describe("publishDuePosts workflow", () => {
         },
       });
 
+      // A post without a root cannot be represented as a ScheduledAction, so
+      // the worker has nothing to process.
       const result = await publishDuePosts({ now: publishNow });
 
-      expect(result.processed).toBe(1);
-      expect(result.skipped).toBe(1);
+      expect(result.processed).toBe(0);
+      expect(result.skipped).toBe(0);
       expect(result.succeeded).toBe(0);
 
       await db.post.delete({ where: { id: post.id } });

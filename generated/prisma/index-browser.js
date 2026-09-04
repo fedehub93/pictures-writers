@@ -650,6 +650,28 @@ exports.Prisma.SocialChannelScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.ScheduledActionScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  targetType: 'targetType',
+  targetId: 'targetId',
+  plannedAt: 'plannedAt',
+  timezone: 'timezone',
+  status: 'status',
+  attempts: 'attempts',
+  maxAttempts: 'maxAttempts',
+  retryAt: 'retryAt',
+  leaseId: 'leaseId',
+  leaseExpiresAt: 'leaseExpiresAt',
+  idempotencyKey: 'idempotencyKey',
+  providerId: 'providerId',
+  lastError: 'lastError',
+  executedAt: 'executedAt',
+  canceledAt: 'canceledAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -792,6 +814,20 @@ exports.SocialEntityType = exports.$Enums.SocialEntityType = {
   USER: 'USER'
 };
 
+exports.ScheduledActionType = exports.$Enums.ScheduledActionType = {
+  PUBLISH_POST: 'PUBLISH_POST',
+  SEND_EMAIL: 'SEND_EMAIL'
+};
+
+exports.ScheduledActionStatus = exports.$Enums.ScheduledActionStatus = {
+  SCHEDULED: 'SCHEDULED',
+  PROCESSING: 'PROCESSING',
+  RETRY_WAIT: 'RETRY_WAIT',
+  SUCCEEDED: 'SUCCEEDED',
+  FAILED: 'FAILED',
+  CANCELED: 'CANCELED'
+};
+
 exports.Prisma.ModelName = {
   Language: 'Language',
   Settings: 'Settings',
@@ -836,7 +872,8 @@ exports.Prisma.ModelName = {
   Genre: 'Genre',
   Impression: 'Impression',
   Notification: 'Notification',
-  SocialChannel: 'SocialChannel'
+  SocialChannel: 'SocialChannel',
+  ScheduledAction: 'ScheduledAction'
 };
 
 /**
