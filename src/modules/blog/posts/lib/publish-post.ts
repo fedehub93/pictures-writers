@@ -3,15 +3,11 @@ import "server-only";
 import { db } from "@/shared/lib/db";
 import {
   ContentStatus,
-  ScheduledActionStatus,
   type Post,
   type Seo,
 } from "@/generated/prisma";
 
-import {
-  getActiveScheduledActionByTarget,
-  updateScheduledActionResult,
-} from "@/modules/scheduler/lib/scheduled-action-repository";
+import { markActiveScheduledActionSucceededTx } from "@/modules/scheduler/lib/scheduled-action-repository";
 import { SCHEDULER_TARGET_TYPES } from "@/modules/scheduler/constants";
 
 import { acquireRootLock } from "./lock-root-posts";
@@ -95,6 +91,8 @@ export async function publishPost({
         );
       }
 
+      let publishResult: PublishPostResult;
+
       // Already published -> idempotent no-op. This keeps publishedAt,
       // firstPublishedAt and isLatest stable across repeated or concurrent calls.
       if (target.status === ContentStatus.PUBLISHED) {
@@ -104,76 +102,67 @@ export async function publishPost({
         });
 
         // current is guaranteed to exist because we just locked the row
-        return current as PublishPostResult;
-      }
+        publishResult = current as PublishPostResult;
+      } else {
+        if (mode === "scheduled") {
+          if (target.status !== ContentStatus.SCHEDULED) {
+            throw new PublishPostError(
+              "INVALID_STATE",
+              "Post is no longer scheduled",
+            );
+          }
 
-      if (mode === "scheduled") {
-        if (target.status !== ContentStatus.SCHEDULED) {
-          throw new PublishPostError(
-            "INVALID_STATE",
-            "Post is no longer scheduled",
-          );
+          if (
+            !target.scheduledAt ||
+            target.scheduledAt.getTime() > now.getTime()
+          ) {
+            throw new PublishPostError(
+              "INVALID_STATE",
+              "Scheduled time is in the future",
+            );
+          }
         }
 
         if (
-          !target.scheduledAt ||
-          target.scheduledAt.getTime() > now.getTime()
+          target.status !== ContentStatus.DRAFT &&
+          target.status !== ContentStatus.CHANGED &&
+          target.status !== ContentStatus.SCHEDULED
         ) {
-          throw new PublishPostError(
-            "INVALID_STATE",
-            "Scheduled time is in the future",
-          );
+          throw new PublishPostError("INVALID_STATE", "Post cannot be published");
         }
-      }
 
-      if (
-        target.status !== ContentStatus.DRAFT &&
-        target.status !== ContentStatus.CHANGED &&
-        target.status !== ContentStatus.SCHEDULED
-      ) {
-        throw new PublishPostError("INVALID_STATE", "Post cannot be published");
-      }
+        // Demote every version of the root so only the target becomes latest.
+        await tx.post.updateMany({
+          where: { rootId },
+          data: { isLatest: false },
+        });
 
-      // Demote every version of the root so only the target becomes latest.
-      await tx.post.updateMany({
-        where: { rootId },
-        data: { isLatest: false },
-      });
+        const firstPublishedAt = target.version === 1 ? now : undefined;
 
-      const firstPublishedAt = target.version === 1 ? now : undefined;
-
-      const publishedPost = await tx.post.update({
-        where: { id: postId },
-        data: {
-          status: ContentStatus.PUBLISHED,
-          isLatest: true,
-          publishedAt: now,
-          scheduledAt: null,
-          preSchedulingStatus: null,
-          ...(firstPublishedAt && { firstPublishedAt: now }),
-        },
-        include: { seo: true },
-      });
-
-      return publishedPost;
-    })
-    .then(async (publishedPost) => {
-      // During migration, also invalidate any pending ScheduledAction so the
-      // worker does not process this post again.
-      const action = await getActiveScheduledActionByTarget(
-        SCHEDULER_TARGET_TYPES.POST_ROOT,
-        rootId,
-      );
-
-      if (action) {
-        await updateScheduledActionResult(action.id, {
-          status: ScheduledActionStatus.SUCCEEDED,
-          attempts: action.attempts + 1,
-          executedAt: now,
-          lastError: null,
+        publishResult = await tx.post.update({
+          where: { id: postId },
+          data: {
+            status: ContentStatus.PUBLISHED,
+            isLatest: true,
+            publishedAt: now,
+            scheduledAt: null,
+            preSchedulingStatus: null,
+            ...(firstPublishedAt && { firstPublishedAt: now }),
+          },
+          include: { seo: true },
         });
       }
 
-      return publishedPost;
+      // Invalidate any pending or in-flight ScheduledAction atomically with the
+      // state transition (also on the idempotent no-op path) so the worker can
+      // never process this root after publication.
+      await markActiveScheduledActionSucceededTx(
+        tx,
+        SCHEDULER_TARGET_TYPES.POST_ROOT,
+        rootId,
+        now,
+      );
+
+      return publishResult;
     });
 }

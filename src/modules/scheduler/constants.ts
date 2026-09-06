@@ -3,6 +3,12 @@ import "server-only";
 export const SCHEDULER_BATCH_SIZE = 50;
 
 /**
+ * Header used by the external cron trigger to authenticate against the
+ * scheduler run endpoint.
+ */
+export const SECRET_HEADER = "x-scheduled-publication-secret";
+
+/**
  * Lease duration in milliseconds. A worker must complete the action or
  * refresh the lease within this window; otherwise another worker can reclaim
  * the action.

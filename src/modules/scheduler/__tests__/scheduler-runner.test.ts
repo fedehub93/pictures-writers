@@ -462,7 +462,7 @@ describe("scheduler runner", () => {
       const second = await backfillScheduledPosts(now);
 
       expect(second.created).toBe(0);
-      expect(second.skipped).toBe(1);
+      expect(second.skipped).toBe(0);
 
       const actions = await db.scheduledAction.findMany({
         where: { targetId: post.rootId },
