@@ -1,7 +1,7 @@
 import "server-only";
 
 import { db } from "@/shared/lib/db";
-import { ScheduledActionStatus, ScheduledActionType } from "@/generated/prisma";
+import { ScheduledActionType } from "@/generated/prisma";
 import type { Prisma, ScheduledAction } from "@/generated/prisma";
 
 import {
@@ -10,6 +10,7 @@ import {
   rescheduleScheduledAction,
   cancelScheduledAction,
   getActiveScheduledActionByTarget,
+  hasActiveScheduledActionByTargetTx,
 } from "@/modules/scheduler/lib/scheduled-action-repository";
 import { SCHEDULER_TARGET_TYPES } from "@/modules/scheduler/constants";
 
@@ -78,16 +79,11 @@ async function findActiveActionTx(
   tx: Prisma.TransactionClient,
   singleSendId: string,
 ) {
-  return tx.scheduledAction.findFirst({
-    where: {
-      targetType: SCHEDULER_TARGET_TYPES.EMAIL_SINGLE_SEND,
-      targetId: singleSendId,
-      active: true,
-      status: {
-        in: [ScheduledActionStatus.SCHEDULED, ScheduledActionStatus.RETRY_WAIT],
-      },
-    },
-  });
+  return hasActiveScheduledActionByTargetTx(
+    tx,
+    SCHEDULER_TARGET_TYPES.EMAIL_SINGLE_SEND,
+    singleSendId,
+  );
 }
 
 export async function scheduleSingleSend({

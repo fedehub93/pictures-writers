@@ -10,11 +10,12 @@ import {
 } from "@/generated/prisma";
 
 import {
-  createScheduledAction,
+  createScheduledActionTx,
   createIdempotencyKey,
-  rescheduleScheduledAction,
-  cancelScheduledAction,
-  getActiveScheduledActionByTarget,
+  rescheduleScheduledActionTx,
+  cancelScheduledActionTx,
+  hasActiveScheduledActionByTargetTx,
+  getActiveScheduledActionByTargetTx,
 } from "@/modules/scheduler/lib/scheduled-action-repository";
 import { SCHEDULER_TARGET_TYPES } from "@/modules/scheduler/constants";
 
@@ -141,74 +142,73 @@ export async function schedulePost({
     rootId,
   );
 
-  return db
-    .$transaction(async (tx) => {
-      const posts = await loadRootPosts(tx, rootId);
-      const target = findTarget(posts, postId);
+  // The Post state change and the ScheduledAction are written in the same
+  // transaction so a scheduling either commits entirely or not at all: no
+  // window exists in which the Post is SCHEDULED without a corresponding
+  // action, and two concurrent requests cannot create duplicate schedules.
+  return db.$transaction(async (tx) => {
+    const posts = await loadRootPosts(tx, rootId);
+    const target = findTarget(posts, postId);
 
-      assertCurrentVersion(posts, target);
+    assertCurrentVersion(posts, target);
 
-      const activeSchedule = posts.find(
-        (post) => post.status === ContentStatus.SCHEDULED,
+    const activeSchedule = posts.find(
+      (post) => post.status === ContentStatus.SCHEDULED,
+    );
+
+    if (activeSchedule) {
+      throw new ScheduledPostError(
+        "CONFLICT",
+        "An active schedule already exists for this post",
       );
+    }
 
-      if (activeSchedule) {
-        throw new ScheduledPostError(
-          "CONFLICT",
-          "An active schedule already exists for this post",
-        );
-      }
-
-      if (
-        target.status !== ContentStatus.DRAFT &&
-        target.status !== ContentStatus.CHANGED
-      ) {
-        throw new ScheduledPostError(
-          "INVALID_STATE",
-          "Only draft or changed posts can be scheduled",
-        );
-      }
-
-      const scheduledPost = await tx.post.update({
-        where: { id: postId },
-        data: {
-          status: ContentStatus.SCHEDULED,
-          scheduledAt,
-          preSchedulingStatus: target.status,
-        },
-        include: { seo: true },
-      });
-
-      // Compatibility: create the new ScheduledAction representation. The
-      // transaction does not block on the external scheduling table because
-      // ScheduledAction is a separate aggregate; we use the idempotency key
-      // to detect an existing active action outside this transaction.
-      return scheduledPost;
-    })
-    .then(async (scheduledPost) => {
-      const existing = await getActiveScheduledActionByTarget(
-        SCHEDULER_TARGET_TYPES.POST_ROOT,
-        rootId,
+    const existingAction = await hasActiveScheduledActionByTargetTx(
+      tx,
+      SCHEDULER_TARGET_TYPES.POST_ROOT,
+      rootId,
+    );
+    if (existingAction) {
+      throw new ScheduledPostError(
+        "CONFLICT",
+        "An active schedule already exists for this post",
       );
+    }
 
-      if (existing) {
-        throw new ScheduledPostError(
-          "CONFLICT",
-          "An active schedule already exists for this post",
-        );
-      }
+    if (
+      target.status !== ContentStatus.DRAFT &&
+      target.status !== ContentStatus.CHANGED
+    ) {
+      throw new ScheduledPostError(
+        "INVALID_STATE",
+        "Only draft or changed posts can be scheduled",
+      );
+    }
 
-      await createScheduledAction({
-        type: ScheduledActionType.PUBLISH_POST,
-        targetType: SCHEDULER_TARGET_TYPES.POST_ROOT,
-        targetId: rootId,
-        plannedAt: scheduledAt,
-        timezone,
-        idempotencyKey,
-      });
-
-      return scheduledPost;
+    const scheduledPost = await tx.post.update({
+      where: { id: postId },
+      data: {
+        status: ContentStatus.SCHEDULED,
+        scheduledAt,
+        preSchedulingStatus: target.status,
+      },
+      include: { seo: true },
     });
+
+    // Compatibility: the legacy Post fields (status, scheduledAt,
+    // preSchedulingStatus) remain synchronized with the operational
+    // ScheduledAction so the existing editorial UI keeps working unchanged.
+    await createScheduledActionTx(tx, {
+      type: ScheduledActionType.PUBLISH_POST,
+      targetType: SCHEDULER_TARGET_TYPES.POST_ROOT,
+      targetId: rootId,
+      plannedAt: scheduledAt,
+      timezone,
+      idempotencyKey,
+    });
+
+    return scheduledPost;
+  });
 }
 
 export async function reschedulePost({
@@ -227,40 +227,44 @@ export async function reschedulePost({
 
   assertFutureScheduledAt(scheduledAt, now);
 
-  return db
-    .$transaction(async (tx) => {
-      const posts = await loadRootPosts(tx, rootId);
-      const target = findTarget(posts, postId);
+  // Reschedule the ScheduledAction in the same transaction as the Post
+  // update so the two can never drift apart.
+  return db.$transaction(async (tx) => {
+    const posts = await loadRootPosts(tx, rootId);
+    const target = findTarget(posts, postId);
 
-      if (target.status !== ContentStatus.SCHEDULED) {
-        throw new ScheduledPostError(
-          "INVALID_STATE",
-          "Only scheduled posts can be rescheduled",
-        );
-      }
-
-      const rescheduledPost = await tx.post.update({
-        where: { id: postId },
-        data: {
-          scheduledAt,
-        },
-        include: { seo: true },
-      });
-
-      return rescheduledPost;
-    })
-    .then(async (rescheduledPost) => {
-      const action = await getActiveScheduledActionByTarget(
-        SCHEDULER_TARGET_TYPES.POST_ROOT,
-        rootId,
+    if (target.status !== ContentStatus.SCHEDULED) {
+      throw new ScheduledPostError(
+        "INVALID_STATE",
+        "Only scheduled posts can be rescheduled",
       );
+    }
 
-      if (action) {
-        await rescheduleScheduledAction(action.id, scheduledAt, timezone, now);
-      }
-
-      return rescheduledPost;
+    const rescheduledPost = await tx.post.update({
+      where: { id: postId },
+      data: {
+        scheduledAt,
+      },
+      include: { seo: true },
     });
+
+    const action = await getActiveScheduledActionByTargetTx(
+      tx,
+      SCHEDULER_TARGET_TYPES.POST_ROOT,
+      rootId,
+    );
+    if (action) {
+      await rescheduleScheduledActionTx(
+        tx,
+        action.id,
+        scheduledAt,
+        timezone,
+        now,
+      );
+    }
+
+    return rescheduledPost;
+  });
 }
 
 export async function cancelSchedule({
@@ -274,42 +278,40 @@ export async function cancelSchedule({
     );
   }
 
-  return db
-    .$transaction(async (tx) => {
-      const posts = await loadRootPosts(tx, rootId);
-      const target = findTarget(posts, postId);
+  // Cancel the ScheduledAction in the same transaction as the Post state
+  // restoration so a canceled Post never keeps an active action behind.
+  return db.$transaction(async (tx) => {
+    const posts = await loadRootPosts(tx, rootId);
+    const target = findTarget(posts, postId);
 
-      if (target.status !== ContentStatus.SCHEDULED) {
-        throw new ScheduledPostError(
-          "INVALID_STATE",
-          "Only scheduled posts can be unscheduled",
-        );
-      }
-
-      const restoredStatus = target.preSchedulingStatus ?? ContentStatus.DRAFT;
-
-      const restoredPost = await tx.post.update({
-        where: { id: postId },
-        data: {
-          status: restoredStatus,
-          scheduledAt: null,
-          preSchedulingStatus: null,
-        },
-        include: { seo: true },
-      });
-
-      return restoredPost;
-    })
-    .then(async (restoredPost) => {
-      const action = await getActiveScheduledActionByTarget(
-        SCHEDULER_TARGET_TYPES.POST_ROOT,
-        rootId,
+    if (target.status !== ContentStatus.SCHEDULED) {
+      throw new ScheduledPostError(
+        "INVALID_STATE",
+        "Only scheduled posts can be unscheduled",
       );
+    }
 
-      if (action) {
-        await cancelScheduledAction(action.id);
-      }
+    const restoredStatus = target.preSchedulingStatus ?? ContentStatus.DRAFT;
 
-      return restoredPost;
+    const restoredPost = await tx.post.update({
+      where: { id: postId },
+      data: {
+        status: restoredStatus,
+        scheduledAt: null,
+        preSchedulingStatus: null,
+      },
+      include: { seo: true },
     });
+
+    const action = await getActiveScheduledActionByTargetTx(
+      tx,
+      SCHEDULER_TARGET_TYPES.POST_ROOT,
+      rootId,
+    );
+    if (action) {
+      await cancelScheduledActionTx(tx, action.id);
+    }
+
+    return restoredPost;
+  });
 }

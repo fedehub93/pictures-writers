@@ -4,7 +4,6 @@ import { randomUUID } from "node:crypto";
 
 import { db } from "@/shared/lib/db";
 import {
-  ContentStatus,
   ScheduledActionStatus,
   ScheduledActionType,
   type Prisma,
@@ -17,6 +16,27 @@ import {
   SCHEDULER_MAX_ATTEMPTS,
   type SchedulerTargetType,
 } from "../constants";
+
+/**
+ * Statuses of an action that exists on the plan but has not yet been claimed
+ * for execution. Callers that reschedule or cancel an action (or guard the
+ * single-schedule invariant) use these.
+ */
+export const PENDING_ACTION_STATUSES: ScheduledActionStatus[] = [
+  ScheduledActionStatus.SCHEDULED,
+  ScheduledActionStatus.RETRY_WAIT,
+];
+
+/**
+ * Statuses of an action that is either pending or in-flight. Used for
+ * existence checks that must not allow a new schedule while an execution
+ * attempt is underway (e.g. the scheduling conflict gate).
+ */
+export const ACTIVE_ACTION_STATUSES: ScheduledActionStatus[] = [
+  ScheduledActionStatus.SCHEDULED,
+  ScheduledActionStatus.RETRY_WAIT,
+  ScheduledActionStatus.PROCESSING,
+];
 
 export interface CreateScheduledActionInput {
   type: ScheduledActionType;
@@ -98,14 +118,45 @@ export async function getActiveScheduledActionByTarget(
   targetType: SchedulerTargetType,
   targetId: string,
 ): Promise<ScheduledAction | null> {
-  return db.scheduledAction.findFirst({
+  return getActiveScheduledActionByTargetTx(db, targetType, targetId);
+}
+
+export async function getActiveScheduledActionByTargetTx(
+  tx: Prisma.TransactionClient,
+  targetType: SchedulerTargetType,
+  targetId: string,
+): Promise<ScheduledAction | null> {
+  return tx.scheduledAction.findFirst({
     where: {
       targetType,
       targetId,
       active: true,
-      status: { in: [ScheduledActionStatus.SCHEDULED, ScheduledActionStatus.RETRY_WAIT] },
+      status: { in: PENDING_ACTION_STATUSES },
     },
   });
+}
+
+/**
+ * True when the target already has a pending or in-flight action. Used as the
+ * scheduling conflict gate: it must also see PROCESSING attempts so a new
+ * schedule cannot be created while an execution is already underway.
+ */
+export async function hasActiveScheduledActionByTargetTx(
+  tx: Prisma.TransactionClient,
+  targetType: SchedulerTargetType,
+  targetId: string,
+): Promise<boolean> {
+  const action = await tx.scheduledAction.findFirst({
+    where: {
+      targetType,
+      targetId,
+      active: true,
+      status: { in: ACTIVE_ACTION_STATUSES },
+    },
+    select: { id: true },
+  });
+
+  return action !== null;
 }
 
 export async function getActiveScheduledActionByIdempotencyKey(
@@ -114,7 +165,7 @@ export async function getActiveScheduledActionByIdempotencyKey(
   return db.scheduledAction.findFirst({
     where: {
       idempotencyKey,
-      status: { in: [ScheduledActionStatus.SCHEDULED, ScheduledActionStatus.RETRY_WAIT] },
+      status: { in: PENDING_ACTION_STATUSES },
     },
   });
 }
@@ -220,7 +271,15 @@ export async function cancelScheduledAction(
   id: string,
   now = new Date(),
 ): Promise<ScheduledAction> {
-  return db.scheduledAction.update({
+  return cancelScheduledActionTx(db, id, now);
+}
+
+export async function cancelScheduledActionTx(
+  tx: Prisma.TransactionClient,
+  id: string,
+  now = new Date(),
+): Promise<ScheduledAction> {
+  return tx.scheduledAction.update({
     where: { id },
     data: {
       status: ScheduledActionStatus.CANCELED,
@@ -239,7 +298,23 @@ export async function rescheduleScheduledAction(
   timezone: string,
   now = new Date(),
 ): Promise<ScheduledAction> {
-  return db.scheduledAction.update({
+  return rescheduleScheduledActionTx(
+    db,
+    id,
+    plannedAt,
+    timezone,
+    now,
+  );
+}
+
+export async function rescheduleScheduledActionTx(
+  tx: Prisma.TransactionClient,
+  id: string,
+  plannedAt: Date,
+  timezone: string,
+  now = new Date(),
+): Promise<ScheduledAction> {
+  return tx.scheduledAction.update({
     where: { id },
     data: {
       plannedAt,
@@ -256,6 +331,46 @@ export async function rescheduleScheduledAction(
   });
 }
 
+/**
+ * Mark the active scheduled action for a target as SUCCEEDED inside an
+ * existing transaction. Used by the publication workflow so the action is
+ * invalidated atomically with the Post state change, leaving no window in
+ * which the worker could process the same root afterwards.
+ */
+export async function markActiveScheduledActionSucceededTx(
+  tx: Prisma.TransactionClient,
+  targetType: SchedulerTargetType,
+  targetId: string,
+  executedAt: Date,
+): Promise<ScheduledAction | null> {
+  const action = await tx.scheduledAction.findFirst({
+    where: {
+      targetType,
+      targetId,
+      active: true,
+      status: { in: ACTIVE_ACTION_STATUSES },
+    },
+  });
+
+  if (!action) {
+    return null;
+  }
+
+  return tx.scheduledAction.update({
+    where: { id: action.id },
+    data: {
+      status: ScheduledActionStatus.SUCCEEDED,
+      active: false,
+      attempts: action.attempts + 1,
+      executedAt,
+      retryAt: null,
+      lastError: null,
+      leaseId: null,
+      leaseExpiresAt: null,
+    },
+  });
+}
+
 export async function countActiveScheduledActionsByTarget(
   targetType: SchedulerTargetType,
   targetId: string,
@@ -265,7 +380,7 @@ export async function countActiveScheduledActionsByTarget(
       targetType,
       targetId,
       active: true,
-      status: { in: [ScheduledActionStatus.SCHEDULED, ScheduledActionStatus.RETRY_WAIT] },
+      status: { in: ACTIVE_ACTION_STATUSES },
     },
   });
 }
@@ -273,26 +388,32 @@ export async function countActiveScheduledActionsByTarget(
 /**
  * Backfill existing scheduled posts into ScheduledAction records.
  *
- * This is idempotent: it skips posts that already have an active scheduled
- * action for their root.
+ * Idempotent: the query skips posts roots that already have a PUBLISH_POST
+ * action (any state), so repeated runs cannot create duplicates and a loop
+ * over this function progresses through the whole backlog instead of
+ * re-processing the same first page.
  */
 export async function backfillScheduledPosts(
   _now = new Date(),
   batchSize = SCHEDULER_BATCH_SIZE,
 ): Promise<{ created: number; skipped: number }> {
-  const legacyPosts = await db.post.findMany({
-    where: {
-      status: ContentStatus.SCHEDULED,
-      scheduledAt: { not: null },
-      rootId: { not: null },
-    },
-    select: {
-      id: true,
-      rootId: true,
-      scheduledAt: true,
-    },
-    take: batchSize,
-  });
+  const legacyPosts = await db.$queryRaw<
+    Array<{ id: string; rootId: string; scheduledAt: Date }>
+  >`
+    SELECT p.id, p."rootId", p."scheduledAt"
+    FROM "Post" p
+    WHERE p.status = 'SCHEDULED'
+      AND p."scheduledAt" IS NOT NULL
+      AND p."rootId" IS NOT NULL
+      AND NOT EXISTS (
+        SELECT 1 FROM "ScheduledAction" sa
+        WHERE sa."type" = 'PUBLISH_POST'
+          AND sa."targetType" = 'POST_ROOT'
+          AND sa."targetId" = p."rootId"
+      )
+    ORDER BY p.id ASC
+    LIMIT ${batchSize}
+  `;
 
   let created = 0;
   let skipped = 0;
@@ -304,18 +425,6 @@ export async function backfillScheduledPosts(
     }
 
     const targetType = "POST_ROOT";
-    const existing = await db.scheduledAction.findFirst({
-      where: {
-        type: "PUBLISH_POST",
-        targetType,
-        targetId: post.rootId,
-      },
-    });
-    if (existing) {
-      skipped++;
-      continue;
-    }
-
     await createScheduledAction({
       type: "PUBLISH_POST",
       targetType,
