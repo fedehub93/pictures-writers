@@ -7,7 +7,7 @@ import type { EmailProviderAdapter } from "@/modules/mails/lib/types";
 import {
   propagateContactCreate,
   propagateContactUpdate,
-} from "../index";
+} from "../propagate";
 
 /**
  * Helper: create a fake adapter that records calls and returns configurable results.
