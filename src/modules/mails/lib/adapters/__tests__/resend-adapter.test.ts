@@ -239,3 +239,162 @@ describe("ResendAdapter.upsertContact (create path)", () => {
     expect(createArgs.segments).toEqual([{ id: "seg-want" }]);
   });
 });
+
+// ─── addContactsToSegment ────────────────────────────────────────────────────
+
+describe("ResendAdapter.addContactsToSegment", () => {
+  it("adds membership for existing contacts and creates new ones, mapping syncedContacts", async () => {
+    const fake = createFakeClient();
+    fake.contacts.segments.add.mockResolvedValue({
+      data: { segmentId: "seg-1" },
+      ...ok,
+    });
+    fake.contacts.create.mockResolvedValue({
+      data: { id: "new-contact-1" },
+      ...ok,
+    });
+
+    const adapter = makeAdapter(fake);
+    const result = await adapter.addContactsToSegment(
+      [
+        {
+          email: "existing@example.com",
+          id: "local-existing",
+          externalId: "ext-existing",
+        },
+        { email: "new@example.com", id: "local-new" },
+      ],
+      "seg-1",
+    );
+
+    // Routing: existing → membership add, new → create
+    expect(fake.contacts.segments.add).toHaveBeenCalledTimes(1);
+    expect(fake.contacts.segments.add).toHaveBeenCalledWith({
+      email: "existing@example.com",
+      segmentId: "seg-1",
+    });
+    expect(fake.contacts.create).toHaveBeenCalledTimes(1);
+
+    // New contact created with the segment attached + external_id property
+    const createArgs = fake.contacts.create.mock.calls[0][0];
+    expect(createArgs.email).toBe("new@example.com");
+    expect(createArgs.segments).toEqual([{ id: "seg-1" }]);
+    expect(createArgs.properties).toEqual({ external_id: "local-new" });
+
+    // syncedContacts only contains the created contact
+    expect(result.success).toBe(true);
+    expect(result.totalProcessed).toBe(2);
+    expect(result.successfulCount).toBe(2);
+    expect(result.failedCount).toBe(0);
+    expect(result.syncedContacts).toEqual([
+      { localId: "local-new", externalId: "new-contact-1" },
+    ]);
+  });
+
+  it("aggregates per-contact errors without aborting the rest of the batch", async () => {
+    const fake = createFakeClient();
+    fake.contacts.create
+      .mockResolvedValueOnce({
+        data: null,
+        error: {
+          message: "invalid email",
+          name: "validation_error",
+          statusCode: 422,
+        },
+      })
+      .mockResolvedValueOnce({
+        data: { id: "ok-1" },
+        ...ok,
+      });
+
+    const adapter = makeAdapter(fake);
+    const result = await adapter.addContactsToSegment(
+      [
+        { email: "bad@example.com", id: "local-bad" },
+        { email: "ok@example.com", id: "local-ok" },
+      ],
+      "seg-1",
+    );
+
+    expect(result.success).toBe(false);
+    expect(result.totalProcessed).toBe(2);
+    expect(result.successfulCount).toBe(1);
+    expect(result.failedCount).toBe(1);
+    expect(result.errors).toEqual([
+      { email: "bad@example.com", reason: "invalid email" },
+    ]);
+    expect(result.syncedContacts).toEqual([
+      { localId: "local-ok", externalId: "ok-1" },
+    ]);
+  });
+
+  it("retries on 429 with exponential backoff and succeeds", async () => {
+    vi.useFakeTimers();
+    try {
+      const fake = createFakeClient();
+      fake.contacts.create
+        .mockResolvedValueOnce({
+          data: null,
+          error: {
+            message: "rate limit",
+            name: "rate_limit_exceeded",
+            statusCode: 429,
+          },
+        })
+        .mockResolvedValueOnce({
+          data: { id: "contact-1" },
+          ...ok,
+        });
+
+      const adapter = makeAdapter(fake);
+      const promise = adapter.addContactsToSegment(
+        [{ email: "a@example.com", id: "local-1" }],
+        "seg-1",
+      );
+
+      await vi.advanceTimersByTimeAsync(10000);
+      const result = await promise;
+
+      expect(fake.contacts.create).toHaveBeenCalledTimes(2);
+      expect(result.success).toBe(true);
+      expect(result.successfulCount).toBe(1);
+      expect(result.failedCount).toBe(0);
+      expect(result.syncedContacts).toEqual([
+        { localId: "local-1", externalId: "contact-1" },
+      ]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("paces chunks with a delay between them", async () => {
+    vi.useFakeTimers();
+    try {
+      const fake = createFakeClient();
+      fake.contacts.create.mockResolvedValue({
+        data: { id: "c" },
+        ...ok,
+      });
+
+      const contacts = Array.from({ length: 9 }, (_, i) => ({
+        email: `c${i}@example.com`,
+        id: `local-${i}`,
+      }));
+
+      const adapter = makeAdapter(fake);
+      const promise = adapter.addContactsToSegment(contacts, "seg-1");
+
+      // First chunk (8) runs immediately
+      await vi.advanceTimersByTimeAsync(0);
+      expect(fake.contacts.create).toHaveBeenCalledTimes(8);
+
+      // After the inter-chunk delay, the final contact is created
+      await vi.advanceTimersByTimeAsync(1050);
+      expect(fake.contacts.create).toHaveBeenCalledTimes(9);
+
+      await promise;
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});

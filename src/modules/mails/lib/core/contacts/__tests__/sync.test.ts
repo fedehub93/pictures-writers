@@ -34,6 +34,14 @@ function createFakeAdapter(overrides: {
       errors: [],
       syncedContacts: [],
     }),
+    addContactsToSegment: async () => ({
+      success: true,
+      totalProcessed: 0,
+      successfulCount: 0,
+      failedCount: 0,
+      errors: [],
+      syncedContacts: [],
+    }),
     createContact:
       overrides.createContact ??
       (async (...args) => {

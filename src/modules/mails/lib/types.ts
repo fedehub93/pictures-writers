@@ -50,6 +50,17 @@ export interface EmailProviderAdapter {
       audiences?: { externalId: string | null }[];
     }[],
   ): Promise<BatchSyncResult>;
+  addContactsToSegment(
+    contacts: {
+      email: string;
+      id: string;
+      firstName?: string | null;
+      lastName?: string | null;
+      isSubscriber?: boolean;
+      externalId?: string | null;
+    }[],
+    segmentExternalId: string,
+  ): Promise<BatchSyncResult>;
   createContact(
     email: string,
     id: string,

@@ -29,10 +29,10 @@ export {
 // Contacts — non-blocking propagation after local mutations
 export { propagateContactCreate, propagateContactUpdate } from "./contacts/propagate";
 
-// Audiences — blocking batch sync / import
+// Audiences — blocking batch sync / delta import
 export {
   syncContactsWithProvider,
-  updateContactsAudience,
+  importContactsIntoAudience,
 } from "./audiences/sync";
 
 // Audiences — non-blocking propagation after local mutations
