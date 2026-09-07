@@ -24,9 +24,12 @@ describe("sendSingleSend", () => {
         successfulCount: 0,
         failedCount: 0,
         errors: [],
+        syncedContacts: [],
       }),
       createContact: async () => ({ errors: [] }),
       deleteContact: async () => ({ errors: [] }),
+      upsertContact: async () => ({ errors: [], externalId: "ext-123" }),
+      deleteSegment: async () => ({ errors: [] }),
       sendBulk: async ({ segmentExternalId }) => {
         if (behavior === "permanent-failure") {
           return {

@@ -26,6 +26,7 @@ export type BatchSyncResult = {
   successfulCount: number; // Quanti sono andati a buon fine
   failedCount: number; // Quanti hanno generato un errore
   errors: SyncErrorDetail[]; // Dettaglio degli errori per il log o per la UI
+  syncedContacts: { localId: string; externalId: string }[];
 };
 
 export type CreateContactResult = {
@@ -58,6 +59,15 @@ export interface EmailProviderAdapter {
     audiences?: { externalId: string | null }[],
   ): Promise<CreateContactResult>;
   deleteContact(email: string): Promise<DeleteContactResult>;
+  upsertContact(
+    email: string,
+    id: string,
+    firstName?: string | null,
+    lastName?: string | null,
+    isSubscriber?: boolean,
+    audiences?: { externalId: string | null }[],
+  ): Promise<{ errors: string[]; externalId: string }>;
+  deleteSegment(externalId: string): Promise<{ errors: string[] }>;
   sendBulk(params: {
     segmentExternalId: string;
     subject: string;
