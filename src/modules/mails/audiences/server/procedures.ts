@@ -10,6 +10,9 @@ import { audienceInsertSchema, audienceUpdateSchema } from "../schemas";
 import {
   syncContactsWithProvider,
   updateContactsAudience,
+  propagateAudienceCreate,
+  propagateAudienceUpdate,
+  propagateAudienceDelete,
 } from "../../lib/core";
 
 export const audiencesRouter = createTRPCRouter({
@@ -21,7 +24,14 @@ export const audiencesRouter = createTRPCRouter({
           name: input.name,
         },
       });
-      return audience;
+
+      // Propagate to provider — non-blocking
+      const propagation = await propagateAudienceCreate(audience.id);
+
+      return {
+        ...audience,
+        propagationWarning: propagation.propagationWarning ?? null,
+      };
     }),
   update: protectedProcedure
     .input(audienceUpdateSchema)
@@ -38,16 +48,30 @@ export const audiencesRouter = createTRPCRouter({
         });
       }
 
-      return updatedAudience;
+      // Propagate to provider — non-blocking
+      const propagation = await propagateAudienceUpdate(updatedAudience.id);
+
+      return {
+        ...updatedAudience,
+        propagationWarning: propagation.propagationWarning ?? null,
+      };
     }),
   remove: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
-      return await db.emailAudience.delete({
+      // Delete on provider first — non-blocking, only if externalId exists
+      const propagation = await propagateAudienceDelete(input.id);
+
+      const deleted = await db.emailAudience.delete({
         where: {
           id: input.id,
         },
       });
+
+      return {
+        ...deleted,
+        propagationWarning: propagation.propagationWarning ?? null,
+      };
     }),
   getOne: protectedProcedure
     .input(z.object({ id: z.string() }))

@@ -54,6 +54,26 @@ export class ResendAdapter implements EmailProviderAdapter {
 
     return { errors, newExternalId };
   }
+
+  async deleteSegment(externalId: string): Promise<{ errors: string[] }> {
+    const errors: string[] = [];
+
+    try {
+      const { error } = await this.resendClient.segments.remove(externalId);
+      if (error) {
+        throw new Error(
+          error.message || "Unknown error during segment deletion",
+        );
+      }
+    } catch (e: any) {
+      return {
+        errors: [`Impossible to delete the segment: ${e.message}`],
+      };
+    }
+
+    return { errors };
+  }
+
   async syncContactsBatch(
     contacts: {
       email: string;
@@ -70,6 +90,7 @@ export class ResendAdapter implements EmailProviderAdapter {
       successfulCount: 0,
       failedCount: 0,
       errors: [],
+      syncedContacts: [],
     };
 
     if (contacts.length === 0) {
@@ -77,51 +98,68 @@ export class ResendAdapter implements EmailProviderAdapter {
       return result;
     }
 
-    // 1. Limite rigoroso adattato: 5 contatti = 10 API calls totali per ciclo
-    const CHUNK_SIZE = 5;
+    // Resend rate limit: 10 requests/second/team (Sept 2026).
+    // Each contact = 1 API call (contacts.create).
+    // CHUNK_SIZE = 8 with 1050ms delay ≈ 7.6 req/s — safe margin below 10.
+    const CHUNK_SIZE = 8;
     const RATE_LIMIT_DELAY_MS = 1050;
+    const MAX_RETRIES = 3;
+    const BASE_RETRY_DELAY_MS = 2000;
 
     for (let i = 0; i < contacts.length; i += CHUNK_SIZE) {
       const chunk = contacts.slice(i, i + CHUNK_SIZE);
 
-      // Prepariamo fino a 5 workflow simultanei
       const promises = chunk.map(async (contact) => {
-        // STEP A: Crea o aggiorna il contatto
-        const createResponse = await this.resendClient.contacts.create({
-          email: contact.email,
-          firstName: contact.firstName || undefined,
-          lastName: contact.lastName || undefined,
-          unsubscribed: !contact.isSubscriber,
-          segments: contact.audiences
-            ? contact.audiences.map((a) => ({ id: a.externalId }))
-            : undefined,
-          properties: {
-            external_id: contact.id,
-          },
-        });
+        // Retry wrapper for rate-limit (429) errors
+        for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+          const createResponse = await this.resendClient.contacts.create({
+            email: contact.email,
+            firstName: contact.firstName || undefined,
+            lastName: contact.lastName || undefined,
+            unsubscribed: !contact.isSubscriber,
+            segments: contact.audiences
+              ? contact.audiences.map((a) => ({ id: a.externalId }))
+              : undefined,
+            properties: {
+              external_id: contact.id,
+            },
+          });
 
-        // Se la creazione fallisce, restituiamo l'errore e interrompiamo il flusso per questo contatto
-        if (createResponse.error) {
-          return { error: createResponse.error };
+          if (createResponse.error) {
+            const isRateLimit =
+              createResponse.error.statusCode === 429 ||
+              createResponse.error.name === "rate_limit_exceeded";
+
+            if (isRateLimit && attempt < MAX_RETRIES) {
+              // Use retry-after header if available, else exponential backoff
+              const retryAfterHeader = createResponse.headers?.["retry-after"];
+              const retryDelay = retryAfterHeader
+                ? parseInt(retryAfterHeader, 10) * 1000
+                : BASE_RETRY_DELAY_MS * Math.pow(2, attempt);
+              await sleep(retryDelay);
+              continue;
+            }
+
+            return { error: createResponse.error };
+          }
+
+          const contactId = createResponse.data?.id;
+          if (!contactId) {
+            return { error: { message: "Contact ID not returned by Resend", statusCode: null, name: "application_error" as const } };
+          }
+
+          return { data: createResponse.data, localId: contact.id };
         }
-
-        // Estraiamo l'ID generato da Resend
-        const contactId = createResponse.data?.id;
-        if (!contactId) {
-          return { error: { message: "Contact ID non restituito da Resend" } };
-        }
-
-        return { data: createResponse.data };
+        // Should not reach here, but TypeScript needs it
+        return { error: { message: "Max retries exceeded for rate limit", statusCode: 429, name: "rate_limit_exceeded" as const } };
       });
 
-      // Eseguiamo i 5 workflow (10 chiamate di rete in totale)
       const settledResults = await Promise.allSettled(promises);
 
       for (const [index, promiseResult] of settledResults.entries()) {
         const originalContact = chunk[index];
 
         if (promiseResult.status === "fulfilled") {
-          // La nostra funzione wrapper restituisce un oggetto unificato { error } o { data }
           const resendResponse = promiseResult.value;
 
           if (resendResponse.error) {
@@ -132,17 +170,23 @@ export class ResendAdapter implements EmailProviderAdapter {
             });
           } else {
             result.successfulCount++;
+            if (resendResponse.data?.id) {
+              result.syncedContacts.push({
+                localId: resendResponse.localId,
+                externalId: resendResponse.data.id,
+              });
+            }
           }
         } else {
           result.failedCount++;
           result.errors.push({
             email: originalContact.email,
-            reason: promiseResult.reason?.message || "Errore di rete critico",
+            reason: promiseResult.reason?.message || "Critical network error",
           });
         }
       }
 
-      // 2. Controllo Vitale: Pausa forzata per resettare il Rate Limit
+      // Pause between chunks to respect rate limit
       if (i + CHUNK_SIZE < contacts.length) {
         await sleep(RATE_LIMIT_DELAY_MS);
       }
@@ -153,114 +197,7 @@ export class ResendAdapter implements EmailProviderAdapter {
 
     return result;
   }
-  // async syncContactsBatch(
-  //   segmentExternalId: string, // Questo funge da segmentId
-  //   contacts: {
-  //     email: string;
-  //     id: string;
-  //     firstName?: string;
-  //     lastName?: string;
-  //     isSubscriber?: boolean;
-  //   }[],
-  // ): Promise<BatchSyncResult> {
-  //   const result: BatchSyncResult = {
-  //     success: false,
-  //     totalProcessed: contacts.length,
-  //     successfulCount: 0,
-  //     failedCount: 0,
-  //     errors: [],
-  //   };
 
-  //   if (contacts.length === 0) {
-  //     result.success = true;
-  //     return result;
-  //   }
-
-  //   // 1. Limite rigoroso adattato: 5 contatti = 10 API calls totali per ciclo
-  //   const CHUNK_SIZE = 5;
-  //   const RATE_LIMIT_DELAY_MS = 1050;
-
-  //   for (let i = 0; i < contacts.length; i += CHUNK_SIZE) {
-  //     const chunk = contacts.slice(i, i + CHUNK_SIZE);
-
-  //     // Prepariamo fino a 5 workflow simultanei
-  //     const promises = chunk.map(async (contact) => {
-  //       // STEP A: Crea o aggiorna il contatto
-  //       const createResponse = await this.resendClient.contacts.create({
-  //         email: contact.email,
-  //         firstName: contact.firstName || undefined,
-  //         lastName: contact.lastName || undefined,
-  //         unsubscribed: !contact.isSubscriber,
-  //         properties: {
-  //           external_id: contact.id,
-  //         },
-  //       });
-
-  //       // Se la creazione fallisce, restituiamo l'errore e interrompiamo il flusso per questo contatto
-  //       if (createResponse.error) {
-  //         return { error: createResponse.error };
-  //       }
-
-  //       // Estraiamo l'ID generato da Resend
-  //       const contactId = createResponse.data?.id;
-  //       if (!contactId) {
-  //         return { error: { message: "Contact ID non restituito da Resend" } };
-  //       }
-
-  //       // STEP B: Aggiungi il contatto appena creato al Segmento
-  //       const segmentResponse = await this.resendClient.contacts.segments.add({
-  //         contactId: contactId,
-  //         segmentId: segmentExternalId,
-  //       });
-
-  //       // Se l'aggiunta fallisce, restituiamo questo come errore
-  //       if (segmentResponse.error) {
-  //         return { error: segmentResponse.error };
-  //       }
-
-  //       // Se entrambi gli step passano, dichiariamo il successo
-  //       return { data: segmentResponse.data };
-  //     });
-
-  //     // Eseguiamo i 5 workflow (10 chiamate di rete in totale)
-  //     const settledResults = await Promise.allSettled(promises);
-
-  //     for (const [index, promiseResult] of settledResults.entries()) {
-  //       const originalContact = chunk[index];
-
-  //       if (promiseResult.status === "fulfilled") {
-  //         // La nostra funzione wrapper restituisce un oggetto unificato { error } o { data }
-  //         const resendResponse = promiseResult.value;
-
-  //         if (resendResponse.error) {
-  //           result.failedCount++;
-  //           result.errors.push({
-  //             email: originalContact.email,
-  //             reason: resendResponse.error.message,
-  //           });
-  //         } else {
-  //           result.successfulCount++;
-  //         }
-  //       } else {
-  //         result.failedCount++;
-  //         result.errors.push({
-  //           email: originalContact.email,
-  //           reason: promiseResult.reason?.message || "Errore di rete critico",
-  //         });
-  //       }
-  //     }
-
-  //     // 2. Controllo Vitale: Pausa forzata per resettare il Rate Limit
-  //     if (i + CHUNK_SIZE < contacts.length) {
-  //       await sleep(RATE_LIMIT_DELAY_MS);
-  //     }
-  //   }
-
-  //   // 5. Determiniamo il successo globale dell'operazione
-  //   result.success = result.failedCount === 0;
-
-  //   return result;
-  // }
   async createContact(
     email: string,
     externalId: string,
@@ -300,6 +237,84 @@ export class ResendAdapter implements EmailProviderAdapter {
       };
     }
   }
+
+  async upsertContact(
+    email: string,
+    id: string,
+    firstName?: string | null,
+    lastName?: string | null,
+    isSubscriber?: boolean,
+    audiences?: { externalId: string | null }[],
+  ): Promise<{ errors: string[]; externalId: string }> {
+    const errors: string[] = [];
+
+    try {
+      // Step 1: Try to get existing contact by email
+      const getResponse = await this.resendClient.contacts.get({ email });
+
+      if (getResponse.data?.id) {
+        // Contact exists — update it
+        const filteredAudiences = (audiences ?? [])
+          .filter((a): a is { externalId: string } => !!a.externalId)
+          .map((a) => ({ id: a.externalId }));
+
+        const updateResponse = await this.resendClient.contacts.update({
+          email,
+          firstName: firstName || undefined,
+          lastName: lastName || undefined,
+          unsubscribed: !isSubscriber,
+          properties: {
+            external_id: id,
+          },
+          ...(filteredAudiences.length > 0
+            ? { segments: filteredAudiences }
+            : {}),
+        });
+
+        if (updateResponse.error) {
+          throw new Error(
+            updateResponse.error.message ||
+              "Unknown error during contact update",
+          );
+        }
+
+        return { errors, externalId: getResponse.data.id };
+      }
+
+      // Contact does not exist — create it
+      const filteredAudiences = (audiences ?? [])
+        .filter((a): a is { externalId: string } => !!a.externalId)
+        .map((a) => ({ id: a.externalId }));
+
+      const createResponse = await this.resendClient.contacts.create({
+        email,
+        properties: {
+          external_id: id,
+        },
+        firstName: firstName || undefined,
+        lastName: lastName || undefined,
+        unsubscribed: !isSubscriber,
+        ...(filteredAudiences.length > 0
+          ? { segments: filteredAudiences }
+          : {}),
+      });
+
+      if (createResponse.error || !createResponse.data) {
+        throw new Error(
+          createResponse.error?.message ||
+            "Unknown error during contact creation",
+        );
+      }
+
+      return { errors, externalId: createResponse.data.id };
+    } catch (e: any) {
+      return {
+        errors: [`Impossible to upsert the contact: ${e.message}`],
+        externalId: "",
+      };
+    }
+  }
+
   async deleteContact(email: string): Promise<DeleteContactResult> {
     const errors: string[] = [];
 
@@ -321,6 +336,7 @@ export class ResendAdapter implements EmailProviderAdapter {
 
     return { errors };
   }
+
   async sendBulk({
     segmentExternalId,
     subject,
@@ -338,6 +354,8 @@ export class ResendAdapter implements EmailProviderAdapter {
   }) {
     try {
       // Chiamata all'endpoint Broadcast di Resend vedi documentazione 2026
+      // Nota: idempotencyKey non è ancora supportato da broadcasts.create nel SDK Resend
+      // (solo emails.send e batch lo supportano). Lo scartiamo per ora.
       const { data, error } = await this.resendClient.broadcasts.create({
         name: subject,
         segmentId: segmentExternalId,
