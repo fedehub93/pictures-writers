@@ -1,11 +1,16 @@
 import z from "zod";
 import { db } from "@/shared/lib/db";
 
-import { baseProcedure, createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 import { contactInsertSchema, contactUpdateSchema } from "../schemas";
 
-import { syncContactWithProvider } from "../../lib/core";
+import {
+  syncContactWithProvider,
+  propagateContactCreate,
+  propagateContactUpdate,
+  deleteContactOnProvider,
+} from "../../lib/core";
 
 import { getEmailContactsGrowth } from "./data";
 
@@ -18,9 +23,24 @@ export const contactsRouter = createTRPCRouter({
           email: input.email,
           firstName: input.firstName,
           lastName: input.lastName,
+          isSubscriber: input.isSubscriber,
+          audiences: input.audiences?.length
+            ? {
+                connect: input.audiences.map((a: { id: string }) => ({
+                  id: a.id,
+                })),
+              }
+            : undefined,
         },
       });
-      return contact;
+
+      // Propagate to provider — non-blocking
+      const propagation = await propagateContactCreate(contact.id);
+
+      return {
+        ...contact,
+        propagationWarning: propagation.propagationWarning ?? null,
+      };
     }),
   update: protectedProcedure
     .input(contactUpdateSchema)
@@ -68,14 +88,32 @@ export const contactsRouter = createTRPCRouter({
         });
       }
 
-      return updatedContact;
+      // Propagate to provider — non-blocking
+      const propagation = await propagateContactUpdate(id);
+
+      return {
+        ...updatedContact,
+        propagationWarning: propagation.propagationWarning ?? null,
+      };
     }),
   remove: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
-      return await db.emailContact.delete({
+      // Delete on provider first — non-blocking
+      let propagationWarning: string | null = null;
+      try {
+        await deleteContactOnProvider(input.id);
+      } catch (error) {
+        console.error("[contacts.remove] Provider deletion failed:", error);
+        propagationWarning =
+          error instanceof Error ? error.message : "Unknown propagation error";
+      }
+
+      const deleted = await db.emailContact.delete({
         where: { id: input.id },
       });
+
+      return { ...deleted, propagationWarning };
     }),
   getOne: protectedProcedure
     .input(z.object({ id: z.string() }))
