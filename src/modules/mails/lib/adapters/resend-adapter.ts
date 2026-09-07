@@ -98,51 +98,68 @@ export class ResendAdapter implements EmailProviderAdapter {
       return result;
     }
 
-    // 1. Limite rigoroso adattato: 5 contatti = 10 API calls totali per ciclo
-    const CHUNK_SIZE = 5;
+    // Resend rate limit: 10 requests/second/team (Sept 2026).
+    // Each contact = 1 API call (contacts.create).
+    // CHUNK_SIZE = 8 with 1050ms delay ≈ 7.6 req/s — safe margin below 10.
+    const CHUNK_SIZE = 8;
     const RATE_LIMIT_DELAY_MS = 1050;
+    const MAX_RETRIES = 3;
+    const BASE_RETRY_DELAY_MS = 2000;
 
     for (let i = 0; i < contacts.length; i += CHUNK_SIZE) {
       const chunk = contacts.slice(i, i + CHUNK_SIZE);
 
-      // Prepariamo fino a 5 workflow simultanei
       const promises = chunk.map(async (contact) => {
-        // STEP A: Crea o aggiorna il contatto
-        const createResponse = await this.resendClient.contacts.create({
-          email: contact.email,
-          firstName: contact.firstName || undefined,
-          lastName: contact.lastName || undefined,
-          unsubscribed: !contact.isSubscriber,
-          segments: contact.audiences
-            ? contact.audiences.map((a) => ({ id: a.externalId }))
-            : undefined,
-          properties: {
-            external_id: contact.id,
-          },
-        });
+        // Retry wrapper for rate-limit (429) errors
+        for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+          const createResponse = await this.resendClient.contacts.create({
+            email: contact.email,
+            firstName: contact.firstName || undefined,
+            lastName: contact.lastName || undefined,
+            unsubscribed: !contact.isSubscriber,
+            segments: contact.audiences
+              ? contact.audiences.map((a) => ({ id: a.externalId }))
+              : undefined,
+            properties: {
+              external_id: contact.id,
+            },
+          });
 
-        // Se la creazione fallisce, restituiamo l'errore e interrompiamo il flusso per questo contatto
-        if (createResponse.error) {
-          return { error: createResponse.error };
+          if (createResponse.error) {
+            const isRateLimit =
+              createResponse.error.statusCode === 429 ||
+              createResponse.error.name === "rate_limit_exceeded";
+
+            if (isRateLimit && attempt < MAX_RETRIES) {
+              // Use retry-after header if available, else exponential backoff
+              const retryAfterHeader = createResponse.headers?.["retry-after"];
+              const retryDelay = retryAfterHeader
+                ? parseInt(retryAfterHeader, 10) * 1000
+                : BASE_RETRY_DELAY_MS * Math.pow(2, attempt);
+              await sleep(retryDelay);
+              continue;
+            }
+
+            return { error: createResponse.error };
+          }
+
+          const contactId = createResponse.data?.id;
+          if (!contactId) {
+            return { error: { message: "Contact ID not returned by Resend", statusCode: null, name: "application_error" as const } };
+          }
+
+          return { data: createResponse.data, localId: contact.id };
         }
-
-        // Estraiamo l'ID generato da Resend
-        const contactId = createResponse.data?.id;
-        if (!contactId) {
-          return { error: { message: "Contact ID non restituito da Resend" } };
-        }
-
-        return { data: createResponse.data, localId: contact.id };
+        // Should not reach here, but TypeScript needs it
+        return { error: { message: "Max retries exceeded for rate limit", statusCode: 429, name: "rate_limit_exceeded" as const } };
       });
 
-      // Eseguiamo i 5 workflow (10 chiamate di rete in totale)
       const settledResults = await Promise.allSettled(promises);
 
       for (const [index, promiseResult] of settledResults.entries()) {
         const originalContact = chunk[index];
 
         if (promiseResult.status === "fulfilled") {
-          // La nostra funzione wrapper restituisce un oggetto unificato { error } o { data }
           const resendResponse = promiseResult.value;
 
           if (resendResponse.error) {
@@ -164,12 +181,12 @@ export class ResendAdapter implements EmailProviderAdapter {
           result.failedCount++;
           result.errors.push({
             email: originalContact.email,
-            reason: promiseResult.reason?.message || "Errore di rete critico",
+            reason: promiseResult.reason?.message || "Critical network error",
           });
         }
       }
 
-      // 2. Controllo Vitale: Pausa forzata per resettare il Rate Limit
+      // Pause between chunks to respect rate limit
       if (i + CHUNK_SIZE < contacts.length) {
         await sleep(RATE_LIMIT_DELAY_MS);
       }
