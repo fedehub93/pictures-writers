@@ -145,13 +145,25 @@ export class ResendAdapter implements EmailProviderAdapter {
 
           const contactId = createResponse.data?.id;
           if (!contactId) {
-            return { error: { message: "Contact ID not returned by Resend", statusCode: null, name: "application_error" as const } };
+            return {
+              error: {
+                message: "Contact ID not returned by Resend",
+                statusCode: null,
+                name: "application_error" as const,
+              },
+            };
           }
 
           return { data: createResponse.data, localId: contact.id };
         }
         // Should not reach here, but TypeScript needs it
-        return { error: { message: "Max retries exceeded for rate limit", statusCode: 429, name: "rate_limit_exceeded" as const } };
+        return {
+          error: {
+            message: "Max retries exceeded for rate limit",
+            statusCode: 429,
+            name: "rate_limit_exceeded" as const,
+          },
+        };
       });
 
       const settledResults = await Promise.allSettled(promises);
@@ -266,9 +278,6 @@ export class ResendAdapter implements EmailProviderAdapter {
           properties: {
             external_id: id,
           },
-          ...(filteredAudiences.length > 0
-            ? { segments: filteredAudiences }
-            : {}),
         });
 
         if (updateResponse.error) {
@@ -277,6 +286,11 @@ export class ResendAdapter implements EmailProviderAdapter {
               "Unknown error during contact update",
           );
         }
+
+        // Segment memberships are NOT part of contacts.update — they are
+        // managed via contacts.segments.*. Reconcile the membership so the
+        // provider matches the local audience associations.
+        await this.reconcileContactSegments(email, filteredAudiences, errors);
 
         return { errors, externalId: getResponse.data.id };
       }
@@ -312,6 +326,66 @@ export class ResendAdapter implements EmailProviderAdapter {
         errors: [`Impossible to upsert the contact: ${e.message}`],
         externalId: "",
       };
+    }
+  }
+
+  /**
+   * Reconcile a contact's segment memberships on the provider with the
+   * desired set. `contacts.update` does NOT accept `segments`, so
+   * memberships are managed via `contacts.segments.*`:
+   *  - list current memberships,
+   *  - add missing ones,
+   *  - remove stale ones.
+   * Errors are pushed into `errors` (the caller surfaces them) without
+   * aborting the remaining reconciliations.
+   */
+  private async reconcileContactSegments(
+    email: string,
+    desiredSegments: { id: string }[],
+    errors: string[],
+  ): Promise<void> {
+    const desiredIds = new Set(desiredSegments.map((s) => s.id));
+
+    try {
+      const { data: listData, error: listError } =
+        await this.resendClient.contacts.segments.list({ email, limit: 100 });
+
+      if (listError) {
+        errors.push(`Impossible to list contact segments: ${listError.message}`);
+        return;
+      }
+
+      const currentIds = new Set((listData?.data ?? []).map((s) => s.id));
+
+      for (const id of desiredIds) {
+        if (!currentIds.has(id)) {
+          const { error } = await this.resendClient.contacts.segments.add({
+            email,
+            segmentId: id,
+          });
+          if (error) {
+            errors.push(`Impossible to add segment ${id}: ${error.message}`);
+          }
+        }
+      }
+
+      for (const id of currentIds) {
+        if (!desiredIds.has(id)) {
+          const { error } = await this.resendClient.contacts.segments.remove({
+            email,
+            segmentId: id,
+          });
+          if (error) {
+            errors.push(`Impossible to remove segment ${id}: ${error.message}`);
+          }
+        }
+      }
+    } catch (e: unknown) {
+      errors.push(
+        `Impossible to reconcile contact segments: ${
+          e instanceof Error ? e.message : String(e)
+        }`,
+      );
     }
   }
 
