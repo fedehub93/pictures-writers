@@ -1,10 +1,18 @@
 import { randomUUID } from "node:crypto";
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 import { db } from "@/shared/lib/db";
 import type { EmailProviderAdapter } from "@/modules/mails/lib/types";
 
 import { importContactsIntoAudience } from "../sync";
+
+// An empty delta must never need the provider adapter, so resolving it would
+// only ever be a bug here (it also throws, mirroring a broken/missing setup).
+vi.mock("../../provider", () => ({
+  resolveAdapter: vi.fn(async () => {
+    throw new Error("provider is not configured");
+  }),
+}));
 
 /**
  * Helper: create a fake adapter that records `addContactsToSegment` calls and
@@ -15,20 +23,27 @@ function createFakeAdapter(overrides: {
   addContactsToSegment?: EmailProviderAdapter["addContactsToSegment"];
 } = {}): EmailProviderAdapter & {
   calls: {
+    syncSegment: Parameters<EmailProviderAdapter["syncSegment"]>[];
     addContactsToSegment: Parameters<
       EmailProviderAdapter["addContactsToSegment"]
     >[];
   };
 } {
   const calls = {
+    syncSegment: [] as Parameters<EmailProviderAdapter["syncSegment"]>[],
     addContactsToSegment:
       [] as Parameters<EmailProviderAdapter["addContactsToSegment"]>[],
   };
 
+  const syncSegment =
+    overrides.syncSegment ?? (async () => ({ errors: [] }));
+
   return {
     calls,
-    syncSegment:
-      overrides.syncSegment ?? (async () => ({ errors: [] })),
+    syncSegment: async (externalId, name) => {
+      calls.syncSegment.push([externalId, name]);
+      return syncSegment(externalId, name);
+    },
     syncContactsBatch: async () => ({
       success: true,
       totalProcessed: 0,
@@ -189,7 +204,7 @@ describe("importContactsIntoAudience", () => {
     expect(result.success).toBe(true);
   });
 
-  it("returns a graceful zero-result and makes no provider call for an empty delta", async () => {
+  it("returns a graceful zero-result and makes zero provider calls for an empty delta", async () => {
     const audience = await createAudience();
     // Contact already in the audience → not part of the delta
     await createContact("in@test.com", {
@@ -206,6 +221,8 @@ describe("importContactsIntoAudience", () => {
       adapter,
     );
 
+    // No provider call at all — neither segment sync nor add-to-segment
+    expect(adapter.calls.syncSegment).toHaveLength(0);
     expect(adapter.calls.addContactsToSegment).toHaveLength(0);
     expect(result).toEqual({
       success: true,
@@ -215,6 +232,74 @@ describe("importContactsIntoAudience", () => {
       errors: [],
       syncedContacts: [],
     });
+  });
+
+  it("does not resolve the provider adapter when the delta is empty", async () => {
+    const audience = await createAudience();
+    // Contact already in the audience → not part of the delta
+    await createContact("in@test.com", {
+      audienceIds: [audience.id],
+      interactionType: "ebook_downloaded",
+    });
+
+    // No adapter injected on purpose: resolving the provider would throw
+    // (mocked above), so the graceful zero-result proves the fast-path runs
+    // before any provider work.
+    const result = await importContactsIntoAudience(
+      audience.id,
+      ["ebook_downloaded"],
+      0,
+      100,
+    );
+
+    expect(result).toEqual({
+      success: true,
+      totalProcessed: 0,
+      successfulCount: 0,
+      failedCount: 0,
+      errors: [],
+      syncedContacts: [],
+    });
+  });
+
+  it("syncs the segment and persists a newly returned provider segment id before adding contacts", async () => {
+    // Audience with no provider segment yet
+    const audience = await db.emailAudience.create({
+      data: { name: "Fresh Audience" },
+    });
+    createdAudienceIds.push(audience.id);
+    await createContact("fresh@test.com", {
+      interactionType: "ebook_downloaded",
+    });
+
+    const adapter = createFakeAdapter({
+      syncSegment: async () => ({ errors: [], newExternalId: "seg-new" }),
+    });
+
+    await importContactsIntoAudience(
+      audience.id,
+      ["ebook_downloaded"],
+      0,
+      100,
+      adapter,
+    );
+
+    // Segment synced before any contact operation
+    expect(adapter.calls.syncSegment).toHaveLength(1);
+    expect(adapter.calls.syncSegment[0][0]).toBeNull();
+    expect(adapter.calls.syncSegment[0][1]).toBe("Fresh Audience");
+
+    // The new provider segment id is persisted on the audience and used for
+    // the add-to-segment call
+    const updatedAudience = await db.emailAudience.findUnique({
+      where: { id: audience.id },
+    });
+    expect(updatedAudience?.externalId).toBe("seg-new");
+
+    expect(adapter.calls.addContactsToSegment).toHaveLength(1);
+    const [addedContacts, segmentId] = adapter.calls.addContactsToSegment[0];
+    expect(segmentId).toBe("seg-new");
+    expect(addedContacts.map((c) => c.email)).toEqual(["fresh@test.com"]);
   });
 
   it("persists externalId for contacts created on the provider", async () => {

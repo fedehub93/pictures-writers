@@ -1,6 +1,19 @@
 import { db } from "@/shared/lib/db";
-import { EmailProviderAdapter } from "../../types";
+import { EmailProviderAdapter, type BatchSyncResult } from "../../types";
 import { resolveAdapter } from "../../provider";
+
+/**
+ * Shape returned when there is nothing to process (no contacts found).
+ * Shared by the full re-sync and the delta import fast-paths.
+ */
+const emptyBatchResult = (): BatchSyncResult => ({
+  success: true,
+  totalProcessed: 0,
+  successfulCount: 0,
+  failedCount: 0,
+  errors: [],
+  syncedContacts: [],
+});
 
 /**
  * Sync an audience and all of its contacts to the email provider.
@@ -85,15 +98,8 @@ export async function syncContactsWithProvider(
     take,
   });
 
-  if (!contacts || contacts.length === 0) {
-    return {
-      success: true,
-      totalProcessed: 0,
-      successfulCount: 0,
-      failedCount: 0,
-      errors: [],
-      syncedContacts: [],
-    };
+  if (contacts.length === 0) {
+    return emptyBatchResult();
   }
 
   // 4. Aggiorniamo l'elenco contatti associato
@@ -122,8 +128,13 @@ export async function syncContactsWithProvider(
  * don't exist yet are created with the segment attached and their returned
  * `externalId` is persisted locally.
  *
- * Zero provider calls when the delta is empty. Blocking: returns the final
- * batch result (counts + per-contact errors).
+ * The delta is selected first (DB-only). When nothing is missing the import
+ * returns a zero-result without resolving the provider or making any provider
+ * call, so re-running an import is harmless even under provider
+ * misconfiguration. Otherwise the audience segment is ensured on the provider
+ * (persisting any returned `externalId`) before the missing contacts are
+ * connected locally and propagated. Blocking: returns the final batch result
+ * (counts + per-contact errors).
  */
 export async function importContactsIntoAudience(
   audienceId: string,
@@ -132,9 +143,7 @@ export async function importContactsIntoAudience(
   take: number,
   _adapter?: EmailProviderAdapter,
 ) {
-  const adapter = _adapter ?? (await resolveAdapter());
-
-  // 1. Sync the audience segment first, persisting any returned externalId
+  // 1. Load the audience (DB only)
   const audience = await db.emailAudience.findUnique({
     where: { id: audienceId },
   });
@@ -142,23 +151,6 @@ export async function importContactsIntoAudience(
   if (!audience) {
     throw new Error("Audience not found");
   }
-
-  const resultAudience = await adapter.syncSegment(
-    audience.externalId,
-    audience.name,
-  );
-  if (resultAudience.errors.length > 0) {
-    throw new Error(`Segment not synced: ${resultAudience.errors.join(", ")}`);
-  }
-
-  if (resultAudience.newExternalId) {
-    await db.emailAudience.update({
-      where: { id: audienceId },
-      data: { externalId: resultAudience.newExternalId },
-    });
-  }
-
-  const segmentExternalId = resultAudience.newExternalId ?? audience.externalId;
 
   // 2. Query contacts NOT in the audience with matching interaction types
   const contacts = await db.emailContact.findMany({
@@ -176,19 +168,37 @@ export async function importContactsIntoAudience(
     take,
   });
 
-  // 3. Empty delta → graceful zero-result, no provider call
-  if (!contacts || contacts.length === 0) {
-    return {
-      success: true,
-      totalProcessed: 0,
-      successfulCount: 0,
-      failedCount: 0,
-      errors: [],
-      syncedContacts: [],
-    };
+  // 3. Empty delta → graceful zero-result: no provider resolution, no calls
+  if (contacts.length === 0) {
+    return emptyBatchResult();
   }
 
-  // 4. Connect contacts to the audience locally
+  // 4. Resolve the provider adapter only when there is something to import
+  const adapter = _adapter ?? (await resolveAdapter());
+
+  // 5. Ensure the audience segment exists on the provider, persisting any
+  //    returned externalId
+  const resultAudience = await adapter.syncSegment(
+    audience.externalId,
+    audience.name,
+  );
+  if (resultAudience.errors.length > 0) {
+    throw new Error(`Segment not synced: ${resultAudience.errors.join(", ")}`);
+  }
+
+  if (resultAudience.newExternalId) {
+    await db.emailAudience.update({
+      where: { id: audienceId },
+      data: { externalId: resultAudience.newExternalId },
+    });
+  }
+
+  const segmentExternalId = resultAudience.newExternalId ?? audience.externalId;
+  if (!segmentExternalId) {
+    throw new Error("Segment id could not be resolved for the audience");
+  }
+
+  // 6. Connect contacts to the audience locally
   for (const contact of contacts) {
     await db.emailContact.update({
       where: { id: contact.id },
@@ -202,7 +212,7 @@ export async function importContactsIntoAudience(
     });
   }
 
-  // 5. Propagate only the delta to the provider
+  // 7. Propagate only the delta to the provider
   const result = await adapter.addContactsToSegment(
     contacts.map((c) => ({
       email: c.email,
@@ -212,10 +222,10 @@ export async function importContactsIntoAudience(
       isSubscriber: c.isSubscriber,
       externalId: c.externalId,
     })),
-    segmentExternalId ?? "",
+    segmentExternalId,
   );
 
-  // 6. Persist externalId for each contact created on the provider
+  // 8. Persist externalId for each contact created on the provider
   if (result.syncedContacts.length > 0) {
     await db.$transaction(
       result.syncedContacts.map((sc) =>

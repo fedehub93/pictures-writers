@@ -4,11 +4,11 @@
 
 **Blocked by:** None (can start immediately).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The provider adapter interface gains `addContactsToSegment(contacts, segmentExternalId)` returning the shared batch result shape (`BatchSyncResult`)
-- [ ] The Resend adapter implements it: contact with an `externalId` → membership add via the dedicated segment endpoint; contact without → creation with the segment attached, with the new `externalId` returned in `syncedContacts`
-- [ ] No membership pre-check: the add operation is effectively idempotent (verified against provider docs), so no list-before-add
-- [ ] Rate limiting mirrors the existing batch sync (chunk cadence + exponential backoff on 429)
-- [ ] The existing fake adapters in mails test files are updated with a stub method so the suite stays green with the extended interface
-- [ ] Adapter tests (fake provider client) cover: add-vs-create routing per contact, chunk cadence and 429 backoff, per-contact error aggregation, and the `syncedContacts` mapping for created contacts
+- [x] The provider adapter interface gains `addContactsToSegment(contacts, segmentExternalId)` returning the shared batch result shape (`BatchSyncResult`)
+- [x] The Resend adapter implements it: contact with an `externalId` → membership add via the dedicated segment endpoint; contact without → creation with the segment attached, with the new `externalId` returned in `syncedContacts`
+- [x] No membership pre-check: the add operation is effectively idempotent (verified against provider docs), so no list-before-add
+- [x] Rate limiting mirrors the existing batch sync (chunk cadence + exponential backoff on 429)
+- [x] The existing fake adapters in mails test files are updated with a stub method so the suite stays green with the extended interface
+- [x] Adapter tests (fake provider client) cover: add-vs-create routing per contact, chunk cadence and 429 backoff, per-contact error aggregation, and the `syncedContacts` mapping for created contacts
