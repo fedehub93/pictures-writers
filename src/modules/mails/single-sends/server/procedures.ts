@@ -1,12 +1,11 @@
 import z from "zod";
 import { db } from "@/shared/lib/db";
-import Handlebars from "handlebars";
 
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 
 import { singleSendInsertSchema, singleSendUpdateSchema } from "../schemas";
-import { sendBulk } from "../../lib/core";
+import { sendSingleSend, EmailSendError } from "../lib/send-single-send";
 import {
   scheduleSingleSend,
   rescheduleSingleSend,
@@ -223,88 +222,37 @@ export const singleSendsRouter = createTRPCRouter({
     .input(
       z.object({
         singleSendId: z.string(),
+        idempotencyKey: z.string().optional(),
       }),
     )
     .mutation(async ({ input }) => {
-      const { singleSendId } = input;
+      const { singleSendId, idempotencyKey } = input;
 
-      // 1. Recupero i settings generali
-      const settings = await db.emailSetting.findFirst();
-      if (!settings || !settings.emailSender) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Missing or incomplete email settings",
+      try {
+        const result = await sendSingleSend({
+          singleSendId,
+          idempotencyKey,
         });
-      }
 
-      // 2. Recupero il single send includendo le audience per prendere l'externalId
-      const singleSend = await db.emailSingleSend.findUnique({
-        where: { id: singleSendId },
-      });
-
-      if (!singleSend || !singleSend.bodyHtml || !singleSend.subject) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Wrong single send ID or missing template fields",
-        });
-      }
-
-      // Prendiamo la prima audience legata al single send (o gestisci logiche multi-audience se necessario)
-
-      const audiences = await db.emailAudience.findMany({
-        where: {
-          emailSingleSends: {
-            some: {
-              id: singleSendId,
-            },
+        await db.emailSingleSend.update({
+          where: { id: singleSendId },
+          data: {
+            externalId: result.providerId,
           },
-          externalId: { not: null },
-        },
-      });
-
-      if (!audiences || audiences.length === 0) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message:
-            "Target audience is missing or not synchronized with the provider",
         });
+
+        return {
+          status: "sent" as const,
+          externalCampaignId: result.providerId,
+        };
+      } catch (error) {
+        if (error instanceof EmailSendError) {
+          throw new TRPCError({
+            code: error.transient ? "INTERNAL_SERVER_ERROR" : "BAD_REQUEST",
+            message: error.message,
+          });
+        }
+        throw error;
       }
-
-      const targetAudience = audiences[0];
-
-      // 3. Compilazione del template (Logica globale o con tag del provider)
-
-      const template = Handlebars.compile(singleSend.bodyHtml);
-      const compiledHtml = template({}); // Variabili globali se ci sono
-
-      const providerResult = await sendBulk({
-        segmentExternalId: targetAudience.externalId!,
-        subject: singleSend.subject,
-        html: compiledHtml,
-        from: `${settings.emailSenderName} <${settings.emailSender}>`,
-        replyTo: settings.emailResponse || undefined,
-      });
-
-      if (!providerResult.success) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message:
-            providerResult.error ||
-            "Failed to trigger bulk send on external provider",
-        });
-      }
-
-      // 5. Scrittura log cumulativo (opzionale) o aggiornamento dello stato del Single Send
-      await db.emailSingleSend.update({
-        where: { id: singleSendId },
-        data: {
-          externalId: providerResult.externalCampaignId,
-        },
-      });
-
-      return {
-        status: "sent",
-        externalCampaignId: providerResult.externalCampaignId,
-      };
     }),
 });
