@@ -3,6 +3,14 @@ import withBundleAnalyzer from "@next/bundle-analyzer";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async rewrites() {
+    return [
+      {
+        source: "/assets/:id",
+        destination: "https://ghhc7ejbae.ufs.sh/f/:id",
+      },
+    ];
+  },
   async redirects() {
     return [
       {
@@ -58,7 +66,7 @@ const nextConfig = {
     "/*": ["./node_modules/.prisma/client/**/*"],
   },
   reactCompiler: true,
-  allowedDevOrigins: ["127.0.0.1"]
+  allowedDevOrigins: ["127.0.0.1"],
 };
 
 const bundleAnalyzer = withBundleAnalyzer({
