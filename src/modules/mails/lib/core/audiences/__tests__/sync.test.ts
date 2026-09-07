@@ -43,6 +43,14 @@ function createFakeAdapter(overrides: {
           })),
         };
       }),
+    addContactsToSegment: async () => ({
+      success: true,
+      totalProcessed: 0,
+      successfulCount: 0,
+      failedCount: 0,
+      errors: [],
+      syncedContacts: [],
+    }),
     createContact: async () => ({ errors: [], newExternalId: "ext" }),
     deleteContact: async () => ({ errors: [] }),
     upsertContact: async () => ({ errors: [], externalId: "ext" }),

@@ -9,7 +9,7 @@ import { TRPCError } from "@trpc/server";
 import { audienceInsertSchema, audienceUpdateSchema } from "../schemas";
 import {
   syncContactsWithProvider,
-  updateContactsAudience,
+  importContactsIntoAudience,
   propagateAudienceCreate,
   propagateAudienceUpdate,
   propagateAudienceDelete,
@@ -139,7 +139,7 @@ export const audiencesRouter = createTRPCRouter({
 
       try {
         // 2. Chiamata alla logica di business per aggiornare i contatti
-        const result = await updateContactsAudience(
+        const result = await importContactsIntoAudience(
           id,
           interactions,
           skip,
