@@ -1,6 +1,7 @@
 import "server-only";
 
 import { db } from "@/shared/lib/db";
+import { revalidateContent } from "@/shared/lib/revalidate-content";
 import { ContentStatus } from "@/generated/prisma";
 import { publishPost, PublishPostError } from "@/modules/blog/posts/lib/publish-post";
 
@@ -69,12 +70,14 @@ export async function handlePublishPost(
   }
 
   try {
-    await publishPost({
+    const published = await publishPost({
       postId: post.id,
       rootId: action.targetId,
       now,
       mode: "scheduled",
     });
+
+    revalidateContent("post", published.slug);
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unknown publication error";

@@ -1,5 +1,6 @@
 import z from "zod";
 import { db } from "@/shared/lib/db";
+import { revalidateContent } from "@/shared/lib/revalidate-content";
 
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
@@ -440,10 +441,14 @@ export const postsRouter = createTRPCRouter({
     .input(z.object({ id: z.string(), rootId: z.string() }))
     .mutation(async ({ input }) => {
       try {
-        return await publishPost({
+        const published = await publishPost({
           postId: input.id,
           rootId: input.rootId,
         });
+
+        revalidateContent("post", published.slug);
+
+        return published;
       } catch (error) {
         if (error instanceof PublishPostError) {
           const code =
@@ -578,6 +583,8 @@ export const postsRouter = createTRPCRouter({
         where: { id: input.id },
         data: { status: ContentStatus.CHANGED },
       });
+
+      revalidateContent("post", unpublishedPost.slug);
 
       return unpublishedPost;
     }),

@@ -8,6 +8,7 @@ export default defineConfig({
     alias: {
       "handlebars": path.resolve(__dirname, "node_modules/handlebars/dist/handlebars.js"),
       "server-only": path.resolve(__dirname, "tests/mocks/server-only.ts"),
+      "next/cache": path.resolve(__dirname, "tests/mocks/next-cache.ts"),
     },
   },
   test: {

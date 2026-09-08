@@ -4,6 +4,7 @@ import { ContentStatus, ProductType } from "@/generated/prisma";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
+import { revalidateContent } from "@/shared/lib/revalidate-content";
 
 import { isEbookMetadata } from "@/type-guards";
 
@@ -69,6 +70,10 @@ export async function PATCH(
         seo: true,
       },
     });
+
+    // Revalidate the /shop segment; this covers every product page
+    // (/shop/{categorySlug}/{productSlug}) and category page.
+    revalidateContent("product");
 
     return NextResponse.json(publishedProduct);
   } catch (error) {

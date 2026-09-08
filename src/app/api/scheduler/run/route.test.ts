@@ -1,16 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 import { runScheduledActions } from "@/modules/scheduler/lib/scheduler-runner";
-import { triggerWebhookBuild } from "@/lib/vercel";
 
 import { POST } from "./route";
 
 vi.mock("@/modules/scheduler/lib/scheduler-runner", () => ({
   runScheduledActions: vi.fn(),
-}));
-
-vi.mock("@/lib/vercel", () => ({
-  triggerWebhookBuild: vi.fn(),
 }));
 
 describe("POST /api/scheduler/run", () => {
@@ -51,7 +46,7 @@ describe("POST /api/scheduler/run", () => {
     expect(res.status).toBe(401);
   });
 
-  it("returns 200 with worker results and triggers a build when a Post is published", async () => {
+  it("returns 200 with worker results when a Post is published", async () => {
     vi.mocked(runScheduledActions).mockResolvedValue({
       processed: 2,
       succeeded: 2,
@@ -84,10 +79,9 @@ describe("POST /api/scheduler/run", () => {
       skipped: 0,
     });
     expect(runScheduledActions).toHaveBeenCalledTimes(1);
-    expect(triggerWebhookBuild).toHaveBeenCalledTimes(1);
   });
 
-  it("does not trigger a build when only newsletter actions succeeded", async () => {
+  it("returns 200 when only newsletter actions succeeded", async () => {
     vi.mocked(runScheduledActions).mockResolvedValue({
       processed: 1,
       succeeded: 1,
@@ -106,7 +100,6 @@ describe("POST /api/scheduler/run", () => {
     const res = await POST(makeRequest("test-secret"));
 
     expect(res.status).toBe(200);
-    expect(triggerWebhookBuild).not.toHaveBeenCalled();
   });
 
   it("returns 500 when the worker throws", async () => {
@@ -122,7 +115,6 @@ describe("POST /api/scheduler/run", () => {
       "[SCHEDULER_RUN]",
       expect.any(Error),
     );
-    expect(triggerWebhookBuild).not.toHaveBeenCalled();
     consoleErrorSpy.mockRestore();
   });
 });
