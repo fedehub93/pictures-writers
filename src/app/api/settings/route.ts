@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
 import { SettingsScripts } from "@/types";
+import { revalidateContent } from "@/shared/lib/revalidate-content";
 
 export async function PATCH(req: Request) {
   try {
@@ -27,6 +28,8 @@ export async function PATCH(req: Request) {
         scripts,
       },
     });
+
+    revalidateContent("settings");
 
     return NextResponse.json(updatedSettings);
   } catch (error) {

@@ -1,5 +1,6 @@
 import z from "zod";
 import { db } from "@/shared/lib/db";
+import { revalidateContent } from "@/shared/lib/revalidate-content";
 
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
@@ -340,6 +341,8 @@ export const pagesRouter = createTRPCRouter({
         },
       });
 
+      revalidateContent("page", publishedPage.slug);
+
       return publishedPage;
     }),
   unpublish: protectedProcedure
@@ -362,6 +365,8 @@ export const pagesRouter = createTRPCRouter({
         where: { id: input.id },
         data: { status: ContentStatus.CHANGED },
       });
+
+      revalidateContent("page", unpublishedPage.slug);
 
       return unpublishedPage;
     }),

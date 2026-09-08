@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 
 import { authAdmin } from "@/lib/auth-service";
-import { triggerWebhookBuild } from "@/lib/vercel";
+import { revalidateContent } from "@/shared/lib/revalidate-content";
 
-export async function POST(req: Request) {
+export async function POST(_req: Request) {
   try {
     const user = await authAdmin();
 
@@ -11,9 +11,9 @@ export async function POST(req: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    if (process.env.NODE_ENV === "production") {
-      await triggerWebhookBuild();
-    }
+    // Emergency "revalidate everything" — replaces the old full Vercel rebuild.
+    // Revalidates root layout (navbar/footer/global) and sitemap.
+    revalidateContent("all");
 
     return NextResponse.json({ status: true });
   } catch (error) {

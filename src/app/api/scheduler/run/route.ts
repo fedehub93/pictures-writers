@@ -4,7 +4,6 @@ import { NextResponse } from "next/server";
 
 import { runScheduledActions } from "@/modules/scheduler/lib/scheduler-runner";
 import { SECRET_HEADER } from "@/modules/scheduler/constants";
-import { triggerWebhookBuild } from "@/lib/vercel";
 
 function hashSecret(secret: string) {
   return createHash("sha256").update(secret).digest();
@@ -36,16 +35,9 @@ export async function POST(req: Request) {
 
     // The external cron triggers the single common worker, which processes
     // due POST and newsletter actions together in one bounded batch.
+    // Post publications are revalidated on-demand by the publish handler
+    // (see ADR-0001); no full rebuild is triggered here.
     const result = await runScheduledActions();
-
-    // Only successful Post publications request a rebuild; email sends never
-    // trigger a Post build.
-    const postPublished = result.details.some(
-      (item) => item.type === "PUBLISH_POST" && item.status === "succeeded",
-    );
-    if (postPublished) {
-      await triggerWebhookBuild();
-    }
 
     return NextResponse.json(result);
   } catch (error) {

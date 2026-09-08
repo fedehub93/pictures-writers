@@ -3,6 +3,7 @@ import { ContentStatus } from "@/generated/prisma";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
+import { revalidateContent } from "@/shared/lib/revalidate-content";
 
 export async function PATCH(req: Request) {
   try {
@@ -50,6 +51,9 @@ export async function PATCH(req: Request) {
           seo: true,
         },
       });
+
+      revalidateContent("product");
+
       publishedProducts.push(publishedProduct);
     }
 

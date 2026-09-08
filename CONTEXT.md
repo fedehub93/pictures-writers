@@ -34,3 +34,17 @@ _Avoid_: SEO outline when referring to the contextual helper displayed beside th
 **TableContentNode**:
 A persistent Tiptap content node that can be inserted into a post for public display. It is separate from the temporary admin outline.
 _Avoid_: Outline when referring to persisted post content.
+
+## Public rendering
+
+**On-demand revalidation**:
+The mechanism (`revalidatePath`) that regenerates and re-caches a public route at publish/edit time so content changes go live without a full application build.
+_Avoid_: Rebuild, deploy-on-publish when referring to the retired webhook-build flow.
+
+**Route-level invalidation**:
+Invalidating a whole URL path (or segment, via `revalidatePath(path, 'layout')`) rather than individual cached data. This is the chosen granularity because public pages read directly from the database.
+_Avoid_: Tag-based invalidation when referring to the chosen approach.
+
+**ISR backstop**:
+The coarse time-based `revalidate` value on public routes (24h) that self-heals content if an on-demand revalidation is missed. It is a safety net, not the source of freshness.
+_Avoid_: Cache TTL when referring to the strategy.

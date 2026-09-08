@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
 import { ContentStatus } from "@/generated/prisma";
+import { revalidateContent } from "@/shared/lib/revalidate-content";
 
 export async function PATCH(
   req: Request,
@@ -49,6 +50,9 @@ export async function PATCH(
         seo: true,
       },
     });
+
+    // Invalidate the shop segment (listing, categories) since a category changed
+    revalidateContent("product");
 
     return NextResponse.json(publishedCategory);
   } catch (error) {
