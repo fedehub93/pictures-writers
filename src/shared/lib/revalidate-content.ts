@@ -16,6 +16,7 @@ export type RevalidateScope =
   | "page"
   | "product"
   | "settings"
+  | "widgets"
   | "all";
 
 /**
@@ -35,6 +36,9 @@ export type RevalidateScope =
  *   products: revalidating the `/shop` layout covers all product pages, and a
  *   bare `product.slug` would not match the two-segment URL.
  * - **settings**: root layout (navbar/footer) + sitemap — settings affect the whole site
+ * - **widgets**: root layout only — widgets render on every post page (sidebar, bottom,
+ *   popup) and potentially the home/hero, so a change invalidates the whole site. No
+ *   sitemap revalidation needed since widgets don't affect it.
  * - **all**: root layout + sitemap — emergency "revalidate everything" (replaces the old webhook build)
  */
 export function revalidateContent(
@@ -67,6 +71,13 @@ export function revalidateContent(
       revalidatePath("/shop", "layout");
       // Sitemap
       revalidatePath("/sitemap.xml");
+      break;
+
+    case "widgets":
+      // Widgets render on every post page (sidebar, bottom, popup) and potentially
+      // on the home/hero, so a change invalidates the whole site via the root layout.
+      // Widgets don't affect the sitemap, so it isn't revalidated here.
+      revalidatePath("/", "layout");
       break;
 
     case "settings":

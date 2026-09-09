@@ -3,6 +3,7 @@ import { WidgetSection, WidgetType } from "@/generated/prisma";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
+import { revalidateContent } from "@/shared/lib/revalidate-content";
 import {
   setDefaultWidgetAuthorMetadata,
   setDefaultWidgetCategoryMetadata,
@@ -127,6 +128,9 @@ export async function POST(req: Request) {
     if (!widget) {
       return new NextResponse("Bad Request", { status: 400 });
     }
+
+    // Widgets render across the whole site, so revalidate all public surfaces
+    revalidateContent("widgets");
 
     return NextResponse.json(widget);
   } catch (error) {
