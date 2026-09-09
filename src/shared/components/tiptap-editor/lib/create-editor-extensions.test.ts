@@ -8,6 +8,15 @@ import {
   createProductionExtensions,
   TIPTAP_PLACEHOLDER,
 } from "./create-editor-extensions";
+import {
+  filterSlashCommands,
+  slashCommands,
+} from "../slash-menu/slash-commands";
+import {
+  executeSlashCommand,
+  isSlashMenuAllowed,
+} from "../slash-menu/slash-menu-extension";
+import type { SlashCommand } from "../slash-menu/types";
 
 describe("Tiptap production editor seam", () => {
   it("preserves persisted custom nodes and their attributes", () => {
@@ -135,6 +144,267 @@ describe("Tiptap production editor seam", () => {
     expect(json.content?.[0].type).toBe("heading");
     expect(json.content?.[0].attrs?.level).toBe(2);
     expect(json.content?.[0].content?.[0].text).toBe("Becomes a heading");
+  });
+
+  describe("slash menu", () => {
+    const findCommand = (id: string): SlashCommand => {
+      const command = slashCommands.find((cmd) => cmd.id === id);
+      if (!command) throw new Error(`Missing slash command: ${id}`);
+      return command;
+    };
+
+    it("catalog exposes only the canonical text block commands", () => {
+      const ids = slashCommands.map((cmd) => cmd.id);
+
+      expect(ids).toEqual([
+        "paragraph",
+        "heading-1",
+        "heading-2",
+        "heading-3",
+        "heading-4",
+        "bullet-list",
+        "ordered-list",
+        "blockquote",
+        "code-block",
+        "divider",
+      ]);
+
+      expect(ids).not.toContain("tablecontent");
+      expect(ids).not.toContain("image");
+      expect(ids).not.toContain("youtube");
+      expect(ids).not.toContain("product");
+      expect(ids).not.toContain("infobox");
+    });
+
+    it("filters commands by label, description and keywords", () => {
+      expect(filterSlashCommands(slashCommands, "")).toHaveLength(
+        slashCommands.length,
+      );
+
+      expect(filterSlashCommands(slashCommands, "heading").map((c) => c.id)).toEqual([
+        "heading-1",
+        "heading-2",
+        "heading-3",
+        "heading-4",
+      ]);
+
+      expect(filterSlashCommands(slashCommands, "h2").map((c) => c.id)).toEqual([
+        "heading-2",
+      ]);
+
+      expect(filterSlashCommands(slashCommands, "numbered").map((c) => c.id)).toEqual([
+        "ordered-list",
+      ]);
+
+      expect(filterSlashCommands(slashCommands, "quote").map((c) => c.id)).toEqual([
+        "blockquote",
+      ]);
+
+      expect(filterSlashCommands(slashCommands, "xyz")).toHaveLength(0);
+    });
+
+    it("removes the slash query before inserting a heading", () => {
+      const editor = new Editor({
+        extensions: createProductionExtensions(),
+        content: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "/heading Hello" }],
+            },
+          ],
+        },
+      });
+
+      // `/heading` spans positions 1-9 inside the first paragraph.
+      const range = { from: 1, to: 9 };
+      const result = executeSlashCommand(
+        editor,
+        findCommand("heading-2"),
+        range,
+      );
+
+      expect(result).toBe(true);
+      const json: JSONContent = editor.getJSON();
+      expect(json.content?.[0].type).toBe("heading");
+      expect(json.content?.[0].attrs?.level).toBe(2);
+      expect(json.content?.[0].content?.[0].text).toBe(" Hello");
+      expect(JSON.stringify(json)).not.toContain("/heading");
+    });
+
+    it("removes the slash query before inserting a bullet list", () => {
+      const editor = new Editor({
+        extensions: createProductionExtensions(),
+        content: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "/list Buy milk" }],
+            },
+          ],
+        },
+      });
+
+      const range = { from: 1, to: 6 };
+      const result = executeSlashCommand(
+        editor,
+        findCommand("bullet-list"),
+        range,
+      );
+
+      expect(result).toBe(true);
+      const json: JSONContent = editor.getJSON();
+      expect(json.content?.[0].type).toBe("bulletList");
+      expect(JSON.stringify(json)).toContain("Buy milk");
+      expect(JSON.stringify(json)).not.toContain("/list");
+    });
+
+    it("removes the slash query before inserting a code block", () => {
+      const editor = new Editor({
+        extensions: createProductionExtensions(),
+        content: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "/code const x = 1" }],
+            },
+          ],
+        },
+      });
+
+      const range = { from: 1, to: 6 };
+      const result = executeSlashCommand(
+        editor,
+        findCommand("code-block"),
+        range,
+      );
+
+      expect(result).toBe(true);
+      const json: JSONContent = editor.getJSON();
+      expect(json.content?.[0].type).toBe("codeBlock");
+      expect(json.content?.[0].content?.[0].text).toBe(" const x = 1");
+      expect(JSON.stringify(json)).not.toContain("/code");
+    });
+
+    it("inserts a divider and removes the slash query", () => {
+      const editor = new Editor({
+        extensions: createProductionExtensions(),
+        content: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "/divider" }],
+            },
+          ],
+        },
+      });
+
+      const range = { from: 1, to: 9 };
+      const result = executeSlashCommand(editor, findCommand("divider"), range);
+
+      expect(result).toBe(true);
+      const json: JSONContent = editor.getJSON();
+      expect(json.content?.some((node) => node.type === "horizontalRule")).toBe(
+        true,
+      );
+      expect(JSON.stringify(json)).not.toContain("/divider");
+    });
+
+    it("transforms an existing heading into a paragraph via slash command", () => {
+      const editor = new Editor({
+        extensions: createProductionExtensions(),
+        content: {
+          type: "doc",
+          content: [
+            {
+              type: "heading",
+              attrs: { level: 1 },
+              content: [{ type: "text", text: "/p Downgrade me" }],
+            },
+          ],
+        },
+      });
+
+      const range = { from: 1, to: 3 };
+      const result = executeSlashCommand(
+        editor,
+        findCommand("paragraph"),
+        range,
+      );
+
+      expect(result).toBe(true);
+      const json: JSONContent = editor.getJSON();
+      expect(json.content?.[0].type).toBe("paragraph");
+      expect(json.content?.[0].content?.[0].text).toBe(" Downgrade me");
+    });
+
+    it("activates the slash suggestion plugin", () => {
+      const editor = new Editor({
+        extensions: createProductionExtensions(),
+        content: { type: "doc", content: [] },
+      });
+
+      const hasSlashMenu = editor.extensionManager.extensions.some(
+        (extension) => extension.name === "slashMenu",
+      );
+      expect(hasSlashMenu).toBe(true);
+    });
+
+    it("allows slash menu at the start of a block", () => {
+      const editor = new Editor({
+        extensions: createProductionExtensions(),
+        content: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "/heading" }],
+            },
+          ],
+        },
+      });
+
+      expect(isSlashMenuAllowed({ state: editor.state, range: { from: 1, to: 9 } })).toBe(true);
+    });
+
+    it("allows slash menu after a space", () => {
+      const editor = new Editor({
+        extensions: createProductionExtensions(),
+        content: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "word /heading" }],
+            },
+          ],
+        },
+      });
+
+      // `/heading` starts at position 6 (after the space at position 5).
+      expect(isSlashMenuAllowed({ state: editor.state, range: { from: 6, to: 14 } })).toBe(true);
+    });
+
+    it("disallows slash menu in the middle of a word", () => {
+      const editor = new Editor({
+        extensions: createProductionExtensions(),
+        content: {
+          type: "doc",
+          content: [
+            {
+              type: "paragraph",
+              content: [{ type: "text", text: "word/heading" }],
+            },
+          ],
+        },
+      });
+
+      expect(isSlashMenuAllowed({ state: editor.state, range: { from: 5, to: 13 } })).toBe(false);
+    });
   });
 
 });

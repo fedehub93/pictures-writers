@@ -9,6 +9,7 @@ import { CustomImage } from "../extensions/image";
 import { ProductNode } from "../extensions/product";
 import { InfoBoxNode } from "../extensions/info-box";
 import { TableContentNode } from "../extensions/table-content";
+import { SlashMenuExtension } from "../slash-menu/slash-menu-extension";
 
 export const TIPTAP_PLACEHOLDER = "Start writing or type '/' for commands";
 
@@ -44,6 +45,7 @@ export const createProductionExtensions = () => [
   ProductNode,
   InfoBoxNode,
   TableContentNode,
+  SlashMenuExtension,
   Placeholder.configure({
     placeholder: ({ editor }) => {
       if (editor.isEmpty) {
