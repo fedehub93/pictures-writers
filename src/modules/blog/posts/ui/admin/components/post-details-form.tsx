@@ -71,6 +71,9 @@ export const PostDetailsForm = ({
       rootId,
       editorType: initialData?.editorType ?? undefined,
     },
+    // Vedi content-form.tsx: il reset reattivo innescato dal refetch post-salvataggio
+    // non deve sovrascrivere i campi con modifiche locali ancora non persistite.
+    resetOptions: { keepDirtyValues: true, keepDirty: true },
     mode: "onChange",
   });
 

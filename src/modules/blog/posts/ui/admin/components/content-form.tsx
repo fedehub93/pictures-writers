@@ -61,6 +61,14 @@ export const ContentForm = ({
         content: [],
       },
     },
+    // Ogni autosalvataggio invalida e ri-fetcha la stessa query da cui arriva
+    // `initialData` (getLastByRootId): il cambio di riferimento di `values`
+    // farebbe partire un reset del form che svuota dirtyFields e riporta i
+    // valori allo snapshot del server, cancellando silenziosamente l'ultimo
+    // contenuto digitato (l'editor TipTap non viene risincronizzato dal form,
+    // quindi il testo resta visibile ma non viene mai salvato).
+    // keepDirtyValues preserva i campi con modifiche locali al reset.
+    resetOptions: { keepDirtyValues: true, keepDirty: true },
     mode: "onChange",
   });
 
