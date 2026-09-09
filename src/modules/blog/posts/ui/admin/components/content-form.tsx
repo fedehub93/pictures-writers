@@ -48,7 +48,7 @@ export const ContentForm = ({
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const [filters] = usePostsFilters();
-  const { setStatus } = usePostStore();
+  const setStatus = usePostStore((state) => state.setStatus);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

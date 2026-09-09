@@ -35,7 +35,7 @@ export const TagsForm = ({ initialData, rootId, postId }: TagsFormProps) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const [filters] = usePostsFilters();
-  const { setStatus } = usePostStore();
+  const setStatus = usePostStore((state) => state.setStatus);
 
   const form = useForm<PostUpdateValues>({
     resolver: zodResolver(postUpdateSchema),

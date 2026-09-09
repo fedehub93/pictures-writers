@@ -56,7 +56,7 @@ export const AuthorsForm = ({
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const [filters] = usePostsFilters();
-  const { setStatus, reset } = usePostStore();
+  const setStatus = usePostStore((state) => state.setStatus);
 
   const form = useForm<PostUpdateValues>({
     resolver: zodResolver(postUpdateSchema),

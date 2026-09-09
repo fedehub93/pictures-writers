@@ -29,7 +29,7 @@ export const DescriptionForm = ({
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const [filters] = usePostsFilters();
-  const { setStatus } = usePostStore();
+  const setStatus = usePostStore((state) => state.setStatus);
 
   const updatePost = useMutation(
     trpc.posts.update.mutationOptions({

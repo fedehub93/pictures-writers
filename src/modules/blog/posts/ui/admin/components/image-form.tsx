@@ -41,7 +41,7 @@ export const ImageForm = ({ initialData, rootId, postId }: ImageFormProps) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const [filters] = usePostsFilters();
-  const { setStatus } = usePostStore();
+  const setStatus = usePostStore((state) => state.setStatus);
   const { onOpen } = useModal();
 
   const [previewMedia, setPreviewMedia] = useState<Media | null>(

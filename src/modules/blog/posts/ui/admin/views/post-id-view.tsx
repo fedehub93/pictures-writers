@@ -53,6 +53,8 @@ import { DescriptionForm } from "../components/description-form";
 import { PostOutline } from "../components/post-outline";
 import { SchedulePostDialog } from "../components/schedule-post-dialog";
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "";
+
 interface PostIdViewProps {
   rootId: string;
 }
@@ -63,8 +65,7 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const [filters] = usePostsFilters();
-  const { setStatus } = usePostStore();
-  const [activeTab] = useState("post");
+  const setStatus = usePostStore((state) => state.setStatus);
   const [tiptapEditor, setTiptapEditor] = useState<TiptapEditor | null>(null);
 
   const handleEditorReady = useCallback((editor: TiptapEditor | null) => {
@@ -74,15 +75,22 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
   const activeEditor =
     post.editorType === EditorType.TIPTAP ? tiptapEditor : null;
 
+  // Tutte le mutazioni della pagina scrivono sullo stesso Post (lista + ultima
+  // versione). Raggruppando l'invalidazione in un'unica callback stabile si
+  // evita la duplicazione e si dà al React Compiler una dipendenza memoizzabile.
+  const invalidatePostQueries = useCallback(() => {
+    queryClient.invalidateQueries(trpc.posts.getMany.queryFilter(filters));
+    if (rootId) {
+      queryClient.invalidateQueries(
+        trpc.posts.getLastByRootId.queryFilter({ rootId }),
+      );
+    }
+  }, [queryClient, trpc, filters, rootId]);
+
   const publishPost = useMutation(
     trpc.posts.publish.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries(trpc.posts.getMany.queryFilter(filters));
-        if (rootId) {
-          queryClient.invalidateQueries(
-            trpc.posts.getLastByRootId.queryFilter({ rootId }),
-          );
-        }
+        invalidatePostQueries();
         toast.success("Post published successfully");
       },
       onError: async (error) => {
@@ -94,12 +102,7 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
   const unpublishPost = useMutation(
     trpc.posts.unpublish.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries(trpc.posts.getMany.queryFilter(filters));
-        if (rootId) {
-          queryClient.invalidateQueries(
-            trpc.posts.getLastByRootId.queryFilter({ rootId }),
-          );
-        }
+        invalidatePostQueries();
         toast.success("Post unpublished successfully");
       },
       onError: async (error) => {
@@ -111,12 +114,7 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
   const cancelSchedulePost = useMutation(
     trpc.posts.cancelSchedule.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries(trpc.posts.getMany.queryFilter(filters));
-        if (rootId) {
-          queryClient.invalidateQueries(
-            trpc.posts.getLastByRootId.queryFilter({ rootId }),
-          );
-        }
+        invalidatePostQueries();
         toast.success("Schedule cancelled successfully");
       },
       onError: async (error) => {
@@ -125,26 +123,26 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
     }),
   );
 
-  const onTogglePublish = async () => {
-    setStatus("publishing");
+  const handleTogglePublish = useCallback(async () => {
     const mustPublish = post.status !== ContentStatus.PUBLISHED;
-    if (mustPublish) {
-      await publishPost.mutateAsync({ id: post.id, rootId });
-    } else {
-      await unpublishPost.mutateAsync({ id: post.id });
+    setStatus("publishing");
+    try {
+      if (mustPublish) {
+        await publishPost.mutateAsync({ id: post.id, rootId });
+      } else {
+        await unpublishPost.mutateAsync({ id: post.id });
+      }
+      setStatus("published");
+    } catch {
+      // L'errore è già stato mostrato dall'onError della mutation.
+      setStatus("error");
     }
-    setStatus("published");
-  };
+  }, [post.id, post.status, publishPost, unpublishPost, rootId, setStatus]);
 
   const updatePost = useMutation(
     trpc.posts.update.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries(trpc.posts.getMany.queryFilter(filters));
-        if (rootId) {
-          queryClient.invalidateQueries(
-            trpc.posts.getLastByRootId.queryFilter({ rootId }),
-          );
-        }
+        invalidatePostQueries();
         setStatus("saved");
         toast.success("Post updated successfully!");
       },
@@ -168,15 +166,10 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
     }),
   );
 
-  const onDelete = async () => {
+  const onDelete = () => {
     removePost.mutate({ id: post.id });
   };
-  const requiredFields = [post.title, post.slug];
-
-  const totalFields = requiredFields.length;
-  const completedFields = requiredFields.filter(Boolean).length;
-  const completionText = `(${completedFields}/${totalFields})`;
-  const isComplete = requiredFields.every(Boolean);
+  const isComplete = Boolean(post.title && post.slug);
 
   const disabled =
     publishPost.isPending ||
@@ -184,7 +177,12 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
     updatePost.isPending ||
     cancelSchedulePost.isPending;
 
-  const previewLink = `${process.env.NEXT_PUBLIC_APP_URL}/draft/${post.slug}`;
+  const editorColumnClassName = cn(
+    "min-w-0 h-[90vh] min-h-112.5 rounded-xl px-4 xl:h-full",
+    post.editorType === EditorType.TIPTAP
+      ? "xl:col-span-12"
+      : "xl:col-span-17",
+  );
 
   return (
     // 1. Il contenitore principale occupa l'altezza disponibile dell'area lavoro ed evita lo scroll globale della finestra
@@ -210,11 +208,11 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
           />
           <div className="flex items-center gap-x-1">
             <Link
-              href={previewLink as Route}
+              href={`${APP_URL}/draft/${post.slug}` as Route}
               target="_blank"
               className="text-xs"
             >
-              {process.env.NEXT_PUBLIC_APP_URL}/
+              {APP_URL}/
             </Link>
             <EditableField
               initialValue={post.slug}
@@ -251,7 +249,7 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
               {post.status === ContentStatus.SCHEDULED ? (
                 <>
                   <DropdownMenuItem
-                    onSelect={() => onTogglePublish()}
+                    onSelect={() => void handleTogglePublish()}
                     disabled={disabled || !isComplete}
                   >
                     <EyeIcon className="size-4 mr-2" />
@@ -289,7 +287,7 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
               ) : (
                 <>
                   <DropdownMenuItem
-                    onSelect={() => onTogglePublish()}
+                    onSelect={() => void handleTogglePublish()}
                     disabled={
                       disabled ||
                       (post.status !== ContentStatus.PUBLISHED && !isComplete)
@@ -341,14 +339,7 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
             <PostOutline editor={activeEditor} />
           </div>
 
-          <ScrollArea
-            className={cn(
-              "min-w-0 h-[90vh] min-h-112.5 rounded-xl px-4 xl:h-full",
-              activeTab === "post" && post.editorType !== EditorType.TIPTAP
-                ? "xl:col-span-17"
-                : "xl:col-span-12",
-            )}
-          >
+          <ScrollArea className={editorColumnClassName}>
             <div className="mt-0 outline-none max-w-4xl mx-auto pb-12">
               <PostDetailsForm
                 id={post.id}
