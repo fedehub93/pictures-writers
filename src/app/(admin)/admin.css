@@ -430,3 +430,12 @@
 @utility evidence {
   @apply mt-2 rounded-md bg-secondary p-1 font-bold text-primary;
 }
+
+/* Tiptap placeholder: only the empty editor surface shows the prompt. */
+.ProseMirror .is-editor-empty::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--muted-foreground);
+  pointer-events: none;
+  height: 0;
+}

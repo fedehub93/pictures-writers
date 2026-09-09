@@ -40,3 +40,6 @@ next-env.d.ts
 
 # prisma generated client
 /generated/prisma
+
+# local reference repositories used by editor skills
+/.reference/

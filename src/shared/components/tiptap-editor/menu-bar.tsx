@@ -11,10 +11,8 @@ import {
   ChevronDown,
   Info,
   Italic,
-  Link,
   List,
   ListOrdered,
-  ListOrderedIcon,
   LucideImage,
   Quote,
   Underline,
@@ -42,18 +40,15 @@ import { MarkButton } from "./mark-button";
 import { LinkButtonToolbar } from "./extensions/link/ui/LinkButtonToolbar";
 import { insertProduct } from "./extensions/product/helpers";
 import { insertInfoBox } from "./extensions/info-box/helpers";
-import { insertTableContent } from "./extensions/table-content/helpers";
 
 export interface MenuBarProps {
   editor: Editor | null;
-  showEmbedButton?: boolean;
   sticky?: boolean;
   padding?: "none" | "xs" | "lg";
 }
 
 export const MenuBar = ({
   editor,
-  showEmbedButton = true,
   sticky = false,
   padding = "lg",
 }: MenuBarProps) => {
@@ -126,7 +121,7 @@ export const MenuBar = ({
     });
   };
 
-  const getProduct = (data: any) => {
+  const getProduct = (data: { rootId: string }) => {
     insertProduct(editor, { rootId: data.rootId });
   };
 
@@ -134,21 +129,17 @@ export const MenuBar = ({
     insertInfoBox(editor);
   };
 
-  const insertTableContentNode = () => {
-    insertTableContent(editor);
-  };
-
   // === Render ===
   return (
     <div
       className={cn(
-        "bg-accent border-y drop-shadow top-0 z-10 p-2 h-full flex flex-col space-y-4",
+        "bg-accent border-b top-0 z-10 flex flex-wrap items-center gap-x-1 gap-y-1",
         padding === "xs" && "p-1",
-        padding === "lg" && "p-4",
+        padding === "lg" && "p-3",
         sticky && "sticky",
       )}
     >
-      <div className="flex items-center flex-wrap gap-x-1 h-full gap-y-2">
+      <div className="flex items-center flex-wrap gap-x-1 gap-y-1">
         <HeadingSelect editor={editor} />
         <Separator orientation="vertical" className="mx-2 h-8!" />
 
@@ -239,10 +230,6 @@ export const MenuBar = ({
             <DropdownMenuItem onClick={insertInfoBoxNode}>
               <Info className="size-4 mr-2" />
               Info box
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={insertTableContentNode}>
-              <ListOrderedIcon className="size-4 mr-2" />
-              Table of Contents
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
