@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
+import { revalidateContent } from "@/shared/lib/revalidate-content";
 
 export async function PATCH(
   req: Request,
@@ -27,6 +28,9 @@ export async function PATCH(
         type: undefined,
       },
     });
+
+    // Widgets render across the whole site, so revalidate all public surfaces
+    revalidateContent("widgets");
 
     return NextResponse.json(updatedWidget);
   } catch (error) {
@@ -63,6 +67,9 @@ export async function DELETE(
     const deletedWidget = await db.widget.deleteMany({
       where: { id: widgetId },
     });
+
+    // Widgets render across the whole site, so revalidate all public surfaces
+    revalidateContent("widgets");
 
     return NextResponse.json(deletedWidget);
   } catch (error) {
