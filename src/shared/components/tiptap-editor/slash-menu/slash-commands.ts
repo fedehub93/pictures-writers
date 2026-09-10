@@ -1,17 +1,28 @@
 import {
+  Box,
   Code,
   Heading1,
   Heading2,
   Heading3,
   Heading4,
+  Image as ImageIcon,
+  Info,
   List,
   ListOrdered,
   Minus,
   Pilcrow,
   Quote,
+  Video,
 } from "lucide-react";
 
-import type { SlashCommand, SlashCommandGroup } from "./types";
+import { DEFAULT_INFO_BOX_ICON } from "../extensions/info-box";
+
+import type {
+  SlashCommand,
+  SlashCommandGroup,
+  SlashCommandModalService,
+} from "./types";
+import { noOpSlashCommandModalService } from "./modal-service";
 
 export const slashCommandGroups: Record<SlashCommandGroup, string> = {
   text: "Text",
@@ -19,7 +30,9 @@ export const slashCommandGroups: Record<SlashCommandGroup, string> = {
   content: "Content",
 };
 
-export const slashCommands: SlashCommand[] = [
+export const createSlashCommands = (
+  modalService: SlashCommandModalService = noOpSlashCommandModalService,
+): SlashCommand[] => [
   {
     id: "paragraph",
     label: "Paragraph",
@@ -140,7 +153,102 @@ export const slashCommands: SlashCommand[] = [
     execute: (editor, range) =>
       editor.chain().focus().deleteRange(range).setHorizontalRule().run(),
   },
+  {
+    id: "image",
+    label: "Image",
+    description: "Insert an image from the media library",
+    keywords: ["img", "photo", "picture"],
+    group: "media",
+    icon: ImageIcon,
+    execute: (editor, range) => {
+      const deleted = editor.chain().focus().deleteRange(range).run();
+      if (!deleted) return false;
+
+      const insertPos = range.from;
+      modalService.openImagePicker((image) => {
+        editor
+          .chain()
+          .focus()
+          .insertContentAt(insertPos, {
+            type: "image",
+            attrs: { src: image.src, alt: image.alt },
+          })
+          .run();
+      });
+      return true;
+    },
+  },
+  {
+    id: "video",
+    label: "Video",
+    description: "Insert a YouTube video",
+    keywords: ["youtube", "embed"],
+    group: "media",
+    icon: Video,
+    execute: (editor, range) => {
+      const deleted = editor.chain().focus().deleteRange(range).run();
+      if (!deleted) return false;
+
+      const insertPos = range.from;
+      modalService.openVideoUrlPicker((video) => {
+        editor
+          .chain()
+          .focus()
+          .insertContentAt(insertPos, {
+            type: "youtube",
+            attrs: { src: video.src },
+          })
+          .run();
+      });
+      return true;
+    },
+  },
+  {
+    id: "product",
+    label: "Product",
+    description: "Insert a product card",
+    keywords: ["shop", "item"],
+    group: "content",
+    icon: Box,
+    execute: (editor, range) => {
+      const deleted = editor.chain().focus().deleteRange(range).run();
+      if (!deleted) return false;
+
+      const insertPos = range.from;
+      modalService.openProductPicker((product) => {
+        editor
+          .chain()
+          .focus()
+          .insertContentAt(insertPos, {
+            type: "product",
+            attrs: { productRootId: product.productRootId },
+          })
+          .run();
+      });
+      return true;
+    },
+  },
+  {
+    id: "info-box",
+    label: "Info box",
+    description: "Insert a callout box",
+    keywords: ["callout", "tip", "note"],
+    group: "content",
+    icon: Info,
+    execute: (editor, range) =>
+      editor
+        .chain()
+        .focus()
+        .deleteRange(range)
+        .insertInfoBox({ icon: DEFAULT_INFO_BOX_ICON })
+        .run(),
+  },
 ];
+
+/**
+ * Default catalog using the no-op modal service.
+ */
+export const slashCommands = createSlashCommands();
 
 /**
  * Filters the slash command catalog by label, description and keywords.

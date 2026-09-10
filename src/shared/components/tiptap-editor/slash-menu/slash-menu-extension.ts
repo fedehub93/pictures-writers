@@ -3,12 +3,13 @@ import { ReactRenderer } from "@tiptap/react";
 import Suggestion from "@tiptap/suggestion";
 import { PluginKey, type EditorState } from "@tiptap/pm/state";
 
-import { filterSlashCommands, slashCommands } from "./slash-commands";
+import { createSlashCommands, filterSlashCommands } from "./slash-commands";
 import { SlashMenu, type SlashMenuHandle } from "./slash-menu";
-import type { SlashCommand } from "./types";
+import type { SlashCommand, SlashCommandModalService } from "./types";
 
 export interface SlashMenuExtensionOptions {
-  commands: SlashCommand[];
+  modalService?: SlashCommandModalService;
+  commands?: SlashCommand[];
 }
 
 /**
@@ -45,11 +46,15 @@ export const SlashMenuExtension = Extension.create<SlashMenuExtensionOptions>({
 
   addOptions() {
     return {
-      commands: slashCommands,
+      modalService: undefined,
+      commands: undefined,
     };
   },
 
   addProseMirrorPlugins() {
+    const commands =
+      this.options.commands ?? createSlashCommands(this.options.modalService);
+
     return [
       Suggestion<SlashCommand, SlashCommand>({
         editor: this.editor,
@@ -70,7 +75,7 @@ export const SlashMenuExtension = Extension.create<SlashMenuExtensionOptions>({
           return props.execute(editor, range);
         },
 
-        items: ({ query }) => filterSlashCommands(this.options.commands, query),
+        items: ({ query }) => filterSlashCommands(commands, query),
 
         render: () => {
           let component: ReactRenderer<SlashMenuHandle> | null = null;

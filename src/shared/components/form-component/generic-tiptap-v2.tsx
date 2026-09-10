@@ -10,6 +10,7 @@ import type { Editor } from "@tiptap/core";
 import Tiptap from "../tiptap-editor";
 import { createProductionExtensions } from "../tiptap-editor/lib/create-editor-extensions";
 import type { LinkButtonBubbleProps } from "../tiptap-editor/bubble-menu/bubble-menu";
+import type { SlashCommandModalService } from "../tiptap-editor/slash-menu/types";
 
 interface GenericTiptapProps<T extends FieldValues> {
   id: string;
@@ -20,6 +21,7 @@ interface GenericTiptapProps<T extends FieldValues> {
   toolbar?: boolean;
   bubbleMenu?: boolean;
   linkButton?: ComponentType<LinkButtonBubbleProps>;
+  modalService?: SlashCommandModalService;
 }
 
 export const GenericTiptapV2 = <T extends FieldValues>({
@@ -31,10 +33,11 @@ export const GenericTiptapV2 = <T extends FieldValues>({
   toolbar = true,
   bubbleMenu = false,
   linkButton,
+  modalService,
 }: GenericTiptapProps<T>) => {
   const { field } = useController({ control, name });
   const editor = useEditor({
-    extensions: createProductionExtensions(),
+    extensions: createProductionExtensions(modalService),
     content: field.value ?? "",
     immediatelyRender: false,
     editorProps: {

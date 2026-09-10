@@ -17,6 +17,7 @@ import { GenericTiptapV2 } from "@/shared/components/form-component/generic-tipt
 import { useAutoSave } from "@/modules/blog/shared/hooks/use-auto-save";
 
 import Editor from "@/app/(admin)/_components/editor";
+import { useAdminSlashCommandModalService } from "@/app/(admin)/_hooks/use-slash-command-modal-service";
 
 import { LinkButtonBubble } from "./link-button-bubble";
 
@@ -51,6 +52,8 @@ export const ContentForm = ({
   const queryClient = useQueryClient();
   const [filters] = usePostsFilters();
   const setStatus = usePostStore((state) => state.setStatus);
+
+  const modalService = useAdminSlashCommandModalService();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -146,6 +149,7 @@ export const ContentForm = ({
               onEditorReady={onEditorReady}
               bubbleMenu
               linkButton={LinkButtonBubble}
+              modalService={modalService}
             />
           )}
         </form>

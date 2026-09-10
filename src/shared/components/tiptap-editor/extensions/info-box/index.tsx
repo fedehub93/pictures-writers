@@ -2,6 +2,8 @@ import { Node, mergeAttributes } from "@tiptap/core";
 import { ReactNodeViewRenderer } from "@tiptap/react";
 import { InfoBoxBlock } from "./ui/InfoBoxNode";
 
+export const DEFAULT_INFO_BOX_ICON = "💡";
+
 export interface InfoBoxAttrs {
   icon: string;
 }
@@ -23,8 +25,9 @@ export const InfoBoxNode = Node.create({
   addAttributes() {
     return {
       icon: {
-        default: "💡",
-        parseHTML: (element) => element.getAttribute("data-icon") || "💡",
+        default: DEFAULT_INFO_BOX_ICON,
+        parseHTML: (element) =>
+          element.getAttribute("data-icon") || DEFAULT_INFO_BOX_ICON,
         renderHTML: (attributes) => ({
           "data-icon": attributes.icon,
         }),
@@ -56,17 +59,19 @@ export const InfoBoxNode = Node.create({
     return {
       insertInfoBox:
         (attrs) =>
-        ({ editor }) => {
-          return editor.commands.insertContent({
-            type: this.name,
-            attrs,
-            content: [
-              {
-                type: "paragraph",
-                content: [{ type: "text", text: "Type here..." }],
-              },
-            ],
-          });
+        ({ chain }) => {
+          return chain()
+            .insertContent({
+              type: this.name,
+              attrs,
+              content: [
+                {
+                  type: "paragraph",
+                  content: [{ type: "text", text: "Type here..." }],
+                },
+              ],
+            })
+            .run();
         },
     };
   },

@@ -11,6 +11,7 @@ import { ProductNode } from "../extensions/product";
 import { InfoBoxNode } from "../extensions/info-box";
 import { TableContentNode } from "../extensions/table-content";
 import { SlashMenuExtension } from "../slash-menu/slash-menu-extension";
+import type { SlashCommandModalService } from "../slash-menu/types";
 
 export const TIPTAP_PLACEHOLDER = "Start writing or type '/' for commands";
 
@@ -35,7 +36,9 @@ export const placeholderForEmptyNode = ({ node }: { node: Node }) => {
  * loading and rendering, but it is intentionally omitted from new insertion
  * surfaces such as the toolbar or any future slash menu.
  */
-export const createProductionExtensions = () => [
+export const createProductionExtensions = (
+  modalService?: SlashCommandModalService,
+) => [
   StarterKit.configure({
     bold: false,
     heading: {
@@ -58,7 +61,9 @@ export const createProductionExtensions = () => [
   ProductNode,
   InfoBoxNode,
   TableContentNode,
-  SlashMenuExtension,
+  SlashMenuExtension.configure({
+    modalService,
+  }),
   Placeholder.configure({
     // The extension only evaluates the placeholder for empty textblock
     // nodes, and the node is passed along, so we can tailor the prompt
