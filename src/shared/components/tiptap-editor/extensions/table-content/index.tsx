@@ -1,4 +1,4 @@
-import { Node, mergeAttributes } from "@tiptap/core";
+import { Node as TiptapNode, mergeAttributes } from "@tiptap/core";
 import { ReactNodeViewRenderer } from "@tiptap/react";
 import { TableContentBlock } from "./ui/table-content-node";
 
@@ -12,7 +12,7 @@ declare module "@tiptap/core" {
   }
 }
 
-export const TableContentNode = Node.create({
+export const TableContentNode = TiptapNode.create({
   name: "tablecontent",
   group: "block",
   draggable: true,
@@ -22,6 +22,14 @@ export const TableContentNode = Node.create({
     return [
       {
         tag: "div[data-type='tablecontent']",
+        contentElement: (element) => {
+          const el = element.cloneNode(true) as HTMLElement;
+          const title = el.querySelector(
+            ".mb-4.font-bold, div:first-child",
+          );
+          if (title) title.remove();
+          return el;
+        },
       },
     ];
   },

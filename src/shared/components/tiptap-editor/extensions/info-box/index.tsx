@@ -1,4 +1,4 @@
-import { Node, mergeAttributes } from "@tiptap/core";
+import { Node as TiptapNode, mergeAttributes } from "@tiptap/core";
 import { ReactNodeViewRenderer } from "@tiptap/react";
 import { InfoBoxBlock } from "./ui/InfoBoxNode";
 
@@ -16,7 +16,7 @@ declare module "@tiptap/core" {
   }
 }
 
-export const InfoBoxNode = Node.create({
+export const InfoBoxNode = TiptapNode.create({
   name: "infobox",
   group: "block",
   draggable: true,
@@ -39,6 +39,20 @@ export const InfoBoxNode = Node.create({
     return [
       {
         tag: "div[data-type='infobox']",
+        getAttrs: (element) => {
+          const el = element as HTMLElement;
+          const iconEl = el.querySelector<HTMLElement>("[data-icon]");
+          if (iconEl) return { icon: iconEl.getAttribute("data-icon") };
+          return {};
+        },
+        contentElement: (element) => {
+          const el = element.cloneNode(true) as HTMLElement;
+          const iconEl = el.querySelector<HTMLElement>(
+            ".post__info-box-icon, [data-icon]",
+          );
+          if (iconEl) iconEl.remove();
+          return el;
+        },
       },
     ];
   },

@@ -11,14 +11,17 @@ interface InfoBoxProps {
 export const InfoBoxElement = ({ node }: InfoBoxProps) => {
   return (
     <div
+      data-type="infobox"
       className={cn(
         "post__info-box",
         node.align === "left" && "text-left",
         node.align === "center" && "text-center",
-        node.align === "right" && "text-right"
+        node.align === "right" && "text-right",
       )}
     >
-      <div className="post__info-box-icon">{node.data.icon}</div>
+      <div data-icon={node.data.icon} className="post__info-box-icon">
+        {node.data.icon}
+      </div>
 
       {node.children.map((child: any, i: number) => (
         <RenderNode key={i} node={child} />
