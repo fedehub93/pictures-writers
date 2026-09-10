@@ -5,7 +5,6 @@ import { FormControl, FormField, FormItem, FormLabel } from "@/shared/ui/form";
 
 import Tiptap from "../tiptap-editor";
 import { createProductionExtensions } from "../tiptap-editor/lib/create-editor-extensions";
-import { countWordsFromTiptap } from "../tiptap-renderer/helpers/words-counter";
 
 interface GenericTiptapProps<T extends FieldValues> {
   id: string;
@@ -62,11 +61,6 @@ export const GenericTiptap = <T extends FieldValues>({
           </FormItem>
         )}
       />
-      <div className="flex items-center justify-between w-full pt-4">
-        <div className="text-sm text-muted-foreground">
-          {countWordsFromTiptap(field.value)} words
-        </div>
-      </div>
     </div>
   );
 };

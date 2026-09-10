@@ -1,8 +1,11 @@
 // @vitest-environment happy-dom
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { Editor, type JSONContent } from "@tiptap/core";
 
-import { countWordsFromTiptap } from "@/shared/components/tiptap-renderer/helpers/words-counter";
+import {
+  countWordsFromText,
+  countWordsFromTiptap,
+} from "@/shared/components/tiptap-renderer/helpers/words-counter";
 
 import {
   createProductionExtensions,
@@ -17,6 +20,8 @@ import {
   isSlashMenuAllowed,
 } from "../slash-menu/slash-menu-extension";
 import type { SlashCommand } from "../slash-menu/types";
+import { estimateReadingTime } from "./writing-metrics";
+
 
 describe("Tiptap production editor seam", () => {
   it("preserves persisted custom nodes and their attributes", () => {
@@ -175,6 +180,63 @@ describe("Tiptap production editor seam", () => {
     });
 
     expect(countWordsFromTiptap(editor.getJSON())).toBe(5);
+  });
+
+  it("derives zero word count and reading time from an empty document", () => {
+    const editor = new Editor({
+      extensions: createProductionExtensions(),
+      content: { type: "doc", content: [] },
+    });
+
+    const wordCount = countWordsFromText(editor.getText());
+    expect(wordCount).toBe(0);
+    expect(estimateReadingTime(wordCount)).toBe(0);
+  });
+
+  it("derives reading time from word count and rounds up for non-empty content", () => {
+    const editor = new Editor({
+      extensions: createProductionExtensions(),
+      content: {
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "One" }],
+          },
+        ],
+      },
+    });
+
+    const wordCount = countWordsFromText(editor.getText());
+    expect(wordCount).toBe(1);
+    expect(estimateReadingTime(wordCount)).toBe(1);
+  });
+
+  it("debounces a rapid sequence of edits into a single observable autosave", () => {
+    vi.useFakeTimers();
+
+    const onSave = vi.fn();
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+    const editor = new Editor({
+      extensions: createProductionExtensions(),
+      content: { type: "doc", content: [] },
+      onUpdate: () => {
+        if (timeout) clearTimeout(timeout);
+        timeout = setTimeout(() => onSave(), 300);
+      },
+    });
+
+    editor.chain().insertContent("a").run();
+    editor.chain().insertContent("ab").run();
+    editor.chain().insertContent("abc").run();
+
+    expect(onSave).not.toHaveBeenCalled();
+
+    vi.advanceTimersByTime(300);
+
+    expect(onSave).toHaveBeenCalledTimes(1);
+
+    vi.useRealTimers();
   });
 
   it("transforms a paragraph into a heading without losing text", () => {

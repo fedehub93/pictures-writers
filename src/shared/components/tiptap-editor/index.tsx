@@ -8,6 +8,7 @@ import {
   BubbleMenu,
   type LinkButtonBubbleProps,
 } from "./bubble-menu/bubble-menu";
+import { WritingMetrics } from "./writing-metrics";
 
 interface TiptapProps {
   editor: Editor | null;
@@ -32,6 +33,7 @@ const Tiptap = ({
         className="max-w-full p-4 prose rounded-b-lg min-h-[12rem]"
       />
       {bubbleMenu && <BubbleMenu editor={editor} linkButton={linkButton} />}
+      <WritingMetrics editor={editor} />
     </div>
   );
 };

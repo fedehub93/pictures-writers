@@ -6,6 +6,14 @@ type TiptapNode = {
   attrs?: Record<string, any>;
 };
 
+export function countWordsFromText(text: string): number {
+  return text
+    .trim()
+    .replace(/\s+/g, " ")
+    .split(" ")
+    .filter(Boolean).length;
+}
+
 export function countWordsFromTiptap(nodeOrDoc: TiptapNode | TiptapNode[]): number {
   const nodes = Array.isArray(nodeOrDoc) ? nodeOrDoc : [nodeOrDoc];
   let text = "";
@@ -22,12 +30,5 @@ export function countWordsFromTiptap(nodeOrDoc: TiptapNode | TiptapNode[]): numb
 
   for (const n of nodes) walk(n);
 
-  // normalizza e conta
-  const words = text
-    .trim()
-    .replace(/\s+/g, " ")
-    .split(" ")
-    .filter(Boolean);
-
-  return words.length;
+  return countWordsFromText(text);
 }
