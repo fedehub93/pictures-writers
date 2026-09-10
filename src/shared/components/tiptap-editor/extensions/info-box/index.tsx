@@ -1,6 +1,8 @@
-import { Node, mergeAttributes } from "@tiptap/core";
+import { Node as TiptapNode, mergeAttributes } from "@tiptap/core";
 import { ReactNodeViewRenderer } from "@tiptap/react";
 import { InfoBoxBlock } from "./ui/InfoBoxNode";
+
+export const DEFAULT_INFO_BOX_ICON = "💡";
 
 export interface InfoBoxAttrs {
   icon: string;
@@ -14,7 +16,7 @@ declare module "@tiptap/core" {
   }
 }
 
-export const InfoBoxNode = Node.create({
+export const InfoBoxNode = TiptapNode.create({
   name: "infobox",
   group: "block",
   draggable: true,
@@ -23,8 +25,9 @@ export const InfoBoxNode = Node.create({
   addAttributes() {
     return {
       icon: {
-        default: "💡",
-        parseHTML: (element) => element.getAttribute("data-icon") || "💡",
+        default: DEFAULT_INFO_BOX_ICON,
+        parseHTML: (element) =>
+          element.getAttribute("data-icon") || DEFAULT_INFO_BOX_ICON,
         renderHTML: (attributes) => ({
           "data-icon": attributes.icon,
         }),
@@ -36,6 +39,20 @@ export const InfoBoxNode = Node.create({
     return [
       {
         tag: "div[data-type='infobox']",
+        getAttrs: (element) => {
+          const el = element as HTMLElement;
+          const iconEl = el.querySelector<HTMLElement>("[data-icon]");
+          if (iconEl) return { icon: iconEl.getAttribute("data-icon") };
+          return {};
+        },
+        contentElement: (element) => {
+          const el = element.cloneNode(true) as HTMLElement;
+          const iconEl = el.querySelector<HTMLElement>(
+            ".post__info-box-icon, [data-icon]",
+          );
+          if (iconEl) iconEl.remove();
+          return el;
+        },
       },
     ];
   },
@@ -56,17 +73,19 @@ export const InfoBoxNode = Node.create({
     return {
       insertInfoBox:
         (attrs) =>
-        ({ editor }) => {
-          return editor.commands.insertContent({
-            type: this.name,
-            attrs,
-            content: [
-              {
-                type: "paragraph",
-                content: [{ type: "text", text: "Type here..." }],
-              },
-            ],
-          });
+        ({ chain }) => {
+          return chain()
+            .insertContent({
+              type: this.name,
+              attrs,
+              content: [
+                {
+                  type: "paragraph",
+                  content: [{ type: "text", text: "Type here..." }],
+                },
+              ],
+            })
+            .run();
         },
     };
   },

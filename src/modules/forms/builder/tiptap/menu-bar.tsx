@@ -74,16 +74,19 @@ export const MenuBar = ({ editor }: MenuBarProps) => {
           onClick={onClickBold}
           isActive={editorState.isBold}
           Icon={Bold}
+          label="Bold"
         />
         <MarkButton
           onClick={onClickItalic}
           isActive={editorState.isItalic}
           Icon={Italic}
+          label="Italic"
         />
         <MarkButton
           onClick={onClickUnderline}
           isActive={editorState.isUnderline}
           Icon={Underline}
+          label="Underline"
         />
 
         <LinkButtonToolbar editor={editor} />

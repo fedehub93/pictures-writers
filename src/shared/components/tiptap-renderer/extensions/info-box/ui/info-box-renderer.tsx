@@ -10,8 +10,10 @@ export const InfoBoxRenderer = ({ node, children }: InfoBoxRendererProps) => {
   const { icon } = node.attrs;
 
   return (
-    <div className={cn("post__info-box")}>
-      <div className="post__info-box-icon">{icon}</div>
+    <div data-type="infobox" className={cn("post__info-box")}>
+      <div data-icon={icon} className="post__info-box-icon">
+        {icon}
+      </div>
       {children}
     </div>
   );

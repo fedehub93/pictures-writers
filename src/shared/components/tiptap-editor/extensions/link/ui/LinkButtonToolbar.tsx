@@ -1,10 +1,14 @@
+"use client";
+
+import "client-only";
+
 import { useEditorState, type Editor } from "@tiptap/react";
 
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 
 import { MarkButton } from "@/shared/components/tiptap-editor/mark-button";
 
-import { removeLinkMark, setLinkMark } from "../helpers";
+import { removeLinkMark, updateLinkMark } from "../helpers";
 import { Link } from "lucide-react";
 
 export const LinkButtonToolbar = ({ editor }: { editor: Editor }) => {
@@ -30,12 +34,7 @@ export const LinkButtonToolbar = ({ editor }: { editor: Editor }) => {
   }) => {
     const { target, follow } = data;
 
-    setLinkMark(editor, { href: target });
-    editor
-      .chain()
-      .focus()
-      .extendMarkRange("link")
-      .updateAttributes("link", { nofollow: !follow });
+    updateLinkMark(editor, { href: target, nofollow: !follow });
 
     setTimeout(() => {
       editor.chain().focus().run();
@@ -57,6 +56,7 @@ export const LinkButtonToolbar = ({ editor }: { editor: Editor }) => {
       onClick={onClickLink}
       isActive={editorState.isLink}
       Icon={Link}
+      label={editorState.isLink ? "Edit link" : "Add link"}
     />
   );
 };

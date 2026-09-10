@@ -4,8 +4,5 @@ export const insertInfoBox = (
   editor: Editor,
   data: { icon: "💡" } = { icon: "💡" }
 ) => {
-  editor
-    .chain()
-    .focus()
-    .insertInfoBox({ ...data });
+  editor.chain().focus().insertInfoBox({ ...data }).run();
 };

@@ -17,9 +17,11 @@ import { GenericTiptapV2 } from "@/shared/components/form-component/generic-tipt
 import { useAutoSave } from "@/modules/blog/shared/hooks/use-auto-save";
 
 import Editor from "@/app/(admin)/_components/editor";
+import { useAdminSlashCommandModalService } from "@/app/(admin)/_hooks/use-slash-command-modal-service";
+
+import { LinkButtonBubble } from "./link-button-bubble";
 
 import { usePostStore } from "../../../store/use-post-store";
-import { usePostsFilters } from "../../../hooks/use-posts-filters";
 
 interface BodyFormProps {
   initialData: {
@@ -47,8 +49,9 @@ export const ContentForm = ({
 }: BodyFormProps) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const [filters] = usePostsFilters();
   const setStatus = usePostStore((state) => state.setStatus);
+
+  const modalService = useAdminSlashCommandModalService();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -61,22 +64,31 @@ export const ContentForm = ({
         content: [],
       },
     },
+    // Ogni autosalvataggio invalida e ri-fetcha la stessa query da cui arriva
+    // `initialData` (getLastByRootId): il cambio di riferimento di `values`
+    // farebbe partire un reset del form che svuota dirtyFields e riporta i
+    // valori allo snapshot del server, cancellando silenziosamente l'ultimo
+    // contenuto digitato (l'editor TipTap non viene risincronizzato dal form,
+    // quindi il testo resta visibile ma non viene mai salvato).
+    // keepDirtyValues preserva i campi con modifiche locali al reset.
+    resetOptions: { keepDirtyValues: true, keepDirty: true },
     mode: "onChange",
   });
 
-  const { mutate: updatePost, isPending } = useMutation(
+  const { mutate: updatePost } = useMutation(
     trpc.posts.update.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries(trpc.posts.getMany.queryFilter(filters));
+        // The body update does not affect the post list, so avoid invalidating
+        // the grid query on every keystroke. Only refresh the current version.
         if (rootId) {
           queryClient.invalidateQueries(
             trpc.posts.getLastByRootId.queryFilter({ rootId }),
           );
         }
         setStatus("saved");
-        toast.success("Post updated successfully");
       },
       onError: (error) => {
+        setStatus("error");
         toast.error(error.message);
       },
     }),
@@ -97,14 +109,14 @@ export const ContentForm = ({
     form.setValue("bodyData", value);
   };
 
-  const onValueChangeBody = (value: Descendant[]) => {
+  const onValueChangeBody = (_value: Descendant[]) => {
     handleAutoSave();
   };
 
   return (
     <div>
       <Form {...form}>
-        <form onChange={handleAutoSave} className="space-y-4">
+        <div className="flex flex-col gap-4">
           {initialData.editorType === EditorType.SLATE && (
             <FormField
               control={form.control}
@@ -134,9 +146,12 @@ export const ContentForm = ({
               name="tiptapBodyData"
               onUpdate={handleAutoSave}
               onEditorReady={onEditorReady}
+              bubbleMenu
+              linkButton={LinkButtonBubble}
+              modalService={modalService}
             />
           )}
-        </form>
+        </div>
       </Form>
     </div>
   );

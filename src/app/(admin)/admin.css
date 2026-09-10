@@ -430,3 +430,14 @@
 @utility evidence {
   @apply mt-2 rounded-md bg-secondary p-1 font-bold text-primary;
 }
+
+/* Tiptap placeholder: shown on the current empty paragraph and on the
+   empty editor surface (the empty-doc node carries both classes). */
+.ProseMirror .is-empty::before,
+.ProseMirror .is-editor-empty::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: var(--muted-foreground);
+  pointer-events: none;
+  height: 0;
+}

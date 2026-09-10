@@ -11,10 +11,8 @@ import {
   ChevronDown,
   Info,
   Italic,
-  Link,
   List,
   ListOrdered,
-  ListOrderedIcon,
   LucideImage,
   Quote,
   Underline,
@@ -42,18 +40,15 @@ import { MarkButton } from "./mark-button";
 import { LinkButtonToolbar } from "./extensions/link/ui/LinkButtonToolbar";
 import { insertProduct } from "./extensions/product/helpers";
 import { insertInfoBox } from "./extensions/info-box/helpers";
-import { insertTableContent } from "./extensions/table-content/helpers";
 
 export interface MenuBarProps {
   editor: Editor | null;
-  showEmbedButton?: boolean;
   sticky?: boolean;
   padding?: "none" | "xs" | "lg";
 }
 
 export const MenuBar = ({
   editor,
-  showEmbedButton = true,
   sticky = false,
   padding = "lg",
 }: MenuBarProps) => {
@@ -126,7 +121,7 @@ export const MenuBar = ({
     });
   };
 
-  const getProduct = (data: any) => {
+  const getProduct = (data: { rootId: string }) => {
     insertProduct(editor, { rootId: data.rootId });
   };
 
@@ -134,21 +129,17 @@ export const MenuBar = ({
     insertInfoBox(editor);
   };
 
-  const insertTableContentNode = () => {
-    insertTableContent(editor);
-  };
-
   // === Render ===
   return (
     <div
       className={cn(
-        "bg-accent border-y drop-shadow top-0 z-10 p-2 h-full flex flex-col space-y-4",
+        "bg-accent border-b top-0 z-10 flex flex-wrap items-center gap-x-1 gap-y-1",
         padding === "xs" && "p-1",
-        padding === "lg" && "p-4",
+        padding === "lg" && "p-3",
         sticky && "sticky",
       )}
     >
-      <div className="flex items-center flex-wrap gap-x-1 h-full gap-y-2">
+      <div className="flex items-center flex-wrap gap-x-1 gap-y-1">
         <HeadingSelect editor={editor} />
         <Separator orientation="vertical" className="mx-2 h-8!" />
 
@@ -156,16 +147,19 @@ export const MenuBar = ({
           onClick={onClickBold}
           isActive={editorState.isBold}
           Icon={Bold}
+          label="Bold"
         />
         <MarkButton
           onClick={onClickItalic}
           isActive={editorState.isItalic}
           Icon={Italic}
+          label="Italic"
         />
         <MarkButton
           onClick={onClickUnderline}
           isActive={editorState.isUnderline}
           Icon={Underline}
+          label="Underline"
         />
 
         <Separator orientation="vertical" className="bg-slate-300 mx-2 h-8!" />
@@ -178,21 +172,25 @@ export const MenuBar = ({
           onClick={() => editor.chain().focus().setTextAlign("left").run()}
           isActive={editorState.textAlign === "left"}
           Icon={AlignLeft}
+          label="Align left"
         />
         <MarkButton
           onClick={() => editor.chain().focus().setTextAlign("center").run()}
           isActive={editorState.textAlign === "center"}
           Icon={AlignCenter}
+          label="Align center"
         />
         <MarkButton
           onClick={() => editor.chain().focus().setTextAlign("right").run()}
           isActive={editorState.textAlign === "right"}
           Icon={AlignRight}
+          label="Align right"
         />
         <MarkButton
           onClick={() => editor.chain().focus().setTextAlign("justify").run()}
           isActive={editorState.textAlign === "justify"}
           Icon={AlignJustify}
+          label="Align justify"
         />
 
         <Separator orientation="vertical" className="bg-slate-300 mx-2 h-8!" />
@@ -201,16 +199,19 @@ export const MenuBar = ({
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           isActive={editorState.isBulletList}
           Icon={List}
+          label="Bullet list"
         />
         <MarkButton
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
           isActive={editorState.isOrderedList}
           Icon={ListOrdered}
+          label="Ordered list"
         />
         <MarkButton
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
           isActive={editorState.isBlockquote}
           Icon={Quote}
+          label="Blockquote"
         />
 
         <DropdownMenu>
@@ -239,10 +240,6 @@ export const MenuBar = ({
             <DropdownMenuItem onClick={insertInfoBoxNode}>
               <Info className="size-4 mr-2" />
               Info box
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={insertTableContentNode}>
-              <ListOrderedIcon className="size-4 mr-2" />
-              Table of Contents
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

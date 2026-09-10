@@ -13,7 +13,10 @@ interface ImageElementProps {
 export const ProductElement = ({ node }: ImageElementProps) => {
   if (isEbookMetadata(node.data.metadata)) {
     return (
-      <div className="flex flex-col items-center justify-center mx-auto w-full md:w-5/12 border my-8 rounded-lg shadow-lg bg-white">
+      <div
+        data-type="product"
+        className="flex flex-col items-center justify-center mx-auto w-full md:w-5/12 border my-8 rounded-lg shadow-lg bg-white"
+      >
         <div className="relative w-full aspect-square border-b">
           <Image
             src={node.data.imageCoverUrl}

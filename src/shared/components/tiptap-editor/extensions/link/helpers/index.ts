@@ -4,9 +4,15 @@ export const setLinkMark = (
   editor: Editor,
   options: { href: string; nofollow?: boolean }
 ) => {
-  const { href } = options;
+  const { href, nofollow } = options;
 
-  return editor.chain().focus().extendMarkRange("link").setLink({ href }).run();
+  return editor
+    .chain()
+    .focus()
+    .extendMarkRange("link")
+    .setLink({ href })
+    .updateAttributes("link", { nofollow: nofollow ?? true })
+    .run();
 };
 
 export const updateLinkMark = (

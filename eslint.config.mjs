@@ -38,6 +38,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Generated Prisma client output.
     "generated/**",
+    // Local reference repositories used by editor skills.
+    ".reference/**",
   ]),
   {
     rules: {
