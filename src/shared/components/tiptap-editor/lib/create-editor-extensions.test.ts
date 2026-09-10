@@ -98,8 +98,61 @@ describe("Tiptap production editor seam", () => {
     );
     expect(placeholderExtension).toBeDefined();
     expect(
-      placeholderExtension?.options.placeholder({ editor }),
+      placeholderExtension?.options.placeholder({
+        editor,
+        node: editor.state.schema.nodes.paragraph.create(),
+      }),
     ).toBe(TIPTAP_PLACEHOLDER);
+  });
+
+  it("shows the placeholder on empty paragraphs even when the document is not empty", () => {
+    const editor = new Editor({
+      extensions: createProductionExtensions(),
+      content: {
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "Hello" }],
+          },
+          { type: "paragraph", content: [] },
+        ],
+      },
+    });
+
+    expect(editor.isEmpty).toBe(false);
+
+    const placeholderExtension = editor.extensionManager.extensions.find(
+      (extension) => extension.name === "placeholder",
+    );
+    expect(placeholderExtension).toBeDefined();
+    expect(
+      placeholderExtension?.options.placeholder({
+        editor,
+        node: editor.state.schema.nodes.paragraph.create(),
+      }),
+    ).toBe(TIPTAP_PLACEHOLDER);
+  });
+
+  it("shows a node-specific placeholder for empty headings", () => {
+    const editor = new Editor({
+      extensions: createProductionExtensions(),
+      content: { type: "doc", content: [] },
+    });
+
+    const placeholderExtension = editor.extensionManager.extensions.find(
+      (extension) => extension.name === "placeholder",
+    );
+    expect(placeholderExtension).toBeDefined();
+
+    for (const level of [1, 2, 3, 4]) {
+      expect(
+        placeholderExtension?.options.placeholder({
+          editor,
+          node: editor.state.schema.nodes.heading.create({ level }),
+        }),
+      ).toBe(`Heading ${level}`);
+    }
   });
 
   it("derives word count from the document", () => {

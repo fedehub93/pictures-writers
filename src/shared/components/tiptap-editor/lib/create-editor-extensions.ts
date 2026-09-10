@@ -2,6 +2,7 @@ import StarterKit from "@tiptap/starter-kit";
 import TextAlign from "@tiptap/extension-text-align";
 import Youtube from "@tiptap/extension-youtube";
 import Placeholder from "@tiptap/extension-placeholder";
+import { type Node } from "@tiptap/pm/model";
 
 import { CustomBold } from "../extensions/bold";
 import { CustomLink } from "../extensions/link";
@@ -12,6 +13,18 @@ import { TableContentNode } from "../extensions/table-content";
 import { SlashMenuExtension } from "../slash-menu/slash-menu-extension";
 
 export const TIPTAP_PLACEHOLDER = "Start writing or type '/' for commands";
+
+/**
+ * Node-aware placeholder text. The Placeholder extension only evaluates
+ * this for empty textblock nodes, so an empty heading shows "Heading 2"
+ * instead of the generic writing prompt.
+ */
+export const placeholderForEmptyNode = ({ node }: { node: Node }) => {
+  if (node.type.name === "heading") {
+    return `Heading ${node.attrs.level}`;
+  }
+  return TIPTAP_PLACEHOLDER;
+};
 
 /**
  * Factory for the Tiptap extension set used in production editors.
@@ -47,14 +60,14 @@ export const createProductionExtensions = () => [
   TableContentNode,
   SlashMenuExtension,
   Placeholder.configure({
-    placeholder: ({ editor }) => {
-      if (editor.isEmpty) {
-        return TIPTAP_PLACEHOLDER;
-      }
-      return "";
-    },
+    // The extension only evaluates the placeholder for empty textblock
+    // nodes, and the node is passed along, so we can tailor the prompt
+    // to the current node type (e.g. "Heading 2" on an empty h2).
+    placeholder: placeholderForEmptyNode,
     showOnlyWhenEditable: true,
-    showOnlyCurrent: false,
+    // Show the prompt on the empty paragraph that currently holds the
+    // cursor, instead of decorating every empty node at once.
+    showOnlyCurrent: true,
     emptyEditorClass: "is-editor-empty",
   }),
 ];
