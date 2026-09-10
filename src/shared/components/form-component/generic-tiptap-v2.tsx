@@ -1,10 +1,15 @@
-import React, { useEffect } from "react";
+"use client";
+
+import "client-only";
+
+import React, { useEffect, type ComponentType } from "react";
 import { Control, FieldValues, Path, useController } from "react-hook-form";
 import { useEditor } from "@tiptap/react";
 import type { Editor } from "@tiptap/core";
 
 import Tiptap from "../tiptap-editor";
 import { createProductionExtensions } from "../tiptap-editor/lib/create-editor-extensions";
+import type { LinkButtonBubbleProps } from "../tiptap-editor/bubble-menu/bubble-menu";
 
 interface GenericTiptapProps<T extends FieldValues> {
   id: string;
@@ -13,6 +18,8 @@ interface GenericTiptapProps<T extends FieldValues> {
   onUpdate?: () => void;
   onEditorReady?: (editor: Editor | null) => void;
   toolbar?: boolean;
+  bubbleMenu?: boolean;
+  linkButton?: ComponentType<LinkButtonBubbleProps>;
 }
 
 export const GenericTiptapV2 = <T extends FieldValues>({
@@ -22,6 +29,8 @@ export const GenericTiptapV2 = <T extends FieldValues>({
   onUpdate,
   onEditorReady,
   toolbar = true,
+  bubbleMenu = false,
+  linkButton,
 }: GenericTiptapProps<T>) => {
   const { field } = useController({ control, name });
   const editor = useEditor({
@@ -51,6 +60,13 @@ export const GenericTiptapV2 = <T extends FieldValues>({
   }, [editor, onEditorReady]);
 
   return (
-    <Tiptap key={id} editor={editor} value={field.value} toolbar={toolbar} />
+    <Tiptap
+      key={id}
+      editor={editor}
+      value={field.value}
+      toolbar={toolbar}
+      bubbleMenu={bubbleMenu}
+      linkButton={linkButton}
+    />
   );
 };

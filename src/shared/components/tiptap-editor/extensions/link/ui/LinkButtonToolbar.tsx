@@ -1,3 +1,7 @@
+"use client";
+
+import "client-only";
+
 import { useEditorState, type Editor } from "@tiptap/react";
 
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
@@ -52,6 +56,7 @@ export const LinkButtonToolbar = ({ editor }: { editor: Editor }) => {
       onClick={onClickLink}
       isActive={editorState.isLink}
       Icon={Link}
+      label={editorState.isLink ? "Edit link" : "Add link"}
     />
   );
 };

@@ -147,16 +147,19 @@ export const MenuBar = ({
           onClick={onClickBold}
           isActive={editorState.isBold}
           Icon={Bold}
+          label="Bold"
         />
         <MarkButton
           onClick={onClickItalic}
           isActive={editorState.isItalic}
           Icon={Italic}
+          label="Italic"
         />
         <MarkButton
           onClick={onClickUnderline}
           isActive={editorState.isUnderline}
           Icon={Underline}
+          label="Underline"
         />
 
         <Separator orientation="vertical" className="bg-slate-300 mx-2 h-8!" />
@@ -169,21 +172,25 @@ export const MenuBar = ({
           onClick={() => editor.chain().focus().setTextAlign("left").run()}
           isActive={editorState.textAlign === "left"}
           Icon={AlignLeft}
+          label="Align left"
         />
         <MarkButton
           onClick={() => editor.chain().focus().setTextAlign("center").run()}
           isActive={editorState.textAlign === "center"}
           Icon={AlignCenter}
+          label="Align center"
         />
         <MarkButton
           onClick={() => editor.chain().focus().setTextAlign("right").run()}
           isActive={editorState.textAlign === "right"}
           Icon={AlignRight}
+          label="Align right"
         />
         <MarkButton
           onClick={() => editor.chain().focus().setTextAlign("justify").run()}
           isActive={editorState.textAlign === "justify"}
           Icon={AlignJustify}
+          label="Align justify"
         />
 
         <Separator orientation="vertical" className="bg-slate-300 mx-2 h-8!" />
@@ -192,16 +199,19 @@ export const MenuBar = ({
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           isActive={editorState.isBulletList}
           Icon={List}
+          label="Bullet list"
         />
         <MarkButton
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
           isActive={editorState.isOrderedList}
           Icon={ListOrdered}
+          label="Ordered list"
         />
         <MarkButton
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
           isActive={editorState.isBlockquote}
           Icon={Quote}
+          label="Blockquote"
         />
 
         <DropdownMenu>

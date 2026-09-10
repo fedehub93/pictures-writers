@@ -18,6 +18,8 @@ import { useAutoSave } from "@/modules/blog/shared/hooks/use-auto-save";
 
 import Editor from "@/app/(admin)/_components/editor";
 
+import { LinkButtonBubble } from "./link-button-bubble";
+
 import { usePostStore } from "../../../store/use-post-store";
 import { usePostsFilters } from "../../../hooks/use-posts-filters";
 
@@ -142,6 +144,8 @@ export const ContentForm = ({
               name="tiptapBodyData"
               onUpdate={handleAutoSave}
               onEditorReady={onEditorReady}
+              bubbleMenu
+              linkButton={LinkButtonBubble}
             />
           )}
         </form>
