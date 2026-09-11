@@ -1,21 +1,9 @@
-import NextImage from "next/image";
-import Link from "next/link";
-
 import { renderToReactElement } from "@tiptap/static-renderer";
-import StarterKit from "@tiptap/starter-kit";
-import TextAlign from "@tiptap/extension-text-align";
-import Youtube from "@tiptap/extension-youtube";
-import Image from "@tiptap/extension-image";
 
 import { TiptapContent } from "@/types";
 
-import { InfoBoxNodeRenderer } from "./extensions/info-box";
-import { ProductNodeRenderer } from "./extensions/product";
-import { CustomLinkMarkRenderer } from "./extensions/link";
-import { AdBlockNodeRenderer } from "./extensions/ads";
-import { TableContentNodeRenderer } from "./extensions/table-content";
+import { tiptapContentExtensions } from "./extensions";
 import { TableContentRenderer } from "./extensions/table-content/ui/table-content-renderer";
-import { CustomHeading } from "./extensions/heading";
 
 import { InfoBoxRenderer } from "./extensions/info-box/ui/info-box-renderer";
 import { ProductRenderer } from "./extensions/product/ui/product-renderer";
@@ -33,30 +21,7 @@ const TipTapRendererV2 = ({ content, preview = false }: Props) => {
 
   const output = renderToReactElement({
     content,
-    extensions: [
-      StarterKit.configure({
-        heading: false,
-        link: false,
-        blockquote: {
-          HTMLAttributes: {
-            class: "not-prose",
-          },
-        },
-      }),
-      CustomHeading.configure({
-        levels: [1, 2, 3, 4],
-      }),
-      CustomLinkMarkRenderer,
-      TextAlign.configure({ types: ["heading", "paragraph"] }),
-      Youtube.configure({
-        nocookie: true,
-      }),
-      Image,
-      ProductNodeRenderer,
-      InfoBoxNodeRenderer,
-      AdBlockNodeRenderer,
-      TableContentNodeRenderer,
-    ],
+    extensions: tiptapContentExtensions,
     options: {
       markMapping: {
         link: ({ children, mark }) => {

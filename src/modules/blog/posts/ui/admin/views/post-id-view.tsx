@@ -18,9 +18,7 @@ import {
 import Link from "next/link";
 import { Route } from "next";
 
-import { ContentStatus, EditorType } from "@/generated/prisma";
-
-import { cn } from "@/shared/lib/utils";
+import { ContentStatus } from "@/generated/prisma";
 
 import { Button } from "@/shared/ui/button";
 import {
@@ -71,9 +69,6 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
   const handleEditorReady = useCallback((editor: TiptapEditor | null) => {
     setTiptapEditor(editor);
   }, []);
-
-  const activeEditor =
-    post.editorType === EditorType.TIPTAP ? tiptapEditor : null;
 
   // Tutte le mutazioni della pagina scrivono sullo stesso Post (lista + ultima
   // versione). Raggruppando l'invalidazione in un'unica callback stabile si
@@ -177,12 +172,8 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
     updatePost.isPending ||
     cancelSchedulePost.isPending;
 
-  const editorColumnClassName = cn(
-    "min-w-0 h-[90vh] min-h-112.5 rounded-xl px-4 xl:h-full",
-    post.editorType === EditorType.TIPTAP
-      ? "xl:col-span-12"
-      : "xl:col-span-17",
-  );
+  const editorColumnClassName =
+  "min-w-0 h-[90vh] min-h-112.5 rounded-xl px-4 xl:h-full xl:col-span-12";
 
   return (
     // 1. Il contenitore principale occupa l'altezza disponibile dell'area lavoro ed evita lo scroll globale della finestra
@@ -336,7 +327,7 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
       <div className="flex-1 flex flex-col min-h-0 w-full">
         <div className="flex-1 grid grid-cols-1 xl:grid-cols-24 gap-8 xl:gap-4 pt-6 xl:overflow-hidden">
           <div className="mt-0 hidden min-h-0 outline-none xl:col-span-5 xl:flex xl:flex-col pl-4 h-full">
-            <PostOutline editor={activeEditor} />
+            <PostOutline editor={tiptapEditor} />
           </div>
 
           <ScrollArea className={editorColumnClassName}>

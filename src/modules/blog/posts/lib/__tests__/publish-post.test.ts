@@ -6,6 +6,7 @@ import { ContentStatus } from "@/generated/prisma";
 
 import { publishPost, PublishPostError } from "../publish-post";
 import { cancelSchedule, schedulePost } from "../schedule-post";
+import { emptyTiptapDoc } from "./fixtures";
 
 describe("publishPost workflow", () => {
   const createdRootIds: string[] = [];
@@ -35,7 +36,7 @@ describe("publishPost workflow", () => {
         slug: "test-post",
         version: 1,
         status: ContentStatus.DRAFT,
-        bodyData: [{ type: "paragraph", children: [{ text: "" }] }],
+        tiptapBodyData: emptyTiptapDoc,
         rootId: explicitRootId,
         ...overrides,
       },

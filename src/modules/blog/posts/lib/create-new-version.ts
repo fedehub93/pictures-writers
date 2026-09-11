@@ -70,10 +70,6 @@ export const createNewVersion = async (input: Partial<PostUpdateValues>) => {
         version: latestPost.version + 1,
         status: ContentStatus.CHANGED,
         isLatest: false,
-        bodyData: input.bodyData ||
-          latestPost.bodyData || [
-            { type: "paragraph", children: [{ text: "" }] },
-          ],
         tiptapBodyData: input.tiptapBodyData || latestPost.tiptapBodyData,
         tags: { connect: tagsToConnect },
         postCategories: { create: categoriesToCreate },

@@ -20,7 +20,6 @@ export const createNewVersionProduct = async (rootId: string, values: any) => {
   const product = await db.product.create({
     data: {
       title: values.title || publishedProduct.title,
-      description: values.description || publishedProduct.description,
       slug: values.slug || publishedProduct.slug,
       type: publishedProduct.type,
       price: values.price || publishedProduct.price,
@@ -36,6 +35,7 @@ export const createNewVersionProduct = async (rootId: string, values: any) => {
       ...publishedProduct,
       ...values,
       id: undefined,
+      description: undefined,
       version: undefined,
       status: undefined,
       isLatest: undefined,

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import { EditorType, WidgetSection, WidgetType } from "@/generated/prisma";
+import { WidgetSection, WidgetType } from "@/generated/prisma";
 
 import { db } from "@/shared/lib/db";
 
@@ -32,26 +32,7 @@ export const PostDraftSlugView = async ({ slug }: PostDraftSlugViewProps) => {
   let bodyImages: string[] = [];
   let bodyVideos: string[] = [];
 
-  if (post.editorType === EditorType.SLATE) {
-    bodyImages =
-      post.bodyData
-        .filter(
-          (image) => image.type === "image" && image.url && image.url !== "",
-        )
-        .map((image) => image.url || "") || [];
-
-    bodyVideos =
-      post.bodyData
-        .filter(
-          (video) => video.type === "video" && video.url && video.url !== "",
-        )
-        .map((video) => video.url || "") || [];
-  }
-
-  if (
-    post.editorType === EditorType.TIPTAP &&
-    isJSONContent(post.tiptapBodyData)
-  ) {
+  if (isJSONContent(post.tiptapBodyData)) {
     bodyImages =
       post.tiptapBodyData.content
         ?.filter((image) => image.type === "image" && image.attrs?.src !== "")

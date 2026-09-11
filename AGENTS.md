@@ -25,7 +25,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - **Email**: SendGrid, Resend, React Email Editor
 - **File uploads**: UploadThing
 - **Page builder**: Puck editor (`@puckeditor/core`)
-- **Rich text**: TipTap + Slate
+- **Rich text**: TipTap
 - **Forms**: React Hook Form + Valibot/Zod
 - **State**: Zustand, TanStack Query (React Query)
 - **Tables**: TanStack Table

@@ -112,12 +112,6 @@ export const columns = columnHelper.columns([
       );
     },
   }),
-  columnHelper.accessor("editorType", {
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Editor Type" />
-    ),
-    sortFn: "text",
-  }),
   columnHelper.accessor("status", {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />

@@ -1,5 +1,4 @@
 import { ReactNode } from "react";
-import { CustomElement } from "./app/(admin)/_components/editor";
 import { HTMLContent, JSONContent } from "@tiptap/core";
 import type {
   Media,
@@ -21,7 +20,6 @@ export type TiptapContent = HTMLContent | JSONContent | JSONContent[] | null;
 
 declare global {
   namespace PrismaJson {
-    type BodyData = CustomElement[];
     type TipTapBodyData = TiptapContent;
     type PuckData = Data<SavedComponents>;
     type SubmissionData = Record<string, unknown>;

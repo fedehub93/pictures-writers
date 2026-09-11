@@ -56,7 +56,6 @@ export const postsRouter = createTRPCRouter({
           scheduledAt: input.scheduledAt,
           preSchedulingStatus:
             status === ContentStatus.SCHEDULED ? ContentStatus.DRAFT : null,
-          bodyData: [{ type: "paragraph", children: [{ text: "" }] }],
           userId: ctx.auth.id,
           postAuthors: {
             create: {
@@ -239,8 +238,6 @@ export const postsRouter = createTRPCRouter({
           slug: true,
           description: true,
           status: true,
-          editorType: true,
-          bodyData: true,
           tiptapBodyData: true,
           publishedAt: true,
           firstPublishedAt: true,
@@ -327,7 +324,6 @@ export const postsRouter = createTRPCRouter({
           firstPublishedAt: true,
           scheduledAt: true,
           version: true,
-          editorType: true,
           imageCover: {
             select: {
               url: true,

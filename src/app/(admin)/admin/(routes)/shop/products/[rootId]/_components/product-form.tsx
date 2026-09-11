@@ -86,9 +86,6 @@ export const ProductForm = ({
     resolver: zodResolver(productFormSchema),
     defaultValues: {
       ...initialData,
-      description: initialData.description || [
-        { type: "paragraph", children: [{ text: "" }] },
-      ],
       tiptapDescription: initialData.tiptapDescription || {
         type: "doc",
         content: [],

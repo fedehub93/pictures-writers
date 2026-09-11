@@ -22,8 +22,6 @@ export const getLastPostByRootId = async (rootId: string) => {
         slug: true,
         description: true,
         status: true,
-        editorType: true,
-        bodyData: true,
         tiptapBodyData: true,
         publishedAt: true,
         firstPublishedAt: true,

@@ -23,6 +23,8 @@ import { FaqSection } from "@/shared/components/faq-section";
 import { ProductGallery } from "./_components/product-gallery";
 import { EbookInfo } from "./_components/ebook-info";
 
+import { TipTapRendererV2 } from "@/shared/components/tiptap-renderer";
+
 import { Webinar } from "./_components/webinar";
 import { Service } from "./_components/service";
 
@@ -106,14 +108,17 @@ const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
               title={product.title}
               acquisitionMode={product.acquisitionMode}
               imageCoverUrl={product.imageCover?.url!}
-              description={product.description}
               price={product.price}
               discountedPrice={product.discountedPrice}
               formats={product.metadata.formats}
               publishedAt={product.metadata.publishedAt}
               author={product.metadata.author}
               edition={product.metadata.edition}
-            />
+            >
+              {product.tiptapDescription && (
+                <TipTapRendererV2 content={product.tiptapDescription} />
+              )}
+            </EbookInfo>
           </>
         )}
         {isWebinarMetadata(product.metadata) && (

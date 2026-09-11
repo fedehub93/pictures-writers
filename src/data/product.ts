@@ -26,7 +26,6 @@ export const getProductsPaginatedByFilters = async ({
         id: true,
         rootId: true,
         title: true,
-        description: true,
         slug: true,
         updatedAt: true,
         category: {
@@ -104,7 +103,6 @@ export const getPublishedProductBySlug = async (slug: string) => {
       id: true,
       rootId: true,
       title: true,
-      description: true,
       tiptapDescription: true,
       slug: true,
       category: {
@@ -292,7 +290,6 @@ export const getDraftProductBySlug = async (slug: string) => {
       id: true,
       rootId: true,
       title: true,
-      description: true,
       tiptapDescription: true,
       slug: true,
       category: {

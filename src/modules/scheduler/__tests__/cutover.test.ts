@@ -19,6 +19,7 @@ import {
 } from "@/modules/scheduler/lib/migration";
 import { schedulePost, cancelSchedule } from "@/modules/blog/posts/lib/schedule-post";
 import { publishPost } from "@/modules/blog/posts/lib/publish-post";
+import { emptyTiptapDoc } from "@/modules/blog/posts/lib/__tests__/fixtures";
 import { scheduleSingleSend } from "@/modules/mails/single-sends/lib/schedule-single-send";
 
 import * as sendSingleSendModule from "@/modules/mails/single-sends/lib/send-single-send";
@@ -89,7 +90,7 @@ describe("scheduler cutover", () => {
         slug: "test-post",
         version: 1,
         status: ContentStatus.DRAFT,
-        bodyData: [{ type: "paragraph", children: [{ text: "" }] }],
+        tiptapBodyData: emptyTiptapDoc,
         rootId: explicitRootId,
         ...overrides,
       },
@@ -114,7 +115,7 @@ describe("scheduler cutover", () => {
         slug: `legacy-${randomUUID()}`,
         version: 1,
         status: ContentStatus.SCHEDULED,
-        bodyData: [{ type: "paragraph", children: [{ text: "" }] }],
+        tiptapBodyData: emptyTiptapDoc,
         scheduledAt,
         preSchedulingStatus: ContentStatus.DRAFT,
       },

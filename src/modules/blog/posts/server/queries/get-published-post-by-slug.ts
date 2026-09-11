@@ -20,8 +20,6 @@ export const getPublishedPostBySlug = async (slug: string) => {
       title: true,
       slug: true,
       description: true,
-      editorType: true,
-      bodyData: true,
       tiptapBodyData: true,
       publishedAt: true,
       firstPublishedAt: true,
