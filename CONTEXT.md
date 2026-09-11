@@ -1,6 +1,6 @@
 # Pictures Writers
 
-Glossary for the blog post editing context, including editorial content, editor types, and desktop navigation.
+Glossary for the blog post editing context, including editorial content and desktop navigation.
 
 ## Post editing
 
@@ -21,11 +21,8 @@ A temporary desktop navigation view derived from the headings in the active Tipt
 _Avoid_: Table of contents when referring to the admin editing aid.
 
 **Tiptap editor**:
-The rich-text editor used to edit the structured JSON content of a post and the source of the admin outline.
+The single rich-text editor for editorial content (posts, product descriptions). It produces structured JSON content and is the source of the admin outline.
 _Avoid_: Public table of contents.
-
-**Slate editor**:
-The legacy/editor alternative used by posts whose editor type is Slate. The desktop outline does not apply to Slate content.
 
 **SEO panel**:
 The post editing area for search metadata such as title, description, canonical URL, social metadata, and indexing directives.
