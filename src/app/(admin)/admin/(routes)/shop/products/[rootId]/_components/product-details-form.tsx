@@ -68,13 +68,6 @@ export const ProductDetailsForm = ({
           disabled={isSubmitting}
           buttonOnClick={onSlugCreate}
         />
-        {/* <GenericEditor
-          id="description"
-          control={control}
-          name="description"
-          label="Description (Optional)"
-          disabled={isSubmitting}
-        /> */}
         <GenericTiptap
           key={initialData.id}
           id={initialData.id}
