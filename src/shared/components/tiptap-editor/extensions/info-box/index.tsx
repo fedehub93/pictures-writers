@@ -26,8 +26,16 @@ export const InfoBoxNode = TiptapNode.create({
     return {
       icon: {
         default: DEFAULT_INFO_BOX_ICON,
-        parseHTML: (element) =>
-          element.getAttribute("data-icon") || DEFAULT_INFO_BOX_ICON,
+        parseHTML: (element) => {
+          const iconEl = element.querySelector<HTMLElement>(
+            ".post__info-box-icon, [data-icon]",
+          );
+          return (
+            iconEl?.getAttribute("data-icon") ||
+            element.getAttribute("data-icon") ||
+            DEFAULT_INFO_BOX_ICON
+          );
+        },
         renderHTML: (attributes) => ({
           "data-icon": attributes.icon,
         }),
