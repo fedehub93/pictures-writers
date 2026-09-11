@@ -16,6 +16,7 @@ import {
 
 import { ProductGallery } from "@/app/(home)/(routes)/shop/[categorySlug]/[productSlug]/_components/product-gallery";
 import { EbookInfo } from "@/app/(home)/(routes)/shop/[categorySlug]/[productSlug]/_components/ebook-info";
+import { TipTapRendererV2 } from "@/shared/components/tiptap-renderer";
 import { Webinar } from "@/app/(home)/(routes)/shop/[categorySlug]/[productSlug]/_components/webinar";
 
 export const dynamic = "force-dynamic";
@@ -110,14 +111,17 @@ const Page = async (
               title={product.title}
               acquisitionMode={product.acquisitionMode}
               imageCoverUrl={product.imageCover?.url!}
-              tiptapDescription={product.tiptapDescription}
               price={product.price}
               discountedPrice={product.discountedPrice}
               formats={product.metadata.formats}
               publishedAt={product.metadata.publishedAt}
               author={product.metadata.author}
               edition={product.metadata.edition}
-            />
+            >
+              {product.tiptapDescription && (
+                <TipTapRendererV2 content={product.tiptapDescription} />
+              )}
+            </EbookInfo>
           </>
         )}
         {isWebinarMetadata(product.metadata) && (
