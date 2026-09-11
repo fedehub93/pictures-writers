@@ -2,6 +2,7 @@ import StarterKit from "@tiptap/starter-kit";
 import TextAlign from "@tiptap/extension-text-align";
 import Youtube from "@tiptap/extension-youtube";
 import Image from "@tiptap/extension-image";
+import type { Extensions } from "@tiptap/core";
 
 import { InfoBoxNodeRenderer } from "./extensions/info-box";
 import { ProductNodeRenderer } from "./extensions/product";
@@ -33,4 +34,4 @@ export const tiptapContentExtensions = [
   InfoBoxNodeRenderer,
   AdBlockNodeRenderer,
   TableContentNodeRenderer,
-];
+] satisfies Extensions;
