@@ -328,8 +328,7 @@ model Post {
 
   editorType EditorType @default(TIPTAP)
 
-  /// [BodyData]
-  bodyData Json @db.JsonB
+  bodyData Json? @db.JsonB
 
   /// [TipTapBodyData]
   tiptapBodyData Json? @db.JsonB
@@ -635,8 +634,7 @@ model Product {
   title String
   slug  String
 
-  /// [BodyData]
-  description       Json  @db.JsonB
+  description       Json? @db.JsonB
   /// [TipTapBodyData]
   tiptapDescription Json? @db.JsonB
 
