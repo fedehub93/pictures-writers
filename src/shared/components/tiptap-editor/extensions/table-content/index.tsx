@@ -99,7 +99,7 @@ export const TableContentNode = TiptapNode.create({
             }
           });
 
-          return editor.commands.insertContent({
+          return commands.insertContent({
             type: "tablecontent",
             content: [
               {

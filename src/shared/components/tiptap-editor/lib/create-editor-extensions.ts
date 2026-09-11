@@ -32,9 +32,6 @@ export const placeholderForEmptyNode = ({ node }: { node: Node }) => {
  *
  * Keeping this list in one place guarantees that tests, the public renderer
  * and every admin editing surface share the same document semantics.
- * `TableContentNode` stays registered so existing persisted content keeps
- * loading and rendering, but it is intentionally omitted from new insertion
- * surfaces such as the toolbar or any future slash menu.
  */
 export const createProductionExtensions = (
   modalService?: SlashCommandModalService,

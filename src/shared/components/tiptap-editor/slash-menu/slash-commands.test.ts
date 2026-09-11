@@ -72,7 +72,7 @@ describe("custom slash commands", () => {
     expect(ids).toContain("video");
     expect(ids).toContain("product");
     expect(ids).toContain("info-box");
-    expect(ids).not.toContain("tablecontent");
+    expect(ids).toContain("tablecontent");
   });
 
   it("groups media and content commands separately from text commands", () => {
@@ -80,11 +80,15 @@ describe("custom slash commands", () => {
     const videoCommand = slashCommands.find((cmd) => cmd.id === "video");
     const productCommand = slashCommands.find((cmd) => cmd.id === "product");
     const infoBoxCommand = slashCommands.find((cmd) => cmd.id === "info-box");
+    const tableContentCommand = slashCommands.find(
+      (cmd) => cmd.id === "tablecontent",
+    );
 
     expect(imageCommand?.group).toBe("media");
     expect(videoCommand?.group).toBe("media");
     expect(productCommand?.group).toBe("content");
     expect(infoBoxCommand?.group).toBe("content");
+    expect(tableContentCommand?.group).toBe("content");
   });
 
   describe("image", () => {
@@ -282,6 +286,86 @@ describe("custom slash commands", () => {
       expect(json.content?.[0].type).toBe("infobox");
       expect(json.content?.[1].type).toBe("paragraph");
       expect(json.content?.[1].content?.[0].text).toBe(" after");
+    });
+  });
+
+  describe("tablecontent", () => {
+    const createEditorWithTocSlash = (text: string) =>
+      new Editor({
+        extensions: createProductionExtensions(),
+        content: {
+          type: "doc",
+          content: [
+            {
+              type: "heading",
+              attrs: { level: 2 },
+              content: [{ type: "text", text: "First section" }],
+            },
+            {
+              type: "heading",
+              attrs: { level: 2 },
+              content: [{ type: "text", text: "Second section" }],
+            },
+            {
+              type: "paragraph",
+              content: [{ type: "text", text }],
+            },
+          ],
+        },
+      });
+
+    const findSlashRange = (editor: Editor, query: string) => {
+      let from = 1;
+      let to = 1;
+      editor.state.doc.descendants((node, pos) => {
+        if (node.isText && node.text?.startsWith(query)) {
+          from = pos;
+          to = pos + query.length;
+          return false;
+        }
+        return true;
+      });
+      return { from, to };
+    };
+
+    it("removes the slash query and inserts a table of contents", () => {
+      const commands = createSlashCommands();
+      const editor = createEditorWithTocSlash("/toc");
+
+      const result = executeSlashCommand(
+        editor,
+        findCommand(commands, "tablecontent"),
+        findSlashRange(editor, "/toc"),
+      );
+
+      expect(result).toBe(true);
+      expect(JSON.stringify(editor.getJSON())).not.toContain("/toc");
+
+      const json: JSONContent = editor.getJSON();
+      const tocNode = json.content?.find(
+        (node) => node.type === "tablecontent",
+      );
+      expect(tocNode).toBeDefined();
+      expect(tocNode?.content?.[0].type).toBe("orderedList");
+      expect(tocNode?.content?.[0].content).toHaveLength(2);
+    });
+
+    it("preserves trailing text when inserting via slash command", () => {
+      const commands = createSlashCommands();
+      const editor = createEditorWithTocSlash("/toc after");
+
+      executeSlashCommand(
+        editor,
+        findCommand(commands, "tablecontent"),
+        findSlashRange(editor, "/toc"),
+      );
+
+      const json: JSONContent = editor.getJSON();
+      const tocNode = json.content?.find(
+        (node) => node.type === "tablecontent",
+      );
+      expect(tocNode).toBeDefined();
+      expect(JSON.stringify(json)).toContain(" after");
     });
   });
 });

@@ -12,6 +12,7 @@ import {
   Minus,
   Pilcrow,
   Quote,
+  TableOfContents,
   Video,
 } from "lucide-react";
 
@@ -241,6 +242,21 @@ export const createSlashCommands = (
         .focus()
         .deleteRange(range)
         .insertInfoBox({ icon: DEFAULT_INFO_BOX_ICON })
+        .run(),
+  },
+  {
+    id: "tablecontent",
+    label: "Table of contents",
+    description: "Insert a navigable table of contents",
+    keywords: ["toc", "index", "contents", "outline"],
+    group: "content",
+    icon: TableOfContents,
+    execute: (editor, range) =>
+      editor
+        .chain()
+        .focus()
+        .deleteRange(range)
+        .insertTableContent()
         .run(),
   },
 ];

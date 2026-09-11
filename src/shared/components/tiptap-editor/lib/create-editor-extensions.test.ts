@@ -268,7 +268,7 @@ describe("Tiptap production editor seam", () => {
       return command;
     };
 
-    it("catalog exposes text, media and content commands and excludes tablecontent", () => {
+    it("catalog exposes text, media and content commands including tablecontent", () => {
       const ids = slashCommands.map((cmd) => cmd.id);
 
       expect(ids).toEqual([
@@ -286,9 +286,8 @@ describe("Tiptap production editor seam", () => {
         "video",
         "product",
         "info-box",
+        "tablecontent",
       ]);
-
-      expect(ids).not.toContain("tablecontent");
     });
 
     it("filters commands by label, description and keywords", () => {

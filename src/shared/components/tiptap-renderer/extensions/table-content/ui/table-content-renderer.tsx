@@ -11,6 +11,7 @@ export const TableContentRenderer = ({
 }: TableContentRendererProps) => {
   return (
     <nav
+      data-type="tablecontent"
       contentEditable={false}
       className="max-w-md border border-primary/40 bg-accent rounded-md shadow-lg p-4"
       aria-label="Indice dei contenuti"

@@ -15,6 +15,7 @@ import {
   ListOrdered,
   LucideImage,
   Quote,
+  TableOfContents,
   Underline,
   Video,
 } from "lucide-react";
@@ -40,6 +41,7 @@ import { MarkButton } from "./mark-button";
 import { LinkButtonToolbar } from "./extensions/link/ui/LinkButtonToolbar";
 import { insertProduct } from "./extensions/product/helpers";
 import { insertInfoBox } from "./extensions/info-box/helpers";
+import { insertTableContent } from "./extensions/table-content/helpers";
 
 export interface MenuBarProps {
   editor: Editor | null;
@@ -127,6 +129,10 @@ export const MenuBar = ({
 
   const insertInfoBoxNode = () => {
     insertInfoBox(editor);
+  };
+
+  const insertTableContentNode = () => {
+    insertTableContent(editor);
   };
 
   // === Render ===
@@ -240,6 +246,11 @@ export const MenuBar = ({
             <DropdownMenuItem onClick={insertInfoBoxNode}>
               <Info className="size-4 mr-2" />
               Info box
+            </DropdownMenuItem>
+
+            <DropdownMenuItem onClick={insertTableContentNode}>
+              <TableOfContents className="size-4 mr-2" />
+              Table of contents
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
