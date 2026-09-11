@@ -1,5 +1,4 @@
 import { ProductAcquisitionMode } from "@/generated/prisma";
-import { Descendant } from "slate";
 import { z } from "zod";
 
 const productGalleryFormSchema = z.object({
@@ -25,7 +24,6 @@ export const productFormSchema = z.object({
   slug: z.string().min(1, {
     error: "Slug is required!",
   }),
-  description: z.custom<Descendant[]>(),
   tiptapDescription: z.any().optional(),
   imageCoverId: z.string().nullable(),
   acquisitionMode: z.enum(ProductAcquisitionMode),

@@ -75,6 +75,7 @@ export async function PATCH(
       where: { id: product.id },
       data: {
         ...values,
+        description: undefined,
         gallery: undefined,
         faqs: undefined,
         seo: undefined,

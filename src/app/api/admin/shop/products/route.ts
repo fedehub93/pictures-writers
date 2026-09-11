@@ -78,7 +78,6 @@ export async function POST(req: Request) {
       data: {
         userId: user.id,
         title,
-        description: [{ type: "paragraph", children: [{ text: "" }] }],
         slug,
         type,
         version: 1,
