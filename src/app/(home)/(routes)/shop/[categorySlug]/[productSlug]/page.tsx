@@ -106,7 +106,7 @@ const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
               title={product.title}
               acquisitionMode={product.acquisitionMode}
               imageCoverUrl={product.imageCover?.url!}
-              description={product.description}
+              tiptapDescription={product.tiptapDescription}
               price={product.price}
               discountedPrice={product.discountedPrice}
               formats={product.metadata.formats}

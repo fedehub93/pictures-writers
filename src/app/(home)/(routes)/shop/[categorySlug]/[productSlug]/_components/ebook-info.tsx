@@ -9,7 +9,7 @@ import { formatBytes, formatDate, formatPrice } from "@/lib/format";
 import { EbookFormat } from "@/types";
 
 import { FreeEbookModal } from "@/app/(home)/_components/modals/free-ebook-modal";
-import { SlateRendererV2 } from "@/shared/components/editor/view/slate-renderer";
+import { TipTapRendererV2 } from "@/shared/components/tiptap-renderer";
 import { BuyButton } from "./buy-button";
 import { BoxInfo } from "./box-info";
 import { ProductAcquisitionMode } from "@/generated/prisma";
@@ -19,7 +19,7 @@ interface EbookInfoProps {
   title: string;
   imageCoverUrl: string;
   acquisitionMode: ProductAcquisitionMode;
-  description: PrismaJson.BodyData | null;
+  tiptapDescription: PrismaJson.TipTapBodyData | null;
   price: number | null;
   discountedPrice: number | null;
   formats: EbookFormat[];
@@ -38,7 +38,7 @@ export const EbookInfo = ({
   title,
   acquisitionMode,
   imageCoverUrl,
-  description,
+  tiptapDescription,
   price,
   discountedPrice,
   formats,
@@ -76,7 +76,7 @@ export const EbookInfo = ({
       </div>
       <Separator />
       <div>
-        <SlateRendererV2 content={description!} />
+        {tiptapDescription && <TipTapRendererV2 content={tiptapDescription} />}
       </div>
       <Separator />
       <div className="flex justify-between items-center">

@@ -7,6 +7,7 @@ import { ContentStatus, ProductType, EmailProvider } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 import { isEbookMetadata, isWebinarMetadata } from "@/type-guards";
 import { createContactByEmail } from "@/data/email-contact";
+import { renderTiptapHtml } from "@/shared/components/tiptap-renderer/helpers/render-tiptap-html";
 import { GenericEmail } from "./types";
 
 import { handleProductPurchased } from "../../../lib/event-handler";
@@ -111,8 +112,17 @@ export const sendWebinarPurchaseEmail = async (
       status: ContentStatus.PUBLISHED,
       isLatest: true,
     },
-    include: {
-      imageCover: true,
+    select: {
+      id: true,
+      type: true,
+      title: true,
+      tiptapDescription: true,
+      metadata: true,
+      imageCover: {
+        select: {
+          url: true,
+        },
+      },
     },
   });
 
@@ -138,7 +148,7 @@ export const sendWebinarPurchaseEmail = async (
       email,
       id: webinar.id,
       title: webinar.title,
-      description: webinar.description,
+      description: renderTiptapHtml(webinar.tiptapDescription),
       imageCoverUrl: webinar.imageCover?.url,
     }),
     type: "webinar_purchased",
@@ -193,8 +203,16 @@ export const sendFreeEbookEmail = async (
       status: ContentStatus.PUBLISHED,
       isLatest: true,
     },
-    include: {
-      imageCover: true,
+    select: {
+      id: true,
+      title: true,
+      tiptapDescription: true,
+      metadata: true,
+      imageCover: {
+        select: {
+          url: true,
+        },
+      },
     },
   });
 
@@ -218,7 +236,7 @@ export const sendFreeEbookEmail = async (
       email,
       id: ebook.id,
       title: ebook.title,
-      description: ebook.description,
+      description: renderTiptapHtml(ebook.tiptapDescription),
       format,
       imageCoverUrl: ebook.imageCover?.url,
     }),

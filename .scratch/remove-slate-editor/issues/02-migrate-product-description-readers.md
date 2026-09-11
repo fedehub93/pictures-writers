@@ -4,11 +4,11 @@
 
 **Blocked by:** None (can start immediately).
 
-**Status:** ready-for-agent
+**Status:** ready-for-human
 
-- [ ] Ebook product pages (published and draft) render `tiptapDescription` via the shared Tiptap renderer
+- [x] Ebook product pages (published and draft) render `tiptapDescription` via the shared Tiptap renderer
 - [ ] The ebook product page renders correctly for the existing migrated ebook
-- [ ] Product queries used by public pages no longer select the legacy description column
-- [ ] Webinar and ebook transactional emails embed `tiptapDescription`
-- [ ] No code in the public render path or email path reads the legacy description column
-- [ ] Build and lint pass
+- [x] Product queries used by public pages no longer select the legacy description column
+- [x] Webinar and ebook transactional emails embed `tiptapDescription`
+- [x] No code in the public render path or email path reads the legacy description column
+- [x] Build and lint pass
