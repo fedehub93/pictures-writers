@@ -3,20 +3,18 @@
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Descendant } from "slate";
 import type { Editor as TiptapEditor } from "@tiptap/core";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import { toast } from "sonner";
 
-import { ContentStatus, EditorType } from "@/generated/prisma";
+import { ContentStatus } from "@/generated/prisma";
 
-import { Form, FormControl, FormField, FormItem } from "@/shared/ui/form";
+import { Form } from "@/shared/ui/form";
 import { GenericTiptapV2 } from "@/shared/components/form-component/generic-tiptap-v2";
 
 import { useAutoSave } from "@/modules/blog/shared/hooks/use-auto-save";
 
-import Editor from "@/app/(admin)/_components/editor";
 import { useAdminSlashCommandModalService } from "@/app/(admin)/_hooks/use-slash-command-modal-service";
 
 import { LinkButtonBubble } from "./link-button-bubble";
@@ -26,8 +24,6 @@ import { usePostStore } from "../../../store/use-post-store";
 interface BodyFormProps {
   initialData: {
     id: string;
-    editorType: EditorType;
-    bodyData: Descendant[];
     tiptapBodyData: any;
     status: ContentStatus;
   };
@@ -37,7 +33,6 @@ interface BodyFormProps {
 }
 
 const formSchema = z.object({
-  bodyData: z.custom<Descendant[]>(),
   tiptapBodyData: z.any().optional(),
 });
 
@@ -56,9 +51,6 @@ export const ContentForm = ({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     values: {
-      bodyData: initialData.bodyData || [
-        { type: "paragraph", children: [{ text: "" }] },
-      ],
       tiptapBodyData: initialData.tiptapBodyData || {
         type: "doc",
         content: [],
@@ -100,57 +92,25 @@ export const ContentForm = ({
       ...dirtyData,
       id: postId,
       rootId: rootId,
-      bodyData: dirtyData.bodyData,
       tiptapBodyData: dirtyData.tiptapBodyData,
     });
   });
-
-  const onChangeBody = (value: Descendant[]) => {
-    form.setValue("bodyData", value);
-  };
-
-  const onValueChangeBody = (_value: Descendant[]) => {
-    handleAutoSave();
-  };
 
   return (
     <div>
       <Form {...form}>
         <div className="flex flex-col gap-4">
-          {initialData.editorType === EditorType.SLATE && (
-            <FormField
-              control={form.control}
-              name="bodyData"
-              render={({ field }) => (
-                <FormItem className="space-y-0">
-                  <FormControl>
-                    <Editor
-                      {...field}
-                      onChange={onChangeBody}
-                      onValueChange={onValueChangeBody}
-                    >
-                      <Editor.Toolbar sticky />
-                      <Editor.Input onHandleIsFocused={() => {}} />
-                      <Editor.Counter value={field.value} />
-                    </Editor>
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-          )}
-          {initialData.editorType === EditorType.TIPTAP && (
-            <GenericTiptapV2
-              key={initialData.id}
-              id={initialData.id}
-              control={form.control}
-              name="tiptapBodyData"
-              onUpdate={handleAutoSave}
-              onEditorReady={onEditorReady}
-              bubbleMenu
-              linkButton={LinkButtonBubble}
-              modalService={modalService}
-            />
-          )}
+          <GenericTiptapV2
+            key={initialData.id}
+            id={initialData.id}
+            control={form.control}
+            name="tiptapBodyData"
+            onUpdate={handleAutoSave}
+            onEditorReady={onEditorReady}
+            bubbleMenu
+            linkButton={LinkButtonBubble}
+            modalService={modalService}
+          />
         </div>
       </Form>
     </div>

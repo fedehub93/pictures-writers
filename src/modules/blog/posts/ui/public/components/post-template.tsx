@@ -1,11 +1,8 @@
 import Image from "next/image";
-import { EditorType } from "@/generated/prisma";
 
 import { getAdBlocks } from "@/data/ad-blocks";
 
 import { getPlaceholderImage } from "@/lib/image";
-
-import { SlateRendererV2 } from "@/shared/components/editor/view/slate-renderer";
 
 import { PostInfo } from "@/modules/blog/posts/ui/public/components/post-info";
 import Sidebar from "@/app/(home)/_components/sidebar";
@@ -24,22 +21,18 @@ interface PostTemplateProps {
 export const PostTemplate = async ({ post }: PostTemplateProps) => {
   if (!post.postCategories.length) return null;
 
-  let normalizedContent = post.tiptapBodyData;
-
-  if (post.editorType === EditorType.TIPTAP) {
-    const blocks = await getAdBlocks({
-      postRootId: post.rootId!,
-      categoryRootIds: post.postCategories.map((c) => c.category.rootId!),
-      tagRootIds: post.tags.map((t) => t.rootId!),
-    });
-    normalizedContent = normalizeContent(post.tiptapBodyData, {
-      adBlocks: blocks,
-      totalWordCount:
-        post.tiptapBodyData && typeof post.tiptapBodyData !== "string"
-          ? countWordsFromTiptap(post.tiptapBodyData)
-          : 0,
-    });
-  }
+  const blocks = await getAdBlocks({
+    postRootId: post.rootId!,
+    categoryRootIds: post.postCategories.map((c) => c.category.rootId!),
+    tagRootIds: post.tags.map((t) => t.rootId!),
+  });
+  const normalizedContent = normalizeContent(post.tiptapBodyData, {
+    adBlocks: blocks,
+    totalWordCount:
+      post.tiptapBodyData && typeof post.tiptapBodyData !== "string"
+        ? countWordsFromTiptap(post.tiptapBodyData)
+        : 0,
+  });
 
   const imageWithPlaceholder = await getPlaceholderImage(post.imageCover?.url!);
 
@@ -71,10 +64,7 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
             <h1 className="blog-post__title">{post.title}</h1>
           </div>
 
-          {post.editorType === EditorType.SLATE && (
-            <SlateRendererV2 content={post.bodyData} />
-          )}
-          {post.tiptapBodyData && post.editorType === EditorType.TIPTAP && (
+          {post.tiptapBodyData && (
             <TipTapRendererV2 content={normalizedContent} />
           )}
         </article>

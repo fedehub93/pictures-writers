@@ -17,6 +17,7 @@ import {
   backfillScheduledPosts,
 } from "@/modules/scheduler/lib/scheduled-action-repository";
 import { SCHEDULER_TARGET_TYPES } from "@/modules/scheduler/constants";
+import { emptyTiptapDoc } from "@/modules/blog/posts/lib/__tests__/fixtures";
 
 describe("scheduler runner", () => {
   const createdRootIds: string[] = [];
@@ -52,7 +53,7 @@ describe("scheduler runner", () => {
         slug: "test-post",
         version: 1,
         status: ContentStatus.DRAFT,
-        bodyData: [{ type: "paragraph", children: [{ text: "" }] }],
+        tiptapBodyData: emptyTiptapDoc,
         rootId: explicitRootId,
         ...overrides,
       },

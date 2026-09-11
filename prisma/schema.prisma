@@ -309,11 +309,6 @@ model Page {
   @@index([slug])
 }
 
-enum EditorType {
-  SLATE
-  TIPTAP
-}
-
 model Post {
   id String @id @default(uuid())
 
@@ -325,8 +320,6 @@ model Post {
 
   status   ContentStatus @default(DRAFT)
   isLatest Boolean       @default(true)
-
-  editorType EditorType @default(TIPTAP)
 
   bodyData Json? @db.JsonB
 

@@ -1,7 +1,5 @@
 import * as z from "zod";
 
-import { EditorType } from "@/generated/prisma";
-
 export const postInsertSchema = z.object({
   title: z.string().min(1, { error: "Title name is required" }),
   slug: z.string().min(1, { error: "Slug is required" }),
@@ -20,8 +18,6 @@ export const postUpdateSchema = postInsertSchema.partial().extend({
     .optional(),
   description: z.string().nullable().optional(),
   imageCoverId: z.string().nullable().optional(),
-  editorType: z.enum([EditorType.SLATE, EditorType.TIPTAP]).optional(),
-  bodyData: z.any().optional(),
   tiptapBodyData: z.any().optional(),
   categories: z
     .array(

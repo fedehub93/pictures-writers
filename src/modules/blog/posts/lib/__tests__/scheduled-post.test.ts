@@ -6,6 +6,7 @@ import { ContentStatus, ScheduledActionStatus } from "@/generated/prisma";
 import { publishPost } from "../publish-post";
 import { cancelSchedule, reschedulePost, schedulePost } from "../schedule-post";
 import { createNewVersion } from "../create-new-version";
+import { emptyTiptapDoc } from "./fixtures";
 
 import { getPublishedPostByRootId } from "../../server/queries/get-published-post-by-root-id";
 
@@ -39,7 +40,7 @@ describe("scheduled post lifecycle", () => {
         slug: "test-post",
         version: 1,
         status: ContentStatus.DRAFT,
-        bodyData: [{ type: "paragraph", children: [{ text: "" }] }],
+        tiptapBodyData: emptyTiptapDoc,
         rootId: explicitRootId,
         ...overrides,
       },

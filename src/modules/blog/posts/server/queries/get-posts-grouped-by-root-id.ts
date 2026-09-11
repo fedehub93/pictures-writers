@@ -11,7 +11,6 @@ export const getPostsGroupedByRootId = async () => {
         status: true,
         publishedAt: true,
         firstPublishedAt: true,
-        editorType: true,
         imageCover: {
           select: {
             url: true,

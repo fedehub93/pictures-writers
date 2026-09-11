@@ -24,7 +24,6 @@ export async function POST(req: Request) {
         slug,
         version: 1,
         status: ContentStatus.DRAFT,
-        bodyData: [{ type: "paragraph", children: [{ text: "" }] }],
         userId: user.id,
       },
     });

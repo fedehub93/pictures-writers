@@ -14,6 +14,7 @@ import {
   createScheduledAction,
   createIdempotencyKey,
 } from "../scheduled-action-repository";
+import { emptyTiptapDoc } from "@/modules/blog/posts/lib/__tests__/fixtures";
 import {
   SCHEDULER_TARGET_TYPES,
   type SchedulerTargetType,
@@ -58,7 +59,7 @@ describe("calendar query", () => {
         slug: `test-post-${randomUUID().slice(0, 8)}`,
         version: 1,
         status: ContentStatus.DRAFT,
-        bodyData: [{ type: "paragraph", children: [{ text: "" }] }],
+        tiptapBodyData: emptyTiptapDoc,
         rootId: explicitRootId,
         ...overrides,
       },
