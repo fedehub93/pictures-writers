@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/shared/lib/db";
 import { hashInvitationToken, isInvitationUsable } from "@/modules/users/lib/invitation-token";
+import { recordAdministrativeActivity } from "@/modules/administrative-activity";
 
 type Params = { params: Promise<{ token: string }> };
 
@@ -63,6 +64,10 @@ export async function POST(request: Request, { params }: Params) {
         roleId: invitation.roleId,
         accountStatus: "ACTIVE",
       },
+    });
+    await recordAdministrativeActivity(db, {
+      actorId: result.user.id, action: "INVITATION_ACCEPTED", area: "INVITATIONS", targetType: "USER", targetId: result.user.id, outcome: "SUCCESS",
+      after: { email: invitation.email, roleId: invitation.roleId, accountStatus: "ACTIVE", invitationId: invitation.id },
     });
     return NextResponse.json({ success: true });
   } catch (error) {

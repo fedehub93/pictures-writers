@@ -38,3 +38,5 @@ export const resendInvitationSchema = invitationIdSchema;
 export const requestPasswordResetSchema = z.object({
   email: z.email().transform((email) => email.toLowerCase()),
 });
+
+export const activityHistorySchema = z.object({ userId: z.string().uuid() });

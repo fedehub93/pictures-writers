@@ -183,6 +183,7 @@ model User {
   roleId         String?
   roleDefinition Role?         @relation(fields: [roleId], references: [id])
   invitationsCreated Invitation[] @relation("InvitationCreator")
+  activitiesAsActor  AdministrativeActivity[] @relation("ActivityActor")
 
   pages Page[]
 
@@ -196,6 +197,24 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model AdministrativeActivity {
+  id         String   @id @default(uuid())
+  actorId    String?
+  actor      User?    @relation("ActivityActor", fields: [actorId], references: [id], onDelete: SetNull)
+  action     String
+  area       String
+  targetType String
+  targetId   String?
+  outcome    String
+  before     Json?
+  after      Json?
+  createdAt  DateTime @default(now())
+
+  @@index([actorId])
+  @@index([targetType, targetId, createdAt])
+  @@index([createdAt])
 }
 
 enum InvitationStatus {

@@ -8,10 +8,11 @@ import { PERMISSIONS } from "@/shared/lib/authorization";
 import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 
 import { assertAccountChangeAllowed, hasManagementPermissions } from "../lib/account-policy";
-import { createInvitationSchema, invitationIdSchema, requestPasswordResetSchema, userListSchema, updateStatusSchema, updateUserSchema } from "../schemas";
+import { activityHistorySchema, createInvitationSchema, invitationIdSchema, requestPasswordResetSchema, userListSchema, updateStatusSchema, updateUserSchema } from "../schemas";
 import { createInvitationToken, invitationExpiry } from "../lib/invitation-token";
 import { sendInvitationEmail } from "./emails";
 import { auth } from "@/shared/lib/auth";
+import { recordAdministrativeActivity } from "@/modules/administrative-activity";
 
 const roleSelect = {
   id: true,
@@ -107,11 +108,17 @@ export const usersRouter = createTRPCRouter({
           qualifiedAdministratorCount: await getQualifiedAdministratorCount(transaction),
           resultingUser: { ...target, roleDefinition: role },
         });
-        return transaction.user.update({
+        const updated = await transaction.user.update({
           where: { id: input.id },
           data: { firstName: input.firstName, lastName: input.lastName, bio: input.bio, imageUrl: input.imageUrl, roleId: role.id },
           select: userSelect,
         });
+        await recordAdministrativeActivity(transaction, {
+          actorId: ctx.auth.id, action: "USER_UPDATED", area: "USERS", targetType: "USER", targetId: target.id, outcome: "SUCCESS",
+          before: { firstName: target.firstName, lastName: target.lastName, bio: target.bio, imageUrl: target.imageUrl, roleId: target.roleDefinition?.id ?? null },
+          after: { firstName: updated.firstName, lastName: updated.lastName, bio: updated.bio, imageUrl: updated.imageUrl, roleId: updated.roleDefinition?.id ?? null },
+        });
+        return updated;
       }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
     }),
   updateStatus: permissionProcedure(PERMISSIONS.USERS_MANAGE)
@@ -127,7 +134,12 @@ export const usersRouter = createTRPCRouter({
           qualifiedAdministratorCount: await getQualifiedAdministratorCount(transaction),
           resultingUser: { ...target, accountStatus: input.accountStatus },
         });
-        return transaction.user.update({ where: { id: input.id }, data: { accountStatus: input.accountStatus }, select: userSelect });
+        const updated = await transaction.user.update({ where: { id: input.id }, data: { accountStatus: input.accountStatus }, select: userSelect });
+        await recordAdministrativeActivity(transaction, {
+          actorId: ctx.auth.id, action: input.accountStatus === "SUSPENDED" ? "USER_SUSPENDED" : "USER_REACTIVATED", area: "USERS", targetType: "USER", targetId: target.id, outcome: "SUCCESS",
+          before: { accountStatus: target.accountStatus }, after: { accountStatus: updated.accountStatus },
+        });
+        return updated;
       }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
     }),
   getInvitations: permissionProcedure(PERMISSIONS.USERS_READ).query(async () => {
@@ -140,6 +152,13 @@ export const usersRouter = createTRPCRouter({
       status: invitation.status === "PENDING" && invitation.expiresAt <= new Date() ? "EXPIRED" as const : invitation.status,
     }));
   }),
+  getActivityHistory: permissionProcedure(PERMISSIONS.USERS_READ)
+    .input(activityHistorySchema)
+    .query(({ input }) => (db as typeof db & { administrativeActivity: Prisma.AdministrativeActivityDelegate }).administrativeActivity.findMany({
+      where: { targetType: "USER", targetId: input.userId },
+      include: { actor: { select: { id: true, name: true, firstName: true, lastName: true, email: true } } },
+      orderBy: { createdAt: "desc" },
+    })),
   createInvitation: permissionProcedure(PERMISSIONS.USERS_MANAGE)
     .input(createInvitationSchema)
     .mutation(async ({ input, ctx }) => {
@@ -160,13 +179,21 @@ export const usersRouter = createTRPCRouter({
         if (!(await sendInvitationEmail(invitation.email, token, invitation.role.name))) throw new Error("Email delivery is not configured");
       } catch (error) {
         await db.invitation.update({ where: { id: invitation.id }, data: { status: "CANCELLED", tokenHash: `cancelled-${crypto.randomUUID()}` } });
+        await recordAdministrativeActivity(db, {
+          actorId: ctx.auth.id, action: "INVITATION_CREATED", area: "INVITATIONS", targetType: "INVITATION", targetId: invitation.id, outcome: "FAILURE",
+          after: { email: invitation.email, role: invitation.role.name, status: "CANCELLED" },
+        });
         throw new TRPCError({ code: "PRECONDITION_FAILED", message: error instanceof Error ? error.message : "Invitation delivery failed" });
       }
-      return invitation;
+       await recordAdministrativeActivity(db, {
+         actorId: ctx.auth.id, action: "INVITATION_CREATED", area: "INVITATIONS", targetType: "INVITATION", targetId: invitation.id, outcome: "SUCCESS",
+         after: { email: invitation.email, role: invitation.role.name, status: invitation.status, expiresAt: invitation.expiresAt.toISOString() },
+       });
+       return invitation;
     }),
   resendInvitation: permissionProcedure(PERMISSIONS.USERS_MANAGE)
     .input(invitationIdSchema)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const invitation = await db.invitation.findUnique({ where: { id: input.id }, include: { role: { select: { name: true } } } });
       if (!invitation || invitation.status !== "PENDING") throw new TRPCError({ code: "BAD_REQUEST", message: "Only pending invitations can be resent" });
       const { token, tokenHash } = createInvitationToken();
@@ -175,23 +202,48 @@ export const usersRouter = createTRPCRouter({
         if (!(await sendInvitationEmail(updated.email, token, invitation.role.name))) throw new Error("Email delivery is not configured");
       } catch (error) {
         await db.invitation.update({ where: { id: invitation.id }, data: { tokenHash: invitation.tokenHash, expiresAt: invitation.expiresAt } });
+        await recordAdministrativeActivity(db, {
+          actorId: ctx.auth.id, action: "INVITATION_RESENT", area: "INVITATIONS", targetType: "INVITATION", targetId: invitation.id, outcome: "FAILURE",
+          after: { email: invitation.email, role: invitation.role.name, status: invitation.status },
+        });
         throw new TRPCError({ code: "PRECONDITION_FAILED", message: error instanceof Error ? error.message : "Invitation delivery failed" });
       }
-      return updated;
+       await recordAdministrativeActivity(db, {
+         actorId: ctx.auth.id, action: "INVITATION_RESENT", area: "INVITATIONS", targetType: "INVITATION", targetId: invitation.id, outcome: "SUCCESS",
+         before: { status: invitation.status, expiresAt: invitation.expiresAt.toISOString() }, after: { status: updated.status, expiresAt: updated.expiresAt.toISOString() },
+       });
+       return updated;
     }),
   cancelInvitation: permissionProcedure(PERMISSIONS.USERS_MANAGE)
     .input(invitationIdSchema)
-    .mutation(async ({ input }) => {
-      const invitation = await db.invitation.findUnique({ where: { id: input.id }, select: { status: true } });
+    .mutation(async ({ input, ctx }) => {
+       const invitation = await db.invitation.findUnique({ where: { id: input.id }, select: { status: true, email: true, role: { select: { name: true } } } });
       if (!invitation || invitation.status !== "PENDING") throw new TRPCError({ code: "BAD_REQUEST", message: "Only pending invitations can be cancelled" });
-      return db.invitation.update({ where: { id: input.id }, data: { status: "CANCELLED", tokenHash: `cancelled-${crypto.randomUUID()}` } });
+       const cancelled = await db.invitation.update({ where: { id: input.id }, data: { status: "CANCELLED", tokenHash: `cancelled-${crypto.randomUUID()}` } });
+       await recordAdministrativeActivity(db, {
+         actorId: ctx.auth.id, action: "INVITATION_CANCELLED", area: "INVITATIONS", targetType: "INVITATION", targetId: input.id, outcome: "SUCCESS",
+         before: { email: invitation.email, role: invitation.role.name, status: invitation.status }, after: { status: cancelled.status },
+       });
+       return cancelled;
     }),
   requestPasswordReset: permissionProcedure(PERMISSIONS.USERS_MANAGE)
     .input(requestPasswordResetSchema)
-    .mutation(async ({ input }) => {
-      const user = await db.user.findUnique({ where: { email: input.email }, select: { id: true } });
-      if (!user) return { sent: true };
-      await auth.api.requestPasswordReset({ body: { email: input.email, redirectTo: "/reset-password" } });
-      return { sent: true };
+    .mutation(async ({ input, ctx }) => {
+       const user = await db.user.findUnique({ where: { email: input.email }, select: { id: true, email: true } });
+       if (!user) return { sent: true };
+       try {
+         await auth.api.requestPasswordReset({ body: { email: input.email, redirectTo: "/reset-password" } });
+       } catch (error) {
+         await recordAdministrativeActivity(db, {
+           actorId: ctx.auth.id, action: "PASSWORD_RESET_REQUESTED", area: "USERS", targetType: "USER", targetId: user.id, outcome: "FAILURE",
+           after: { email: user.email },
+         });
+         throw error;
+       }
+       await recordAdministrativeActivity(db, {
+         actorId: ctx.auth.id, action: "PASSWORD_RESET_REQUESTED", area: "USERS", targetType: "USER", targetId: user.id, outcome: "SUCCESS",
+         after: { email: user.email },
+       });
+       return { sent: true };
     }),
 });

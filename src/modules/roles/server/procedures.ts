@@ -6,6 +6,7 @@ import { TRPCError } from "@trpc/server";
 import { db } from "@/shared/lib/db";
 import { PERMISSIONS } from "@/shared/lib/authorization";
 import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
+import { recordAdministrativeActivity } from "@/modules/administrative-activity";
 
 import {
   ADMIN_ROLE_KEY,
@@ -90,24 +91,31 @@ export const rolesRouter = createTRPCRouter({
   ),
   create: permissionProcedure(PERMISSIONS.ROLES_MANAGE)
     .input(createRoleSchema)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       await throwIfDuplicateName(input.name);
       await ensurePermissionIdsExist(input.permissionIds);
-      const role = await db.role.create({
-        data: {
-          key: `CUSTOM_${crypto.randomUUID()}`,
-          name: input.name,
-          permissions: {
-            create: input.permissionIds.map((permissionId) => ({ permissionId })),
+      const role = await db.$transaction(async (transaction) => {
+        const created = await transaction.role.create({
+          data: {
+            key: `CUSTOM_${crypto.randomUUID()}`,
+            name: input.name,
+            permissions: {
+              create: input.permissionIds.map((permissionId) => ({ permissionId })),
+            },
           },
-        },
-        include: roleInclude,
+          include: roleInclude,
+        });
+        await recordAdministrativeActivity(transaction, {
+          actorId: ctx.auth.id, action: "ROLE_CREATED", area: "ROLES", targetType: "ROLE", targetId: created.id, outcome: "SUCCESS",
+          after: { key: created.key, name: created.name, isActive: created.isActive, permissionIds: input.permissionIds },
+        });
+        return created;
       });
       return role;
     }),
   update: permissionProcedure(PERMISSIONS.ROLES_MANAGE)
     .input(updateRoleSchema)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const role = await db.role.findUnique({
         where: { id: input.id },
         include: {
@@ -137,22 +145,36 @@ export const rolesRouter = createTRPCRouter({
           throw new TRPCError({ code: "CONFLICT", message: "The last active administrator must retain management permissions" });
         }
       }
-      await db.$transaction(async (transaction) => {
+      const updated = await db.$transaction(async (transaction) => {
         await transaction.role.update({ where: { id: role.id }, data: { name: input.name, isActive: input.isActive } });
         await transaction.rolePermission.deleteMany({ where: { roleId: role.id } });
         if (input.permissionIds.length) {
           await transaction.rolePermission.createMany({ data: input.permissionIds.map((permissionId) => ({ roleId: role.id, permissionId })) });
         }
+        const result = await transaction.role.findUniqueOrThrow({ where: { id: role.id }, include: roleInclude });
+        await recordAdministrativeActivity(transaction, {
+          actorId: ctx.auth.id, action: "ROLE_UPDATED", area: "ROLES", targetType: "ROLE", targetId: role.id, outcome: "SUCCESS",
+          before: { name: role.name, isActive: role.isActive, permissionIds: role.permissions.map(({ permission }) => permission.key) },
+          after: { name: result.name, isActive: result.isActive, permissionIds: result.permissions.map(({ permission }) => permission.key) },
+        });
+        return result;
       });
-      return db.role.findUniqueOrThrow({ where: { id: role.id }, include: roleInclude });
+      return updated;
     }),
   remove: permissionProcedure(PERMISSIONS.ROLES_MANAGE)
     .input(deleteRoleSchema)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const role = await db.role.findUnique({ where: { id: input.id }, include: { _count: { select: { users: true } } } });
       if (!role) throw new TRPCError({ code: "NOT_FOUND", message: "Role not found" });
       if (role.isSystem) throw new TRPCError({ code: "BAD_REQUEST", message: "System roles cannot be removed" });
       if (role._count.users > 0) throw new TRPCError({ code: "CONFLICT", message: "Reassign users before removing this role" });
-      return db.role.delete({ where: { id: role.id } });
+      const deleted = await db.$transaction(async (transaction) => {
+        await recordAdministrativeActivity(transaction, {
+          actorId: ctx.auth.id, action: "ROLE_REMOVED", area: "ROLES", targetType: "ROLE", targetId: role.id, outcome: "SUCCESS",
+          before: { key: role.key, name: role.name, isActive: role.isActive },
+        });
+        return transaction.role.delete({ where: { id: role.id } });
+      });
+      return deleted;
     }),
 });
