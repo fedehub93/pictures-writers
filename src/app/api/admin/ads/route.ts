@@ -4,10 +4,11 @@ import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
 
 import { adCampaignFormSchema } from "@/schemas/ads";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 
 export async function POST(req: Request) {
   try {
-    const user = await authAdmin();
+    const user = await authAdmin(PERMISSIONS.ADS_MANAGE);
 
     if (!user) {
       return new NextResponse("Unauthorized", { status: 401 });

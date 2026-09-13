@@ -35,6 +35,8 @@ import { API_ADMIN_PRODUCTS_PUBLISH } from "@/constants/api";
 
 import { DataTableFacetedFilter } from "./data-table-faceted-filter";
 import { type DataTableFeatures } from "./data-table-features";
+import { usePermission } from "@/shared/providers/authorization-provider";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 
 interface DataTableToolbarProps<TData extends RowData> {
   table: ReactTable<DataTableFeatures, TData>;
@@ -90,6 +92,8 @@ export function DataTableToolbar<TData extends RowData>({
   const router = useRouter();
   const isFiltered = table.state.columnFilters.length > 0;
   const selectedRows = table.state.rowSelection;
+  const canCreate = usePermission(PERMISSIONS.PRODUCTS_CREATE);
+  const canPublish = usePermission(PERMISSIONS.PRODUCTS_PUBLISH);
 
   const onPublishPost = async () => {
     try {
@@ -148,7 +152,7 @@ export function DataTableToolbar<TData extends RowData>({
           </Button>
         )}
       </div>
-      <DropdownMenu>
+      {(canCreate || canPublish) && <DropdownMenu>
         <DropdownMenuTrigger asChild disabled={isLoading}>
           <Button type="button" variant="outline" size="sm">
             Actions
@@ -156,18 +160,18 @@ export function DataTableToolbar<TData extends RowData>({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <Link href="/admin/shop/products/create">
+          {canCreate && <Link href="/admin/shop/products/create">
             <DropdownMenuItem>
               <PlusCircleIcon />
               New product
             </DropdownMenuItem>
-          </Link>
-          <DropdownMenuItem onSelect={onPublishPost}>
+          </Link>}
+          {canPublish && <DropdownMenuItem onSelect={onPublishPost}>
             <PencilIcon />
             Publish
-          </DropdownMenuItem>
+          </DropdownMenuItem>}
         </DropdownMenuContent>
-      </DropdownMenu>
+      </DropdownMenu>}
     </div>
   );
 }

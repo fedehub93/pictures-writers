@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
 import { revalidateContent } from "@/shared/lib/revalidate-content";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 
 export async function PATCH(
   req: Request,
@@ -10,7 +11,7 @@ export async function PATCH(
 ) {
   const params = await props.params;
   try {
-    const user = await authAdmin();
+    const user = await authAdmin(PERMISSIONS.WIDGETS_MANAGE);
     const { widgetId } = params;
     const values = await req.json();
 
@@ -49,7 +50,7 @@ export async function DELETE(
 ) {
   const params = await props.params;
   try {
-    const user = await authAdmin();
+    const user = await authAdmin(PERMISSIONS.WIDGETS_MANAGE);
     const { widgetId } = params;
 
     if (!user) {

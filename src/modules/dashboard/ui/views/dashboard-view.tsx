@@ -2,13 +2,14 @@
 
 import { DatePickerWithRange } from "@/shared/components/date-range";
 import { usePermission } from "@/shared/providers/authorization-provider";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 
 import { EbooksWidget } from "@/app/(admin)/admin/(routes)/dashboard/_components/ebooks-widget";
 import { SubscriptionsWidget } from "../components/subscriptions-widget";
 
 export const DashboardView = () => {
-  const canReadDashboard = usePermission("dashboard.read");
-  const canReadContacts = usePermission("contacts.read");
+  const canReadDashboard = usePermission(PERMISSIONS.DASHBOARD_READ);
+  const canReadContacts = usePermission(PERMISSIONS.CONTACTS_READ);
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 md:pt-4">

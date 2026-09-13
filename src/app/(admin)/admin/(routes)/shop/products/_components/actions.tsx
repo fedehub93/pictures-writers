@@ -18,6 +18,8 @@ import {
 
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 import { API_ADMIN_PRODUCTS } from "@/constants/api";
+import { usePermission } from "@/shared/providers/authorization-provider";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 
 export const ProductsAction = ({
   id,
@@ -29,6 +31,8 @@ export const ProductsAction = ({
   const [isOpen, setIsOpen] = useState(false);
   const [_isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const canUpdate = usePermission(PERMISSIONS.PRODUCTS_UPDATE);
+  const canDelete = usePermission(PERMISSIONS.PRODUCTS_DELETE);
 
   const onDelete = async () => {
     try {
@@ -62,14 +66,14 @@ export const ProductsAction = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <Link href={`/admin/shop/products/${rootId}`}>
+        {canUpdate && <Link href={`/admin/shop/products/${rootId}`}>
           <DropdownMenuItem>
             <Pencil />
             Edit
           </DropdownMenuItem>
-        </Link>
-        <DropdownMenuSeparator />
-        <ConfirmModal onConfirm={onDelete}>
+        </Link>}
+        {(canUpdate && canDelete) && <DropdownMenuSeparator />}
+        {canDelete && <ConfirmModal onConfirm={onDelete}>
           <Button
             variant="ghost"
             className="text-destructive px-2 w-full justify-start"
@@ -77,7 +81,7 @@ export const ProductsAction = ({
             <Trash2 data-icon="inline-start" />
             Delete
           </Button>
-        </ConfirmModal>
+        </ConfirmModal>}
       </DropdownMenuContent>
     </DropdownMenu>
   );

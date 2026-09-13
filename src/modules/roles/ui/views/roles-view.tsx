@@ -7,12 +7,13 @@ import { useQuery } from "@tanstack/react-query";
 import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
 import { useTRPC } from "@/trpc/client";
 import { usePermission } from "@/shared/providers/authorization-provider";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 import { RoleDialog } from "../components/role-dialog";
 import { RolesTable } from "../components/roles-table";
 
 export function RolesView() {
   const trpc = useTRPC();
-  const canManage = usePermission("roles.manage");
+  const canManage = usePermission(PERMISSIONS.ROLES_MANAGE);
   const rolesQuery = useQuery(trpc.roles.getMany.queryOptions());
   const roles = rolesQuery.data ?? [];
 

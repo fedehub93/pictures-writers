@@ -20,6 +20,7 @@ import { Input } from "@/shared/ui/input";
 import { Textarea } from "@/shared/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/ui/table";
 import { usePermission } from "@/shared/providers/authorization-provider";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 
 type User = inferRouterOutputs<AppRouter>["users"]["getMany"]["users"][number];
 
@@ -38,7 +39,7 @@ export function UsersView() {
   const router = useRouter();
   const pathname = usePathname();
   const trpc = useTRPC();
-  const canManage = usePermission("users.manage");
+  const canManage = usePermission(PERMISSIONS.USERS_MANAGE);
   const queryClient = useQueryClient();
   const filters = getFilters(params);
   const query = useQuery(trpc.users.getMany.queryOptions(filters));

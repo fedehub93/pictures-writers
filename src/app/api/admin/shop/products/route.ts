@@ -12,12 +12,13 @@ import {
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
 import { createProductSeo } from "@/lib/seo";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 
 const PRODUCT_BATCH = 4;
 
 export async function POST(req: Request) {
   try {
-    const user = await authAdmin();
+    const user = await authAdmin(PERMISSIONS.PRODUCTS_CREATE);
     const { title, slug, type } = await req.json();
 
     if (!user) {
@@ -109,7 +110,7 @@ export async function POST(req: Request) {
 
 export async function GET(req: Request) {
   try {
-    const user = await authAdmin();
+    const user = await authAdmin(PERMISSIONS.PRODUCTS_READ);
     const { searchParams } = new URL(req.url);
 
     const cursor = searchParams.get("cursor");
