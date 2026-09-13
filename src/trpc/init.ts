@@ -4,7 +4,9 @@ import superjson from "superjson";
 
 import { initTRPC, TRPCError } from "@trpc/server";
 import { auth } from "@/shared/lib/auth";
-import { getAuthorizedUser, PERMISSIONS } from "@/shared/lib/authorization";
+import { getAuthorizedUser } from "@/shared/lib/authorization";
+import { PERMISSIONS } from "@/shared/lib/permissions";
+import { getProcedurePermissions } from "@/shared/lib/permissions";
 export const createTRPCContext = cache(async () => {
   /**
    * @see: https://trpc.io/docs/server/context
@@ -41,8 +43,12 @@ const authenticatedProcedure = baseProcedure.use(async ({ ctx, next }) => {
 });
 
 export const protectedProcedure = authenticatedProcedure.use(
-  async ({ ctx, next }) => {
-    if (!(await getAuthorizedUser(ctx.auth.id, PERMISSIONS.DASHBOARD_READ))) {
+  async ({ ctx, next, path }) => {
+    const permissions = getProcedurePermissions(path);
+    const authorized = await Promise.all(
+      permissions.map((permission) => getAuthorizedUser(ctx.auth.id, permission)),
+    );
+    if (!authorized.some(Boolean)) {
       throw new TRPCError({ code: "FORBIDDEN", message: "Forbidden" });
     }
 

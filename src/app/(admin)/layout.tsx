@@ -12,7 +12,9 @@ import { SidebarInset, SidebarProvider } from "@/shared/ui/sidebar";
 
 import { ThemeProvider } from "@/shared/providers/theme-provider";
 import { ToastProvider } from "@/shared/providers/toast-provider";
+import { AuthorizationProvider } from "@/shared/providers/authorization-provider";
 import { requireAdminAuth } from "@/shared/lib/auth-utils";
+import { getAuthorizedUser } from "@/shared/lib/authorization";
 
 import { getSettings } from "@/data/settings";
 
@@ -36,7 +38,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const user = await requireAdminAuth();
+    const user = await requireAdminAuth();
+  const authorizedUser = await getAuthorizedUser(user.id);
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -50,16 +53,18 @@ export default async function RootLayout({
           <ToastProvider />
           <NuqsAdapter>
             <TRPCReactProvider>
-              <SidebarProvider className="h-screen overflow-hidden">
-                <AppSidebar />
-                <SidebarInset className="min-h-0">
-                  <Header user={user} />
-                  <Container>{children}</Container>
-                </SidebarInset>
-                <ModalProvider />
-                <SheetProvider />
-                <ProgressLoader />
-              </SidebarProvider>
+              <AuthorizationProvider permissionKeys={authorizedUser?.permissionKeys ?? []}>
+                <SidebarProvider className="h-screen overflow-hidden">
+                  <AppSidebar permissionKeys={authorizedUser?.permissionKeys ?? []} />
+                  <SidebarInset className="min-h-0">
+                    <Header user={user} />
+                    <Container>{children}</Container>
+                  </SidebarInset>
+                  <ModalProvider />
+                  <SheetProvider />
+                  <ProgressLoader />
+                </SidebarProvider>
+              </AuthorizationProvider>
             </TRPCReactProvider>
           </NuqsAdapter>
           <Toaster />

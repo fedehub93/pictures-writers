@@ -4,7 +4,8 @@ import type { SearchParams } from "nuqs";
 
 import { HydrateClient } from "@/trpc/server";
 
-import { requireAdminAuth } from "@/shared/lib/auth-utils";
+import { requirePermission } from "@/shared/lib/auth-utils";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 
 import { FormsView, FormsViewError, FormsViewLoading } from "@/modules/forms";
 
@@ -16,7 +17,7 @@ interface Props {
 }
 
 const FormsPage = async ({ searchParams }: Props) => {
-  await requireAdminAuth();
+  await requirePermission(PERMISSIONS.FORMS_READ);
 
   const filters = await loadSearchParams(searchParams);
 

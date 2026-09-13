@@ -1,13 +1,14 @@
 import { db } from "@/lib/db";
 
-import { requireAdminAuth } from "@/lib/auth-utils";
+import { requirePermission } from "@/shared/lib/auth-utils";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 
 import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
 import { DataTable } from "./(routes)/_components/data-table";
 import { columns } from "./(routes)/_components/columns";
 
 const ProductCategoriesPage = async () => {
-  await requireAdminAuth();
+  await requirePermission(PERMISSIONS.PRODUCT_CATEGORIES_READ);
 
   const categories = await db.productCategory.findMany({
     orderBy: {

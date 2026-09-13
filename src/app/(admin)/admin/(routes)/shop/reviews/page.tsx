@@ -1,11 +1,12 @@
 import { db } from "@/lib/db";
 
-import { requireAdminAuth } from "@/lib/auth-utils";
+import { requirePermission } from "@/shared/lib/auth-utils";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 
 import { ReviewsView } from "./components/reviews-view";
 
 const ReviewsPage = async () => {
-  await requireAdminAuth();
+  await requirePermission(PERMISSIONS.REVIEWS_READ);
 
   const reviews = await db.reviews.findMany({
     select: {

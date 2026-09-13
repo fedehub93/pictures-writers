@@ -18,7 +18,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 
 type Role = inferRouterOutputs<AppRouter>["roles"]["getMany"][number];
 
-export function RolesTable({ roles }: { roles: Role[] }) {
+export function RolesTable({ roles, canManage }: { roles: Role[]; canManage: boolean }) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -39,7 +39,7 @@ export function RolesTable({ roles }: { roles: Role[] }) {
               <TableCell>{role.permissions.length}</TableCell>
               <TableCell>{role._count.users}</TableCell>
               <TableCell>
-                <DropdownMenu>
+                {canManage && <DropdownMenu>
                   <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal data-icon="inline-start" /><span className="sr-only">Open role actions</span></Button></DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuGroup>
@@ -47,7 +47,7 @@ export function RolesTable({ roles }: { roles: Role[] }) {
                       {!role.isSystem && <DropdownMenuItem disabled={role._count.users > 0 || removeMutation.isPending} onClick={() => { setDeletingId(role.id); removeMutation.mutate({ id: role.id }); }}><Trash2Icon data-icon="inline-start" />{deletingId === role.id ? "Removing..." : "Remove role"}</DropdownMenuItem>}
                     </DropdownMenuGroup>
                   </DropdownMenuContent>
-                </DropdownMenu>
+                </DropdownMenu>}
               </TableCell>
             </TableRow>
           ))}

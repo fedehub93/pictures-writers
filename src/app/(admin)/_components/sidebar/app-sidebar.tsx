@@ -43,6 +43,7 @@ import {
   SidebarRail,
 } from "@/shared/ui/sidebar";
 import Logo from "@/shared/components/logo";
+import { hasPermission } from "@/shared/lib/permissions";
 import { NavMain } from "./nav-main";
 
 // This is sample data.
@@ -51,10 +52,12 @@ export type NavObject = {
   title: string;
   url: Route;
   Icon?: LucideIcon;
+  permission?: string;
   items?: {
     title: string;
     url: Route;
     Icon?: LucideIcon;
+    permission?: string;
   }[];
 };
 
@@ -64,16 +67,19 @@ const data: Record<string, NavObject[]> = {
       title: "Dashboard",
       url: "/admin/dashboard",
       Icon: LayoutDashboardIcon,
+      permission: "dashboard.read",
     },
     {
       title: "Pages",
       url: "/admin/pages",
       Icon: LayoutPanelTopIcon,
+      permission: "pages.read",
     },
     {
       title: "Schedule",
       url: "/admin/schedule",
       Icon: CalendarCheckIcon,
+      permission: "posts.read",
     },
     {
       title: "Contents",
@@ -84,16 +90,19 @@ const data: Record<string, NavObject[]> = {
           title: "Posts",
           url: "/admin/posts",
           Icon: NotebookPenIcon,
+          permission: "posts.read",
         },
         {
           title: "Categories",
           url: "/admin/categories",
           Icon: BoxesIcon,
+          permission: "categories.read",
         },
         {
           title: "Tags",
           url: "/admin/tags",
           Icon: TagsIcon,
+          permission: "tags.read",
         },
       ],
     },
@@ -108,16 +117,19 @@ const data: Record<string, NavObject[]> = {
           title: "Products",
           url: "/admin/shop/products",
           Icon: BoxIcon,
+          permission: "products.read",
         },
         {
           title: "Categories",
           url: "/admin/shop/categories",
           Icon: BoxesIcon,
+          permission: "product-categories.read",
         },
         {
           title: "Reviews",
           url: "/admin/shop/reviews",
           Icon: StarIcon,
+          permission: "reviews.read",
         },
       ],
     },
@@ -132,21 +144,25 @@ const data: Record<string, NavObject[]> = {
           title: "Single Sends",
           url: "/admin/mails/single-sends",
           Icon: MailPlusIcon,
+          permission: "single-sends.read",
         },
         {
           title: "Contacts",
           url: "/admin/mails/audiences",
           Icon: ContactIcon,
+          permission: "audiences.read",
         },
         {
           title: "Email templates",
           url: "/admin/mails/templates",
           Icon: LayoutPanelTopIcon,
+          permission: "templates.read",
         },
         {
           title: "Settings",
           url: "/admin/mails/settings",
           Icon: SettingsIcon,
+          permission: "email-settings.read",
         },
       ],
     },
@@ -154,11 +170,13 @@ const data: Record<string, NavObject[]> = {
       title: "Widgets",
       url: "/admin/widgets",
       Icon: BlocksIcon,
+      permission: "widgets.read",
     },
     {
       title: "Ads",
       url: "/admin/ads",
       Icon: MegaphoneIcon,
+      permission: "ads.read",
     },
     {
       title: "Forms",
@@ -169,11 +187,13 @@ const data: Record<string, NavObject[]> = {
           title: "All forms",
           url: "/admin/forms",
           Icon: ListIcon,
+          permission: "forms.read",
         },
         {
           title: "Submissions",
           url: "/admin/submissions",
           Icon: InboxIcon,
+          permission: "submissions.read",
         },
       ],
     },
@@ -181,6 +201,7 @@ const data: Record<string, NavObject[]> = {
       title: "Settings",
       url: "/admin/settings",
       Icon: SettingsIcon,
+      permission: "settings.read",
     },
   ],
   others: [
@@ -188,6 +209,7 @@ const data: Record<string, NavObject[]> = {
       title: "Media",
       url: "/admin/media",
       Icon: BookImageIcon,
+      permission: "media.read",
     },
     {
       title: "Coverage",
@@ -198,6 +220,7 @@ const data: Record<string, NavObject[]> = {
           title: "First impressions",
           url: "/admin/coverage/impressions",
           Icon: ClipboardPenIcon,
+          permission: "coverage.read",
         },
       ],
     },
@@ -205,16 +228,26 @@ const data: Record<string, NavObject[]> = {
       title: "Users",
       url: "/admin/users",
       Icon: UsersIcon,
+      permission: "users.read",
     },
     {
       title: "Roles",
       url: "/admin/roles/" as Route,
       Icon: ShieldCheckIcon,
+      permission: "roles.read",
     },
   ],
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({ permissionKeys, ...props }: React.ComponentProps<typeof Sidebar> & { permissionKeys: readonly string[] }) {
+  const visibleData = Object.fromEntries(
+    Object.entries(data).map(([section, items]) => [
+      section,
+      items
+        .map((item) => ({ ...item, items: item.items?.filter((child) => !child.permission || hasPermission(permissionKeys, child.permission)) }))
+        .filter((item) => (!item.permission || hasPermission(permissionKeys, item.permission)) && (!item.items || item.items.length > 0)),
+    ]),
+  ) as Record<string, NavObject[]>;
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -234,10 +267,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain label="Blog" items={data.navMain} />
-        <NavMain label="Shop" items={data.shop} />
-        <NavMain label="Tools" items={data.tools} />
-        <NavMain label="Others" items={data.others} />
+         <NavMain label="Blog" items={visibleData.navMain} />
+         <NavMain label="Shop" items={visibleData.shop} />
+         <NavMain label="Tools" items={visibleData.tools} />
+         <NavMain label="Others" items={visibleData.others} />
       </SidebarContent>
       <SidebarRail />
     </Sidebar>

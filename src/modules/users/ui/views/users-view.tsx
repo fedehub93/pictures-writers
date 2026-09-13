@@ -19,6 +19,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Input } from "@/shared/ui/input";
 import { Textarea } from "@/shared/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/ui/table";
+import { usePermission } from "@/shared/providers/authorization-provider";
 
 type User = inferRouterOutputs<AppRouter>["users"]["getMany"]["users"][number];
 
@@ -37,6 +38,7 @@ export function UsersView() {
   const router = useRouter();
   const pathname = usePathname();
   const trpc = useTRPC();
+  const canManage = usePermission("users.manage");
   const queryClient = useQueryClient();
   const filters = getFilters(params);
   const query = useQuery(trpc.users.getMany.queryOptions(filters));
@@ -69,14 +71,14 @@ export function UsersView() {
 
   return (
     <div className="flex h-full w-full flex-col gap-4 px-6 py-3">
-      <div className="flex items-center justify-between"><ContentHeader label="Users" totalEntries={query.data?.total ?? 0} /><Button onClick={() => setInviteOpen(true)}><UserPlus data-icon="inline-start" />Invite user</Button></div>
+       <div className="flex items-center justify-between"><ContentHeader label="Users" totalEntries={query.data?.total ?? 0} />{canManage && <Button onClick={() => setInviteOpen(true)}><UserPlus data-icon="inline-start" />Invite user</Button>}</div>
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative"><Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" /><Input className="w-64 pl-9" placeholder="Search name or email" defaultValue={filters.search} onKeyDown={(event) => { if (event.key === "Enter") setFilters({ search: event.currentTarget.value }); }} /></div>
         <select className="h-10 rounded-md border bg-background px-3 text-sm" value={filters.roleId ?? ""} onChange={(event) => setFilters({ roleId: event.target.value })}><option value="">All roles</option>{roles.map((role) => <option key={role.id} value={role.id}>{role.name}</option>)}</select>
         <select className="h-10 rounded-md border bg-background px-3 text-sm" value={filters.accountStatus ?? ""} onChange={(event) => setFilters({ status: event.target.value })}><option value="">All statuses</option><option value="ACTIVE">Active</option><option value="SUSPENDED">Suspended</option></select>
         <select className="h-10 rounded-md border bg-background px-3 text-sm" value={`${filters.sort}:${filters.direction}`} onChange={(event) => { const [sort, direction] = event.target.value.split(":"); setFilters({ sort, direction }); }}><option value="createdAt:desc">Newest</option><option value="name:asc">Name</option><option value="email:asc">Email</option><option value="accountStatus:asc">Status</option></select>
       </div>
-       <div className="overflow-x-auto rounded-md border"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="p-3">Name</th><th className="p-3">Email</th><th className="p-3">Role</th><th className="p-3">Status</th><th className="p-3 text-right">Actions</th></tr></thead><tbody>{users.map((user) => <UserRow key={user.id} user={user} onEdit={() => setEditing(user)} onStatus={() => { if (window.confirm(`${user.accountStatus === "ACTIVE" ? "Suspend" : "Reactivate"} this account?`)) status.mutate({ id: user.id, accountStatus: user.accountStatus === "ACTIVE" ? "SUSPENDED" : "ACTIVE" }); }} onReset={() => requestReset.mutate({ email: user.email ?? "" })} />)}{!users.length && <tr><td className="p-8 text-center" colSpan={5}>No users found.</td></tr>}</tbody></table></div>
+       <div className="overflow-x-auto rounded-md border"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="p-3">Name</th><th className="p-3">Email</th><th className="p-3">Role</th><th className="p-3">Status</th>{canManage && <th className="p-3 text-right">Actions</th>}</tr></thead><tbody>{users.map((user) => <UserRow key={user.id} user={user} canManage={canManage} onEdit={() => setEditing(user)} onStatus={() => { if (window.confirm(`${user.accountStatus === "ACTIVE" ? "Suspend" : "Reactivate"} this account?`)) status.mutate({ id: user.id, accountStatus: user.accountStatus === "ACTIVE" ? "SUSPENDED" : "ACTIVE" }); }} onReset={() => requestReset.mutate({ email: user.email ?? "" })} />)}{!users.length && <tr><td className="p-8 text-center" colSpan={canManage ? 5 : 4}>No users found.</td></tr>}</tbody></table></div>
        <section className="flex flex-col gap-3"><h2 className="text-lg font-semibold">Invitations</h2><div className="overflow-x-auto rounded-md border"><table className="w-full text-sm"><thead><tr className="border-b text-left"><th className="p-3">Email</th><th className="p-3">Role</th><th className="p-3">Status</th><th className="p-3 text-right">Actions</th></tr></thead><tbody>{(invitations.data ?? []).map((invitation) => <tr className="border-b last:border-0" key={invitation.id}><td className="p-3">{invitation.email}</td><td className="p-3">{invitation.role.name}</td><td className="p-3"><Badge variant={invitation.status === "PENDING" ? "default" : "secondary"}>{invitation.status}</Badge></td><td className="p-3 text-right">{invitation.status === "PENDING" && <><Button variant="ghost" size="sm" onClick={() => resendInvitation.mutate({ id: invitation.id })}><RotateCw data-icon="inline-start" />Resend</Button><Button variant="ghost" size="sm" onClick={() => cancelInvitation.mutate({ id: invitation.id })}><X data-icon="inline-start" />Cancel</Button></>}</td></tr>)}{!invitations.data?.length && <tr><td className="p-8 text-center" colSpan={4}>No invitations found.</td></tr>}</tbody></table></div></section>
       <div className="flex justify-end gap-2"><Button variant="outline" disabled={page <= 1} onClick={() => setFilters({ page: String(page - 1) })}>Previous</Button><span className="px-2 py-2 text-sm">Page {page} of {totalPages}</span><Button variant="outline" disabled={page >= totalPages} onClick={() => setFilters({ page: String(page + 1) })}>Next</Button></div>
         <EditDialog key={editing?.id ?? "closed"} user={editing} roles={roles} activities={activities.data ?? []} pending={update.isPending} onClose={() => setEditing(null)} onSubmit={(value) => update.mutate(value)} />
@@ -85,8 +87,8 @@ export function UsersView() {
   );
 }
 
-function UserRow({ user, onEdit, onStatus, onReset }: { user: User; onEdit: () => void; onStatus: () => void; onReset: () => void }) {
-  return <tr className="border-b last:border-0"><td className="p-3">{[user.firstName, user.lastName].filter(Boolean).join(" ") || user.name || "Unnamed"}</td><td className="p-3">{user.email ?? "-"}</td><td className="p-3">{user.roleDefinition?.name ?? "-"}</td><td className="p-3"><Badge variant={user.accountStatus === "ACTIVE" ? "default" : "secondary"}>{user.accountStatus}</Badge></td><td className="p-3 text-right"><Button variant="ghost" size="sm" onClick={onEdit}><Pencil data-icon="inline-start" />Edit</Button><Button variant="ghost" size="sm" onClick={onReset}><Mail data-icon="inline-start" />Reset password</Button><Button variant="ghost" size="sm" onClick={onStatus}>{user.accountStatus === "ACTIVE" ? "Suspend" : "Reactivate"}</Button></td></tr>;
+function UserRow({ user, canManage, onEdit, onStatus, onReset }: { user: User; canManage: boolean; onEdit: () => void; onStatus: () => void; onReset: () => void }) {
+  return <tr className="border-b last:border-0"><td className="p-3">{[user.firstName, user.lastName].filter(Boolean).join(" ") || user.name || "Unnamed"}</td><td className="p-3">{user.email ?? "-"}</td><td className="p-3">{user.roleDefinition?.name ?? "-"}</td><td className="p-3"><Badge variant={user.accountStatus === "ACTIVE" ? "default" : "secondary"}>{user.accountStatus}</Badge></td>{canManage && <td className="p-3 text-right"><Button variant="ghost" size="sm" onClick={onEdit}><Pencil data-icon="inline-start" />Edit</Button><Button variant="ghost" size="sm" onClick={onReset}><Mail data-icon="inline-start" />Reset password</Button><Button variant="ghost" size="sm" onClick={onStatus}>{user.accountStatus === "ACTIVE" ? "Suspend" : "Reactivate"}</Button></td>}</tr>;
 }
 
 function InviteDialog({ open, roles, pending, onClose, onSubmit }: { open: boolean; roles: { id: string; name: string }[]; pending: boolean; onClose: () => void; onSubmit: (value: { email: string; roleId: string }) => void }) {

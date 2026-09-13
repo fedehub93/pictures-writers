@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 
-import { requireAdminAuth } from "@/lib/auth-utils";
+import { requirePermission } from "@/shared/lib/auth-utils";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 
 import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
 import { AssetsList } from "./_components/assets-list";
@@ -14,7 +15,7 @@ const MediaPage = async (props: {
     page?: string;
   }>;
 }) => {
-  await requireAdminAuth();
+  await requirePermission(PERMISSIONS.MEDIA_READ);
 
   const searchParams = await props.searchParams;
 

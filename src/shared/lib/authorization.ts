@@ -1,24 +1,10 @@
 import "server-only";
 
 import { db } from "@/shared/lib/db";
+import { hasPermission, type PermissionKey } from "./permissions";
 
-export const PERMISSIONS = {
-  DASHBOARD_READ: "dashboard.read",
-  ROLES_READ: "roles.read",
-  ROLES_MANAGE: "roles.manage",
-  USERS_READ: "users.read",
-  USERS_CREATE: "users.create",
-  USERS_UPDATE: "users.update",
-  USERS_DELETE: "users.delete",
-  USERS_MANAGE: "users.manage",
-} as const;
-
-export type PermissionKey = string;
-
-export const can = (
-  permissionKeys: readonly string[],
-  requiredPermission: PermissionKey,
-) => permissionKeys.includes(requiredPermission);
+export { hasPermission as can, PERMISSIONS } from "./permissions";
+export type { PermissionKey } from "./permissions";
 
 export const getAuthorizedUser = async (
   userId: string,
@@ -50,7 +36,7 @@ export const getAuthorizedUser = async (
     ({ permission }) => permission.key,
   );
 
-  if (requiredPermission && !can(permissionKeys, requiredPermission)) {
+  if (requiredPermission && !hasPermission(permissionKeys, requiredPermission)) {
     return null;
   }
 

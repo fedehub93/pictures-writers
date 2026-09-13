@@ -1,13 +1,14 @@
 import { db } from "@/lib/db";
 
-import { requireAdminAuth } from "@/lib/auth-utils";
+import { requirePermission } from "@/shared/lib/auth-utils";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
 
 import { DataTable } from "./_components/data-table";
 import { columns } from "./_components/columns";
 
 const WidgetsPage = async () => {
-  await requireAdminAuth();
+  await requirePermission(PERMISSIONS.WIDGETS_READ);
 
   const widgets = await db.widget.findMany({
     orderBy: {

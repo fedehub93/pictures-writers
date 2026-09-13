@@ -4,7 +4,8 @@ import type { SearchParams } from "nuqs";
 
 import { HydrateClient } from "@/trpc/server";
 
-import { requireAdminAuth } from "@/shared/lib/auth-utils";
+import { requirePermission } from "@/shared/lib/auth-utils";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 
 import { prefetchPages } from "@/modules/pages/server/prefetch";
 
@@ -22,7 +23,7 @@ interface Props {
 }
 
 const PagesPage = async ({ searchParams }: Props) => {
-  await requireAdminAuth();
+  await requirePermission(PERMISSIONS.PAGES_READ);
 
   const filters = await loadSearchParams(searchParams);
 

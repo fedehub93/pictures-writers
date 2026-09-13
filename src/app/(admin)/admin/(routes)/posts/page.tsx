@@ -3,7 +3,8 @@ import { HydrateClient } from "@/trpc/server";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
-import { requireAdminAuth } from "@/shared/lib/auth-utils";
+import { requirePermission } from "@/shared/lib/auth-utils";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 
 import { loadSearchParams } from "@/modules/blog/posts/params";
 import { prefetchPosts } from "@/modules/blog/posts/server/prefetch";
@@ -20,7 +21,7 @@ interface Props {
 }
 
 const PostsPage = async ({ searchParams }: Props) => {
-  await requireAdminAuth();
+  await requirePermission(PERMISSIONS.POSTS_READ);
 
   const filters = await loadSearchParams(searchParams);
 

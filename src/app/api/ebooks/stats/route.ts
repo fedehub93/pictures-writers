@@ -1,11 +1,18 @@
 import { NextResponse } from "next/server";
 
 import { getEbookDownloadGrowth } from "@/data/email-contact";
+import { auth } from "@/shared/lib/auth";
+import { getAuthorizedUser, PERMISSIONS } from "@/shared/lib/authorization";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
   try {
+    const session = await auth.api.getSession({ headers: req.headers });
+    if (!session || !(await getAuthorizedUser(session.id, PERMISSIONS.DASHBOARD_READ))) {
+      return new NextResponse("Forbidden", { status: 403 });
+    }
+
     const { searchParams } = new URL(req.url);
 
     const from = searchParams.get("from");

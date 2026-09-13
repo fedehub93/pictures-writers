@@ -6,11 +6,13 @@ import { useQuery } from "@tanstack/react-query";
 
 import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
 import { useTRPC } from "@/trpc/client";
+import { usePermission } from "@/shared/providers/authorization-provider";
 import { RoleDialog } from "../components/role-dialog";
 import { RolesTable } from "../components/roles-table";
 
 export function RolesView() {
   const trpc = useTRPC();
+  const canManage = usePermission("roles.manage");
   const rolesQuery = useQuery(trpc.roles.getMany.queryOptions());
   const roles = rolesQuery.data ?? [];
 
@@ -18,9 +20,9 @@ export function RolesView() {
     <div className="flex h-full w-full flex-col gap-4 px-6 py-3">
       <div className="flex items-center justify-between gap-4">
         <ContentHeader label="Roles" totalEntries={roles.length} />
-        <RoleDialog />
+        {canManage && <RoleDialog />}
       </div>
-      <RolesTable roles={roles} />
+      <RolesTable roles={roles} canManage={canManage} />
     </div>
   );
 }
