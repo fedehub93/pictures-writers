@@ -31,6 +31,18 @@ export const requireAdminAuth = async () => {
   return session;
 };
 
+export const requirePermission = async (permission: string) => {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session || !(await getAuthorizedUser(session.id, permission))) {
+    redirect("/sign-in");
+  }
+
+  return session;
+};
+
 export const requireUnauth = async () => {
   const session = await auth.api.getSession({
     headers: await headers(),

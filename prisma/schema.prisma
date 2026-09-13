@@ -100,6 +100,7 @@ model Role {
   key         String           @unique
   name        String
   isSystem    Boolean          @default(false)
+  isActive    Boolean          @default(true)
   users       User[]
   permissions RolePermission[]
   createdAt   DateTime         @default(now())

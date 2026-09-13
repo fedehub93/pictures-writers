@@ -12,6 +12,7 @@ import { settingsRouter } from "@/modules/mails/settings/server/procedures";
 import { singleSendsRouter } from "@/modules/mails/single-sends/server/procedures";
 import { tagsRouter } from "@/modules/blog/tags/server/procedures";
 import { templatesRouter } from "@/modules/mails/templates/server/procedures";
+import { rolesRouter } from "@/modules/roles/server/procedures";
 
 export const appRouter = createTRPCRouter({
   audiences: audiencesRouter,
@@ -21,6 +22,7 @@ export const appRouter = createTRPCRouter({
   mailSettings: settingsRouter,
   pages: pagesRouter,
   posts: postsRouter,
+  roles: rolesRouter,
   scheduler: schedulerRouter,
   singleSends: singleSendsRouter,
   submissions: formSubmissionsRouter,

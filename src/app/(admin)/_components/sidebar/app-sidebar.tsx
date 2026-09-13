@@ -30,6 +30,7 @@ import {
   StarIcon,
   TagsIcon,
   UsersIcon,
+  ShieldCheckIcon,
 } from "lucide-react";
 
 import {
@@ -204,6 +205,11 @@ const data: Record<string, NavObject[]> = {
       title: "Users",
       url: "/admin/users",
       Icon: UsersIcon,
+    },
+    {
+      title: "Roles",
+      url: "/admin/roles/" as Route,
+      Icon: ShieldCheckIcon,
     },
   ],
 };

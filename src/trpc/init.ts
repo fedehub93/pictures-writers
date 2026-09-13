@@ -25,12 +25,12 @@ const t = initTRPC.create({
 export const createTRPCRouter = t.router;
 export const createCallerFactory = t.createCallerFactory;
 export const baseProcedure = t.procedure;
-export const protectedProcedure = baseProcedure.use(async ({ ctx, next }) => {
+const authenticatedProcedure = baseProcedure.use(async ({ ctx, next }) => {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
 
-  if (!session || !(await getAuthorizedUser(session.id, PERMISSIONS.DASHBOARD_READ))) {
+  if (!session || !(await getAuthorizedUser(session.id))) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
       message: "Unauthorized",
@@ -39,3 +39,22 @@ export const protectedProcedure = baseProcedure.use(async ({ ctx, next }) => {
 
   return next({ ctx: { ...ctx, auth: session } });
 });
+
+export const protectedProcedure = authenticatedProcedure.use(
+  async ({ ctx, next }) => {
+    if (!(await getAuthorizedUser(ctx.auth.id, PERMISSIONS.DASHBOARD_READ))) {
+      throw new TRPCError({ code: "FORBIDDEN", message: "Forbidden" });
+    }
+
+    return next({ ctx });
+  },
+);
+
+export const permissionProcedure = (permission: string) =>
+  authenticatedProcedure.use(async ({ ctx, next }) => {
+    if (!(await getAuthorizedUser(ctx.auth.id, permission))) {
+      throw new TRPCError({ code: "FORBIDDEN", message: "Forbidden" });
+    }
+
+    return next({ ctx });
+  });

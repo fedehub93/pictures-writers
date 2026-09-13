@@ -4,6 +4,8 @@ import { db } from "@/shared/lib/db";
 
 export const PERMISSIONS = {
   DASHBOARD_READ: "dashboard.read",
+  ROLES_READ: "roles.read",
+  ROLES_MANAGE: "roles.manage",
   USERS_READ: "users.read",
   USERS_CREATE: "users.create",
   USERS_UPDATE: "users.update",
@@ -35,7 +37,12 @@ export const getAuthorizedUser = async (
     },
   });
 
-  if (!user || user.accountStatus === "SUSPENDED" || !user.roleDefinition) {
+  if (
+    !user ||
+    user.accountStatus === "SUSPENDED" ||
+    !user.roleDefinition ||
+    !user.roleDefinition.isActive
+  ) {
     return null;
   }
 
@@ -43,14 +50,7 @@ export const getAuthorizedUser = async (
     ({ permission }) => permission.key,
   );
 
-  const isProtectedAdmin =
-    user.roleDefinition.isSystem && user.roleDefinition.key === "ADMIN";
-
-  if (
-    requiredPermission &&
-    !isProtectedAdmin &&
-    !can(permissionKeys, requiredPermission)
-  ) {
+  if (requiredPermission && !can(permissionKeys, requiredPermission)) {
     return null;
   }
 
