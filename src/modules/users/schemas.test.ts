@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   legacyUserCreateSchema,
   legacyUserUpdateSchema,
+  updateUserSchema,
 } from "./schemas";
 
 describe("legacy user API contract", () => {
@@ -30,5 +31,12 @@ describe("legacy user API contract", () => {
 
   it("rejects an empty legacy user creation", () => {
     expect(() => legacyUserCreateSchema.parse({ bio: "Only a bio" })).toThrow();
+  });
+
+  it("accepts seeded role identifiers when updating a user", () => {
+    expect(updateUserSchema.parse({
+      id: "123e4567-e89b-42d3-a456-426614174000",
+      roleId: "system-role-editor",
+    }).roleId).toBe("system-role-editor");
   });
 });

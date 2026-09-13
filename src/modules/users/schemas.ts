@@ -5,7 +5,7 @@ import { USER_LIST_SORTS } from "./lib/user-list";
 
 export const userListSchema = z.object({
   search: z.string().trim().max(100).default(""),
-  roleId: z.string().uuid().optional(),
+  roleId: z.string().trim().min(1).optional(),
   accountStatus: z.enum(["ACTIVE", "SUSPENDED"]).optional(),
   page: z.number().int().min(1).default(DEFAULT_PAGE),
   pageSize: z.number().int().min(1).max(MAX_PAGE_SIZE).default(DEFAULT_PAGE_SIZE),
@@ -19,7 +19,7 @@ export const updateUserSchema = z.object({
   lastName: z.string().trim().max(100).nullable().optional(),
   bio: z.string().trim().max(2000).nullable().optional(),
   imageUrl: z.string().url().nullable().optional(),
-  roleId: z.string().uuid(),
+  roleId: z.string().trim().min(1),
 });
 
 const legacyUserFieldsSchema = z.object({
