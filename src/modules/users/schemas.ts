@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from "./constants";
+import { USER_LIST_SORTS } from "./lib/user-list";
 
 export const userListSchema = z.object({
   search: z.string().trim().max(100).default(""),
@@ -8,7 +9,7 @@ export const userListSchema = z.object({
   accountStatus: z.enum(["ACTIVE", "SUSPENDED"]).optional(),
   page: z.number().int().min(1).default(DEFAULT_PAGE),
   pageSize: z.number().int().min(1).max(MAX_PAGE_SIZE).default(DEFAULT_PAGE_SIZE),
-  sort: z.enum(["name", "email", "createdAt", "accountStatus"]).default("createdAt"),
+  sort: z.enum(USER_LIST_SORTS).default("createdAt"),
   direction: z.enum(["asc", "desc"]).default("desc"),
 });
 

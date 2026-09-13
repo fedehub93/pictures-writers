@@ -9,10 +9,11 @@ import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 
 import { assertAccountChangeAllowed, hasManagementPermissions } from "../lib/account-policy";
 import { activityHistorySchema, createInvitationSchema, invitationIdSchema, requestPasswordResetSchema, userListSchema, updateStatusSchema, updateUserSchema } from "../schemas";
-import { createInvitationToken, invitationExpiry } from "../lib/invitation-token";
+import { createInvitationToken, invitationExpiry, withoutInvitationTokenHash } from "../lib/invitation-token";
 import { sendInvitationEmail } from "./emails";
 import { auth } from "@/shared/lib/auth";
 import { recordAdministrativeActivity } from "@/modules/administrative-activity";
+import { getUserOrderBy } from "../lib/user-list";
 
 const roleSelect = {
   id: true,
@@ -76,7 +77,7 @@ export const usersRouter = createTRPCRouter({
             ]
           : undefined,
       };
-      const orderBy = { [input.sort]: input.direction } as Prisma.UserOrderByWithRelationInput;
+       const orderBy = getUserOrderBy(input.sort, input.direction);
       const [users, total, roles] = await Promise.all([
         db.user.findMany({
           where,
@@ -189,7 +190,7 @@ export const usersRouter = createTRPCRouter({
          actorId: ctx.auth.id, action: "INVITATION_CREATED", area: "INVITATIONS", targetType: "INVITATION", targetId: invitation.id, outcome: "SUCCESS",
          after: { email: invitation.email, role: invitation.role.name, status: invitation.status, expiresAt: invitation.expiresAt.toISOString() },
        });
-       return invitation;
+        return withoutInvitationTokenHash(invitation);
     }),
   resendInvitation: permissionProcedure(PERMISSIONS.USERS_MANAGE)
     .input(invitationIdSchema)
@@ -197,11 +198,21 @@ export const usersRouter = createTRPCRouter({
       const invitation = await db.invitation.findUnique({ where: { id: input.id }, include: { role: { select: { name: true } } } });
       if (!invitation || invitation.status !== "PENDING") throw new TRPCError({ code: "BAD_REQUEST", message: "Only pending invitations can be resent" });
       const { token, tokenHash } = createInvitationToken();
-      const updated = await db.invitation.update({ where: { id: invitation.id }, data: { tokenHash, expiresAt: invitationExpiry() } });
+       const expiresAt = invitationExpiry();
+       const claimed = await db.invitation.updateMany({
+         where: { id: invitation.id, status: "PENDING", tokenHash: invitation.tokenHash },
+         data: { tokenHash, expiresAt },
+       });
+       if (claimed.count !== 1) throw new TRPCError({ code: "BAD_REQUEST", message: "Only pending invitations can be resent" });
+       const updated = { ...invitation, tokenHash, expiresAt };
       try {
-        if (!(await sendInvitationEmail(updated.email, token, invitation.role.name))) throw new Error("Email delivery is not configured");
+       if (!(await sendInvitationEmail(updated.email, token, invitation.role.name))) throw new Error("Email delivery is not configured");
+        const current = await db.invitation.findUnique({ where: { id: invitation.id }, select: { status: true, tokenHash: true } });
+        if (!current || current.status !== "PENDING" || current.tokenHash !== tokenHash) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "The invitation is no longer pending" });
+        }
       } catch (error) {
-        await db.invitation.update({ where: { id: invitation.id }, data: { tokenHash: invitation.tokenHash, expiresAt: invitation.expiresAt } });
+         await db.invitation.updateMany({ where: { id: invitation.id, status: "PENDING", tokenHash }, data: { tokenHash: invitation.tokenHash, expiresAt: invitation.expiresAt } });
         await recordAdministrativeActivity(db, {
           actorId: ctx.auth.id, action: "INVITATION_RESENT", area: "INVITATIONS", targetType: "INVITATION", targetId: invitation.id, outcome: "FAILURE",
           after: { email: invitation.email, role: invitation.role.name, status: invitation.status },
@@ -212,19 +223,25 @@ export const usersRouter = createTRPCRouter({
          actorId: ctx.auth.id, action: "INVITATION_RESENT", area: "INVITATIONS", targetType: "INVITATION", targetId: invitation.id, outcome: "SUCCESS",
          before: { status: invitation.status, expiresAt: invitation.expiresAt.toISOString() }, after: { status: updated.status, expiresAt: updated.expiresAt.toISOString() },
        });
-       return updated;
+        return withoutInvitationTokenHash(updated);
     }),
   cancelInvitation: permissionProcedure(PERMISSIONS.USERS_MANAGE)
     .input(invitationIdSchema)
     .mutation(async ({ input, ctx }) => {
        const invitation = await db.invitation.findUnique({ where: { id: input.id }, select: { status: true, email: true, role: { select: { name: true } } } });
       if (!invitation || invitation.status !== "PENDING") throw new TRPCError({ code: "BAD_REQUEST", message: "Only pending invitations can be cancelled" });
-       const cancelled = await db.invitation.update({ where: { id: input.id }, data: { status: "CANCELLED", tokenHash: `cancelled-${crypto.randomUUID()}` } });
+       const cancelledTokenHash = `cancelled-${crypto.randomUUID()}`;
+       const cancellation = await db.invitation.updateMany({
+         where: { id: input.id, status: "PENDING" },
+         data: { status: "CANCELLED", tokenHash: cancelledTokenHash },
+       });
+       if (cancellation.count !== 1) throw new TRPCError({ code: "BAD_REQUEST", message: "Only pending invitations can be cancelled" });
+       const cancelledInvitation = await db.invitation.findUniqueOrThrow({ where: { id: input.id } });
        await recordAdministrativeActivity(db, {
          actorId: ctx.auth.id, action: "INVITATION_CANCELLED", area: "INVITATIONS", targetType: "INVITATION", targetId: input.id, outcome: "SUCCESS",
-         before: { email: invitation.email, role: invitation.role.name, status: invitation.status }, after: { status: cancelled.status },
+          before: { email: invitation.email, role: invitation.role.name, status: invitation.status }, after: { status: cancelledInvitation.status },
        });
-       return cancelled;
+       return withoutInvitationTokenHash(cancelledInvitation);
     }),
   requestPasswordReset: permissionProcedure(PERMISSIONS.USERS_MANAGE)
     .input(requestPasswordResetSchema)

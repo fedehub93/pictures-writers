@@ -5,6 +5,7 @@ import {
   hashInvitationToken,
   invitationExpiry,
   isInvitationUsable,
+  withoutInvitationTokenHash,
 } from "./invitation-token";
 
 describe("invitation tokens", () => {
@@ -29,5 +30,11 @@ describe("invitation tokens", () => {
     expect(isInvitationUsable(invitation, now)).toBe(true);
     expect(isInvitationUsable({ ...invitation, status: "CANCELLED" }, now)).toBe(false);
     expect(isInvitationUsable({ ...invitation, expiresAt: now }, now)).toBe(false);
+  });
+
+  it("removes token hashes from invitation responses", () => {
+    expect(withoutInvitationTokenHash({ id: "invitation-1", tokenHash: "secret" })).toEqual({
+      id: "invitation-1",
+    });
   });
 });

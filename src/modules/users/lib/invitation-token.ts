@@ -18,3 +18,8 @@ export const isInvitationUsable = (invitation: {
   expiresAt: Date;
 }, now = new Date()) =>
   invitation.status === "PENDING" && invitation.expiresAt > now;
+
+export const withoutInvitationTokenHash = <T extends { tokenHash: string }>({
+  tokenHash: _tokenHash,
+  ...invitation
+}: T) => invitation;
