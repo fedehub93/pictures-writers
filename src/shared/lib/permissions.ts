@@ -113,7 +113,7 @@ export const getProcedurePermission = (path: string): string => {
   if (READ_OPERATIONS.has(operation) || operation.startsWith("get")) {
     return `${area}.read`;
   }
-  if (operation === "publish" || operation === "unpublish") {
+  if (["publish", "unpublish", "schedule", "reschedule", "cancelSchedule"].includes(operation)) {
     return `${area}.publish`;
   }
   if (operation.startsWith("create")) {

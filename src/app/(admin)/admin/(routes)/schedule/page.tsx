@@ -8,8 +8,12 @@ import {
   ScheduleViewLoading,
 } from "@/modules/scheduler";
 import { SchedulerHeader } from "@/modules/scheduler/ui/components/schedule-header";
+import { requirePermission } from "@/shared/lib/auth-utils";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 
-const SchedulePage = () => {
+const SchedulePage = async () => {
+  await requirePermission(PERMISSIONS.POSTS_READ);
+
   return (
     <HydrateClient>
       <SchedulerHeader />

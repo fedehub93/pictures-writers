@@ -14,6 +14,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 
 import { useTRPC } from "@/trpc/client";
+import { usePermission } from "@/shared/providers/authorization-provider";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 import { ContentStatus } from "@/generated/prisma";
 
 import { Button } from "@/shared/ui/button";
@@ -40,6 +42,9 @@ interface PagesAction {
 
 export const PagesActions = ({ id, rootId, status, data }: PagesAction) => {
   const trpc = useTRPC();
+  const canUpdate = usePermission(PERMISSIONS.PAGES_UPDATE);
+  const canPublish = usePermission(PERMISSIONS.PAGES_PUBLISH);
+  const canDelete = usePermission(PERMISSIONS.PAGES_DELETE);
 
   const queryClient = useQueryClient();
   const [filters, _setFilters] = usePagesFilters();
@@ -122,18 +127,18 @@ export const PagesActions = ({ id, rootId, status, data }: PagesAction) => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={onEdit}>
+          {canUpdate && <DropdownMenuItem onClick={onEdit}>
             <PencilIcon />
             Edit
-          </DropdownMenuItem>
+          </DropdownMenuItem>}
 
-          <DropdownMenuItem asChild>
+          {canUpdate && <DropdownMenuItem asChild>
             <Link href={`/admin/pages/${rootId}/builder`}>
               <BlocksIcon />
               Page Builder
             </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem
+          </DropdownMenuItem>}
+          {canPublish && <DropdownMenuItem
             onSelect={() => {
               onTogglePublish();
             }}
@@ -151,9 +156,9 @@ export const PagesActions = ({ id, rootId, status, data }: PagesAction) => {
                 Unpublish
               </>
             )}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <ConfirmModal onConfirm={onDelete}>
+          </DropdownMenuItem>}
+          {canDelete && <DropdownMenuSeparator />}
+          {canDelete && <ConfirmModal onConfirm={onDelete}>
             <Button
               variant="ghost"
               disabled={isPending}
@@ -162,7 +167,7 @@ export const PagesActions = ({ id, rootId, status, data }: PagesAction) => {
               <Trash2Icon data-icon="inline-start" />
               Delete
             </Button>
-          </ConfirmModal>
+          </ConfirmModal>}
         </DropdownMenuContent>
       </DropdownMenu>
     </>

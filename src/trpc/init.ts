@@ -5,8 +5,7 @@ import superjson from "superjson";
 import { initTRPC, TRPCError } from "@trpc/server";
 import { auth } from "@/shared/lib/auth";
 import { getAuthorizedUser } from "@/shared/lib/authorization";
-import { PERMISSIONS } from "@/shared/lib/permissions";
-import { getProcedurePermissions } from "@/shared/lib/permissions";
+import { PERMISSIONS, getProcedurePermissions } from "@/shared/lib/permissions";
 export const createTRPCContext = cache(async () => {
   /**
    * @see: https://trpc.io/docs/server/context

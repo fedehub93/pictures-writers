@@ -12,6 +12,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 
 import { useTRPC } from "@/trpc/client";
+import { usePermission } from "@/shared/providers/authorization-provider";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 
 import { Button } from "@/shared/ui/button";
 import {
@@ -35,6 +37,7 @@ interface FormsActions {
 
 export const FormsActions = ({ id, data }: FormsActions) => {
   const trpc = useTRPC();
+  const canManage = usePermission(PERMISSIONS.FORMS_MANAGE);
 
   const queryClient = useQueryClient();
   const [filters, _setFilters] = useFormFilters();
@@ -75,19 +78,19 @@ export const FormsActions = ({ id, data }: FormsActions) => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={onEdit}>
+          {canManage && <DropdownMenuItem onClick={onEdit}>
             <PencilIcon />
             Edit
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
+          </DropdownMenuItem>}
+          {canManage && <DropdownMenuItem asChild>
             <Link href={`/admin/forms/${id}/builder`}>
               <BlocksIcon />
               Form Builder
             </Link>
-          </DropdownMenuItem>
+          </DropdownMenuItem>}
 
-          <DropdownMenuSeparator />
-          <ConfirmModal onConfirm={onDelete}>
+          {canManage && <DropdownMenuSeparator />}
+          {canManage && <ConfirmModal onConfirm={onDelete}>
             <Button
               variant="ghost"
               disabled={isPending}
@@ -96,7 +99,7 @@ export const FormsActions = ({ id, data }: FormsActions) => {
               <Trash2Icon data-icon="inline-start" />
               Delete
             </Button>
-          </ConfirmModal>
+          </ConfirmModal>}
         </DropdownMenuContent>
       </DropdownMenu>
     </>

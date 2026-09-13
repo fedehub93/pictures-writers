@@ -17,6 +17,8 @@ import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useTRPC } from "@/trpc/client";
+import { usePermission } from "@/shared/providers/authorization-provider";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 
 import { ContentStatus } from "@/generated/prisma";
 
@@ -48,6 +50,9 @@ export const PostsActions = ({
   scheduledAt,
 }: PostsActionsProps) => {
   const trpc = useTRPC();
+  const canUpdate = usePermission(PERMISSIONS.POSTS_UPDATE);
+  const canPublish = usePermission(PERMISSIONS.POSTS_PUBLISH);
+  const canDelete = usePermission(PERMISSIONS.POSTS_DELETE);
 
   const queryClient = useQueryClient();
   const [filters, _] = usePostsFilters();
@@ -145,14 +150,14 @@ export const PostsActions = ({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <Link href={`/admin/posts/${rootId}`}>
+          {canUpdate && <Link href={`/admin/posts/${rootId}`}>
             <DropdownMenuItem>
               <PencilIcon />
               Edit
             </DropdownMenuItem>
-          </Link>
+          </Link>}
 
-          {status === ContentStatus.SCHEDULED ? (
+          {canPublish && status === ContentStatus.SCHEDULED ? (
             <>
               <DropdownMenuItem
                 onSelect={() => {
@@ -188,7 +193,7 @@ export const PostsActions = ({
                 </DropdownMenuItem>
               </ConfirmModal>
             </>
-          ) : (
+          ) : canPublish ? (
             <>
               <DropdownMenuItem
                 onSelect={() => {
@@ -224,9 +229,9 @@ export const PostsActions = ({
                 }
               />
             </>
-          )}
-          <DropdownMenuSeparator />
-          <ConfirmModal onConfirm={onDelete}>
+          ) : null}
+          {canDelete && <DropdownMenuSeparator />}
+          {canDelete && <ConfirmModal onConfirm={onDelete}>
             <Button
               variant="ghost"
               disabled={isPending}
@@ -235,7 +240,7 @@ export const PostsActions = ({
               <Trash2Icon data-icon="inline-start" />
               Delete
             </Button>
-          </ConfirmModal>
+          </ConfirmModal>}
         </DropdownMenuContent>
       </DropdownMenu>
     </>
