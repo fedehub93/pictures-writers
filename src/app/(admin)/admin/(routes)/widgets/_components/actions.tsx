@@ -15,6 +15,8 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
+import { usePermission } from "@/shared/providers/authorization-provider";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 
 interface WidgetActions {
   id: string;
@@ -22,6 +24,7 @@ interface WidgetActions {
 
 export const WidgetActions = ({ id }: WidgetActions) => {
   const router = useRouter();
+  const canManage = usePermission(PERMISSIONS.WIDGETS_MANAGE);
 
   const onDelete = async () => {
     try {
@@ -35,7 +38,7 @@ export const WidgetActions = ({ id }: WidgetActions) => {
     }
   };
 
-  return (
+  return canManage ? (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="size-8">
@@ -62,5 +65,5 @@ export const WidgetActions = ({ id }: WidgetActions) => {
         </ConfirmModal>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  ) : null;
 };

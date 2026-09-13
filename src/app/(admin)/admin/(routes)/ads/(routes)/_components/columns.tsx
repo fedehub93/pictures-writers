@@ -19,6 +19,8 @@ import { Badge } from "@/shared/ui/badge";
 import { DataTableColumnHeader } from "@/shared/components/data-table-column-header";
 
 import { type DataTableFeatures } from "./data-table-features";
+import { usePermission } from "@/shared/providers/authorization-provider";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 
 const columnHelper = createColumnHelper<DataTableFeatures, AdCampaign>();
 
@@ -48,7 +50,18 @@ export const columns = columnHelper.columns([
     id: "actions",
     cell: ({ row }) => {
       const { id } = row.original;
-      return (
+      return <AdActions id={id} />;
+    },
+    enableHiding: false,
+  }),
+]);
+
+function AdActions({ id }: { id: string }) {
+  const canManage = usePermission(PERMISSIONS.ADS_MANAGE);
+
+  if (!canManage) return null;
+
+  return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="size-8">
@@ -65,8 +78,5 @@ export const columns = columnHelper.columns([
             </Link>
           </DropdownMenuContent>
         </DropdownMenu>
-      );
-    },
-    enableHiding: false,
-  }),
-]);
+  );
+}

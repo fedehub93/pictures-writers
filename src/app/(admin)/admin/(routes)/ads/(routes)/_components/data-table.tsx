@@ -25,6 +25,8 @@ import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 
 import { features, type DataTableFeatures } from "./data-table-features";
+import { usePermission } from "@/shared/providers/authorization-provider";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 
 interface DataTableProps<TData extends RowData> {
   columns: ColumnDef<DataTableFeatures, TData>[];
@@ -40,6 +42,7 @@ export function DataTable<TData extends RowData>({
     [],
   );
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
+  const canManage = usePermission(PERMISSIONS.ADS_MANAGE);
 
   const table = useTable({
     features,
@@ -66,12 +69,12 @@ export function DataTable<TData extends RowData>({
           }
           className="max-w-sm"
         />
-        <Link href="/admin/ads/create">
+        {canManage && <Link href="/admin/ads/create">
           <Button>
             <PlusCircleIcon data-icon="inline-start" />
             New ads
           </Button>
-        </Link>
+        </Link>}
       </div>
       <div className="overflow-hidden rounded-md border">
         <Table>

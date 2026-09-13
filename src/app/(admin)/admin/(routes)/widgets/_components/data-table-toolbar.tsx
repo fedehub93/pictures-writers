@@ -17,6 +17,8 @@ import { Button } from "@/shared/ui/button";
 
 import { DataTableFacetedFilter } from "./data-table-faceted-filter";
 import { type DataTableFeatures } from "./data-table-features";
+import { usePermission } from "@/shared/providers/authorization-provider";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 
 interface DataTableToolbarProps<TData extends RowData> {
   table: ReactTable<DataTableFeatures, TData>;
@@ -49,6 +51,7 @@ export function DataTableToolbar<TData extends RowData>({
   table,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.state.columnFilters.length > 0;
+  const canManage = usePermission(PERMISSIONS.WIDGETS_MANAGE);
 
   return (
     <div className="flex items-center justify-between py-4">
@@ -79,12 +82,12 @@ export function DataTableToolbar<TData extends RowData>({
           </Button>
         )}
       </div>
-      <Link href="/admin/widgets/create">
+      {canManage && <Link href="/admin/widgets/create">
         <Button role="button">
           <PlusCircle data-icon="inline-start" />
           New widget
         </Button>
-      </Link>
+      </Link>}
     </div>
   );
 }
