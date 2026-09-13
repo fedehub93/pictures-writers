@@ -22,4 +22,11 @@ describe("authorization policy", () => {
       "forms.manage",
     ]);
   });
+
+  it("uses publish access for post scheduling but manage access for mail scheduling", () => {
+    expect(getProcedurePermissions("posts.schedule")).toEqual(["posts.publish"]);
+    expect(getProcedurePermissions("singleSends.schedule")).toEqual([
+      "single-sends.manage",
+    ]);
+  });
 });

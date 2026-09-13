@@ -113,7 +113,10 @@ export const getProcedurePermission = (path: string): string => {
   if (READ_OPERATIONS.has(operation) || operation.startsWith("get")) {
     return `${area}.read`;
   }
-  if (["publish", "unpublish", "schedule", "reschedule", "cancelSchedule"].includes(operation)) {
+  if (
+    ["publish", "unpublish"].includes(operation) ||
+    (area === "posts" && ["schedule", "reschedule", "cancelSchedule"].includes(operation))
+  ) {
     return `${area}.publish`;
   }
   if (operation.startsWith("create")) {
@@ -134,7 +137,9 @@ export const getProcedurePermissions = (path: string) => {
   const [rawArea] = path.split(".");
   const area = AREA_ALIASES[rawArea] ?? rawArea;
 
-  return required.endsWith(".read") || required.endsWith(".publish")
-    ? [required]
-    : [required, `${area}.manage`];
+  return [...new Set(
+    required.endsWith(".read") || required.endsWith(".publish")
+      ? [required]
+      : [required, `${area}.manage`],
+  )];
 };
