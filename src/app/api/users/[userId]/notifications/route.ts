@@ -4,6 +4,7 @@ import { Notification } from "@/generated/prisma";
 
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
+import { PERMISSIONS } from "@/shared/lib/authorization";
 
 const NOTIFICATION_BATCH = 5;
 
@@ -13,7 +14,7 @@ export async function GET(
 ) {
   try {
     const params = await props.params;
-    const user = await authAdmin();
+    const user = await authAdmin(PERMISSIONS.USERS_READ);
 
     const { userId } = params;
 
@@ -43,8 +44,6 @@ export async function GET(
           createdAt: "desc",
         },
       });
-
-      let nextCursor = null;
 
       if (notifications.length === NOTIFICATION_BATCH) {
         nextCursor = notifications[NOTIFICATION_BATCH - 1].id;

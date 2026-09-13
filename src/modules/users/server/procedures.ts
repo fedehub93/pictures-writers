@@ -94,7 +94,7 @@ export const usersRouter = createTRPCRouter({
       ]);
       return { users, total, page: input.page, pageSize: input.pageSize, roles };
     }),
-  update: permissionProcedure(PERMISSIONS.USERS_MANAGE)
+  update: permissionProcedure(PERMISSIONS.USERS_UPDATE)
     .input(updateUserSchema)
     .mutation(async ({ input, ctx }) => {
       return db.$transaction(async (transaction) => {
@@ -121,7 +121,7 @@ export const usersRouter = createTRPCRouter({
         return updated;
       }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
     }),
-  updateStatus: permissionProcedure(PERMISSIONS.USERS_MANAGE)
+  updateStatus: permissionProcedure(PERMISSIONS.USERS_UPDATE)
     .input(updateStatusSchema)
     .mutation(async ({ input, ctx }) => {
       return db.$transaction(async (transaction) => {
@@ -159,7 +159,7 @@ export const usersRouter = createTRPCRouter({
       include: { actor: { select: { id: true, name: true, firstName: true, lastName: true, email: true } } },
       orderBy: { createdAt: "desc" },
     })),
-  createInvitation: permissionProcedure(PERMISSIONS.USERS_MANAGE)
+  createInvitation: permissionProcedure(PERMISSIONS.USERS_CREATE)
     .input(createInvitationSchema)
     .mutation(async ({ input, ctx }) => {
       const role = await getActiveRole(db, input.roleId);

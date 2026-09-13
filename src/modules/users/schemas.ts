@@ -21,6 +21,25 @@ export const updateUserSchema = z.object({
   roleId: z.string().uuid(),
 });
 
+const legacyUserFieldsSchema = z.object({
+  name: z.string().trim().max(200).nullable().optional(),
+  firstName: z.string().trim().max(100).nullable().optional(),
+  lastName: z.string().trim().max(100).nullable().optional(),
+  email: z.email().nullable().optional(),
+  image: z.string().trim().max(2048).nullable().optional(),
+  imageUrl: z.string().trim().max(2048).nullable().optional(),
+  bio: z.string().trim().max(2000).nullable().optional(),
+});
+
+export const legacyUserCreateSchema = legacyUserFieldsSchema.refine(
+  ({ name, firstName, lastName, email }) =>
+    [name, firstName, lastName, email].some((value) =>
+      typeof value === "string" ? value.trim().length > 0 : value !== null && value !== undefined,
+    ),
+  "At least one identity field is required",
+);
+export const legacyUserUpdateSchema = legacyUserFieldsSchema;
+
 export const updateStatusSchema = z.object({
   id: z.string().uuid(),
   accountStatus: z.enum(["ACTIVE", "SUSPENDED"]),

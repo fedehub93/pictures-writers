@@ -1,7 +1,11 @@
 import "server-only";
 
 import { db } from "@/shared/lib/db";
-import { hasPermission, type PermissionKey } from "./permissions";
+import {
+  getPermissionAlternatives,
+  hasPermission,
+  type PermissionKey,
+} from "./permissions";
 
 export { hasPermission as can, PERMISSIONS } from "./permissions";
 export type { PermissionKey } from "./permissions";
@@ -42,3 +46,20 @@ export const getAuthorizedUser = async (
 
   return { ...user, permissionKeys };
 };
+
+export const getAuthorizedUserForPermissions = async (
+  userId: string,
+  requiredPermissions: readonly PermissionKey[],
+) => {
+  const user = await getAuthorizedUser(userId);
+  if (!user || !requiredPermissions.some((permission) => hasPermission(user.permissionKeys, permission))) {
+    return null;
+  }
+
+  return user;
+};
+
+export const getAuthorizedUserForProcedure = async (
+  userId: string,
+  permission: PermissionKey,
+) => getAuthorizedUserForPermissions(userId, getPermissionAlternatives(permission));

@@ -134,12 +134,12 @@ export const getProcedurePermission = (path: string): string => {
 
 export const getProcedurePermissions = (path: string) => {
   const required = getProcedurePermission(path);
-  const [rawArea] = path.split(".");
-  const area = AREA_ALIASES[rawArea] ?? rawArea;
+  return getPermissionAlternatives(required);
+};
 
-  return [...new Set(
-    required.endsWith(".read") || required.endsWith(".publish")
-      ? [required]
-      : [required, `${area}.manage`],
-  )];
+export const getPermissionAlternatives = (permission: PermissionKey) => {
+  const [area, action] = permission.split(".");
+  return action === "read" || action === "publish"
+    ? [permission]
+    : [...new Set([permission, `${area}.manage`])];
 };

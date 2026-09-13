@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import { can } from "@/shared/lib/authorization";
-import { getProcedurePermissions } from "@/shared/lib/permissions";
+import {
+  getPermissionAlternatives,
+  getProcedurePermissions,
+} from "@/shared/lib/permissions";
 
 describe("authorization policy", () => {
   it("grants a permission present on the role", () => {
@@ -27,6 +30,22 @@ describe("authorization policy", () => {
     expect(getProcedurePermissions("posts.schedule")).toEqual(["posts.publish"]);
     expect(getProcedurePermissions("singleSends.schedule")).toEqual([
       "single-sends.manage",
+    ]);
+  });
+
+  it("uses the area manage permission as a fallback for mutations", () => {
+    expect(getProcedurePermissions("users.update")).toEqual([
+      "users.update",
+      "users.manage",
+    ]);
+    expect(getProcedurePermissions("users.getMany")).toEqual(["users.read"]);
+  });
+
+  it("keeps read access exact while allowing manage as a mutation fallback", () => {
+    expect(getPermissionAlternatives("users.read")).toEqual(["users.read"]);
+    expect(getPermissionAlternatives("users.update")).toEqual([
+      "users.update",
+      "users.manage",
     ]);
   });
 });

@@ -4,7 +4,10 @@ import superjson from "superjson";
 
 import { initTRPC, TRPCError } from "@trpc/server";
 import { auth } from "@/shared/lib/auth";
-import { getAuthorizedUser } from "@/shared/lib/authorization";
+import {
+  getAuthorizedUser,
+  getAuthorizedUserForProcedure,
+} from "@/shared/lib/authorization";
 import { getProcedurePermissions } from "@/shared/lib/permissions";
 export const createTRPCContext = cache(async () => {
   /**
@@ -57,7 +60,7 @@ export const protectedProcedure = authenticatedProcedure.use(
 
 export const permissionProcedure = (permission: string) =>
   authenticatedProcedure.use(async ({ ctx, next }) => {
-    if (!(await getAuthorizedUser(ctx.auth.id, permission))) {
+    if (!(await getAuthorizedUserForProcedure(ctx.auth.id, permission))) {
       throw new TRPCError({ code: "FORBIDDEN", message: "Forbidden" });
     }
 

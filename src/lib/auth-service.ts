@@ -1,7 +1,10 @@
 import { headers } from "next/headers";
-import { getAuthorizedUser, PERMISSIONS } from "@/shared/lib/authorization";
+import {
+  getAuthorizedUserForProcedure,
+  PERMISSIONS,
+} from "@/shared/lib/authorization";
 
-import { auth } from "./auth";
+import { auth } from "@/shared/lib/auth";
 
 export const authAdmin = async (
   permission: string = PERMISSIONS.DASHBOARD_READ,
@@ -14,5 +17,5 @@ export const authAdmin = async (
     return null;
   }
 
-  return getAuthorizedUser(session.id, permission);
+  return getAuthorizedUserForProcedure(session.id, permission);
 };
