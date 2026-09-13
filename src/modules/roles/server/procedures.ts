@@ -75,6 +75,9 @@ const ensureAdminInvariant = (
   }
 };
 
+const hasRequiredAdminPermissions = (keys: string[]) =>
+  REQUIRED_ADMIN_PERMISSIONS.every((required) => keys.includes(required));
+
 export const rolesRouter = createTRPCRouter({
   getMany: permissionProcedure(PERMISSIONS.ROLES_READ).query(() =>
     db.role.findMany({
@@ -107,7 +110,10 @@ export const rolesRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       const role = await db.role.findUnique({
         where: { id: input.id },
-        include: { _count: { select: { users: true } } },
+        include: {
+          _count: { select: { users: true } },
+          permissions: { include: { permission: { select: { key: true } } } },
+        },
       });
       if (!role) throw new TRPCError({ code: "NOT_FOUND", message: "Role not found" });
       if (!input.isActive && role._count.users > 0) {
@@ -118,6 +124,18 @@ export const rolesRouter = createTRPCRouter({
       const catalog = await db.permission.findMany({ select: { id: true, key: true } });
       if (role.key === ADMIN_ROLE_KEY) {
         ensureAdminInvariant(input.isActive, input.permissionIds, catalog);
+      } else if (
+        role.isActive &&
+        hasRequiredAdminPermissions(role.permissions.map(({ permission }) => permission.key)) &&
+        (!input.isActive || !hasRequiredAdminPermissions(input.permissionIds.map((id) => catalog.find((permission) => permission.id === id)?.key ?? "")))
+      ) {
+        const otherQualifiedAdministrators = await db.user.findMany({
+          where: { accountStatus: "ACTIVE", roleId: { not: role.id }, roleDefinition: { is: { isActive: true } } },
+          select: { roleDefinition: { select: { permissions: { select: { permission: { select: { key: true } } } } } } },
+        });
+        if (!otherQualifiedAdministrators.some((user) => hasRequiredAdminPermissions(user.roleDefinition?.permissions.map(({ permission }) => permission.key) ?? []))) {
+          throw new TRPCError({ code: "CONFLICT", message: "The last active administrator must retain management permissions" });
+        }
       }
       await db.$transaction(async (transaction) => {
         await transaction.role.update({ where: { id: role.id }, data: { name: input.name, isActive: input.isActive } });
