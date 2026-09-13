@@ -15,6 +15,9 @@ export async function POST(req: NextRequest) {
       data: {
         ...values,
         role: "USER",
+        roleDefinition: {
+          connect: { key: "USER" },
+        },
       },
     });
 

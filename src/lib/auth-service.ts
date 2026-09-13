@@ -1,6 +1,5 @@
 import { headers } from "next/headers";
-import { UserRole } from "@/generated/prisma";
-import { db } from "@/lib/db";
+import { getAuthorizedUser, PERMISSIONS } from "@/shared/lib/authorization";
 
 import { auth } from "./auth";
 
@@ -13,17 +12,5 @@ export const authAdmin = async () => {
     return null;
   }
 
-  const user = await db.user.findUnique({
-    where: {
-      id: session.id,
-      role: UserRole.ADMIN,
-    },
-  });
-
-
-  if (!user) {
-    return null;
-  }
-
-  return user;
+  return getAuthorizedUser(session.id, PERMISSIONS.DASHBOARD_READ);
 };

@@ -12,6 +12,30 @@ export const auth = betterAuth({
     enabled: true,
     autoSignIn: true,
   },
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user, _context) => {
+          await db.user.update({
+            where: { id: user.id },
+            data: { roleDefinition: { connect: { key: "USER" } } },
+          });
+        },
+      },
+    },
+    session: {
+      create: {
+        before: async (session, _context) => {
+          const user = await db.user.findUnique({
+            where: { id: session.userId },
+            select: { accountStatus: true },
+          });
+
+          return user?.accountStatus === "ACTIVE";
+        },
+      },
+    },
+  },
   plugins: [
     customSession(async ({ user }) => {
       const dbUser = await db.user.findUniqueOrThrow({

@@ -1,15 +1,18 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { UserRole } from "@/generated/prisma";
 import { auth } from "./auth";
+import {
+  getAuthorizedUser,
+  PERMISSIONS,
+} from "@/shared/lib/authorization";
 
 export const requireAuth = async () => {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
 
-  if (!session) {
+  if (!session || !(await getAuthorizedUser(session.id))) {
     redirect("/sign-in");
   }
 
@@ -21,10 +24,7 @@ export const requireAdminAuth = async () => {
     headers: await headers(),
   });
 
-  if (
-    !session ||
-    (session.role !== UserRole.ADMIN && session.role !== UserRole.EDITOR)
-  ) {
+  if (!session || !(await getAuthorizedUser(session.id, PERMISSIONS.DASHBOARD_READ))) {
     redirect("/sign-in");
   }
 

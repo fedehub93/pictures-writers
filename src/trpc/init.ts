@@ -4,6 +4,7 @@ import superjson from "superjson";
 
 import { initTRPC, TRPCError } from "@trpc/server";
 import { auth } from "@/shared/lib/auth";
+import { getAuthorizedUser, PERMISSIONS } from "@/shared/lib/authorization";
 export const createTRPCContext = cache(async () => {
   /**
    * @see: https://trpc.io/docs/server/context
@@ -29,7 +30,7 @@ export const protectedProcedure = baseProcedure.use(async ({ ctx, next }) => {
     headers: await headers(),
   });
 
-  if (!session) {
+  if (!session || !(await getAuthorizedUser(session.id, PERMISSIONS.DASHBOARD_READ))) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
       message: "Unauthorized",
