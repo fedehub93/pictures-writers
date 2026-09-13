@@ -25,3 +25,16 @@ export const updateStatusSchema = z.object({
   id: z.string().uuid(),
   accountStatus: z.enum(["ACTIVE", "SUSPENDED"]),
 });
+
+export const createInvitationSchema = z.object({
+  email: z.email().transform((email) => email.toLowerCase()),
+  roleId: z.string().uuid(),
+});
+
+export const invitationIdSchema = z.object({ id: z.string().uuid() });
+
+export const resendInvitationSchema = invitationIdSchema;
+
+export const requestPasswordResetSchema = z.object({
+  email: z.email().transform((email) => email.toLowerCase()),
+});

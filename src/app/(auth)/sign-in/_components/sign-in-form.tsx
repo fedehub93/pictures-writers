@@ -115,6 +115,9 @@ export function LoginForm() {
                   <Button type="submit" className="w-full" disabled={isPending}>
                     Login
                   </Button>
+                  <Link href="/forgot-password/" className="text-center text-sm text-muted-foreground underline-offset-4 hover:underline">
+                    Forgot your password?
+                  </Link>
                 </div>
               </div>
             </form>
