@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 
-import { authAdmin } from "@/lib/auth-service";
+import { auth } from "@/shared/lib/auth";
+import { getAuthorizedUser } from "@/shared/lib/authorization";
 import { db } from "@/lib/db";
-import { PERMISSIONS } from "@/shared/lib/authorization";
+import { headers } from "next/headers";
 
 export async function PATCH(
   _req: Request,
@@ -10,7 +11,10 @@ export async function PATCH(
 ) {
   const params = await props.params;
   try {
-    const user = await authAdmin(PERMISSIONS.USERS_READ);
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    const user = session ? await getAuthorizedUser(session.id) : null;
     const { userId, notificationId } = params;
 
     if (!user || user.id !== userId) {

@@ -267,10 +267,10 @@ export function AppSidebar({ permissionKeys, ...props }: React.ComponentProps<ty
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-         <NavMain label="Blog" items={visibleData.navMain} />
-         <NavMain label="Shop" items={visibleData.shop} />
-         <NavMain label="Tools" items={visibleData.tools} />
-         <NavMain label="Others" items={visibleData.others} />
+         {visibleData.navMain.length > 0 && <NavMain label="Blog" items={visibleData.navMain} />}
+         {visibleData.shop.length > 0 && <NavMain label="Shop" items={visibleData.shop} />}
+         {visibleData.tools.length > 0 && <NavMain label="Tools" items={visibleData.tools} />}
+         {visibleData.others.length > 0 && <NavMain label="Others" items={visibleData.others} />}
       </SidebarContent>
       <SidebarRail />
     </Sidebar>

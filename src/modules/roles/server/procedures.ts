@@ -15,6 +15,7 @@ import {
 import {
   createRoleSchema,
   deleteRoleSchema,
+  roleListSchema,
   updateRoleSchema,
 } from "../schemas";
 
@@ -80,12 +81,25 @@ const hasRequiredAdminPermissions = (keys: string[]) =>
   REQUIRED_ADMIN_PERMISSIONS.every((required) => keys.includes(required));
 
 export const rolesRouter = createTRPCRouter({
-  getMany: permissionProcedure(PERMISSIONS.ROLES_READ).query(() =>
-    db.role.findMany({
-      include: roleInclude,
-      orderBy: [{ isSystem: "desc" }, { name: "asc" }],
+  getMany: permissionProcedure(PERMISSIONS.ROLES_READ)
+    .input(roleListSchema)
+    .query(async ({ input }) => {
+      const [roles, total] = await Promise.all([
+        db.role.findMany({
+          include: roleInclude,
+          orderBy: [{ isSystem: "desc" }, { name: "asc" }],
+          skip: (input.page - 1) * input.pageSize,
+          take: input.pageSize,
+        }),
+        db.role.count(),
+      ]);
+      return {
+        roles,
+        total,
+        page: input.page,
+        pageSize: input.pageSize,
+      };
     }),
-  ),
   getCatalog: permissionProcedure(PERMISSIONS.ROLES_READ).query(() =>
     db.permission.findMany({ orderBy: [{ area: "asc" }, { action: "asc" }] }),
   ),
@@ -130,12 +144,17 @@ export const rolesRouter = createTRPCRouter({
       await throwIfDuplicateName(input.name, role.id);
       await ensurePermissionIdsExist(input.permissionIds);
       const catalog = await db.permission.findMany({ select: { id: true, key: true } });
-      if (role.key === ADMIN_ROLE_KEY) {
-        ensureAdminInvariant(input.isActive, input.permissionIds, catalog);
+      const isAdmin = role.key === ADMIN_ROLE_KEY;
+      const effectivePermissionIds = isAdmin
+        ? catalog.map((permission) => permission.id)
+        : input.permissionIds;
+      const effectiveIsActive = isAdmin ? true : input.isActive;
+      if (isAdmin) {
+        ensureAdminInvariant(effectiveIsActive, effectivePermissionIds, catalog);
       } else if (
         role.isActive &&
         hasRequiredAdminPermissions(role.permissions.map(({ permission }) => permission.key)) &&
-        (!input.isActive || !hasRequiredAdminPermissions(input.permissionIds.map((id) => catalog.find((permission) => permission.id === id)?.key ?? "")))
+        (!effectiveIsActive || !hasRequiredAdminPermissions(effectivePermissionIds.map((id) => catalog.find((permission) => permission.id === id)?.key ?? "")))
       ) {
         const otherQualifiedAdministrators = await db.user.findMany({
           where: { accountStatus: "ACTIVE", roleId: { not: role.id }, roleDefinition: { is: { isActive: true } } },
@@ -146,10 +165,10 @@ export const rolesRouter = createTRPCRouter({
         }
       }
       const updated = await db.$transaction(async (transaction) => {
-        await transaction.role.update({ where: { id: role.id }, data: { name: input.name, isActive: input.isActive } });
+        await transaction.role.update({ where: { id: role.id }, data: { name: input.name, isActive: effectiveIsActive } });
         await transaction.rolePermission.deleteMany({ where: { roleId: role.id } });
-        if (input.permissionIds.length) {
-          await transaction.rolePermission.createMany({ data: input.permissionIds.map((permissionId) => ({ roleId: role.id, permissionId })) });
+        if (effectivePermissionIds.length) {
+          await transaction.rolePermission.createMany({ data: effectivePermissionIds.map((permissionId) => ({ roleId: role.id, permissionId })) });
         }
         const result = await transaction.role.findUniqueOrThrow({ where: { id: role.id }, include: roleInclude });
         await recordAdministrativeActivity(transaction, {

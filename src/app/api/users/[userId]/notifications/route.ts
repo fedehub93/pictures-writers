@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 
 import { Notification } from "@/generated/prisma";
 
-import { authAdmin } from "@/lib/auth-service";
+import { auth } from "@/shared/lib/auth";
+import { getAuthorizedUser } from "@/shared/lib/authorization";
 import { db } from "@/lib/db";
-import { PERMISSIONS } from "@/shared/lib/authorization";
+import { headers } from "next/headers";
 
 const NOTIFICATION_BATCH = 5;
 
@@ -14,7 +15,10 @@ export async function GET(
 ) {
   try {
     const params = await props.params;
-    const user = await authAdmin(PERMISSIONS.USERS_READ);
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    const user = session ? await getAuthorizedUser(session.id) : null;
 
     const { userId } = params;
 

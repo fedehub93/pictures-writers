@@ -20,16 +20,11 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
-        before: async (user, _context) => {
-          const invitation = await db.invitation.findFirst({ where: { email: user.email, status: { not: "ACCEPTED" } }, select: { id: true } });
+before: async (user, _context) => {
+          const invitation = await db.invitation.findFirst({ where: { email: user.email, status: "PENDING", expiresAt: { gt: new Date() } }, select: { id: true } });
           return invitation ? false : undefined;
         },
-        after: async (user, _context) => {
-          await db.user.update({
-            where: { id: user.id },
-            data: { roleDefinition: { connect: { key: "USER" } } },
-          });
-        },
+        after: async (_user, _context) => {},
       },
     },
     session: {

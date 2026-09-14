@@ -44,6 +44,8 @@ export const PERMISSIONS = {
   PRODUCT_CATEGORIES_UPDATE: "product-categories.update",
   PRODUCT_CATEGORIES_DELETE: "product-categories.delete",
   SUBMISSIONS_READ: "submissions.read",
+  SUBMISSIONS_CREATE: "submissions.create",
+  SUBMISSIONS_UPDATE: "submissions.update",
   SUBMISSIONS_DELETE: "submissions.delete",
   COVERAGE_READ: "coverage.read",
   COVERAGE_MANAGE: "coverage.manage",

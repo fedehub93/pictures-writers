@@ -25,7 +25,7 @@ export const sendSendgridEmail = async ({
 
   if (!settings || !settings.emailApiKey || !settings.emailSender) return false;
 
-  if (!html) return;
+  if (!html) return false;
 
   sgMail.setApiKey(settings.emailApiKey);
   await sgMail.send({
@@ -44,6 +44,8 @@ export const sendSendgridEmail = async ({
       type,
     },
   });
+
+  return true;
 };
 
 export const sendResendEmail = async ({
@@ -59,7 +61,7 @@ export const sendResendEmail = async ({
 
   if (!settings || !settings.emailApiKey || !settings.emailSender) return false;
 
-  if (!html) return;
+  if (!html) return false;
 
   const resend = new Resend(process.env.NEXT_RESEND_KEY);
 
@@ -79,6 +81,8 @@ export const sendResendEmail = async ({
       type,
     },
   });
+
+  return true;
 };
 
 export const sendEmail = async (emailData: GenericEmail) => {

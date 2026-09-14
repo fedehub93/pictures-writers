@@ -23,6 +23,7 @@ interface FileUploadProps {
   endpoint: keyof typeof ourFileRouter;
   setIsFocused?: Dispatch<SetStateAction<boolean>>;
   size?: "small" | "medium" | "large";
+  className?: string;
 }
 
 export const FileUpload = ({
@@ -31,6 +32,7 @@ export const FileUpload = ({
   endpoint,
   setIsFocused,
   size = "large",
+  className,
 }: FileUploadProps) => {
   const fileType = value?.split(".").pop();
   if (value && fileType !== "pdf") {
@@ -38,6 +40,7 @@ export const FileUpload = ({
       <div
         className={cn(
           "relative rounded-md overflow-hidden",
+          className,
           size === "small" && "w-40 h-auto aspect-square",
           size === "large" && "w-96 h-72 aspect-video",
         )}
@@ -48,7 +51,7 @@ export const FileUpload = ({
           className="bg-rose-500 text-white p-1 rounded-full absolute top-0 right-0 shadow-2xs"
           type="button"
         >
-          <X className="h-4 w-4" />
+          <X className="size-4" />
         </button>
       </div>
     );
@@ -71,7 +74,7 @@ export const FileUpload = ({
           className="bg-rose-500 text-white p-1 rounded-full absolute -top-2 -right-2 shadow-2xs"
           type="button"
         >
-          <X className="h-4 w-4" />
+          <X className="size-4" />
         </button>
       </div>
     );

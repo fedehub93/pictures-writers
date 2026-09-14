@@ -27,7 +27,7 @@ export const formSubmissionsRouter = createTRPCRouter({
   update: protectedProcedure
     .input(formSubmissionUpdateSchema)
     .mutation(async ({ input }) => {
-      const updatedSubmission = await db.form.update({
+      const updatedSubmission = await db.formSubmission.update({
         where: { id: input.id },
         data: { ...input },
       });
