@@ -155,6 +155,24 @@ describe("createNewVersion – FAQ handling", () => {
       expect(newFaqs[1].question).toBe("Question 2");
       expect(newFaqs[1].postId).toBe(newPost.id);
     });
+
+    it("clears FAQ rows when input.faqs is an empty array", async () => {
+      const post = await createPost({ status: ContentStatus.DRAFT });
+      const rootId = post.rootId;
+
+      await publishPost({ postId: post.id, rootId, now: new Date("2025-01-01T00:00:00.000Z") });
+      await createFaqs(post.id, 2);
+
+      const newPost = await createNewVersion({ rootId, faqs: [] });
+
+      expect(newPost.status).toBe(ContentStatus.CHANGED);
+
+      const newFaqs = await db.faq.findMany({ where: { postId: newPost.id } });
+      expect(newFaqs).toHaveLength(0);
+
+      const publishedFaqs = await db.faq.findMany({ where: { postId: post.id } });
+      expect(publishedFaqs).toHaveLength(2);
+    });
   });
 
   describe("Branch B – draft/scheduled → existing", () => {
@@ -203,6 +221,20 @@ describe("createNewVersion – FAQ handling", () => {
       expect(faqs).toHaveLength(2);
       expect(faqs[0].question).toBe("Question 1");
       expect(faqs[1].question).toBe("Question 2");
+    });
+
+    it("clears FAQ rows when input.faqs is an empty array", async () => {
+      const post = await createPost({ status: ContentStatus.DRAFT });
+      await createFaqs(post.id, 2);
+
+      await createNewVersion({
+        id: post.id,
+        rootId: post.rootId,
+        faqs: [],
+      });
+
+      const faqs = await db.faq.findMany({ where: { postId: post.id } });
+      expect(faqs).toHaveLength(0);
     });
   });
 

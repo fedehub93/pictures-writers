@@ -48,6 +48,7 @@ import { CategoriesForm } from "../components/categories-form";
 import { TagsForm } from "../components/tags-form";
 import { ImageForm } from "../components/image-form";
 import { DescriptionForm } from "../components/description-form";
+import { FaqForm } from "../components/faq-form";
 import { PostOutline } from "../components/post-outline";
 import { SchedulePostDialog } from "../components/schedule-post-dialog";
 
@@ -360,6 +361,7 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
                 initialData={post}
               />
               <TagsForm postId={post.id} rootId={rootId} initialData={post} />
+              <FaqForm postId={post.id} rootId={rootId} initialData={post} />
 
               <SeoForm id={post.id} rootId={rootId} initialData={post.seo} />
             </div>
