@@ -21,7 +21,7 @@ export async function getHeadMetadata(): Promise<Metadata | null> {
     },
     description: seo.description,
     openGraph: {
-      url: `${siteUrl}/"`,
+      url: `${siteUrl}/`,
       type: "website",
     },
   };

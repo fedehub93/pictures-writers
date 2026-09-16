@@ -5,6 +5,7 @@ import { JsonLd } from "./json-ld";
 
 export interface BlogPostingJsonLdProps {
   url: string;
+  siteUrl: string;
   headline?: string | string[];
   title?: string;
   keywords?: string | string[];
@@ -21,6 +22,7 @@ export interface BlogPostingJsonLdProps {
 
 export const BlogPostingJsonLd: FC<BlogPostingJsonLdProps> = ({
   url,
+  siteUrl,
   headline,
   title,
   imageCover,
@@ -48,24 +50,24 @@ export const BlogPostingJsonLd: FC<BlogPostingJsonLdProps> = ({
     thumbnailUrl: imageCover ? imageCover.url : undefined,
     image: [...images],
     genre: "Cinema, Sceneggiatura",
-    //@ts-ignore
+    //@ts-expect-error schema-dts Video type differs
     video: videos && videos.length > 0 ? [...videos] : undefined,
     author: authors.map((a) => ({
       "@type": "Person",
       name: `${a.firstName} ${a.lastName}`,
-      url: "https://pictureswriters.com/about/",
+      url: `${siteUrl}/about/`,
     })),
     editor: authors.map((a) => ({
       "@type": "Person",
       name: `${a.firstName} ${a.lastName}`,
-      url: "https://pictureswriters.com/about/",
+      url: `${siteUrl}/about/`,
     })),
     publisher: {
       "@type": "Organization",
       name: "Pictures Writers",
       logo: {
         "@type": "ImageObject",
-        url: "https://pictureswriters.com/logo.png",
+        url: `${siteUrl}/logo.png`,
       },
     },
     isPartOf: {

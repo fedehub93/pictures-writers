@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { ContentStatus, ProductType } from "@/generated/prisma";
 
 import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
+import { BreadcrumbListJsonLd } from "@/app/(home)/_components/seo/json-ld/breadcrumb-list";
 import { Breadcrumbs } from "@/app/(home)/_components/breadcrumbs";
 
 import { getSettings } from "@/data/settings";
@@ -95,6 +96,8 @@ export async function generateMetadata(
 const ShopCategoryPage = async (props: PageProps<"/shop/[categorySlug]">) => {
   const { categorySlug } = await props.params;
 
+  const { siteUrl, siteShopUrl } = await getSettings();
+
   const category = await getPublishedProductCategoryBySlug({
     slug: categorySlug,
   });
@@ -136,6 +139,16 @@ const ShopCategoryPage = async (props: PageProps<"/shop/[categorySlug]">) => {
 
   return (
     <div className="bg-background">
+      <BreadcrumbListJsonLd
+        items={[
+          { title: "Home", href: `${siteUrl}/` },
+          { title: "Shop", href: `${siteShopUrl}/` },
+          {
+            title: category.title,
+            href: `${siteShopUrl}/${category.slug}/`,
+          },
+        ]}
+      />
       <div className="py-8 mx-auto grid w-full max-w-6xl grid-cols-1 px-4 md:grid-cols-2 space-y-6 gap-x-12">
         <Breadcrumbs
           items={[

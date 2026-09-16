@@ -9,6 +9,8 @@ import {
 
 import { getProductMetadataBySlug } from "@/app/(home)/_components/seo/content-metadata";
 import { ProductJsonLd } from "@/app/(home)/_components/seo/json-ld/product";
+import { BreadcrumbListJsonLd } from "@/app/(home)/_components/seo/json-ld/breadcrumb-list";
+import { FaqPageJsonLd } from "@/app/(home)/_components/seo/json-ld/faq-page";
 import { Breadcrumbs } from "@/app/(home)/_components/breadcrumbs";
 
 import { getSettings } from "@/data/settings";
@@ -17,8 +19,6 @@ import {
   getPublishedProductBySlug,
   getPublishedProductsBuilding,
 } from "@/data/product";
-
-import { FaqSection } from "@/shared/components/faq-section";
 
 import { ProductGallery } from "./_components/product-gallery";
 import { EbookInfo } from "./_components/ebook-info";
@@ -56,7 +56,7 @@ export async function generateMetadata(
 const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
   const { productSlug } = await props.params;
 
-  const { siteShopUrl } = await getSettings();
+  const { siteUrl, siteShopUrl } = await getSettings();
   const product = await getPublishedProductBySlug(productSlug);
 
   if (!product || !product.category) {
@@ -76,7 +76,7 @@ const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
         offers={{
           type: "Offer",
           priceCurrency: "EUR",
-          price: product.price?.toString()!,
+          price: product.price?.toString() ?? "",
           url: url,
           availability: "https://schema.org/InStock",
         }}
@@ -88,6 +88,18 @@ const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
         dateModified={product.updatedAt.toISOString()}
         url={url}
       />
+      <BreadcrumbListJsonLd
+        items={[
+          { title: "Home", href: `${siteUrl}/` },
+          { title: "Shop", href: `${siteShopUrl}/` },
+          {
+            title: product.category.slug,
+            href: `${siteShopUrl}/${product.category.slug}/`,
+          },
+          { title: product.title, href: url },
+        ]}
+      />
+      <FaqPageJsonLd mainEntity={product.faqs} />
       <div className="mx-auto grid w-full max-w-6xl grid-cols-1 px-4 md:grid-cols-2 space-y-6 gap-x-12">
         <Breadcrumbs
           items={[
@@ -107,7 +119,7 @@ const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
               rootId={product.rootId!}
               title={product.title}
               acquisitionMode={product.acquisitionMode}
-              imageCoverUrl={product.imageCover?.url!}
+              imageCoverUrl={product.imageCover?.url ?? ""}
               price={product.price}
               discountedPrice={product.discountedPrice}
               formats={product.metadata.formats}

@@ -55,7 +55,7 @@ export async function getPageMetadataBySlug(
     alternates: {
       canonical: page.seo.canonicalUrl
         ? page.seo.canonicalUrl
-        : `${siteUrl}/${page.slug}`,
+        : `${siteUrl}/${page.slug}/`,
     },
     openGraph: {
       title: page.seo.ogTwitterTitle || page.seo.title,
@@ -142,7 +142,7 @@ export async function getPostMetadataBySlug(
     alternates: {
       canonical: post.seo.canonicalUrl
         ? post.seo.canonicalUrl
-        : `${siteUrl}/${post.slug}`,
+        : `${siteUrl}/${post.slug}/`,
     },
     openGraph: {
       title: post.seo.ogTwitterTitle || post.seo.title,
@@ -167,7 +167,7 @@ export async function getPostMetadataBySlug(
       card: "summary_large_image",
       title: post.seo.ogTwitterTitle || post.seo.title,
       description: post.seo.ogTwitterDescription || post.seo.description || "",
-      images: [post.imageCover!.url],
+      images: post.imageCover ? [post.imageCover.url] : [],
       creator: authorsString,
     },
   };
@@ -204,7 +204,7 @@ export async function getCategoryMetadataBySlug(
     alternates: {
       canonical: category.seo.canonicalUrl
         ? category.seo.canonicalUrl
-        : `${siteUrl}/blog/${category.slug}`,
+        : `${siteUrl}/blog/${category.slug}/`,
     },
     openGraph: {
       title: category.seo.ogTwitterTitle || category.seo.title,
@@ -257,7 +257,7 @@ export async function getTagMetdataBySlug(
     alternates: {
       canonical: tag.seo.canonicalUrl
         ? tag.seo.canonicalUrl
-        : `${siteUrl}/blog/${tag.slug}`,
+        : `${siteUrl}/blog/${tag.slug}/`,
     },
     openGraph: {
       title: tag.seo.ogTwitterTitle || tag.seo.title,
@@ -315,7 +315,7 @@ export async function getProductMetadataBySlug(
     alternates: {
       canonical: product.seo.canonicalUrl
         ? product.seo.canonicalUrl
-        : `${siteShopUrl}/${product.category?.slug}/${product.slug}`,
+        : `${siteShopUrl}/${product.category?.slug}/${product.slug}/`,
     },
     openGraph: {
       title: product.seo.ogTwitterTitle || product.seo.title,

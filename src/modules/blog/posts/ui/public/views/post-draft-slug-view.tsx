@@ -78,6 +78,7 @@ export const PostDraftSlugView = async ({ slug }: PostDraftSlugViewProps) => {
         datePublished={post.firstPublishedAt.toISOString()}
         dateModified={post.publishedAt.toISOString()}
         url={`${siteUrl}/${post.slug}`}
+        siteUrl={siteUrl!}
       />
       <PostTemplate post={post} />
       {isValidWidgetPopup && product && (
@@ -85,7 +86,7 @@ export const PostDraftSlugView = async ({ slug }: PostDraftSlugViewProps) => {
           rootId={product.rootId!}
           title={product.title}
           slug={product.slug}
-          imageCoverUrl={product.imageCover?.url!}
+          imageCoverUrl={product.imageCover?.url ?? ""}
           label={widgetPopup.metadata.label}
           actionType={widgetPopup.metadata.actionType}
           autoOpenDelay={widgetPopup.metadata.autoOpenDelay}

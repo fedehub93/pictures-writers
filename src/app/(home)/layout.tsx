@@ -20,6 +20,7 @@ import { QueryProvider } from "@/shared/providers/query-provider";
 import { AppScripts } from "@/shared/components/scripts";
 
 import { OrganizationJsonLd } from "./_components/seo/json-ld/organization";
+import { WebSiteJsonLd } from "./_components/seo/json-ld/website";
 import { BottomBanner } from "./_components/bottom-banner";
 
 const figtree = Figtree({ subsets: ["latin"] });
@@ -44,6 +45,9 @@ export default async function RootLayout({
 }>) {
   const settings = await getSettings();
 
+  const socialUrls = settings.socials
+    .filter((s): s is typeof s & { url: string } => !!s.url)
+    .map((s) => s.url);
   return (
     <html lang="it" suppressHydrationWarning>
       <HolyLoader color="var(--primary)" />
@@ -52,6 +56,12 @@ export default async function RootLayout({
           name={settings.siteName!}
           url={`${settings.siteUrl!}/`}
           logo={`${settings.siteUrl}${settings.logoUrl}`}
+          sameAs={socialUrls}
+        />
+        <WebSiteJsonLd
+          name={settings.siteName!}
+          url={`${settings.siteUrl!}/`}
+          description={settings.seo?.description || undefined}
         />
         <ToastProvider />
         <QueryProvider>

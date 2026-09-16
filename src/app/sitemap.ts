@@ -33,28 +33,6 @@ const generateBlogPostsSitemap = async () => {
   return mappedPosts;
 };
 
-const generateBlogPagesSitemap = async () => {
-  const { siteUrl } = await getSettings();
-
-  const totalPosts = await db.post.count({
-    where: { status: ContentStatus.PUBLISHED, isLatest: true },
-  });
-  const pages = Math.ceil(totalPosts / 10);
-
-  const blogs = Array.from({ length: pages }, (_, index) => ({
-    page: index + 1,
-  })).filter((blog) => blog.page > 1);
-
-  const mappedBlogPages: MetadataRoute.Sitemap = blogs.map((blog) => ({
-    url: `${siteUrl}/blog/${blog.page}/`,
-    lastModified: new Date(),
-    changeFrequency: "monthly",
-    priority: 0.5,
-  }));
-
-  return mappedBlogPages;
-};
-
 const generateBlogCategoriesSitemap = async () => {
   const { siteUrl } = await getSettings();
 
@@ -119,7 +97,7 @@ const generateProductsSitemap = async () => {
       status: ContentStatus.PUBLISHED,
       isLatest: true,
       type: {
-        in: [ProductType.EBOOK, ProductType.WEBINAR],
+        in: [ProductType.EBOOK, ProductType.WEBINAR, ProductType.SERVICE],
       },
     },
     select: {
@@ -162,7 +140,7 @@ const generateProductCategoriesSitemap = async () => {
       isLatest: true,
       products: {
         some: {
-          type: { equals: ProductType.EBOOK },
+          type: { in: [ProductType.EBOOK, ProductType.SERVICE] },
         },
       },
     },
@@ -188,7 +166,6 @@ const generateProductCategoriesSitemap = async () => {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const { siteUrl, siteShopUrl } = await getSettings();
-  const blogPages = await generateBlogPagesSitemap();
   const posts = await generateBlogPostsSitemap();
   const categories = await generateBlogCategoriesSitemap();
   const tags = await generateBlogTagsSitemap();
@@ -241,7 +218,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 0.5,
     },
-    ...blogPages,
     ...posts,
     ...categories,
     ...tags,

@@ -78,6 +78,7 @@ export const PostSlugView = async ({ slug }: PostSlugViewProps) => {
         datePublished={post.firstPublishedAt.toISOString()}
         dateModified={post.publishedAt.toISOString()}
         url={`${siteUrl}/${post.slug}`}
+        siteUrl={siteUrl!}
       />
       <PostTemplate post={post} />
       {isValidWidgetPopup && product && (

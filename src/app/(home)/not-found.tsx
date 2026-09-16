@@ -12,6 +12,14 @@ export async function generateMetadata(): Promise<Metadata | null> {
     ...metadata,
     title: "404: Pictures Writers",
     description: "Pagina 404 di Pictures Writers",
+    robots: {
+      index: false,
+      follow: false,
+      googleBot: {
+        index: false,
+        follow: false,
+      },
+    },
   };
 }
 
