@@ -280,6 +280,17 @@ export const postsRouter = createTRPCRouter({
               sort: "asc",
             },
           },
+          faqs: {
+            select: {
+              id: true,
+              question: true,
+              answer: true,
+              sort: true,
+            },
+            orderBy: {
+              sort: "asc",
+            },
+          },
         },
       });
 

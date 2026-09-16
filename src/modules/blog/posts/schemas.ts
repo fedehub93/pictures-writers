@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { faqItemsSchema } from "@/modules/faq";
 
 export const postInsertSchema = z.object({
   title: z.string().min(1, { error: "Title name is required" }),
@@ -42,6 +43,7 @@ export const postUpdateSchema = postInsertSchema.partial().extend({
       }),
     )
     .optional(),
+  faqs: faqItemsSchema.optional(),
 });
 
 export type PostUpdateValues = z.infer<typeof postUpdateSchema>;

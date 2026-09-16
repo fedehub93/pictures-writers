@@ -12,6 +12,7 @@ export const createNewVersion = async (input: Partial<PostUpdateValues>) => {
       tags: true,
       postCategories: true,
       postAuthors: true,
+      faqs: true,
     },
     orderBy: { createdAt: "desc" },
   });
@@ -25,6 +26,7 @@ export const createNewVersion = async (input: Partial<PostUpdateValues>) => {
     tags: inputTags,
     categories: inputCategories,
     authors: inputAuthors,
+    faqs: inputFaqs,
     ...inputData
   } = input;
 
@@ -40,6 +42,7 @@ export const createNewVersion = async (input: Partial<PostUpdateValues>) => {
       tags,
       postCategories,
       postAuthors,
+      faqs: latestFaqs,
       ...oldPostData
     } = latestPost;
 
@@ -60,6 +63,10 @@ export const createNewVersion = async (input: Partial<PostUpdateValues>) => {
       ? inputAuthors.map((a) => ({ userId: a.id, sort: a.sort })) // Dal form
       : latestPost.postAuthors.map((a) => ({ userId: a.userId, sort: a.sort })); // Dal DB
 
+    const faqsToCreate = inputFaqs
+      ? inputFaqs.map((f) => ({ question: f.question, answer: f.answer, sort: f.sort })) // Dal form
+      : latestFaqs.map((f) => ({ question: f.question, answer: f.answer, sort: f.sort })); // Dal DB
+
     const newPost = await db.post.create({
       data: {
         ...oldPostData,
@@ -75,6 +82,20 @@ export const createNewVersion = async (input: Partial<PostUpdateValues>) => {
         postCategories: { create: categoriesToCreate },
         postAuthors: { create: authorsToCreate },
       },
+    });
+
+    // FAQ: elimino e ricreo le righe contro l'id della nuova versione
+    await db.faq.deleteMany({
+      where: { postId: newPost.id },
+    });
+
+    await db.faq.createMany({
+      data: faqsToCreate.map((f) => ({
+        postId: newPost.id,
+        question: f.question ?? "",
+        answer: f.answer ?? "",
+        sort: f.sort,
+      })),
     });
 
     return newPost;
@@ -107,6 +128,18 @@ export const createNewVersion = async (input: Partial<PostUpdateValues>) => {
         postAuthors: {
           deleteMany: {},
           create: inputAuthors.map((a) => ({ userId: a.id, sort: a.sort })),
+        },
+      }),
+
+      // FAQ (Svuoto la tabella e ricreo gli eventuali record)
+      ...(inputFaqs && {
+        faqs: {
+          deleteMany: {},
+          create: inputFaqs.map((f) => ({
+            question: f.question ?? "",
+            answer: f.answer ?? "",
+            sort: f.sort,
+          })),
         },
       }),
     },
