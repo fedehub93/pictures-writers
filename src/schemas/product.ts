@@ -1,16 +1,10 @@
 import { ProductAcquisitionMode } from "@/generated/prisma";
 import { z } from "zod";
+import { faqItemSchema } from "@/modules/faq";
 
 const productGalleryFormSchema = z.object({
   mediaId: z.string(),
   url: z.string().optional(),
-  sort: z.coerce.number<number>(),
-});
-
-const productFAQsFormSchema = z.object({
-  id: z.string().optional(),
-  question: z.string().optional(),
-  answer: z.string().optional(),
   sort: z.coerce.number<number>(),
 });
 
@@ -35,7 +29,7 @@ export const productFormSchema = z.object({
     description: z.string().optional(),
   }),
   gallery: z.array(productGalleryFormSchema),
-  faqs: z.array(productFAQsFormSchema),
+  faqs: z.array(faqItemSchema),
   metadata: z.any(),
 });
 

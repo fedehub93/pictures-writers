@@ -63,11 +63,11 @@ export const createNewVersionProduct = async (rootId: string, values: any) => {
   /**
    * FAQ
    */
-  await db.productFAQ.deleteMany({
+  await db.faq.deleteMany({
     where: { productId: updatedProduct.id },
   });
 
-  await db.productFAQ.createMany({
+  await db.faq.createMany({
     data: values.faqs.map(
       (v: { question: string; answer: string; sort: number }) => ({
         productId: product.id,

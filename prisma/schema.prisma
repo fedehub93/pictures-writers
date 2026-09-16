@@ -424,6 +424,8 @@ model Post {
   tags           Tag[]
   postAuthors    PostAuthor[]
 
+  faqs Faq[]
+
   seo   Seo?    @relation(fields: [seoId], references: [id])
   seoId String?
 
@@ -750,7 +752,7 @@ model Product {
   rootChildren Product[] @relation("RootChildren")
 
   gallery ProductGallery[]
-  faqs    ProductFAQ[]
+  faqs    Faq[]
   reviews Reviews[]
 
   purchases Purchase[]
@@ -820,18 +822,24 @@ model ProductExtra {
   updatedAt DateTime @updatedAt
 }
 
-model ProductFAQ {
+model Faq {
   id String @id @default(uuid())
 
   question String
   answer   String
   sort     Int
 
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  productId String
+  product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String?
+
+  post   Post? @relation(fields: [postId], references: [id], onDelete: Cascade)
+  postId String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([productId])
+  @@index([postId])
 }
 
 model Reviews {
