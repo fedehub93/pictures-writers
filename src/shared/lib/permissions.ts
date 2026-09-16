@@ -47,8 +47,6 @@ export const PERMISSIONS = {
   SUBMISSIONS_CREATE: "submissions.create",
   SUBMISSIONS_UPDATE: "submissions.update",
   SUBMISSIONS_DELETE: "submissions.delete",
-  COVERAGE_READ: "coverage.read",
-  COVERAGE_MANAGE: "coverage.manage",
   AUDIENCES_READ: "audiences.read",
   AUDIENCES_MANAGE: "audiences.manage",
   CONTACTS_READ: "contacts.read",
@@ -117,7 +115,8 @@ export const getProcedurePermission = (path: string): string => {
   }
   if (
     ["publish", "unpublish"].includes(operation) ||
-    (area === "posts" && ["schedule", "reschedule", "cancelSchedule"].includes(operation))
+    (area === "posts" &&
+      ["schedule", "reschedule", "cancelSchedule"].includes(operation))
   ) {
     return `${area}.publish`;
   }

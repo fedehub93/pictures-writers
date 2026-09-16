@@ -8,11 +8,9 @@ import Link from "next/link";
 import {
   BlocksIcon,
   BookImageIcon,
-  BookUpIcon,
   BoxIcon,
   BoxesIcon,
   CalendarCheckIcon,
-  ClipboardPenIcon,
   ContactIcon,
   FormIcon,
   InboxIcon,
@@ -44,6 +42,7 @@ import {
 } from "@/shared/ui/sidebar";
 import Logo from "@/shared/components/logo";
 import { hasPermission } from "@/shared/lib/permissions";
+
 import { NavMain } from "./nav-main";
 
 // This is sample data.
@@ -212,19 +211,6 @@ const data: Record<string, NavObject[]> = {
       permission: "media.read",
     },
     {
-      title: "Coverage",
-      url: "#",
-      Icon: BookUpIcon,
-      items: [
-        {
-          title: "First impressions",
-          url: "/admin/coverage/impressions",
-          Icon: ClipboardPenIcon,
-          permission: "coverage.read",
-        },
-      ],
-    },
-    {
       title: "Users",
       url: "/admin/users",
       Icon: UsersIcon,
@@ -239,13 +225,30 @@ const data: Record<string, NavObject[]> = {
   ],
 };
 
-export function AppSidebar({ permissionKeys, ...props }: React.ComponentProps<typeof Sidebar> & { permissionKeys: readonly string[] }) {
+export function AppSidebar({
+  permissionKeys,
+  ...props
+}: React.ComponentProps<typeof Sidebar> & {
+  permissionKeys: readonly string[];
+}) {
   const visibleData = Object.fromEntries(
     Object.entries(data).map(([section, items]) => [
       section,
       items
-        .map((item) => ({ ...item, items: item.items?.filter((child) => !child.permission || hasPermission(permissionKeys, child.permission)) }))
-        .filter((item) => (!item.permission || hasPermission(permissionKeys, item.permission)) && (!item.items || item.items.length > 0)),
+        .map((item) => ({
+          ...item,
+          items: item.items?.filter(
+            (child) =>
+              !child.permission ||
+              hasPermission(permissionKeys, child.permission),
+          ),
+        }))
+        .filter(
+          (item) =>
+            (!item.permission ||
+              hasPermission(permissionKeys, item.permission)) &&
+            (!item.items || item.items.length > 0),
+        ),
     ]),
   ) as Record<string, NavObject[]>;
   return (
@@ -267,10 +270,18 @@ export function AppSidebar({ permissionKeys, ...props }: React.ComponentProps<ty
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-         {visibleData.navMain.length > 0 && <NavMain label="Blog" items={visibleData.navMain} />}
-         {visibleData.shop.length > 0 && <NavMain label="Shop" items={visibleData.shop} />}
-         {visibleData.tools.length > 0 && <NavMain label="Tools" items={visibleData.tools} />}
-         {visibleData.others.length > 0 && <NavMain label="Others" items={visibleData.others} />}
+        {visibleData.navMain.length > 0 && (
+          <NavMain label="Blog" items={visibleData.navMain} />
+        )}
+        {visibleData.shop.length > 0 && (
+          <NavMain label="Shop" items={visibleData.shop} />
+        )}
+        {visibleData.tools.length > 0 && (
+          <NavMain label="Tools" items={visibleData.tools} />
+        )}
+        {visibleData.others.length > 0 && (
+          <NavMain label="Others" items={visibleData.others} />
+        )}
       </SidebarContent>
       <SidebarRail />
     </Sidebar>

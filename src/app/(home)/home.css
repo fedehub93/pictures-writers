@@ -48,6 +48,14 @@
     background-color: var(--color-foreground);
   }
 
+  .custom-upload-button > *[data-ut-element="button"] {
+    background-color: var(--color-primary);
+  }
+
+  .custom-upload-button > *[data-ut-element="button"][data-state="uploading"] {
+    background-color: var(--color-primary);
+  }
+
   .custom-upload-dropzone > button[data-state="ready"] {
     background-color: var(--color-foreground);
   }

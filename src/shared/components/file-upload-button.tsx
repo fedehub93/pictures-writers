@@ -3,7 +3,6 @@
 import { FileIcon, X } from "lucide-react";
 import { Dispatch, SetStateAction } from "react";
 import Link from "next/link";
-import { MediaType } from "@/generated/prisma";
 
 import { UploadButton } from "@/lib/uploadthing";
 import { ourFileRouter } from "@/app/api/uploadthing/core";
@@ -82,18 +81,21 @@ export const FileUploadButton = ({
 
       <div className="py-4 border border-dashed rounded-md">
         <UploadButton
-          className="custom-upload-button mt-0!"
+          className="custom-upload-button mt-0! ut-button:ut-readying:bg-red"
           appearance={{
             button: {
-              color: disabled ? "var(--color-primary)" : "var(--color-primary-foreground)",
+              color: disabled
+                ? "var(--color-primary)"
+                : "var(--color-primary-foreground)",
               cursor: disabled ? "default" : "pointer",
             },
           }}
           content={{
-            button({ ready }) {
+            button({ ready, isUploading }) {
+              if (isUploading) return <div>Uploading...</div>;
               if (ready) return <div>Carica file</div>;
 
-              return "In preparazione";
+              return "In preparazione...";
             },
             allowedContent({ ready, fileTypes, isUploading }) {
               if (!ready) return "Controlla il tipo di file";
