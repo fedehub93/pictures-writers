@@ -19,3 +19,4 @@ Update `prisma/schema.prisma`: replace the `ProductFAQ` model with a generic `Fa
 - `npx prisma validate` and `npx prisma generate` succeed; fresh typecheck and lint pass.
 - To keep the build green, the `db.productFAQ` consumer switches were done here too (see `02-product-persistence.md` comments): `src/lib/product.ts` and the versions PATCH route now use `db.faq` with unchanged delete-then-create semantics.
 - **Not yet applied**: the migration has not been deployed. Per spec, it should be verified against a copy of production-like data before deploy.
+

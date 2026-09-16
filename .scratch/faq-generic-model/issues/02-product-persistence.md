@@ -5,13 +5,14 @@ Point the product persistence and admin UI at the new `Faq` table: `src/lib/prod
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `db.productFAQ` references replaced with `db.faq` in both write paths; create payloads set `productId` per version.
-- [ ] Admin product page selects `faqs` from `Faq` and seeds `product-form` default `faqs` unchanged.
-- [ ] Saving a draft product persists FAQ; publishing creates a CHANGED version whose FAQ rows point to the new version id.
+- [x] `db.productFAQ` references replaced with `db.faq` in both write paths; create payloads set `productId` per version.
+- [x] Admin product page selects `faqs` from `Faq` and seeds `product-form` default `faqs` unchanged.
+- [x] Saving a draft product persists FAQ; publishing creates a CHANGED version whose FAQ rows point to the new version id.
 
 ## Comments
 
 - Partial progress from issue `01` (done while keeping the build green after the schema rename): the two write paths now use `db.faq` — `src/lib/product.ts` (`createNewVersionProduct`) and `src/app/api/admin/shop/products/[rootId]/versions/[productId]/route.ts` (PATCH). Delete-then-create semantics unchanged; `productId` still points to the current version id.
 - Remaining here: admin product page `faqs` select in `src/app/(admin)/admin/(routes)/shop/products/[rootId]/page.tsx` and `product-form.tsx` default values (both already read the generated `Faq` data via `faqs`, so mostly verification).
+
