@@ -79,3 +79,17 @@ The lifecycle state of a backoffice user: `pending` while an invitation is not a
 
 **Authorization policy**:
 The server-side rule that evaluates a backoffice user’s role and permissions. It is the single security boundary shared by admin pages, tRPC procedures, and REST endpoints.
+
+## FAQ
+
+**Faq**:
+A generic Prisma model storing a question-and-answer pair, linked to exactly one content entity (Product or Post) via optional foreign keys. Content is per-entity, never shared across entities.
+_Avoid_: ProductFAQ, PostFAQ, FaqItem when referring to the Prisma model.
+
+**FaqSection**:
+The public accordion component that renders a list of Faqs on a page. Shared across products and posts.
+_Avoid_: FAQ accordion when referring to the component.
+
+**FaqPageJsonLd**:
+The component that generates FAQPage JSON-LD structured data from a list of Faqs. Still parsed by AI answer engines and non-Google crawlers; Google no longer produces rich results from it (removed May 2026).
+_Avoid_: FAQ rich result when referring to the component.
