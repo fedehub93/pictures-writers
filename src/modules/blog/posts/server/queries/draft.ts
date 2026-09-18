@@ -98,6 +98,15 @@ export const getDraftPostBySlug = async (slug: string) => {
           sort: "asc",
         },
       },
+      faqs: {
+        select: {
+          question: true,
+          answer: true,
+        },
+        orderBy: {
+          sort: "asc",
+        },
+      },
     },
     orderBy: {
       publishedAt: "desc",

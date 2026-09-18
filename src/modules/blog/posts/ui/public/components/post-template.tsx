@@ -12,6 +12,7 @@ import { normalizeContent } from "@/shared/components/tiptap-renderer/helpers/no
 import { countWordsFromTiptap } from "@/shared/components/tiptap-renderer/helpers/words-counter";
 
 import type { GetDraftPostBySlug } from "@/modules/blog/posts/server/queries/draft";
+import { FaqSection } from "@/shared/components/faq-section";
 import { PostBottom } from "./post-bottom";
 
 interface PostTemplateProps {
@@ -34,7 +35,9 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
         : 0,
   });
 
-  const imageWithPlaceholder = await getPlaceholderImage(post.imageCover?.url!);
+  const imageWithPlaceholder = post.imageCover
+    ? await getPlaceholderImage(post.imageCover.url)
+    : null;
 
   return (
     <div className="blog-post">
@@ -50,7 +53,7 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
                 priority
                 className="blog-post__image"
                 placeholder="blur"
-                blurDataURL={imageWithPlaceholder.placeholder}
+                blurDataURL={imageWithPlaceholder?.placeholder}
                 quality={100}
               />
             ) : null}
@@ -67,6 +70,7 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
           {post.tiptapBodyData && (
             <TipTapRendererV2 content={normalizedContent} />
           )}
+          {post.faqs.length > 0 && <FaqSection faqs={post.faqs} />}
         </article>
         <PostBottom postId={post.id} tags={post.tags} />
         {/* <DisqusLazy config={disqusOptions} /> */}

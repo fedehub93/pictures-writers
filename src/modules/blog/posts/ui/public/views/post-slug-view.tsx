@@ -15,6 +15,7 @@ import { getPublishedPostBySlug } from "@/modules/blog/posts/server/queries";
 import { PostTemplate } from "@/modules/blog/posts/ui/public/components/post-template";
 
 import { BlogPostingJsonLd } from "@/app/(home)/_components/seo/json-ld/blog-posting";
+import { FaqPageJsonLd } from "@/app/(home)/_components/seo/json-ld/faq-page";
 
 interface PostSlugViewProps {
   slug: string;
@@ -80,6 +81,7 @@ export const PostSlugView = async ({ slug }: PostSlugViewProps) => {
         url={`${siteUrl}/${post.slug}`}
         siteUrl={siteUrl!}
       />
+      <FaqPageJsonLd mainEntity={post.faqs} />
       <PostTemplate post={post} />
       {isValidWidgetPopup && product && (
         <WidgetProductPop
