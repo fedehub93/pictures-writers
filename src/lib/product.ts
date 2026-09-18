@@ -74,7 +74,7 @@ export const createNewVersionProduct = async (rootId: string, values: any) => {
         question: v.question,
         answer: v.answer,
         sort: v.sort,
-      })
+      }),
     ),
   });
 
@@ -89,6 +89,10 @@ export const createNewVersionProduct = async (rootId: string, values: any) => {
    * Reviews
    */
   const publishedReviews = await db.reviews.findMany({
+    where: { productId: publishedProduct.id },
+  });
+
+  await db.reviews.deleteMany({
     where: { productId: publishedProduct.id },
   });
 
