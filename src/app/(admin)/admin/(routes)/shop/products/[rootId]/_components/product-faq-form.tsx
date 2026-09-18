@@ -11,15 +11,15 @@ import {
 import { FaqFieldArrayForm } from "@/shared/components/form-component/faq-field-array-form";
 import type { ProductFormValues } from "@/schemas/product";
 
-interface ProductFAQFormProps {
+interface ProductFaqFormProps {
   control: Control<ProductFormValues>;
   isSubmitting: boolean;
 }
 
-export const ProductFAQForm = ({
+export const ProductFaqForm = ({
   control,
   isSubmitting,
-}: ProductFAQFormProps) => (
+}: ProductFaqFormProps) => (
   <Accordion
     type="single"
     collapsible

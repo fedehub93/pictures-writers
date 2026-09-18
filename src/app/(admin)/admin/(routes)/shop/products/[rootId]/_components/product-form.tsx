@@ -38,7 +38,7 @@ import { ProductGalleryForm } from "./product-gallery-form";
 import { ProductAffiliateForm } from "./affiliate/product-affiliate-form";
 import { ProductWebinarForm } from "./webinar/product-webinar-form";
 import { ProductServiceForm } from "./service/product-service-form";
-import { ProductFAQForm } from "./product-faq-form";
+import { ProductFaqForm } from "./product-faq-form";
 
 interface ProductFormProps {
   initialData: Product & {
@@ -201,7 +201,7 @@ export const ProductForm = ({
                   control={form.control}
                   isSubmitting={isSubmitting}
                 />
-                <ProductFAQForm
+                <ProductFaqForm
                   control={form.control}
                   isSubmitting={isSubmitting}
                 />
