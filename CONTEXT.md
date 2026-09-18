@@ -32,6 +32,10 @@ _Avoid_: SEO outline when referring to the contextual helper displayed beside th
 A persistent Tiptap content node that can be inserted into a post for public display. It is separate from the temporary admin outline.
 _Avoid_: Outline when referring to persisted post content.
 
+**Table**:
+A persistent Tiptap content node expressing tabular data as a rectangular grid of rows and columns, editable and rendered for public display in posts and product descriptions. Unlike Notion's database views, it is a plain data grid with no merged cells. Distinct from TableContentNode, which is an index of headings.
+_Avoid_: TableContentNode when referring to a data grid; Grid or Data grid when referring to the editor node.
+
 ## Public rendering
 
 **On-demand revalidation**:

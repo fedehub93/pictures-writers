@@ -10,6 +10,7 @@ import { CustomImage } from "../extensions/image";
 import { ProductNode } from "../extensions/product";
 import { InfoBoxNode } from "../extensions/info-box";
 import { TableContentNode } from "../extensions/table-content";
+import { createTableExtensions } from "../extensions/table";
 import { SlashMenuExtension } from "../slash-menu/slash-menu-extension";
 import type { SlashCommandModalService } from "../slash-menu/types";
 
@@ -58,6 +59,7 @@ export const createProductionExtensions = (
   ProductNode,
   InfoBoxNode,
   TableContentNode,
+  ...createTableExtensions(),
   SlashMenuExtension.configure({
     modalService,
   }),

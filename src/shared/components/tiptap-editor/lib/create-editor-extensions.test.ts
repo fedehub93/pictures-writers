@@ -21,7 +21,73 @@ import {
 } from "../slash-menu/slash-menu-extension";
 import type { SlashCommand } from "../slash-menu/types";
 import { estimateReadingTime } from "./writing-metrics";
+import { normalizeTableSlice } from "../extensions/table/paste";
+import {
+  DOMParser as PMDOMParser,
+  Fragment,
+  Node as PMNode,
+  Slice,
+} from "@tiptap/pm/model";
+import type { Schema } from "@tiptap/pm/model";
 
+const collectCells = (editor: Editor) => {
+  const cells: { type: string; pos: number }[] = [];
+  editor.state.doc.descendants((node, pos) => {
+    const role = node.type.spec.tableRole;
+    if (role === "cell" || role === "header_cell") {
+      cells.push({ type: node.type.name, pos });
+    }
+    return true;
+  });
+  return cells;
+};
+
+const setCursorInCell = (editor: Editor, index: number) => {
+  const cells = collectCells(editor);
+  const cell = cells[index];
+  if (!cell) throw new Error(`No cell at index ${index}`);
+  editor.commands.setTextSelection(cell.pos + 2);
+};
+
+const activeCellIndex = (editor: Editor) => {
+  const $head = editor.state.selection.$head;
+  return collectCells(editor).findIndex(({ pos }) => {
+    const cell = editor.state.doc.nodeAt(pos);
+    return cell ? $head.pos >= pos && $head.pos < pos + cell.nodeSize : false;
+  });
+};
+
+const pressKey = (editor: Editor, key: string, init: KeyboardEventInit = {}) => {
+  const event = new KeyboardEvent("keydown", {
+    key,
+    bubbles: true,
+    cancelable: true,
+    ...init,
+  });
+  return editor.view.someProp("handleKeyDown", (handler) =>
+    handler(editor.view, event),
+  );
+};
+
+const createTableEditor = () =>
+  new Editor({
+    extensions: createProductionExtensions(),
+    content: { type: "doc", content: [] },
+  });
+
+const makeCell = (
+  schema: Schema,
+  text: string,
+  type: "tableCell" | "tableHeader",
+  attrs: Record<string, unknown> = {},
+) =>
+  schema.nodes[type].create(
+    { colspan: 1, rowspan: 1, colwidth: null, ...attrs },
+    [schema.nodes.paragraph.create(null, schema.text(text))],
+  );
+
+const makeRow = (schema: Schema, cells: PMNode[]) =>
+  schema.nodes.tableRow.create(null, cells);
 
 describe("Tiptap production editor seam", () => {
   it("preserves persisted custom nodes and their attributes", () => {
@@ -287,6 +353,7 @@ describe("Tiptap production editor seam", () => {
         "product",
         "info-box",
         "tablecontent",
+        "table",
       ]);
     });
 
@@ -315,6 +382,15 @@ describe("Tiptap production editor seam", () => {
       ]);
 
       expect(filterSlashCommands(slashCommands, "xyz")).toHaveLength(0);
+
+      expect(filterSlashCommands(slashCommands, "table").map((c) => c.id)).toEqual([
+        "tablecontent",
+        "table",
+      ]);
+
+      expect(filterSlashCommands(slashCommands, "grid").map((c) => c.id)).toEqual([
+        "table",
+      ]);
     });
 
     it("removes the slash query before inserting a heading", () => {
@@ -518,6 +594,398 @@ describe("Tiptap production editor seam", () => {
       });
 
       expect(isSlashMenuAllowed({ state: editor.state, range: { from: 5, to: 13 } })).toBe(false);
+    });
+  });
+
+  describe("table node", () => {
+    it("inserts a 3x3 table with a header row via slash command", () => {
+      const editor = new Editor({
+        extensions: createProductionExtensions(),
+        content: {
+          type: "doc",
+          content: [
+            { type: "paragraph", content: [{ type: "text", text: "/table" }] },
+          ],
+        },
+      });
+
+      const command = slashCommands.find((cmd) => cmd.id === "table");
+      expect(command).toBeDefined();
+      expect(command?.group).toBe("content");
+
+      const result = executeSlashCommand(editor, command!, { from: 1, to: 7 });
+
+      expect(result).toBe(true);
+      const json: JSONContent = editor.getJSON();
+      expect(JSON.stringify(json)).not.toContain("/table");
+
+      const table = json.content?.find((node) => node.type === "table");
+      expect(table).toBeDefined();
+      expect(table?.content).toHaveLength(3);
+      expect(table?.content?.[0].type).toBe("tableRow");
+      expect(table?.content?.[0].content).toHaveLength(3);
+      expect(table?.content?.[0].content?.[0].type).toBe("tableHeader");
+      expect(table?.content?.[1].content?.[0].type).toBe("tableCell");
+    });
+
+    it("inserts a 3x3 table whose cells only contain paragraphs", () => {
+      const editor = createTableEditor();
+      editor.commands.insertTable();
+
+      const json: JSONContent = editor.getJSON();
+      const table = json.content?.[0];
+      expect(table?.type).toBe("table");
+      expect(table?.content).toHaveLength(3);
+
+      table?.content?.forEach((row, rowIndex) => {
+        expect(row.type).toBe("tableRow");
+        expect(row.content).toHaveLength(3);
+        row.content?.forEach((cell) => {
+          expect(cell.type).toBe(rowIndex === 0 ? "tableHeader" : "tableCell");
+          expect(cell.attrs).toMatchObject({ colspan: 1, rowspan: 1 });
+          expect(cell.content?.length).toBe(1);
+          expect(cell.content?.[0].type).toBe("paragraph");
+        });
+      });
+    });
+
+    it("keeps the caret inside the header row after insertion", () => {
+      const editor = createTableEditor();
+      editor.commands.insertTable();
+      expect(activeCellIndex(editor)).toBe(0);
+    });
+
+    it("Tab moves to the next cell and adds a row on the last column", () => {
+      const editor = createTableEditor();
+      editor.commands.insertTable();
+      setCursorInCell(editor, 0);
+      pressKey(editor, "Tab");
+      expect(activeCellIndex(editor)).toBe(1);
+
+      setCursorInCell(editor, 8);
+      pressKey(editor, "Tab");
+      const json: JSONContent = editor.getJSON();
+      expect(json.content?.[0]?.content).toHaveLength(4);
+      expect(activeCellIndex(editor)).toBe(9);
+    });
+
+    it("Shift+Tab moves to the previous cell", () => {
+      const editor = createTableEditor();
+      editor.commands.insertTable();
+      setCursorInCell(editor, 1);
+      pressKey(editor, "Tab", { shiftKey: true });
+      expect(activeCellIndex(editor)).toBe(0);
+    });
+
+    it("Enter moves the caret to the cell below", () => {
+      const editor = createTableEditor();
+      editor.commands.insertTable();
+      setCursorInCell(editor, 0);
+      pressKey(editor, "Enter");
+      expect(activeCellIndex(editor)).toBe(3);
+    });
+
+    it("Enter on the last row appends a new row below", () => {
+      const editor = createTableEditor();
+      editor.commands.insertTable();
+      setCursorInCell(editor, 6);
+      pressKey(editor, "Enter");
+
+      const json: JSONContent = editor.getJSON();
+      expect(json.content?.[0]?.content).toHaveLength(4);
+      expect(activeCellIndex(editor)).toBe(9);
+    });
+
+    it("Shift+Enter inserts a hard break inside a cell", () => {
+      const editor = createTableEditor();
+      editor.commands.insertTable();
+      setCursorInCell(editor, 0);
+      editor.commands.insertContent("a");
+      pressKey(editor, "Enter", { shiftKey: true });
+
+      const nodes: string[] = [];
+      editor.state.doc.descendants((node) => {
+        if (node.type.name === "hardBreak") nodes.push("br");
+        if (node.isText) nodes.push(node.text ?? "");
+        return true;
+      });
+      expect(nodes).toEqual(["a", "br"]);
+    });
+
+    it("Enter outside a table still splits the paragraph", () => {
+      const editor = new Editor({
+        extensions: createProductionExtensions(),
+        content: {
+          type: "doc",
+          content: [
+            { type: "paragraph", content: [{ type: "text", text: "ab" }] },
+          ],
+        },
+      });
+      editor.commands.setTextSelection(2);
+      pressKey(editor, "Enter");
+
+      const json: JSONContent = editor.getJSON();
+      expect(json.content).toHaveLength(2);
+    });
+
+    it("Escape exits the table into the following paragraph", () => {
+      const editor = new Editor({
+        extensions: createProductionExtensions(),
+        content: {
+          type: "doc",
+          content: [
+            { type: "paragraph", content: [{ type: "text", text: "Before" }] },
+            {
+              type: "table",
+              content: [
+                {
+                  type: "tableRow",
+                  content: [
+                    {
+                      type: "tableCell",
+                      content: [{ type: "paragraph", content: [] }],
+                    },
+                  ],
+                },
+              ],
+            },
+            { type: "paragraph", content: [{ type: "text", text: "After" }] },
+          ],
+        },
+      });
+
+      setCursorInCell(editor, 0);
+      pressKey(editor, "Escape");
+      expect(editor.state.selection.$head.parent.textContent).toBe("After");
+    });
+
+    it("Escape from a late-table drops the caret to the paragraph after the table", () => {
+      const editor = new Editor({
+        extensions: createProductionExtensions(),
+        content: {
+          type: "doc",
+          content: [
+            { type: "paragraph", content: [{ type: "text", text: "Before" }] },
+            {
+              type: "table",
+              content: [
+                {
+                  type: "tableRow",
+                  content: [
+                    {
+                      type: "tableCell",
+                      content: [{ type: "paragraph", content: [] }],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      });
+
+      setCursorInCell(editor, 0);
+      pressKey(editor, "Escape");
+
+      const selection = editor.state.selection as unknown as { jsonID: string };
+      expect(selection.jsonID ?? "").toBe("text");
+
+      const $head = editor.state.selection.$head;
+      expect(editor.isActive("table")).toBe(false);
+      expect($head.parent.type.spec.tableRole).toBeUndefined();
+      expect($head.parent.textContent).toBe("");
+    });
+
+    it("loads and round-trips existing custom nodes and a table without drift", () => {
+      const source = {
+        type: "doc",
+        content: [
+          { type: "paragraph", content: [{ type: "text", text: "Hello" }] },
+          {
+            type: "table",
+            content: [
+              {
+                type: "tableRow",
+                content: [
+                  {
+                    type: "tableHeader",
+                    content: [
+                      { type: "paragraph", content: [{ type: "text", text: "H1" }] },
+                    ],
+                  },
+                  {
+                    type: "tableHeader",
+                    content: [
+                      { type: "paragraph", content: [{ type: "text", text: "H2" }] },
+                    ],
+                  },
+                ],
+              },
+              {
+                type: "tableRow",
+                content: [
+                  {
+                    type: "tableCell",
+                    content: [
+                      { type: "paragraph", content: [{ type: "text", text: "A" }] },
+                    ],
+                  },
+                  {
+                    type: "tableCell",
+                    content: [
+                      { type: "paragraph", content: [{ type: "text", text: "B" }] },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "infobox",
+            attrs: { icon: "🔥" },
+            content: [
+              { type: "paragraph", content: [{ type: "text", text: "Info" }] },
+            ],
+          },
+        ],
+      };
+
+      const editor = new Editor({
+        extensions: createProductionExtensions(),
+        content: source,
+      });
+      const json = editor.getJSON();
+
+      expect((json.content?.[0]?.content?.[0] as JSONContent).text).toBe(
+        "Hello",
+      );
+      expect(json.content?.[1]?.type).toBe("table");
+      expect(json.content?.[1]?.content).toHaveLength(2);
+      expect(json.content?.[2]?.type).toBe("infobox");
+
+      const reloaded = new Editor({
+        extensions: createProductionExtensions(),
+        content: json,
+      });
+      const roundTrip = reloaded.getJSON();
+      expect(JSON.stringify(roundTrip)).toBe(JSON.stringify(json));
+    });
+
+    it("runs the paste normalizer on the editing seam", () => {
+      const editor = createTableEditor();
+      const { schema } = editor.state;
+      const table = schema.nodes.table.create(null, [
+        makeRow(schema, [makeCell(schema, "A", "tableHeader", { colspan: 2 })]),
+        makeRow(schema, [makeCell(schema, "B", "tableCell"), makeCell(schema, "C", "tableCell")]),
+      ]);
+      const slice = new Slice(Fragment.from(table), 1, 1);
+
+      let transformed: Slice | null = null;
+      editor.view.someProp(
+        "transformPasted",
+        (transform) => {
+          transformed = (
+            transform as (slice: Slice, view: unknown) => Slice
+          )(slice, editor.view);
+          return true;
+        },
+      );
+
+      expect(transformed).not.toBeNull();
+      const normalized = transformed!.content.firstChild as PMNode;
+      expect(normalized.childCount).toBe(2);
+      expect(normalized.child(0).childCount).toBe(2);
+      expect((normalized.child(0).child(0) as PMNode).textContent).toBe("A");
+    });
+
+    it("normalizes a merged table into an expanded rectangle", () => {
+      const editor = createTableEditor();
+      const { schema } = editor.state;
+      const table = schema.nodes.table.create(null, [
+        makeRow(schema, [makeCell(schema, "A", "tableHeader", { colspan: 2 })]),
+        makeRow(schema, [makeCell(schema, "B", "tableCell"), makeCell(schema, "C", "tableCell")]),
+      ]);
+      const slice = new Slice(Fragment.from(table), 1, 1);
+
+      const normalized = normalizeTableSlice(slice).content.firstChild as PMNode;
+
+      expect(normalized.type.name).toBe("table");
+      expect(normalized.childCount).toBe(2);
+      expect(normalized.child(0).childCount).toBe(2);
+      expect(normalized.child(0).child(0).textContent).toBe("A");
+      expect(normalized.child(0).child(1).textContent).toBe("A");
+      expect(
+        normalized.child(0).child(0).attrs.colspan,
+      ).toBe(1);
+      expect(normalized.child(1).child(0).textContent).toBe("B");
+      expect(normalized.child(1).child(1).textContent).toBe("C");
+    });
+
+    it("leaves a rectangular merge-free table untouched", () => {
+      const editor = createTableEditor();
+      const { schema } = editor.state;
+      const table = schema.nodes.table.create(null, [
+        makeRow(schema, [makeCell(schema, "A", "tableHeader"), makeCell(schema, "B", "tableHeader")]),
+        makeRow(schema, [makeCell(schema, "C", "tableCell"), makeCell(schema, "D", "tableCell")]),
+      ]);
+      const slice = new Slice(Fragment.from(table), 1, 1);
+
+      const result = normalizeTableSlice(slice);
+      expect(result).toBe(slice);
+    });
+
+    it("does not leak colspan or rowspan into the serialized HTML", () => {
+      const editor = createTableEditor();
+      editor.commands.insertTable();
+      const html = editor.getHTML();
+      expect(html).toContain("<table");
+      expect(html).not.toMatch(/colspan|rowspan/);
+    });
+
+    it("does not expose structural merge commands", () => {
+      const editor = createTableEditor();
+      editor.commands.insertTable();
+
+      expect(editor.commands.mergeCells).toBeUndefined();
+      expect(editor.commands.splitCell).toBeUndefined();
+      expect(editor.commands.mergeOrSplit).toBeUndefined();
+      expect(editor.commands.setCellAttribute).toBeUndefined();
+    });
+
+    it("expands an HTML-pasted merged table into a rectangular grid", () => {
+      const editor = createTableEditor();
+      const { schema } = editor.state;
+      const dom = new DOMParser().parseFromString(
+        "<table><tr><td colspan=\"2\">M</td></tr><tr><td>a</td><td>b</td></tr></table>",
+        "text/html",
+      );
+      const parsed = PMDOMParser.fromSchema(schema).parse(dom);
+      const slice = new Slice(parsed.content, 0, 0);
+
+      let transformed: Slice | null = null;
+      editor.view.someProp(
+        "transformPasted",
+        (transform) => {
+          transformed = (
+            transform as (slice: Slice, view: unknown) => Slice
+          )(slice, editor.view);
+          return true;
+        },
+      );
+
+      expect(transformed).not.toBeNull();
+      const table = transformed!.content.firstChild as PMNode;
+      expect(table.type.spec.tableRole).toBe("table");
+      expect(table.childCount).toBe(2);
+      expect(table.child(0).childCount).toBe(2);
+      expect(table.child(1).childCount).toBe(2);
+      expect(table.child(0).child(0).textContent).toBe("M");
+      expect(table.child(0).child(1).textContent).toBe("M");
+      expect(table.child(1).child(0).textContent).toBe("a");
+      expect(table.child(1).child(1).textContent).toBe("b");
+      expect(table.child(0).child(0).attrs.colspan).toBe(1);
+      expect(table.child(0).child(0).attrs.rowspan).toBe(1);
     });
   });
 

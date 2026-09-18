@@ -15,6 +15,7 @@ import {
   ListOrdered,
   LucideImage,
   Quote,
+  Table,
   TableOfContents,
   Underline,
   Video,
@@ -135,6 +136,10 @@ export const MenuBar = ({
     insertTableContent(editor);
   };
 
+  const insertTableNode = () => {
+    editor.chain().focus().insertTable().run();
+  };
+
   // === Render ===
   return (
     <div
@@ -251,6 +256,11 @@ export const MenuBar = ({
             <DropdownMenuItem onClick={insertTableContentNode}>
               <TableOfContents className="size-4 mr-2" />
               Table of contents
+            </DropdownMenuItem>
+
+            <DropdownMenuItem onClick={insertTableNode}>
+              <Table className="size-4 mr-2" />
+              Table
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -12,6 +12,7 @@ import {
   Minus,
   Pilcrow,
   Quote,
+  Table,
   TableOfContents,
   Video,
 } from "lucide-react";
@@ -258,6 +259,16 @@ export const createSlashCommands = (
         .deleteRange(range)
         .insertTableContent()
         .run(),
+  },
+  {
+    id: "table",
+    label: "Table",
+    description: "Insert a data grid",
+    keywords: ["grid", "data", "columns", "rows", "cells"],
+    group: "content",
+    icon: Table,
+    execute: (editor, range) =>
+      editor.chain().focus().deleteRange(range).insertTable().run(),
   },
 ];
 
