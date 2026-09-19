@@ -89,6 +89,43 @@ const makeCell = (
 const makeRow = (schema: Schema, cells: PMNode[]) =>
   schema.nodes.tableRow.create(null, cells);
 
+const gridTextRows = (editor: Editor): string[] => {
+  const table = editor.state.doc.firstChild as PMNode;
+  const rows: string[] = [];
+  for (let r = 0; r < table.childCount; r += 1) {
+    const row = table.child(r);
+    const cells = Array.from({ length: row.childCount }, (_, c) =>
+      row.child(c).textContent,
+    );
+    rows.push(cells.join("|"));
+  }
+  return rows;
+};
+
+const gridCellTypes = (editor: Editor): string[][] => {
+  const table = editor.state.doc.firstChild as PMNode;
+  const rows: string[][] = [];
+  for (let r = 0; r < table.childCount; r += 1) {
+    const row = table.child(r);
+    rows.push(
+      Array.from({ length: row.childCount }, (_, c) => row.child(c).type.name),
+    );
+  }
+  return rows;
+};
+
+const seedTableGrid = (editor: Editor, rows: number, cols: number) => {
+  editor.commands.insertTable({ rows, cols, withHeaderRow: true });
+  let label = 1;
+  for (let r = 0; r < rows; r += 1) {
+    for (let c = 0; c < cols; c += 1) {
+      setCursorInCell(editor, r * cols + c);
+      editor.commands.insertContent(String(label));
+      label += 1;
+    }
+  }
+};
+
 describe("Tiptap production editor seam", () => {
   it("preserves persisted custom nodes and their attributes", () => {
     const persisted = {
@@ -988,5 +1025,269 @@ describe("Tiptap production editor seam", () => {
       expect(table.child(0).child(0).attrs.rowspan).toBe(1);
     });
   });
+
+  describe("table structural commands", () => {
+    it("inserts a row after the current one", () => {
+      const editor = createTableEditor();
+      seedTableGrid(editor, 3, 3);
+
+      setCursorInCell(editor, 4); // row 1, col 1
+      expect(editor.commands.addRowAfter()).toBe(true);
+      expect(gridTextRows(editor)).toEqual([
+        "1|2|3",
+        "4|5|6",
+        "||",
+        "7|8|9",
+      ]);
+      expect(gridCellTypes(editor)[0]).toEqual([
+        "tableHeader",
+        "tableHeader",
+        "tableHeader",
+      ]);
+    });
+
+    it("inserts a row before the current one", () => {
+      const editor = createTableEditor();
+      seedTableGrid(editor, 3, 3);
+
+      setCursorInCell(editor, 4);
+      expect(editor.commands.addRowBefore()).toBe(true);
+      expect(gridTextRows(editor)).toEqual([
+        "1|2|3",
+        "||",
+        "4|5|6",
+        "7|8|9",
+      ]);
+    });
+
+    it("inserts a column after the current one", () => {
+      const editor = createTableEditor();
+      seedTableGrid(editor, 3, 3);
+
+      setCursorInCell(editor, 4); // row 1, col 1
+      expect(editor.commands.addColumnAfter()).toBe(true);
+      expect(gridTextRows(editor)).toEqual([
+        "1|2||3",
+        "4|5||6",
+        "7|8||9",
+      ]);
+      expect(gridCellTypes(editor)).toEqual([
+        ["tableHeader", "tableHeader", "tableHeader", "tableHeader"],
+        ["tableCell", "tableCell", "tableCell", "tableCell"],
+        ["tableCell", "tableCell", "tableCell", "tableCell"],
+      ]);
+    });
+
+    it("inserts a column before the current one", () => {
+      const editor = createTableEditor();
+      seedTableGrid(editor, 3, 3);
+
+      setCursorInCell(editor, 4);
+      expect(editor.commands.addColumnBefore()).toBe(true);
+      expect(gridTextRows(editor)).toEqual([
+        "1||2|3",
+        "4||5|6",
+        "7||8|9",
+      ]);
+    });
+
+    it("deletes the current row", () => {
+      const editor = createTableEditor();
+      seedTableGrid(editor, 3, 3);
+
+      setCursorInCell(editor, 4);
+      expect(editor.commands.deleteRow()).toBe(true);
+      expect(gridTextRows(editor)).toEqual(["1|2|3", "7|8|9"]);
+    });
+
+    it("deletes the current column", () => {
+      const editor = createTableEditor();
+      seedTableGrid(editor, 3, 3);
+
+      setCursorInCell(editor, 4);
+      expect(editor.commands.deleteColumn()).toBe(true);
+      expect(gridTextRows(editor)).toEqual(["1|3", "4|6", "7|9"]);
+    });
+
+    it("stops row deletion at the 1x1 limit", () => {
+      const editor = createTableEditor();
+      editor.commands.insertTable({ rows: 1, cols: 1, withHeaderRow: false });
+
+      setCursorInCell(editor, 0);
+      expect(editor.commands.deleteRow()).toBe(false);
+      expect(gridTextRows(editor)).toEqual([""]);
+    });
+
+    it("stops column deletion at the 1x1 limit", () => {
+      const editor = createTableEditor();
+      editor.commands.insertTable({ rows: 1, cols: 1, withHeaderRow: false });
+
+      setCursorInCell(editor, 0);
+      expect(editor.commands.deleteColumn()).toBe(false);
+      expect(gridTextRows(editor)).toEqual([""]);
+    });
+
+    it("keeps at least one row and one column in any deletion sequence", () => {
+      const editor = createTableEditor();
+      editor.commands.insertTable({ rows: 2, cols: 2, withHeaderRow: false });
+
+      // a 2x2 grid can shed rows and columns but never go below 1x1
+      setCursorInCell(editor, 0);
+      editor.commands.deleteColumn();
+      setCursorInCell(editor, 0);
+      editor.commands.deleteRow();
+      expect(gridTextRows(editor)).toEqual([""]);
+      expect(gridCellTypes(editor)).toEqual([["tableCell"]]);
+
+      setCursorInCell(editor, 0);
+      expect(editor.commands.deleteColumn()).toBe(false);
+      expect(editor.commands.deleteRow()).toBe(false);
+      expect(gridTextRows(editor)).toEqual([""]);
+    });
+
+    it("toggles the header row on the first row", () => {
+      const editor = createTableEditor();
+      seedTableGrid(editor, 3, 3);
+
+      // cursor sits on a data row; toggle must still affect the first row
+      setCursorInCell(editor, 4);
+      expect(editor.commands.toggleHeaderRow()).toBe(true);
+      expect(gridCellTypes(editor)).toEqual([
+        ["tableCell", "tableCell", "tableCell"],
+        ["tableCell", "tableCell", "tableCell"],
+        ["tableCell", "tableCell", "tableCell"],
+      ]);
+
+      expect(editor.commands.toggleHeaderRow()).toBe(true);
+      expect(gridCellTypes(editor)).toEqual([
+        ["tableHeader", "tableHeader", "tableHeader"],
+        ["tableCell", "tableCell", "tableCell"],
+        ["tableCell", "tableCell", "tableCell"],
+      ]);
+    });
+
+    it("round-trips the header row state in the JSON document", () => {
+      const editor = createTableEditor();
+      seedTableGrid(editor, 3, 3);
+      setCursorInCell(editor, 4);
+      editor.commands.toggleHeaderRow();
+
+      const json: JSONContent = editor.getJSON();
+      const table = json.content?.find((node) => node.type === "table");
+      expect(table).toBeDefined();
+      expect(table?.content?.[0].content).toBeDefined();
+
+      const reloaded = new Editor({
+        extensions: createProductionExtensions(),
+        content: json,
+      });
+      expect(reloaded.getJSON()).toEqual(json);
+      const reloadedJson: JSONContent = reloaded.getJSON();
+      const reloadedTable = (
+        reloadedJson.content?.find((node) => node.type === "table")
+      )?.content?.[0];
+      expect(reloadedTable?.content?.map((cell) => cell.type)).toEqual([
+        "tableCell",
+        "tableCell",
+        "tableCell",
+      ]);
+    });
+
+    it("deletes the whole table from the document", () => {
+      const editor = new Editor({
+        extensions: createProductionExtensions(),
+        content: {
+          type: "doc",
+          content: [
+            { type: "paragraph", content: [{ type: "text", text: "before" }] },
+            {
+              type: "table",
+              content: [
+                {
+                  type: "tableRow",
+                  content: [
+                    {
+                      type: "tableCell",
+                      content: [{ type: "paragraph" }],
+                    },
+                  ],
+                },
+              ],
+            },
+            { type: "paragraph", content: [{ type: "text", text: "after" }] },
+          ],
+        },
+      });
+
+      setCursorInCell(editor, 0);
+      expect(editor.commands.deleteTable()).toBe(true);
+      const json: JSONContent = editor.getJSON();
+      expect(json.content?.some((node) => node.type === "table")).toBe(false);
+      expect(json.content?.map((node) => node.type)).toEqual([
+        "paragraph",
+        "paragraph",
+      ]);
+      expect(json.content?.[0].content?.[0]).toMatchObject({ text: "before" });
+      expect(json.content?.[1].content?.[0]).toMatchObject({ text: "after" });
+    });
+
+    it("persists colwidth across save and reload", () => {
+      const doc = {
+        type: "doc",
+        content: [
+          {
+            type: "table",
+            content: [
+              {
+                type: "tableRow",
+                content: [
+                  {
+                    type: "tableHeader",
+                    attrs: { colwidth: [120] },
+                    content: [{ type: "paragraph" }],
+                  },
+                  {
+                    type: "tableHeader",
+                    attrs: { colwidth: [180] },
+                    content: [{ type: "paragraph" }],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      };
+
+      const editor = new Editor({
+        extensions: createProductionExtensions(),
+        content: doc,
+      });
+      const json: JSONContent = editor.getJSON();
+      const table = json.content?.find((node) => node.type === "table");
+      const row = table?.content?.find((r) => r.type === "tableRow");
+      expect(row?.content?.map((c) => c.attrs?.colwidth)).toEqual([
+        [120],
+        [180],
+      ]);
+
+      const reloaded = new Editor({
+        extensions: createProductionExtensions(),
+        content: json,
+      });
+      expect(reloaded.getJSON()).toEqual(json);
+      const reloadedJson: JSONContent = reloaded.getJSON();
+      const reloadedTable = reloadedJson.content?.find(
+        (node) => node.type === "table",
+      );
+      const reloadedRow = reloadedTable?.content?.find(
+        (r) => r.type === "tableRow",
+      );
+      expect(reloadedRow?.content?.map((c) => c.attrs?.colwidth)).toEqual([
+        [120],
+        [180],
+      ]);
+    });
+
+    });
 
 });

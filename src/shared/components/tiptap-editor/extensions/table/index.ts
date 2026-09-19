@@ -1,5 +1,11 @@
 import { mergeAttributes } from "@tiptap/core";
-import { Table, TableCell, TableHeader, TableRow } from "@tiptap/extension-table";
+import {
+  Table,
+  TableCell,
+  TableHeader,
+  TableRow,
+  type TableOptions,
+} from "@tiptap/extension-table";
 
 import { TableNavigationKeymap } from "./keymap";
 import { TablePaste } from "./paste";
@@ -17,6 +23,13 @@ const STRUCTURAL_MERGE_COMMANDS = [
 ];
 
 const structuralTable = Table.extend({
+  addOptions(): TableOptions {
+    return {
+      ...this.parent?.(),
+      resizable: true,
+    } as TableOptions;
+  },
+
   addCommands() {
     const parent = this.parent?.() as Record<string, unknown> | undefined;
     return Object.fromEntries(
