@@ -495,6 +495,19 @@
   @apply absolute top-3 left-2 text-lg p-2;
 }
 
+@utility post__table {
+  @apply my-4 w-full border-collapse text-left text-sm leading-6 text-neutral-700;
+
+  & th,
+  & td {
+    @apply border border-neutral-300 px-3 py-2 align-top;
+  }
+
+  & th {
+    @apply bg-muted font-bold;
+  }
+}
+
 @utility sidebar__wrapper {
   @apply fixed left-0 hidden sm:flex flex-col w-60 h-full z-50 border-r border-r-zinc-300 transition-[width];
 }

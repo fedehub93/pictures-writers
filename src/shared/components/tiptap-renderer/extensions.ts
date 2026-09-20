@@ -9,6 +9,12 @@ import { ProductNodeRenderer } from "./extensions/product";
 import { CustomLinkMarkRenderer } from "./extensions/link";
 import { AdBlockNodeRenderer } from "./extensions/ads";
 import { TableContentNodeRenderer } from "./extensions/table-content";
+import {
+  TableNodeRenderer,
+  TableRowNodeRenderer,
+  TableCellNodeRenderer,
+  TableHeaderNodeRenderer,
+} from "./extensions/table";
 import { CustomHeading } from "./extensions/heading";
 
 export const tiptapContentExtensions = [
@@ -34,4 +40,8 @@ export const tiptapContentExtensions = [
   InfoBoxNodeRenderer,
   AdBlockNodeRenderer,
   TableContentNodeRenderer,
+  TableNodeRenderer,
+  TableRowNodeRenderer,
+  TableCellNodeRenderer,
+  TableHeaderNodeRenderer,
 ] satisfies Extensions;
