@@ -7,8 +7,10 @@ import {
   type TableOptions,
 } from "@tiptap/extension-table";
 
+import { ActiveTableCell } from "./active-cell";
 import { TableNavigationKeymap } from "./keymap";
 import { TablePaste } from "./paste";
+import { TableBlockView } from "./table-view";
 
 /**
  * Structural merge commands stay out of the command surface so the grid can
@@ -23,10 +25,14 @@ const STRUCTURAL_MERGE_COMMANDS = [
 ];
 
 const structuralTable = Table.extend({
+  // The grid moves as a single block, like the other custom blocks.
+  draggable: true,
+
   addOptions(): TableOptions {
     return {
       ...this.parent?.(),
       resizable: true,
+      View: TableBlockView,
     } as TableOptions;
   },
 
@@ -93,4 +99,5 @@ export const createTableExtensions = () => [
   InlineTableHeader,
   TableNavigationKeymap,
   TablePaste,
+  ActiveTableCell,
 ];

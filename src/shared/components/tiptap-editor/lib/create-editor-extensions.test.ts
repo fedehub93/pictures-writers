@@ -23,6 +23,10 @@ import type { SlashCommand } from "../slash-menu/types";
 import { estimateReadingTime } from "./writing-metrics";
 import { normalizeTableSlice } from "../extensions/table/paste";
 import {
+  runTableMenuAction,
+  tableMenuStateAtCell,
+} from "../extensions/table/menu";
+import {
   DOMParser as PMDOMParser,
   Fragment,
   Node as PMNode,
@@ -1287,7 +1291,166 @@ describe("Tiptap production editor seam", () => {
         [180],
       ]);
     });
+  });
 
+  describe("table editor menu", () => {
+    it("reports rows, columns and capability guards from a hovered cell", () => {
+      const editor = createTableEditor();
+      seedTableGrid(editor, 3, 3);
+      const cells = collectCells(editor);
+
+      expect(tableMenuStateAtCell(editor.state.doc, cells[4].pos)).toEqual({
+        rows: 3,
+        columns: 3,
+        canDeleteRow: true,
+        canDeleteColumn: true,
+        hasHeaderRow: true,
+      });
     });
+
+    it("reports the 1x1 limit with deletions disabled", () => {
+      const editor = createTableEditor();
+      editor.commands.insertTable({ rows: 1, cols: 1, withHeaderRow: false });
+      const cells = collectCells(editor);
+
+      expect(tableMenuStateAtCell(editor.state.doc, cells[0].pos)).toEqual({
+        rows: 1,
+        columns: 1,
+        canDeleteRow: false,
+        canDeleteColumn: false,
+        hasHeaderRow: false,
+      });
+    });
+
+    it("returns null for a position outside any table", () => {
+      const editor = new Editor({
+        extensions: createProductionExtensions(),
+        content: {
+          type: "doc",
+          content: [
+            { type: "paragraph", content: [{ type: "text", text: "hi" }] },
+          ],
+        },
+      });
+
+      expect(tableMenuStateAtCell(editor.state.doc, 1)).toBeNull();
+    });
+
+    it("runs a structural action against the hovered cell, not the caret", () => {
+      const editor = createTableEditor();
+      seedTableGrid(editor, 3, 3);
+      const cells = collectCells(editor);
+
+      setCursorInCell(editor, 4); // caret in the middle cell
+      expect(runTableMenuAction(editor, "addRowBelow", cells[2].pos)).toBe(true);
+      expect(gridTextRows(editor)).toEqual([
+        "1|2|3",
+        "||",
+        "4|5|6",
+        "7|8|9",
+      ]);
+    });
+
+    it("adds a column to the right of the hovered cell", () => {
+      const editor = createTableEditor();
+      seedTableGrid(editor, 3, 3);
+      const cells = collectCells(editor);
+
+      setCursorInCell(editor, 0);
+      expect(runTableMenuAction(editor, "addColumnRight", cells[1].pos)).toBe(
+        true,
+      );
+      expect(gridTextRows(editor)).toEqual([
+        "1|2||3",
+        "4|5||6",
+        "7|8||9",
+      ]);
+    });
+
+    it("deletes the row of the hovered cell", () => {
+      const editor = createTableEditor();
+      seedTableGrid(editor, 3, 3);
+      const cells = collectCells(editor);
+
+      setCursorInCell(editor, 0);
+      expect(runTableMenuAction(editor, "deleteRow", cells[4].pos)).toBe(true);
+      expect(gridTextRows(editor)).toEqual(["1|2|3", "7|8|9"]);
+    });
+
+    it("toggles the header row through the menu", () => {
+      const editor = createTableEditor();
+      seedTableGrid(editor, 3, 3);
+      const cells = collectCells(editor);
+
+      setCursorInCell(editor, 7);
+      expect(runTableMenuAction(editor, "toggleHeaderRow", cells[4].pos)).toBe(
+        true,
+      );
+      expect(gridCellTypes(editor)[0]).toEqual([
+        "tableCell",
+        "tableCell",
+        "tableCell",
+      ]);
+    });
+
+    it("deletes the whole table through the menu", () => {
+      const editor = new Editor({
+        extensions: createProductionExtensions(),
+        content: {
+          type: "doc",
+          content: [
+            { type: "paragraph", content: [{ type: "text", text: "before" }] },
+            {
+              type: "table",
+              content: [
+                {
+                  type: "tableRow",
+                  content: [
+                    {
+                      type: "tableCell",
+                      content: [{ type: "paragraph" }],
+                    },
+                  ],
+                },
+              ],
+            },
+            { type: "paragraph", content: [{ type: "text", text: "after" }] },
+          ],
+        },
+      });
+      const cells = collectCells(editor);
+
+      setCursorInCell(editor, 0);
+      expect(runTableMenuAction(editor, "deleteTable", cells[0].pos)).toBe(
+        true,
+      );
+      const json: JSONContent = editor.getJSON();
+      expect(json.content?.map((node) => node.type)).toEqual([
+        "paragraph",
+        "paragraph",
+      ]);
+    });
+
+    it("refuses deletions at the 1x1 limit", () => {
+      const editor = createTableEditor();
+      editor.commands.insertTable({ rows: 1, cols: 1, withHeaderRow: false });
+      const cells = collectCells(editor);
+
+      setCursorInCell(editor, 0);
+      expect(runTableMenuAction(editor, "deleteRow", cells[0].pos)).toBe(false);
+      expect(runTableMenuAction(editor, "deleteColumn", cells[0].pos)).toBe(
+        false,
+      );
+      expect(gridTextRows(editor)).toEqual([""]);
+    });
+  });
+
+  describe("table block drag", () => {
+    it("marks the table node draggable for block moves", () => {
+      const editor = createTableEditor();
+
+      expect(editor.state.schema.nodes.table.spec.draggable).toBe(true);
+    });
+  });
 
 });
