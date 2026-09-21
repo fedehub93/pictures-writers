@@ -30,13 +30,13 @@
 
 ## Checklist
 
-- [ ] Lato lettore, una tabella con tante colonne scorre orizzontalmente e le colonne restano leggibili (nessuna compressione) — **validazione manuale da eseguire**.
-- [ ] Lato lettore, una colonna con molto testo non comprime le altre oltre il min-content — **validazione manuale da eseguire**.
-- [ ] Lato lettore, una tabella piccola resta full-width su desktop (nessuna regressione rispetto all'attuale `w-full`) — **validazione manuale da eseguire**.
+- [x] Lato lettore, una tabella con tante colonne scorre orizzontalmente e le colonne restano leggibili (nessuna compressione) — **validazione manuale eseguita**.
+- [x] Lato lettore, una colonna con molto testo non comprime le altre oltre il min-content — **validazione manuale eseguita**.
+- [x] Lato lettore, una tabella piccola resta full-width su desktop (nessuna regressione rispetto all'attuale `w-full`) — **validazione manuale eseguita**.
 - [x] Le `colwidth` persistite restano rispettate nel rendering pubblico (rendering test: `min-width: max(100%, Npx)` + larghezze per colonna).
 - [x] La scrollbar è sottile e coerente col tema; nessun fade/hint aggiuntivo (utility `post__table-scroll` con scrollbar webkit 6px e `scrollbar-width: thin`).
-- [ ] In editor, una tabella larga non fuoriesce più dal `.tableWrapper` ma scorre nel layer interno — **validazione manuale da eseguire** (test strutturale del DOM verde).
-- [ ] In editor, drag handle e entrambi i knob "+" restano visibili e usabili con la tabella scorrevole — **validazione manuale da eseguire**.
+- [x] In editor, una tabella larga non fuoriesce più dal `.tableWrapper` ma scorre nel layer interno — **validazione manuale eseguita** (test strutturale del DOM verde).
+- [x] In editor, drag handle e entrambi i knob "+" restano visibili e usabili con la tabella scorrevole — **validazione manuale eseguita**.
 - [x] Test del seam rendering aggiornati/passanti; roundtrip documento invariato.
 - [x] `npm run lint` senza nuovi finding; `npx tsc --noEmit` pulito.
 
@@ -47,7 +47,7 @@
 - Lato editor: `TableBlockView` crea un layer interno `.table-scroll-layer` (`overflow-x: auto`) e ci sposta la `<table>`; drag handle e knob "+" restano fuori dal layer (per il handle sul wrapper esterno, per i knob perché `tableWrapperAt` ora restituisce il layer, il cui rect è il bordo visibile). Celle con `table-layout: fixed` e `colwidth` invariate.
 - Test: `table-rendering.test.tsx` aggiornato (9 test, incluse le due nuove asserzioni sul wrapper e `min-width: max(100%, …)`), roundtrip invariato; nuovo `table-view.test.ts` (happy-dom) che verifica la struttura DOM del layer di scroll.
 - `npm run test:run`: 37 file, 314 test, tutti passanti; `npx tsc --noEmit` pulito; `npm run lint` senza nuovi finding rispetto alla baseline pre-esistente (73 errori / 321 warning).
-- Restano da validare manualmente i punti visuali: scroll reale su viewport stretto (lettore), nessuna compressione oltre il min-content, tabella piccola full-width, tabella larga in editor che scorre nel layer, raggiungibilità dei knob "+" con tabella scorrevole.
+- Validazione manuale eseguita e passata: scroll reale su viewport stretto (lettore), nessuna compressione oltre il min-content, tabella piccola full-width, tabella larga in editor che scorre nel layer, raggiungibilità di drag handle e knob "+" con tabella scorrevole.
 
 ## Out of scope (da 06/spec)
 
