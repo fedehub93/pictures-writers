@@ -256,6 +256,29 @@
       overflow: visible;
       border-radius: 6px;
 
+      // The table scrolls inside this layer: the drag handle and the "+"
+      // knobs live on the wrapper around it so a wide grid never gets
+      // clipped, it just scrolls.
+      & .table-scroll-layer {
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: thin;
+        scrollbar-color: var(--color-border) transparent;
+
+        &::-webkit-scrollbar {
+          height: 6px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          border-radius: 3px;
+          background-color: var(--color-border);
+        }
+
+        &::-webkit-scrollbar-track {
+          background-color: transparent;
+        }
+      }
+
       table {
         border-collapse: collapse;
         table-layout: fixed;
@@ -497,7 +520,7 @@
 }
 
 @utility post__table {
-  @apply my-4 w-full border-collapse text-left text-sm leading-6 text-neutral-700;
+  @apply w-max min-w-full border-collapse text-left text-sm leading-6 text-neutral-700;
 
   & th,
   & td {
@@ -506,6 +529,25 @@
 
   & th {
     @apply bg-muted font-bold;
+  }
+}
+
+@utility post__table-scroll {
+  @apply my-4 w-full overflow-x-auto overflow-y-hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: 3px;
+    background-color: var(--color-border);
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
   }
 }
 

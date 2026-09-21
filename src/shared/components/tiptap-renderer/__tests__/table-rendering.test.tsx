@@ -61,7 +61,9 @@ describe("public Tiptap table rendering seam (issue 05)", () => {
   it("renders a produced table document to HTML with full borders and a highlighted header", () => {
     const html = renderTiptapHtml(produce(THREE_BY_THREE));
 
-    expect(html).toContain('<table class="post__table"');
+    expect(html).toContain(
+      '<div class="post__table-scroll"><table class="post__table"',
+    );
     expect(html).toContain("<tbody>");
     expect(html).toContain("<tr>");
     expect(html).toContain("<th><p>Rank</p></th>");
@@ -78,6 +80,7 @@ describe("public Tiptap table rendering seam (issue 05)", () => {
       <TipTapRendererV2 content={produce(THREE_BY_THREE)} />,
     );
 
+    expect(markup).toContain('<div class="post__table-scroll">');
     expect(markup).toContain('<table class="post__table"');
     expect(markup).toContain("<tbody>");
     expect(markup).toContain("<tr>");
@@ -89,6 +92,22 @@ describe("public Tiptap table rendering seam (issue 05)", () => {
   it("does not leak internal cell attributes into the public HTML", () => {
     const html = renderTiptapHtml(produce(THREE_BY_THREE));
     expect(html).not.toMatch(/colspan|rowspan|colwidth/);
+  });
+
+  it("wraps the table in a horizontal scroll layer in both output paths", () => {
+    const produced = produce(THREE_BY_THREE);
+
+    const html = renderTiptapHtml(produced);
+    expect(html).toMatch(
+      /<div class="post__table-scroll"><table class="post__table"/,
+    );
+
+    const markup = renderToStaticMarkup(
+      <TipTapRendererV2 content={produced} />,
+    );
+    expect(markup).toMatch(
+      /<div class="post__table-scroll"><table class="post__table"/,
+    );
   });
 
   it("round-trips a produced table document through the renderer schema without semantic loss", () => {
@@ -122,10 +141,21 @@ describe("public Tiptap table rendering seam (issue 05)", () => {
 
     const html = renderTiptapHtml(produce(fixture));
 
-    expect(html).toContain('<table class="post__table" style="width: 300px"');
+    expect(html).toContain(
+      '<table class="post__table" style="min-width: max(100%, 300px)"',
+    );
+    expect(html).toContain('<div class="post__table-scroll">');
     expect(html).toContain('<col style="width: 120px"/>');
     expect(html).toContain('<col style="width: 180px"/>');
     expect(html).toContain('style="text-align: center"');
+  });
+
+  it("keeps the table filling its container when no column widths are persisted", () => {
+    const html = renderTiptapHtml(produce(THREE_BY_THREE));
+
+    expect(html).toContain(
+      '<table class="post__table" style="min-width: max(100%, 75px)"',
+    );
   });
 
   it("renders a table without a header row using body cells only", () => {

@@ -2,6 +2,7 @@ import { Node, mergeAttributes } from "@tiptap/core";
 import { createColGroup } from "@tiptap/extension-table";
 
 const TABLE_CLASSNAME = "post__table";
+const TABLE_WRAPPER_CLASSNAME = "post__table-scroll";
 const TABLE_CELL_MIN_WIDTH = 25;
 
 const cellAttributes = () => ({
@@ -25,19 +26,27 @@ export const TableNodeRenderer = Node.create({
   renderHTML({ node, HTMLAttributes }) {
     const colGroup = createColGroup(node, TABLE_CELL_MIN_WIDTH);
     const hasColumns = "colgroup" in colGroup;
-    const tableStyle = hasColumns
-      ? colGroup.tableWidth
-        ? `width: ${colGroup.tableWidth}`
-        : `min-width: ${colGroup.tableMinWidth}`
+
+    // The wrapper makes the grid scroll horizontally on narrow viewports.
+    // On the table itself a min-width (never a hard width) keeps the saved
+    // column proportions while still letting small tables fill their
+    // container: `max(100%, Npx)` grows the grid to full width when it fits
+    // and only scrolls once the persisted widths exceed the viewport.
+    const explicitWidth =
+      hasColumns && (colGroup.tableWidth || colGroup.tableMinWidth);
+    const tableStyle = explicitWidth
+      ? `min-width: max(100%, ${explicitWidth})`
       : "";
     const attrs = mergeAttributes(HTMLAttributes, {
       class: TABLE_CLASSNAME,
       ...(tableStyle ? { style: tableStyle } : {}),
     });
 
-    return hasColumns
+    const table = hasColumns
       ? ["table", attrs, colGroup.colgroup, ["tbody", 0]]
       : ["table", attrs, ["tbody", 0]];
+
+    return ["div", { class: TABLE_WRAPPER_CLASSNAME }, table];
   },
 });
 
