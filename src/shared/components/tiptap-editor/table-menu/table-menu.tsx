@@ -24,8 +24,8 @@ import {
   tableMenuStateAtCell,
 } from "../extensions/table/menu";
 import {
-  HIDE_DELAY_MS,
   HideScheduler,
+  ShowScheduler,
   hoverReducer,
   type TableMenuAnchor,
   type HoverSignal,
@@ -85,6 +85,7 @@ const tableWrapperAt = (
 export const TableMenu = ({ editor }: TableMenuProps) => {
   const [anchor, setAnchor] = useState<TableMenuAnchor | null>(null);
   const anchorRef = useRef<TableMenuAnchor | null>(null);
+  const pendingRef = useRef<TableMenuAnchor | null>(null);
   const pointRef = useRef<{ left: number; top: number } | null>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const toolbarRef = useRef<HTMLDivElement>(null);
@@ -97,18 +98,32 @@ export const TableMenu = ({ editor }: TableMenuProps) => {
     const view = editor.view;
     const dom = view.dom;
 
-    const scheduler = new HideScheduler(() => {
+    const hideScheduler = new HideScheduler(() => {
       pointRef.current = null;
+      pendingRef.current = null;
       anchorRef.current = null;
       setAnchor(null);
-    }, HIDE_DELAY_MS);
+    });
+
+    const showScheduler = new ShowScheduler(() => {
+      const pending = pendingRef.current;
+      if (!pending) return;
+      pendingRef.current = null;
+      anchorRef.current = pending;
+      setAnchor(pending);
+    });
 
     const applySignal = (signal: HoverSignal) => {
       const decision = hoverReducer(anchorRef.current, signal);
       anchorRef.current = decision.anchor;
       setAnchor(decision.anchor);
-      if (decision.timer === "arm") scheduler.arm();
-      else if (decision.timer === "cancel") scheduler.cancel();
+      if (signal.type === "cell") {
+        pendingRef.current = signal.anchor;
+      }
+      if (decision.show === "arm") showScheduler.arm();
+      else if (decision.show === "cancel") showScheduler.cancel();
+      if (decision.hide === "arm") hideScheduler.arm();
+      else if (decision.hide === "cancel") hideScheduler.cancel();
     };
     applySignalRef.current = applySignal;
 
@@ -155,8 +170,10 @@ export const TableMenu = ({ editor }: TableMenuProps) => {
     };
 
     const onScroll = () => {
-      scheduler.cancel();
+      showScheduler.cancel();
+      hideScheduler.cancel();
       pointRef.current = null;
+      pendingRef.current = null;
       anchorRef.current = null;
       setAnchor(null);
     };
@@ -193,7 +210,8 @@ export const TableMenu = ({ editor }: TableMenuProps) => {
         window.removeEventListener("scroll", onScroll, true);
       }
       editor.off("transaction", onTransaction);
-      scheduler.cancel();
+      showScheduler.cancel();
+      hideScheduler.cancel();
       applySignalRef.current = () => undefined;
     };
   }, [editor]);
@@ -286,7 +304,7 @@ export const TableMenu = ({ editor }: TableMenuProps) => {
         ref={toolbarRef}
         role="toolbar"
         aria-label="Table row and column actions"
-        className="pointer-events-auto absolute flex -translate-x-1/2 items-center gap-0.5 rounded-md border bg-background p-1 shadow-md"
+        className="pointer-events-auto absolute flex -translate-x-1/2 items-center gap-0.5 rounded-md border bg-background p-1 shadow-md animate-in fade-in-0 zoom-in-[0.98] duration-[120ms]"
         style={{ top: menuTop, left: menuLeft }}
       >
         {structuralActions.map(({ action, label, Icon, disabled }) => (

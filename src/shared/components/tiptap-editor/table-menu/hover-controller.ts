@@ -21,8 +21,11 @@ export type HoverSignal =
 
 export interface HoverDecision {
   anchor: TableMenuAnchor | null;
-  timer: "arm" | "cancel" | "none";
+  show: "arm" | "cancel" | "none";
+  hide: "arm" | "cancel" | "none";
 }
+
+export const SHOW_DELAY_MS = 300;
 
 export const HIDE_DELAY_MS = 200;
 
@@ -31,28 +34,37 @@ export const hoverReducer = (
   signal: HoverSignal,
 ): HoverDecision => {
   switch (signal.type) {
-    case "cell":
-      return { anchor: signal.anchor, timer: "cancel" };
+    case "cell": {
+      const sameCell = anchor !== null && anchor.cellPos === signal.anchor.cellPos;
+      return sameCell
+        ? { anchor: signal.anchor, show: "cancel", hide: "cancel" }
+        : { anchor, show: "arm", hide: "cancel" };
+    }
     case "interstitial":
-      return { anchor, timer: anchor ? "arm" : "none" };
+      return {
+        anchor,
+        show: "cancel",
+        hide: anchor ? "arm" : "none",
+      };
     case "editorLeave":
       return {
         anchor,
-        timer: signal.towardMenu ? "none" : anchor ? "arm" : "none",
+        show: "cancel",
+        hide: signal.towardMenu ? "none" : anchor ? "arm" : "none",
       };
     case "menuEnter":
-      return { anchor, timer: "cancel" };
+      return { anchor, show: "cancel", hide: "cancel" };
     case "menuLeave":
-      return { anchor, timer: anchor ? "arm" : "none" };
+      return { anchor, show: "cancel", hide: anchor ? "arm" : "none" };
   }
 };
 
-export class HideScheduler {
+export class DelayScheduler {
   private timer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
-    private readonly onHide: () => void,
-    private readonly delayMs = HIDE_DELAY_MS,
+    private readonly onFire: () => void,
+    private readonly delayMs: number,
   ) {}
 
   get pending(): boolean {
@@ -63,7 +75,7 @@ export class HideScheduler {
     this.cancel();
     this.timer = setTimeout(() => {
       this.timer = null;
-      this.onHide();
+      this.onFire();
     }, this.delayMs);
   }
 
@@ -72,5 +84,17 @@ export class HideScheduler {
       clearTimeout(this.timer);
       this.timer = null;
     }
+  }
+}
+
+export class ShowScheduler extends DelayScheduler {
+  constructor(onShow: () => void) {
+    super(onShow, SHOW_DELAY_MS);
+  }
+}
+
+export class HideScheduler extends DelayScheduler {
+  constructor(onHide: () => void) {
+    super(onHide, HIDE_DELAY_MS);
   }
 }
