@@ -63,6 +63,7 @@ const BubbleMenuToolbar = ({ editor }: { editor: Editor }) => {
 export const BubbleMenu = ({ editor, linkButton: LinkButton }: BubbleMenuProps) => {
   const options = useMemo(
     () => ({
+      strategy: "fixed" as const,
       placement: "top" as const,
       offset: 8,
       flip: true,
@@ -79,8 +80,10 @@ export const BubbleMenu = ({ editor, linkButton: LinkButton }: BubbleMenuProps) 
       editor={editor}
       shouldShow={shouldShowBubbleMenu}
       updateDelay={250}
+      appendTo={document.body}
       options={options}
-      className="flex items-center gap-1 rounded-md border bg-background p-1 shadow-sm select-none"
+      className="flex items-center gap-1 rounded-md border bg-background p-1 shadow-sm select-none z-50"
+      style={{ zIndex: 9999 }}
       onPointerDown={(event) => event.preventDefault()}
       role="toolbar"
       aria-label="Inline formatting"

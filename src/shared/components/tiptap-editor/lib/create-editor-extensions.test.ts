@@ -1367,6 +1367,72 @@ describe("Tiptap production editor seam", () => {
       ]);
     });
 
+    it("lands the caret in the row inserted below the hovered cell", () => {
+      const editor = createTableEditor();
+      seedTableGrid(editor, 3, 3);
+      const cells = collectCells(editor);
+
+      setCursorInCell(editor, 6); // caret elsewhere, hovered cell is cells[1]
+      expect(runTableMenuAction(editor, "addRowBelow", cells[1].pos)).toBe(true);
+      expect(gridTextRows(editor)).toEqual([
+        "1|2|3",
+        "||",
+        "4|5|6",
+        "7|8|9",
+      ]);
+      expect(activeCellIndex(editor)).toBe(4); // new row, same column
+    });
+
+    it("lands the caret in the row inserted above the hovered cell", () => {
+      const editor = createTableEditor();
+      seedTableGrid(editor, 3, 3);
+      const cells = collectCells(editor);
+
+      setCursorInCell(editor, 6);
+      expect(runTableMenuAction(editor, "addRowAbove", cells[1].pos)).toBe(true);
+      expect(gridTextRows(editor)).toEqual([
+        "||",
+        "1|2|3",
+        "4|5|6",
+        "7|8|9",
+      ]);
+      expect(activeCellIndex(editor)).toBe(1); // new row, same column
+    });
+
+    it("lands the caret in the column inserted to the right of the hovered cell", () => {
+      const editor = createTableEditor();
+      seedTableGrid(editor, 3, 3);
+      const cells = collectCells(editor);
+
+      setCursorInCell(editor, 6);
+      expect(runTableMenuAction(editor, "addColumnRight", cells[1].pos)).toBe(
+        true,
+      );
+      expect(gridTextRows(editor)).toEqual([
+        "1|2||3",
+        "4|5||6",
+        "7|8||9",
+      ]);
+      expect(activeCellIndex(editor)).toBe(2); // new column, same row
+    });
+
+    it("lands the caret in the column inserted to the left of the hovered cell", () => {
+      const editor = createTableEditor();
+      seedTableGrid(editor, 3, 3);
+      const cells = collectCells(editor);
+
+      setCursorInCell(editor, 0);
+      expect(runTableMenuAction(editor, "addColumnLeft", cells[4].pos)).toBe(
+        true,
+      );
+      expect(gridTextRows(editor)).toEqual([
+        "1||2|3",
+        "4||5|6",
+        "7||8|9",
+      ]);
+      expect(activeCellIndex(editor)).toBe(5); // row 1, new column
+    });
+
     it("deletes the row of the hovered cell", () => {
       const editor = createTableEditor();
       seedTableGrid(editor, 3, 3);

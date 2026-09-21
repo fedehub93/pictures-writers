@@ -1,5 +1,6 @@
 import type { Editor } from "@tiptap/core";
 import type { Node } from "@tiptap/pm/model";
+import { cellAround, cellNear, isInTable, nextCell } from "@tiptap/pm/tables";
 
 export type TableMenuAction =
   | "addRowAbove"
@@ -79,9 +80,27 @@ const TABLE_MENU_COMMANDS: Record<
 };
 
 /**
+ * The cell the caret lands in after each structural insertion, expressed as a
+ * move from the hovered cell: rows keep the column, columns keep the row.
+ * This mirrors the keyboard behaviour (Tab/Enter land in the new row/column),
+ * so inserting from the menu or the "+" knobs selects the created cell.
+ */
+const INSERT_NEXT_CELL: Partial<
+  Record<TableMenuAction, { dir: 1 | -1; axis: "horiz" | "vert" }>
+> = {
+  addRowAbove: { axis: "vert", dir: -1 },
+  addRowBelow: { axis: "vert", dir: 1 },
+  addColumnLeft: { axis: "horiz", dir: -1 },
+  addColumnRight: { axis: "horiz", dir: 1 },
+};
+
+/**
  * Applies one of the structural operations relative to the hovered cell,
  * placing the caret into that cell first so the action targets it even when
  * the cursor lives elsewhere (e.g. another cell, or outside the table).
+ * Inserting a row/column then moves the caret into the cell that was created,
+ * matching the keyboard behaviour; deletions leave the caret where the grid
+ * maps it.
  */
 export const runTableMenuAction = (
   editor: Editor,
@@ -106,5 +125,16 @@ export const runTableMenuAction = (
   }
 
   editor.commands.setTextSelection(selectionPos);
-  return TABLE_MENU_COMMANDS[action](editor);
+  const applied = TABLE_MENU_COMMANDS[action](editor);
+
+  const move = INSERT_NEXT_CELL[action];
+  if (applied && move && isInTable(editor.state)) {
+    const $cell =
+      cellAround(editor.state.selection.$head) ??
+      cellNear(editor.state.selection.$head);
+    const target = $cell ? nextCell($cell, move.axis, move.dir) : null;
+    if (target) editor.commands.setTextSelection(target.pos + 2);
+  }
+
+  return applied;
 };

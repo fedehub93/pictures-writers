@@ -270,7 +270,8 @@
         min-width: 1em;
         border: 1px solid var(--color-border);
         padding: 3px 12px;
-        vertical-align: top;
+        text-align: left;
+        vertical-align: middle;
       }
 
       th {
@@ -500,7 +501,7 @@
 
   & th,
   & td {
-    @apply border border-neutral-300 px-3 py-2 align-top;
+    @apply border border-neutral-300 px-3 py-2 align-middle;
   }
 
   & th {
