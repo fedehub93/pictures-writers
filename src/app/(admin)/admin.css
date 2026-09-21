@@ -256,9 +256,9 @@
       overflow: visible;
       border-radius: 6px;
 
-      // The table scrolls inside this layer: the drag handle and the "+"
-      // knobs live on the wrapper around it so a wide grid never gets
-      // clipped, it just scrolls.
+      /* The table scrolls inside this layer: the drag handle and the "+"
+         knobs live on the wrapper around it so a wide grid never gets
+         clipped, it just scrolls. */
       & .table-scroll-layer {
         overflow-x: auto;
         overflow-y: hidden;
