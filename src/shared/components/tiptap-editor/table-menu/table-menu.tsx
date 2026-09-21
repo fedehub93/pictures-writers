@@ -374,7 +374,7 @@ export const TableMenu = ({ editor }: TableMenuProps) => {
         title="Add row below"
         className="pointer-events-auto absolute border bg-background shadow-sm"
         style={{
-          top: anchor.table.bottom + 4,
+          top: anchor.table.bottom + 0,
           left: anchor.table.left + anchor.table.width / 2,
         }}
         onClick={() => runAction("addRowBelow")}
