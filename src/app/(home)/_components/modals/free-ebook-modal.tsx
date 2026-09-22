@@ -103,7 +103,7 @@ export const FreeEbookModal = ({
           }
         });
       });
-    } catch (error) {
+    } catch (_error) {
       setIsRecaptchaLoading(false);
       setError(
         "Qualcosa è andato storto. Prego riprovare o contattare il supporto."
@@ -177,7 +177,7 @@ export const FreeEbookModal = ({
                   </div>
                   <DialogFooter className="flex flex-row gap-x-2 justify-between">
                     <DialogClose asChild className="flex-1">
-                      <Button type="button">Close</Button>
+                      <Button type="button">Chiudi</Button>
                     </DialogClose>
                     <Button
                       className="flex-1"

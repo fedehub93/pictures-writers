@@ -79,7 +79,7 @@ const WidgetNewsletter = ({ label }: WidgetNewsletter) => {
           }
         });
       });
-    } catch (error) {
+    } catch (_error) {
       setIsRecaptchaLoading(false);
       setError(
         "Qualcosa è andato storto. Prego riprovare o contattare il supporto."
@@ -94,19 +94,13 @@ const WidgetNewsletter = ({ label }: WidgetNewsletter) => {
       {success && (
         <div className="newsletter__success">
           <p>
-            Benvenuto a bordo, ti ringraziamo per esserti iscritto alla nostra
-            newsletter.
+            Benvenuto a bordo! Controlla la tua inbox per confermare
+            l&apos;iscrizione. Ci vediamo nella prossima email.
           </p>
-          <p>
-            <strong>
-              Ti abbiamo inviato una email per confermare la tua sottoscrizione.
-            </strong>
+          <p className="text-sm text-muted-foreground">
+            Potrai annullare la sottoscrizione in qualsiasi momento, direttamente
+            dalle email che riceverai.
           </p>
-          <p>
-            Promettiamo di non essere invadenti e vogliamo ricordarti che potrai
-            annullare la sottoscrizione direttamente dalle email che riceverai.
-          </p>
-          <p>Grazie ancora per esserti unito a noi.</p>
         </div>
       )}
       {error && (
@@ -125,16 +119,15 @@ const WidgetNewsletter = ({ label }: WidgetNewsletter) => {
       {!success && !error && (
         <>
           <div className="newsletter__box">
-            Iscriviti alla nostra community di sceneggiatori e riceverai news
-            settimanali direttamente sulla tua email:
+            Entra nella community di sceneggiatori di Pictures Writers: ogni
+            settimana nella tua inbox trovi strumenti concreti per scrivere
+            meglio.
             <br />
             <br />
             <ul className="list-disc pl-4">
-              <li>Articoli più popolari e news sul settore.</li>
-              <li>
-                Aggiornamenti sui più importanti concorsi di sceneggiatura.
-              </li>
-              <li>Nuovi eventi online di Pictures Writers.</li>
+              <li>Guide pratiche e analisi dei film che fanno scuola</li>
+              <li>Scadenze e aggiornamenti sui concorsi di sceneggiatura</li>
+              <li>Notizie sui laboratori e gli eventi Pictures Writers</li>
             </ul>
           </div>
           <div className="text-sm text-muted-foreground">
@@ -172,7 +165,7 @@ const WidgetNewsletter = ({ label }: WidgetNewsletter) => {
                   className="self-end"
                   disabled={!isValid || isSubmitting || isRecaptchaLoading}
                 >
-                  Iscriviti
+                  Sì, voglio scrivere meglio
                 </Button>
               </form>
             </Form>
