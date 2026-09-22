@@ -109,7 +109,7 @@ export const ContactUs = (): JSX.Element => {
                 <div className="flex flex-wrap gap-4">
                   <GenericInput
                     control={form.control}
-                    label="Name"
+                    label="Nome"
                     name="name"
                     placeholder="Mario Rossi"
                     disabled={isSubmitting}
@@ -126,7 +126,7 @@ export const ContactUs = (): JSX.Element => {
                 </div>
                 <GenericInput
                   control={form.control}
-                  label="Subject"
+                  label="Soggetto"
                   name="subject"
                   placeholder="Info"
                   disabled={isSubmitting}

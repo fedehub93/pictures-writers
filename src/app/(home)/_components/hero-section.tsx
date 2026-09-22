@@ -2,10 +2,12 @@
 
 import { JSX } from "react";
 import Image from "next/image";
+import { ChevronDownCircleIcon } from "lucide-react";
 
 import Link from "next/link";
 
 import { Button } from "@/shared/ui/button";
+import { Badge } from "@/shared/ui/badge";
 
 export const HeroSection = (): JSX.Element => {
   return (
@@ -24,19 +26,8 @@ export const HeroSection = (): JSX.Element => {
               , fornendoti l&apos;ispirazione, l&apos;istruzione e la comunità
               di supporto di cui hai bisogno per diventare uno sceneggiatore di
               successo.
-              <br />
-              <br />
-              Dai{" "}
-              <span className="rounded-md bg-accent p-1 font-bold">
-                laboratori di scrittura
-              </span>{" "}
-              alle{" "}
-              <span className="rounded-md bg-accent p-1 font-bold">
-                consulenze di editing
-              </span>{" "}
-              d'élite: ti accompagniamo dalla prima pagina al pitch finale.
             </p>
-            {/* <p>
+            <p>
               Pronto a dare vita alle tue idee sul grande schermo?
               <br />
               <span className="font-bold text-primary">
@@ -47,20 +38,17 @@ export const HeroSection = (): JSX.Element => {
                 Introduzione alla sceneggiatura cinematografica
               </span>
               , e inizia a scrivere le tue storie di successo.
-            </p> */}
-
-            <div className="flex flex-wrap gap-4 justify-center lg:justify-start">
-              <Button asChild type="button" className="bg-foreground text-md" size="lg">
-                <Link href="/shop/servizi-di-editing">Servizi di Editing</Link>
-              </Button>
-              <Button asChild type="button" className="bg-foreground text-md" size="lg">
-                <Link href="/shop/corsi-di-sceneggiatura">
-                  Corsi & Masterclass
+            </p>
+            <div>
+              <Button asChild type="button" size="lg">
+                <Link href="/shop/ebooks/introduzione-alla-sceneggiatura">
+                  Vai all&apos;Ebook
                 </Link>
               </Button>
             </div>
           </div>
-          <div className="rounded-lg aspect-square relative">
+
+          <div className="rounded-lg aspect-square relative hidden lg:block">
             <Image
               alt="jumbotron"
               fill
@@ -69,36 +57,23 @@ export const HeroSection = (): JSX.Element => {
               src="/hero-section-pana.png"
               priority
             />
-            {/* <div className="absolute top-1/4 -left-4 md:left-4 animate-float">
-              <div className="bg-white p-5 rounded-2xl shadow-lg border border-primary/10 max-w-70">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="bg-primary text-white text-[10px] font-black px-2 py-1 rounded-md uppercase">
-                    Expiring
-                  </span>
-                  <span className="text-primary font-bold text-xs">
-                    Mancano 48h
-                  </span>
-                </div>
-                <h4 className="font-bold text-foreground mb-1">
-                  Scrittura Dialoghi Avanzata
-                </h4>
-                <p className="text-xs text-gray-500 mb-4 italic">
-                  Ultimi 5 posti disponibili con sconto "Early Bird".
-                </p>
-                <div className="flex items-center justify-between">
-                  <span className="text-xl font-black text-foreground">
-                    €129{" "}
-                    <span className="text-xs text-gray-400 line-through">
-                      €189
-                    </span>
-                  </span>
-                  <button className="bg-foreground text-white text-[11px] font-bold px-3 py-2 rounded-lg hover:bg-primary transition-colors">
-                    Iscriviti ora
-                  </button>
-                </div>
-              </div>
-            </div> */}
           </div>
+        </div>
+        <div className="mt-20 w-full flex justify-center">
+          <a
+            href="#testimonianze"
+            className="flex flex-col items-center gap-4 group"
+          >
+            <Badge className="flex gap-x-4 items-center bg-foreground group-hover:bg-primary text-lg p-2 px-4">
+              <span className="inline-flex items-center gap-1 text-sm font-medium text-primary-foreground transition-colors">
+                Cosa dicono i nostri studenti
+              </span>
+            </Badge>
+            <ChevronDownCircleIcon
+              className="size-8 animate-bounce group-hover:text-primary"
+              strokeWidth={1}
+            />
+          </a>
         </div>
       </div>
     </section>

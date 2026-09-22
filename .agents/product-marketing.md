@@ -141,6 +141,7 @@
 - v1 (2026-09-16) — Initial context.
 - v2 (2026-09-16) — Added SEO workflow status section.
 - v3 (2026-09-16) — Fase copywriting completata (copy deck in `.agents/copywriting.md`).
+- v4 (2026-09-22) — Fase cro completata (deliverable in `.agents/cro.md`).
 
 ## SEO Marketing Skills Workflow
 
@@ -149,7 +150,7 @@
 2. seo-audit ✅ (correzioni tecniche completate)
 3. content-strategy ✅ (strategia + calendario in `.agents/content-strategy.md`)
 4. copywriting ✅ (copy deck in `.agents/copywriting.md`, in corso di applicazione in CMS)
-5. cro 🔲
+5. cro ✅ (deliverable in `.agents/cro.md`)
 6. schema 🔲 (residui: ContactPage, Event, VideoObject, Course, ItemList Blog)
 7. emails 🔲
 8. ai-seo 🔲
@@ -197,8 +198,8 @@
 - `src/modules/blog/posts/ui/public/views/post-slug-view.tsx`
 - `src/modules/blog/posts/ui/public/views/post-draft-slug-view.tsx`
 
-### Prossimi passi (fasi 5-9)
-La prossima sessione deve iniziare dalla **cro** (fase 5 della roadmap). Per riprendere:
-1. Leggere `.agents/copywriting.md` (deliverable copy fase 4, da applicare in CMS)
-2. Leggere `.agents/content-strategy.md` per la strategia e il calendario editoriale
-3. Usare lo skill `cro` per ottimizzare struttura/pagina hub (CTA placement, conversion paths)
+### Prossimi passi (fasi 6-9)
+La prossima sessione deve iniziare dalla **schema** (fase 6 della roadmap). Per riprendere:
+1. Leggere `.agents/cro.md` (deliverable fase 5: quick wins + test ideas da implementare)
+2. Leggere `.agents/copywriting.md` (copy da applicare in CMS, checklist §9)
+3. Risolvere i residui schema: ContactPage, Event, VideoObject, Course, ItemList Blog

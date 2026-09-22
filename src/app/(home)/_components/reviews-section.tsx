@@ -55,7 +55,7 @@ export const ReviewsSection = ({
       )}
       <section
         id="testimonianze"
-        className="py-24 bg-primary-foreground border-b border-b-accent"
+        className="scroll-mt-12 py-24 bg-primary-foreground border-b border-b-accent"
       >
         <div className="container mx-auto px-6 lg:max-w-6xl">
           <div className="text-center mb-16">
@@ -64,8 +64,8 @@ export const ReviewsSection = ({
             </h2>
             <div className="w-20 h-1 bg-primary mx-auto"></div>
             <p className="text-gray-600 mt-6 max-w-2xl mx-auto text-lg italic">
-              "La scrittura è un mestiere solitario, ma non devi impararlo da
-              solo."
+              &ldquo;La scrittura è un mestiere solitario, ma non devi
+              impararlo da solo.&rdquo;
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

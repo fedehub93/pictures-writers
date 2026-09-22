@@ -7,6 +7,7 @@ import { it } from "date-fns/locale";
 import { ContentStatus } from "@/generated/prisma";
 import { getAuthorsString } from "@/data/user";
 import { db } from "@/lib/db";
+import { Button } from "@/shared/ui/button";
 
 export const LatestNews = async () => {
   const latestNews = await db.post.findMany({
@@ -45,7 +46,7 @@ export const LatestNews = async () => {
         <div className="mx-auto grid grid-cols-1 gap-8 lg:grid-cols-3">
           {latestNews.map((post) => {
             const authorsString = getAuthorsString(
-              post.postAuthors.map((v) => v.user)
+              post.postAuthors.map((v) => v.user),
             );
             return (
               <div key={post.title}>
@@ -85,10 +86,10 @@ export const LatestNews = async () => {
                 <p className="mb-4 leading-6 ">{post.description}</p>
                 <Link
                   href={`/${post.slug}`}
-                  className="font-bold text-primary-public flex items-center gap-x-2"
+                  className="font-medium text-primary-public flex items-center gap-x-2 transition-colors hover:text-primary"
                   prefetch
                 >
-                  Scopri di più <ChevronRight className="h-5 w-5" />
+                  Scopri di più <ChevronRight className="size-5" />
                 </Link>
               </div>
             );

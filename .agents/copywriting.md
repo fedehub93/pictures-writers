@@ -47,9 +47,11 @@ Formula bottone: **[Verbo azione] + [cosa ottieni] + [qualificatore se serve]**
 
 ## 3. HUB 1 — "Come scrivere una sceneggiatura" (priorità 🔴)
 
+> **Riferimento SERP (v2, 2026-09-22):** dettaglio completo di analisi SERP (top 3), gap analysis e RISCRITTURA INTEGRALE dell'articolo pronto per il CMS in `serp-come-scrivere-una-sceneggiatura.md`. La v2 è SERP-first: **la promessa "10 step" è superata** — struttura a 7 sezioni tematiche + FAQ, meta/H1 aggiornati (§5 del deliverable). Il deck qui sotto resta valido per intro (deve però dire "guida completa", non "10 step"), CTA metà/finale e funnel; il copy finale incollabile è nel deliverable.
+
 **URL:** `/come-scrivere-una-sceneggiatura/`
 **Buyer stage:** Awareness (percorso graduale verso consideration/decision)
-**Fatti da usare:** guida 10 step già esistente e completa · ebook gratuito · 500+ download
+**Fatti da usare:** guida esistente aggiornata in v2 (7 sezioni + FAQ) · ebook gratuito · 500+ download · 700+ iscritti community
 
 ### 3.1 Meta
 

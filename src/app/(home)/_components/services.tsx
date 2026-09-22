@@ -82,6 +82,46 @@ export const CreativeFeatures = () => (
             </div>
           </div>
         </div>
+        {/* <div className="grid grid-cols-1 items-center gap-16 md:grid-cols-2">
+          <div className="md:order-1 aspect-square relative">
+            <Image
+              src="/feedback-pana.png"
+              alt="Editing professionale della sceneggiatura"
+              fill
+              sizes="(max-width: 1023px) 90vw, 35vw"
+              className="object-cover"
+            />
+          </div>
+
+          <div className="md:order-2">
+            <p className="uppercase text-heading">Metodo Double View</p>
+            <h3 className="mt-4 text-3xl font-bold">
+              Editing professionale: due consulenti sul tuo copione.
+            </h3>
+            <p className="mt-2">
+              Non una semplice lettura: due consulenti analizzano la tua
+              sceneggiatura in modo indipendente e ti restituiscono un parere
+              unico, in 7-10 giorni lavorativi e a un prezzo sotto la media del
+              mercato.
+              <br />
+              <br />
+              E se preferisci scrivere in gruppo, i laboratori ti guidano dal
+              concept alla prima stesura.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-4">
+              <Link href="/shop/servizi-di-editing" prefetch>
+                <Button className="bg-primary">
+                  Scopri l&apos;editing Double View
+                </Button>
+              </Link>
+              <Link href="/shop/corsi-di-sceneggiatura" prefetch>
+                <Button variant="outline">
+                  Guarda i corsi
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div> */}
       </div>
     </div>
   </section>
