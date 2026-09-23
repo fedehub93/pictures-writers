@@ -3,21 +3,21 @@
 import { useRouter } from "next/navigation";
 
 import { ProductAcquisitionMode } from "@/generated/prisma";
-import { Route } from "next";
+import type { Route } from "next";
 
-interface WebinarBottomCtaProps {
+interface ProductBottomCtaProps {
   acquisitionMode: ProductAcquisitionMode;
   ctaLabel?: string;
   price?: number | null;
   discountedPrice?: number | null;
 }
 
-export const WebinarBottomCta = ({
+export const ProductBottomCta = ({
   acquisitionMode,
   ctaLabel,
   price,
   discountedPrice,
-}: WebinarBottomCtaProps) => {
+}: ProductBottomCtaProps) => {
   const router = useRouter();
 
   const onCtaClick = () => {
@@ -49,14 +49,14 @@ export const WebinarBottomCta = ({
         {/* CTA */}
         {acquisitionMode === ProductAcquisitionMode.FORM ? (
           <button
-            className="bg-primary text-primary-foreground font-medium px-5 py-2 rounded-md shadow-md hover:bg-primary/90 transition"
+            className="bg-primary text-primary-foreground font-medium px-5 py-2 rounded-md shadow-md hover:bg-primary/90 transition whitespace-nowrap shrink-0"
             onClick={onCtaClick}
           >
             {ctaLabel || "Invia"}
           </button>
         ) : acquisitionMode === ProductAcquisitionMode.PAID ? (
           <button
-            className="bg-primary text-primary-foreground font-medium px-5 py-2 rounded-md shadow-md hover:bg-primary/90 transition"
+            className="bg-primary text-primary-foreground font-medium px-5 py-2 rounded-md shadow-md hover:bg-primary/90 transition whitespace-nowrap shrink-0"
             onClick={() => {
               const section = document.querySelector("#summary");
               if (section) section.scrollIntoView({ behavior: "smooth" });

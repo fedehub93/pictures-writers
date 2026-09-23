@@ -149,7 +149,7 @@ const WidgetNewsletter = ({ label }: WidgetNewsletter) => {
           ) : (
             <Form {...form}>
               <form
-                className="flex items-center gap-x-2"
+                className="flex flex-col lg:flex-row lg:items-center gap-2 w-full"
                 onSubmit={form.handleSubmit(onSubmit)}
               >
                 <GenericInput
@@ -162,7 +162,7 @@ const WidgetNewsletter = ({ label }: WidgetNewsletter) => {
                 />
                 <Button
                   type="submit"
-                  className="self-end"
+                  className="lg:self-end"
                   disabled={!isValid || isSubmitting || isRecaptchaLoading}
                 >
                   Sì, voglio scrivere meglio

@@ -118,7 +118,7 @@ export const ServiceInfo = ({
                 className="text-md font-bold tracking-wide transition-all flex items-center justify-center gap-3"
               >
                 <Link href={`submission` as Route}>
-                  Richiedi il parere sulla tua storia
+                  Richiedi la tua analisi
                   <ArrowRightIcon
                     size={20}
                     className="group-hover:translate-x-1 transition-transform"

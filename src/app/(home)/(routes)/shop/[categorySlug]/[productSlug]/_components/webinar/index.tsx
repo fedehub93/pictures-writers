@@ -7,7 +7,7 @@ import { Separator } from "@/shared/ui/separator";
 import { WebinarInfo } from "./webinar-info";
 import { WebinarSummary } from "./webinar-summary";
 
-import { WebinarBottomCta } from "./webinar-bottom-cta";
+import { ProductBottomCta } from "../product-bottom-cta";
 import { ProductReviews } from "../product-reviews";
 
 interface WebinarProps {
@@ -71,7 +71,7 @@ export const Webinar = ({
         </div>
       </div>
 
-      <WebinarBottomCta
+      <ProductBottomCta
         acquisitionMode={acquisitionMode}
         ctaLabel="Vai alla submission"
         price={price}

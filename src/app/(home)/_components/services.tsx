@@ -100,9 +100,9 @@ export const CreativeFeatures = () => (
             </h3>
             <p className="mt-2">
               Non una semplice lettura: due consulenti analizzano la tua
-              sceneggiatura in modo indipendente e ti restituiscono un parere
-              unico, in 7-10 giorni lavorativi e a un prezzo sotto la media del
-              mercato.
+              sceneggiatura in modo indipendente e ti restituiscono
+              un&apos;analisi unica, in 7-10 giorni lavorativi e a un prezzo sotto
+              la media del mercato.
               <br />
               <br />
               E se preferisci scrivere in gruppo, i laboratori ti guidano dal

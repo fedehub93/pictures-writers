@@ -12,7 +12,7 @@ export const ServiceSample = ({ attachamentUrl }: ServiceSampleProps) => {
     <section className="py-12">
       <div className="container mx-auto px-6 lg:max-w-6xl">
         <div className="flex flex-col lg:flex-row items-center gap-20">
-          <div className="flex-1 order-2 lg:order-1">
+          <div className="flex-1 lg:order-1">
             <h2 className="text-4xl text-foreground mb-8 leading-tight">
               Guarda un esempio <br />
               di Report Professionale
@@ -20,12 +20,12 @@ export const ServiceSample = ({ attachamentUrl }: ServiceSampleProps) => {
             <p className="text-secondary-foreground text-lg mb-10 leading-relaxed">
               Vogliamo che tu sappia esattamente cosa aspettarti. Il nostro
               report è un documento tecnico di alto livello, formattato secondo
-              gli standard dell'industria cinematografica internazionale.
+              gli standard dell&apos;industria cinematografica internazionale.
               <br />
               <br />
-              Non sono semplici "commenti", ma una vera e propria{" "}
+              Non sono semplici &ldquo;commenti&rdquo;, ma una vera e propria{" "}
               <strong className="text-primary">mappa per la riscrittura</strong>
-              . Clicca sul documento per sfogliare un'analisi fac-simile.
+              . Clicca sul documento per sfogliare un&apos;analisi fac-simile.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">

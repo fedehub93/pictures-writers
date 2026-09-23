@@ -13,15 +13,10 @@ import {
 import { getProductMetadataBySlug } from "@/app/(home)/_components/seo/content-metadata";
 import { Breadcrumbs } from "@/app/(home)/_components/breadcrumbs";
 
-import { FormRunner } from "@/modules/forms/builder/runner/form-runner";
-
-import { getCaptchaToken } from "@/app/(home)/_components/utils/captcha";
-import { submitProductForm } from "@/actions/submit-product-form";
-
 import { WebinarSummary } from "../_components/webinar/webinar-summary";
 import { ServiceSummary } from "../_components/service/service-summary";
+
 import { SubmissionFormV2 } from "./_components/submission-form-v2";
-import SubmissionForm from "./_components/submission-form";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
@@ -85,16 +80,15 @@ const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
           <div className="w-full md:w-8/12">
             {
               <div className="flex-1 flex flex-col gap-y-4">
-                {/* <div className="text-2xl font-semibold">
+                <div className="text-2xl font-semibold">
                   Informazioni sottoscrizione
-                </div> */}
+                </div>
                 <div className="bg-card border rounded-lg shadow p-4 flex flex-col space-y-4">
-                  <SubmissionForm rootId={product.rootId!} form={form} />
-                  {/* <SubmissionFormV2
+                  <SubmissionFormV2
                     rootId={product.rootId!}
                     content={form.content!}
                     gtmEventName={form.gtmEventName}
-                  /> */}
+                  />
                 </div>
               </div>
             }

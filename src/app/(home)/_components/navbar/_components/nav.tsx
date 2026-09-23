@@ -117,23 +117,23 @@ const services: {
   Icon: ReactNode;
 }[] = [
   {
-    title: "Servizi di Editing",
-    description: "Ottieni una valutazione tecnica profonda del tuo progetto.",
-    href: "/shop/servizi-di-editing/" as Route,
-    Icon: (
-      <FileTextIcon
-        className="absolute h-8 w-8 bottom-4 right-2 text-primary"
-        strokeWidth={1}
-      />
-    ),
-  },
-  {
     title: "Corsi & Masterclass",
     description:
       "Percorsi formativi strutturati per una crescita professionale accelerata.",
     href: "/shop/corsi-di-sceneggiatura/" as Route,
     Icon: (
       <VideoIcon
+        className="absolute h-8 w-8 bottom-4 right-2 text-primary"
+        strokeWidth={1}
+      />
+    ),
+  },
+  {
+    title: "Servizi di Editing",
+    description: "Ottieni una valutazione tecnica profonda del tuo progetto.",
+    href: "/shop/servizi-di-editing/" as Route,
+    Icon: (
+      <FileTextIcon
         className="absolute h-8 w-8 bottom-4 right-2 text-primary"
         strokeWidth={1}
       />

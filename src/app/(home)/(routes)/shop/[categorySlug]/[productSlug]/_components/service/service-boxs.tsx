@@ -7,8 +7,8 @@ interface ServiceBoxsProps {
 export const ServiceBoxs = ({ features }: ServiceBoxsProps) => {
   return (
     <section className="py-12">
-      <div className="container mx-auto px-6 lg:max-w-6xl">
-        <div className="text-center mb-16">
+      <div className="flex flex-col mx-auto lg:max-w-6xl">
+        <div className="text-center mb-8 lg:mb-12">
           <h2 className="text-3xl md:text-4xl text-foreground mb-6">
             Cosa Analizziamo
           </h2>

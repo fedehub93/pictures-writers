@@ -11,10 +11,10 @@ import { Badge } from "@/shared/ui/badge";
 
 export const HeroSection = (): JSX.Element => {
   return (
-    <section className="w-full bg-background border-b border-b-accent px-4 lg:px-6 py-16 lg:py-8 lg:h-[calc(100vh-80px)] flex items-center">
+    <section className="w-full bg-background border-b border-b-accent px-4 lg:px-6 py-12 lg:py-8 lg:h-[calc(100vh-80px)] flex items-center">
       <div className="mx-auto max-w-lg text-center md:max-w-(--breakpoint-md) lg:max-w-6xl lg:text-left">
         <div className="grid items-center gap-12 lg:grid-cols-2">
-          <div className="flex flex-col gap-y-10">
+          <div className="flex flex-col gap-y-7 lg:gap-y-10">
             <h1 className="text-4xl font-bold md:text-5xl xl:text-6xl">
               Vuoi diventare <br />
               <span className="text-primary">uno sceneggiatore?</span>
@@ -28,7 +28,7 @@ export const HeroSection = (): JSX.Element => {
               successo.
             </p>
             <p>
-              Pronto a dare vita alle tue idee sul grande schermo?
+              Pronto a dare vita alla tua storia?
               <br />
               <span className="font-bold text-primary">
                 Scarica il nostro eBook gratuito:
@@ -59,7 +59,7 @@ export const HeroSection = (): JSX.Element => {
             />
           </div>
         </div>
-        <div className="mt-20 w-full flex justify-center">
+        <div className="mt-8 lg:mt-20 w-full flex justify-center">
           <a
             href="#testimonianze"
             className="flex flex-col items-center gap-4 group"
