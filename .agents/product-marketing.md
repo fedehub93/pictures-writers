@@ -142,6 +142,8 @@
 - v2 (2026-09-16) — Added SEO workflow status section.
 - v3 (2026-09-16) — Fase copywriting completata (copy deck in `.agents/copywriting.md`).
 - v4 (2026-09-22) — Fase cro completata (deliverable in `.agents/cro.md`).
+- v5 (2026-09-23) — Piano di lancio "Laboratorio 1:1 — soggetto di lungometraggio" (deliverable in `.agents/launch-individuale.md`).
+- v6 (2026-09-23) — Fase schema completata (deliverable in `.agents/schema.md`).
 
 ## SEO Marketing Skills Workflow
 
@@ -151,7 +153,7 @@
 3. content-strategy ✅ (strategia + calendario in `.agents/content-strategy.md`)
 4. copywriting ✅ (copy deck in `.agents/copywriting.md`, in corso di applicazione in CMS)
 5. cro ✅ (deliverable in `.agents/cro.md`)
-6. schema 🔲 (residui: ContactPage, Event, VideoObject, Course, ItemList Blog)
+6. schema ✅ (deliverable in `.agents/schema.md`)
 7. emails 🔲
 8. ai-seo 🔲
 9. marketing-plan 🔲
@@ -198,8 +200,30 @@
 - `src/modules/blog/posts/ui/public/views/post-slug-view.tsx`
 - `src/modules/blog/posts/ui/public/views/post-draft-slug-view.tsx`
 
-### Prossimi passi (fasi 6-9)
-La prossima sessione deve iniziare dalla **schema** (fase 6 della roadmap). Per riprendere:
-1. Leggere `.agents/cro.md` (deliverable fase 5: quick wins + test ideas da implementare)
-2. Leggere `.agents/copywriting.md` (copy da applicare in CMS, checklist §9)
-3. Risolvere i residui schema: ContactPage, Event, VideoObject, Course, ItemList Blog
+### Fase 6 — Schema (residui completati)
+
+Nuovi componenti JSON-LD in `src/app/(home)/_components/seo/json-ld/`:
+- `item-list.tsx` — ItemList per `/blog/`, paginazione, categorie e tag
+- `event.tsx` — Event (online, VirtualLocation) per ogni lezione dei prodotti WEBINAR
+- `course.tsx` — Course + CourseInstance per i prodotti WEBINAR (decisione sul `ProductType`, non sullo slug di categoria)
+- `lib/rome-time.ts` — helper difensivi Europe/Rome (offset DST, date ISO complete)
+
+Aggiornamenti:
+- `blog-posting.tsx` — `video` ora emette `VideoObject` strutturati (non più stringhe)
+- `json-ld.tsx` — `JsonLd` accetta `WithContext<Thing> | Graph`
+- `product.tsx` — `@ts-ignore` → `@ts-expect-error` (residuo fase 2)
+- Pagine: shop prodotto (Course/Event in base a `isWebinarMetadata`, Product per gli altri tipi), `blog-view.tsx`, `blog-categories-tags.tsx`
+- `src/constants/index.ts` — nuova `CONTACT_EMAIL`; `contact-us.tsx` la usa
+
+Non implementato (feedback utente): **ContactPage**. Il sito non ha un campo "kind" pagina → rilevare la pagina contatti via slug in code lo hanno ritenuto fragile; `contact-page.tsx` (creato e poi rimosso). Se servirà, campo enum `Page.kind` dal form admin.
+
+Fix critico: le date lezione in DB sono timestamp ISO completi (mezzanotte locale del picker admin), non `YYYY-MM-DD` → prima il prerender della pagina corso crashava (`Invalid time value`). `toRomeIso` ora normalizza in Europe/Rome e scarta lezioni invalide.
+
+Verificato: `npx tsc --noEmit` pulito, `eslint` senza errori nuovi, `npm run build` completato (incluse le pagine shop).
+
+### Prossimi passi (fasi 7-9)
+La prossima sessione deve iniziare dalla **emails** (fase 7 della roadmap). Per riprendere:
+1. Leggere `.agents/schema.md` (deliverable fase 6: schema markup implementato)
+2. Leggere `.agents/cro.md` (quick wins + test ideas da implementare in parallelo)
+3. Leggere `.agents/copywriting.md` (copy da applicare in CMS, checklist §9)
+4. Fase 7: emails → poi 8. ai-seo → 9. marketing-plan

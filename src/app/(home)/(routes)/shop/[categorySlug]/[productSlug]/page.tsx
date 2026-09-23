@@ -11,6 +11,8 @@ import { getProductMetadataBySlug } from "@/app/(home)/_components/seo/content-m
 import { ProductJsonLd } from "@/app/(home)/_components/seo/json-ld/product";
 import { BreadcrumbListJsonLd } from "@/app/(home)/_components/seo/json-ld/breadcrumb-list";
 import { FaqPageJsonLd } from "@/app/(home)/_components/seo/json-ld/faq-page";
+import { EventJsonLd } from "@/app/(home)/_components/seo/json-ld/event";
+import { CourseJsonLd } from "@/app/(home)/_components/seo/json-ld/course";
 import { Breadcrumbs } from "@/app/(home)/_components/breadcrumbs";
 
 import { getSettings } from "@/data/settings";
@@ -56,7 +58,7 @@ export async function generateMetadata(
 const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
   const { productSlug } = await props.params;
 
-  const { siteUrl, siteShopUrl } = await getSettings();
+  const { siteUrl, siteShopUrl, siteName } = await getSettings();
   const product = await getPublishedProductBySlug(productSlug);
 
   if (!product || !product.category) {
@@ -68,26 +70,64 @@ const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
 
   const url = `${siteShopUrl}/${product.category.slug}/${product.slug}/`;
 
+  const webinarData = isWebinarMetadata(product.metadata)
+    ? product.metadata
+    : null;
+
+  const offer = {
+    priceCurrency: "EUR",
+    price: product.price?.toString() ?? "0",
+    url,
+    availability: "https://schema.org/InStock" as const,
+  };
+
   return (
     <section key={product.slug} className="bg-background py-8">
-      <ProductJsonLd
-        title={product.seo?.title}
-        description={product.seo?.description || ""}
-        offers={{
-          type: "Offer",
-          priceCurrency: "EUR",
-          price: product.price?.toString() ?? "",
-          url: url,
-          availability: "https://schema.org/InStock",
-        }}
-        images={galleryImages}
-        aggregateRating={product.aggregateRating}
-        reviews={product.reviews}
-        authorName={`${product.user?.firstName} ${product.user?.lastName}`}
-        datePublished={product.createdAt.toISOString()}
-        dateModified={product.updatedAt.toISOString()}
-        url={url}
-      />
+      {webinarData && webinarData.lessons.length > 0 ? (
+        <CourseJsonLd
+          name={product.title}
+          description={product.seo?.description || ""}
+          url={url}
+          image={product.imageCover?.url || undefined}
+          providerName={siteName || "Pictures Writers"}
+          providerUrl={`${siteUrl}/`}
+          courseMode="online"
+          offers={offer}
+          lessons={webinarData.lessons}
+        />
+      ) : (
+        <ProductJsonLd
+          title={product.seo?.title}
+          description={product.seo?.description || ""}
+          offers={{
+            type: "Offer",
+            priceCurrency: "EUR",
+            price: product.price?.toString() ?? "",
+            url: url,
+            availability: "https://schema.org/InStock",
+          }}
+          images={galleryImages}
+          aggregateRating={product.aggregateRating}
+          reviews={product.reviews}
+          authorName={`${product.user?.firstName} ${product.user?.lastName}`}
+          datePublished={product.createdAt.toISOString()}
+          dateModified={product.updatedAt.toISOString()}
+          url={url}
+        />
+      )}
+      {webinarData && webinarData.lessons.length > 0 && (
+        <EventJsonLd
+          name={product.title}
+          description={product.seo?.description || ""}
+          url={url}
+          image={product.imageCover?.url || undefined}
+          organizerName={siteName || "Pictures Writers"}
+          siteUrl={`${siteUrl}/`}
+          seats={webinarData.seats}
+          lessons={webinarData.lessons}
+          offers={offer}
+        />
+      )}
       <BreadcrumbListJsonLd
         items={[
           { title: "Home", href: `${siteUrl}/` },

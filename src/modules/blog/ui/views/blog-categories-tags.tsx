@@ -12,6 +12,10 @@ import { getPublishedTagBySlug } from "../../tags/server/queries";
 import { PostListGrid } from "../../posts/ui/public/components/post-list-grid";
 import { PostList } from "../../posts/ui/public/components/post-list";
 
+import { getSettings } from "@/data/settings";
+
+import { ItemListJsonLd } from "@/app/(home)/_components/seo/json-ld/item-list";
+
 interface BlogCategoriesTagsProps {
   slug: string;
 }
@@ -19,6 +23,8 @@ interface BlogCategoriesTagsProps {
 export const BlogCategoriesTags = async ({ slug }: BlogCategoriesTagsProps) => {
   let result: any = null;
   let entity: { title: string; description: string | null } | null = null;
+
+  const { siteUrl } = await getSettings();
 
   const slugPage = typeof slug === "string" ? Number.parseInt(slug) : 1;
 
@@ -37,6 +43,12 @@ export const BlogCategoriesTags = async ({ slug }: BlogCategoriesTagsProps) => {
   if (result && result.posts.length > 0 && entity) {
     return (
       <section className="px-4 py-10 lg:px-6">
+        <ItemListJsonLd
+          items={result.posts.map((post: { title: string; slug: string }) => ({
+            title: post.title,
+            url: `${siteUrl}/${post.slug}/`,
+          }))}
+        />
         <div>
           <h1 className="mb-4 text-center text-3xl font-bold">
             {entity.title}
@@ -97,6 +109,12 @@ export const BlogCategoriesTags = async ({ slug }: BlogCategoriesTagsProps) => {
   }
   return (
     <section className="bg-background px-4 py-10 lg:px-6">
+      <ItemListJsonLd
+        items={result.posts.map((post: { title: string; slug: string }) => ({
+          title: post.title,
+          url: `${siteUrl}/${post.slug}/`,
+        }))}
+      />
       <div>
         <h1 className="mb-4 text-center text-3xl font-bold">{entity.title}</h1>
         <p className="mx-auto mb-12 max-w-lg text-center">

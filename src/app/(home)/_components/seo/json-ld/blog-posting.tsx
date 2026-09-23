@@ -50,8 +50,18 @@ export const BlogPostingJsonLd: FC<BlogPostingJsonLdProps> = ({
     thumbnailUrl: imageCover ? imageCover.url : undefined,
     image: [...images],
     genre: "Cinema, Sceneggiatura",
-    //@ts-expect-error schema-dts Video type differs
-    video: videos && videos.length > 0 ? [...videos] : undefined,
+    video:
+      videos && videos.length > 0
+        ? videos.map((videoUrl) => ({
+            "@type": "VideoObject",
+            name: title,
+            description: description,
+            thumbnailUrl: imageCover ? imageCover.url : undefined,
+            uploadDate: datePublished,
+            contentUrl: videoUrl,
+            embedUrl: videoUrl,
+          }))
+        : undefined,
     author: authors.map((a) => ({
       "@type": "Person",
       name: `${a.firstName} ${a.lastName}`,

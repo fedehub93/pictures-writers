@@ -1,13 +1,13 @@
 import React, { type JSX } from "react";
-import { Thing, WithContext } from "schema-dts";
+import { Graph, Thing, WithContext } from "schema-dts";
 
-export interface JsonLdProps<GThing extends Thing> {
-  json: WithContext<GThing>;
+export type JsonLdData = WithContext<Thing> | Graph;
+
+export interface JsonLdProps {
+  json: JsonLdData;
 }
 
-export const JsonLd = <GThing extends Thing>({
-  json,
-}: JsonLdProps<GThing>): JSX.Element => (
+export const JsonLd = ({ json }: JsonLdProps): JSX.Element => (
   <script
     type="application/ld+json"
     dangerouslySetInnerHTML={{

@@ -69,7 +69,7 @@ export const ProductJsonLd: FC<ProductJsonLdProps> = ({
       name: "Pictures Writers",
     },
     sku: slugify(title || "", { lower: true }),
-    //@ts-ignore
+    //@ts-expect-error schema-dts Product.video differs
     video: videos && videos.length > 0 ? [...videos] : undefined,
     review: reviews
       ? reviews.map((r) => ({

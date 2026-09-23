@@ -16,6 +16,7 @@ import { Button } from "@/shared/ui/button";
 
 import { contact } from "@/actions/contact";
 import { ContactSchemaValibot } from "@/schemas";
+import { CONTACT_EMAIL } from "@/constants";
 
 import { GoogleRecaptchaV3 } from "@/shared/components/google-recaptchav3";
 
@@ -178,10 +179,10 @@ export const ContactUs = (): JSX.Element => {
             <li>
               <a
                 className="mb-5 flex items-start justify-start gap-1"
-                href="mailto:support@pictureswriters.com"
+                href={`mailto:${CONTACT_EMAIL}`}
               >
                 <Mail className="h-5 w-5" />
-                <span>: support@pictureswriters.com</span>
+                <span>: {CONTACT_EMAIL}</span>
               </a>
             </li>
             <li>

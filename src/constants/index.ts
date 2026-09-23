@@ -1,5 +1,7 @@
 import { SocialKey } from "@/generated/prisma";
 
+export const CONTACT_EMAIL = "support@pictureswriters.com";
+
 export const DEFAULT_SOCIAL_CHANNEL_VALUES: {
   key: SocialKey;
   url: string;
