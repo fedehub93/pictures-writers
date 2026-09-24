@@ -185,6 +185,32 @@ describe("automation schema", () => {
     expect(foundTrue?.toInput).toBe("main");
   });
 
+  it("rejects a duplicate identical Connection (same edge twice)", async () => {
+    const { automation, triggerNode, emailNode } = await seedAutomation();
+
+    // seedAutomation already created trigger -> email with main/main outputs.
+    await expect(
+      db.connection.create({
+        data: {
+          automationId: automation.id,
+          fromNodeId: triggerNode.id,
+          toNodeId: emailNode.id,
+        },
+      }),
+    ).rejects.toThrow(/unique/i);
+
+    // A different output port is a distinct edge and stays allowed.
+    const branch = await db.connection.create({
+      data: {
+        automationId: automation.id,
+        fromNodeId: triggerNode.id,
+        toNodeId: emailNode.id,
+        fromOutput: "true",
+      },
+    });
+    expect(branch.id).toBeTruthy();
+  });
+
   it("stores a Run with the graph snapshot, payload and idempotency key", async () => {
     const { run } = await seedAutomation();
 

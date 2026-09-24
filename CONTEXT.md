@@ -97,3 +97,41 @@ _Avoid_: FAQ accordion when referring to the component.
 **FaqPageJsonLd**:
 The component that generates FAQPage JSON-LD structured data from a list of Faqs. Still parsed by AI answer engines and non-Google crawlers; Google no longer produces rich results from it (removed May 2026).
 _Avoid_: FAQ rich result when referring to the component.
+
+## Automation engine
+
+**Automation**:
+An authored, versioned workflow blueprint in the CMS: a set of Nodes joined by Connections, with the trigger that starts it. Built in the visual canvas editor and published as a snapshot.
+_Avoid_: Workflow when referring to the CMS entity (the naming kept from the earlier tutorial model), flow.
+
+**Node**:
+An authored element of an Automation; either a Trigger (manual, cron, webhook, internal event) or an Action (conditional, wait, send email, http, llm, web search). Configured via position and data; may reference a Credential.
+_Avoid_: Step when referring to the authored element.
+
+**Connection**:
+A directed link between two Nodes over which the source Node's output is delivered to the target Node's input. Multiple outgoing connections (fan-out) are allowed; cycles are rejected by the editor.
+_Avoid_: Edge, Link.
+
+**Trigger event**:
+A typed, internal event emitted by a CMS module (e.g. `form.submitted`) that an Automation can subscribe to start a Run. The in-process counterpart of the external webhook trigger.
+_Avoid_: Event hook, pub/sub event.
+
+**Run**:
+A single execution of an Automation, created when its trigger fires; owns a snapshot of the trigger payload and a ledger of Steps. There is no concept of a "paused execution": a waiting step is a Step with a resume time.
+_Avoid_: Execution (ambiguous with deployment/CI), session.
+
+**Step**:
+The run-time record of one Node execution inside a Run: input/output snapshots, status, attempt count, resume time, and error. Distinct from Node, which is author-time.
+_Avoid_: Task, Node when referring to a run-time record.
+
+**Published snapshot**:
+The frozen copy of an Automation's graph that Runs execute; captured at publish time so editing the draft never affects running or historical executions.
+_Avoid_: Version, revision.
+
+**Credential**:
+A stored, encrypted secret (API key, webhook secret) that Nodes reference by id. Secrets never live in Node configuration.
+_Avoid_: API key when referring to the stored record.
+
+**Idempotency key**:
+The opaque string a caller passes to the trigger ingestion (`enqueueRun`) so the engine silently skips a Run when another Run with the same Automation and key already exists. Callers choose the key; the engine never interprets it.
+_Avoid_: Dedup key, contact key.

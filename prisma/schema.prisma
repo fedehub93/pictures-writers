@@ -1245,8 +1245,11 @@ model Connection {
   updatedAt DateTime @updatedAt
 
   @@index([automationId])
-  @@index([fromNodeId])
   @@index([toNodeId])
+
+  /// A duplicate identical edge would double the token arrival (one Step per
+  /// arriving token), so identical fan-out edges are rejected at the DB.
+  @@unique([fromNodeId, toNodeId, fromOutput, toInput])
 }
 
 enum AutomationRunStatus {
