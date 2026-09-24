@@ -1,0 +1,1 @@
+export { cleanupAutomationTables } from "./lib/cleanup";
