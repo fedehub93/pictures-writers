@@ -29,9 +29,9 @@ export async function generateStaticParams() {
   });
   const pages = Math.ceil(totalPosts / 10);
 
-  const blogs = Array.from({ length: pages }, (_, index) => ({
-    slug: `blog/${index + 1}`,
-  })).filter((b) => b.slug !== "blog/1");
+  const blogs = Array.from({ length: Math.max(pages - 1, 0) }, (_, index) => ({
+    slug: String(index + 2),
+  }));
 
   const categories = await getPublishedCategoriesBuilding();
   const tags = await getPublishedTagsBuilding();
