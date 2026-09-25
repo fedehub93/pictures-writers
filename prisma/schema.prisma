@@ -1321,6 +1321,9 @@ model AutomationRunStep {
   status   AutomationRunStepStatus @default(PENDING)
   attempts Int                     @default(0)
 
+  leaseId        String?
+  leaseExpiresAt DateTime?
+
   /// When a waiting Step becomes due again; a Run "sleeps" as rows (ADR-0003).
   resumeAt DateTime?
 
@@ -1339,6 +1342,7 @@ model AutomationRunStep {
   @@unique([runId, seq])
   @@index([runId, nodeId])
   @@index([status, resumeAt])
+  @@index([status, leaseExpiresAt, resumeAt])
 }
 
 /// Stored, encrypted secret that Nodes reference by id (see CONTEXT.md "Credential").

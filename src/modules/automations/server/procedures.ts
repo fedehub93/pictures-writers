@@ -18,6 +18,7 @@ import {
   MIN_PAGE_SIZE,
 } from "../constants";
 import { validateAutomationGraph } from "../lib/validate";
+import { enqueueRun } from "../lib/automation-ingestion";
 import {
   automationCreateSchema,
   automationPublishSchema,
@@ -60,7 +61,7 @@ const toConnectionRow = (
 });
 
 export const automationsRouter = createTRPCRouter({
-  execute: permissionProcedure(PERMISSIONS.AUTOMATIONS_READ)
+  execute: permissionProcedure(PERMISSIONS.AUTOMATIONS_WRITE)
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
       const automation = await db.automation.findUniqueOrThrow({
@@ -69,7 +70,17 @@ export const automationsRouter = createTRPCRouter({
         },
       });
 
-      // await sendAutomationExecution({ automationId: input.id });
+      const run = await enqueueRun({
+        automationId: input.id,
+        triggerType: "manual",
+      });
+
+      if (!run) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Automation has no runnable graph",
+        });
+      }
 
       return automation;
     }),
