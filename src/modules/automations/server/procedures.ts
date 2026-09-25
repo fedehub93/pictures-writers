@@ -1,0 +1,319 @@
+import "server-only";
+
+import type { Node, Edge } from "@xyflow/react";
+import { TRPCError } from "@trpc/server";
+import z from "zod";
+
+import { db } from "@/shared/lib/db";
+import { PERMISSIONS } from "@/shared/lib/permissions";
+import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
+
+import { AutomationStatus } from "@/generated/prisma";
+
+import {
+  DEFAULT_PAGE,
+  DEFAULT_PAGE_SIZE,
+  INITIAL_NODE_TYPE,
+  MAX_PAGE_SIZE,
+  MIN_PAGE_SIZE,
+} from "../constants";
+import { validateAutomationGraph } from "../lib/validate";
+import {
+  automationCreateSchema,
+  automationPublishSchema,
+  automationUpdateSchema,
+} from "../schemas";
+
+/** Map a client node (React Flow) to the Node row columns. */
+const toNodeRow = (
+  node: {
+    id: string;
+    type?: string | null;
+    position: { x: number; y: number };
+    data?: Record<string, unknown>;
+  },
+  automationId: string,
+) => ({
+  id: node.id,
+  automationId,
+  name: node.type || "unknown",
+  type: node.type as string,
+  position: node.position,
+  data: node.data || {},
+});
+
+/** Map a client edge (React Flow) to the Connection row columns. */
+const toConnectionRow = (
+  edge: {
+    source: string;
+    target: string;
+    sourceHandle?: string | null;
+    targetHandle?: string | null;
+  },
+  automationId: string,
+) => ({
+  automationId,
+  fromNodeId: edge.source,
+  toNodeId: edge.target,
+  fromOutput: edge.sourceHandle || "main",
+  toInput: edge.targetHandle || "main",
+});
+
+export const automationsRouter = createTRPCRouter({
+  execute: permissionProcedure(PERMISSIONS.AUTOMATIONS_READ)
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input }) => {
+      const automation = await db.automation.findUniqueOrThrow({
+        where: {
+          id: input.id,
+        },
+      });
+
+      // await sendAutomationExecution({ automationId: input.id });
+
+      return automation;
+    }),
+  getMany: permissionProcedure(PERMISSIONS.AUTOMATIONS_READ)
+    .input(
+      z.object({
+        page: z.number().default(DEFAULT_PAGE),
+        pageSize: z
+          .number()
+          .min(MIN_PAGE_SIZE)
+          .max(MAX_PAGE_SIZE)
+          .default(DEFAULT_PAGE_SIZE),
+        search: z.string().nullish(),
+        status: z
+          .enum([AutomationStatus.DRAFT, AutomationStatus.PUBLISHED])
+          .nullish(),
+      }),
+    )
+    .query(async ({ input }) => {
+      const where = {
+        name: input.search
+          ? { contains: input.search, mode: "insensitive" as const }
+          : undefined,
+        status: input.status ?? undefined,
+      };
+
+      const automations = await db.automation.findMany({
+        where,
+        select: {
+          id: true,
+          name: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: input.pageSize,
+        skip: (input.page - 1) * input.pageSize,
+      });
+
+      const total = await db.automation.count({ where });
+
+      return {
+        items: automations,
+        total,
+        totalPages: Math.ceil(total / input.pageSize),
+      };
+    }),
+  create: permissionProcedure(PERMISSIONS.AUTOMATIONS_WRITE)
+    .input(automationCreateSchema)
+    .mutation(async ({ input }) => {
+      return db.automation.create({
+        data: {
+          name: input.name,
+          nodes: {
+            create: {
+              type: INITIAL_NODE_TYPE,
+              position: { x: 0, y: 0 },
+              name: INITIAL_NODE_TYPE,
+            },
+          },
+        },
+      });
+    }),
+  update: permissionProcedure(PERMISSIONS.AUTOMATIONS_WRITE)
+    .input(automationUpdateSchema)
+    .mutation(async ({ input }) => {
+      const { id, nodes, edges } = input;
+
+      const automation = await db.automation.findUnique({
+        where: { id },
+      });
+
+      if (!automation) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Automation not found",
+        });
+      }
+
+      // Transaction to ensure consistency
+      return db.$transaction(async (tx) => {
+        // Delete existing nodes and connections (cascade deletes connections)
+        await tx.node.deleteMany({
+          where: { automationId: id },
+        });
+
+        // Create nodes
+        await tx.node.createMany({
+          data: nodes.map((node) => toNodeRow(node, id)),
+        });
+
+        // Create connections
+        await tx.connection.createMany({
+          data: edges.map((edge) => toConnectionRow(edge, id)),
+        });
+
+        // update automation's updatedAt timestamp
+        await tx.automation.update({
+          where: { id },
+          data: {
+            updatedAt: new Date(),
+          },
+        });
+
+        return automation;
+      });
+    }),
+  publish: permissionProcedure(PERMISSIONS.AUTOMATIONS_WRITE)
+    .input(automationPublishSchema)
+    .mutation(async ({ input }) => {
+      const { id, nodes, edges } = input;
+
+      const automation = await db.automation.findUnique({
+        where: { id },
+      });
+
+      if (!automation) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Automation not found",
+        });
+      }
+
+      const validation = validateAutomationGraph(nodes, edges);
+      if (!validation.valid) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: validation.reason,
+        });
+      }
+
+      // Freeze the graph into the published snapshot (ADR-0004): Runs execute
+      // this snapshot, never the live draft. Editing the draft afterwards does
+      // not touch it until the next publish.
+      const publishedSnapshot = {
+        nodes: nodes.map((node) => ({
+          id: node.id,
+          type: node.type,
+          name: node.type,
+          data: node.data || {},
+        })),
+        connections: edges.map((edge) => ({
+          fromNodeId: edge.source,
+          toNodeId: edge.target,
+          fromOutput: edge.sourceHandle || "main",
+          toInput: edge.targetHandle || "main",
+        })),
+      };
+
+      return db.$transaction(async (tx) => {
+        // Delete existing nodes and connections (cascade deletes connections)
+        await tx.node.deleteMany({
+          where: { automationId: id },
+        });
+
+        await tx.node.createMany({
+          data: nodes.map((node) => toNodeRow(node, id)),
+        });
+
+        await tx.connection.createMany({
+          data: edges.map((edge) => toConnectionRow(edge, id)),
+        });
+
+        return tx.automation.update({
+          where: { id },
+          data: {
+            status: AutomationStatus.PUBLISHED,
+            publishedSnapshot,
+          },
+        });
+      });
+    }),
+  updateName: permissionProcedure(PERMISSIONS.AUTOMATIONS_WRITE)
+    .input(z.object({ id: z.string(), name: z.string().min(1) }))
+    .mutation(({ input }) => {
+      return db.automation.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          name: input.name,
+        },
+      });
+    }),
+  remove: permissionProcedure(PERMISSIONS.AUTOMATIONS_WRITE)
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input }) => {
+      const automation = await db.automation.findUnique({
+        where: { id: input.id },
+      });
+
+      if (!automation) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Automation not found",
+        });
+      }
+
+      return db.automation.delete({
+        where: { id: input.id },
+      });
+    }),
+  getOne: permissionProcedure(PERMISSIONS.AUTOMATIONS_READ)
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input }) => {
+      const automation = await db.automation.findUnique({
+        where: { id: input.id },
+        include: {
+          nodes: {
+            orderBy: { createdAt: "asc" },
+          },
+          connections: {
+            orderBy: { createdAt: "asc" },
+          },
+        },
+      });
+
+      if (!automation) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Automation not found",
+        });
+      }
+
+      // Transforming server nodes to react-flow compatible nodes
+      const nodes: Node[] = automation.nodes.map((node) => ({
+        id: node.id,
+        type: node.type,
+        position: node.position as { x: number; y: number },
+        data: (node.data as Record<string, unknown>) || {},
+      }));
+
+      // Transform server connections to react-flow compatibles edges
+      const edges: Edge[] = automation.connections.map((connection) => ({
+        id: connection.id,
+        source: connection.fromNodeId,
+        target: connection.toNodeId,
+        sourceHandle: connection.fromOutput,
+        targetHandle: connection.toInput,
+      }));
+
+      return { ...automation, nodes, connections: edges };
+    }),
+});

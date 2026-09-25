@@ -73,6 +73,8 @@ export const PERMISSIONS = {
   LANGUAGES_MANAGE: "languages.manage",
   FORMS_READ: "forms.read",
   FORMS_MANAGE: "forms.manage",
+  AUTOMATIONS_READ: "automations.read",
+  AUTOMATIONS_WRITE: "automations.write",
   MAIL_READ: "mail.read",
   MAIL_MANAGE: "mail.manage",
 } as const;

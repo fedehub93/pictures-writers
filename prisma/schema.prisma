@@ -179,10 +179,10 @@ model User {
 
   role UserRole @default(USER)
 
-  accountStatus  AccountStatus @default(ACTIVE)
-  roleId         String?
-  roleDefinition Role?         @relation(fields: [roleId], references: [id])
-  invitationsCreated Invitation[] @relation("InvitationCreator")
+  accountStatus      AccountStatus            @default(ACTIVE)
+  roleId             String?
+  roleDefinition     Role?                    @relation(fields: [roleId], references: [id])
+  invitationsCreated Invitation[]             @relation("InvitationCreator")
   activitiesAsActor  AdministrativeActivity[] @relation("ActivityActor")
 
   pages Page[]
@@ -224,18 +224,18 @@ enum InvitationStatus {
 }
 
 model Invitation {
-  id          String           @id @default(uuid())
-  email       String
-  tokenHash   String           @unique
-  expiresAt   DateTime
-  status      InvitationStatus @default(PENDING)
-  acceptedAt  DateTime?
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  id         String           @id @default(uuid())
+  email      String
+  tokenHash  String           @unique
+  expiresAt  DateTime
+  status     InvitationStatus @default(PENDING)
+  acceptedAt DateTime?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
 
-  role       Role   @relation(fields: [roleId], references: [id])
-  roleId     String
-  createdBy  User   @relation("InvitationCreator", fields: [createdById], references: [id])
+  role        Role   @relation(fields: [roleId], references: [id])
+  roleId      String
+  createdBy   User   @relation("InvitationCreator", fields: [createdById], references: [id])
   createdById String
 
   @@index([email, status])
@@ -832,7 +832,7 @@ model Faq {
   product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String?
 
-  post   Post? @relation(fields: [postId], references: [id], onDelete: Cascade)
+  post   Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId String?
 
   createdAt DateTime @default(now())
@@ -1196,7 +1196,7 @@ model Automation {
 
 /// Authored element of an Automation: a Trigger or an Action.
 model Node {
-  id   String @id @default(uuid())
+  id   String  @id @default(uuid())
   type String
   name String?
 
@@ -1204,7 +1204,7 @@ model Node {
   position Json @db.JsonB
 
   /// Node configuration; may contain template expressions. Never holds secret material.
-  data Json @db.JsonB
+  data Json @default("{}") @db.JsonB
 
   credential   Credential? @relation(fields: [credentialId], references: [id], onDelete: SetNull)
   credentialId String?
@@ -1235,21 +1235,20 @@ model Connection {
   automation   Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
   automationId String
 
-  fromNode   Node @relation("ConnectionFromNode", fields: [fromNodeId], references: [id], onDelete: Cascade)
+  fromNode   Node   @relation("ConnectionFromNode", fields: [fromNodeId], references: [id], onDelete: Cascade)
   fromNodeId String
 
-  toNode   Node @relation("ConnectionToNode", fields: [toNodeId], references: [id], onDelete: Cascade)
+  toNode   Node   @relation("ConnectionToNode", fields: [toNodeId], references: [id], onDelete: Cascade)
   toNodeId String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([automationId])
-  @@index([toNodeId])
-
   /// A duplicate identical edge would double the token arrival (one Step per
   /// arriving token), so identical fan-out edges are rejected at the DB.
   @@unique([fromNodeId, toNodeId, fromOutput, toInput])
+  @@index([automationId])
+  @@index([toNodeId])
 }
 
 enum AutomationRunStatus {
@@ -1281,7 +1280,7 @@ model AutomationRun {
   /// Human-readable failure reason for FAILED runs.
   error String?
 
-  startedAt DateTime @default(now())
+  startedAt DateTime  @default(now())
   endedAt   DateTime?
 
   automation   Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
@@ -1316,7 +1315,7 @@ model AutomationRunStep {
   seq Int
 
   /// Token received along a Connection (one Step per arriving token).
-  input Json? @db.JsonB
+  input  Json? @db.JsonB
   output Json? @db.JsonB
 
   status   AutomationRunStepStatus @default(PENDING)
