@@ -24,6 +24,10 @@ import {
   automationPublishSchema,
   automationUpdateSchema,
 } from "../schemas";
+import {
+  decryptCredentialSecret,
+  encryptCredentialSecret,
+} from "../lib/credential-store";
 
 /** Map a client node (React Flow) to the Node row columns. */
 const toNodeRow = (
@@ -32,6 +36,7 @@ const toNodeRow = (
     type?: string | null;
     position: { x: number; y: number };
     data?: Record<string, unknown>;
+    credentialId?: string | null;
   },
   automationId: string,
 ) => ({
@@ -41,6 +46,7 @@ const toNodeRow = (
   type: node.type as string,
   position: node.position,
   data: node.data || {},
+  credentialId: node.credentialId ?? null,
 });
 
 /** Map a client edge (React Flow) to the Connection row columns. */
@@ -58,6 +64,120 @@ const toConnectionRow = (
   toNodeId: edge.target,
   fromOutput: edge.sourceHandle || "main",
   toInput: edge.targetHandle || "main",
+});
+
+const credentialSelect = {
+  id: true,
+  name: true,
+  type: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
+
+export const credentialsRouter = createTRPCRouter({
+  getMany: permissionProcedure(PERMISSIONS.AUTOMATIONS_READ)
+    .query(async () => {
+      return db.credential.findMany({
+        select: credentialSelect,
+        orderBy: { createdAt: "desc" },
+      });
+    }),
+  getOne: permissionProcedure(PERMISSIONS.AUTOMATIONS_READ)
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input }) => {
+      const credential = await db.credential.findUnique({
+        where: { id: input.id },
+        select: credentialSelect,
+      });
+
+      if (!credential) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Credential not found" });
+      }
+
+      return credential;
+    }),
+  create: permissionProcedure(PERMISSIONS.AUTOMATIONS_WRITE)
+    .input(
+      z.object({
+        name: z.string().min(1, { error: "Name is required" }),
+        type: z.string().min(1, { error: "Type is required" }),
+        secret: z.string().min(1, { error: "Secret is required" }),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const credential = await db.credential.create({
+        data: {
+          name: input.name,
+          type: input.type,
+          secretEncrypted: encryptCredentialSecret(input.secret),
+        },
+        select: credentialSelect,
+      });
+
+      return credential;
+    }),
+  update: permissionProcedure(PERMISSIONS.AUTOMATIONS_WRITE)
+    .input(
+      z.object({
+        id: z.string(),
+        name: z.string().min(1).optional(),
+        type: z.string().min(1).optional(),
+        secret: z.string().min(1).optional(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const existing = await db.credential.findUnique({ where: { id: input.id } });
+
+      if (!existing) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Credential not found" });
+      }
+
+      const credential = await db.credential.update({
+        where: { id: input.id },
+        data: {
+          name: input.name,
+          type: input.type,
+          secretEncrypted: input.secret
+            ? encryptCredentialSecret(input.secret)
+            : undefined,
+        },
+        select: credentialSelect,
+      });
+
+      return credential;
+    }),
+  remove: permissionProcedure(PERMISSIONS.AUTOMATIONS_WRITE)
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input }) => {
+      const existing = await db.credential.findUnique({ where: { id: input.id } });
+
+      if (!existing) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Credential not found" });
+      }
+
+      return db.credential.delete({
+        where: { id: input.id },
+        select: credentialSelect,
+      });
+    }),
+  decrypt: permissionProcedure(PERMISSIONS.AUTOMATIONS_WRITE)
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input }) => {
+      const credential = await db.credential.findUnique({
+        where: { id: input.id },
+      });
+
+      if (!credential) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Credential not found" });
+      }
+
+      return {
+        id: credential.id,
+        name: credential.name,
+        type: credential.type,
+        secret: decryptCredentialSecret(credential.secretEncrypted),
+      };
+    }),
 });
 
 export const automationsRouter = createTRPCRouter({
@@ -313,7 +433,10 @@ export const automationsRouter = createTRPCRouter({
         id: node.id,
         type: node.type,
         position: node.position as { x: number; y: number },
-        data: (node.data as Record<string, unknown>) || {},
+        data: {
+          ...(node.data as Record<string, unknown> | null),
+          credentialId: node.credentialId ?? undefined,
+        },
       }));
 
       // Transform server connections to react-flow compatibles edges

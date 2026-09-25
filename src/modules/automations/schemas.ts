@@ -14,6 +14,7 @@ export const automationUpdateSchema = z.object({
       type: z.string().nullish(),
       position: z.object({ x: z.number(), y: z.number() }),
       data: z.record(z.string(), z.any()).optional(),
+      credentialId: z.string().nullish(),
     }),
   ),
   edges: z.array(
@@ -33,6 +34,7 @@ const graphNodeSchema = z.object({
   type: z.string().min(1),
   position: z.object({ x: z.number(), y: z.number() }),
   data: z.record(z.string(), z.any()).optional(),
+  credentialId: z.string().nullish(),
 });
 
 const graphEdgeSchema = z.object({
