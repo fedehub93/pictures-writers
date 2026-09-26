@@ -19,6 +19,7 @@ import {
   MIN_PAGE_SIZE,
 } from "../constants";
 import { validateAutomationGraph } from "../lib/validate";
+import { dedupeConnections } from "../lib/connections";
 import { enqueueRun } from "../lib/automation-ingestion";
 import { hashWebhookSecret } from "../lib/webhook-secret";
 import { pumpDueAutomations } from "./automation-runtime";
@@ -252,7 +253,7 @@ export const automationsRouter = createTRPCRouter({
 
         // Create connections
         await tx.connection.createMany({
-          data: edges.map((edge) => toConnectionRow(edge, id)),
+          data: dedupeConnections(edges.map((edge) => toConnectionRow(edge, id))),
         });
 
         // update automation's updatedAt timestamp
@@ -319,7 +320,7 @@ export const automationsRouter = createTRPCRouter({
         });
 
         await tx.connection.createMany({
-          data: edges.map((edge) => toConnectionRow(edge, id)),
+          data: dedupeConnections(edges.map((edge) => toConnectionRow(edge, id))),
         });
 
         return tx.automation.update({

@@ -37,9 +37,9 @@ export function NodeShell({ id, type, showTargetHandle }: NodeShellProps) {
           <span className="font-medium text-sm">{entry?.label ?? type}</span>
         </div>
         {showTargetHandle ? (
-          <Handle type="target" position={Position.Top} />
+          <Handle id="main" type="target" position={Position.Top} />
         ) : null}
-        <Handle type="source" position={Position.Bottom} />
+        <Handle id="main" type="source" position={Position.Bottom} />
       </BaseNode>
     </AutomationNode>
   );
