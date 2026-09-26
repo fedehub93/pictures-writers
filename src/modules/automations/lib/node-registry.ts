@@ -133,16 +133,42 @@ function parseDuration(value: unknown): number | null {
   return amount * (multipliers[unit] ?? 1);
 }
 
+const OBJECT_DURATION_MULTIPLIERS: Record<string, number> = {
+  ms: 1,
+  seconds: 1000,
+  minutes: 60 * 1000,
+  hours: 60 * 60 * 1000,
+  days: 24 * 60 * 60 * 1000,
+  weeks: 7 * 24 * 60 * 60 * 1000,
+};
+
+function parseNumberMs(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (/^-?\d+(?:\.\d+)?$/.test(trimmed)) {
+    return Number(trimmed);
+  }
+
+  return null;
+}
+
 function readObjectDuration(value: unknown): number | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return null;
   }
 
   const record = value as Record<string, unknown>;
-  const total = ["ms", "seconds", "minutes", "hours", "days", "weeks"].reduce(
-    (sum, key) => {
-      const duration = parseDuration(record[key]);
-      return duration === null ? sum : sum + duration * (key === "ms" ? 1 : 1);
+  const total = Object.entries(OBJECT_DURATION_MULTIPLIERS).reduce(
+    (sum, [key, multiplier]) => {
+      const duration = parseNumberMs(record[key]);
+      return duration === null ? sum : sum + duration * multiplier;
     },
     0,
   );
