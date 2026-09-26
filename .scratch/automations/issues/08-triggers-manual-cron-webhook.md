@@ -20,7 +20,12 @@ Delivered:
 - **Webhook.** `lib/webhook-secret.ts` hashes the secret (`sha256` hex) and verifies a caller secret in constant time (`timingSafeEqual`), rejecting malformed stored hashes. `enqueueWebhookRun` verifies then enqueues with the request body as payload. The route `src/app/api/automations/webhook/[automationId]/route.ts` reads `x-automation-secret`, returns 401 for bad/missing secrets, and 200 `{ runId }` otherwise (`runId: null` when unpublished). No automation existence is leaked (unknown id and bad secret are both 401).
 - **Admin secret management.** `setWebhookSecret` / `clearWebhookSecret` procedures store only the hash; `getOne` strips `webhookSecretHash` and exposes `hasWebhookSecret`. UI: `CRON_TRIGGER`/`WEBHOOK_TRIGGER` palette entries, a `TriggerNode` canvas renderer, and shadcn `Field` config panels (cron interval + time of day; webhook status, endpoint with copy, secret with generate/save/remove). `TRIGGER_NODE_TYPES` now lists all three so cron/webhook-only graphs publish.
 - **Tests.** `cron-schedule` and `webhook-secret` unit suites; `automation-triggers` integration covers manual, cron (due/not-due/unpublished, through the pump), webhook accept/reject/ignored (through the pump); the webhook route suite covers 401/200/500 and body parsing. `validate` now asserts cron/webhook count as triggers.
-- Verified: `npx tsc --noEmit` clean; full `npm run test:run` 446/446 (56 files); `npx eslint` clean on touched paths; `npm run build` succeeds.
+- **Draining pump.** `server/automation-runtime.ts` composes the concrete registry/effects and `pumpDueAutomations` calls the runner repeatedly until nothing is due (bounded). Because `runDueAutomations` snapshots the due set, a chain previously advanced one node per cron tick; now one tick — and "Run now" — drains a whole chain up to its first wait/retry. `execute` enqueues then drains synchronously, so a manual test actually runs. The cron endpoint keeps its own registry/effect wiring out of the engine core (ADR-0003).
+- Verified: `npx tsc --noEmit` clean; full `npm run test:run` 448/448 (57 files); `npx eslint` clean on touched paths; `npm run build` succeeds.
+
+## Deployment note
+
+The external cron (cron-job.org) must POST `/api/automations/run/` with the `x-scheduled-publication-secret` header, in addition to the existing `/api/scheduler/run/`. Without it, cron/webhook-triggered runs stay enqueued until a manual "Run now" drains them.
 
 Non-blocking follow-ups:
 

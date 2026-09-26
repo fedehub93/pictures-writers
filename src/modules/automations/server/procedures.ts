@@ -21,6 +21,7 @@ import {
 import { validateAutomationGraph } from "../lib/validate";
 import { enqueueRun } from "../lib/automation-ingestion";
 import { hashWebhookSecret } from "../lib/webhook-secret";
+import { pumpDueAutomations } from "./automation-runtime";
 import { parseRunDateRange, resolveRunNodes } from "../lib/run-ledger";
 import {
   automationCreateSchema,
@@ -94,7 +95,22 @@ export const automationsRouter = createTRPCRouter({
         });
       }
 
-      return { id: automation.id, name: automation.name, runId: run.id };
+      // "Run now" is a test affordance: drain the freshly enqueued run straight
+      // away instead of waiting for the external cron pump. It stops at the
+      // first wait/retry, so a sleeping run stays RUNNING by design.
+      await pumpDueAutomations();
+
+      const executed = await db.automationRun.findUnique({
+        where: { id: run.id },
+        select: { status: true },
+      });
+
+      return {
+        id: automation.id,
+        name: automation.name,
+        runId: run.id,
+        status: executed?.status ?? run.status,
+      };
     }),
   setWebhookSecret: permissionProcedure(PERMISSIONS.AUTOMATIONS_WRITE)
     .input(

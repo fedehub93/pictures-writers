@@ -34,6 +34,9 @@ export const AUTOMATION_LEASE_MS = 5 * 60 * 1000;
 export const AUTOMATION_MAX_ATTEMPTS = 3;
 export const AUTOMATION_RETRY_DELAY_MS = 5 * 60 * 1000;
 export const AUTOMATION_MAX_EXECUTIONS = 500;
+
+/// Safety cap on consecutive batches a single pump drains (see pumpDueAutomations).
+export const AUTOMATION_PUMP_MAX_BATCHES = 100;
 export const AUTOMATION_SECRET_HEADER = "x-scheduled-publication-secret";
 
 /// Header an external caller uses to present a webhook trigger secret.

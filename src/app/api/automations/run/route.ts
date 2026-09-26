@@ -5,13 +5,8 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 
 import { AUTOMATION_SECRET_HEADER } from "@/modules/automations/constants";
-import { unconfiguredEffects } from "@/modules/automations/lib/effects";
-import { runDueAutomations } from "@/modules/automations/lib/automation-runner";
 import { enqueueDueCronAutomations } from "@/modules/automations/lib/automation-triggers";
-import {
-  createAutomationMailEffect,
-  sendEmailNodeRegistry,
-} from "@/modules/mails/automations";
+import { pumpDueAutomations } from "@/modules/automations/server/automation-runtime";
 
 function hashSecret(secret: string) {
   return createHash("sha256").update(secret).digest();
@@ -37,13 +32,7 @@ export async function POST(request: Request) {
     }
 
     const cron = await enqueueDueCronAutomations();
-    const result = await runDueAutomations({
-      registry: sendEmailNodeRegistry,
-      effects: {
-        ...unconfiguredEffects,
-        mail: createAutomationMailEffect(),
-      },
-    });
+    const result = await pumpDueAutomations();
     return NextResponse.json({ ...result, cron });
   } catch (error) {
     console.error("[AUTOMATIONS_RUN]", error);

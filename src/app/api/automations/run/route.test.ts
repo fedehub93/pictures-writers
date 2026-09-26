@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { runDueAutomations } from "@/modules/automations/lib/automation-runner";
 import { enqueueDueCronAutomations } from "@/modules/automations/lib/automation-triggers";
+import { pumpDueAutomations } from "@/modules/automations/server/automation-runtime";
 
 import { POST } from "./route";
 
-vi.mock("@/modules/automations/lib/automation-runner", () => ({
-  runDueAutomations: vi.fn(),
+vi.mock("@/modules/automations/server/automation-runtime", () => ({
+  pumpDueAutomations: vi.fn(),
 }));
 
 vi.mock("@/modules/automations/lib/automation-triggers", () => ({
@@ -46,30 +46,23 @@ describe("POST /api/automations/run", () => {
     const response = await POST(makeRequest());
 
     expect(response.status).toBe(401);
-    expect(runDueAutomations).not.toHaveBeenCalled();
+    expect(pumpDueAutomations).not.toHaveBeenCalled();
   });
 
   it("returns 401 when the secret header is invalid", async () => {
     const response = await POST(makeRequest("wrong-secret"));
 
     expect(response.status).toBe(401);
-    expect(runDueAutomations).not.toHaveBeenCalled();
+    expect(pumpDueAutomations).not.toHaveBeenCalled();
   });
 
   it("runs due automations for a valid secret", async () => {
-    vi.mocked(runDueAutomations).mockResolvedValue({
+    vi.mocked(pumpDueAutomations).mockResolvedValue({
+      batches: 1,
       processed: 1,
       succeeded: 1,
       failed: 0,
       skipped: 0,
-      details: [
-        {
-          runId: "run-1",
-          stepId: "step-1",
-          nodeId: "trigger",
-          status: "succeeded",
-        },
-      ],
     });
 
     const response = await POST(makeRequest("test-secret"));
@@ -83,14 +76,14 @@ describe("POST /api/automations/run", () => {
       skipped: 0,
     });
     expect(enqueueDueCronAutomations).toHaveBeenCalledTimes(1);
-    expect(runDueAutomations).toHaveBeenCalledTimes(1);
+    expect(pumpDueAutomations).toHaveBeenCalledTimes(1);
   });
 
   it("returns 500 when the runner throws", async () => {
     const consoleErrorSpy = vi
       .spyOn(console, "error")
       .mockImplementation(() => {});
-    vi.mocked(runDueAutomations).mockRejectedValue(new Error("database down"));
+    vi.mocked(pumpDueAutomations).mockRejectedValue(new Error("database down"));
 
     const response = await POST(makeRequest("test-secret"));
 
