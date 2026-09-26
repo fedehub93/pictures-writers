@@ -11,6 +11,7 @@ import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 import { AutomationStatus } from "@/generated/prisma";
 
 import {
+  AUTOMATION_RUN_STATUSES,
   DEFAULT_PAGE,
   DEFAULT_PAGE_SIZE,
   INITIAL_NODE_TYPE,
@@ -19,6 +20,7 @@ import {
 } from "../constants";
 import { validateAutomationGraph } from "../lib/validate";
 import { enqueueRun } from "../lib/automation-ingestion";
+import { parseRunDateRange, resolveRunNodes } from "../lib/run-ledger";
 import {
   automationCreateSchema,
   automationPublishSchema,
@@ -330,5 +332,86 @@ export const automationsRouter = createTRPCRouter({
       }));
 
       return { ...automation, nodes, connections: edges };
+    }),
+  getRuns: permissionProcedure(PERMISSIONS.AUTOMATIONS_READ)
+    .input(
+      z.object({
+        automationId: z.string(),
+        page: z.number().default(DEFAULT_PAGE),
+        pageSize: z
+          .number()
+          .min(MIN_PAGE_SIZE)
+          .max(MAX_PAGE_SIZE)
+          .default(DEFAULT_PAGE_SIZE),
+        status: z.enum(AUTOMATION_RUN_STATUSES).nullish(),
+        from: z.string().nullish(),
+        to: z.string().nullish(),
+      }),
+    )
+    .query(async ({ input }) => {
+      const { gte, lte } = parseRunDateRange({
+        from: input.from,
+        to: input.to,
+      });
+
+      const where = {
+        automationId: input.automationId,
+        status: input.status ?? undefined,
+        startedAt: gte || lte ? { gte, lte } : undefined,
+      };
+
+      const [items, total] = await Promise.all([
+        db.automationRun.findMany({
+          where,
+          select: {
+            id: true,
+            status: true,
+            triggerType: true,
+            startedAt: true,
+            endedAt: true,
+            error: true,
+          },
+          orderBy: { startedAt: "desc" },
+          take: input.pageSize,
+          skip: (input.page - 1) * input.pageSize,
+        }),
+        db.automationRun.count({ where }),
+      ]);
+
+      return {
+        items,
+        total,
+        totalPages: Math.ceil(total / input.pageSize),
+      };
+    }),
+  getRun: permissionProcedure(PERMISSIONS.AUTOMATIONS_READ)
+    .input(z.object({ id: z.string(), automationId: z.string() }))
+    .query(async ({ input }) => {
+      const run = await db.automationRun.findUnique({
+        where: { id: input.id },
+        include: {
+          automation: { select: { id: true, name: true } },
+          steps: { orderBy: { seq: "asc" } },
+        },
+      });
+
+      if (!run || run.automationId !== input.automationId) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Run not found",
+        });
+      }
+
+      const { graph, steps, idempotencyKey: _idempotencyKey, ...rest } = run;
+      const nodes = resolveRunNodes(graph);
+
+      return {
+        ...rest,
+        steps: steps.map((step) => ({
+          ...step,
+          nodeType: nodes[step.nodeId]?.type ?? null,
+          nodeName: nodes[step.nodeId]?.name ?? null,
+        })),
+      };
     }),
 });

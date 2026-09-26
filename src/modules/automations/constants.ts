@@ -1,7 +1,17 @@
+import { AutomationRunStatus } from "@/generated/prisma";
+
 export const DEFAULT_PAGE = 1;
 export const DEFAULT_PAGE_SIZE = 10;
 export const MAX_PAGE_SIZE = 100;
 export const MIN_PAGE_SIZE = 1;
+
+/// The lifecycle states of a Run; the single source for filters and validation.
+export const AUTOMATION_RUN_STATUSES = [
+  AutomationRunStatus.RUNNING,
+  AutomationRunStatus.COMPLETED,
+  AutomationRunStatus.FAILED,
+  AutomationRunStatus.CANCELED,
+] as const;
 
 /// Canvas placeholder node; picking a trigger from its selector converts it.
 export const INITIAL_NODE_TYPE = "INITIAL";

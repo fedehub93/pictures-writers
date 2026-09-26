@@ -1,6 +1,7 @@
 "use client";
 
-import { RocketIcon, SaveIcon } from "lucide-react";
+import { HistoryIcon, RocketIcon, SaveIcon } from "lucide-react";
+import Link from "next/link";
 import React, { useEffect, useRef, useState } from "react";
 import { useAtomValue } from "jotai";
 
@@ -216,6 +217,12 @@ export const EditorHeader = ({ automationId }: { automationId: string }) => {
           <EditorStatusBadge automationId={automationId} />
         </div>
         <div className="flex items-center gap-x-2">
+          <Button size="sm" variant="outline" asChild>
+            <Link href={`/admin/automations/${automationId}/executions/`}>
+              <HistoryIcon data-icon="inline-start" />
+              Executions
+            </Link>
+          </Button>
           <EditorPublishButton automationId={automationId} />
           <EditorSaveButton automationId={automationId} />
         </div>
