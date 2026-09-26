@@ -1,7 +1,12 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { db } from "@/shared/lib/db";
-import { AutomationStatus, AutomationRunStepStatus } from "@/generated/prisma";
+import {
+  AutomationRunStatus,
+  AutomationRunStepStatus,
+  AutomationStatus,
+  Prisma,
+} from "@/generated/prisma";
 import { cleanupAutomationTables } from "@/modules/automations";
 
 import { enqueueRun } from "../automation-ingestion";
@@ -10,6 +15,7 @@ import {
   runDueAutomations,
 } from "../automation-runner";
 import { createInMemoryEffects } from "../effects";
+import type { JsonValue } from "../graph";
 import { TransientAutomationNodeError } from "../node-registry";
 
 const graph = {
@@ -456,5 +462,334 @@ describe("automation engine", () => {
     expect(result.skipped).toBe(1);
     expect(result.failed).toBe(0);
     expect(result.details[0]?.status).toBe("skipped");
+  });
+
+  it("executes a linear chain through connections and terminalizes", async () => {
+    const automation = await db.automation.create({
+      data: {
+        name: "Chain flow",
+        status: AutomationStatus.PUBLISHED,
+        publishedSnapshot: {
+          nodes: [
+            { id: "trigger", type: "manual", data: {} },
+            { id: "a", type: "a", data: {} },
+            { id: "b", type: "b", data: {} },
+            { id: "end", type: "end", data: {} },
+          ],
+          connections: [
+            { fromNodeId: "trigger", toNodeId: "a" },
+            { fromNodeId: "a", toNodeId: "b" },
+            { fromNodeId: "b", toNodeId: "end" },
+          ],
+        },
+      },
+    });
+    const calls: Array<{ nodeId: string; input: unknown }> = [];
+    const registry = {
+      a: async (ctx: { input: unknown }) => {
+        calls.push({ nodeId: "a", input: ctx.input });
+        return { output: { from: "a" } };
+      },
+      b: async (ctx: { input: unknown }) => {
+        calls.push({ nodeId: "b", input: ctx.input });
+        return { output: { from: "b" } };
+      },
+    };
+
+    const run = await enqueueRun({
+      automationId: automation.id,
+      triggerType: "manual",
+      payload: { start: 1 },
+    });
+
+    // Trigger, a, b, end each require a separate pump call in a linear chain.
+    await runDueAutomations({ registry });
+    await runDueAutomations({ registry });
+    await runDueAutomations({ registry });
+    await runDueAutomations({ registry });
+
+    const completed = await db.automationRun.findUnique({
+      where: { id: run!.id },
+      include: { steps: { orderBy: { seq: "asc" } } },
+    });
+
+    expect(completed?.status).toBe("COMPLETED");
+    expect(calls).toEqual([
+      { nodeId: "a", input: { start: 1 } },
+      { nodeId: "b", input: { from: "a" } },
+    ]);
+    expect(
+      completed?.steps.map((step) => ({
+        nodeId: step.nodeId,
+        status: step.status,
+      })),
+    ).toEqual([
+      { nodeId: "trigger", status: AutomationRunStepStatus.COMPLETED },
+      { nodeId: "a", status: AutomationRunStepStatus.COMPLETED },
+      { nodeId: "b", status: AutomationRunStepStatus.COMPLETED },
+      { nodeId: "end", status: AutomationRunStepStatus.COMPLETED },
+    ]);
+  });
+
+  it("fans out from one node to two successors", async () => {
+    const automation = await db.automation.create({
+      data: {
+        name: "Fan-out flow",
+        status: AutomationStatus.PUBLISHED,
+        publishedSnapshot: {
+          nodes: [
+            { id: "trigger", type: "manual", data: {} },
+            { id: "split", type: "split", data: {} },
+            { id: "a", type: "a", data: {} },
+            { id: "b", type: "b", data: {} },
+          ],
+          connections: [
+            { fromNodeId: "trigger", toNodeId: "split" },
+            { fromNodeId: "split", toNodeId: "a" },
+            { fromNodeId: "split", toNodeId: "b" },
+          ],
+        },
+      },
+    });
+    const calls: string[] = [];
+    const registry = {
+      split: async () => ({ output: { value: 1 } }),
+      a: async () => {
+        calls.push("a");
+        return { output: { branch: "a" } };
+      },
+      b: async () => {
+        calls.push("b");
+        return { output: { branch: "b" } };
+      },
+    };
+
+    const run = await enqueueRun({
+      automationId: automation.id,
+      triggerType: "manual",
+    });
+
+    await runDueAutomations({ registry });
+    await runDueAutomations({ registry });
+    await runDueAutomations({ registry });
+
+    expect(calls.sort()).toEqual(["a", "b"]);
+    const steps = await db.automationRunStep.findMany({
+      where: { runId: run!.id },
+      orderBy: { seq: "asc" },
+    });
+    expect(steps).toHaveLength(4);
+    expect(
+      steps
+        .filter((step) => step.nodeId === "a" || step.nodeId === "b")
+        .every((step) => step.status === AutomationRunStepStatus.COMPLETED),
+    ).toBe(true);
+  });
+
+  it("routes a conditional node to only the matched output", async () => {
+    const automation = await db.automation.create({
+      data: {
+        name: "Conditional flow",
+        status: AutomationStatus.PUBLISHED,
+        publishedSnapshot: {
+          nodes: [
+            { id: "trigger", type: "manual", data: {} },
+            {
+              id: "cond",
+              type: "conditional",
+              data: { path: "tier", operator: "equals", value: "{{ payload.tier }}" },
+            },
+            { id: "trueBranch", type: "trueBranch", data: {} },
+            { id: "falseBranch", type: "falseBranch", data: {} },
+          ],
+          connections: [
+            { fromNodeId: "trigger", toNodeId: "cond" },
+            {
+              fromNodeId: "cond",
+              toNodeId: "trueBranch",
+              fromOutput: "true",
+            },
+            {
+              fromNodeId: "cond",
+              toNodeId: "falseBranch",
+              fromOutput: "false",
+            },
+          ],
+        },
+      },
+    });
+    const calls: string[] = [];
+    const registry = {
+      trueBranch: async () => {
+        calls.push("trueBranch");
+        return { output: { branch: "true" } };
+      },
+      falseBranch: async () => {
+        calls.push("falseBranch");
+        return { output: { branch: "false" } };
+      },
+    };
+
+    const run = await enqueueRun({
+      automationId: automation.id,
+      triggerType: "manual",
+      payload: { tier: "pro" },
+    });
+
+    await runDueAutomations({ registry });
+    await runDueAutomations({ registry });
+    await runDueAutomations({ registry });
+
+    expect(calls).toEqual(["trueBranch"]);
+    const steps = await db.automationRunStep.findMany({
+      where: { runId: run!.id },
+      orderBy: { seq: "asc" },
+    });
+    expect(steps).toHaveLength(3);
+    expect(
+      steps.find((step) => step.nodeId === "falseBranch"),
+    ).toBeUndefined();
+  });
+
+  it("creates one Step per incoming token for a node with multiple inputs", async () => {
+    const automation = await db.automation.create({
+      data: {
+        name: "Per-token flow",
+        status: AutomationStatus.PUBLISHED,
+        publishedSnapshot: {
+          nodes: [
+            { id: "trigger", type: "manual", data: {} },
+            { id: "a", type: "a", data: {} },
+            { id: "b", type: "b", data: {} },
+            { id: "merge", type: "merge", data: {} },
+          ],
+          connections: [
+            { fromNodeId: "trigger", toNodeId: "a" },
+            { fromNodeId: "trigger", toNodeId: "b" },
+            { fromNodeId: "a", toNodeId: "merge" },
+            { fromNodeId: "b", toNodeId: "merge" },
+          ],
+        },
+      },
+    });
+    const inputs: unknown[] = [];
+    const registry = {
+      a: async () => ({ output: { branch: "a" } }),
+      b: async () => ({ output: { branch: "b" } }),
+      merge: async (ctx: { input: unknown }) => {
+        inputs.push(ctx.input);
+        return { output: ctx.input as JsonValue };
+      },
+    };
+
+    const run = await enqueueRun({
+      automationId: automation.id,
+      triggerType: "manual",
+    });
+
+    // Trigger -> a and b (fan-out)
+    await runDueAutomations({ registry });
+    // a and b -> merge (two independent tokens)
+    await runDueAutomations({ registry });
+    // Execute both merge steps (per-token, no join)
+    await runDueAutomations({ registry });
+
+    expect(inputs).toHaveLength(2);
+    expect(inputs).toEqual(
+      expect.arrayContaining([{ branch: "a" }, { branch: "b" }]),
+    );
+
+    const mergeSteps = await db.automationRunStep.findMany({
+      where: { runId: run!.id, nodeId: "merge" },
+      orderBy: { seq: "asc" },
+    });
+    expect(mergeSteps).toHaveLength(2);
+    expect(mergeSteps.map((step) => step.input)).toEqual(
+      expect.arrayContaining([{ branch: "a" }, { branch: "b" }]),
+    );
+  });
+
+  it("cancels a Run that exceeds the 500-execution guard", async () => {
+    // Pre-seed the ledger so the aggregate attempts sum already sits at the
+    // limit; exercising the guard does not require running 500 real nodes.
+    const leafCount = 500;
+    const nodes = [
+      { id: "trigger", type: "manual", data: {} },
+      ...Array.from({ length: leafCount }, (_, index) => ({
+        id: `leaf-${index}`,
+        type: "leaf",
+        data: {},
+      })),
+    ];
+    const connections = Array.from({ length: leafCount }, (_, index) => ({
+      fromNodeId: "trigger",
+      toNodeId: `leaf-${index}`,
+    }));
+
+    const automation = await db.automation.create({
+      data: {
+        name: "Guard flow",
+        status: AutomationStatus.PUBLISHED,
+        publishedSnapshot: { nodes, connections },
+      },
+    });
+    const registry = {
+      leaf: async () => ({ output: { ok: true } }),
+    };
+
+    const run = await db.automationRun.create({
+      data: {
+        automationId: automation.id,
+        triggerType: "manual",
+        graph: { nodes, connections } as unknown as Prisma.InputJsonValue,
+        payload: Prisma.DbNull,
+        status: AutomationRunStatus.RUNNING,
+        startedAt: new Date(),
+        steps: {
+          create: [
+            {
+              nodeId: "trigger",
+              seq: 1,
+              status: AutomationRunStepStatus.COMPLETED,
+              attempts: 1,
+              input: Prisma.DbNull,
+              output: Prisma.DbNull,
+            },
+            ...Array.from({ length: leafCount }, (_, index) => ({
+              nodeId: `leaf-${index}`,
+              seq: index + 2,
+              status: AutomationRunStepStatus.PENDING,
+              attempts: 1,
+              input: Prisma.DbNull,
+            })),
+          ],
+        },
+      },
+      include: { steps: true },
+    });
+
+    const result = await runDueAutomations({ registry });
+
+    const finalRun = await db.automationRun.findUnique({
+      where: { id: run.id },
+      include: { steps: true },
+    });
+
+    expect(finalRun?.status).toBe("CANCELED");
+    expect(finalRun?.error).toMatch(/500/);
+    expect(finalRun?.error).toMatch(/execution limit/i);
+
+    const completedCount = finalRun?.steps.filter(
+      (step) => step.status === AutomationRunStepStatus.COMPLETED,
+    ).length;
+    expect(completedCount).toBeLessThanOrEqual(500);
+
+    const skippedCount = finalRun?.steps.filter(
+      (step) => step.status === AutomationRunStepStatus.SKIPPED,
+    ).length;
+    expect(skippedCount).toBeGreaterThanOrEqual(1);
+    expect(result.details.some((detail) => detail.status === "skipped")).toBe(
+      true,
+    );
   });
 });

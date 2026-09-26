@@ -6,6 +6,11 @@ import {
   type JsonValue,
 } from "./graph";
 import { passthroughEffects, type AutomationEffects } from "./effects";
+import {
+  interpolateAutomationValue,
+  readPath,
+  type AutomationInterpolationContext,
+} from "./interpolate";
 
 export type AutomationNodeHandlerContext = {
   node: AutomationNode;
@@ -70,20 +75,6 @@ export function isTransientNodeError(error: unknown): boolean {
   }
 
   return false;
-}
-
-function readPath(value: JsonValue, path: string): JsonValue {
-  if (!path) {
-    return value;
-  }
-
-  return path.split(".").reduce<JsonValue>((current, key) => {
-    if (!current || typeof current !== "object" || Array.isArray(current)) {
-      return null;
-    }
-
-    return (current as JsonObject)[key] ?? null;
-  }, value);
 }
 
 function parseDuration(value: unknown): number | null {
@@ -256,8 +247,18 @@ const waitHandler: AutomationNodeHandler = ({ node, input, now }) => ({
   resumeAt: resolveWaitAt(node.data, now),
 });
 
-const conditionalHandler: AutomationNodeHandler = ({ node, input, payload }) => {
-  const config = node.data;
+const conditionalHandler: AutomationNodeHandler = (context) => {
+  const { node, input, payload } = context;
+  const interpolationContext: AutomationInterpolationContext = {
+    input,
+    payload,
+    run: context.run,
+    step: context.step,
+  };
+  const config = interpolateAutomationValue(
+    node.data,
+    interpolationContext,
+  ) as JsonObject;
   const source = config.source === "payload" ? payload : input;
   const path = typeof config.path === "string" ? config.path : "";
   const actual = readPath(source, path);
