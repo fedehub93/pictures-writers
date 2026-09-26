@@ -4,7 +4,7 @@ import {
   decryptCredentialSecret,
   encryptCredentialSecret,
   getCredentialEncryptionKey,
-} from "../credential-store";
+} from "../../credentials/lib/credential-store";
 
 describe("credential store", () => {
   const originalKey = process.env.AUTOMATION_CREDENTIALS_KEY;

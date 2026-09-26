@@ -42,4 +42,11 @@ export {
   AutomationsViewError,
 } from "./list/ui/views/automations-view";
 
+export {
+  CredentialsView,
+  CredentialsViewLoading,
+  CredentialsViewError,
+} from "./credentials/ui/views/credentials-view";
+
 export { AutomationsListHeader } from "./list/ui/components/automations-list-header";
+export { CredentialsListHeader } from "./credentials/ui/components/credentials-list-header";

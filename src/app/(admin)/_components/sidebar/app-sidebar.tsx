@@ -199,9 +199,23 @@ const data: Record<string, NavObject[]> = {
     },
     {
       title: "Automations",
-      url: "/admin/automations/" as Route,
+      url: "#",
       Icon: WorkflowIcon,
       permission: "automations.read",
+      items: [
+        {
+          title: "All automations",
+          url: "/admin/automations/" as Route,
+          Icon: WorkflowIcon,
+          permission: "automations.read",
+        },
+        {
+          title: "Credentials",
+          url: "/admin/automations/credentials" as Route,
+          Icon: ShieldCheckIcon,
+          permission: "automations.read",
+        },
+      ],
     },
     {
       title: "Settings",
