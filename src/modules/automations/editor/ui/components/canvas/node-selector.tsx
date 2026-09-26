@@ -2,7 +2,6 @@
 
 import { createId } from "@paralleldrive/cuid2";
 import { useReactFlow } from "@xyflow/react";
-import { GlobeIcon, MousePointerIcon } from "lucide-react";
 import React, { useCallback } from "react";
 import { toast } from "sonner";
 import {
@@ -14,33 +13,38 @@ import {
   SheetTrigger,
 } from "@/shared/ui/sheet";
 import { Separator } from "@/shared/ui/separator";
+import {
+  editorActionNodes,
+  editorTriggerNodes,
+} from "@/modules/automations/editor/config/node-catalog";
+import { NodeIcon } from "@/modules/automations/editor/config/node-icon";
 import { INITIAL_NODE_TYPE } from "@/modules/automations/constants";
+import type { AutomationNodeCatalogEntry } from "@/modules/automations/lib/node-catalog";
 
-export type NodeTypeOption = {
-  type: string;
-  label: string;
-  description: string;
-  icon: React.ComponentType<{ className?: string }> | string;
-};
-
-const triggerNodes: NodeTypeOption[] = [
-  {
-    type: "MANUAL_TRIGGER",
-    label: "Trigger manually",
-    description:
-      "Runs the flow on clicking a button. Good for getting started quickly.",
-    icon: MousePointerIcon,
-  },
-];
-
-export const executionNodes: NodeTypeOption[] = [
-  {
-    type: "HTTP_REQUEST",
-    label: "HTTP Request",
-    description: "Makes an HTTP request",
-    icon: GlobeIcon,
-  },
-];
+function NodeOption({
+  entry,
+  onSelect,
+}: {
+  entry: AutomationNodeCatalogEntry;
+  onSelect: (entry: AutomationNodeCatalogEntry) => void;
+}) {
+  return (
+    <div
+      className="w-full justify-start h-auto py-5 px-4 rounded-none cursor-pointer border-l-2 border-transparent hover:border-l-primary"
+      onClick={() => onSelect(entry)}
+    >
+      <div className="flex items-center gap-6 w-full overflow-hidden">
+        <NodeIcon type={entry.type} className="size-5" />
+        <div className="flex flex-col items-start text-left">
+          <span className="font-medium text-sm">{entry.label}</span>
+          <span className="text-xs text-muted-foreground">
+            {entry.description}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface NodeSelectorProps {
   open: boolean;
@@ -55,7 +59,7 @@ export function NodeSelector({
 }: NodeSelectorProps) {
   const { setNodes, getNodes, screenToFlowPosition } = useReactFlow();
   const handleNodeSelect = useCallback(
-    (selection: NodeTypeOption) => {
+    (selection: AutomationNodeCatalogEntry) => {
       if (selection.type === "MANUAL_TRIGGER") {
         const nodes = getNodes();
         const hasManualTrigger = nodes.some(
@@ -94,6 +98,7 @@ export function NodeSelector({
     },
     [setNodes, getNodes, onOpenChange, screenToFlowPosition],
   );
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>{children}</SheetTrigger>
@@ -105,69 +110,15 @@ export function NodeSelector({
           </SheetDescription>
         </SheetHeader>
         <div>
-          {triggerNodes.map((nodeType) => {
-            const Icon = nodeType.icon;
-            return (
-              <div
-                key={nodeType.type}
-                className="w-full justify-start h-auto py-5 px-4 rounded-none cursor-pointer border-l-2 border-transparent hover:border-l-primary"
-                onClick={() => handleNodeSelect(nodeType)}
-              >
-                <div className="flex items-center gap-6 w-full overflow-hidden">
-                  {typeof Icon === "string" ? (
-                    <img
-                      src={Icon}
-                      alt={nodeType.label}
-                      className="size-5 object-contain rounded-sm"
-                    />
-                  ) : (
-                    <Icon className="size-5" />
-                  )}
-                  <div className="flex flex-col items-start text-left">
-                    <span className="font-medium text-sm">
-                      {nodeType.label}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {nodeType.description}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {editorTriggerNodes.map((entry) => (
+            <NodeOption key={entry.type} entry={entry} onSelect={handleNodeSelect} />
+          ))}
         </div>
         <Separator />
         <div>
-          {executionNodes.map((nodeType) => {
-            const Icon = nodeType.icon;
-            return (
-              <div
-                key={nodeType.type}
-                className="w-full justify-start h-auto py-5 px-4 rounded-none cursor-pointer border-l-2 border-transparent hover:border-l-primary"
-                onClick={() => handleNodeSelect(nodeType)}
-              >
-                <div className="flex items-center gap-6 w-full overflow-hidden">
-                  {typeof Icon === "string" ? (
-                    <img
-                      src={Icon}
-                      alt={nodeType.label}
-                      className="size-5 object-contain rounded-sm"
-                    />
-                  ) : (
-                    <Icon className="size-5" />
-                  )}
-                  <div className="flex flex-col items-start text-left">
-                    <span className="font-medium text-sm">
-                      {nodeType.label}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {nodeType.description}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {editorActionNodes.map((entry) => (
+            <NodeOption key={entry.type} entry={entry} onSelect={handleNodeSelect} />
+          ))}
         </div>
       </SheetContent>
     </Sheet>

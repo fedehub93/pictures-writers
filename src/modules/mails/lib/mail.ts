@@ -12,15 +12,40 @@ import { GenericEmail } from "./types";
 
 import { handleProductPurchased } from "../../../lib/event-handler";
 
-export const sendSendgridEmail = async ({
-  to,
-  from,
-  subject,
-  type,
-  replyTo,
-  text,
-  html,
-}: GenericEmail) => {
+export interface SendEmailOptions {
+  /**
+   * When false, the send is not recorded in `EmailSendLog`. Callers that need
+   * to own the audit row (e.g. automation sends with an idempotency key) use
+   * this so the log is written once, not twice.
+   */
+  log?: boolean;
+}
+
+async function recordSend(data: GenericEmail): Promise<void> {
+  await db.emailSendLog.create({
+    data: {
+      to: data.to,
+      from: data.from,
+      subject: data.subject,
+      type: data.type,
+      idempotencyKey: data.idempotencyKey,
+    },
+  });
+}
+
+export const sendSendgridEmail = async (
+  {
+    to,
+    from,
+    subject,
+    type,
+    replyTo,
+    text: _text,
+    html,
+    idempotencyKey,
+  }: GenericEmail,
+  options: SendEmailOptions = {},
+) => {
   const settings = await db.emailSetting.findFirst();
 
   if (!settings || !settings.emailApiKey || !settings.emailSender) return false;
@@ -36,27 +61,26 @@ export const sendSendgridEmail = async ({
     replyTo,
   });
 
-  await db.emailSendLog.create({
-    data: {
-      to,
-      from,
-      subject,
-      type,
-    },
-  });
+  if (options.log !== false) {
+    await recordSend({ to, from, subject, type, idempotencyKey });
+  }
 
   return true;
 };
 
-export const sendResendEmail = async ({
-  to,
-  from,
-  subject,
-  type,
-  replyTo,
-  text,
-  html,
-}: GenericEmail) => {
+export const sendResendEmail = async (
+  {
+    to,
+    from,
+    subject,
+    type,
+    replyTo,
+    text: _text,
+    html,
+    idempotencyKey,
+  }: GenericEmail,
+  options: SendEmailOptions = {},
+) => {
   const settings = await db.emailSetting.findFirst();
 
   if (!settings || !settings.emailApiKey || !settings.emailSender) return false;
@@ -65,36 +89,37 @@ export const sendResendEmail = async ({
 
   const resend = new Resend(process.env.NEXT_RESEND_KEY);
 
-  await resend.emails.send({
-    to,
-    from,
-    subject,
-    html,
-    replyTo,
-  });
-
-  await db.emailSendLog.create({
-    data: {
+  await resend.emails.send(
+    {
       to,
       from,
       subject,
-      type,
+      html,
+      replyTo,
     },
-  });
+    idempotencyKey ? { idempotencyKey } : undefined,
+  );
+
+  if (options.log !== false) {
+    await recordSend({ to, from, subject, type, idempotencyKey });
+  }
 
   return true;
 };
 
-export const sendEmail = async (emailData: GenericEmail) => {
+export const sendEmail = async (
+  emailData: GenericEmail,
+  options: SendEmailOptions = {},
+) => {
   const settings = await db.emailSetting.findFirst();
 
   if (!settings || !settings.emailProvider) {
     return false;
   }
   if (settings.emailProvider === EmailProvider.SENDGRID) {
-    return sendSendgridEmail(emailData);
+    return sendSendgridEmail(emailData, options);
   } else if (settings.emailProvider === EmailProvider.RESEND) {
-    return sendResendEmail(emailData);
+    return sendResendEmail(emailData, options);
   }
 
   return false;

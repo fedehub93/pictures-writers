@@ -678,6 +678,11 @@ model EmailSendLog {
 
   type String
 
+  /// Opaque key used to make a send idempotent (e.g. one automation Step).
+  /// Reusing the same key never sends twice; the unique constraint also guards
+  /// against concurrent retries.
+  idempotencyKey String? @unique
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

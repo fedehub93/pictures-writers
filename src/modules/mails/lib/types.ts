@@ -8,6 +8,9 @@ export type GenericEmail = {
   replyTo?: string;
   text?: string;
   html?: string;
+  /// Opaque idempotency key persisted on the EmailSendLog row. Reusing the
+  /// same key never sends twice.
+  idempotencyKey?: string;
 };
 
 export interface SyncResult {

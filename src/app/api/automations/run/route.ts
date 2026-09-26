@@ -5,7 +5,12 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 
 import { AUTOMATION_SECRET_HEADER } from "@/modules/automations/constants";
+import { unconfiguredEffects } from "@/modules/automations/lib/effects";
 import { runDueAutomations } from "@/modules/automations/lib/automation-runner";
+import {
+  createAutomationMailEffect,
+  sendEmailNodeRegistry,
+} from "@/modules/mails/automations";
 
 function hashSecret(secret: string) {
   return createHash("sha256").update(secret).digest();
@@ -30,7 +35,13 @@ export async function POST(request: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const result = await runDueAutomations();
+    const result = await runDueAutomations({
+      registry: sendEmailNodeRegistry,
+      effects: {
+        ...unconfiguredEffects,
+        mail: createAutomationMailEffect(),
+      },
+    });
     return NextResponse.json(result);
   } catch (error) {
     console.error("[AUTOMATIONS_RUN]", error);
