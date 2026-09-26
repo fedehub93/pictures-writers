@@ -26,6 +26,18 @@ export const coreNodeCatalog: AutomationNodeCatalogEntry[] = [
     category: "trigger",
   },
   {
+    type: "CRON_TRIGGER",
+    label: "Schedule",
+    description: "Runs the flow on a recurring interval.",
+    category: "trigger",
+  },
+  {
+    type: "WEBHOOK_TRIGGER",
+    label: "Webhook",
+    description: "Starts the flow from an authenticated HTTP request.",
+    category: "trigger",
+  },
+  {
     type: "HTTP_REQUEST",
     label: "HTTP Request",
     description: "Makes an HTTP request",

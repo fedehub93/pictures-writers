@@ -8,4 +8,8 @@ export interface NodeConfigPanelProps {
   data: Record<string, unknown>;
   /** Merge a partial update into the node's `data`. */
   onChange: (patch: Record<string, unknown>) => void;
+  /** The Automation being edited; needed by panels that touch Automation state. */
+  automationId?: string;
+  /** Whether the Automation has a webhook secret configured. */
+  hasWebhookSecret?: boolean;
 }

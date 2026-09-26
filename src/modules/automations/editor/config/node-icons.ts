@@ -1,13 +1,17 @@
 import {
+  ClockIcon,
   GlobeIcon,
   MailIcon,
   MousePointerIcon,
   PuzzleIcon,
+  WebhookIcon,
   type LucideIcon,
 } from "lucide-react";
 
 const nodeIcons: Record<string, LucideIcon> = {
   MANUAL_TRIGGER: MousePointerIcon,
+  CRON_TRIGGER: ClockIcon,
+  WEBHOOK_TRIGGER: WebhookIcon,
   HTTP_REQUEST: GlobeIcon,
   SEND_EMAIL: MailIcon,
 };

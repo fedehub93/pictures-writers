@@ -4,6 +4,8 @@ import { createElement, type ComponentType } from "react";
 
 import { SendEmailConfigPanel } from "@/modules/mails/automations/ui/send-email-config-panel";
 
+import { CronTriggerConfigPanel } from "../ui/components/config/cron-trigger-config-panel";
+import { WebhookTriggerConfigPanel } from "../ui/components/config/webhook-trigger-config-panel";
 import type { NodeConfigPanelProps } from "./node-config-panel-types";
 
 /**
@@ -15,6 +17,8 @@ export const nodeConfigPanels: Record<
   string,
   ComponentType<NodeConfigPanelProps>
 > = {
+  CRON_TRIGGER: CronTriggerConfigPanel,
+  WEBHOOK_TRIGGER: WebhookTriggerConfigPanel,
   SEND_EMAIL: SendEmailConfigPanel,
 };
 
@@ -32,6 +36,8 @@ export function NodeConfigPanelHost({
   type,
   data,
   onChange,
+  automationId,
+  hasWebhookSecret,
 }: NodeConfigPanelProps & { type?: string | null }) {
   const panel = getNodeConfigPanel(type);
 
@@ -39,5 +45,10 @@ export function NodeConfigPanelHost({
     return null;
   }
 
-  return createElement(panel, { data, onChange });
+  return createElement(panel, {
+    data,
+    onChange,
+    automationId,
+    hasWebhookSecret,
+  });
 }

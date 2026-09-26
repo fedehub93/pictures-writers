@@ -94,6 +94,51 @@ export const useExecuteAutomation = () => {
 };
 
 /**
+ * Hook to set (rotate) an Automation's webhook trigger secret. The raw secret
+ * is sent once and stored as a hash; only its presence is ever read back.
+ */
+export const useSetWebhookSecret = () => {
+  const queryClient = useQueryClient();
+  const trpc = useTRPC();
+
+  return useMutation(
+    trpc.automations.setWebhookSecret.mutationOptions({
+      onSuccess: (_data, variables) => {
+        toast.success("Webhook secret saved");
+        queryClient.invalidateQueries(
+          trpc.automations.getOne.queryOptions({ id: variables.id }),
+        );
+      },
+      onError: (error) => {
+        toast.error(`Failed to save webhook secret: ${error.message}`);
+      },
+    }),
+  );
+};
+
+/**
+ * Hook to remove an Automation's webhook trigger secret.
+ */
+export const useClearWebhookSecret = () => {
+  const queryClient = useQueryClient();
+  const trpc = useTRPC();
+
+  return useMutation(
+    trpc.automations.clearWebhookSecret.mutationOptions({
+      onSuccess: (_data, variables) => {
+        toast.success("Webhook secret removed");
+        queryClient.invalidateQueries(
+          trpc.automations.getOne.queryOptions({ id: variables.id }),
+        );
+      },
+      onError: (error) => {
+        toast.error(`Failed to remove webhook secret: ${error.message}`);
+      },
+    }),
+  );
+};
+
+/**
  * Hook to publish a automation: validates the graph server-side, persists it
  * and stores the published snapshot.
  */

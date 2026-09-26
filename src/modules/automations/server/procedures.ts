@@ -20,6 +20,7 @@ import {
 } from "../constants";
 import { validateAutomationGraph } from "../lib/validate";
 import { enqueueRun } from "../lib/automation-ingestion";
+import { hashWebhookSecret } from "../lib/webhook-secret";
 import { parseRunDateRange, resolveRunNodes } from "../lib/run-ledger";
 import {
   automationCreateSchema,
@@ -65,7 +66,7 @@ const toConnectionRow = (
 
 export const automationsRouter = createTRPCRouter({
   execute: permissionProcedure(PERMISSIONS.AUTOMATIONS_WRITE)
-    .input(z.object({ id: z.string() }))
+    .input(z.object({ id: z.string(), payload: z.unknown().optional() }))
     .mutation(async ({ input }) => {
       const automation = await db.automation.findUniqueOrThrow({
         where: {
@@ -76,16 +77,71 @@ export const automationsRouter = createTRPCRouter({
       const run = await enqueueRun({
         automationId: input.id,
         triggerType: "manual",
+        payload:
+          input.payload === undefined
+            ? {
+                source: "manual",
+                triggeredAt: new Date().toISOString(),
+              }
+            : input.payload,
       });
 
       if (!run) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Automation has no runnable graph",
+          message:
+            "Automation has no runnable graph. Publish it before running.",
         });
       }
 
-      return automation;
+      return { id: automation.id, name: automation.name, runId: run.id };
+    }),
+  setWebhookSecret: permissionProcedure(PERMISSIONS.AUTOMATIONS_WRITE)
+    .input(
+      z.object({
+        id: z.string(),
+        secret: z.string().min(1).max(256),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const automation = await db.automation.findUnique({
+        where: { id: input.id },
+      });
+
+      if (!automation) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Automation not found",
+        });
+      }
+
+      await db.automation.update({
+        where: { id: input.id },
+        data: { webhookSecretHash: hashWebhookSecret(input.secret) },
+      });
+
+      return { id: input.id, hasWebhookSecret: true };
+    }),
+  clearWebhookSecret: permissionProcedure(PERMISSIONS.AUTOMATIONS_WRITE)
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input }) => {
+      const automation = await db.automation.findUnique({
+        where: { id: input.id },
+      });
+
+      if (!automation) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Automation not found",
+        });
+      }
+
+      await db.automation.update({
+        where: { id: input.id },
+        data: { webhookSecretHash: null },
+      });
+
+      return { id: input.id, hasWebhookSecret: false };
     }),
   getMany: permissionProcedure(PERMISSIONS.AUTOMATIONS_READ)
     .input(
@@ -331,7 +387,15 @@ export const automationsRouter = createTRPCRouter({
         targetHandle: connection.toInput,
       }));
 
-      return { ...automation, nodes, connections: edges };
+      // The secret hash must never reach the client; expose only its presence.
+      const { webhookSecretHash, ...rest } = automation;
+
+      return {
+        ...rest,
+        hasWebhookSecret: webhookSecretHash != null,
+        nodes,
+        connections: edges,
+      };
     }),
   getRuns: permissionProcedure(PERMISSIONS.AUTOMATIONS_READ)
     .input(

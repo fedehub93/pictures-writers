@@ -61,6 +61,15 @@ describe("validateAutomationGraph", () => {
     expect(validateAutomationGraph([trigger("t")], [])).toEqual({ valid: true });
   });
 
+  it("accepts cron and webhook triggers", () => {
+    expect(
+      validateAutomationGraph([{ id: "c", type: "CRON_TRIGGER" }], []),
+    ).toEqual({ valid: true });
+    expect(
+      validateAutomationGraph([{ id: "w", type: "WEBHOOK_TRIGGER" }], []),
+    ).toEqual({ valid: true });
+  });
+
   it("accepts a trigger -> action chain", () => {
     const result = validateAutomationGraph(
       [trigger("t"), action("a")],

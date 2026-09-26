@@ -36,7 +36,7 @@ import {
   NodeConfigPanelHost,
 } from "../../config/node-config-panels";
 import { useSuspenseAutomation } from "../../../hooks/use-automations";
-import { TRIGGER_NODE_TYPES } from "@/modules/automations/constants";
+import { MANUAL_TRIGGER_NODE_TYPE } from "@/modules/automations/constants";
 
 import { editorAtom, selectedNodeIdAtom } from "../../store/atoms";
 import { AddNodeButton } from "../components/canvas/add-node-button";
@@ -68,11 +68,7 @@ export const EditorView = ({ automationId }: { automationId: string }) => {
   );
 
   const hasManualTrigger = useMemo(() => {
-    return nodes.some(
-      (node) =>
-        node.type != null &&
-        (TRIGGER_NODE_TYPES as readonly string[]).includes(node.type),
-    );
+    return nodes.some((node) => node.type === MANUAL_TRIGGER_NODE_TYPE);
   }, [nodes]);
 
   const selectedNode = useMemo(
@@ -160,6 +156,8 @@ export const EditorView = ({ automationId }: { automationId: string }) => {
                 type={selectedNode.type}
                 data={(selectedNode.data ?? {}) as Record<string, unknown>}
                 onChange={handleConfigChange}
+                automationId={automationId}
+                hasWebhookSecret={automation.hasWebhookSecret}
               />
             ) : null}
           </div>

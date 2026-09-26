@@ -7,6 +7,7 @@ import { NextResponse } from "next/server";
 import { AUTOMATION_SECRET_HEADER } from "@/modules/automations/constants";
 import { unconfiguredEffects } from "@/modules/automations/lib/effects";
 import { runDueAutomations } from "@/modules/automations/lib/automation-runner";
+import { enqueueDueCronAutomations } from "@/modules/automations/lib/automation-triggers";
 import {
   createAutomationMailEffect,
   sendEmailNodeRegistry,
@@ -35,6 +36,7 @@ export async function POST(request: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    const cron = await enqueueDueCronAutomations();
     const result = await runDueAutomations({
       registry: sendEmailNodeRegistry,
       effects: {
@@ -42,7 +44,7 @@ export async function POST(request: Request) {
         mail: createAutomationMailEffect(),
       },
     });
-    return NextResponse.json(result);
+    return NextResponse.json({ ...result, cron });
   } catch (error) {
     console.error("[AUTOMATIONS_RUN]", error);
     return new NextResponse("Internal Error", { status: 500 });

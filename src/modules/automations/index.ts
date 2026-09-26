@@ -1,6 +1,25 @@
 export { cleanupAutomationTables } from "./lib/cleanup";
 export { enqueueRun } from "./lib/automation-ingestion";
 export {
+  CRON_TRIGGER_TYPE,
+  MANUAL_TRIGGER_TYPE,
+  WEBHOOK_TRIGGER_TYPE,
+  enqueueDueCronAutomations,
+  enqueueWebhookRun,
+} from "./lib/automation-triggers";
+export type {
+  CronEvaluationResult,
+  WebhookEnqueueResult,
+} from "./lib/automation-triggers";
+export {
+  isCronTriggerDue,
+  nextCronFireAt,
+  parseCronSchedule,
+  parseTimeOfDay,
+} from "./lib/cron-schedule";
+export type { CronSchedule, TimeOfDay } from "./lib/cron-schedule";
+export { hashWebhookSecret, verifyWebhookSecret } from "./lib/webhook-secret";
+export {
   claimDueAutomationStep,
   findDueAutomationSteps,
   runDueAutomations,

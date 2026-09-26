@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { runDueAutomations } from "@/modules/automations/lib/automation-runner";
+import { enqueueDueCronAutomations } from "@/modules/automations/lib/automation-triggers";
 
 import { POST } from "./route";
 
@@ -8,11 +9,16 @@ vi.mock("@/modules/automations/lib/automation-runner", () => ({
   runDueAutomations: vi.fn(),
 }));
 
+vi.mock("@/modules/automations/lib/automation-triggers", () => ({
+  enqueueDueCronAutomations: vi.fn(),
+}));
+
 describe("POST /api/automations/run", () => {
   const originalSecret = process.env.SCHEDULED_PUBLICATION_SECRET;
 
   beforeEach(() => {
     vi.resetAllMocks();
+    vi.mocked(enqueueDueCronAutomations).mockResolvedValue({ fired: [] });
     process.env.SCHEDULED_PUBLICATION_SECRET = "test-secret";
   });
 
@@ -76,6 +82,7 @@ describe("POST /api/automations/run", () => {
       failed: 0,
       skipped: 0,
     });
+    expect(enqueueDueCronAutomations).toHaveBeenCalledTimes(1);
     expect(runDueAutomations).toHaveBeenCalledTimes(1);
   });
 
