@@ -79,6 +79,34 @@ describe("POST /api/automations/run", () => {
     expect(pumpDueAutomations).toHaveBeenCalledTimes(1);
   });
 
+  it("still drains due steps when cron evaluation fails", async () => {
+    const consoleErrorSpy = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+    vi.mocked(enqueueDueCronAutomations).mockRejectedValue(
+      new Error("cron evaluator down"),
+    );
+    vi.mocked(pumpDueAutomations).mockResolvedValue({
+      batches: 1,
+      processed: 1,
+      succeeded: 1,
+      failed: 0,
+      skipped: 0,
+    });
+
+    const response = await POST(makeRequest("test-secret"));
+    const result = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(result).toMatchObject({ processed: 1, cron: { fired: [] } });
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      "[AUTOMATIONS_CRON]",
+      expect.any(Error),
+    );
+    expect(pumpDueAutomations).toHaveBeenCalledTimes(1);
+    consoleErrorSpy.mockRestore();
+  });
+
   it("returns 500 when the runner throws", async () => {
     const consoleErrorSpy = vi
       .spyOn(console, "error")

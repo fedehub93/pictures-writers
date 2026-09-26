@@ -31,7 +31,12 @@ export async function POST(request: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const cron = await enqueueDueCronAutomations();
+    // Trigger evaluation and step execution are independent: a failure to
+    // evaluate cron triggers must not stop already-enqueued Runs from draining.
+    const cron = await enqueueDueCronAutomations().catch((error) => {
+      console.error("[AUTOMATIONS_CRON]", error);
+      return { fired: [] };
+    });
     const result = await pumpDueAutomations();
     return NextResponse.json({ ...result, cron });
   } catch (error) {
