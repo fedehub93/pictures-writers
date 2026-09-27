@@ -1,5 +1,6 @@
 import "server-only";
 
+import { formSubmittedNodeRegistry } from "@/modules/forms/automations";
 import {
   createAutomationMailEffect,
   sendEmailNodeRegistry,
@@ -10,13 +11,23 @@ import {
   type RunDueAutomationsResult,
 } from "../lib/automation-runner";
 import { unconfiguredEffects, type AutomationEffects } from "../lib/effects";
-import type { AutomationNodeRegistry } from "../lib/node-registry";
+import {
+  mergeNodeRegistries,
+  type AutomationNodeRegistry,
+} from "../lib/node-registry";
 import { AUTOMATION_PUMP_MAX_BATCHES } from "../constants";
+
+/// Node registry contributed by feature modules. The engine core supplies its
+/// own defaults, so only domain nodes are composed here (ADR-0005).
+const moduleNodeRegistry: AutomationNodeRegistry = mergeNodeRegistries(
+  sendEmailNodeRegistry,
+  formSubmittedNodeRegistry,
+);
 
 /**
  * App-level composition of the automation runtime: the concrete node registry
  * and effects the runner executes. Only composition lives here, so the engine
- * core (`lib/`) stays free of domain concepts (ADR-0003).
+ * core (`lib/`) stays free of domain concepts (ADR-0005).
  */
 export function createAutomationRuntimeEffects(): AutomationEffects {
   return {
@@ -53,7 +64,7 @@ export interface PumpDueAutomationsResult {
 export async function pumpDueAutomations(
   input: PumpDueAutomationsInput = {},
 ): Promise<PumpDueAutomationsResult> {
-  const registry = input.registry ?? sendEmailNodeRegistry;
+  const registry = input.registry ?? moduleNodeRegistry;
   const effects = input.effects ?? createAutomationRuntimeEffects();
   const maxBatches = Math.max(1, input.maxBatches ?? AUTOMATION_PUMP_MAX_BATCHES);
 

@@ -1,4 +1,5 @@
 import {
+  ClipboardListIcon,
   ClockIcon,
   GlobeIcon,
   MailIcon,
@@ -12,6 +13,7 @@ const nodeIcons: Record<string, LucideIcon> = {
   MANUAL_TRIGGER: MousePointerIcon,
   CRON_TRIGGER: ClockIcon,
   WEBHOOK_TRIGGER: WebhookIcon,
+  FORM_SUBMITTED_TRIGGER: ClipboardListIcon,
   HTTP_REQUEST: GlobeIcon,
   SEND_EMAIL: MailIcon,
 };

@@ -23,6 +23,10 @@ export const MANUAL_TRIGGER_NODE_TYPE = "MANUAL_TRIGGER";
 export const CRON_TRIGGER_NODE_TYPE = "CRON_TRIGGER";
 export const WEBHOOK_TRIGGER_NODE_TYPE = "WEBHOOK_TRIGGER";
 
+/// Node types that start a workflow ("triggers" per CONTEXT.md). Publish
+/// requires at least one of these; module-contributed triggers are recognised
+/// by the `*_TRIGGER` naming convention (see `isTriggerNodeTypeName`). These
+/// are the editor/UI type strings; the engine canonicalises them.
 export const TRIGGER_NODE_TYPES = [
   MANUAL_TRIGGER_NODE_TYPE,
   CRON_TRIGGER_NODE_TYPE,

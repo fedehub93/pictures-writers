@@ -149,7 +149,10 @@ function compareValues(
   }
 }
 
-const passthroughHandler: AutomationNodeHandler = ({ input, payload }) => ({
+export const passthroughHandler: AutomationNodeHandler = ({
+  input,
+  payload,
+}) => ({
   output: input === null ? payload : input,
 });
 

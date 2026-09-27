@@ -1,4 +1,5 @@
 import { INITIAL_NODE_TYPE, TRIGGER_NODE_TYPES } from "../constants";
+import { isTriggerNodeTypeName } from "./graph";
 
 export type GraphNode = {
   id: string;
@@ -83,7 +84,8 @@ export function validateAutomationGraph(
   const hasTrigger = nodes.some(
     (node) =>
       node.type != null &&
-      (TRIGGER_NODE_TYPES as readonly string[]).includes(node.type),
+      ((TRIGGER_NODE_TYPES as readonly string[]).includes(node.type) ||
+        isTriggerNodeTypeName(node.type)),
   );
 
   if (!hasTrigger) {

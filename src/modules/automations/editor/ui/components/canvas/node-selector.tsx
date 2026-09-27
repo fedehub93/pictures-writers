@@ -82,7 +82,7 @@ export function NodeSelector({
 
         const newNode = {
           id: createId(),
-          data: {},
+          data: selection.defaultData ?? {},
           position: flowPosition,
           type: selection.type,
         };

@@ -6,6 +6,8 @@
  * (e.g. the mails module contributes Send Email) and the editor composes them,
  * so the engine core never learns about domain nodes.
  */
+import type { JsonObject } from "./graph";
+
 export type AutomationNodeCategory = "trigger" | "action";
 
 export interface AutomationNodeCatalogEntry {
@@ -14,6 +16,8 @@ export interface AutomationNodeCatalogEntry {
   label: string;
   description: string;
   category: AutomationNodeCategory;
+  /** Initial `data` seeded on a new node, when the node needs a shape. */
+  defaultData?: JsonObject;
 }
 
 /** Nodes contributed by the engine itself. */

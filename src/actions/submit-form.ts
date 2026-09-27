@@ -1,6 +1,7 @@
 "use server";
 
 import { createContactByEmail } from "@/data/email-contact";
+import { emitFormSubmitted } from "@/modules/forms/automations/emit";
 import { handleFormSubmitted } from "@/lib/event-handler";
 
 import { verifyRecaptcha } from "@/lib/recaptcha";
@@ -64,7 +65,21 @@ export const submitForm = async (
       },
     });
 
-    await createContactByEmail(emailFromBody, "submit_form");
+    const contact = await createContactByEmail(emailFromBody, "submit_form");
+
+    // Start any automation listening for this internal event. The forms module
+    // chooses the idempotency key (the contact id) so a repeated submission
+    // from the same contact cannot start a second nurture cycle (ADR-0005).
+    try {
+      await emitFormSubmitted({
+        formId,
+        email: emailFromBody,
+        contactId: contact?.id ?? null,
+        data: values,
+      });
+    } catch (automationError) {
+      console.error("Error enqueuing form.submitted automation: ", automationError);
+    }
 
     //  Send notification to admins
     await handleFormSubmitted();

@@ -9,6 +9,7 @@ export const nodeComponents = {
   MANUAL_TRIGGER: TriggerNode,
   CRON_TRIGGER: TriggerNode,
   WEBHOOK_TRIGGER: TriggerNode,
+  FORM_SUBMITTED_TRIGGER: TriggerNode,
   HTTP_REQUEST: ActionNode,
   SEND_EMAIL: ActionNode,
 } as const satisfies NodeTypes;

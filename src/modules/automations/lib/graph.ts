@@ -41,14 +41,31 @@ const typeAliases: Record<string, string> = {
   llm: "llm",
 };
 
+const TRIGGER_SUFFIX = "_trigger";
+
+/**
+ * Canonicalises a node type or trigger event name to the engine's internal
+ * form. Normalisation is generic (camelCase, dots, dashes and spaces all
+ * collapse to `_`), and UI trigger types follow a `*_TRIGGER` convention whose
+ * suffix the trigger event name omits — e.g. `FORM_SUBMITTED_TRIGGER` and the
+ * event `form.submitted` both canonicalise to `form_submitted`. That lets a
+ * module register a trigger without the engine knowing the domain.
+ */
 export function canonicalNodeType(type: string): string {
   const normalized = type
     .trim()
     .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
-    .replace(/[-\s]+/g, "_")
+    .replace(/[.\s-]+/g, "_")
     .toLowerCase();
 
-  return typeAliases[normalized] ?? normalized;
+  const aliased = typeAliases[normalized];
+  if (aliased) {
+    return aliased;
+  }
+
+  return normalized.endsWith(TRIGGER_SUFFIX)
+    ? normalized.slice(0, -TRIGGER_SUFFIX.length)
+    : normalized;
 }
 
 export function isTriggerNodeType(
@@ -56,6 +73,19 @@ export function isTriggerNodeType(
   triggerType = "manual",
 ): boolean {
   return canonicalNodeType(type) === canonicalNodeType(triggerType);
+}
+
+/**
+ * True when a UI node type follows the `*_TRIGGER` naming convention. The
+ * engine uses this to recognise triggers contributed by feature modules without
+ * hardcoding a list of domain node types.
+ */
+export function isTriggerNodeTypeName(
+  type: string | null | undefined,
+): boolean {
+  return (
+    typeof type === "string" && /_TRIGGER$/.test(type.trim().toUpperCase())
+  );
 }
 
 export function toJsonValue(value: unknown): JsonValue {

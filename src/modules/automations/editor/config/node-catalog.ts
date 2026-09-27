@@ -4,6 +4,7 @@ import {
   mergeNodeCatalog,
   type AutomationNodeCatalogEntry,
 } from "@/modules/automations/lib/node-catalog";
+import { formSubmittedTriggerCatalogEntry } from "@/modules/forms/automations/catalog";
 import { sendEmailNodeCatalogEntry } from "@/modules/mails/automations/catalog";
 
 /**
@@ -12,7 +13,7 @@ import { sendEmailNodeCatalogEntry } from "@/modules/mails/automations/catalog";
  */
 export const editorNodeCatalog: AutomationNodeCatalogEntry[] = mergeNodeCatalog(
   coreNodeCatalog,
-  [sendEmailNodeCatalogEntry],
+  [sendEmailNodeCatalogEntry, formSubmittedTriggerCatalogEntry],
 );
 
 export const editorTriggerNodes = catalogByCategory(
