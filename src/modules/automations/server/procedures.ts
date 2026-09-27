@@ -10,6 +10,8 @@ import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 
 import { AutomationStatus } from "@/generated/prisma";
 
+import { formSubmittedNodeValidator } from "@/modules/forms/automations/validate";
+
 import {
   AUTOMATION_RUN_STATUSES,
   DEFAULT_PAGE,
@@ -283,7 +285,9 @@ export const automationsRouter = createTRPCRouter({
         });
       }
 
-      const validation = validateAutomationGraph(nodes, edges);
+      const validation = validateAutomationGraph(nodes, edges, {
+        nodeValidators: [formSubmittedNodeValidator],
+      });
       if (!validation.valid) {
         throw new TRPCError({
           code: "BAD_REQUEST",

@@ -4,6 +4,7 @@ import { enqueueEventRuns } from "@/modules/automations/lib/automation-events";
 import type { JsonObject } from "@/modules/automations/lib/graph";
 
 import { FORM_SUBMITTED_TRIGGER_TYPE } from "./constants";
+import { readConfiguredFormId } from "./lib/form-submitted-config";
 import type { FormSubmittedPayload } from "./types";
 
 export interface FormSubmittedEventInput {
@@ -32,6 +33,12 @@ export interface FormSubmittedEventInput {
 export async function emitFormSubmitted(
   input: FormSubmittedEventInput,
 ): Promise<{ runIds: string[] }> {
+  // The trigger is always scoped to one form; an unscoped event would fan out
+  // to legacy triggers with no form configured, so it is a no-op.
+  if (!input.formId) {
+    return { runIds: [] };
+  }
+
   const now = input.now ?? new Date();
   const submittedAt = input.submittedAt ?? now;
 
@@ -47,5 +54,8 @@ export async function emitFormSubmitted(
     payload,
     idempotencyKey: input.contactId ?? input.email,
     now,
+    // Only Automations whose trigger is scoped to this exact form react; the
+    // filter is the forms module's, the engine just asks the predicate.
+    matchesNode: (node) => readConfiguredFormId(node.data) === input.formId,
   });
 }

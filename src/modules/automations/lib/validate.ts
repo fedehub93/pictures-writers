@@ -4,6 +4,8 @@ import { isTriggerNodeTypeName } from "./graph";
 export type GraphNode = {
   id: string;
   type: string | null | undefined;
+  /** Node configuration, inspected by module-contributed validators. */
+  data?: Record<string, unknown>;
 };
 
 export type GraphEdge = {
@@ -16,6 +18,17 @@ export type GraphEdge = {
 export type ValidationResult =
   | { valid: true }
   | { valid: false; reason: string };
+
+/**
+ * A module-contributed, per-node publish check. Returns a failure reason or
+ * `null` when the node is fine. Keeps domain rules (e.g. "this trigger needs a
+ * form") in the owning module instead of the engine.
+ */
+export type NodeValidator = (node: GraphNode) => string | null;
+
+export interface ValidateAutomationGraphOptions {
+  nodeValidators?: NodeValidator[];
+}
 
 /**
  * Returns a node's effective output/input port name, defaulting to "main" so
@@ -80,6 +93,7 @@ export function hasCycle(nodes: GraphNode[], edges: GraphEdge[]): boolean {
 export function validateAutomationGraph(
   nodes: GraphNode[],
   edges: GraphEdge[],
+  options: ValidateAutomationGraphOptions = {},
 ): ValidationResult {
   const hasTrigger = nodes.some(
     (node) =>
@@ -93,6 +107,15 @@ export function validateAutomationGraph(
       valid: false,
       reason: "At least one trigger node is required to publish",
     };
+  }
+
+  for (const validateNode of options.nodeValidators ?? []) {
+    for (const node of nodes) {
+      const reason = validateNode(node);
+      if (reason) {
+        return { valid: false, reason };
+      }
+    }
   }
 
   const nodeIds = new Set<string>();

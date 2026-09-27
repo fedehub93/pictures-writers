@@ -2,6 +2,7 @@
 
 import { createElement, type ComponentType } from "react";
 
+import { FormSubmittedTriggerConfigPanel } from "@/modules/forms/automations/ui/form-submitted-trigger-config-panel";
 import { SendEmailConfigPanel } from "@/modules/mails/automations/ui/send-email-config-panel";
 
 import { CronTriggerConfigPanel } from "../ui/components/config/cron-trigger-config-panel";
@@ -19,6 +20,7 @@ export const nodeConfigPanels: Record<
 > = {
   CRON_TRIGGER: CronTriggerConfigPanel,
   WEBHOOK_TRIGGER: WebhookTriggerConfigPanel,
+  FORM_SUBMITTED_TRIGGER: FormSubmittedTriggerConfigPanel,
   SEND_EMAIL: SendEmailConfigPanel,
 };
 

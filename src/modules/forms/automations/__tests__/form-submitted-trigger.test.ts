@@ -6,6 +6,7 @@ import { runDueAutomations } from "@/modules/automations/lib/automation-runner";
 import { cleanupAutomationTables } from "@/modules/automations/lib/cleanup";
 import { createInMemoryEffects } from "@/modules/automations/lib/effects";
 import { mergeNodeRegistries } from "@/modules/automations/lib/node-registry";
+import { validateAutomationGraph } from "@/modules/automations/lib/validate";
 import { sendEmailNodeRegistry } from "@/modules/mails/automations";
 import { db } from "@/shared/lib/db";
 import { AutomationRunStatus, AutomationStatus } from "@/generated/prisma";
@@ -14,15 +15,22 @@ import { formSubmittedTriggerCatalogEntry } from "../catalog";
 import { FORM_SUBMITTED_NODE_TYPE, FORM_SUBMITTED_TRIGGER_TYPE } from "../constants";
 import { emitFormSubmitted } from "../emit";
 import { formSubmittedNodeRegistry } from "../node";
+import { formSubmittedNodeValidator } from "../validate";
 
 const registry = mergeNodeRegistries(
   sendEmailNodeRegistry,
   formSubmittedNodeRegistry,
 );
 
+const CONFIGURED_FORM_ID = "form-1";
+
 const formSubmittedGraph = {
   nodes: [
-    { id: "form-trigger", type: FORM_SUBMITTED_NODE_TYPE, data: {} },
+    {
+      id: "form-trigger",
+      type: FORM_SUBMITTED_NODE_TYPE,
+      data: { formId: CONFIGURED_FORM_ID },
+    },
     {
       id: "send",
       type: "SEND_EMAIL",
@@ -73,7 +81,7 @@ describe("form.submitted trigger", () => {
     const now = new Date("2026-09-26T10:00:00.000Z");
 
     const { runIds } = await emitFormSubmitted({
-      formId: "form-1",
+      formId: CONFIGURED_FORM_ID,
       email: contact.email,
       contactId: contact.id,
       data: { name: "Ada", tier: "pro" },
@@ -89,11 +97,28 @@ describe("form.submitted trigger", () => {
     expect(run.triggerType).toBe(FORM_SUBMITTED_TRIGGER_TYPE);
     expect(run.status).toBe(AutomationRunStatus.RUNNING);
     expect(run.payload).toMatchObject({
-      formId: "form-1",
+      formId: CONFIGURED_FORM_ID,
       email: contact.email,
       data: { name: "Ada", tier: "pro" },
     });
     expect(run.idempotencyKey).toBe(contact.id);
+  });
+
+  it("does not start a Run for a form the trigger is not scoped to", async () => {
+    const contact = await db.emailContact.create({
+      data: { email: uniqueEmail() },
+    });
+    await publishGraph(formSubmittedGraph);
+
+    const { runIds } = await emitFormSubmitted({
+      formId: "some-other-form",
+      email: contact.email,
+      contactId: contact.id,
+      data: { name: "Ada" },
+    });
+
+    expect(runIds).toHaveLength(0);
+    expect(await db.automationRun.count()).toBe(0);
   });
 
   it("does not start a second Run for the same contact while the first is non-terminal", async () => {
@@ -103,13 +128,13 @@ describe("form.submitted trigger", () => {
     await publishGraph(formSubmittedGraph);
 
     const first = await emitFormSubmitted({
-      formId: "form-1",
+      formId: CONFIGURED_FORM_ID,
       email: contact.email,
       contactId: contact.id,
       data: { name: "Ada" },
     });
     const second = await emitFormSubmitted({
-      formId: "form-2",
+      formId: CONFIGURED_FORM_ID,
       email: contact.email,
       contactId: contact.id,
       data: { name: "Ada again" },
@@ -132,7 +157,7 @@ describe("form.submitted trigger", () => {
     });
 
     const { runIds } = await emitFormSubmitted({
-      formId: "form-1",
+      formId: CONFIGURED_FORM_ID,
       email: contact.email,
       contactId: contact.id,
       data: { name: "Ada" },
@@ -149,13 +174,13 @@ describe("form.submitted trigger", () => {
     await publishGraph(formSubmittedGraph);
 
     await emitFormSubmitted({
-      formId: "form-1",
+      formId: CONFIGURED_FORM_ID,
       email: contact.email,
       contactId: contact.id,
       data: { name: "Ada" },
     });
     await emitFormSubmitted({
-      formId: "form-1",
+      formId: CONFIGURED_FORM_ID,
       email: contact.email,
       contactId: contact.id,
       data: { name: "Ada" },
@@ -171,5 +196,24 @@ describe("form.submitted trigger", () => {
 
     const run = await db.automationRun.findFirstOrThrow();
     expect(run.status).toBe(AutomationRunStatus.COMPLETED);
+  });
+
+  describe("publish validation", () => {
+    const validate = (data: Record<string, unknown>) =>
+      validateAutomationGraph(
+        [{ id: "t", type: FORM_SUBMITTED_NODE_TYPE, data }],
+        [],
+        { nodeValidators: [formSubmittedNodeValidator] },
+      );
+
+    it("rejects a form.submitted trigger without a form selected", () => {
+      const result = validate({});
+      expect(result.valid).toBe(false);
+      expect(result.valid === false && result.reason).toMatch(/form/i);
+    });
+
+    it("accepts a form.submitted trigger scoped to a form", () => {
+      expect(validate({ formId: CONFIGURED_FORM_ID })).toEqual({ valid: true });
+    });
   });
 });

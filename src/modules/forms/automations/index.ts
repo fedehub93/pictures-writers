@@ -7,6 +7,7 @@ export {
   formSubmittedTriggerDefaultData,
 } from "./catalog";
 export { formSubmittedNodeRegistry } from "./node";
+export { formSubmittedNodeValidator } from "./validate";
 export { emitFormSubmitted } from "./emit";
 export type { FormSubmittedEventInput } from "./emit";
 export type { FormSubmittedPayload } from "./types";

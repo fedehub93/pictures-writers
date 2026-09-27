@@ -4,7 +4,11 @@ import { db } from "@/shared/lib/db";
 import { AutomationStatus } from "@/generated/prisma";
 
 import { enqueueRun } from "./automation-ingestion";
-import { canonicalNodeType, parseAutomationGraph } from "./graph";
+import {
+  canonicalNodeType,
+  parseAutomationGraph,
+  type AutomationNode,
+} from "./graph";
 
 export interface EnqueueEventRunsInput {
   /**
@@ -17,6 +21,12 @@ export interface EnqueueEventRunsInput {
   /** Opaque dedup key forwarded to `enqueueRun` (ADR-0005). */
   idempotencyKey?: string | null;
   now?: Date;
+  /**
+   * Optional caller-owned refinement of which matching trigger nodes are
+   * interested, read from the node's configuration (e.g. only a specific form).
+   * Opaque to the engine, which never inspects `data`.
+   */
+  matchesNode?: (node: AutomationNode) => boolean;
 }
 
 export interface EnqueueEventRunsResult {
@@ -53,7 +63,9 @@ export async function enqueueEventRuns(
     try {
       const graph = parseAutomationGraph(automation.publishedSnapshot);
       matches = graph.nodes.some(
-        (node) => canonicalNodeType(node.type) === eventType,
+        (node) =>
+          canonicalNodeType(node.type) === eventType &&
+          (input.matchesNode ? input.matchesNode(node) : true),
       );
     } catch {
       continue;
