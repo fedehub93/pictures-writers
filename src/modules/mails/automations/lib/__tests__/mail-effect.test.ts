@@ -13,6 +13,7 @@ import {
 async function resetTables() {
   await db.emailSendLog.deleteMany({});
   await db.emailSetting.deleteMany({});
+  await db.emailTemplate.deleteMany({});
 }
 
 async function seedSettings() {
@@ -44,8 +45,8 @@ const request = {
   },
   input: { email: "reader@example.com" },
   payload: { email: "reader@example.com" },
-  runId: "run-1",
-  stepId: "step-1",
+  run: { id: "run-1", triggerType: "manual" },
+  step: { id: "step-1", attempts: 0 },
 };
 
 describe("automationEmailIdempotencyKey", () => {
@@ -116,5 +117,67 @@ describe("createAutomationMailEffect", () => {
     await expect(
       effect({ ...request, config: { subject: "S", body: "B" } }),
     ).rejects.toMatchObject({ transient: false });
+  });
+
+  it("uses and interpolates the referenced email template's body", async () => {
+    await seedSettings();
+    await db.emailTemplate.create({
+      data: {
+        id: "template-1",
+        name: "Welcome",
+        bodyHtml: "<p>Hi {{ payload.name }}, welcome.</p>",
+      },
+    });
+    const { calls, transport } = recorder();
+    const effect = createAutomationMailEffect({ transport });
+
+    await effect({
+      ...request,
+      payload: { email: "reader@example.com", name: "Ada" },
+      config: {
+        recipient: "reader@example.com",
+        subject: "Welcome",
+        body: "<p>Ignored inline body</p>",
+        emailTemplateId: "template-1",
+      },
+    });
+
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toMatchObject({ html: "<p>Hi Ada, welcome.</p>" });
+  });
+
+  it("fails permanently when the email template does not exist", async () => {
+    await seedSettings();
+    const effect = createAutomationMailEffect({ transport: async () => true });
+
+    await expect(
+      effect({
+        ...request,
+        config: {
+          recipient: "reader@example.com",
+          subject: "Welcome",
+          emailTemplateId: "missing",
+        },
+      }),
+    ).rejects.toMatchObject({ name: "AutomationNodeError", transient: false });
+  });
+
+  it("fails permanently when the email template has no body", async () => {
+    await seedSettings();
+    await db.emailTemplate.create({
+      data: { id: "template-empty", name: "Empty", bodyHtml: "   " },
+    });
+    const effect = createAutomationMailEffect({ transport: async () => true });
+
+    await expect(
+      effect({
+        ...request,
+        config: {
+          recipient: "reader@example.com",
+          subject: "Welcome",
+          emailTemplateId: "template-empty",
+        },
+      }),
+    ).rejects.toMatchObject({ name: "AutomationNodeError", transient: false });
   });
 });

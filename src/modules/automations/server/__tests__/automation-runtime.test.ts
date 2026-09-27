@@ -57,7 +57,7 @@ describe("pumpDueAutomations", () => {
     expect(result.batches).toBeGreaterThanOrEqual(2);
     expect(effects.mailCalls).toHaveLength(1);
     expect(effects.mailCalls[0]).toMatchObject({
-      runId: run!.id,
+      run: { id: run!.id, triggerType: "manual" },
       config: { recipient: "reader@example.com", subject: "Hi Ada" },
     });
 

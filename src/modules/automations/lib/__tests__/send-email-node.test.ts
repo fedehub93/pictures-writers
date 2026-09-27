@@ -58,7 +58,7 @@ describe("Send Email node", () => {
 
     expect(effects.mailCalls).toHaveLength(1);
     expect(effects.mailCalls[0]).toMatchObject({
-      runId: run!.id,
+      run: { id: run!.id, triggerType: "manual" },
       config: {
         recipient: "reader@example.com",
         subject: "Welcome Ada",

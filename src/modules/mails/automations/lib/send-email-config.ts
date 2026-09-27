@@ -7,7 +7,14 @@ import type { JsonObject } from "@/modules/automations/lib/graph";
 export interface SendEmailConfig {
   recipient: string;
   subject: string;
-  body: string;
+  /** Inline HTML body. Omitted when `emailTemplateId` supplies the body. */
+  body?: string;
+  /**
+   * When set, the referenced `EmailTemplate` provides the message HTML and the
+   * inline `body` (if any) is ignored. The mail effect loads and interpolates
+   * the template, since it is the server boundary with database access.
+   */
+  emailTemplateId?: string;
   from?: string;
   replyTo?: string;
 }
@@ -47,6 +54,7 @@ export function resolveSendEmailConfig(
   const recipient = asTrimmedString(interpolated.recipient);
   const subject = asTrimmedString(interpolated.subject);
   const body = asTrimmedString(interpolated.body);
+  const emailTemplateId = asTrimmedString(interpolated.emailTemplateId);
 
   if (!recipient) {
     throw new MissingSendEmailConfigError(
@@ -60,9 +68,9 @@ export function resolveSendEmailConfig(
     );
   }
 
-  if (!body) {
+  if (!body && !emailTemplateId) {
     throw new MissingSendEmailConfigError(
-      "Send Email node is missing a body",
+      "Send Email node is missing a body or an email template",
     );
   }
 
@@ -72,7 +80,8 @@ export function resolveSendEmailConfig(
   return {
     recipient,
     subject,
-    body,
+    ...(body ? { body } : {}),
+    ...(emailTemplateId ? { emailTemplateId } : {}),
     ...(from ? { from } : {}),
     ...(replyTo ? { replyTo } : {}),
   };

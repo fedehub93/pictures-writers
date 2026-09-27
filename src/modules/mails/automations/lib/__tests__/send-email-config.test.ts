@@ -83,4 +83,38 @@ describe("resolveSendEmailConfig", () => {
       resolveSendEmailConfig({ recipient: "a@b.com", subject: "S" }, context),
     ).toThrow(MissingSendEmailConfigError);
   });
+
+  it("accepts an email template in place of an inline body", () => {
+    const config = resolveSendEmailConfig(
+      {
+        recipient: "reader@example.com",
+        subject: "Subject",
+        emailTemplateId: "template-1",
+      },
+      context,
+    );
+
+    expect(config).toEqual({
+      recipient: "reader@example.com",
+      subject: "Subject",
+      emailTemplateId: "template-1",
+    });
+    expect(config.body).toBeUndefined();
+  });
+
+  it("interpolates an email template id", () => {
+    const config = resolveSendEmailConfig(
+      {
+        recipient: "reader@example.com",
+        subject: "Subject",
+        emailTemplateId: "{{ payload.templateId }}",
+      },
+      {
+        ...context,
+        payload: { templateId: "template-42" },
+      },
+    );
+
+    expect(config.emailTemplateId).toBe("template-42");
+  });
 });

@@ -1,8 +1,8 @@
 import { NodeTypes } from "@xyflow/react";
 
-import { ActionNode } from "../ui/components/canvas/action-node";
+import { ActionNode } from "../ui/components/canvas/executions/action-node";
 import { InitialNode } from "../ui/components/canvas/initial-node";
-import { TriggerNode } from "../ui/components/canvas/trigger-node";
+import { TriggerNode } from "../ui/components/canvas/triggers/trigger-node";
 
 export const nodeComponents = {
   INITIAL: InitialNode,

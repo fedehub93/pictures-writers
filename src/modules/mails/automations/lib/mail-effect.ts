@@ -2,7 +2,12 @@ import "server-only";
 
 import type { JsonObject, JsonValue } from "@/modules/automations/lib/graph";
 import type { AutomationEffect } from "@/modules/automations/lib/effects";
+import {
+  interpolateAutomationValue,
+  type AutomationInterpolationContext,
+} from "@/modules/automations/lib/interpolate";
 import { AutomationNodeError } from "@/modules/automations/lib/node-registry";
+import { db } from "@/shared/lib/db";
 
 import type { GenericEmail } from "../../lib/types";
 import {
@@ -23,6 +28,52 @@ function readString(source: JsonObject, key: string): string | undefined {
   return typeof value === "string" && value.trim().length > 0
     ? value
     : undefined;
+}
+
+function readObject(source: JsonObject, key: string): JsonObject {
+  const value = source[key];
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as JsonObject)
+    : {};
+}
+
+/**
+ * Resolves the message HTML: the inline `body` by default, or the referenced
+ * `EmailTemplate`'s `bodyHtml` interpolated against the run context when an
+ * `emailTemplateId` is configured.
+ */
+async function resolveEmailBody(
+  config: JsonObject,
+  context: AutomationInterpolationContext,
+): Promise<string> {
+  const emailTemplateId = readString(config, "emailTemplateId");
+
+  if (!emailTemplateId) {
+    return readString(config, "body") ?? "";
+  }
+
+  const template = await db.emailTemplate.findUnique({
+    where: { id: emailTemplateId },
+    select: { bodyHtml: true },
+  });
+
+  if (!template) {
+    throw new AutomationNodeError("Email template not found", false);
+  }
+
+  const bodyHtml = template.bodyHtml?.trim();
+
+  if (!bodyHtml) {
+    throw new AutomationNodeError("Email template has no body", false);
+  }
+
+  const interpolated = interpolateAutomationValue(bodyHtml, context);
+
+  return typeof interpolated === "string"
+    ? interpolated
+    : interpolated === null || interpolated === undefined
+      ? ""
+      : String(interpolated);
 }
 
 export interface CreateAutomationMailEffectOptions {
@@ -49,14 +100,31 @@ export function createAutomationMailEffect(
         ? (record.config as JsonObject)
         : {};
 
-    const runId = readString(record, "runId");
-    const stepId = readString(record, "stepId");
+    const run = readObject(record, "run");
+    const step = readObject(record, "step");
+    const runId = readString(run, "id");
+    const stepId = readString(step, "id");
+
+    const interpolation: AutomationInterpolationContext = {
+      input: record.input ?? null,
+      payload: record.payload ?? null,
+      run: {
+        id: runId ?? "",
+        triggerType: readString(run, "triggerType") ?? "",
+      },
+      step: {
+        id: stepId ?? "",
+        attempts: typeof step.attempts === "number" ? step.attempts : 0,
+      },
+    };
 
     try {
+      const body = await resolveEmailBody(config, interpolation);
+
       const result = await sendAutomationEmail({
         to: readString(config, "recipient") ?? "",
         subject: readString(config, "subject") ?? "",
-        body: readString(config, "body") ?? "",
+        body,
         from: readString(config, "from"),
         replyTo: readString(config, "replyTo"),
         idempotencyKey:

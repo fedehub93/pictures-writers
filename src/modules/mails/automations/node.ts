@@ -37,8 +37,8 @@ export const sendEmailHandler: AutomationNodeHandler = async (context) => {
       config,
       input,
       payload,
-      runId: run.id,
-      stepId: step.id,
+      run,
+      step,
     }),
   );
 

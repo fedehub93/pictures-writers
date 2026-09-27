@@ -43,8 +43,8 @@ describe("sendEmailHandler", () => {
       },
       input: { email: "reader@example.com", name: "Ada" },
       payload: { email: "reader@example.com", name: "Ada" },
-      runId: "run-1",
-      stepId: "step-1",
+      run: { id: "run-1", triggerType: "manual" },
+      step: { id: "step-1", attempts: 0 },
     });
     expect(result).toEqual({ output: context.effects.mailCalls[0] });
   });
