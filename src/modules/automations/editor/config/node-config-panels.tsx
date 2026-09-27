@@ -8,6 +8,7 @@ import { SendEmailConfigPanel } from "@/modules/mails/automations/ui/send-email-
 import { CronTriggerConfigPanel } from "../ui/components/config/cron-trigger-config-panel";
 import { HttpRequestConfigPanel } from "../ui/components/config/http-request-config-panel";
 import { LlmConfigPanel } from "../ui/components/config/llm-config-panel";
+import { WaitConfigPanel } from "../ui/components/config/wait-config-panel";
 import { WebSearchConfigPanel } from "../ui/components/config/web-search-config-panel";
 import { WebhookTriggerConfigPanel } from "../ui/components/config/webhook-trigger-config-panel";
 import type { NodeConfigPanelProps } from "./node-config-panel-types";
@@ -24,6 +25,7 @@ export const nodeConfigPanels: Record<
   CRON_TRIGGER: CronTriggerConfigPanel,
   WEBHOOK_TRIGGER: WebhookTriggerConfigPanel,
   FORM_SUBMITTED_TRIGGER: FormSubmittedTriggerConfigPanel,
+  WAIT: WaitConfigPanel,
   HTTP_REQUEST: HttpRequestConfigPanel,
   WEB_SEARCH: WebSearchConfigPanel,
   LLM: LlmConfigPanel,

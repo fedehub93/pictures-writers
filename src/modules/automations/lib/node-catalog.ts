@@ -42,6 +42,13 @@ export const coreNodeCatalog: AutomationNodeCatalogEntry[] = [
     category: "trigger",
   },
   {
+    type: "WAIT",
+    label: "Wait",
+    description: "Pauses the flow for a delay or until a date and time.",
+    category: "action",
+    defaultData: { waitMode: "delay", delay: "1 day" },
+  },
+  {
     type: "HTTP_REQUEST",
     label: "HTTP Request",
     description: "Calls any external API with a method, URL and body.",
