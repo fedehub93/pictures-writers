@@ -30,6 +30,7 @@ import {
 } from "@/shared/ui/sheet";
 
 import { nodeComponents } from "../../config/node-components";
+import { AutomationEdge } from "../components/canvas/automation-edge";
 import { findCatalogEntry } from "../../config/node-catalog";
 import {
   getNodeConfigPanel,
@@ -41,6 +42,8 @@ import { MANUAL_TRIGGER_NODE_TYPE } from "@/modules/automations/constants";
 import { editorAtom, selectedNodeIdAtom } from "../../store/atoms";
 import { AddNodeButton } from "../components/canvas/add-node-button";
 import { ExecuteAutomationButton } from "../components/canvas/execute-automation-button";
+
+const edgeTypes = { automation: AutomationEdge };
 
 export const EditorView = ({ automationId }: { automationId: string }) => {
   const { data: automation } = useSuspenseAutomation(automationId);
@@ -112,6 +115,9 @@ export const EditorView = ({ automationId }: { automationId: string }) => {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         nodeTypes={nodeComponents}
+        edgeTypes={edgeTypes}
+        defaultEdgeOptions={{ type: "automation" }}
+        deleteKeyCode={["Backspace", "Delete"]}
         onInit={setEditor}
         onPaneClick={() => setSelectedNodeId(null)}
         fitView
