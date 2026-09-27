@@ -39,6 +39,7 @@ import {
   unconfiguredEffects,
   type AutomationEffects,
 } from "./effects";
+import { DEFAULT_TIME_ZONE } from "./time-zone";
 
 export type AutomationStepResultStatus =
   | "succeeded"
@@ -54,6 +55,8 @@ export interface RunDueAutomationsInput {
   registry?: AutomationNodeRegistry;
   handlers?: AutomationNodeRegistry;
   effects?: AutomationEffects;
+  /** Site IANA time zone; defaults to UTC. */
+  timeZone?: string;
 }
 
 export interface RunDueAutomationsResult {
@@ -500,6 +503,7 @@ async function processStep(
   now: Date,
   registry: AutomationNodeRegistry,
   effects: AutomationEffects,
+  timeZone: string,
 ): Promise<StepExecution> {
   const run = await db.automationRun.findUnique({ where: { id: step.runId } });
 
@@ -571,6 +575,7 @@ async function processStep(
       step: { id: step.id, attempts: step.attempts },
       now,
       effects,
+      timeZone,
     });
     const result: AutomationNodeHandlerResult =
       rawResult && typeof rawResult === "object"
@@ -619,6 +624,7 @@ export async function runDueAutomations(
     input.registry ?? input.handlers ?? {},
   );
   const effects = input.effects ?? unconfiguredEffects;
+  const timeZone = input.timeZone ?? DEFAULT_TIME_ZONE;
   const result: RunDueAutomationsResult = {
     processed: 0,
     succeeded: 0,
@@ -640,7 +646,7 @@ export async function runDueAutomations(
     }
 
     result.processed++;
-    const execution = await processStep(step, now, registry, effects);
+    const execution = await processStep(step, now, registry, effects, timeZone);
 
     if (execution.status === "succeeded") {
       result.succeeded++;

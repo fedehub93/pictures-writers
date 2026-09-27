@@ -25,6 +25,7 @@ import { dedupeConnections } from "../lib/connections";
 import { enqueueRun } from "../lib/automation-ingestion";
 import { hashWebhookSecret } from "../lib/webhook-secret";
 import { pumpDueAutomations } from "./automation-runtime";
+import { getSiteTimeZone } from "./site-time-zone";
 import { parseRunDateRange, resolveRunNodes } from "../lib/run-ledger";
 import {
   automationCreateSchema,
@@ -118,7 +119,7 @@ export const automationsRouter = createTRPCRouter({
       // "Run now" is a test affordance: drain the freshly enqueued run straight
       // away instead of waiting for the external cron pump. It stops at the
       // first wait/retry, so a sleeping run stays RUNNING by design.
-      await pumpDueAutomations();
+      await pumpDueAutomations({ timeZone: await getSiteTimeZone() });
 
       const executed = await db.automationRun.findUnique({
         where: { id: run.id },

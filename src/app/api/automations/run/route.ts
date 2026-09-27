@@ -7,6 +7,7 @@ import { NextResponse } from "next/server";
 import { AUTOMATION_SECRET_HEADER } from "@/modules/automations/constants";
 import { enqueueDueCronAutomations } from "@/modules/automations/lib/automation-triggers";
 import { pumpDueAutomations } from "@/modules/automations/server/automation-runtime";
+import { getSiteTimeZone } from "@/modules/automations/server/site-time-zone";
 
 function hashSecret(secret: string) {
   return createHash("sha256").update(secret).digest();
@@ -31,13 +32,15 @@ export async function POST(request: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    const timeZone = await getSiteTimeZone();
+
     // Trigger evaluation and step execution are independent: a failure to
     // evaluate cron triggers must not stop already-enqueued Runs from draining.
-    const cron = await enqueueDueCronAutomations().catch((error) => {
+    const cron = await enqueueDueCronAutomations({ timeZone }).catch((error) => {
       console.error("[AUTOMATIONS_CRON]", error);
       return { fired: [] };
     });
-    const result = await pumpDueAutomations();
+    const result = await pumpDueAutomations({ timeZone });
     return NextResponse.json({ ...result, cron });
   } catch (error) {
     console.error("[AUTOMATIONS_RUN]", error);

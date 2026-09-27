@@ -30,9 +30,10 @@ export type CronEvaluationResult = {
  * elapsed since its most recent Run. Unpublished Automations never fire.
  */
 export async function enqueueDueCronAutomations(
-  options: { now?: Date } = {},
+  options: { now?: Date; timeZone?: string } = {},
 ): Promise<CronEvaluationResult> {
   const now = options.now ?? new Date();
+  const timeZone = options.timeZone;
 
   const automations = await db.automation.findMany({
     where: {
@@ -65,7 +66,7 @@ export async function enqueueDueCronAutomations(
     });
 
     const due = cronNodes.some((node) =>
-      isCronTriggerDue(node.data, lastRun?.startedAt ?? null, now),
+      isCronTriggerDue(node.data, lastRun?.startedAt ?? null, now, timeZone),
     );
 
     if (!due) {

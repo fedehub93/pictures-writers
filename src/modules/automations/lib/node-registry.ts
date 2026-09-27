@@ -7,6 +7,11 @@ import {
 import { passthroughEffects, type AutomationEffects } from "./effects";
 import { parseDuration, readObjectDuration } from "./duration";
 import {
+  DEFAULT_TIME_ZONE,
+  parseTimeOfDay,
+  waitResumeAt,
+} from "./time-zone";
+import {
   interpolateAutomationValue,
   readPath,
   type AutomationInterpolationContext,
@@ -34,6 +39,8 @@ export type AutomationNodeHandlerContext = {
   };
   now: Date;
   effects: AutomationEffects;
+  /** Site IANA time zone, used by time-of-day anchored nodes (see Wait). */
+  timeZone?: string;
 };
 
 export type AutomationNodeHandlerResult = {
@@ -85,7 +92,11 @@ export function isTransientNodeError(error: unknown): boolean {
   return false;
 }
 
-function resolveWaitAt(data: JsonObject, now: Date): Date {
+function resolveWaitAt(
+  data: JsonObject,
+  now: Date,
+  timeZone: string = DEFAULT_TIME_ZONE,
+): Date {
   const waitData =
     data.wait && typeof data.wait === "object" && !Array.isArray(data.wait)
       ? (data.wait as JsonObject)
@@ -114,6 +125,14 @@ function resolveWaitAt(data: JsonObject, now: Date): Date {
 
   if (duration === null || duration < 0) {
     throw new AutomationNodeError("Wait node requires a non-negative delay");
+  }
+
+  // An optional time of day anchors the resume to a wall-clock time in the
+  // site zone: "2 days at 09:00" resumes two calendar days later at 09:00,
+  // rolled forward if that instant has already passed.
+  const timeOfDay = parseTimeOfDay(waitData.timeOfDay);
+  if (timeOfDay) {
+    return waitResumeAt(now, duration, timeOfDay, timeZone);
   }
 
   return new Date(now.getTime() + duration);
@@ -153,10 +172,24 @@ export const passthroughHandler: AutomationNodeHandler = ({
   output: input === null ? payload : input,
 });
 
-const waitHandler: AutomationNodeHandler = ({ node, input, now }) => ({
-  output: input,
-  resumeAt: resolveWaitAt(node.data, now),
-});
+const waitHandler: AutomationNodeHandler = (context) => {
+  const { node, input, payload, now } = context;
+  const interpolationContext: AutomationInterpolationContext = {
+    input,
+    payload,
+    run: context.run,
+    step: context.step,
+  };
+  const config = interpolateAutomationValue(
+    node.data,
+    interpolationContext,
+  ) as JsonObject;
+
+  return {
+    output: input,
+    resumeAt: resolveWaitAt(config, now, context.timeZone),
+  };
+};
 
 const conditionalHandler: AutomationNodeHandler = (context) => {
   const { node, input, payload } = context;

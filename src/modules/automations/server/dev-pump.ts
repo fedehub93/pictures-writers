@@ -2,6 +2,7 @@ import "server-only";
 
 import { enqueueDueCronAutomations } from "../lib/automation-triggers";
 import { pumpDueAutomations } from "./automation-runtime";
+import { getSiteTimeZone } from "./site-time-zone";
 
 /**
  * Development-only pump.
@@ -34,8 +35,9 @@ export function resolveDevPumpIntervalMs(): number {
 }
 
 async function defaultTick(): Promise<void> {
-  await enqueueDueCronAutomations();
-  await pumpDueAutomations();
+  const timeZone = await getSiteTimeZone();
+  await enqueueDueCronAutomations({ timeZone });
+  await pumpDueAutomations({ timeZone });
 }
 
 export function startAutomationDevPump(

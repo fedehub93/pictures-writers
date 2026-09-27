@@ -135,3 +135,11 @@ _Avoid_: API key when referring to the stored record.
 **Idempotency key**:
 The opaque string a caller passes to the trigger ingestion (`enqueueRun`) so the engine silently skips a Run when another Run with the same Automation and key already exists. Callers choose the key; the engine never interprets it.
 _Avoid_: Dedup key, contact key.
+
+**Site time zone**:
+The single IANA time zone, configured once in site settings, in which scheduled features read wall-clock times — the Cron trigger's time of day and the Wait node's anchoring. Sites start in `Europe/Rome`; an unset or invalid value falls back to UTC.
+_Avoid_: User time zone, server time zone, per-node time zone.
+
+**Wait anchor**:
+The rule that turns the Wait node's delay plus a time of day into a resume moment: N calendar days after the current wall date, at that time in the Site time zone, rolled forward one day when the moment has already passed.
+_Avoid_: Absolute delay, countdown, offset.

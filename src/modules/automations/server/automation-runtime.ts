@@ -50,6 +50,8 @@ export interface PumpDueAutomationsInput {
   /** Test seam; defaults to the composed runtime. */
   registry?: AutomationNodeRegistry;
   effects?: AutomationEffects;
+  /** Site IANA time zone; defaults to UTC when not supplied. */
+  timeZone?: string;
 }
 
 export interface PumpDueAutomationsResult {
@@ -88,6 +90,7 @@ export async function pumpDueAutomations(
       now: input.now,
       registry,
       effects,
+      timeZone: input.timeZone,
     });
 
     totals.batches += 1;

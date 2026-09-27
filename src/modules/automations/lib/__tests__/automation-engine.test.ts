@@ -255,6 +255,47 @@ describe("automation engine", () => {
     expect(completed?.steps.find((step) => step.nodeId === "wait")?.attempts).toBe(1);
   });
 
+  it("resumes a wait at a time of day in the site time zone", async () => {
+    const automation = await db.automation.create({
+      data: {
+        name: "Anchored wait flow",
+        status: AutomationStatus.PUBLISHED,
+        publishedSnapshot: {
+          nodes: [
+            { id: "trigger", type: "manual", data: {} },
+            {
+              id: "wait",
+              type: "wait",
+              data: { delay: "2 days", timeOfDay: "10:00" },
+            },
+            { id: "end", type: "end", data: {} },
+          ],
+          connections: [
+            { fromNodeId: "trigger", toNodeId: "wait" },
+            { fromNodeId: "wait", toNodeId: "end" },
+          ],
+        },
+      },
+    });
+    // 2026-09-24 16:00 in Europe/Rome.
+    const start = new Date("2026-09-24T14:00:00.000Z");
+    const run = await enqueueRun(
+      { automationId: automation.id, triggerType: "manual" },
+      start,
+    );
+
+    await runDueAutomations({ now: start, timeZone: "Europe/Rome" });
+    await runDueAutomations({ now: start, timeZone: "Europe/Rome" });
+
+    const waiting = await db.automationRunStep.findFirst({
+      where: { runId: run!.id, nodeId: "wait" },
+    });
+    // Thu 16:00 -> Sat 10:00 in Rome, i.e. 08:00Z.
+    expect(waiting?.resumeAt?.toISOString()).toBe(
+      "2026-09-26T08:00:00.000Z",
+    );
+  });
+
   it("passes node requests through the injected effects context", async () => {
     const automation = await db.automation.create({
       data: {

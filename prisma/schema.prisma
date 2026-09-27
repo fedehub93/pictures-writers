@@ -37,6 +37,10 @@ model Settings {
 
   logoUrl String?
 
+  /// IANA time zone the site schedules in (e.g. "Europe/Rome"). Applied to
+  /// cron triggers and to the Wait node's time-of-day anchoring.
+  timezone String? @default("Europe/Rome")
+
   /// [Scripts]
   scripts Json @default("null") @db.JsonB
 

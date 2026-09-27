@@ -4,7 +4,6 @@ import {
   isCronTriggerDue,
   nextCronFireAt,
   parseCronSchedule,
-  parseTimeOfDay,
 } from "../cron-schedule";
 
 describe("parseCronSchedule", () => {
@@ -42,20 +41,6 @@ describe("parseCronSchedule", () => {
   });
 });
 
-describe("parseTimeOfDay", () => {
-  it("accepts valid 24h times", () => {
-    expect(parseTimeOfDay("00:00")).toEqual({ hours: 0, minutes: 0 });
-    expect(parseTimeOfDay("23:59")).toEqual({ hours: 23, minutes: 59 });
-  });
-
-  it("rejects malformed or out-of-range values", () => {
-    expect(parseTimeOfDay("24:00")).toBeNull();
-    expect(parseTimeOfDay("12:60")).toBeNull();
-    expect(parseTimeOfDay("noon")).toBeNull();
-    expect(parseTimeOfDay(9)).toBeNull();
-  });
-});
-
 describe("nextCronFireAt", () => {
   const schedule = { intervalMs: 60 * 60 * 1000, timeOfDay: null };
 
@@ -81,6 +66,18 @@ describe("nextCronFireAt", () => {
     expect(nextCronFireAt(daily, lastRunAt).toISOString()).toBe(
       "2026-09-26T09:00:00.000Z",
     );
+  });
+
+  it("aligns the time of day in the site time zone", () => {
+    const daily = {
+      intervalMs: 24 * 60 * 60 * 1000,
+      timeOfDay: { hours: 9, minutes: 0 },
+    };
+    // 08:00 in Rome (06:00Z) + 1 day, anchored to 09:00 Rome == 07:00Z.
+    expect(
+      nextCronFireAt(daily, new Date("2026-09-24T06:00:00.000Z"), "Europe/Rome")
+        .toISOString(),
+    ).toBe("2026-09-25T07:00:00.000Z");
   });
 });
 

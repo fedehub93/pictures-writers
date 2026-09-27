@@ -11,13 +11,17 @@ export type {
   CronEvaluationResult,
   WebhookEnqueueResult,
 } from "./lib/automation-triggers";
+export { isCronTriggerDue, nextCronFireAt, parseCronSchedule } from "./lib/cron-schedule";
+export type { CronSchedule } from "./lib/cron-schedule";
 export {
-  isCronTriggerDue,
-  nextCronFireAt,
-  parseCronSchedule,
+  alignToTimeOfDay,
+  DEFAULT_TIME_ZONE,
+  isValidTimeZone,
+  normalizeTimeZone,
   parseTimeOfDay,
-} from "./lib/cron-schedule";
-export type { CronSchedule, TimeOfDay } from "./lib/cron-schedule";
+  waitResumeAt,
+} from "./lib/time-zone";
+export type { TimeOfDay } from "./lib/time-zone";
 export { hashWebhookSecret, verifyWebhookSecret } from "./lib/webhook-secret";
 export {
   claimDueAutomationStep,

@@ -121,4 +121,54 @@ describe("wait node handler", () => {
       resumeAt: new Date(now.getTime() + 30_000 + 60_000),
     });
   });
+
+  it("anchors the resume to a time of day in the site zone", () => {
+    const handler = defaultNodeRegistry.wait;
+    const now = new Date("2026-09-24T14:00:00.000Z"); // 16:00 in Rome
+
+    const result = handler({
+      node: {
+        id: "wait",
+        type: "wait",
+        data: { delay: "2 days", timeOfDay: "10:00" },
+      },
+      input: null,
+      payload: null,
+      run: { id: "run-1", triggerType: "manual" },
+      step: { id: "step-1", attempts: 0 },
+      now,
+      effects: createInMemoryEffects(),
+      timeZone: "Europe/Rome",
+    });
+
+    // Thu 16:00 -> Sat 10:00 in Rome, i.e. 08:00Z.
+    expect(result).toEqual({
+      output: null,
+      resumeAt: new Date("2026-09-26T08:00:00.000Z"),
+    });
+  });
+
+  it("interpolates the delay from the run payload", () => {
+    const handler = defaultNodeRegistry.wait;
+    const now = new Date("2026-09-01T00:00:00.000Z");
+
+    const result = handler({
+      node: {
+        id: "wait",
+        type: "wait",
+        data: { delay: "{{ payload.days }} days" },
+      },
+      input: null,
+      payload: { days: 3 },
+      run: { id: "run-1", triggerType: "manual" },
+      step: { id: "step-1", attempts: 0 },
+      now,
+      effects: createInMemoryEffects(),
+    });
+
+    expect(result).toEqual({
+      output: null,
+      resumeAt: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000),
+    });
+  });
 });
