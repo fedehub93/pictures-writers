@@ -12,6 +12,8 @@ export const nodeComponents = {
   FORM_SUBMITTED_TRIGGER: TriggerNode,
   WAIT: ActionNode,
   HTTP_REQUEST: ActionNode,
+  WEB_SEARCH: ActionNode,
+  LLM: ActionNode,
   SEND_EMAIL: ActionNode,
 } as const satisfies NodeTypes;
 
