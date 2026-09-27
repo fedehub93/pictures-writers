@@ -281,11 +281,12 @@ describe("automation engine", () => {
 
     expect(effects.httpCalls).toHaveLength(1);
     expect(effects.httpCalls[0]).toMatchObject({
-      runId: run!.id,
-      stepId: expect.any(String),
+      run: { id: run!.id, triggerType: "manual" },
+      step: { id: expect.any(String), attempts: 1 },
+      credentialId: null,
       input: { value: 1 },
       payload: { value: 1 },
-      config: { url: "https://example.test" },
+      config: { method: "GET", url: "https://example.test" },
     });
   });
 

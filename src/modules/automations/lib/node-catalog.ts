@@ -44,8 +44,23 @@ export const coreNodeCatalog: AutomationNodeCatalogEntry[] = [
   {
     type: "HTTP_REQUEST",
     label: "HTTP Request",
-    description: "Makes an HTTP request",
+    description: "Calls any external API with a method, URL and body.",
     category: "action",
+    defaultData: { method: "GET", url: "" },
+  },
+  {
+    type: "WEB_SEARCH",
+    label: "Web Search",
+    description: "Runs a query through a search provider using a credential.",
+    category: "action",
+    defaultData: { provider: "tavily", query: "" },
+  },
+  {
+    type: "LLM",
+    label: "LLM",
+    description: "Runs a provider/model with a templated prompt.",
+    category: "action",
+    defaultData: { provider: "openai", model: "gpt-4o-mini", prompt: "" },
   },
 ];
 

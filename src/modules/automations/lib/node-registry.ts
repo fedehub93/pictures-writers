@@ -1,6 +1,5 @@
 import {
   canonicalNodeType,
-  toJsonValue,
   type AutomationNode,
   type JsonObject,
   type JsonValue,
@@ -12,6 +11,14 @@ import {
   readPath,
   type AutomationInterpolationContext,
 } from "./interpolate";
+import { resolveHttpRequestConfig } from "./actions/http-request";
+import { resolveLlmConfig } from "./actions/llm";
+import {
+  buildActionEffectRequest,
+  MissingActionConfigError,
+  resolveCredentialId,
+} from "./actions/shared";
+import { resolveWebSearchConfig } from "./actions/web-search";
 
 export type AutomationNodeHandlerContext = {
   node: AutomationNode;
@@ -112,16 +119,6 @@ function resolveWaitAt(data: JsonObject, now: Date): Date {
   return new Date(now.getTime() + duration);
 }
 
-function effectRequest(context: AutomationNodeHandlerContext): JsonObject {
-  return {
-    config: context.node.data,
-    input: context.input,
-    payload: context.payload,
-    runId: context.run.id,
-    stepId: context.step.id,
-  };
-}
-
 function compareValues(
   actual: JsonValue,
   operator: string,
@@ -186,11 +183,54 @@ const conditionalHandler: AutomationNodeHandler = (context) => {
   };
 };
 
-const effectHandler =
-  (effect: keyof AutomationEffects): AutomationNodeHandler =>
-  async (context) => ({
-    output: await context.effects[effect](toJsonValue(effectRequest(context))),
-  });
+function resolveActionOrThrow<T>(resolve: () => T): T {
+  try {
+    return resolve();
+  } catch (error) {
+    if (error instanceof MissingActionConfigError) {
+      throw new AutomationNodeError(error.message, false);
+    }
+    throw error;
+  }
+}
+
+/**
+ * General-purpose effect-backed actions (HTTP Request, Web Search, LLM).
+ *
+ * The handler is thin: it interpolates the node config against the run context,
+ * resolves the Credential id (never the secret), and delegates to the injected
+ * effect, so the engine executes any provider generically (ADR-0003/0004).
+ */
+const actionHandler =
+  (
+    resolveConfig: (
+      data: JsonObject,
+      context: AutomationInterpolationContext,
+    ) => object,
+    effect: keyof AutomationEffects,
+  ): AutomationNodeHandler =>
+  async (context) => {
+    const { node, input, payload } = context;
+    const interpolationContext: AutomationInterpolationContext = {
+      input,
+      payload,
+      run: context.run,
+      step: context.step,
+    };
+    const config = resolveActionOrThrow(() =>
+      resolveConfig(node.data, interpolationContext),
+    );
+
+    const output = await context.effects[effect](
+      buildActionEffectRequest({
+        config,
+        credentialId: resolveCredentialId(node, config as JsonObject),
+        context: interpolationContext,
+      }),
+    );
+
+    return { output };
+  };
 
 export const defaultNodeRegistry: AutomationNodeRegistry = {
   initial: passthroughHandler,
@@ -200,9 +240,9 @@ export const defaultNodeRegistry: AutomationNodeRegistry = {
   wait: waitHandler,
   end: passthroughHandler,
   conditional: conditionalHandler,
-  httpRequest: effectHandler("http"),
-  webSearch: effectHandler("webSearch"),
-  llm: effectHandler("llm"),
+  httpRequest: actionHandler(resolveHttpRequestConfig, "http"),
+  webSearch: actionHandler(resolveWebSearchConfig, "webSearch"),
+  llm: actionHandler(resolveLlmConfig, "llm"),
 };
 
 export function mergeNodeRegistries(

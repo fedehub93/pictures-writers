@@ -8,6 +8,11 @@ export type AutomationNode = {
   type: string;
   name?: string | null;
   data: JsonObject;
+  /**
+   * Id of the Credential the node references, if any. Only the id travels in
+   * snapshots; the secret is resolved at the execution boundary.
+   */
+  credentialId?: string | null;
 };
 
 export type AutomationConnection = {
@@ -153,11 +158,20 @@ function parseNode(value: unknown): AutomationNode {
 
   const data = isRecord(value.data) ? (value.data as JsonObject) : {};
 
+  const credentialId =
+    typeof value.credentialId === "string" && value.credentialId.trim().length > 0
+      ? value.credentialId
+      : typeof data.credentialId === "string" &&
+          data.credentialId.trim().length > 0
+        ? data.credentialId
+        : null;
+
   return {
     id: value.id,
     type: value.type,
     name: typeof value.name === "string" ? value.name : null,
     data,
+    credentialId,
   };
 }
 

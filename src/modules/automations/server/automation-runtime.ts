@@ -10,12 +10,17 @@ import {
   runDueAutomations,
   type RunDueAutomationsResult,
 } from "../lib/automation-runner";
-import { unconfiguredEffects, type AutomationEffects } from "../lib/effects";
+import type { AutomationEffects } from "../lib/effects";
 import {
   mergeNodeRegistries,
   type AutomationNodeRegistry,
 } from "../lib/node-registry";
 import { AUTOMATION_PUMP_MAX_BATCHES } from "../constants";
+import {
+  createAutomationHttpEffect,
+  createAutomationLlmEffect,
+  createAutomationWebSearchEffect,
+} from "./action-effects";
 
 /// Node registry contributed by feature modules. The engine core supplies its
 /// own defaults, so only domain nodes are composed here (ADR-0005).
@@ -31,8 +36,10 @@ const moduleNodeRegistry: AutomationNodeRegistry = mergeNodeRegistries(
  */
 export function createAutomationRuntimeEffects(): AutomationEffects {
   return {
-    ...unconfiguredEffects,
     mail: createAutomationMailEffect(),
+    http: createAutomationHttpEffect(),
+    webSearch: createAutomationWebSearchEffect(),
+    llm: createAutomationLlmEffect(),
   };
 }
 

@@ -31,6 +31,23 @@ import {
   automationPublishSchema,
   automationUpdateSchema,
 } from "../schemas";
+/**
+ * Resolves the Credential a client node references. The editor stores it inside
+ * `data` (mirroring `getOne`), while API callers may send it top-level; both
+ * are honoured. Only the id travels — never the secret.
+ */
+const resolveNodeCredentialId = (node: {
+  data?: Record<string, unknown>;
+  credentialId?: string | null;
+}): string | null => {
+  if (typeof node.credentialId === "string" && node.credentialId.trim()) {
+    return node.credentialId;
+  }
+
+  const fromData = node.data?.credentialId;
+  return typeof fromData === "string" && fromData.trim() ? fromData : null;
+};
+
 /** Map a client node (React Flow) to the Node row columns. */
 const toNodeRow = (
   node: {
@@ -48,7 +65,7 @@ const toNodeRow = (
   type: node.type as string,
   position: node.position,
   data: node.data || {},
-  credentialId: node.credentialId ?? null,
+  credentialId: resolveNodeCredentialId(node),
 });
 
 /** Map a client edge (React Flow) to the Connection row columns. */
@@ -304,6 +321,7 @@ export const automationsRouter = createTRPCRouter({
           type: node.type,
           name: node.type,
           data: node.data || {},
+          credentialId: resolveNodeCredentialId(node),
         })),
         connections: edges.map((edge) => ({
           fromNodeId: edge.source,

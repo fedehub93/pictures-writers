@@ -5,6 +5,8 @@ import {
   MailIcon,
   MousePointerIcon,
   PuzzleIcon,
+  SearchIcon,
+  SparklesIcon,
   WebhookIcon,
   type LucideIcon,
 } from "lucide-react";
@@ -15,6 +17,8 @@ const nodeIcons: Record<string, LucideIcon> = {
   WEBHOOK_TRIGGER: WebhookIcon,
   FORM_SUBMITTED_TRIGGER: ClipboardListIcon,
   HTTP_REQUEST: GlobeIcon,
+  WEB_SEARCH: SearchIcon,
+  LLM: SparklesIcon,
   SEND_EMAIL: MailIcon,
 };
 
