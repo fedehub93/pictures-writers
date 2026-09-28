@@ -7,6 +7,7 @@ import { ContactSchemaValibot } from "@/schemas";
 import { createContactByEmail } from "@/data/email-contact";
 import { handleContactRequested } from "@/lib/event-handler";
 import { verifyRecaptcha } from "@/lib/recaptcha";
+import { BUILT_IN_CONTACT_FORM_ID } from "@/modules/forms/built-in-forms";
 
 export const contact = async (
   values: v.InferInput<typeof ContactSchemaValibot>,
@@ -33,8 +34,7 @@ export const contact = async (
 
     await db.formSubmission.create({
       data: {
-        formId: "cad10953-192a-423f-9d75-852a2b26034f",
-        // formId: "e8972c06-44ce-47c0-b206-5e18f1f4ee6d",
+        formId: BUILT_IN_CONTACT_FORM_ID,
         email,
         data: {
           name,

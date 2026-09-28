@@ -50,6 +50,12 @@ _Avoid_: Tag-based invalidation when referring to the chosen approach.
 The coarse time-based `revalidate` value on public routes (24h) that self-heals content if an on-demand revalidation is missed. It is a safety net, not the source of freshness.
 _Avoid_: Cache TTL when referring to the strategy.
 
+## Forms
+
+**Form**:
+A reusable form definition stored in the CMS, whose fields and content drive the public submission UI and whose submissions are recorded per Form. A Form can be embedded in pages and products, and Automations can subscribe to its submissions.
+_Avoid_: Modulo, contact form when referring to the CMS entity.
+
 ## Backoffice users and authorization
 
 **Backoffice user**:
