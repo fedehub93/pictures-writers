@@ -1,6 +1,8 @@
 "use client";
 
 import type { NodeConfigPanelProps } from "@/modules/automations/editor/config/node-config-panel-types";
+import { TimePicker, TIME_OPTIONS } from "@/shared/components/time-picker";
+import { Button } from "@/shared/ui/button";
 import {
   Field,
   FieldDescription,
@@ -22,6 +24,8 @@ export function CronTriggerConfigPanel({
   data,
   onChange,
 }: NodeConfigPanelProps) {
+  const timeOfDay = stringValue(data.timeOfDay);
+
   return (
     <FieldGroup>
       <Field>
@@ -41,16 +45,26 @@ export function CronTriggerConfigPanel({
       </Field>
 
       <Field>
-        <FieldLabel htmlFor="cron-time-of-day">Time of day (optional)</FieldLabel>
-        <Input
-          id="cron-time-of-day"
-          type="time"
-          value={stringValue(data.timeOfDay)}
-          onChange={(event) =>
-            onChange({
-              timeOfDay: event.target.value === "" ? undefined : event.target.value,
-            })
-          }
+        <div className="flex items-center justify-between gap-2">
+          <FieldLabel htmlFor="cron-time-of-day">
+            Time of day (optional)
+          </FieldLabel>
+          {timeOfDay && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-auto px-2 py-1 text-xs text-muted-foreground"
+              onClick={() => onChange({ timeOfDay: undefined })}
+            >
+              Clear
+            </Button>
+          )}
+        </div>
+        <TimePicker
+          value={timeOfDay}
+          onValueChange={(next) => onChange({ timeOfDay: next })}
+          options={TIME_OPTIONS}
         />
         <FieldDescription>
           Fire at this time (UTC) once the interval has elapsed. Leave empty to

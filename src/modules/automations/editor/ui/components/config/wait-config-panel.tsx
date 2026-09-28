@@ -1,8 +1,17 @@
 "use client";
 
+import { format, setHours, setMinutes, setSeconds } from "date-fns";
+
 import type { NodeConfigPanelProps } from "@/modules/automations/editor/config/node-config-panel-types";
 import { parseDurationValue } from "@/modules/automations/lib/duration";
 import { DAY_MS } from "@/modules/automations/lib/time-zone";
+import {
+  TimePicker,
+  TIME_OPTIONS,
+  TIME_PICKER_FORMAT,
+} from "@/shared/components/time-picker";
+import { Button } from "@/shared/ui/button";
+import { Calendar } from "@/shared/ui/calendar";
 import {
   Field,
   FieldDescription,
@@ -80,32 +89,29 @@ function formatDelay(amount: string, unit: string): string {
   return `${value} ${label}`;
 }
 
-/** Formats an ISO timestamp for a `datetime-local` input in local time. */
-function toLocalInputValue(value: unknown): string {
+/** Parses a persisted ISO timestamp into the day and `"HH:mm"` the pickers use. */
+function readUntil(value: unknown): { date: Date | undefined; time: string } {
   const raw = stringValue(value).trim();
   if (!raw) {
-    return "";
+    return { date: undefined, time: "" };
   }
 
   const date = new Date(raw);
   if (Number.isNaN(date.getTime())) {
-    return "";
+    return { date: undefined, time: "" };
   }
 
-  const pad = (part: number) => String(part).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
-    date.getDate(),
-  )}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  return { date, time: format(date, TIME_PICKER_FORMAT) };
 }
 
-/** Converts a `datetime-local` value to an absolute ISO timestamp, or null. */
-function fromLocalInputValue(value: string): string | null {
-  if (!value) {
+/** Combines a day and an `"HH:mm"` time into an absolute ISO timestamp, or null. */
+function buildUntil(date: Date, time: string): string | null {
+  const [hours, minutes] = time.split(":").map(Number);
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) {
     return null;
   }
 
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+  return setSeconds(setMinutes(setHours(date, hours), minutes), 0).toISOString();
 }
 
 /**
@@ -122,6 +128,7 @@ export function WaitConfigPanel({ data, onChange }: NodeConfigPanelProps) {
     data.delayMode === "expression" ? "expression" : "value";
   const { amount, unit } = readDelay(data.delay);
   const timeOfDay = stringValue(data.timeOfDay);
+  const until = readUntil(data.until);
 
   const availableUnits = timeOfDay
     ? DELAY_UNITS.filter((option) => ANCHORED_UNITS.has(option.value))
@@ -185,6 +192,22 @@ export function WaitConfigPanel({ data, onChange }: NodeConfigPanelProps) {
     }
 
     setDelayConfig({ delay: stringValue(data.delay), timeOfDay: next });
+  };
+
+  /// Rebuilds the absolute resume timestamp from the date and time pickers.
+  const setUntil = (date: Date, time: string) => {
+    const next = buildUntil(date, time);
+    if (!next) {
+      return;
+    }
+
+    onChange({
+      waitMode: "until",
+      until: next,
+      delay: null,
+      timeOfDay: null,
+      delayMode: "value",
+    });
   };
 
   return (
@@ -298,14 +321,26 @@ export function WaitConfigPanel({ data, onChange }: NodeConfigPanelProps) {
             </FieldDescription>
           </Field>
           <Field>
-            <FieldLabel htmlFor="wait-time-of-day">
-              Time of day (optional)
-            </FieldLabel>
-            <Input
-              id="wait-time-of-day"
-              type="time"
+            <div className="flex items-center justify-between gap-2">
+              <FieldLabel htmlFor="wait-time-of-day">
+                Time of day (optional)
+              </FieldLabel>
+              {timeOfDay && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-auto px-2 py-1 text-xs text-muted-foreground"
+                  onClick={() => setTimeOfDay("")}
+                >
+                  Clear
+                </Button>
+              )}
+            </div>
+            <TimePicker
               value={timeOfDay}
-              onChange={(event) => setTimeOfDay(event.target.value)}
+              onValueChange={setTimeOfDay}
+              options={TIME_OPTIONS}
             />
             <FieldDescription>
               Resume at this time in the site time zone (e.g.{" "}
@@ -316,30 +351,39 @@ export function WaitConfigPanel({ data, onChange }: NodeConfigPanelProps) {
           </Field>
         </>
       ) : (
-        <Field>
-          <FieldLabel htmlFor="wait-until">Resume at</FieldLabel>
-          <Input
-            id="wait-until"
-            type="datetime-local"
-            value={toLocalInputValue(data.until)}
-            onChange={(event) => {
-              const next = fromLocalInputValue(event.target.value);
-              if (next) {
-                onChange({
-                  waitMode: "until",
-                  until: next,
-                  delay: null,
-                  timeOfDay: null,
-                  delayMode: "value",
-                });
-              }
-            }}
-          />
+        <>
+          <Field>
+            <FieldLabel>Date</FieldLabel>
+            <Calendar
+              mode="single"
+              selected={until.date}
+              onSelect={(next) => {
+                if (next) {
+                  setUntil(next, until.time || "09:00");
+                }
+              }}
+              className="mx-auto [--cell-size:2rem]"
+            />
+          </Field>
+
+          <Field>
+            <FieldLabel>Time</FieldLabel>
+            <TimePicker
+              value={until.time}
+              onValueChange={(next) => {
+                if (until.date) {
+                  setUntil(until.date, next);
+                }
+              }}
+              options={TIME_OPTIONS}
+            />
+          </Field>
+
           <FieldDescription>
             The flow resumes at this local date and time. If it is already in the
             past, the flow continues immediately.
           </FieldDescription>
-        </Field>
+        </>
       )}
     </FieldGroup>
   );

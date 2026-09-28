@@ -82,9 +82,9 @@ export function AutomationEdge({
             onClick={removeEdge}
             aria-label="Remove connection"
             title="Remove connection"
-            className="flex size-5 items-center justify-center rounded-full border bg-background text-muted-foreground shadow-sm transition-colors hover:border-destructive hover:text-destructive"
+            className="flex size-4 items-center justify-center rounded-full border bg-background text-muted-foreground shadow-sm transition-colors hover:border-destructive hover:text-destructive"
           >
-            <XIcon className="size-3" />
+            <XIcon className="size-2" />
           </button>
         </div>
       </EdgeLabelRenderer>
