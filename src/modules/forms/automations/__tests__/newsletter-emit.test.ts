@@ -2,7 +2,11 @@ import { randomUUID } from "node:crypto";
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { runDueAutomations } from "@/modules/automations/lib/automation-runner";
 import { cleanupAutomationTables } from "@/modules/automations/lib/cleanup";
+import { createInMemoryEffects } from "@/modules/automations/lib/effects";
+import { mergeNodeRegistries } from "@/modules/automations/lib/node-registry";
+import { sendEmailNodeRegistry } from "@/modules/mails/automations";
 import { AutomationRunStatus, AutomationStatus } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 
@@ -12,6 +16,7 @@ import {
   FORM_SUBMITTED_TRIGGER_TYPE,
 } from "../constants";
 import { emitFormSubmitted } from "../emit";
+import { formSubmittedNodeRegistry } from "../node";
 
 vi.mock("@/lib/recaptcha", () => ({
   verifyRecaptcha: vi.fn(async () => ({ success: true })),
@@ -65,6 +70,11 @@ async function publishGraph(formId: string) {
   });
 }
 
+const registry = mergeNodeRegistries(
+  sendEmailNodeRegistry,
+  formSubmittedNodeRegistry,
+);
+
 describe("newsletter action emit", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -106,6 +116,24 @@ describe("newsletter action emit", () => {
       where: { email },
     });
     expect(run.idempotencyKey).toBe(createdContact.id);
+  });
+
+  it("executes the scoped Automation end to end", async () => {
+    const email = uniqueEmail();
+    await publishGraph(BUILT_IN_NEWSLETTER_FORM_ID);
+
+    await subscribe({ email }, "token");
+
+    const effects = createInMemoryEffects();
+    const now = new Date();
+    // The runner drains one node per call: the first processes the trigger and
+    // schedules the send, the second executes it.
+    await runDueAutomations({ now, registry, effects });
+    await runDueAutomations({ now, registry, effects });
+
+    expect(effects.mailCalls).toHaveLength(1);
+    const run = await db.automationRun.findFirstOrThrow();
+    expect(run.status).toBe(AutomationRunStatus.COMPLETED);
   });
 
   it("keeps the user_subscribed interaction and notification", async () => {
