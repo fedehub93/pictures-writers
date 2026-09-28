@@ -6,6 +6,7 @@ import { db } from "@/shared/lib/db";
 
 import { createContactByEmail } from "@/data/email-contact";
 import { handleFormSubmitted } from "@/lib/event-handler";
+import { emitFormSubmitted } from "@/modules/forms/automations/emit";
 
 import { verifyRecaptcha } from "@/lib/recaptcha";
 import { getPublishedProductByRootId } from "@/data/product";
@@ -67,7 +68,27 @@ export const submitProductForm = async (
       },
     });
 
-    await createContactByEmail(emailFromBody, "submit_product_form");
+    const contact = await createContactByEmail(
+      emailFromBody,
+      "submit_product_form",
+    );
+
+    // Start any automation listening for this internal event. The forms module
+    // chooses the idempotency key (the contact id) so a repeated submission
+    // from the same contact cannot start a second nurture cycle (ADR-0005).
+    try {
+      await emitFormSubmitted({
+        formId: product.formId,
+        email: emailFromBody,
+        contactId: contact?.id ?? null,
+        data: values,
+      });
+    } catch (automationError) {
+      console.error(
+        "Error enqueuing form.submitted automation: ",
+        automationError,
+      );
+    }
 
     //  Send notification to admins
     await handleFormSubmitted();
