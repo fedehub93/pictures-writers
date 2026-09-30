@@ -72,7 +72,7 @@ Dare a ogni percorso di submission un'identità `Form` e far emettere `form.subm
 - Flag `isSystem` sul modello `Form` e filtering di admin/Puck picker (visibilità accettata).
 - Persistere `FormSubmission` per newsletter/ebook.
 - Convergenza della home su `submitForm()` (reCAPTCHA action e schema diversi).
-- Nuovi trigger dedicati alle lead-capture (`lead.captured`, `contact.subscribed`), ADR dedicato, o termini di glossario per l'identità temporanea.
+- Nuovi trigger dedicati alle lead-capture (`lead.captured`, `contact.subscribed`), ADR dedicato, o termini di glossario per l'identità temporanea. → Il trigger di conferma newsletter (`subscription.confirmed`) e il glossario/ADR sono ora affrontati nel follow-up `.scratch/subscription-confirmed-trigger/`; l'emit `form.submitted` di questa spec resta invariato.
 - Unificare le notifiche admin (`CONTACT_REQUESTED` vs `FORM_SUBMITTED`).
 
 ## Further Notes

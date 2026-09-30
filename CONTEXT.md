@@ -56,6 +56,24 @@ _Avoid_: Cache TTL when referring to the strategy.
 A reusable form definition stored in the CMS, whose fields and content drive the public submission UI and whose submissions are recorded per Form. A Form can be embedded in pages and products, and Automations can subscribe to its submissions.
 _Avoid_: Modulo, contact form when referring to the CMS entity.
 
+## Contacts and subscriptions
+
+**Contact**:
+An email address captured by any public entry point (contact form, newsletter, lead magnet, product form), with no implication about consent or ownership.
+_Avoid_: Lead, user, member when referring to the captured address.
+
+**Subscriber**:
+A Contact who consented to receive marketing email. Consent is revoked — not deleted — when they unsubscribe.
+_Avoid_: Member, mailing-list entry, user.
+
+**Verified address**:
+A Contact whose address ownership was proven by following a link sent to that address. Capturing an address never verifies it; only confirmation does.
+_Avoid_: Confirmed contact, validated email, double opt-in flag.
+
+**Confirmation**:
+The act by which a Contact follows the subscription link and becomes a Subscriber with a Verified address; it is the moment the `subscription.confirmed` trigger event fires.
+_Avoid_: Opt-in, signup, soft opt-in.
+
 ## Backoffice users and authorization
 
 **Backoffice user**:
