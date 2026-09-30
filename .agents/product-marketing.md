@@ -144,6 +144,7 @@
 - v4 (2026-09-22) — Fase cro completata (deliverable in `.agents/cro.md`).
 - v5 (2026-09-23) — Piano di lancio "Laboratorio 1:1 — soggetto di lungometraggio" (deliverable in `.agents/launch-individuale.md`).
 - v6 (2026-09-23) — Fase schema completata (deliverable in `.agents/schema.md`).
+- v7 (2026-09-23) — Fase emails completata (deliverable in `.agents/emails.md`).
 
 ## SEO Marketing Skills Workflow
 
@@ -154,7 +155,7 @@
 4. copywriting ✅ (copy deck in `.agents/copywriting.md`, in corso di applicazione in CMS)
 5. cro ✅ (deliverable in `.agents/cro.md`)
 6. schema ✅ (deliverable in `.agents/schema.md`)
-7. emails 🔲
+7. emails ✅ (deliverable in `.agents/emails.md`)
 8. ai-seo 🔲
 9. marketing-plan 🔲
 
@@ -221,9 +222,8 @@ Fix critico: le date lezione in DB sono timestamp ISO completi (mezzanotte local
 
 Verificato: `npx tsc --noEmit` pulito, `eslint` senza errori nuovi, `npm run build` completato (incluse le pagine shop).
 
-### Prossimi passi (fasi 7-9)
-La prossima sessione deve iniziare dalla **emails** (fase 7 della roadmap). Per riprendere:
-1. Leggere `.agents/schema.md` (deliverable fase 6: schema markup implementato)
-2. Leggere `.agents/cro.md` (quick wins + test ideas da implementare in parallelo)
-3. Leggere `.agents/copywriting.md` (copy da applicare in CMS, checklist §9)
-4. Fase 7: emails → poi 8. ai-seo → 9. marketing-plan
+### Prossimi passi (fasi 8-9)
+La prossima sessione deve iniziare dalla **ai-seo** (fase 8 della roadmap). Per riprendere:
+1. Leggere `.agents/emails.md` (deliverable fase 7: program email, copy S1-S5, gap G1-G5 e piano Opzione A su `ScheduledAction`)
+2. Leggere `.agents/schema.md` (deliverable fase 6: schema markup, base per l'ottimizzazione AI-answer)
+3. Fase 8: ai-seo → poi 9. marketing-plan
