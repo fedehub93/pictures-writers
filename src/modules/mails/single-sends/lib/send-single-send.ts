@@ -1,7 +1,5 @@
 import "server-only";
 
-import Handlebars from "handlebars";
-
 import { db } from "@/shared/lib/db";
 import type { EmailProviderAdapter } from "@/modules/mails/lib/types";
 import { getProviderAdapter } from "@/modules/mails/lib/core";
@@ -70,10 +68,7 @@ export async function sendSingleSend({
   }
 
   if (!singleSend.subject || !singleSend.bodyHtml) {
-    throw new EmailSendError(
-      "Single send is missing subject or body",
-      false,
-    );
+    throw new EmailSendError("Single send is missing subject or body", false);
   }
 
   const audiences = singleSend.audiences;
@@ -106,17 +101,11 @@ export async function sendSingleSend({
     const settings = await db.emailSetting.findFirst();
 
     if (!settings || !settings.emailSender) {
-      throw new EmailSendError(
-        "Missing or incomplete email settings",
-        false,
-      );
+      throw new EmailSendError("Missing or incomplete email settings", false);
     }
 
     if (!settings.emailProvider) {
-      throw new EmailSendError(
-        "Email provider is not configured",
-        false,
-      );
+      throw new EmailSendError("Email provider is not configured", false);
     }
 
     effectiveFrom ??= settings.emailSenderName
@@ -128,8 +117,8 @@ export async function sendSingleSend({
     effectiveAdapter ??= getProviderAdapter(settings.emailProvider);
   }
 
-  const template = Handlebars.compile(singleSend.bodyHtml);
-  const html = template({});
+  // const template = Handlebars.compile(singleSend.bodyHtml);
+  // const html = template({});
 
   const providerIds: string[] = [];
 
@@ -137,7 +126,7 @@ export async function sendSingleSend({
     const result = await effectiveAdapter.sendBulk({
       segmentExternalId: audience.externalId!,
       subject: singleSend.subject,
-      html,
+      html: singleSend.bodyHtml,
       from: effectiveFrom,
       replyTo: effectiveReplyTo,
       idempotencyKey,

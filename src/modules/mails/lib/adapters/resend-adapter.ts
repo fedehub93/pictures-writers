@@ -512,7 +512,9 @@ export class ResendAdapter implements EmailProviderAdapter {
         await this.resendClient.contacts.segments.list({ email, limit: 100 });
 
       if (listError) {
-        errors.push(`Impossible to list contact segments: ${listError.message}`);
+        errors.push(
+          `Impossible to list contact segments: ${listError.message}`,
+        );
         return;
       }
 
