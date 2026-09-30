@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { AutomationRunStatus, AutomationStatus } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
@@ -28,6 +28,67 @@ const chainGraph = {
     { fromNodeId: "email", toNodeId: "end" },
   ],
 };
+
+describe("sequence consent policy in the composed runtime", () => {
+  beforeEach(async () => {
+    await cleanupAutomationTables();
+    await db.emailContact.deleteMany({});
+    await db.emailSendLog.deleteMany({});
+  });
+
+  afterEach(async () => {
+    await db.emailContact.deleteMany({});
+    await db.emailSendLog.deleteMany({});
+  });
+
+  it("completes the Step without sending or logging when consent is revoked", async () => {
+    await db.emailContact.create({
+      data: { email: "revoked@example.com", isSubscriber: false },
+    });
+    const automation = await db.automation.create({
+      data: {
+        name: "Revoked consent chain",
+        status: AutomationStatus.PUBLISHED,
+        publishedSnapshot: {
+          nodes: [
+            { id: "trigger", type: "MANUAL_TRIGGER", data: {} },
+            {
+              id: "email",
+              type: "SEND_EMAIL",
+              data: {
+                recipient: "revoked@example.com",
+                subject: "Welcome",
+                body: "<p>Welcome</p>",
+              },
+            },
+            { id: "end", type: "end", data: {} },
+          ],
+          connections: [
+            { fromNodeId: "trigger", toNodeId: "email" },
+            { fromNodeId: "email", toNodeId: "end" },
+          ],
+        },
+      },
+    });
+    const run = await enqueueRun({
+      automationId: automation.id,
+      triggerType: "manual",
+    });
+
+    await pumpDueAutomations();
+
+    const emailStep = await db.automationRunStep.findFirst({
+      where: { runId: run!.id, nodeId: "email" },
+    });
+    expect(emailStep?.status).toBe("COMPLETED");
+    expect(await db.emailSendLog.count()).toBe(0);
+
+    const completed = await db.automationRun.findUnique({
+      where: { id: run!.id },
+    });
+    expect(completed?.status).toBe(AutomationRunStatus.COMPLETED);
+  });
+});
 
 describe("pumpDueAutomations", () => {
   beforeEach(async () => {

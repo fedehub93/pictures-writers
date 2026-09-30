@@ -3,6 +3,7 @@ import "server-only";
 import { formSubmittedNodeRegistry } from "@/modules/forms/automations";
 import {
   createAutomationMailEffect,
+  createSequenceDeliveryPolicy,
   sendEmailNodeRegistry,
   subscriptionConfirmedNodeRegistry,
 } from "@/modules/mails/automations";
@@ -38,7 +39,7 @@ const moduleNodeRegistry: AutomationNodeRegistry = mergeNodeRegistries(
  */
 export function createAutomationRuntimeEffects(): AutomationEffects {
   return {
-    mail: createAutomationMailEffect(),
+    mail: createSequenceDeliveryPolicy(createAutomationMailEffect()),
     http: createAutomationHttpEffect(),
     webSearch: createAutomationWebSearchEffect(),
     llm: createAutomationLlmEffect(),

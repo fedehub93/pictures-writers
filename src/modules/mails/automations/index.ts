@@ -27,6 +27,7 @@ export {
   automationEmailIdempotencyKey,
 } from "./lib/mail-effect";
 export type { CreateAutomationMailEffectOptions } from "./lib/mail-effect";
+export { createSequenceDeliveryPolicy } from "./lib/sequence-delivery-policy";
 export {
   AutomationEmailError,
   sendAutomationEmail,
