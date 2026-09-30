@@ -4,6 +4,7 @@ import { formSubmittedNodeRegistry } from "@/modules/forms/automations";
 import {
   createAutomationMailEffect,
   sendEmailNodeRegistry,
+  subscriptionConfirmedNodeRegistry,
 } from "@/modules/mails/automations";
 
 import {
@@ -27,6 +28,7 @@ import {
 const moduleNodeRegistry: AutomationNodeRegistry = mergeNodeRegistries(
   sendEmailNodeRegistry,
   formSubmittedNodeRegistry,
+  subscriptionConfirmedNodeRegistry,
 );
 
 /**

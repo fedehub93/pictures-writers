@@ -1,6 +1,7 @@
 import { toJsonValue } from "@/modules/automations/lib/graph";
 import {
   AutomationNodeError,
+  passthroughHandler,
   type AutomationNodeHandler,
   type AutomationNodeRegistry,
 } from "@/modules/automations/lib/node-registry";
@@ -50,4 +51,15 @@ export const sendEmailHandler: AutomationNodeHandler = async (context) => {
 /// `SEND_EMAIL` node type.
 export const sendEmailNodeRegistry: AutomationNodeRegistry = {
   sendEmail: sendEmailHandler,
+};
+
+/**
+ * Handlers contributed by the mails module for the `subscription.confirmed`
+ * trigger. The trigger is a passthrough: the Run payload already is the token,
+ * so the trigger Step just forwards it to its successors. Registered here (not
+ * in the engine) so the engine core stays free of subscription semantics
+ * (ADR-0005).
+ */
+export const subscriptionConfirmedNodeRegistry: AutomationNodeRegistry = {
+  subscription_confirmed: passthroughHandler,
 };

@@ -10,6 +10,7 @@ export const nodeComponents = {
   CRON_TRIGGER: TriggerNode,
   WEBHOOK_TRIGGER: TriggerNode,
   FORM_SUBMITTED_TRIGGER: TriggerNode,
+  SUBSCRIPTION_CONFIRMED_TRIGGER: TriggerNode,
   WAIT: ActionNode,
   HTTP_REQUEST: ActionNode,
   WEB_SEARCH: ActionNode,

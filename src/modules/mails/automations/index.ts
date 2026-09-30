@@ -1,9 +1,20 @@
 export {
   AUTOMATION_EMAIL_LOG_TYPE,
   SEND_EMAIL_NODE_TYPE,
+  SUBSCRIPTION_CONFIRMED_NODE_TYPE,
+  SUBSCRIPTION_CONFIRMED_TRIGGER_TYPE,
 } from "./constants";
-export { sendEmailNodeCatalogEntry } from "./catalog";
-export { sendEmailHandler, sendEmailNodeRegistry } from "./node";
+export {
+  sendEmailNodeCatalogEntry,
+  subscriptionConfirmedTriggerCatalogEntry,
+  subscriptionConfirmedTriggerDefaultData,
+} from "./catalog";
+export {
+  sendEmailHandler,
+  sendEmailNodeRegistry,
+  subscriptionConfirmedNodeRegistry,
+} from "./node";
+export type { SubscriptionConfirmedPayload } from "./types";
 export {
   MissingSendEmailConfigError,
   resolveSendEmailConfig,

@@ -8,6 +8,7 @@ import {
   SearchIcon,
   SparklesIcon,
   TimerIcon,
+  UserCheckIcon,
   WebhookIcon,
   type LucideIcon,
 } from "lucide-react";
@@ -17,6 +18,7 @@ const nodeIcons: Record<string, LucideIcon> = {
   CRON_TRIGGER: ClockIcon,
   WEBHOOK_TRIGGER: WebhookIcon,
   FORM_SUBMITTED_TRIGGER: ClipboardListIcon,
+  SUBSCRIPTION_CONFIRMED_TRIGGER: UserCheckIcon,
   WAIT: TimerIcon,
   HTTP_REQUEST: GlobeIcon,
   WEB_SEARCH: SearchIcon,
