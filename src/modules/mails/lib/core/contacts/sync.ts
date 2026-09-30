@@ -121,7 +121,10 @@ export async function createContactOnProvider(
   return newExternalId;
 }
 
-export async function deleteContactOnProvider(id: string) {
+export async function deleteContactOnProvider(
+  id: string,
+  _adapter?: EmailProviderAdapter,
+) {
   // 1. Recupero Dati dal Database
   const contact = await db.emailContact.findUnique({
     where: { id },
@@ -140,7 +143,7 @@ export async function deleteContactOnProvider(id: string) {
   }
 
   // 2. Inizializzazione dinamica dell'Adapter (Factory)
-  const adapter = await resolveAdapter();
+  const adapter = _adapter ?? (await resolveAdapter());
 
   const { errors } = await adapter.deleteContact(contact.email);
 

@@ -29,6 +29,9 @@ export {
 // Contacts — non-blocking propagation after local mutations
 export { propagateContactCreate, propagateContactUpdate } from "./contacts/propagate";
 
+// Contacts — consent revocation (keeps the row, best-effort provider sync)
+export { unsubscribeContactById } from "./contacts/unsubscribe";
+
 // Audiences — blocking batch sync / delta import
 export {
   syncContactsWithProvider,
