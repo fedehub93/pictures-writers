@@ -4,20 +4,22 @@
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Nuova suite `src/modules/mails/automations/__tests__/subscription-confirmed-trigger.test.ts`:
-  - [ ] prima conferma → un Run con `triggerType === "subscription.confirmed"`, payload `{ email, contactId, confirmedAt }`, `idempotencyKey === contactId`;
-  - [ ] la stessa Automation con Send Email esegue end-to-end (due `runDueAutomations` → un `mailCall`);
-  - [ ] riconferma di un contatto già verificato → nessun nuovo Run;
-  - [ ] `subscription.confirmed` non attiva un'Automation con trigger `form.submitted`;
-  - [ ] un fallimento dell'emit non blocca la conferma (action ritorna `success`).
-- [ ] Aggiornamento `src/modules/forms/automations/__tests__/newsletter-emit.test.ts`: alla richiesta nessun `emailVerified`, nessuna interaction `user_subscribed`, nessuna notifica; restano l'emit `form.submitted`, il token e l'invio della mail di conferma.
-- [ ] `npx tsc --noEmit` pulito.
-- [ ] `npx vitest run` verde.
-- [ ] `npx eslint` pulito sui path toccati.
+- [x] Nuova suite `src/modules/mails/automations/__tests__/subscription-confirmed-trigger.test.ts`:
+  - [x] prima conferma → un Run con `triggerType === "subscription.confirmed"`, payload `{ email, contactId, confirmedAt }`, `idempotencyKey === contactId`;
+  - [x] la stessa Automation con Send Email esegue end-to-end (due `runDueAutomations` → un `mailCall`);
+  - [x] riconferma di un contatto già verificato → nessun nuovo Run;
+  - [x] `subscription.confirmed` non attiva un'Automation con trigger `form.submitted`;
+  - [x] un fallimento dell'emit non blocca la conferma (action ritorna `success`).
+- [x] Aggiornamento `src/modules/forms/automations/__tests__/newsletter-emit.test.ts`: alla richiesta nessun `emailVerified`, nessuna interaction `user_subscribed`, nessuna notifica; restano l'emit `form.submitted`, il token e l'invio della mail di conferma.
+- [x] `npx tsc --noEmit` pulito.
+- [x] `npx vitest run` verde.
+- [x] `npx eslint` pulito sui path toccati.
 
 ## Comments
+
+Delivered insieme al ticket 02 (la suite `subscription-confirmed-trigger.test.ts` del ticket 01 è stata estesa con il `describe("newSubscription confirmation semantics")`; `newsletter-emit.test.ts` aggiornato al nuovo significato della richiesta). Dettagli e comandi di verifica nei commenti del ticket 02.
 
 Note di contesto:
 

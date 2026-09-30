@@ -37,6 +37,7 @@ vi.mock("../emit", async (importOriginal) => {
 
 import { subscribe } from "@/actions/subscribe";
 import { handleUserSubscribed } from "@/lib/event-handler";
+import { sendSubscriptionEmail } from "@/modules/mails/lib/mail";
 
 function uniqueEmail(): string {
   return `newsletter-${randomUUID()}@example.com`;
@@ -136,7 +137,7 @@ describe("newsletter action emit", () => {
     expect(run.status).toBe(AutomationRunStatus.COMPLETED);
   });
 
-  it("keeps the user_subscribed interaction and notification", async () => {
+  it("does not verify the address or notify at request time", async () => {
     const email = uniqueEmail();
     await publishGraph(BUILT_IN_NEWSLETTER_FORM_ID);
 
@@ -145,11 +146,26 @@ describe("newsletter action emit", () => {
     const createdContact = await db.emailContact.findFirstOrThrow({
       where: { email },
     });
+    // Verification, the user_subscribed interaction and the admin notification
+    // all move to the confirmation action, not the request.
+    expect(createdContact.emailVerified).toBeNull();
     const interaction = await db.emailContactInteraction.findFirst({
       where: { contactId: createdContact.id, interactionType: "user_subscribed" },
     });
-    expect(interaction).not.toBeNull();
-    expect(handleUserSubscribed).toHaveBeenCalledTimes(1);
+    expect(interaction).toBeNull();
+    expect(handleUserSubscribed).not.toHaveBeenCalled();
+  });
+
+  it("still generates the token and sends the confirmation email", async () => {
+    const email = uniqueEmail();
+
+    await subscribe({ email }, "token");
+
+    const token = await db.emailSubscriptionToken.findFirst({
+      where: { email },
+    });
+    expect(token).not.toBeNull();
+    expect(sendSubscriptionEmail).toHaveBeenCalledWith(email, token?.token);
   });
 
   it("does not start a Run for an Automation scoped to a different form", async () => {

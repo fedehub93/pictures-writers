@@ -15,6 +15,8 @@ export {
   subscriptionConfirmedNodeRegistry,
 } from "./node";
 export type { SubscriptionConfirmedPayload } from "./types";
+export { emitSubscriptionConfirmed } from "./emit";
+export type { SubscriptionConfirmedEventInput } from "./emit";
 export {
   MissingSendEmailConfigError,
   resolveSendEmailConfig,

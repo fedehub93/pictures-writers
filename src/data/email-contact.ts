@@ -33,27 +33,24 @@ export const getContactById = async (id: string) => {
 
 export const createContactByEmail = async (
   email: string,
-  interactionType: string
+  interactionType?: string
 ) => {
-  const existingContact = await getContactByEmail(email);
+  let contact = await getContactByEmail(email);
 
-  if (!existingContact) {
-    const newContact = await db.emailContact.create({
+  if (!contact) {
+    contact = await db.emailContact.create({
       data: {
         email,
         isSubscriber: true,
-        emailVerified: new Date(),
       },
     });
-
-    await addContactInteraction(newContact.id, interactionType);
-
-    return newContact;
   }
 
-  await addContactInteraction(existingContact.id, interactionType);
+  if (interactionType) {
+    await addContactInteraction(contact.id, interactionType);
+  }
 
-  return existingContact;
+  return contact;
 };
 
 export const addContactInteraction = async (
