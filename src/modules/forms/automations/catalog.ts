@@ -7,13 +7,14 @@ import type { FormSubmittedPayload } from "./types";
  * Default `data` the editor seeds for a new `form.submitted` trigger.
  *
  * It mirrors the payload the runtime hands to the Run, so expression
- * assistance can point at `{{ payload.email }}` (and `{{ payload.data.* }}`)
- * out of the box; publishing needs no manual entry because the trigger takes
- * no required configuration.
+ * assistance can point at `{{ payload.email }}`, `{{ payload.contactId }}`
+ * (and `{{ payload.data.* }}`) out of the box; publishing needs no manual
+ * entry because the trigger takes no required configuration.
  */
 export const formSubmittedTriggerDefaultData: FormSubmittedPayload = {
   formId: "",
   email: "",
+  contactId: "",
   data: {},
   submittedAt: "",
 };

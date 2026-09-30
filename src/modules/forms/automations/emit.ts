@@ -45,6 +45,9 @@ export async function emitFormSubmitted(
   const payload: FormSubmittedPayload = {
     formId: input.formId,
     email: input.email,
+    // Surfaced only when known, so a contact-less emit leaves the key absent
+    // rather than shipping a null the Run payload would carry forever.
+    ...(input.contactId ? { contactId: input.contactId } : {}),
     data: input.data,
     submittedAt: submittedAt.toISOString(),
   };

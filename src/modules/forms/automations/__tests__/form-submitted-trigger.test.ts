@@ -69,6 +69,7 @@ describe("form.submitted trigger", () => {
     expect(formSubmittedTriggerCatalogEntry.defaultData).toMatchObject({
       formId: expect.anything(),
       email: expect.anything(),
+      contactId: expect.anything(),
       data: expect.anything(),
     });
   });
@@ -102,6 +103,42 @@ describe("form.submitted trigger", () => {
       data: { name: "Ada", tier: "pro" },
     });
     expect(run.idempotencyKey).toBe(contact.id);
+  });
+
+  it("carries the responder's contact id in the Run payload", async () => {
+    const contact = await db.emailContact.create({
+      data: { email: uniqueEmail() },
+    });
+    await publishGraph(formSubmittedGraph);
+
+    const { runIds } = await emitFormSubmitted({
+      formId: CONFIGURED_FORM_ID,
+      email: contact.email,
+      contactId: contact.id,
+      data: { name: "Ada" },
+    });
+
+    const run = await db.automationRun.findUniqueOrThrow({
+      where: { id: runIds[0] },
+    });
+    expect(run.payload).toMatchObject({ contactId: contact.id });
+  });
+
+  it("omits the contact id from the payload when the emitter has none", async () => {
+    const email = uniqueEmail();
+    await publishGraph(formSubmittedGraph);
+
+    const { runIds } = await emitFormSubmitted({
+      formId: CONFIGURED_FORM_ID,
+      email,
+      data: { name: "Ada" },
+    });
+
+    const run = await db.automationRun.findUniqueOrThrow({
+      where: { id: runIds[0] },
+    });
+    expect(run.payload).not.toHaveProperty("contactId");
+    expect(run.idempotencyKey).toBe(email);
   });
 
   it("does not start a Run for a form the trigger is not scoped to", async () => {
