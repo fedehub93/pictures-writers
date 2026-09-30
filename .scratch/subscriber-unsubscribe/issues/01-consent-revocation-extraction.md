@@ -4,11 +4,20 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Esiste una funzione server unica di revoca che imposta `isSubscriber = false` senza cancellare la riga Contact.
-- [ ] Gli errori di sincronizzazione col provider non sono propagati: la revoca riesce comunque.
-- [ ] Una seconda chiamata per lo stesso id è idempotente (nessun errore).
-- [ ] Id inesistente → ritorna `false`.
-- [ ] La pagina pubblica `/rimuovi-sottoscrizione` continua a comportarsi identicamente (il Contact resta, il consenso è revocato).
-- [ ] Test al seam della funzione (DB di test + adapter provider mockato): revoca, tolleranza agli errori del provider, idempotenza, id inesistente.
+- [x] Esiste una funzione server unica di revoca che imposta `isSubscriber = false` senza cancellare la riga Contact.
+- [x] Gli errori di sincronizzazione col provider non sono propagati: la revoca riesce comunque.
+- [x] Una seconda chiamata per lo stesso id è idempotente (nessun errore).
+- [x] Id inesistente → ritorna `false`.
+- [x] La pagina pubblica `/rimuovi-sottoscrizione` continua a comportarsi identicamente (il Contact resta, il consenso è revocato).
+- [x] Test al seam della funzione (DB di test + adapter provider mockato): revoca, tolleranza agli errori del provider, idempotenza, id inesistente.
+
+## Comments
+
+Delivered:
+
+- `src/modules/mails/lib/core/contacts/unsubscribe.ts` espone `unsubscribeContactById(id, adapter?)`: imposta `isSubscriber = false` senza cancellare la riga, tenta `deleteContactOnProvider` in best-effort (errori loggati con `console.error`, mai propagati), è idempotente e ritorna `false` per id inesistente. Riesportata da `src/modules/mails/lib/core/index.ts`.
+- `src/actions/remove-subscription.ts` è ora un thin wrapper che delega a `unsubscribeContactById`, mantenendo il contratto `{ error }` / `{ success }`.
+- Coverage: `src/modules/mails/lib/core/contacts/__tests__/unsubscribe.test.ts` (revoca mantenendo la riga, errori provider come lista e come throw, idempotenza, id inesistente → `false`).
+- Verified: suite completa verde, `npx tsc --noEmit` e eslint puliti.

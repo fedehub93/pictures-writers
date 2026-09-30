@@ -19,9 +19,9 @@ Vincolo di prodotto: l'applicativo è la **single-source-of-truth del consenso**
 Dare alle email di sequenza le stesse garanzie di disiscrizione dei broadcast, restando interamente interni all'app:
 
 - **Footer authored nei template**: il template Handlebars compone il link di disiscrizione con l'id del Contact (es. `.../rimuovi-sottoscrizione/?id={{payload.contactId}}`). Perché funzioni, il payload del trigger `form.submitted` espone l'id del Contact (come già fa `subscription.confirmed`).
-- **Tipo di email esplicito sul nodo**: il nodo Send Email dichiara un campo `purpose` (`marketing` | `transactional`, default `marketing`). È configurazione di dominio del modulo mails, non del motore (ADR-0005): il motore resta agnostico.
-- **Header di posta (solo `marketing`)** impostati dal modulo mail al momento dell'invio: `List-Unsubscribe` e `List-Unsubscribe-Post: List-Unsubscribe=One-Click`, puntati a un endpoint interno dell'app.
-- **Guardia di consenso (solo `marketing`)**: per le email `marketing`, il modulo mail risolve il Contact dal destinatario; se il Contact esiste e il consenso è revocato (`isSubscriber = false`), l'invio viene **saltato** (nessuna email, Step non in errore). Per le email `transactional` non c'è guardia: l'invio avviene sempre.
+- **Policy di consegna nel dominio contatti**: guardia di consenso e header di posta non entrano nel nodo Send Email né in `sendAutomationEmail`. Vivono in una policy che decora l'effetto `mail` nell'unico punto di composizione del runtime (ADR-0008). Nodo e primitivo di invio restano generici e ignari dei Contact.
+- **Guardia di consenso**: la policy risolve il Contact dal destinatario; se esiste e il consenso è revocato (`isSubscriber = false`), l'invio viene **saltato** (nessuna email, nessun log, Step non in errore). L'unica capacità generica aggiunta a `GenericEmail` è il passthrough di `headers` — concetto di trasporto, non di dominio.
+- **Header di posta**: la policy inietta `List-Unsubscribe` e `List-Unsubscribe-Post: List-Unsubscribe=One-Click`, puntati a un endpoint interno dell'app, quando il destinatario è un Contact e l'URL è configurata.
 - **Endpoint one-click interno**: una route pubblica che, sul `POST` generato dai client per il one-click, revoca il consenso con la stessa logica della pagina pubblica; un `GET` reindirizza alla pagina di conferma esistente.
 - **Una sola logica di revoca**: sia la server action pubblica esistente, sia la nuova route one-click, delegano a un'unica funzione server di revoca del consenso, che **mantiene il Contact** (il consenso si revoca, non si cancella — vedi glossario).
 
@@ -43,18 +43,18 @@ Dare alle email di sequenza le stesse garanzie di disiscrizione dei broadcast, r
 14. Come sviluppatore, voglio che il salto per consenso revocato non marchi lo Step come fallito, così la sequenza prosegue senza retry inutili.
 15. Come sviluppatore, voglio che gli header passino attraverso il tipo email e gli adapter del provider, così il canale transazionale supporta gli stessi header del canale broadcast.
 16. Come sviluppatore, voglio che il payload `form.submitted` porti `contactId` in modo opzionale, così i trigger che non hanno un Contact non si rompono.
-17. Come sviluppatore, voglio testare il comportamento al confine del modulo di invio (transport iniettabile) e al confine della revoca (DB di test + adapter mockato), così non testo dettagli implementativi.
-18. Come admin, voglio poter marcare un nodo Send Email come `transactional`, così le automazioni interne non applicano la guardia di consenso né l'header di disiscrizione.
-19. Come admin, voglio che un nuovo nodo Send Email sia `marketing` di default, così non dimentico la conformità nelle sequenze.
-20. Come admin, voglio vedere un selettore "Tipo di email" nel pannello del nodo, così scelgo consapevolmente tra marketing e transazionale.
-21. Come sviluppatore, voglio che il tipo di email sia configurazione del nodo (modulo mails) e non del motore, così il motore resta domain-agnostic (ADR-0005).
+17. Come sviluppatore, voglio testare il comportamento al confine della policy di consegna (effetto interno iniettabile) e al confine della revoca (DB di test + adapter mockato), così non testo dettagli implementativi.
+18. Come admin, voglio che la guardia di consenso e gli header siano applicati automaticamente a ogni invio di sequenza, così non devo configurarli nodo per nodo.
+19. Come admin, voglio che il nodo Send Email resti generico (nessun campo marketing/transazionale), così non introduco semantica dei Contact nei nodi riusabili.
+20. Come sviluppatore, voglio che consenso e header siano una policy di dominio contatti al confine dell'effetto mail, così nodo e primitivo di invio restano domain-agnostic (ADR-0005, ADR-0008).
 
 ## Implementation Decisions
 
 ### Moduli e interfacce modificati
 
-- **Modulo mails — nodo Send Email**: nuovo campo di configurazione `purpose` (`marketing` | `transactional`), default `marketing` (anche quando assente, così i nodi esistenti restano marketing). Il pannello di configurazione del nodo espone un selettore "Tipo di email". Il motore non conosce il campo: lo passa al modulo mail come semplice configurazione.
-- **Modulo mails — funzione di invio email di automazione** (`sendAutomationEmail`): comportamento in base a `purpose`. Se `marketing`: risolve il Contact dal destinatario; se il Contact esiste e il consenso è revocato, ritorna un esito di invio saltato (equivalente a `skipped`) senza contattare il provider e senza scrivere il log di invio; se il consenso è presente (o il destinatario non è un Contact), allega gli header `List-Unsubscribe` e `List-Unsubscribe-Post`. Se `transactional`: nessuna guardia e nessun header, invio semplice.
+- **Modulo mails — nodo Send Email**: **nessuna modifica**. Resta un'azione generica: niente `purpose`, niente selettore nel pannello. Deve continuare a non conoscere i Contact.
+- **Modulo mails — policy di consegna delle sequenze** (dominio contatti): decora l'effetto `mail` nel punto di composizione del runtime (`createAutomationRuntimeEffects`). Legge il destinatario dalla request dell'effetto; risolve l'`EmailContact` per email; se esiste e `isSubscriber = false` ritorna `{ sent: false, skipped: true }` senza chiamare l'effetto interno (nessuna email, nessun log); altrimenti inietta gli header `List-Unsubscribe`/`List-Unsubscribe-Post` (quando il Contact esiste e l'URL è configurata) e delega all'effetto interno. L'effetto interno è iniettabile per i test.
+- **Modulo mails — funzione di invio email di automazione** (`sendAutomationEmail`): **nessuna guardia di consenso e nessun lookup di Contact**. L'unica aggiunta è inoltrare `headers` al provider (capacità generica).
 - **Modulo mails — tipo email generico** (`GenericEmail`): nuovo campo opzionale `headers: Record<string, string>`.
 - **Modulo mails — adapter provider**: le funzioni di invio transazionale inoltrano `headers` al provider.
 - **Modulo mails — nuova funzione server `unsubscribeContactById(id)`**: revoca il consenso (`isSubscriber = false`), **mantiene la riga Contact**, e tenta la sincronizzazione col provider in modalità best-effort (errori loggati, mai propagati). Ritorna `false` se il Contact non esiste. Idempotente: una seconda chiamata non produce errori.
@@ -69,6 +69,7 @@ Dare alle email di sequenza le stesse garanzie di disiscrizione dei broadcast, r
 - **Token di disiscrizione**: è l'id del Contact (bearer), coerente con la pagina `/rimuovi-sottoscrizione` esistente. Un token casuale dedicato è una scelta più pulita ma è fuori scope.
 - **Semantica della revoca**: il consenso si revoca, non si cancella (glossario `Subscriber`/`Contact`). La revoca è una transizione di stato sul Contact; la cancellazione del contatto sul provider resta parte della sincronizzazione best-effort, com'è oggi.
 - **Allineamento ADR-0007**: la guardia usa il consenso (`isSubscriber`) come asse separato dalla verifica dell'indirizzo (`emailVerified`), come stabilito dall'ADR. L'incoerenza preesistente per cui `createContactByEmail` concede il consenso al capture resta invariata (vedi Out of Scope).
+- **Allineamento ADR-0008**: guardia di consenso e header sono una policy di dominio al confine dell'effetto mail; nodo Send Email, `sendAutomationEmail` e il motore restano domain-agnostic.
 - **Limite noto del motore**: il motore non ha una exit condition. Un Subscriber che revoca il consenso a metà sequenza viene saltato a ogni invio successivo (nessuna email), ma il Run non viene chiuso. Nessun invio indesiderato; la chiusura anticipata del Run è fuori scope.
 
 ### Flusso one-click
@@ -82,8 +83,8 @@ Dare alle email di sequenza le stesse garanzie di disiscrizione dei broadcast, r
 
 Cosa rende buon test qui: si verifica **comportamento esterno** ai confini dei moduli, con provider e transport iniettati/mockati; nessun test su dettagli implementativi interni. Convenzione repo: Vitest contro il database di test (`.env.test`).
 
-- **Seam 1 (primario) — `sendAutomationEmail`**, con `transport` iniettato (prior art: `send-automation-email.test.ts`). Verifica per `purpose = marketing`: il salto quando il consenso è revocato (nessuna chiamata al transport, nessun log); la presenza di `List-Unsubscribe` e `List-Unsubscribe-Post` quando esiste un Contact e l'URL è configurata; l'assenza degli header quando l'URL non è configurata. Verifica per `purpose = transactional`: l'invio avviene anche verso un Contact con consenso revocato e senza header. Verifica che `purpose` assente valga `marketing`.
-  - Il selettore "Tipo di email" nel pannello non ha test di componente (convenzione repo: niente component test); si verifica con lint/build e a mano.
+- **Seam 1 (primario) — policy di consegna**, con l'effetto interno iniettato (un recorder in-memory) + DB di test. Verifica: il salto quando il consenso è revocato (nessuna chiamata all'effetto interno, nessun log); l'invio quando il consenso è presente o il destinatario non è un Contact; la presenza di `List-Unsubscribe` e `List-Unsubscribe-Post` quando esiste un Contact e l'URL è configurata; l'assenza degli header quando l'URL non è configurata o il destinatario non è un Contact.
+  - Non ci sono test di componente né per il pannello del nodo (che non cambia) né per il selettore (che non esiste); si verifica con lint/build e a mano.
 - **Seam 2 — `emitFormSubmitted`**, contro il DB di test (prior art: `form-submitted-trigger.test.ts`, `ebook-emit.test.ts`). Verifica: il payload del Run contiene `contactId` quando fornito; non lo contiene quando assente.
 - **Seam 3 — `unsubscribeContactById`**, DB di test + adapter provider mockato (prior art: i test di propagate/sync dei contatti). Verifica: il consenso viene revocato senza cancellare il Contact; gli errori del provider non sono propagati; la seconda chiamata è idempotente; id inesistente → `false`.
 - **Seam 4 — route `POST /api/newsletter/unsubscribe`**: smoke (prior art: `scheduler/run/route.test.ts`). Verifica: `POST` senza id → 400; `POST` con id valido → 2xx e consenso revocato; `GET` → redirect alla pagina pubblica.
@@ -98,9 +99,10 @@ Cosa rende buon test qui: si verifica **comportamento esterno** ai confini dei m
 - Correzione della policy di consenso al capture (`createContactByEmail` imposta `isSubscriber = true`): incoerenza preesistente tracciata da ADR-0007.
 - UI/UX della pagina pubblica `/rimuovi-sottoscrizione`.
 - Header di disiscrizione per le email transazionali non di marketing (conferma iscrizione, ebook gratuito, acquisto webinar).
+- Campo `purpose` / distinzione marketing-transazionale sul nodo Send Email: non modellata. Un'eventuale eccezione transazionale dentro una sequenza è una futura decisione di policy, non una property del nodo.
 
 ## Further Notes
 
 - **Prerequisito operativo**: il motore gira in produzione solo se il cron esterno pompa `/api/automations/run/` (stessa env/header di `/api/scheduler/run/`: `SCHEDULED_PUBLICATION_SECRET` / `x-scheduled-publication-secret`). Questo spec non lo implementa, ma le sequenze non partono senza.
 - **Contratto per la fase email (S1/S2)**: i template useranno `{{payload.contactId}}` nel footer; il valore è l'id del Contact, che è anche l'`external_id` del contatto sul provider.
-- **Riferimenti**: `.scratch/automations/spec.md` (motore), `docs/adr/0005` (engine domain-agnostic), `docs/adr/0007` (consenso vs verifica), `CONTEXT.md` (glossario Contact/Subscriber/Confirmation).
+- **Riferimenti**: `.scratch/automations/spec.md` (motore), `docs/adr/0005` (engine domain-agnostic), `docs/adr/0007` (consenso vs verifica), `docs/adr/0008` (policy di consegna al confine dell'effetto mail), `CONTEXT.md` (glossario Contact/Subscriber/Confirmation).
