@@ -3,6 +3,8 @@ import { ProductAcquisitionMode } from "@/generated/prisma";
 
 import { db } from "@/lib/db";
 import { getPublishedProductByRootId } from "@/data/product";
+import { createContactByEmail } from "@/data/email-contact";
+import { emitFormSubmitted } from "@/modules/forms/automations/emit";
 
 export async function POST(
   req: Request,
@@ -62,6 +64,34 @@ export async function POST(
         data: body,
       },
     });
+
+    // Emission needs an email: the contact is its idempotency key source and
+    // the payload's responder. An address-less submission keeps the old
+    // behaviour (200 with the stored submission, no contact, no emit).
+    if (emailFromBody) {
+      const contact = await createContactByEmail(
+        emailFromBody,
+        "submit_product_form",
+      );
+
+      // Start any automation listening for this internal event. The forms
+      // module chooses the idempotency key (the contact id) so a repeated
+      // submission from the same contact cannot start a second nurture cycle
+      // (ADR-0005).
+      try {
+        await emitFormSubmitted({
+          formId: product.formId,
+          email: emailFromBody,
+          contactId: contact?.id ?? null,
+          data: body,
+        });
+      } catch (automationError) {
+        console.error(
+          "Error enqueuing form.submitted automation: ",
+          automationError,
+        );
+      }
+    }
 
     return NextResponse.json({
       submissionId: submission.id,

@@ -8,6 +8,8 @@ import { createContactByEmail } from "@/data/email-contact";
 import { handleEbookDownloaded } from "@/lib/event-handler";
 import { verifyRecaptcha } from "@/lib/recaptcha";
 import { createContactOnProvider } from "@/modules/mails/lib/core";
+import { BUILT_IN_EBOOK_FORM_ID } from "@/modules/forms/built-in-forms";
+import { emitFormSubmitted } from "@/modules/forms/automations/emit";
 
 export const subscribeFreeEbook = async (
   values: v.InferInput<typeof FreeEbookSchemaValibot>,
@@ -36,6 +38,23 @@ export const subscribeFreeEbook = async (
       email,
       "ebook_downloaded",
     );
+
+    // Start any automation listening for this internal event. The forms module
+    // chooses the idempotency key (the contact id) so a repeated download from
+    // the same contact cannot start a second nurture cycle (ADR-0005).
+    try {
+      await emitFormSubmitted({
+        formId: BUILT_IN_EBOOK_FORM_ID,
+        email,
+        contactId: existingContact.id,
+        data: { email, rootId: rootId!, format },
+      });
+    } catch (automationError) {
+      console.error(
+        "Error enqueuing form.submitted automation: ",
+        automationError,
+      );
+    }
 
     const isEmailSent = await sendFreeEbookEmail(email, rootId!, format);
     //  Send notification to admins

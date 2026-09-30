@@ -54,7 +54,8 @@ export function revalidateContent(
   switch (scope) {
     case "post":
       // Blog listing, pagination, categories, and tags
-      revalidatePath("/blog", "layout");
+      revalidatePath("/blog");
+      revalidatePath("/(home)/(routes)/blog/[slug]", "page");
       // Home page (LatestNews component reads from DB)
       revalidatePath("/");
       // Sitemap

@@ -8,20 +8,45 @@ import axios from "axios";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
-import { Settings } from "@/generated/prisma";
-
 import { Button } from "@/shared/ui/button";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/shared/ui/form";
 import { Input } from "@/shared/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/ui/select";
 import { useSettings } from "../../_components/providers/settings-provider";
 import { Separator } from "@/shared/ui/separator";
+
+/// A curated set of common IANA zones; add more as needed.
+const SITE_TIME_ZONES = [
+  "UTC",
+  "Europe/Rome",
+  "Europe/London",
+  "Europe/Paris",
+  "Europe/Madrid",
+  "Europe/Berlin",
+  "America/New_York",
+  "America/Chicago",
+  "America/Los_Angeles",
+  "America/Sao_Paulo",
+  "Asia/Dubai",
+  "Asia/Kolkata",
+  "Asia/Shanghai",
+  "Asia/Tokyo",
+  "Australia/Sydney",
+];
 
 const formSchema = z.object({
   siteName: z.string().min(1, {
@@ -35,6 +60,7 @@ const formSchema = z.object({
     .optional(),
   logoUrl: z.string().optional(),
   deployWebhookUrl: z.string().optional(),
+  timezone: z.string().optional(),
 });
 
 const MainSettingsPage = () => {
@@ -49,6 +75,7 @@ const MainSettingsPage = () => {
       siteUrl: settings?.siteUrl || "",
       logoUrl: settings?.logoUrl || "",
       deployWebhookUrl: settings?.deployWebhookUrl || "",
+      timezone: settings?.timezone || "Europe/Rome",
     },
   });
 
@@ -145,6 +172,38 @@ const MainSettingsPage = () => {
                     {...field}
                   />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="timezone"
+            render={({ field }) => (
+              <FormItem className="min-w-40 flex-auto">
+                <FormLabel>Time zone</FormLabel>
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={isLoading || isSubmitting}
+                >
+                  <FormControl>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="UTC" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {SITE_TIME_ZONES.map((zone) => (
+                      <SelectItem key={zone} value={zone}>
+                        {zone}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  Automations schedule in this time zone (cron triggers and Wait
+                  time-of-day).
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}

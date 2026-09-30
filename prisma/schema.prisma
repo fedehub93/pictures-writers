@@ -37,6 +37,10 @@ model Settings {
 
   logoUrl String?
 
+  /// IANA time zone the site schedules in (e.g. "Europe/Rome"). Applied to
+  /// cron triggers and to the Wait node's time-of-day anchoring.
+  timezone String? @default("Europe/Rome")
+
   /// [Scripts]
   scripts Json @default("null") @db.JsonB
 
@@ -179,10 +183,10 @@ model User {
 
   role UserRole @default(USER)
 
-  accountStatus  AccountStatus @default(ACTIVE)
-  roleId         String?
-  roleDefinition Role?         @relation(fields: [roleId], references: [id])
-  invitationsCreated Invitation[] @relation("InvitationCreator")
+  accountStatus      AccountStatus            @default(ACTIVE)
+  roleId             String?
+  roleDefinition     Role?                    @relation(fields: [roleId], references: [id])
+  invitationsCreated Invitation[]             @relation("InvitationCreator")
   activitiesAsActor  AdministrativeActivity[] @relation("ActivityActor")
 
   pages Page[]
@@ -224,18 +228,18 @@ enum InvitationStatus {
 }
 
 model Invitation {
-  id          String           @id @default(uuid())
-  email       String
-  tokenHash   String           @unique
-  expiresAt   DateTime
-  status      InvitationStatus @default(PENDING)
-  acceptedAt  DateTime?
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  id         String           @id @default(uuid())
+  email      String
+  tokenHash  String           @unique
+  expiresAt  DateTime
+  status     InvitationStatus @default(PENDING)
+  acceptedAt DateTime?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
 
-  role       Role   @relation(fields: [roleId], references: [id])
-  roleId     String
-  createdBy  User   @relation("InvitationCreator", fields: [createdById], references: [id])
+  role        Role   @relation(fields: [roleId], references: [id])
+  roleId      String
+  createdBy   User   @relation("InvitationCreator", fields: [createdById], references: [id])
   createdById String
 
   @@index([email, status])
@@ -678,6 +682,11 @@ model EmailSendLog {
 
   type String
 
+  /// Opaque key used to make a send idempotent (e.g. one automation Step).
+  /// Reusing the same key never sends twice; the unique constraint also guards
+  /// against concurrent retries.
+  idempotencyKey String? @unique
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -832,7 +841,7 @@ model Faq {
   product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String?
 
-  post   Post? @relation(fields: [postId], references: [id], onDelete: Cascade)
+  post   Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId String?
 
   createdAt DateTime @default(now())
@@ -1166,4 +1175,197 @@ model ScheduledAction {
   @@index([targetType, targetId, status])
   @@index([leaseExpiresAt, status])
   @@index([active])
+}
+
+enum AutomationStatus {
+  DRAFT
+  PUBLISHED
+}
+
+/// Authored, versioned workflow blueprint in the CMS (see CONTEXT.md "Automation engine").
+model Automation {
+  id   String @id @default(uuid())
+  name String
+
+  status AutomationStatus @default(DRAFT)
+
+  /// Frozen graph captured at publish time; Runs execute this, never the live draft (ADR-0004).
+  publishedSnapshot Json? @db.JsonB
+
+  /// Hash of the webhook trigger secret; the raw secret is never stored.
+  webhookSecretHash String?
+
+  nodes       Node[]
+  connections Connection[]
+  runs        AutomationRun[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Authored element of an Automation: a Trigger or an Action.
+model Node {
+  id   String  @id @default(uuid())
+  type String
+  name String?
+
+  /// Canvas position, e.g. { x, y }.
+  position Json @db.JsonB
+
+  /// Node configuration; may contain template expressions. Never holds secret material.
+  data Json @default("{}") @db.JsonB
+
+  credential   Credential? @relation(fields: [credentialId], references: [id], onDelete: SetNull)
+  credentialId String?
+
+  automation   Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  automationId String
+
+  fromConnections Connection[] @relation("ConnectionFromNode")
+  toConnections   Connection[] @relation("ConnectionToNode")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([automationId])
+  @@index([credentialId])
+}
+
+/// Directed link between two Nodes carrying the source output to the target input.
+model Connection {
+  id String @id @default(uuid())
+
+  /// Output port of the source Node: "main" by default; the Conditional node uses "true"/"false".
+  fromOutput String @default("main")
+
+  /// Input port of the target Node.
+  toInput String @default("main")
+
+  automation   Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  automationId String
+
+  fromNode   Node   @relation("ConnectionFromNode", fields: [fromNodeId], references: [id], onDelete: Cascade)
+  fromNodeId String
+
+  toNode   Node   @relation("ConnectionToNode", fields: [toNodeId], references: [id], onDelete: Cascade)
+  toNodeId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// A duplicate identical edge would double the token arrival (one Step per
+  /// arriving token), so identical fan-out edges are rejected at the DB.
+  @@unique([fromNodeId, toNodeId, fromOutput, toInput])
+  @@index([automationId])
+  @@index([toNodeId])
+}
+
+enum AutomationRunStatus {
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELED
+}
+
+/// A single execution of an Automation, created when its trigger fires.
+model AutomationRun {
+  id          String              @id @default(uuid())
+  triggerType String
+  status      AutomationRunStatus @default(RUNNING)
+
+  /// The published snapshot captured at trigger time, so later republishes
+  /// cannot mutate a live run (ADR-0004).
+  graph Json @db.JsonB
+
+  /// Trigger input snapshot (e.g. form payload). Absent for triggers with no input.
+  payload Json? @db.JsonB
+
+  /// Opaque dedup key chosen by the caller (ADR-0005); the engine never interprets it.
+  /// Dedup is engine-time: enqueueRun skips when a non-terminal Run with the same
+  /// (automationId, idempotencyKey) exists (spec.md). Null keys may repeat
+  /// (cron/manual triggers).
+  idempotencyKey String?
+
+  /// Human-readable failure reason for FAILED runs.
+  error String?
+
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+
+  automation   Automation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  automationId String
+
+  steps AutomationRunStep[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([automationId, idempotencyKey])
+  @@index([status, startedAt])
+}
+
+enum AutomationRunStepStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  SKIPPED
+}
+
+/// Run-time ledger of one Node execution inside a Run (see CONTEXT.md "Step").
+model AutomationRunStep {
+  id String @id @default(uuid())
+
+  /// Authored Node id this Step records. No FK on purpose: Runs execute a frozen
+  /// snapshot, so editing the draft must never block execution history.
+  nodeId String
+
+  /// Order of execution within the Run.
+  seq Int
+
+  /// Token received along a Connection (one Step per arriving token).
+  input  Json? @db.JsonB
+  output Json? @db.JsonB
+
+  status   AutomationRunStepStatus @default(PENDING)
+  attempts Int                     @default(0)
+
+  leaseId        String?
+  leaseExpiresAt DateTime?
+
+  /// When a waiting Step becomes due again; a Run "sleeps" as rows (ADR-0003).
+  resumeAt DateTime?
+
+  /// Human-readable failure reason from the last attempt.
+  error String?
+
+  startedAt DateTime?
+  endedAt   DateTime?
+
+  run   AutomationRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  runId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([runId, seq])
+  @@index([runId, nodeId])
+  @@index([status, resumeAt])
+  @@index([status, leaseExpiresAt, resumeAt])
+}
+
+/// Stored, encrypted secret that Nodes reference by id (see CONTEXT.md "Credential").
+model Credential {
+  id   String @id @default(uuid())
+  name String
+  type String
+
+  /// The secret encrypted at rest (AES, key from environment); plaintext never
+  /// leaves the encryption boundary and never lands in Node data or snapshots.
+  secretEncrypted String
+
+  nodes Node[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

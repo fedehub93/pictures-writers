@@ -6,8 +6,9 @@ import { SubscribeSchemaValibot } from "@/schemas";
 import { generateSubscriptionToken } from "@/lib/tokens";
 import { sendSubscriptionEmail } from "@/modules/mails/lib/mail";
 import { createContactByEmail } from "@/data/email-contact";
-import { handleUserSubscribed } from "@/lib/event-handler";
 import { verifyRecaptcha } from "@/lib/recaptcha";
+import { BUILT_IN_NEWSLETTER_FORM_ID } from "@/modules/forms/built-in-forms";
+import { emitFormSubmitted } from "@/modules/forms/automations/emit";
 
 export const subscribe = async (
   values: v.InferInput<typeof SubscribeSchemaValibot>,
@@ -32,13 +33,24 @@ export const subscribe = async (
     const validatedFields = v.parse(SubscribeSchemaValibot, values);
     const { email } = validatedFields;
 
-    const existingContact = await createContactByEmail(
-      email,
-      "user_subscribed"
-    );
+    const existingContact = await createContactByEmail(email);
 
-    //  Send notification to admins
-    await handleUserSubscribed();
+    // Start any automation listening for this internal event. The forms module
+    // chooses the idempotency key (the contact id) so a repeated subscription
+    // from the same contact cannot start a second nurture cycle (ADR-0005).
+    try {
+      await emitFormSubmitted({
+        formId: BUILT_IN_NEWSLETTER_FORM_ID,
+        email,
+        contactId: existingContact.id,
+        data: { email },
+      });
+    } catch (automationError) {
+      console.error(
+        "Error enqueuing form.submitted automation: ",
+        automationError,
+      );
+    }
 
     const subscriptionToken = await generateSubscriptionToken(email);
 

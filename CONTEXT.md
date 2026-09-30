@@ -50,6 +50,30 @@ _Avoid_: Tag-based invalidation when referring to the chosen approach.
 The coarse time-based `revalidate` value on public routes (24h) that self-heals content if an on-demand revalidation is missed. It is a safety net, not the source of freshness.
 _Avoid_: Cache TTL when referring to the strategy.
 
+## Forms
+
+**Form**:
+A reusable form definition stored in the CMS, whose fields and content drive the public submission UI and whose submissions are recorded per Form. A Form can be embedded in pages and products, and Automations can subscribe to its submissions.
+_Avoid_: Modulo, contact form when referring to the CMS entity.
+
+## Contacts and subscriptions
+
+**Contact**:
+An email address captured by any public entry point (contact form, newsletter, lead magnet, product form), with no implication about consent or ownership.
+_Avoid_: Lead, user, member when referring to the captured address.
+
+**Subscriber**:
+A Contact who consented to receive marketing email. Consent is revoked — not deleted — when they unsubscribe.
+_Avoid_: Member, mailing-list entry, user.
+
+**Verified address**:
+A Contact whose address ownership was proven by following a link sent to that address. Capturing an address never verifies it; only confirmation does.
+_Avoid_: Confirmed contact, validated email, double opt-in flag.
+
+**Confirmation**:
+The act by which a Contact follows the subscription link and becomes a Subscriber with a Verified address; it is the moment the `subscription.confirmed` trigger event fires.
+_Avoid_: Opt-in, signup, soft opt-in.
+
 ## Backoffice users and authorization
 
 **Backoffice user**:
@@ -97,3 +121,49 @@ _Avoid_: FAQ accordion when referring to the component.
 **FaqPageJsonLd**:
 The component that generates FAQPage JSON-LD structured data from a list of Faqs. Still parsed by AI answer engines and non-Google crawlers; Google no longer produces rich results from it (removed May 2026).
 _Avoid_: FAQ rich result when referring to the component.
+
+## Automation engine
+
+**Automation**:
+An authored, versioned workflow blueprint in the CMS: a set of Nodes joined by Connections, with the trigger that starts it. Built in the visual canvas editor and published as a snapshot.
+_Avoid_: Workflow when referring to the CMS entity (the naming kept from the earlier tutorial model), flow.
+
+**Node**:
+An authored element of an Automation; either a Trigger (manual, cron, webhook, internal event) or an Action (conditional, wait, send email, http, llm, web search). Configured via position and data; may reference a Credential.
+_Avoid_: Step when referring to the authored element.
+
+**Connection**:
+A directed link between two Nodes over which the source Node's output is delivered to the target Node's input. Multiple outgoing connections (fan-out) are allowed; cycles are rejected by the editor.
+_Avoid_: Edge, Link.
+
+**Trigger event**:
+A typed, internal event emitted by a CMS module (e.g. `form.submitted`) that an Automation can subscribe to start a Run. The in-process counterpart of the external webhook trigger.
+_Avoid_: Event hook, pub/sub event.
+
+**Run**:
+A single execution of an Automation, created when its trigger fires; owns a snapshot of the trigger payload and a ledger of Steps. There is no concept of a "paused execution": a waiting step is a Step with a resume time.
+_Avoid_: Execution (ambiguous with deployment/CI), session.
+
+**Step**:
+The run-time record of one Node execution inside a Run: input/output snapshots, status, attempt count, resume time, and error. Distinct from Node, which is author-time.
+_Avoid_: Task, Node when referring to a run-time record.
+
+**Published snapshot**:
+The frozen copy of an Automation's graph that Runs execute; captured at publish time so editing the draft never affects running or historical executions.
+_Avoid_: Version, revision.
+
+**Credential**:
+A stored, encrypted secret (API key, webhook secret) that Nodes reference by id. Secrets never live in Node configuration.
+_Avoid_: API key when referring to the stored record.
+
+**Idempotency key**:
+The opaque string a caller passes to the trigger ingestion (`enqueueRun`) so the engine silently skips a Run when another Run with the same Automation and key already exists. Callers choose the key; the engine never interprets it.
+_Avoid_: Dedup key, contact key.
+
+**Site time zone**:
+The single IANA time zone, configured once in site settings, in which scheduled features read wall-clock times — the Cron trigger's time of day and the Wait node's anchoring. Sites start in `Europe/Rome`; an unset or invalid value falls back to UTC.
+_Avoid_: User time zone, server time zone, per-node time zone.
+
+**Wait anchor**:
+The rule that turns the Wait node's delay plus a time of day into a resume moment: N calendar days after the current wall date, at that time in the Site time zone, rolled forward one day when the moment has already passed.
+_Avoid_: Absolute delay, countdown, offset.

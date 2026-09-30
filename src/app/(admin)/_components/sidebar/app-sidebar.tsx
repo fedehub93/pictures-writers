@@ -29,6 +29,7 @@ import {
   TagsIcon,
   UsersIcon,
   ShieldCheckIcon,
+  WorkflowIcon,
 } from "lucide-react";
 
 import {
@@ -193,6 +194,26 @@ const data: Record<string, NavObject[]> = {
           url: "/admin/submissions",
           Icon: InboxIcon,
           permission: "submissions.read",
+        },
+      ],
+    },
+    {
+      title: "Automations",
+      url: "#",
+      Icon: WorkflowIcon,
+      permission: "automations.read",
+      items: [
+        {
+          title: "All automations",
+          url: "/admin/automations/" as Route,
+          Icon: WorkflowIcon,
+          permission: "automations.read",
+        },
+        {
+          title: "Credentials",
+          url: "/admin/automations/credentials" as Route,
+          Icon: ShieldCheckIcon,
+          permission: "automations.read",
         },
       ],
     },
