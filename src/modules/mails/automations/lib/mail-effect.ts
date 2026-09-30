@@ -37,6 +37,15 @@ function readObject(source: JsonObject, key: string): JsonObject {
     : {};
 }
 
+/** Reads string-valued transport headers from the node config, if any. */
+function readHeaders(source: JsonObject): Record<string, string> | undefined {
+  const entries = Object.entries(readObject(source, "headers")).filter(
+    (entry): entry is [string, string] => typeof entry[1] === "string",
+  );
+
+  return entries.length > 0 ? Object.fromEntries(entries) : undefined;
+}
+
 /**
  * Resolves the message HTML: the inline `body` by default, or the referenced
  * `EmailTemplate`'s `bodyHtml` interpolated against the run context when an
@@ -127,6 +136,7 @@ export function createAutomationMailEffect(
         body,
         from: readString(config, "from"),
         replyTo: readString(config, "replyTo"),
+        headers: readHeaders(config),
         idempotencyKey:
           runId && stepId
             ? automationEmailIdempotencyKey(runId, stepId)

@@ -32,6 +32,8 @@ export interface SendAutomationEmailInput {
   /** Overrides the configured sender. Defaults to the mail settings sender. */
   from?: string;
   replyTo?: string;
+  /** Transport headers forwarded verbatim to the provider. */
+  headers?: Record<string, string>;
   /** When present, a repeated send with the same key is skipped. */
   idempotencyKey?: string;
   /**
@@ -193,6 +195,7 @@ export async function sendAutomationEmail(
     html: body,
     type: AUTOMATION_EMAIL_LOG_TYPE,
     replyTo,
+    headers: input.headers,
     idempotencyKey,
   };
 

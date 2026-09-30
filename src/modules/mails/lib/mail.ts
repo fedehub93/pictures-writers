@@ -42,6 +42,7 @@ export const sendSendgridEmail = async (
     replyTo,
     text: _text,
     html,
+    headers,
     idempotencyKey,
   }: GenericEmail,
   options: SendEmailOptions = {},
@@ -59,6 +60,7 @@ export const sendSendgridEmail = async (
     subject,
     html,
     replyTo,
+    headers,
   });
 
   if (options.log !== false) {
@@ -77,6 +79,7 @@ export const sendResendEmail = async (
     replyTo,
     text: _text,
     html,
+    headers,
     idempotencyKey,
   }: GenericEmail,
   options: SendEmailOptions = {},
@@ -96,6 +99,7 @@ export const sendResendEmail = async (
       subject,
       html,
       replyTo,
+      headers,
     },
     idempotencyKey ? { idempotencyKey } : undefined,
   );

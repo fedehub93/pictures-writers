@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import type { AutomationEffect } from "@/modules/automations/lib/effects";
-import type { JsonValue } from "@/modules/automations/lib/graph";
+import type { JsonObject, JsonValue } from "@/modules/automations/lib/graph";
 import { db } from "@/shared/lib/db";
 
 import { createSequenceDeliveryPolicy } from "../sequence-delivery-policy";
@@ -32,12 +32,26 @@ async function createContact(email: string, isSubscriber: boolean) {
   return db.emailContact.create({ data: { email, isSubscriber } });
 }
 
+function forwardedHeaders(call: JsonValue): JsonObject | undefined {
+  const record = call as JsonObject;
+  const config = record.config as JsonObject;
+  return config.headers as JsonObject | undefined;
+}
+
 describe("createSequenceDeliveryPolicy", () => {
+  const originalAppUrl = process.env.NEXT_PUBLIC_APP_URL;
+
   beforeEach(async () => {
+    delete process.env.NEXT_PUBLIC_APP_URL;
     await db.emailContact.deleteMany({});
   });
 
   afterEach(async () => {
+    if (originalAppUrl === undefined) {
+      delete process.env.NEXT_PUBLIC_APP_URL;
+    } else {
+      process.env.NEXT_PUBLIC_APP_URL = originalAppUrl;
+    }
     await db.emailContact.deleteMany({});
   });
 
@@ -88,5 +102,72 @@ describe("createSequenceDeliveryPolicy", () => {
     await policy(request);
 
     expect(calls[0]).toEqual(request);
+  });
+
+  it("injects the List-Unsubscribe headers for a contact when the app URL is configured", async () => {
+    process.env.NEXT_PUBLIC_APP_URL = "https://app.test";
+    const contact = await createContact("reader@example.com", true);
+    const { calls, inner } = recorder();
+    const policy = createSequenceDeliveryPolicy(inner);
+
+    await policy(request);
+
+    const url = `https://app.test/api/newsletter/unsubscribe/?id=${contact.id}`;
+    expect(forwardedHeaders(calls[0])).toEqual({
+      "List-Unsubscribe": `<${url}>`,
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    });
+  });
+
+  it("normalizes trailing slashes in the configured app URL", async () => {
+    process.env.NEXT_PUBLIC_APP_URL = "https://app.test///";
+    const contact = await createContact("reader@example.com", true);
+    const { calls, inner } = recorder();
+    const policy = createSequenceDeliveryPolicy(inner);
+
+    await policy(request);
+
+    expect(forwardedHeaders(calls[0])?.["List-Unsubscribe"]).toBe(
+      `<https://app.test/api/newsletter/unsubscribe/?id=${contact.id}>`,
+    );
+  });
+
+  it("omits the headers without error when the app URL is not configured", async () => {
+    await createContact("reader@example.com", true);
+    const { calls, inner } = recorder();
+    const policy = createSequenceDeliveryPolicy(inner);
+
+    await policy(request);
+
+    expect(calls).toHaveLength(1);
+    expect(forwardedHeaders(calls[0])).toBeUndefined();
+  });
+
+  it("omits the headers when the recipient is not a contact", async () => {
+    process.env.NEXT_PUBLIC_APP_URL = "https://app.test";
+    const { calls, inner } = recorder();
+    const policy = createSequenceDeliveryPolicy(inner);
+
+    await policy(request);
+
+    expect(calls).toHaveLength(1);
+    expect(forwardedHeaders(calls[0])).toBeUndefined();
+  });
+
+  it("keeps pre-existing config headers when injecting", async () => {
+    process.env.NEXT_PUBLIC_APP_URL = "https://app.test";
+    await createContact("reader@example.com", true);
+    const { calls, inner } = recorder();
+    const policy = createSequenceDeliveryPolicy(inner);
+
+    await policy({
+      ...request,
+      config: { ...request.config, headers: { "X-Existing": "kept" } },
+    });
+
+    expect(forwardedHeaders(calls[0])).toMatchObject({
+      "X-Existing": "kept",
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    });
   });
 });

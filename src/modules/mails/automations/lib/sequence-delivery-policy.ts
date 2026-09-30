@@ -17,6 +17,38 @@ function readString(source: JsonObject, key: string): string | undefined {
     : undefined;
 }
 
+const LIST_UNSUBSCRIBE_HEADER = "List-Unsubscribe";
+const LIST_UNSUBSCRIBE_POST_HEADER = "List-Unsubscribe-Post";
+const LIST_UNSUBSCRIBE_POST_VALUE = "List-Unsubscribe=One-Click";
+
+function normalizeAppUrl(value: string | undefined): string | undefined {
+  const normalized = value?.trim().replace(/\/+$/, "");
+  return normalized ? normalized : undefined;
+}
+
+/**
+ * Builds the RFC 8058 one-click unsubscribe headers pointing at this app's
+ * public endpoint (the app is the single source of truth for consent). Returns
+ * `undefined` when `NEXT_PUBLIC_APP_URL` is not configured, so the send still
+ * goes out and the template footer keeps working.
+ */
+function buildUnsubscribeHeaders(
+  contactId: string,
+): Record<string, string> | undefined {
+  const appUrl = normalizeAppUrl(process.env.NEXT_PUBLIC_APP_URL);
+
+  if (!appUrl) {
+    return undefined;
+  }
+
+  const url = `${appUrl}/api/newsletter/unsubscribe/?id=${contactId}`;
+
+  return {
+    [LIST_UNSUBSCRIBE_HEADER]: `<${url}>`,
+    [LIST_UNSUBSCRIBE_POST_HEADER]: LIST_UNSUBSCRIBE_POST_VALUE,
+  };
+}
+
 /**
  * Sequence delivery policy owned by the contacts domain.
  *
@@ -27,8 +59,9 @@ function readString(source: JsonObject, key: string): string | undefined {
  * `EmailContact`, and suppresses the send when consent was revoked
  * (`isSubscriber = false`): the inner effect is never called, so no email is
  * delivered and no `EmailSendLog` row is written, and the Step is not marked as
- * failed. In every other case the request is passed through to the inner
- * effect unchanged.
+ * failed. When the Contact exists and the app URL is configured, it forwards
+ * the request with the one-click unsubscribe headers merged into the config;
+ * otherwise the request is passed to the inner effect unchanged.
  */
 export function createSequenceDeliveryPolicy(
   inner: AutomationEffect,
@@ -38,17 +71,35 @@ export function createSequenceDeliveryPolicy(
     const config = asObject(record.config);
     const recipient = readString(config, "recipient");
 
-    if (recipient) {
-      const contact = await db.emailContact.findUnique({
-        where: { email: recipient },
-        select: { isSubscriber: true },
-      });
-
-      if (contact && !contact.isSubscriber) {
-        return { sent: false, skipped: true };
-      }
+    if (!recipient) {
+      return inner(request);
     }
 
-    return inner(request);
+    const contact = await db.emailContact.findUnique({
+      where: { email: recipient },
+      select: { id: true, isSubscriber: true },
+    });
+
+    if (!contact) {
+      return inner(request);
+    }
+
+    if (!contact.isSubscriber) {
+      return { sent: false, skipped: true };
+    }
+
+    const headers = buildUnsubscribeHeaders(contact.id);
+
+    if (!headers) {
+      return inner(request);
+    }
+
+    return inner({
+      ...record,
+      config: {
+        ...config,
+        headers: { ...asObject(config.headers), ...headers },
+      },
+    });
   };
 }

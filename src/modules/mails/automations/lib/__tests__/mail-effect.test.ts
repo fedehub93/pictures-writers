@@ -83,6 +83,24 @@ describe("createAutomationMailEffect", () => {
     });
   });
 
+  it("forwards configured transport headers to the message", async () => {
+    await seedSettings();
+    const { calls, transport } = recorder();
+    const effect = createAutomationMailEffect({ transport });
+
+    await effect({
+      ...request,
+      config: {
+        ...request.config,
+        headers: { "List-Unsubscribe": "<https://app.test/unsubscribe>" },
+      },
+    });
+
+    expect(calls[0]?.headers).toEqual({
+      "List-Unsubscribe": "<https://app.test/unsubscribe>",
+    });
+  });
+
   it("does not send twice for a retried Step", async () => {
     await seedSettings();
     const { calls, transport } = recorder();

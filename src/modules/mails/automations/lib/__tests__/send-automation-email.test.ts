@@ -74,6 +74,23 @@ describe("sendAutomationEmail", () => {
     });
   });
 
+  it("forwards transport headers to the pipeline", async () => {
+    await seedSettings();
+    const { calls, transport } = recorder();
+
+    await sendAutomationEmail({
+      to: "reader@example.com",
+      subject: "Welcome",
+      body: "<p>Welcome</p>",
+      headers: { "List-Unsubscribe": "<https://app.test/unsubscribe>" },
+      transport,
+    });
+
+    expect(calls[0]?.headers).toEqual({
+      "List-Unsubscribe": "<https://app.test/unsubscribe>",
+    });
+  });
+
   it("skips a repeated send with the same idempotency key", async () => {
     await seedSettings();
     const { calls, transport } = recorder();

@@ -8,6 +8,9 @@ export type GenericEmail = {
   replyTo?: string;
   text?: string;
   html?: string;
+  /// Extra transport headers forwarded verbatim to the provider. A transport
+  /// concern (e.g. `List-Unsubscribe`), not a domain one.
+  headers?: Record<string, string>;
   /// Opaque idempotency key persisted on the EmailSendLog row. Reusing the
   /// same key never sends twice.
   idempotencyKey?: string;
