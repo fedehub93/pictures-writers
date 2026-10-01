@@ -7,6 +7,8 @@ import type { JsonObject } from "@/modules/automations/lib/graph";
 export interface SendEmailConfig {
   recipient: string;
   subject: string;
+  /** Inbox preview summary injected as a hidden preheader. */
+  previewText?: string;
   /** Inline HTML body. Omitted when `emailTemplateId` supplies the body. */
   body?: string;
   /**
@@ -53,6 +55,7 @@ export function resolveSendEmailConfig(
 
   const recipient = asTrimmedString(interpolated.recipient);
   const subject = asTrimmedString(interpolated.subject);
+  const previewText = asTrimmedString(interpolated.previewText);
   const body = asTrimmedString(interpolated.body);
   const emailTemplateId = asTrimmedString(interpolated.emailTemplateId);
 
@@ -80,6 +83,7 @@ export function resolveSendEmailConfig(
   return {
     recipient,
     subject,
+    ...(previewText ? { previewText } : {}),
     ...(body ? { body } : {}),
     ...(emailTemplateId ? { emailTemplateId } : {}),
     ...(from ? { from } : {}),

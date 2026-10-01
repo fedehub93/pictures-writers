@@ -39,6 +39,8 @@ export function SendEmailConfigPanel({ data, onChange }: NodeConfigPanelProps) {
 
   const emailTemplateId = stringValue(data.emailTemplateId);
   const bodySource = emailTemplateId ? "template" : "custom";
+  const previewText = stringValue(data.previewText);
+  const previewTextLength = previewText.trim().length;
 
   const templateOptions = useMemo(
     () => templates?.map((template) => ({ label: template.name, value: template.id })) ?? [],
@@ -78,6 +80,25 @@ export function SendEmailConfigPanel({ data, onChange }: NodeConfigPanelProps) {
           onChange={(event) => onChange({ subject: event.target.value })}
           placeholder="Welcome, {{ payload.name }}"
         />
+      </Field>
+
+      <Field>
+        <FieldLabel htmlFor="send-email-preview-text">
+          Preview text (optional)
+        </FieldLabel>
+        <Input
+          id="send-email-preview-text"
+          value={previewText}
+          onChange={(event) => onChange({ previewText: event.target.value })}
+          placeholder="Unlock your onboarding"
+        />
+        <FieldDescription>
+          Shown after the subject in the inbox. {"{{ ... }}"} expressions are
+          resolved before sending.
+          {previewTextLength > 100
+            ? ` ${previewTextLength} characters — most inboxes show about 100.`
+            : ""}
+        </FieldDescription>
       </Field>
 
       <Field>

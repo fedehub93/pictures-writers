@@ -83,8 +83,8 @@ export const ProductReviews = ({
           <h2 className="text-4xl">Cosa dicono i nostri studenti</h2>
           {/* <div className="w-20 h-1 bg-primary mx-auto"></div> */}
           <p className="mt-1 max-w-sm mx-auto text-muted-foreground italic">
-            "La scrittura è un mestiere solitario, ma non devi impararlo da
-            solo."
+            &ldquo;La scrittura è un mestiere solitario, ma non devi impararlo da
+            solo.&rdquo;
           </p>
         </div>
 

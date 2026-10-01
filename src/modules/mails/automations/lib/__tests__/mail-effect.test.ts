@@ -83,6 +83,23 @@ describe("createAutomationMailEffect", () => {
     });
   });
 
+  it("injects the configured preview text as a hidden preheader", async () => {
+    await seedSettings();
+    const { calls, transport } = recorder();
+    const effect = createAutomationMailEffect({ transport });
+
+    await effect({
+      ...request,
+      config: {
+        ...request.config,
+        previewText: "Unlock your onboarding",
+      },
+    });
+
+    expect(calls[0]?.html).toContain("Unlock your onboarding");
+    expect(calls[0]?.html).toContain("display:none");
+  });
+
   it("forwards configured transport headers to the message", async () => {
     await seedSettings();
     const { calls, transport } = recorder();

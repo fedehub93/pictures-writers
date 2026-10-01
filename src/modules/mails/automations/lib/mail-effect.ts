@@ -10,6 +10,7 @@ import { AutomationNodeError } from "@/modules/automations/lib/node-registry";
 import { db } from "@/shared/lib/db";
 
 import type { GenericEmail } from "../../lib/types";
+import { applyPreheader } from "./preheader";
 import {
   AutomationEmailError,
   sendAutomationEmail,
@@ -129,11 +130,12 @@ export function createAutomationMailEffect(
 
     try {
       const body = await resolveEmailBody(config, interpolation);
+      const html = applyPreheader(body, readString(config, "previewText"));
 
       const result = await sendAutomationEmail({
         to: readString(config, "recipient") ?? "",
         subject: readString(config, "subject") ?? "",
-        body,
+        body: html,
         from: readString(config, "from"),
         replyTo: readString(config, "replyTo"),
         headers: readHeaders(config),

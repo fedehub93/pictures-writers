@@ -84,6 +84,12 @@ _Avoid_: Newsletter when referring to the CMS entity.
 The act of creating a new, independent Email template by copying an existing one's design. The copy carries over the content only — never the settings that link a template to a subscription flow — and is edited on its own from the moment it is created.
 _Avoid_: Clone, version when referring to this action.
 
+## Outgoing email
+
+**Preheader**:
+The short summary text an inbox shows alongside the subject line before the message is opened. It accompanies the subject on an outgoing email and is not part of an Email template's design.
+_Avoid_: Preview text when referring to the concept (that is the UI label), summary line.
+
 ## Backoffice users and authorization
 
 **Backoffice user**:

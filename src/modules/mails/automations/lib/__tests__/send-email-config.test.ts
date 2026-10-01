@@ -53,6 +53,34 @@ describe("resolveSendEmailConfig", () => {
     });
   });
 
+  it("interpolates the preview text", () => {
+    const config = resolveSendEmailConfig(
+      {
+        recipient: "reader@example.com",
+        subject: "Subject",
+        previewText: "Hi {{ payload.name }}",
+        body: "<p>Body</p>",
+      },
+      context,
+    );
+
+    expect(config.previewText).toBe("Hi Ada");
+  });
+
+  it("omits a blank preview text", () => {
+    const config = resolveSendEmailConfig(
+      {
+        recipient: "reader@example.com",
+        subject: "Subject",
+        previewText: "   ",
+        body: "<p>Body</p>",
+      },
+      context,
+    );
+
+    expect(config.previewText).toBeUndefined();
+  });
+
   it("leaves a whole-string expression as the typed value", () => {
     const config = resolveSendEmailConfig(
       {
