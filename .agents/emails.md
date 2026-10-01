@@ -15,10 +15,10 @@ Fonte del contesto: `.agents/product-marketing.md` (audience, obiezioni, proof p
 **Regole applicate (skill emails):**
 - Una email, un lavoro: un CTA primario per email
 - Valore prima della richiesta: i CTA commerciali arrivano dopo 2-3 email di valore
-- Rilevanza > volume: la lista è ~700 iscritti → sequence corte e segmentate, meglio di tante email deboli
+- Rilevanza > volume: la lista è ~800 iscritti → sequence corte e segmentate, meglio di tante email deboli
 - Ogni email muove il percorso: link utili che approfondiscono il funnel (blog → ebook → corso → editing)
 
-**Proof points utilizzabili (verificati, da product-marketing):** 700+ iscritti newsletter · 500+ download ebook gratuito · 7 recensioni media 5★ · metodo Double View (due consulenti che analizzano in modo indipendente) · consegna 7-10 giorni lavorativi · prezzo sotto la media del mercato (da €50 per un soggetto · laboratorio €200).
+**Proof points utilizzabili (verificati, da product-marketing):** 800+ iscritti newsletter · 500+ download ebook gratuito · 7 recensioni media 5★ · metodo Double View (due consulenti che analizzano in modo indipendente) · consegna 7-10 giorni lavorativi · prezzo sotto la media del mercato (da €50 per un soggetto · laboratorio €200).
 
 **Vincolo:** niente statistiche inventate; nessuna recensione/testimonianza non verifica esistente in piattaforma.
 
@@ -38,17 +38,18 @@ Mappato sul codice il 2026-09-23:
 | Scheduling (post + single send) | ✅ | `ScheduledAction` + `scheduler-runner` + handler `SEND_EMAIL` (`EMAIL_SINGLE_SEND`) |
 | Contatti + interazioni (segmentazione) | ✅ | `EmailContact`, `EmailContactInteraction` (unique per tipo per contatto) |
 | Sync provider | ✅ | ResendAdapter (`createContactOnProvider`, sync audience/contatti) |
-| **Sequence automatizzate multi-step** | ❌ | **Manca: nessun concetto di sequence/step per contatto** |
-| Cron server-side per runner scheduler | ⚠️ | Vedi §9 gap / piano implementazione |
+| **Sequence automatizzate multi-step** | ✅ | Motore **Automations** interno (`Automation` / `AutomationRun` / `AutomationRunStep`, canvas + trigger a evento, ADR-0004, `docs/automations.md`); **S1 pubblicata** su questo motore |
+| Trigger eventi interni (download ebook / conferma iscrizione) | ✅ | `emitFormSubmitted` (form built-in ebook) e `emitSubscriptionConfirmed` → `enqueueEventRuns` (`src/modules/*/automations/emit.ts`) |
+| Cron server-side (scheduler + automations pump) | ✅ | `/api/scheduler/run/` + `/api/automations/run/` via cron-job.org (`docs/automations.md`) |
 
 **Interazioni oggi tracciate** (chiavi di segmentazione disponibili):
-- `user_subscribed` — iscrizione newsletter (dal widget)
+- `user_subscribed` — iscrizione newsletter **confermata** (impostata alla conferma via email, non alla richiesta dal widget)
 - `ebook_downloaded` — download ebook gratuito (lead magnet)
 - `webinar_purchased` — acquisto webinar
 - `submit_product_form` — submission form corso/editing (senza dettaglio prodotto: gap)
 - `submit_form` / `contact_requested` — form generici / contatti
 
-**Nota doppio opt-in:** `subscribe.ts` crea il contatto con `emailVerified` già valorizzato e non esiste rotta che consumi il token: il "conferma sottoscrizione" è di fatto un soft opt-in (segnalazione di deliverability, non un gate). Da valutare se blindare prima di avviare le sequence (vedi §9).
+**Nota doppio opt-in:** ✅ è ora un **gate reale**. `createContactByEmail` non imposta più `emailVerified` alla creazione (per nessun flusso); `newSubscription` (`src/actions/new-subscription.ts`) consuma il token di conferma, imposta `emailVerified`, aggiunge l'interazione `user_subscribed`, notifica l'admin ed emette il trigger interno `subscription.confirmed` **solo alla prima conferma** del contatto. `subscribe.ts` invia la mail di conferma e mantiene l'emit `form.submitted` come segnale di *richiesta* (non di iscrizione confermata). Vedi ADR-0007.
 
 ---
 
@@ -58,15 +59,16 @@ Mappato sul codice il 2026-09-23:
 Blog / SERP (freddo)
   → widget newsletter ────────────────┐
   → lead magnet ebook (form 1 campo) ─┴─► S2: Welcome newsletter (4 email)
-                                       ou ► S1: Nurture post-ebook (6 email)  [high intent]
+                                       ou ► S1: Nurture post-ebook (7 email)  [high intent]
                                              │
-  Corso/Laboratorio (consideration) ◄───────┘ (CTA E5-E6)
-  Editing Double View (decision)     ◄────────
+  Feedback gratuito (micro-commitment) ◄─────┤ (E4 — attrezzo intermedio, costo 0)
+  Corso/Laboratorio (consideration)   ◄──────┤ (CTA E5-E7: laboratorio)
+  Editing Double View (decision)      ◄──────┘ (conversione secondaria)
      │ acquisto │ acquisto │ acquisto
      ▼          ▼          ▼
 S3a post-corso   S3b post-editing   S3c post-webinar   (orientamento → cross-sell → review)
 
-Ogni 2 settimane: S4: Newsletter (broadcast via single send)
+Ogni settimana (piena/leggera): S4: Newsletter (broadcast via single send)
 30-60 giorni inattivi: S5: Re-engagement
 ```
 
@@ -76,127 +78,222 @@ Ogni 2 settimane: S4: Newsletter (broadcast via single send)
 
 ## 4. S1 — Nurture post-ebook (sequence prioritaria 🔴)
 
-Entry point ad alto intent: il lead ha dato l'email per il lead magnet. È il flusso che deve portare a corso/editing secondo il funnel content-strategy. L'ebook viene consegnato già dall'email transazionale (`free_ebook_email`); la sequence inizia il giorno dopo.
+Entry point ad alto intent: il lead ha dato l'email per il lead magnet. È il flusso che deve portare alla conversione primaria — l'iscrizione al **laboratorio di scrittura di un soggetto** — con l'editing come conversione secondaria per chi ha già un testo. L'ebook viene consegnato già dall'email transazionale (`free_ebook_email`); la sequence inizia il giorno dopo.
 
 ```
 Sequence Name: Nurture post-download ebook
 Trigger: interazione `ebook_downloaded` (dopo l'email transazionale di consegna)
-Goal: primo acquisto — laboratorio (€200) o editing soggetto/copione (da €50)
-Length: 6 email
-Timing: Day 1 / 3 / 5 / 7 / 9 / 12
+Goal: iscrizione al laboratorio di scrittura di un soggetto (€200) — conversione primaria; editing come conversione secondaria per chi ha già un testo
+Attrezzo intermedio: feedback gratuito sulla prima pagina (asset già live, costo di implementazione 0) — micro-commitment tra la fase di valore (E1-E3) e l'ask commerciale (E5-E7)
+Length: 7 email
+Timing: Day 1 / 3 / 5 / 7 / 9 / 11 / 14
 Exit conditions: acquisto corso o editing (→ S3) · unsubscribe · hard bounce
 Segment iniziale: contatti con `ebook_downloaded` e nessun acquisto
+Nota: la richiesta di feedback (E4) NON è un'uscita — è una micro-conversione intermedia; il contatto resta in S1 e riceve l'ask sul laboratorio (E5-E7)
 ```
+
+**Stato:** ✅ implementata e pubblicata sul motore Automations interno (trigger evento sul form built-in ebook).
 
 ### Email 1 — Quick win ("il primo passo")
 **Send:** Day 1
 **Subject:** Il primo passo (piccolo) da fare oggi
 **Preview:** Leggi l'ebook, sì — ma prima c'è un gesto da 10 minuti che ti sblocca.
 **Body:**
-> Hai scaricato l'ebook "Introduzione alla sceneggiatura cinematografica": ottima decisione. Ora non farlo diventare un'altra risorsa da tenere nel cassetto.
+> Ciao,
+> hai scaricato l'ebook "Introduzione alla sceneggiatura cinematografica". Ottima decisione: ora non lasciarlo in un cassetto.
 >
-> Il primo passo non è "studiare tutto il manuale". È questo: **se il tuo soggetto fosse una sola frase, quale sarebbe?** Scrivila ora, da qualche parte. Non serve che sia perfetta: serve che esista.
+> Il primo passo non è studiare tutto il manuale.
+> È una riga sola, e bastano dieci minuti:
 >
-> Se ti blocchi perché "è troppo poco per essere una storia", è normale: tutte le storie partono da lì. Questo articolo ti accompagna passo per passo nel costruire quella frase in un percorso completo:
+> **Se il tuo soggetto fosse una frase, quale sarebbe?**
 >
-> [Leggi: la guida in 10 step →] `/come-scrivere-una-sceneggiatura/`
+> Scrivila adesso, dove capita.
+> Non deve essere perfetta. Deve esistere.
 >
-> Nei prossimi giorni ti mando uno strumento alla volta: niente spam, solo quello che serve per non restare bloccati a metà.
-**CTA:** Leggi la guida gratuita → `/come-scrivere-una-sceneggiatura/`
+> Se ti sembra "troppo poco per essere una storia", è normale: tutte le storie partono da lì.
+>
+> Nella guida completa vedi come quella frase diventa un percorso, passo per passo.
+>
+> **[Inizia dalla guida completa →]** `/come-scrivere-una-sceneggiatura/`
+>
+> Nei prossimi giorni ti mando uno strumento alla volta.
+> Niente spam: solo quello che serve per non bloccarti a metà.
+>
+> A presto,
+> Federico e il team di Pictures Writers
+**CTA:** Inizia dalla guida completa → `/come-scrivere-una-sceneggiatura/`
 **Segment/Conditions:** ebook scaricato, niente acquisto
 
-### Email 2 — Story / Why
+### Email 2 — Roadmap ("la mappa")
 **Send:** Day 3
-**Subject:** Perché abbiamo costruito Pictures Writers
-**Preview:** Due consulenti, un metodo: la storia della "Double View".
+**Subject:** La mappa che avremmo voluto avere
+**Preview:** Non è fortuna: è un percorso, con tappe precise. Ecco l'ordine giusto.
 **Body:**
-> Ti raccontiamo da dove veniamo, perché ti aiuta a capire se questo posto fa per te.
+> Diventare sceneggiatori non è questione di fortuna.
+> È un percorso, con tappe precise: cosa studiare, cosa scrivere, a quali concorsi partecipare, come farti leggere.
 >
-> Quando scriviamo, ci chiediamo continuamente: "ma sarà buono?" Senza qualcuno che sappia leggere davvero, la domanda resta senza risposta. Le scuole costano tanto e non sempre sono accessibili; i pareri dei conoscenti sono affettuosi ma inutili; su internet le informazioni sono frammentate.
+> Il problema più grande, per chi inizia, non è il talento.
+> Sono le informazioni frammentate.
 >
-> Da qui nasce Pictures Writers: una piattaforma dove **imparare a scrivere, farti leggere da professionisti e crescere** — tutto in italiano, tutto nello stesso posto.
+> Un tutorial qui. Un capitolo di manuale là. Il consiglio di un amico.
+> Mai il percorso completo, nell'ordine giusto.
 >
-> Sul metodo "Double View" ci spieghiamo prossimamente. Per ora sappi questo: dietro a ogni servizio c'è la convinzione che scrivere non debba essere un mestiere solitario.
+> Per questo abbiamo messo insieme la mappa che avremmo voluto avere quando abbiamo iniziato:
 >
-> [Leggi: come diventare sceneggiatore →] `/come-diventare-sceneggiatore-la-guida-definitiva/`
-**CTA:** La guida definitiva al mestiere → `/come-diventare-sceneggiatore-la-guida-definitiva/`
-**Segment/Conditions:** chi ha aperto la E1 (per chi non apre si continua comunque, il contenuto è brand-building)
+> - **8 tappe**, dalla formazione alla prima produzione
+> - Le **verità scomode** che gli altri non raccontano (quanto si guadagna davvero, come funzionano oggi agenzie e case di produzione)
+> - L'**ordine giusto** per non disperdere tempo ed energia
+>
+> È la stessa mappa che usiamo ogni giorno con la nostra community di 800+ sceneggiatori.
+>
+> **[Scopri le 8 tappe: come diventare sceneggiatore →]** `/come-diventare-sceneggiatore-la-guida-definitiva/`
+>
+> Nei prossimi giorni ti mostriamo uno strumento alla volta. Niente rumore: solo quello che serve a non disperderti.
+>
+> A presto,
+> Federico e il team di Pictures Writers
+**CTA:** Scopri le 8 tappe → `/come-diventare-sceneggiatore-la-guida-definitiva/`
+**Segment/Conditions:** tutti
 
 ### Email 3 — Social proof + expertise (Pagina Uno)
 **Send:** Day 5
-**Subject:** Cosa vedono due consulenti quando leggono un copione
+**Subject:** Come si smonta una sceneggiatura (e cosa impari)
 **Preview:** La nostra serie Pagina Uno: i film che conosci, analizzati riga per riga.
 **Body:**
-> Ogni settimana analizziamo una sceneggiatura famosa — struttura, personaggi, dialoghi — e spieghiamo perché funziona. Si chiama serie **Pagina Uno**, ed è l'esercizio che ci alleniamo a fare ogni giorno sui nostri stessi lavori.
+> Ogni settimana prendiamo una sceneggiatura famosa e la smontiamo: struttura, personaggi, dialoghi. Perché funziona, riga per riga.
 >
-> Saper leggere una sceneggiatura come un professionista è l'abilità che poi restituiamo a chi ci affida il proprio soggetto. Ecco come la racconta chi ci ha già provato: **7 recensioni, media 5 stelle**, 500+ ebook scaricati e una community di 700+ sceneggiatori.
+> Si chiama **Pagina Uno**, ed è l'esercizio che facciamo ogni giorno sui nostri stessi lavori.
 >
-> Guarda un'analisi per capire il livello:
+> E non lo diciamo solo noi:
 >
-> [Scopri le analisi Pagina Uno →] (link hub Pagina Uno `/pagina-uno/`, quando pubblicata)
+> - **7 recensioni**, media **5 stelle**
+> - **500+** ebook scaricati
+> - una community di **800+** sceneggiatori
 >
-> E se vuoi capire come è fatta la *tua* sceneggiatura da quegli stessi occhi, alla fine del percorso ti aspettiamo: il metodo Double View, due consulenti, un solo parere applicabile.
-**CTA:** Una pagina uno dei nostri film → `/pagina-uno/` (hub da creare; fallback: link a un post Pagina Uno esistente)
+> Guarda le analisi per capire il livello: film che conosci, letti con gli occhi di chi scrive.
+>
+> **[Scopri la serie Pagina Uno →]** `/blog/pagina-uno/`
+>
+> La prossima tappa arriva tra due giorni: come mettere il tuo lavoro — anche solo una pagina — sotto quegli stessi occhi.
+>
+> A presto,
+> Federico e il team di Pictures Writers
+**CTA:** Scopri la serie Pagina Uno → `/blog/pagina-uno/` (in futuro hub dedicato `/pagina-uno/`)
 **Segment/Conditions:** tutti
 
-### Email 4 — Problem deep-dive + obiezione
+### Email 4 — Attrezzo intermedio: il feedback gratuito (micro-commitment)
 **Send:** Day 7
-**Subject:** "Ho scritto tutto, ma non so se è buono"
-**Preview:** Il copione che aspetta nel cassetto, la paura di farlo leggere: parliamone.
+**Subject:** Il tuo lavoro sotto gli occhi di un consulente (gratis)
+**Preview:** Non serve un copione finito: solo la prima pagina. La leggiamo e ti diciamo cosa vediamo.
 **Body:**
-> È la frase che sentiamo più spesso. La storia ce l'hai: l'hai scritta, riscritta, cambiata di nuovo. E poi l'hai messa nel cassetto, perché "chissà se è davvero pronta".
+> Fin qui: la guida, la mappa, le analisi di Pagina Uno.
 >
-> Il problema non è la tua sceneggiatura. È che **senza un parere qualificato non saprai mai se è pronta** — e intanto il tempo passa, il concorso scade, l'occasione si allontana.
+> Ora il passo che cambia tutto: **scrivere qualcosa e farlo leggere a un professionista.**
 >
-> "Ma come faccio a fidarmi di uno sconosciuto che la legge?" Domanda giusta. Ecco perché il nostro servizio usa il metodo **Double View**: due consulenti la leggono separatamente, poi confrontano il loro lavoro e ti restituiscono un unico parere, con punti di forza e criticità concrete. Non è l'opinione di una persona: è il confronto di due sguardi.
+> So cosa stai pensando:
 >
-> Prezzo sotto la media del mercato — da **€50 per un soggetto** — e risposta in 7-10 giorni lavorativi.
+> - "non sono pronto"
+> - "non ho ancora una sceneggiatura"
 >
-> [Come funziona il servizio →] `/shop/servizi-di-editing/soggetto-di-lungometraggio/`
-**CTA:** Scopri come funziona → `/shop/servizi-di-editing/soggetto-di-lungometraggio/`
-**Segment/Conditions:** tutti
+> Non serve. Ti basta **la prima pagina**.
+>
+> La scena in cui il tuo protagonista entra nel mondo della storia.
+>
+> Mandacela.
+>
+> La leggiamo come leggiamo i copioni che arrivano in studio:
+>
+> - cosa funziona
+> - cosa frena
+> - da dove ripartire
+>
+> È lo stesso occhio della serie Pagina Uno, applicato al tuo testo. **Gratis.**
+>
+> **[Richiedi il feedback gratuito →]** `/feedback-gratuito-sceneggiatura/`
+>
+> La prossima tappa arriva tra due giorni: perché l'idea, da sola, non basta.
+>
+> A presto,
+> Federico e il team di Pictures Writers
+**CTA:** Richiedi il feedback gratuito → `/feedback-gratuito-sceneggiatura/`
+**Segment/Conditions:** tutti · se richiede il feedback → tag `first_feedback_request` (resta in S1, non esce)
 
-### Email 5 — Solution framework / differenziazione (doppia via)
+### Email 5 — L'idea senza metodo → il laboratorio
 **Send:** Day 9
-**Subject:** Due strade, a seconda di dove sei
-**Preview:** Hai un'idea da sviluppare? Un copione da limare? Scegli la tua.
+**Subject:** "Ho l'idea, ma non so da dove cominciare"
+**Preview:** L'idea giusta non basta: senza metodo resta un'idea. Ecco come diventa un soggetto.
 **Body:**
-> A questo punto del percorso, ci sono due modi in cui ti puoi trovare:
+> C'è una frase che sentiamo spesso:
+> "Ho un'idea, prima o poi la scrivo."
 >
-> **1. Hai un'idea, ma non sai come portarla fino in fondo.**
-> Il laboratorio di scrittura del soggetto è il percorso giusto: gruppo ristretto, esercitazioni, revisioni e confronto. Si parte dal concept e si arriva alla prima stesura con qualcuno che ti segue. €200, con un percorso che altrimenti faresti da solo.
+> Poi passa il tempo. E l'idea resta lì.
 >
-> **2. Il testo c'è già, ti manca chi lo sa leggere.**
-> Il servizio di editing con metodo Double View: due consulenti analizzano il tuo soggetto o la tua sceneggiatura e ti dicono esattamente dove la storia perde forza, e come aggiustarla.
+> Non è pigrizia, né mancanza di talento. È che tra l'idea e un soggetto scritto c'è un **metodo** — e nessuno te lo ha mai mostrato.
 >
-> Scegli la tua strada — per entrambe vale la scelta che abbiamo fatto dal primo giorno: prezzi sotto la media del mercato, niente sorprese.
+> Il **laboratorio di scrittura di un soggetto** è quel metodo, applicato passo per passo:
 >
-> [✍️ Scopri il laboratorio →] `/shop/corsi-di-sceneggiatura/laboratorio-di-scrittura-di-un-soggetto/`
-> [👁 Fai analizzare il tuo testo →] `/shop/servizi-di-editing/sceneggiatura-di-lungometraggio/`
-**CTA:** doppia (laboratorio / editing) — unica eccezione, scelta consapevole: il lead è a un bivio e la *sua* risposta vale più di una CTA forzata
+> - **Gruppo ristretto:** il tuo lavoro viene guardato davvero.
+> - **Dal concept alla storia:** protagonista, conflitto, finale.
+> - **Esercitazioni e revisioni:** scrivi tra le sessioni, ricevi riscontri, correggi.
+> - **Fino alla prima stesura:** con una struttura che regge, non appunti sparsi.
+>
+> Da soli è il modo più sicuro per non arrivare mai alla parola "fine". Con qualcuno che ti segue e un gruppo con cui confrontarti, cambia tutto.
+>
+> **€200**, sotto la media del mercato.
+>
+> **[Scopri il laboratorio →]** `/shop/corsi-di-sceneggiatura/laboratorio-di-scrittura-di-un-soggetto/`
+>
+> Nella prossima email: lo dicono loro, meglio di noi.
+>
+> A presto,
+> Federico e il team di Pictures Writers
+**CTA:** Scopri il laboratorio → `/shop/corsi-di-sceneggiatura/laboratorio-di-scrittura-di-un-soggetto/`
 **Segment/Conditions:** tutti
 
-### Email 6 — Conversion
-**Send:** Day 12
-**Subject:** Il prossimo passo è tuo
-**Preview:** In tre righe: cosa abbiamo visto finora, e il modo più semplice per iniziare.
+### Email 6 — Recensioni (social proof)
+**Send:** Day 11
+**Subject:** Lo dicono meglio di noi
+**Preview:** Due voci da chi ha finito il laboratorio: cosa cambia, cosa ottieni.
 **Body:**
-> Ti raccontiamo in breve dove siamo arrivati.
+> Il modo migliore per capire se il laboratorio fa per te? Sentirlo raccontare da chi l'ha già fatto.
 >
-> Hai scaricato l'ebook, hai gli strumenti per non fermarti a metà, conosci il metodo Double View e sai quanto costa il confronto di due consulenti.
+> *"Federico e Lorenzo sono due professionisti generosi e disponibili. Mi hanno guidato passo passo nella creazione di un soggetto cinematografico. Sono stati un ottimo duo per ragionare ad alta voce sulla storia e darle struttura prima di darle forma scritta."* **[…]**
 >
-> Il prossimo passo non è "decidere se sei pronto". È scegliere la porta per cui passare:
+> *"Il corso di scrittura di soggetti mi ha fatto notevolmente migliorare nella redazione di documenti di analisi e sintesi in pochissimo tempo. Inoltre mi ha posto in condizione di partecipare fin da subito al Premio Solinas."*
 >
-> ▶ Se la tua storia è un'idea che aspetta di diventare soggetto → **[Scopri il laboratorio](/shop/corsi-di-sceneggiatura/laboratorio-di-scrittura-di-un-soggetto/)**
+> Media: **5 stelle** su 7 recensioni.
 >
-> ▶ Se il testo c'è già e vuoi sapere se è pronto → **[Richiedi la tua analisi](/shop/servizi-di-editing/sceneggiatura-di-lungometraggio/)**
+> **[Leggi le recensioni →]** `/#testimonianze`
 >
-> Finora devi aver notato una cosa: qui non dobbiamo convincerti di niente. Ti mettiamo davanti la strada, e quando vuoi la camminiamo insieme. Media 5 stelle su 7 recensioni, tempi garantiti, prezzo sotto la media del mercato: se qualcosa non tornasse dopo la consegna, il supporto ti accompagna ad applicare il parere.
+> La prossima email è l'ultima: il passo da fare.
 >
-> Ci leggiamo presto.
+> A presto,
+> Federico e il team di Pictures Writers
+**CTA:** Leggi le recensioni → `/#testimonianze`
+**Segment/Conditions:** tutti
+
+### Email 7 — Conversione
+**Send:** Day 14
+**Subject:** Il momento giusto per iniziare è adesso
+**Preview:** L'idea aspetta da mesi. C'è un modo per non farla aspettare ancora.
+**Body:**
+> La tua idea aspetta da mesi.
+> Un soggetto finito ha una data.
+>
+> Il **laboratorio di scrittura di un soggetto** è il percorso dal concept alla prima stesura: gruppo ristretto, esercitazioni, revisioni.
+>
+> Il prossimo passo non è "decidere se sei pronto". È **iniziare**.
+>
+> **[Iscriviti al laboratorio →]** `/shop/corsi-di-sceneggiatura/laboratorio-di-scrittura-di-un-soggetto/`
+>
+> Prezzo sotto la media del mercato. Media 5 stelle su 7 recensioni. Il metodo Double View — due consulenti — al servizio di ogni testo.
+>
+> Hai già una sceneggiatura pronta e cerchi solo un parere? Per te c'è il [servizio di editing](/shop/servizi-di-editing/sceneggiatura-di-lungometraggio/).
+>
+> Ci vediamo in laboratorio.
 >
 > — Federico e il team di Pictures Writers
-**CTA:** doppia (laboratorio / editing) — stessa logica della E5; se entrambe falliscono, esce dalla sequence automaticamente
+**CTA:** Iscriviti al laboratorio (primaria, singola) → `/shop/corsi-di-sceneggiatura/laboratorio-di-scrittura-di-un-soggetto/` · editing: una riga secondaria solo per chi ha già un testo
 **Segment/Conditions:** tutti
 
 ---
@@ -230,8 +327,8 @@ Exit conditions: scarica ebook → merge in S1 (reset alle E1) · unsubscribe ·
 >
 > Per iniziare bene, parti dalla guida che usiamo con tutti quelli che ci chiedono "da dove comincio":
 >
-> [Leggi: come scrivere una sceneggiatura →] `/come-scrivere-una-sceneggiatura/`
-**CTA:** La guida gratuita in 10 step → `/come-scrivere-una-sceneggiatura/`
+> [Leggi: come scrivere una sceneggiatura (guida completa) →] `/come-scrivere-una-sceneggiatura/`
+**CTA:** La guida completa gratuita → `/come-scrivere-una-sceneggiatura/`
 
 ### Email 2 — Primo strumento
 **Send:** Day 2
@@ -337,7 +434,7 @@ Goal: valore continuo + opportunità micro-conversione (corsi/editing/concorsi)
 Exit: unsubscribe · bounce
 ```
 
-**Nota sulla cadenza (decisione da prendere in CMS):** il copy del widget newsletter applicato in CRO (§8.2 copywriting) promette "**ogni settimana**". Con una lista di ~700 e ritmo di produzione realistico, **settimanale è insostenibile**, e una promessa disattesa corrode la fiducia. Consiglio: **bi-settimanale** e allineare il copy del widget da "ogni settimana" a "ogni due settimane" (modifica testo in `newsletter.tsx` / admin). In alternativa, se si mantiene settimanale, serve un'email "leggera" (1 link) alternata all'email "piena".
+**Nota sulla cadenza (decisa):** il copy del widget newsletter e l'hub `come-scrivere-una-sceneggiatura` promettono "**ogni settimana**". Decisione: **settimanale confermata**, resa sostenibile col **formato alternato piena/leggera** (una email "piena" ogni due invii, una "leggera" con 1 solo link nell'altra). Nessuna modifica di copy necessaria su widget o hub. Vedi §7 per i tipi alternati.
 
 **Formula template (email piena):**
 1. **Pillola di tecnica** (1 concetto + 1 esempio) → link hub/pillola
@@ -381,13 +478,15 @@ La fase 7 è un deliverable di design; le righe sotto preparano l'implementazion
 ### Gap tecnici rilevati
 | # | Gap | Dettaglio | Dove |
 |---|-----|-----------|------|
-| G1 | **Nessun motore sequence** | Nessun modello `EmailSequence` / `EmailSequenceStep` / `EmailSequenceRun`. Il runner scheduler (`SCHEDULER_TARGET_TYPES`) copre POST e SINGLE_SEND ma non l'invio singolo a un contatto con template + relativo step | `scheduler/*`, `prisma/schema.prisma` |
+| G1 | ✅ **Chiuso — motore sequence** | Costruito il motore **Automations** interno (`Automation` / `AutomationRun` / `AutomationRunStep`, canvas + trigger a evento, ADR-0004, `docs/automations.md`). La **S1** è pubblicata su questo motore; non serve più il worker "sequence" immaginato dalle opzioni A/B | `src/modules/automations/*`, `prisma/schema.prisma` |
 | G2 | **Interazioni incomplete** | `submit_product_form` senza tipo prodotto; mancano `course_purchased`, `editing_purchased`, `first_feedback_request` | `submit-product-form.ts`, `mail.ts`, checkout Stripe handler |
 | G3 | **Hook post-acquisto** | Solo il webinar ha email di conferma; acquisti corso/editing non emettono email né interazione | stripe webhook / checkout success |
-| G4 | **Token di conferma non consumato** | Soft opt-in: valutare gate doppio opt-in prima di S1/S2 (decisione business: conversioni vs deliverability) | `subscribe.ts`, eventuale rotta `/api/newsletter/confirm` |
+| G4 | ✅ **Chiuso — doppio opt-in come gate** | `createContactByEmail` non imposta più `emailVerified`; `newSubscription` consuma il token, imposta `emailVerified`, sposta `user_subscribed`/notifica alla conferma ed emette `subscription.confirmed` (solo prima conferma, idempotenza per `contactId`). Trigger separato da `form.submitted`. Vedi ADR-0007 | `src/actions/new-subscription.ts`, `src/data/email-contact.ts` |
 | G5 | **Variabili template** | I template usano Handlebars; le sequence avranno bisogno di variabili aggiuntive (`firstName`, `urlSpecifica`, `daysCount`) | `mail.ts` / nuovo `send-sequence-step.ts` |
 
 ### Opzioni di implementazione (MVP)
+
+> **Aggiornamento (2026-10-01):** la **S1 è stata implementata sul motore Automations interno** (canvas visuale + trigger a evento; nessun modello `EmailSequence` dedicato). Le opzioni A/B sotto restano come riferimento per S2-S5 o per evoluzioni future, ma non sono la strada seguita per S1.
 
 **Opzione A — Runner piggyback su `ScheduledAction` (consigliata, basso rischio):**
 1. Nuovo `ScheduledActionType.SEND_TEMPLATE_EMAIL` (o riuso `SEND_EMAIL` con `targetType` diverso es. `EMAIL_CONTACT`).
@@ -401,7 +500,8 @@ La fase 7 è un deliverable di design; le righe sotto preparano l'implementazion
 **Consiglio: Opzione A per le prime 2 sequence (S1, poi S2), Opzione B come follow-up se il team preferisce risorse esterne.**
 
 ### Checklist di configurazione admin (senza codice, subito)
-- [ ] Template `EmailTemplate` da creare nell'editor admin per ogni email S1 (6) e S2 (4) — copy e CTA sono su questo documento.
+- [x] Template `EmailTemplate` per ogni email **S1 (7)**: creati nell'editor admin.
+- [ ] Template `EmailTemplate` per ogni email **S2 (4)** — copy e CTA sono su questo documento.
 - [ ] S3: nel frattempo, conferma acquisti e promemoria via email manuali usando i template S3, finché G1-G3 non sono chiusi.
 - [ ] Audience/segmenti su Resend: `newsletter`, `ebook_lead`, `clienti` (per S4 di fondo).
 - [ ] `EmailSetting`: rivedere `maxEmailsPerDay` (rispetto al piano di invio: liste piccole, soglia prudente) e `emailSenderName`.
@@ -417,7 +517,8 @@ La fase 7 è un deliverable di design; le righe sotto preparano l'implementazion
 - Open rate: **target 25-40%** (benchmark skill 20-40%)
 - Click rate: **target 3-8%** (benchmark 2-5%, sequence nutrimento più alte)
 - Unsubscribe: **< 0.5%** per invio
-- Conversioni per sequence: **S1 → % che acquista corso o editing entro 30 giorni dalla E6**
+- Conversioni per sequence: **S1 → % che si iscrive al laboratorio entro 30 giorni dalla E7** (editing = conversione secondaria)
+- Micro-conversione intermedia: **% che richiede il feedback gratuito (E4)** e, tra questi, **% che poi acquista il laboratorio** (misura se l'attrezzo intermedio alza la conversione finale o la diluisce)
 
 ### Eventi GA4 da verificare/aggiungere per la catena
 `newsletter_signup`/`ebook_download` → `cta_click` (email link → destino prodotto/articolo) → `submit_product_form` → `purchase`. Le email vanno taggate con UTM: `utm_source=email&utm_medium=sequence&utm_campaign=S1-E5` (tutti i link dei template).
@@ -426,12 +527,14 @@ La fase 7 è un deliverable di design; le righe sotto preparano l'implementazion
 | Test | Oggetto | Metrica |
 |------|---------|---------|
 | T-E1 | Subject E1 S1: "Il primo passo (piccolo) da fare oggi" vs "10 minuti per sbloccare la tua storia" | Open rate |
-| T-E6 | CTA finale S1: doppia (laboratorio/editing) vs singola (editing) | CTR + conversioni |
+| T-INT | **Attrezzo intermedio in S1**: E4 feedback gratuito (esistente) vs E4 template/checklist soggetto (da costruire) | Click E4 + conversione al laboratorio |
+| T-E7 | CTA finale S1: doppia (laboratorio/editing) vs singola (laboratorio) | CTR + conversioni |
 | T-CAD | Cadenza newsletter: settimanale vs bi-settimanale (dopo allineamento copy widget) | Unsubscribe + retention apertura |
-| T-SUBJ | Pattern subject: "come fare" vs domanda ("Non sai se il tuo copione è pronto?") | Open rate E4 S1 |
+| T-SUBJ | Pattern subject: "come fare" vs domanda ("Non sai se il tuo copione è pronto?") | Open rate E5 S1 |
 
 ### KPI a 60 giorni (per dashboard)
 - Crescita iscritti newsletter mese su mese (fonte GSC pagine hub + CRO quick wins)
+- Richieste di feedback gratuito via S1-E4 (nuova micro-conversione da tracciare, richiede chiusura G2)
 - Tasso di conversione S1 → acquisto (prima baseline quando G2/G3 saranno chiusi)
 - Numero recensioni raccolte via S3b (obiettivo: >7 per consolidare il proof point)
 - Unsubscribe rate medio sotto soglia
@@ -440,3 +543,22 @@ La fase 7 è un deliverable di design; le righe sotto preparano l'implementazion
 
 ## Changelog
 - v1 (2026-09-23) — Programma email fase 7: S1 nurture post-ebook (6), S2 welcome newsletter (4), S3 post-acquisto (3 flussi), S4 newsletter cadence, S5 re-engagement. Copy completa, mappatura infrastruttura, gap (G1-G5) e piano implementazione MVP (Opzione A su `ScheduledAction`), test e metriche.
+- v2 (2026-09-30) — Allineamento all'hub aggiornato: l'articolo `/come-scrivere-una-sceneggiatura/` è ora "la guida completa" (SERP v2, vedi `.agents/serp-come-scrivere-una-sceneggiatura.md`), non più "10 step". Aggiornati i CTA di S1-E1 e S2-E1. L'hub ora promuove esso stesso la cadenza settimanale della newsletter e rimanda a ebook, laboratorio ed editing: rafforza il funnel. Nota: la cadenza settimanale è ora promessa in più punti (hub + widget) → la decisione di §7/§9 va riconfermata.
+- v3 (2026-10-01) — Allineamento al rientro dopo l'aggiornamento dei due hub pillar. Proof point community aggiornato a **800+** (canonico). **S1 ridisegnata**: E2 da brand story a "roadmap/mappa" (hub 1B `come-diventare-sceneggiatore`), E4 dal servizio a pagamento al **feedback gratuito sulla prima pagina** (`/feedback-gratuito-sceneggiatura/`). E3 punta a `/blog/pagina-uno/`. Cadenza **settimanale confermata** con formato alternato piena/leggera (nessuna modifica di copy).
+- v4 (2026-10-01) — **Conversione primaria di S1 fissata sul laboratorio di scrittura di un soggetto (€200)**; l'editing scende a conversione secondaria. Ricadute: E4 riscritta sul problema "l'idea c'è, manca il metodo" (niente più feedback gratuito, che resta un asset fuori S1); E5 diventa "come funziona il laboratorio" (CTA singola); E6 conversione a CTA singola sul laboratorio con l'editing citato in una riga. Aggiornati goal/mappa/metriche di §4/§3/§10.
+- v5 (2026-10-01) — **Attrezzo intermedio di S1 scelto: feedback gratuito sulla prima pagina** (asset già live, costo di implementazione 0), inserito come micro-conversione tra la fase di valore (E1-E3) e l'ask commerciale. S1 passa da 6 a 7 email: nuova E4 (feedback), vecchie E4-E6 → E5-E7, timing Day 1/3/5/7/9/11/14. La richiesta di feedback non è un'uscita (tag `first_feedback_request`, resta in S1). Aggiornati mappa §3, checklist §9, metriche e A/B §10 (nuovo test T-INT feedback vs template/checklist). Il **template/checklist soggetto** (content-strategy §5) resta da costruire per un futuro swap A/B: così si confrontano i dati dei due attrezzi.
+- v6 (2026-10-01) — **S1-E2 riscritta per scansionabilità** (era un unico blocco di testo): hook breve, problema-frammentazione isolato in righe brevi, le 8 tappe in bullet. CTA resa concreta (**"Scopri le 8 tappe"**, destinazione invariata hub 1B) e aggiunto **sign-off di chiusura** coerente con E1/E7 ("uno strumento alla volta / niente rumore"), che aggancia la E3.
+- v7 (2026-10-01) — **S1-E3 riscritta per scansionabilità** + **CTA riconsiderata**: da indice analisi a **guida step-by-step** `/come-analizzare-una-sceneggiatura/` ("Impara a leggere un copione come un professionista"), perché l'email promette una *capacità*, non una vetrina; la serie Pagina Uno resta la prova (proof point in bullet + esempio concreto `/scomporre-il-primo-atto-little-miss-sunshine/`) e l'indice `/blog/pagina-uno/` scende a link secondario. Il vecchio paragrafo finale (Double View) diventa sign-off che aggancia la E4.
+- v8 (2026-10-01) — **S1-E3 riportata a solo Pagina Uno.** La guida `/come-analizzare-una-sceneggiatura/` (didattica, molto più approfondita) e le scomposizioni Little Miss Sunshine escono dall'email: due registri diversi nello stesso invio ("mostrare" vs "insegnare") si annullavano. E3 resta l'email di *showcase/expertise*: proof point in bullet + CTA unica alla serie `/blog/pagina-uno/`. La guida resta disponibile per un touchpoint didattico dedicato (es. una newsletter "piena" della S4).
+- v9 (2026-10-01) — **S1-E4 riscritta per mobile:** paragrafi spezzati (nessun blocco oltre ~2 righe su smartphone, prima i tre paragrafi di apertura erano 5-6-6 righe), obiezioni e "cosa funziona/frena/ripartire" in bullet. CTA armonizzata e resa concreta: **"Richiedi il feedback gratuito"** (il bottone e il campo CTA non coincidevano più: *"Scopri come funziona"* vs *"Manda la tua prima pagina"*). Sign-off che aggancia la E5.
+- v10 (2026-10-01) — **S1-E6 alleggerita per mobile:** bullet accorciate (ogni voce ~1-2 righe, prima 3-4), intro ridotta a una riga, paragrafo finale spezzato in due. Aggiunto sign-off che aggancia la E7. *(Eseguita per errore: l'intento era la E5.)*
+- v11 (2026-10-01) — **S1-E5 riscritta per mobile** (l'email realmente richiesta): i tre paragrafi-muro (fino a 6 righe) spezzati in blocchi da 1-2 righe, il "metodo che manca" trasformato in bullet (organizzazione/structure/documenti/concept), paragrafo finale accorciato. CTA armonizzata sul testo del bottone (**"Scopri come funziona il laboratorio"**). Aggiunto sign-off.
+- v12 (2026-10-01) — **S1-E5: aggiunta chiusura dopo la CTA** (mancava una riga di raccordo prima della firma): "Nella prossima email ti raccontiamo come si lavora, passo per passo." → aggancia la E6.
+- v13 (2026-10-01) — **S1-E5: CTA accorciata** per farla stare su una riga in mobile: da "Scopri come funziona il laboratorio" a **"Scopri il laboratorio"**. Regola: tenere il testo del bottone ≲20-22 caratteri.
+- v14 (2026-10-01) — **S1-E6: hook di apertura.** L'incipit "Come funziona il laboratorio, in concreto" era un'etichetta e ripeteva il subject. Sostituito con un hook **self-contained** (ogni email si regge da sola: open rate <100%, lettori che entrano a metà sequence): "Trasformare un'idea in un soggetto scritto non è fortuna: è un metodo. Ecco come si applica, passo per passo."
+- v15 (2026-10-01) — **S1: un solo ask diretto (opzione 1) + E7 alleggerita.** E6 da "Iscriviti al laboratorio" a **"Scopri il laboratorio"** (soft: E6 fa *capire*, l'ask diretto resta solo in E7), coerentemente con il tema stato apertura/lista d'attesa. **E7 riscritta per mobile e resa self-contained:** via il recap "Hai l'idea / Hai capito / Hai visto" (rimando alle email precedenti) e il "Quello che ci siamo detti in questi giorni"; nuova apertura "La tua idea aspetta da mesi. Un soggetto finito ha una data.", blocchi corti, trust line compatta (prezzo/5 stelle/Double View) e editing come riga secondaria.
+- v16 (2026-10-01) — **S1 ristrutturata sulla prova sociale.** E5 e E6 erano in gran parte sovrapposte (entrambe spiegavano il laboratorio): **fuse nella nuova E5** "L'idea senza metodo → il laboratorio" (problema + metodo + prezzo, una sola lista di bullet, hook self-contained), e lo slot liberato è diventato la **nuova E6 Recensioni** (due testimonianze reali fornite dal cliente + CTA a `/#testimonianze`, la sezione "Cosa dicono i nostri studenti" della homepage; niente pagina recensioni dedicata). Sequenza sempre a **7 email**; finestra finale: problema/soluzione (E5) → prova sociale (E6) → conversione (E7). Recensioni riportate fedelmente (R1 con taglio segnalato da `[…]`).
+- v17 (2026-10-01) — **Audit oggetto/preview delle 7 email S1** rispetto ai body riscritti (v6-v16). Unico disallineamento: **E3**, il cui oggetto era rimasto sull'angolo Double View ("Cosa vedono due consulenti quando leggono un copione") mentre dopo v7/v8 il body è tornato a essere solo Pagina Uno (showcase/expertise). Nuovo oggetto: **"Come si smonta una sceneggiatura (e cosa impari)"** (evita di duplicare la preview che cita già "i film che conosci, analizzati riga per riga"); preview invariata. E1, E2, E4, E5, E6, E7 risultano coerenti. Resta aperta una nota minore su **E1**: la preview promette un "gesto da 10 minuti" non quantificato nel body.
+- v18 (2026-10-01) — **S1-E1: allineato il body alla preview.** Aggiunta la quantificazione nella riga del primo passo ("È una riga sola, e bastano dieci minuti:"), così la promessa dei "10 minuti" della preview (`emails.md:97`) trova riscontro nel corpo. Audit oggetto/preview S1 chiuso: nessun disallineamento residuo.
+- v19 (2026-10-01) — **S1 implementata e pubblicata.** La sequence post-ebook è costruita sul **motore Automations interno** (canvas + trigger evento, `Automation`/`AutomationRun`/`AutomationRunStep`, `docs/automations.md`), non sul worker immaginato in §9 opzioni A/B: **G1 chiuso**. Trigger via evento interno sul form built-in ebook (`emitFormSubmitted`); idempotenza per `contactId` (ADR-0005). Template delle 7 email creati nell'editor admin. Aggiornati: §2 (tabella infrastruttura), §4 (stato S1), §9 (G1 + nota sulle opzioni MVP, checklist). S2-S5 restano da implementare.
+- v20 (2026-10-01) — **Doppio opt-in chiuso (§2/G4).** Il token di conferma ora viene consumato: `createContactByEmail` non imposta più `emailVerified`; `newSubscription` imposta `emailVerified`, sposta `user_subscribed`/notifica alla conferma ed emette il nuovo trigger interno `subscription.confirmed` (solo prima conferma, idempotenza per `contactId`). `subscribe.ts` mantiene l'emit `form.submitted` come segnale di richiesta. Vedi ADR-0007. Nessun gap infrastrutturale bloccante residuo per S1/S2 (restano G2/G3/G5).
