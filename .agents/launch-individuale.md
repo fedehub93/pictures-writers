@@ -57,7 +57,7 @@
 ## 4. Canali — ORB
 
 ### Owned (core)
-- **Newsletter (700+ iscritti)** → pre-annuncio + waitlist. È la macchina di lancio principale.
+- **Newsletter (800+ iscritti)** → pre-annuncio + waitlist. È la macchina di lancio principale.
 - **13 studenti del corso di gruppo** → audience PRIMARIA per l'1:1: hanno già fatto il percorso, la proposta è l'upsell di attenzione ("lo stesso metodo, solo per te"). Non serve convincerli a "scrivere un soggetto", serve mostrar loro cosa cambia con un consulente dedicato.
 - **Blog** → aggancio alla pillare già prevista in content-strategy: "Come scrivere un soggetto cinematografico" (hub/spoke del cluster 1A) → CTA al laboratorio. Altri naturali: "Differenza soggetto/trattamento/scaletta", "La logline perfetta".
 - **Product page** → nuovo prodotto in shop con categoria dedicata.

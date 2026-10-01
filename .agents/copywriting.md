@@ -25,7 +25,7 @@ Per ogni hub è indicato:
 
 **Regole applicate:** chiarezza > creatività; benefici > funzionalità; specificità > genericità; "tu" e linguaggio del lettore; nessuna statistica inventata (solo i proof del product-marketing).
 
-**Proof points utilizzabili (verificati):** 700+ iscritti newsletter · 500+ download ebook gratuito · 7 recensioni media 5★ · metodo Double View (due consulenti) · consegna 7-10 giorni lavorativi · prezzi sotto la media del mercato.
+**Proof points utilizzabili (verificati):** 800+ iscritti newsletter · 500+ download ebook gratuito · 7 recensioni media 5★ · metodo Double View (due consulenti) · consegna 7-10 giorni lavorativi · prezzi sotto la media del mercato.
 
 ---
 
@@ -51,7 +51,7 @@ Formula bottone: **[Verbo azione] + [cosa ottieni] + [qualificatore se serve]**
 
 **URL:** `/come-scrivere-una-sceneggiatura/`
 **Buyer stage:** Awareness (percorso graduale verso consideration/decision)
-**Fatti da usare:** guida esistente aggiornata in v2 (7 sezioni + FAQ) · ebook gratuito · 500+ download · 700+ iscritti community
+**Fatti da usare:** guida esistente aggiornata in v2 (7 sezioni + FAQ) · ebook gratuito · 500+ download · 800+ iscritti community
 
 ### 3.1 Meta
 
@@ -93,7 +93,7 @@ Si inserisce alla fine della sezione Step 5, prima della Step 6.
 
 > **Per non fermarti a metà**
 >
-> La parte difficile della sceneggiatura non è iniziare, è arrivare alla fine. Iscrìviti alla community di sceneggiatori di Pictures Writers: ogni settimana ricevi uno strumento concreto — checklist, esempi, pillole di tecnica — per portare il tuo copione fino alla parola "fine". Già oltre 700 sceneggiatori lo fanno.
+> La parte difficile della sceneggiatura non è iniziare, è arrivare alla fine. Iscrìviti alla community di sceneggiatori di Pictures Writers: ogni settimana ricevi uno strumento concreto — checklist, esempi, pillole di tecnica — per portare il tuo copione fino alla parola "fine". Già oltre 800 sceneggiatori lo fanno.
 >
 > [📘 **Scarica l'ebook gratuito**](/shop/ebooks/introduzione-alla-sceneggiatura/)
 
@@ -150,7 +150,7 @@ Metodo: mantenere ogni variante 2-3 settimane, confrontare CTR da GSC e bounce r
 >
 > Perché diventare sceneggiatore non è questione di fortuna: è un percorso, con tappe precise. Serve sapere **cosa studiare, cosa scrivere, a quali concorsi partecipare** e come ottenere un feedback professionale su quello che fai. È un mestiere lungo — qui non te lo nascondiamo — ma non devi percorrerlo da solo e non devi farlo a tentativi.
 >
-> Questa è la mappa che vorremmo aver avuto quando abbiamo iniziato. La usiamo ogni giorno con la nostra community di 700+ sceneggiatori. E alla fine trovi anche gli strumenti di Pictures Writers per accorciare il percorso: dal laboratorio di scrittura al parere Double View sul tuo copione.
+> Questa è la mappa che vorremmo aver avuto quando abbiamo iniziato. La usiamo ogni giorno con la nostra community di 800+ sceneggiatori. E alla fine trovi anche gli strumenti di Pictures Writers per accorciare il percorso: dal laboratorio di scrittura al parere Double View sul tuo copione.
 
 ### 4.4 CTA di metà articolo (dopo "Educazione e formazione")
 

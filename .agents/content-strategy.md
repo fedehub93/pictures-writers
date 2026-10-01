@@ -11,7 +11,7 @@
 ### Blog Stats
 - **226 post pubblicati** (1 draft)
 - **2.400 visualizzazioni/mese**, 1.000 utenti unici/mese
-- **700+ iscritti newsletter**
+- **800+ iscritti newsletter**
 - 3 categorie: Sceneggiatura, Cinema, Regia cinematografica
 - 16 tag
 
@@ -196,9 +196,12 @@
 ```
 Blog post (search) → Lead magnet CTA → Form → Email nurtured →
   → Ebook gratuito (primo touch)
+  → Feedback gratuito sulla prima pagina (micro-commitment, asset già live)
   → Corso/Laboratorio (consideration)
   → Editing Double View (decision)
 ```
+
+**Nota sull'attrezzo intermedio (S1 email):** il passaggio dall'ebook al laboratorio è mediato dal **feedback gratuito sulla prima pagina** (`/feedback-gratuito-sceneggiatura/`), scelto perché già live e a costo di implementazione zero. In parallelo si costruisce un **template/checklist soggetto** (vedi tabella sopra) per testarlo in futuro nella stessa posizione, come A/B (test `T-INT` in `.agents/emails.md`), confrontando i dati dei due attrezzi.
 
 ---
 
@@ -230,7 +233,7 @@ Blog post (search) → Lead magnet CTA → Form → Email nurtured →
 |---------|--------|---------|
 | **Borrowed** (scoperta) | Podcast (guest su podcast cinematografici), Guest post su blog cinema, Collaborazioni con scuole | Ogni pillar page = pitch per 3-5 podcast |
 | **Rented** (engagement) | Instagram (clip testo/immagini), YouTube (analisi sceneggiature), LinkedIn (thought leadership) | Ogni post lungo = 3-5 clip social |
-| **Owned** (conversion) | Blog, Newsletter (700+ iscritti), Email sequences | Newsletter ogni 2 settimane con highlight |
+| **Owned** (conversion) | Blog, Newsletter (800+ iscritti), Email sequences | Newsletter ogni settimana, formato alternato piena/leggera |
 
 ### Atomizzazione per Contenuto
 

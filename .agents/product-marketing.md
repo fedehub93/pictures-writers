@@ -113,7 +113,7 @@
 **Metrics:**
 - 2.400 visualizzazioni/mese
 - 1.000 utenti unici/mese (899 nuovi, provenienti principalmente da organic search)
-- 700+ iscritti newsletter (tra iscritti news e download ebook gratuiti)
+- 800+ iscritti newsletter (tra iscritti news e download ebook gratuiti)
 - 7 recensioni, media 5 stelle
 - Ebook scaricati 500+ volte
 **Customers:** Sceneggiatori italiani (aspiranti e professionisti), studenti di scuole di sceneggiatura
@@ -125,7 +125,7 @@
 | Professionalità del servizio | Metodo Double View con due consulenti, tempi garantiti 7-10 giorni |
 | Prezzo accessibile | Prezzo sotto la media del mercato (mostrato esplicitamente nel sito) |
 | Qualità riconosciuta | Media 5 stelle, 500+ ebook scaricati |
-| Community e supporto | "Non devi impararlo da solo", 700+ iscritti newsletter |
+| Community e supporto | "Non devi impararlo da solo", 800+ iscritti newsletter |
 
 ## Goals
 **Business goal:** Crescita ricavi da editing e corsi + espansione base iscritti newsletter
@@ -133,7 +133,7 @@
 **Current metrics:**
 - 2.400 visualizzazioni/mese
 - 1.000 utenti unici/mese
-- 700+ iscritti newsletter
+- 800+ iscritti newsletter
 - 7 recensioni (5★ media)
 - Tasso di conversione e reddito: non disponibili
 
@@ -145,6 +145,9 @@
 - v5 (2026-09-23) — Piano di lancio "Laboratorio 1:1 — soggetto di lungometraggio" (deliverable in `.agents/launch-individuale.md`).
 - v6 (2026-09-23) — Fase schema completata (deliverable in `.agents/schema.md`).
 - v7 (2026-09-23) — Fase emails completata (deliverable in `.agents/emails.md`).
+- v8 (2026-10-01) — Riscrittura SERP hub 2B "Come diventare sceneggiatore" (audit SERP + riscrittura integrale + FAQ/FAQPage) in `.agents/serp-come-diventare-sceneggiatore.md`; piano di misurazione in `.agents/measurement-come-diventare-sceneggiatore.md`; implementazione verificata su draft (review in §8 del deliverable).
+- v9 (2026-10-01) — Proof point community aggiornato a **800+** (canonico, allineato agli hub live); propagato ai deliverable (content-strategy, copywriting, emails, launch). Cadenza newsletter riconfermata settimanale (formato alternato piena/leggera).
+- v10 (2026-10-01) — Fase 7 (emails) aggiornata: **attrezzo intermedio di S1 = feedback gratuito sulla prima pagina** (asset già live, costo 0), S1 da 6 a 7 email. Template/checklist soggetto da costruire per un futuro A/B nella stessa posizione. Dettagli in `.agents/emails.md` v5; funnel allineato in `.agents/content-strategy.md` §5.
 
 ## SEO Marketing Skills Workflow
 

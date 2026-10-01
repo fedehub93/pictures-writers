@@ -226,7 +226,7 @@ Nessuno vede da solo i propri difetti. Un parere esterno — un amico che non te
 
 > **[H2 — CTA di metà articolo] Per non fermarti a metà**
 >
-> La parte difficile della sceneggiatura non è iniziare, è arrivare alla fine. Iscriviti alla community di sceneggiatori di Pictures Writers: ogni settimana ricevi uno strumento concreto — checklist, esempi, pillole di tecnica — per portare il tuo copione fino alla parola "fine". Già oltre 700 sceneggiatori lo fanno.
+> La parte difficile della sceneggiatura non è iniziare, è arrivare alla fine. Iscriviti alla community di sceneggiatori di Pictures Writers: ogni settimana ricevi uno strumento concreto — checklist, esempi, pillole di tecnica — per portare il tuo copione fino alla parola "fine". Già oltre 800 sceneggiatori lo fanno.
 >
 > **[Bottone] Scarica l'ebook gratuito** → `/shop/ebooks/introduzione-alla-sceneggiatura/`
 
