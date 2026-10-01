@@ -3,6 +3,7 @@ import "server-only";
 import { db } from "@/shared/lib/db";
 import type { EmailProviderAdapter } from "@/modules/mails/lib/types";
 import { getProviderAdapter } from "@/modules/mails/lib/core";
+import { resolveSender } from "@/modules/mails/lib/sender";
 
 export class EmailSendError extends Error {
   constructor(
@@ -108,9 +109,7 @@ export async function sendSingleSend({
       throw new EmailSendError("Email provider is not configured", false);
     }
 
-    effectiveFrom ??= settings.emailSenderName
-      ? `${settings.emailSenderName} <${settings.emailSender}>`
-      : settings.emailSender;
+    effectiveFrom ??= resolveSender(settings)!;
 
     effectiveReplyTo ??= settings.emailResponse ?? undefined;
 

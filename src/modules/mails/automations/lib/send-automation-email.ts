@@ -4,6 +4,7 @@ import { Prisma } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 
 import { sendEmail } from "../../lib/mail";
+import { resolveSender } from "../../lib/sender";
 import type { GenericEmail } from "../../lib/types";
 import { AUTOMATION_EMAIL_LOG_TYPE } from "../constants";
 
@@ -51,21 +52,6 @@ export interface SendAutomationEmailResult {
   sent: boolean;
   /** True when the send was suppressed because the key was already logged. */
   skipped: boolean;
-}
-
-function resolveSender(
-  settings: {
-    emailSender?: string | null;
-    emailSenderName?: string | null;
-  },
-): string | null {
-  if (!settings.emailSender) {
-    return null;
-  }
-
-  return settings.emailSenderName
-    ? `${settings.emailSenderName} <${settings.emailSender}>`
-    : settings.emailSender;
 }
 
 function isUniqueConstraintError(error: unknown): boolean {

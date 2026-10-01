@@ -9,6 +9,7 @@ import { isEbookMetadata, isWebinarMetadata } from "@/type-guards";
 import { createContactByEmail } from "@/data/email-contact";
 import { renderTiptapHtml } from "@/shared/components/tiptap-renderer/helpers/render-tiptap-html";
 import { GenericEmail } from "./types";
+import { resolveSender } from "./sender";
 
 import { handleProductPurchased } from "../../../lib/event-handler";
 
@@ -175,7 +176,7 @@ export const sendWebinarPurchaseEmail = async (
 
   await sendEmail({
     to: email,
-    from: settings.emailSender,
+    from: resolveSender(settings)!,
     subject: `Webinar: ${webinar.title} acquistato con successo`,
     html: template({
       email,
@@ -211,7 +212,7 @@ export const sendSubscriptionEmail = async (email: string, token: string) => {
 
   await sendEmail({
     to: email,
-    from: settings.emailSender,
+    from: resolveSender(settings)!,
     subject: "Conferma sottoscrizione",
     html: template({ token, email }),
     type: "subscription_email",
@@ -263,7 +264,7 @@ export const sendFreeEbookEmail = async (
 
   await sendEmail({
     to: email,
-    from: settings.emailSender,
+    from: resolveSender(settings)!,
     subject: `Free ebook: ${ebook.title}`,
     html: template({
       email,
