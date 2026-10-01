@@ -48,7 +48,7 @@ export const ProductReviews = ({
   }, [api]);
 
   return (
-    <section className="border-b pb-6">
+    <section id="testimonianze" className="border-b pb-6 scroll-mt-26">
       {openReview && (
         <ResponsiveDialog
           open={Boolean(openReviewId)}
