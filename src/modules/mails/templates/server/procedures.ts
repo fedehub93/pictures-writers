@@ -21,6 +21,32 @@ export const templatesRouter = createTRPCRouter({
       return template;
     }),
 
+  duplicate: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input }) => {
+      const template = await db.emailTemplate.findUnique({
+        where: { id: input.id },
+      });
+
+      if (!template) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Template not found",
+        });
+      }
+
+      const duplicate = await db.emailTemplate.create({
+        data: {
+          name: `${template.name} (Copy)`,
+          description: template.description,
+          designData: template.designData ?? undefined,
+          bodyHtml: template.bodyHtml,
+        },
+      });
+
+      return duplicate;
+    }),
+
   update: protectedProcedure
     .input(templateUpdateSchema)
     .mutation(async ({ input }) => {

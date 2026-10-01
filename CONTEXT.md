@@ -74,6 +74,16 @@ _Avoid_: Confirmed contact, validated email, double opt-in flag.
 The act by which a Contact follows the subscription link and becomes a Subscriber with a Verified address; it is the moment the `subscription.confirmed` trigger event fires.
 _Avoid_: Opt-in, signup, soft opt-in.
 
+## Email templates
+
+**Email template**:
+A reusable email design stored in the CMS, holding the visual layout and the rendered HTML that outgoing mail can start from. It is a standalone asset, not owned by any single send.
+_Avoid_: Newsletter when referring to the CMS entity.
+
+**Template duplication**:
+The act of creating a new, independent Email template by copying an existing one's design. The copy carries over the content only — never the settings that link a template to a subscription flow — and is edited on its own from the moment it is created.
+_Avoid_: Clone, version when referring to this action.
+
 ## Backoffice users and authorization
 
 **Backoffice user**:

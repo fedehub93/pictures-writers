@@ -1,20 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { createColumnHelper } from "@tanstack/react-table";
-import { MoreHorizontalIcon, PencilIcon } from "lucide-react";
-
-import { Button } from "@/shared/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
 
 import { DataTableColumnHeader } from "@/shared/components/data-table-column-header";
 
 import { TemplatesGetMany } from "../../types";
+import { TemplateAction } from "./actions";
 import { type DataTableFeatures } from "./data-table-features";
 
 type Template = TemplatesGetMany[number];
@@ -37,27 +28,7 @@ export const columns = columnHelper.columns([
   }),
   columnHelper.display({
     id: "actions",
-    cell: ({ row }) => {
-      const { id } = row.original;
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="size-8">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontalIcon />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <Link href={`/admin/mails/templates/${id}`}>
-              <DropdownMenuItem>
-                <PencilIcon />
-                Edit
-              </DropdownMenuItem>
-            </Link>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
-    },
+    cell: ({ row }) => <TemplateAction id={row.original.id} />,
     enableHiding: false,
   }),
 ]);
