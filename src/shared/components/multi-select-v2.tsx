@@ -51,7 +51,7 @@ export const MultiSelectV2 = ({
               type="button"
               variant="outline"
               // Aggiunto: h-auto, min-h-10, py-2, items-center e flex-wrap
-              className="border-dashed w-full flex flex-wrap items-center gap-2 justify-start h-auto min-h-10 py-2"
+              className="border-dashed w-full flex flex-wrap items-center gap-2 justify-start h-9 min-h-9 py-1"
               disabled={isSubmitting}
             >
               {showValuesInButton && (

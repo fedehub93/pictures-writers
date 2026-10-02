@@ -21,7 +21,6 @@ import { useTRPC } from "@/trpc/client";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -312,48 +311,25 @@ export const WriteForm = ({ singleSend }: WriteFormProps) => {
               </DropdownMenu>
             </div>
           </div>
-          <div className="flex flex-wrap gap-4 items-start">
-            <div className="flex min-w-40 flex-1 flex-col gap-4">
-              <GenericInput
-                control={form.control}
-                name="subject"
-                label="Subject"
-                containerProps={{ className: "min-w-40 flex-auto h-2" }}
-              />
-              <FormField
-                control={form.control}
-                name="previewText"
-                render={({ field }) => {
-                  const previewTextLength = (field.value ?? "").trim().length;
+          <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(12rem,1fr)_minmax(12rem,1fr)_30rem]">
+            <GenericInput
+              control={form.control}
+              name="subject"
+              label="Subject"
+            />
+            <GenericInput
+              control={form.control}
+              name="previewText"
+              label="Preview Text (optional)"
+              placeholder="Unlock your onboarding"
+            />
 
-                  return (
-                    <FormItem>
-                      <FormLabel>Preview text (optional)</FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          value={field.value ?? ""}
-                          placeholder="Unlock your onboarding"
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Shown after the subject in the inbox.
-                        {previewTextLength > 100
-                          ? ` ${previewTextLength} characters — most inboxes show about 100.`
-                          : ""}
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  );
-                }}
-              />
-            </div>
             <FormField
               control={form.control}
               name="audiences"
               render={({ field }) => {
                 return (
-                  <FormItem className="flex flex-col gap-x-8 min-w-2/5">
+                  <FormItem className="flex flex-col">
                     <FormLabel>Audiences</FormLabel>
                     {!isLoading && audiences ? (
                       <>
@@ -373,7 +349,7 @@ export const WriteForm = ({ singleSend }: WriteFormProps) => {
                         <FormMessage className="mt-0!" />
                       </>
                     ) : (
-                      <Skeleton className="min-w-2/5 h-9" />
+                      <Skeleton className="h-9 w-full" />
                     )}
                   </FormItem>
                 );
