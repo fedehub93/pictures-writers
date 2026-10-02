@@ -14,19 +14,17 @@ export async function PATCH(req: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    let scripts = [];
-    if (values.scripts && values.scripts.length > 0) {
-      scripts = values.scripts.map((v: SettingsScripts) => ({
+    const data: Record<string, unknown> = { ...values };
+
+    if (Array.isArray(values.scripts)) {
+      data.scripts = values.scripts.map((v: SettingsScripts) => ({
         ...v,
         content: v.content?.trim(),
       }));
     }
 
     const updatedSettings = await db.settings.updateMany({
-      data: {
-        ...values,
-        scripts,
-      },
+      data,
     });
 
     revalidateContent("settings");

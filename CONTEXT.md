@@ -124,6 +124,28 @@ The lifecycle state of a backoffice user: `pending` while an invitation is not a
 **Authorization policy**:
 The server-side rule that evaluates a backoffice user’s role and permissions. It is the single security boundary shared by admin pages, tRPC procedures, and REST endpoints.
 
+## Commerce
+
+**Customer**:
+A person or organization that buys or may buy products and services through the platform. Distinct from a Contact (just an email address) and from a Backoffice user (CMS identity). A Customer may have a name, email, phone, billing details, and optional notes. A Customer may exist without having placed an Order.
+_Avoid_: User, subscriber, or contact when referring to the commercial buyer.
+
+**Order**:
+A commercial request by a Customer to buy one or more products or services. It has a lifecycle status, a total amount, one or more Order items, and zero or more Payments. An Order is created manually by a backoffice user or by an Automation.
+_Avoid_: Purchase when referring to the new canonical order entity.
+
+**Order item**:
+A single line inside an Order: a product reference, a quantity, and the price/name snapshot taken at the time the Order was created.
+_Avoid_: Cart item, product line.
+
+**Payment**:
+A record of money received or expected for an Order, with a method (offline, Stripe, etc.), a status, an amount, and a reference. One Order may have multiple Payments (deposits, refunds).
+_Avoid_: Transaction, purchase.
+
+**Order completion**:
+The manual transition, performed by an authorized backoffice user, that moves an Order from a pending state to a completed state and records the corresponding Payment as received. It is the canonical business moment that triggers downstream events such as post-purchase automations and analytics.
+_Avoid_: Closing the order, paid flag.
+
 ## FAQ
 
 **Faq**:

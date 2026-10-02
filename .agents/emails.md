@@ -298,7 +298,9 @@ Nota: la richiesta di feedback (E4) NON è un'uscita — è una micro-conversion
 
 ---
 
-## 5. S2 — Welcome newsletter (punto di ingresso a basso intent)
+## 5. S2 — Welcome newsletter ✅ (punto di ingresso a basso intent)
+
+**Stato: implementata e pubblicata** sul motore Automations interno (4 template + canvas, trigger `subscription.confirmed`).
 
 Per chi si iscrive dalla newsletter **senza** aver scaricato l'ebook. Converte l'iscritto "curioso" in un percorso utile e, se interessato, lo porta a scaricare l'ebook → da lì entra nella S1.
 
@@ -519,7 +521,7 @@ La fase 7 è un deliverable di design; le righe sotto preparano l'implementazion
 
 ### Opzioni di implementazione (MVP)
 
-> **Aggiornamento (2026-10-01):** la **S1 è stata implementata sul motore Automations interno** (canvas visuale + trigger a evento; nessun modello `EmailSequence` dedicato). Le opzioni A/B sotto restano come riferimento per S2-S5 o per evoluzioni future, ma non sono la strada seguita per S1.
+> **Aggiornamento (2026-10-02):** **S1 e S2 sono state implementate sul motore Automations interno** (canvas visuale + trigger a evento; nessun modello `EmailSequence` dedicato). Le opzioni A/B sotto restano come riferimento per S3-S5 o per evoluzioni future.
 
 **Opzione A — Runner piggyback su `ScheduledAction` (consigliata, basso rischio):**
 1. Nuovo `ScheduledActionType.SEND_TEMPLATE_EMAIL` (o riuso `SEND_EMAIL` con `targetType` diverso es. `EMAIL_CONTACT`).
@@ -534,7 +536,7 @@ La fase 7 è un deliverable di design; le righe sotto preparano l'implementazion
 
 ### Checklist di configurazione admin (senza codice, subito)
 - [x] Template `EmailTemplate` per ogni email **S1 (7)**: creati nell'editor admin.
-- [ ] Template `EmailTemplate` per ogni email **S2 (4)** — copy e CTA sono su questo documento.
+- [x] Template `EmailTemplate` per ogni email **S2 (4)** — creati e pubblicati (sequence sul trigger `subscription.confirmed`).
 - [ ] S3: nel frattempo, conferma acquisti e promemoria via email manuali usando i template S3, finché G1-G3 non sono chiusi.
 - [ ] Audience/segmenti su Resend: `newsletter`, `ebook_lead`, `clienti` (per S4 di fondo).
 - [ ] `EmailSetting`: rivedere `maxEmailsPerDay` (rispetto al piano di invio: liste piccole, soglia prudente) e `emailSenderName`.
@@ -598,3 +600,4 @@ La fase 7 è un deliverable di design; le righe sotto preparano l'implementazion
 - v21 (2026-10-02) — **S2 allineata alle convenzioni S1** (mobile, firma, CTA). Apertura `Ciao,` e firma `A presto, Federico e il team di Pictures Writers` su tutte e 4 le email. E1: "Bentornato" → "Benvenuto", aggiunto proof point community **800+**, CTA resa concreta (**"Da dove cominciare"** invece del generico "Leggi la guida completa"). E2: hook self-contained + CTA corta ("Scopri i 3 atti"). E3: rimossa emoji dalla CTA, aggiunto proof **500+** download. E4 ricentrata sull'attivazione: **CTA primaria = ebook gratuito** (merge in S1), laboratorio/editing come link secondari "quando sei pronto" (non più ask commerciale primario su lead freddo). Corretto il trigger di S2 in **`subscription.confirmed`** (era `user_subscribed`) con nota: la separazione da S1 è data dal trigger, non dal flag `isSubscriber`; l'overlap dual-entry è accettato per l'MVP (fix futuro a monte in `emitSubscriptionConfirmed`, mai nell'engine). Aggiunte righe di raccordo prima della firma su E1 ("Tra due giorni ti mando il primo strumento…", aggancia la E2), E2 ("Tra tre giorni ti mando il percorso completo…", aggancia la E3) ed E4 ("E ogni settimana ci ritroviamo qui, nella newsletter."). E3 aveva già la sua.
 - v22 (2026-10-02) — **S2 chiusa.** Copy e design finalizzati con l'utente; §5 marcata `✅` con stato di implementazione (4 template + canvas sul trigger `subscription.confirmed`, a cura dell'utente, nessun codice). E1: CTA resa concreta (**"Da dove cominciare"**). E4: preview de-ridondata (**"Dove ci trovi, quando sei pronto a muoverti."**). Overlap dual-entry E3/E4 lasciato invariante su decisione dell'utente.
 - v23 (2026-10-02) — **Prezzo laboratorio €200 → €300** (allineato all'1:1, decisione utente). Aggiornati: proof point §1, goal §4, body **S1-E5** ("**€300**, sotto la media del mercato"). ⚠️ Il template **S1-E5** pubblicato in admin va riallineato a €300. Propagato anche a `copywriting.md` e `launch-individuale.md`.
+- v24 (2026-10-02) — **S2 implementata e pubblicata.** I 4 template S2 e il canvas sul trigger `subscription.confirmed` sono live sul motore Automations interno. Aggiornati: §5 (stato ✅), §9 (checklist S2 → `[x]`, nota opzioni A/B ora riferita a S3-S5). Stato sequenze: **S1, S2, S4 live; S3/S5 da implementare** (dipendono da G2/G3).

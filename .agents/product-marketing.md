@@ -151,6 +151,8 @@
 - v11 (2026-10-02) — **S2 (Welcome newsletter) chiusa**: copy e design finalizzati in `.agents/emails.md` §5 (v21-v22). Trigger corretto in `subscription.confirmed`; separazione da S1 data dal trigger (non dal flag `isSubscriber`), overlap dual-entry accettato per l'MVP. Implementazione admin a cura dell'utente (nessun codice).
 - v12 (2026-10-02) — **Capitolo email chiuso.** S1 (nurture post-ebook) implementata e pubblicata sul motore Automations; S2 (welcome newsletter) chiusa; **S4 newsletter eseguita**: piano di ottobre (riattivazione + apertura laboratori, finestra 8→27 ott, avvio 3/11) e novembre in `.agents/newsletter.md`. S3 (post-acquisto) e S5 (re-engagement) restano progettate ma non implementate: dipendono dai gap di tracciamento interazioni G2/G3. Prossimo passo: fase 8 (ai-seo).
 - v13 (2026-10-02) — **Fase 8 (ai-seo) completata**: deliverable in `.agents/ai-seo.md`. Audit `is-agentic` 68/100; implementate le fondamenta tecniche (robots.ts con policy AI esplicita + Content-Usage, `/llms.txt` e `/llms-full.txt` dinamici, Organization JSON-LD completo, og:image/OG/Twitter, fix gerarchia heading homepage). Markdown content negotiation e dati originali rimandati (roadmap). Prossimo passo: fase 9 (marketing-plan).
+- v14 (2026-10-02) — **Fase 9 (marketing-plan) completata — roadmap chiusa.** Deliverable in `.agents/marketing-plan.md` (13 sezioni, framework AARRR, orizzonte ott 2026–set 2027). Intake: budget Tier 1 bootstrap (€0–100/mese), esecuzione Federico da solo, priorità Q1 = conversione blog→laboratori/corsi, esclusi paid e internazionalizzazione. **Misurazione:** il top-funnel è già tracciato via GTM/GA4 (`newsletter_signup`, `ebook_download`, `cta_click`, submit form); il buco è la **conversione pagata**, che si chiude offline via email+bonifico (Stripe presente nel codice ma non in uso) → open decision #1. Rubric 17 sezioni: 43/85 (51%), forma "voce/contenuti forti, conversione e misurazione deboli". North star proposta: ricavo da laboratori+editing per 1.000 iscritti newsletter. Sblocco non per funding round ma per milestone di ricavo.
+- v15 (2026-10-02) — **Correzione stato email.** **S2 (welcome newsletter) è pubblicata** (non solo "chiusa"): S1, S2 e S4 sono live; restano S3/S5. Aggiornato `.agents/marketing-plan.md`: rimosso S2 dagli item in-flight/bloccati e dalla roadmap; rubric 45/85 (53%) — Onboarding 2→3, Email lifecycle 3→4.
 
 ## SEO Marketing Skills Workflow
 
@@ -163,7 +165,7 @@
 6. schema ✅ (deliverable in `.agents/schema.md`)
 7. emails ✅ (design in `.agents/emails.md`; esecuzione newsletter in `.agents/newsletter.md`)
 8. ai-seo ✅ (deliverable in `.agents/ai-seo.md`; fondamenta tecniche implementate)
-9. marketing-plan 🔲
+9. marketing-plan ✅ (deliverable in `.agents/marketing-plan.md`)
 
 ### Fase 2 — SEO Audit (correzioni tecniche completate)
 
@@ -228,12 +230,18 @@ Fix critico: le date lezione in DB sono timestamp ISO completi (mezzanotte local
 
 Verificato: `npx tsc --noEmit` pulito, `eslint` senza errori nuovi, `npm run build` completato (incluse le pagine shop).
 
-### Prossimi passi (fase 9)
+### Roadmap SEO marketing completata (fasi 1–9)
 
-**Capitolo ai-seo chiuso** (fase 8): deliverable in `.agents/ai-seo.md`. Implementate le fondamenta di agent-readiness (robots AI policy, `llms.txt`, `llms-full.txt`, Organization JSON-LD, OG metadata, heading). Roadmap AI residua documentata in `.agents/ai-seo.md` §7.2 (Markdown negotiation, answer block, FAQ/HowTo, `/pricing.md`, dati originali, presence off-site).
+Tutte le 9 fasi della roadmap originale sono completate. Il deliverable della fase 9 è in `.agents/marketing-plan.md`.
 
-La prossima sessione deve iniziare dalla **marketing-plan** (fase 9 della roadmap). Contesto pronto:
-1. `.agents/product-marketing.md` (questo file)
-2. `.agents/content-strategy.md` (calendario + funnel)
-3. `.agents/ai-seo.md` (input per la sezione Acquisition)
-4. Fase 9: marketing-plan (fCMO/AARRR, 13 sezioni)
+**Priorità operative per i prossimi 90 giorni** (da `.agents/marketing-plan.md` §9):
+1. Rendere attribuibile la conversione pagata (pagamenti offline via email+bonifico: marker “pagato”/riconciliazione + eventuale evento server-side GA4), più le interazioni interne mancanti (`course_purchased`, `editing_purchased`, tipo-prodotto nel form). Il top-funnel GTM/GA4 è già attivo.
+2. Produrre i 5 lead magnet e collegarli al funnel.
+3. Attivare le sequenze post-acquisto S3 (finora bloccate dalle interazioni mancanti) e leggere i dati di S2 (già pubblicata).
+4. Lanciare il Laboratorio 1:1 (naming, date, pagina prodotto, waitlist).
+5. Eseguire la finestra laboratori di ottobre (8→27 ott, avvio 3/11).
+6. Chiudere i quick win CRO residui e verificare la gerarchia CTA homepage con i dati di ricavo.
+
+**Fondamenta tecniche residue** (roadmap AI, `.agents/ai-seo.md` §7.2): Markdown content negotiation, answer block 40–60 parole, FAQ/`FAQPage` sui hub, `HowTo`, `/pricing.md`, dati originali, presenza off-site.
+
+**Decisioni aperte bloccanti** (`.agents/marketing-plan.md` §13): conversione pagata non attribuita (pagamenti offline; priorità #1), interazioni interne incomplete, prezzo editing da confermare, naming/date 1:1, lead magnet da produrre.
