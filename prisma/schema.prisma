@@ -198,6 +198,7 @@ model User {
 
   notifications Notification[]
   products      Product[]
+  customer      Customer?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -765,7 +766,8 @@ model Product {
   faqs    Faq[]
   reviews Reviews[]
 
-  purchases Purchase[]
+  purchases  Purchase[]
+  orderItems OrderItem[]
 
   seo   Seo?    @relation(fields: [seoId], references: [id])
   seoId String?
@@ -1369,4 +1371,95 @@ model Credential {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum OrderStatus {
+  DRAFT
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+enum OrderSource {
+  MANUAL
+  FORM_SUBMISSION
+  AUTOMATION
+  STRIPE
+}
+
+enum PaymentMethod {
+  OFFLINE
+  STRIPE
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  REFUNDED
+  FAILED
+}
+
+/// Commercial buyer (see CONTEXT.md "Customer"), distinct from User and EmailContact.
+model Customer {
+  id          String    @id @default(uuid())
+  email       String    @unique
+  name        String?
+  phone       String?
+  billingInfo Json?
+  notes       String?
+  userId      String?   @unique
+  user        User?     @relation(fields: [userId], references: [id])
+  orders      Order[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+/// Commercial request by a Customer to buy products or services (see CONTEXT.md "Order").
+model Order {
+  id          String      @id @default(uuid())
+  orderNumber String      @unique
+  status      OrderStatus @default(DRAFT)
+  source      OrderSource @default(MANUAL)
+  customerId  String
+  customer    Customer    @relation(fields: [customerId], references: [id])
+  items       OrderItem[]
+  payments    Payment[]
+  totalAmount Float
+  currency    String      @default("EUR")
+  notes       String?
+  completedAt DateTime?
+  completedBy String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+/// A single line inside an Order with a price/name snapshot (see CONTEXT.md "Order item").
+model OrderItem {
+  id           String   @id @default(uuid())
+  orderId      String
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId    String?
+  product      Product? @relation(fields: [productId], references: [id])
+  nameSnapshot String
+  unitPrice    Float
+  quantity     Int      @default(1)
+  totalPrice   Float
+  metadata     Json?
+  createdAt    DateTime @default(now())
+}
+
+/// Record of money received or expected for an Order (see CONTEXT.md "Payment").
+model Payment {
+  id        String        @id @default(uuid())
+  orderId   String
+  order     Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  method    PaymentMethod @default(OFFLINE)
+  status    PaymentStatus @default(PENDING)
+  amount    Float
+  currency  String        @default("EUR")
+  reference String?
+  paidAt    DateTime?
+  metadata  Json?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 }

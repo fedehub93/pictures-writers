@@ -137,9 +137,16 @@ model Payment {
 
 ## Testing Decisions
 
-- The project currently has no automated tests, and this spec does not introduce a new test framework.
-- Acceptance will be verified manually through the admin UI and by running an end-to-end Form → Automation → Order → Complete flow.
-- When a test framework is added later, the highest-value seams to test will be: Order status transitions, order number generation, Customer/Order creation through Automation nodes, and `order.completed` trigger emission.
+- The project already uses **Vitest** with a dedicated test database configured in `.env.test`. The test runner runs `prisma migrate deploy` against that database before the suite starts.
+- This work follows a **TDD approach**: for each ticket, tests are written before the implementation code and must pass before the ticket is considered complete.
+- Tests are integration tests against the real test database, following the existing project pattern (`describe`/`it`, `beforeEach` cleanup, direct `db` calls).
+- Each ticket defines the seams to test:
+  - **Foundation**: verify that permissions are registered and migration applies cleanly.
+  - **Customer**: CRUD operations, email uniqueness, optional fields.
+  - **Order**: creation, total calculation, status transitions, completion/cancellation semantics, permission enforcement.
+  - **Automation nodes**: `CREATE_CUSTOMER` and `CREATE_ORDER` actions produce correct records, and `order.completed` trigger fires on completion.
+  - **GA4 event**: the `purchase` payload is built correctly from an Order and its items.
+- Manual acceptance remains the final gate for the end-to-end Form → Automation → Order → Complete flow and the GTM event firing in the browser.
 
 ## Out of Scope
 
