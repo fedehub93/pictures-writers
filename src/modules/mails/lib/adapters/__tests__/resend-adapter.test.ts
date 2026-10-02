@@ -17,6 +17,9 @@ type FakeResendClient = {
       remove: ReturnType<typeof vi.fn>;
     };
   };
+  broadcasts: {
+    create: ReturnType<typeof vi.fn>;
+  };
 };
 
 function createFakeClient(): FakeResendClient {
@@ -30,6 +33,9 @@ function createFakeClient(): FakeResendClient {
         add: vi.fn(),
         remove: vi.fn(),
       },
+    },
+    broadcasts: {
+      create: vi.fn(),
     },
   };
 }
@@ -396,5 +402,54 @@ describe("ResendAdapter.addContactsToSegment", () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+});
+
+// ─── sendBulk ────────────────────────────────────────────────────────────────
+
+describe("ResendAdapter.sendBulk", () => {
+  it("forwards previewText to broadcasts.create", async () => {
+    const fake = createFakeClient();
+    fake.broadcasts.create.mockResolvedValue({
+      data: { id: "broadcast-1" },
+      ...ok,
+    });
+
+    const adapter = makeAdapter(fake);
+    const result = await adapter.sendBulk({
+      segmentExternalId: "seg-1",
+      subject: "Hello",
+      html: "<p>Body</p>",
+      from: "Test <test@example.com>",
+      previewText: "A short teaser",
+    });
+
+    expect(result).toEqual({ success: true, externalCampaignId: "broadcast-1" });
+    expect(fake.broadcasts.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        segmentId: "seg-1",
+        subject: "Hello",
+        previewText: "A short teaser",
+      }),
+    );
+  });
+
+  it("omits previewText from broadcasts.create when absent", async () => {
+    const fake = createFakeClient();
+    fake.broadcasts.create.mockResolvedValue({
+      data: { id: "broadcast-1" },
+      ...ok,
+    });
+
+    const adapter = makeAdapter(fake);
+    await adapter.sendBulk({
+      segmentExternalId: "seg-1",
+      subject: "Hello",
+      html: "<p>Body</p>",
+      from: "Test <test@example.com>",
+    });
+
+    const createArgs = fake.broadcasts.create.mock.calls[0][0];
+    expect(createArgs.previewText).toBeUndefined();
   });
 });

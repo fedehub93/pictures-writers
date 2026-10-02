@@ -645,8 +645,9 @@ model EmailContactInteraction {
 model EmailSingleSend {
   id String @id @default(uuid())
 
-  name    String
-  subject String?
+  name        String
+  subject     String?
+  previewText String?
 
   /// [EmailDesignData]
   designData Json?   @db.JsonB

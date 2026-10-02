@@ -4,6 +4,7 @@ export const singleSendInsertSchema = z.object({
   name: z.string().min(1, { error: "Name is required" }),
   emailTemplateId: z.string().optional(),
   subject: z.string().optional(),
+  previewText: z.string().optional(),
   audiences: z.array(
     z.object({
       id: z.string(),

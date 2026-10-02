@@ -128,6 +128,7 @@ export async function sendSingleSend({
       html: singleSend.bodyHtml,
       from: effectiveFrom,
       replyTo: effectiveReplyTo,
+      previewText: singleSend.previewText ?? undefined,
       idempotencyKey,
     });
 

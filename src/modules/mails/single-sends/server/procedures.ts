@@ -28,6 +28,7 @@ export const singleSendsRouter = createTRPCRouter({
       const singleSend = await db.emailSingleSend.create({
         data: {
           name: input.name,
+          previewText: input.previewText,
           designData: template?.designData,
           bodyHtml: template?.bodyHtml,
         },

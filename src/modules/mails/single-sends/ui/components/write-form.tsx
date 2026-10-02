@@ -15,12 +15,14 @@ import { useTRPC } from "@/trpc/client";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/shared/ui/form";
 import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
 import { Skeleton } from "@/shared/ui/skeleton";
 
 import { GenericInput } from "@/shared/components/form-component/generic-input";
@@ -62,6 +64,7 @@ export const WriteForm = ({ singleSend }: WriteFormProps) => {
       id: singleSend.id,
       name: singleSend.name || "",
       subject: singleSend.subject || "",
+      previewText: singleSend.previewText || "",
       audiences: singleSend.audiences.map((audience) => ({
         id: audience.id,
       })),
@@ -132,6 +135,7 @@ export const WriteForm = ({ singleSend }: WriteFormProps) => {
         name: values.name,
         audiences: values.audiences,
         subject: values.subject,
+        previewText: values.previewText,
         designData: design,
         bodyHtml: html,
       });
@@ -285,12 +289,41 @@ export const WriteForm = ({ singleSend }: WriteFormProps) => {
             </div>
           </div>
           <div className="flex flex-wrap gap-4 items-start">
-            <GenericInput
-              control={form.control}
-              name="subject"
-              label="Subject"
-              containerProps={{ className: "min-w-40 flex-auto h-2" }}
-            />
+            <div className="flex min-w-40 flex-1 flex-col gap-4">
+              <GenericInput
+                control={form.control}
+                name="subject"
+                label="Subject"
+                containerProps={{ className: "min-w-40 flex-auto h-2" }}
+              />
+              <FormField
+                control={form.control}
+                name="previewText"
+                render={({ field }) => {
+                  const previewTextLength = (field.value ?? "").trim().length;
+
+                  return (
+                    <FormItem>
+                      <FormLabel>Preview text (optional)</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          value={field.value ?? ""}
+                          placeholder="Unlock your onboarding"
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Shown after the subject in the inbox.
+                        {previewTextLength > 100
+                          ? ` ${previewTextLength} characters — most inboxes show about 100.`
+                          : ""}
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
+              />
+            </div>
             <FormField
               control={form.control}
               name="audiences"

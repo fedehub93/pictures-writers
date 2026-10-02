@@ -580,6 +580,7 @@ export class ResendAdapter implements EmailProviderAdapter {
     html,
     from,
     replyTo,
+    previewText,
     idempotencyKey: _idempotencyKey,
   }: {
     segmentExternalId: string;
@@ -587,6 +588,7 @@ export class ResendAdapter implements EmailProviderAdapter {
     html: string;
     from: string;
     replyTo?: string;
+    previewText?: string;
     idempotencyKey?: string;
   }) {
     try {
@@ -601,6 +603,7 @@ export class ResendAdapter implements EmailProviderAdapter {
         html: html,
         send: true,
         replyTo: replyTo ? [replyTo] : undefined,
+        previewText: previewText || undefined,
       });
 
       if (error) {

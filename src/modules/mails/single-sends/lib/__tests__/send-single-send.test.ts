@@ -12,6 +12,7 @@ import {
 describe("sendSingleSend", () => {
   const createdSingleSendIds: string[] = [];
   const createdAudienceIds: string[] = [];
+  const sentPayloads: { segmentExternalId: string; previewText?: string }[] = [];
 
   const fakeAdapter = (
     behavior: "success" | "permanent-failure" | "transient-failure" = "success",
@@ -38,7 +39,8 @@ describe("sendSingleSend", () => {
       deleteContact: async () => ({ errors: [] }),
       upsertContact: async () => ({ errors: [], externalId: "ext-123" }),
       deleteSegment: async () => ({ errors: [] }),
-      sendBulk: async ({ segmentExternalId }) => {
+      sendBulk: async ({ segmentExternalId, previewText }) => {
+        sentPayloads.push({ segmentExternalId, previewText });
         if (behavior === "permanent-failure") {
           return {
             success: false,
@@ -72,6 +74,7 @@ describe("sendSingleSend", () => {
 
   const createSingleSend = async (overrides: {
     subject?: string;
+    previewText?: string;
     bodyHtml?: string;
     audienceIds?: string[];
   } = {}) => {
@@ -83,6 +86,7 @@ describe("sendSingleSend", () => {
       data: {
         name: "Test Newsletter",
         subject: overrides.subject ?? "Subject",
+        previewText: overrides.previewText,
         bodyHtml: overrides.bodyHtml ?? "<p>Body</p>",
         audiences: audienceConnections,
       },
@@ -97,6 +101,7 @@ describe("sendSingleSend", () => {
     await db.emailAudience.deleteMany({});
     createdSingleSendIds.length = 0;
     createdAudienceIds.length = 0;
+    sentPayloads.length = 0;
   });
 
   afterEach(async () => {
@@ -135,6 +140,47 @@ describe("sendSingleSend", () => {
     });
 
     expect(result.providerId).toBe(`campaign-${audience.externalId}`);
+  });
+
+  it("passes the saved previewText to the provider", async () => {
+    const audience = await createAudience();
+    const singleSend = await createSingleSend({
+      previewText: "A short teaser",
+      audienceIds: [audience.id],
+    });
+
+    await sendSingleSend({
+      singleSendId: singleSend.id,
+      adapter: fakeAdapter(),
+      from: "Test <test@example.com>",
+    });
+
+    expect(sentPayloads).toEqual([
+      {
+        segmentExternalId: audience.externalId,
+        previewText: "A short teaser",
+      },
+    ]);
+  });
+
+  it("passes undefined previewText when none is saved", async () => {
+    const audience = await createAudience();
+    const singleSend = await createSingleSend({
+      audienceIds: [audience.id],
+    });
+
+    await sendSingleSend({
+      singleSendId: singleSend.id,
+      adapter: fakeAdapter(),
+      from: "Test <test@example.com>",
+    });
+
+    expect(sentPayloads).toEqual([
+      {
+        segmentExternalId: audience.externalId,
+        previewText: undefined,
+      },
+    ]);
   });
 
   it("resolves audiences dynamically at execution time", async () => {

@@ -91,6 +91,7 @@ export interface EmailProviderAdapter {
     html: string;
     from: string;
     replyTo?: string;
+    previewText?: string;
     idempotencyKey?: string;
   }): Promise<{
     success: boolean;
