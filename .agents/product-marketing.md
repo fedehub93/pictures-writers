@@ -150,6 +150,7 @@
 - v10 (2026-10-01) — Fase 7 (emails) aggiornata: **attrezzo intermedio di S1 = feedback gratuito sulla prima pagina** (asset già live, costo 0), S1 da 6 a 7 email. Template/checklist soggetto da costruire per un futuro A/B nella stessa posizione. Dettagli in `.agents/emails.md` v5; funnel allineato in `.agents/content-strategy.md` §5.
 - v11 (2026-10-02) — **S2 (Welcome newsletter) chiusa**: copy e design finalizzati in `.agents/emails.md` §5 (v21-v22). Trigger corretto in `subscription.confirmed`; separazione da S1 data dal trigger (non dal flag `isSubscriber`), overlap dual-entry accettato per l'MVP. Implementazione admin a cura dell'utente (nessun codice).
 - v12 (2026-10-02) — **Capitolo email chiuso.** S1 (nurture post-ebook) implementata e pubblicata sul motore Automations; S2 (welcome newsletter) chiusa; **S4 newsletter eseguita**: piano di ottobre (riattivazione + apertura laboratori, finestra 8→27 ott, avvio 3/11) e novembre in `.agents/newsletter.md`. S3 (post-acquisto) e S5 (re-engagement) restano progettate ma non implementate: dipendono dai gap di tracciamento interazioni G2/G3. Prossimo passo: fase 8 (ai-seo).
+- v13 (2026-10-02) — **Fase 8 (ai-seo) completata**: deliverable in `.agents/ai-seo.md`. Audit `is-agentic` 68/100; implementate le fondamenta tecniche (robots.ts con policy AI esplicita + Content-Usage, `/llms.txt` e `/llms-full.txt` dinamici, Organization JSON-LD completo, og:image/OG/Twitter, fix gerarchia heading homepage). Markdown content negotiation e dati originali rimandati (roadmap). Prossimo passo: fase 9 (marketing-plan).
 
 ## SEO Marketing Skills Workflow
 
@@ -161,7 +162,7 @@
 5. cro ✅ (deliverable in `.agents/cro.md`)
 6. schema ✅ (deliverable in `.agents/schema.md`)
 7. emails ✅ (design in `.agents/emails.md`; esecuzione newsletter in `.agents/newsletter.md`)
-8. ai-seo 🔲
+8. ai-seo ✅ (deliverable in `.agents/ai-seo.md`; fondamenta tecniche implementate)
 9. marketing-plan 🔲
 
 ### Fase 2 — SEO Audit (correzioni tecniche completate)
@@ -227,12 +228,12 @@ Fix critico: le date lezione in DB sono timestamp ISO completi (mezzanotte local
 
 Verificato: `npx tsc --noEmit` pulito, `eslint` senza errori nuovi, `npm run build` completato (incluse le pagine shop).
 
-### Prossimi passi (fasi 8-9)
+### Prossimi passi (fase 9)
 
-**Capitolo email chiuso** (fase 7): design in `.agents/emails.md` (S1-S5), esecuzione newsletter in `.agents/newsletter.md`. S3/S5 restano non implementate per dipendenza dai gap G2/G3.
+**Capitolo ai-seo chiuso** (fase 8): deliverable in `.agents/ai-seo.md`. Implementate le fondamenta di agent-readiness (robots AI policy, `llms.txt`, `llms-full.txt`, Organization JSON-LD, OG metadata, heading). Roadmap AI residua documentata in `.agents/ai-seo.md` §7.2 (Markdown negotiation, answer block, FAQ/HowTo, `/pricing.md`, dati originali, presence off-site).
 
-La prossima sessione deve iniziare dalla **ai-seo** (fase 8 della roadmap). Contesto pronto:
+La prossima sessione deve iniziare dalla **marketing-plan** (fase 9 della roadmap). Contesto pronto:
 1. `.agents/product-marketing.md` (questo file)
 2. `.agents/content-strategy.md` (calendario + funnel)
-3. `.agents/schema.md` (schema markup, base per l'ottimizzazione AI-answer)
-4. Fase 8: ai-seo → poi 9. marketing-plan
+3. `.agents/ai-seo.md` (input per la sezione Acquisition)
+4. Fase 9: marketing-plan (fCMO/AARRR, 13 sezioni)

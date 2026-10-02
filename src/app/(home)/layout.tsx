@@ -56,6 +56,7 @@ export default async function RootLayout({
           name={settings.siteName!}
           url={`${settings.siteUrl!}/`}
           logo={`${settings.siteUrl}${settings.logoUrl}`}
+          description={settings.seo?.description || undefined}
           sameAs={socialUrls}
         />
         <WebSiteJsonLd

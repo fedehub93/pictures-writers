@@ -78,9 +78,9 @@ export const Review = ({
               : "?"}
           </div>
           <div>
-            <h4 className="text-sm sm:text-base font-bold text-foreground">
+            <h3 className="text-sm sm:text-base font-bold text-foreground">
               {name}
-            </h4>
+            </h3>
             <p className="text-xs text-muted-foreground line-clamp-1">{role}</p>
           </div>
         </div>
