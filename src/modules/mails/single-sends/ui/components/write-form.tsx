@@ -5,7 +5,13 @@ import { useController, useForm } from "react-hook-form";
 import { EditorRef, EmailEditorProps } from "react-email-editor";
 import dynamic from "next/dynamic";
 import { useRef } from "react";
-import { SendIcon, Trash2Icon, CalendarClockIcon, XIcon } from "lucide-react";
+import {
+  SendIcon,
+  Trash2Icon,
+  CalendarClockIcon,
+  XIcon,
+  MoreHorizontalIcon,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
@@ -24,6 +30,13 @@ import {
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Skeleton } from "@/shared/ui/skeleton";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/shared/ui/dropdown-menu";
 
 import { GenericInput } from "@/shared/components/form-component/generic-input";
 import { MultiSelectV2 } from "@/shared/components/multi-select-v2";
@@ -225,67 +238,78 @@ export const WriteForm = ({ singleSend }: WriteFormProps) => {
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-medium">Write Email</h1>
             <div className="flex gap-x-2 items-center">
-              <ConfirmModal onConfirm={onRemove}>
-                <Button variant="destructive">
-                  <Trash2Icon className="size-4" />
-                </Button>
-              </ConfirmModal>
               <Button type="submit" disabled={isSubmitting || !isValid}>
-                Save Single Send
+                Save
               </Button>
-              {activeSchedule ? (
-                <>
-                  <ScheduleSingleSendDialog
-                    singleSendId={singleSend.id}
-                    mode="reschedule"
-                    currentScheduledAt={activeSchedule.plannedAt}
-                    trigger={
-                      <Button
-                        type="button"
-                        variant="outline"
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="size-8">
+                    <span className="sr-only">Open menu</span>
+                    <MoreHorizontalIcon />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => onSend()}
+                    disabled={isSubmitting || !isValid || sendIsPending}
+                  >
+                    <SendIcon />
+                    Send now
+                  </DropdownMenuItem>
+                  {activeSchedule ? (
+                    <>
+                      <ScheduleSingleSendDialog
+                        singleSendId={singleSend.id}
+                        mode="reschedule"
+                        currentScheduledAt={activeSchedule.plannedAt}
+                        trigger={
+                          <DropdownMenuItem
+                            onSelect={(event) => event.preventDefault()}
+                            disabled={isSubmitting || scheduleIsPending}
+                          >
+                            <CalendarClockIcon />
+                            Reschedule
+                          </DropdownMenuItem>
+                        }
+                      />
+                      <DropdownMenuItem
+                        onClick={() =>
+                          cancelSchedule.mutate({
+                            singleSendId: singleSend.id,
+                          })
+                        }
                         disabled={isSubmitting || scheduleIsPending}
                       >
-                        <CalendarClockIcon className="size-4 mr-2" />
-                        Reschedule
-                      </Button>
-                    }
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={isSubmitting || scheduleIsPending}
-                    onClick={() =>
-                      cancelSchedule.mutate({ singleSendId: singleSend.id })
-                    }
-                  >
-                    <XIcon className="size-4 mr-2" />
-                    Cancel
-                  </Button>
-                </>
-              ) : (
-                <ScheduleSingleSendDialog
-                  singleSendId={singleSend.id}
-                  trigger={
+                        <XIcon />
+                        Cancel schedule
+                      </DropdownMenuItem>
+                    </>
+                  ) : (
+                    <ScheduleSingleSendDialog
+                      singleSendId={singleSend.id}
+                      trigger={
+                        <DropdownMenuItem
+                          onSelect={(event) => event.preventDefault()}
+                          disabled={isSubmitting || !isValid}
+                        >
+                          <CalendarClockIcon />
+                          Schedule send
+                        </DropdownMenuItem>
+                      }
+                    />
+                  )}
+                  <DropdownMenuSeparator />
+                  <ConfirmModal onConfirm={onRemove}>
                     <Button
-                      type="button"
-                      variant="outline"
-                      disabled={isSubmitting || !isValid}
+                      variant="ghost"
+                      className="bg-destructive px-2! w-full justify-start text-destructive-foreground"
                     >
-                      <CalendarClockIcon className="size-4 mr-2" />
-                      Schedule send
+                      <Trash2Icon data-icon="inline-start" />
+                      Delete
                     </Button>
-                  }
-                />
-              )}
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onSend()}
-                disabled={isSubmitting || !isValid}
-              >
-                <SendIcon className="size-4 mr-2" />
-                Send
-              </Button>
+                  </ConfirmModal>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
           <div className="flex flex-wrap gap-4 items-start">

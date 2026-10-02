@@ -9,11 +9,16 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import dynamic from "next/dynamic";
-import { Trash2Icon } from "lucide-react";
+import { MoreHorizontalIcon, Trash2Icon } from "lucide-react";
 
 import { useTRPC } from "@/trpc/client";
 import { Form } from "@/shared/ui/form";
 import { Button } from "@/shared/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/shared/ui/dropdown-menu";
 
 import { GenericInput } from "@/shared/components/form-component/generic-input";
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
@@ -131,11 +136,26 @@ export const TemplateEditorForm = ({ template }: EmailEditorFormProps) => {
           >
             Save
           </Button>
-          <ConfirmModal onConfirm={onDelete}>
-            <Button variant="destructive" disabled={isLoading}>
-              <Trash2Icon className="h-4 w-4" />
-            </Button>
-          </ConfirmModal>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="size-8">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontalIcon />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <ConfirmModal onConfirm={onDelete}>
+                <Button
+                  variant="ghost"
+                  disabled={isLoading}
+                  className="bg-destructive px-2! w-full justify-start text-destructive-foreground"
+                >
+                  <Trash2Icon data-icon="inline-start" />
+                  Delete
+                </Button>
+              </ConfirmModal>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
       <Form {...form}>
