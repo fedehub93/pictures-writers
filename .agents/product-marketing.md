@@ -1,7 +1,7 @@
 # Product Marketing Context
 
 **Document version:** v1
-**Last updated:** 2026-09-16
+**Last updated:** 2026-10-02
 
 ## Product Overview
 **One-liner:** La piattaforma italiana dedicata alla formazione e alla crescita professionale degli sceneggiatori cinematografici e televisivi.
@@ -148,6 +148,8 @@
 - v8 (2026-10-01) — Riscrittura SERP hub 2B "Come diventare sceneggiatore" (audit SERP + riscrittura integrale + FAQ/FAQPage) in `.agents/serp-come-diventare-sceneggiatore.md`; piano di misurazione in `.agents/measurement-come-diventare-sceneggiatore.md`; implementazione verificata su draft (review in §8 del deliverable).
 - v9 (2026-10-01) — Proof point community aggiornato a **800+** (canonico, allineato agli hub live); propagato ai deliverable (content-strategy, copywriting, emails, launch). Cadenza newsletter riconfermata settimanale (formato alternato piena/leggera).
 - v10 (2026-10-01) — Fase 7 (emails) aggiornata: **attrezzo intermedio di S1 = feedback gratuito sulla prima pagina** (asset già live, costo 0), S1 da 6 a 7 email. Template/checklist soggetto da costruire per un futuro A/B nella stessa posizione. Dettagli in `.agents/emails.md` v5; funnel allineato in `.agents/content-strategy.md` §5.
+- v11 (2026-10-02) — **S2 (Welcome newsletter) chiusa**: copy e design finalizzati in `.agents/emails.md` §5 (v21-v22). Trigger corretto in `subscription.confirmed`; separazione da S1 data dal trigger (non dal flag `isSubscriber`), overlap dual-entry accettato per l'MVP. Implementazione admin a cura dell'utente (nessun codice).
+- v12 (2026-10-02) — **Capitolo email chiuso.** S1 (nurture post-ebook) implementata e pubblicata sul motore Automations; S2 (welcome newsletter) chiusa; **S4 newsletter eseguita**: piano di ottobre (riattivazione + apertura laboratori, finestra 8→27 ott, avvio 3/11) e novembre in `.agents/newsletter.md`. S3 (post-acquisto) e S5 (re-engagement) restano progettate ma non implementate: dipendono dai gap di tracciamento interazioni G2/G3. Prossimo passo: fase 8 (ai-seo).
 
 ## SEO Marketing Skills Workflow
 
@@ -158,7 +160,7 @@
 4. copywriting ✅ (copy deck in `.agents/copywriting.md`, in corso di applicazione in CMS)
 5. cro ✅ (deliverable in `.agents/cro.md`)
 6. schema ✅ (deliverable in `.agents/schema.md`)
-7. emails ✅ (deliverable in `.agents/emails.md`)
+7. emails ✅ (design in `.agents/emails.md`; esecuzione newsletter in `.agents/newsletter.md`)
 8. ai-seo 🔲
 9. marketing-plan 🔲
 
@@ -226,7 +228,11 @@ Fix critico: le date lezione in DB sono timestamp ISO completi (mezzanotte local
 Verificato: `npx tsc --noEmit` pulito, `eslint` senza errori nuovi, `npm run build` completato (incluse le pagine shop).
 
 ### Prossimi passi (fasi 8-9)
-La prossima sessione deve iniziare dalla **ai-seo** (fase 8 della roadmap). Per riprendere:
-1. Leggere `.agents/emails.md` (deliverable fase 7: program email, copy S1-S5, gap G1-G5 e piano Opzione A su `ScheduledAction`)
-2. Leggere `.agents/schema.md` (deliverable fase 6: schema markup, base per l'ottimizzazione AI-answer)
-3. Fase 8: ai-seo → poi 9. marketing-plan
+
+**Capitolo email chiuso** (fase 7): design in `.agents/emails.md` (S1-S5), esecuzione newsletter in `.agents/newsletter.md`. S3/S5 restano non implementate per dipendenza dai gap G2/G3.
+
+La prossima sessione deve iniziare dalla **ai-seo** (fase 8 della roadmap). Contesto pronto:
+1. `.agents/product-marketing.md` (questo file)
+2. `.agents/content-strategy.md` (calendario + funnel)
+3. `.agents/schema.md` (schema markup, base per l'ottimizzazione AI-answer)
+4. Fase 8: ai-seo → poi 9. marketing-plan

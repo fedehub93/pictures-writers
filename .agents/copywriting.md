@@ -124,7 +124,7 @@ Metodo: mantenere ogni variante 2-3 settimane, confrontare CTR da GSC e bounce r
 
 **URL:** `/come-diventare-sceneggiatore-la-guida-definitiva/`
 **Buyer stage:** Consideration (verso decision)
-**Fatti da usare:** roadmap esistente · laboratorio corso (€200) · editing soggetto (€50/€90) · community
+**Fatti da usare:** roadmap esistente · laboratorio corso (€300) · editing soggetto (€50/€90) · community
 
 ### 4.1 Meta
 

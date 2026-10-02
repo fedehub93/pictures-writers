@@ -27,7 +27,7 @@
 
 | Prodotto | Job-to-be-done | Formato | Prezzo |
 |---|---|---|---|
-| **Corso di gruppo** (5ª edizione, 13 studenti) | Scrivere un soggetto di lungometraggio (3ª stesura) | 5 sessioni, collettivo, ritmo di classe | 200€ |
+| **Corso di gruppo** (5ª edizione, 13 studenti) | Scrivere un soggetto di lungometraggio (3ª stesura) | 5 sessioni, collettivo, ritmo di classe | 300€ |
 | **Laboratorio 1:1** (nuovo) | Scrivere un soggetto di lungometraggio (3ª stesura) | Sessioni singole, ritmo dello studente, brainstorming dedicato | 300€ |
 | **Editing Double View** | Parere professionale incrociato su una sceneggiatura | — | da listino |
 
@@ -74,7 +74,7 @@
 
 | Fase | Azioni | Output / KPI |
 |---|---|---|
-| **1. Internal** | Offrire l'1:1 a 2-3 dei 13 studenti a prezzo founder (es. 200€); raccogliere testimonianze sulla differenza vs gruppo | Prova sociale + delivery collaudato |
+| **1. Internal** | Offrire l'1:1 a 2-3 dei 13 studenti a prezzo founder (es. 250€); raccogliere testimonianze sulla differenza vs gruppo | Prova sociale + delivery collaudato |
 | **2. Alpha** | Creare product page + categoria `laboratorio-individuale`; annuncio newsletter "pre-iscrizione" con waitlist | Waitlist attiva |
 | **3. Beta** | Teaser social formato 1:1; inviti waitlist a coorti piccole (5-10% per volta); early-bird 300€ (o 270€ pre-lancio) | Prime conversioni + feedback |
 | **4. Early access** | Leak agenda sessioni / cosa restituisce il laboratorio; email di conferma acquisto (template `webinarTemplateId`); facoltativo sondaggio PMF | Validazione a scala |
@@ -88,7 +88,7 @@ Il CMS separa già tutto per prodotto (URL `/shop/[categoria]/[slug]`, title/des
 
 1. **Stesso job → flusso "formato", non "nuovo argomento".** Gruppo: "laboratorio di sceneggiatura di gruppo", "corso di gruppo per soggetto". Individuale: "laboratorio individuale", "percorso 1:1 soggetto", "scrivere un soggetto con un tutor/consulente", "mentoring sceneggiatura individuale". Evitare che entrambe le pagine puntino al solo termine "scrivere un soggetto" senza modale: gruppo→"corso di gruppo", individuale→"individuale 1:1".
 2. **Schema** (completato fase 6, in `.agents/schema.md`): ogni prodotto `ProductType.WEBINAR` emette `Course` (`courseMode`: online, offer) + `Event` per lezione — decisione sul type, non sullo slug di categoria, quindi niente coupling al rename. `learningResourceType` non valorizzato in pagina (il valore specifico 1:1 non vale per gli altri webinar). `@id` distinti (`#course`/`#course-instance`, `#event-N`).
-3. **Interlinking "vs"** — il laboratorio linka al gruppo con "Preferisci farlo in gruppo? Edizione collettiva a 200€"; il gruppo viceversa ("Vuoi più attenzione sulla tua idea? Percorso 1:1 a 300€").
+3. **Interlinking "vs"** — il laboratorio linka al gruppo con "Preferisci farlo in gruppo? Edizione collettiva a 300€"; il gruppo viceversa ("Vuoi più attenzione sulla tua idea? Percorso 1:1 a 300€"). Stesso prezzo: la differenza è il **formato** (collettivo vs 1:1), non il prezzo.
 4. **FAQ distinte** (`product.faqs`) — gruppo: "come funziona la classe?". Individuale: "quante sessioni mi dedicano?", "devo avere già un'idea?", "le sessioni vengono registrate? No — è un lavoro 1:1 di analisi e brainstorming", "cosa consegno a fine percorso? Un soggetto alla terza stesura, come nel corso di gruppo".
 5. **Seo fields valorizzati** — title/description unici, non derivati dal nome.
 
@@ -98,7 +98,7 @@ Il CMS separa già tutto per prodotto (URL `/shop/[categoria]/[slug]`, title/des
 - **Early-bird pre-lancio:** 270€ (waitlist/alpha) o 250€ founder (prima coorte beta).
 - **Posti per edizione:** 5 max (reale scarsità 1:1).
 - **Frame:** non "sconto", ma "edizione corrente con date [...] — posti limitati".
-- **Elevation del gruppo:** invariata per questo lancio (200€). L'individuale non è un upgrade della tecnica: è lo stesso esito con più attenzione. Non toccare il prezzo del gruppo mentre lanci l'1:1.
+- **Prezzo del gruppo:** allineato a **300€** (stessa soglia dell'1:1), deciso dall'utente. La differenza tra i due prodotti è il **formato** (collettivo vs 1:1), non il prezzo. L'individuale non è un upgrade della tecnica: è lo stesso esito con più attenzione.
 
 ## 8. Email di lancio (bozza copy, tono brand: caldo, tu, diretto)
 
@@ -179,3 +179,4 @@ Questo lancio matura e dà priorità a:
 ## Changelog
 
 - v2 — Correzione posizionamento: il corso di gruppo produce GIÀ un soggetto alla 3ª stesura → job identico, differenza sul formato (collettivo vs 1:1). Pitch ex-studenti = upsell di attenzione, non nuovo insegnamento. Sessioni non registrabili (1:1, analisi/brainstorming) → caratteristica, non gap. SEO: separazione su modale gruppo/1:1.
+- v3 (2026-10-02) — **Prezzo del corso di gruppo allineato all'1:1 a 300€** (decisione utente). Rimossa la regola "non toccare il prezzo del gruppo"; la differenziazione resta sul **formato**, non sul prezzo. Esempio founder 1:1 portato a 250€.

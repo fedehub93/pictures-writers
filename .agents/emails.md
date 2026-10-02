@@ -1,7 +1,7 @@
 # Email Marketing — Pictures Writers
 
 **Document version:** v1
-**Last updated:** 2026-09-23
+**Last updated:** 2026-10-02
 **Status:** Fase 7 della roadmap SEO
 
 ---
@@ -18,7 +18,7 @@ Fonte del contesto: `.agents/product-marketing.md` (audience, obiezioni, proof p
 - Rilevanza > volume: la lista è ~800 iscritti → sequence corte e segmentate, meglio di tante email deboli
 - Ogni email muove il percorso: link utili che approfondiscono il funnel (blog → ebook → corso → editing)
 
-**Proof points utilizzabili (verificati, da product-marketing):** 800+ iscritti newsletter · 500+ download ebook gratuito · 7 recensioni media 5★ · metodo Double View (due consulenti che analizzano in modo indipendente) · consegna 7-10 giorni lavorativi · prezzo sotto la media del mercato (da €50 per un soggetto · laboratorio €200).
+**Proof points utilizzabili (verificati, da product-marketing):** 800+ iscritti newsletter · 500+ download ebook gratuito · 7 recensioni media 5★ · metodo Double View (due consulenti che analizzano in modo indipendente) · consegna 7-10 giorni lavorativi · prezzo sotto la media del mercato (da €50 per un soggetto · laboratorio €300).
 
 **Vincolo:** niente statistiche inventate; nessuna recensione/testimonianza non verifica esistente in piattaforma.
 
@@ -83,7 +83,7 @@ Entry point ad alto intent: il lead ha dato l'email per il lead magnet. È il fl
 ```
 Sequence Name: Nurture post-download ebook
 Trigger: interazione `ebook_downloaded` (dopo l'email transazionale di consegna)
-Goal: iscrizione al laboratorio di scrittura di un soggetto (€200) — conversione primaria; editing come conversione secondaria per chi ha già un testo
+Goal: iscrizione al laboratorio di scrittura di un soggetto (€300) — conversione primaria; editing come conversione secondaria per chi ha già un testo
 Attrezzo intermedio: feedback gratuito sulla prima pagina (asset già live, costo di implementazione 0) — micro-commitment tra la fase di valore (E1-E3) e l'ask commerciale (E5-E7)
 Length: 7 email
 Timing: Day 1 / 3 / 5 / 7 / 9 / 11 / 14
@@ -239,7 +239,7 @@ Nota: la richiesta di feedback (E4) NON è un'uscita — è una micro-conversion
 >
 > Da soli è il modo più sicuro per non arrivare mai alla parola "fine". Con qualcuno che ti segue e un gruppo con cui confrontarti, cambia tutto.
 >
-> **€200**, sotto la media del mercato.
+> **€300**, sotto la media del mercato.
 >
 > **[Scopri il laboratorio →]** `/shop/corsi-di-sceneggiatura/laboratorio-di-scrittura-di-un-soggetto/`
 >
@@ -304,75 +304,108 @@ Per chi si iscrive dalla newsletter **senza** aver scaricato l'ebook. Converte l
 
 ```
 Sequence Name: Welcome newsletter
-Trigger: interazione `user_subscribed` (dopo conferma) e nessun `ebook_downloaded`
+Trigger: trigger evento `subscription.confirmed` (dopo la conferma dell'iscrizione newsletter)
 Goal: attivare il curioso → aggancio ebook gratuito → merge in S1
 Length: 4 email
 Timing: Day 0 (immediata) / 2 / 5 / 8
 Exit conditions: scarica ebook → merge in S1 (reset alle E1) · unsubscribe · bounce
+Nota: la separazione da S1 (ebook) è data dal **trigger**, non dal flag `isSubscriber` (condiviso tra chi scarica l'ebook e chi si iscrive). Chi scarica l'ebook **e poi** conferma la newsletter entra in entrambe le sequence: accettato per l'MVP. Se darà fastidio, la correzione è a monte in `emitSubscriptionConfirmed` (non emettere se il contatto ha `ebook_downloaded`), mai nell'engine.
 ```
+
+**Stato:** ✅ copy e design chiusi. Implementazione admin (4 template `EmailTemplate` + canvas sul trigger `subscription.confirmed`) a cura dell'utente; nessuna modifica di codice necessaria.
 
 ### Email 1 — Benvenuto + cosa aspettarsi
 **Send:** Day 0 (immediata)
 **Subject:** Benvenuto tra gli sceneggiatori di Pictures Writers
 **Preview:** Ogni settimana uno strumento concreto per scrivere meglio. Ecco cosa aspettarti.
 **Body:**
-> Bentornato: ora sei ufficialmente dentro la community.
+> Ciao,
+> la tua iscrizione è confermata: sei dentro la community di Pictures Writers.
 >
 > Ogni settimana nella tua inbox trovi strumenti concreti per scrivere meglio:
-> - Guide pratiche e analisi dei film che fanno scuola
-> - Scadenze e aggiornamenti sui concorsi di sceneggiatura
-> - Notizie su laboratori e servizi di editing
+> - guide pratiche e analisi dei film che fanno scuola
+> - scadenze e aggiornamenti sui concorsi
+> - novità su laboratori ed editing
 >
 > Niente rumore: solo quello che serve al mestiere.
 >
-> Per iniziare bene, parti dalla guida che usiamo con tutti quelli che ci chiedono "da dove comincio":
+> E non parti da solo: siamo già **800+ sceneggiatori**.
 >
-> [Leggi: come scrivere una sceneggiatura (guida completa) →] `/come-scrivere-una-sceneggiatura/`
-**CTA:** La guida completa gratuita → `/come-scrivere-una-sceneggiatura/`
+> Per iniziare bene, parti dalla guida che diamo a chi ci chiede "da dove comincio?":
+>
+> **[Da dove cominciare →]** `/come-scrivere-una-sceneggiatura/`
+>
+> Tra due giorni ti mando il primo strumento: la struttura che tiene in piedi ogni storia.
+>
+> A presto,
+> Federico e il team di Pictures Writers
+**CTA:** Da dove cominciare → `/come-scrivere-una-sceneggiatura/`
 
 ### Email 2 — Primo strumento
 **Send:** Day 2
 **Subject:** Il metodo 3 atti che spiega (quasi) tutti i film
 **Preview:** Un solo concetto, esempi compresi, per capire com'è fatta una storia.
 **Body:**
-> Cominciamo con la struttura, perché senza struttura non c'è storia.
+> Ciao,
+> cominciamo dalla struttura. Perché senza struttura non c'è storia.
 >
-> La [struttura in 3 atti](/la-struttura-in-tre-atti-di-una-sceneggiatura/) ha un solo compito: dare un inizio, un conflitto e una soluzione alla tua idea. Non è una gabbia: è lo scheletro che tiene in piedi tutto il resto.
+> La [struttura in 3 atti](/la-struttura-in-tre-atti-di-una-sceneggiatura/) ha un solo compito: dare un inizio, un conflitto e una soluzione alla tua idea.
+> Non è una gabbia: è lo scheletro che tiene in piedi tutto il resto.
 >
-> Se la guardi una volta con gli esempi giusti, poi la riconosci ovunque — anche nei film che già conosci. E quando la riconosci, la sai usare.
+> Guardala una volta con gli esempi giusti e la riconosci ovunque, anche nei film che già conosci. E quando la riconosci, la sai usare.
 >
-> [Scopri la struttura in 3 atti →] `/la-struttura-in-tre-atti-di-una-sceneggiatura/`
-**CTA:** Leggi la guida → `/la-struttura-in-tre-atti-di-una-sceneggiatura/`
+> **[Scopri i 3 atti →]** `/la-struttura-in-tre-atti-di-una-sceneggiatura/`
+>
+> Tra tre giorni ti mando il percorso completo, da tenere con te mentre scrivi.
+>
+> A presto,
+> Federico e il team di Pictures Writers
+**CTA:** Scopri i 3 atti → `/la-struttura-in-tre-atti-di-una-sceneggiatura/`
 
 ### Email 3 — Lead magnet: chiudi il gap verso l'ebook
 **Send:** Day 5
 **Subject:** Il percorso completo, da tenere sempre con te
 **Preview:** Un solo oggetto che riunisce tutto: l'ebook gratuito per sceneggiatori.
 **Body:**
-> Parliamoci chiaro: le email sono ottime, ma servono con te sul tavolo mentre scrivi.
+> Ciao,
+> le email sono ottime, ma servono al tavolo, mentre scrivi.
 >
-> L'ebook "Introduzione alla sceneggiatura cinematografica" è proprio questo: il percorso completo — idea, soggetto, struttura, personaggi — in formato da consultare mentre lavori. Gratis, perché per noi la porta d'ingresso del mestiere deve restare aperta.
+> L'ebook **"Introduzione alla sceneggiatura cinematografica"** è il percorso completo — idea, soggetto, struttura, personaggi — da consultare mentre lavori.
 >
-> [📘 Scarica l'ebook gratuito →] `/shop/ebooks/introduzione-alla-sceneggiatura/`
+> Gratis, perché per noi la porta d'ingresso del mestiere deve restare aperta.
 >
-> *Dopo il download, la prossima email ti aspetta con il primo passo concreto.* (→ apre la S1)
+> Lo hanno già scaricato in **500+**.
+>
+> **[Scarica l'ebook gratuito →]** `/shop/ebooks/introduzione-alla-sceneggiatura/`
+>
+> Dopo il download, ti aspetta il primo passo concreto.
+>
+> A presto,
+> Federico e il team di Pictures Writers
 **CTA:** Scarica l'ebook gratuito → `/shop/ebooks/introduzione-alla-sceneggiatura/`
 **Exit/merge:** se clicca e completa il form, `ebook_downloaded` → entra in S1 (E1) e abbandona S2
 
-### Email 4 — Community + prossimi passi
+### Email 4 — Attivazione + prossimi passi
 **Send:** Day 8
 **Subject:** Non sei più da solo con il tuo copione
-**Preview:** Community, laboratorio, editing: dove ci trovi quando sei pronto.
+**Preview:** Dove ci trovi, quando sei pronto a muoverti.
 **Body:**
-> Scrivere è un mestiere solitario solo se lo fai da solo.
+> Ciao,
+> scrivere è un mestiere solitario solo se lo fai da solo.
 >
-> Quando sarai pronto a muoverti, qui trovi tutto nello stesso posto:
-> - **Laboratorio di scrittura del soggetto**: un gruppo ristretto per portare l'idea fino alla prima stesura → `/shop/corsi-di-sceneggiatura/laboratorio-di-scrittura-di-un-soggetto/`
-> - **Editing Double View**: due consulenti che analizzano la tua sceneggiatura → `/shop/servizi-di-editing/sceneggiatura-di-lungometraggio/`
-> - E le newsletter settimanali, dove ci ritroviamo.
+> Se non l'hai ancora fatto, il primo passo è la guida gratuita che unisce tutto — idea, soggetto, struttura, personaggi:
 >
-> Il prossimo strumento arriva regolarmente. Ci vediamo lì.
-**CTA:** Scopri il laboratorio → `/shop/corsi-di-sceneggiatura/laboratorio-di-scrittura-di-un-soggetto/`
+> **[Scarica l'ebook gratuito →]** `/shop/ebooks/introduzione-alla-sceneggiatura/`
+>
+> E quando sarai pronto a muoverti:
+> - il **laboratorio di scrittura del soggetto** porta la tua idea fino alla prima stesura;
+> - l'**editing Double View** mette due consulenti sulla tua sceneggiatura.
+>
+> E ogni settimana ci ritroviamo qui, nella newsletter.
+>
+> A presto,
+> Federico e il team di Pictures Writers
+**CTA:** Scarica l'ebook gratuito (primaria) → `/shop/ebooks/introduzione-alla-sceneggiatura/` · quando è pronto: laboratorio `/shop/corsi-di-sceneggiatura/laboratorio-di-scrittura-di-un-soggetto/` · editing `/shop/servizi-di-editing/sceneggiatura-di-lungometraggio/`
 **Exit:** a fine S2 se nessuna interazione → dopo 30 giorni valutare: merge in S1 se ha scaricato l'ebook, altrimenti S5 re-engagement
 
 ---
@@ -562,3 +595,6 @@ La fase 7 è un deliverable di design; le righe sotto preparano l'implementazion
 - v18 (2026-10-01) — **S1-E1: allineato il body alla preview.** Aggiunta la quantificazione nella riga del primo passo ("È una riga sola, e bastano dieci minuti:"), così la promessa dei "10 minuti" della preview (`emails.md:97`) trova riscontro nel corpo. Audit oggetto/preview S1 chiuso: nessun disallineamento residuo.
 - v19 (2026-10-01) — **S1 implementata e pubblicata.** La sequence post-ebook è costruita sul **motore Automations interno** (canvas + trigger evento, `Automation`/`AutomationRun`/`AutomationRunStep`, `docs/automations.md`), non sul worker immaginato in §9 opzioni A/B: **G1 chiuso**. Trigger via evento interno sul form built-in ebook (`emitFormSubmitted`); idempotenza per `contactId` (ADR-0005). Template delle 7 email creati nell'editor admin. Aggiornati: §2 (tabella infrastruttura), §4 (stato S1), §9 (G1 + nota sulle opzioni MVP, checklist). S2-S5 restano da implementare.
 - v20 (2026-10-01) — **Doppio opt-in chiuso (§2/G4).** Il token di conferma ora viene consumato: `createContactByEmail` non imposta più `emailVerified`; `newSubscription` imposta `emailVerified`, sposta `user_subscribed`/notifica alla conferma ed emette il nuovo trigger interno `subscription.confirmed` (solo prima conferma, idempotenza per `contactId`). `subscribe.ts` mantiene l'emit `form.submitted` come segnale di richiesta. Vedi ADR-0007. Nessun gap infrastrutturale bloccante residuo per S1/S2 (restano G2/G3/G5).
+- v21 (2026-10-02) — **S2 allineata alle convenzioni S1** (mobile, firma, CTA). Apertura `Ciao,` e firma `A presto, Federico e il team di Pictures Writers` su tutte e 4 le email. E1: "Bentornato" → "Benvenuto", aggiunto proof point community **800+**, CTA resa concreta (**"Da dove cominciare"** invece del generico "Leggi la guida completa"). E2: hook self-contained + CTA corta ("Scopri i 3 atti"). E3: rimossa emoji dalla CTA, aggiunto proof **500+** download. E4 ricentrata sull'attivazione: **CTA primaria = ebook gratuito** (merge in S1), laboratorio/editing come link secondari "quando sei pronto" (non più ask commerciale primario su lead freddo). Corretto il trigger di S2 in **`subscription.confirmed`** (era `user_subscribed`) con nota: la separazione da S1 è data dal trigger, non dal flag `isSubscriber`; l'overlap dual-entry è accettato per l'MVP (fix futuro a monte in `emitSubscriptionConfirmed`, mai nell'engine). Aggiunte righe di raccordo prima della firma su E1 ("Tra due giorni ti mando il primo strumento…", aggancia la E2), E2 ("Tra tre giorni ti mando il percorso completo…", aggancia la E3) ed E4 ("E ogni settimana ci ritroviamo qui, nella newsletter."). E3 aveva già la sua.
+- v22 (2026-10-02) — **S2 chiusa.** Copy e design finalizzati con l'utente; §5 marcata `✅` con stato di implementazione (4 template + canvas sul trigger `subscription.confirmed`, a cura dell'utente, nessun codice). E1: CTA resa concreta (**"Da dove cominciare"**). E4: preview de-ridondata (**"Dove ci trovi, quando sei pronto a muoverti."**). Overlap dual-entry E3/E4 lasciato invariante su decisione dell'utente.
+- v23 (2026-10-02) — **Prezzo laboratorio €200 → €300** (allineato all'1:1, decisione utente). Aggiornati: proof point §1, goal §4, body **S1-E5** ("**€300**, sotto la media del mercato"). ⚠️ Il template **S1-E5** pubblicato in admin va riallineato a €300. Propagato anche a `copywriting.md` e `launch-individuale.md`.
