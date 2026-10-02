@@ -4,6 +4,7 @@ import { audiencesRouter } from "@/modules/mails/audiences/server/procedures";
 import { automationsRouter } from "@/modules/automations/server/procedures";
 import { credentialsRouter } from "@/modules/automations/credentials/server/procedures";
 import { categoriesRouter } from "@/modules/blog/categories/server/procedures";
+import { customersRouter } from "@/modules/customers/server/procedures";
 import { contactsRouter } from "@/modules/mails/contacts/server/procedures";
 import { formsRouter } from "@/modules/forms/server/procedures";
 import { formSubmissionsRouter } from "@/modules/forms/submissions/server/procedures";
@@ -23,6 +24,7 @@ export const appRouter = createTRPCRouter({
   credentials: credentialsRouter,
   categories: categoriesRouter,
   contacts: contactsRouter,
+  customers: customersRouter,
   forms: formsRouter,
   mailSettings: settingsRouter,
   pages: pagesRouter,

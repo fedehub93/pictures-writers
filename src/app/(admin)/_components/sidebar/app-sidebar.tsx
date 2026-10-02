@@ -28,6 +28,7 @@ import {
   StarIcon,
   TagsIcon,
   UsersIcon,
+  UsersRoundIcon,
   ShieldCheckIcon,
   WorkflowIcon,
 } from "lucide-react";
@@ -130,6 +131,12 @@ const data: Record<string, NavObject[]> = {
           url: "/admin/shop/reviews",
           Icon: StarIcon,
           permission: "reviews.read",
+        },
+        {
+          title: "Customers",
+          url: "/admin/shop/customers" as Route,
+          Icon: UsersRoundIcon,
+          permission: "customers.read",
         },
       ],
     },
