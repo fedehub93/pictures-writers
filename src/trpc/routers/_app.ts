@@ -8,6 +8,7 @@ import { customersRouter } from "@/modules/customers/server/procedures";
 import { contactsRouter } from "@/modules/mails/contacts/server/procedures";
 import { formsRouter } from "@/modules/forms/server/procedures";
 import { formSubmissionsRouter } from "@/modules/forms/submissions/server/procedures";
+import { ordersRouter } from "@/modules/orders/server/procedures";
 import { pagesRouter } from "@/modules/pages/server/procedures";
 import { postsRouter } from "@/modules/blog/posts/server/procedures";
 import { schedulerRouter } from "@/modules/scheduler/server/procedures";
@@ -27,6 +28,7 @@ export const appRouter = createTRPCRouter({
   customers: customersRouter,
   forms: formsRouter,
   mailSettings: settingsRouter,
+  orders: ordersRouter,
   pages: pagesRouter,
   posts: postsRouter,
   roles: rolesRouter,
