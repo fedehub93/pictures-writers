@@ -21,6 +21,7 @@ The solution adds:
 
 - A `Customer` entity separate from `User` (backoffice identity) and `Contact` (captured email address).
 - An `Order` entity with a small but extensible lifecycle, linked to a `Customer`.
+- An `orderDate` on `Order` that records the actual date of the sale, editable by an admin, so historical orders keep their real date instead of the import date.
 - `OrderItem` rows that keep a price/name snapshot at order time plus an optional reference to the live `Product`.
 - A `Payment` entity linked to an `Order`, supporting offline payments now and online methods later.
 - Admin list/detail pages for Customers and Orders, protected by granular permissions.
@@ -47,6 +48,7 @@ The solution adds:
 14. As an admin, I want Orders created from a Form to be distinguishable from Orders created manually, so that I can report by source.
 15. As a future developer, I want the Order model to support multiple Payments per Order, so that deposits or partial refunds can be added later without a schema rewrite.
 16. As a future developer, I want the `Purchase` model left untouched, so that existing Stripe webhook data remains valid while the new order system is built beside it.
+17. As an admin, I want to set the actual date of an Order, so that historical and offline sales appear on the correct day in reporting and exports instead of the day I entered them.
 
 ## Implementation Decisions
 
@@ -56,7 +58,8 @@ The solution adds:
 - **Order completion is a manual admin action.** Only a backoffice user with the `orders.manage` permission can move an Order from `PENDING` to `COMPLETED`. The action records `completedAt` and `completedBy`.
 - **OrderItem stores a snapshot plus an optional live reference.** Each item stores `nameSnapshot`, `unitPrice`, `quantity`, and `totalPrice`, plus an optional `productId`. If the Product is deleted or its price changes, the Order remains valid.
 - **Payment is a separate entity.** One Order can have many Payments. In v1 an offline Order gets one `Payment` with `method=OFFLINE` and `status=PENDING`; completing the Order sets it to `COMPLETED`.
-- **Order has a human-readable order number.** Format like `PW-2026-000001`, generated atomically. The UUID remains the primary key.
+- **Order has a human-readable order number.** Format like `PW-2026-000001`, generated atomically. The UUID remains the primary key. The year segment follows `orderDate`, not the wall-clock creation year, so imported/historical orders are numbered in their own year.
+- **Order records its actual date separately from its audit timestamps.** `orderDate` is the business date of the sale. It defaults to the creation time but can be set by the admin, so historical orders keep their true date. `createdAt`/`updatedAt` remain the DB audit timestamps and `completedAt` remains the real moment the order was completed.
 - **Order tracks its source.** Values: `MANUAL`, `FORM_SUBMISSION`, `AUTOMATION`, `STRIPE`.
 - **Existing `Purchase` model is not touched.** It remains legacy data for any future Stripe reactivation.
 - **Admin API uses the same tRPC pattern as Posts and Forms.** This keeps authorization, prefetching, and Suspense consistent with the rest of the admin area.
@@ -98,6 +101,7 @@ model Order {
   payments    Payment[]
   totalAmount Float
   currency    String      @default("EUR")
+  orderDate   DateTime    @default(now())
   notes       String?
   completedAt DateTime?
   completedBy String?
@@ -137,9 +141,17 @@ model Payment {
 
 ## Testing Decisions
 
-- The project currently has no automated tests, and this spec does not introduce a new test framework.
-- Acceptance will be verified manually through the admin UI and by running an end-to-end Form → Automation → Order → Complete flow.
-- When a test framework is added later, the highest-value seams to test will be: Order status transitions, order number generation, Customer/Order creation through Automation nodes, and `order.completed` trigger emission.
+- The project already uses **Vitest** with a dedicated test database configured in `.env.test`. The test runner runs `prisma migrate deploy` against that database before the suite starts.
+- This work follows a **TDD approach**: for each ticket, tests are written before the implementation code and must pass before the ticket is considered complete.
+- Tests are integration tests against the real test database, following the existing project pattern (`describe`/`it`, `beforeEach` cleanup, direct `db` calls).
+- Each ticket defines the seams to test:
+  - **Foundation**: verify that permissions are registered and migration applies cleanly.
+  - **Customer**: CRUD operations, email uniqueness, optional fields.
+  - **Order**: creation, total calculation, status transitions, completion/cancellation semantics, permission enforcement.
+  - **Order date**: `orderDate` persists on create, defaults to now, is returned by the read procedures, and drives the order-number year.
+  - **Automation nodes**: `CREATE_CUSTOMER` and `CREATE_ORDER` actions produce correct records, and `order.completed` trigger fires on completion.
+  - **GA4 event**: the `purchase` payload is built correctly from an Order and its items.
+- Manual acceptance remains the final gate for the end-to-end Form → Automation → Order → Complete flow and the GTM event firing in the browser.
 
 ## Out of Scope
 
@@ -150,10 +162,12 @@ model Payment {
 - Customer-facing email notifications at Order creation or completion (existing email flows remain unchanged).
 - Partial payments or refunds in the admin UI in v1 (the schema supports them, but the UI does not).
 - Dashboard widgets for revenue/statistics.
+- Editing `orderDate` on an already-created Order (v1 sets it at creation only).
 - Migration of legacy `Purchase` records into Orders.
 
 ## Further Notes
 
 - Order completion is the canonical business moment. It must remain the single trigger for GA4 purchase events and post-purchase Automations.
 - The GA4 `purchase` event directly addresses the top operational priority in `.agents/marketing-plan.md`: making offline paid conversions attributable.
+- `orderDate` is a record/reporting field and does not change when the GA4 `purchase` event fires. GA4 timestamps events at receipt and cannot be backdated beyond 72 hours, so imported historical orders still land on the import date in GA4. Use `orderDate` from the database for accurate historical reporting.
 - `Purchase` remains a legacy table. A future migration should be a deliberate, separate effort once the new Order system is stable and Stripe is reactivated.

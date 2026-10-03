@@ -68,7 +68,7 @@ export const GenericCalendar = <T extends FieldValues>({
                 </Button>
               </FormControl>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent className="w-70 p-0" align="start">
               <Calendar
                 mode="single"
                 selected={field.value}
@@ -78,6 +78,7 @@ export const GenericCalendar = <T extends FieldValues>({
                     ? date < new Date() || date < new Date("1900-01-01")
                     : false
                 }
+                className="w-full"
                 autoFocus
               />
             </PopoverContent>

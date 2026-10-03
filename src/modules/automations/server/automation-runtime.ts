@@ -1,5 +1,6 @@
 import "server-only";
 
+import { createCustomerNodeRegistry } from "@/modules/customers/automations";
 import { formSubmittedNodeRegistry } from "@/modules/forms/automations";
 import {
   createAutomationMailEffect,
@@ -7,6 +8,10 @@ import {
   sendEmailNodeRegistry,
   subscriptionConfirmedNodeRegistry,
 } from "@/modules/mails/automations";
+import {
+  createOrderNodeRegistry,
+  orderCompletedNodeRegistry,
+} from "@/modules/orders/automations";
 
 import {
   runDueAutomations,
@@ -30,6 +35,9 @@ const moduleNodeRegistry: AutomationNodeRegistry = mergeNodeRegistries(
   sendEmailNodeRegistry,
   formSubmittedNodeRegistry,
   subscriptionConfirmedNodeRegistry,
+  createCustomerNodeRegistry,
+  createOrderNodeRegistry,
+  orderCompletedNodeRegistry,
 );
 
 /**

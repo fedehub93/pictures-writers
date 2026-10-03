@@ -17,6 +17,7 @@ import {
   DrawerDescription,
 } from "@/shared/ui/drawer";
 import { ScrollArea } from "../ui/scroll-area";
+import { cn } from "@/shared/lib/utils";
 
 interface ResponsiveDialogProps {
   title: string;
@@ -24,6 +25,7 @@ interface ResponsiveDialogProps {
   children: React.ReactNode;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  contentClassName?: string;
 }
 
 export const ResponsiveDialog = ({
@@ -32,6 +34,7 @@ export const ResponsiveDialog = ({
   children,
   open,
   onOpenChange,
+  contentClassName,
 }: ResponsiveDialogProps) => {
   const isMobile = useIsMobile();
 
@@ -53,7 +56,12 @@ export const ResponsiveDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="lg:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent
+        className={cn(
+          "lg:max-w-2xl max-h-[90vh] overflow-y-auto",
+          contentClassName,
+        )}
+      >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>

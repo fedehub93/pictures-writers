@@ -30,16 +30,14 @@ const PagesPage = async ({ searchParams }: Props) => {
   prefetchPages(filters);
 
   return (
-    <>
-      <HydrateClient>
-        <PagesListHeader />
-        <Suspense fallback={<PagesViewLoading />}>
-          <ErrorBoundary fallback={<PagesViewError />}>
-            <PagesView />
-          </ErrorBoundary>
-        </Suspense>
-      </HydrateClient>
-    </>
+    <HydrateClient>
+      <PagesListHeader />
+      <Suspense fallback={<PagesViewLoading />}>
+        <ErrorBoundary fallback={<PagesViewError />}>
+          <PagesView />
+        </ErrorBoundary>
+      </Suspense>
+    </HydrateClient>
   );
 };
 

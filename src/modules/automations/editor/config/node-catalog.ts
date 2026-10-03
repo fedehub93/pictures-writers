@@ -4,11 +4,16 @@ import {
   mergeNodeCatalog,
   type AutomationNodeCatalogEntry,
 } from "@/modules/automations/lib/node-catalog";
+import { createCustomerNodeCatalogEntry } from "@/modules/customers/automations/catalog";
 import { formSubmittedTriggerCatalogEntry } from "@/modules/forms/automations/catalog";
 import {
   sendEmailNodeCatalogEntry,
   subscriptionConfirmedTriggerCatalogEntry,
 } from "@/modules/mails/automations/catalog";
+import {
+  createOrderNodeCatalogEntry,
+  orderCompletedTriggerCatalogEntry,
+} from "@/modules/orders/automations/catalog";
 
 /**
  * The palette contents: engine nodes plus the nodes feature modules
@@ -20,6 +25,9 @@ export const editorNodeCatalog: AutomationNodeCatalogEntry[] = mergeNodeCatalog(
     sendEmailNodeCatalogEntry,
     formSubmittedTriggerCatalogEntry,
     subscriptionConfirmedTriggerCatalogEntry,
+    createCustomerNodeCatalogEntry,
+    createOrderNodeCatalogEntry,
+    orderCompletedTriggerCatalogEntry,
   ],
 );
 
