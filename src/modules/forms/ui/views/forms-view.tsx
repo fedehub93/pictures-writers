@@ -10,17 +10,23 @@ import { useSuspenseForms } from "../../hooks/use-forms";
 import { columns } from "../components/column";
 import { UpdateFormDialog } from "../components/update-form-dialog";
 import { useFormFilters } from "../../hooks/use-forms-filter";
+import { DataPagination } from "@/shared/components/data-pagination";
 
 export const FormsView = () => {
-  const [filters, _] = useFormFilters();
+  const [filters, setFilters] = useFormFilters();
   const { data } = useSuspenseForms(filters);
 
   return (
     <>
       <UpdateFormDialog />
       <div className="h-full w-full flex flex-col gap-y-4 px-6 py-3">
-        <ContentHeader label="Forms" totalEntries={data.length} />
-        <DataTable columns={columns} data={data} />
+        <ContentHeader label="Forms" totalEntries={data.total} />
+        <DataTable columns={columns} data={data.items} />
+        <DataPagination
+          page={filters.page}
+          totalPages={data.totalPages}
+          onPageChange={(page) => setFilters({ page })}
+        />
       </div>
     </>
   );

@@ -1,6 +1,9 @@
 "use client";
 
 import { XCircleIcon } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+
+import { useTRPC } from "@/trpc/client";
 
 import { Button } from "@/shared/ui/button";
 import { ScrollArea, ScrollBar } from "@/shared/ui/scroll-area";
@@ -15,6 +18,9 @@ import { FormIdFilter } from "./form-id-filter";
 
 export const SubmissionsListHeader = () => {
   const [filters, setFilters] = useSubmissionsFilters();
+  const trpc = useTRPC();
+
+  const { data } = useQuery(trpc.submissions.getMany.queryOptions(filters));
 
   const isanyFilterModified = !!filters.search || !!filters.formId;
 
@@ -29,7 +35,7 @@ export const SubmissionsListHeader = () => {
   return (
     <>
       <div className="flex flex-col gap-y-4 px-6 pt-3">
-        <ContentHeader label="Submissions" totalEntries={0} />
+        <ContentHeader label="Submissions" totalEntries={data?.total ?? 0} />
         <ScrollArea>
           <div className="flex items-center gap-x-2 px-1">
             <SubmissionsSearchFilter />

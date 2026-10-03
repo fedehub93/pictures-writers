@@ -1,6 +1,8 @@
 import z from "zod";
 import { db } from "@/shared/lib/db";
 
+import { Prisma } from "@/generated/prisma";
+
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 
@@ -112,17 +114,27 @@ export const formsRouter = createTRPCRouter({
       }),
     )
     .query(async ({ input }) => {
+      const where: Prisma.FormWhereInput = {
+        name: input.search
+          ? { contains: input.search, mode: "insensitive" }
+          : undefined,
+      };
+
       const forms = await db.form.findMany({
-        where: {
-          name: input.search
-            ? { contains: input.search, mode: "insensitive" }
-            : undefined,
-        },
+        where,
         orderBy: { createdAt: "desc" },
         take: input.pageSize,
         skip: (input.page - 1) * input.pageSize,
       });
 
-      return forms;
+      const total = await db.form.count({ where });
+
+      const totalPages = Math.ceil(total / input.pageSize);
+
+      return {
+        items: forms,
+        total,
+        totalPages,
+      };
     }),
 });

@@ -34,7 +34,7 @@ export const FormView = ({ state, onUpdate }: FormViewProps) => {
   return (
     <div className="flex flex-col space-y-2">
       <CommandSelect
-        options={(data || []).map((form) => ({
+        options={(data?.items ?? []).map((form) => ({
           id: form.id,
           value: form.id,
           children: (
@@ -44,7 +44,7 @@ export const FormView = ({ state, onUpdate }: FormViewProps) => {
           ),
         }))}
         onSelect={(val) => {
-          const selectedForm = data?.find((f) => f.id === val);
+          const selectedForm = data?.items?.find((f) => f.id === val);
           if (selectedForm) {
             onUpdate({
               id: selectedForm.id,

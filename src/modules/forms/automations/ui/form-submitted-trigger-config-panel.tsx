@@ -53,7 +53,7 @@ export function FormSubmittedTriggerConfigPanel({
             />
           </SelectTrigger>
           <SelectContent>
-            {(forms ?? []).map((form) => (
+            {(forms?.items ?? []).map((form) => (
               <SelectItem key={form.id} value={form.id}>
                 {form.name}
               </SelectItem>
