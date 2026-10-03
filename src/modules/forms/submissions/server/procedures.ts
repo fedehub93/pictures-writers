@@ -85,11 +85,13 @@ export const formSubmissionsRouter = createTRPCRouter({
       }),
     )
     .query(async ({ input }) => {
+      const where = {
+        formId: input.formId ? input.formId : undefined,
+        email: input.search ? { contains: input.search } : undefined,
+      };
+
       const submissions = await db.formSubmission.findMany({
-        where: {
-          formId: input.formId ? input.formId : undefined,
-          email: input.search ? { contains: input.search } : undefined,
-        },
+        where,
         include: {
           form: true,
         },
@@ -98,6 +100,14 @@ export const formSubmissionsRouter = createTRPCRouter({
         skip: (input.page - 1) * input.pageSize,
       });
 
-      return submissions;
+      const total = await db.formSubmission.count({ where });
+
+      const totalPages = Math.ceil(total / input.pageSize);
+
+      return {
+        items: submissions,
+        total,
+        totalPages,
+      };
     }),
 });

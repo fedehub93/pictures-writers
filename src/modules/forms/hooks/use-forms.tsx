@@ -26,7 +26,7 @@ export const useFormsQuery = () => {
   );
 
   return {
-    data,
+    data: data?.items,
     isLoading,
     isError,
   };

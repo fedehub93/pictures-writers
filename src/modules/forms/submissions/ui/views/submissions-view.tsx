@@ -7,6 +7,7 @@ import { DataTable } from "../components/data-table";
 import { columns } from "../components/column";
 import { useSuspenseFormSubmissions } from "../../hooks/use-submissions";
 import { useSubmissionsFilters } from "../../hooks/use-submissions-filters";
+import { DataPagination } from "@/shared/components/data-pagination";
 
 export const FormSubmissionsView = () => {
   const [filters, setFilters] = useSubmissionsFilters();
@@ -15,7 +16,12 @@ export const FormSubmissionsView = () => {
 
   return (
     <div className="px-6">
-      <DataTable columns={columns} data={data} />
+      <DataTable columns={columns} data={data.items} />
+      <DataPagination
+        page={filters.page}
+        totalPages={data.totalPages}
+        onPageChange={(page) => setFilters({ page })}
+      />
     </div>
   );
 };

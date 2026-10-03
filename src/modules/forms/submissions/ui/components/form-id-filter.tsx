@@ -24,7 +24,7 @@ export const FormIdFilter = () => {
     <CommandSelect
       placeholder="Form"
       className="h-8 px-2 lg:px-3"
-      options={(data ?? []).map((form) => ({
+      options={(data?.items ?? []).map((form) => ({
         id: form.id,
         value: form.id,
         children: <div className="flex items-center gap-x-2">{form.name}</div>,
