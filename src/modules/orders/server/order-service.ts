@@ -1,7 +1,5 @@
 import "server-only";
 
-import { TRPCError } from "@trpc/server";
-
 import {
   OrderSource,
   OrderStatus,
@@ -15,6 +13,32 @@ import { db } from "@/shared/lib/db";
 const ORDER_NUMBER_PREFIX = "PW";
 
 type DbClient = typeof db | Prisma.TransactionClient;
+
+/**
+ * Domain failures of the order creation path. The service stays free of any
+ * transport concern; each caller translates these to its own error type (the
+ * tRPC router to `TRPCError`, the automation node to `AutomationNodeError`).
+ */
+export class OrderCustomerNotFoundError extends Error {
+  constructor() {
+    super("Customer not found.");
+    this.name = "OrderCustomerNotFoundError";
+  }
+}
+
+export class OrderProductNotFoundError extends Error {
+  constructor() {
+    super("One or more products were not found.");
+    this.name = "OrderProductNotFoundError";
+  }
+}
+
+export class OrderNumberGenerationError extends Error {
+  constructor() {
+    super("Could not generate a unique order number.");
+    this.name = "OrderNumberGenerationError";
+  }
+}
 
 export const orderInclude = {
   customer: { select: { id: true, email: true, name: true } },
@@ -78,10 +102,7 @@ const buildItems = async (items: CreateOrderItemInput[]) => {
   });
 
   if (products.length !== productIds.length) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "One or more products were not found.",
-    });
+    throw new OrderProductNotFoundError();
   }
 
   const productById = new Map(products.map((product) => [product.id, product]));
@@ -114,10 +135,7 @@ export async function createOrderRecord(
   });
 
   if (!customer) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Customer not found.",
-    });
+    throw new OrderCustomerNotFoundError();
   }
 
   const items = await buildItems(input.items);
@@ -158,8 +176,5 @@ export async function createOrderRecord(
     }
   }
 
-  throw new TRPCError({
-    code: "INTERNAL_SERVER_ERROR",
-    message: "Could not generate a unique order number.",
-  });
+  throw new OrderNumberGenerationError();
 }

@@ -17,7 +17,29 @@ import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 
 import { orderInsertSchema, orderListSchema } from "../schemas";
 import { emitOrderCompleted } from "../automations/emit";
-import { createOrderRecord, orderInclude } from "./order-service";
+import {
+  createOrderRecord,
+  orderInclude,
+  OrderCustomerNotFoundError,
+  OrderNumberGenerationError,
+  OrderProductNotFoundError,
+} from "./order-service";
+
+const toTRPCError = (error: unknown): never => {
+  if (error instanceof OrderCustomerNotFoundError) {
+    throw new TRPCError({ code: "NOT_FOUND", message: error.message });
+  }
+  if (error instanceof OrderProductNotFoundError) {
+    throw new TRPCError({ code: "BAD_REQUEST", message: error.message });
+  }
+  if (error instanceof OrderNumberGenerationError) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: error.message,
+    });
+  }
+  throw error;
+};
 
 // The allowed lifecycle transitions live in a single place so new states can be
 // added safely. COMPLETED and CANCELLED are terminal.
@@ -71,15 +93,19 @@ const findOrderOrThrow = async (id: string) => {
 export const ordersRouter = createTRPCRouter({
   create: permissionProcedure(PERMISSIONS.ORDERS_CREATE)
     .input(orderInsertSchema)
-    .mutation(({ input }) =>
-      createOrderRecord({
-        customerId: input.customerId,
-        items: input.items,
-        notes: input.notes,
-        source: OrderSource.MANUAL,
-        status: OrderStatus.DRAFT,
-      }),
-    ),
+    .mutation(async ({ input }) => {
+      try {
+        return await createOrderRecord({
+          customerId: input.customerId,
+          items: input.items,
+          notes: input.notes,
+          source: OrderSource.MANUAL,
+          status: OrderStatus.DRAFT,
+        });
+      } catch (error) {
+        return toTRPCError(error);
+      }
+    }),
 
   getMany: permissionProcedure(PERMISSIONS.ORDERS_READ)
     .input(orderListSchema)

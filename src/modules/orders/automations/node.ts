@@ -1,5 +1,3 @@
-import { TRPCError } from "@trpc/server";
-
 import { OrderSource, OrderStatus } from "@/generated/prisma";
 import {
   AutomationNodeError,
@@ -8,7 +6,12 @@ import {
   type AutomationNodeRegistry,
 } from "@/modules/automations/lib/node-registry";
 
-import { createOrderRecord } from "../server/order-service";
+import {
+  createOrderRecord,
+  OrderCustomerNotFoundError,
+  OrderNumberGenerationError,
+  OrderProductNotFoundError,
+} from "../server/order-service";
 import {
   MissingCreateOrderConfigError,
   resolveCreateOrderConfig,
@@ -55,7 +58,11 @@ export const createOrderHandler: AutomationNodeHandler = async (context) => {
       },
     };
   } catch (error) {
-    if (error instanceof TRPCError) {
+    if (
+      error instanceof OrderCustomerNotFoundError ||
+      error instanceof OrderProductNotFoundError ||
+      error instanceof OrderNumberGenerationError
+    ) {
       throw new AutomationNodeError(error.message, false);
     }
     throw error;
