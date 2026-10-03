@@ -15,6 +15,7 @@ export const OrderDialog = () => {
       description="Create an order for a customer and add products from the catalog."
       open={isOpen}
       onOpenChange={onClose}
+      contentClassName="lg:max-w-3xl"
     >
       <OrderForm onSuccess={onClose} onCancel={onClose} />
     </ResponsiveDialog>

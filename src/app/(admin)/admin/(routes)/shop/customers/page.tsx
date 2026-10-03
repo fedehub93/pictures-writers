@@ -8,6 +8,7 @@ import { requirePermission } from "@/shared/lib/auth-utils";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 
 import {
+  CustomersListHeader,
   CustomersView,
   CustomersViewError,
   CustomersViewLoading,
@@ -28,6 +29,7 @@ const CustomersPage = async ({ searchParams }: Props) => {
 
   return (
     <HydrateClient>
+      <CustomersListHeader />
       <Suspense fallback={<CustomersViewLoading />}>
         <ErrorBoundary fallback={<CustomersViewError />}>
           <CustomersView />

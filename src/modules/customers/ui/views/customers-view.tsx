@@ -8,7 +8,6 @@ import { useCustomerFilters } from "../../hooks/use-customers-filter";
 import { useSuspenseCustomers } from "../../hooks/use-customers";
 
 import { CustomerDialog } from "../components/customer-dialog";
-import { CustomersListHeader } from "../components/customers-list-header";
 import { DataTable } from "../components/data-table";
 import { columns } from "../components/columns";
 
@@ -20,7 +19,6 @@ export const CustomersView = () => {
     <>
       <CustomerDialog />
       <div className="h-full w-full flex flex-col gap-y-4 px-6 py-3">
-        <CustomersListHeader totalEntries={data.total} />
         <DataTable columns={columns} data={data.items} />
         <DataPagination
           page={filters.page}

@@ -9,3 +9,5 @@ export {
   CustomerIdViewLoading,
   CustomerIdViewError,
 } from "./ui/views/customer-id-view";
+
+export { CustomersListHeader } from "./ui/components/customers-list-header";

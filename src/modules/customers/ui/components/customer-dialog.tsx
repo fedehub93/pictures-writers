@@ -15,6 +15,7 @@ export const CustomerDialog = () => {
       description="Manage the customer's contact and billing details."
       open={isOpen}
       onOpenChange={onClose}
+      contentClassName="lg:max-w-3xl"
     >
       <CustomerForm
         onSuccess={onClose}

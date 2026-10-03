@@ -8,7 +8,6 @@ import { useOrderFilters } from "../../hooks/use-orders-filter";
 import { useSuspenseOrders } from "../../hooks/use-orders";
 
 import { OrderDialog } from "../components/order-dialog";
-import { OrdersListHeader } from "../components/orders-list-header";
 import { DataTable } from "../components/data-table";
 import { columns } from "../components/columns";
 
@@ -20,7 +19,6 @@ export const OrdersView = () => {
     <>
       <OrderDialog />
       <div className="h-full w-full flex flex-col gap-y-4 px-6 py-3">
-        <OrdersListHeader totalEntries={data.total} />
         <DataTable columns={columns} data={data.items} />
         <DataPagination
           page={filters.page}
