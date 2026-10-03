@@ -16,10 +16,8 @@ import { PERMISSIONS } from "@/shared/lib/authorization";
 import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 
 import { orderInsertSchema, orderListSchema } from "../schemas";
-
-const ORDER_NUMBER_PREFIX = "PW";
-
-type DbClient = typeof db | Prisma.TransactionClient;
+import { emitOrderCompleted } from "../automations/emit";
+import { createOrderRecord, orderInclude } from "./order-service";
 
 // The allowed lifecycle transitions live in a single place so new states can be
 // added safely. COMPLETED and CANCELLED are terminal.
@@ -62,41 +60,6 @@ const transitionOrThrow = async (
   }
 };
 
-const formatOrderNumber = (year: number, sequence: number) =>
-  `${ORDER_NUMBER_PREFIX}-${year}-${String(sequence).padStart(6, "0")}`;
-const nextOrderNumber = async (client: DbClient, year: number) => {
-  const prefix = `${ORDER_NUMBER_PREFIX}-${year}-`;
-  const last = await client.order.findFirst({
-    where: { orderNumber: { startsWith: prefix } },
-    orderBy: { orderNumber: "desc" },
-    select: { orderNumber: true },
-  });
-
-  const lastSequence = last
-    ? Number.parseInt(last.orderNumber.slice(prefix.length), 10)
-    : 0;
-
-  return formatOrderNumber(
-    year,
-    (Number.isNaN(lastSequence) ? 0 : lastSequence) + 1,
-  );
-};
-
-const isUniqueConstraintError = (error: unknown) =>
-  error instanceof Prisma.PrismaClientKnownRequestError &&
-  error.code === "P2002";
-
-const toNullable = (value: string | null | undefined) => {
-  const trimmed = value?.trim();
-  return trimmed ? trimmed : null;
-};
-
-const orderInclude = {
-  customer: { select: { id: true, email: true, name: true } },
-  items: { orderBy: { createdAt: "asc" as const } },
-  payments: { orderBy: { createdAt: "asc" as const } },
-} satisfies Prisma.OrderInclude;
-
 const findOrderOrThrow = async (id: string) => {
   const order = await db.order.findUnique({ where: { id } });
   if (!order) {
@@ -105,94 +68,18 @@ const findOrderOrThrow = async (id: string) => {
   return order;
 };
 
-const buildItems = async (items: { productId: string; quantity: number }[]) => {
-  const productIds = [...new Set(items.map((item) => item.productId))];
-  const products = await db.product.findMany({
-    where: { id: { in: productIds } },
-  });
-
-  if (products.length !== productIds.length) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "One or more products were not found.",
-    });
-  }
-
-  const productById = new Map(products.map((product) => [product.id, product]));
-
-  return items.map((item) => {
-    const product = productById.get(item.productId)!;
-    const unitPrice = product.price ?? 0;
-    const totalPrice = unitPrice * item.quantity;
-
-    return {
-      productId: product.id,
-      nameSnapshot: product.title,
-      unitPrice,
-      quantity: item.quantity,
-      totalPrice,
-    };
-  });
-};
-
 export const ordersRouter = createTRPCRouter({
   create: permissionProcedure(PERMISSIONS.ORDERS_CREATE)
     .input(orderInsertSchema)
-    .mutation(async ({ input }) => {
-      const customer = await db.customer.findUnique({
-        where: { id: input.customerId },
-      });
-
-      if (!customer) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Customer not found.",
-        });
-      }
-
-      const items = await buildItems(input.items);
-      const totalAmount = items.reduce(
-        (total, item) => total + item.totalPrice,
-        0,
-      );
-      const year = new Date().getFullYear();
-
-      for (let attempt = 0; attempt < 5; attempt += 1) {
-        try {
-          return await db.$transaction(async (transaction) => {
-            const orderNumber = await nextOrderNumber(transaction, year);
-
-            return transaction.order.create({
-              data: {
-                orderNumber,
-                customerId: customer.id,
-                status: OrderStatus.DRAFT,
-                source: OrderSource.MANUAL,
-                totalAmount,
-                notes: toNullable(input.notes),
-                items: { create: items },
-                payments: {
-                  create: {
-                    method: PaymentMethod.OFFLINE,
-                    status: PaymentStatus.PENDING,
-                    amount: totalAmount,
-                  },
-                },
-              },
-              include: orderInclude,
-            });
-          });
-        } catch (error) {
-          if (isUniqueConstraintError(error)) continue;
-          throw error;
-        }
-      }
-
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Could not generate a unique order number.",
-      });
-    }),
+    .mutation(({ input }) =>
+      createOrderRecord({
+        customerId: input.customerId,
+        items: input.items,
+        notes: input.notes,
+        source: OrderSource.MANUAL,
+        status: OrderStatus.DRAFT,
+      }),
+    ),
 
   getMany: permissionProcedure(PERMISSIONS.ORDERS_READ)
     .input(orderListSchema)
@@ -296,7 +183,7 @@ export const ordersRouter = createTRPCRouter({
 
       const now = new Date();
 
-      return db.$transaction(async (transaction) => {
+      const completed = await db.$transaction(async (transaction) => {
         const result = await transaction.order.updateMany({
           where: { id: order.id, status: OrderStatus.PENDING },
           data: {
@@ -328,6 +215,26 @@ export const ordersRouter = createTRPCRouter({
           include: orderInclude,
         });
       });
+
+      // Completion is the canonical post-purchase moment: emit the internal
+      // trigger so subscribed automations start. An emit failure must never
+      // roll back a completed sale.
+      try {
+        await emitOrderCompleted({
+          id: completed.id,
+          orderNumber: completed.orderNumber,
+          customerId: completed.customerId,
+          customerEmail: completed.customer.email,
+          totalAmount: completed.totalAmount,
+          currency: completed.currency,
+          completedAt: completed.completedAt,
+          items: completed.items,
+        });
+      } catch (error) {
+        console.error("[ORDERS] Failed to emit order.completed", error);
+      }
+
+      return completed;
     }),
 
   cancel: permissionProcedure(PERMISSIONS.ORDERS_MANAGE)
