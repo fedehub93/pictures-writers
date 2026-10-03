@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useTRPC } from "@/trpc/client";
 import { formatPrice } from "@/lib/format";
 
+import { GenericCalendar } from "@/shared/components/form-component/generic-calendar";
 import { Button } from "@/shared/ui/button";
 import { Separator } from "@/shared/ui/separator";
 import {
@@ -51,6 +52,7 @@ export const OrderForm = ({ onSuccess, onCancel }: OrderFormProps) => {
     defaultValues: {
       customerId: "",
       items: [{ productId: "", quantity: 1 }],
+      orderDate: new Date(),
       notes: "",
     },
   });
@@ -125,6 +127,13 @@ export const OrderForm = ({ onSuccess, onCancel }: OrderFormProps) => {
               <FormMessage />
             </FormItem>
           )}
+        />
+
+        <GenericCalendar
+          control={form.control}
+          name="orderDate"
+          label="Order date"
+          onlyFutureDates={false}
         />
 
         <div className="flex flex-col gap-3">

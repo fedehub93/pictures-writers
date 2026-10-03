@@ -44,6 +44,13 @@ export const columns = columnHelper.columns([
       </div>
     ),
   }),
+  columnHelper.accessor("orderDate", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Order date" />
+    ),
+    sortFn: "datetime",
+    cell: ({ row }) => formatDate({ date: row.original.orderDate }),
+  }),
   columnHelper.accessor("status", {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />

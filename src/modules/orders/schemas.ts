@@ -28,6 +28,7 @@ export const orderInsertSchema = z.object({
   items: z
     .array(orderItemInputSchema)
     .min(1, { error: "Add at least one product" }),
+  orderDate: z.date().optional(),
   notes: z.string().nullish(),
 });
 

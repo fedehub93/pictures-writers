@@ -1426,6 +1426,10 @@ model Order {
   payments    Payment[]
   totalAmount Float
   currency    String      @default("EUR")
+  /// Business date of the sale. Defaults to creation time but can be set by an
+  /// admin so imported/historical orders keep their real date. Drives the year
+  /// segment of `orderNumber`.
+  orderDate   DateTime    @default(now())
   notes       String?
   completedAt DateTime?
   completedBy String?

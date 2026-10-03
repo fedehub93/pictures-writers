@@ -163,6 +163,55 @@ describe("ordersRouter", () => {
       expect(first.orderNumber).not.toBe(second.orderNumber);
     });
 
+    it("persists an explicit orderDate", async () => {
+      const customer = await createCustomer();
+      const product = await createProduct(10);
+      const orderDate = new Date("2023-03-15T12:00:00.000Z");
+
+      const created = await caller.create({
+        customerId: customer.id,
+        items: [{ productId: product.id, quantity: 1 }],
+        orderDate,
+      });
+
+      expect(created.orderDate.getTime()).toBe(orderDate.getTime());
+
+      const loaded = await db.order.findUniqueOrThrow({
+        where: { id: created.id },
+      });
+      expect(loaded.orderDate.getTime()).toBe(orderDate.getTime());
+    });
+
+    it("defaults orderDate to now when omitted", async () => {
+      const customer = await createCustomer();
+      const product = await createProduct(10);
+      const before = Date.now();
+
+      const created = await caller.create({
+        customerId: customer.id,
+        items: [{ productId: product.id, quantity: 1 }],
+      });
+
+      const after = Date.now();
+      expect(created.orderDate.getTime()).toBeGreaterThanOrEqual(before);
+      expect(created.orderDate.getTime()).toBeLessThanOrEqual(after);
+    });
+
+    it("derives the order number year from orderDate", async () => {
+      const customer = await createCustomer();
+      const product = await createProduct(10);
+      const orderDate = new Date(2021, 5, 15, 12, 0, 0);
+
+      const created = await caller.create({
+        customerId: customer.id,
+        items: [{ productId: product.id, quantity: 1 }],
+        orderDate,
+      });
+
+      expect(created.orderDate.getFullYear()).toBe(2021);
+      expect(created.orderNumber).toMatch(/^PW-2021-\d{6}$/);
+    });
+
     it("normalizes a null product price to zero", async () => {
       const customer = await createCustomer();
       const product = await createProduct(null);
@@ -219,6 +268,7 @@ describe("ordersRouter", () => {
       expect(result.items[0]?.customer.email).toBe(customer.email);
       expect(result.items[0]?._count.items).toBe(1);
       expect(result.items[0]?.totalAmount).toBe(10);
+      expect(result.items[0]?.orderDate).toBeInstanceOf(Date);
     });
 
     it("filters by status", async () => {
@@ -275,6 +325,7 @@ describe("ordersRouter", () => {
       expect(loaded.customer.id).toBe(customer.id);
       expect(loaded.items).toHaveLength(1);
       expect(loaded.payments).toHaveLength(1);
+      expect(loaded.orderDate).toBeInstanceOf(Date);
     });
 
     it("throws NOT_FOUND for an unknown order", async () => {

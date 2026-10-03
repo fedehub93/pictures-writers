@@ -99,6 +99,7 @@ export const ordersRouter = createTRPCRouter({
           customerId: input.customerId,
           items: input.items,
           notes: input.notes,
+          orderDate: input.orderDate,
           source: OrderSource.MANUAL,
           status: OrderStatus.DRAFT,
         });

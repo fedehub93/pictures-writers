@@ -59,6 +59,12 @@ export interface CreateOrderRecordInput {
   customerId: string;
   items: CreateOrderItemInput[];
   notes?: string | null;
+  /**
+   * Business date of the sale. Defaults to now. Also drives the year segment of
+   * the generated `orderNumber`, so historical orders are numbered in their own
+   * year.
+   */
+  orderDate?: Date | null;
   /** Who/what created the order. `MANUAL` for the admin form, `AUTOMATION` for nodes. */
   source: OrderSource;
   /** Lifecycle state at creation. The admin form starts DRAFT, automations start PENDING. */
@@ -143,7 +149,8 @@ export async function createOrderRecord(
     (total, item) => total + item.totalPrice,
     0,
   );
-  const year = new Date().getFullYear();
+  const orderDate = input.orderDate ?? new Date();
+  const year = orderDate.getFullYear();
 
   for (let attempt = 0; attempt < 5; attempt += 1) {
     try {
@@ -157,6 +164,7 @@ export async function createOrderRecord(
             status: input.status,
             source: input.source,
             totalAmount,
+            orderDate,
             notes: toNullable(input.notes),
             items: { create: items },
             payments: {

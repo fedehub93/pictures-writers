@@ -97,6 +97,10 @@ export const OrderIdView = ({ orderId }: OrderIdViewProps) => {
               value={formatPrice(order.totalAmount, true)}
             />
             <DetailRow
+              label="Order date"
+              value={formatDate({ date: order.orderDate })}
+            />
+            <DetailRow
               label="Created"
               value={formatDate({ date: order.createdAt })}
             />
