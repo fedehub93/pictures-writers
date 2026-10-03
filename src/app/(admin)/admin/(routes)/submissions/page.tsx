@@ -29,8 +29,8 @@ const Submissions = async ({ searchParams }: Props) => {
 
   return (
     <>
-      <SubmissionsListHeader />
       <HydrateClient>
+        <SubmissionsListHeader />
         <Suspense fallback={<FormSubmissionsViewLoading />}>
           <ErrorBoundary fallback={<FormSubmissionsViewError />}>
             <FormSubmissionsView />
