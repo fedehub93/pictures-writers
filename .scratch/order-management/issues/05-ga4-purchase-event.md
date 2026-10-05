@@ -4,7 +4,7 @@
 
 **Blocked by:** 03 — Order admin end-to-end.
 
-**Status:** resolved
+**Status:** reversed — see comment below.
 
 ## Acceptance criteria
 
@@ -23,3 +23,7 @@ Delivered:
 - `GoogleTagManager` aggiunto al layout admin (production-gated, come nel layout pubblico) così il dataLayer del backoffice è effettivamente collegato al container GTM.
 - Coverage: `src/modules/orders/__tests__/ga4-purchase.test.ts` (4 test: payload completo, mapping multi-riga, fallback `item_id` al `OrderItem.id` quando il `productId` è null, `null` per stati non `COMPLETED`).
 - Verified: `npx tsc --noEmit`, eslint sui file toccati e `npx vitest run` (83 file, 633 test verdi).
+
+Reversed (2026-10-05):
+
+Il purchase client-side è stato rimosso: l'evento partiva dal browser dell'admin, quindi GA4 attribuiva la conversione alla sessione admin invece che a quella del cliente. Sono stati rimossi `sendGTMEvent` da `useOrderActions`, `src/modules/orders/lib/ga4-purchase.ts`, i suoi test e il `GoogleTagManager` dal layout admin (introdotto solo per questo scopo). L'Order in admin resta il marker "pagato". L'attribuzione server-side (GA4 Measurement Protocol) è stata specificata ma **parcheggiata** per volume insufficiente: vedi `.scratch/offline-purchase-attribution/spec.md`.

@@ -3,14 +3,11 @@
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { sendGTMEvent } from "@next/third-parties/google";
 
 import { OrderStatus } from "@/generated/prisma";
 import { useTRPC } from "@/trpc/client";
 import { usePermission } from "@/shared/providers/authorization-provider";
 import { PERMISSIONS } from "@/shared/lib/permissions";
-
-import { buildGa4PurchaseEvent } from "../lib/ga4-purchase";
 
 import { useOrderFilters } from "./use-orders-filter";
 
@@ -54,15 +51,7 @@ export const useOrderActions = ({ id, status }: UseOrderActionsArgs) => {
 
   const completeOrder = useMutation(
     trpc.orders.complete.mutationOptions({
-      onSuccess: async (order) => {
-        // Completion is the canonical conversion moment: push the GA4 purchase
-        // event. An order that was already COMPLETED cannot transition again,
-        // so the mutation (and this event) only fire once.
-        const purchaseEvent = buildGa4PurchaseEvent(order);
-        if (purchaseEvent && typeof window !== "undefined") {
-          sendGTMEvent(purchaseEvent);
-        }
-
+      onSuccess: async () => {
         await invalidate();
         toast.success("Order completed.");
       },
