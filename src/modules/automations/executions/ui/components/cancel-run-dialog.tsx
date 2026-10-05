@@ -68,7 +68,7 @@ export const CancelRunDialog = ({
   return (
     <ResponsiveDialog
       title="Cancel run"
-      description="Stop this Run and skip its remaining Steps. A Step already in flight may still finish, but nothing runs after it. This cannot be undone."
+      description="Cancel this Run and skip its remaining Steps. A Step already in flight may still finish, but nothing runs after it. This cannot be undone."
       open={open}
       onOpenChange={handleOpenChange}
     >
