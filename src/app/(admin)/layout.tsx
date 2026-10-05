@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import HolyLoader from "holy-loader";
 import { NuqsAdapter } from "nuqs/adapters/next";
+import { GoogleTagManager } from "@next/third-parties/google";
 import { TRPCReactProvider } from "@/trpc/client";
 
 import "./admin.css";
@@ -70,6 +71,9 @@ export default async function RootLayout({
           <Toaster />
         </ThemeProvider>
       </body>
+      {process.env.NODE_ENV === "production" && (
+        <GoogleTagManager gtmId={process.env.NEXT_GTAG_CONTAINER_ID!} />
+      )}
     </html>
   );
 }
