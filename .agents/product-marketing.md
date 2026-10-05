@@ -235,7 +235,7 @@ Verificato: `npx tsc --noEmit` pulito, `eslint` senza errori nuovi, `npm run bui
 Tutte le 9 fasi della roadmap originale sono completate. Il deliverable della fase 9 è in `.agents/marketing-plan.md`.
 
 **Priorità operative per i prossimi 90 giorni** (da `.agents/marketing-plan.md` §9):
-1. Rendere attribuibile la conversione pagata (pagamenti offline via email+bonifico: marker “pagato”/riconciliazione + eventuale evento server-side GA4), più le interazioni interne mancanti (`course_purchased`, `editing_purchased`, tipo-prodotto nel form). Il top-funnel GTM/GA4 è già attivo.
+1. Rendere attribuibile la conversione pagata (pagamenti offline via email+bonifico: marker “pagato”/riconciliazione + eventuale evento server-side GA4), più le interazioni interne mancanti (`course_purchased`, `editing_purchased`, tipo-prodotto nel form). Il top-funnel GTM/GA4 è già attivo. **Nota (2026-10-05):** l'evento server-side GA4 è stato parcheggiato per volume insufficiente; restano marker "pagato" (Order in admin) + consolidamento manuale, con l'alternativa self-reported "come ci hai conosciuto?". Vedi `.scratch/offline-purchase-attribution/spec.md`.
 2. Produrre i 5 lead magnet e collegarli al funnel.
 3. Attivare le sequenze post-acquisto S3 (finora bloccate dalle interazioni mancanti) e leggere i dati di S2 (già pubblicata).
 4. Lanciare il Laboratorio 1:1 (naming, date, pagina prodotto, waitlist).
@@ -244,4 +244,4 @@ Tutte le 9 fasi della roadmap originale sono completate. Il deliverable della fa
 
 **Fondamenta tecniche residue** (roadmap AI, `.agents/ai-seo.md` §7.2): Markdown content negotiation, answer block 40–60 parole, FAQ/`FAQPage` sui hub, `HowTo`, `/pricing.md`, dati originali, presenza off-site.
 
-**Decisioni aperte bloccanti** (`.agents/marketing-plan.md` §13): conversione pagata non attribuita (pagamenti offline; priorità #1), interazioni interne incomplete, prezzo editing da confermare, naming/date 1:1, lead magnet da produrre.
+**Decisioni aperte bloccanti** (`.agents/marketing-plan.md` §13): conversione pagata non attribuita (pagamenti offline; priorità #1 — evento server-side GA4 **parcheggiato**, vedi `.scratch/offline-purchase-attribution/spec.md`), interazioni interne incomplete, prezzo editing da confermare, naming/date 1:1, lead magnet da produrre.
