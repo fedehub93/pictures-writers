@@ -17,12 +17,14 @@ import {
   DEFAULT_PAGE,
   DEFAULT_PAGE_SIZE,
   INITIAL_NODE_TYPE,
+  MAX_CANCEL_REASON_LENGTH,
   MAX_PAGE_SIZE,
   MIN_PAGE_SIZE,
 } from "../constants";
 import { validateAutomationGraph } from "../lib/validate";
 import { dedupeConnections } from "../lib/connections";
 import { enqueueRun } from "../lib/automation-ingestion";
+import { cancelAutomationRun } from "../lib/automation-runner";
 import { hashWebhookSecret } from "../lib/webhook-secret";
 import { pumpDueAutomations } from "./automation-runtime";
 import { getSiteTimeZone } from "./site-time-zone";
@@ -474,6 +476,7 @@ export const automationsRouter = createTRPCRouter({
             startedAt: true,
             endedAt: true,
             error: true,
+            cancelReason: true,
           },
           orderBy: { startedAt: "desc" },
           take: input.pageSize,
@@ -517,5 +520,44 @@ export const automationsRouter = createTRPCRouter({
           nodeName: nodes[step.nodeId]?.name ?? null,
         })),
       };
+    }),
+  cancelRun: permissionProcedure(PERMISSIONS.AUTOMATIONS_WRITE)
+    .input(
+      z.object({
+        automationId: z.string(),
+        id: z.string(),
+        reason: z.string().nullish(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const run = await db.automationRun.findUnique({
+        where: { id: input.id },
+        select: { id: true, automationId: true },
+      });
+
+      if (!run || run.automationId !== input.automationId) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Run not found",
+        });
+      }
+
+      const trimmedReason = input.reason?.trim();
+      const reason = trimmedReason
+        ? trimmedReason.slice(0, MAX_CANCEL_REASON_LENGTH)
+        : null;
+
+      await cancelAutomationRun({ runId: input.id, reason });
+
+      return db.automationRun.findUniqueOrThrow({
+        where: { id: input.id },
+        select: {
+          id: true,
+          automationId: true,
+          status: true,
+          cancelReason: true,
+          endedAt: true,
+        },
+      });
     }),
 });

@@ -24,12 +24,14 @@ export {
 export type { TimeOfDay } from "./lib/time-zone";
 export { hashWebhookSecret, verifyWebhookSecret } from "./lib/webhook-secret";
 export {
+  cancelAutomationRun,
   claimDueAutomationStep,
   findDueAutomationSteps,
   runDueAutomations,
 } from "./lib/automation-runner";
 export type {
   AutomationStepResultStatus,
+  CancelAutomationRunInput,
   RunDueAutomationsInput,
   RunDueAutomationsResult,
 } from "./lib/automation-runner";

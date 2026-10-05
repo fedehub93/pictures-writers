@@ -169,6 +169,74 @@ async function terminalizeRun(
   }
 }
 
+export interface CancelAutomationRunInput {
+  runId: string;
+  reason?: string | null;
+}
+
+/**
+ * Cancel a RUNNING Run: skip its PENDING/RUNNING Steps (clearing their resume
+ * time and lease) and mark the Run CANCELED with an optional reason.
+ *
+ * The Run row is locked so a Step completing concurrently serialises against
+ * the cancel: either the cancel skips the fresh children, or the completion
+ * finds its own Step already SKIPPED and creates no children. Either way no
+ * orphaned pending Step survives. A no-op — returning `false` — when the Run
+ * does not exist or is already terminal. See ADR-0010.
+ */
+export async function cancelAutomationRun({
+  runId,
+  reason,
+}: CancelAutomationRunInput): Promise<boolean> {
+  return db.$transaction(async (tx) => {
+    if (!(await lockRun(tx, runId))) {
+      return false;
+    }
+
+    const run = await tx.automationRun.findUnique({
+      where: { id: runId },
+      select: { status: true },
+    });
+
+    if (!run || run.status !== AutomationRunStatus.RUNNING) {
+      return false;
+    }
+
+    const now = new Date();
+
+    await tx.automationRunStep.updateMany({
+      where: {
+        runId,
+        status: {
+          in: [
+            AutomationRunStepStatus.PENDING,
+            AutomationRunStepStatus.RUNNING,
+          ],
+        },
+      },
+      data: {
+        status: AutomationRunStepStatus.SKIPPED,
+        resumeAt: null,
+        leaseId: null,
+        leaseExpiresAt: null,
+        endedAt: now,
+        updatedAt: now,
+      },
+    });
+
+    await tx.automationRun.update({
+      where: { id: runId },
+      data: {
+        status: AutomationRunStatus.CANCELED,
+        cancelReason: reason ?? null,
+        endedAt: now,
+      },
+    });
+
+    return true;
+  });
+}
+
 export async function findDueAutomationSteps(
   options: { now?: Date; batchSize?: number } = {},
 ): Promise<AutomationRunStep[]> {
@@ -459,45 +527,6 @@ async function completeStep(
   });
 }
 
-async function cancelRunForExecutionLimit(
-  step: AutomationRunStep,
-  now: Date,
-): Promise<boolean> {
-  return db.$transaction(async (tx) => {
-    if (!(await lockRun(tx, step.runId))) {
-      return false;
-    }
-
-    await tx.automationRunStep.updateMany({
-      where: {
-        runId: step.runId,
-        status: {
-          in: [AutomationRunStepStatus.PENDING, AutomationRunStepStatus.RUNNING],
-        },
-      },
-      data: {
-        status: AutomationRunStepStatus.SKIPPED,
-        resumeAt: null,
-        leaseId: null,
-        leaseExpiresAt: null,
-        endedAt: now,
-        updatedAt: now,
-      },
-    });
-
-    const updated = await tx.automationRun.updateMany({
-      where: { id: step.runId, status: AutomationRunStatus.RUNNING },
-      data: {
-        status: AutomationRunStatus.CANCELED,
-        error: `Automation exceeded the ${AUTOMATION_MAX_EXECUTIONS} execution limit`,
-        endedAt: now,
-      },
-    });
-
-    return updated.count > 0;
-  });
-}
-
 async function processStep(
   step: AutomationRunStep,
   now: Date,
@@ -535,7 +564,10 @@ async function processStep(
     _sum: { attempts: true },
   });
   if ((executionCount._sum.attempts ?? 0) > AUTOMATION_MAX_EXECUTIONS) {
-    await cancelRunForExecutionLimit(step, now);
+    await cancelAutomationRun({
+      runId: step.runId,
+      reason: `Automation exceeded the ${AUTOMATION_MAX_EXECUTIONS} execution limit`,
+    });
     return { status: "skipped" };
   }
 

@@ -186,6 +186,10 @@ _Avoid_: Execution (ambiguous with deployment/CI), session.
 The run-time record of one Node execution inside a Run: input/output snapshots, status, attempt count, resume time, and error. Distinct from Node, which is author-time.
 _Avoid_: Task, Node when referring to a run-time record.
 
+**Run cancellation**:
+The terminal transition, performed by an authorized backoffice user, that moves a Run from `RUNNING` to `CANCELED` and skips its pending Steps. It never recalls a Step already in flight, and it frees the Run's idempotency key so the same trigger may start a new Run.
+_Avoid_: Terminate, stop, or abort when referring to the action; "paused" Run.
+
 **Published snapshot**:
 The frozen copy of an Automation's graph that Runs execute; captured at publish time so editing the draft never affects running or historical executions.
 _Avoid_: Version, revision.

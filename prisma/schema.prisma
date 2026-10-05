@@ -1292,6 +1292,9 @@ model AutomationRun {
   /// Human-readable failure reason for FAILED runs.
   error String?
 
+  /// Human-readable cancellation reason for CANCELED runs (ADR-0010).
+  cancelReason String?
+
   startedAt DateTime  @default(now())
   endedAt   DateTime?
 

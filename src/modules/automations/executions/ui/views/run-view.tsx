@@ -1,7 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeftIcon, XCircleIcon } from "lucide-react";
+import { ArrowLeftIcon, BanIcon, XCircleIcon } from "lucide-react";
+
+import { AutomationRunStatus } from "@/generated/prisma";
+
+import { usePermission } from "@/shared/providers/authorization-provider";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
@@ -18,6 +24,7 @@ import { ErrorState } from "@/shared/components/error-state";
 import { formatDuration, formatRunDate } from "../../../lib/run-ledger";
 import { useSuspenseAutomationRun } from "../../hooks/use-executions";
 
+import { CancelRunDialog } from "../components/cancel-run-dialog";
 import { DetailField } from "../components/detail-field";
 import { RunStatusBadge } from "../components/run-status-badge";
 import { SnapshotViewer } from "../components/snapshot-viewer";
@@ -31,6 +38,11 @@ export const RunView = ({
   runId: string;
 }) => {
   const { data: run } = useSuspenseAutomationRun(automationId, runId);
+  const canWrite = usePermission(PERMISSIONS.AUTOMATIONS_WRITE);
+  const [cancelOpen, setCancelOpen] = useState(false);
+
+  const canCancel =
+    canWrite && run.status === AutomationRunStatus.RUNNING;
 
   return (
     <div className="flex flex-col gap-6 px-6 py-4">
@@ -49,14 +61,35 @@ export const RunView = ({
             {run.automation.name} · started {formatRunDate(run.startedAt)}
           </p>
         </div>
-        <RunStatusBadge status={run.status} />
+        <div className="flex items-center gap-2">
+          {canCancel && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCancelOpen(true)}
+            >
+              Cancel run
+            </Button>
+          )}
+          <RunStatusBadge status={run.status} />
+        </div>
       </div>
 
-      {run.error && (
+      {run.status === AutomationRunStatus.FAILED && run.error && (
         <Alert variant="destructive">
           <XCircleIcon />
           <AlertTitle>Run failed</AlertTitle>
           <AlertDescription>{run.error}</AlertDescription>
+        </Alert>
+      )}
+
+      {run.status === AutomationRunStatus.CANCELED && (
+        <Alert>
+          <BanIcon />
+          <AlertTitle>Run canceled</AlertTitle>
+          {run.cancelReason && (
+            <AlertDescription>{run.cancelReason}</AlertDescription>
+          )}
         </Alert>
       )}
 
@@ -87,6 +120,13 @@ export const RunView = ({
         </div>
         <StepTrace steps={run.steps} />
       </section>
+
+      <CancelRunDialog
+        automationId={automationId}
+        runId={runId}
+        open={cancelOpen}
+        onOpenChange={setCancelOpen}
+      />
     </div>
   );
 };

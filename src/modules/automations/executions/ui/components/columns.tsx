@@ -1,12 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { createColumnHelper } from "@tanstack/react-table";
-import { ArrowUpRightIcon } from "lucide-react";
 
-import { AutomationRunStatus } from "@/generated/prisma";
-
-import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 
 import { DataTableColumnHeader } from "@/shared/components/data-table-column-header";
@@ -14,6 +9,7 @@ import { DataTableColumnHeader } from "@/shared/components/data-table-column-hea
 import type { AutomationsGetRuns } from "../../../types";
 import { formatDuration, formatRunDate } from "../../../lib/run-ledger";
 import { type DataTableFeatures } from "./data-table-features";
+import { RunActions } from "./run-actions";
 import { RunStatusBadge } from "./run-status-badge";
 
 type Run = AutomationsGetRuns["items"][number];
@@ -76,22 +72,11 @@ export const getRunColumns = (automationId: string) =>
     columnHelper.display({
       id: "actions",
       header: () => <div className="text-right">Actions</div>,
-      cell: ({ row }) => {
-        const isFailed = row.original.status === AutomationRunStatus.FAILED;
-
-        return (
-          <div className="flex justify-end">
-            <Button variant="outline" size="sm" asChild>
-              <Link
-                href={`/admin/automations/${automationId}/executions/${row.original.id}/`}
-              >
-                {isFailed ? "Debug" : "View"}
-                <ArrowUpRightIcon data-icon="inline-end" />
-              </Link>
-            </Button>
-          </div>
-        );
-      },
+      cell: ({ row }) => (
+        <div className="flex justify-end">
+          <RunActions automationId={automationId} run={row.original} />
+        </div>
+      ),
       enableSorting: false,
       enableHiding: false,
     }),

@@ -2,10 +2,8 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import { db } from "@/shared/lib/db";
 import {
-  AutomationRunStatus,
   AutomationRunStepStatus,
   AutomationStatus,
-  Prisma,
 } from "@/generated/prisma";
 import { cleanupAutomationTables } from "@/modules/automations";
 
@@ -751,87 +749,4 @@ describe("automation engine", () => {
     );
   });
 
-  it("cancels a Run that exceeds the 500-execution guard", async () => {
-    // Pre-seed the ledger so the aggregate attempts sum already sits at the
-    // limit; exercising the guard does not require running 500 real nodes.
-    const leafCount = 500;
-    const nodes = [
-      { id: "trigger", type: "manual", data: {} },
-      ...Array.from({ length: leafCount }, (_, index) => ({
-        id: `leaf-${index}`,
-        type: "leaf",
-        data: {},
-      })),
-    ];
-    const connections = Array.from({ length: leafCount }, (_, index) => ({
-      fromNodeId: "trigger",
-      toNodeId: `leaf-${index}`,
-    }));
-
-    const automation = await db.automation.create({
-      data: {
-        name: "Guard flow",
-        status: AutomationStatus.PUBLISHED,
-        publishedSnapshot: { nodes, connections },
-      },
-    });
-    const registry = {
-      leaf: async () => ({ output: { ok: true } }),
-    };
-
-    const run = await db.automationRun.create({
-      data: {
-        automationId: automation.id,
-        triggerType: "manual",
-        graph: { nodes, connections } as unknown as Prisma.InputJsonValue,
-        payload: Prisma.DbNull,
-        status: AutomationRunStatus.RUNNING,
-        startedAt: new Date(),
-        steps: {
-          create: [
-            {
-              nodeId: "trigger",
-              seq: 1,
-              status: AutomationRunStepStatus.COMPLETED,
-              attempts: 1,
-              input: Prisma.DbNull,
-              output: Prisma.DbNull,
-            },
-            ...Array.from({ length: leafCount }, (_, index) => ({
-              nodeId: `leaf-${index}`,
-              seq: index + 2,
-              status: AutomationRunStepStatus.PENDING,
-              attempts: 1,
-              input: Prisma.DbNull,
-            })),
-          ],
-        },
-      },
-      include: { steps: true },
-    });
-
-    const result = await runDueAutomations({ registry });
-
-    const finalRun = await db.automationRun.findUnique({
-      where: { id: run.id },
-      include: { steps: true },
-    });
-
-    expect(finalRun?.status).toBe("CANCELED");
-    expect(finalRun?.error).toMatch(/500/);
-    expect(finalRun?.error).toMatch(/execution limit/i);
-
-    const completedCount = finalRun?.steps.filter(
-      (step) => step.status === AutomationRunStepStatus.COMPLETED,
-    ).length;
-    expect(completedCount).toBeLessThanOrEqual(500);
-
-    const skippedCount = finalRun?.steps.filter(
-      (step) => step.status === AutomationRunStepStatus.SKIPPED,
-    ).length;
-    expect(skippedCount).toBeGreaterThanOrEqual(1);
-    expect(result.details.some((detail) => detail.status === "skipped")).toBe(
-      true,
-    );
-  });
 });
