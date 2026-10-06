@@ -1,42 +1,42 @@
-import { db } from "@/lib/db";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import type { SearchParams } from "nuqs";
+
+import { HydrateClient } from "@/trpc/server";
 
 import { requirePermission } from "@/shared/lib/auth-utils";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 
-import { ReviewsView } from "./components/reviews-view";
+import {
+  ReviewsListHeader,
+  ReviewsView,
+  ReviewsViewError,
+  ReviewsViewLoading,
+} from "@/modules/reviews";
+import { loadSearchParams } from "@/modules/reviews/params";
+import { prefetchReviews } from "@/modules/reviews/server/prefetch";
 
-const ReviewsPage = async () => {
+interface Props {
+  searchParams: Promise<SearchParams>;
+}
+
+const ReviewsPage = async ({ searchParams }: Props) => {
   await requirePermission(PERMISSIONS.REVIEWS_READ);
 
-  const reviews = await db.reviews.findMany({
-    select: {
-      id: true,
-      product: {
-        select: {
-          id: true,
-          title: true,
-          description: true,
-          imageCover: {
-            select: {
-              url: true,
-              altText: true,
-            },
-          },
-        },
-      },
-      rating: true,
-      reviewerName: true,
-      role: true,
-      comment: true,
-      status: true,
-      date: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  const filters = await loadSearchParams(searchParams);
 
-  return <ReviewsView reviews={reviews} />;
+  prefetchReviews(filters);
+
+  return (
+    <HydrateClient>
+      <ReviewsListHeader />
+      <Suspense fallback={<ReviewsViewLoading />}>
+        <ErrorBoundary fallback={<ReviewsViewError />}>
+          <ReviewsView />
+        </ErrorBoundary>
+      </Suspense>
+    </HydrateClient>
+  );
 };
 
 export default ReviewsPage;

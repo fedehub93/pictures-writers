@@ -15,6 +15,7 @@ export type RevalidateScope =
   | "post"
   | "page"
   | "product"
+  | "review"
   | "settings"
   | "widgets"
   | "all";
@@ -35,6 +36,8 @@ export type RevalidateScope =
  *   at `/shop/{categorySlug}/{productSlug}`) + sitemap. No slug is needed for
  *   products: revalidating the `/shop` layout covers all product pages, and a
  *   bare `product.slug` would not match the two-segment URL.
+ * - **review**: home (`/`) and the `/shop` segment (product pages) — reviews render
+ *   in both. The sitemap does not contain reviews, so it is left untouched.
  * - **settings**: root layout (navbar/footer) + sitemap — settings affect the whole site
  * - **widgets**: root layout only — widgets render on every post page (sidebar, bottom,
  *   popup) and potentially the home/hero, so a change invalidates the whole site. No
@@ -72,6 +75,12 @@ export function revalidateContent(
       revalidatePath("/shop", "layout");
       // Sitemap
       revalidatePath("/sitemap.xml");
+      break;
+
+    case "review":
+      // Home testimonials and every product page under the shop segment
+      revalidatePath("/", "layout");
+      revalidatePath("/shop", "layout");
       break;
 
     case "widgets":

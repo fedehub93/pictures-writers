@@ -8,7 +8,7 @@ import { WebinarInfo } from "./webinar-info";
 import { WebinarSummary } from "./webinar-summary";
 
 import { ProductBottomCta } from "../product-bottom-cta";
-import { ProductReviews } from "../product-reviews";
+import { ProductReviews } from "@/modules/reviews";
 
 interface WebinarProps {
   id: string;
