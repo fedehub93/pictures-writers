@@ -10,8 +10,8 @@ import {
   OrderIdView,
   OrderIdViewError,
   OrderIdViewLoading,
-} from "@/modules/orders";
-import { prefetchOrderById } from "@/modules/orders/server/prefetch";
+} from "@/modules/shop/orders";
+import { prefetchOrderById } from "@/modules/shop/orders/server/prefetch";
 
 const OrderIdPage = async ({
   params,

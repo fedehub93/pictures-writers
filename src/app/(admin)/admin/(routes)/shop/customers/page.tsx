@@ -12,9 +12,9 @@ import {
   CustomersView,
   CustomersViewError,
   CustomersViewLoading,
-} from "@/modules/customers";
-import { loadSearchParams } from "@/modules/customers/params";
-import { prefetchCustomers } from "@/modules/customers/server/prefetch";
+} from "@/modules/shop/customers";
+import { loadSearchParams } from "@/modules/shop/customers/params";
+import { prefetchCustomers } from "@/modules/shop/customers/server/prefetch";
 
 interface Props {
   searchParams: Promise<SearchParams>;

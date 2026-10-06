@@ -2,10 +2,10 @@
 
 import { createElement, type ComponentType } from "react";
 
-import { CreateCustomerConfigPanel } from "@/modules/customers/automations/ui/create-customer-config-panel";
+import { CreateCustomerConfigPanel } from "@/modules/shop/customers/automations/ui/create-customer-config-panel";
 import { FormSubmittedTriggerConfigPanel } from "@/modules/forms/automations/ui/form-submitted-trigger-config-panel";
 import { SendEmailConfigPanel } from "@/modules/mails/automations/ui/send-email-config-panel";
-import { CreateOrderConfigPanel } from "@/modules/orders/automations/ui/create-order-config-panel";
+import { CreateOrderConfigPanel } from "@/modules/shop/orders/automations/ui/create-order-config-panel";
 
 import { CronTriggerConfigPanel } from "../ui/components/config/cron-trigger-config-panel";
 import { HttpRequestConfigPanel } from "../ui/components/config/http-request-config-panel";

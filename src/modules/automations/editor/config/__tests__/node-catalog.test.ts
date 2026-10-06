@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { CREATE_CUSTOMER_NODE_TYPE } from "@/modules/customers/automations/constants";
+import { CREATE_CUSTOMER_NODE_TYPE } from "@/modules/shop/customers/automations/constants";
 import {
   CREATE_ORDER_NODE_TYPE,
   ORDER_COMPLETED_NODE_TYPE,
-} from "@/modules/orders/automations/constants";
+} from "@/modules/shop/orders/automations/constants";
 
 import {
   editorActionNodes,

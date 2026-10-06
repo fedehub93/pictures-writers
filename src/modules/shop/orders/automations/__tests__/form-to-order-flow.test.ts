@@ -7,8 +7,8 @@ import { passthroughEffects } from "@/modules/automations/lib/effects";
 import { pumpDueAutomations } from "@/modules/automations/server/automation-runtime";
 import { FORM_SUBMITTED_NODE_TYPE } from "@/modules/forms/automations/constants";
 import { emitFormSubmitted } from "@/modules/forms/automations/emit";
-import { CREATE_CUSTOMER_NODE_TYPE } from "@/modules/customers/automations/constants";
-import { CREATE_ORDER_NODE_TYPE } from "@/modules/orders/automations/constants";
+import { CREATE_CUSTOMER_NODE_TYPE } from "@/modules/shop/customers/automations/constants";
+import { CREATE_ORDER_NODE_TYPE } from "@/modules/shop/orders/automations/constants";
 import { db } from "@/shared/lib/db";
 import {
   AutomationRunStatus,

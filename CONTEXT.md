@@ -124,6 +124,20 @@ The lifecycle state of a backoffice user: `pending` while an invitation is not a
 **Authorization policy**:
 The server-side rule that evaluates a backoffice user’s role and permissions. It is the single security boundary shared by admin pages, tRPC procedures, and REST endpoints.
 
+## Catalog
+
+**Product**:
+A sellable offering in the shop — an ebook, service, webinar, or affiliate link — managed in the CMS with its description, pricing, media, FAQs, SEO, and publishing state.
+_Avoid_: Item, offering, listing when referring to the catalog entity.
+
+**Product category**:
+A named grouping that organizes Products in the shop and drives the public shop listing.
+_Avoid_: Shop category, Category when referring to the blog taxonomy.
+
+**Review**:
+A customer testimonial attached to a Product, carrying a rating and an optional comment, shown publicly once published.
+_Avoid_: Testimonial, rating, feedback when referring to the entity.
+
 ## Commerce
 
 **Customer**:

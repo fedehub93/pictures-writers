@@ -30,7 +30,7 @@ import {
   ProductType,
 } from "@/generated/prisma";
 
-import { ordersRouter } from "@/modules/orders/server/procedures";
+import { ordersRouter } from "@/modules/shop/orders/server/procedures";
 
 import { orderCompletedTriggerCatalogEntry } from "../catalog";
 import {

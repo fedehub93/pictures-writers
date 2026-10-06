@@ -43,6 +43,7 @@ export const PERMISSIONS = {
   PRODUCT_CATEGORIES_CREATE: "product-categories.create",
   PRODUCT_CATEGORIES_UPDATE: "product-categories.update",
   PRODUCT_CATEGORIES_DELETE: "product-categories.delete",
+  PRODUCT_CATEGORIES_PUBLISH: "product-categories.publish",
   CUSTOMERS_READ: "customers.read",
   CUSTOMERS_CREATE: "customers.create",
   CUSTOMERS_UPDATE: "customers.update",
