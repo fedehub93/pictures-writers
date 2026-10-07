@@ -6,15 +6,6 @@ import { AppRouter } from "@/trpc/routers/_app";
 export type ProductsGetMany =
   inferRouterOutputs<AppRouter>["products"]["getMany"];
 
-export type ProductGetOne =
-  inferRouterOutputs<AppRouter>["products"]["getOne"];
-
-export type ProductGetLastByRootId =
-  inferRouterOutputs<AppRouter>["products"]["getLastByRootId"];
-
-export type ProductsGetByRootIds =
-  inferRouterOutputs<AppRouter>["products"]["getByRootIds"];
-
 /**
  * Product metadata is type-specific, so it is modelled as a discriminated
  * union keyed by `type`. These types are the single domain definition shared
