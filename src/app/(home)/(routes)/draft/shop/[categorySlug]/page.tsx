@@ -10,7 +10,7 @@ import { getSettings } from "@/data/settings";
 import {
   getDraftProductCategoryBySlug,
   getPublishedProductCategoryBySlug,
-} from "@/data/product-category";
+} from "@/modules/shop/product-categories/server/queries";
 import { getProductsPaginatedByFilters } from "@/data/product";
 import { ProductsList } from "../../../shop/[categorySlug]/_components/products-list";
 

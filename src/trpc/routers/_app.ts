@@ -9,6 +9,7 @@ import { contactsRouter } from "@/modules/mails/contacts/server/procedures";
 import { formsRouter } from "@/modules/forms/server/procedures";
 import { formSubmissionsRouter } from "@/modules/forms/submissions/server/procedures";
 import { ordersRouter } from "@/modules/shop/orders/server/procedures";
+import { productCategoriesRouter } from "@/modules/shop/product-categories/server/procedures";
 import { pagesRouter } from "@/modules/pages/server/procedures";
 import { postsRouter } from "@/modules/blog/posts/server/procedures";
 import { reviewsRouter } from "@/modules/reviews/server/procedures";
@@ -32,6 +33,7 @@ export const appRouter = createTRPCRouter({
   orders: ordersRouter,
   pages: pagesRouter,
   posts: postsRouter,
+  productCategories: productCategoriesRouter,
   reviews: reviewsRouter,
   roles: rolesRouter,
   users: usersRouter,

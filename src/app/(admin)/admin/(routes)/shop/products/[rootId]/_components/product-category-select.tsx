@@ -26,7 +26,7 @@ import { Skeleton } from "@/shared/ui/skeleton";
 
 import { ProductFormValues } from "@/schemas/product";
 
-import { useProductCategoriesQuery } from "@/app/(admin)/_hooks/use-product-categories";
+import { useProductCategoriesQuery } from "@/modules/shop/product-categories/hooks/use-product-categories";
 
 interface ProductCategorySelectProps {
   control: Control<ProductFormValues>;

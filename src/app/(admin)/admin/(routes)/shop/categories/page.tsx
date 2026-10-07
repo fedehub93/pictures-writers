@@ -1,30 +1,41 @@
-import { db } from "@/lib/db";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import type { SearchParams } from "nuqs";
+
+import { HydrateClient } from "@/trpc/server";
 
 import { requirePermission } from "@/shared/lib/auth-utils";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 
-import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
-import { DataTable } from "./(routes)/_components/data-table";
-import { columns } from "./(routes)/_components/columns";
+import {
+  ProductCategoriesListHeader,
+  ProductCategoriesView,
+  ProductCategoriesViewError,
+  ProductCategoriesViewLoading,
+} from "@/modules/shop/product-categories";
+import { loadSearchParams } from "@/modules/shop/product-categories/params";
+import { prefetchProductCategories } from "@/modules/shop/product-categories/server/prefetch";
 
-const ProductCategoriesPage = async () => {
+interface Props {
+  searchParams: Promise<SearchParams>;
+}
+
+const ProductCategoriesPage = async ({ searchParams }: Props) => {
   await requirePermission(PERMISSIONS.PRODUCT_CATEGORIES_READ);
 
-  const categories = await db.productCategory.findMany({
-    orderBy: {
-      createdAt: "desc",
-    },
-    distinct: ["rootId"],
-  });
+  const filters = await loadSearchParams(searchParams);
+
+  prefetchProductCategories(filters);
 
   return (
-    <div className="h-full w-full flex flex-col gap-y-4 px-6 py-3">
-      <ContentHeader
-        label="Product Categories"
-        totalEntries={categories.length}
-      />
-      <DataTable columns={columns} data={categories} />
-    </div>
+    <HydrateClient>
+      <ProductCategoriesListHeader />
+      <Suspense fallback={<ProductCategoriesViewLoading />}>
+        <ErrorBoundary fallback={<ProductCategoriesViewError />}>
+          <ProductCategoriesView />
+        </ErrorBoundary>
+      </Suspense>
+    </HydrateClient>
   );
 };
 

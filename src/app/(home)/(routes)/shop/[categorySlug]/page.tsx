@@ -9,7 +9,7 @@ import { BreadcrumbListJsonLd } from "@/app/(home)/_components/seo/json-ld/bread
 import { Breadcrumbs } from "@/app/(home)/_components/breadcrumbs";
 
 import { getSettings } from "@/data/settings";
-import { getPublishedProductCategoryBySlug } from "@/data/product-category";
+import { getPublishedProductCategoryBySlug } from "@/modules/shop/product-categories/server/queries";
 import { getProductsPaginatedByFilters } from "@/data/product";
 
 import { ProductsList } from "./_components/products-list";
