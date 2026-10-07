@@ -1,20 +1,18 @@
-import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 
+import { ContentStatus } from "@/generated/prisma";
+
+import { useTRPC } from "@/trpc/client";
+
 export const useProductOptions = (s?: string) => {
-  return useQuery({
-    queryKey: ["products", { s }],
-    queryFn: async () => {
-      const response = await axios.get(
-        `/api/admin/shop/products?s=${s}&per_page=100`,
-      );
-      return response.data as {
-        items: {
-          id: string;
-          title: string;
-          imageCover: { url: string; altText: string | null } | null;
-        }[];
-      };
-    },
-  });
+  const trpc = useTRPC();
+
+  return useQuery(
+    trpc.products.getMany.queryOptions({
+      page: 1,
+      pageSize: 100,
+      search: s ?? null,
+      status: ContentStatus.PUBLISHED,
+    }),
+  );
 };

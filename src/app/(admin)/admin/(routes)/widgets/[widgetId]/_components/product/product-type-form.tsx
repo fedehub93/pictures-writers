@@ -3,7 +3,6 @@
 import * as z from "zod";
 import Image from "next/image";
 import { ChangeEvent } from "react";
-import axios from "axios";
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 import { Product } from "@/generated/prisma";
 import { Control, useController } from "react-hook-form";
@@ -27,11 +26,11 @@ import {
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 
-import { API_ADMIN_PRODUCTS_FETCH } from "@/constants/api";
+import { useTRPC } from "@/trpc/client";
 import { widgetFormSchema } from "../widget-form";
 import { cn } from "@/shared/lib/utils";
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
-import { ProductWithImageCoverAndAuthor, WidgetProductType } from "@/types";
+import { WidgetProductType } from "@/types";
 
 interface ProductTypeFormProps {
   control: Control<z.infer<typeof widgetFormSchema>>;
@@ -77,22 +76,14 @@ export const ProductTypeForm = ({
     name: "metadata.limit",
   });
 
-  const fetchProducts = async (ids: string[]) => {
-    const { data } = await axios.post<ProductWithImageCoverAndAuthor[]>(
-      `${API_ADMIN_PRODUCTS_FETCH}`,
-      { ids },
-    );
-    return data;
-  };
+  const trpc = useTRPC();
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["productsFetch", fieldProducts.value.length],
-    queryFn: () =>
-      fetchProducts(
-        fieldProducts.value.map(
-          (v: { rootId: string; sort: number }) => v.rootId,
-        ),
+    ...trpc.products.getByRootIds.queryOptions({
+      ids: fieldProducts.value.map(
+        (v: { rootId: string; sort: number }) => v.rootId,
       ),
+    }),
     enabled: fieldProducts.value.length > 0,
   });
 

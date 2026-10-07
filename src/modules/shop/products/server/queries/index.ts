@@ -11,3 +11,8 @@ export {
 export { getPublishedProductsBuilding } from "./get-published-products-building";
 
 export { getProductMetadataBySlug } from "./get-product-metadata-by-slug";
+
+export {
+  getPublishedProductByRootId,
+  type GetPublishedProductByRootId,
+} from "./get-published-product-by-root-id";

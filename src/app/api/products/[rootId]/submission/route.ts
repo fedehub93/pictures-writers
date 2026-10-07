@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { ProductAcquisitionMode } from "@/generated/prisma";
 
 import { db } from "@/lib/db";
-import { getPublishedProductByRootId } from "@/data/product";
+import { getPublishedProductByRootId } from "@/modules/shop/products";
 import { createContactByEmail } from "@/data/email-contact";
 import { emitFormSubmitted } from "@/modules/forms/automations/emit";
 

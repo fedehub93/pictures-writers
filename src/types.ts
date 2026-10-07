@@ -1,8 +1,6 @@
 import { ReactNode } from "react";
 import { HTMLContent, JSONContent } from "@tiptap/core";
 import type {
-  Media,
-  Product,
   Seo,
   Settings,
   SocialChannel,
@@ -86,13 +84,8 @@ export interface BaseSeoProps {
 }
 
 /**
- * Product Types
+ * Product types
  */
-
-export type ProductWithImageCoverAndAuthor = Product & {
-  category: { title: string; slug: string } | null;
-  imageCover: Media | { url: string; altText: string | null } | null;
-};
 
 export type Gallery = {
   sort: number;

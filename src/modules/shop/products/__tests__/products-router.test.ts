@@ -648,6 +648,38 @@ describe("productsRouter", () => {
     });
   });
 
+  describe("getPublishedByRootId", () => {
+    it("returns the published version even when a draft is ahead", async () => {
+      const created = await createProduct();
+      const published = await caller.publish({
+        id: created.id,
+        rootId: created.rootId!,
+      });
+      await caller.update({
+        id: created.id,
+        rootId: created.rootId!,
+        title: "Draft ahead",
+      });
+
+      const loaded = await caller.getPublishedByRootId({
+        rootId: created.rootId!,
+      });
+
+      expect(loaded?.id).toBe(published.id);
+      expect(loaded?.title).toBe(created.title);
+    });
+
+    it("returns null for a root with no published version", async () => {
+      const created = await createProduct();
+
+      const loaded = await caller.getPublishedByRootId({
+        rootId: created.rootId!,
+      });
+
+      expect(loaded).toBeNull();
+    });
+  });
+
   describe("getMany", () => {
     it("returns a paginated envelope of one row per root", async () => {
       const created = await createProduct({
@@ -831,6 +863,9 @@ describe("productsRouter", () => {
         PERMISSIONS.PRODUCTS_PUBLISH,
       );
       expect(getProcedurePermission("products.getMany")).toBe(
+        PERMISSIONS.PRODUCTS_READ,
+      );
+      expect(getProcedurePermission("products.getPublishedByRootId")).toBe(
         PERMISSIONS.PRODUCTS_READ,
       );
       expect(getProcedurePermission("products.getByRootIds")).toBe(

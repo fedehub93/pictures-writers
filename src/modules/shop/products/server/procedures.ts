@@ -30,6 +30,7 @@ import {
   PRODUCT_NOT_FOUND,
 } from "../lib/create-new-version";
 import { getDefaultProductMetadata } from "../lib/default-metadata";
+import { getPublishedProductByRootId } from "./queries/get-published-product-by-root-id";
 
 const findProductOrThrow = async (id: string) => {
   const product = await db.product.findUnique({ where: { id } });
@@ -212,6 +213,12 @@ export const productsRouter = createTRPCRouter({
       }
 
       return product;
+    }),
+
+  getPublishedByRootId: permissionProcedure(PERMISSIONS.PRODUCTS_READ)
+    .input(z.object({ rootId: z.string().min(1) }))
+    .query(async ({ input }) => {
+      return getPublishedProductByRootId(input.rootId);
     }),
 
   getMany: permissionProcedure(PERMISSIONS.PRODUCTS_READ)

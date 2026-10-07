@@ -15,9 +15,11 @@ export { ProductsListHeader } from "./ui/admin/components/products-list-header";
 export {
   getProductMetadataBySlug,
   getProductsPaginatedByFilters,
+  getPublishedProductByRootId,
   getPublishedProductBySlug,
   getPublishedProductsBuilding,
   type GetProductsPaginatedByFiltersReturn,
+  type GetPublishedProductByRootId,
   type GetPublishedProductBySlug,
 } from "./server/queries";
 
