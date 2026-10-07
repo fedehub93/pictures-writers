@@ -11,7 +11,7 @@ import { ProductAcquisitionMode } from "@/generated/prisma";
 import { useTRPC } from "@/trpc/client";
 
 import { Form } from "@/shared/ui/form";
-import { Field, FieldLabel } from "@/shared/ui/field";
+import { Field, FieldDescription, FieldLabel } from "@/shared/ui/field";
 import {
   Select,
   SelectContent,
@@ -156,12 +156,12 @@ export const ProductPricingForm = ({
           control={form.control}
           name="isFree"
           render={({ field }) => (
-            <Field className="flex flex-row items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
+            <Field orientation="horizontal" className="rounded-lg border p-4">
+              <div className="flex-1">
                 <FieldLabel htmlFor="form-rhf-is-free">Free</FieldLabel>
-                <p className="text-sm text-muted-foreground">
+                <FieldDescription>
                   Make this product available at no cost.
-                </p>
+                </FieldDescription>
               </div>
               <Switch
                 id="form-rhf-is-free"

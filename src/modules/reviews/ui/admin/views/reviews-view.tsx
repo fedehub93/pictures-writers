@@ -18,7 +18,7 @@ export const ReviewsView = () => {
   return (
     <>
       <ReviewDialog />
-      <div className="h-full w-full flex flex-col gap-y-4 px-6 py-3">
+      <div className="px-6">
         <DataTable columns={columns} data={data.items} />
         <DataPagination
           page={filters.page}

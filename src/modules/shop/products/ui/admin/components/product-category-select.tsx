@@ -72,7 +72,7 @@ export const ProductCategorySelect = <T extends FieldValues>({
                 {selected && (
                   <Badge
                     className={cn(
-                      "h-3.5 text-xs",
+                      "text-xs",
                       selected.status === ContentStatus.DRAFT && "bg-slate-700",
                       selected.status === ContentStatus.CHANGED && "bg-sky-700",
                       selected.status === ContentStatus.PUBLISHED &&
@@ -100,7 +100,7 @@ export const ProductCategorySelect = <T extends FieldValues>({
                 >
                   <SelectTrigger
                     id="form-rhf-product-category"
-                    className="h-9 shadow-2xs mb-0"
+                    className="h-9 w-full shadow-2xs mb-0"
                     aria-invalid={fieldState.invalid}
                   >
                     <SelectValue placeholder="Select a category..." />

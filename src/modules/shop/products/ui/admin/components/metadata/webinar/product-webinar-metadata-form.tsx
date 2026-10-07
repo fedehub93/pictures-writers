@@ -93,22 +93,22 @@ export const ProductWebinarMetadataForm = ({
   });
 
   return (
-    <Card className="md:p-6 shadow-sm border rounded-xl">
-      <CardHeader className="px-4 pt-4 md:px-6 md:pt-2">
-        <div className="flex items-center justify-between gap-4">
-          <CardTitle className="text-xl font-normal text-foreground">
-            Webinar details
-          </CardTitle>
-          <GenericSwitch
-            control={form.control}
-            name="metadata.isOpen"
-            label="Enrollment open"
-            disabled={isPending}
-          />
-        </div>
-      </CardHeader>
-      <CardContent className="px-4 md:px-6">
-        <Form {...form}>
+    <Form {...form}>
+      <Card className="md:p-6 shadow-sm border rounded-xl">
+        <CardHeader className="px-4 pt-4 md:px-6 md:pt-2">
+          <div className="flex items-center justify-between gap-4">
+            <CardTitle className="text-xl font-normal text-foreground">
+              Webinar details
+            </CardTitle>
+            <GenericSwitch
+              control={form.control}
+              name="metadata.isOpen"
+              label="Enrollment open"
+              disabled={isPending}
+            />
+          </div>
+        </CardHeader>
+        <CardContent className="px-4 md:px-6">
           <form onSubmit={onSubmit} className="flex flex-col gap-y-6">
             <div className="flex flex-col gap-4 sm:flex-row">
               <GenericInput
@@ -158,7 +158,7 @@ export const ProductWebinarMetadataForm = ({
               {fields.map((lesson, index) => (
                 <div
                   key={lesson.id}
-                  className="relative grid grid-cols-1 gap-3 rounded-md border p-4 sm:grid-cols-4"
+                  className="grid grid-cols-1 gap-3 rounded-md border p-4 sm:grid-cols-[repeat(4,minmax(0,1fr))_auto] sm:items-end"
                 >
                   <GenericInput
                     control={form.control}
@@ -192,7 +192,7 @@ export const ProductWebinarMetadataForm = ({
                     type="button"
                     variant="destructive"
                     size="icon"
-                    className="absolute right-2 top-2"
+                    className="justify-self-end sm:self-end"
                     disabled={isPending}
                     aria-label={`Remove lesson ${index + 1}`}
                     onClick={() => remove(index)}
@@ -209,8 +209,8 @@ export const ProductWebinarMetadataForm = ({
               </Button>
             </div>
           </form>
-        </Form>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </Form>
   );
 };

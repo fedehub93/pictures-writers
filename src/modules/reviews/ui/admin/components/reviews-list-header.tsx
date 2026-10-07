@@ -49,7 +49,7 @@ export const ReviewsListHeader = () => {
   return (
     <div className="flex flex-col gap-y-4 px-6 py-4">
       <ContentHeader label="Reviews" totalEntries={data?.total ?? 0} />
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex justify-between">
         <ScrollArea>
           <div className="flex items-center gap-x-2 p-1">
             <ReviewsSearchFilter />
