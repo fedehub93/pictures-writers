@@ -434,6 +434,60 @@ describe("productsRouter", () => {
       },
     );
 
+    it("rejects ebook metadata missing the nullable-but-required fields", async () => {
+      const created = await createProduct({ type: ProductType.EBOOK });
+
+      await expect(
+        caller.update({
+          id: created.id,
+          rootId: created.rootId!,
+          metadata: {
+            type: ProductType.EBOOK,
+            edition: "First",
+            formats: [],
+          },
+        } as never),
+      ).rejects.toThrow();
+    });
+
+    it("rejects a webinar lesson date that is not a string", async () => {
+      const created = await createProduct({ type: ProductType.WEBINAR });
+
+      await expect(
+        caller.update({
+          id: created.id,
+          rootId: created.rootId!,
+          metadata: {
+            type: ProductType.WEBINAR,
+            seats: 1,
+            platform: "Zoom",
+            lessons: [{ date: new Date(), startTime: "", endTime: "" }],
+            isOpen: true,
+          },
+        } as never),
+      ).rejects.toThrow();
+    });
+
+    it("accepts a webinar lesson with an ISO date string", async () => {
+      const created = await createProduct({ type: ProductType.WEBINAR });
+
+      const updated = await caller.update({
+        id: created.id,
+        rootId: created.rootId!,
+        metadata: {
+          type: ProductType.WEBINAR,
+          seats: 1,
+          platform: "Zoom",
+          lessons: [
+            { date: "2026-11-10", startTime: "18:00", endTime: "20:00" },
+          ],
+          isOpen: true,
+        },
+      });
+
+      expect(updated.metadata).toMatchObject({ type: ProductType.WEBINAR });
+    });
+
     it("throws NOT_FOUND when the root does not exist", async () => {
       await expect(
         caller.update({

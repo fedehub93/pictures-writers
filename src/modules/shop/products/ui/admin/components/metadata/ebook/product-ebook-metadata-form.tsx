@@ -58,12 +58,21 @@ export const ProductEbookMetadataForm = ({
         publishedAt: initialData?.publishedAt
           ? new Date(initialData.publishedAt)
           : null,
-        author: initialData?.author ?? {
-          id: "",
-          firstName: "",
-          lastName: "",
-          imageUrl: "",
-        },
+        // Legacy metadata may carry partial author records, so normalize the
+        // fields the schema requires to be present.
+        author: initialData?.author
+          ? {
+              id: initialData.author.id,
+              firstName: initialData.author.firstName,
+              lastName: initialData.author.lastName,
+              imageUrl: initialData.author.imageUrl ?? "",
+            }
+          : {
+              id: "",
+              firstName: "",
+              lastName: "",
+              imageUrl: "",
+            },
       },
     },
     mode: "onChange",

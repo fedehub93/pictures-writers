@@ -24,16 +24,15 @@ export const ebookMetadataSchema = z.object({
     }),
   ),
   edition: z.string(),
-  publishedAt: z.coerce.date<Date>().nullable().optional(),
+  publishedAt: z.coerce.date<Date>().nullable(),
   author: z
     .object({
       id: z.string(),
       firstName: z.string(),
       lastName: z.string(),
-      imageUrl: z.string().nullish(),
+      imageUrl: z.string(),
     })
-    .nullable()
-    .optional(),
+    .nullable(),
 });
 
 export const affiliateMetadataSchema = z.object({
@@ -48,7 +47,7 @@ export const webinarMetadataSchema = z.object({
   lessons: z.array(
     z.object({
       title: z.string().optional(),
-      date: z.union([z.string(), z.date()]),
+      date: z.string(),
       startTime: z.string(),
       endTime: z.string(),
     }),
