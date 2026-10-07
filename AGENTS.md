@@ -135,12 +135,35 @@ npm run start
 
 ## Testing Instructions
 
-There are currently **no automated tests** in this project. If you add tests:
+Tests run with **Vitest** (`vitest.config.ts`). Test files live alongside source files or in a `__tests__` directory.
 
-- Place test files alongside source files or in a `__tests__` directory
-- The project uses TypeScript — consider Vitest or Jest with `ts-jest`
+```bash
+npm run test        # watch mode
+npm run test:run    # single run (used in CI)
+```
 
-> **IMPORTANT**: Vitest runs only against a dedicated test database defined in `.env.test` (its `DATABASE_URL` database name must contain `test`); it refuses to touch the dev/production `DATABASE_URL` in `.env`. To keep test isolation, test files may clean the tables they use on that test database.
+### Test database
+
+Vitest runs **only** against a dedicated PostgreSQL test database defined in `.env.test`; it refuses to start if that file is missing or if its `DATABASE_URL` is identical to the dev/production one in `.env` (`tests/test-db.ts`). `tests/global-setup.ts` runs `prisma migrate deploy` against the test database on every run.
+
+Recommended local setup: a disposable PostgreSQL 16 container, on a non-default port to avoid clashing with any local Postgres.
+
+```bash
+npm run test:db:up      # docker compose up -d db (postgres:16 on localhost:5433)
+npm run test:run
+npm run test:db:down    # stop the container
+npm run test:db:reset   # recreate it from scratch (drops the volume)
+```
+
+`.env.test` (gitignored) should contain:
+
+```
+DATABASE_URL=postgresql://postgres:postgres@localhost:5433/pictures_writers_test
+```
+
+CI (`.github/workflows/test.yml`) provisions the same `postgres:16` as a service container and creates `.env` / `.env.test` at runtime. Don't point the test database at Neon: frequent test runs keep the Neon compute awake and cost money.
+
+> **Out-of-sync client gotcha**: `generated/prisma` is gitignored. If schema changes aren't reflected, run `npx prisma generate` — a stale client can make tests fail with "column does not exist".
 
 Before committing, always run:
 

@@ -135,18 +135,14 @@ Esecuzione del flusso **S4** progettato in `.agents/emails.md` §7. Qui vivono i
 **Preview:** Le iscrizioni chiudono martedì 27. Il 3 novembre si parte.
 **Body:**
 > Ciao,
-> le iscrizioni ai laboratori chiudono **martedì 27 ottobre**. Il **3 novembre** si parte.
+> le iscrizioni al laboratorio chiudono **martedì 27 ottobre**. Il **3 novembre** si parte.
 >
 > Se stai rimandando, questo è il momento.
 >
-> Due modi per farlo:
-> - **In gruppo:** un percorso a tappe, con una classe e un ritmo condiviso.
-> - **1:1:** sessioni dedicate solo alla tua idea, con un consulente.
->
-> Stesso metodo, stessa cura. Cambia quanta attenzione è tutta per te.
+> Un percorso a tappe, con una classe e un ritmo condiviso.
 > Non serve un copione già scritto: si parte dall'idea.
 >
-> **[Iscriviti ai laboratori →]** `/shop/corsi-di-sceneggiatura/`
+> **[Iscriviti al laboratorio →]** `/shop/corsi-di-sceneggiatura/`
 >
 > Un'idea tenuta nel cassetto non diventa mai un film.
 >
@@ -158,28 +154,59 @@ Esecuzione del flusso **S4** progettato in `.agents/emails.md` §7. Qui vivono i
 ### Extra — Apertura iscrizioni laboratori ✅ scritta
 **Tipo:** speciale (a scadenza) · **Send:** giovedì 8 ottobre
 **Oggetto:** Sono aperte le iscrizioni ai laboratori
-**Preview:** Gruppo o 1:1, si parte il 3 novembre. Iscrizioni fino al 27.
+**Preview:** Si parte il 3 novembre. Iscrizioni fino al 27.
 **Body:**
 > Ciao,
-> da oggi sono aperte le iscrizioni ai laboratori di scrittura del soggetto.
+> da oggi sono aperte le iscrizioni al laboratorio di scrittura del soggetto.
 >
-> Due modi per farlo:
-> - **In gruppo:** un percorso a tappe, con una classe e un ritmo condiviso.
-> - **1:1:** sessioni dedicate solo alla tua idea, con un consulente.
->
-> Stesso metodo, stessa cura. Cambia quanta attenzione è tutta per te.
+> Un percorso a tappe, con una classe e un ritmo condiviso.
 > Non serve un copione già scritto: si parte dall'idea.
 >
 > Si parte il **3 novembre**. Le iscrizioni chiudono il **27 ottobre**.
 >
-> **[Scopri i laboratori →]** `/shop/corsi-di-sceneggiatura/`
+> **[Scopri il laboratorio →]** `/shop/corsi-di-sceneggiatura/`
 >
 > Un soggetto scritto è già una storia. Il resto viene dopo.
 >
 > A presto,
 > il team di Pictures Writers
-**CTA:** Scopri i laboratori → `/shop/corsi-di-sceneggiatura/`
-**Nota:** apertura iscrizioni (finestra 8-27 ott, avvio 3 nov). Email self-contained: non rimanda alla Issue 1. Gruppo e 1:1 allo stesso prezzo (300€), differenza sul formato.
+**CTA:** Scopri il laboratorio → `/shop/corsi-di-sceneggiatura/`
+**Nota:** apertura iscrizioni **solo gruppo** (finestra 8-27 ott, avvio 3 nov). Email self-contained: non rimanda alla Issue 1. Il formato 1:1 **non entra qui**: diventerebbe confusante (stesso prezzo, stesso esito) → ha una send dedicata a offerta unica dopo la finestra (vedi sotto).
+
+### Send 1:1 — Lancio Laboratorio 1:1 ✅ scritta
+**Tipo:** speciale a scadenza · **Send:** dopo la finestra del gruppo (post 27/10, es. mer 28 o gio 29)
+**Oggetto:** Il laboratorio con una sola persona
+**Preview:** Non era previsto. È andata benissimo. Ora è una scelta.
+**Body:**
+> Ciao,
+> c'è un'edizione del nostro laboratorio che è finita con una sola persona.
+>
+> Non era previsto. Ma quella persona si è trovata benissimo: attenzione totale, ritmo suo, domande dirette, niente attese.
+>
+> Abbiamo capito una cosa: quel formato non era un caso. Era un modo di lavorare migliore, per chi lo vuole.
+>
+> Così l'abbiamo reso intenzionale: il **Laboratorio 1:1**, il laboratorio del soggetto con i **due consulenti** solo per te.
+>
+> - due consulenti dedicati, non uno, solo sulla tua idea
+> - stesso metodo del corso di gruppo
+> - stesso risultato: un soggetto di lungometraggio alla terza stesura
+> - 5 sessioni, una a settimana
+> - l'orario lo concordiamo insieme, sessione per sessione
+> - prenoti con un form
+>
+> La differenza non è cosa impari. È quanta attenzione è tutta sulla tua idea.
+> Stesso prezzo del corso di gruppo: 300€.
+>
+> **[Scopri il Lab 1:1 →]** `/shop/laboratorio-individuale/`
+>
+> Si parte il **10 novembre**. I posti sono **5**.
+>
+> Un'idea che non condividi con nessuno resta solo tua. Uno spunto che lavori con qualcuno diventa una storia.
+>
+> A presto,
+> il team di Pictures Writers
+**CTA:** Scopri il Lab 1:1 → `/shop/laboratorio-individuale/`
+**Nota:** send separata e a **offerta unica** (mai "gruppo o 1:1" nella stessa email). Angolo = l'edizione del gruppo finita con una sola persona, andata bene. Avvio 10/11, 5 posti. **Bloccata dalla creazione della product page** (il link CTA deve essere live prima dell'invio).
 
 ### Avvio (extra del 3 novembre)
 Email di benvenuto/conferma agli iscritti (dettagli prima sessione, come accedere), derivabile dalla conferma acquisto in `.agents/launch-individuale.md` §8.
@@ -204,4 +231,5 @@ Email di benvenuto/conferma agli iscritti (dettagli prima sessione, come acceder
 - v6 (2026-10-02) — **Issue 2 riscritta: dal tema "tre documenti" al secondo atto.** La versione precedente spiegava la differenza soggetto/trattamento/scaletta ma chiudeva su Pagina Uno, un non-sequitur (un'analisi di sceneggiatura finita non mostra i documenti a monte). Nuovo tema: pillola sulla **struttura del secondo atto** (la parte che cede più spesso) + analisi **Little Miss Sunshine** come prova concreta, CTA a `/scomporre-il-secondo-atto-little-miss-sunshine/` (live). Testo reso in voce umana e senza trattini lunghi. La riga di raccordo della Issue 1 va riallineata a mano (a cura dell'utente).
 - v7 (2026-10-02) — **Frase ispirazionale di chiusura dopo il CTA.** Aggiunta una riga motivazionale dopo il bottone e prima della firma su Issue 2 (`Il secondo atto è dove si decide se quella storia arriverà mai alla fine.`), Issue 3 (`A volte non serve riscrivere tutto. Serve qualcuno che ti dica da dove ripartire.`) e Issue 4 (`Un'idea tenuta nel cassetto non diventa mai un film.`). Convenzione codificata nel playbook §2. Issue 1 lasciata all'utente.
 - v8 (2026-10-02) — **Ottobre ricalendarizzato sulla finestra iscrizioni 5-27 (avvio 3/11).** Il pre-annuncio a fine ottobre era incompatibile con la chiusura del 27. Nuovo piano: **Issue 1 (lun 5) = ritorno + apertura iscrizioni**, Issue 2 (lun 12) valore + richiamo finestra aperta, Issue 3 (lun 19) valore, **Issue 4 (gio 22) = ultima chiamata** a scadenza (fuori cadenza del lunedì per dare margine). Aggiunta email di avvio 3/11 e opzione teaser social nel weekend. Issue 1 riscritta (ruolo cambiato da ritorno soft ad apertura): hook "il soggetto è il vero lavoro" mantenuto come lead-in dell'offerta. Aggiornati §1, §3, §4.
+- v10 (2026-10-06) — **1:1 fuori dalla finestra del gruppo.** L'**Extra di gio 8 diventa a offerta singola sul gruppo** (rimosso l'1:1: stesso prezzo/stesso esito creava confusione); **Issue 4** allineata (niente "in gruppo / 1:1"). Il **Laboratorio 1:1** ha ora una **send dedicata a offerta unica** post-finestra (oggetto "Il laboratorio con una sola persona"), lancio diretto con avvio **10/11** e 5 posti; angolo = l'edizione del gruppo finita con una sola persona; **i due consulenti** sono il differenziatore. Blocco: creazione della product page. Vedi `.agents/launch-individuale.md` v4-v6.
 - v9 (2026-10-02) — **Ritorno e apertura separati: Issue 1 (lun 5) soft + Extra apertura (gio 8).** Applicata la regola playbook "valore prima della richiesta": la Issue 1 torna a essere **ritorno soft, senza vendita** (CTA all'articolo sul soggetto), l'apertura iscrizioni diventa l'**Extra di giovedì 8** ("da oggi aperte, fino al 27, si parte il 3/11"), self-contained. Finestra iscrizioni 8→27. Ponte tra le due: riga "Giovedì ti scriviamo di nuovo: c'è una novità" in Issue 1. Rimosso il pre-annuncio (ora superfluo: la Issue 1 lo fa in forma soft). Issue 2-4 invariate. Aggiornati §1, §3, §4.
