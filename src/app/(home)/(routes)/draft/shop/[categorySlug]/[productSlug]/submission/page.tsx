@@ -8,7 +8,7 @@ import { Separator } from "@/shared/ui/separator";
 
 import { db } from "@/lib/db";
 
-import { isWebinarMetadata } from "@/type-guards";
+import { isWebinarMetadata } from "@/modules/shop/products/types";
 import { formatDate } from "@/lib/format";
 import { getLessonRange } from "@/data/webinars";
 

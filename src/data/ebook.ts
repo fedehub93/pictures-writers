@@ -1,7 +1,7 @@
 import { ContentStatus, Product, ProductType } from "@/generated/prisma";
 
 import { db } from "@/lib/db";
-import { isEbookMetadata } from "@/type-guards";
+import { isEbookMetadata } from "@/modules/shop/products/types";
 
 const EBOOK_PER_PAGE = 12;
 

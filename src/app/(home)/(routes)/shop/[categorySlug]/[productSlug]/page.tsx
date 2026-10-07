@@ -5,7 +5,7 @@ import {
   isEbookMetadata,
   isServiceMetadata,
   isWebinarMetadata,
-} from "@/type-guards";
+} from "@/modules/shop/products/types";
 
 import { getProductMetadataBySlug } from "@/app/(home)/_components/seo/content-metadata";
 import { ProductJsonLd } from "@/app/(home)/_components/seo/json-ld/product";

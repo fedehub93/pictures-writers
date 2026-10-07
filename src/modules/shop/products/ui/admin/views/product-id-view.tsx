@@ -26,6 +26,7 @@ import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 import { useSuspenseProduct } from "../../../hooks/use-products";
 import { useProductsFilters } from "../../../hooks/use-products-filters";
 
+import { ProductMetadataForm } from "../components/metadata/product-metadata-form";
 import { ProductDetailsForm } from "../components/product-details-form";
 import { ProductPricingForm } from "../components/product-pricing-form";
 import { ProductGalleryForm } from "../components/product-gallery-form";
@@ -145,6 +146,9 @@ export const ProductIdView = ({ rootId }: ProductIdViewProps) => {
               <TabsTrigger value="details" className={tabTriggerClassName}>
                 Details
               </TabsTrigger>
+              <TabsTrigger value="metadata" className={tabTriggerClassName}>
+                Metadata
+              </TabsTrigger>
               <TabsTrigger value="pricing" className={tabTriggerClassName}>
                 Pricing
               </TabsTrigger>
@@ -176,6 +180,15 @@ export const ProductIdView = ({ rootId }: ProductIdViewProps) => {
                   />
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="metadata" className="mt-0 outline-none">
+              <ProductMetadataForm
+                id={product.id}
+                rootId={rootId}
+                type={product.type}
+                metadata={product.metadata}
+              />
             </TabsContent>
 
             <TabsContent value="pricing" className="mt-0 outline-none">

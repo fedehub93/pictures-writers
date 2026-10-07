@@ -22,8 +22,8 @@ vi.mock("@/trpc/init", async () => {
 import { createCallerFactory } from "@/trpc/init";
 
 import { ContentStatus, ProductAcquisitionMode, ProductType } from "@/generated/prisma";
-import { EbookType } from "@/types";
 import { db } from "@/shared/lib/db";
+import { EbookType } from "@/modules/shop/products/types";
 import {
   PERMISSIONS,
   getPermissionAlternatives,
@@ -354,6 +354,85 @@ describe("productsRouter", () => {
         edition: "First",
       });
     });
+
+    it("accepts metadata for every product type", async () => {
+      const cases: { type: ProductType; metadata: unknown }[] = [
+        {
+          type: ProductType.AFFILIATE,
+          metadata: { type: ProductType.AFFILIATE, url: "https://example.com" },
+        },
+        {
+          type: ProductType.SERVICE,
+          metadata: {
+            type: ProductType.SERVICE,
+            serviceType: "Editing",
+            competitorPrice: 10,
+            target: "Writers",
+            attachamentUrl: "",
+            features: [],
+          },
+        },
+        {
+          type: ProductType.WEBINAR,
+          metadata: {
+            type: ProductType.WEBINAR,
+            seats: 5,
+            platform: "Zoom",
+            lessons: [],
+            isOpen: true,
+          },
+        },
+      ];
+
+      for (const { type, metadata } of cases) {
+        const created = await createProduct({ type });
+        const updated = await caller.update({
+          id: created.id,
+          rootId: created.rootId!,
+          metadata: metadata as never,
+        });
+
+        expect(updated.metadata).toMatchObject({ type });
+      }
+    });
+
+    it.each([
+      [
+        ProductType.EBOOK,
+        { type: ProductType.EBOOK, edition: "First" },
+      ],
+      [
+        ProductType.AFFILIATE,
+        { type: ProductType.AFFILIATE, url: 123 },
+      ],
+      [
+        ProductType.SERVICE,
+        { type: ProductType.SERVICE, serviceType: "Editing" },
+      ],
+      [
+        ProductType.WEBINAR,
+        {
+          type: ProductType.WEBINAR,
+          seats: "many",
+          platform: "Zoom",
+          lessons: [],
+          isOpen: true,
+        },
+      ],
+    ])(
+      "rejects malformed %s metadata at the procedure boundary",
+      async (type, metadata) => {
+        const created = await createProduct({ type });
+
+        await expect(
+          caller.update({
+            id: created.id,
+            rootId: created.rootId!,
+            metadata,
+          } as never),
+        ).rejects.toThrow();
+      },
+    );
 
     it("throws NOT_FOUND when the root does not exist", async () => {
       await expect(

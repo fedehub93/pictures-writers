@@ -6,7 +6,7 @@ import { Button } from "@/shared/ui/button";
 import { cn } from "@/shared/lib/utils";
 import { getLessonRange, getPurchasedWebinar } from "@/data/webinars";
 import { formatDate, formatPrice } from "@/lib/format";
-import { WebinarLesson } from "@/types";
+import { WebinarLesson } from "@/modules/shop/products/types";
 
 interface WebinarCardProps {
   rootId: string;

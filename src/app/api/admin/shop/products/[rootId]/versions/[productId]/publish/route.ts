@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
 import { revalidateContent } from "@/shared/lib/revalidate-content";
 
-import { isEbookMetadata } from "@/type-guards";
+import { isEbookMetadata } from "@/modules/shop/products/types";
 
 export async function PATCH(
   req: Request,

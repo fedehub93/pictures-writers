@@ -1,7 +1,8 @@
 "use client";
 
-import { ServiceMetadata, TiptapContent } from "@/types";
+import { TiptapContent } from "@/types";
 import { ProductAcquisitionMode } from "@/generated/prisma";
+import { ServiceMetadata } from "@/modules/shop/products/types";
 
 import { FaqSection } from "@/shared/components/faq-section";
 

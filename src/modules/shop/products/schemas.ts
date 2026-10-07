@@ -4,26 +4,27 @@ import {
   ProductAcquisitionMode,
   ProductType,
 } from "@/generated/prisma";
-import { EbookType } from "@/types";
 
 import { faqItemsSchema } from "@/modules/faq";
+
+import { EbookType } from "./types";
 
 /**
  * Product metadata is validated per product type via a discriminated union,
  * so a payload can never carry metadata that belongs to another type.
  */
-const ebookMetadataSchema = z.object({
+export const ebookMetadataSchema = z.object({
   type: z.literal(ProductType.EBOOK),
   formats: z.array(
     z.object({
       type: z.enum(EbookType),
       url: z.string(),
-      size: z.number(),
-      pages: z.number(),
+      size: z.coerce.number<number>(),
+      pages: z.coerce.number<number>(),
     }),
   ),
   edition: z.string(),
-  publishedAt: z.coerce.date().nullable().optional(),
+  publishedAt: z.coerce.date<Date>().nullable().optional(),
   author: z
     .object({
       id: z.string(),
@@ -35,14 +36,14 @@ const ebookMetadataSchema = z.object({
     .optional(),
 });
 
-const affiliateMetadataSchema = z.object({
+export const affiliateMetadataSchema = z.object({
   type: z.literal(ProductType.AFFILIATE),
   url: z.string(),
 });
 
-const webinarMetadataSchema = z.object({
+export const webinarMetadataSchema = z.object({
   type: z.literal(ProductType.WEBINAR),
-  seats: z.number(),
+  seats: z.coerce.number<number>(),
   platform: z.string(),
   lessons: z.array(
     z.object({
@@ -55,10 +56,10 @@ const webinarMetadataSchema = z.object({
   isOpen: z.boolean(),
 });
 
-const serviceMetadataSchema = z.object({
+export const serviceMetadataSchema = z.object({
   type: z.literal(ProductType.SERVICE),
   serviceType: z.string(),
-  competitorPrice: z.number(),
+  competitorPrice: z.coerce.number<number>(),
   target: z.string(),
   attachamentUrl: z.string(),
   features: z.array(

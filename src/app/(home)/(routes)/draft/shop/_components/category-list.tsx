@@ -1,4 +1,8 @@
-import { AffiliateMetadata, EbookMetadata, WebinarMetadata } from "@/types";
+import {
+  AffiliateMetadata,
+  EbookMetadata,
+  WebinarMetadata,
+} from "@/modules/shop/products/types";
 
 interface CategoryListProps {
   title: string;

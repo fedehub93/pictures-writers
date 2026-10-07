@@ -1,9 +1,6 @@
-import { ProductType, WidgetType } from "@/generated/prisma";
+import { WidgetType } from "@/generated/prisma";
 
 import {
-  AffiliateMetadata,
-  EbookMetadata,
-  EbookType,
   WidgetAuthorMetadata,
   WidgetCategoryMetadata,
   WidgetNewsletterMetadata,
@@ -13,61 +10,9 @@ import {
   WidgetSearchMetadata,
   WidgetSocialMetadata,
   WidgetTagMetadata,
-  WebinarMetadata,
   TiptapContent,
-  ServiceMetadata,
 } from "@/types";
 import { JSONContent } from "@tiptap/react";
-
-export function isValidEbookFormat(format: string | null): format is EbookType {
-  return format === "pdf" || format === "epub" || format === "mobi";
-}
-
-export function isEbookMetadata(metadata: unknown): metadata is EbookMetadata {
-  return (
-    typeof metadata === "object" &&
-    metadata !== null &&
-    "type" in metadata &&
-    typeof (metadata as any).type === "string" &&
-    metadata.type === ProductType.EBOOK
-  );
-}
-
-export function isAffiliateMetadata(
-  metadata: unknown
-): metadata is AffiliateMetadata {
-  return (
-    typeof metadata === "object" &&
-    metadata !== null &&
-    "type" in metadata &&
-    typeof (metadata as any).type === "string" &&
-    metadata.type === ProductType.AFFILIATE
-  );
-}
-
-export function isWebinarMetadata(
-  metadata: unknown
-): metadata is WebinarMetadata {
-  return (
-    typeof metadata === "object" &&
-    metadata !== null &&
-    "type" in metadata &&
-    typeof (metadata as any).type === "string" &&
-    metadata.type === ProductType.WEBINAR
-  );
-}
-
-export function isServiceMetadata(
-  metadata: unknown
-): metadata is ServiceMetadata {
-  return (
-    typeof metadata === "object" &&
-    metadata !== null &&
-    "type" in metadata &&
-    typeof (metadata as any).type === "string" &&
-    metadata.type === ProductType.SERVICE
-  );
-}
 
 export function isValidWidgetMetadata(
   metadata: unknown

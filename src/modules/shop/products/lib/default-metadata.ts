@@ -1,6 +1,6 @@
 import { ProductType } from "@/generated/prisma";
 
-import { EbookType } from "@/types";
+import { EbookType } from "../types";
 
 /**
  * Starting metadata for a freshly created product, matching the shape the

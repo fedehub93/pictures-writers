@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { isServiceMetadata, isWebinarMetadata } from "@/type-guards";
+import {
+  isServiceMetadata,
+  isWebinarMetadata,
+} from "@/modules/shop/products/types";
 
 import { db } from "@/shared/lib/db";
 

@@ -22,7 +22,7 @@ import {
   isEbookMetadata,
   isServiceMetadata,
   isWebinarMetadata,
-} from "@/type-guards";
+} from "@/modules/shop/products/types";
 
 import { getSettings } from "./settings";
 import { getPurchasedWebinar } from "./webinars";

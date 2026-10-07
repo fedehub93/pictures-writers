@@ -4,7 +4,10 @@ import { Node } from "@tiptap/pm/model";
 
 import { Button } from "@/shared/ui/button";
 
-import { isAffiliateMetadata, isEbookMetadata } from "@/type-guards";
+import {
+  isAffiliateMetadata,
+  isEbookMetadata,
+} from "@/modules/shop/products/types";
 import { getPublishedProductByRootId } from "@/data/product";
 
 interface ProductRendererProps {

@@ -9,7 +9,7 @@ import { Button } from "@/shared/ui/button";
 import { Separator } from "@/shared/ui/separator";
 
 import { formatDate, formatPrice } from "@/lib/format";
-import { WebinarMetadata } from "@/types";
+import { WebinarMetadata } from "@/modules/shop/products/types";
 
 import { BuyButton } from "@/shared/components/checkout/buy-button";
 

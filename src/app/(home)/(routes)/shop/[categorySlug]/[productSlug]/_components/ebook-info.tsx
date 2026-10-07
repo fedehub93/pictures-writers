@@ -7,7 +7,7 @@ import { BookOpenText, CalendarDays, Earth, Weight } from "lucide-react";
 import { Badge } from "@/shared/ui/badge";
 import { Separator } from "@/shared/ui/separator";
 import { formatBytes, formatDate, formatPrice } from "@/lib/format";
-import { EbookFormat } from "@/types";
+import { EbookFormat } from "@/modules/shop/products/types";
 
 import { FreeEbookModal } from "@/app/(home)/_components/modals/free-ebook-modal";
 import { BuyButton } from "./buy-button";

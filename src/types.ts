@@ -3,7 +3,6 @@ import { HTMLContent, JSONContent } from "@tiptap/core";
 import type {
   Media,
   Product,
-  ProductType,
   Seo,
   Settings,
   SocialChannel,
@@ -14,6 +13,7 @@ import type {
 import type { Data } from "@puckeditor/core";
 
 import type { FormRootInstance } from "./modules/forms/builder/types/core";
+import type { ProductMetadata as ProductMetadataType } from "./modules/shop/products/types";
 import type { SavedComponents } from "./puck/config";
 
 export type TiptapContent = HTMLContent | JSONContent | JSONContent[] | null;
@@ -25,13 +25,7 @@ declare global {
     type SubmissionData = Record<string, unknown>;
     type FormFields = any;
     type FormContentState = FormRootInstance;
-    type ProductMetadata =
-      | EbookMetadata
-      | AffiliateMetadata
-      | WebinarMetadata
-      | ServiceMetadata
-      | null
-      | undefined;
+    type ProductMetadata = ProductMetadataType | null | undefined;
     type WidgetMetadata = any;
     type Scripts = SettingsScripts[] | null | undefined;
   }
@@ -109,64 +103,6 @@ export type Gallery = {
   };
 };
 
-/**
- * Ebook types
- */
-
-export enum EbookType {
-  PDF = "pdf",
-  EPUB = "epub",
-  MOBI = "mobi",
-}
-
-export type EbookFormat = {
-  type: EbookType;
-  url: string;
-  size: number;
-  pages: number;
-};
-
-export type EbookMetadata = {
-  type: ProductType;
-  formats: EbookFormat[];
-  edition: string;
-  publishedAt: Date | null;
-  author: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    imageUrl: string;
-  } | null;
-};
-
-export type AffiliateMetadata = {
-  type: ProductType;
-  url: string;
-};
-
-export type WebinarMetadata = {
-  type: ProductType;
-  seats: number;
-  platform: string;
-  lessons: WebinarLesson[];
-  isOpen: boolean;
-};
-
-export type ServiceMetadata = {
-  type: ProductType;
-  serviceType: string;
-  competitorPrice: number;
-  target: string;
-  attachamentUrl: string;
-  features: { title: string; Icon: string; description: string }[];
-};
-
-export type WebinarLesson = {
-  title?: string; // opzionale, per lezioni con nome (es. “Costruire un protagonista”)
-  date: string; // ISO string → “2025-11-10”
-  startTime: string; // “18:00”
-  endTime: string; // “20:00”
-};
 /**
  * Widget types
  */

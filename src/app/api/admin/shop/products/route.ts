@@ -7,7 +7,7 @@ import {
   EbookType,
   ServiceMetadata,
   WebinarMetadata,
-} from "@/types";
+} from "@/modules/shop/products/types";
 
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";

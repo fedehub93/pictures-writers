@@ -6,7 +6,7 @@ import {
   isEbookMetadata,
   isServiceMetadata,
   isWebinarMetadata,
-} from "@/type-guards";
+} from "@/modules/shop/products/types";
 
 import { GetProductsPaginatedByFiltersReturn } from "@/data/product";
 

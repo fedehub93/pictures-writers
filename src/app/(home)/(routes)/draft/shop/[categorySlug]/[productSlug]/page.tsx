@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { isEbookMetadata, isWebinarMetadata } from "@/type-guards";
+import {
+  isEbookMetadata,
+  isWebinarMetadata,
+} from "@/modules/shop/products/types";
 
 import { getProductMetadataBySlug } from "@/app/(home)/_components/seo/content-metadata";
 import { ProductJsonLd } from "@/app/(home)/_components/seo/json-ld/product";
