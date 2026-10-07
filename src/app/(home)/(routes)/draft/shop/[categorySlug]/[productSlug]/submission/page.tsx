@@ -17,7 +17,7 @@ import {
   getDraftProductsBuilding,
 } from "@/data/product";
 
-import { getProductMetadataBySlug } from "@/app/(home)/_components/seo/content-metadata";
+import { getProductMetadataBySlug } from "@/modules/shop/products";
 import { Breadcrumbs } from "@/app/(home)/_components/breadcrumbs";
 import SubmissionForm from "@/app/(home)/(routes)/shop/[categorySlug]/[productSlug]/submission/_components/submission-form";
 

@@ -9,15 +9,14 @@ import {
 import { db } from "@/shared/lib/db";
 
 import {
+  ServiceSummary,
+  WebinarSummary,
+  getProductMetadataBySlug,
   getPublishedProductBySlug,
   getPublishedProductsBuilding,
-} from "@/data/product";
+} from "@/modules/shop/products";
 
-import { getProductMetadataBySlug } from "@/app/(home)/_components/seo/content-metadata";
 import { Breadcrumbs } from "@/app/(home)/_components/breadcrumbs";
-
-import { WebinarSummary } from "../_components/webinar/webinar-summary";
-import { ServiceSummary } from "../_components/service/service-summary";
 
 import { SubmissionFormV2 } from "./_components/submission-form-v2";
 

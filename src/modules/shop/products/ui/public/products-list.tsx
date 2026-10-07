@@ -8,7 +8,7 @@ import {
   isWebinarMetadata,
 } from "@/modules/shop/products/types";
 
-import { GetProductsPaginatedByFiltersReturn } from "@/data/product";
+import { GetProductsPaginatedByFiltersReturn } from "../../server/queries";
 
 import { WebinarCard } from "./webinar-card";
 import { EbookCard } from "./ebook-card";

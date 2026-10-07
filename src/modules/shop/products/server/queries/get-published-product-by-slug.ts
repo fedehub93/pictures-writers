@@ -1,86 +1,13 @@
 import { ContentStatus, ProductType } from "@/generated/prisma";
 
-import { db } from "@/lib/db";
+import { db } from "@/shared/lib/db";
 
-export {
-  getProductsPaginatedByFilters,
-  getPublishedProductBySlug,
-  getPublishedProductsBuilding,
-  type GetProductsPaginatedByFiltersReturn,
-  type GetPublishedProductBySlug,
-} from "@/modules/shop/products/server/queries";
-
-export const getPublishedProductByRootId = async (rootId: string) => {
-  const product = await db.product.findFirst({
-    where: {
-      rootId,
-      isLatest: true,
-      status: ContentStatus.PUBLISHED,
-    },
-    include: {
-      imageCover: true,
-      seo: true,
-      user: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-
-  return product;
-};
-
-export type GetPublishedProductByRootId = Awaited<
-  ReturnType<typeof getPublishedProductByRootId>
->;
-
-/**
- * DRAFT
- */
-
-export const getDraftProductsBuilding = async () => {
-  const products = await db.product.findMany({
-    where: {
-      isLatest: true,
-      status: { in: [ContentStatus.DRAFT, ContentStatus.CHANGED] },
-      type: { not: ProductType.AFFILIATE },
-    },
-    select: {
-      id: true,
-      slug: true,
-      type: true,
-      category: {
-        select: {
-          slug: true,
-        },
-      },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-
-  return products;
-};
-
-export type GetDraftProductByRootId = Awaited<
-  ReturnType<typeof getPublishedProductByRootId>
->;
-
-export const getDraftProductBySlug = async (slug: string) => {
+export const getPublishedProductBySlug = async (slug: string) => {
   const product = await db.product.findFirst({
     where: {
       slug,
-      OR: [
-        {
-          isLatest: true,
-          status: ContentStatus.DRAFT,
-        },
-        {
-          isLatest: false,
-          status: ContentStatus.CHANGED,
-        },
-      ],
+      isLatest: true,
+      status: ContentStatus.PUBLISHED,
       type: { not: ProductType.AFFILIATE },
     },
     select: {
@@ -163,9 +90,24 @@ export const getDraftProductBySlug = async (slug: string) => {
     },
   });
 
-  return product;
+  if (!product) {
+    return null;
+  }
+
+  const reviewCount = product.reviews.length;
+  const aggregateRating =
+    reviewCount > 0
+      ? {
+          ratingValue:
+            product.reviews.reduce((acc, r) => acc + r.rating, 0) / reviewCount,
+          bestRating: Math.max(...product.reviews.map((r) => r.rating)),
+          ratingCount: reviewCount,
+        }
+      : undefined;
+
+  return { ...product, aggregateRating };
 };
 
-export type GetDraftProductBySlug = Awaited<
-  ReturnType<typeof getDraftProductBySlug>
+export type GetPublishedProductBySlug = Awaited<
+  ReturnType<typeof getPublishedProductBySlug>
 >;

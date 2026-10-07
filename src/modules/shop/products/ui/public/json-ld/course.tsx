@@ -1,7 +1,7 @@
 import React, { FC } from "react";
 import { Course, ItemAvailability, WithContext } from "schema-dts";
-import { JsonLd } from "./json-ld";
-import { toRomeIso } from "./lib/rome-time";
+import { JsonLd } from "@/app/(home)/_components/seo/json-ld/json-ld";
+import { toRomeIso } from "@/app/(home)/_components/seo/json-ld/lib/rome-time";
 
 export interface CourseJsonLdProps {
   name: string;

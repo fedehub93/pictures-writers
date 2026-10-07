@@ -11,8 +11,7 @@ import {
   getDraftProductCategoryBySlug,
   getPublishedProductCategoryBySlug,
 } from "@/modules/shop/product-categories/server/queries";
-import { getProductsPaginatedByFilters } from "@/data/product";
-import { ProductsList } from "../../../shop/[categorySlug]/_components/products-list";
+import { getProductsPaginatedByFilters, ProductsList } from "@/modules/shop/products";
 
 export const dynamic = "force-dynamic";
 

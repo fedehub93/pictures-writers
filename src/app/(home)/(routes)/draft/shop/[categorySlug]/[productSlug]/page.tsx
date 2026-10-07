@@ -6,8 +6,6 @@ import {
   isWebinarMetadata,
 } from "@/modules/shop/products/types";
 
-import { getProductMetadataBySlug } from "@/app/(home)/_components/seo/content-metadata";
-import { ProductJsonLd } from "@/app/(home)/_components/seo/json-ld/product";
 import { Breadcrumbs } from "@/app/(home)/_components/breadcrumbs";
 
 import { getSettings } from "@/data/settings";
@@ -17,10 +15,14 @@ import {
   getDraftProductsBuilding,
 } from "@/data/product";
 
-import { ProductGallery } from "@/app/(home)/(routes)/shop/[categorySlug]/[productSlug]/_components/product-gallery";
-import { EbookInfo } from "@/app/(home)/(routes)/shop/[categorySlug]/[productSlug]/_components/ebook-info";
+import {
+  EbookInfo,
+  ProductGallery,
+  ProductJsonLd,
+  Webinar,
+  getProductMetadataBySlug,
+} from "@/modules/shop/products";
 import { TipTapRendererV2 } from "@/shared/components/tiptap-renderer";
-import { Webinar } from "@/app/(home)/(routes)/shop/[categorySlug]/[productSlug]/_components/webinar";
 
 export const dynamic = "force-dynamic";
 

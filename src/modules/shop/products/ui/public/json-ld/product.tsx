@@ -1,6 +1,6 @@
 import React, { FC } from "react";
 import { Product, WithContext } from "schema-dts";
-import { JsonLd } from "./json-ld";
+import { JsonLd } from "@/app/(home)/_components/seo/json-ld/json-ld";
 import { formatDate } from "@/lib/format";
 import slugify from "slugify";
 
