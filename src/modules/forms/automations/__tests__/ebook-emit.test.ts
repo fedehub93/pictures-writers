@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanupAutomationTables } from "@/modules/automations/lib/cleanup";
 import { AutomationRunStatus, AutomationStatus } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
-import { EbookType } from "@/types";
+import { EbookType } from "@/modules/shop/products/types";
 
 import { BUILT_IN_EBOOK_FORM_ID } from "../../built-in-forms";
 import {

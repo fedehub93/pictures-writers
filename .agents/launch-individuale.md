@@ -1,7 +1,7 @@
 # Launch — Laboratorio individuale 1:1 (Soggetto di lungometraggio)
 
 **Document version:** v1
-**Status:** In pianificazione (nessuna data fissata)
+**Status:** Pronto al lancio — avvio **10/11/2026** (5 sessioni settimanali, prenotazione via form). Lancio diretto, senza run founder. Bloccante: creare la product page.
 **Skill di riferimento:** `launch` (ORB + 5 fasi) — context: `.agents/product-marketing.md`
 
 ---
@@ -15,7 +15,7 @@
 - Evitare: "corso individuale di sceneggiatura" (confonde col gruppo, non è il job)
 
 **Promessa (una riga):**
-> Dall'idea al soggetto di lungometraggio, con un consulente che lavora solo con te.
+> Dall'idea al soggetto di lungometraggio, con i **due consulenti** che lavorano solo sulla tua idea.
 
 **Esito realistico del laboratorio:**
 - Un **soggetto di lungometraggio finito alla terza stesura** (3-5 pagine).
@@ -35,12 +35,7 @@
 - Gruppo = percorso standard, collettivo, esito garantito dal metodo già testato.
 - Individuale = **lo stesso esito, ma con attenzione dedicata**: brainstorming, analisi del singolo progetto, ritmo dello studente, niente pareti di classe.
 
-**Attenzione sui vecchi studenti (13 in 5 edizioni):**
-- Hanno GIÀ avuto il percorso "scrivi un soggetto" → a loro NON si vende "adesso ti insegniamo a scrivere un soggetto" (l'hanno già fatto).
-- Il pitch per loro è: **"lo stesso metodo che conosci già, ma solo per te: più tempo sulla tua idea, domande dirette, brainstorming senza aspettare gli altri"**. Upsell di attenzione, non insegnamento nuovo.
-
-**Valore per ex-studenti (audience migliore per l'1:1):**
-- Riescono a rivedere il vecchio soggetto, iniziarne uno nuovo, o approfondire con un consulente dedicato.
+**Ex-studenti: NON sono il target (decisione utente).** Hanno già fatto il percorso "scrivi un soggetto" nel gruppo → non rifanno lo stesso job. Il 1:1 si vende a chi non ha ancora fatto quel percorso e vuole attenzione dedicata (lead, o professionisti che non si metterebbero in una classe).
 
 ## 3. Readiness Gate (SLC)
 
@@ -48,8 +43,10 @@
 - **Lovable** — domanda già validata dal corso di gruppo (5 edizioni); l'1:1 è valore percepito immediato.
 - **Complete** — stessa struttura `WEBINAR` già testata (lessons con date/orari, seats, platform, isOpen).
 
-**Da chiudere prima dell'apertura iscrizioni (non è scope, è qualità):**
-- Sistema di prenotazione appuntamenti 1:1 (slot) o accordo diretto via email al termine dell'acquisto.
+**Confezione definitiva (risolta):**
+- **Piattaforma:** Google Meet. **Orario:** concordato con lo studente, sessione per sessione — è un **plus** del formato 1:1, non un vincolo. **Prenotazione:** via form.
+- **Struttura:** 5 sessioni da 2 ore, cadenza settimanale, avvio **10/11/2026**.
+- Product page modellata su quella del gruppo (`/shop/corsi-di-sceneggiatura/laboratorio-di-scrittura-di-un-soggetto/`): struttura lunga (obiettivo, struttura, programma 5 lezioni, prezzo, in sintesi, testimonianze), con **testimonianze del gruppo riusate come prova del metodo**.
 - Proposta di consegna intermedia (es. revisione del soggetto tra le sessioni).
 
 **Nota sul formato (da riflettere nel copy):** nessuna registrazione delle sessioni — è un laboratorio parlato (analisi + brainstorming). Da spuntare come esclusività: "le sessioni non vengono registrate, sono solo per te". Non è un gap del prodotto.
@@ -58,7 +55,7 @@
 
 ### Owned (core)
 - **Newsletter (800+ iscritti)** → pre-annuncio + waitlist. È la macchina di lancio principale.
-- **13 studenti del corso di gruppo** → audience PRIMARIA per l'1:1: hanno già fatto il percorso, la proposta è l'upsell di attenzione ("lo stesso metodo, solo per te"). Non serve convincerli a "scrivere un soggetto", serve mostrar loro cosa cambia con un consulente dedicato.
+- **Lead newsletter (800+)** → audience primaria: chi vuole scrivere un soggetto ma preferisce l'attenzione 1:1 (o non può seguire una classe). Gli ex-studenti del gruppo sono **esclusi** (hanno già fatto quel job).
 - **Blog** → aggancio alla pillare già prevista in content-strategy: "Come scrivere un soggetto cinematografico" (hub/spoke del cluster 1A) → CTA al laboratorio. Altri naturali: "Differenza soggetto/trattamento/scaletta", "La logline perfetta".
 - **Product page** → nuovo prodotto in shop con categoria dedicata.
 
@@ -74,13 +71,13 @@
 
 | Fase | Azioni | Output / KPI |
 |---|---|---|
-| **1. Internal** | Offrire l'1:1 a 2-3 dei 13 studenti a prezzo founder (es. 250€); raccogliere testimonianze sulla differenza vs gruppo | Prova sociale + delivery collaudato |
+| **1. Internal** | **Saltata** (decisione utente): il formato è già provato — un'edizione del gruppo si è svolta con una sola persona, andata bene. Si va di **lancio diretto** via newsletter. | — |
 | **2. Alpha** | Creare product page + categoria `laboratorio-individuale`; annuncio newsletter "pre-iscrizione" con waitlist | Waitlist attiva |
 | **3. Beta** | Teaser social formato 1:1; inviti waitlist a coorti piccole (5-10% per volta); early-bird 300€ (o 270€ pre-lancio) | Prime conversioni + feedback |
 | **4. Early access** | Leak agenda sessioni / cosa restituisce il laboratorio; email di conferma acquisto (template `webinarTemplateId`); facoltativo sondaggio PMF | Validazione a scala |
 | **5. Full launch** | Aprire iscrizioni pubbliche a 300€; post blog annuncio; social; "nuovo" in nav; schema `Event` sulle date live | Vendite continue |
 
-**Regola coorti:** a 13 studenti in 5 edizioni il gruppo è andato piano: non lanciare l'individuale "always-on". **A coorti con deadline** ("edizione corrente: 6 sessioni live dal [data], posti: 5"). La scarsità naturale dell'1:1 (tempo del consulente) è la leva, non lo sconto.
+**Regola coorti:** a 13 studenti in 5 edizioni il gruppo è andato piano: non lanciare l'individuale "always-on". **A coorti con deadline** ("edizione corrente: 6 sessioni live dal [data], posti: 5"). La scarsità naturale dell'1:1 (tempo dei consulenti) è la leva, non lo sconto.
 
 ## 6. SEO anti-cannibalizzazione
 
@@ -103,10 +100,10 @@ Il CMS separa già tutto per prodotto (URL `/shop/[categoria]/[slug]`, title/des
 ## 8. Email di lancio (bozza copy, tono brand: caldo, tu, diretto)
 
 ### Email 1 — Pre-annuncio (alpha)
-Oggetto: **"Un consulente solo per te (per il tuo soggetto)"**
+Oggetto: **"Due consulenti solo per te (per il tuo soggetto)"**
 Ciao {nome},
 hai già scritto un soggetto di lungometraggio con il corso di gruppo — o magari ci stai pensando.
-Ora immagina lo stesso percorso con un consulente che lavora solo con te: sessioni live 1:1, niente classe, ritmo tuo, brainstorming diretto sulla tua idea.
+Ora immagina lo stesso percorso con i **due consulenti** che lavorano solo sulla tua idea: sessioni live 1:1, niente classe, ritmo tuo, brainstorming diretto sul tuo progetto.
 Nessuna registrazione: solo un lavoro a quattr'occhi.
 Stiamo per aprire il Laboratorio 1:1. I posti saranno pochissimi. Entra in lista d'attesa: ti avvisiamo all'apertura.
 [CTA: Lista d'attesa]
@@ -115,7 +112,7 @@ Stiamo per aprire il Laboratorio 1:1. I posti saranno pochissimi. Entra in lista
 Oggetto: **"Il Laboratorio 1:1 è aperto (5 posti)"**
 Ciao {nome},
 le iscrizioni al Laboratorio 1:1 sono aperte.
-6 sessioni live 1:1 · il tuo soggetto di lungometraggio, pronto · consulente dedicato.
+5 sessioni live 1:1 · il tuo soggetto di lungometraggio, pronto · due consulenti dedicati.
 Early-bird a 270€ per i primi iscritti di questa edizione — poi 300€. Posti: 5.
 [CTA: Iscriviti ora]
 
@@ -180,3 +177,6 @@ Questo lancio matura e dà priorità a:
 
 - v2 — Correzione posizionamento: il corso di gruppo produce GIÀ un soggetto alla 3ª stesura → job identico, differenza sul formato (collettivo vs 1:1). Pitch ex-studenti = upsell di attenzione, non nuovo insegnamento. Sessioni non registrabili (1:1, analisi/brainstorming) → caratteristica, non gap. SEO: separazione su modale gruppo/1:1.
 - v3 (2026-10-02) — **Prezzo del corso di gruppo allineato all'1:1 a 300€** (decisione utente). Rimossa la regola "non toccare il prezzo del gruppo"; la differenziazione resta sul **formato**, non sul prezzo. Esempio founder 1:1 portato a 250€.
+- v4 (2026-10-06) — **Lancio diretto confermato.** Avvio **10/11/2026**, 5 sessioni settimanali, prenotazione via form, prezzo 300€ (come il gruppo). **Fase 1 (run founder) saltata**: il formato è già provato dall'edizione del gruppo con una sola persona (andata bene) → non è un formato mai erogato. **Ex-studenti esclusi dall'audience** (hanno già fatto il job nel gruppo); target = lead newsletter / professionisti che vogliono attenzione 1:1. Regola: **non mescolare 1:1 e gruppo nella stessa email** → il 1:1 ha una send dedicata a offerta unica dopo la finestra del gruppo. Bloccante: **creare la product page** (WEBINAR, 5 lezioni settimanali dal 10/11, seats=5, categoria `laboratorio-individuale`, FAQ, SEO).
+- v5 (2026-10-06) — **Dettagli esecuzione.** Piattaforma **Google Meet**; **orario da concordare** con lo studente sessione per sessione (plus del formato 1:1). Product page modellata su quella del gruppo, con **testimonianze del gruppo riusate come prova del metodo**.
+- v6 (2026-10-06) — **Correzione: i consulenti sono sempre 2.** Anche nel formato 1:1 le sessioni sono condotte da **entrambi i consulenti** (Double View applicato a un singolo studente). Aggiornati promessa, copy email e oggetto ("Due consulenti solo per te"). Allineata la durata a **5 sessioni** (era "6" nella bozza email 2). È un argomento di lancio: nel 1:1 "normale" c'è un tutor, qui due.

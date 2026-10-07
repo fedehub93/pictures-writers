@@ -553,7 +553,7 @@ describe("scheduled post lifecycle", () => {
       expect(published.status).toBe(ContentStatus.PUBLISHED);
       expect(published.scheduledAt).toBeNull();
       expect(published.preSchedulingStatus).toBeNull();
-      expect(published.publishedAt.toISOString()).toBe(now.toISOString());
+      expect(published.publishedAt?.toISOString()).toBe(now.toISOString());
     });
 
     it("keeps a later scheduler run as a no-op after immediate publication", async () => {
@@ -581,7 +581,7 @@ describe("scheduled post lifecycle", () => {
       });
 
       expect(second.status).toBe(ContentStatus.PUBLISHED);
-      expect(second.publishedAt.toISOString()).toBe(now.toISOString());
+      expect(second.publishedAt?.toISOString()).toBe(now.toISOString());
     });
   });
 
@@ -664,7 +664,7 @@ describe("scheduled post lifecycle", () => {
 
       expect(publicVersion?.status).toBe(ContentStatus.PUBLISHED);
       expect(publicVersion?.isLatest).toBe(true);
-      expect(publicVersion?.publishedAt.toISOString()).toBe(
+      expect(publicVersion?.publishedAt?.toISOString()).toBe(
         firstPublishAt.toISOString(),
       );
     });

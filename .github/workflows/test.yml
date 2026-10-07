@@ -1,0 +1,54 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: pictures_writers_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d pictures_writers_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/pictures_writers_test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      # Keep CI on the exact npm that generated the lockfile (Node 24.18.0
+      # bundles npm 12.0.2). Corepack cannot manage npm, so pin it explicitly;
+      # otherwise a newer/older runner npm makes `npm ci` reject the lockfile.
+      - name: Pin npm
+        run: npm install -g npm@12.0.2
+
+      # Vitest refuses to run without a dedicated test database and compares
+      # .env.test against the dev URL in .env. Both files are gitignored, so we
+      # create them here. The dev URL is a dummy (never connected to in CI).
+      - name: Create test env files
+        run: |
+          echo "DATABASE_URL=postgresql://dev:dev@localhost:5999/dev" > .env
+          echo "DATABASE_URL=$DATABASE_URL" > .env.test
+
+      - run: npm ci
+
+      - run: npm run test:run

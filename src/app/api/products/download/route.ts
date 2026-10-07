@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import axios from "axios";
 
 import { db } from "@/lib/db";
-import { isEbookMetadata, isValidEbookFormat } from "@/type-guards";
+import {
+  isEbookMetadata,
+  isValidEbookFormat,
+} from "@/modules/shop/products/types";
 
 export const dynamic = "force-dynamic";
 

@@ -5,7 +5,10 @@ import handlebars from "handlebars";
 
 import { ContentStatus, ProductType, EmailProvider } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
-import { isEbookMetadata, isWebinarMetadata } from "@/type-guards";
+import {
+  isEbookMetadata,
+  isWebinarMetadata,
+} from "@/modules/shop/products/types";
 import { createContactByEmail } from "@/data/email-contact";
 import { renderTiptapHtml } from "@/shared/components/tiptap-renderer/helpers/render-tiptap-html";
 import { GenericEmail } from "./types";

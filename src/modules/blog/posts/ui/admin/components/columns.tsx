@@ -134,14 +134,16 @@ export const columns = columnHelper.columns([
       );
     },
   }),
-  columnHelper.accessor("firstPublishedAt", {
+  columnHelper.accessor("publishedAt", {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Published at" />
     ),
     sortFn: "datetime",
     cell: ({ row }) => {
-      const date = new Date(row.original.firstPublishedAt);
-      const formattedDate = date.toLocaleDateString("it-IT", {
+      const publishedAt = row.original.publishedAt;
+      if (!publishedAt) return <div>—</div>;
+
+      const formattedDate = new Date(publishedAt).toLocaleDateString("it-IT", {
         year: "numeric",
         month: "short",
         day: "numeric",

@@ -15,7 +15,10 @@ import { WidgetProductType } from "@/types";
 import { getWidgetProducts } from "@/data/widget";
 import { Button } from "@/shared/ui/button";
 import { formatDate, formatPrice } from "@/lib/format";
-import { isServiceMetadata, isWebinarMetadata } from "@/type-guards";
+import {
+  isServiceMetadata,
+  isWebinarMetadata,
+} from "@/modules/shop/products/types";
 import { cn } from "@/shared/lib/utils";
 import { Route } from "next";
 

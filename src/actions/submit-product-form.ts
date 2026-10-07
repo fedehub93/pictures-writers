@@ -9,7 +9,7 @@ import { handleFormSubmitted } from "@/lib/event-handler";
 import { emitFormSubmitted } from "@/modules/forms/automations/emit";
 
 import { verifyRecaptcha } from "@/lib/recaptcha";
-import { getPublishedProductByRootId } from "@/data/product";
+import { getPublishedProductByRootId } from "@/modules/shop/products";
 
 export const submitProductForm = async (
   rootId: string,

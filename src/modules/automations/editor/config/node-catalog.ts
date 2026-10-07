@@ -4,7 +4,7 @@ import {
   mergeNodeCatalog,
   type AutomationNodeCatalogEntry,
 } from "@/modules/automations/lib/node-catalog";
-import { createCustomerNodeCatalogEntry } from "@/modules/customers/automations/catalog";
+import { createCustomerNodeCatalogEntry } from "@/modules/shop/customers/automations/catalog";
 import { formSubmittedTriggerCatalogEntry } from "@/modules/forms/automations/catalog";
 import {
   sendEmailNodeCatalogEntry,
@@ -13,7 +13,7 @@ import {
 import {
   createOrderNodeCatalogEntry,
   orderCompletedTriggerCatalogEntry,
-} from "@/modules/orders/automations/catalog";
+} from "@/modules/shop/orders/automations/catalog";
 
 /**
  * The palette contents: engine nodes plus the nodes feature modules

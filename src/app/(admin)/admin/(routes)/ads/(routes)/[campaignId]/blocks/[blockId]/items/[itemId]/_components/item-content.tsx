@@ -11,7 +11,7 @@ import { Skeleton } from "@/shared/ui/skeleton";
 
 import { AdItemFormValues } from "@/schemas/ads";
 
-import type { GetPublishedProductByRootId } from "@/data/product";
+import type { GetPublishedProductByRootId } from "@/modules/shop/products";
 
 import { GenericInput } from "@/shared/components/form-component/generic-input";
 import { GenericTextarea } from "@/shared/components/form-component/generic-textarea";

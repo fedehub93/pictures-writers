@@ -1,31 +1,41 @@
-import { db } from "@/lib/db";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import type { SearchParams } from "nuqs";
+
+import { HydrateClient } from "@/trpc/server";
 
 import { requirePermission } from "@/shared/lib/auth-utils";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 
-import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
-import { DataTable } from "./_components/data-table";
-import { columns } from "./_components/columns";
+import {
+  ProductsListHeader,
+  ProductsView,
+  ProductsViewError,
+  ProductsViewLoading,
+} from "@/modules/shop/products";
+import { loadSearchParams } from "@/modules/shop/products/params";
+import { prefetchProducts } from "@/modules/shop/products/server/prefetch";
 
-const ProductsPage = async () => {
+interface Props {
+  searchParams: Promise<SearchParams>;
+}
+
+const ProductsPage = async ({ searchParams }: Props) => {
   await requirePermission(PERMISSIONS.PRODUCTS_READ);
 
-  const products = await db.product.findMany({
-    include: {
-      imageCover: true,
-      category: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-    distinct: ["rootId"],
-  });
+  const filters = await loadSearchParams(searchParams);
+
+  prefetchProducts(filters);
 
   return (
-    <div className="h-full w-full flex flex-col gap-y-4 px-6 py-3">
-      <ContentHeader label="Products" totalEntries={products.length} />
-      <DataTable columns={columns} data={products} />
-    </div>
+    <HydrateClient>
+      <ProductsListHeader />
+      <Suspense fallback={<ProductsViewLoading />}>
+        <ErrorBoundary fallback={<ProductsViewError />}>
+          <ProductsView />
+        </ErrorBoundary>
+      </Suspense>
+    </HydrateClient>
   );
 };
 

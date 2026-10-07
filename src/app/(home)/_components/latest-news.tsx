@@ -70,14 +70,18 @@ export const LatestNews = async () => {
                   </div>
                 ) : null}
                 <div className="text-sm mb-2 text-muted-foreground">
-                  <span>
-                    Pubblicato&nbsp;
-                    {formatDistance(post.firstPublishedAt, new Date(), {
-                      addSuffix: true,
-                      locale: it,
-                    })}
-                  </span>
-                  &nbsp;-&nbsp;
+                  {post.firstPublishedAt ? (
+                    <>
+                      <span>
+                        Pubblicato&nbsp;
+                        {formatDistance(post.firstPublishedAt, new Date(), {
+                          addSuffix: true,
+                          locale: it,
+                        })}
+                      </span>
+                      &nbsp;-&nbsp;
+                    </>
+                  ) : null}
                   <span className="text-sm">{authorsString}</span>
                 </div>
                 <h3 className="mb-2 text-lg font-bold leading-5 text-heading">

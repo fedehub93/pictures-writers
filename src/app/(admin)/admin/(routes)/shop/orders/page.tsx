@@ -12,9 +12,9 @@ import {
   OrdersView,
   OrdersViewError,
   OrdersViewLoading,
-} from "@/modules/orders";
-import { loadSearchParams } from "@/modules/orders/params";
-import { prefetchOrders } from "@/modules/orders/server/prefetch";
+} from "@/modules/shop/orders";
+import { loadSearchParams } from "@/modules/shop/orders/params";
+import { prefetchOrders } from "@/modules/shop/orders/server/prefetch";
 
 interface Props {
   searchParams: Promise<SearchParams>;

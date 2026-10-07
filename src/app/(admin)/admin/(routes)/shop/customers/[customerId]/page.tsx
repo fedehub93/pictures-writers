@@ -10,8 +10,8 @@ import {
   CustomerIdView,
   CustomerIdViewError,
   CustomerIdViewLoading,
-} from "@/modules/customers";
-import { prefetchCustomerById } from "@/modules/customers/server/prefetch";
+} from "@/modules/shop/customers";
+import { prefetchCustomerById } from "@/modules/shop/customers/server/prefetch";
 
 const CustomerIdPage = async ({
   params,

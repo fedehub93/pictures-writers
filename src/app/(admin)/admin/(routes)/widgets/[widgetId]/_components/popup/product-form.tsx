@@ -2,7 +2,6 @@ import * as z from "zod";
 import Image from "next/image";
 import { Trash2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import { Product } from "@/generated/prisma";
 
 import { Control, useController } from "react-hook-form";
@@ -15,10 +14,8 @@ import {
 } from "@/shared/ui/form";
 import { Button } from "@/shared/ui/button";
 
-import { ProductWithImageCoverAndAuthor } from "@/types";
-
 import { widgetFormSchema } from "../widget-form";
-import { API_ADMIN_PRODUCTS_FETCH } from "@/constants/api";
+import { useTRPC } from "@/trpc/client";
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 
 interface PopupProductFormProps {
@@ -39,17 +36,12 @@ export const PopupProductForm = ({
     name: "metadata.productRootId",
   });
 
-  const fetchProducts = async (id: string) => {
-    const { data } = await axios.post<ProductWithImageCoverAndAuthor[]>(
-      API_ADMIN_PRODUCTS_FETCH,
-      { ids: [id] }
-    );
-    return data;
-  };
+  const trpc = useTRPC();
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["productsFetch", fieldProduct.value],
-    queryFn: () => fetchProducts(fieldProduct.value),
+    ...trpc.products.getByRootIds.queryOptions({
+      ids: fieldProduct.value ? [fieldProduct.value] : [],
+    }),
     enabled: !!fieldProduct.value,
   });
 

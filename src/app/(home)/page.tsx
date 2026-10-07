@@ -1,5 +1,5 @@
 import { HeroSection } from "./_components/hero-section";
-import { ReviewsView } from "./_components/reviews-view";
+import { HomeReviewsView } from "@/modules/reviews";
 import { ServicesCta } from "./_components/services-cta";
 import { CreativeFeatures } from "./_components/services";
 import { LatestNews } from "./_components/latest-news";
@@ -9,7 +9,7 @@ const HomePage = () => {
   return (
     <>
       <HeroSection />
-      <ReviewsView />
+      <HomeReviewsView />
       <ServicesCta />
       <CreativeFeatures />
       <LatestNews />

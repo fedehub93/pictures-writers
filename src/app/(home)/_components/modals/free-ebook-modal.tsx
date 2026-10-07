@@ -22,8 +22,8 @@ import {
 } from "@/shared/ui/dialog";
 import { Form } from "@/shared/ui/form";
 
-import { EbookType } from "@/types";
 import { FreeEbookSchemaValibot } from "@/schemas";
+import { EbookType } from "@/modules/shop/products/types";
 
 import { subscribeFreeEbook } from "@/actions/subscribe-free-ebook";
 import { GoogleRecaptchaV3 } from "@/shared/components/google-recaptchav3";

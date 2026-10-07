@@ -25,7 +25,7 @@ const generateBlogPostsSitemap = async () => {
     .filter((post) => !post.seo?.canonicalUrl)
     .map((post) => ({
       url: `${siteUrl}/${post.slug}/`,
-      lastModified: post.publishedAt,
+      lastModified: post.publishedAt ?? undefined,
       changeFrequency: "monthly",
       priority: 1,
     }));
@@ -53,7 +53,7 @@ const generateBlogCategoriesSitemap = async () => {
     .filter((category) => !category.seo?.canonicalUrl)
     .map((post) => ({
       url: `${siteUrl}/blog/${post.slug}/`,
-      lastModified: post.publishedAt,
+      lastModified: post.publishedAt ?? undefined,
       changeFrequency: "monthly",
       priority: 1,
     }));
@@ -81,7 +81,7 @@ const generateBlogTagsSitemap = async () => {
     .filter((tag) => !tag.seo?.canonicalUrl)
     .map((tag) => ({
       url: `${siteUrl}/blog/${tag.slug}/`,
-      lastModified: tag.publishedAt,
+      lastModified: tag.publishedAt ?? undefined,
       changeFrequency: "monthly",
       priority: 1,
     }));
@@ -156,7 +156,7 @@ const generateProductCategoriesSitemap = async () => {
     .filter((category) => !category.seo?.canonicalUrl)
     .map((category) => ({
       url: `${siteShopUrl}/${category.slug}/`,
-      lastModified: category.publishedAt,
+      lastModified: category.publishedAt ?? undefined,
       changeFrequency: "monthly",
       priority: 1,
     }));

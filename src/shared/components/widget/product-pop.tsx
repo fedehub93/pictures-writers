@@ -22,7 +22,8 @@ import {
 import { getLocalStorage, setLocalStorage } from "@/lib/storage-helper";
 import { Form } from "@/shared/ui/form";
 
-import { EbookType, WidgetProductPopActionType } from "@/types";
+import { WidgetProductPopActionType } from "@/types";
+import { EbookType } from "@/modules/shop/products/types";
 import { FreeEbookSchemaValibot } from "@/schemas";
 import { subscribeFreeEbook } from "@/actions/subscribe-free-ebook";
 

@@ -12,7 +12,7 @@ export interface BlogPostingJsonLdProps {
   imageCover: { url: string } | null;
   images: string[];
   videos?: string[];
-  datePublished: string;
+  datePublished?: string;
   dateCreated?: string;
   dateModified?: string;
   authors: User[];

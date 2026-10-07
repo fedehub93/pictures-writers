@@ -90,10 +90,12 @@ export const SearchBar = () => {
                             <div className="flex items-center justify-between">
                               <p className="self-end text-xs text-muted-foreground">
                                 Pubblicato{" "}
-                                {formatDistance(item.publishedAt, new Date(), {
-                                  addSuffix: true,
-                                  locale: it,
-                                })}
+                                {item.publishedAt
+                                  ? formatDistance(item.publishedAt, new Date(), {
+                                      addSuffix: true,
+                                      locale: it,
+                                    })
+                                  : "—"}
                               </p>
                             </div>
                           </div>

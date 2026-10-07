@@ -4,9 +4,10 @@ import { db } from "@/shared/lib/db";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 
-import { ContentStatus } from "@/generated/prisma";
+import { ContentStatus, type Prisma } from "@/generated/prisma";
 
 import { createCategorySeo } from "@/lib/seo";
+import { buildListOrderBy } from "@/shared/lib/list-sorting";
 
 import {
   categoryInsertSchema,
@@ -15,6 +16,7 @@ import {
 } from "../schemas";
 
 import {
+  CATEGORY_LIST_SORTS,
   DEFAULT_PAGE,
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,
@@ -234,43 +236,45 @@ export const categoriesRouter = createTRPCRouter({
             ContentStatus.PUBLISHED,
           ])
           .nullish(),
+        sort: z.enum(CATEGORY_LIST_SORTS).nullish(),
+        direction: z.enum(["asc", "desc"]).nullish(),
       }),
     )
     .query(async ({ input }) => {
-      const categories = await db.category.findMany({
-        where: {
-          title: input.search
-            ? { contains: input.search, mode: "insensitive" }
-            : undefined,
-          status: input.status ? { in: [input.status] } : undefined,
-        },
+      const where: Prisma.CategoryWhereInput = {
+        title: input.search
+          ? { contains: input.search, mode: "insensitive" }
+          : undefined,
+        status: input.status ? { in: [input.status] } : undefined,
+      };
+
+      const currentVersions = await db.category.findMany({
+        where,
         distinct: ["rootId"],
+        orderBy: [{ rootId: "asc" }, { version: "desc" }],
+        select: { id: true },
+      });
+
+      const currentIds = currentVersions.map((category) => category.id);
+
+      const categories = await db.category.findMany({
+        where: { ...where, id: { in: currentIds } },
         include: {
           seo: true,
         },
-        orderBy: {
-          publishedAt: "desc",
-        },
+        orderBy: buildListOrderBy<Prisma.CategoryOrderByWithRelationInput>({
+          sort: input.sort,
+          direction: input.direction,
+          sortable: CATEGORY_LIST_SORTS,
+        }),
         take: input.pageSize,
         skip: (input.page - 1) * input.pageSize,
       });
 
-      const distinctCategories = await db.category.groupBy({
-        by: ["rootId"],
-        where: {
-          title: input.search
-            ? { contains: input.search, mode: "insensitive" }
-            : undefined,
-          status: input.status ? { in: [input.status] } : undefined,
-        },
-      });
-
-      const totalPages = Math.ceil(distinctCategories.length / input.pageSize);
-
       return {
         items: categories,
-        total: distinctCategories.length,
-        totalPages,
+        total: currentIds.length,
+        totalPages: Math.ceil(currentIds.length / input.pageSize),
       };
     }),
   publish: protectedProcedure
@@ -284,6 +288,7 @@ export const categoriesRouter = createTRPCRouter({
         select: {
           title: true,
           version: true,
+          firstPublishedAt: true,
         },
       });
 
@@ -313,7 +318,8 @@ export const categoriesRouter = createTRPCRouter({
         data: {
           status: ContentStatus.PUBLISHED,
           isLatest: true,
-          firstPublishedAt: category.version === 1 ? new Date() : undefined,
+          firstPublishedAt:
+            category.firstPublishedAt === null ? new Date() : undefined,
           publishedAt: new Date(),
         },
         include: {

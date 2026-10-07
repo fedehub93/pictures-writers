@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { can } from "@/shared/lib/authorization";
 import {
+  PERMISSIONS,
   getPermissionAlternatives,
   getProcedurePermissions,
 } from "@/shared/lib/permissions";
@@ -17,6 +18,12 @@ describe("authorization policy", () => {
 
   it("maps read procedures to the parent area's read permission", () => {
     expect(getProcedurePermissions("posts.getMany")).toEqual(["posts.read"]);
+  });
+
+  it("maps productCategories.publish through the area alias to its publish permission", () => {
+    expect(getProcedurePermissions("productCategories.publish")).toEqual([
+      PERMISSIONS.PRODUCT_CATEGORIES_PUBLISH,
+    ]);
   });
 
   it("allows manage-only modules to use their manage permission", () => {

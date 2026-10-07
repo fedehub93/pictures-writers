@@ -1,16 +1,13 @@
-import axios from "axios";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
-import { API_ADMIN_PRODUCTS } from "@/constants/api";
+import { ContentStatus } from "@/generated/prisma";
+
+import { DEFAULT_PAGE_SIZE } from "@/modules/shop/products/constants";
+
+import { useTRPCClient } from "@/trpc/client";
 
 export const useProductsQuery = (s = "", windowIsOpen = false) => {
-  const fetchProducts = async ({ pageParam = undefined, s = "" }) => {
-    const paramsObj = { cursor: pageParam, s };
-    const res = await axios.get(API_ADMIN_PRODUCTS, {
-      params: { ...paramsObj },
-    });
-    return res.data;
-  };
+  const client = useTRPCClient();
 
   const {
     data,
@@ -20,10 +17,17 @@ export const useProductsQuery = (s = "", windowIsOpen = false) => {
     status,
     refetch,
   } = useInfiniteQuery({
-    initialPageParam: undefined,
+    initialPageParam: 1,
     queryKey: ["products", s],
-    queryFn: ({ pageParam }) => fetchProducts({ pageParam, s }),
-    getNextPageParam: (lastPage) => lastPage?.nextCursor,
+    queryFn: ({ pageParam }) =>
+      client.products.getMany.query({
+        search: s,
+        page: pageParam,
+        pageSize: DEFAULT_PAGE_SIZE,
+        status: ContentStatus.PUBLISHED,
+      }),
+    getNextPageParam: (lastPage, allPages) =>
+      allPages.length < lastPage.totalPages ? allPages.length + 1 : undefined,
     refetchInterval: false,
     enabled: windowIsOpen,
     refetchOnMount: true,

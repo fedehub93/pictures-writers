@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { WebinarLesson } from "@/types";
+import { WebinarLesson } from "@/modules/shop/products/types";
 
 export const getPurchasedWebinar = async (webinarRootId: string) => {
   const w = await db.purchase.findMany({

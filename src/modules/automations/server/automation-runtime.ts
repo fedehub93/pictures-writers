@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createCustomerNodeRegistry } from "@/modules/customers/automations";
+import { createCustomerNodeRegistry } from "@/modules/shop/customers/automations";
 import { formSubmittedNodeRegistry } from "@/modules/forms/automations";
 import {
   createAutomationMailEffect,
@@ -11,7 +11,7 @@ import {
 import {
   createOrderNodeRegistry,
   orderCompletedNodeRegistry,
-} from "@/modules/orders/automations";
+} from "@/modules/shop/orders/automations";
 
 import {
   runDueAutomations,

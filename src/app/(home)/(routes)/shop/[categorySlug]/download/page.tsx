@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { Button } from "@/shared/ui/button";
 
-import { isValidEbookFormat } from "@/type-guards";
+import { isValidEbookFormat } from "@/modules/shop/products/types";
 
 import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
 

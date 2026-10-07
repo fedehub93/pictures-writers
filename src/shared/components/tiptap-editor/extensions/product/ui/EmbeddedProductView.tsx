@@ -6,7 +6,10 @@ import { NodeViewRendererProps, NodeViewWrapper } from "@tiptap/react";
 import { Button } from "@/shared/ui/button";
 import { Skeleton } from "@/shared/ui/skeleton";
 
-import { isAffiliateMetadata, isEbookMetadata } from "@/type-guards";
+import {
+  isAffiliateMetadata,
+  isEbookMetadata,
+} from "@/modules/shop/products/types";
 import { useProductRootIdQuery } from "@/app/(admin)/_hooks/use-product-root-id-query";
 
 export const EmbeddedProductView = ({ node }: NodeViewRendererProps) => {

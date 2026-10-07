@@ -74,6 +74,7 @@ export async function publishPost({
           title: true,
           slug: true,
           scheduledAt: true,
+          firstPublishedAt: true,
         },
         orderBy: { id: "asc" },
       });
@@ -137,7 +138,7 @@ export async function publishPost({
           data: { isLatest: false },
         });
 
-        const firstPublishedAt = target.version === 1 ? now : undefined;
+        const firstPublishedAt = target.firstPublishedAt === null ? now : undefined;
 
         publishResult = await tx.post.update({
           where: { id: postId },

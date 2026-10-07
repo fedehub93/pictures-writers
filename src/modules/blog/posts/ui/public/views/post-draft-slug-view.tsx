@@ -7,7 +7,7 @@ import { db } from "@/shared/lib/db";
 import { isJSONContent, isWidgetProductPopMetadata } from "@/type-guards";
 
 import { getSettings } from "@/data/settings";
-import { getPublishedProductByRootId } from "@/data/product";
+import { getPublishedProductByRootId } from "@/modules/shop/products";
 
 import { WidgetProductPop } from "@/shared/components/widget/product-pop";
 
@@ -75,8 +75,8 @@ export const PostDraftSlugView = async ({ slug }: PostDraftSlugViewProps) => {
         images={bodyImages}
         videos={bodyVideos}
         authors={post.postAuthors.map((a) => a.user)}
-        datePublished={post.firstPublishedAt.toISOString()}
-        dateModified={post.publishedAt.toISOString()}
+        datePublished={post.firstPublishedAt?.toISOString()}
+        dateModified={post.publishedAt?.toISOString()}
         url={`${siteUrl}/${post.slug}`}
         siteUrl={siteUrl!}
       />

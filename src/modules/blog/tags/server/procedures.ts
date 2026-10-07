@@ -4,9 +4,10 @@ import { db } from "@/shared/lib/db";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 
-import { ContentStatus } from "@/generated/prisma";
+import { ContentStatus, type Prisma } from "@/generated/prisma";
 
 import { createTagSeo } from "@/lib/seo";
+import { buildListOrderBy } from "@/shared/lib/list-sorting";
 
 import {
   tagInsertSchema,
@@ -19,6 +20,7 @@ import {
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,
   MIN_PAGE_SIZE,
+  TAG_LIST_SORTS,
 } from "../constants";
 
 import { createNewVersion } from "../lib/create-new-version";
@@ -234,43 +236,45 @@ export const tagsRouter = createTRPCRouter({
             ContentStatus.PUBLISHED,
           ])
           .nullish(),
+        sort: z.enum(TAG_LIST_SORTS).nullish(),
+        direction: z.enum(["asc", "desc"]).nullish(),
       }),
     )
     .query(async ({ input }) => {
-      const tags = await db.tag.findMany({
-        where: {
-          title: input.search
-            ? { contains: input.search, mode: "insensitive" }
-            : undefined,
-          status: input.status ? { in: [input.status] } : undefined,
-        },
+      const where: Prisma.TagWhereInput = {
+        title: input.search
+          ? { contains: input.search, mode: "insensitive" }
+          : undefined,
+        status: input.status ? { in: [input.status] } : undefined,
+      };
+
+      const currentVersions = await db.tag.findMany({
+        where,
         distinct: ["rootId"],
+        orderBy: [{ rootId: "asc" }, { version: "desc" }],
+        select: { id: true },
+      });
+
+      const currentIds = currentVersions.map((tag) => tag.id);
+
+      const tags = await db.tag.findMany({
+        where: { ...where, id: { in: currentIds } },
         include: {
           seo: true,
         },
-        orderBy: {
-          publishedAt: "desc",
-        },
+        orderBy: buildListOrderBy<Prisma.TagOrderByWithRelationInput>({
+          sort: input.sort,
+          direction: input.direction,
+          sortable: TAG_LIST_SORTS,
+        }),
         take: input.pageSize,
         skip: (input.page - 1) * input.pageSize,
       });
 
-      const distinctTags = await db.tag.groupBy({
-        by: ["rootId"],
-        where: {
-          title: input.search
-            ? { contains: input.search, mode: "insensitive" }
-            : undefined,
-          status: input.status ? { in: [input.status] } : undefined,
-        },
-      });
-
-      const totalPages = Math.ceil(distinctTags.length / input.pageSize);
-
       return {
         items: tags,
-        total: distinctTags.length,
-        totalPages,
+        total: currentIds.length,
+        totalPages: Math.ceil(currentIds.length / input.pageSize),
       };
     }),
   publish: protectedProcedure
@@ -284,6 +288,7 @@ export const tagsRouter = createTRPCRouter({
         select: {
           title: true,
           version: true,
+          firstPublishedAt: true,
         },
       });
 
@@ -313,7 +318,8 @@ export const tagsRouter = createTRPCRouter({
         data: {
           status: ContentStatus.PUBLISHED,
           isLatest: true,
-          firstPublishedAt: tag.version === 1 ? new Date() : undefined,
+          firstPublishedAt:
+            tag.firstPublishedAt === null ? new Date() : undefined,
           publishedAt: new Date(),
         },
         include: {
