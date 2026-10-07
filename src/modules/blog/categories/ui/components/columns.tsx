@@ -76,6 +76,17 @@ export const columns = columnHelper.columns([
       return <div>{date}</div>;
     },
   }),
+  columnHelper.accessor("publishedAt", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Published at" />
+    ),
+    sortFn: "datetime",
+    cell: ({ row }) => {
+      const publishedAt = row.original.publishedAt;
+      if (!publishedAt) return <div>—</div>;
+      return <div>{formatDate({ date: publishedAt })}</div>;
+    },
+  }),
   columnHelper.accessor("status", {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />

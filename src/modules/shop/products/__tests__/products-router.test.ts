@@ -722,6 +722,36 @@ describe("productsRouter", () => {
       expect(result.items[0]!.status).toBe(ContentStatus.CHANGED);
     });
 
+    it("sorts by the requested column and direction across all roots", async () => {
+      const marker = `Sort marker ${randomUUID()}`;
+      const alpha = await createProduct({ title: `${marker} Alpha` });
+      const beta = await createProduct({ title: `${marker} Beta` });
+
+      const ascending = await caller.getMany({
+        page: 1,
+        pageSize: 50,
+        search: marker,
+        sort: "title",
+        direction: "asc",
+      });
+      const descending = await caller.getMany({
+        page: 1,
+        pageSize: 50,
+        search: marker,
+        sort: "title",
+        direction: "desc",
+      });
+
+      expect(ascending.items.map((item) => item.rootId)).toEqual([
+        alpha.rootId,
+        beta.rootId,
+      ]);
+      expect(descending.items.map((item) => item.rootId)).toEqual([
+        beta.rootId,
+        alpha.rootId,
+      ]);
+    });
+
     it("filters by status and type", async () => {
       const published = await createProduct({
         title: "Live service",

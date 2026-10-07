@@ -5,7 +5,9 @@ import {
   useQueryStates,
 } from "nuqs";
 
-import { DEFAULT_PAGE } from "../constants";
+import { SORT_DIRECTIONS } from "@/shared/lib/list-sorting";
+
+import { DEFAULT_PAGE, TAG_LIST_SORTS } from "../constants";
 
 export const useTagsFilters = () => {
   return useQueryStates({
@@ -14,5 +16,7 @@ export const useTagsFilters = () => {
       .withDefault(DEFAULT_PAGE)
       .withOptions({ clearOnDefault: true }),
     status: parseAsStringEnum(["DRAFT", "CHANGED", "PUBLISHED"] as const),
+    sort: parseAsStringEnum([...TAG_LIST_SORTS]),
+    direction: parseAsStringEnum([...SORT_DIRECTIONS]),
   });
 };

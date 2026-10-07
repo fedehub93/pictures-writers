@@ -6,6 +6,7 @@ import type { Prisma } from "@/generated/prisma";
 import { ContentStatus, ProductType } from "@/generated/prisma";
 
 import { createProductSeo } from "@/lib/seo";
+import { buildListOrderBy } from "@/shared/lib/list-sorting";
 import { db } from "@/shared/lib/db";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 import { revalidateContent } from "@/shared/lib/revalidate-content";
@@ -16,6 +17,7 @@ import {
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,
   MIN_PAGE_SIZE,
+  PRODUCT_LIST_SORTS,
 } from "../constants";
 
 import {
@@ -240,6 +242,8 @@ export const productsRouter = createTRPCRouter({
           .nullish(),
         type: z.enum(ProductType).nullish(),
         category: z.string().nullish(),
+        sort: z.enum(PRODUCT_LIST_SORTS).nullish(),
+        direction: z.enum(["asc", "desc"]).nullish(),
       }),
     )
     .query(async ({ input }) => {
@@ -254,25 +258,31 @@ export const productsRouter = createTRPCRouter({
         category: input.category ? { rootId: input.category } : undefined,
       };
 
-      const [items, distinctProducts] = await Promise.all([
-        db.product.findMany({
-          where,
-          distinct: ["rootId"],
-          include: { imageCover: true, category: true },
-          orderBy: { createdAt: "desc" },
-          take: input.pageSize,
-          skip: (input.page - 1) * input.pageSize,
+      const currentVersions = await db.product.findMany({
+        where,
+        distinct: ["rootId"],
+        orderBy: [{ rootId: "asc" }, { version: "desc" }],
+        select: { id: true },
+      });
+
+      const currentIds = currentVersions.map((product) => product.id);
+
+      const items = await db.product.findMany({
+        where: { ...where, id: { in: currentIds } },
+        include: { imageCover: true, category: true },
+        orderBy: buildListOrderBy<Prisma.ProductOrderByWithRelationInput>({
+          sort: input.sort,
+          direction: input.direction,
+          sortable: PRODUCT_LIST_SORTS,
         }),
-        db.product.groupBy({
-          by: ["rootId"],
-          where,
-        }),
-      ]);
+        take: input.pageSize,
+        skip: (input.page - 1) * input.pageSize,
+      });
 
       return {
         items,
-        total: distinctProducts.length,
-        totalPages: Math.ceil(distinctProducts.length / input.pageSize),
+        total: currentIds.length,
+        totalPages: Math.ceil(currentIds.length / input.pageSize),
       };
     }),
 
@@ -299,7 +309,7 @@ export const productsRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       const product = await db.product.findFirst({
         where: { id: input.id, rootId: input.rootId },
-        select: { title: true },
+        select: { title: true, firstPublishedAt: true },
       });
 
       if (!product) {
@@ -321,9 +331,17 @@ export const productsRouter = createTRPCRouter({
         data: { isLatest: false },
       });
 
+      const now = new Date();
+
       const publishedProduct = await db.product.update({
         where: { id: input.id },
-        data: { status: ContentStatus.PUBLISHED, isLatest: true },
+        data: {
+          status: ContentStatus.PUBLISHED,
+          isLatest: true,
+          publishedAt: now,
+          firstPublishedAt:
+            product.firstPublishedAt === null ? now : undefined,
+        },
         include: { seo: true },
       });
 

@@ -440,8 +440,8 @@ model Post {
   scheduledAt         DateTime?
   preSchedulingStatus ContentStatus?
 
-  firstPublishedAt DateTime @default(now())
-  publishedAt      DateTime @default(now())
+  firstPublishedAt DateTime?
+  publishedAt      DateTime?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -486,8 +486,8 @@ model Category {
   user   User?   @relation(fields: [userId], references: [id])
   userId String?
 
-  firstPublishedAt DateTime @default(now())
-  publishedAt      DateTime @default(now())
+  firstPublishedAt DateTime?
+  publishedAt      DateTime?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -531,8 +531,8 @@ model Tag {
   user   User?   @relation(fields: [userId], references: [id])
   userId String?
 
-  firstPublishedAt DateTime @default(now())
-  publishedAt      DateTime @default(now())
+  firstPublishedAt DateTime?
+  publishedAt      DateTime?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -775,6 +775,9 @@ model Product {
   user   User?   @relation(fields: [userId], references: [id])
   userId String?
 
+  firstPublishedAt DateTime?
+  publishedAt      DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -801,8 +804,8 @@ model ProductCategory {
   seo   Seo?    @relation(fields: [seoId], references: [id])
   seoId String?
 
-  firstPublishedAt DateTime @default(now())
-  publishedAt      DateTime @default(now())
+  firstPublishedAt DateTime?
+  publishedAt      DateTime?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 }

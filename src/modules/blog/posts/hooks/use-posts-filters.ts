@@ -5,7 +5,9 @@ import {
   useQueryStates,
 } from "nuqs";
 
-import { DEFAULT_PAGE } from "../constants";
+import { SORT_DIRECTIONS } from "@/shared/lib/list-sorting";
+
+import { DEFAULT_PAGE, POST_LIST_SORTS } from "../constants";
 
 export const usePostsFilters = () => {
   return useQueryStates({
@@ -16,5 +18,7 @@ export const usePostsFilters = () => {
     status: parseAsStringEnum(
       ["DRAFT", "CHANGED", "PUBLISHED", "SCHEDULED"] as const,
     ),
+    sort: parseAsStringEnum([...POST_LIST_SORTS]),
+    direction: parseAsStringEnum([...SORT_DIRECTIONS]),
   });
 };

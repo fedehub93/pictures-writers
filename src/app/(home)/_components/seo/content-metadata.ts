@@ -160,8 +160,8 @@ export async function getPostMetadataBySlug(
       locale: "it_IT",
       type: "article",
       authors: [authorsString],
-      publishedTime: post.firstPublishedAt.toISOString(),
-      modifiedTime: post.publishedAt.toISOString(),
+      publishedTime: post.firstPublishedAt?.toISOString(),
+      modifiedTime: post.publishedAt?.toISOString(),
     },
     twitter: {
       card: "summary_large_image",
@@ -214,8 +214,8 @@ export async function getCategoryMetadataBySlug(
       siteName: siteName!,
       locale: "it_IT",
       type: "article",
-      publishedTime: category.firstPublishedAt.toISOString(),
-      modifiedTime: category.publishedAt.toISOString(),
+      publishedTime: category.firstPublishedAt?.toISOString(),
+      modifiedTime: category.publishedAt?.toISOString(),
     },
     twitter: {
       card: "summary_large_image",
@@ -266,8 +266,8 @@ export async function getTagMetdataBySlug(
       siteName: siteName!,
       locale: "it_IT",
       type: "article",
-      publishedTime: tag.firstPublishedAt.toISOString(),
-      modifiedTime: tag.publishedAt.toISOString(),
+      publishedTime: tag.firstPublishedAt?.toISOString(),
+      modifiedTime: tag.publishedAt?.toISOString(),
     },
     twitter: {
       card: "summary_large_image",

@@ -36,6 +36,20 @@ _Avoid_: Outline when referring to persisted post content.
 A persistent Tiptap content node expressing tabular data as a rectangular grid of rows and columns, editable and rendered for public display in posts and product descriptions. Unlike Notion's database views, it is a plain data grid with no merged cells. Distinct from TableContentNode, which is an index of headings.
 _Avoid_: TableContentNode when referring to a data grid; Grid or Data grid when referring to the editor node.
 
+## Publishing state
+
+**Published at**:
+The moment a content version last became public. It is empty for content that has never been published, and it changes every time an already-published version is published again.
+_Avoid_: Creation date, updated date when referring to this moment.
+
+**First published at**:
+The moment a content item first became public, shared by every later version of that item. It is empty until the first publication and never changes afterwards.
+_Avoid_: Published at when referring to the latest publication.
+
+**Current version**:
+The most recent version of a content item, whether or not it is public. It is the version an editor works on and the one that represents the item in backoffice lists. Distinct from the live version, which is the published one.
+_Avoid_: Latest version when referring to the live version.
+
 ## Public rendering
 
 **On-demand revalidation**:

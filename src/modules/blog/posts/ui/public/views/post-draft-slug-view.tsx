@@ -75,8 +75,8 @@ export const PostDraftSlugView = async ({ slug }: PostDraftSlugViewProps) => {
         images={bodyImages}
         videos={bodyVideos}
         authors={post.postAuthors.map((a) => a.user)}
-        datePublished={post.firstPublishedAt.toISOString()}
-        dateModified={post.publishedAt.toISOString()}
+        datePublished={post.firstPublishedAt?.toISOString()}
+        dateModified={post.publishedAt?.toISOString()}
         url={`${siteUrl}/${post.slug}`}
         siteUrl={siteUrl!}
       />

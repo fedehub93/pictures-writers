@@ -23,20 +23,29 @@ import { features, type DataTableFeatures } from "./data-table-features";
 interface DataTableProps<TData extends RowData> {
   columns: ColumnDef<DataTableFeatures, TData>[];
   data: TData[];
+  sorting?: SortingState;
+  onSortingChange?: (updater: React.SetStateAction<SortingState>) => void;
 }
 
 export function DataTable<TData extends RowData>({
   columns,
   data,
+  sorting: controlledSorting,
+  onSortingChange: controlledSortingChange,
 }: DataTableProps<TData>) {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [internalSorting, setInternalSorting] =
+    React.useState<SortingState>([]);
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
+
+  const sorting = controlledSorting ?? internalSorting;
+  const onSortingChange =
+    controlledSortingChange ?? ((updater) => setInternalSorting(updater));
 
   const table = useTable({
     features,
     data,
     columns,
-    onSortingChange: setSorting,
+    onSortingChange,
     onRowSelectionChange: setRowSelection,
     state: {
       sorting,

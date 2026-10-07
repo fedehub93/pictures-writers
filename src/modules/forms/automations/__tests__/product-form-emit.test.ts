@@ -83,6 +83,7 @@ async function createFormProduct(formId: string) {
     },
   });
 
+  const publishedAt = new Date();
   const product = await db.product.create({
     data: {
       title: "Form product",
@@ -91,6 +92,8 @@ async function createFormProduct(formId: string) {
       version: 2,
       status: ContentStatus.PUBLISHED,
       isLatest: true,
+      firstPublishedAt: publishedAt,
+      publishedAt,
       acquisitionMode: ProductAcquisitionMode.FORM,
       formId,
       rootId: root.id,

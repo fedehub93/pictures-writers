@@ -247,7 +247,7 @@ export const productCategoriesRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       const category = await db.productCategory.findFirst({
         where: { id: input.id, rootId: input.rootId },
-        select: { title: true, version: true },
+        select: { title: true, version: true, firstPublishedAt: true },
       });
 
       if (!category) {
@@ -275,7 +275,7 @@ export const productCategoriesRouter = createTRPCRouter({
           status: ContentStatus.PUBLISHED,
           isLatest: true,
           firstPublishedAt:
-            category.version === 1 ? new Date() : undefined,
+            category.firstPublishedAt === null ? new Date() : undefined,
           publishedAt: new Date(),
         },
         include: { seo: true },

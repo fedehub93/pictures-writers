@@ -36,6 +36,7 @@ export const createNewVersion = async (
           version: latestCategory.version + 1,
           status: ContentStatus.CHANGED,
           isLatest: false,
+          firstPublishedAt: latestCategory.firstPublishedAt,
           root: { connect: { id: input.rootId } },
           seo: latestCategory.seoId
             ? { connect: { id: latestCategory.seoId } }

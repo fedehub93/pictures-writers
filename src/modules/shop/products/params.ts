@@ -5,7 +5,9 @@ import {
   parseAsStringEnum,
 } from "nuqs/server";
 
-import { DEFAULT_PAGE, PRODUCT_TYPES } from "./constants";
+import { SORT_DIRECTIONS } from "@/shared/lib/list-sorting";
+
+import { DEFAULT_PAGE, PRODUCT_LIST_SORTS, PRODUCT_TYPES } from "./constants";
 
 export const filtersSearchParams = {
   search: parseAsString.withDefault("").withOptions({ clearOnDefault: true }),
@@ -15,6 +17,8 @@ export const filtersSearchParams = {
   status: parseAsStringEnum(["DRAFT", "CHANGED", "PUBLISHED"] as const),
   type: parseAsStringEnum([...PRODUCT_TYPES]),
   category: parseAsString.withOptions({ clearOnDefault: true }),
+  sort: parseAsStringEnum([...PRODUCT_LIST_SORTS]),
+  direction: parseAsStringEnum([...SORT_DIRECTIONS]),
 };
 
 export const loadSearchParams = createLoader(filtersSearchParams);

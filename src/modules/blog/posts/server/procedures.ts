@@ -5,9 +5,14 @@ import { revalidateContent } from "@/shared/lib/revalidate-content";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 
-import { ContentStatus, ScheduledActionType } from "@/generated/prisma";
+import {
+  ContentStatus,
+  ScheduledActionType,
+  type Prisma,
+} from "@/generated/prisma";
 
 import { createPostSeo } from "@/lib/seo";
+import { buildListOrderBy } from "@/shared/lib/list-sorting";
 import {
   createScheduledAction,
   createIdempotencyKey,
@@ -26,6 +31,7 @@ import {
   MAX_PAGE_SIZE,
   MIN_PAGE_SIZE,
   POST_BATCH,
+  POST_LIST_SORTS,
 } from "../constants";
 
 import { createNewVersion } from "../lib/create-new-version";
@@ -321,9 +327,27 @@ export const postsRouter = createTRPCRouter({
             ContentStatus.SCHEDULED,
           ])
           .nullish(),
+        sort: z.enum(POST_LIST_SORTS).nullish(),
+        direction: z.enum(["asc", "desc"]).nullish(),
       }),
     )
     .query(async ({ input }) => {
+      const where: Prisma.PostWhereInput = {
+        title: input.search
+          ? { contains: input.search, mode: "insensitive" }
+          : undefined,
+        status: input.status ? { in: [input.status] } : undefined,
+      };
+
+      const currentVersions = await db.post.findMany({
+        where,
+        distinct: ["rootId"],
+        orderBy: [{ rootId: "asc" }, { version: "desc" }],
+        select: { id: true },
+      });
+
+      const currentIds = currentVersions.map((post) => post.id);
+
       const posts = await db.post.findMany({
         select: {
           id: true,
@@ -355,36 +379,20 @@ export const postsRouter = createTRPCRouter({
             },
           },
         },
-        where: {
-          title: input.search
-            ? { contains: input.search, mode: "insensitive" }
-            : undefined,
-          status: input.status ? { in: [input.status] } : undefined,
-        },
-        distinct: ["rootId"],
-        orderBy: {
-          publishedAt: "desc",
-        },
+        where: { ...where, id: { in: currentIds } },
+        orderBy: buildListOrderBy<Prisma.PostOrderByWithRelationInput>({
+          sort: input.sort,
+          direction: input.direction,
+          sortable: POST_LIST_SORTS,
+        }),
         take: input.pageSize,
         skip: (input.page - 1) * input.pageSize,
       });
 
-      const distinctPosts = await db.post.groupBy({
-        by: ["rootId"],
-        where: {
-          title: input.search
-            ? { contains: input.search, mode: "insensitive" }
-            : undefined,
-          status: input.status ? { in: [input.status] } : undefined,
-        },
-      });
-
-      const totalPages = Math.ceil(distinctPosts.length / input.pageSize);
-
       return {
         items: posts,
-        total: distinctPosts.length,
-        totalPages,
+        total: currentIds.length,
+        totalPages: Math.ceil(currentIds.length / input.pageSize),
       };
     }),
   getPaginated: protectedProcedure

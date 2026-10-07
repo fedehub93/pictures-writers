@@ -38,7 +38,7 @@ import { usePostStore } from "../../../store/use-post-store";
 
 interface AuthorsFormProps {
   initialData: {
-    firstPublishedAt: Date;
+    firstPublishedAt: Date | null;
     postAuthors: {
       user: User;
       sort: number;
@@ -252,7 +252,10 @@ export const AuthorsForm = ({
           </form>
         </Form>
         <div className="text-xs text-muted-foreground">
-          created At {formatDate({ date: initialData.firstPublishedAt })}
+          created At{" "}
+          {initialData.firstPublishedAt
+            ? formatDate({ date: initialData.firstPublishedAt })
+            : "—"}
         </div>
       </CardContent>
     </Card>

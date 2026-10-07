@@ -45,6 +45,7 @@ export const createNewVersion = async (input: ProductUpdateValues) => {
           version: latestProduct.version + 1,
           status: ContentStatus.CHANGED,
           isLatest: false,
+          firstPublishedAt: latestProduct.firstPublishedAt,
           acquisitionMode: latestProduct.acquisitionMode,
           price: latestProduct.price,
           discountedPrice: latestProduct.discountedPrice,
