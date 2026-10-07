@@ -3,16 +3,24 @@ export type SortDirection = "asc" | "desc";
 export const SORT_DIRECTIONS = ["asc", "desc"] as const;
 
 /**
- * Default ordering for versioned content lists: unpublished versions
- * (`publishedAt` null) first, then the most recently published, then by
- * lifecycle status and title for a deterministic order.
+ * Editorial priority for versioned content: everything not yet published comes
+ * before published items. PostgreSQL stores `ContentStatus` as an enum ordered
+ * `DRAFT, CHANGED, PUBLISHED, SCHEDULED`, so this "unpublished first" grouping
+ * cannot be expressed with a plain `orderBy`; we rank explicitly instead.
  */
-export const DEFAULT_PUBLISHED_ORDER_BY = [
-  { publishedAt: { sort: "desc", nulls: "first" } },
-  { status: "asc" },
-  { title: "asc" },
-  { id: "asc" },
-] as const;
+const STATUS_RANK: Record<string, number> = {
+  DRAFT: 0,
+  CHANGED: 1,
+  SCHEDULED: 2,
+  PUBLISHED: 3,
+};
+
+export interface DefaultSortableRow {
+  id: string;
+  title: string;
+  status: string;
+  publishedAt: Date | null;
+}
 
 interface BuildListOrderByArgs {
   sort?: string | null;
@@ -20,26 +28,75 @@ interface BuildListOrderByArgs {
   sortable: readonly string[];
 }
 
+const rankOf = (status: string) =>
+  STATUS_RANK[status] ?? Number.MAX_SAFE_INTEGER;
+
+function compareNullableDateDesc(a: Date | null, b: Date | null): number {
+  if (a === b) return 0;
+  if (a === null) return 1;
+  if (b === null) return -1;
+  return b.getTime() - a.getTime();
+}
+
+function compareTextAsc(a: string, b: string): number {
+  const at = a.toLowerCase();
+  const bt = b.toLowerCase();
+  if (at < bt) return -1;
+  if (at > bt) return 1;
+  return 0;
+}
+
+/**
+ * Default editorial order for versioned content lists:
+ * unpublished statuses first (`DRAFT`, `CHANGED`, `SCHEDULED`), then
+ * `PUBLISHED`; within a status the most recently published first, then
+ * alphabetically by title, then by id for a deterministic order.
+ */
+export function compareDefaultOrder<T extends DefaultSortableRow>(
+  a: T,
+  b: T,
+): number {
+  const byStatus = rankOf(a.status) - rankOf(b.status);
+  if (byStatus !== 0) return byStatus;
+
+  const byPublishedAt = compareNullableDateDesc(a.publishedAt, b.publishedAt);
+  if (byPublishedAt !== 0) return byPublishedAt;
+
+  const byTitle = compareTextAsc(a.title, b.title);
+  if (byTitle !== 0) return byTitle;
+
+  return compareTextAsc(a.id, b.id);
+}
+
+export function sortByDefaultOrder<T extends DefaultSortableRow>(
+  rows: T[],
+): T[] {
+  return [...rows].sort(compareDefaultOrder);
+}
+
 /**
  * Builds a Prisma `orderBy` for the explicit column sort chosen by the user.
- * Falls back to {@link DEFAULT_PUBLISHED_ORDER_BY} when no (valid) sort is set.
- * Nullable publication dates always sort nulls first so unpublished content
- * stays grouped; a stable `id` tiebreaker keeps pagination deterministic.
+ * Returns `null` when no (valid) sort is set so callers can fall back to
+ * {@link sortByDefaultOrder}. Nullable publication dates always sort with
+ * `nulls` pinned so scheduling (nulls last) and publication (nulls first)
+ * grouping stay stable regardless of direction; `id` is a stable tiebreaker.
  */
 export function buildListOrderBy<TOrderBy>({
   sort,
   direction,
   sortable,
-}: BuildListOrderByArgs): TOrderBy[] {
+}: BuildListOrderByArgs): TOrderBy[] | null {
   if (!sort || !sortable.includes(sort)) {
-    return DEFAULT_PUBLISHED_ORDER_BY as unknown as TOrderBy[];
+    return null;
   }
 
   const dir: SortDirection = direction ?? "desc";
   const primary =
     sort === "publishedAt"
       ? { publishedAt: { sort: dir, nulls: "first" } }
-      : { [sort]: dir };
+      : sort === "scheduledAt"
+        ? { scheduledAt: { sort: dir, nulls: "last" } }
+        : { [sort]: dir };
 
   return [primary, { id: "asc" }] as unknown as TOrderBy[];
 }

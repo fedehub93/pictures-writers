@@ -7,7 +7,10 @@ import { TRPCError } from "@trpc/server";
 import { ContentStatus, type Prisma } from "@/generated/prisma";
 
 import { createTagSeo } from "@/lib/seo";
-import { buildListOrderBy } from "@/shared/lib/list-sorting";
+import {
+  buildListOrderBy,
+  sortByDefaultOrder,
+} from "@/shared/lib/list-sorting";
 
 import {
   tagInsertSchema,
@@ -252,30 +255,52 @@ export const tagsRouter = createTRPCRouter({
         where,
         distinct: ["rootId"],
         orderBy: [{ rootId: "asc" }, { version: "desc" }],
-        select: { id: true },
+        select: {
+          id: true,
+          title: true,
+          status: true,
+          publishedAt: true,
+        },
       });
 
-      const currentIds = currentVersions.map((tag) => tag.id);
+      const total = currentVersions.length;
+      const totalPages = Math.ceil(total / input.pageSize);
+      const orderBy = buildListOrderBy<Prisma.TagOrderByWithRelationInput>({
+        sort: input.sort,
+        direction: input.direction,
+        sortable: TAG_LIST_SORTS,
+      });
+
+      if (orderBy) {
+        const items = await db.tag.findMany({
+          where: { ...where, id: { in: currentVersions.map((v) => v.id) } },
+          include: {
+            seo: true,
+          },
+          orderBy,
+          take: input.pageSize,
+          skip: (input.page - 1) * input.pageSize,
+        });
+
+        return { items, total, totalPages };
+      }
+
+      const pageIds = sortByDefaultOrder(currentVersions)
+        .slice((input.page - 1) * input.pageSize, input.page * input.pageSize)
+        .map((tag) => tag.id);
 
       const tags = await db.tag.findMany({
-        where: { ...where, id: { in: currentIds } },
+        where: { id: { in: pageIds } },
         include: {
           seo: true,
         },
-        orderBy: buildListOrderBy<Prisma.TagOrderByWithRelationInput>({
-          sort: input.sort,
-          direction: input.direction,
-          sortable: TAG_LIST_SORTS,
-        }),
-        take: input.pageSize,
-        skip: (input.page - 1) * input.pageSize,
       });
+      const tagsById = new Map(tags.map((tag) => [tag.id, tag]));
+      const items = pageIds
+        .map((id) => tagsById.get(id))
+        .filter((tag): tag is (typeof tags)[number] => Boolean(tag));
 
-      return {
-        items: tags,
-        total: currentIds.length,
-        totalPages: Math.ceil(currentIds.length / input.pageSize),
-      };
+      return { items, total, totalPages };
     }),
   publish: protectedProcedure
     .input(z.object({ id: z.string(), rootId: z.string() }))

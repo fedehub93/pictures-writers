@@ -6,7 +6,10 @@ import type { Prisma } from "@/generated/prisma";
 import { ContentStatus, ProductType } from "@/generated/prisma";
 
 import { createProductSeo } from "@/lib/seo";
-import { buildListOrderBy } from "@/shared/lib/list-sorting";
+import {
+  buildListOrderBy,
+  sortByDefaultOrder,
+} from "@/shared/lib/list-sorting";
 import { db } from "@/shared/lib/db";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 import { revalidateContent } from "@/shared/lib/revalidate-content";
@@ -262,28 +265,52 @@ export const productsRouter = createTRPCRouter({
         where,
         distinct: ["rootId"],
         orderBy: [{ rootId: "asc" }, { version: "desc" }],
-        select: { id: true },
+        select: {
+          id: true,
+          title: true,
+          status: true,
+          publishedAt: true,
+        },
       });
 
-      const currentIds = currentVersions.map((product) => product.id);
+      const total = currentVersions.length;
+      const totalPages = Math.ceil(total / input.pageSize);
+      const orderBy = buildListOrderBy<Prisma.ProductOrderByWithRelationInput>({
+        sort: input.sort,
+        direction: input.direction,
+        sortable: PRODUCT_LIST_SORTS,
+      });
 
-      const items = await db.product.findMany({
-        where: { ...where, id: { in: currentIds } },
+      if (orderBy) {
+        const items = await db.product.findMany({
+          where: { ...where, id: { in: currentVersions.map((v) => v.id) } },
+          include: { imageCover: true, category: true },
+          orderBy,
+          take: input.pageSize,
+          skip: (input.page - 1) * input.pageSize,
+        });
+
+        return { items, total, totalPages };
+      }
+
+      const pageIds = sortByDefaultOrder(currentVersions)
+        .slice((input.page - 1) * input.pageSize, input.page * input.pageSize)
+        .map((product) => product.id);
+
+      const products = await db.product.findMany({
+        where: { id: { in: pageIds } },
         include: { imageCover: true, category: true },
-        orderBy: buildListOrderBy<Prisma.ProductOrderByWithRelationInput>({
-          sort: input.sort,
-          direction: input.direction,
-          sortable: PRODUCT_LIST_SORTS,
-        }),
-        take: input.pageSize,
-        skip: (input.page - 1) * input.pageSize,
       });
+      const productsById = new Map(
+        products.map((product) => [product.id, product]),
+      );
+      const items = pageIds
+        .map((id) => productsById.get(id))
+        .filter(
+          (product): product is (typeof products)[number] => Boolean(product),
+        );
 
-      return {
-        items,
-        total: currentIds.length,
-        totalPages: Math.ceil(currentIds.length / input.pageSize),
-      };
+      return { items, total, totalPages };
     }),
 
   getByRootIds: permissionProcedure(PERMISSIONS.PRODUCTS_READ)

@@ -7,7 +7,10 @@ import { TRPCError } from "@trpc/server";
 import { ContentStatus, type Prisma } from "@/generated/prisma";
 
 import { createCategorySeo } from "@/lib/seo";
-import { buildListOrderBy } from "@/shared/lib/list-sorting";
+import {
+  buildListOrderBy,
+  sortByDefaultOrder,
+} from "@/shared/lib/list-sorting";
 
 import {
   categoryInsertSchema,
@@ -252,30 +255,57 @@ export const categoriesRouter = createTRPCRouter({
         where,
         distinct: ["rootId"],
         orderBy: [{ rootId: "asc" }, { version: "desc" }],
-        select: { id: true },
+        select: {
+          id: true,
+          title: true,
+          status: true,
+          publishedAt: true,
+        },
       });
 
-      const currentIds = currentVersions.map((category) => category.id);
+      const total = currentVersions.length;
+      const totalPages = Math.ceil(total / input.pageSize);
+      const orderBy = buildListOrderBy<Prisma.CategoryOrderByWithRelationInput>({
+        sort: input.sort,
+        direction: input.direction,
+        sortable: CATEGORY_LIST_SORTS,
+      });
+
+      if (orderBy) {
+        const items = await db.category.findMany({
+          where: { ...where, id: { in: currentVersions.map((v) => v.id) } },
+          include: {
+            seo: true,
+          },
+          orderBy,
+          take: input.pageSize,
+          skip: (input.page - 1) * input.pageSize,
+        });
+
+        return { items, total, totalPages };
+      }
+
+      const pageIds = sortByDefaultOrder(currentVersions)
+        .slice((input.page - 1) * input.pageSize, input.page * input.pageSize)
+        .map((category) => category.id);
 
       const categories = await db.category.findMany({
-        where: { ...where, id: { in: currentIds } },
+        where: { id: { in: pageIds } },
         include: {
           seo: true,
         },
-        orderBy: buildListOrderBy<Prisma.CategoryOrderByWithRelationInput>({
-          sort: input.sort,
-          direction: input.direction,
-          sortable: CATEGORY_LIST_SORTS,
-        }),
-        take: input.pageSize,
-        skip: (input.page - 1) * input.pageSize,
       });
+      const categoriesById = new Map(
+        categories.map((category) => [category.id, category]),
+      );
+      const items = pageIds
+        .map((id) => categoriesById.get(id))
+        .filter(
+          (category): category is (typeof categories)[number] =>
+            Boolean(category),
+        );
 
-      return {
-        items: categories,
-        total: currentIds.length,
-        totalPages: Math.ceil(currentIds.length / input.pageSize),
-      };
+      return { items, total, totalPages };
     }),
   publish: protectedProcedure
     .input(z.object({ id: z.string(), rootId: z.string() }))

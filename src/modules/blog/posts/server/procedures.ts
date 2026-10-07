@@ -12,7 +12,10 @@ import {
 } from "@/generated/prisma";
 
 import { createPostSeo } from "@/lib/seo";
-import { buildListOrderBy } from "@/shared/lib/list-sorting";
+import {
+  buildListOrderBy,
+  sortByDefaultOrder,
+} from "@/shared/lib/list-sorting";
 import {
   createScheduledAction,
   createIdempotencyKey,
@@ -339,61 +342,83 @@ export const postsRouter = createTRPCRouter({
         status: input.status ? { in: [input.status] } : undefined,
       };
 
+      const select = {
+        id: true,
+        rootId: true,
+        title: true,
+        slug: true,
+        status: true,
+        publishedAt: true,
+        firstPublishedAt: true,
+        scheduledAt: true,
+        version: true,
+        imageCover: {
+          select: {
+            url: true,
+            altText: true,
+          },
+        },
+        postAuthors: {
+          select: {
+            user: {
+              select: {
+                email: true,
+                imageUrl: true,
+              },
+            },
+          },
+          orderBy: {
+            sort: "asc",
+          },
+        },
+      } satisfies Prisma.PostSelect;
+
       const currentVersions = await db.post.findMany({
         where,
         distinct: ["rootId"],
         orderBy: [{ rootId: "asc" }, { version: "desc" }],
-        select: { id: true },
-      });
-
-      const currentIds = currentVersions.map((post) => post.id);
-
-      const posts = await db.post.findMany({
         select: {
           id: true,
-          rootId: true,
           title: true,
-          slug: true,
           status: true,
           publishedAt: true,
-          firstPublishedAt: true,
-          scheduledAt: true,
-          version: true,
-          imageCover: {
-            select: {
-              url: true,
-              altText: true,
-            },
-          },
-          postAuthors: {
-            select: {
-              user: {
-                select: {
-                  email: true,
-                  imageUrl: true,
-                },
-              },
-            },
-            orderBy: {
-              sort: "asc",
-            },
-          },
         },
-        where: { ...where, id: { in: currentIds } },
-        orderBy: buildListOrderBy<Prisma.PostOrderByWithRelationInput>({
-          sort: input.sort,
-          direction: input.direction,
-          sortable: POST_LIST_SORTS,
-        }),
-        take: input.pageSize,
-        skip: (input.page - 1) * input.pageSize,
       });
 
-      return {
-        items: posts,
-        total: currentIds.length,
-        totalPages: Math.ceil(currentIds.length / input.pageSize),
-      };
+      const total = currentVersions.length;
+      const totalPages = Math.ceil(total / input.pageSize);
+      const orderBy = buildListOrderBy<Prisma.PostOrderByWithRelationInput>({
+        sort: input.sort,
+        direction: input.direction,
+        sortable: POST_LIST_SORTS,
+      });
+
+      if (orderBy) {
+        const posts = await db.post.findMany({
+          select,
+          where: { ...where, id: { in: currentVersions.map((v) => v.id) } },
+          orderBy,
+          take: input.pageSize,
+          skip: (input.page - 1) * input.pageSize,
+        });
+
+        return { items: posts, total, totalPages };
+      }
+
+      const pageIds = sortByDefaultOrder(currentVersions)
+        .slice((input.page - 1) * input.pageSize, input.page * input.pageSize)
+        .map((post) => post.id);
+
+      const posts = await db.post.findMany({
+        select,
+        where: { id: { in: pageIds } },
+      });
+      const postsById = new Map(posts.map((post) => [post.id, post]));
+      const items = pageIds
+        .map((id) => postsById.get(id))
+        .filter((post): post is (typeof posts)[number] => Boolean(post));
+
+      return { items, total, totalPages };
     }),
   getPaginated: protectedProcedure
     .input(
