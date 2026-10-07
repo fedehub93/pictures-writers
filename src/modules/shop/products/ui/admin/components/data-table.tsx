@@ -4,7 +4,6 @@ import * as React from "react";
 import {
   useTable,
   type ColumnDef,
-  type ColumnFiltersState,
   type RowData,
   type RowSelectionState,
   type SortingState,
@@ -19,9 +18,6 @@ import {
   TableRow,
 } from "@/shared/ui/table";
 
-import { Button } from "@/shared/ui/button";
-
-import { DataTableToolbar } from "./data-table-toolbar";
 import { features, type DataTableFeatures } from "./data-table-features";
 
 interface DataTableProps<TData extends RowData> {
@@ -34,9 +30,6 @@ export function DataTable<TData extends RowData>({
   data,
 }: DataTableProps<TData>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    [],
-  );
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
 
   const table = useTable({
@@ -44,18 +37,15 @@ export function DataTable<TData extends RowData>({
     data,
     columns,
     onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
     onRowSelectionChange: setRowSelection,
     state: {
       sorting,
-      columnFilters,
       rowSelection,
     },
   });
 
   return (
     <div>
-      <DataTableToolbar table={table} data={data} />
       <div className="overflow-hidden rounded-md border">
         <Table>
           <TableHeader>
@@ -79,7 +69,7 @@ export function DataTable<TData extends RowData>({
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="max-w-40">
+                    <TableCell key={cell.id}>
                       <table.FlexRender cell={cell} />
                     </TableCell>
                   ))}
@@ -97,24 +87,6 @@ export function DataTable<TData extends RowData>({
             )}
           </TableBody>
         </Table>
-      </div>
-      <div className="flex items-center justify-end gap-2 py-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
-          Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
-          Next
-        </Button>
       </div>
     </div>
   );

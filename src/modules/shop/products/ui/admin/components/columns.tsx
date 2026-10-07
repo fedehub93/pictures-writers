@@ -1,32 +1,27 @@
 "use client";
 
-import {
-  ContentStatus,
-  Media,
-  Product,
-  ProductCategory,
-  ProductType,
-} from "@/generated/prisma";
 import Image from "next/image";
 import { createColumnHelper } from "@tanstack/react-table";
+
+import { ContentStatus, ProductType } from "@/generated/prisma";
+
+import { formatPrice } from "@/lib/format";
 import { cn, getFirstCharUppercase } from "@/shared/lib/utils";
+import { formatDate } from "@/shared/lib/format";
 
 import { Badge } from "@/shared/ui/badge";
 import { Checkbox } from "@/shared/ui/checkbox";
 
-import { formatPrice } from "@/lib/format";
-
 import { DataTableColumnHeader } from "@/shared/components/data-table-column-header";
 
-import { ProductsAction } from "./actions";
+import type { ProductsGetMany } from "../../../types";
+
+import { ProductsActions } from "./actions";
 import { type DataTableFeatures } from "./data-table-features";
 
-type ProductRow = Product & {
-  imageCover: Media | null;
-  category: ProductCategory | null;
-};
+type Product = ProductsGetMany["items"][number];
 
-const columnHelper = createColumnHelper<DataTableFeatures, ProductRow>();
+const columnHelper = createColumnHelper<DataTableFeatures, Product>();
 
 export const columns = columnHelper.columns([
   columnHelper.display({
@@ -60,12 +55,14 @@ export const columns = columnHelper.columns([
     enableSorting: false,
     enableHiding: false,
   }),
-  columnHelper.accessor("imageCover", {
+  columnHelper.display({
+    id: "image",
     header: () => <span>Image</span>,
     enableSorting: false,
     cell: ({ row }) => {
       const imageCover = row.original.imageCover;
       if (!imageCover) return null;
+
       return (
         <div className="relative h-20 aspect-1/2">
           <Image
@@ -84,7 +81,6 @@ export const columns = columnHelper.columns([
       <DataTableColumnHeader column={column} title="Title" />
     ),
     sortFn: "text",
-    filterFn: "includesString",
   }),
   columnHelper.accessor("category", {
     header: ({ column }) => (
@@ -102,11 +98,7 @@ export const columns = columnHelper.columns([
       <DataTableColumnHeader column={column} title="Type" />
     ),
     sortFn: "text",
-    filterFn: "arrIncludes",
-    cell: ({ row }) => {
-      const type = row.original.type;
-      return <Badge>{type}</Badge>;
-    },
+    cell: ({ row }) => <Badge>{row.original.type}</Badge>,
   }),
   columnHelper.accessor("price", {
     header: ({ column }) => (
@@ -114,23 +106,31 @@ export const columns = columnHelper.columns([
     ),
     sortFn: "alphanumeric",
     cell: ({ row }) => {
-      const price = row.original.price ?? 0.0;
-      const type = row.original.type;
+      const price = row.original.price ?? 0;
 
-      if (type === ProductType.AFFILIATE) {
+      if (row.original.type === ProductType.AFFILIATE) {
         return <span className="font-bold">N/D</span>;
       }
       return <span className="font-bold">{formatPrice(price, true)}</span>;
     },
+  }),
+  columnHelper.accessor("createdAt", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Created At" />
+    ),
+    sortFn: "datetime",
+    cell: ({ row }) => (
+      <div>{formatDate({ date: row.original.createdAt })}</div>
+    ),
   }),
   columnHelper.accessor("status", {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />
     ),
     sortFn: "text",
-    filterFn: "arrIncludes",
     cell: ({ row }) => {
       const status = row.original.status;
+
       return (
         <Badge
           className={cn(
@@ -147,8 +147,11 @@ export const columns = columnHelper.columns([
   columnHelper.display({
     id: "actions",
     cell: ({ row }) => {
-      const { rootId, id } = row.original;
-      return <ProductsAction rootId={rootId!} id={id} />;
+      const { rootId, id, status } = row.original;
+
+      if (!rootId) return null;
+
+      return <ProductsActions rootId={rootId} id={id} status={status} />;
     },
     enableHiding: false,
   }),
