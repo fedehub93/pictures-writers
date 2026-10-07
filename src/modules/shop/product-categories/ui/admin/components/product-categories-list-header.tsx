@@ -81,7 +81,7 @@ export const ProductCategoriesListHeader = () => {
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => onOpen()}>
                 <PlusCircleIcon />
-                New category
+                New product category
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

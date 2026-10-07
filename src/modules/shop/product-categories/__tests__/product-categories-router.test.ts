@@ -164,10 +164,12 @@ describe("productCategoriesRouter", () => {
         rootId: created.rootId!,
         status: ContentStatus.PUBLISHED,
         isLatest: false,
+        seoId: randomUUID(),
       } as never);
 
       expect(updated.status).toBe(ContentStatus.DRAFT);
       expect(updated.isLatest).toBe(true);
+      expect(updated.seoId).toBe(created.seoId);
     });
 
     it("throws NOT_FOUND when the root does not exist", async () => {
@@ -257,13 +259,25 @@ describe("productCategoriesRouter", () => {
       );
     });
 
-    it("unpublishes a version back to CHANGED", async () => {
+    it("unpublishes a version back to CHANGED and keeps a single latest version", async () => {
       const created = await createCategory();
       await caller.publish({ id: created.id, rootId: created.rootId! });
+      const changed = await caller.update({
+        id: created.id,
+        rootId: created.rootId!,
+        title: "Draft ahead",
+      });
 
-      const unpublished = await caller.unpublish({ id: created.id });
+      const unpublished = await caller.unpublish({ id: changed.id });
 
       expect(unpublished.status).toBe(ContentStatus.CHANGED);
+
+      const rows = await db.productCategory.findMany({
+        where: { rootId: created.rootId! },
+      });
+      const latest = rows.filter((row) => row.isLatest);
+      expect(latest).toHaveLength(1);
+      expect(latest[0]!.id).toBe(changed.id);
     });
 
     it("throws NOT_FOUND when publishing an unknown category", async () => {

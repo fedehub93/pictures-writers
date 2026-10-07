@@ -4,6 +4,8 @@ import { inferInput } from "@trpc/tanstack-react-query";
 import { useTRPC } from "@/trpc/client";
 import { trpc } from "@/trpc/server";
 
+import { DEFAULT_PAGE, MAX_PAGE_SIZE } from "../constants";
+
 type Input = inferInput<typeof trpc.productCategories.getMany>;
 
 // Hook to fetch the paginated product category list using suspense
@@ -30,8 +32,8 @@ export const useProductCategoriesQuery = () => {
 
   const { data, isLoading, isError } = useQuery({
     ...trpc.productCategories.getMany.queryOptions({
-      page: 1,
-      pageSize: 100,
+      page: DEFAULT_PAGE,
+      pageSize: MAX_PAGE_SIZE,
       status: "PUBLISHED",
     }),
     enabled: true,

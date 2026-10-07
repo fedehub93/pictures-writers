@@ -61,7 +61,7 @@ export const ProductCategoriesActions = ({
           trpc.productCategories.getLastByRootId.queryFilter({ rootId }),
         );
         router.refresh();
-        toast.success("Category published successfully");
+        toast.success("Product category published successfully");
       },
       onError: (error) => {
         toast.error(error.message);
@@ -79,7 +79,7 @@ export const ProductCategoriesActions = ({
           trpc.productCategories.getLastByRootId.queryFilter({ rootId }),
         );
         router.refresh();
-        toast.success("Category unpublished successfully");
+        toast.success("Product category unpublished successfully");
       },
       onError: (error) => {
         toast.error(error.message);
@@ -94,7 +94,7 @@ export const ProductCategoriesActions = ({
           trpc.productCategories.getMany.queryFilter(filters),
         );
         router.refresh();
-        toast.success("Category deleted successfully");
+        toast.success("Product category deleted successfully");
       },
       onError: (error) => {
         toast.error(error.message);

@@ -11,7 +11,7 @@ export const ProductCategoryDialog = () => {
 
   return (
     <ResponsiveDialog
-      title="Create category"
+      title="Create product category"
       description="Create a product category, then fill in the details."
       open={isOpen}
       onOpenChange={onClose}

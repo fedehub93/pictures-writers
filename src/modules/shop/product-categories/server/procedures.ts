@@ -124,7 +124,6 @@ export const productCategoriesRouter = createTRPCRouter({
       await createNewVersion({
         id: category.id,
         rootId: input.rootId,
-        seoId: updatedSeo.id,
       });
 
       return updatedSeo;
@@ -290,11 +289,16 @@ export const productCategoriesRouter = createTRPCRouter({
   unpublish: permissionProcedure(PERMISSIONS.PRODUCT_CATEGORIES_PUBLISH)
     .input(z.object({ id: z.string().min(1) }))
     .mutation(async ({ input }) => {
-      await findCategoryOrThrow(input.id);
+      const category = await findCategoryOrThrow(input.id);
+
+      await db.productCategory.updateMany({
+        where: { rootId: category.rootId },
+        data: { isLatest: false },
+      });
 
       const unpublishedCategory = await db.productCategory.update({
         where: { id: input.id },
-        data: { status: ContentStatus.CHANGED },
+        data: { status: ContentStatus.CHANGED, isLatest: true },
       });
 
       revalidateContent("product");

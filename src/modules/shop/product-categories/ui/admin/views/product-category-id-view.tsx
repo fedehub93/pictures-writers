@@ -52,7 +52,7 @@ export const ProductCategoryIdView = ({
         queryClient.invalidateQueries(
           trpc.productCategories.getLastByRootId.queryFilter({ rootId }),
         );
-        toast.success("Category published successfully");
+        toast.success("Product category published successfully");
       },
       onError: (error) => {
         toast.error(error.message || "Failed to publish the category");
@@ -69,7 +69,7 @@ export const ProductCategoryIdView = ({
         queryClient.invalidateQueries(
           trpc.productCategories.getLastByRootId.queryFilter({ rootId }),
         );
-        toast.success("Category unpublished successfully");
+        toast.success("Product category unpublished successfully");
       },
       onError: (error) => {
         toast.error(error.message || "Failed to unpublish the category");
@@ -83,7 +83,7 @@ export const ProductCategoryIdView = ({
         queryClient.invalidateQueries(
           trpc.productCategories.getMany.queryFilter(filters),
         );
-        toast.success("Category deleted successfully");
+        toast.success("Product category deleted successfully");
         router.push("/admin/shop/categories");
       },
       onError: (error) => {
@@ -110,7 +110,9 @@ export const ProductCategoryIdView = ({
   return (
     <div className="size-full mx-auto p-6">
       <div className="flex items-center justify-between mb-2">
-        <h1 className="text-2xl font-medium tracking-tight">Category setup</h1>
+        <h1 className="text-2xl font-medium tracking-tight">
+          Product category setup
+        </h1>
         <div className="flex items-center gap-x-4">
           <span className="text-sm font-medium">
             Complete all fields {completionText}

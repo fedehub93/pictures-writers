@@ -15,7 +15,6 @@ export const productCategoryUpdateSchema = z.object({
   title: z.string().min(1, { error: "Title is required" }).optional(),
   slug: z.string().min(1, { error: "Slug is required" }).optional(),
   description: z.string().nullable().optional(),
-  seoId: z.string().nullable().optional(),
 });
 
 export type ProductCategoryUpdateValues = z.infer<
