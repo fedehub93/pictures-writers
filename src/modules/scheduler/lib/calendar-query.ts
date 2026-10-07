@@ -262,6 +262,7 @@ export async function getCalendarEvents({
 
   for (const post of manualPosts) {
     if (!post.rootId) continue;
+    if (!post.publishedAt) continue;
     if (seenRootIds.has(post.rootId)) continue;
 
     const key = `${post.rootId}:${post.publishedAt.getTime()}`;

@@ -84,8 +84,8 @@ describe("publishPost workflow", () => {
 
       expect(published.status).toBe(ContentStatus.PUBLISHED);
       expect(published.isLatest).toBe(true);
-      expect(published.publishedAt.toISOString()).toBe(now.toISOString());
-      expect(published.firstPublishedAt.toISOString()).toBe(now.toISOString());
+      expect(published.publishedAt?.toISOString()).toBe(now.toISOString());
+      expect(published.firstPublishedAt?.toISOString()).toBe(now.toISOString());
     });
 
     it("publishes a CHANGED post, demotes the previous published version and preserves firstPublishedAt", async () => {
@@ -124,10 +124,10 @@ describe("publishPost workflow", () => {
 
       expect(published.status).toBe(ContentStatus.PUBLISHED);
       expect(published.isLatest).toBe(true);
-      expect(published.publishedAt.toISOString()).toBe(
+      expect(published.publishedAt?.toISOString()).toBe(
         secondPublishAt.toISOString(),
       );
-      expect(published.firstPublishedAt.toISOString()).toBe(
+      expect(published.firstPublishedAt?.toISOString()).toBe(
         versionTwoFirstPublishedAt.toISOString(),
       );
 
@@ -160,11 +160,11 @@ describe("publishPost workflow", () => {
       });
 
       expect(secondResult.status).toBe(ContentStatus.PUBLISHED);
-      expect(secondResult.publishedAt.toISOString()).toBe(
-        firstResult.publishedAt.toISOString(),
+      expect(secondResult.publishedAt?.toISOString()).toBe(
+        firstResult.publishedAt?.toISOString(),
       );
-      expect(secondResult.firstPublishedAt.toISOString()).toBe(
-        firstResult.firstPublishedAt.toISOString(),
+      expect(secondResult.firstPublishedAt?.toISOString()).toBe(
+        firstResult.firstPublishedAt?.toISOString(),
       );
       expect(secondResult.isLatest).toBe(true);
     });
@@ -185,7 +185,7 @@ describe("publishPost workflow", () => {
         }),
       ]);
 
-      const publishedAts = results.map((r) => r.publishedAt.toISOString());
+      const publishedAts = results.map((r) => r.publishedAt?.toISOString());
       expect(new Set(publishedAts).size).toBe(1);
       expect(results.every((r) => r.status === ContentStatus.PUBLISHED)).toBe(
         true,
@@ -263,7 +263,7 @@ describe("publishPost workflow", () => {
       });
 
       expect(result.status).toBe(ContentStatus.PUBLISHED);
-      expect(result.publishedAt.toISOString()).toBe(
+      expect(result.publishedAt?.toISOString()).toBe(
         firstPublishAt.toISOString(),
       );
       expect(result.isLatest).toBe(false);
@@ -297,7 +297,7 @@ describe("publishPost workflow", () => {
       expect(republished.id).toBe(published.id);
       expect(republished.status).toBe(ContentStatus.PUBLISHED);
       expect(republished.isLatest).toBe(true);
-      expect(republished.publishedAt.toISOString()).toBe(now.toISOString());
+      expect(republished.publishedAt?.toISOString()).toBe(now.toISOString());
     });
   });
 
@@ -323,7 +323,7 @@ describe("publishPost workflow", () => {
 
       expect(published.status).toBe(ContentStatus.PUBLISHED);
       expect(published.scheduledAt).toBeNull();
-      expect(published.publishedAt.toISOString()).toBe(publishNow.toISOString());
+      expect(published.publishedAt?.toISOString()).toBe(publishNow.toISOString());
     });
 
     it("rejects publishing a scheduled post whose time is still in the future", async () => {

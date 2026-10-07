@@ -120,7 +120,7 @@ export async function buildLlmsFullTxt() {
   const postLines = posts
     .map(
       (post) =>
-        `- [${post.title}](${siteUrl}/${post.slug}/) — aggiornato ${formatDate(post.publishedAt)}${post.description ? `: ${post.description}` : ""}`,
+        `- [${post.title}](${siteUrl}/${post.slug}/) — aggiornato ${post.publishedAt ? formatDate(post.publishedAt) : "—"}${post.description ? `: ${post.description}` : ""}`,
     )
     .join("\n");
 
