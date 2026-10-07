@@ -1,67 +1,37 @@
-import { redirect } from "next/navigation";
-import { ProductType, UserRole } from "@/generated/prisma";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 
-import { db } from "@/lib/db";
-import { requireAdminAuth } from "@/lib/auth-utils";
+import { HydrateClient } from "@/trpc/server";
 
-import { API_ADMIN_PRODUCTS } from "@/constants/api";
-import { ProductForm } from "./_components/product-form";
+import { requirePermission } from "@/shared/lib/auth-utils";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 
-const ProductIdPage = async (props: {
+import {
+  ProductIdView,
+  ProductIdViewError,
+  ProductIdViewLoading,
+} from "@/modules/shop/products";
+import { prefetchProductByRootId } from "@/modules/shop/products/server/prefetch";
+
+const ProductIdPage = async ({
+  params,
+}: {
   params: Promise<{ rootId: string }>;
 }) => {
-  await requireAdminAuth();
+  await requirePermission(PERMISSIONS.PRODUCTS_READ);
 
-  const params = await props.params;
+  const { rootId } = await params;
 
-  const product = await db.product.findFirst({
-    where: {
-      rootId: params.rootId,
-    },
-    include: {
-      user: true,
-      seo: true,
-      gallery: {
-        select: {
-          mediaId: true,
-          sort: true,
-          media: true,
-        },
-      },
-      faqs: {
-        select: {
-          id: true,
-          question: true,
-          answer: true,
-          sort: true,
-        },
-      },
-      imageCover: true,
-    },
-    orderBy: { createdAt: "desc" },
-  });
-
-  if (!product || !product.rootId) {
-    redirect("/admin/shop/products");
-  }
-
-  let authors = undefined;
-  if (product.type === ProductType.EBOOK) {
-    authors = await db.user.findMany({
-      where: {
-        role: {
-          in: [UserRole.ADMIN, UserRole.EDITOR],
-        },
-      },
-    });
-  }
+  prefetchProductByRootId(rootId);
 
   return (
-    <ProductForm
-      initialData={product}
-      apiUrl={`${API_ADMIN_PRODUCTS}/${product.rootId}`}
-      authors={authors}
-    />
+    <HydrateClient>
+      <Suspense fallback={<ProductIdViewLoading />}>
+        <ErrorBoundary fallback={<ProductIdViewError />}>
+          <ProductIdView rootId={rootId} />
+        </ErrorBoundary>
+      </Suspense>
+    </HydrateClient>
   );
 };
 

@@ -21,7 +21,7 @@ vi.mock("@/trpc/init", async () => {
 
 import { createCallerFactory } from "@/trpc/init";
 
-import { ContentStatus, ProductType } from "@/generated/prisma";
+import { ContentStatus, ProductAcquisitionMode, ProductType } from "@/generated/prisma";
 import { EbookType } from "@/types";
 import { db } from "@/shared/lib/db";
 import {
@@ -219,6 +219,53 @@ describe("productsRouter", () => {
       expect(newVersion.gallery[0]!.mediaId).toBe(media.id);
       expect(newVersion.faqs).toHaveLength(1);
       expect(newVersion.faqs[0]!.question).toBe("Is it good?");
+    });
+
+    it("persists gallery, FAQs and core fields together in a single update", async () => {
+      const created = await createProduct();
+      const media = await createMedia();
+
+      const category = await db.productCategory.create({
+        data: {
+          title: `Atomic category ${randomUUID()}`,
+          slug: `atomic-category-${randomUUID()}`,
+          version: 1,
+        },
+      });
+      await db.productCategory.update({
+        where: { id: category.id },
+        data: { rootId: category.id },
+      });
+
+      const updated = await caller.update({
+        id: created.id,
+        rootId: created.rootId!,
+        title: "Atomic title",
+        slug: "atomic-title",
+        categoryId: category.id,
+        acquisitionMode: ProductAcquisitionMode.FREE,
+        price: 12,
+        isFree: false,
+        gallery: [{ mediaId: media.id, sort: 1 }],
+        faqs: [{ question: "Atomic question?", answer: "Atomic answer", sort: 1 }],
+      });
+
+      const loaded = await db.product.findUniqueOrThrow({
+        where: { id: updated.id },
+        include: { gallery: true, faqs: true },
+      });
+
+      expect(loaded.title).toBe("Atomic title");
+      expect(loaded.slug).toBe("atomic-title");
+      expect(loaded.categoryId).toBe(category.id);
+      expect(loaded.acquisitionMode).toBe(ProductAcquisitionMode.FREE);
+      expect(loaded.price).toBe(12);
+      expect(loaded.gallery).toHaveLength(1);
+      expect(loaded.gallery[0]!.mediaId).toBe(media.id);
+      expect(loaded.faqs).toHaveLength(1);
+      expect(loaded.faqs[0]!.question).toBe("Atomic question?");
+
+      await db.productCategory.deleteMany({ where: { rootId: category.id } });
     });
 
     it("does not dereference missing inputs when carrying over a version", async () => {
