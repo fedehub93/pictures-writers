@@ -191,10 +191,10 @@ model User {
 
   pageVersions PageVersion[]
 
-  posts       Post[]
-  categories  Category[]
-  tags        Tag[]
-  postAuthors PostAuthor[]
+  postVersions PostVersion[]
+  categories   Category[]
+  tags         Tag[]
+  postAuthors  PostAuthor[]
 
   notifications Notification[]
   products      Product[]
@@ -306,7 +306,7 @@ model Media {
   type    MediaType @default(FILE)
   altText String?
 
-  post         Post[]
+  postVersions PostVersion[]
   seo          Seo[]
   product      Product[]
   impression   Impression?
@@ -352,8 +352,9 @@ model Seo {
   settings Settings[]
 
   pageVersions PageVersion[]
-  posts       Post[]
-  categories  Category[]
+
+  postVersions PostVersion[]
+  categories   Category[]
 
   tags Tag[]
 
@@ -428,56 +429,80 @@ model PageVersion {
   @@index([status, scheduledAt])
 }
 
-model Post {
+/// Logical post identity. Owns the stable slug, the first publication date,
+/// and the two special version pointers (current draft + live version).
+/// See CONTEXT.md "Post".
+model PostRoot {
+  id   String @id @default(uuid())
+  slug String @unique
+
+  firstPublishedAt DateTime?
+
+  currentVersion   PostVersion? @relation("PostRootCurrentVersion", fields: [currentVersionId], references: [id], onDelete: SetNull)
+  currentVersionId String?      @unique
+
+  liveVersion   PostVersion? @relation("PostRootLiveVersion", fields: [liveVersionId], references: [id], onDelete: SetNull)
+  liveVersionId String?      @unique
+
+  versions PostVersion[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// One revision of a Post. Owns the mutable content and every editorial
+/// relation (authors, taxonomy links, FAQs, SEO), so they draft and publish
+/// atomically with the content.
+model PostVersion {
   id String @id @default(uuid())
 
   title       String
-  slug        String
   description String?
 
   version Int
 
-  status   ContentStatus @default(DRAFT)
-  isLatest Boolean       @default(true)
+  status ContentStatus @default(DRAFT)
 
   bodyData Json? @db.JsonB
 
   /// [TipTapBodyData]
   tiptapBodyData Json? @db.JsonB
 
-  rootId       String?
-  root         Post?   @relation("RootChildren", fields: [rootId], references: [id])
-  rootChildren Post[]  @relation("RootChildren")
+  root   PostRoot @relation(fields: [rootId], references: [id], onDelete: Cascade)
+  rootId String
 
-  imageCover   Media?  @relation(fields: [imageCoverId], references: [id])
+  imageCover   Media?  @relation(fields: [imageCoverId], references: [id], onDelete: SetNull)
   imageCoverId String?
 
-  postCategories PostCategory[]
-  tags           Tag[]
-  postAuthors    PostAuthor[]
+  categories PostCategory[]
+  tags       Tag[]
+  authors    PostAuthor[]
 
   faqs Faq[]
 
-  seo   Seo?    @relation(fields: [seoId], references: [id])
+  seo   Seo?    @relation(fields: [seoId], references: [id], onDelete: SetNull)
   seoId String?
 
-  user   User?   @relation(fields: [userId], references: [id])
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
   userId String?
 
   scheduledAt         DateTime?
   preSchedulingStatus ContentStatus?
 
-  firstPublishedAt DateTime?
-  publishedAt      DateTime?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
+  currentForRoot PostRoot? @relation("PostRootCurrentVersion")
+  liveForRoot    PostRoot? @relation("PostRootLiveVersion")
+
+  @@unique([rootId, version])
   @@index([rootId])
   @@index([status, scheduledAt])
 }
 
 model PostAuthor {
-  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  post   PostVersion @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId String
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -508,7 +533,7 @@ model Category {
 }
 
 model PostCategory {
-  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  post   PostVersion @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId String
 
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
@@ -523,10 +548,10 @@ model Tag {
   id String @id @default(uuid())
 
   title       String
-  slug        String @unique
+  slug        String  @unique
   description String?
 
-  posts Post[]
+  postVersions PostVersion[]
 
   seo   Seo?    @relation(fields: [seoId], references: [id])
   seoId String?
@@ -846,7 +871,7 @@ model Faq {
   product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String?
 
-  post   Post?   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  post   PostVersion? @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId String?
 
   createdAt DateTime @default(now())
