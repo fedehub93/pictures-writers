@@ -4,75 +4,70 @@ import { ContentStatus } from "@/generated/prisma";
 
 import { hydratePuckForms } from "@/puck/utils/hydrate-puck-forms";
 
+const DRAFT_STATUSES = [ContentStatus.DRAFT, ContentStatus.CHANGED];
+
 export const getPublishedDraftPagesBuilding = async () => {
-  const pages = await db.page.findMany({
+  const roots = await db.pageRoot.findMany({
     where: {
-      OR: [
-        {
-          isLatest: true,
-          status: ContentStatus.DRAFT,
-        },
-        {
-          isLatest: false,
-          status: ContentStatus.CHANGED,
-        },
-      ],
+      currentVersion: { is: { status: { in: DRAFT_STATUSES } } },
     },
     select: {
       id: true,
-      rootId: true,
       slug: true,
+      currentVersion: {
+        select: {
+          id: true,
+        },
+      },
     },
     orderBy: {
       firstPublishedAt: "desc",
     },
   });
 
-  return pages;
+  return roots.map((root) => ({
+    id: root.currentVersion!.id,
+    rootId: root.id,
+    slug: root.slug,
+  }));
 };
 
 export const getDraftPageBySlug = async (slug: string) => {
-  const page = await db.page.findFirst({
+  const root = await db.pageRoot.findFirst({
     where: {
       slug,
-      OR: [
-        {
-          isLatest: true,
-          status: ContentStatus.DRAFT,
-        },
-        {
-          isLatest: false,
-          status: ContentStatus.CHANGED,
-        },
-      ],
+      currentVersion: { is: { status: { in: DRAFT_STATUSES } } },
     },
-    select: {
-      id: true,
-      rootId: true,
-      title: true,
-      slug: true,
-      puckData: true,
-      publishedAt: true,
-      firstPublishedAt: true,
-      updatedAt: true,
-      seo: {
-        select: {
-          title: true,
-          description: true,
+    include: {
+      currentVersion: {
+        include: {
+          seo: {
+            select: {
+              title: true,
+              description: true,
+            },
+          },
         },
       },
     },
-
-    orderBy: {
-      publishedAt: "desc",
-    },
   });
 
-  if (!page) return null;
+  if (!root || !root.currentVersion) return null;
+
+  const version = root.currentVersion;
 
   const hydratedPage = {
-    ...page,
-    puckData: page.puckData ? await hydratePuckForms(page.puckData) : null,
+    id: version.id,
+    rootId: root.id,
+    title: version.title,
+    slug: root.slug,
+    puckData: version.puckData
+      ? await hydratePuckForms(version.puckData)
+      : null,
+    publishedAt: version.publishedAt,
+    firstPublishedAt: root.firstPublishedAt,
+    updatedAt: version.updatedAt,
+    seo: version.seo,
   };
 
   return hydratedPage;

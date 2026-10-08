@@ -189,7 +189,7 @@ model User {
   invitationsCreated Invitation[]             @relation("InvitationCreator")
   activitiesAsActor  AdministrativeActivity[] @relation("ActivityActor")
 
-  pages Page[]
+  pageVersions PageVersion[]
 
   posts       Post[]
   categories  Category[]
@@ -306,12 +306,13 @@ model Media {
   type    MediaType @default(FILE)
   altText String?
 
-  post       Post[]
-  seo        Seo[]
-  product    Product[]
-  impression Impression?
-  products   ProductGallery[]
-  user       User[]
+  post         Post[]
+  seo          Seo[]
+  product      Product[]
+  impression   Impression?
+  products     ProductGallery[]
+  user         User[]
+  pageVersions PageVersion[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -350,9 +351,9 @@ model Seo {
 
   settings Settings[]
 
-  pages      Page[]
-  posts      Post[]
-  categories Category[]
+  pageVersions PageVersion[]
+  posts       Post[]
+  categories  Category[]
 
   tags Tag[]
 
@@ -367,38 +368,64 @@ enum PageEditorType {
   PUCK
 }
 
-model Page {
+/// Logical page identity. Owns the stable slug and the two special version
+/// pointers (current draft + live version). See CONTEXT.md "Current version".
+model PageRoot {
+  id   String @id @default(uuid())
+  slug String @unique
+
+  firstPublishedAt DateTime?
+
+  currentVersion   PageVersion? @relation("PageRootCurrentVersion", fields: [currentVersionId], references: [id], onDelete: SetNull)
+  currentVersionId String?      @unique
+
+  liveVersion   PageVersion? @relation("PageRootLiveVersion", fields: [liveVersionId], references: [id], onDelete: SetNull)
+  liveVersionId String?      @unique
+
+  versions PageVersion[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// One revision of a Page. Owns the mutable content and a sequential version
+/// number scoped to its root.
+model PageVersion {
   id String @id @default(uuid())
 
   title String
-  slug  String
 
   version Int
 
-  status   ContentStatus @default(DRAFT)
-  isLatest Boolean       @default(true)
-
+  status     ContentStatus  @default(DRAFT)
   editorType PageEditorType @default(PUCK)
   /// [PuckData]
   puckData   Json?          @db.JsonB
 
-  rootId       String?
-  root         Page?   @relation("RootChildren", fields: [rootId], references: [id])
-  rootChildren Page[]  @relation("RootChildren")
+  root   PageRoot @relation(fields: [rootId], references: [id], onDelete: Cascade)
+  rootId String
 
-  seo   Seo?    @relation(fields: [seoId], references: [id])
+  seo   Seo?    @relation(fields: [seoId], references: [id], onDelete: SetNull)
   seoId String?
 
-  user   User?   @relation(fields: [userId], references: [id])
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
   userId String?
 
-  firstPublishedAt DateTime @default(now())
-  publishedAt      DateTime @default(now())
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  imageCover   Media?  @relation(fields: [imageCoverId], references: [id], onDelete: SetNull)
+  imageCoverId String?
 
+  publishedAt DateTime?
+  scheduledAt DateTime?
+
+  currentForRoot PageRoot? @relation("PageRootCurrentVersion")
+  liveForRoot    PageRoot? @relation("PageRootLiveVersion")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([rootId, version])
   @@index([rootId])
-  @@index([slug])
+  @@index([status, scheduledAt])
 }
 
 model Post {

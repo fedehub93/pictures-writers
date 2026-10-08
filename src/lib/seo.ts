@@ -1,6 +1,5 @@
 import {
   Category,
-  Page,
   Post,
   Product,
   ProductCategory,
@@ -17,31 +16,6 @@ const updateSeoRootId = async (seoId: string, rootId: string) => {
   });
 
   return updatedPostSeo;
-};
-
-export const createPageSeo = async (page: Page) => {
-  const pageSeo = await db.seo.create({
-    data: {
-      title: page.title,
-      version: 1,
-      description: "",
-      ogTwitterTitle: page.title,
-      ogTwitterDescription: "",
-      ogTwitterType: "card",
-      ogTwitterLocale: "it_IT",
-      // ogTwitterImageId: post.imageCoverId,
-      pages: {
-        connect: { id: page.id },
-      },
-    },
-  });
-
-  if (!pageSeo) {
-    return null;
-  }
-
-  const updatedPageSeo = await updateSeoRootId(pageSeo.id, pageSeo.id);
-  return updatedPageSeo;
 };
 
 export const createPostSeo = async (post: Post) => {

@@ -116,14 +116,14 @@ export const ProductIdView = ({ rootId }: ProductIdViewProps) => {
 
   return (
     <div className="size-full mx-auto p-6">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-x-3">
+      <div className="flex items-center justify-between lg:mb-2 flex-col lg:flex-row gap-y-4">
+        <div className="w-full flex items-center justify-between lg:justify-start gap-x-3">
           <h1 className="text-2xl font-medium tracking-tight">
             Product setup
           </h1>
           <Badge>{product.type}</Badge>
         </div>
-        <div className="flex items-center gap-x-4">
+        <div className="w-full flex items-center justify-between lg:justify-end gap-x-4">
           <span className="text-sm font-medium">
             Complete all fields {completionText}
           </span>

@@ -50,6 +50,18 @@ _Avoid_: Published at when referring to the latest publication.
 The most recent version of a content item, whether or not it is public. It is the version an editor works on and the one that represents the item in backoffice lists. Distinct from the live version, which is the published one.
 _Avoid_: Latest version when referring to the live version.
 
+**Live version**:
+The version of a content item currently visible on the public site. A page's live version is the one referenced by its root's `liveVersionId`; unpublishing clears it. Distinct from the current version, which may be an unpublished draft.
+_Avoid_: Latest version; published version when it could be confused with the current version.
+
+**Root**:
+The stable, logical identity of a content item, separate from its revisions. A root owns the stable slug, the first publication date, and all external relationships, and points at exactly one current version and (once published) one live version. The Page pilot implements it as `PageRoot`.
+_Avoid_: Entity, parent, item when the identity/revision distinction matters.
+
+**Version**:
+One revision of a root: a snapshot of the mutable content (title, Puck data, status, publication dates, SEO, cover) with a sequential number scoped to the root. The Page pilot implements it as `PageVersion`. Editing a non-live version updates it in place; editing a live version forks a new version so the live site is unaffected until the new version is published.
+_Avoid_: Revision when referring to the Prisma row; draft when the version may be published.
+
 ## Public rendering
 
 **On-demand revalidation**:

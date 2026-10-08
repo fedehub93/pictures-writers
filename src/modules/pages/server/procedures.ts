@@ -1,15 +1,14 @@
 import z from "zod";
 import { db } from "@/shared/lib/db";
+import { sortByDefaultOrder } from "@/shared/lib/list-sorting";
 import { revalidateContent } from "@/shared/lib/revalidate-content";
 
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 
-import { ContentStatus } from "@/generated/prisma";
+import { ContentStatus, Prisma } from "@/generated/prisma";
 
 import { hydratePuckForms } from "@/puck/utils/hydrate-puck-forms";
-
-import { createPageSeo } from "@/lib/seo";
 
 import {
   pageInsertSchema,
@@ -20,66 +19,32 @@ import {
 import {
   DEFAULT_PAGE,
   DEFAULT_PAGE_SIZE,
-  INITIAL_PUCK_DATA,
   MAX_PAGE_SIZE,
   MIN_PAGE_SIZE,
 } from "../constants";
 
-import { createNewVersion } from "../lib/create-new-version";
+import { createPage } from "./create-page";
+import { savePageVersion } from "./save-page";
+import { publishPageVersion, unpublishPageVersion } from "./publish-page";
+import { updatePageVersionSeo } from "./update-seo";
+import { deletePageRoot } from "./delete-page";
+import { toPageTrpcError } from "./errors";
 
 export const pagesRouter = createTRPCRouter({
   create: protectedProcedure
     .input(pageInsertSchema)
     .mutation(async ({ input, ctx }) => {
-      const page = await db.page.create({
-        data: {
-          ...input,
-          version: 1,
-          status: ContentStatus.DRAFT,
-          puckData: INITIAL_PUCK_DATA,
-          userId: ctx.auth.id,
-        },
-      });
-
-      if (!page) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Missing required parameters!",
-        });
-      }
-
-      const updatedPage = await db.page.update({
-        where: { id: page.id },
-        data: { rootId: page.id },
-      });
-
-      await createPageSeo(updatedPage);
-
-      return page;
+      return await createPage({ ...input, userId: ctx.auth.id });
     }),
 
   update: protectedProcedure
     .input(pageUpdateSchema)
     .mutation(async ({ input }) => {
       try {
-        const page = await createNewVersion(input);
-
-        return page;
+        return await savePageVersion(input);
       } catch (error) {
-        if (error instanceof TRPCError) {
-          throw error;
-        }
-
-        if (error instanceof Error && error.message === "PAGE_NOT_FOUND") {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "La pagina richiesta non esiste.",
-          });
-        }
-
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Errore durante il salvataggio della pagina.",
+        throw toPageTrpcError(error, {
+          notFoundMessage: "La pagina richiesta non esiste.",
         });
       }
     }),
@@ -88,47 +53,11 @@ export const pagesRouter = createTRPCRouter({
     .input(pageUpdateSeoSchema)
     .mutation(async ({ input }) => {
       try {
-        const page = await db.page.findUnique({
-          where: {
-            id: input.id,
-            rootId: input.rootId,
-          },
-        });
-
-        if (!page || !page.rootId || !page.seoId) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Page not found",
-          });
-        }
-
-        const updatedSeo = await db.seo.update({
-          where: { id: page.seoId },
-          data: { ...input, id: undefined, rootId: undefined },
-        });
-
-        await createNewVersion({
-          id: page.id,
-          rootId: page.rootId,
-          seoId: updatedSeo.id,
-        });
-
-        return updatedSeo;
+        return await updatePageVersionSeo(input);
       } catch (error) {
-        if (error instanceof TRPCError) {
-          throw error;
-        }
-
-        if (error instanceof Error && error.message === "PAGE_NOT_FOUND") {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "La pagina richiesta non esiste.",
-          });
-        }
-
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Errore durante il salvataggio della pagina.",
+        throw toPageTrpcError(error, {
+          notFoundMessage: "La pagina richiesta non esiste.",
+          internalMessage: "Errore durante il salvataggio della pagina.",
         });
       }
     }),
@@ -136,99 +65,118 @@ export const pagesRouter = createTRPCRouter({
   remove: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
-      const page = await db.page.findUnique({
-        where: {
-          id: input.id,
-        },
-      });
+      try {
+        const deleted = await deletePageRoot({ versionId: input.id });
 
-      if (!page) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Page not found",
+        revalidateContent("page", deleted.slug);
+
+        return deleted;
+      } catch (error) {
+        throw toPageTrpcError(error, {
+          notFoundMessage: "La pagina richiesta non esiste.",
+          internalMessage: "Errore durante l'eliminazione della pagina.",
         });
       }
-
-      const deletedPage = await db.page.deleteMany({
-        where: { rootId: page.rootId },
-      });
-
-      if (page.seoId) {
-        await db.seo.delete({
-          where: { id: page.seoId },
-        });
-      }
-
-      return deletedPage;
     }),
   getOne: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ input }) => {
-      const page = await db.page.findUnique({
+      const version = await db.pageVersion.findUnique({
         where: {
           id: input.id,
         },
-      });
-
-      if (!page) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Page not found",
-        });
-      }
-
-      const hydratedPage = {
-        ...page,
-        puckData: page.puckData ? await hydratePuckForms(page.puckData) : null,
-      };
-
-      return hydratedPage;
-    }),
-  getLastByRootId: protectedProcedure
-    .input(z.object({ rootId: z.string() }))
-    .query(async ({ input }) => {
-      const page = await db.page.findFirst({
-        where: {
-          rootId: input.rootId,
-        },
-        orderBy: {
-          publishedAt: "desc",
-        },
-        select: {
-          id: true,
-          rootId: true,
-          title: true,
-          slug: true,
-          puckData: true,
-          status: true,
-          seo: {
+        include: {
+          seo: true,
+          root: {
             select: {
-              id: true,
-              rootId: true,
-              title: true,
-              description: true,
-              ogTwitterTitle: true,
-              ogTwitterDescription: true,
-              noIndex: true,
-              noFollow: true,
+              slug: true,
             },
           },
         },
       });
 
-      if (!page) {
+      if (!version) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Page not found",
         });
       }
 
-      const hydratedPage = {
-        ...page,
-        puckData: page.puckData ? await hydratePuckForms(page.puckData) : null,
-      };
+      const { root, ...rest } = version;
 
-      return hydratedPage;
+      return {
+        ...rest,
+        slug: root.slug,
+        puckData: rest.puckData
+          ? await hydratePuckForms(rest.puckData)
+          : null,
+      };
+    }),
+  getLastByRootId: protectedProcedure
+    .input(z.object({ rootId: z.string() }))
+    .query(async ({ input }) => {
+      const root = await db.pageRoot.findUnique({
+        where: {
+          id: input.rootId,
+        },
+        include: {
+          currentVersion: {
+            include: {
+              seo: {
+                select: {
+                  id: true,
+                  rootId: true,
+                  title: true,
+                  description: true,
+                  ogTwitterTitle: true,
+                  ogTwitterDescription: true,
+                  noIndex: true,
+                  noFollow: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!root || !root.currentVersion) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Page not found",
+        });
+      }
+
+      const version = root.currentVersion;
+
+      return {
+        id: version.id,
+        rootId: root.id,
+        title: version.title,
+        slug: root.slug,
+        puckData: version.puckData
+          ? await hydratePuckForms(version.puckData)
+          : null,
+        status: version.status,
+        seo: version.seo,
+      };
+    }),
+  getVersions: protectedProcedure
+    .input(z.object({ rootId: z.string() }))
+    .query(async ({ input }) => {
+      return await db.pageVersion.findMany({
+        where: { rootId: input.rootId },
+        orderBy: { version: "desc" },
+        select: {
+          id: true,
+          version: true,
+          title: true,
+          status: true,
+          publishedAt: true,
+          scheduledAt: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
     }),
   getMany: protectedProcedure
     .input(
@@ -250,124 +198,97 @@ export const pagesRouter = createTRPCRouter({
       }),
     )
     .query(async ({ input }) => {
-      const pages = await db.page.findMany({
-        where: {
-          title: input.search
-            ? { contains: input.search, mode: "insensitive" }
-            : undefined,
-          status: input.status ? { in: [input.status] } : undefined,
+      const where: Prisma.PageRootWhereInput = {
+        currentVersion: {
+          is: {
+            title: input.search
+              ? { contains: input.search, mode: "insensitive" }
+              : undefined,
+            status: input.status ? { in: [input.status] } : undefined,
+          },
         },
-        distinct: ["rootId"],
+      };
+
+      const roots = await db.pageRoot.findMany({
+        where,
         include: {
-          seo: true,
+          currentVersion: {
+            include: {
+              seo: true,
+            },
+          },
         },
-        orderBy: {
-          publishedAt: "desc",
-        },
-        take: input.pageSize,
-        skip: (input.page - 1) * input.pageSize,
       });
 
-      const hydratedPages = await Promise.all(
-        pages.map(async (p) => ({
-          ...p,
-          puckData: p.puckData ? await hydratePuckForms(p.puckData) : null,
+      const rows = roots
+        .map((root) => {
+          const version = root.currentVersion;
+          if (!version) return null;
+
+          return {
+            id: version.id,
+            title: version.title,
+            status: version.status,
+            publishedAt: version.publishedAt,
+            version,
+            root,
+          };
+        })
+        .filter((row): row is NonNullable<typeof row> => row !== null);
+
+      const total = rows.length;
+      const totalPages = Math.ceil(total / input.pageSize);
+
+      const pageRows = sortByDefaultOrder(rows).slice(
+        (input.page - 1) * input.pageSize,
+        input.page * input.pageSize,
+      );
+
+      const items = await Promise.all(
+        pageRows.map(async ({ version, root }) => ({
+          ...version,
+          slug: root.slug,
+          firstPublishedAt: root.firstPublishedAt,
+          puckData: version.puckData
+            ? await hydratePuckForms(version.puckData)
+            : null,
         })),
       );
 
-      const distinctPages = await db.page.groupBy({
-        by: ["rootId"],
-        where: {
-          title: input.search
-            ? { contains: input.search, mode: "insensitive" }
-            : undefined,
-          status: input.status ? { in: [input.status] } : undefined,
-        },
-      });
-
-      const totalPages = Math.ceil(distinctPages.length / input.pageSize);
-
       return {
-        items: hydratedPages,
-        total: distinctPages.length,
+        items,
+        total,
         totalPages,
       };
     }),
   publish: protectedProcedure
     .input(z.object({ id: z.string(), rootId: z.string() }))
     .mutation(async ({ input }) => {
-      const page = await db.page.findFirst({
-        where: {
-          id: input.id,
-          rootId: input.rootId,
-        },
-        select: {
-          title: true,
-          version: true,
-        },
-      });
+      try {
+        const publishedPage = await publishPageVersion(input);
 
-      if (!page) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Page not found",
+        revalidateContent("page", publishedPage.slug);
+
+        return publishedPage;
+      } catch (error) {
+        throw toPageTrpcError(error, {
+          internalMessage: "Failed to publish the page",
         });
       }
-
-      if (!page.title) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Missing required fields",
-        });
-      }
-
-      await db.page.updateMany({
-        where: { rootId: input.rootId },
-        data: { isLatest: false },
-      });
-
-      const publishedPage = await db.page.update({
-        where: {
-          id: input.id,
-        },
-        data: {
-          status: ContentStatus.PUBLISHED,
-          isLatest: true,
-          firstPublishedAt: page.version === 1 ? new Date() : undefined,
-          publishedAt: new Date(),
-        },
-        include: {
-          seo: true,
-        },
-      });
-
-      revalidateContent("page", publishedPage.slug);
-
-      return publishedPage;
     }),
   unpublish: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
-      const page = await db.page.findUnique({
-        where: {
-          id: input.id,
-        },
-      });
+      try {
+        const unpublishedPage = await unpublishPageVersion(input);
 
-      if (!page) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Page not found",
+        revalidateContent("page", unpublishedPage.slug);
+
+        return unpublishedPage;
+      } catch (error) {
+        throw toPageTrpcError(error, {
+          internalMessage: "Failed to unpublish the page",
         });
       }
-
-      const unpublishedPage = await db.page.update({
-        where: { id: input.id },
-        data: { status: ContentStatus.CHANGED },
-      });
-
-      revalidateContent("page", unpublishedPage.slug);
-
-      return unpublishedPage;
     }),
 });
