@@ -5,8 +5,12 @@ Glossary for the blog post editing context, including editorial content and desk
 ## Post editing
 
 **Post**:
-An editorial document managed in the blog CMS, including its content, metadata, SEO settings, and publishing state.
-_Avoid_: Article when referring to the CMS entity.
+The logical identity of an editorial document in the blog CMS — equivalent to its root. It owns the stable slug, the first publication date, and the inbound references to it (ads, scheduling, widgets). Its content, metadata, authors, taxonomy links, FAQs, and SEO settings live on its versions.
+_Avoid_: Article when referring to the CMS entity; using Post for a single revision.
+
+**Post version**:
+One revision of a Post's editable content (title, description, body, cover, authors, taxonomy links, SEO), with a status and a sequential number scoped to the Post. Editing the live version forks a new one; the live site changes only on publish.
+_Avoid_: Draft when the version may be published; Post when referring to the revision.
 
 **Scheduled publication**:
 A publication instruction that makes the latest saved eligible version of a Post public at a future date and time chosen by the editor.
@@ -55,17 +59,17 @@ The version of a content item currently visible on the public site. A page's liv
 _Avoid_: Latest version; published version when it could be confused with the current version.
 
 **Root**:
-The stable, logical identity of a content item, separate from its revisions. A root owns the stable slug, the first publication date, and all external relationships, and points at exactly one current version and (once published) one live version. The Page pilot implements it as `PageRoot`.
+The stable, logical identity of a content item, separate from its revisions. A root owns the stable slug, the first publication date, and the inbound references that must survive across revisions (ads, scheduling, widgets); it points at exactly one current version and, once published, one live version. Editorial relationships — SEO, authors, taxonomy links, FAQs — belong to the version, not the root. Implemented as `PageRoot` and `PostRoot`.
 _Avoid_: Entity, parent, item when the identity/revision distinction matters.
 
 **Version**:
-One revision of a root: a snapshot of the mutable content (title, Puck data, status, publication dates, SEO, cover) with a sequential number scoped to the root. The Page pilot implements it as `PageVersion`. Editing a non-live version updates it in place; editing a live version forks a new version so the live site is unaffected until the new version is published.
+One revision of a root: a snapshot of the mutable content (title, Puck data / body, status, publication dates, SEO, cover, authors, taxonomy links, FAQs) with a sequential number scoped to the root. Implemented as `PageVersion` and `PostVersion`. Editing a non-live version updates it in place; editing a live version forks a new version so the live site is unaffected until the new version is published.
 _Avoid_: Revision when referring to the Prisma row; draft when the version may be published.
 
 ## Content versioning
 
 **Versioning**:
-The Root + Version model that separates a content item's stable identity from its revisions, so revisions can be drafted, published, and kept as history. It is reserved for long, frequently edited content, where protecting the live site from in-progress edits and preserving revision history has real value. The Page pilot implements it as `PageRoot` + `PageVersion`; `Post`, `Product`, and `ProductCategory` follow.
+The Root + Version model that separates a content item's stable identity from its revisions, so revisions can be drafted, published, and kept as history. It is reserved for long, frequently edited content, where protecting the live site from in-progress edits and preserving revision history has real value. Implemented for `Page` and `Post`; `Product` and `ProductCategory` remain.
 _Avoid_: applying versioning to short, rarely edited system records.
 
 **Taxonomy**:
