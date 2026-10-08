@@ -20,8 +20,6 @@ import { DEFAULT_PAGE } from "../../constants";
 import { useCategoriesFilters } from "../../hooks/use-categories-filters";
 import { useOpenCategory } from "../../hooks/use-open-category";
 
-import { StatusFilter } from "./categories-status-filter";
-
 export const CategoriesListHeader = () => {
   const [filters, setFilters] = useCategoriesFilters();
   const { onOpen } = useOpenCategory();
@@ -29,13 +27,12 @@ export const CategoriesListHeader = () => {
 
   const { data } = useQuery(trpc.categories.getMany.queryOptions(filters));
 
-  const isAnyFilterModified = !!filters.search || !!filters.status;
+  const isAnyFilterModified = !!filters.search;
 
   const onClearFilters = () => {
     setFilters({
       search: "",
       page: DEFAULT_PAGE,
-      status: null,
     });
   };
 
@@ -46,7 +43,6 @@ export const CategoriesListHeader = () => {
         <div className="flex justify-between">
           <ScrollArea>
             <div className="flex items-center gap-x-2 px-1 py-4">
-              <StatusFilter />
               {isAnyFilterModified && (
                 <Button
                   variant="outline"

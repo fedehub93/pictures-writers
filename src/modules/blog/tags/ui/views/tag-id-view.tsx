@@ -6,16 +6,12 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Trash2Icon } from "lucide-react";
 
-import { ContentStatus } from "@/generated/prisma";
-
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 
 import { LoadingState } from "@/shared/components/loading-state";
 import { ErrorState } from "@/shared/components/error-state";
-
-import { StatusBox } from "@/modules/blog/shared/components/status-box";
 
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 
@@ -26,62 +22,20 @@ import { useTagsFilters } from "../../hooks/use-tags-filters";
 import { SeoForm } from "../components/seo-form";
 
 interface TagIdViewProps {
-  rootId: string;
+  id: string;
 }
 
-export const TagIdView = ({ rootId }: TagIdViewProps) => {
-  const { data: tag } = useSuspenseTag(rootId);
+export const TagIdView = ({ id }: TagIdViewProps) => {
+  const { data: tag } = useSuspenseTag(id);
   const router = useRouter();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const [filters, _] = useTagsFilters();
-
-  const publishTag = useMutation(
-    trpc.tags.publish.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries(trpc.tags.getMany.queryFilter(filters));
-        if (rootId) {
-          queryClient.invalidateQueries(
-            trpc.tags.getLastByRootId.queryFilter({ rootId }),
-          );
-        }
-        toast.success("Tag published successfully");
-      },
-      onError: async (error) => {
-        toast.error(error.message || "Failed to publish the Tag");
-      },
-    }),
-  );
-
-  const unpublishTag = useMutation(
-    trpc.tags.unpublish.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries(trpc.tags.getMany.queryFilter(filters));
-        if (rootId) {
-          queryClient.invalidateQueries(
-            trpc.tags.getLastByRootId.queryFilter({ rootId }),
-          );
-        }
-        toast.success("Tag unpublished successfully");
-      },
-      onError: async (error) => {
-        toast.error(error.message || "Failed to unpublish the Tag");
-      },
-    }),
-  );
-
-  const onTogglePublish = () => {
-    const mustPublish = tag.status !== ContentStatus.PUBLISHED;
-    if (mustPublish) {
-      return publishTag.mutate({ id: tag.id, rootId });
-    }
-    return unpublishTag.mutate({ id: tag.id });
-  };
+  const [filters] = useTagsFilters();
 
   const removeTag = useMutation(
     trpc.tags.remove.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries(trpc.tags.getMany.queryOptions(filters));
+        queryClient.invalidateQueries(trpc.tags.getMany.queryFilter(filters));
         toast.success("Tag deleted successfully!");
         router.push("/admin/tags");
       },
@@ -91,17 +45,15 @@ export const TagIdView = ({ rootId }: TagIdViewProps) => {
     }),
   );
 
-  const onDelete = async () => {
+  const onDelete = () => {
     removeTag.mutate({ id: tag.id });
   };
+
   const requiredFields = [tag.title, tag.slug];
 
   const totalFields = requiredFields.length;
   const completedFields = requiredFields.filter(Boolean).length;
   const completionText = `(${completedFields}/${totalFields})`;
-  const isComplete = requiredFields.every(Boolean);
-
-  const disabled = publishTag.isPending || unpublishTag.isPending;
 
   return (
     <div className="size-full mx-auto p-6">
@@ -112,7 +64,11 @@ export const TagIdView = ({ rootId }: TagIdViewProps) => {
             Complete all fields {completionText}
           </span>
           <ConfirmModal onConfirm={onDelete}>
-            <Button size="sm" variant="destructive" disabled={disabled}>
+            <Button
+              size="sm"
+              variant="destructive"
+              disabled={removeTag.isPending}
+            >
               <Trash2Icon className="h-4 w-4" />
             </Button>
           </ConfirmModal>
@@ -138,7 +94,7 @@ export const TagIdView = ({ rootId }: TagIdViewProps) => {
             </TabsList>
           </div>
 
-          <div className="xl:col-span-15 min-w-0">
+          <div className="xl:col-span-21 min-w-0">
             <TabsContent value="tag" className="mt-0 outline-none">
               <Card className="md:p-6 shadow-sm border rounded-xl">
                 <CardHeader className="px-4 pt-4 md:px-6 md:pt-2">
@@ -147,11 +103,7 @@ export const TagIdView = ({ rootId }: TagIdViewProps) => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="px-4 md:px-6">
-                  <TagDetailsForm
-                    id={tag.id}
-                    rootId={tag.rootId!}
-                    initialData={tag}
-                  />
+                  <TagDetailsForm id={tag.id} initialData={tag} />
                 </CardContent>
               </Card>
             </TabsContent>
@@ -164,26 +116,10 @@ export const TagIdView = ({ rootId }: TagIdViewProps) => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="px-4 md:px-6">
-                  <SeoForm
-                    id={tag.id}
-                    rootId={tag.rootId!}
-                    initialData={tag.seo}
-                  />
+                  <SeoForm id={tag.id} initialData={tag.seo} />
                 </CardContent>
               </Card>
             </TabsContent>
-          </div>
-
-          <div className="xl:col-span-6">
-            <div className="sticky top-6">
-              <StatusBox
-                status={tag.status}
-                lastSavedAt={tag.updatedAt}
-                disabled={disabled}
-                canPublish={isComplete}
-                onToggleStatus={onTogglePublish}
-              />
-            </div>
           </div>
         </div>
       </Tabs>

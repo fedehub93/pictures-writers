@@ -14,19 +14,19 @@ import { prefetchTagById } from "@/modules/blog/tags/server/prefetch";
 const TagIdPage = async ({
   params,
 }: {
-  params: Promise<{ rootId: string }>;
+  params: Promise<{ id: string }>;
 }) => {
   await requireAdminAuth();
 
-  const { rootId } = await params;
+  const { id } = await params;
 
-  prefetchTagById(rootId);
+  prefetchTagById(id);
 
   return (
     <HydrateClient>
       <Suspense fallback={<TagIdViewLoading />}>
         <ErrorBoundary fallback={<TagIdViewError />}>
-          <TagIdView rootId={rootId} />
+          <TagIdView id={id} />
         </ErrorBoundary>
       </Suspense>
     </HydrateClient>

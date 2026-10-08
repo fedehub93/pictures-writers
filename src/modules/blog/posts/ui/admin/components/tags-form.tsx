@@ -120,7 +120,6 @@ export const TagsForm = ({ initialData, rootId, postId }: TagsFormProps) => {
                   ? tags.items.map((c) => ({
                       id: c.id,
                       title: c.title,
-                      status: c.status,
                     }))
                   : []
               }

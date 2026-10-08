@@ -18,7 +18,6 @@ import { tagUpdateSchema, type TagUpdateValues } from "../../schemas";
 
 interface TagDetailsFormProps {
   id: string;
-  rootId: string;
   initialData: {
     title: string;
     description: string | null;
@@ -26,21 +25,16 @@ interface TagDetailsFormProps {
   } | null;
 }
 
-export const TagDetailsForm = ({
-  id,
-  rootId,
-  initialData,
-}: TagDetailsFormProps) => {
+export const TagDetailsForm = ({ id, initialData }: TagDetailsFormProps) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const [filters, _] = useTagsFilters();
+  const [filters] = useTagsFilters();
 
   const form = useForm<TagUpdateValues>({
     resolver: zodResolver(tagUpdateSchema),
     values: {
       ...initialData,
       id,
-      rootId,
       description: initialData?.description ?? "",
     },
     mode: "onChange",
@@ -50,18 +44,13 @@ export const TagDetailsForm = ({
     trpc.tags.update.mutationOptions({
       onSuccess: () => {
         queryClient.invalidateQueries(trpc.tags.getMany.queryFilter(filters));
-        if (rootId) {
-          queryClient.invalidateQueries(
-            trpc.tags.getLastByRootId.queryFilter({ rootId }),
-          );
-        }
         toast.success("Tag updated successfully");
       },
     }),
   );
 
   const handleAutoSave = useAutoSave(form, (dirtyData) => {
-    updateTag({ id, rootId, ...dirtyData });
+    updateTag({ id, ...dirtyData });
   });
 
   const disabled = isPending;

@@ -1,7 +1,5 @@
 import { Control, Controller, FieldValues, Path } from "react-hook-form";
 
-import { ContentStatus } from "@/generated/prisma";
-
 import { Field, FieldError, FieldLabel } from "@/shared/ui/field";
 
 import { MultiSelectV2 } from "@/shared/components/multi-select-v2";
@@ -16,7 +14,6 @@ interface MultiSelectFieldProps<T extends FieldValues> {
   options: {
     id: string;
     title: string;
-    status: ContentStatus;
   }[];
   isLoading?: boolean;
   onSelect?: () => void;
@@ -84,7 +81,6 @@ export const MultiSelectField = <T extends FieldValues>({
                   options={options.map((c) => ({
                     id: c.id,
                     label: c.title,
-                    status: c.status,
                   }))}
                   onSelectValue={onSelectOption}
                   showValuesInButton

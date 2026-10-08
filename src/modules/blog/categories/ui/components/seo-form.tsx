@@ -22,7 +22,6 @@ import { useCategoriesFilters } from "../../hooks/use-categories-filters";
 
 interface SeoFormProps {
   id: string;
-  rootId: string;
   initialData: {
     title: string;
     description: string | null;
@@ -34,17 +33,16 @@ interface SeoFormProps {
   } | null;
 }
 
-export const SeoForm = ({ id, rootId, initialData }: SeoFormProps) => {
+export const SeoForm = ({ id, initialData }: SeoFormProps) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const [filters, _] = useCategoriesFilters();
+  const [filters] = useCategoriesFilters();
 
   const form = useForm<CategoryUpdateSeoValues>({
     resolver: zodResolver(categoryUpdateSeoSchema),
     values: {
       ...initialData,
       id,
-      rootId,
       description: initialData?.description ?? "",
       canonicalUrl: initialData?.canonicalUrl ?? "",
       ogTwitterTitle: initialData?.ogTwitterTitle ?? "",
@@ -61,11 +59,6 @@ export const SeoForm = ({ id, rootId, initialData }: SeoFormProps) => {
         queryClient.invalidateQueries(
           trpc.categories.getMany.queryFilter(filters),
         );
-        if (rootId) {
-          queryClient.invalidateQueries(
-            trpc.categories.getLastByRootId.queryFilter({ rootId }),
-          );
-        }
         toast.success("Category updated successfully");
       },
     }),
@@ -75,7 +68,6 @@ export const SeoForm = ({ id, rootId, initialData }: SeoFormProps) => {
     updateCategorySeo({
       ...dirtyData,
       id,
-      rootId,
       noIndex: dirtyData.noIndex === false ? false : true,
       noFollow: dirtyData.noFollow === false ? false : true,
     });

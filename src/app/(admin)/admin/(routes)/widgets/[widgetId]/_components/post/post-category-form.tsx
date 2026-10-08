@@ -85,16 +85,16 @@ export const SpecificCategoryForm = ({
     fieldCategories.onChange([]);
   }
 
-  const onSelectCategory = (rootId: string) => {
+  const onSelectCategory = (id: string) => {
     let newCategories = [...fieldCategories.value];
-    const category = fieldCategories.value.includes(rootId);
+    const category = fieldCategories.value.includes(id);
     if (category) {
       newCategories = [
-        ...fieldCategories.value.filter((v: string) => v !== rootId),
+        ...fieldCategories.value.filter((v: string) => v !== id),
       ];
     }
     if (!category) {
-      newCategories.push(rootId);
+      newCategories.push(id);
     }
     fieldCategories.onChange(newCategories);
   };
@@ -183,13 +183,13 @@ export const SpecificCategoryForm = ({
                           ) : (
                             categories.items
                               .filter((option) => {
-                                return field.value.includes(option.rootId!);
+                                return field.value.includes(option.id);
                               })
                               .map((option) => {
                                 return (
                                   <Badge
                                     variant="secondary"
-                                    key={option.rootId}
+                                    key={option.id}
                                     className="rounded-sm px-1 font-normal"
                                   >
                                     {option.title}
@@ -212,17 +212,16 @@ export const SpecificCategoryForm = ({
                       {categories.items.map((category) => (
                         <CommandItem
                           value={category.title}
-                          key={category.rootId}
+                          key={category.id}
                           onSelect={() => {
-                            onSelectCategory(category.rootId!);
-                            // fieldCategories.onChange(category.id);
+                            onSelectCategory(category.id);
                           }}
                         >
                           <span className="mr-2">{category.title}</span>
                           <Check
                             className={cn(
                               "ml-auto",
-                              field.value.includes(category.rootId!)
+                              field.value.includes(category.id)
                                 ? "opacity-100"
                                 : "opacity-0",
                             )}
