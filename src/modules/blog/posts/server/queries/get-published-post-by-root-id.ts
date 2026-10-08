@@ -4,37 +4,41 @@
  * @returns
  */
 
-import { ContentStatus } from "@/generated/prisma";
-
 import { db } from "@/shared/lib/db";
 
 export const getPublishedPostByRootId = async (rootId: string) => {
-  const post = await db.post.findFirst({
+  const root = await db.postRoot.findUnique({
     where: {
-      rootId: rootId,
-      status: ContentStatus.PUBLISHED,
-      isLatest: true,
+      id: rootId,
     },
-    select: {
-      id: true,
-      rootId: true,
-      title: true,
-      description: true,
-      slug: true,
-      imageCover: {
+    include: {
+      liveVersion: {
         select: {
           id: true,
-          url: true,
-          altText: true,
+          title: true,
+          description: true,
+          imageCover: {
+            select: {
+              id: true,
+              url: true,
+              altText: true,
+            },
+          },
         },
       },
     },
-    orderBy: {
-      createdAt: "desc",
-    },
   });
 
-  return post;
+  if (!root || !root.liveVersion) return null;
+
+  return {
+    id: root.liveVersion.id,
+    rootId: root.id,
+    title: root.liveVersion.title,
+    description: root.liveVersion.description,
+    slug: root.slug,
+    imageCover: root.liveVersion.imageCover,
+  };
 };
 
 export type GetPublishedPostByRootId = Awaited<

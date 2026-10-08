@@ -24,8 +24,8 @@ export const revalidate = 86400;
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
-  const totalPosts = await db.post.count({
-    where: { status: ContentStatus.PUBLISHED, isLatest: true },
+  const totalPosts = await db.postRoot.count({
+    where: { liveVersion: { isNot: null } },
   });
   const pages = Math.ceil(totalPosts / 10);
 
@@ -70,7 +70,6 @@ export async function generateMetadata(
       page: slugPage,
       where: {
         status: ContentStatus.PUBLISHED,
-        isLatest: true,
       },
     });
 

@@ -1,23 +1,25 @@
-import { ContentStatus } from "@/generated/prisma";
-
 import { db } from "@/shared/lib/db";
 
 export const getPublishedPostById = async (id: string) => {
-  const post = await db.post.findFirst({
+  const root = await db.postRoot.findFirst({
     where: {
-      id: id,
-      status: ContentStatus.PUBLISHED,
-      isLatest: true,
+      liveVersionId: id,
     },
     include: {
-      user: true,
-    },
-    orderBy: {
-      createdAt: "desc",
+      liveVersion: {
+        include: {
+          user: true,
+        },
+      },
     },
   });
 
-  const lastPublishedPost = { ...post };
+  if (!root || !root.liveVersion) return null;
 
-  return lastPublishedPost;
+  return {
+    ...root.liveVersion,
+    rootId: root.id,
+    slug: root.slug,
+    firstPublishedAt: root.firstPublishedAt,
+  };
 };

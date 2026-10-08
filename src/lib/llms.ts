@@ -65,16 +65,20 @@ export async function buildLlmsFullTxt() {
     seo?.description ??
     "La piattaforma italiana dedicata alla formazione e alla crescita professionale degli sceneggiatori cinematografici e televisivi.";
 
-  const [posts, products, pageRoots] = await Promise.all([
-    db.post.findMany({
-      where: { status: ContentStatus.PUBLISHED, isLatest: true },
+  const [postRoots, products, pageRoots] = await Promise.all([
+    db.postRoot.findMany({
+      where: { liveVersion: { isNot: null } },
       select: {
-        title: true,
         slug: true,
-        description: true,
-        publishedAt: true,
+        liveVersion: {
+          select: {
+            title: true,
+            description: true,
+            publishedAt: true,
+          },
+        },
       },
-      orderBy: { publishedAt: "desc" },
+      orderBy: { firstPublishedAt: "desc" },
     }),
     db.product.findMany({
       where: {
@@ -119,11 +123,11 @@ export async function buildLlmsFullTxt() {
     })
     .join("\n");
 
-  const postLines = posts
-    .map(
-      (post) =>
-        `- [${post.title}](${siteUrl}/${post.slug}/) — aggiornato ${post.publishedAt ? formatDate(post.publishedAt) : "—"}${post.description ? `: ${post.description}` : ""}`,
-    )
+  const postLines = postRoots
+    .map((root) => {
+      const version = root.liveVersion!;
+      return `- [${version.title}](${siteUrl}/${root.slug}/) — aggiornato ${version.publishedAt ? formatDate(version.publishedAt) : "—"}${version.description ? `: ${version.description}` : ""}`;
+    })
     .join("\n");
 
   const pageLines = pageRoots

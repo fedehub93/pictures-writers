@@ -4,7 +4,6 @@ import { addHours } from "date-fns";
 
 import { db } from "@/shared/lib/db";
 import {
-  ContentStatus,
   ScheduledActionStatus,
   ScheduledActionType,
   type Prisma,
@@ -157,15 +156,17 @@ export async function getCalendarEvents({
     }
   }
 
-  const [latestPosts, emailSingleSends] = await Promise.all([
+  const [postRootsForActions, emailSingleSends] = await Promise.all([
     postRootIds.length > 0
-      ? db.post.findMany({
-          where: { rootId: { in: postRootIds } },
-          orderBy: [{ version: "desc" }],
+      ? db.postRoot.findMany({
+          where: { id: { in: postRootIds } },
           select: {
-            rootId: true,
-            title: true,
-            version: true,
+            id: true,
+            currentVersion: {
+              select: {
+                title: true,
+              },
+            },
           },
         })
       : Promise.resolve([]),
@@ -177,11 +178,12 @@ export async function getCalendarEvents({
       : Promise.resolve([]),
   ]);
 
-  const latestPostByRootId = new Map<string, { title: string }>();
-  for (const post of latestPosts) {
-    if (!post.rootId) continue;
-    if (!latestPostByRootId.has(post.rootId)) {
-      latestPostByRootId.set(post.rootId, { title: post.title });
+  const titleByRootId = new Map<string, { title: string }>();
+  for (const postRoot of postRootsForActions) {
+    if (!titleByRootId.has(postRoot.id)) {
+      titleByRootId.set(postRoot.id, {
+        title: postRoot.currentVersion?.title ?? "Unknown post",
+      });
     }
   }
 
@@ -191,7 +193,7 @@ export async function getCalendarEvents({
     let title = "Unknown";
 
     if (action.type === ScheduledActionType.PUBLISH_POST) {
-      const post = latestPostByRootId.get(action.targetId);
+      const post = titleByRootId.get(action.targetId);
       title = post?.title ?? "Unknown post";
     } else if (action.type === ScheduledActionType.SEND_EMAIL) {
       const email = emailById.get(action.targetId);
@@ -242,38 +244,43 @@ export async function getCalendarEvents({
       .map((action) => `${action.targetId}:${action.executedAt!.getTime()}`),
   );
 
-  const manualPosts = await db.post.findMany({
+  const manualPostRoots = await db.postRoot.findMany({
     where: {
-      status: ContentStatus.PUBLISHED,
-      isLatest: true,
-      publishedAt: { gte: from, lt: to },
+      liveVersion: {
+        is: {
+          publishedAt: { gte: from, lt: to },
+        },
+      },
     },
-    orderBy: [{ publishedAt: "desc" }],
+    orderBy: [{ liveVersion: { publishedAt: "desc" } }],
     select: {
       id: true,
-      rootId: true,
-      title: true,
-      publishedAt: true,
+      liveVersion: {
+        select: {
+          title: true,
+          publishedAt: true,
+        },
+      },
     },
   });
 
   const seenRootIds = new Set<string>();
   const manualEvents: CalendarEvent[] = [];
 
-  for (const post of manualPosts) {
-    if (!post.rootId) continue;
-    if (!post.publishedAt) continue;
-    if (seenRootIds.has(post.rootId)) continue;
+  for (const root of manualPostRoots) {
+    const post = root.liveVersion;
+    if (!post || !post.publishedAt) continue;
+    if (seenRootIds.has(root.id)) continue;
 
-    const key = `${post.rootId}:${post.publishedAt.getTime()}`;
+    const key = `${root.id}:${post.publishedAt.getTime()}`;
     if (succeededPublications.has(key)) {
       continue;
     }
 
-    seenRootIds.add(post.rootId);
+    seenRootIds.add(root.id);
 
     manualEvents.push({
-      id: `manual:${post.rootId}`,
+      id: `manual:${root.id}`,
       type: ScheduledActionType.PUBLISH_POST,
       title: post.title,
       start: post.publishedAt,
@@ -281,11 +288,11 @@ export async function getCalendarEvents({
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       status: "PUBLISHED" as CalendarEventStatus,
       targetType: "POST_ROOT",
-      targetId: post.rootId,
+      targetId: root.id,
       plannedAt: null,
       executedAt: post.publishedAt,
       overdue: false,
-      url: buildManualPostUrl(post.rootId),
+      url: buildManualPostUrl(root.id),
     });
   }
 

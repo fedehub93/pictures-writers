@@ -5,67 +5,67 @@
 import { Prisma } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 
+import { postVersionListInclude } from "./post-list-include";
+
+export type PostListVersion = "live" | "current";
+
 type GetPaginatedPostsByFiltersParams = {
   page: number;
-  where: Prisma.Args<typeof db.post, "findMany">["where"];
+  version?: PostListVersion;
+  where?: Prisma.PostVersionWhereInput;
 };
 
 const POST_PER_PAGE = 10;
 
 export const getPaginatedPostsByFilters = async ({
   page,
-  where,
+  version = "live",
+  where = {},
 }: GetPaginatedPostsByFiltersParams) => {
   try {
     const skip = POST_PER_PAGE * (page - 1);
 
-    const posts = await db.post.findMany({
-      where,
-      select: {
-        id: true,
-        rootId: true,
-        title: true,
-        description: true,
-        slug: true,
-        updatedAt: true,
-        postCategories: {
-          select: {
-            category: {
-              select: {
-                title: true,
-                slug: true,
-              },
-            },
-          },
-        },
-        imageCover: {
-          select: {
-            url: true,
-            altText: true,
-          },
-        },
-        postAuthors: {
-          select: {
-            user: true,
-            sort: true,
-          },
-          orderBy: {
-            sort: "asc",
-          },
-        },
+    const rootWhere: Prisma.PostRootWhereInput =
+      version === "live"
+        ? { liveVersion: { is: where } }
+        : { currentVersion: { is: where } };
+
+    const roots = await db.postRoot.findMany({
+      where: rootWhere,
+      include: {
+        liveVersion: { include: postVersionListInclude },
+        currentVersion: { include: postVersionListInclude },
       },
       take: POST_PER_PAGE,
-      skip: skip,
+      skip,
       orderBy: {
         firstPublishedAt: "desc",
       },
     });
 
-    const totalPosts = await db.post.count({
-      where,
-    });
+    const totalPosts = await db.postRoot.count({ where: rootWhere });
 
     const totalPages = Math.ceil(totalPosts / POST_PER_PAGE);
+
+    const posts = roots
+      .map((root) => {
+        const v = version === "live" ? root.liveVersion : root.currentVersion;
+        if (!v) return null;
+
+        return {
+          id: v.id,
+          rootId: root.id,
+          title: v.title,
+          slug: root.slug,
+          description: v.description,
+          updatedAt: v.updatedAt,
+          publishedAt: v.publishedAt,
+          imageCover: v.imageCover,
+          categories: v.categories,
+          authors: v.authors,
+        };
+      })
+      .filter((post): post is NonNullable<typeof post> => post !== null);
 
     return { posts, totalPages, currentPage: page };
   } catch (error) {

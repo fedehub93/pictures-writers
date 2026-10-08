@@ -4,27 +4,34 @@ import Link from "next/link";
 import { formatDistance } from "date-fns";
 import { it } from "date-fns/locale";
 
-import { ContentStatus } from "@/generated/prisma";
 import { getAuthorsString } from "@/data/user";
 import { db } from "@/lib/db";
 import { Button } from "@/shared/ui/button";
 
 export const LatestNews = async () => {
-  const latestNews = await db.post.findMany({
+  const latestRoots = await db.postRoot.findMany({
     where: {
-      status: ContentStatus.PUBLISHED,
-      isLatest: true,
+      liveVersion: { isNot: null },
     },
-    include: {
-      imageCover: true,
-      user: true,
-      postAuthors: {
+    select: {
+      id: true,
+      slug: true,
+      firstPublishedAt: true,
+      liveVersion: {
         select: {
-          user: true,
-          sort: true,
-        },
-        orderBy: {
-          sort: "asc",
+          id: true,
+          title: true,
+          description: true,
+          imageCover: true,
+          authors: {
+            select: {
+              user: true,
+              sort: true,
+            },
+            orderBy: {
+              sort: "asc",
+            },
+          },
         },
       },
     },
@@ -33,6 +40,15 @@ export const LatestNews = async () => {
       firstPublishedAt: "desc",
     },
   });
+
+  const latestNews = latestRoots
+    .filter((root) => Boolean(root.liveVersion))
+    .map((root) => ({
+      ...root.liveVersion!,
+      rootId: root.id,
+      slug: root.slug,
+      firstPublishedAt: root.firstPublishedAt,
+    }));
 
   return (
     <section className="bg-primary-foreground border-y-accent border-y px-4 py-20 lg:px-6">
@@ -46,7 +62,7 @@ export const LatestNews = async () => {
         <div className="mx-auto grid grid-cols-1 gap-8 lg:grid-cols-3">
           {latestNews.map((post) => {
             const authorsString = getAuthorsString(
-              post.postAuthors.map((v) => v.user),
+              post.authors.map((v) => v.user),
             );
             return (
               <div key={post.title}>

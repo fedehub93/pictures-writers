@@ -13,7 +13,6 @@ export const BlogView = async () => {
     page: 1,
     where: {
       status: ContentStatus.PUBLISHED,
-      isLatest: true,
     },
   });
   return (

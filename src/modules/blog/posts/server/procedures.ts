@@ -215,96 +215,142 @@ export const postsRouter = createTRPCRouter({
   getOne: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ input }) => {
-      const post = await db.post.findUnique({
+      const root = await db.postRoot.findUnique({
         where: {
           id: input.id,
         },
-      });
-
-      if (!post) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Post not found",
-        });
-      }
-
-      return post;
-    }),
-  getLastByRootId: protectedProcedure
-    .input(z.object({ rootId: z.string() }))
-    .query(async ({ input }) => {
-      const post = await db.post.findFirst({
-        where: {
-          rootId: input.rootId,
-        },
-        orderBy: {
-          publishedAt: "desc",
-        },
-        select: {
-          id: true,
-          rootId: true,
-          title: true,
-          slug: true,
-          description: true,
-          status: true,
-          tiptapBodyData: true,
-          publishedAt: true,
-          firstPublishedAt: true,
-          scheduledAt: true,
-          updatedAt: true,
-          version: true,
-          seo: true,
-          postCategories: {
-            select: {
-              category: {
+        include: {
+          currentVersion: {
+            include: {
+              seo: true,
+              categories: {
+                select: {
+                  category: {
+                    select: {
+                      id: true,
+                      title: true,
+                      slug: true,
+                    },
+                  },
+                  sort: true,
+                },
+              },
+              tags: {
                 select: {
                   id: true,
                   title: true,
                   slug: true,
                 },
               },
-              sort: true,
-            },
-          },
-          tags: {
-            select: {
-              id: true,
-              title: true,
-              slug: true,
-            },
-          },
-          imageCover: true,
-          postAuthors: {
-            select: {
-              user: true,
-              sort: true,
-            },
-            orderBy: {
-              sort: "asc",
-            },
-          },
-          faqs: {
-            select: {
-              id: true,
-              question: true,
-              answer: true,
-              sort: true,
-            },
-            orderBy: {
-              sort: "asc",
+              imageCover: true,
+              authors: {
+                select: {
+                  user: true,
+                  sort: true,
+                },
+                orderBy: {
+                  sort: "asc",
+                },
+              },
+              faqs: {
+                select: {
+                  id: true,
+                  question: true,
+                  answer: true,
+                  sort: true,
+                },
+                orderBy: {
+                  sort: "asc",
+                },
+              },
             },
           },
         },
       });
 
-      if (!post) {
+      if (!root || !root.currentVersion) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Post not found",
         });
       }
 
-      return post;
+      return {
+        ...root.currentVersion,
+        rootId: root.id,
+        slug: root.slug,
+        firstPublishedAt: root.firstPublishedAt,
+      };
+    }),
+  getLastByRootId: protectedProcedure
+    .input(z.object({ rootId: z.string() }))
+    .query(async ({ input }) => {
+      const root = await db.postRoot.findUnique({
+        where: {
+          id: input.rootId,
+        },
+        include: {
+          currentVersion: {
+            include: {
+              seo: true,
+              categories: {
+                select: {
+                  category: {
+                    select: {
+                      id: true,
+                      title: true,
+                      slug: true,
+                    },
+                  },
+                  sort: true,
+                },
+              },
+              tags: {
+                select: {
+                  id: true,
+                  title: true,
+                  slug: true,
+                },
+              },
+              imageCover: true,
+              authors: {
+                select: {
+                  user: true,
+                  sort: true,
+                },
+                orderBy: {
+                  sort: "asc",
+                },
+              },
+              faqs: {
+                select: {
+                  id: true,
+                  question: true,
+                  answer: true,
+                  sort: true,
+                },
+                orderBy: {
+                  sort: "asc",
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!root || !root.currentVersion) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Post not found",
+        });
+      }
+
+      return {
+        ...root.currentVersion,
+        rootId: root.id,
+        slug: root.slug,
+        firstPublishedAt: root.firstPublishedAt,
+      };
     }),
   getMany: protectedProcedure
     .input(
@@ -329,88 +375,120 @@ export const postsRouter = createTRPCRouter({
       }),
     )
     .query(async ({ input }) => {
-      const where: Prisma.PostWhereInput = {
-        title: input.search
-          ? { contains: input.search, mode: "insensitive" }
-          : undefined,
-        status: input.status ? { in: [input.status] } : undefined,
-      };
-
-      const select = {
-        id: true,
-        rootId: true,
-        title: true,
-        slug: true,
-        status: true,
-        publishedAt: true,
-        firstPublishedAt: true,
-        scheduledAt: true,
-        version: true,
-        imageCover: {
-          select: {
-            url: true,
-            altText: true,
+      const where: Prisma.PostRootWhereInput = {
+        currentVersion: {
+          is: {
+            title: input.search
+              ? { contains: input.search, mode: "insensitive" }
+              : undefined,
+            status: input.status ? { in: [input.status] } : undefined,
           },
         },
-        postAuthors: {
-          select: {
-            user: {
+      };
+
+      const include = {
+        currentVersion: {
+          include: {
+            imageCover: {
               select: {
-                email: true,
-                imageUrl: true,
+                url: true,
+                altText: true,
+              },
+            },
+            authors: {
+              select: {
+                user: {
+                  select: {
+                    email: true,
+                    imageUrl: true,
+                  },
+                },
+              },
+              orderBy: {
+                sort: "asc",
               },
             },
           },
-          orderBy: {
-            sort: "asc",
-          },
         },
-      } satisfies Prisma.PostSelect;
+      } satisfies Prisma.PostRootInclude;
 
-      const currentVersions = await db.post.findMany({
-        where,
-        distinct: ["rootId"],
-        orderBy: [{ rootId: "asc" }, { version: "desc" }],
-        select: {
-          id: true,
-          title: true,
-          status: true,
-          publishedAt: true,
-        },
-      });
+      const mapItem = (
+        root: Prisma.PostRootGetPayload<{ include: typeof include }>,
+      ) => {
+        const version = root.currentVersion;
+        if (!version) return null;
 
-      const total = currentVersions.length;
-      const totalPages = Math.ceil(total / input.pageSize);
-      const orderBy = buildListOrderBy<Prisma.PostOrderByWithRelationInput>({
+        return {
+          id: version.id,
+          rootId: root.id,
+          title: version.title,
+          slug: root.slug,
+          status: version.status,
+          publishedAt: version.publishedAt,
+          firstPublishedAt: root.firstPublishedAt,
+          scheduledAt: version.scheduledAt,
+          version: version.version,
+          imageCover: version.imageCover,
+          authors: version.authors,
+        };
+      };
+
+      const orderBy = buildListOrderBy<Prisma.PostRootOrderByWithRelationInput>({
         sort: input.sort,
         direction: input.direction,
         sortable: POST_LIST_SORTS,
+        relation: "currentVersion",
       });
 
       if (orderBy) {
-        const posts = await db.post.findMany({
-          select,
-          where: { ...where, id: { in: currentVersions.map((v) => v.id) } },
-          orderBy,
-          take: input.pageSize,
-          skip: (input.page - 1) * input.pageSize,
-        });
+        const [roots, total] = await Promise.all([
+          db.postRoot.findMany({
+            where,
+            include,
+            orderBy,
+            take: input.pageSize,
+            skip: (input.page - 1) * input.pageSize,
+          }),
+          db.postRoot.count({ where }),
+        ]);
 
-        return { items: posts, total, totalPages };
+        const items = roots
+          .map(mapItem)
+          .filter((item): item is NonNullable<typeof item> => item !== null);
+
+        return {
+          items,
+          total,
+          totalPages: Math.ceil(total / input.pageSize),
+        };
       }
 
-      const pageIds = sortByDefaultOrder(currentVersions)
-        .slice((input.page - 1) * input.pageSize, input.page * input.pageSize)
-        .map((post) => post.id);
+      const roots = await db.postRoot.findMany({ where, include });
 
-      const posts = await db.post.findMany({
-        select,
-        where: { id: { in: pageIds } },
-      });
-      const postsById = new Map(posts.map((post) => [post.id, post]));
-      const items = pageIds
-        .map((id) => postsById.get(id))
-        .filter((post): post is (typeof posts)[number] => Boolean(post));
+      const rows = roots
+        .map((root) => {
+          const version = root.currentVersion;
+          if (!version) return null;
+
+          return {
+            // Sort on the logical post: the default tie-breaker is the root id,
+            // matching the explicit `{ id: "asc" }` order used below.
+            id: root.id,
+            title: version.title,
+            status: version.status,
+            publishedAt: version.publishedAt,
+            root,
+          };
+        })
+        .filter((row): row is NonNullable<typeof row> => row !== null);
+
+      const total = rows.length;
+      const totalPages = Math.ceil(total / input.pageSize);
+
+      const items = sortByDefaultOrder(rows)
+        .slice((input.page - 1) * input.pageSize, input.page * input.pageSize)
+        .map(({ root }) => mapItem(root))
+        .filter((item): item is NonNullable<typeof item> => item !== null);
 
       return { items, total, totalPages };
     }),
@@ -454,22 +532,29 @@ export const postsRouter = createTRPCRouter({
     )
 
     .query(async ({ input }) => {
-      const posts = await db.post.findMany({
+      const roots = await db.postRoot.findMany({
         where: {
-          status: ContentStatus.PUBLISHED,
-          isLatest: true,
-          rootId: { in: input.ids },
+          id: { in: input.ids },
+          liveVersion: { isNot: null },
         },
-        select: {
-          id: true,
-          rootId: true,
-          title: true,
-          imageCover: { select: { url: true } },
-          slug: true,
+        include: {
+          liveVersion: {
+            select: {
+              id: true,
+              title: true,
+              imageCover: { select: { url: true } },
+            },
+          },
         },
       });
 
-      return posts;
+      return roots.map((root) => ({
+        id: root.liveVersion!.id,
+        rootId: root.id,
+        title: root.liveVersion!.title,
+        imageCover: root.liveVersion!.imageCover,
+        slug: root.slug,
+      }));
     }),
   publish: protectedProcedure
     .input(z.object({ id: z.string(), rootId: z.string() }))

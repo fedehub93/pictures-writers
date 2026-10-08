@@ -1,5 +1,3 @@
-import { ContentStatus } from "@/generated/prisma";
-
 import { db } from "@/shared/lib/db";
 
 /**
@@ -10,22 +8,29 @@ import { db } from "@/shared/lib/db";
 
 export const getPostsByIds = async (ids: string[]) => {
   try {
-    const posts = await db.post.findMany({
+    const roots = await db.postRoot.findMany({
       where: {
-        status: ContentStatus.PUBLISHED,
-        isLatest: true,
-        rootId: { in: ids },
+        id: { in: ids },
+        liveVersion: { isNot: null },
       },
-      select: {
-        id: true,
-        rootId: true,
-        title: true,
-        imageCover: { select: { url: true } },
-        slug: true,
+      include: {
+        liveVersion: {
+          select: {
+            id: true,
+            title: true,
+            imageCover: { select: { url: true } },
+          },
+        },
       },
     });
 
-    return posts;
+    return roots.map((root) => ({
+      id: root.liveVersion!.id,
+      rootId: root.id,
+      title: root.liveVersion!.title,
+      imageCover: root.liveVersion!.imageCover,
+      slug: root.slug,
+    }));
   } catch (error) {
     console.error(error);
     return [];
