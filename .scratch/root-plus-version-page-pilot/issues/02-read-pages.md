@@ -8,13 +8,13 @@
 
 ## Acceptance criteria
 
-- [ ] `pagesRouter.getOne` reads from `PageRoot` + `PageVersion`.
-- [ ] `pagesRouter.getLastByRootId` returns the current version from the new schema.
-- [ ] `pagesRouter.getMany` lists one row per `PageRoot`, sorted and filtered as before.
-- [ ] `getPublishedPageBySlug` resolves `slug -> PageRoot -> liveVersion`.
-- [ ] Admin page list renders one row per logical page.
-- [ ] Public page rendering works for all existing slugs after migration.
-- [ ] Editor loads the current version of the selected page.
+- [x] `pagesRouter.getOne` reads from `PageRoot` + `PageVersion`.
+- [x] `pagesRouter.getLastByRootId` returns the current version from the new schema.
+- [x] `pagesRouter.getMany` lists one row per `PageRoot`, sorted and filtered as before.
+- [x] `getPublishedPageBySlug` resolves `slug -> PageRoot -> liveVersion`.
+- [x] Admin page list renders one row per logical page.
+- [x] Public page rendering works for all existing slugs after migration.
+- [x] Editor loads the current version of the selected page.
 
 ## Notes
 
