@@ -1,6 +1,5 @@
 import {
   Category,
-  Post,
   Product,
   ProductCategory,
   Tag,
@@ -15,31 +14,6 @@ const updateSeoRootId = async (seoId: string, rootId: string) => {
     },
   });
 
-  return updatedPostSeo;
-};
-
-export const createPostSeo = async (post: Post) => {
-  const postSeo = await db.seo.create({
-    data: {
-      title: post.title,
-      version: 1,
-      description: post.description,
-      ogTwitterTitle: post.title,
-      ogTwitterDescription: post.description,
-      ogTwitterType: "card",
-      ogTwitterLocale: "it_IT",
-      ogTwitterImageId: post.imageCoverId,
-      posts: {
-        connect: { id: post.id },
-      },
-    },
-  });
-
-  if (!postSeo) {
-    return null;
-  }
-
-  const updatedPostSeo = await updateSeoRootId(postSeo.id, postSeo.id);
   return updatedPostSeo;
 };
 

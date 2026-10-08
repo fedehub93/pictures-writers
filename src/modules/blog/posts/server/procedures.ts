@@ -5,22 +5,12 @@ import { revalidateContent } from "@/shared/lib/revalidate-content";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 
-import {
-  ContentStatus,
-  ScheduledActionType,
-  type Prisma,
-} from "@/generated/prisma";
+import { ContentStatus, type Prisma } from "@/generated/prisma";
 
-import { createPostSeo } from "@/lib/seo";
 import {
   buildListOrderBy,
   sortByDefaultOrder,
 } from "@/shared/lib/list-sorting";
-import {
-  createScheduledAction,
-  createIdempotencyKey,
-} from "@/modules/scheduler/lib/scheduled-action-repository";
-import { SCHEDULER_TARGET_TYPES } from "@/modules/scheduler/constants";
 
 import {
   postInsertSchema,
@@ -37,8 +27,16 @@ import {
   POST_LIST_SORTS,
 } from "../constants";
 
-import { createNewVersion } from "../lib/create-new-version";
-import { publishPost, PublishPostError } from "../lib/publish-post";
+import { createPost } from "../lib/create-post";
+import { deletePostRoot } from "../lib/delete-post";
+import { toPostTrpcError } from "../lib/errors";
+import {
+  publishPost,
+  PublishPostError,
+  unpublishPostVersion,
+} from "../lib/publish-post";
+import { savePostVersion } from "../lib/save-post";
+import { updatePostVersionSeo } from "../lib/update-seo";
 import {
   cancelSchedule,
   reschedulePost,
@@ -52,86 +50,22 @@ export const postsRouter = createTRPCRouter({
   create: protectedProcedure
     .input(postInsertSchema.extend({ timezone: z.string().optional() }))
     .mutation(async ({ input, ctx }) => {
-      const { timezone, ...postData } = input;
-      const isScheduled = input.scheduledAt && input.scheduledAt > new Date();
-      const status = isScheduled
-        ? ContentStatus.SCHEDULED
-        : ContentStatus.DRAFT;
-      const post = await db.post.create({
-        data: {
-          ...postData,
-          version: 1,
-          status,
-          scheduledAt: input.scheduledAt,
-          preSchedulingStatus:
-            status === ContentStatus.SCHEDULED ? ContentStatus.DRAFT : null,
-          userId: ctx.auth.id,
-          postAuthors: {
-            create: {
-              userId: ctx.auth.id,
-              sort: 0,
-            },
-          },
-        },
+      return await createPost({
+        title: input.title,
+        slug: input.slug,
+        scheduledAt: input.scheduledAt,
+        timezone: input.timezone,
+        userId: ctx.auth.id,
       });
-
-      if (!post) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Missing required parameters!",
-        });
-      }
-
-      const updatedPost = await db.post.update({
-        where: { id: post.id },
-        data: { rootId: post.id },
-      });
-
-      await createPostSeo(updatedPost);
-
-      if (isScheduled && input.scheduledAt) {
-        await createScheduledAction({
-          type: ScheduledActionType.PUBLISH_POST,
-          targetType: SCHEDULER_TARGET_TYPES.POST_ROOT,
-          targetId: updatedPost.id,
-          plannedAt: input.scheduledAt,
-          timezone:
-            timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone,
-          idempotencyKey: createIdempotencyKey(
-            ScheduledActionType.PUBLISH_POST,
-            SCHEDULER_TARGET_TYPES.POST_ROOT,
-            updatedPost.id,
-          ),
-        });
-      }
-
-      return post;
     }),
 
   update: protectedProcedure
     .input(postUpdateSchema)
     .mutation(async ({ input }) => {
       try {
-        const post = await createNewVersion(input);
-
-        return post;
+        return await savePostVersion(input);
       } catch (error) {
-        console.error(error);
-        if (error instanceof TRPCError) {
-          throw error;
-        }
-
-        if (error instanceof Error && error.message === "POST_NOT_FOUND") {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Post not exists.",
-          });
-        }
-
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Error saving post.",
-        });
+        throw toPostTrpcError(error);
       }
     }),
 
@@ -139,79 +73,47 @@ export const postsRouter = createTRPCRouter({
     .input(postUpdateSeoSchema)
     .mutation(async ({ input }) => {
       try {
-        const post = await db.post.findUnique({
-          where: {
-            id: input.id,
-            rootId: input.rootId,
-          },
-        });
-
-        if (!post || !post.rootId || !post.seoId) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Post not found",
-          });
-        }
-
-        const updatedSeo = await db.seo.update({
-          where: { id: post.seoId },
-          data: { ...input, id: undefined, rootId: undefined },
-        });
-
-        await createNewVersion({
-          id: post.id,
-          rootId: post.rootId,
-          seoId: updatedSeo.id,
-        });
-
-        return updatedSeo;
+        return await updatePostVersionSeo(input);
       } catch (error) {
-        if (error instanceof TRPCError) {
-          throw error;
-        }
-
-        if (error instanceof Error && error.message === "POST_NOT_FOUND") {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Post not exists.",
-          });
-        }
-
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Error saving post.",
-        });
+        throw toPostTrpcError(error);
       }
     }),
 
   remove: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
-      const post = await db.post.findUnique({
-        where: {
-          id: input.id,
-        },
-      });
+      try {
+        const root =
+          (await db.postRoot.findUnique({
+            where: { id: input.id },
+            select: { id: true },
+          })) ??
+          (await db.postVersion.findUnique({
+            where: { id: input.id },
+            select: { rootId: true },
+          }).then((version) =>
+            version ? { id: version.rootId } : null,
+          ));
 
-      if (!post) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Post not found",
+        if (!root) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Post not found",
+          });
+        }
+
+        const deleted = await deletePostRoot({ rootId: root.id });
+
+        revalidateContent("post", deleted.slug);
+
+        return deleted;
+      } catch (error) {
+        throw toPostTrpcError(error, {
+          internalMessage: "Error deleting post.",
         });
       }
-
-      const deletedPost = await db.post.deleteMany({
-        where: { rootId: post.rootId },
-      });
-
-      if (post.seoId) {
-        await db.seo.delete({
-          where: { id: post.seoId },
-        });
-      }
-
-      return deletedPost;
     }),
+
   getOne: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ input }) => {
@@ -282,6 +184,7 @@ export const postsRouter = createTRPCRouter({
         firstPublishedAt: root.firstPublishedAt,
       };
     }),
+
   getLastByRootId: protectedProcedure
     .input(z.object({ rootId: z.string() }))
     .query(async ({ input }) => {
@@ -352,6 +255,26 @@ export const postsRouter = createTRPCRouter({
         firstPublishedAt: root.firstPublishedAt,
       };
     }),
+
+  getVersions: protectedProcedure
+    .input(z.object({ rootId: z.string() }))
+    .query(async ({ input }) => {
+      return await db.postVersion.findMany({
+        where: { rootId: input.rootId },
+        orderBy: { version: "desc" },
+        select: {
+          id: true,
+          version: true,
+          title: true,
+          status: true,
+          publishedAt: true,
+          scheduledAt: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+    }),
+
   getMany: protectedProcedure
     .input(
       z.object({
@@ -492,6 +415,7 @@ export const postsRouter = createTRPCRouter({
 
       return { items, total, totalPages };
     }),
+
   getPaginated: protectedProcedure
     .input(
       z.object({
@@ -524,13 +448,13 @@ export const postsRouter = createTRPCRouter({
         });
       }
     }),
+
   getPublishedByIds: protectedProcedure
     .input(
       z.object({
         ids: z.array(z.uuid()).nonempty(),
       }),
     )
-
     .query(async ({ input }) => {
       const roots = await db.postRoot.findMany({
         where: {
@@ -556,12 +480,13 @@ export const postsRouter = createTRPCRouter({
         slug: root.slug,
       }));
     }),
+
   publish: protectedProcedure
     .input(z.object({ id: z.string(), rootId: z.string() }))
     .mutation(async ({ input }) => {
       try {
         const published = await publishPost({
-          postId: input.id,
+          id: input.id,
           rootId: input.rootId,
         });
 
@@ -586,6 +511,28 @@ export const postsRouter = createTRPCRouter({
         throw error;
       }
     }),
+
+  unpublish: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input }) => {
+      try {
+        const unpublished = await unpublishPostVersion({ id: input.id });
+
+        revalidateContent("post", unpublished.slug);
+
+        return unpublished;
+      } catch (error) {
+        if (error instanceof PublishPostError) {
+          throw new TRPCError({
+            code: error.code === "NOT_FOUND" ? "NOT_FOUND" : "BAD_REQUEST",
+            message: error.message,
+          });
+        }
+
+        throw error;
+      }
+    }),
+
   schedule: protectedProcedure
     .input(
       z.object({
@@ -681,30 +628,5 @@ export const postsRouter = createTRPCRouter({
 
         throw error;
       }
-    }),
-  unpublish: protectedProcedure
-    .input(z.object({ id: z.string() }))
-    .mutation(async ({ input }) => {
-      const post = await db.post.findUnique({
-        where: {
-          id: input.id,
-        },
-      });
-
-      if (!post) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Post not found",
-        });
-      }
-
-      const unpublishedPost = await db.post.update({
-        where: { id: input.id },
-        data: { status: ContentStatus.CHANGED },
-      });
-
-      revalidateContent("post", unpublishedPost.slug);
-
-      return unpublishedPost;
     }),
 });

@@ -1,20 +1,13 @@
 import "server-only";
 
+import { ContentStatus } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
-import {
-  ContentStatus,
-  type Post,
-  type Seo,
-} from "@/generated/prisma";
 
 import { markActiveScheduledActionSucceededTx } from "@/modules/scheduler/lib/scheduled-action-repository";
 import { SCHEDULER_TARGET_TYPES } from "@/modules/scheduler/constants";
 
 import { acquireRootLock } from "./lock-root-posts";
-
-export type PublishPostResult = Post & {
-  seo: Seo | null;
-};
+import type { PostVersionWithSlug } from "./save-post";
 
 export class PublishPostError extends Error {
   constructor(
@@ -28,7 +21,7 @@ export class PublishPostError extends Error {
 export type PublishMode = "manual" | "scheduled";
 
 export interface PublishPostInput {
-  postId: string;
+  id: string;
   rootId: string;
   now?: Date;
   mode?: PublishMode;
@@ -37,133 +30,166 @@ export interface PublishPostInput {
 /**
  * Shared, idempotent publication workflow for Posts.
  *
- * The workflow can be invoked from multiple entry points (e.g. the admin tRPC
- * procedure, a future scheduled-publication job, etc.) without duplicating the
- * transition logic.
- *
- * It is safe to call concurrently for the same post: a repeated or racing
- * request on a version that is already published and latest is a no-op and
- * will not mutate `publishedAt`, `firstPublishedAt` or `isLatest`.
+ * Publishing locks the `PostRoot` for the duration of the transaction so
+ * concurrent publishes serialize: the second call observes an already-live
+ * target and becomes a no-op instead of racing a second publication. The
+ * previous live version (if any) is demoted to `CHANGED`, the target is
+ * promoted to `PUBLISHED`, any scheduling state is cleared and
+ * `firstPublishedAt` is only written the first time a root goes live.
  */
 export async function publishPost({
-  postId,
+  id,
   rootId,
   now = new Date(),
   mode = "manual",
-}: PublishPostInput): Promise<PublishPostResult> {
-  if (!postId || !rootId) {
+}: PublishPostInput): Promise<PostVersionWithSlug> {
+  if (!id || !rootId) {
     throw new PublishPostError(
       "VALIDATION_ERROR",
-      "postId and rootId are required",
+      "id and rootId are required",
     );
   }
 
-  return db
-    .$transaction(async (tx) => {
-      // Lock every version of the post root in a deterministic order to avoid
-      // deadlocks and race conditions between concurrent publishers.
-      await acquireRootLock(tx, rootId);
+  return db.$transaction(async (tx) => {
+    await acquireRootLock(tx, rootId);
 
-      const posts = await tx.post.findMany({
-        where: { rootId },
-        select: {
-          id: true,
-          status: true,
-          version: true,
-          isLatest: true,
-          title: true,
-          slug: true,
-          scheduledAt: true,
-          firstPublishedAt: true,
-        },
-        orderBy: { id: "asc" },
-      });
+    const root = await tx.postRoot.findUnique({ where: { id: rootId } });
+    if (!root) {
+      throw new PublishPostError("NOT_FOUND", "Post not found");
+    }
 
-      const target = posts.find((post) => post.id === postId);
+    const target = await tx.postVersion.findUnique({ where: { id } });
+    if (!target || target.rootId !== rootId) {
+      throw new PublishPostError("NOT_FOUND", "Post not found");
+    }
 
-      if (!target) {
-        throw new PublishPostError("NOT_FOUND", "Post not found");
-      }
+    if (!target.title || !root.slug) {
+      throw new PublishPostError(
+        "VALIDATION_ERROR",
+        "Missing required fields",
+      );
+    }
 
-      if (!target.title || !target.slug) {
-        throw new PublishPostError(
-          "VALIDATION_ERROR",
-          "Missing required fields",
-        );
-      }
+    let published = target;
 
-      let publishResult: PublishPostResult;
+    const alreadyLive =
+      root.liveVersionId === target.id &&
+      target.status === ContentStatus.PUBLISHED;
 
-      // Already published -> idempotent no-op. This keeps publishedAt,
-      // firstPublishedAt and isLatest stable across repeated or concurrent calls.
-      if (target.status === ContentStatus.PUBLISHED) {
-        const current = await tx.post.findUnique({
-          where: { id: postId },
-          include: { seo: true },
-        });
-
-        // current is guaranteed to exist because we just locked the row
-        publishResult = current as PublishPostResult;
-      } else {
-        if (mode === "scheduled") {
-          if (target.status !== ContentStatus.SCHEDULED) {
-            throw new PublishPostError(
-              "INVALID_STATE",
-              "Post is no longer scheduled",
-            );
-          }
-
-          if (
-            !target.scheduledAt ||
-            target.scheduledAt.getTime() > now.getTime()
-          ) {
-            throw new PublishPostError(
-              "INVALID_STATE",
-              "Scheduled time is in the future",
-            );
-          }
+    if (!alreadyLive) {
+      if (mode === "scheduled") {
+        if (target.status !== ContentStatus.SCHEDULED) {
+          throw new PublishPostError(
+            "INVALID_STATE",
+            "Post is no longer scheduled",
+          );
         }
 
         if (
-          target.status !== ContentStatus.DRAFT &&
-          target.status !== ContentStatus.CHANGED &&
-          target.status !== ContentStatus.SCHEDULED
+          !target.scheduledAt ||
+          target.scheduledAt.getTime() > now.getTime()
         ) {
-          throw new PublishPostError("INVALID_STATE", "Post cannot be published");
+          throw new PublishPostError(
+            "INVALID_STATE",
+            "Scheduled time is in the future",
+          );
         }
+      }
 
-        // Demote every version of the root so only the target becomes latest.
-        await tx.post.updateMany({
-          where: { rootId },
-          data: { isLatest: false },
-        });
+      if (
+        target.status !== ContentStatus.DRAFT &&
+        target.status !== ContentStatus.CHANGED &&
+        target.status !== ContentStatus.SCHEDULED
+      ) {
+        throw new PublishPostError(
+          "INVALID_STATE",
+          "Post cannot be published",
+        );
+      }
 
-        const firstPublishedAt = target.firstPublishedAt === null ? now : undefined;
-
-        publishResult = await tx.post.update({
-          where: { id: postId },
-          data: {
-            status: ContentStatus.PUBLISHED,
-            isLatest: true,
-            publishedAt: now,
-            scheduledAt: null,
-            preSchedulingStatus: null,
-            ...(firstPublishedAt && { firstPublishedAt: now }),
-          },
-          include: { seo: true },
+      if (root.liveVersionId && root.liveVersionId !== target.id) {
+        await tx.postVersion.update({
+          where: { id: root.liveVersionId },
+          data: { status: ContentStatus.CHANGED },
         });
       }
 
-      // Invalidate any pending or in-flight ScheduledAction atomically with the
-      // state transition (also on the idempotent no-op path) so the worker can
-      // never process this root after publication.
-      await markActiveScheduledActionSucceededTx(
-        tx,
-        SCHEDULER_TARGET_TYPES.POST_ROOT,
-        rootId,
-        now,
-      );
+      published = await tx.postVersion.update({
+        where: { id: target.id },
+        data: {
+          status: ContentStatus.PUBLISHED,
+          publishedAt: now,
+          scheduledAt: null,
+          preSchedulingStatus: null,
+        },
+      });
 
-      return publishResult;
+      await tx.postRoot.update({
+        where: { id: rootId },
+        data: {
+          liveVersionId: published.id,
+          ...(root.firstPublishedAt === null ? { firstPublishedAt: now } : {}),
+        },
+      });
+    }
+
+    // Invalidate any pending or in-flight ScheduledAction atomically with the
+    // state transition (also on the idempotent no-op path) so the worker can
+    // never process this root after publication.
+    await markActiveScheduledActionSucceededTx(
+      tx,
+      SCHEDULER_TARGET_TYPES.POST_ROOT,
+      rootId,
+      now,
+    );
+
+    return { ...published, slug: root.slug };
+  });
+}
+
+export interface UnpublishPostInput {
+  id: string;
+}
+
+/**
+ * Take a version off the live site: clear the root's live pointer and move the
+ * published revision back to `CHANGED`. The revision stays the current one so
+ * the editor keeps their draft. Locked on the root for symmetry with publish.
+ */
+export async function unpublishPostVersion({
+  id,
+}: UnpublishPostInput): Promise<PostVersionWithSlug> {
+  return db.$transaction(async (tx) => {
+    const version = await tx.postVersion.findUnique({ where: { id } });
+    if (!version) {
+      throw new PublishPostError("NOT_FOUND", "Post not found");
+    }
+
+    await acquireRootLock(tx, version.rootId);
+
+    // Re-read the root after locking so a concurrent publish cannot slip
+    // between the lock and the decision to clear the live pointer.
+    const root = await tx.postRoot.findUnique({
+      where: { id: version.rootId },
     });
+    if (!root) {
+      throw new PublishPostError("NOT_FOUND", "Post not found");
+    }
+
+    if (root.liveVersionId !== version.id) {
+      return { ...version, slug: root.slug };
+    }
+
+    const unpublished = await tx.postVersion.update({
+      where: { id: version.id },
+      data: { status: ContentStatus.CHANGED },
+    });
+
+    await tx.postRoot.update({
+      where: { id: root.id },
+      data: { liveVersionId: null },
+    });
+
+    return { ...unpublished, slug: root.slug };
+  });
 }

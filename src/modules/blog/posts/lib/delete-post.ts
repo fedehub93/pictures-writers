@@ -3,12 +3,12 @@ import "server-only";
 import type { Prisma } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 
-import { PageError } from "./errors";
-import { acquirePageRootLock } from "./lock-page-root";
+import { PostError } from "./errors";
+import { acquireRootLock } from "./lock-root-posts";
 
 /**
- * Whether any row other than the page versions we are deleting still points at
- * this SEO record. Covers every model that owns a `seoId` so deleting a page
+ * Whether any row other than the post versions we are deleting still points at
+ * this SEO record. Covers every model that owns a `seoId` so deleting a post
  * never removes metadata another entity depends on.
  */
 async function seoIsReferenced(
@@ -16,16 +16,16 @@ async function seoIsReferenced(
   seoId: string,
 ): Promise<boolean> {
   const [
-    pageVersions,
     postVersions,
+    pageVersions,
     categories,
     tags,
     products,
     productCategories,
     settings,
   ] = await Promise.all([
-    tx.pageVersion.count({ where: { seoId } }),
     tx.postVersion.count({ where: { seoId } }),
+    tx.pageVersion.count({ where: { seoId } }),
     tx.category.count({ where: { seoId } }),
     tx.tag.count({ where: { seoId } }),
     tx.product.count({ where: { seoId } }),
@@ -34,8 +34,8 @@ async function seoIsReferenced(
   ]);
 
   return (
-    pageVersions +
-      postVersions +
+    postVersions +
+      pageVersions +
       categories +
       tags +
       products +
@@ -45,41 +45,38 @@ async function seoIsReferenced(
   );
 }
 
-export interface DeletePageRootInput {
-  /** Id of any version of the page; the whole root is removed. */
-  versionId: string;
+export interface DeletePostRootInput {
+  /** Id of the `PostRoot` to delete. */
+  rootId: string;
 }
 
-export interface DeletePageRootResult {
+export interface DeletePostRootResult {
   id: string;
   slug: string;
 }
 
 /**
- * Delete a logical page: its `PageRoot`, every `PageVersion` (cascade) and the
+ * Delete a logical post: its `PostRoot`, every `PostVersion` (cascade) and the
  * SEO rows that belonged to those versions. SEO rows still referenced by
  * another entity are left intact; any SEO left with no owner is deleted.
  */
-export async function deletePageRoot({
-  versionId,
-}: DeletePageRootInput): Promise<DeletePageRootResult> {
+export async function deletePostRoot({
+  rootId,
+}: DeletePostRootInput): Promise<DeletePostRootResult> {
   return db.$transaction(async (tx) => {
-    const version = await tx.pageVersion.findUnique({
-      where: { id: versionId },
-      select: { rootId: true, root: { select: { slug: true } } },
+    const root = await tx.postRoot.findUnique({
+      where: { id: rootId },
+      select: { id: true, slug: true },
     });
 
-    if (!version) {
-      throw new PageError("NOT_FOUND", "Page not found");
+    if (!root) {
+      throw new PostError("NOT_FOUND", "Post not found");
     }
 
-    const rootId = version.rootId;
-    const slug = version.root.slug;
+    await acquireRootLock(tx, root.id);
 
-    await acquirePageRootLock(tx, rootId);
-
-    const versions = await tx.pageVersion.findMany({
-      where: { rootId },
+    const versions = await tx.postVersion.findMany({
+      where: { rootId: root.id },
       select: { seoId: true },
     });
 
@@ -91,7 +88,7 @@ export async function deletePageRoot({
       ),
     ];
 
-    await tx.pageRoot.delete({ where: { id: rootId } });
+    await tx.postRoot.delete({ where: { id: root.id } });
 
     for (const seoId of seoIds) {
       if (!(await seoIsReferenced(tx, seoId))) {
@@ -99,6 +96,6 @@ export async function deletePageRoot({
       }
     }
 
-    return { id: rootId, slug };
+    return { id: root.id, slug: root.slug };
   });
 }
