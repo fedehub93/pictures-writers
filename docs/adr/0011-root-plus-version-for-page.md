@@ -27,5 +27,5 @@ The legacy `Page` table and the dual-write path that kept it in sync were remove
 
 - Admin page lists show one row per logical page (the root), not one row per revision; version history is a per-root list.
 - Concurrency is safe: publish/unpublish/edit serialize on the root row lock, so two publishers cannot leave the root with two live revisions.
-- The same split is intended for `Post`, `Product`, `Category`, `Tag`, `ProductCategory`, and `Seo`; those migrations should follow once this pattern is exercised in production.
+- The same split is intended for `Post`, `Product`, and `ProductCategory`; `Category` and `Tag` left versioning entirely instead (ADR 0012). Those migrations should follow once this pattern is exercised in production.
 - The cut-over migration is destructive and one-way: after it runs, rolling back to the legacy table means restoring from a database backup that predates the deploy.

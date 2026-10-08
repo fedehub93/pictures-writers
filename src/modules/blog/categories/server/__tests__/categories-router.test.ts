@@ -100,11 +100,13 @@ afterEach(async () => {
 describe("categoriesRouter", () => {
   describe("create", () => {
     it("creates exactly one row with a linked SEO", async () => {
+      const before = await db.category.count();
       const created = await createCategory({
         title: "Writing tips",
         slug: `writing-tips-${randomUUID()}`,
       });
 
+      expect(await db.category.count()).toBe(before + 1);
       const rows = await db.category.findMany({ where: { id: created.id } });
       expect(rows).toHaveLength(1);
       expect(rows[0]!.userId).toBe(userId);
@@ -127,6 +129,7 @@ describe("categoriesRouter", () => {
   describe("update", () => {
     it("mutates the single row in place", async () => {
       const created = await createCategory({ title: "Old title" });
+      const before = await db.category.count();
 
       const updated = await caller.update({
         id: created.id,
@@ -135,13 +138,16 @@ describe("categoriesRouter", () => {
         description: "Updated description",
       });
 
+      expect(await db.category.count()).toBe(before);
       expect(updated.id).toBe(created.id);
       expect(updated.title).toBe("New title");
       expect(updated.description).toBe("Updated description");
 
-      const rows = await db.category.findMany({ where: { id: created.id } });
+      const rows = await db.category.findMany({
+        where: { title: "New title" },
+      });
       expect(rows).toHaveLength(1);
-      expect(rows[0]!.title).toBe("New title");
+      expect(rows[0]!.id).toBe(created.id);
     });
 
     it("throws NOT_FOUND for an unknown category", async () => {
@@ -155,6 +161,7 @@ describe("categoriesRouter", () => {
     it("updates the linked SEO row in place", async () => {
       const created = await createCategory();
       const before = await caller.getOne({ id: created.id });
+      const countBefore = await db.category.count();
 
       const seo = await caller.updateSeo({
         id: created.id,
@@ -168,9 +175,7 @@ describe("categoriesRouter", () => {
       expect(seo.title).toBe("SEO title");
       expect(seo.description).toBe("SEO description");
       expect(seo.noIndex).toBe(true);
-
-      const rows = await db.category.findMany({ where: { id: created.id } });
-      expect(rows).toHaveLength(1);
+      expect(await db.category.count()).toBe(countBefore);
     });
 
     it("throws NOT_FOUND for an unknown category", async () => {

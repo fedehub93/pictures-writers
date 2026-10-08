@@ -100,11 +100,13 @@ afterEach(async () => {
 describe("tagsRouter", () => {
   describe("create", () => {
     it("creates exactly one row with a linked SEO", async () => {
+      const before = await db.tag.count();
       const created = await createTag({
         title: "Writing tips",
         slug: `writing-tips-${randomUUID()}`,
       });
 
+      expect(await db.tag.count()).toBe(before + 1);
       const rows = await db.tag.findMany({ where: { id: created.id } });
       expect(rows).toHaveLength(1);
       expect(rows[0]!.userId).toBe(userId);
@@ -127,6 +129,7 @@ describe("tagsRouter", () => {
   describe("update", () => {
     it("mutates the single row in place", async () => {
       const created = await createTag({ title: "Old title" });
+      const before = await db.tag.count();
 
       const updated = await caller.update({
         id: created.id,
@@ -135,13 +138,14 @@ describe("tagsRouter", () => {
         description: "Updated description",
       });
 
+      expect(await db.tag.count()).toBe(before);
       expect(updated.id).toBe(created.id);
       expect(updated.title).toBe("New title");
       expect(updated.description).toBe("Updated description");
 
-      const rows = await db.tag.findMany({ where: { id: created.id } });
+      const rows = await db.tag.findMany({ where: { title: "New title" } });
       expect(rows).toHaveLength(1);
-      expect(rows[0]!.title).toBe("New title");
+      expect(rows[0]!.id).toBe(created.id);
     });
 
     it("throws NOT_FOUND for an unknown tag", async () => {
@@ -155,6 +159,7 @@ describe("tagsRouter", () => {
     it("updates the linked SEO row in place", async () => {
       const created = await createTag();
       const before = await caller.getOne({ id: created.id });
+      const countBefore = await db.tag.count();
 
       const seo = await caller.updateSeo({
         id: created.id,
@@ -168,9 +173,7 @@ describe("tagsRouter", () => {
       expect(seo.title).toBe("SEO title");
       expect(seo.description).toBe("SEO description");
       expect(seo.noIndex).toBe(true);
-
-      const rows = await db.tag.findMany({ where: { id: created.id } });
-      expect(rows).toHaveLength(1);
+      expect(await db.tag.count()).toBe(countBefore);
     });
 
     it("throws NOT_FOUND for an unknown tag", async () => {

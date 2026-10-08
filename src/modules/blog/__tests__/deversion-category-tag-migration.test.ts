@@ -4,6 +4,7 @@ import path from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import { ContentStatus } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 
 const MIGRATION_PATH = path.resolve(
@@ -19,8 +20,6 @@ const categoryIds: string[] = [];
 const tagIds: string[] = [];
 const seoIds: string[] = [];
 const postIds: string[] = [];
-
-type ContentStatus = "DRAFT" | "CHANGED" | "PUBLISHED" | "SCHEDULED";
 
 interface LegacyFields {
   rootId: string | null;
@@ -45,11 +44,6 @@ async function setLegacy(
   );
 }
 
-/**
- * Re-create the columns and indexes the de-version migration expects to find
- * on a legacy database: the self-relation versioning columns on `Category` and
- * `Tag`, and no unique constraint on slug yet.
- */
 async function addLegacyColumns() {
   await raw(`DROP INDEX IF EXISTS "Category_slug_key"`);
   await raw(`DROP INDEX IF EXISTS "Tag_slug_key"`);
@@ -74,10 +68,6 @@ async function addLegacyColumns() {
   }
 }
 
-/**
- * Undo `addLegacyColumns` in case the migration never ran to completion (it
- * drops the legacy columns itself). Safe to call in every `afterEach`.
- */
 async function restoreCollapsedSchema() {
   for (const table of ["Category", "Tag"]) {
     await raw(
@@ -197,7 +187,6 @@ describe("deversion_category_tag migration", () => {
     const tagSharedSlug = `tag-shared-${marker}`;
     const tagUniqueSlug = `tag-unique-${marker}`;
 
-    // --- Category: two roots that both survive with the same slug -----------
     const seoCatA1 = await createSeo("A v1");
     const seoCatA2 = await createSeo("A v2");
     const seoCatB1 = await createSeo("B v1");
@@ -255,7 +244,6 @@ describe("deversion_category_tag migration", () => {
       isLatest: true,
     });
 
-    // --- Tag: two survivors, one of them with a duplicate slug --------------
     const seoTagT1 = await createSeo("T v1");
     const seoTagT2 = await createSeo("T v2");
     const seoTagU1 = await createSeo("U");
@@ -291,7 +279,6 @@ describe("deversion_category_tag migration", () => {
       isLatest: true,
     });
 
-    // --- Links pointing at deleted revisions --------------------------------
     const post1 = await createPost();
     const post2 = await createPost();
     await db.postCategory.createMany({
@@ -305,10 +292,8 @@ describe("deversion_category_tag migration", () => {
       `INSERT INTO "_PostToTag" ("A", "B") VALUES ('${post1.id}', '${tagT1.id}'), ('${post1.id}', '${tagT2.id}'), ('${post2.id}', '${tagU1.id}')`,
     );
 
-    // --- Run the collapse migration -----------------------------------------
     await raw(migrationSql);
 
-    // One row per logical item.
     expect(await db.category.findUnique({ where: { id: catA1.id } })).toBeNull();
     expect(await db.category.findUnique({ where: { id: catB1.id } })).toBeNull();
     expect(await db.tag.findUnique({ where: { id: tagT1.id } })).toBeNull();
@@ -318,8 +303,6 @@ describe("deversion_category_tag migration", () => {
     });
     expect(survivingCategories).toHaveLength(3);
 
-    // Survivors keep their id and their revision's slug, then collisions are
-    // resolved deterministically (oldest survivor keeps the bare slug).
     await expect(
       db.category.findUniqueOrThrow({ where: { id: catA2.id } }),
     ).resolves.toMatchObject({ slug: sharedSlug, title: "A v2" });
@@ -337,7 +320,6 @@ describe("deversion_category_tag migration", () => {
       db.tag.findUniqueOrThrow({ where: { id: tagU1.id } }),
     ).resolves.toMatchObject({ slug: tagUniqueSlug, title: "U" });
 
-    // Links repointed onto the survivor and de-duplicated.
     const post1Links = await db.postCategory.findMany({
       where: { postId: post1.id },
     });
@@ -358,7 +340,6 @@ describe("deversion_category_tag migration", () => {
     expect(tagLinks).toContainEqual({ A: post1.id, B: tagT2.id });
     expect(tagLinks).toContainEqual({ A: post2.id, B: tagU1.id });
 
-    // SEO rows owned solely by deleted revisions are removed; survivors' are kept.
     expect(await db.seo.findUnique({ where: { id: seoCatA1.id } })).toBeNull();
     expect(await db.seo.findUnique({ where: { id: seoCatB1.id } })).toBeNull();
     expect(await db.seo.findUnique({ where: { id: seoTagT1.id } })).toBeNull();
@@ -372,7 +353,6 @@ describe("deversion_category_tag migration", () => {
       await db.seo.findUnique({ where: { id: seoTagT2.id } }),
     ).not.toBeNull();
 
-    // Versioning columns dropped and the unique slug constraint restored.
     const legacyColumns = await db.$queryRaw<{ column_name: string }[]>`
       SELECT column_name FROM information_schema.columns
       WHERE table_schema = 'public'
