@@ -10,67 +10,69 @@ export async function getPageMetadataBySlug(
 ): Promise<Metadata | null> {
   const { siteName, siteUrl } = await getSettings();
 
-  const page = await db.page.findFirst({
-    where: {
-      slug,
-      status: ContentStatus.PUBLISHED,
-      isLatest: true,
-    },
+  const root = await db.pageRoot.findUnique({
+    where: { slug },
     select: {
-      title: true,
       slug: true,
-      seo: {
+      firstPublishedAt: true,
+      liveVersion: {
         select: {
-          title: true,
-          description: true,
-          canonicalUrl: true,
-          noIndex: true,
-          noFollow: true,
-          ogTwitterTitle: true,
-          ogTwitterDescription: true,
-          ogTwitterUrl: true,
+          publishedAt: true,
+          seo: {
+            select: {
+              title: true,
+              description: true,
+              canonicalUrl: true,
+              noIndex: true,
+              noFollow: true,
+              ogTwitterTitle: true,
+              ogTwitterDescription: true,
+              ogTwitterUrl: true,
+            },
+          },
         },
       },
-      firstPublishedAt: true,
-      publishedAt: true,
     },
-    orderBy: { firstPublishedAt: "desc" },
   });
 
-  if (!page || !page.seo) {
+  const liveVersion = root?.liveVersion;
+
+  if (!root || !liveVersion?.seo) {
     return null;
   }
 
   return {
-    title: page.seo.title,
-    description: page.seo.description,
+    title: liveVersion.seo.title,
+    description: liveVersion.seo.description,
     robots: {
-      index: !page.seo.noIndex,
-      follow: !page.seo.noFollow,
+      index: !liveVersion.seo.noIndex,
+      follow: !liveVersion.seo.noFollow,
       googleBot: {
-        index: !page.seo.noIndex,
-        follow: !page.seo.noFollow,
+        index: !liveVersion.seo.noIndex,
+        follow: !liveVersion.seo.noFollow,
       },
     },
     alternates: {
-      canonical: page.seo.canonicalUrl
-        ? page.seo.canonicalUrl
-        : `${siteUrl}/${page.slug}/`,
+      canonical: liveVersion.seo.canonicalUrl
+        ? liveVersion.seo.canonicalUrl
+        : `${siteUrl}/${root.slug}/`,
     },
     openGraph: {
-      title: page.seo.ogTwitterTitle || page.seo.title,
-      description: page.seo.ogTwitterDescription || page.seo.description || "",
-      url: page.seo.ogTwitterUrl || "",
+      title: liveVersion.seo.ogTwitterTitle || liveVersion.seo.title,
+      description:
+        liveVersion.seo.ogTwitterDescription || liveVersion.seo.description || "",
+      url: liveVersion.seo.ogTwitterUrl || "",
       siteName: siteName!,
       locale: "it_IT",
       type: "article",
-      publishedTime: page.firstPublishedAt.toISOString(),
-      modifiedTime: page.publishedAt.toISOString(),
+      publishedTime: root.firstPublishedAt?.toISOString(),
+      modifiedTime: liveVersion.publishedAt?.toISOString(),
     },
     twitter: {
       card: "summary_large_image",
-      title: page.seo.ogTwitterTitle || page.seo.title,
-      description: page.seo.ogTwitterDescription || page.seo.description || "",
+      title: liveVersion.seo.ogTwitterTitle || liveVersion.seo.title,
+      description:
+        liveVersion.seo.ogTwitterDescription || liveVersion.seo.description || "",
     },
   };
 }

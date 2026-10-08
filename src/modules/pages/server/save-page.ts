@@ -10,7 +10,6 @@ import { INITIAL_PUCK_DATA } from "../constants";
 
 import { PageError } from "./errors";
 import { acquirePageRootLock } from "./lock-page-root";
-import { toLegacySnapshot, upsertLegacyPage } from "./legacy-page-sync";
 
 /**
  * Persist an edit to the current revision of a Page root.
@@ -20,9 +19,6 @@ import { toLegacySnapshot, upsertLegacyPage } from "./legacy-page-sync";
  * - When the current revision is live, the edit forks a new `CHANGED` revision
  *   so the live site keeps serving the published version until the change is
  *   published.
- *
- * The matching legacy `Page` row is dual-written so the public SEO/sitemap
- * readers keep working until the cut-over ticket removes the old model.
  */
 export async function savePageVersion(input: PageUpdateValues) {
   const { id, rootId } = input;
@@ -71,15 +67,6 @@ export async function savePageVersion(input: PageUpdateValues) {
         data: { currentVersionId: forked.id, slug: nextSlug },
       });
 
-      await upsertLegacyPage(
-        tx,
-        toLegacySnapshot(forked, {
-          slug: nextSlug,
-          status: ContentStatus.CHANGED,
-          isLatest: false,
-        }),
-      );
-
       return { ...forked, slug: nextSlug };
     }
 
@@ -98,15 +85,6 @@ export async function savePageVersion(input: PageUpdateValues) {
         data: { slug: nextSlug },
       });
     }
-
-    await upsertLegacyPage(
-      tx,
-      toLegacySnapshot(updated, {
-        slug: nextSlug,
-        status: updated.status,
-        isLatest: false,
-      }),
-    );
 
     return { ...updated, slug: nextSlug };
   });

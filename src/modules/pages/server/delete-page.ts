@@ -17,7 +17,6 @@ async function seoIsReferenced(
 ): Promise<boolean> {
   const [
     pageVersions,
-    pages,
     posts,
     categories,
     tags,
@@ -26,7 +25,6 @@ async function seoIsReferenced(
     settings,
   ] = await Promise.all([
     tx.pageVersion.count({ where: { seoId } }),
-    tx.page.count({ where: { seoId } }),
     tx.post.count({ where: { seoId } }),
     tx.category.count({ where: { seoId } }),
     tx.tag.count({ where: { seoId } }),
@@ -37,7 +35,6 @@ async function seoIsReferenced(
 
   return (
     pageVersions +
-      pages +
       posts +
       categories +
       tags +
@@ -61,8 +58,7 @@ export interface DeletePageRootResult {
 /**
  * Delete a logical page: its `PageRoot`, every `PageVersion` (cascade) and the
  * SEO rows that belonged to those versions. SEO rows still referenced by
- * another entity are left intact. The legacy `Page` mirror rows are removed too
- * while dual-write is active, then any SEO left with no owner is deleted.
+ * another entity are left intact; any SEO left with no owner is deleted.
  */
 export async function deletePageRoot({
   versionId,
@@ -86,20 +82,15 @@ export async function deletePageRoot({
       where: { rootId },
       select: { seoId: true },
     });
-    const legacy = await tx.page.findMany({
-      where: { rootId },
-      select: { seoId: true },
-    });
 
     const seoIds = [
       ...new Set(
-        [...versions, ...legacy]
+        versions
           .map((row) => row.seoId)
           .filter((seoId): seoId is string => Boolean(seoId)),
       ),
     ];
 
-    await tx.page.deleteMany({ where: { rootId } });
     await tx.pageRoot.delete({ where: { id: rootId } });
 
     for (const seoId of seoIds) {

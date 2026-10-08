@@ -50,20 +50,15 @@ afterEach(async () => {
       where: { rootId: { in: rootIds } },
       select: { seoId: true },
     });
-    const legacy = await db.page.findMany({
-      where: { rootId: { in: rootIds } },
-      select: { seoId: true },
-    });
     const seoIds = [
       ...new Set(
-        [...versions, ...legacy]
-          .map((row) => row.seoId)
+        versions
+          .map((version) => version.seoId)
           .filter((id): id is string => Boolean(id)),
       ),
     ];
 
     await db.pageRoot.deleteMany({ where: { id: { in: rootIds } } });
-    await db.page.deleteMany({ where: { rootId: { in: rootIds } } });
     if (seoIds.length > 0) {
       await db.seo.deleteMany({ where: { id: { in: seoIds } } });
     }
@@ -75,12 +70,12 @@ afterEach(async () => {
   userIds.length = 0;
 });
 
-async function createPage(marker = randomUUID()) {
+async function createPage(marker: string = randomUUID()) {
   const created = await caller.create({
     title: `Page ${marker}`,
     slug: `page-${marker}`,
   });
-  rootIds.push(created.id);
+  rootIds.push(created.rootId);
   return created;
 }
 
@@ -90,14 +85,14 @@ describe("pagesRouter edit", () => {
 
     const updated = await caller.update({
       id: created.id,
-      rootId: created.id,
+      rootId: created.rootId,
       title: "Edited draft",
     });
 
     expect(updated.title).toBe("Edited draft");
 
     const versions = await db.pageVersion.findMany({
-      where: { rootId: created.id },
+      where: { rootId: created.rootId },
     });
     expect(versions).toHaveLength(1);
     expect(versions[0]!.id).toBe(created.id);
@@ -106,7 +101,7 @@ describe("pagesRouter edit", () => {
     expect(versions[0]!.title).toBe("Edited draft");
 
     const root = await db.pageRoot.findUniqueOrThrow({
-      where: { id: created.id },
+      where: { id: created.rootId },
     });
     expect(root.currentVersionId).toBe(created.id);
   });
@@ -117,12 +112,12 @@ describe("pagesRouter edit", () => {
 
     await caller.update({
       id: created.id,
-      rootId: created.id,
+      rootId: created.rootId,
       slug: nextSlug,
     });
 
     const root = await db.pageRoot.findUniqueOrThrow({
-      where: { id: created.id },
+      where: { id: created.rootId },
     });
     expect(root.slug).toBe(nextSlug);
 
@@ -134,19 +129,19 @@ describe("pagesRouter edit", () => {
     const created = await createPage();
     const published = await caller.publish({
       id: created.id,
-      rootId: created.id,
+      rootId: created.rootId,
     });
 
     const updated = await caller.update({
       id: published.id,
-      rootId: created.id,
+      rootId: created.rootId,
       title: "Staged change",
     });
 
     expect(updated.id).not.toBe(created.id);
 
     const versions = await db.pageVersion.findMany({
-      where: { rootId: created.id },
+      where: { rootId: created.rootId },
       orderBy: { version: "asc" },
     });
     expect(versions).toHaveLength(2);
@@ -159,7 +154,7 @@ describe("pagesRouter edit", () => {
     expect(versions[1]!.title).toBe("Staged change");
 
     const root = await db.pageRoot.findUniqueOrThrow({
-      where: { id: created.id },
+      where: { id: created.rootId },
     });
     expect(root.currentVersionId).toBe(updated.id);
     expect(root.liveVersionId).toBe(created.id);
@@ -167,23 +162,23 @@ describe("pagesRouter edit", () => {
 
   it("keeps editing the forked version in place", async () => {
     const created = await createPage();
-    await caller.publish({ id: created.id, rootId: created.id });
+    await caller.publish({ id: created.id, rootId: created.rootId });
     const forked = await caller.update({
       id: created.id,
-      rootId: created.id,
+      rootId: created.rootId,
       title: "First edit",
     });
 
     const second = await caller.update({
       id: forked.id,
-      rootId: created.id,
+      rootId: created.rootId,
       title: "Second edit",
     });
 
     expect(second.id).toBe(forked.id);
 
     const versions = await db.pageVersion.findMany({
-      where: { rootId: created.id },
+      where: { rootId: created.rootId },
     });
     expect(versions).toHaveLength(2);
   });
@@ -201,14 +196,14 @@ describe("pagesRouter publish", () => {
 
     const published = await caller.publish({
       id: created.id,
-      rootId: created.id,
+      rootId: created.rootId,
     });
 
     expect(published.status).toBe(ContentStatus.PUBLISHED);
     expect(published.publishedAt).toBeInstanceOf(Date);
 
     const root = await db.pageRoot.findUniqueOrThrow({
-      where: { id: created.id },
+      where: { id: created.rootId },
     });
     expect(root.liveVersionId).toBe(created.id);
     expect(root.currentVersionId).toBe(created.id);
@@ -217,17 +212,17 @@ describe("pagesRouter publish", () => {
 
   it("promotes a forked version and demotes the previous live version", async () => {
     const created = await createPage();
-    await caller.publish({ id: created.id, rootId: created.id });
+    await caller.publish({ id: created.id, rootId: created.rootId });
     const forked = await caller.update({
       id: created.id,
-      rootId: created.id,
+      rootId: created.rootId,
       title: "New live",
     });
 
-    await caller.publish({ id: forked.id, rootId: created.id });
+    await caller.publish({ id: forked.id, rootId: created.rootId });
 
     const root = await db.pageRoot.findUniqueOrThrow({
-      where: { id: created.id },
+      where: { id: created.rootId },
     });
     expect(root.liveVersionId).toBe(forked.id);
 
@@ -246,10 +241,10 @@ describe("pagesRouter publish", () => {
     const created = await createPage();
     const first = await caller.publish({
       id: created.id,
-      rootId: created.id,
+      rootId: created.rootId,
     });
     const rootAfterFirst = await db.pageRoot.findUniqueOrThrow({
-      where: { id: created.id },
+      where: { id: created.rootId },
     });
     expect(rootAfterFirst.firstPublishedAt?.toISOString()).toBe(
       first.publishedAt?.toISOString(),
@@ -257,16 +252,16 @@ describe("pagesRouter publish", () => {
 
     const forked = await caller.update({
       id: created.id,
-      rootId: created.id,
+      rootId: created.rootId,
       title: "Second publication",
     });
     const second = await caller.publish({
       id: forked.id,
-      rootId: created.id,
+      rootId: created.rootId,
     });
 
     const rootAfterSecond = await db.pageRoot.findUniqueOrThrow({
-      where: { id: created.id },
+      where: { id: created.rootId },
     });
     expect(rootAfterSecond.firstPublishedAt?.toISOString()).toBe(
       rootAfterFirst.firstPublishedAt?.toISOString(),
@@ -280,8 +275,8 @@ describe("pagesRouter publish", () => {
     const created = await createPage();
 
     const results = await Promise.all([
-      caller.publish({ id: created.id, rootId: created.id }),
-      caller.publish({ id: created.id, rootId: created.id }),
+      caller.publish({ id: created.id, rootId: created.rootId }),
+      caller.publish({ id: created.id, rootId: created.rootId }),
     ]);
 
     const publishedAts = results.map((result) =>
@@ -293,14 +288,50 @@ describe("pagesRouter publish", () => {
     ).toBe(true);
 
     const root = await db.pageRoot.findUniqueOrThrow({
-      where: { id: created.id },
+      where: { id: created.rootId },
     });
     expect(root.liveVersionId).toBe(created.id);
 
     const versions = await db.pageVersion.findMany({
-      where: { rootId: created.id },
+      where: { rootId: created.rootId },
     });
     expect(versions).toHaveLength(1);
+  });
+
+  it("leaves a single live version when two publishers promote different versions", async () => {
+    const created = await createPage();
+    await caller.publish({ id: created.id, rootId: created.rootId });
+
+    const second = await caller.update({
+      id: created.id,
+      rootId: created.rootId,
+      title: "Revision two",
+    });
+    const third = await caller.update({
+      id: created.id,
+      rootId: created.rootId,
+      title: "Revision three",
+    });
+
+    await Promise.all([
+      caller.publish({ id: second.id, rootId: created.rootId }),
+      caller.publish({ id: third.id, rootId: created.rootId }),
+    ]);
+
+    const root = await db.pageRoot.findUniqueOrThrow({
+      where: { id: created.rootId },
+    });
+    expect([second.id, third.id]).toContain(root.liveVersionId);
+
+    const versions = await db.pageVersion.findMany({
+      where: { rootId: created.rootId },
+      orderBy: { version: "asc" },
+    });
+    const live = versions.filter(
+      (version) => version.status === ContentStatus.PUBLISHED,
+    );
+    expect(live).toHaveLength(1);
+    expect(live[0]!.id).toBe(root.liveVersionId);
   });
 
   it("throws NOT_FOUND when the target version is unknown", async () => {
@@ -313,14 +344,14 @@ describe("pagesRouter publish", () => {
 describe("pagesRouter unpublish", () => {
   it("clears the live version and moves it back to CHANGED", async () => {
     const created = await createPage();
-    await caller.publish({ id: created.id, rootId: created.id });
+    await caller.publish({ id: created.id, rootId: created.rootId });
 
     const unpublished = await caller.unpublish({ id: created.id });
 
     expect(unpublished.status).toBe(ContentStatus.CHANGED);
 
     const root = await db.pageRoot.findUniqueOrThrow({
-      where: { id: created.id },
+      where: { id: created.rootId },
     });
     expect(root.liveVersionId).toBeNull();
     expect(root.currentVersionId).toBe(created.id);
@@ -328,54 +359,5 @@ describe("pagesRouter unpublish", () => {
 
   it("throws NOT_FOUND for an unknown page", async () => {
     await expect(caller.unpublish({ id: randomUUID() })).rejects.toThrow();
-  });
-});
-
-describe("pagesRouter dual-write", () => {
-  it("keeps the legacy row in sync when publishing a forked version", async () => {
-    const created = await createPage();
-    await caller.publish({ id: created.id, rootId: created.id });
-    const forked = await caller.update({
-      id: created.id,
-      rootId: created.id,
-      title: "Legacy live",
-    });
-
-    await caller.publish({ id: forked.id, rootId: created.id });
-
-    const legacyLive = await db.page.findUniqueOrThrow({
-      where: { id: forked.id },
-    });
-    expect(legacyLive.status).toBe(ContentStatus.PUBLISHED);
-    expect(legacyLive.isLatest).toBe(true);
-
-    const legacyPrevious = await db.page.findUniqueOrThrow({
-      where: { id: created.id },
-    });
-    expect(legacyPrevious.status).toBe(ContentStatus.PUBLISHED);
-    expect(legacyPrevious.isLatest).toBe(false);
-  });
-
-  it("mirrors the root firstPublishedAt onto the live legacy row", async () => {
-    const created = await createPage();
-    await caller.publish({ id: created.id, rootId: created.id });
-
-    const rootAfterFirst = await db.pageRoot.findUniqueOrThrow({
-      where: { id: created.id },
-    });
-
-    const forked = await caller.update({
-      id: created.id,
-      rootId: created.id,
-      title: "Second live",
-    });
-    await caller.publish({ id: forked.id, rootId: created.id });
-
-    const legacyLive = await db.page.findUniqueOrThrow({
-      where: { id: forked.id },
-    });
-    expect(legacyLive.firstPublishedAt.toISOString()).toBe(
-      rootAfterFirst.firstPublishedAt?.toISOString(),
-    );
   });
 });

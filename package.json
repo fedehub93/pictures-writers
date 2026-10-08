@@ -15,7 +15,6 @@
     "test:db:up": "docker compose up -d db",
     "test:db:down": "docker compose down",
     "test:db:reset": "docker compose down -v && docker compose up -d db",
-    "backfill:pages": "tsx scripts/backfill-page-root-version.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {

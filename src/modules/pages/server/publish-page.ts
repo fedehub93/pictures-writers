@@ -5,7 +5,6 @@ import { db } from "@/shared/lib/db";
 
 import { PageError } from "./errors";
 import { acquirePageRootLock } from "./lock-page-root";
-import { toLegacySnapshot, upsertLegacyPage } from "./legacy-page-sync";
 
 export interface PageVersionWithSlug extends PageVersion {
   slug: string;
@@ -66,8 +65,6 @@ export async function publishPageVersion({
       data: { status: ContentStatus.PUBLISHED, publishedAt: now },
     });
 
-    const firstPublishedAt = root.firstPublishedAt ?? now;
-
     await tx.pageRoot.update({
       where: { id: rootId },
       data: {
@@ -75,22 +72,6 @@ export async function publishPageVersion({
         ...(root.firstPublishedAt === null ? { firstPublishedAt: now } : {}),
       },
     });
-
-    await tx.page.updateMany({
-      where: { rootId },
-      data: { isLatest: false },
-    });
-
-    await upsertLegacyPage(
-      tx,
-      toLegacySnapshot(published, {
-        slug: root.slug,
-        status: ContentStatus.PUBLISHED,
-        isLatest: true,
-        publishedAt: now,
-        firstPublishedAt,
-      }),
-    );
 
     return { ...published, slug: root.slug };
   });
@@ -136,23 +117,6 @@ export async function unpublishPageVersion({
       where: { id: root.id },
       data: { liveVersionId: null },
     });
-
-    await tx.page.updateMany({
-      where: { rootId: root.id },
-      data: { isLatest: false },
-    });
-
-    await upsertLegacyPage(
-      tx,
-      toLegacySnapshot(unpublished, {
-        slug: root.slug,
-        status: ContentStatus.CHANGED,
-        isLatest: false,
-        ...(root.firstPublishedAt
-          ? { firstPublishedAt: root.firstPublishedAt }
-          : {}),
-      }),
-    );
 
     return { ...unpublished, slug: root.slug };
   });

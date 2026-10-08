@@ -7,7 +7,6 @@ import type { PageUpdateSeoValues } from "../schemas";
 
 import { PageError } from "./errors";
 import { acquirePageRootLock } from "./lock-page-root";
-import { toLegacySnapshot, upsertLegacyPage } from "./legacy-page-sync";
 import {
   clonePageSeo,
   createPageVersionSeo,
@@ -48,7 +47,7 @@ export async function updatePageVersionSeo(
     }
 
     if (root.liveVersionId === current.id) {
-      return forkVersionWithSeo(tx, root.id, root.slug, current, overrides);
+      return forkVersionWithSeo(tx, root.id, current, overrides);
     }
 
     const sharedWithAnotherVersion = current.seoId
@@ -66,19 +65,10 @@ export async function updatePageVersionSeo(
 
     const seo = await resolveSeo(tx, current, overrides);
 
-    const updated = await tx.pageVersion.update({
+    await tx.pageVersion.update({
       where: { id: current.id },
       data: { seoId: seo.id },
     });
-
-    await upsertLegacyPage(
-      tx,
-      toLegacySnapshot(updated, {
-        slug: root.slug,
-        status: updated.status,
-        isLatest: false,
-      }),
-    );
 
     return seo;
   });
@@ -112,7 +102,6 @@ async function resolveSeo(
 async function forkVersionWithSeo(
   tx: Prisma.TransactionClient,
   rootId: string,
-  slug: string,
   current: PageVersion,
   overrides: PageSeoOverrides,
 ): Promise<Seo> {
@@ -141,15 +130,6 @@ async function forkVersionWithSeo(
     where: { id: rootId },
     data: { currentVersionId: forked.id },
   });
-
-  await upsertLegacyPage(
-    tx,
-    toLegacySnapshot(forked, {
-      slug,
-      status: ContentStatus.CHANGED,
-      isLatest: false,
-    }),
-  );
 
   return seo;
 }

@@ -24,7 +24,6 @@ import { createCallerFactory } from "@/trpc/init";
 import { ContentStatus } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 
-import { backfillPageRootVersion } from "../backfill";
 import { getPublishedPageBySlug } from "../queries";
 import { pagesRouter } from "../procedures";
 
@@ -34,48 +33,6 @@ const rootIds: string[] = [];
 const userIds: string[] = [];
 
 let caller: ReturnType<typeof createCaller>;
-
-async function seedLegacyGroup(marker: string) {
-  const slug = `legacy-${randomUUID()}`;
-  const firstPublishedAt = new Date("2024-01-01T00:00:00.000Z");
-
-  const created = await db.page.create({
-    data: {
-      title: `${marker} live`,
-      slug,
-      version: 1,
-      status: ContentStatus.PUBLISHED,
-      isLatest: true,
-      firstPublishedAt,
-      publishedAt: firstPublishedAt,
-    },
-  });
-  const published = await db.page.update({
-    where: { id: created.id },
-    data: { rootId: created.id },
-  });
-  rootIds.push(published.id);
-
-  const changed = await db.page.create({
-    data: {
-      title: `${marker} draft`,
-      slug,
-      version: 2,
-      status: ContentStatus.CHANGED,
-      isLatest: false,
-      firstPublishedAt,
-      rootId: published.id,
-    },
-  });
-
-  return { published, changed, slug };
-}
-
-async function dropLegacyPages(rootId: string | string[]) {
-  await db.page.deleteMany({
-    where: { rootId: { in: Array.isArray(rootId) ? rootId : [rootId] } },
-  });
-}
 
 beforeEach(async () => {
   rootIds.length = 0;
@@ -94,20 +51,15 @@ afterEach(async () => {
       where: { rootId: { in: rootIds } },
       select: { seoId: true },
     });
-    const legacy = await db.page.findMany({
-      where: { rootId: { in: rootIds } },
-      select: { seoId: true },
-    });
     const seoIds = [
       ...new Set(
-        [...versions, ...legacy]
-          .map((row) => row.seoId)
+        versions
+          .map((version) => version.seoId)
           .filter((id): id is string => Boolean(id)),
       ),
     ];
 
     await db.pageRoot.deleteMany({ where: { id: { in: rootIds } } });
-    await db.page.deleteMany({ where: { rootId: { in: rootIds } } });
     if (seoIds.length > 0) {
       await db.seo.deleteMany({ where: { id: { in: seoIds } } });
     }
@@ -119,21 +71,36 @@ afterEach(async () => {
   userIds.length = 0;
 });
 
+async function createPage(marker: string = randomUUID()) {
+  const created = await caller.create({
+    title: `Page ${marker}`,
+    slug: `page-${marker}`,
+  });
+  rootIds.push(created.rootId);
+  return created;
+}
+
+async function createMultiVersionPage(marker: string = randomUUID()) {
+  const created = await createPage(marker);
+  const live = await caller.publish({ id: created.id, rootId: created.rootId });
+  const current = await caller.update({
+    id: created.id,
+    rootId: created.rootId,
+    title: `${marker} revised`,
+  });
+  return { rootId: created.rootId, live, current, slug: created.slug };
+}
+
 describe("pagesRouter reads via Root + Version", () => {
   describe("getOne", () => {
     it("returns the current version with its inherited slug and SEO", async () => {
-      const created = await caller.create({
-        title: "About",
-        slug: `about-${randomUUID()}`,
-      });
-      rootIds.push(created.id);
-      await dropLegacyPages(created.id);
+      const created = await createPage();
 
       const loaded = await caller.getOne({ id: created.id });
 
       expect(loaded.id).toBe(created.id);
-      expect(loaded.rootId).toBe(created.id);
-      expect(loaded.title).toBe("About");
+      expect(loaded.rootId).toBe(created.rootId);
+      expect(loaded.title).toBe(created.title);
       expect(loaded.slug).toBe(created.slug);
       expect(loaded.seo).toBeTruthy();
     });
@@ -145,22 +112,24 @@ describe("pagesRouter reads via Root + Version", () => {
 
   describe("getLastByRootId", () => {
     it("returns the current version of the root", async () => {
-      const created = await caller.create({
-        title: "Contact",
-        slug: `contact-${randomUUID()}`,
-      });
-      rootIds.push(created.id);
-      await dropLegacyPages(created.id);
+      const created = await createPage();
 
-      const loaded = await caller.getLastByRootId({ rootId: created.id });
+      const loaded = await caller.getLastByRootId({ rootId: created.rootId });
 
       expect(loaded.id).toBe(created.id);
-      expect(loaded.rootId).toBe(created.id);
+      expect(loaded.rootId).toBe(created.rootId);
       expect(loaded.slug).toBe(created.slug);
-      expect(loaded.title).toBe("Contact");
       expect(loaded.status).toBe(ContentStatus.DRAFT);
       expect(loaded.puckData).toBeTruthy();
       expect(loaded.seo).toBeTruthy();
+    });
+
+    it("returns the forked version when the current differs from the live one", async () => {
+      const { rootId, current } = await createMultiVersionPage();
+
+      const loaded = await caller.getLastByRootId({ rootId });
+
+      expect(loaded.id).toBe(current.id);
     });
 
     it("throws NOT_FOUND for an unknown root", async () => {
@@ -173,16 +142,8 @@ describe("pagesRouter reads via Root + Version", () => {
   describe("getMany", () => {
     it("returns one row per logical page", async () => {
       const marker = `Marker ${randomUUID()}`;
-      const first = await caller.create({
-        title: `${marker} One`,
-        slug: `one-${randomUUID()}`,
-      });
-      const second = await caller.create({
-        title: `${marker} Two`,
-        slug: `two-${randomUUID()}`,
-      });
-      rootIds.push(first.id, second.id);
-      await dropLegacyPages([first.id, second.id]);
+      const first = await createPage(`${marker} One`);
+      const second = await createPage(`${marker} Two`);
 
       const result = await caller.getMany({
         page: 1,
@@ -194,15 +155,13 @@ describe("pagesRouter reads via Root + Version", () => {
       expect(result.totalPages).toBe(1);
       expect(result.items).toHaveLength(2);
       expect(new Set(result.items.map((item) => item.rootId))).toEqual(
-        new Set([first.id, second.id]),
+        new Set([first.rootId, second.rootId]),
       );
     });
 
     it("shows the current version of a multi-version root", async () => {
       const marker = `Multi ${randomUUID()}`;
-      const { published, changed, slug } = await seedLegacyGroup(marker);
-      await backfillPageRootVersion();
-      await dropLegacyPages(published.rootId!);
+      const { rootId, current, slug } = await createMultiVersionPage(marker);
 
       const result = await caller.getMany({
         page: 1,
@@ -212,39 +171,18 @@ describe("pagesRouter reads via Root + Version", () => {
 
       expect(result.total).toBe(1);
       expect(result.items).toHaveLength(1);
-      expect(result.items[0]!.id).toBe(changed.id);
-      expect(result.items[0]!.rootId).toBe(published.id);
-      expect(result.items[0]!.title).toBe(`${marker} draft`);
+      expect(result.items[0]!.id).toBe(current.id);
+      expect(result.items[0]!.rootId).toBe(rootId);
+      expect(result.items[0]!.title).toBe(`${marker} revised`);
       expect(result.items[0]!.slug).toBe(slug);
       expect(result.items[0]!.status).toBe(ContentStatus.CHANGED);
     });
 
     it("orders unpublished pages before published ones", async () => {
       const marker = `Order ${randomUUID()}`;
-      const slug = `live-${randomUUID()}`;
-      const live = await db.page.create({
-        data: {
-          title: `${marker} live`,
-          slug,
-          version: 1,
-          status: ContentStatus.PUBLISHED,
-          isLatest: true,
-        },
-      });
-      await db.page.update({
-        where: { id: live.id },
-        data: { rootId: live.id },
-      });
-      rootIds.push(live.id);
-      await backfillPageRootVersion();
-      await dropLegacyPages(live.id);
-
-      const draft = await caller.create({
-        title: `${marker} draft`,
-        slug: `draft-${randomUUID()}`,
-      });
-      rootIds.push(draft.id);
-      await dropLegacyPages(draft.id);
+      const live = await createPage(`${marker} live`);
+      await caller.publish({ id: live.id, rootId: live.rootId });
+      const draft = await createPage(`${marker} draft`);
 
       const result = await caller.getMany({
         page: 1,
@@ -253,19 +191,14 @@ describe("pagesRouter reads via Root + Version", () => {
       });
 
       expect(result.items.map((item) => item.rootId)).toEqual([
-        draft.id,
-        live.id,
+        draft.rootId,
+        live.rootId,
       ]);
     });
 
     it("filters by the status of the current version", async () => {
       const marker = `Status ${randomUUID()}`;
-      const created = await caller.create({
-        title: `${marker} Draft`,
-        slug: `status-${randomUUID()}`,
-      });
-      rootIds.push(created.id);
-      await dropLegacyPages(created.id);
+      const created = await createPage(marker);
 
       const drafts = await caller.getMany({
         page: 1,
@@ -281,7 +214,7 @@ describe("pagesRouter reads via Root + Version", () => {
       });
 
       expect(drafts.total).toBe(1);
-      expect(drafts.items[0]!.rootId).toBe(created.id);
+      expect(drafts.items[0]!.rootId).toBe(created.rootId);
       expect(published.total).toBe(0);
     });
   });
@@ -289,26 +222,19 @@ describe("pagesRouter reads via Root + Version", () => {
   describe("getPublishedPageBySlug", () => {
     it("resolves slug to the live version of the root", async () => {
       const marker = `Public ${randomUUID()}`;
-      const { published, slug } = await seedLegacyGroup(marker);
-      await backfillPageRootVersion();
-      await dropLegacyPages(published.rootId!);
+      const { live, slug } = await createMultiVersionPage(marker);
 
       const page = await getPublishedPageBySlug(slug);
 
       expect(page).not.toBeNull();
-      expect(page!.id).toBe(published.id);
-      expect(page!.rootId).toBe(published.id);
-      expect(page!.title).toBe(`${marker} live`);
+      expect(page!.id).toBe(live.id);
+      expect(page!.rootId).toBe(live.rootId);
+      expect(page!.title).toBe(`Page ${marker}`);
       expect(page!.slug).toBe(slug);
     });
 
     it("returns null for a root that was never published", async () => {
-      const created = await caller.create({
-        title: "Never live",
-        slug: `never-${randomUUID()}`,
-      });
-      rootIds.push(created.id);
-      await dropLegacyPages(created.id);
+      const created = await createPage();
 
       const page = await getPublishedPageBySlug(created.slug);
 

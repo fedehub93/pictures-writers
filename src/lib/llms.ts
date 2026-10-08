@@ -65,7 +65,7 @@ export async function buildLlmsFullTxt() {
     seo?.description ??
     "La piattaforma italiana dedicata alla formazione e alla crescita professionale degli sceneggiatori cinematografici e televisivi.";
 
-  const [posts, products, pages] = await Promise.all([
+  const [posts, products, pageRoots] = await Promise.all([
     db.post.findMany({
       where: { status: ContentStatus.PUBLISHED, isLatest: true },
       select: {
@@ -94,10 +94,12 @@ export async function buildLlmsFullTxt() {
       },
       orderBy: { createdAt: "desc" },
     }),
-    db.page.findMany({
-      where: { status: ContentStatus.PUBLISHED, isLatest: true },
-      select: { title: true, slug: true },
-      orderBy: { title: "asc" },
+    db.pageRoot.findMany({
+      where: { liveVersion: { isNot: null } },
+      select: {
+        slug: true,
+        liveVersion: { select: { title: true } },
+      },
     }),
   ]);
 
@@ -124,8 +126,11 @@ export async function buildLlmsFullTxt() {
     )
     .join("\n");
 
-  const pageLines = pages
-    .map((page) => `- [${page.title}](${siteUrl}/${page.slug}/)`)
+  const pageLines = pageRoots
+    .sort((a, b) =>
+      (a.liveVersion?.title ?? "").localeCompare(b.liveVersion?.title ?? ""),
+    )
+    .map((root) => `- [${root.liveVersion!.title}](${siteUrl}/${root.slug}/)`)
     .join("\n");
 
   const faqLines = products

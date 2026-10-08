@@ -10,8 +10,6 @@ import { ContentStatus, Prisma } from "@/generated/prisma";
 
 import { hydratePuckForms } from "@/puck/utils/hydrate-puck-forms";
 
-import { createPageSeo } from "@/lib/seo";
-
 import {
   pageInsertSchema,
   pageUpdateSchema,
@@ -21,12 +19,11 @@ import {
 import {
   DEFAULT_PAGE,
   DEFAULT_PAGE_SIZE,
-  INITIAL_PUCK_DATA,
   MAX_PAGE_SIZE,
   MIN_PAGE_SIZE,
 } from "../constants";
 
-import { createPageRootVersion } from "./root-version";
+import { createPage } from "./create-page";
 import { savePageVersion } from "./save-page";
 import { publishPageVersion, unpublishPageVersion } from "./publish-page";
 import { updatePageVersionSeo } from "./update-seo";
@@ -37,33 +34,7 @@ export const pagesRouter = createTRPCRouter({
   create: protectedProcedure
     .input(pageInsertSchema)
     .mutation(async ({ input, ctx }) => {
-      const page = await db.page.create({
-        data: {
-          ...input,
-          version: 1,
-          status: ContentStatus.DRAFT,
-          puckData: INITIAL_PUCK_DATA,
-          userId: ctx.auth.id,
-        },
-      });
-
-      if (!page) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Missing required parameters!",
-        });
-      }
-
-      const updatedPage = await db.page.update({
-        where: { id: page.id },
-        data: { rootId: page.id },
-      });
-
-      const seo = await createPageSeo(updatedPage);
-
-      await createPageRootVersion(updatedPage, seo?.id ?? null);
-
-      return page;
+      return await createPage({ ...input, userId: ctx.auth.id });
     }),
 
   update: protectedProcedure
@@ -188,6 +159,24 @@ export const pagesRouter = createTRPCRouter({
         status: version.status,
         seo: version.seo,
       };
+    }),
+  getVersions: protectedProcedure
+    .input(z.object({ rootId: z.string() }))
+    .query(async ({ input }) => {
+      return await db.pageVersion.findMany({
+        where: { rootId: input.rootId },
+        orderBy: { version: "desc" },
+        select: {
+          id: true,
+          version: true,
+          title: true,
+          status: true,
+          publishedAt: true,
+          scheduledAt: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
     }),
   getMany: protectedProcedure
     .input(

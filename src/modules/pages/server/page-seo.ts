@@ -23,9 +23,7 @@ export type PageSeoOverrides = Pick<
 >;
 
 /**
- * Create a fresh SEO row for a page version when the source has none. Mirrors
- * `createPageSeo` defaults so a version created outside the legacy `Page` flow
- * still gets a complete SEO record.
+ * Create a fresh, self-owned SEO row for a page version that has none yet.
  */
 export async function createPageVersionSeo(
   tx: Prisma.TransactionClient,
