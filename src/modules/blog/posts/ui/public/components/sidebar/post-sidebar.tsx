@@ -19,7 +19,7 @@ import { StickyWrapper } from "@/shared/components/sticky-wrapper";
 interface PostSidebarProps {
   postCategories?: {
     category: {
-      rootId: string | null;
+      id: string;
     };
   }[];
 }

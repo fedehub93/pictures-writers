@@ -11,7 +11,7 @@ interface WidgetPostProps {
   postCategoryRootId?: string;
   postCategories?: {
     category: {
-      rootId: string | null;
+      id: string;
     };
   }[];
   categoryFilter: WidgetPostCategoryFilter;

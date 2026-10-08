@@ -6,8 +6,6 @@ export const MIN_PAGE_SIZE = 1;
 export const TAG_LIST_SORTS = [
   "title",
   "slug",
-  "status",
-  "publishedAt",
   "createdAt",
   "updatedAt",
 ] as const;

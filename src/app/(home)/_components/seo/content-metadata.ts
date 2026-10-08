@@ -180,12 +180,11 @@ export async function getCategoryMetadataBySlug(
 ): Promise<Metadata | null> {
   const { siteName, siteUrl } = await getSettings();
 
-  const category = await db.category.findFirst({
-    where: { slug, isLatest: true },
+  const category = await db.category.findUnique({
+    where: { slug },
     include: {
       seo: true,
     },
-    orderBy: { firstPublishedAt: "desc" },
   });
 
   if (!category || !category.seo) {
@@ -216,8 +215,7 @@ export async function getCategoryMetadataBySlug(
       siteName: siteName!,
       locale: "it_IT",
       type: "article",
-      publishedTime: category.firstPublishedAt?.toISOString(),
-      modifiedTime: category.publishedAt?.toISOString(),
+      modifiedTime: category.updatedAt.toISOString(),
     },
     twitter: {
       card: "summary_large_image",
@@ -233,12 +231,11 @@ export async function getTagMetdataBySlug(
 ): Promise<Metadata | null> {
   const { siteName, siteUrl } = await getSettings();
 
-  const tag = await db.tag.findFirst({
-    where: { slug, isLatest: true },
+  const tag = await db.tag.findUnique({
+    where: { slug },
     include: {
       seo: true,
     },
-    orderBy: { firstPublishedAt: "desc" },
   });
 
   if (!tag || !tag.seo) {
@@ -268,8 +265,7 @@ export async function getTagMetdataBySlug(
       siteName: siteName!,
       locale: "it_IT",
       type: "article",
-      publishedTime: tag.firstPublishedAt?.toISOString(),
-      modifiedTime: tag.publishedAt?.toISOString(),
+      modifiedTime: tag.updatedAt.toISOString(),
     },
     twitter: {
       card: "summary_large_image",

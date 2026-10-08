@@ -13,10 +13,10 @@ export const useSuspenseTags = (params: Input) => {
 };
 
 // Hook to fetch a tag using suspense
-export const useSuspenseTag = (rootId: string) => {
+export const useSuspenseTag = (id: string) => {
   const trpc = useTRPC();
 
-  return useSuspenseQuery(trpc.tags.getLastByRootId.queryOptions({ rootId }));
+  return useSuspenseQuery(trpc.tags.getOne.queryOptions({ id }));
 };
 
 export const useTagsQuery = () => {

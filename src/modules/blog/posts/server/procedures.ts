@@ -259,10 +259,8 @@ export const postsRouter = createTRPCRouter({
               category: {
                 select: {
                   id: true,
-                  rootId: true,
                   title: true,
                   slug: true,
-                  status: true,
                 },
               },
               sort: true,
@@ -273,10 +271,6 @@ export const postsRouter = createTRPCRouter({
               id: true,
               title: true,
               slug: true,
-              status: true,
-            },
-            where: {
-              isLatest: true,
             },
           },
           imageCover: true,

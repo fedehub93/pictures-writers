@@ -118,7 +118,7 @@ type GetWidgetPosts = {
   posts: { rootId: string; sort: number }[];
   postCategories?: {
     category: {
-      rootId: string | null;
+      id: string;
     };
   }[];
   categoryFilter: WidgetPostCategoryFilter;
@@ -184,7 +184,7 @@ export const getWidgetPosts = async ({
     whereClause.postCategories = {
       some: {
         category: {
-          rootId: { in: postCategories.map((c) => c.category.rootId!) },
+          id: { in: postCategories.map((c) => c.category.id) },
         },
       },
     };
@@ -196,7 +196,7 @@ export const getWidgetPosts = async ({
     whereClause.postCategories = {
       some: {
         category: {
-          rootId: { in: categories },
+          id: { in: categories },
         },
       },
     };
@@ -223,9 +223,7 @@ export const getWidgetCategories = async ({
   categoryType,
   limit,
 }: GetWidgetCategories) => {
-  let whereClause: Prisma.CategoryWhereInput = {
-    status: ContentStatus.PUBLISHED,
-    isLatest: true,
+  const whereClause: Prisma.CategoryWhereInput = {
     postCategories: {
       some: {
         post: {
@@ -246,7 +244,7 @@ export const getWidgetCategories = async ({
 
   const categoriessData = await db.category.findMany({
     where: whereClause,
-    orderBy: { firstPublishedAt: "desc" },
+    orderBy: { createdAt: "desc" },
     take: limit,
   });
 
@@ -264,7 +262,7 @@ export const getWidgetProducts = async ({
   products,
   limit,
 }: GetWidgetProducts) => {
-  let whereClause: Prisma.ProductWhereInput = {
+  const whereClause: Prisma.ProductWhereInput = {
     status: ContentStatus.PUBLISHED,
     isLatest: true,
   };

@@ -37,23 +37,19 @@ const generateBlogCategoriesSitemap = async () => {
   const { siteUrl } = await getSettings();
 
   const categories = await db.category.findMany({
-    where: {
-      status: ContentStatus.PUBLISHED,
-      isLatest: true,
-    },
     include: {
       seo: true,
     },
     orderBy: {
-      firstPublishedAt: "desc",
+      createdAt: "desc",
     },
   });
 
   const mappedCategories: MetadataRoute.Sitemap = categories
     .filter((category) => !category.seo?.canonicalUrl)
-    .map((post) => ({
-      url: `${siteUrl}/blog/${post.slug}/`,
-      lastModified: post.publishedAt ?? undefined,
+    .map((category) => ({
+      url: `${siteUrl}/blog/${category.slug}/`,
+      lastModified: category.updatedAt ?? undefined,
       changeFrequency: "monthly",
       priority: 1,
     }));
@@ -65,15 +61,11 @@ const generateBlogTagsSitemap = async () => {
   const { siteUrl } = await getSettings();
 
   const tags = await db.tag.findMany({
-    where: {
-      status: ContentStatus.PUBLISHED,
-      isLatest: true,
-    },
     include: {
       seo: true,
     },
     orderBy: {
-      firstPublishedAt: "desc",
+      createdAt: "desc",
     },
   });
 
@@ -81,7 +73,7 @@ const generateBlogTagsSitemap = async () => {
     .filter((tag) => !tag.seo?.canonicalUrl)
     .map((tag) => ({
       url: `${siteUrl}/blog/${tag.slug}/`,
-      lastModified: tag.publishedAt ?? undefined,
+      lastModified: tag.updatedAt ?? undefined,
       changeFrequency: "monthly",
       priority: 1,
     }));
