@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, it, expect, vi } from "vitest";
+import { afterEach, describe, it, expect, vi } from "vitest";
 import { Editor, type JSONContent } from "@tiptap/core";
 
 import {
@@ -33,6 +33,18 @@ import {
   Slice,
 } from "@tiptap/pm/model";
 import type { Schema } from "@tiptap/pm/model";
+
+const editors: Editor[] = [];
+
+const createEditor = (options: ConstructorParameters<typeof Editor>[0]) => {
+  const editor = new Editor(options);
+  editors.push(editor);
+  return editor;
+};
+
+afterEach(() => {
+  for (const editor of editors.splice(0)) editor.destroy();
+});
 
 const collectCells = (editor: Editor) => {
   const cells: { type: string; pos: number }[] = [];
@@ -74,7 +86,7 @@ const pressKey = (editor: Editor, key: string, init: KeyboardEventInit = {}) => 
 };
 
 const createTableEditor = () =>
-  new Editor({
+  createEditor({
     extensions: createProductionExtensions(),
     content: { type: "doc", content: [] },
   });
@@ -176,7 +188,7 @@ describe("Tiptap production editor seam", () => {
       ],
     };
 
-    const editor = new Editor({
+    const editor = createEditor({
       extensions: createProductionExtensions(),
       content: persisted,
     });
@@ -198,7 +210,7 @@ describe("Tiptap production editor seam", () => {
   });
 
   it("reports an empty document as empty and configures the placeholder", () => {
-    const editor = new Editor({
+    const editor = createEditor({
       extensions: createProductionExtensions(),
       content: { type: "doc", content: [] },
     });
@@ -218,7 +230,7 @@ describe("Tiptap production editor seam", () => {
   });
 
   it("shows the placeholder on empty paragraphs even when the document is not empty", () => {
-    const editor = new Editor({
+    const editor = createEditor({
       extensions: createProductionExtensions(),
       content: {
         type: "doc",
@@ -247,7 +259,7 @@ describe("Tiptap production editor seam", () => {
   });
 
   it("shows a node-specific placeholder for empty headings", () => {
-    const editor = new Editor({
+    const editor = createEditor({
       extensions: createProductionExtensions(),
       content: { type: "doc", content: [] },
     });
@@ -268,7 +280,7 @@ describe("Tiptap production editor seam", () => {
   });
 
   it("derives word count from the document", () => {
-    const editor = new Editor({
+    const editor = createEditor({
       extensions: createProductionExtensions(),
       content: {
         type: "doc",
@@ -290,7 +302,7 @@ describe("Tiptap production editor seam", () => {
   });
 
   it("derives zero word count and reading time from an empty document", () => {
-    const editor = new Editor({
+    const editor = createEditor({
       extensions: createProductionExtensions(),
       content: { type: "doc", content: [] },
     });
@@ -301,7 +313,7 @@ describe("Tiptap production editor seam", () => {
   });
 
   it("derives reading time from word count and rounds up for non-empty content", () => {
-    const editor = new Editor({
+    const editor = createEditor({
       extensions: createProductionExtensions(),
       content: {
         type: "doc",
@@ -324,7 +336,7 @@ describe("Tiptap production editor seam", () => {
 
     const onSave = vi.fn();
     let timeout: ReturnType<typeof setTimeout> | null = null;
-    const editor = new Editor({
+    const editor = createEditor({
       extensions: createProductionExtensions(),
       content: { type: "doc", content: [] },
       onUpdate: () => {
@@ -347,7 +359,7 @@ describe("Tiptap production editor seam", () => {
   });
 
   it("transforms a paragraph into a heading without losing text", () => {
-    const editor = new Editor({
+    const editor = createEditor({
       extensions: createProductionExtensions(),
       content: {
         type: "doc",
@@ -435,7 +447,7 @@ describe("Tiptap production editor seam", () => {
     });
 
     it("removes the slash query before inserting a heading", () => {
-      const editor = new Editor({
+      const editor = createEditor({
         extensions: createProductionExtensions(),
         content: {
           type: "doc",
@@ -465,7 +477,7 @@ describe("Tiptap production editor seam", () => {
     });
 
     it("removes the slash query before inserting a bullet list", () => {
-      const editor = new Editor({
+      const editor = createEditor({
         extensions: createProductionExtensions(),
         content: {
           type: "doc",
@@ -493,7 +505,7 @@ describe("Tiptap production editor seam", () => {
     });
 
     it("removes the slash query before inserting a code block", () => {
-      const editor = new Editor({
+      const editor = createEditor({
         extensions: createProductionExtensions(),
         content: {
           type: "doc",
@@ -521,7 +533,7 @@ describe("Tiptap production editor seam", () => {
     });
 
     it("inserts a divider and removes the slash query", () => {
-      const editor = new Editor({
+      const editor = createEditor({
         extensions: createProductionExtensions(),
         content: {
           type: "doc",
@@ -546,7 +558,7 @@ describe("Tiptap production editor seam", () => {
     });
 
     it("transforms an existing heading into a paragraph via slash command", () => {
-      const editor = new Editor({
+      const editor = createEditor({
         extensions: createProductionExtensions(),
         content: {
           type: "doc",
@@ -574,7 +586,7 @@ describe("Tiptap production editor seam", () => {
     });
 
     it("activates the slash suggestion plugin", () => {
-      const editor = new Editor({
+      const editor = createEditor({
         extensions: createProductionExtensions(),
         content: { type: "doc", content: [] },
       });
@@ -586,7 +598,7 @@ describe("Tiptap production editor seam", () => {
     });
 
     it("allows slash menu at the start of a block", () => {
-      const editor = new Editor({
+      const editor = createEditor({
         extensions: createProductionExtensions(),
         content: {
           type: "doc",
@@ -603,7 +615,7 @@ describe("Tiptap production editor seam", () => {
     });
 
     it("allows slash menu after a space", () => {
-      const editor = new Editor({
+      const editor = createEditor({
         extensions: createProductionExtensions(),
         content: {
           type: "doc",
@@ -621,7 +633,7 @@ describe("Tiptap production editor seam", () => {
     });
 
     it("disallows slash menu in the middle of a word", () => {
-      const editor = new Editor({
+      const editor = createEditor({
         extensions: createProductionExtensions(),
         content: {
           type: "doc",
@@ -640,7 +652,7 @@ describe("Tiptap production editor seam", () => {
 
   describe("table node", () => {
     it("inserts a 3x3 table with a header row via slash command", () => {
-      const editor = new Editor({
+      const editor = createEditor({
         extensions: createProductionExtensions(),
         content: {
           type: "doc",
@@ -754,7 +766,7 @@ describe("Tiptap production editor seam", () => {
     });
 
     it("Enter outside a table still splits the paragraph", () => {
-      const editor = new Editor({
+      const editor = createEditor({
         extensions: createProductionExtensions(),
         content: {
           type: "doc",
@@ -771,7 +783,7 @@ describe("Tiptap production editor seam", () => {
     });
 
     it("Escape exits the table into the following paragraph", () => {
-      const editor = new Editor({
+      const editor = createEditor({
         extensions: createProductionExtensions(),
         content: {
           type: "doc",
@@ -802,7 +814,7 @@ describe("Tiptap production editor seam", () => {
     });
 
     it("Escape from a late-table drops the caret to the paragraph after the table", () => {
-      const editor = new Editor({
+      const editor = createEditor({
         extensions: createProductionExtensions(),
         content: {
           type: "doc",
@@ -892,7 +904,7 @@ describe("Tiptap production editor seam", () => {
         ],
       };
 
-      const editor = new Editor({
+      const editor = createEditor({
         extensions: createProductionExtensions(),
         content: source,
       });
@@ -905,7 +917,7 @@ describe("Tiptap production editor seam", () => {
       expect(json.content?.[1]?.content).toHaveLength(2);
       expect(json.content?.[2]?.type).toBe("infobox");
 
-      const reloaded = new Editor({
+      const reloaded = createEditor({
         extensions: createProductionExtensions(),
         content: json,
       });
@@ -1181,7 +1193,7 @@ describe("Tiptap production editor seam", () => {
       expect(table).toBeDefined();
       expect(table?.content?.[0].content).toBeDefined();
 
-      const reloaded = new Editor({
+      const reloaded = createEditor({
         extensions: createProductionExtensions(),
         content: json,
       });
@@ -1198,7 +1210,7 @@ describe("Tiptap production editor seam", () => {
     });
 
     it("deletes the whole table from the document", () => {
-      const editor = new Editor({
+      const editor = createEditor({
         extensions: createProductionExtensions(),
         content: {
           type: "doc",
@@ -1262,7 +1274,7 @@ describe("Tiptap production editor seam", () => {
         ],
       };
 
-      const editor = new Editor({
+      const editor = createEditor({
         extensions: createProductionExtensions(),
         content: doc,
       });
@@ -1274,7 +1286,7 @@ describe("Tiptap production editor seam", () => {
         [180],
       ]);
 
-      const reloaded = new Editor({
+      const reloaded = createEditor({
         extensions: createProductionExtensions(),
         content: json,
       });
@@ -1323,7 +1335,7 @@ describe("Tiptap production editor seam", () => {
     });
 
     it("returns null for a position outside any table", () => {
-      const editor = new Editor({
+      const editor = createEditor({
         extensions: createProductionExtensions(),
         content: {
           type: "doc",
@@ -1460,7 +1472,7 @@ describe("Tiptap production editor seam", () => {
     });
 
     it("deletes the whole table through the menu", () => {
-      const editor = new Editor({
+      const editor = createEditor({
         extensions: createProductionExtensions(),
         content: {
           type: "doc",
