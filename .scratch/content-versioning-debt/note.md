@@ -14,11 +14,14 @@ workaround over a versioning model that conflates several concepts.
 
 This note records the debt so it is not lost; it is **not** a committed plan.
 
+> Update (2026-10-08): `Page` has since moved to Root + Version (ADR 0011) and
+> `Category`/`Tag` have left versioning entirely (ADR 0012). The debt below now
+> concerns `Post`, `ProductCategory`, and `Product` only.
+
 ## The debt
 
 The versioning model (a self-relation `rootId` + `version` + `status` + `isLatest`
-on `Post`, `Category`, `Tag`, `ProductCategory`, `Product`, `Page`) has these
-smells:
+on `Post`, `ProductCategory`, `Product`) has these smells:
 
 - **Two concepts in one flag.** `isLatest` means "live/published version", but
   there is no explicit "current version" (the most recent one). Editing a

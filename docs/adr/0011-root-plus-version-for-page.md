@@ -2,6 +2,8 @@
 
 **Status**: accepted
 
+**Partially superseded by**: ADR 0012 (taxonomy is not versioned) drops `Category` and `Tag` from the list of entities intended to follow this split.
+
 Content versioning used a single-table model: every revision of an item was a row in its own table (`Page`, `Post`, `Product`, …) distinguished by `rootId`, `version`, `status`, and `isLatest`. That model conflates identity with revision, duplicates large content columns per revision, overloads `isLatest` between "current draft" and "live published version", attaches external relationships to specific revisions, and implements publishing slightly differently per entity — with row-level locking only on Post. The CMS is becoming a generic, sellable product, so we split the simplest entity first to validate a shared pattern.
 
 We introduce **Root + Version** for `Page`:

@@ -62,6 +62,24 @@ _Avoid_: Entity, parent, item when the identity/revision distinction matters.
 One revision of a root: a snapshot of the mutable content (title, Puck data, status, publication dates, SEO, cover) with a sequential number scoped to the root. The Page pilot implements it as `PageVersion`. Editing a non-live version updates it in place; editing a live version forks a new version so the live site is unaffected until the new version is published.
 _Avoid_: Revision when referring to the Prisma row; draft when the version may be published.
 
+## Content versioning
+
+**Versioning**:
+The Root + Version model that separates a content item's stable identity from its revisions, so revisions can be drafted, published, and kept as history. It is reserved for long, frequently edited content, where protecting the live site from in-progress edits and preserving revision history has real value. The Page pilot implements it as `PageRoot` + `PageVersion`; `Post`, `Product`, and `ProductCategory` follow.
+_Avoid_: applying versioning to short, rarely edited system records.
+
+**Taxonomy**:
+The blog's controlled vocabulary of Categories and Tags. Taxonomy is not versioned: a Category or Tag has no draft, publish, or history — there is one row per item, edited live, identified by a stable unique slug. Versioning is for long, frequently edited content; taxonomy is a set of stable system entities and opts out entirely.
+_Avoid_: Category/Tag versions, draft category, publishing a tag.
+
+**Category**:
+A named grouping of Posts in the blog taxonomy. It is a single, directly-editable record (title, slug, description, SEO) with no revision model.
+_Avoid_: Product category when referring to the shop grouping.
+
+**Tag**:
+A free-form label attached to Posts in the blog taxonomy. It is a single, directly-editable record with no revision model.
+_Avoid_: Product category, Category when the distinction matters.
+
 ## Public rendering
 
 **On-demand revalidation**:
