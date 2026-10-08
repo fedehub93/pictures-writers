@@ -15,7 +15,7 @@
 - [x] `PostCategory` rows and `_PostToTag` join rows that referenced deleted rows are repointed to the survivor.
 - [x] `Seo` rows owned solely by deleted rows are removed; the survivor's SEO is kept.
 - [x] The migration is idempotent and one-way; rollback is documented as restoring a pre-deploy backup.
-- [ ] `npx prisma generate` succeeds and existing build/tests still compile (failing taxonomy-versioning tests are updated in a later ticket). `prisma generate` succeeds; the taxonomy code/tests are updated in tickets 02-04.
+- [x] `npx prisma generate` succeeds (the taxonomy code/tests that still reference the removed columns are updated in tickets 02-04).
 
 ## Notes
 

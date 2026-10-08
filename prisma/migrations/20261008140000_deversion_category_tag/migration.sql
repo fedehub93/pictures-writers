@@ -242,7 +242,11 @@ BEGIN
     AND NOT EXISTS (SELECT 1 FROM "Tag" x WHERE x."seoId" = s."id")
     AND NOT EXISTS (SELECT 1 FROM "Product" x WHERE x."seoId" = s."id")
     AND NOT EXISTS (SELECT 1 FROM "ProductCategory" x WHERE x."seoId" = s."id")
-    AND NOT EXISTS (SELECT 1 FROM "Seo" x WHERE x."rootId" = s."id");
+    -- Taxonomy SEO is self-rooted (`rootId = id`), so only treat another Seo
+    -- row as a dependent when it is a genuine child, not the row itself.
+    AND NOT EXISTS (
+      SELECT 1 FROM "Seo" x WHERE x."rootId" = s."id" AND x."id" <> s."id"
+    );
 
   DROP TABLE IF EXISTS "_DeletedSeo";
   DROP TABLE IF EXISTS "_CategorySurvivor";
