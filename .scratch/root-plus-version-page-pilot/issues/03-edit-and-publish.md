@@ -8,12 +8,12 @@
 
 ## Acceptance criteria
 
-- [ ] Editing a draft page updates the current `PageVersion` in place.
-- [ ] Editing a published page creates a new `CHANGED` `PageVersion` while the live version remains unchanged.
-- [ ] Publish promotes the target version to the root's `liveVersionId` and sets `status = PUBLISHED`.
-- [ ] Publish acquires a row-level lock on `PageRoot` to prevent concurrent publish races.
-- [ ] Unpublish clears `liveVersionId` and moves the published version to `CHANGED`.
-- [ ] `firstPublishedAt` is set only on the first publication of the root.
+- [x] Editing a draft page updates the current `PageVersion` in place.
+- [x] Editing a published page creates a new `CHANGED` `PageVersion` while the live version remains unchanged.
+- [x] Publish promotes the target version to the root's `liveVersionId` and sets `status = PUBLISHED`.
+- [x] Publish acquires a row-level lock on `PageRoot` to prevent concurrent publish races.
+- [x] Unpublish clears `liveVersionId` and moves the published version to `CHANGED`.
+- [x] `firstPublishedAt` is set only on the first publication of the root.
 
 ## Notes
 
