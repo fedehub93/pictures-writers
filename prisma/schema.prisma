@@ -192,8 +192,6 @@ model User {
   pageVersions PageVersion[]
 
   posts       Post[]
-  categories  Category[]
-  tags        Tag[]
   postAuthors PostAuthor[]
 
   notifications Notification[]
@@ -492,33 +490,16 @@ model Category {
   id String @id @default(uuid())
 
   title       String
-  slug        String
+  slug        String @unique
   description String?
-
-  version Int
-
-  status ContentStatus @default(DRAFT)
-
-  isLatest Boolean @default(true)
-
-  rootId       String?
-  root         Category?  @relation("RootChildren", fields: [rootId], references: [id])
-  rootChildren Category[] @relation("RootChildren")
 
   postCategories PostCategory[]
 
   seo   Seo?    @relation(fields: [seoId], references: [id])
   seoId String?
 
-  user   User?   @relation(fields: [userId], references: [id])
-  userId String?
-
-  firstPublishedAt DateTime?
-  publishedAt      DateTime?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
-  @@index([rootId])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model PostCategory {
@@ -537,33 +518,16 @@ model Tag {
   id String @id @default(uuid())
 
   title       String
-  slug        String
+  slug        String @unique
   description String?
-
-  version Int
-
-  status ContentStatus @default(DRAFT)
-
-  isLatest Boolean @default(true)
-
-  rootId       String?
-  root         Tag?    @relation("RootChildren", fields: [rootId], references: [id])
-  rootChildren Tag[]   @relation("RootChildren")
 
   posts Post[]
 
   seo   Seo?    @relation(fields: [seoId], references: [id])
   seoId String?
 
-  user   User?   @relation(fields: [userId], references: [id])
-  userId String?
-
-  firstPublishedAt DateTime?
-  publishedAt      DateTime?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
-  @@index([rootId])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum EmailProvider {
