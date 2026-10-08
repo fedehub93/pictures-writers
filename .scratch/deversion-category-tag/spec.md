@@ -39,7 +39,7 @@ revision model.
 - One row per logical category/tag. `slug` becomes `@unique` and is the stable
   public identity.
 - Remove `version`, `rootId`, `isLatest`, `status`, `firstPublishedAt`,
-  `publishedAt`, `userId`. Keep `id`, `title`, `slug`, `description`, `seoId`,
+  `publishedAt`. Keep `id`, `title`, `slug`, `description`, `seoId`, `userId`,
   `createdAt`, `updatedAt`.
 - Edits apply immediately; there is no draft/publish/unpublish step.
 - `Seo` stays a one-to-one relationship on the row (as with `PageVersion`), so
@@ -74,8 +74,10 @@ are repointed, and the extra rows are deleted.
 ## Implementation Decisions
 
 - **Schema**: `Category` and `Tag` keep their table names and become single-row
-  entities: `id`, `title`, `slug @unique`, `description?`, `seoId?`, `createdAt`,
-  `updatedAt`. The `@@index([rootId])` and all versioning columns are dropped.
+  entities: `id`, `title`, `slug @unique`, `description?`, `seoId?`, `userId?`,
+  `createdAt`, `updatedAt`. The `@@index([rootId])` and all versioning columns are
+  dropped. `userId` is kept as a plain creator reference (it is not part of the
+  versioning model).
 - **Stable identity**: `slug` gains a `@unique` constraint. Because the current
   slugs are not unique, the migration must resolve collisions (append a numeric
   suffix, deterministically) before adding the constraint.

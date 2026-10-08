@@ -91,9 +91,9 @@ BEGIN
   JOIN "_CategoryRemap" r ON r."oldId" = c."id"
   WHERE c."seoId" IS NOT NULL;
 
-  -- 3b. Drop the self-relation and owner FK, then the non-surviving rows.
+  -- 3b. Drop the self-relation, then the non-surviving rows. `userId` is kept
+  --     (it is a plain creator reference, not part of the versioning model).
   ALTER TABLE "Category" DROP CONSTRAINT IF EXISTS "Category_rootId_fkey";
-  ALTER TABLE "Category" DROP CONSTRAINT IF EXISTS "Category_userId_fkey";
 
   DELETE FROM "Category" c
   USING "_CategoryRemap" r
@@ -145,7 +145,6 @@ BEGIN
   WHERE t."seoId" IS NOT NULL;
 
   ALTER TABLE "Tag" DROP CONSTRAINT IF EXISTS "Tag_rootId_fkey";
-  ALTER TABLE "Tag" DROP CONSTRAINT IF EXISTS "Tag_userId_fkey";
 
   DELETE FROM "Tag" t
   USING "_TagRemap" r
@@ -213,7 +212,6 @@ BEGIN
     DROP COLUMN IF EXISTS "status",
     DROP COLUMN IF EXISTS "isLatest",
     DROP COLUMN IF EXISTS "rootId",
-    DROP COLUMN IF EXISTS "userId",
     DROP COLUMN IF EXISTS "firstPublishedAt",
     DROP COLUMN IF EXISTS "publishedAt";
 
@@ -222,7 +220,6 @@ BEGIN
     DROP COLUMN IF EXISTS "status",
     DROP COLUMN IF EXISTS "isLatest",
     DROP COLUMN IF EXISTS "rootId",
-    DROP COLUMN IF EXISTS "userId",
     DROP COLUMN IF EXISTS "firstPublishedAt",
     DROP COLUMN IF EXISTS "publishedAt";
 

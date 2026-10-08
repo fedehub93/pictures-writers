@@ -8,7 +8,7 @@
 
 ## Acceptance criteria
 
-- [x] `Category` and `Tag` models are `{ id, title, slug @unique, description?, seoId?, createdAt, updatedAt }`; `version`, `rootId`, `isLatest`, `status`, `firstPublishedAt`, `publishedAt`, `userId`, and `@@index([rootId])` are removed.
+- [x] `Category` and `Tag` models are `{ id, title, slug @unique, description?, seoId?, userId?, createdAt, updatedAt }`; `version`, `rootId`, `isLatest`, `status`, `firstPublishedAt`, `publishedAt`, and `@@index([rootId])` are removed (`userId` is kept as a plain creator reference).
 - [x] `PostCategory.categoryId` references `Category.id`; the `Post ↔ Tag` relation references `Tag.id`; `postId` is unchanged.
 - [x] The migration resolves slug collisions deterministically before adding the `@unique` constraint.
 - [x] The migration collapses each `rootId` group to its canonical row (the `isLatest = true` / `PUBLISHED` row, else the highest `version`), reusing the survivor's id.
