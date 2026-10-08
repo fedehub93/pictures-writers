@@ -1,11 +1,12 @@
 import z from "zod";
 import { db } from "@/shared/lib/db";
+import { sortByDefaultOrder } from "@/shared/lib/list-sorting";
 import { revalidateContent } from "@/shared/lib/revalidate-content";
 
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 
-import { ContentStatus } from "@/generated/prisma";
+import { ContentStatus, Prisma } from "@/generated/prisma";
 
 import { hydratePuckForms } from "@/puck/utils/hydrate-puck-forms";
 
@@ -167,71 +168,84 @@ export const pagesRouter = createTRPCRouter({
   getOne: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ input }) => {
-      const page = await db.page.findUnique({
+      const version = await db.pageVersion.findUnique({
         where: {
           id: input.id,
         },
-      });
-
-      if (!page) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Page not found",
-        });
-      }
-
-      const hydratedPage = {
-        ...page,
-        puckData: page.puckData ? await hydratePuckForms(page.puckData) : null,
-      };
-
-      return hydratedPage;
-    }),
-  getLastByRootId: protectedProcedure
-    .input(z.object({ rootId: z.string() }))
-    .query(async ({ input }) => {
-      const page = await db.page.findFirst({
-        where: {
-          rootId: input.rootId,
-        },
-        orderBy: {
-          publishedAt: "desc",
-        },
-        select: {
-          id: true,
-          rootId: true,
-          title: true,
-          slug: true,
-          puckData: true,
-          status: true,
-          seo: {
+        include: {
+          seo: true,
+          root: {
             select: {
-              id: true,
-              rootId: true,
-              title: true,
-              description: true,
-              ogTwitterTitle: true,
-              ogTwitterDescription: true,
-              noIndex: true,
-              noFollow: true,
+              slug: true,
             },
           },
         },
       });
 
-      if (!page) {
+      if (!version) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Page not found",
         });
       }
 
-      const hydratedPage = {
-        ...page,
-        puckData: page.puckData ? await hydratePuckForms(page.puckData) : null,
-      };
+      const { root, ...rest } = version;
 
-      return hydratedPage;
+      return {
+        ...rest,
+        slug: root.slug,
+        puckData: rest.puckData
+          ? await hydratePuckForms(rest.puckData)
+          : null,
+      };
+    }),
+  getLastByRootId: protectedProcedure
+    .input(z.object({ rootId: z.string() }))
+    .query(async ({ input }) => {
+      const root = await db.pageRoot.findUnique({
+        where: {
+          id: input.rootId,
+        },
+        include: {
+          currentVersion: {
+            include: {
+              seo: {
+                select: {
+                  id: true,
+                  rootId: true,
+                  title: true,
+                  description: true,
+                  ogTwitterTitle: true,
+                  ogTwitterDescription: true,
+                  noIndex: true,
+                  noFollow: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!root || !root.currentVersion) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Page not found",
+        });
+      }
+
+      const version = root.currentVersion;
+
+      return {
+        id: version.id,
+        rootId: root.id,
+        title: version.title,
+        slug: root.slug,
+        puckData: version.puckData
+          ? await hydratePuckForms(version.puckData)
+          : null,
+        status: version.status,
+        seo: version.seo,
+      };
     }),
   getMany: protectedProcedure
     .input(
@@ -253,46 +267,66 @@ export const pagesRouter = createTRPCRouter({
       }),
     )
     .query(async ({ input }) => {
-      const pages = await db.page.findMany({
-        where: {
-          title: input.search
-            ? { contains: input.search, mode: "insensitive" }
-            : undefined,
-          status: input.status ? { in: [input.status] } : undefined,
+      const where: Prisma.PageRootWhereInput = {
+        currentVersion: {
+          is: {
+            title: input.search
+              ? { contains: input.search, mode: "insensitive" }
+              : undefined,
+            status: input.status ? { in: [input.status] } : undefined,
+          },
         },
-        distinct: ["rootId"],
+      };
+
+      const roots = await db.pageRoot.findMany({
+        where,
         include: {
-          seo: true,
+          currentVersion: {
+            include: {
+              seo: true,
+            },
+          },
         },
-        orderBy: {
-          publishedAt: "desc",
-        },
-        take: input.pageSize,
-        skip: (input.page - 1) * input.pageSize,
       });
 
-      const hydratedPages = await Promise.all(
-        pages.map(async (p) => ({
-          ...p,
-          puckData: p.puckData ? await hydratePuckForms(p.puckData) : null,
+      const rows = roots
+        .map((root) => {
+          const version = root.currentVersion;
+          if (!version) return null;
+
+          return {
+            id: version.id,
+            title: version.title,
+            status: version.status,
+            publishedAt: version.publishedAt,
+            version,
+            root,
+          };
+        })
+        .filter((row): row is NonNullable<typeof row> => row !== null);
+
+      const total = rows.length;
+      const totalPages = Math.ceil(total / input.pageSize);
+
+      const pageRows = sortByDefaultOrder(rows).slice(
+        (input.page - 1) * input.pageSize,
+        input.page * input.pageSize,
+      );
+
+      const items = await Promise.all(
+        pageRows.map(async ({ version, root }) => ({
+          ...version,
+          slug: root.slug,
+          firstPublishedAt: root.firstPublishedAt,
+          puckData: version.puckData
+            ? await hydratePuckForms(version.puckData)
+            : null,
         })),
       );
 
-      const distinctPages = await db.page.groupBy({
-        by: ["rootId"],
-        where: {
-          title: input.search
-            ? { contains: input.search, mode: "insensitive" }
-            : undefined,
-          status: input.status ? { in: [input.status] } : undefined,
-        },
-      });
-
-      const totalPages = Math.ceil(distinctPages.length / input.pageSize);
-
       return {
-        items: hydratedPages,
-        total: distinctPages.length,
+        items,
+        total,
         totalPages,
       };
     }),

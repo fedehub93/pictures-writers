@@ -1,5 +1,3 @@
-import { ContentStatus } from "@/generated/prisma";
-
 import { db } from "@/shared/lib/db";
 
 import { hydratePuckForms } from "@/puck/utils/hydrate-puck-forms";
@@ -11,38 +9,40 @@ import { hydratePuckForms } from "@/puck/utils/hydrate-puck-forms";
  */
 
 export const getPublishedPageBySlug = async (slug: string) => {
-  const page = await db.page.findFirst({
+  const root = await db.pageRoot.findUnique({
     where: {
       slug,
-      status: ContentStatus.PUBLISHED,
-      isLatest: true,
     },
-    select: {
-      id: true,
-      rootId: true,
-      title: true,
-      slug: true,
-      editorType: true,
-      puckData: true,
-      firstPublishedAt: true,
-      updatedAt: true,
-      seo: {
-        select: {
-          title: true,
-          description: true,
+    include: {
+      liveVersion: {
+        include: {
+          seo: {
+            select: {
+              title: true,
+              description: true,
+            },
+          },
         },
       },
     },
-    orderBy: {
-      publishedAt: "desc",
-    },
   });
 
-  if (!page) return null;
+  if (!root || !root.liveVersion) return null;
+
+  const version = root.liveVersion;
 
   const hydratedPage = {
-    ...page,
-    puckData: page.puckData ? await hydratePuckForms(page.puckData) : null,
+    id: version.id,
+    rootId: root.id,
+    title: version.title,
+    slug: root.slug,
+    editorType: version.editorType,
+    puckData: version.puckData
+      ? await hydratePuckForms(version.puckData)
+      : null,
+    firstPublishedAt: root.firstPublishedAt,
+    updatedAt: version.updatedAt,
+    seo: version.seo,
   };
 
   return hydratedPage;

@@ -44,6 +44,9 @@ export async function createPageRootVersion(
 
     const version = await tx.pageVersion.create({
       data: {
+        // Reuse the legacy id so the version id, the first version id and the
+        // legacy `Page.id` all converge, exactly like the one-time backfill.
+        id: page.id,
         ...data,
         seoId,
         createdAt: page.createdAt,

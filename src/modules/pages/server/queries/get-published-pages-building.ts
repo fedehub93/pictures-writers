@@ -1,22 +1,27 @@
-import { ContentStatus } from "@/generated/prisma";
-
 import { db } from "@/shared/lib/db";
 
 export const getPublishedPagesBuilding = async () => {
-  const pages = await db.page.findMany({
+  const roots = await db.pageRoot.findMany({
     where: {
-      status: ContentStatus.PUBLISHED,
-      isLatest: true,
+      liveVersion: { isNot: null },
     },
     select: {
       id: true,
-      rootId: true,
       slug: true,
+      liveVersion: {
+        select: {
+          id: true,
+        },
+      },
     },
     orderBy: {
       firstPublishedAt: "desc",
     },
   });
 
-  return pages;
+  return roots.map((root) => ({
+    id: root.liveVersion!.id,
+    rootId: root.id,
+    slug: root.slug,
+  }));
 };
