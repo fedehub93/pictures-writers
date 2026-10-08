@@ -2,11 +2,6 @@
 
 import { createColumnHelper } from "@tanstack/react-table";
 
-import { ContentStatus } from "@/generated/prisma";
-
-import { cn, getFirstCharUppercase } from "@/shared/lib/utils";
-
-import { Badge } from "@/shared/ui/badge";
 import { Checkbox } from "@/shared/ui/checkbox";
 
 import { formatDate } from "@/shared/lib/format";
@@ -76,53 +71,9 @@ export const columns = columnHelper.columns([
       return <div>{date}</div>;
     },
   }),
-  columnHelper.accessor("publishedAt", {
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Published at" />
-    ),
-    sortFn: "datetime",
-    cell: ({ row }) => {
-      const publishedAt = row.original.publishedAt;
-      if (!publishedAt) return <div>—</div>;
-      return <div>{formatDate({ date: publishedAt })}</div>;
-    },
-  }),
-  columnHelper.accessor("status", {
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Status" />
-    ),
-    sortFn: "text",
-    cell: ({ row }) => {
-      const status = row.original.status;
-
-      return (
-        <Badge
-          className={cn(
-            status === ContentStatus.DRAFT && "bg-slate-700",
-            status === ContentStatus.CHANGED && "bg-sky-700",
-            status === ContentStatus.PUBLISHED && "bg-emerald-700",
-          )}
-        >
-          {getFirstCharUppercase(status.toLowerCase())}
-        </Badge>
-      );
-    },
-  }),
   columnHelper.display({
     id: "actions",
-    cell: ({ row }) => {
-      const { rootId, id, status } = row.original;
-
-      if (!rootId) return null;
-
-      return (
-        <CategoriesActions
-          rootId={rootId}
-          id={id}
-          status={status}
-        />
-      );
-    },
+    cell: ({ row }) => <CategoriesActions id={row.original.id} />,
     enableHiding: false,
   }),
 ]);

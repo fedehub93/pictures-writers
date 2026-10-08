@@ -61,7 +61,7 @@ export const BlockVisibilityForm = ({
           label="Excluded categories"
           data={
             categories
-              ? categories.items.map((c) => ({ id: c.rootId!, label: c.title }))
+              ? categories.items.map((c) => ({ id: c.id, label: c.title }))
               : []
           }
           isLoading={isCategoriesLoading}
@@ -73,7 +73,7 @@ export const BlockVisibilityForm = ({
           label="Excluded tags"
           data={
             tags
-              ? tags.items.map((c) => ({ id: c.rootId!, label: c.title }))
+              ? tags.items.map((c) => ({ id: c.id, label: c.title }))
               : []
           }
           isLoading={isTagsLoading}

@@ -25,10 +25,8 @@ interface CategoriesFormProps {
     postCategories: {
       category: {
         id: string;
-        rootId: string | null;
         title: string;
         slug: string;
-        status: string;
       };
       sort: number;
     }[];
@@ -136,7 +134,6 @@ export const CategoriesForm = ({
                   ? categories.items.map((c) => ({
                       id: c.id,
                       title: c.title,
-                      status: c.status,
                     }))
                   : []
               }

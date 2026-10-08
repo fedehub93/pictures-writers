@@ -32,10 +32,8 @@ export const getLastPostByRootId = async (rootId: string) => {
             category: {
               select: {
                 id: true,
-                rootId: true,
                 title: true,
                 slug: true,
-                status: true,
               },
             },
             sort: true,
@@ -46,10 +44,6 @@ export const getLastPostByRootId = async (rootId: string) => {
             id: true,
             title: true,
             slug: true,
-            status: true,
-          },
-          where: {
-            isLatest: true,
           },
         },
         imageCover: {

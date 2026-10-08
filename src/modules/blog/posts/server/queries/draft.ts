@@ -69,7 +69,7 @@ export const getDraftPostBySlug = async (slug: string) => {
         select: {
           category: {
             select: {
-              rootId: true,
+              id: true,
               title: true,
               slug: true,
             },
@@ -78,7 +78,7 @@ export const getDraftPostBySlug = async (slug: string) => {
       },
       tags: {
         select: {
-          rootId: true,
+          id: true,
           title: true,
           slug: true,
         },

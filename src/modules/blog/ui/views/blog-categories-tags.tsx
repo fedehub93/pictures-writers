@@ -67,7 +67,7 @@ export const BlogCategoriesTags = async ({ slug }: BlogCategoriesTagsProps) => {
   }
   if (!result) {
     const category = await getPublishedCategoryBySlug(slug);
-    if (category && category.rootId) {
+    if (category) {
       result = await getPostsByFilters({
         where: {
           status: ContentStatus.PUBLISHED,
@@ -75,7 +75,7 @@ export const BlogCategoriesTags = async ({ slug }: BlogCategoriesTagsProps) => {
           postCategories: {
             some: {
               category: {
-                rootId: { equals: category.rootId },
+                id: { equals: category.id },
               },
             },
           },
@@ -88,14 +88,14 @@ export const BlogCategoriesTags = async ({ slug }: BlogCategoriesTagsProps) => {
 
   if (!result) {
     const tag = await getPublishedTagBySlug(slug);
-    if (tag && tag.rootId) {
+    if (tag) {
       result = await getPostsByFilters({
         where: {
           status: ContentStatus.PUBLISHED,
           isLatest: true,
           tags: {
             some: {
-              rootId: { equals: tag.rootId },
+              id: { equals: tag.id },
             },
           },
         },

@@ -19,7 +19,6 @@ import { useTagsFilters } from "../../hooks/use-tags-filters";
 
 interface SeoFormProps {
   id: string;
-  rootId: string;
   initialData: {
     title: string;
     description: string | null;
@@ -31,17 +30,16 @@ interface SeoFormProps {
   } | null;
 }
 
-export const SeoForm = ({ id, rootId, initialData }: SeoFormProps) => {
+export const SeoForm = ({ id, initialData }: SeoFormProps) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const [filters, _] = useTagsFilters();
+  const [filters] = useTagsFilters();
 
   const form = useForm<TagUpdateSeoValues>({
     resolver: zodResolver(tagUpdateSeoSchema),
     values: {
       ...initialData,
       id,
-      rootId,
       description: initialData?.description ?? "",
       canonicalUrl: initialData?.canonicalUrl ?? "",
       ogTwitterTitle: initialData?.ogTwitterTitle ?? "",
@@ -56,11 +54,6 @@ export const SeoForm = ({ id, rootId, initialData }: SeoFormProps) => {
     trpc.tags.updateSeo.mutationOptions({
       onSuccess: () => {
         queryClient.invalidateQueries(trpc.tags.getMany.queryFilter(filters));
-        if (rootId) {
-          queryClient.invalidateQueries(
-            trpc.tags.getLastByRootId.queryFilter({ rootId }),
-          );
-        }
         toast.success("Tag updated successfully");
       },
     }),
@@ -70,7 +63,6 @@ export const SeoForm = ({ id, rootId, initialData }: SeoFormProps) => {
     updateTagSeo({
       ...dirtyData,
       id,
-      rootId,
       noIndex: dirtyData.noIndex === false ? false : true,
       noFollow: dirtyData.noFollow === false ? false : true,
     });

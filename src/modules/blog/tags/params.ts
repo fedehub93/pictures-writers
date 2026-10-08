@@ -14,7 +14,6 @@ export const filtersSearchParams = {
   page: parseAsInteger
     .withDefault(DEFAULT_PAGE)
     .withOptions({ clearOnDefault: true }),
-  status: parseAsStringEnum(["DRAFT", "CHANGED", "PUBLISHED"] as const),
   sort: parseAsStringEnum([...TAG_LIST_SORTS]),
   direction: parseAsStringEnum([...SORT_DIRECTIONS]),
 };

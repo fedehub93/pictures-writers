@@ -9,7 +9,6 @@ export type TagInsertValues = z.infer<typeof tagInsertSchema>;
 
 export const tagUpdateSchema = tagInsertSchema.partial().extend({
   id: z.string().min(1, { error: "Id is required" }),
-  rootId: z.string().min(1, { error: "Root Id is required" }),
   seoId: z
     .string()
     .min(1, { error: "SEO Id is required" })
@@ -22,7 +21,6 @@ export type TagUpdateValues = z.infer<typeof tagUpdateSchema>;
 
 export const tagUpdateSeoSchema = z.object({
   id: z.string().min(1, { error: "Id is required" }),
-  rootId: z.string().min(1, { error: "Root Id is required" }),
   title: z.string().optional(),
   description: z.string().nullable().optional(),
   canonicalUrl: z.string().nullable().optional(),

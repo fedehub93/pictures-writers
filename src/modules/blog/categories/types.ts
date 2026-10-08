@@ -7,6 +7,3 @@ export type CategoriesGetMany =
 
 export type CategoryGetOne =
   inferRouterOutputs<AppRouter>["categories"]["getOne"];
-
-export type CategoryGetLastByRootId =
-  inferRouterOutputs<AppRouter>["categories"]["getLastByRootId"];

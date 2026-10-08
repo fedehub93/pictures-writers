@@ -14,19 +14,19 @@ import { prefetchCategoryById } from "@/modules/blog/categories/server/prefetch"
 const CategoryIdPage = async ({
   params,
 }: {
-  params: Promise<{ rootId: string }>;
+  params: Promise<{ id: string }>;
 }) => {
   await requireAdminAuth();
 
-  const { rootId } = await params;
+  const { id } = await params;
 
-  prefetchCategoryById(rootId);
+  prefetchCategoryById(id);
 
   return (
     <HydrateClient>
       <Suspense fallback={<CategoryIdViewLoading />}>
         <ErrorBoundary fallback={<CategoryIdViewError />}>
-          <CategoryIdView rootId={rootId} />
+          <CategoryIdView id={id} />
         </ErrorBoundary>
       </Suspense>
     </HydrateClient>

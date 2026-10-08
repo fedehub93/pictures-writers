@@ -20,8 +20,6 @@ import { DEFAULT_PAGE } from "../../constants";
 import { useTagsFilters } from "../../hooks/use-tags-filters";
 import { useOpenTag } from "../../hooks/use-open-tag";
 
-import { StatusFilter } from "./tags-status-filter";
-
 export const TagsListHeader = () => {
   const [filters, setFilters] = useTagsFilters();
   const { onOpen } = useOpenTag();
@@ -29,13 +27,12 @@ export const TagsListHeader = () => {
 
   const { data } = useQuery(trpc.tags.getMany.queryOptions(filters));
 
-  const isAnyFilterModified = !!filters.search || !!filters.status;
+  const isAnyFilterModified = !!filters.search;
 
   const onClearFilters = () => {
     setFilters({
       search: "",
       page: DEFAULT_PAGE,
-      status: null,
     });
   };
 
@@ -45,7 +42,6 @@ export const TagsListHeader = () => {
       <div className="flex justify-between">
         <ScrollArea>
           <div className="flex items-center gap-x-2 px-1 py-4">
-            <StatusFilter />
             {isAnyFilterModified && (
               <Button
                 variant="outline"

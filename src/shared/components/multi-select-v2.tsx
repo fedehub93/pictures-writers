@@ -16,7 +16,6 @@ import {
 import { Separator } from "@/shared/ui/separator";
 
 import { cn } from "@/shared/lib/utils";
-import { ContentStatus } from "@/generated/prisma";
 
 interface MultiSelectV2Props {
   label: string;
@@ -25,7 +24,6 @@ interface MultiSelectV2Props {
   options: {
     id: string;
     label: string;
-    status?: ContentStatus;
     imageUrl?: string;
   }[];
   onSelectValue: ({ id, sort }: { id: string; sort: number }) => void;
@@ -83,15 +81,7 @@ export const MultiSelectV2 = ({
                           <Badge
                             variant="secondary"
                             key={option.id}
-                            className={cn(
-                              "rounded-sm px-1 text-white font-semibold bg-primary",
-                              option?.status === ContentStatus.DRAFT &&
-                                "bg-slate-700 hover:bg-slate-700/60",
-                              option?.status === ContentStatus.CHANGED &&
-                                "bg-sky-700 hover:bg-sky-700/60",
-                              option?.status === ContentStatus.PUBLISHED &&
-                                "bg-emerald-700 hover:bg-emerald-700/60",
-                            )}
+                            className="rounded-sm px-1 text-white font-semibold bg-primary"
                           >
                             {option.label}
                           </Badge>

@@ -13,6 +13,6 @@ export const prefetchCategories = (params: Input) => {
 /**
  * Prefetch a single category
  */
-export const prefetchCategoryById = (rootId: string) => {
-  return prefetch(trpc.categories.getLastByRootId.queryOptions({ rootId }));
+export const prefetchCategoryById = (id: string) => {
+  return prefetch(trpc.categories.getOne.queryOptions({ id }));
 };

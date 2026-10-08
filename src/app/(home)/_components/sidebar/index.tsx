@@ -20,7 +20,7 @@ interface PostSidebarProps {
   postId?: string;
   postCategories?: {
     category: {
-      rootId: string | null;
+      id: string;
     };
   }[];
 }

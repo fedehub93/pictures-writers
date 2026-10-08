@@ -24,8 +24,8 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
 
   const blocks = await getAdBlocks({
     postRootId: post.rootId!,
-    categoryRootIds: post.postCategories.map((c) => c.category.rootId!),
-    tagRootIds: post.tags.map((t) => t.rootId!),
+    categoryRootIds: post.postCategories.map((c) => c.category.id),
+    tagRootIds: post.tags.map((t) => t.id),
   });
   const normalizedContent = normalizeContent(post.tiptapBodyData, {
     adBlocks: blocks,

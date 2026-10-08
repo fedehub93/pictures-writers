@@ -13,12 +13,10 @@ export const useSuspenseCategories = (params: Input) => {
 };
 
 // Hook to fetch a category using suspense
-export const useSuspenseCategory = (rootId: string) => {
+export const useSuspenseCategory = (id: string) => {
   const trpc = useTRPC();
 
-  return useSuspenseQuery(
-    trpc.categories.getLastByRootId.queryOptions({ rootId }),
-  );
+  return useSuspenseQuery(trpc.categories.getOne.queryOptions({ id }));
 };
 
 export const useCategoriesQuery = () => {

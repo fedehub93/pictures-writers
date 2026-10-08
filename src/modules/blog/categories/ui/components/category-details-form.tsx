@@ -18,7 +18,6 @@ import { categoryUpdateSchema, type CategoryUpdateValues } from "../../schemas";
 
 interface CategoryDetailsFormProps {
   id: string;
-  rootId: string;
   initialData: {
     title: string;
     description: string | null;
@@ -28,19 +27,17 @@ interface CategoryDetailsFormProps {
 
 export const CategoryDetailsForm = ({
   id,
-  rootId,
   initialData,
 }: CategoryDetailsFormProps) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const [filters, _] = useCategoriesFilters();
+  const [filters] = useCategoriesFilters();
 
   const form = useForm<CategoryUpdateValues>({
     resolver: zodResolver(categoryUpdateSchema),
     values: {
       ...initialData,
       id,
-      rootId,
       description: initialData?.description ?? "",
     },
     mode: "onChange",
@@ -52,18 +49,13 @@ export const CategoryDetailsForm = ({
         queryClient.invalidateQueries(
           trpc.categories.getMany.queryFilter(filters),
         );
-        if (rootId) {
-          queryClient.invalidateQueries(
-            trpc.categories.getLastByRootId.queryFilter({ rootId }),
-          );
-        }
         toast.success("Category updated successfully");
       },
     }),
   );
 
   const handleAutoSave = useAutoSave(form, (dirtyData) => {
-    updateCategory({ id, rootId, ...dirtyData });
+    updateCategory({ id, ...dirtyData });
   });
 
   const disabled = isPending;

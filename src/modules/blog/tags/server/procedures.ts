@@ -4,19 +4,12 @@ import { db } from "@/shared/lib/db";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 
-import { ContentStatus, type Prisma } from "@/generated/prisma";
+import type { Prisma } from "@/generated/prisma";
 
 import { createTagSeo } from "@/lib/seo";
-import {
-  buildListOrderBy,
-  sortByDefaultOrder,
-} from "@/shared/lib/list-sorting";
+import { buildListOrderBy } from "@/shared/lib/list-sorting";
 
-import {
-  tagInsertSchema,
-  tagUpdateSchema,
-  tagUpdateSeoSchema,
-} from "../schemas";
+import { tagInsertSchema, tagUpdateSchema, tagUpdateSeoSchema } from "../schemas";
 
 import {
   DEFAULT_PAGE,
@@ -26,8 +19,6 @@ import {
   TAG_LIST_SORTS,
 } from "../constants";
 
-import { createNewVersion } from "../lib/create-new-version";
-
 export const tagsRouter = createTRPCRouter({
   create: protectedProcedure
     .input(tagInsertSchema)
@@ -35,8 +26,6 @@ export const tagsRouter = createTRPCRouter({
       const tag = await db.tag.create({
         data: {
           ...input,
-          version: 1,
-          status: ContentStatus.DRAFT,
           userId: ctx.auth.id,
         },
       });
@@ -48,12 +37,7 @@ export const tagsRouter = createTRPCRouter({
         });
       }
 
-      const updatedTag = await db.tag.update({
-        where: { id: tag.id },
-        data: { rootId: tag.id },
-      });
-
-      await createTagSeo(updatedTag);
+      await createTagSeo(tag);
 
       return tag;
     }),
@@ -61,76 +45,53 @@ export const tagsRouter = createTRPCRouter({
   update: protectedProcedure
     .input(tagUpdateSchema)
     .mutation(async ({ input }) => {
-      try {
-        const tag = await createNewVersion(input);
+      const existing = await db.tag.findUnique({
+        where: { id: input.id },
+      });
 
-        return tag;
-      } catch (error) {
-        if (error instanceof TRPCError) {
-          throw error;
-        }
-
-        if (error instanceof Error && error.message === "TAG_NOT_FOUND") {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Tag not exists.",
-          });
-        }
-
+      if (!existing) {
         throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Error saving tag.",
+          code: "NOT_FOUND",
+          message: "Il tag richiesto non esiste.",
         });
       }
+
+      return db.tag.update({
+        where: { id: input.id },
+        data: {
+          title: input.title,
+          slug: input.slug,
+          description: input.description,
+        },
+      });
     }),
 
   updateSeo: protectedProcedure
     .input(tagUpdateSeoSchema)
     .mutation(async ({ input }) => {
-      try {
-        const tag = await db.tag.findUnique({
-          where: {
-            id: input.id,
-            rootId: input.rootId,
-          },
-        });
+      const tag = await db.tag.findUnique({
+        where: { id: input.id },
+      });
 
-        if (!tag || !tag.rootId || !tag.seoId) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Tag not found",
-          });
-        }
-
-        const updatedSeo = await db.seo.update({
-          where: { id: tag.seoId },
-          data: { ...input, id: undefined, rootId: undefined },
-        });
-
-        await createNewVersion({
-          id: tag.id,
-          rootId: tag.rootId,
-          seoId: updatedSeo.id,
-        });
-
-        return updatedSeo;
-      } catch (error) {
-        if (error instanceof TRPCError) {
-          throw error;
-        }
-
-        if (error instanceof Error && error.message === "TAG_NOT_FOUND") {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Tag not exists",
-          });
-        }
-
+      if (!tag || !tag.seoId) {
         throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Error saving tag.",
+          code: "NOT_FOUND",
+          message: "Tag not found",
         });
       }
+
+      return db.seo.update({
+        where: { id: tag.seoId },
+        data: {
+          title: input.title,
+          description: input.description,
+          canonicalUrl: input.canonicalUrl,
+          ogTwitterTitle: input.ogTwitterTitle,
+          ogTwitterDescription: input.ogTwitterDescription,
+          noIndex: input.noIndex,
+          noFollow: input.noFollow,
+        },
+      });
     }),
 
   remove: protectedProcedure
@@ -149,8 +110,8 @@ export const tagsRouter = createTRPCRouter({
         });
       }
 
-      const deletedTag = await db.tag.deleteMany({
-        where: { rootId: tag.rootId },
+      const deletedTag = await db.tag.delete({
+        where: { id: tag.id },
       });
 
       if (tag.seoId) {
@@ -168,48 +129,8 @@ export const tagsRouter = createTRPCRouter({
         where: {
           id: input.id,
         },
-      });
-
-      if (!tag) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Tag not found",
-        });
-      }
-
-      return tag;
-    }),
-  getLastByRootId: protectedProcedure
-    .input(z.object({ rootId: z.string() }))
-    .query(async ({ input }) => {
-      const tag = await db.tag.findFirst({
-        where: {
-          rootId: input.rootId,
-        },
-        orderBy: {
-          publishedAt: "desc",
-        },
-        select: {
-          id: true,
-          rootId: true,
-          title: true,
-          description: true,
-          slug: true,
-          status: true,
-          updatedAt: true,
-          seo: {
-            select: {
-              id: true,
-              rootId: true,
-              title: true,
-              description: true,
-              canonicalUrl: true,
-              ogTwitterTitle: true,
-              ogTwitterDescription: true,
-              noIndex: true,
-              noFollow: true,
-            },
-          },
+        include: {
+          seo: true,
         },
       });
 
@@ -232,13 +153,6 @@ export const tagsRouter = createTRPCRouter({
           .max(MAX_PAGE_SIZE)
           .default(DEFAULT_PAGE_SIZE),
         search: z.string().nullish(),
-        status: z
-          .enum([
-            ContentStatus.DRAFT,
-            ContentStatus.CHANGED,
-            ContentStatus.PUBLISHED,
-          ])
-          .nullish(),
         sort: z.enum(TAG_LIST_SORTS).nullish(),
         direction: z.enum(["asc", "desc"]).nullish(),
       }),
@@ -248,133 +162,26 @@ export const tagsRouter = createTRPCRouter({
         title: input.search
           ? { contains: input.search, mode: "insensitive" }
           : undefined,
-        status: input.status ? { in: [input.status] } : undefined,
       };
 
-      const currentVersions = await db.tag.findMany({
-        where,
-        distinct: ["rootId"],
-        orderBy: [{ rootId: "asc" }, { version: "desc" }],
-        select: {
-          id: true,
-          title: true,
-          status: true,
-          publishedAt: true,
-        },
-      });
-
-      const total = currentVersions.length;
+      const total = await db.tag.count({ where });
       const totalPages = Math.ceil(total / input.pageSize);
       const orderBy = buildListOrderBy<Prisma.TagOrderByWithRelationInput>({
         sort: input.sort,
         direction: input.direction,
         sortable: TAG_LIST_SORTS,
-      });
+      }) ?? [{ createdAt: "desc" }, { id: "asc" }];
 
-      if (orderBy) {
-        const items = await db.tag.findMany({
-          where: { ...where, id: { in: currentVersions.map((v) => v.id) } },
-          include: {
-            seo: true,
-          },
-          orderBy,
-          take: input.pageSize,
-          skip: (input.page - 1) * input.pageSize,
-        });
-
-        return { items, total, totalPages };
-      }
-
-      const pageIds = sortByDefaultOrder(currentVersions)
-        .slice((input.page - 1) * input.pageSize, input.page * input.pageSize)
-        .map((tag) => tag.id);
-
-      const tags = await db.tag.findMany({
-        where: { id: { in: pageIds } },
+      const items = await db.tag.findMany({
+        where,
         include: {
           seo: true,
         },
+        orderBy,
+        take: input.pageSize,
+        skip: (input.page - 1) * input.pageSize,
       });
-      const tagsById = new Map(tags.map((tag) => [tag.id, tag]));
-      const items = pageIds
-        .map((id) => tagsById.get(id))
-        .filter((tag): tag is (typeof tags)[number] => Boolean(tag));
 
       return { items, total, totalPages };
-    }),
-  publish: protectedProcedure
-    .input(z.object({ id: z.string(), rootId: z.string() }))
-    .mutation(async ({ input }) => {
-      const tag = await db.tag.findFirst({
-        where: {
-          id: input.id,
-          rootId: input.rootId,
-        },
-        select: {
-          title: true,
-          version: true,
-          firstPublishedAt: true,
-        },
-      });
-
-      if (!tag) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Tag not found",
-        });
-      }
-
-      if (!tag.title) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Missing required fields",
-        });
-      }
-
-      await db.tag.updateMany({
-        where: { rootId: input.rootId },
-        data: { isLatest: false },
-      });
-
-      const publishedTag = await db.tag.update({
-        where: {
-          id: input.id,
-        },
-        data: {
-          status: ContentStatus.PUBLISHED,
-          isLatest: true,
-          firstPublishedAt:
-            tag.firstPublishedAt === null ? new Date() : undefined,
-          publishedAt: new Date(),
-        },
-        include: {
-          seo: true,
-        },
-      });
-
-      return publishedTag;
-    }),
-  unpublish: protectedProcedure
-    .input(z.object({ id: z.string() }))
-    .mutation(async ({ input }) => {
-      const tag = await db.tag.findUnique({
-        where: {
-          id: input.id,
-        },
-      });
-
-      if (!tag) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Cagtegory not found",
-        });
-      }
-
-      const unpublishedTag = await db.tag.update({
-        where: { id: input.id },
-        data: { status: ContentStatus.CHANGED },
-      });
-
-      return unpublishedTag;
     }),
 });

@@ -13,6 +13,6 @@ export const prefetchTags = (params: Input) => {
 /**
  * Prefetch a single Tag
  */
-export const prefetchTagById = (rootId: string) => {
-  return prefetch(trpc.tags.getLastByRootId.queryOptions({ rootId }));
+export const prefetchTagById = (id: string) => {
+  return prefetch(trpc.tags.getOne.queryOptions({ id }));
 };
