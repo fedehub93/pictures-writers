@@ -4,7 +4,7 @@
 
 **Blocked by:** 02 — Read pages via Root+Version.
 
-**Status:** ready-for-agent
+**Status:** done
 
 ## Acceptance criteria
 

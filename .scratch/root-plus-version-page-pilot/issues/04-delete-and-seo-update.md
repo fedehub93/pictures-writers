@@ -4,7 +4,7 @@
 
 **Blocked by:** 03 — Edit and publish Page versions.
 
-**Status:** ready-for-agent
+**Status:** done
 
 ## Acceptance criteria
 

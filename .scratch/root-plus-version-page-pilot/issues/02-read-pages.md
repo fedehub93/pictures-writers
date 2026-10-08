@@ -4,7 +4,7 @@
 
 **Blocked by:** 01 — Schema and backfill for Page Root+Version.
 
-**Status:** ready-for-agent
+**Status:** done
 
 ## Acceptance criteria
 
