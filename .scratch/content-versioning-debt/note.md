@@ -19,8 +19,8 @@ This note records the debt so it is not lost; it is **not** a committed plan.
 > concerns `Post`, `ProductCategory`, and `Product` only.
 >
 > Update (2026-10-08, later): `Post` has also moved to Root + Version (ADR 0013).
-> The debt now concerns `ProductCategory` and `Product` only, and the two-phase
-> `getMany` workaround is gone for the blog.
+> The debt now concerns `ProductCategory` and `Product` only; the blog's
+> two-phase `getMany` workaround is retired with its read paths.
 
 ## The debt
 

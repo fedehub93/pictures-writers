@@ -15,12 +15,15 @@
 --
 -- Legacy semantics relied on below:
 --   * `rootId` groups a post; the first row's id equals `rootId`.
---   * `isLatest = true` marked the live (published) row.
+--   * `isLatest = true` marked the live (published) row, *not* the current one:
+--     editing a published post forks a `CHANGED` row with `isLatest = false`.
+--     The current row is therefore the highest `version` (newest edit), and the
+--     live row is the `PUBLISHED` one, so the two pointers can differ.
 --   * `version` was meant to increase per root, but production contains
 --     duplicate version numbers, so versions are renumbered densely per root to
 --     satisfy @@unique([rootId, version]).
 --   * `firstPublishedAt` was duplicated on every revision; the root keeps the
---     earliest value.
+--     earliest published value.
 --   * every revision shared its `seoId`, so the Seo row is simply carried over.
 
 DO $$
@@ -90,15 +93,55 @@ BEGIN
   CREATE INDEX "_PostVersionToTag_B_index" ON "_PostVersionToTag"("B");
 
   -- =========================================================================
-  -- 2. One root per legacy rootId group. The slug comes from the current row
-  --    (the `isLatest` row, else the highest version) so public URLs survive;
-  --    the first publication date is the earliest one recorded on the group.
+  -- 2. Pick, per root group, the current revision (highest version) and the
+  --    live revision (the PUBLISHED one, if any). They differ for a published
+  --    post with an in-progress edit.
+  -- =========================================================================
+
+  CREATE TEMP TABLE "_PostCurrent" AS
+  SELECT DISTINCT ON (b."grp")
+    b."grp",
+    b."id" AS "currentId",
+    b."slug" AS "currentSlug"
+  FROM (
+    SELECT
+      COALESCE("rootId", "id") AS "grp",
+      "id",
+      "slug",
+      "version",
+      "createdAt"
+    FROM "Post"
+  ) b
+  ORDER BY b."grp", b."version" DESC, b."createdAt" DESC, b."id" DESC;
+
+  CREATE TEMP TABLE "_PostLive" AS
+  SELECT DISTINCT ON (b."grp")
+    b."grp",
+    b."id" AS "liveId",
+    b."slug" AS "liveSlug"
+  FROM (
+    SELECT
+      COALESCE("rootId", "id") AS "grp",
+      "id",
+      "slug",
+      "isLatest",
+      "version",
+      "createdAt"
+    FROM "Post"
+    WHERE "status" = 'PUBLISHED'
+  ) b
+  ORDER BY b."grp", b."isLatest" DESC, b."version" DESC, b."createdAt" DESC, b."id" DESC;
+
+  -- =========================================================================
+  -- 3. One root per group. The slug comes from the live revision when the post
+  --    is published (so public URLs survive), else from the current one; the
+  --    first publication date is the earliest recorded on a published revision.
   -- =========================================================================
 
   INSERT INTO "PostRoot" ("id", "slug", "firstPublishedAt", "createdAt", "updatedAt")
   SELECT
     g."grp",
-    c."slug",
+    COALESCE(l."liveSlug", c."currentSlug"),
     g."firstPublishedAt",
     g."createdAt",
     NOW()
@@ -106,28 +149,18 @@ BEGIN
     SELECT
       COALESCE("rootId", "id") AS "grp",
       MIN("createdAt") AS "createdAt",
-      MIN("firstPublishedAt") AS "firstPublishedAt"
+      MIN("firstPublishedAt") FILTER (WHERE "status" = 'PUBLISHED') AS "firstPublishedAt"
     FROM "Post"
     GROUP BY COALESCE("rootId", "id")
   ) g
-  JOIN (
-    SELECT DISTINCT ON (COALESCE("rootId", "id"))
-      COALESCE("rootId", "id") AS "grp",
-      "slug"
-    FROM "Post"
-    ORDER BY
-      COALESCE("rootId", "id"),
-      "isLatest" DESC,
-      "version" DESC,
-      "createdAt" DESC,
-      "id" DESC
-  ) c ON c."grp" = g."grp";
+  JOIN "_PostCurrent" c ON c."grp" = g."grp"
+  LEFT JOIN "_PostLive" l ON l."grp" = g."grp";
 
   -- =========================================================================
-  -- 3. One version per legacy row, reusing the legacy id. Duplicate versions
-  --    are renumbered densely per root (order preserved). Any published
-  --    revision other than the chosen live one is demoted to CHANGED so a root
-  --    has at most one PUBLISHED version.
+  -- 4. One version per legacy row, reusing the legacy id. Duplicate versions
+  --    are renumbered densely per root (original order preserved). Any
+  --    published revision other than the chosen live one is demoted to CHANGED
+  --    so a root has at most one PUBLISHED version.
   -- =========================================================================
 
   INSERT INTO "PostVersion" (
@@ -149,26 +182,26 @@ BEGIN
     "updatedAt"
   )
   SELECT
-    r."id",
-    r."title",
-    r."description",
-    r."newVersion",
+    v."id",
+    v."title",
+    v."description",
+    v."newVersion",
     CASE
-      WHEN r."id" = r."liveId" THEN 'PUBLISHED'::"ContentStatus"
-      WHEN r."status" = 'PUBLISHED' THEN 'CHANGED'::"ContentStatus"
-      ELSE r."status"
+      WHEN v."id" = l."liveId" THEN 'PUBLISHED'::"ContentStatus"
+      WHEN v."status" = 'PUBLISHED' THEN 'CHANGED'::"ContentStatus"
+      ELSE v."status"
     END,
-    r."bodyData",
-    r."tiptapBodyData",
-    r."grp",
-    r."imageCoverId",
-    r."seoId",
-    r."userId",
-    r."scheduledAt",
-    r."preSchedulingStatus",
-    r."publishedAt",
-    r."createdAt",
-    r."updatedAt"
+    v."bodyData",
+    v."tiptapBodyData",
+    v."grp",
+    v."imageCoverId",
+    v."seoId",
+    v."userId",
+    v."scheduledAt",
+    v."preSchedulingStatus",
+    v."publishedAt",
+    v."createdAt",
+    v."updatedAt"
   FROM (
     SELECT
       p."id",
@@ -189,59 +222,27 @@ BEGIN
       row_number() OVER (
         PARTITION BY COALESCE(p."rootId", p."id")
         ORDER BY p."version", p."createdAt", p."id"
-      ) AS "newVersion",
-      live."id" AS "liveId"
+      ) AS "newVersion"
     FROM "Post" p
-    LEFT JOIN LATERAL (
-      SELECT l."id"
-      FROM "Post" l
-      WHERE COALESCE(l."rootId", l."id") = COALESCE(p."rootId", p."id")
-        AND l."status" = 'PUBLISHED'
-      ORDER BY l."isLatest" DESC, l."version" DESC, l."createdAt" DESC, l."id" DESC
-      LIMIT 1
-    ) live ON TRUE
-  ) r;
+  ) v
+  LEFT JOIN "_PostLive" l ON l."grp" = v."grp";
 
   -- =========================================================================
-  -- 4. Fill the root pointers: current = the `isLatest` row (else highest
-  --    version); live = the PUBLISHED row (else none).
+  -- 5. Fill the root pointers.
   -- =========================================================================
 
   UPDATE "PostRoot" r
-  SET "currentVersionId" = c."id"
-  FROM (
-    SELECT DISTINCT ON (COALESCE("rootId", "id"))
-      COALESCE("rootId", "id") AS "grp",
-      "id"
-    FROM "Post"
-    ORDER BY
-      COALESCE("rootId", "id"),
-      "isLatest" DESC,
-      "version" DESC,
-      "createdAt" DESC,
-      "id" DESC
-  ) c
+  SET "currentVersionId" = c."currentId"
+  FROM "_PostCurrent" c
   WHERE r."id" = c."grp";
 
   UPDATE "PostRoot" r
-  SET "liveVersionId" = l."id"
-  FROM (
-    SELECT DISTINCT ON (COALESCE("rootId", "id"))
-      COALESCE("rootId", "id") AS "grp",
-      "id"
-    FROM "Post"
-    WHERE "status" = 'PUBLISHED'
-    ORDER BY
-      COALESCE("rootId", "id"),
-      "isLatest" DESC,
-      "version" DESC,
-      "createdAt" DESC,
-      "id" DESC
-  ) l
+  SET "liveVersionId" = l."liveId"
+  FROM "_PostLive" l
   WHERE r."id" = l."grp";
 
   -- =========================================================================
-  -- 5. Resolve slug collisions deterministically. Unique slugs are claimed
+  -- 6. Resolve slug collisions deterministically. Unique slugs are claimed
   --    first so a suffix never steals an existing slug; later duplicates get a
   --    `-N` suffix. Only then can the unique index be created.
   -- =========================================================================
@@ -272,7 +273,7 @@ BEGIN
   CREATE UNIQUE INDEX "PostRoot_slug_key" ON "PostRoot"("slug");
 
   -- =========================================================================
-  -- 6. Repoint the editorial relations. Ids are reused, so only the referenced
+  -- 7. Repoint the editorial relations. Ids are reused, so only the referenced
   --    table changes; no link rows need to move. The implicit Post <-> Tag join
   --    is renamed to its new model-derived name (`_PostVersionToTag`).
   -- =========================================================================
@@ -293,14 +294,14 @@ BEGIN
     FOREIGN KEY ("postId") REFERENCES "PostVersion"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
   -- =========================================================================
-  -- 7. Drop the legacy tables. Their self-relation and FKs go with them.
+  -- 8. Drop the legacy tables. Their self-relation and FKs go with them.
   -- =========================================================================
 
   DROP TABLE "_PostToTag";
   DROP TABLE "Post";
 
   -- =========================================================================
-  -- 8. Foreign keys for the new tables.
+  -- 9. Foreign keys for the new tables.
   -- =========================================================================
 
   ALTER TABLE "PostRoot" ADD CONSTRAINT "PostRoot_currentVersionId_fkey"
@@ -326,4 +327,7 @@ BEGIN
 
   ALTER TABLE "_PostVersionToTag" ADD CONSTRAINT "_PostVersionToTag_B_fkey"
     FOREIGN KEY ("B") REFERENCES "Tag"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+  DROP TABLE "_PostCurrent";
+  DROP TABLE "_PostLive";
 END $$;
