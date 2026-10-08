@@ -28,6 +28,9 @@ import {
 
 import { createNewVersion } from "../lib/create-new-version";
 import { createPageRootVersion } from "./root-version";
+import { savePageVersion } from "./save-page";
+import { publishPageVersion, unpublishPageVersion } from "./publish-page";
+import { toPageTrpcError } from "./errors";
 
 export const pagesRouter = createTRPCRouter({
   create: protectedProcedure
@@ -66,24 +69,10 @@ export const pagesRouter = createTRPCRouter({
     .input(pageUpdateSchema)
     .mutation(async ({ input }) => {
       try {
-        const page = await createNewVersion(input);
-
-        return page;
+        return await savePageVersion(input);
       } catch (error) {
-        if (error instanceof TRPCError) {
-          throw error;
-        }
-
-        if (error instanceof Error && error.message === "PAGE_NOT_FOUND") {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "La pagina richiesta non esiste.",
-          });
-        }
-
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Errore durante il salvataggio della pagina.",
+        throw toPageTrpcError(error, {
+          notFoundMessage: "La pagina richiesta non esiste.",
         });
       }
     }),
@@ -333,78 +322,31 @@ export const pagesRouter = createTRPCRouter({
   publish: protectedProcedure
     .input(z.object({ id: z.string(), rootId: z.string() }))
     .mutation(async ({ input }) => {
-      const page = await db.page.findFirst({
-        where: {
-          id: input.id,
-          rootId: input.rootId,
-        },
-        select: {
-          title: true,
-          version: true,
-        },
-      });
+      try {
+        const publishedPage = await publishPageVersion(input);
 
-      if (!page) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Page not found",
+        revalidateContent("page", publishedPage.slug);
+
+        return publishedPage;
+      } catch (error) {
+        throw toPageTrpcError(error, {
+          internalMessage: "Failed to publish the page",
         });
       }
-
-      if (!page.title) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Missing required fields",
-        });
-      }
-
-      await db.page.updateMany({
-        where: { rootId: input.rootId },
-        data: { isLatest: false },
-      });
-
-      const publishedPage = await db.page.update({
-        where: {
-          id: input.id,
-        },
-        data: {
-          status: ContentStatus.PUBLISHED,
-          isLatest: true,
-          firstPublishedAt: page.version === 1 ? new Date() : undefined,
-          publishedAt: new Date(),
-        },
-        include: {
-          seo: true,
-        },
-      });
-
-      revalidateContent("page", publishedPage.slug);
-
-      return publishedPage;
     }),
   unpublish: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
-      const page = await db.page.findUnique({
-        where: {
-          id: input.id,
-        },
-      });
+      try {
+        const unpublishedPage = await unpublishPageVersion(input);
 
-      if (!page) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Page not found",
+        revalidateContent("page", unpublishedPage.slug);
+
+        return unpublishedPage;
+      } catch (error) {
+        throw toPageTrpcError(error, {
+          internalMessage: "Failed to unpublish the page",
         });
       }
-
-      const unpublishedPage = await db.page.update({
-        where: { id: input.id },
-        data: { status: ContentStatus.CHANGED },
-      });
-
-      revalidateContent("page", unpublishedPage.slug);
-
-      return unpublishedPage;
     }),
 });
