@@ -15,6 +15,7 @@
     "test:db:up": "docker compose up -d db",
     "test:db:down": "docker compose down",
     "test:db:reset": "docker compose down -v && docker compose up -d db",
+    "backfill:pages": "tsx scripts/backfill-page-root-version.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -159,6 +160,7 @@
     "prisma-json-types-generator": "^5.1.1",
     "sass": "^1.103.1",
     "tailwindcss": "^4.3.0",
+    "tsx": "^4.23.15",
     "typescript": "npm:typescript@^6.0.3",
     "vite": "^8.2.2",
     "vite-tsconfig-paths": "^6.1.1",

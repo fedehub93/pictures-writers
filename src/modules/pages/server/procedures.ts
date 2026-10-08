@@ -26,6 +26,7 @@ import {
 } from "../constants";
 
 import { createNewVersion } from "../lib/create-new-version";
+import { createPageRootVersion } from "./root-version";
 
 export const pagesRouter = createTRPCRouter({
   create: protectedProcedure
@@ -53,7 +54,9 @@ export const pagesRouter = createTRPCRouter({
         data: { rootId: page.id },
       });
 
-      await createPageSeo(updatedPage);
+      const seo = await createPageSeo(updatedPage);
+
+      await createPageRootVersion(updatedPage, seo?.id ?? null);
 
       return page;
     }),
