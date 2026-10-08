@@ -8,11 +8,11 @@
 
 ## Acceptance criteria
 
-- [ ] Deleting a page removes the `PageRoot` and all its `PageVersion` rows (cascade).
-- [ ] Deleting a page removes `Seo` records that belong only to that page's versions.
-- [ ] `updateSeo` updates the SEO of the current version.
-- [ ] SEO changes on a published page are staged on the current version and do not affect the live version until publish.
-- [ ] No orphaned versions or SEO rows remain after deletion.
+- [x] Deleting a page removes the `PageRoot` and all its `PageVersion` rows (cascade).
+- [x] Deleting a page removes `Seo` records that belong only to that page's versions.
+- [x] `updateSeo` updates the SEO of the current version.
+- [x] SEO changes on a published page are staged on the current version and do not affect the live version until publish.
+- [x] No orphaned versions or SEO rows remain after deletion.
 
 ## Notes
 

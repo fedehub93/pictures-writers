@@ -26,10 +26,11 @@ import {
   MIN_PAGE_SIZE,
 } from "../constants";
 
-import { createNewVersion } from "../lib/create-new-version";
 import { createPageRootVersion } from "./root-version";
 import { savePageVersion } from "./save-page";
 import { publishPageVersion, unpublishPageVersion } from "./publish-page";
+import { updatePageVersionSeo } from "./update-seo";
+import { deletePageRoot } from "./delete-page";
 import { toPageTrpcError } from "./errors";
 
 export const pagesRouter = createTRPCRouter({
@@ -81,47 +82,11 @@ export const pagesRouter = createTRPCRouter({
     .input(pageUpdateSeoSchema)
     .mutation(async ({ input }) => {
       try {
-        const page = await db.page.findUnique({
-          where: {
-            id: input.id,
-            rootId: input.rootId,
-          },
-        });
-
-        if (!page || !page.rootId || !page.seoId) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Page not found",
-          });
-        }
-
-        const updatedSeo = await db.seo.update({
-          where: { id: page.seoId },
-          data: { ...input, id: undefined, rootId: undefined },
-        });
-
-        await createNewVersion({
-          id: page.id,
-          rootId: page.rootId,
-          seoId: updatedSeo.id,
-        });
-
-        return updatedSeo;
+        return await updatePageVersionSeo(input);
       } catch (error) {
-        if (error instanceof TRPCError) {
-          throw error;
-        }
-
-        if (error instanceof Error && error.message === "PAGE_NOT_FOUND") {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "La pagina richiesta non esiste.",
-          });
-        }
-
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Errore durante il salvataggio della pagina.",
+        throw toPageTrpcError(error, {
+          notFoundMessage: "La pagina richiesta non esiste.",
+          internalMessage: "Errore durante il salvataggio della pagina.",
         });
       }
     }),
@@ -129,30 +94,18 @@ export const pagesRouter = createTRPCRouter({
   remove: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
-      const page = await db.page.findUnique({
-        where: {
-          id: input.id,
-        },
-      });
+      try {
+        const deleted = await deletePageRoot({ versionId: input.id });
 
-      if (!page) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Page not found",
+        revalidateContent("page", deleted.slug);
+
+        return deleted;
+      } catch (error) {
+        throw toPageTrpcError(error, {
+          notFoundMessage: "La pagina richiesta non esiste.",
+          internalMessage: "Errore durante l'eliminazione della pagina.",
         });
       }
-
-      const deletedPage = await db.page.deleteMany({
-        where: { rootId: page.rootId },
-      });
-
-      if (page.seoId) {
-        await db.seo.delete({
-          where: { id: page.seoId },
-        });
-      }
-
-      return deletedPage;
     }),
   getOne: protectedProcedure
     .input(z.object({ id: z.string() }))
