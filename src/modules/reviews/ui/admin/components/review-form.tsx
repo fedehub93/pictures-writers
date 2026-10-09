@@ -126,8 +126,8 @@ export const ReviewForm = ({
               <FormControl>
                 <CommandSelect
                   options={(data?.items || []).map((product) => ({
-                    id: product.id,
-                    value: product.id,
+                    id: product.rootId,
+                    value: product.rootId,
                     children: (
                       <div className="flex items-center gap-x-2 w-full max-w-full relative">
                         {product.imageCover && (

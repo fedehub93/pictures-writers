@@ -103,24 +103,34 @@ const toNullable = (value: string | null | undefined) => {
 
 const buildItems = async (items: CreateOrderItemInput[]) => {
   const productIds = [...new Set(items.map((item) => item.productId))];
-  const products = await db.product.findMany({
+  const roots = await db.productRoot.findMany({
     where: { id: { in: productIds } },
+    select: {
+      id: true,
+      liveVersion: { select: { title: true, price: true } },
+    },
   });
 
-  if (products.length !== productIds.length) {
+  if (roots.length !== productIds.length) {
     throw new OrderProductNotFoundError();
   }
 
-  const productById = new Map(products.map((product) => [product.id, product]));
+  const rootById = new Map(roots.map((root) => [root.id, root]));
 
   return items.map((item) => {
-    const product = productById.get(item.productId)!;
-    const unitPrice = product.price ?? 0;
+    const root = rootById.get(item.productId)!;
+    const liveVersion = root.liveVersion;
+
+    if (!liveVersion) {
+      throw new OrderProductNotFoundError();
+    }
+
+    const unitPrice = liveVersion.price ?? 0;
     const totalPrice = unitPrice * item.quantity;
 
     return {
-      productId: product.id,
-      nameSnapshot: product.title,
+      productId: root.id,
+      nameSnapshot: liveVersion.title,
       unitPrice,
       quantity: item.quantity,
       totalPrice,

@@ -1,21 +1,25 @@
-import { ContentStatus, ProductType } from "@/generated/prisma";
+import { ProductType } from "@/generated/prisma";
 
 import { db } from "@/shared/lib/db";
 
 export const getPublishedProductsBuilding = async () => {
-  const products = await db.product.findMany({
+  const roots = await db.productRoot.findMany({
     where: {
-      isLatest: true,
-      status: ContentStatus.PUBLISHED,
       type: { not: ProductType.AFFILIATE },
+      liveVersion: { isNot: null },
     },
     select: {
       id: true,
       slug: true,
       type: true,
-      category: {
+      liveVersion: {
         select: {
-          slug: true,
+          id: true,
+          category: {
+            select: {
+              slug: true,
+            },
+          },
         },
       },
     },
@@ -24,5 +28,13 @@ export const getPublishedProductsBuilding = async () => {
     },
   });
 
-  return products;
+  return roots
+    .filter((root) => Boolean(root.liveVersion))
+    .map((root) => ({
+      id: root.liveVersion!.id,
+      rootId: root.id,
+      slug: root.slug,
+      type: root.type,
+      category: root.liveVersion!.category,
+    }));
 };

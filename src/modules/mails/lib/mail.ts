@@ -3,7 +3,7 @@ import { Resend } from "resend";
 import { endOfDay, startOfDay } from "date-fns";
 import handlebars from "handlebars";
 
-import { ContentStatus, ProductType, EmailProvider } from "@/generated/prisma";
+import { ProductType, EmailProvider } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 import {
   isEbookMetadata,
@@ -142,26 +142,33 @@ export const sendWebinarPurchaseEmail = async (
   if (!settings || !settings.emailSender || !settings.webinarTemplateId)
     return false;
 
-  const webinar = await db.product.findFirst({
+  const root = await db.productRoot.findFirst({
     where: {
-      rootId: productRootId,
+      id: productRootId,
       type: ProductType.WEBINAR,
-      status: ContentStatus.PUBLISHED,
-      isLatest: true,
+      liveVersion: { isNot: null },
     },
     select: {
-      id: true,
       type: true,
-      title: true,
-      tiptapDescription: true,
-      metadata: true,
-      imageCover: {
+      liveVersion: {
         select: {
-          url: true,
+          id: true,
+          title: true,
+          tiptapDescription: true,
+          metadata: true,
+          imageCover: {
+            select: {
+              url: true,
+            },
+          },
         },
       },
     },
   });
+
+  const webinar = root?.liveVersion
+    ? { ...root.liveVersion, type: root.type }
+    : null;
 
   if (!webinar || !isWebinarMetadata(webinar.metadata)) return false;
 
@@ -233,25 +240,30 @@ export const sendFreeEbookEmail = async (
   if (!settings || !settings.emailSender || !settings.freeEbookTemplateId)
     return false;
 
-  const ebook = await db.product.findFirst({
+  const ebookRoot = await db.productRoot.findFirst({
     where: {
-      rootId: ebookId,
+      id: ebookId,
       type: ProductType.EBOOK,
-      status: ContentStatus.PUBLISHED,
-      isLatest: true,
+      liveVersion: { isNot: null },
     },
     select: {
-      id: true,
-      title: true,
-      tiptapDescription: true,
-      metadata: true,
-      imageCover: {
+      liveVersion: {
         select: {
-          url: true,
+          id: true,
+          title: true,
+          tiptapDescription: true,
+          metadata: true,
+          imageCover: {
+            select: {
+              url: true,
+            },
+          },
         },
       },
     },
   });
+
+  const ebook = ebookRoot?.liveVersion;
 
   if (!ebook || !isEbookMetadata(ebook.metadata)) return false;
 

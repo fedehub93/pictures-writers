@@ -44,10 +44,10 @@ const ShopCategoryPage = async (props: PageProps<"/shop/[categorySlug]">) => {
     where: {
       category: {
         slug: categorySlug,
-        status: ContentStatus.PUBLISHED,
       },
       status: ContentStatus.PUBLISHED,
-      isLatest: true,
+    },
+    rootWhere: {
       type: {
         not: ProductType.AFFILIATE,
       },

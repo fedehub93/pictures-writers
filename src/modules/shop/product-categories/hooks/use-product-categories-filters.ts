@@ -1,9 +1,4 @@
-import {
-  parseAsInteger,
-  parseAsString,
-  parseAsStringEnum,
-  useQueryStates,
-} from "nuqs";
+import { parseAsInteger, parseAsString, useQueryStates } from "nuqs";
 
 import { DEFAULT_PAGE } from "../constants";
 
@@ -13,6 +8,5 @@ export const useProductCategoriesFilters = () => {
     page: parseAsInteger
       .withDefault(DEFAULT_PAGE)
       .withOptions({ clearOnDefault: true }),
-    status: parseAsStringEnum(["DRAFT", "CHANGED", "PUBLISHED"] as const),
   });
 };

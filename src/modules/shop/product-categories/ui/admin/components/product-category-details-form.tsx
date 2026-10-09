@@ -22,7 +22,6 @@ import { useProductCategoriesFilters } from "../../../hooks/use-product-categori
 
 interface ProductCategoryDetailsFormProps {
   id: string;
-  rootId: string;
   initialData: {
     title: string;
     description: string | null;
@@ -32,7 +31,6 @@ interface ProductCategoryDetailsFormProps {
 
 export const ProductCategoryDetailsForm = ({
   id,
-  rootId,
   initialData,
 }: ProductCategoryDetailsFormProps) => {
   const trpc = useTRPC();
@@ -44,7 +42,6 @@ export const ProductCategoryDetailsForm = ({
     values: {
       ...initialData,
       id,
-      rootId,
       description: initialData?.description ?? "",
     },
     mode: "onChange",
@@ -56,18 +53,16 @@ export const ProductCategoryDetailsForm = ({
         queryClient.invalidateQueries(
           trpc.productCategories.getMany.queryFilter(filters),
         );
-        if (rootId) {
-          queryClient.invalidateQueries(
-            trpc.productCategories.getLastByRootId.queryFilter({ rootId }),
-          );
-        }
+        queryClient.invalidateQueries(
+          trpc.productCategories.getOne.queryFilter({ id }),
+        );
         toast.success("Category updated successfully");
       },
     }),
   );
 
   const handleAutoSave = useAutoSave(form, (dirtyData) => {
-    updateCategory({ id, rootId, ...dirtyData });
+    updateCategory({ id, ...dirtyData });
   });
 
   return (

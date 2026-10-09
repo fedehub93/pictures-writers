@@ -1,7 +1,8 @@
 # Note: content versioning debt
 
-Status: known debt, deliberately deferred
+Status: closed (no entity remains on the legacy model)
 Date: 2026-10-07
+Closed: 2026-10-09
 
 ## Context
 
@@ -21,6 +22,13 @@ This note records the debt so it is not lost; it is **not** a committed plan.
 > Update (2026-10-08, later): `Post` has also moved to Root + Version (ADR 0013).
 > The debt now concerns `ProductCategory` and `Product` only; the blog's
 > two-phase `getMany` workaround is retired with its read paths.
+>
+> Closed (2026-10-09): `ProductCategory` has left versioning (a collapse, ADR
+> 0014) and `Product` has moved to `ProductRoot` + `ProductVersion` (ADR 0014).
+> No entity remains on the legacy single-table model, the per-entity
+> `create-new-version.ts` helpers are gone, and the two-phase `distinct rootId`
+> `getMany` workaround is retired for every entity. The body below is kept as a
+> historical record of the debt and the options considered.
 
 ## The debt
 

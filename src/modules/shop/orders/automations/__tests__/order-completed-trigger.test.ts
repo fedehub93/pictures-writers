@@ -23,11 +23,11 @@ import { createCallerFactory } from "@/trpc/init";
 import { cleanupAutomationTables } from "@/modules/automations/lib/cleanup";
 import { createInMemoryEffects } from "@/modules/automations/lib/effects";
 import { pumpDueAutomations } from "@/modules/automations/server/automation-runtime";
+import { createProductRoot } from "@/modules/shop/products/lib/__tests__/root-fixtures";
 import { db } from "@/shared/lib/db";
 import {
   AutomationRunStatus,
   AutomationStatus,
-  ProductType,
 } from "@/generated/prisma";
 
 import { ordersRouter } from "@/modules/shop/orders/server/procedures";
@@ -54,17 +54,9 @@ function uniqueEmail(): string {
 }
 
 async function createProduct(price: number) {
-  const product = await db.product.create({
-    data: {
-      title: `Completed Product ${randomUUID()}`,
-      slug: `completed-product-${randomUUID()}`,
-      type: ProductType.SERVICE,
-      version: 1,
-      price,
-    },
-  });
-  productIds.push(product.id);
-  return product;
+  const { root } = await createProductRoot({ price });
+  productIds.push(root.id);
+  return { id: root.id };
 }
 
 async function createPendingOrder() {
@@ -119,7 +111,7 @@ afterEach(async () => {
     await db.customer.deleteMany({ where: { id: { in: customerIds } } });
   }
   if (productIds.length > 0) {
-    await db.product.deleteMany({ where: { id: { in: productIds } } });
+    await db.productRoot.deleteMany({ where: { id: { in: productIds } } });
   }
   customerIds.length = 0;
   productIds.length = 0;

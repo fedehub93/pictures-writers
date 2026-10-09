@@ -59,17 +59,17 @@ The version of a content item currently visible on the public site. A page's liv
 _Avoid_: Latest version; published version when it could be confused with the current version.
 
 **Root**:
-The stable, logical identity of a content item, separate from its revisions. A root owns the stable slug, the first publication date, and the inbound references that must survive across revisions (ads, scheduling, widgets); it points at exactly one current version and, once published, one live version. Editorial relationships — SEO, authors, taxonomy links, FAQs — belong to the version, not the root. Implemented as `PageRoot` and `PostRoot`.
+The stable, logical identity of a content item, separate from its revisions. A root owns the stable slug, the first publication date, and the inbound references that must survive across revisions (ads, scheduling, widgets); it points at exactly one current version and, once published, one live version. Editorial relationships — SEO, authors, taxonomy links, FAQs — belong to the version, not the root. Implemented as `PageRoot`, `PostRoot`, and `ProductRoot`.
 _Avoid_: Entity, parent, item when the identity/revision distinction matters.
 
 **Version**:
-One revision of a root: a snapshot of the mutable content (title, Puck data / body, status, publication dates, SEO, cover, authors, taxonomy links, FAQs) with a sequential number scoped to the root. Implemented as `PageVersion` and `PostVersion`. Editing a non-live version updates it in place; editing a live version forks a new version so the live site is unaffected until the new version is published.
+One revision of a root: a snapshot of the mutable content (title, Puck data / body, status, publication dates, SEO, cover, authors, taxonomy links, FAQs) with a sequential number scoped to the root. Implemented as `PageVersion`, `PostVersion`, and `ProductVersion`. Editing a non-live version updates it in place; editing a live version forks a new version so the live site is unaffected until the new version is published.
 _Avoid_: Revision when referring to the Prisma row; draft when the version may be published.
 
 ## Content versioning
 
 **Versioning**:
-The Root + Version model that separates a content item's stable identity from its revisions, so revisions can be drafted, published, and kept as history. It is reserved for long, frequently edited content, where protecting the live site from in-progress edits and preserving revision history has real value. Implemented for `Page` and `Post`; `Product` and `ProductCategory` remain.
+The Root + Version model that separates a content item's stable identity from its revisions, so revisions can be drafted, published, and kept as history. It is reserved for long, frequently edited content, where protecting the live site from in-progress edits and preserving revision history has real value. Implemented for `Page`, `Post`, and `Product`. `ProductCategory`, like `Category` and `Tag`, is not versioned.
 _Avoid_: applying versioning to short, rarely edited system records.
 
 **Taxonomy**:
@@ -178,8 +178,12 @@ The server-side rule that evaluates a backoffice user’s role and permissions. 
 A sellable offering in the shop — an ebook, service, webinar, or affiliate link — managed in the CMS with its description, pricing, media, FAQs, SEO, and publishing state.
 _Avoid_: Item, offering, listing when referring to the catalog entity.
 
+**Product version**:
+One revision of a Product's editable content (title, description, pricing, metadata, media, category link, form, FAQs, SEO), with a status and a sequential number scoped to the Product. Editing the live version forks a new one; the live site changes only on publish.
+_Avoid_: Draft when the version may be published; Product when referring to the revision.
+
 **Product category**:
-A named grouping that organizes Products in the shop and drives the public shop listing.
+A named grouping that organizes Products in the shop and drives the public shop listing. It is a single, directly-editable record with no revision model, like the blog's Category.
 _Avoid_: Shop category, Category when referring to the blog taxonomy.
 
 **Review**:

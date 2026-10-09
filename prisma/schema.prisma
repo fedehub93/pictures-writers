@@ -197,7 +197,7 @@ model User {
   postAuthors  PostAuthor[]
 
   notifications Notification[]
-  products      Product[]
+  productVersions ProductVersion[]
   customer      Customer?
 
   createdAt DateTime @default(now())
@@ -308,7 +308,7 @@ model Media {
 
   postVersions PostVersion[]
   seo          Seo[]
-  product      Product[]
+  productVersions ProductVersion[]
   impression   Impression?
   products     ProductGallery[]
   user         User[]
@@ -358,7 +358,7 @@ model Seo {
 
   tags Tag[]
 
-  products          Product[]
+  productVersions ProductVersion[]
   productCategories ProductCategory[]
 
   createdAt DateTime @default(now())
@@ -746,28 +746,45 @@ enum ProductAcquisitionMode {
   AFFILIATE
 }
 
-model Product {
-  id    String @id @default(uuid())
-  title String
-  slug  String
-
-  description       Json? @db.JsonB
-  /// [TipTapBodyData]
-  tiptapDescription Json? @db.JsonB
-
+/// Logical product identity. Owns the stable slug, the immutable type, the
+/// first publication date, and the two special version pointers (current draft
+/// + live version). Durable references (reviews, order items, purchases) point
+/// here so they survive a new product revision. See CONTEXT.md "Product".
+model ProductRoot {
+  id   String      @id @default(uuid())
+  slug String      @unique
   type ProductType
 
+  firstPublishedAt DateTime?
+
+  currentVersion   ProductVersion? @relation("ProductRootCurrentVersion", fields: [currentVersionId], references: [id], onDelete: SetNull)
+  currentVersionId String?         @unique
+
+  liveVersion   ProductVersion? @relation("ProductRootLiveVersion", fields: [liveVersionId], references: [id], onDelete: SetNull)
+  liveVersionId String?         @unique
+
+  versions ProductVersion[]
+
+  reviews    Reviews[]
+  orderItems OrderItem[]
+  purchases  Purchase[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// One revision of a Product. Owns the mutable content and every editorial
+/// relation (gallery, extras, FAQs, SEO), so they draft and publish atomically
+/// with the content.
+model ProductVersion {
+  id String @id @default(uuid())
+
+  title             String
+  /// [TipTapBodyData]
+  tiptapDescription Json?  @db.JsonB
+
   version Int
-
-  status ContentStatus @default(DRAFT)
-
-  isLatest Boolean @default(true)
-
-  imageCover   Media?  @relation(fields: [imageCoverId], references: [id])
-  imageCoverId String?
-
-  category   ProductCategory? @relation(fields: [categoryId], references: [id])
-  categoryId String?
+  status  ContentStatus @default(DRAFT)
 
   acquisitionMode ProductAcquisitionMode @default(PAID)
 
@@ -776,22 +793,19 @@ model Product {
   isFree          Boolean @default(false)
 
   /// [ProductMetadata]
-  metadata Json?          @db.JsonB
-  extras   ProductExtra[]
+  metadata Json? @db.JsonB
 
-  formId String?
+  root   ProductRoot @relation(fields: [rootId], references: [id], onDelete: Cascade)
+  rootId String
+
+  imageCover   Media?  @relation(fields: [imageCoverId], references: [id])
+  imageCoverId String?
+
+  category   ProductCategory? @relation(fields: [categoryId], references: [id])
+  categoryId String?
+
   form   Form?   @relation(fields: [formId], references: [id])
-
-  rootId       String?
-  root         Product?  @relation("RootChildren", fields: [rootId], references: [id])
-  rootChildren Product[] @relation("RootChildren")
-
-  gallery ProductGallery[]
-  faqs    Faq[]
-  reviews Reviews[]
-
-  purchases  Purchase[]
-  orderItems OrderItem[]
+  formId String?
 
   seo   Seo?    @relation(fields: [seoId], references: [id])
   seoId String?
@@ -799,39 +813,35 @@ model Product {
   user   User?   @relation(fields: [userId], references: [id])
   userId String?
 
-  firstPublishedAt DateTime?
-  publishedAt      DateTime?
+  gallery ProductGallery[]
+  extras  ProductExtra[]
+  faqs    Faq[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  currentForRoot ProductRoot? @relation("ProductRootCurrentVersion")
+  liveForRoot    ProductRoot? @relation("ProductRootLiveVersion")
+
+  @@unique([rootId, version])
+  @@index([rootId])
 }
 
 model ProductCategory {
   id String @id @default(uuid())
 
   title       String
-  slug        String
+  slug        String @unique
   description String?
 
-  version Int
-
-  status ContentStatus @default(DRAFT)
-
-  isLatest Boolean @default(true)
-
-  rootId       String?
-  root         ProductCategory?  @relation("RootChildren", fields: [rootId], references: [id])
-  rootChildren ProductCategory[] @relation("RootChildren")
-
-  products Product[]
+  productVersions ProductVersion[]
 
   seo   Seo?    @relation(fields: [seoId], references: [id])
   seoId String?
 
-  firstPublishedAt DateTime?
-  publishedAt      DateTime?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ProductGallery {
@@ -840,7 +850,7 @@ model ProductGallery {
 
   // Relazioni
   productId String
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product   ProductVersion @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   mediaId String
   media   Media  @relation(fields: [mediaId], references: [id])
@@ -855,7 +865,7 @@ model ProductExtra {
   description String?
   price       Float
   productId   String
-  product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product     ProductVersion @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -868,7 +878,7 @@ model Faq {
   answer   String
   sort     Int
 
-  product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product   ProductVersion? @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String?
 
   post   PostVersion? @relation(fields: [postId], references: [id], onDelete: Cascade)
@@ -893,7 +903,7 @@ model Reviews {
 
   status Boolean @default(false)
 
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product   ProductRoot @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String
 
   createdAt DateTime @default(now())
@@ -996,9 +1006,8 @@ model Purchase {
 
   email String
 
-  product       Product @relation(fields: [productId], references: [id])
-  productId     String
-  productRootId String
+  product   ProductRoot @relation(fields: [productId], references: [id])
+  productId String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1030,7 +1039,7 @@ model Form {
   gtmCategory  String? // es: "lead" o "submission"
   gtmLabel     String? // es: "Laboratorio di scrittura novembre"
 
-  products    Product[]
+  productVersions ProductVersion[]
   submissions FormSubmission[]
 
   createdAt DateTime @default(now())
@@ -1473,7 +1482,7 @@ model OrderItem {
   orderId      String
   order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productId    String?
-  product      Product? @relation(fields: [productId], references: [id])
+  product      ProductRoot? @relation(fields: [productId], references: [id])
   nameSnapshot String
   unitPrice    Float
   quantity     Int      @default(1)

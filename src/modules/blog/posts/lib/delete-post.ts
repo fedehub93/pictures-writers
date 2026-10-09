@@ -23,7 +23,7 @@ async function seoIsReferenced(
     pageVersions,
     categories,
     tags,
-    products,
+    productVersions,
     productCategories,
     settings,
   ] = await Promise.all([
@@ -31,7 +31,7 @@ async function seoIsReferenced(
     tx.pageVersion.count({ where: { seoId } }),
     tx.category.count({ where: { seoId } }),
     tx.tag.count({ where: { seoId } }),
-    tx.product.count({ where: { seoId } }),
+    tx.productVersion.count({ where: { seoId } }),
     tx.productCategory.count({ where: { seoId } }),
     tx.settings.count({ where: { seoId } }),
   ]);
@@ -41,7 +41,7 @@ async function seoIsReferenced(
       pageVersions +
       categories +
       tags +
-      products +
+      productVersions +
       productCategories +
       settings >
     0

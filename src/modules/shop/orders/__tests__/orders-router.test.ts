@@ -22,12 +22,13 @@ vi.mock("@/trpc/init", async () => {
 import { createCallerFactory } from "@/trpc/init";
 
 import {
+  ContentStatus,
   OrderStatus,
   PaymentMethod,
   PaymentStatus,
-  ProductType,
 } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
+import { createProductRoot } from "@/modules/shop/products/lib/__tests__/root-fixtures";
 import { PERMISSIONS, getProcedurePermissions } from "@/shared/lib/permissions";
 
 import { ordersRouter } from "../server/procedures";
@@ -55,17 +56,15 @@ async function createCustomer() {
 }
 
 async function createProduct(price: number | null = 100) {
-  const product = await db.product.create({
-    data: {
-      title: `Product ${randomUUID()}`,
-      slug: `product-${randomUUID()}`,
-      type: ProductType.SERVICE,
-      version: 1,
-      price,
-    },
-  });
-  productIds.push(product.id);
-  return product;
+  const { root, version } = await createProductRoot({ price });
+  productIds.push(root.id);
+  return {
+    id: root.id,
+    rootId: root.id,
+    title: version.title,
+    price: version.price,
+    versionId: version.id,
+  };
 }
 
 beforeEach(() => {
@@ -79,7 +78,7 @@ afterEach(async () => {
     await db.customer.deleteMany({ where: { id: { in: customerIds } } });
   }
   if (productIds.length > 0) {
-    await db.product.deleteMany({ where: { id: { in: productIds } } });
+    await db.productRoot.deleteMany({ where: { id: { in: productIds } } });
   }
   customerIds.length = 0;
   productIds.length = 0;
@@ -137,8 +136,8 @@ describe("ordersRouter", () => {
         items: [{ productId: product.id, quantity: 1 }],
       });
 
-      await db.product.update({
-        where: { id: product.id },
+      await db.productVersion.update({
+        where: { id: product.versionId },
         data: { price: 250 },
       });
 
@@ -244,6 +243,35 @@ describe("ordersRouter", () => {
           items: [{ productId: randomUUID(), quantity: 1 }],
         }),
       ).rejects.toThrow();
+    });
+  });
+
+  describe("durability across versions", () => {
+    it("keeps order items attached to the root after a new product version is created", async () => {
+      const customer = await createCustomer();
+      const product = await createProduct(100);
+
+      const created = await caller.create({
+        customerId: customer.id,
+        items: [{ productId: product.id, quantity: 1 }],
+      });
+
+      await db.productVersion.create({
+        data: {
+          rootId: product.rootId,
+          version: 2,
+          status: ContentStatus.CHANGED,
+          title: "Repriced edition",
+          price: 999,
+        },
+      });
+
+      const loaded = await caller.getOne({ id: created.id });
+
+      expect(loaded.items).toHaveLength(1);
+      expect(loaded.items[0]?.productId).toBe(product.rootId);
+      expect(loaded.items[0]?.nameSnapshot).toBe(product.title);
+      expect(loaded.items[0]?.unitPrice).toBe(100);
     });
   });
 

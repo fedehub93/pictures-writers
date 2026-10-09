@@ -26,9 +26,21 @@ export async function GET(req: Request) {
       return new NextResponse("Bad Request", { status: 400 });
     }
 
-    const product = await db.product.findUnique({
-      where: { id: productId },
+    const root = await db.productRoot.findFirst({
+      where: {
+        OR: [{ id: productId }, { versions: { some: { id: productId } } }],
+      },
+      select: {
+        liveVersion: {
+          select: {
+            title: true,
+            metadata: true,
+          },
+        },
+      },
     });
+
+    const product = root?.liveVersion;
 
     if (!product || !isEbookMetadata(product.metadata)) {
       return new NextResponse("Bad Request", { status: 400 });

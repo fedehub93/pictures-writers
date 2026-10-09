@@ -19,9 +19,23 @@ import { reviewInsertSchema, reviewUpdateSchema } from "../schemas";
 
 const reviewProductSelect = {
   id: true,
-  title: true,
-  imageCover: { select: { url: true, altText: true } },
-} satisfies Prisma.ProductSelect;
+  currentVersion: {
+    select: {
+      title: true,
+      imageCover: { select: { url: true, altText: true } },
+    },
+  },
+} satisfies Prisma.ProductRootSelect;
+
+type ReviewProduct = Prisma.ProductRootGetPayload<{
+  select: typeof reviewProductSelect;
+}>;
+
+const mapReviewProduct = (product: ReviewProduct) => ({
+  id: product.id,
+  title: product.currentVersion?.title ?? "",
+  imageCover: product.currentVersion?.imageCover ?? null,
+});
 
 const reviewData = (input: {
   reviewerName: string;
@@ -99,7 +113,7 @@ export const reviewsRouter = createTRPCRouter({
         });
       }
 
-      return review;
+      return { ...review, product: mapReviewProduct(review.product) };
     }),
 
   getMany: permissionProcedure(PERMISSIONS.REVIEWS_READ)
@@ -157,7 +171,10 @@ export const reviewsRouter = createTRPCRouter({
       ]);
 
       return {
-        items,
+        items: items.map((item) => ({
+          ...item,
+          product: mapReviewProduct(item.product),
+        })),
         total,
         totalPages: Math.ceil(total / input.pageSize),
       };

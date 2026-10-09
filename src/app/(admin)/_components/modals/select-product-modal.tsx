@@ -1,7 +1,6 @@
 "use client";
-import { Media, Product } from "@/generated/prisma";
 import Image from "next/image";
-import { File, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useDebounceValue } from "usehooks-ts";
 
 import {
@@ -19,9 +18,7 @@ import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 import { useProductsQuery } from "../../_hooks/use-products-query";
 import { Badge } from "@/shared/ui/badge";
 
-type ProductWithImageCover = Product & {
-  imageCover: Media | null;
-};
+import type { ProductListItem } from "@/modules/shop/products/types";
 
 export const SelectProductModal = () => {
   const { isOpen, onClose, type, onCallback } = useModal();
@@ -42,7 +39,7 @@ export const SelectProductModal = () => {
     );
   }
 
-  const onSelect = async (product: Product) => {
+  const onSelect = async (product: ProductListItem) => {
     onCallback(product);
     handleClose();
   };
@@ -80,7 +77,7 @@ export const SelectProductModal = () => {
             <div className="flex flex-col py-4 px-6 gap-y-4 w-full">
               {data?.pages?.map((group, i) => (
                 <div key={i} className="flex gap-x-4">
-                  {group.items.map((item: ProductWithImageCover) => (
+                  {group.items.map((item) => (
                     <div
                       key={item.title}
                       className="flex flex-col gap-y-2 pb-4 w-40 border cursor-pointer hover:scale-[1.02] hover:shadow-xl duration-500 transition-all rounded-md shadow-md"

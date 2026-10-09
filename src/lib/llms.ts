@@ -1,4 +1,4 @@
-import { ContentStatus, ProductType } from "@/generated/prisma";
+import { ProductType } from "@/generated/prisma";
 
 import { db } from "@/lib/db";
 import { getSettings } from "@/data/settings";
@@ -80,21 +80,27 @@ export async function buildLlmsFullTxt() {
       },
       orderBy: { firstPublishedAt: "desc" },
     }),
-    db.product.findMany({
+    db.productRoot.findMany({
       where: {
-        status: ContentStatus.PUBLISHED,
-        isLatest: true,
         type: { in: [...PRODUCT_TYPES] },
+        liveVersion: { isNot: null },
       },
       select: {
-        title: true,
         slug: true,
         type: true,
-        price: true,
-        discountedPrice: true,
-        isFree: true,
-        category: { select: { slug: true } },
-        faqs: { select: { question: true, answer: true }, orderBy: { sort: "asc" } },
+        liveVersion: {
+          select: {
+            title: true,
+            price: true,
+            discountedPrice: true,
+            isFree: true,
+            category: { select: { slug: true } },
+            faqs: {
+              select: { question: true, answer: true },
+              orderBy: { sort: "asc" },
+            },
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
     }),
@@ -107,8 +113,15 @@ export async function buildLlmsFullTxt() {
     }),
   ]);
 
-  const productLines = products
-    .filter((product) => product.category)
+  const productItems = products
+    .filter((root) => root.liveVersion && root.liveVersion.category)
+    .map((root) => ({
+      ...root.liveVersion!,
+      slug: root.slug,
+      type: root.type,
+    }));
+
+  const productLines = productItems
     .map((product) => {
       const price = product.isFree
         ? "gratuito"
@@ -137,7 +150,7 @@ export async function buildLlmsFullTxt() {
     .map((root) => `- [${root.liveVersion!.title}](${siteUrl}/${root.slug}/)`)
     .join("\n");
 
-  const faqLines = products
+  const faqLines = productItems
     .filter((product) => product.faqs.length > 0)
     .map(
       (product) =>

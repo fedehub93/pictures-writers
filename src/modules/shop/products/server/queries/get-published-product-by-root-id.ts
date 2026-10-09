@@ -1,25 +1,31 @@
-import { ContentStatus } from "@/generated/prisma";
-
 import { db } from "@/shared/lib/db";
 
 export const getPublishedProductByRootId = async (rootId: string) => {
-  const product = await db.product.findFirst({
+  const root = await db.productRoot.findUnique({
     where: {
-      rootId,
-      isLatest: true,
-      status: ContentStatus.PUBLISHED,
+      id: rootId,
     },
     include: {
-      imageCover: true,
-      seo: true,
-      user: true,
-    },
-    orderBy: {
-      createdAt: "desc",
+      liveVersion: {
+        include: {
+          imageCover: true,
+          seo: true,
+          user: true,
+        },
+      },
     },
   });
 
-  return product;
+  if (!root || !root.liveVersion) {
+    return null;
+  }
+
+  return {
+    ...root.liveVersion,
+    rootId: root.id,
+    slug: root.slug,
+    type: root.type,
+  };
 };
 
 export type GetPublishedProductByRootId = Awaited<

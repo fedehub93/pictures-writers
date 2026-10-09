@@ -1,7 +1,5 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 
-import { ContentStatus } from "@/generated/prisma";
-
 import { DEFAULT_PAGE_SIZE } from "@/modules/shop/products/constants";
 
 import { useTRPCClient } from "@/trpc/client";
@@ -24,7 +22,7 @@ export const useProductsQuery = (s = "", windowIsOpen = false) => {
         search: s,
         page: pageParam,
         pageSize: DEFAULT_PAGE_SIZE,
-        status: ContentStatus.PUBLISHED,
+        publishedOnly: true,
       }),
     getNextPageParam: (lastPage, allPages) =>
       allPages.length < lastPage.totalPages ? allPages.length + 1 : undefined,

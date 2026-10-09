@@ -7,6 +7,14 @@ export type ProductsGetMany =
   inferRouterOutputs<AppRouter>["products"]["getMany"];
 
 /**
+ * One row of the admin product list: a logical product (root) projected onto
+ * one of its versions (the current version by default, or the live version when
+ * `products.getMany` is called with `publishedOnly`). Shared by the list table,
+ * the product picker modal and the widget/embedded product renderers.
+ */
+export type ProductListItem = ProductsGetMany["items"][number];
+
+/**
  * Product metadata is type-specific, so it is modelled as a discriminated
  * union keyed by `type`. These types are the single domain definition shared
  * by the admin forms, the public renderers and the blog/widget/mail modules.

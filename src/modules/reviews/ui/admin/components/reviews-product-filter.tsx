@@ -24,8 +24,8 @@ export const ReviewsProductFilter = () => {
       ),
     },
     ...(data?.items ?? []).map((product) => ({
-      id: product.id,
-      value: product.id,
+      id: product.rootId,
+      value: product.rootId,
       children: <span className="truncate">{product.title}</span>,
     })),
   ];

@@ -1,8 +1,6 @@
 import { create } from "zustand";
 
-import type { ProductsGetMany } from "../types";
-
-export type ProductListItem = ProductsGetMany["items"][number];
+import type { ProductListItem } from "../types";
 
 type OpenProductState = {
   data?: ProductListItem;

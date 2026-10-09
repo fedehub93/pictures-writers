@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-import { ContentStatus, ProductType } from "@/generated/prisma";
+import { ProductType } from "@/generated/prisma";
 
 import { db } from "@/lib/db";
 import { getSettings } from "@/data/settings";
@@ -93,25 +93,29 @@ const generateBlogTagsSitemap = async () => {
 const generateProductsSitemap = async () => {
   const { siteShopUrl } = await getSettings();
 
-  const products = await db.product.findMany({
+  const roots = await db.productRoot.findMany({
     where: {
-      status: ContentStatus.PUBLISHED,
-      isLatest: true,
       type: {
         in: [ProductType.EBOOK, ProductType.WEBINAR, ProductType.SERVICE],
       },
+      liveVersion: { isNot: null },
     },
     select: {
       slug: true,
       createdAt: true,
-      category: {
+      liveVersion: {
         select: {
-          slug: true,
-        },
-      },
-      seo: {
-        select: {
-          canonicalUrl: true,
+          createdAt: true,
+          category: {
+            select: {
+              slug: true,
+            },
+          },
+          seo: {
+            select: {
+              canonicalUrl: true,
+            },
+          },
         },
       },
     },
@@ -120,11 +124,13 @@ const generateProductsSitemap = async () => {
     },
   });
 
-  const mappedProducts: MetadataRoute.Sitemap = products
-    .filter((product) => !product.seo?.canonicalUrl)
-    .map((product) => ({
-      url: `${siteShopUrl}/${product.category!.slug}/${product.slug}/`,
-      lastModified: product.createdAt,
+  const mappedProducts: MetadataRoute.Sitemap = roots
+    .filter(
+      (root) => root.liveVersion && !root.liveVersion.seo?.canonicalUrl,
+    )
+    .map((root) => ({
+      url: `${siteShopUrl}/${root.liveVersion!.category!.slug}/${root.slug}/`,
+      lastModified: root.liveVersion!.createdAt,
       changeFrequency: "monthly",
       priority: 1,
     }));
@@ -137,11 +143,11 @@ const generateProductCategoriesSitemap = async () => {
 
   const categories = await db.productCategory.findMany({
     where: {
-      status: ContentStatus.PUBLISHED,
-      isLatest: true,
-      products: {
+      productVersions: {
         some: {
-          type: { in: [ProductType.EBOOK, ProductType.SERVICE] },
+          root: {
+            type: { in: [ProductType.EBOOK, ProductType.SERVICE] },
+          },
         },
       },
     },
@@ -149,7 +155,7 @@ const generateProductCategoriesSitemap = async () => {
       seo: true,
     },
     orderBy: {
-      firstPublishedAt: "desc",
+      createdAt: "desc",
     },
   });
 
@@ -157,7 +163,7 @@ const generateProductCategoriesSitemap = async () => {
     .filter((category) => !category.seo?.canonicalUrl)
     .map((category) => ({
       url: `${siteShopUrl}/${category.slug}/`,
-      lastModified: category.publishedAt ?? undefined,
+      lastModified: category.updatedAt,
       changeFrequency: "monthly",
       priority: 1,
     }));

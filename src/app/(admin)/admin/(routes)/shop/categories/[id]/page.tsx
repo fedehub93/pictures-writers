@@ -11,24 +11,24 @@ import {
   ProductCategoryIdViewError,
   ProductCategoryIdViewLoading,
 } from "@/modules/shop/product-categories";
-import { prefetchProductCategoryByRootId } from "@/modules/shop/product-categories/server/prefetch";
+import { prefetchProductCategoryById } from "@/modules/shop/product-categories/server/prefetch";
 
 const ProductCategoryIdPage = async ({
   params,
 }: {
-  params: Promise<{ rootId: string }>;
+  params: Promise<{ id: string }>;
 }) => {
   await requirePermission(PERMISSIONS.PRODUCT_CATEGORIES_READ);
 
-  const { rootId } = await params;
+  const { id } = await params;
 
-  prefetchProductCategoryByRootId(rootId);
+  prefetchProductCategoryById(id);
 
   return (
     <HydrateClient>
       <Suspense fallback={<ProductCategoryIdViewLoading />}>
         <ErrorBoundary fallback={<ProductCategoryIdViewError />}>
-          <ProductCategoryIdView rootId={rootId} />
+          <ProductCategoryIdView id={id} />
         </ErrorBoundary>
       </Suspense>
     </HydrateClient>

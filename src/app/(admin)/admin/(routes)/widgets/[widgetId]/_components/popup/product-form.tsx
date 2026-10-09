@@ -2,7 +2,6 @@ import * as z from "zod";
 import Image from "next/image";
 import { Trash2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { Product } from "@/generated/prisma";
 
 import { Control, useController } from "react-hook-form";
 import {
@@ -17,6 +16,7 @@ import { Button } from "@/shared/ui/button";
 import { widgetFormSchema } from "../widget-form";
 import { useTRPC } from "@/trpc/client";
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
+import type { ProductListItem } from "@/modules/shop/products/types";
 
 interface PopupProductFormProps {
   control: Control<z.infer<typeof widgetFormSchema>>;
@@ -49,7 +49,7 @@ export const PopupProductForm = ({
     onOpen("selectProduct", onSelectProduct);
   };
 
-  const onSelectProduct = (product: Product) => {
+  const onSelectProduct = (product: ProductListItem) => {
     fieldProduct.onChange(product.rootId);
   };
 

@@ -20,9 +20,10 @@ describe("authorization policy", () => {
     expect(getProcedurePermissions("posts.getMany")).toEqual(["posts.read"]);
   });
 
-  it("maps productCategories.publish through the area alias to its publish permission", () => {
-    expect(getProcedurePermissions("productCategories.publish")).toEqual([
-      PERMISSIONS.PRODUCT_CATEGORIES_PUBLISH,
+  it("maps productCategories.update through the area alias to its update permission", () => {
+    expect(getProcedurePermissions("productCategories.update")).toEqual([
+      PERMISSIONS.PRODUCT_CATEGORIES_UPDATE,
+      "product-categories.manage",
     ]);
   });
 

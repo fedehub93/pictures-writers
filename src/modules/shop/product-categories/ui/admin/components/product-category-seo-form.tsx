@@ -22,7 +22,6 @@ import { useProductCategoriesFilters } from "../../../hooks/use-product-categori
 
 interface ProductCategorySeoFormProps {
   id: string;
-  rootId: string;
   initialData: {
     title: string;
     description: string | null;
@@ -36,7 +35,6 @@ interface ProductCategorySeoFormProps {
 
 export const ProductCategorySeoForm = ({
   id,
-  rootId,
   initialData,
 }: ProductCategorySeoFormProps) => {
   const trpc = useTRPC();
@@ -48,7 +46,6 @@ export const ProductCategorySeoForm = ({
     values: {
       ...initialData,
       id,
-      rootId,
       title: initialData?.title ?? "",
       description: initialData?.description ?? "",
       canonicalUrl: initialData?.canonicalUrl ?? "",
@@ -66,11 +63,9 @@ export const ProductCategorySeoForm = ({
         queryClient.invalidateQueries(
           trpc.productCategories.getMany.queryFilter(filters),
         );
-        if (rootId) {
-          queryClient.invalidateQueries(
-            trpc.productCategories.getLastByRootId.queryFilter({ rootId }),
-          );
-        }
+        queryClient.invalidateQueries(
+          trpc.productCategories.getOne.queryFilter({ id }),
+        );
         toast.success("SEO updated successfully");
       },
     }),
@@ -80,7 +75,6 @@ export const ProductCategorySeoForm = ({
     updateCategorySeo({
       ...dirtyData,
       id,
-      rootId,
       noIndex: dirtyData.noIndex ?? false,
       noFollow: dirtyData.noFollow ?? false,
     });

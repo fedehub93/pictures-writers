@@ -2,12 +2,11 @@ import z from "zod";
 
 import { TRPCError } from "@trpc/server";
 
-import { ContentStatus } from "@/generated/prisma";
+import type { Prisma } from "@/generated/prisma";
 
 import { createProductCategorySeo } from "@/lib/seo";
 import { db } from "@/shared/lib/db";
 import { PERMISSIONS } from "@/shared/lib/permissions";
-import { revalidateContent } from "@/shared/lib/revalidate-content";
 import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 
 import {
@@ -23,24 +22,6 @@ import {
   productCategoryUpdateSeoSchema,
 } from "../schemas";
 
-import {
-  createNewVersion,
-  PRODUCT_CATEGORY_NOT_FOUND,
-} from "../lib/create-new-version";
-
-const findCategoryOrThrow = async (id: string) => {
-  const category = await db.productCategory.findUnique({ where: { id } });
-
-  if (!category) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Product category not found.",
-    });
-  }
-
-  return category;
-};
-
 export const productCategoriesRouter = createTRPCRouter({
   create: permissionProcedure(PERMISSIONS.PRODUCT_CATEGORIES_CREATE)
     .input(productCategoryInsertSchema)
@@ -49,17 +30,10 @@ export const productCategoriesRouter = createTRPCRouter({
         data: {
           title: input.title,
           slug: input.slug,
-          version: 1,
-          status: ContentStatus.DRAFT,
         },
       });
 
-      const rootedCategory = await db.productCategory.update({
-        where: { id: category.id },
-        data: { rootId: category.id },
-      });
-
-      await createProductCategorySeo(rootedCategory);
+      await createProductCategorySeo(category);
 
       return db.productCategory.findUniqueOrThrow({
         where: { id: category.id },
@@ -70,35 +44,32 @@ export const productCategoriesRouter = createTRPCRouter({
   update: permissionProcedure(PERMISSIONS.PRODUCT_CATEGORIES_UPDATE)
     .input(productCategoryUpdateSchema)
     .mutation(async ({ input }) => {
-      try {
-        return await createNewVersion(input);
-      } catch (error) {
-        if (error instanceof TRPCError) {
-          throw error;
-        }
+      const existing = await db.productCategory.findUnique({
+        where: { id: input.id },
+      });
 
-        if (
-          error instanceof Error &&
-          error.message === PRODUCT_CATEGORY_NOT_FOUND
-        ) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "La categoria richiesta non esiste.",
-          });
-        }
-
+      if (!existing) {
         throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Errore durante il salvataggio della categoria.",
+          code: "NOT_FOUND",
+          message: "La categoria richiesta non esiste.",
         });
       }
+
+      return db.productCategory.update({
+        where: { id: input.id },
+        data: {
+          title: input.title,
+          slug: input.slug,
+          description: input.description,
+        },
+      });
     }),
 
   updateSeo: permissionProcedure(PERMISSIONS.PRODUCT_CATEGORIES_UPDATE)
     .input(productCategoryUpdateSeoSchema)
     .mutation(async ({ input }) => {
       const category = await db.productCategory.findUnique({
-        where: { id: input.id, rootId: input.rootId },
+        where: { id: input.id },
       });
 
       if (!category || !category.seoId) {
@@ -108,7 +79,7 @@ export const productCategoriesRouter = createTRPCRouter({
         });
       }
 
-      const updatedSeo = await db.seo.update({
+      return db.seo.update({
         where: { id: category.seoId },
         data: {
           title: input.title,
@@ -120,35 +91,28 @@ export const productCategoriesRouter = createTRPCRouter({
           noFollow: input.noFollow,
         },
       });
-
-      await createNewVersion({
-        id: category.id,
-        rootId: input.rootId,
-      });
-
-      return updatedSeo;
     }),
 
   remove: permissionProcedure(PERMISSIONS.PRODUCT_CATEGORIES_DELETE)
     .input(z.object({ id: z.string().min(1) }))
     .mutation(async ({ input }) => {
-      const category = await findCategoryOrThrow(input.id);
-
-      const versions = await db.productCategory.findMany({
-        where: { rootId: category.rootId },
-        select: { seoId: true },
+      const category = await db.productCategory.findUnique({
+        where: { id: input.id },
       });
 
-      const deletedCategory = await db.productCategory.deleteMany({
-        where: { rootId: category.rootId },
+      if (!category) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Product category not found.",
+        });
+      }
+
+      const deletedCategory = await db.productCategory.delete({
+        where: { id: category.id },
       });
 
-      const seoIds = [
-        ...new Set(versions.map((version) => version.seoId).filter(Boolean)),
-      ] as string[];
-
-      if (seoIds.length > 0) {
-        await db.seo.deleteMany({ where: { id: { in: seoIds } } });
+      if (category.seoId) {
+        await db.seo.delete({ where: { id: category.seoId } });
       }
 
       return deletedCategory;
@@ -172,25 +136,6 @@ export const productCategoriesRouter = createTRPCRouter({
       return category;
     }),
 
-  getLastByRootId: permissionProcedure(PERMISSIONS.PRODUCT_CATEGORIES_READ)
-    .input(z.object({ rootId: z.string().min(1) }))
-    .query(async ({ input }) => {
-      const category = await db.productCategory.findFirst({
-        where: { rootId: input.rootId },
-        orderBy: { createdAt: "desc" },
-        include: { seo: true },
-      });
-
-      if (!category) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Product category not found.",
-        });
-      }
-
-      return category;
-    }),
-
   getMany: permissionProcedure(PERMISSIONS.PRODUCT_CATEGORIES_READ)
     .input(
       z.object({
@@ -201,108 +146,28 @@ export const productCategoriesRouter = createTRPCRouter({
           .max(MAX_PAGE_SIZE)
           .default(DEFAULT_PAGE_SIZE),
         search: z.string().nullish(),
-        status: z
-          .enum([
-            ContentStatus.DRAFT,
-            ContentStatus.CHANGED,
-            ContentStatus.PUBLISHED,
-          ])
-          .nullish(),
       }),
     )
     .query(async ({ input }) => {
       const search = input.search?.trim();
 
-      const where = {
+      const where: Prisma.ProductCategoryWhereInput = {
         title: search
-          ? { contains: search, mode: "insensitive" as const }
+          ? { contains: search, mode: "insensitive" }
           : undefined,
-        status: input.status ? { in: [input.status] } : undefined,
       };
 
-      const [items, distinctCategories] = await Promise.all([
-        db.productCategory.findMany({
-          where,
-          distinct: ["rootId"],
-          include: { seo: true },
-          orderBy: { createdAt: "desc" },
-          take: input.pageSize,
-          skip: (input.page - 1) * input.pageSize,
-        }),
-        db.productCategory.groupBy({
-          by: ["rootId"],
-          where,
-        }),
-      ]);
+      const total = await db.productCategory.count({ where });
+      const totalPages = Math.ceil(total / input.pageSize);
 
-      return {
-        items,
-        total: distinctCategories.length,
-        totalPages: Math.ceil(distinctCategories.length / input.pageSize),
-      };
-    }),
-
-  publish: permissionProcedure(PERMISSIONS.PRODUCT_CATEGORIES_PUBLISH)
-    .input(z.object({ id: z.string().min(1), rootId: z.string().min(1) }))
-    .mutation(async ({ input }) => {
-      const category = await db.productCategory.findFirst({
-        where: { id: input.id, rootId: input.rootId },
-        select: { title: true, version: true, firstPublishedAt: true },
-      });
-
-      if (!category) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Product category not found.",
-        });
-      }
-
-      if (!category.title) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Missing required fields.",
-        });
-      }
-
-      await db.productCategory.updateMany({
-        where: { rootId: input.rootId },
-        data: { isLatest: false },
-      });
-
-      const publishedCategory = await db.productCategory.update({
-        where: { id: input.id },
-        data: {
-          status: ContentStatus.PUBLISHED,
-          isLatest: true,
-          firstPublishedAt:
-            category.firstPublishedAt === null ? new Date() : undefined,
-          publishedAt: new Date(),
-        },
+      const items = await db.productCategory.findMany({
+        where,
         include: { seo: true },
+        orderBy: [{ createdAt: "desc" }, { id: "asc" }],
+        take: input.pageSize,
+        skip: (input.page - 1) * input.pageSize,
       });
 
-      revalidateContent("product");
-
-      return publishedCategory;
-    }),
-
-  unpublish: permissionProcedure(PERMISSIONS.PRODUCT_CATEGORIES_PUBLISH)
-    .input(z.object({ id: z.string().min(1) }))
-    .mutation(async ({ input }) => {
-      const category = await findCategoryOrThrow(input.id);
-
-      await db.productCategory.updateMany({
-        where: { rootId: category.rootId },
-        data: { isLatest: false },
-      });
-
-      const unpublishedCategory = await db.productCategory.update({
-        where: { id: input.id },
-        data: { status: ContentStatus.CHANGED, isLatest: true },
-      });
-
-      revalidateContent("product");
-
-      return unpublishedCategory;
+      return { items, total, totalPages };
     }),
 });

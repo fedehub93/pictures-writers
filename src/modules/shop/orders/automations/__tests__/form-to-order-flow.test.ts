@@ -9,13 +9,13 @@ import { FORM_SUBMITTED_NODE_TYPE } from "@/modules/forms/automations/constants"
 import { emitFormSubmitted } from "@/modules/forms/automations/emit";
 import { CREATE_CUSTOMER_NODE_TYPE } from "@/modules/shop/customers/automations/constants";
 import { CREATE_ORDER_NODE_TYPE } from "@/modules/shop/orders/automations/constants";
+import { createProductRoot } from "@/modules/shop/products/lib/__tests__/root-fixtures";
 import { db } from "@/shared/lib/db";
 import {
   AutomationRunStatus,
   AutomationStatus,
   OrderSource,
   OrderStatus,
-  ProductType,
 } from "@/generated/prisma";
 
 function uniqueEmail(): string {
@@ -23,15 +23,9 @@ function uniqueEmail(): string {
 }
 
 async function createProduct(price: number) {
-  return db.product.create({
-    data: {
-      title: `Flow Product ${randomUUID()}`,
-      slug: `flow-product-${randomUUID()}`,
-      type: ProductType.SERVICE,
-      version: 1,
-      price,
-    },
-  });
+  const { root } = await createProductRoot({ price });
+  productIds.push(root.id);
+  return { id: root.id };
 }
 
 const customerIds: string[] = [];
@@ -47,7 +41,7 @@ afterEach(async () => {
     await db.customer.deleteMany({ where: { id: { in: customerIds } } });
   }
   if (productIds.length > 0) {
-    await db.product.deleteMany({ where: { id: { in: productIds } } });
+    await db.productRoot.deleteMany({ where: { id: { in: productIds } } });
   }
   customerIds.length = 0;
   productIds.length = 0;
@@ -57,7 +51,6 @@ describe("FORM_SUBMITTED -> CREATE_CUSTOMER -> CREATE_ORDER", () => {
   it("creates the customer and the order from the form data end to end", async () => {
     const email = uniqueEmail();
     const product = await createProduct(90);
-    productIds.push(product.id);
 
     await db.automation.create({
       data: {

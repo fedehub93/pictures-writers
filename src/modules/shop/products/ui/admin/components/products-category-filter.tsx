@@ -25,7 +25,7 @@ export const ProductsCategoryFilter = () => {
       ),
     },
     ...(categories ?? []).map((category) => {
-      const value = category.rootId ?? category.id;
+      const value = category.id;
 
       return {
         id: value,

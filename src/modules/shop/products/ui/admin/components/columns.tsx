@@ -14,14 +14,12 @@ import { Checkbox } from "@/shared/ui/checkbox";
 
 import { DataTableColumnHeader } from "@/shared/components/data-table-column-header";
 
-import type { ProductsGetMany } from "../../../types";
+import type { ProductListItem } from "../../../types";
 
 import { ProductsActions } from "./actions";
 import { type DataTableFeatures } from "./data-table-features";
 
-type Product = ProductsGetMany["items"][number];
-
-const columnHelper = createColumnHelper<DataTableFeatures, Product>();
+const columnHelper = createColumnHelper<DataTableFeatures, ProductListItem>();
 
 export const columns = columnHelper.columns([
   columnHelper.display({

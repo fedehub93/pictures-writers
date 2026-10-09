@@ -1,15 +1,14 @@
 import { randomUUID } from "node:crypto";
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { cleanupAutomationTables } from "@/modules/automations/lib/cleanup";
 import {
   AutomationRunStatus,
   AutomationStatus,
-  ContentStatus,
   ProductAcquisitionMode,
-  ProductType,
 } from "@/generated/prisma";
+import { createProductRoot } from "@/modules/shop/products/lib/__tests__/root-fixtures";
 import { db } from "@/shared/lib/db";
 
 import {
@@ -36,6 +35,8 @@ import { POST as productSubmissionRoute } from "@/app/api/products/[rootId]/subm
 import { handleFormSubmitted } from "@/lib/event-handler";
 
 const CONFIGURED_FORM_ID = "form-product";
+
+const productIds: string[] = [];
 
 function uniqueEmail(): string {
   return `product-${randomUUID()}@example.com`;
@@ -70,49 +71,33 @@ async function publishGraph(formId: string) {
 }
 
 async function createFormProduct(formId: string) {
-  const root = await db.product.create({
-    data: {
-      title: "Root product",
-      slug: `root-${randomUUID()}`,
-      type: ProductType.SERVICE,
-      version: 1,
-      status: ContentStatus.DRAFT,
-      isLatest: false,
-      acquisitionMode: ProductAcquisitionMode.FORM,
-      formId,
-    },
+  const { root } = await createProductRoot({
+    acquisitionMode: ProductAcquisitionMode.FORM,
+    formId,
+    published: true,
   });
-
-  const publishedAt = new Date();
-  const product = await db.product.create({
-    data: {
-      title: "Form product",
-      slug: `form-product-${randomUUID()}`,
-      type: ProductType.SERVICE,
-      version: 2,
-      status: ContentStatus.PUBLISHED,
-      isLatest: true,
-      firstPublishedAt: publishedAt,
-      publishedAt,
-      acquisitionMode: ProductAcquisitionMode.FORM,
-      formId,
-      rootId: root.id,
-    },
-  });
-
-  return { rootId: root.id, product };
+  productIds.push(root.id);
+  return { rootId: root.id };
 }
 
 const validSubmission = (email: string) => ({ name: "Ada", email });
 
 beforeEach(async () => {
   vi.clearAllMocks();
+  productIds.length = 0;
   await cleanupAutomationTables();
   await db.form.upsert({
     where: { id: CONFIGURED_FORM_ID },
     update: {},
     create: { id: CONFIGURED_FORM_ID, name: "Product form" },
   });
+});
+
+afterEach(async () => {
+  if (productIds.length > 0) {
+    await db.productRoot.deleteMany({ where: { id: { in: productIds } } });
+  }
+  productIds.length = 0;
 });
 
 describe("product form action emit", () => {
