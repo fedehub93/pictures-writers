@@ -5,7 +5,7 @@ import {
   Prisma,
   ContentStatus,
   ScheduledActionType,
-  type Post,
+  type PostVersion,
   type Seo,
 } from "@/generated/prisma";
 
@@ -21,7 +21,7 @@ import { SCHEDULER_TARGET_TYPES } from "@/modules/scheduler/constants";
 
 import { acquireRootLock } from "./lock-root-posts";
 
-export type ScheduledPostResult = Post & {
+export type ScheduledPostResult = PostVersion & {
   seo: Seo | null;
 };
 
@@ -39,7 +39,7 @@ export class ScheduledPostError extends Error {
 }
 
 export interface SchedulePostInput {
-  postId: string;
+  versionId: string;
   rootId: string;
   scheduledAt: Date;
   timezone?: string;
@@ -47,7 +47,7 @@ export interface SchedulePostInput {
 }
 
 export interface ReschedulePostInput {
-  postId: string;
+  versionId: string;
   rootId: string;
   scheduledAt: Date;
   timezone?: string;
@@ -55,7 +55,7 @@ export interface ReschedulePostInput {
 }
 
 export interface CancelScheduleInput {
-  postId: string;
+  versionId: string;
   rootId: string;
 }
 
@@ -71,48 +71,53 @@ function assertFutureScheduledAt(scheduledAt: Date, now: Date) {
   }
 }
 
-async function loadRootPosts(tx: Prisma.TransactionClient, rootId: string) {
-  await acquireRootLock(tx, rootId);
-
-  return tx.post.findMany({
-    where: { rootId },
-    select: {
-      id: true,
-      status: true,
-      version: true,
-      title: true,
-      slug: true,
-      scheduledAt: true,
-      preSchedulingStatus: true,
-    },
-    orderBy: { id: "asc" },
-  });
+interface RootPointer {
+  id: string;
+  currentVersionId: string | null;
 }
 
-function findTarget(
-  posts: Awaited<ReturnType<typeof loadRootPosts>>,
-  postId: string,
-) {
-  const target = posts.find((post) => post.id === postId);
+/**
+ * Lock the `PostRoot` and read its version pointers. Every scheduling mutation
+ * goes through here so scheduling serializes with publish/unpublish/edit on the
+ * same row, exactly like the publication workflow.
+ */
+async function lockRoot(
+  tx: Prisma.TransactionClient,
+  rootId: string,
+): Promise<RootPointer> {
+  await acquireRootLock(tx, rootId);
 
-  if (!target) {
+  const root = await tx.postRoot.findUnique({
+    where: { id: rootId },
+    select: { id: true, currentVersionId: true },
+  });
+
+  if (!root) {
     throw new ScheduledPostError("NOT_FOUND", "Post not found");
   }
 
-  if (!target.title || !target.slug) {
-    throw new ScheduledPostError("VALIDATION_ERROR", "Missing required fields");
-  }
-
-  return target;
+  return root;
 }
 
-function assertCurrentVersion(
-  posts: Awaited<ReturnType<typeof loadRootPosts>>,
-  target: { id: string; version: number },
-) {
-  const maxVersion = Math.max(...posts.map((post) => post.version));
+async function loadTargetVersion(
+  tx: Prisma.TransactionClient,
+  rootId: string,
+  versionId: string,
+): Promise<PostVersion & { seo: Seo | null }> {
+  const version = await tx.postVersion.findUnique({
+    where: { id: versionId },
+    include: { seo: true },
+  });
 
-  if (target.version !== maxVersion) {
+  if (!version || version.rootId !== rootId) {
+    throw new ScheduledPostError("NOT_FOUND", "Post not found");
+  }
+
+  return version;
+}
+
+function assertCurrentVersion(root: RootPointer, versionId: string) {
+  if (root.currentVersionId !== versionId) {
     throw new ScheduledPostError(
       "INVALID_STATE",
       "Only the current version can be scheduled",
@@ -120,17 +125,25 @@ function assertCurrentVersion(
   }
 }
 
+/**
+ * Move the current version of a root to `SCHEDULED` and create the
+ * `ScheduledAction` that will publish it. Both writes happen under the root
+ * lock and in one transaction, so a schedule can never exist without its
+ * action (or vice versa) and two concurrent requests cannot double-schedule.
+ * The action targets the `PostRoot`, not the version: the worker resolves the
+ * scheduled version through the root at execution time.
+ */
 export async function schedulePost({
-  postId,
+  versionId,
   rootId,
   scheduledAt,
   timezone = Intl.DateTimeFormat().resolvedOptions().timeZone,
   now = new Date(),
 }: SchedulePostInput): Promise<ScheduledPostResult> {
-  if (!postId || !rootId) {
+  if (!versionId || !rootId) {
     throw new ScheduledPostError(
       "VALIDATION_ERROR",
-      "postId and rootId are required",
+      "versionId and rootId are required",
     );
   }
 
@@ -142,24 +155,16 @@ export async function schedulePost({
     rootId,
   );
 
-  // The Post state change and the ScheduledAction are written in the same
-  // transaction so a scheduling either commits entirely or not at all: no
-  // window exists in which the Post is SCHEDULED without a corresponding
-  // action, and two concurrent requests cannot create duplicate schedules.
   return db.$transaction(async (tx) => {
-    const posts = await loadRootPosts(tx, rootId);
-    const target = findTarget(posts, postId);
+    const root = await lockRoot(tx, rootId);
+    const target = await loadTargetVersion(tx, rootId, versionId);
 
-    assertCurrentVersion(posts, target);
+    assertCurrentVersion(root, versionId);
 
-    const activeSchedule = posts.find(
-      (post) => post.status === ContentStatus.SCHEDULED,
-    );
-
-    if (activeSchedule) {
+    if (!target.title) {
       throw new ScheduledPostError(
-        "CONFLICT",
-        "An active schedule already exists for this post",
+        "VALIDATION_ERROR",
+        "Missing required fields",
       );
     }
 
@@ -185,8 +190,8 @@ export async function schedulePost({
       );
     }
 
-    const scheduledPost = await tx.post.update({
-      where: { id: postId },
+    const scheduled = await tx.postVersion.update({
+      where: { id: versionId },
       data: {
         status: ContentStatus.SCHEDULED,
         scheduledAt,
@@ -195,9 +200,6 @@ export async function schedulePost({
       include: { seo: true },
     });
 
-    // Compatibility: the legacy Post fields (status, scheduledAt,
-    // preSchedulingStatus) remain synchronized with the operational
-    // ScheduledAction so the existing editorial UI keeps working unchanged.
     await createScheduledActionTx(tx, {
       type: ScheduledActionType.PUBLISH_POST,
       targetType: SCHEDULER_TARGET_TYPES.POST_ROOT,
@@ -207,31 +209,34 @@ export async function schedulePost({
       idempotencyKey,
     });
 
-    return scheduledPost;
+    return scheduled;
   });
 }
 
+/**
+ * Move the scheduled instant of the current version and its action together.
+ * Both updates share one transaction and the root lock so the version and the
+ * `ScheduledAction` can never drift apart.
+ */
 export async function reschedulePost({
-  postId,
+  versionId,
   rootId,
   scheduledAt,
   timezone = Intl.DateTimeFormat().resolvedOptions().timeZone,
   now = new Date(),
 }: ReschedulePostInput): Promise<ScheduledPostResult> {
-  if (!postId || !rootId) {
+  if (!versionId || !rootId) {
     throw new ScheduledPostError(
       "VALIDATION_ERROR",
-      "postId and rootId are required",
+      "versionId and rootId are required",
     );
   }
 
   assertFutureScheduledAt(scheduledAt, now);
 
-  // Reschedule the ScheduledAction in the same transaction as the Post
-  // update so the two can never drift apart.
   return db.$transaction(async (tx) => {
-    const posts = await loadRootPosts(tx, rootId);
-    const target = findTarget(posts, postId);
+    await lockRoot(tx, rootId);
+    const target = await loadTargetVersion(tx, rootId, versionId);
 
     if (target.status !== ContentStatus.SCHEDULED) {
       throw new ScheduledPostError(
@@ -240,11 +245,9 @@ export async function reschedulePost({
       );
     }
 
-    const rescheduledPost = await tx.post.update({
-      where: { id: postId },
-      data: {
-        scheduledAt,
-      },
+    const rescheduled = await tx.postVersion.update({
+      where: { id: versionId },
+      data: { scheduledAt },
       include: { seo: true },
     });
 
@@ -263,26 +266,29 @@ export async function reschedulePost({
       );
     }
 
-    return rescheduledPost;
+    return rescheduled;
   });
 }
 
+/**
+ * Restore the pre-scheduling status of the current version and cancel its
+ * action in the same transaction, so a canceled post never keeps an active
+ * schedule behind.
+ */
 export async function cancelSchedule({
-  postId,
+  versionId,
   rootId,
 }: CancelScheduleInput): Promise<ScheduledPostResult> {
-  if (!postId || !rootId) {
+  if (!versionId || !rootId) {
     throw new ScheduledPostError(
       "VALIDATION_ERROR",
-      "postId and rootId are required",
+      "versionId and rootId are required",
     );
   }
 
-  // Cancel the ScheduledAction in the same transaction as the Post state
-  // restoration so a canceled Post never keeps an active action behind.
   return db.$transaction(async (tx) => {
-    const posts = await loadRootPosts(tx, rootId);
-    const target = findTarget(posts, postId);
+    await lockRoot(tx, rootId);
+    const target = await loadTargetVersion(tx, rootId, versionId);
 
     if (target.status !== ContentStatus.SCHEDULED) {
       throw new ScheduledPostError(
@@ -293,8 +299,8 @@ export async function cancelSchedule({
 
     const restoredStatus = target.preSchedulingStatus ?? ContentStatus.DRAFT;
 
-    const restoredPost = await tx.post.update({
-      where: { id: postId },
+    const restored = await tx.postVersion.update({
+      where: { id: versionId },
       data: {
         status: restoredStatus,
         scheduledAt: null,
@@ -312,6 +318,6 @@ export async function cancelSchedule({
       await cancelScheduledActionTx(tx, action.id);
     }
 
-    return restoredPost;
+    return restored;
   });
 }

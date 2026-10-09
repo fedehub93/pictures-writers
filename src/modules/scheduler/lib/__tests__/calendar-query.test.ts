@@ -14,7 +14,10 @@ import {
   createScheduledAction,
   createIdempotencyKey,
 } from "../scheduled-action-repository";
-import { emptyTiptapDoc } from "@/modules/blog/posts/lib/__tests__/fixtures";
+import {
+  seedPost,
+  type SeedPostOptions,
+} from "@/modules/blog/posts/lib/__tests__/root-fixtures";
 import {
   SCHEDULER_TARGET_TYPES,
   type SchedulerTargetType,
@@ -40,41 +43,14 @@ describe("calendar query", () => {
     createdEmailIds.push(id);
   };
 
-  const createPost = async (
-    overrides: Partial<{
-      title: string;
-      slug: string;
-      status: ContentStatus;
-      version: number;
-      rootId: string;
-      scheduledAt: Date;
-      publishedAt: Date;
-      firstPublishedAt: Date;
-    }> = {},
-  ) => {
-    const explicitRootId = overrides.rootId;
-    const post = await db.post.create({
-      data: {
-        title: "Test Post",
-        slug: `test-post-${randomUUID().slice(0, 8)}`,
-        version: 1,
-        status: ContentStatus.DRAFT,
-        tiptapBodyData: emptyTiptapDoc,
-        rootId: explicitRootId,
-        ...overrides,
-      },
+  const createPost = async (options: SeedPostOptions = {}) => {
+    const created = await seedPost({
+      ...options,
+      slug: options.slug ?? `test-post-${randomUUID().slice(0, 8)}`,
     });
 
-    const rootId = explicitRootId ?? post.id;
-    if (!explicitRootId) {
-      await db.post.update({
-        where: { id: post.id },
-        data: { rootId },
-      });
-    }
-
-    trackRootId(rootId);
-    return { ...post, rootId };
+    trackRootId(created.rootId);
+    return created;
   };
 
   const createEmailSingleSend = async (name = "Test Newsletter") => {
@@ -127,7 +103,7 @@ describe("calendar query", () => {
     // the dedicated test database (.env.test).
     await db.scheduledAction.deleteMany({});
     await db.emailSingleSend.deleteMany({});
-    await db.post.deleteMany({});
+    await db.postRoot.deleteMany({});
     createdActionIds.length = 0;
     createdEmailIds.length = 0;
     createdRootIds.length = 0;
@@ -149,8 +125,8 @@ describe("calendar query", () => {
     }
 
     if (createdRootIds.length > 0) {
-      await db.post.deleteMany({
-        where: { rootId: { in: createdRootIds } },
+      await db.postRoot.deleteMany({
+        where: { id: { in: createdRootIds } },
       });
       createdRootIds.length = 0;
     }

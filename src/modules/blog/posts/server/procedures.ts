@@ -545,7 +545,7 @@ export const postsRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       try {
         return await schedulePost({
-          postId: input.id,
+          versionId: input.id,
           rootId: input.rootId,
           scheduledAt: input.scheduledAt,
           timezone: input.timezone,
@@ -580,7 +580,7 @@ export const postsRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       try {
         return await reschedulePost({
-          postId: input.id,
+          versionId: input.id,
           rootId: input.rootId,
           scheduledAt: input.scheduledAt,
           timezone: input.timezone,
@@ -608,7 +608,7 @@ export const postsRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       try {
         return await cancelSchedule({
-          postId: input.id,
+          versionId: input.id,
           rootId: input.rootId,
         });
       } catch (error) {

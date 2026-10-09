@@ -17,7 +17,12 @@ import {
   backfillScheduledPosts,
 } from "@/modules/scheduler/lib/scheduled-action-repository";
 import { SCHEDULER_TARGET_TYPES } from "@/modules/scheduler/constants";
-import { emptyTiptapDoc } from "@/modules/blog/posts/lib/__tests__/fixtures";
+import {
+  addPostVersion,
+  makeCurrent,
+  seedPost,
+  type SeedPostOptions,
+} from "@/modules/blog/posts/lib/__tests__/root-fixtures";
 
 describe("scheduler runner", () => {
   const createdRootIds: string[] = [];
@@ -33,63 +38,33 @@ describe("scheduler runner", () => {
     createdActionIds.push(id);
   };
 
-  const createPost = async (
-    overrides: Partial<{
-      title: string;
-      slug: string;
-      status: ContentStatus;
-      version: number;
-      rootId: string;
-      scheduledAt: Date;
-      preSchedulingStatus: ContentStatus;
-      firstPublishedAt: Date;
-      publishedAt: Date;
-    }> = {},
-  ) => {
-    const explicitRootId = overrides.rootId;
-    const post = await db.post.create({
-      data: {
-        title: "Test Post",
-        slug: "test-post",
-        version: 1,
-        status: ContentStatus.DRAFT,
-        tiptapBodyData: emptyTiptapDoc,
-        rootId: explicitRootId,
-        ...overrides,
-      },
+  const createPost = async (options: SeedPostOptions = {}) => {
+    const created = await seedPost({
+      ...options,
+      slug: options.slug ?? `test-post-${randomUUID()}`,
     });
 
-    const rootId = explicitRootId ?? post.id;
-    if (!explicitRootId) {
-      await db.post.update({
-        where: { id: post.id },
-        data: { rootId },
-      });
-    }
-
-    trackRootId(rootId);
-    return { ...post, rootId };
+    trackRootId(created.rootId);
+    return created;
   };
 
   beforeEach(async () => {
-    // Remove scheduled posts left behind by other test files so the backfill
-    // tests see a clean state. Safe: this file runs only against the
-    // dedicated test database (.env.test).
-    await db.post.deleteMany({
-      where: { status: ContentStatus.SCHEDULED },
-    });
+    // Remove actions left behind by other test files so the backfill tests and
+    // the due-action scans see a clean state. Safe: this file runs only against
+    // the dedicated test database (.env.test).
+    await db.scheduledAction.deleteMany({});
   });
 
   afterEach(async () => {
     // Clean up every scheduled action created during this file's tests to
-    // keep tests isolated. Posts are deleted afterwards because actions may
-    // reference them through targetId.
+    // keep tests isolated. Roots are deleted afterwards; deleting a root
+    // cascades its versions.
     await db.scheduledAction.deleteMany({});
     createdActionIds.length = 0;
 
     if (createdRootIds.length > 0) {
-      await db.post.deleteMany({
-        where: { rootId: { in: createdRootIds } },
+      await db.postRoot.deleteMany({
+        where: { id: { in: createdRootIds } },
       });
       createdRootIds.length = 0;
     }
@@ -102,7 +77,7 @@ describe("scheduler runner", () => {
 
       const duePost = await createPost({ status: ContentStatus.DRAFT });
       await schedulePost({
-        postId: duePost.id,
+        versionId: duePost.version.id,
         rootId: duePost.rootId,
         scheduledAt: new Date("2025-06-01T11:00:00.000Z"),
         now,
@@ -110,7 +85,7 @@ describe("scheduler runner", () => {
 
       const futurePost = await createPost({ status: ContentStatus.DRAFT });
       await schedulePost({
-        postId: futurePost.id,
+        versionId: futurePost.version.id,
         rootId: futurePost.rootId,
         scheduledAt: new Date("2025-06-01T13:00:00.000Z"),
         now,
@@ -121,8 +96,12 @@ describe("scheduler runner", () => {
       expect(result.processed).toBe(1);
       expect(result.succeeded).toBe(1);
 
-      const due = await db.post.findUnique({ where: { id: duePost.id } });
-      const future = await db.post.findUnique({ where: { id: futurePost.id } });
+      const due = await db.postVersion.findUnique({
+        where: { id: duePost.version.id },
+      });
+      const future = await db.postVersion.findUnique({
+        where: { id: futurePost.version.id },
+      });
 
       expect(due?.status).toBe(ContentStatus.PUBLISHED);
       expect(future?.status).toBe(ContentStatus.SCHEDULED);
@@ -135,7 +114,7 @@ describe("scheduler runner", () => {
 
       const post = await createPost({ status: ContentStatus.DRAFT });
       await schedulePost({
-        postId: post.id,
+        versionId: post.version.id,
         rootId: post.rootId,
         scheduledAt: plannedAt,
         now: scheduleNow,
@@ -237,7 +216,7 @@ describe("scheduler runner", () => {
 
       const post = await createPost({ status: ContentStatus.DRAFT });
       await schedulePost({
-        postId: post.id,
+        versionId: post.version.id,
         rootId: post.rootId,
         scheduledAt: new Date("2025-06-01T11:00:00.000Z"),
         now,
@@ -281,13 +260,10 @@ describe("scheduler runner", () => {
       const rootIds: string[] = [];
 
       for (let i = 0; i < 3; i++) {
-        const post = await createPost({
-          status: ContentStatus.DRAFT,
-          slug: `batch-post-${i}`,
-        });
+        const post = await createPost({ status: ContentStatus.DRAFT });
         rootIds.push(post.rootId);
         await schedulePost({
-          postId: post.id,
+          versionId: post.version.id,
           rootId: post.rootId,
           scheduledAt: new Date("2025-06-01T11:00:00.000Z"),
           now,
@@ -299,7 +275,7 @@ describe("scheduler runner", () => {
       expect(result.processed).toBe(2);
       expect(result.succeeded).toBe(2);
 
-      const remaining = await db.post.count({
+      const remaining = await db.postVersion.count({
         where: {
           status: ContentStatus.SCHEDULED,
           rootId: { in: rootIds },
@@ -316,7 +292,11 @@ describe("scheduler runner", () => {
       const retryAt = new Date("2025-06-01T11:00:00.000Z");
       const runAt = new Date("2025-06-01T12:00:00.000Z");
 
-      const post = await createPost({ status: ContentStatus.DRAFT });
+      const post = await createPost({
+        status: ContentStatus.SCHEDULED,
+        scheduledAt: now,
+        preSchedulingStatus: ContentStatus.DRAFT,
+      });
       const action = await createScheduledAction({
         type: ScheduledActionType.PUBLISH_POST,
         targetType: SCHEDULER_TARGET_TYPES.POST_ROOT,
@@ -338,12 +318,6 @@ describe("scheduler runner", () => {
           retryAt,
           attempts: 1,
         },
-      });
-
-      // The post must be in SCHEDULED state for the handler to publish it.
-      await db.post.update({
-        where: { id: post.id },
-        data: { status: ContentStatus.SCHEDULED, scheduledAt: now },
       });
 
       const result = await runScheduledActions({ now: runAt });
@@ -393,7 +367,7 @@ describe("scheduler runner", () => {
 
       const validPost = await createPost({ status: ContentStatus.DRAFT });
       await schedulePost({
-        postId: validPost.id,
+        versionId: validPost.version.id,
         rootId: validPost.rootId,
         scheduledAt: new Date("2025-06-01T11:00:00.000Z"),
         now,
@@ -401,13 +375,14 @@ describe("scheduler runner", () => {
 
       const invalidPost = await createPost({ status: ContentStatus.DRAFT });
       await schedulePost({
-        postId: invalidPost.id,
+        versionId: invalidPost.version.id,
         rootId: invalidPost.rootId,
         scheduledAt: new Date("2025-06-01T11:00:00.000Z"),
         now,
       });
-      await db.post.update({
-        where: { id: invalidPost.id },
+      // Blank the title after scheduling so publication fails permanently.
+      await db.postVersion.update({
+        where: { id: invalidPost.version.id },
         data: { title: "" },
       });
 
@@ -420,7 +395,7 @@ describe("scheduler runner", () => {
   });
 
   describe("backfill", () => {
-    it("creates scheduled actions for legacy scheduled posts", async () => {
+    it("creates scheduled actions for scheduled versions", async () => {
       const now = new Date("2025-06-01T10:00:00.000Z");
       const scheduledAt = new Date("2025-06-01T11:00:00.000Z");
 
@@ -441,6 +416,7 @@ describe("scheduler runner", () => {
 
       expect(action).not.toBeNull();
       expect(action?.type).toBe(ScheduledActionType.PUBLISH_POST);
+      expect(action?.targetType).toBe("POST_ROOT");
       expect(action?.status).toBe(ScheduledActionStatus.SCHEDULED);
       expect(action?.plannedAt.toISOString()).toBe(scheduledAt.toISOString());
 
@@ -475,50 +451,40 @@ describe("scheduler runner", () => {
   });
 
   describe("compatibility with Post workflow", () => {
-    it("uses the latest saved eligible version at execution time", async () => {
+    it("uses the current scheduled version at execution time", async () => {
       const now = new Date("2025-06-01T10:00:00.000Z");
       const firstPublishAt = new Date("2025-01-01T00:00:00.000Z");
       const runAt = new Date("2025-06-01T12:00:00.000Z");
 
-      const versionOne = await createPost({
-        status: ContentStatus.DRAFT,
-        version: 1,
-      });
-      const rootId = versionOne.rootId;
-
-      await publishPost({
-        postId: versionOne.id,
-        rootId,
-        now: firstPublishAt,
-      });
-
-      const versionTwo = await createPost({
-        rootId,
-        title: "Updated Title",
-        slug: "test-post",
-        version: 2,
-        status: ContentStatus.CHANGED,
-        firstPublishedAt: firstPublishAt,
+      const created = await createPost({
+        status: ContentStatus.PUBLISHED,
         publishedAt: firstPublishAt,
+        firstPublishedAt: firstPublishAt,
       });
-      trackRootId(rootId);
+      const rootId = created.rootId;
+
+      const forked = await addPostVersion(rootId, {
+        status: ContentStatus.CHANGED,
+        title: "Updated Title",
+      });
+      await makeCurrent(rootId, forked.id);
 
       await schedulePost({
-        postId: versionTwo.id,
+        versionId: forked.id,
         rootId,
         scheduledAt: new Date("2025-06-01T11:00:00.000Z"),
         now,
       });
 
-      await db.post.update({
-        where: { id: versionTwo.id },
+      await db.postVersion.update({
+        where: { id: forked.id },
         data: { title: "Even Newer Title" },
       });
 
       await runScheduledActions({ now: runAt });
 
-      const published = await db.post.findUnique({
-        where: { id: versionTwo.id },
+      const published = await db.postVersion.findUnique({
+        where: { id: forked.id },
       });
 
       expect(published?.status).toBe(ContentStatus.PUBLISHED);
@@ -531,14 +497,14 @@ describe("scheduler runner", () => {
 
       const post = await createPost({ status: ContentStatus.DRAFT });
       await schedulePost({
-        postId: post.id,
+        versionId: post.version.id,
         rootId: post.rootId,
         scheduledAt,
         now,
       });
 
       await publishPost({
-        postId: post.id,
+        id: post.version.id,
         rootId: post.rootId,
         now,
       });
