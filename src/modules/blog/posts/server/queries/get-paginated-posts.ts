@@ -1,4 +1,4 @@
-import { ContentStatus, Prisma } from "@/generated/prisma";
+import { Prisma } from "@/generated/prisma";
 
 import { db } from "@/shared/lib/db";
 
@@ -16,61 +16,77 @@ export const getPaginatedPosts = async ({
   let totalPosts = 0;
 
   const skip = (page - 1) * postBatch;
-  const take = postBatch;
 
-  const where: Prisma.Args<typeof db.post, "findMany">["where"] = {
-    status: ContentStatus.PUBLISHED,
-    isLatest: true,
-    OR: [
-      {
-        title: {
-          contains: searchString,
-          mode: "insensitive",
-        },
-      },
-      {
-        description: {
-          contains: searchString,
-          mode: "insensitive",
-        },
-      },
-    ],
-  };
-
-  const posts = await db.post.findMany({
-    select: {
-      id: true,
-      rootId: true,
-      title: true,
-      slug: true,
-      description: true,
-      publishedAt: true,
-      imageCover: {
-        select: {
-          id: true,
-          url: true,
-          altText: true,
-        },
-      },
-      user: {
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          imageUrl: true,
-        },
+  const where: Prisma.PostRootWhereInput = {
+    liveVersion: {
+      is: {
+        OR: [
+          {
+            title: {
+              contains: searchString,
+              mode: "insensitive",
+            },
+          },
+          {
+            description: {
+              contains: searchString,
+              mode: "insensitive",
+            },
+          },
+        ],
       },
     },
+  };
+
+  const roots = await db.postRoot.findMany({
     where,
-    take: cursor ? postBatch : take,
+    take: postBatch,
     skip: cursor ? 1 : skip,
     cursor: cursor ? { id: cursor } : undefined,
     orderBy: {
       firstPublishedAt: "desc",
     },
+    include: {
+      liveVersion: {
+        include: {
+          imageCover: {
+            select: {
+              id: true,
+              url: true,
+              altText: true,
+            },
+          },
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              imageUrl: true,
+            },
+          },
+        },
+      },
+    },
   });
 
-  totalPosts = await db.post.count({ where });
+  const posts = roots
+    .filter((root) => Boolean(root.liveVersion))
+    .map((root) => {
+      const version = root.liveVersion!;
+
+      return {
+        id: version.id,
+        rootId: root.id,
+        title: version.title,
+        slug: root.slug,
+        description: version.description,
+        publishedAt: version.publishedAt,
+        imageCover: version.imageCover,
+        user: version.user,
+      };
+    });
+
+  totalPosts = await db.postRoot.count({ where });
 
   const pagination = {
     page,
@@ -81,8 +97,8 @@ export const getPaginatedPosts = async ({
 
   let nextCursor = null;
 
-  if (posts.length === postBatch) {
-    nextCursor = posts[postBatch - 1].id;
+  if (roots.length === postBatch) {
+    nextCursor = roots[postBatch - 1].id;
   }
 
   return {

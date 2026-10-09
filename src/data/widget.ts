@@ -134,9 +134,8 @@ export const getWidgetPosts = async ({
   categories,
   limit,
 }: GetWidgetPosts) => {
-  let whereClause: Prisma.PostWhereInput = {
-    status: ContentStatus.PUBLISHED,
-    isLatest: true,
+  let whereClause: Prisma.PostRootWhereInput = {
+    liveVersion: { isNot: null },
   };
 
   let hasLimit = false;
@@ -148,7 +147,7 @@ export const getWidgetPosts = async ({
 
     case WidgetPostType.SPECIFIC:
       if (posts.length > 0) {
-        whereClause.rootId = { in: posts.map((p) => p.rootId) };
+        whereClause.id = { in: posts.map((p) => p.rootId) };
       }
       hasLimit = false;
       break;
@@ -181,10 +180,14 @@ export const getWidgetPosts = async ({
     categoryFilter === WidgetPostCategoryFilter.CURRENT &&
     postCategories?.length
   ) {
-    whereClause.postCategories = {
-      some: {
-        category: {
-          id: { in: postCategories.map((c) => c.category.id) },
+    whereClause.liveVersion = {
+      is: {
+        categories: {
+          some: {
+            category: {
+              id: { in: postCategories.map((c) => c.category.id) },
+            },
+          },
         },
       },
     };
@@ -193,25 +196,39 @@ export const getWidgetPosts = async ({
     categoryFilter === WidgetPostCategoryFilter.SPECIFIC &&
     categories.length > 0
   ) {
-    whereClause.postCategories = {
-      some: {
-        category: {
-          id: { in: categories },
+    whereClause.liveVersion = {
+      is: {
+        categories: {
+          some: {
+            category: {
+              id: { in: categories },
+            },
+          },
         },
       },
     };
   }
 
-  const postsData = await db.post.findMany({
+  const roots = await db.postRoot.findMany({
     where: whereClause,
     include: {
-      imageCover: true,
+      liveVersion: {
+        include: {
+          imageCover: true,
+        },
+      },
     },
     orderBy: { firstPublishedAt: "desc" },
     take: hasLimit ? limit : undefined,
   });
 
-  return postsData;
+  return roots
+    .filter((root) => Boolean(root.liveVersion))
+    .map((root) => ({
+      ...root.liveVersion!,
+      rootId: root.id,
+      slug: root.slug,
+    }));
 };
 
 type GetWidgetCategories = {
@@ -228,7 +245,6 @@ export const getWidgetCategories = async ({
       some: {
         post: {
           status: ContentStatus.PUBLISHED,
-          isLatest: true,
         },
       },
     },

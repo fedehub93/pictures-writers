@@ -51,9 +51,9 @@ export async function generateMetadata(
 
     const { posts } = await getPaginatedPostsByFilters({
       page: 1,
+      version: "current",
       where: {
-        status: ContentStatus.DRAFT,
-        isLatest: true,
+        status: { in: [ContentStatus.DRAFT, ContentStatus.CHANGED] },
       },
     });
 

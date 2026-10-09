@@ -17,11 +17,15 @@ This note records the debt so it is not lost; it is **not** a committed plan.
 > Update (2026-10-08): `Page` has since moved to Root + Version (ADR 0011) and
 > `Category`/`Tag` have left versioning entirely (ADR 0012). The debt below now
 > concerns `Post`, `ProductCategory`, and `Product` only.
+>
+> Update (2026-10-08, later): `Post` has also moved to Root + Version (ADR 0013).
+> The debt now concerns `ProductCategory` and `Product` only; the blog's
+> two-phase `getMany` workaround is retired with its read paths.
 
 ## The debt
 
 The versioning model (a self-relation `rootId` + `version` + `status` + `isLatest`
-on `Post`, `ProductCategory`, `Product`) has these smells:
+on `ProductCategory`, `Product`) has these smells:
 
 - **Two concepts in one flag.** `isLatest` means "live/published version", but
   there is no explicit "current version" (the most recent one). Editing a

@@ -26,6 +26,13 @@ interface BuildListOrderByArgs {
   sort?: string | null;
   direction?: SortDirection | null;
   sortable: readonly string[];
+  /**
+   * Optional relation path to nest the sorted field under. Root + Version
+   * lists sort on fields owned by the version (e.g. `currentVersion.title`)
+   * while keeping the root `id` as the top-level tie-breaker, so the helper no
+   * longer assumes the sorted fields live flat on the queried model.
+   */
+  relation?: string;
 }
 
 const rankOf = (status: string) =>
@@ -85,6 +92,7 @@ export function buildListOrderBy<TOrderBy>({
   sort,
   direction,
   sortable,
+  relation,
 }: BuildListOrderByArgs): TOrderBy[] | null {
   if (!sort || !sortable.includes(sort)) {
     return null;
@@ -98,5 +106,8 @@ export function buildListOrderBy<TOrderBy>({
         ? { scheduledAt: { sort: dir, nulls: "last" } }
         : { [sort]: dir };
 
-  return [primary, { id: "asc" }] as unknown as TOrderBy[];
+  return [
+    relation ? { [relation]: primary } : primary,
+    { id: "asc" },
+  ] as unknown as TOrderBy[];
 }

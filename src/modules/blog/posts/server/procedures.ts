@@ -5,22 +5,12 @@ import { revalidateContent } from "@/shared/lib/revalidate-content";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 
-import {
-  ContentStatus,
-  ScheduledActionType,
-  type Prisma,
-} from "@/generated/prisma";
+import { ContentStatus, type Prisma } from "@/generated/prisma";
 
-import { createPostSeo } from "@/lib/seo";
 import {
   buildListOrderBy,
   sortByDefaultOrder,
 } from "@/shared/lib/list-sorting";
-import {
-  createScheduledAction,
-  createIdempotencyKey,
-} from "@/modules/scheduler/lib/scheduled-action-repository";
-import { SCHEDULER_TARGET_TYPES } from "@/modules/scheduler/constants";
 
 import {
   postInsertSchema,
@@ -37,8 +27,16 @@ import {
   POST_LIST_SORTS,
 } from "../constants";
 
-import { createNewVersion } from "../lib/create-new-version";
-import { publishPost, PublishPostError } from "../lib/publish-post";
+import { createPost } from "../lib/create-post";
+import { deletePostRoot } from "../lib/delete-post";
+import { toPostTrpcError } from "../lib/errors";
+import {
+  publishPost,
+  PublishPostError,
+  unpublishPostVersion,
+} from "../lib/publish-post";
+import { savePostVersion } from "../lib/save-post";
+import { updatePostVersionSeo } from "../lib/update-seo";
 import {
   cancelSchedule,
   reschedulePost,
@@ -52,86 +50,22 @@ export const postsRouter = createTRPCRouter({
   create: protectedProcedure
     .input(postInsertSchema.extend({ timezone: z.string().optional() }))
     .mutation(async ({ input, ctx }) => {
-      const { timezone, ...postData } = input;
-      const isScheduled = input.scheduledAt && input.scheduledAt > new Date();
-      const status = isScheduled
-        ? ContentStatus.SCHEDULED
-        : ContentStatus.DRAFT;
-      const post = await db.post.create({
-        data: {
-          ...postData,
-          version: 1,
-          status,
-          scheduledAt: input.scheduledAt,
-          preSchedulingStatus:
-            status === ContentStatus.SCHEDULED ? ContentStatus.DRAFT : null,
-          userId: ctx.auth.id,
-          postAuthors: {
-            create: {
-              userId: ctx.auth.id,
-              sort: 0,
-            },
-          },
-        },
+      return await createPost({
+        title: input.title,
+        slug: input.slug,
+        scheduledAt: input.scheduledAt,
+        timezone: input.timezone,
+        userId: ctx.auth.id,
       });
-
-      if (!post) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Missing required parameters!",
-        });
-      }
-
-      const updatedPost = await db.post.update({
-        where: { id: post.id },
-        data: { rootId: post.id },
-      });
-
-      await createPostSeo(updatedPost);
-
-      if (isScheduled && input.scheduledAt) {
-        await createScheduledAction({
-          type: ScheduledActionType.PUBLISH_POST,
-          targetType: SCHEDULER_TARGET_TYPES.POST_ROOT,
-          targetId: updatedPost.id,
-          plannedAt: input.scheduledAt,
-          timezone:
-            timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone,
-          idempotencyKey: createIdempotencyKey(
-            ScheduledActionType.PUBLISH_POST,
-            SCHEDULER_TARGET_TYPES.POST_ROOT,
-            updatedPost.id,
-          ),
-        });
-      }
-
-      return post;
     }),
 
   update: protectedProcedure
     .input(postUpdateSchema)
     .mutation(async ({ input }) => {
       try {
-        const post = await createNewVersion(input);
-
-        return post;
+        return await savePostVersion(input);
       } catch (error) {
-        console.error(error);
-        if (error instanceof TRPCError) {
-          throw error;
-        }
-
-        if (error instanceof Error && error.message === "POST_NOT_FOUND") {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Post not exists.",
-          });
-        }
-
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Error saving post.",
-        });
+        throw toPostTrpcError(error);
       }
     }),
 
@@ -139,173 +73,189 @@ export const postsRouter = createTRPCRouter({
     .input(postUpdateSeoSchema)
     .mutation(async ({ input }) => {
       try {
-        const post = await db.post.findUnique({
-          where: {
-            id: input.id,
-            rootId: input.rootId,
-          },
-        });
-
-        if (!post || !post.rootId || !post.seoId) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Post not found",
-          });
-        }
-
-        const updatedSeo = await db.seo.update({
-          where: { id: post.seoId },
-          data: { ...input, id: undefined, rootId: undefined },
-        });
-
-        await createNewVersion({
-          id: post.id,
-          rootId: post.rootId,
-          seoId: updatedSeo.id,
-        });
-
-        return updatedSeo;
+        return await updatePostVersionSeo(input);
       } catch (error) {
-        if (error instanceof TRPCError) {
-          throw error;
-        }
-
-        if (error instanceof Error && error.message === "POST_NOT_FOUND") {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Post not exists.",
-          });
-        }
-
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Error saving post.",
-        });
+        throw toPostTrpcError(error);
       }
     }),
 
   remove: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
-      const post = await db.post.findUnique({
-        where: {
-          id: input.id,
-        },
-      });
+      try {
+        const deleted = await deletePostRoot({ rootId: input.id });
 
-      if (!post) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Post not found",
+        revalidateContent("post", deleted.slug);
+
+        return deleted;
+      } catch (error) {
+        throw toPostTrpcError(error, {
+          internalMessage: "Error deleting post.",
         });
       }
-
-      const deletedPost = await db.post.deleteMany({
-        where: { rootId: post.rootId },
-      });
-
-      if (post.seoId) {
-        await db.seo.delete({
-          where: { id: post.seoId },
-        });
-      }
-
-      return deletedPost;
     }),
+
   getOne: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ input }) => {
-      const post = await db.post.findUnique({
+      const root = await db.postRoot.findUnique({
         where: {
           id: input.id,
         },
-      });
-
-      if (!post) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Post not found",
-        });
-      }
-
-      return post;
-    }),
-  getLastByRootId: protectedProcedure
-    .input(z.object({ rootId: z.string() }))
-    .query(async ({ input }) => {
-      const post = await db.post.findFirst({
-        where: {
-          rootId: input.rootId,
-        },
-        orderBy: {
-          publishedAt: "desc",
-        },
-        select: {
-          id: true,
-          rootId: true,
-          title: true,
-          slug: true,
-          description: true,
-          status: true,
-          tiptapBodyData: true,
-          publishedAt: true,
-          firstPublishedAt: true,
-          scheduledAt: true,
-          updatedAt: true,
-          version: true,
-          seo: true,
-          postCategories: {
-            select: {
-              category: {
+        include: {
+          currentVersion: {
+            include: {
+              seo: true,
+              categories: {
+                select: {
+                  category: {
+                    select: {
+                      id: true,
+                      title: true,
+                      slug: true,
+                    },
+                  },
+                  sort: true,
+                },
+              },
+              tags: {
                 select: {
                   id: true,
                   title: true,
                   slug: true,
                 },
               },
-              sort: true,
-            },
-          },
-          tags: {
-            select: {
-              id: true,
-              title: true,
-              slug: true,
-            },
-          },
-          imageCover: true,
-          postAuthors: {
-            select: {
-              user: true,
-              sort: true,
-            },
-            orderBy: {
-              sort: "asc",
-            },
-          },
-          faqs: {
-            select: {
-              id: true,
-              question: true,
-              answer: true,
-              sort: true,
-            },
-            orderBy: {
-              sort: "asc",
+              imageCover: true,
+              authors: {
+                select: {
+                  user: true,
+                  sort: true,
+                },
+                orderBy: {
+                  sort: "asc",
+                },
+              },
+              faqs: {
+                select: {
+                  id: true,
+                  question: true,
+                  answer: true,
+                  sort: true,
+                },
+                orderBy: {
+                  sort: "asc",
+                },
+              },
             },
           },
         },
       });
 
-      if (!post) {
+      if (!root || !root.currentVersion) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Post not found",
         });
       }
 
-      return post;
+      return {
+        ...root.currentVersion,
+        rootId: root.id,
+        slug: root.slug,
+        firstPublishedAt: root.firstPublishedAt,
+      };
     }),
+
+  getLastByRootId: protectedProcedure
+    .input(z.object({ rootId: z.string() }))
+    .query(async ({ input }) => {
+      const root = await db.postRoot.findUnique({
+        where: {
+          id: input.rootId,
+        },
+        include: {
+          currentVersion: {
+            include: {
+              seo: true,
+              categories: {
+                select: {
+                  category: {
+                    select: {
+                      id: true,
+                      title: true,
+                      slug: true,
+                    },
+                  },
+                  sort: true,
+                },
+              },
+              tags: {
+                select: {
+                  id: true,
+                  title: true,
+                  slug: true,
+                },
+              },
+              imageCover: true,
+              authors: {
+                select: {
+                  user: true,
+                  sort: true,
+                },
+                orderBy: {
+                  sort: "asc",
+                },
+              },
+              faqs: {
+                select: {
+                  id: true,
+                  question: true,
+                  answer: true,
+                  sort: true,
+                },
+                orderBy: {
+                  sort: "asc",
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!root || !root.currentVersion) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Post not found",
+        });
+      }
+
+      return {
+        ...root.currentVersion,
+        rootId: root.id,
+        slug: root.slug,
+        firstPublishedAt: root.firstPublishedAt,
+      };
+    }),
+
+  getVersions: protectedProcedure
+    .input(z.object({ rootId: z.string() }))
+    .query(async ({ input }) => {
+      return await db.postVersion.findMany({
+        where: { rootId: input.rootId },
+        orderBy: { version: "desc" },
+        select: {
+          id: true,
+          version: true,
+          title: true,
+          status: true,
+          publishedAt: true,
+          scheduledAt: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+    }),
+
   getMany: protectedProcedure
     .input(
       z.object({
@@ -329,91 +279,124 @@ export const postsRouter = createTRPCRouter({
       }),
     )
     .query(async ({ input }) => {
-      const where: Prisma.PostWhereInput = {
-        title: input.search
-          ? { contains: input.search, mode: "insensitive" }
-          : undefined,
-        status: input.status ? { in: [input.status] } : undefined,
-      };
-
-      const select = {
-        id: true,
-        rootId: true,
-        title: true,
-        slug: true,
-        status: true,
-        publishedAt: true,
-        firstPublishedAt: true,
-        scheduledAt: true,
-        version: true,
-        imageCover: {
-          select: {
-            url: true,
-            altText: true,
+      const where: Prisma.PostRootWhereInput = {
+        currentVersion: {
+          is: {
+            title: input.search
+              ? { contains: input.search, mode: "insensitive" }
+              : undefined,
+            status: input.status ? { in: [input.status] } : undefined,
           },
         },
-        postAuthors: {
-          select: {
-            user: {
+      };
+
+      const include = {
+        currentVersion: {
+          include: {
+            imageCover: {
               select: {
-                email: true,
-                imageUrl: true,
+                url: true,
+                altText: true,
+              },
+            },
+            authors: {
+              select: {
+                user: {
+                  select: {
+                    email: true,
+                    imageUrl: true,
+                  },
+                },
+              },
+              orderBy: {
+                sort: "asc",
               },
             },
           },
-          orderBy: {
-            sort: "asc",
-          },
         },
-      } satisfies Prisma.PostSelect;
+      } satisfies Prisma.PostRootInclude;
 
-      const currentVersions = await db.post.findMany({
-        where,
-        distinct: ["rootId"],
-        orderBy: [{ rootId: "asc" }, { version: "desc" }],
-        select: {
-          id: true,
-          title: true,
-          status: true,
-          publishedAt: true,
-        },
-      });
+      const mapItem = (
+        root: Prisma.PostRootGetPayload<{ include: typeof include }>,
+      ) => {
+        const version = root.currentVersion;
+        if (!version) return null;
 
-      const total = currentVersions.length;
-      const totalPages = Math.ceil(total / input.pageSize);
-      const orderBy = buildListOrderBy<Prisma.PostOrderByWithRelationInput>({
+        return {
+          id: version.id,
+          rootId: root.id,
+          title: version.title,
+          slug: root.slug,
+          status: version.status,
+          publishedAt: version.publishedAt,
+          firstPublishedAt: root.firstPublishedAt,
+          scheduledAt: version.scheduledAt,
+          version: version.version,
+          imageCover: version.imageCover,
+          authors: version.authors,
+        };
+      };
+
+      const orderBy = buildListOrderBy<Prisma.PostRootOrderByWithRelationInput>({
         sort: input.sort,
         direction: input.direction,
         sortable: POST_LIST_SORTS,
+        relation: "currentVersion",
       });
 
       if (orderBy) {
-        const posts = await db.post.findMany({
-          select,
-          where: { ...where, id: { in: currentVersions.map((v) => v.id) } },
-          orderBy,
-          take: input.pageSize,
-          skip: (input.page - 1) * input.pageSize,
-        });
+        const [roots, total] = await Promise.all([
+          db.postRoot.findMany({
+            where,
+            include,
+            orderBy,
+            take: input.pageSize,
+            skip: (input.page - 1) * input.pageSize,
+          }),
+          db.postRoot.count({ where }),
+        ]);
 
-        return { items: posts, total, totalPages };
+        const items = roots
+          .map(mapItem)
+          .filter((item): item is NonNullable<typeof item> => item !== null);
+
+        return {
+          items,
+          total,
+          totalPages: Math.ceil(total / input.pageSize),
+        };
       }
 
-      const pageIds = sortByDefaultOrder(currentVersions)
-        .slice((input.page - 1) * input.pageSize, input.page * input.pageSize)
-        .map((post) => post.id);
+      const roots = await db.postRoot.findMany({ where, include });
 
-      const posts = await db.post.findMany({
-        select,
-        where: { id: { in: pageIds } },
-      });
-      const postsById = new Map(posts.map((post) => [post.id, post]));
-      const items = pageIds
-        .map((id) => postsById.get(id))
-        .filter((post): post is (typeof posts)[number] => Boolean(post));
+      const rows = roots
+        .map((root) => {
+          const version = root.currentVersion;
+          if (!version) return null;
+
+          return {
+            // Sort on the logical post: the default tie-breaker is the root id,
+            // matching the explicit `{ id: "asc" }` order used below.
+            id: root.id,
+            title: version.title,
+            status: version.status,
+            publishedAt: version.publishedAt,
+            root,
+          };
+        })
+        .filter((row): row is NonNullable<typeof row> => row !== null);
+
+      const total = rows.length;
+      const totalPages = Math.ceil(total / input.pageSize);
+
+      const items = sortByDefaultOrder(rows)
+        .slice((input.page - 1) * input.pageSize, input.page * input.pageSize)
+        .map(({ root }) => mapItem(root))
+        .filter((item): item is NonNullable<typeof item> => item !== null);
 
       return { items, total, totalPages };
     }),
+
   getPaginated: protectedProcedure
     .input(
       z.object({
@@ -446,37 +429,45 @@ export const postsRouter = createTRPCRouter({
         });
       }
     }),
+
   getPublishedByIds: protectedProcedure
     .input(
       z.object({
         ids: z.array(z.uuid()).nonempty(),
       }),
     )
-
     .query(async ({ input }) => {
-      const posts = await db.post.findMany({
+      const roots = await db.postRoot.findMany({
         where: {
-          status: ContentStatus.PUBLISHED,
-          isLatest: true,
-          rootId: { in: input.ids },
+          id: { in: input.ids },
+          liveVersion: { isNot: null },
         },
-        select: {
-          id: true,
-          rootId: true,
-          title: true,
-          imageCover: { select: { url: true } },
-          slug: true,
+        include: {
+          liveVersion: {
+            select: {
+              id: true,
+              title: true,
+              imageCover: { select: { url: true } },
+            },
+          },
         },
       });
 
-      return posts;
+      return roots.map((root) => ({
+        id: root.liveVersion!.id,
+        rootId: root.id,
+        title: root.liveVersion!.title,
+        imageCover: root.liveVersion!.imageCover,
+        slug: root.slug,
+      }));
     }),
+
   publish: protectedProcedure
     .input(z.object({ id: z.string(), rootId: z.string() }))
     .mutation(async ({ input }) => {
       try {
         const published = await publishPost({
-          postId: input.id,
+          id: input.id,
           rootId: input.rootId,
         });
 
@@ -501,6 +492,28 @@ export const postsRouter = createTRPCRouter({
         throw error;
       }
     }),
+
+  unpublish: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input }) => {
+      try {
+        const unpublished = await unpublishPostVersion({ id: input.id });
+
+        revalidateContent("post", unpublished.slug);
+
+        return unpublished;
+      } catch (error) {
+        if (error instanceof PublishPostError) {
+          throw new TRPCError({
+            code: error.code === "NOT_FOUND" ? "NOT_FOUND" : "BAD_REQUEST",
+            message: error.message,
+          });
+        }
+
+        throw error;
+      }
+    }),
+
   schedule: protectedProcedure
     .input(
       z.object({
@@ -513,7 +526,7 @@ export const postsRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       try {
         return await schedulePost({
-          postId: input.id,
+          versionId: input.id,
           rootId: input.rootId,
           scheduledAt: input.scheduledAt,
           timezone: input.timezone,
@@ -548,7 +561,7 @@ export const postsRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       try {
         return await reschedulePost({
-          postId: input.id,
+          versionId: input.id,
           rootId: input.rootId,
           scheduledAt: input.scheduledAt,
           timezone: input.timezone,
@@ -576,7 +589,7 @@ export const postsRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       try {
         return await cancelSchedule({
-          postId: input.id,
+          versionId: input.id,
           rootId: input.rootId,
         });
       } catch (error) {
@@ -596,30 +609,5 @@ export const postsRouter = createTRPCRouter({
 
         throw error;
       }
-    }),
-  unpublish: protectedProcedure
-    .input(z.object({ id: z.string() }))
-    .mutation(async ({ input }) => {
-      const post = await db.post.findUnique({
-        where: {
-          id: input.id,
-        },
-      });
-
-      if (!post) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Post not found",
-        });
-      }
-
-      const unpublishedPost = await db.post.update({
-        where: { id: input.id },
-        data: { status: ContentStatus.CHANGED },
-      });
-
-      revalidateContent("post", unpublishedPost.slug);
-
-      return unpublishedPost;
     }),
 });

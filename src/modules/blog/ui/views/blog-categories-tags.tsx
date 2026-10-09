@@ -31,7 +31,7 @@ export const BlogCategoriesTags = async ({ slug }: BlogCategoriesTagsProps) => {
   if (!isNaN(slugPage) && isFinite(slugPage) && slugPage > 0) {
     result = await getPaginatedPostsByFilters({
       page: slugPage,
-      where: { status: ContentStatus.PUBLISHED, isLatest: true },
+      where: { status: ContentStatus.PUBLISHED },
     });
     entity = {
       title: "News",
@@ -71,8 +71,7 @@ export const BlogCategoriesTags = async ({ slug }: BlogCategoriesTagsProps) => {
       result = await getPostsByFilters({
         where: {
           status: ContentStatus.PUBLISHED,
-          isLatest: true,
-          postCategories: {
+          categories: {
             some: {
               category: {
                 id: { equals: category.id },
@@ -92,7 +91,6 @@ export const BlogCategoriesTags = async ({ slug }: BlogCategoriesTagsProps) => {
       result = await getPostsByFilters({
         where: {
           status: ContentStatus.PUBLISHED,
-          isLatest: true,
           tags: {
             some: {
               id: { equals: tag.id },

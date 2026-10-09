@@ -5,9 +5,9 @@ import { PostList } from "../../posts/ui/public/components/post-list";
 export const BlogDraftView = async () => {
   const { posts, totalPages, currentPage } = await getPaginatedPostsByFilters({
     page: 1,
+    version: "current",
     where: {
-      status: ContentStatus.DRAFT,
-      isLatest: true,
+      status: { in: [ContentStatus.DRAFT, ContentStatus.CHANGED] },
     },
   });
   return (

@@ -2,22 +2,33 @@ import { db } from "@/shared/lib/db";
 
 export const getPagesGroupedByRootId = async () => {
   try {
-    const pages = await db.post.findMany({
-      select: {
-        id: true,
-        rootId: true,
-        title: true,
-        slug: true,
-        status: true,
-        publishedAt: true,
-        firstPublishedAt: true,
+    const roots = await db.pageRoot.findMany({
+      include: {
+        currentVersion: {
+          select: {
+            id: true,
+            title: true,
+            status: true,
+            publishedAt: true,
+          },
+        },
       },
       orderBy: {
-        publishedAt: "desc",
+        firstPublishedAt: "desc",
       },
-      distinct: ["rootId"],
     });
-    return pages;
+
+    return roots
+      .filter((root) => root.currentVersion !== null)
+      .map((root) => ({
+        id: root.currentVersion!.id,
+        rootId: root.id,
+        title: root.currentVersion!.title,
+        slug: root.slug,
+        status: root.currentVersion!.status,
+        publishedAt: root.currentVersion!.publishedAt,
+        firstPublishedAt: root.firstPublishedAt,
+      }));
   } catch (error) {
     console.error("GET_PAGES_GROUPED_BY_ROOT_ID", error);
     return [];

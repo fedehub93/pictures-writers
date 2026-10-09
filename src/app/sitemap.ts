@@ -8,24 +8,33 @@ import { getSettings } from "@/data/settings";
 const generateBlogPostsSitemap = async () => {
   const { siteUrl } = await getSettings();
 
-  const posts = await db.post.findMany({
+  const roots = await db.postRoot.findMany({
     where: {
-      status: ContentStatus.PUBLISHED,
-      isLatest: true,
+      liveVersion: { isNot: null },
     },
-    include: {
-      seo: true,
+    select: {
+      slug: true,
+      liveVersion: {
+        select: {
+          publishedAt: true,
+          seo: {
+            select: {
+              canonicalUrl: true,
+            },
+          },
+        },
+      },
     },
     orderBy: {
       firstPublishedAt: "desc",
     },
   });
 
-  const mappedPosts: MetadataRoute.Sitemap = posts
-    .filter((post) => !post.seo?.canonicalUrl)
-    .map((post) => ({
-      url: `${siteUrl}/${post.slug}/`,
-      lastModified: post.publishedAt ?? undefined,
+  const mappedPosts: MetadataRoute.Sitemap = roots
+    .filter((root) => root.liveVersion && !root.liveVersion.seo?.canonicalUrl)
+    .map((root) => ({
+      url: `${siteUrl}/${root.slug}/`,
+      lastModified: root.liveVersion!.publishedAt ?? undefined,
       changeFrequency: "monthly",
       priority: 1,
     }));

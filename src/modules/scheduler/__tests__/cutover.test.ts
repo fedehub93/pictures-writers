@@ -19,7 +19,12 @@ import {
 } from "@/modules/scheduler/lib/migration";
 import { schedulePost, cancelSchedule } from "@/modules/blog/posts/lib/schedule-post";
 import { publishPost } from "@/modules/blog/posts/lib/publish-post";
-import { emptyTiptapDoc } from "@/modules/blog/posts/lib/__tests__/fixtures";
+import {
+  addPostVersion,
+  makeCurrent,
+  seedPost,
+  type SeedPostOptions,
+} from "@/modules/blog/posts/lib/__tests__/root-fixtures";
 import { scheduleSingleSend } from "@/modules/mails/single-sends/lib/schedule-single-send";
 
 import * as sendSingleSendModule from "@/modules/mails/single-sends/lib/send-single-send";
@@ -44,7 +49,7 @@ describe("scheduler cutover", () => {
     // This file verifies global cutover state, so it owns the whole scheduler
     // tables for the duration of each test (test database only).
     await db.scheduledAction.deleteMany({});
-    await db.post.deleteMany({ where: { status: ContentStatus.SCHEDULED } });
+    await db.postRoot.deleteMany({});
     await db.emailSingleSend.deleteMany({});
     await db.emailAudience.deleteMany({});
     createdRootIds.length = 0;
@@ -57,8 +62,8 @@ describe("scheduler cutover", () => {
   afterEach(async () => {
     await db.scheduledAction.deleteMany({});
     if (createdRootIds.length > 0) {
-      await db.post.deleteMany({
-        where: { rootId: { in: createdRootIds } },
+      await db.postRoot.deleteMany({
+        where: { id: { in: createdRootIds } },
       });
     }
     await db.emailSingleSend.deleteMany({});
@@ -69,64 +74,20 @@ describe("scheduler cutover", () => {
     createdAudienceIds.length = 0;
   });
 
-  const createPost = async (
-    overrides: Partial<{
-      title: string;
-      slug: string;
-      status: ContentStatus;
-      version: number;
-      rootId: string;
-      isLatest: boolean;
-      scheduledAt: Date;
-      preSchedulingStatus: ContentStatus;
-      firstPublishedAt: Date;
-      publishedAt: Date;
-    }> = {},
-  ) => {
-    const explicitRootId = overrides.rootId;
-    const post = await db.post.create({
-      data: {
-        title: "Test Post",
-        slug: "test-post",
-        version: 1,
-        status: ContentStatus.DRAFT,
-        tiptapBodyData: emptyTiptapDoc,
-        rootId: explicitRootId,
-        ...overrides,
-      },
-    });
+  const createPost = async (options: SeedPostOptions = {}) => {
+    const created = await seedPost(options);
 
-    const rootId = explicitRootId ?? post.id;
-    if (!explicitRootId) {
-      await db.post.update({
-        where: { id: post.id },
-        data: { rootId },
-      });
-    }
-
-    trackRootId(rootId);
-    return { ...post, rootId };
+    trackRootId(created.rootId);
+    return created;
   };
 
-  const createLegacyScheduledPost = async (scheduledAt: Date) => {
-    const post = await db.post.create({
-      data: {
-        title: "Legacy scheduled",
-        slug: `legacy-${randomUUID()}`,
-        version: 1,
-        status: ContentStatus.SCHEDULED,
-        tiptapBodyData: emptyTiptapDoc,
-        scheduledAt,
-        preSchedulingStatus: ContentStatus.DRAFT,
-      },
+  const createScheduledPost = async (scheduledAt: Date) => {
+    const created = await createPost({
+      status: ContentStatus.SCHEDULED,
+      scheduledAt,
+      preSchedulingStatus: ContentStatus.DRAFT,
     });
-    const rootId = post.id;
-    await db.post.update({
-      where: { id: post.id },
-      data: { rootId },
-    });
-    trackRootId(rootId);
-    return rootId;
+    return created.rootId;
   };
 
   const createEmailFixture = async () => {
@@ -185,7 +146,7 @@ describe("scheduler cutover", () => {
 
       const post = await createPost({ status: ContentStatus.DRAFT });
       await schedulePost({
-        postId: post.id,
+        versionId: post.version.id,
         rootId: post.rootId,
         scheduledAt: new Date("2025-06-01T11:00:00.000Z"),
         now: scheduleNow,
@@ -208,7 +169,9 @@ describe("scheduler cutover", () => {
       expect(result.succeeded).toBe(2);
       expect(result.failed).toBe(0);
 
-      const published = await db.post.findUnique({ where: { id: post.id } });
+      const published = await db.postVersion.findUnique({
+        where: { id: post.version.id },
+      });
       expect(published?.status).toBe(ContentStatus.PUBLISHED);
 
       const emailActions = await db.scheduledAction.findMany({
@@ -228,14 +191,14 @@ describe("scheduler cutover", () => {
       const post = await createPost({ status: ContentStatus.DRAFT });
 
       await schedulePost({
-        postId: post.id,
+        versionId: post.version.id,
         rootId: post.rootId,
         scheduledAt: new Date("2025-06-01T11:00:00.000Z"),
         now: scheduleNow,
       });
 
       const canceled = await cancelSchedule({
-        postId: post.id,
+        versionId: post.version.id,
         rootId: post.rootId,
       });
       expect(canceled.status).toBe(ContentStatus.DRAFT);
@@ -253,13 +216,13 @@ describe("scheduler cutover", () => {
     });
   });
 
-  describe("legacy migration", () => {
-    it("backfills the whole legacy backlog even when it exceeds one batch", async () => {
+  describe("cutover backfill", () => {
+    it("backfills the whole scheduled backlog even when it exceeds one batch", async () => {
       const now = new Date("2025-06-01T10:00:00.000Z");
       const scheduledAt = new Date("2025-06-01T11:00:00.000Z");
 
       for (let i = 0; i < 3; i++) {
-        await createLegacyScheduledPost(scheduledAt);
+        await createScheduledPost(scheduledAt);
       }
 
       const first = await runSchedulerCutoverBackfill(now, 2);
@@ -272,25 +235,25 @@ describe("scheduler cutover", () => {
 
     it("verifies gaps are flagged before backfill and cleared after", async () => {
       const scheduledAt = new Date("2025-06-01T11:00:00.000Z");
-      await createLegacyScheduledPost(scheduledAt);
+      await createScheduledPost(scheduledAt);
 
       const before = await verifySchedulerCutover();
-      expect(before.legacyScheduledPosts).toBe(1);
-      expect(before.legacyScheduledPostsWithoutActiveAction).toBe(1);
+      expect(before.scheduledVersions).toBe(1);
+      expect(before.scheduledVersionsWithoutActiveAction).toBe(1);
       expect(before.ok).toBe(false);
 
       await runSchedulerCutoverBackfill(new Date("2025-06-01T10:00:00.000Z"));
 
       const after = await verifySchedulerCutover();
-      expect(after.legacyScheduledPosts).toBe(1);
-      expect(after.legacyScheduledPostsWithoutActiveAction).toBe(0);
+      expect(after.scheduledVersions).toBe(1);
+      expect(after.scheduledVersionsWithoutActiveAction).toBe(0);
       expect(after.activeActionsOrphaned).toBe(0);
       expect(after.duplicateActiveActions).toBe(0);
       expect(after.ok).toBe(true);
     });
 
     it("flags orphaned and duplicate active actions", async () => {
-      // Orphan: an active action whose latest root version is not SCHEDULED.
+      // Orphan: an active action whose root's current version is not SCHEDULED.
       const orphanRoot = await createPost({ status: ContentStatus.DRAFT });
       await createPublishPostAction(
         orphanRoot.rootId,
@@ -307,8 +270,8 @@ describe("scheduler cutover", () => {
       const duplicateRoot = await createPost({ status: ContentStatus.DRAFT });
       await createPublishPostAction(duplicateRoot.rootId, scheduledAt);
       await createPublishPostAction(duplicateRoot.rootId, scheduledAt);
-      await db.post.update({
-        where: { id: duplicateRoot.id },
+      await db.postVersion.update({
+        where: { id: duplicateRoot.version.id },
         data: { status: ContentStatus.SCHEDULED, scheduledAt },
       });
 
@@ -323,39 +286,33 @@ describe("scheduler cutover", () => {
     it("keeps terminal actions while allowing a new schedule for the same root", async () => {
       const scheduleNow = new Date("2025-06-01T10:00:00.000Z");
       const publishAt = new Date("2025-06-01T12:00:00.000Z");
-      const firstPublishAt = new Date("2025-01-01T00:00:00.000Z");
 
       const versionOne = await createPost({
         status: ContentStatus.DRAFT,
-        version: 1,
       });
       const rootId = versionOne.rootId;
 
       await schedulePost({
-        postId: versionOne.id,
+        versionId: versionOne.version.id,
         rootId,
         scheduledAt: new Date("2025-06-01T11:00:00.000Z"),
         now: scheduleNow,
       });
 
       await publishPost({
-        postId: versionOne.id,
+        id: versionOne.version.id,
         rootId,
         now: publishAt,
       });
 
-      const versionTwo = await createPost({
-        rootId,
-        title: "Test Post",
-        slug: "test-post",
-        version: 2,
+      const versionTwo = await addPostVersion(rootId, {
         status: ContentStatus.CHANGED,
-        firstPublishedAt: firstPublishAt,
-        publishedAt: firstPublishAt,
+        title: "Test Post",
       });
+      await makeCurrent(rootId, versionTwo.id);
 
       await schedulePost({
-        postId: versionTwo.id,
+        versionId: versionTwo.id,
         rootId,
         scheduledAt: new Date("2025-06-02T12:00:00.000Z"),
         now: new Date("2025-06-01T13:00:00.000Z"),

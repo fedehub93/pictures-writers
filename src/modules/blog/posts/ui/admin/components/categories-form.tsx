@@ -22,7 +22,7 @@ import { usePostStore } from "../../../store/use-post-store";
 
 interface CategoriesFormProps {
   initialData: {
-    postCategories: {
+    categories: {
       category: {
         id: string;
         title: string;
@@ -49,7 +49,7 @@ export const CategoriesForm = ({
     resolver: zodResolver(postUpdateSchema),
     defaultValues: {
       categories:
-        initialData?.postCategories?.map((a) => ({
+        initialData?.categories?.map((a) => ({
           id: a.category.id,
           sort: a.sort,
         })) ?? [],

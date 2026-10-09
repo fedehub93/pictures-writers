@@ -163,7 +163,7 @@ export const PostIdView = ({ rootId }: PostIdViewProps) => {
   );
 
   const onDelete = () => {
-    removePost.mutate({ id: post.id });
+    removePost.mutate({ id: rootId });
   };
   const isComplete = Boolean(post.title && post.slug);
 

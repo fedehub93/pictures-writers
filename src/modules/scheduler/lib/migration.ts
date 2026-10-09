@@ -19,15 +19,14 @@ export interface SchedulerCutoverBackfillResult {
 }
 
 /**
- * One-time operational migration used at cutover: materialize every legacy
- * scheduled Post (status SCHEDULED + scheduledAt) as an active
- * ScheduledAction. Idempotent — safe to run repeatedly — and loops until the
- * legacy backlog is exhausted.
+ * One-time operational migration used at cutover: materialize every scheduled
+ * Post version (status SCHEDULED + scheduledAt) as an active ScheduledAction.
+ * Idempotent — safe to run repeatedly — and loops until the backlog is
+ * exhausted.
  *
- * The runtime cron does not depend on this: after the cutover the common
- * worker is the only processing path. This exists so operators can bring the
- * legacy rows forward and then verify with `verifySchedulerCutover` before the
- * legacy Post fields are eventually removed.
+ * The runtime cron does not depend on this: the common worker is the only
+ * processing path. This exists so operators can bring rows created before the
+ * scheduler cutover forward and then verify with `verifySchedulerCutover`.
  */
 export async function runSchedulerCutoverBackfill(
   now = new Date(),
@@ -49,8 +48,8 @@ export async function runSchedulerCutoverBackfill(
 }
 
 export interface SchedulerCutoverReport {
-  legacyScheduledPosts: number;
-  legacyScheduledPostsWithoutActiveAction: number;
+  scheduledVersions: number;
+  scheduledVersionsWithoutActiveAction: number;
   activeActionsOrphaned: number;
   duplicateActiveActions: number;
   terminalActionsPreserved: number;
@@ -60,10 +59,9 @@ export interface SchedulerCutoverReport {
 /**
  * Read-only verification of the scheduler cutover state.
  *
- * Flags the gaps that must be absent before the legacy Post scheduling fields
- * can be removed:
- * - legacy SCHEDULED Posts that are not backed by an active action;
- * - active PUBLISH_POST actions whose latest root version is not SCHEDULED;
+ * Flags the gaps that must be absent for scheduling to be coherent:
+ * - scheduled Post versions that are not backed by an active action;
+ * - active PUBLISH_POST actions whose root's current version is not SCHEDULED;
  * - two or more active actions for the same Post root.
  *
  * Also reports the number of preserved terminal actions (history).
@@ -71,20 +69,22 @@ export interface SchedulerCutoverReport {
 export async function verifySchedulerCutover(): Promise<SchedulerCutoverReport> {
   const scheduled = ContentStatus.SCHEDULED;
 
-  const legacyPosts = await db.post.findMany({
+  const scheduledRoots = await db.postRoot.findMany({
     where: {
-      status: scheduled,
-      scheduledAt: { not: null },
-      rootId: { not: null },
+      currentVersion: {
+        status: scheduled,
+        scheduledAt: { not: null },
+      },
     },
-    select: { rootId: true },
+    select: { id: true },
   });
 
   // Only pending (not yet claimed) actions are audited for incoherence. An
   // action being executed (PROCESSING) has just been claimed by the worker:
-  // while it runs, the root is still SCHEDULED until the publication
-  // transaction commits, and after it commits the action is terminal. Auditing
-  // in-flight actions would flag legitimate concurrent runs as orphans.
+  // while it runs, the root's current version is still SCHEDULED until the
+  // publication transaction commits, and after it commits the action is
+  // terminal. Auditing in-flight actions would flag legitimate concurrent runs
+  // as orphans.
   const pendingActions = await db.scheduledAction.findMany({
     where: {
       type: ScheduledActionType.PUBLISH_POST,
@@ -96,8 +96,8 @@ export async function verifySchedulerCutover(): Promise<SchedulerCutoverReport> 
 
   const activeTargets = new Set(pendingActions.map((action) => action.targetId));
 
-  const legacyScheduledPostsWithoutActiveAction = legacyPosts.filter(
-    (post) => !post.rootId || !activeTargets.has(post.rootId),
+  const scheduledVersionsWithoutActiveAction = scheduledRoots.filter(
+    (root) => !activeTargets.has(root.id),
   ).length;
 
   const targetCount = new Map<string, number>();
@@ -113,18 +113,17 @@ export async function verifySchedulerCutover(): Promise<SchedulerCutoverReport> 
 
   let activeActionsOrphaned = 0;
   if (activeTargets.size > 0) {
-    const postsByRoot = await db.post.findMany({
-      where: { rootId: { in: [...activeTargets] } },
-      select: { rootId: true, version: true, status: true },
+    const roots = await db.postRoot.findMany({
+      where: { id: { in: [...activeTargets] } },
+      select: {
+        id: true,
+        currentVersion: { select: { status: true } },
+      },
     });
 
     for (const targetId of activeTargets) {
-      const versions = postsByRoot.filter((post) => post.rootId === targetId);
-      const latest = versions.reduce<
-        (typeof versions)[number] | undefined
-      >((max, post) => (!max || post.version > max.version ? post : max), undefined);
-
-      if (!latest || latest.status !== scheduled) {
+      const root = roots.find((candidate) => candidate.id === targetId);
+      if (!root || root.currentVersion?.status !== scheduled) {
         activeActionsOrphaned++;
       }
     }
@@ -143,13 +142,13 @@ export async function verifySchedulerCutover(): Promise<SchedulerCutoverReport> 
   });
 
   return {
-    legacyScheduledPosts: legacyPosts.length,
-    legacyScheduledPostsWithoutActiveAction,
+    scheduledVersions: scheduledRoots.length,
+    scheduledVersionsWithoutActiveAction,
     activeActionsOrphaned,
     duplicateActiveActions,
     terminalActionsPreserved,
     ok:
-      legacyScheduledPostsWithoutActiveAction === 0 &&
+      scheduledVersionsWithoutActiveAction === 0 &&
       activeActionsOrphaned === 0 &&
       duplicateActiveActions === 0,
   };

@@ -21,10 +21,10 @@ export const PostList = ({ posts, currentPage, totalPages }: PostListProps) => {
             title={post.title}
             description={post.description!}
             slug={post.slug}
-            categories={post.postCategories.map((c) => c.category)}
+            categories={post.categories.map((c) => c.category)}
             imageCoverUrl={post.imageCover?.url || ""}
             imageCoverAlt={post.imageCover?.altText || ""}
-            authors={post.postAuthors.map((v) => v.user)}
+            authors={post.authors.map((v) => v.user)}
             updatedAt={post.updatedAt}
           />
         ))}

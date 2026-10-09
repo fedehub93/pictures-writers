@@ -29,7 +29,7 @@ import { getPublishedTagBySlug } from "../queries";
 const createCaller = createCallerFactory(tagsRouter);
 
 const tagIds: string[] = [];
-const postIds: string[] = [];
+const postRootIds: string[] = [];
 const userIds: string[] = [];
 
 let caller: ReturnType<typeof createCaller>;
@@ -46,20 +46,27 @@ async function createTag(overrides: Record<string, unknown> = {}) {
 }
 
 async function createPost() {
-  const post = await db.post.create({
+  const root = await db.postRoot.create({
+    data: { slug: `post-${randomUUID()}` },
+  });
+  const version = await db.postVersion.create({
     data: {
-      title: `Post ${randomUUID()}`,
-      slug: `post-${randomUUID()}`,
+      rootId: root.id,
       version: 1,
+      title: `Post ${randomUUID()}`,
     },
   });
-  postIds.push(post.id);
-  return post;
+  await db.postRoot.update({
+    where: { id: root.id },
+    data: { currentVersionId: version.id },
+  });
+  postRootIds.push(root.id);
+  return version;
 }
 
 beforeEach(async () => {
   tagIds.length = 0;
-  postIds.length = 0;
+  postRootIds.length = 0;
   userIds.length = 0;
 
   const user = await db.user.create({
@@ -85,15 +92,15 @@ afterEach(async () => {
       await db.seo.deleteMany({ where: { id: { in: seoIds } } });
     }
   }
-  if (postIds.length > 0) {
-    await db.post.deleteMany({ where: { id: { in: postIds } } });
+  if (postRootIds.length > 0) {
+    await db.postRoot.deleteMany({ where: { id: { in: postRootIds } } });
   }
   if (userIds.length > 0) {
     await db.user.deleteMany({ where: { id: { in: userIds } } });
   }
 
   tagIds.length = 0;
-  postIds.length = 0;
+  postRootIds.length = 0;
   userIds.length = 0;
 });
 
@@ -191,7 +198,7 @@ describe("tagsRouter", () => {
     it("removes the row, its SEO, and clears post links", async () => {
       const created = await createTag();
       const post = await createPost();
-      await db.post.update({
+      await db.postVersion.update({
         where: { id: post.id },
         data: { tags: { connect: { id: created.id } } },
       });
@@ -204,7 +211,7 @@ describe("tagsRouter", () => {
         await db.seo.findUnique({ where: { id: loaded.seoId! } }),
       ).toBeNull();
 
-      const linked = await db.post.findUniqueOrThrow({
+      const linked = await db.postVersion.findUniqueOrThrow({
         where: { id: post.id },
         include: { tags: true },
       });

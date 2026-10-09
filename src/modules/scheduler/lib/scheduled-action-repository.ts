@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 
 import { db } from "@/shared/lib/db";
 import {
+  ContentStatus,
   ScheduledActionStatus,
   ScheduledActionType,
   type Prisma,
@@ -14,6 +15,7 @@ import {
   SCHEDULER_BATCH_SIZE,
   SCHEDULER_LEASE_MS,
   SCHEDULER_MAX_ATTEMPTS,
+  SCHEDULER_TARGET_TYPES,
   type SchedulerTargetType,
 } from "../constants";
 
@@ -386,55 +388,65 @@ export async function countActiveScheduledActionsByTarget(
 }
 
 /**
- * Backfill existing scheduled posts into ScheduledAction records.
+ * Backfill scheduled post versions into ScheduledAction records.
  *
- * Idempotent: the query skips posts roots that already have a PUBLISH_POST
- * action (any state), so repeated runs cannot create duplicates and a loop
- * over this function progresses through the whole backlog instead of
- * re-processing the same first page.
+ * Used at cutover from the legacy scheduler: a root whose current version is
+ * `SCHEDULED` must be backed by an active `PUBLISH_POST` action, otherwise the
+ * worker would never publish it. Idempotent: roots that already have any
+ * `PUBLISH_POST` action (any state) are excluded from the query, so repeated
+ * runs cannot create duplicates and a loop over this function progresses
+ * through the whole backlog instead of re-processing the same first page.
  */
 export async function backfillScheduledPosts(
   _now = new Date(),
   batchSize = SCHEDULER_BATCH_SIZE,
 ): Promise<{ created: number; skipped: number }> {
-  const legacyPosts = await db.$queryRaw<
-    Array<{ id: string; rootId: string; scheduledAt: Date }>
-  >`
-    SELECT p.id, p."rootId", p."scheduledAt"
-    FROM "Post" p
-    WHERE p.status = 'SCHEDULED'
-      AND p."scheduledAt" IS NOT NULL
-      AND p."rootId" IS NOT NULL
-      AND NOT EXISTS (
-        SELECT 1 FROM "ScheduledAction" sa
-        WHERE sa."type" = 'PUBLISH_POST'
-          AND sa."targetType" = 'POST_ROOT'
-          AND sa."targetId" = p."rootId"
-      )
-    ORDER BY p.id ASC
-    LIMIT ${batchSize}
-  `;
+  const backfilledRootIds = await db.scheduledAction.findMany({
+    where: {
+      type: ScheduledActionType.PUBLISH_POST,
+      targetType: SCHEDULER_TARGET_TYPES.POST_ROOT,
+    },
+    select: { targetId: true },
+    distinct: ["targetId"],
+  });
+
+  const scheduledRoots = await db.postRoot.findMany({
+    where: {
+      id: { notIn: backfilledRootIds.map((action) => action.targetId) },
+      currentVersion: {
+        status: ContentStatus.SCHEDULED,
+        scheduledAt: { not: null },
+      },
+    },
+    select: {
+      id: true,
+      currentVersion: { select: { scheduledAt: true } },
+    },
+    orderBy: { id: "asc" },
+    take: batchSize,
+  });
 
   let created = 0;
   let skipped = 0;
 
-  for (const post of legacyPosts) {
-    if (!post.rootId || !post.scheduledAt) {
+  for (const root of scheduledRoots) {
+    const scheduledAt = root.currentVersion?.scheduledAt;
+    if (!scheduledAt) {
       skipped++;
       continue;
     }
 
-    const targetType = "POST_ROOT";
+    const targetType = SCHEDULER_TARGET_TYPES.POST_ROOT;
     await createScheduledAction({
-      type: "PUBLISH_POST",
+      type: ScheduledActionType.PUBLISH_POST,
       targetType,
-      targetId: post.rootId,
-      plannedAt: post.scheduledAt,
+      targetId: root.id,
+      plannedAt: scheduledAt,
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       idempotencyKey: createIdempotencyKey(
-        "PUBLISH_POST",
+        ScheduledActionType.PUBLISH_POST,
         targetType,
-        post.rootId,
+        root.id,
       ),
       maxAttempts: SCHEDULER_MAX_ATTEMPTS,
     });

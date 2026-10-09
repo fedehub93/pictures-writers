@@ -17,7 +17,7 @@ async function seoIsReferenced(
 ): Promise<boolean> {
   const [
     pageVersions,
-    posts,
+    postVersions,
     categories,
     tags,
     products,
@@ -25,7 +25,7 @@ async function seoIsReferenced(
     settings,
   ] = await Promise.all([
     tx.pageVersion.count({ where: { seoId } }),
-    tx.post.count({ where: { seoId } }),
+    tx.postVersion.count({ where: { seoId } }),
     tx.category.count({ where: { seoId } }),
     tx.tag.count({ where: { seoId } }),
     tx.product.count({ where: { seoId } }),
@@ -35,7 +35,7 @@ async function seoIsReferenced(
 
   return (
     pageVersions +
-      posts +
+      postVersions +
       categories +
       tags +
       products +

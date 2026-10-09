@@ -53,7 +53,6 @@ export async function generateMetadata(
       page: 1,
       where: {
         status: ContentStatus.PUBLISHED,
-        isLatest: true,
       },
     });
 

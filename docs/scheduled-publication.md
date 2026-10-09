@@ -57,11 +57,9 @@ Each invocation processes at most `SCHEDULER_BATCH_SIZE` (currently `50`) due ac
 
 ## Cutover from the legacy scheduler
 
-Older releases used a legacy scheduler driven by the Post's `scheduledAt` field, plus an email-specific scheduled-job endpoint. Both have been removed: the common worker is now the **only** runtime processing path.
+Older releases used a legacy scheduler driven by a Post's `scheduledAt` field, plus an email-specific scheduled-job endpoint. Both have been removed: the common worker is now the **only** runtime processing path, and scheduling state lives on the Post's current version (`PostVersion.status = SCHEDULED`, `scheduledAt`, `preSchedulingStatus`). The `ScheduledAction` targets the `PostRoot`; the worker resolves the root's current version at execution time.
 
-Operators who upgraded from a release that still populated legacy `SCHEDULED` Posts should run the one-time backfill and verification before the legacy Post fields are eventually dropped:
+Operators who upgraded from a release that stored scheduled posts without a backing `ScheduledAction` should run the one-time backfill and verification:
 
-1. `runSchedulerCutoverBackfill()` — materializes every legacy scheduled Post as an active `ScheduledAction`. It is idempotent and safe to run repeatedly; it loops until the backlog is exhausted.
-2. `verifySchedulerCutover()` — read-only report that flags legacy `SCHEDULED` Posts without an active action, active actions whose latest root version is not `SCHEDULED`, and duplicate active actions for one root. It also reports the preserved terminal (succeeded / failed / canceled) history.
-
-The legacy Post fields (`scheduledAt`, `preSchedulingStatus`, `SCHEDULED` status) remain synchronized with the operational `ScheduledAction` purely as a compatibility layer for the editorial UI, and will be removed once the cutover report is clean.
+1. `runSchedulerCutoverBackfill()` — materializes every scheduled Post version as an active `ScheduledAction`. It is idempotent and safe to run repeatedly; it loops until the backlog is exhausted.
+2. `verifySchedulerCutover()` — read-only report that flags scheduled versions without an active action, active actions whose root's current version is not `SCHEDULED`, and duplicate active actions for one root. It also reports the preserved terminal (succeeded / failed / canceled) history.

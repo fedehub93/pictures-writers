@@ -29,7 +29,7 @@ import { getPublishedCategoryBySlug } from "../queries";
 const createCaller = createCallerFactory(categoriesRouter);
 
 const categoryIds: string[] = [];
-const postIds: string[] = [];
+const postRootIds: string[] = [];
 const userIds: string[] = [];
 
 let caller: ReturnType<typeof createCaller>;
@@ -46,20 +46,27 @@ async function createCategory(overrides: Record<string, unknown> = {}) {
 }
 
 async function createPost() {
-  const post = await db.post.create({
+  const root = await db.postRoot.create({
+    data: { slug: `post-${randomUUID()}` },
+  });
+  const version = await db.postVersion.create({
     data: {
-      title: `Post ${randomUUID()}`,
-      slug: `post-${randomUUID()}`,
+      rootId: root.id,
       version: 1,
+      title: `Post ${randomUUID()}`,
     },
   });
-  postIds.push(post.id);
-  return post;
+  await db.postRoot.update({
+    where: { id: root.id },
+    data: { currentVersionId: version.id },
+  });
+  postRootIds.push(root.id);
+  return version;
 }
 
 beforeEach(async () => {
   categoryIds.length = 0;
-  postIds.length = 0;
+  postRootIds.length = 0;
   userIds.length = 0;
 
   const user = await db.user.create({
@@ -85,15 +92,15 @@ afterEach(async () => {
       await db.seo.deleteMany({ where: { id: { in: seoIds } } });
     }
   }
-  if (postIds.length > 0) {
-    await db.post.deleteMany({ where: { id: { in: postIds } } });
+  if (postRootIds.length > 0) {
+    await db.postRoot.deleteMany({ where: { id: { in: postRootIds } } });
   }
   if (userIds.length > 0) {
     await db.user.deleteMany({ where: { id: { in: userIds } } });
   }
 
   categoryIds.length = 0;
-  postIds.length = 0;
+  postRootIds.length = 0;
   userIds.length = 0;
 });
 

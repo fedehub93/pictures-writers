@@ -14,26 +14,29 @@ export interface PostPublishContext {
 }
 
 /**
- * Resolve the latest saved eligible post version for a root at execution time.
+ * Resolve the version a scheduled PUBLISH_POST action refers to.
  *
- * Eligible means: not deleted, belongs to the root, and has the maximum
- * version number. Validation of required fields is left to publishPost.
+ * The action targets the `PostRoot`, so at execution time the scheduled
+ * revision is the root's current version (scheduling moves the current version
+ * to `SCHEDULED`). Resolving through the pointer — instead of trusting a stale
+ * version id captured at schedule time — keeps the handler correct if the root
+ * was published or re-edited meanwhile.
  */
-async function resolveLatestEligiblePost(rootId: string) {
-  const post = await db.post.findFirst({
-    where: { rootId },
-    orderBy: { version: "desc" },
+async function resolveScheduledVersion(rootId: string) {
+  const root = await db.postRoot.findUnique({
+    where: { id: rootId },
+    select: { currentVersion: true },
   });
 
-  return post;
+  return root?.currentVersion ?? null;
 }
 
 /**
  * Handler for PUBLISH_POST scheduled actions.
  *
- * Uses the latest saved eligible version of the post at execution time and
- * delegates the actual publication transition to the existing publishPost
- * workflow.
+ * Resolves the root's scheduled (current) version and delegates the actual
+ * publication transition to the `publishPost` workflow, which promotes it to
+ * `liveVersion`.
  *
  * Returns normally to signal success. Throws ScheduledActionHandlerError to
  * signal failure; `transient: true` requests a retry when attempts remain.
@@ -51,27 +54,27 @@ export async function handlePublishPost(
     );
   }
 
-  const post = await resolveLatestEligiblePost(action.targetId);
+  const version = await resolveScheduledVersion(action.targetId);
 
-  if (!post) {
+  if (!version) {
     throw new ScheduledActionHandlerError("Post not found", false);
   }
 
-  if (post.status === ContentStatus.PUBLISHED) {
+  if (version.status === ContentStatus.PUBLISHED) {
     // Idempotent success: the post was already published (e.g. manually).
     return;
   }
 
-  if (post.status !== ContentStatus.SCHEDULED) {
+  if (version.status !== ContentStatus.SCHEDULED) {
     throw new ScheduledActionHandlerError(
-      `Post is in unexpected state ${post.status}`,
+      `Post is in unexpected state ${version.status}`,
       false,
     );
   }
 
   try {
     const published = await publishPost({
-      postId: post.id,
+      id: version.id,
       rootId: action.targetId,
       now,
       mode: "scheduled",
