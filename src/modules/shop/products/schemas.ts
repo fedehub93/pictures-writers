@@ -85,6 +85,12 @@ const productGallerySchema = z.object({
   sort: z.coerce.number<number>(),
 });
 
+const productExtraSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().nullable().optional(),
+  price: z.coerce.number<number>(),
+});
+
 export const productInsertSchema = z.object({
   title: z.string().min(1, { error: "Title is required" }),
   slug: z.string().min(1, { error: "Slug is required" }),
@@ -108,6 +114,7 @@ export const productUpdateSchema = z.object({
   isFree: z.boolean().optional(),
   metadata: productMetadataSchema.optional(),
   gallery: z.array(productGallerySchema).optional(),
+  extras: z.array(productExtraSchema).optional(),
   faqs: faqItemsSchema.optional(),
 });
 

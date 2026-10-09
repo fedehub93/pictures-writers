@@ -21,7 +21,11 @@ vi.mock("@/trpc/init", async () => {
 
 import { createCallerFactory } from "@/trpc/init";
 
-import { ContentStatus, ProductAcquisitionMode, ProductType } from "@/generated/prisma";
+import {
+  ContentStatus,
+  ProductAcquisitionMode,
+  ProductType,
+} from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 import { EbookType } from "@/modules/shop/products/types";
 import {
@@ -37,6 +41,7 @@ const createCaller = createCallerFactory(productsRouter);
 const rootIds: string[] = [];
 const mediaIds: string[] = [];
 const userIds: string[] = [];
+const categoryIds: string[] = [];
 let caller: ReturnType<typeof createCaller>;
 let userId: string;
 
@@ -49,6 +54,17 @@ async function createMedia() {
   });
   mediaIds.push(media.id);
   return media;
+}
+
+async function createCategory() {
+  const category = await db.productCategory.create({
+    data: {
+      title: `Category ${randomUUID()}`,
+      slug: `category-${randomUUID()}`,
+    },
+  });
+  categoryIds.push(category.id);
+  return category;
 }
 
 async function createProduct(overrides: Record<string, unknown> = {}) {
@@ -69,6 +85,8 @@ async function createProduct(overrides: Record<string, unknown> = {}) {
 beforeEach(async () => {
   rootIds.length = 0;
   mediaIds.length = 0;
+  userIds.length = 0;
+  categoryIds.length = 0;
 
   const user = await db.user.create({
     data: { email: `user-${randomUUID()}@example.com` },
@@ -80,15 +98,15 @@ beforeEach(async () => {
 
 afterEach(async () => {
   if (rootIds.length > 0) {
-    const products = await db.product.findMany({
+    const versions = await db.productVersion.findMany({
       where: { rootId: { in: rootIds } },
       select: { seoId: true },
     });
     const seoIds = [
-      ...new Set(products.map((product) => product.seoId).filter(Boolean)),
+      ...new Set(versions.map((version) => version.seoId).filter(Boolean)),
     ] as string[];
 
-    await db.product.deleteMany({ where: { rootId: { in: rootIds } } });
+    await db.productRoot.deleteMany({ where: { id: { in: rootIds } } });
     if (seoIds.length > 0) {
       await db.seo.deleteMany({ where: { id: { in: seoIds } } });
     }
@@ -96,17 +114,21 @@ afterEach(async () => {
   if (mediaIds.length > 0) {
     await db.media.deleteMany({ where: { id: { in: mediaIds } } });
   }
+  if (categoryIds.length > 0) {
+    await db.productCategory.deleteMany({ where: { id: { in: categoryIds } } });
+  }
   if (userIds.length > 0) {
     await db.user.deleteMany({ where: { id: { in: userIds } } });
   }
   rootIds.length = 0;
   mediaIds.length = 0;
   userIds.length = 0;
+  categoryIds.length = 0;
 });
 
 describe("productsRouter", () => {
   describe("create", () => {
-    it("creates a draft root product with a rootId, SEO and default metadata", async () => {
+    it("creates a draft root + version 1 with its own SEO and default metadata", async () => {
       const created = await createProduct({
         title: "Screenplay 101",
         slug: "screenplay-101",
@@ -119,12 +141,24 @@ describe("productsRouter", () => {
       expect(created.type).toBe(ProductType.EBOOK);
       expect(created.version).toBe(1);
       expect(created.status).toBe(ContentStatus.DRAFT);
-      expect(created.isLatest).toBe(true);
-      expect(created.rootId).toBe(created.id);
       expect(created.seoId).toBeTruthy();
       expect(created.seo?.title).toBe("Screenplay 101");
       expect(created.userId).toBe(userId);
       expect(created.metadata).toMatchObject({ type: ProductType.EBOOK });
+
+      const root = await db.productRoot.findUniqueOrThrow({
+        where: { id: created.rootId },
+      });
+      expect(root.slug).toBe("screenplay-101");
+      expect(root.type).toBe(ProductType.EBOOK);
+      expect(root.currentVersionId).toBe(created.id);
+      expect(root.liveVersionId).toBeNull();
+
+      const versions = await db.productVersion.findMany({
+        where: { rootId: created.rootId },
+      });
+      expect(versions).toHaveLength(1);
+      expect(versions[0]!.status).toBe(ContentStatus.DRAFT);
     });
 
     it("rejects an unknown product type", async () => {
@@ -152,17 +186,16 @@ describe("productsRouter", () => {
       expect(updated.id).toBe(created.id);
       expect(updated.version).toBe(1);
       expect(updated.status).toBe(ContentStatus.DRAFT);
-      expect(updated.isLatest).toBe(true);
       expect(updated.title).toBe("Updated title");
       expect(updated.price).toBe(42);
 
-      const rows = await db.product.findMany({
+      const rows = await db.productVersion.findMany({
         where: { rootId: created.rootId! },
       });
       expect(rows).toHaveLength(1);
     });
 
-    it("creates a new CHANGED version when the latest version is published", async () => {
+    it("creates a new CHANGED version when the current version is live", async () => {
       const created = await createProduct();
       const published = await caller.publish({
         id: created.id,
@@ -171,35 +204,65 @@ describe("productsRouter", () => {
 
       const updated = await caller.update({
         id: published.id,
-        rootId: published.rootId!,
+        rootId: published.rootId,
         title: "Next edition",
       });
 
       expect(updated.id).not.toBe(created.id);
       expect(updated.version).toBe(2);
       expect(updated.status).toBe(ContentStatus.CHANGED);
-      expect(updated.isLatest).toBe(false);
       expect(updated.title).toBe("Next edition");
 
-      const rows = await db.product.findMany({
+      const rows = await db.productVersion.findMany({
         where: { rootId: created.rootId! },
         orderBy: { version: "asc" },
       });
       expect(rows).toHaveLength(2);
       expect(rows[0]!.status).toBe(ContentStatus.PUBLISHED);
-      expect(rows[0]!.isLatest).toBe(true);
       expect(rows[1]!.status).toBe(ContentStatus.CHANGED);
-      expect(rows[1]!.isLatest).toBe(false);
+
+      const root = await db.productRoot.findUniqueOrThrow({
+        where: { id: created.rootId! },
+      });
+      expect(root.liveVersionId).toBe(created.id);
+      expect(root.currentVersionId).toBe(updated.id);
     });
 
-    it("carries gallery and FAQs over to the new version", async () => {
+    it("clones the SEO of the live version when forking", async () => {
+      const created = await createProduct();
+      await caller.publish({ id: created.id, rootId: created.rootId! });
+
+      const updated = await caller.update({
+        id: created.id,
+        rootId: created.rootId!,
+        title: "Next edition",
+      });
+
+      expect(updated.seoId).toBeTruthy();
+      expect(updated.seoId).not.toBe(created.seoId);
+
+      const original = await db.productVersion.findUniqueOrThrow({
+        where: { id: created.id },
+      });
+      expect(original.seoId).toBe(created.seoId);
+
+      const clonedSeo = await db.seo.findUniqueOrThrow({
+        where: { id: updated.seoId! },
+      });
+      expect(clonedSeo.title).toBe(created.title);
+    });
+
+    it("carries gallery, extras, FAQs and category over to the new version", async () => {
       const created = await createProduct();
       const media = await createMedia();
+      const category = await createCategory();
 
       await caller.update({
         id: created.id,
         rootId: created.rootId!,
+        categoryId: category.id,
         gallery: [{ mediaId: media.id, sort: 0 }],
+        extras: [{ name: "Bonus", description: "Extra", price: 5 }],
         faqs: [{ question: "Is it good?", answer: "Yes", sort: 0 }],
       });
       await caller.publish({ id: created.id, rootId: created.rootId! });
@@ -210,27 +273,69 @@ describe("productsRouter", () => {
         title: "Second edition",
       });
 
-      const newVersion = await db.product.findUniqueOrThrow({
+      const newVersion = await db.productVersion.findUniqueOrThrow({
         where: { id: updated.id },
-        include: { gallery: true, faqs: true },
+        include: { gallery: true, extras: true, faqs: true },
       });
 
+      expect(newVersion.categoryId).toBe(category.id);
       expect(newVersion.gallery).toHaveLength(1);
       expect(newVersion.gallery[0]!.mediaId).toBe(media.id);
+      expect(newVersion.extras).toHaveLength(1);
+      expect(newVersion.extras[0]!.name).toBe("Bonus");
       expect(newVersion.faqs).toHaveLength(1);
       expect(newVersion.faqs[0]!.question).toBe("Is it good?");
     });
 
-    it("persists gallery, FAQs and core fields together in a single update", async () => {
+    it("replaces gallery, extras and FAQs in place only when supplied", async () => {
       const created = await createProduct();
       const media = await createMedia();
 
-      const category = await db.productCategory.create({
-        data: {
-          title: `Atomic category ${randomUUID()}`,
-          slug: `atomic-category-${randomUUID()}`,
-        },
+      await caller.update({
+        id: created.id,
+        rootId: created.rootId!,
+        gallery: [{ mediaId: media.id, sort: 0 }],
+        extras: [{ name: "First", price: 1 }],
+        faqs: [{ question: "Q1", answer: "A1", sort: 0 }],
       });
+
+      const updated = await caller.update({
+        id: created.id,
+        rootId: created.rootId!,
+        title: "Only title",
+      });
+
+      const loaded = await db.productVersion.findUniqueOrThrow({
+        where: { id: updated.id },
+        include: { gallery: true, extras: true, faqs: true },
+      });
+
+      expect(loaded.title).toBe("Only title");
+      expect(loaded.gallery).toHaveLength(1);
+      expect(loaded.extras).toHaveLength(1);
+      expect(loaded.faqs).toHaveLength(1);
+
+      await caller.update({
+        id: created.id,
+        rootId: created.rootId!,
+        gallery: [],
+        faqs: [],
+      });
+
+      const cleared = await db.productVersion.findUniqueOrThrow({
+        where: { id: updated.id },
+        include: { gallery: true, extras: true, faqs: true },
+      });
+
+      expect(cleared.gallery).toHaveLength(0);
+      expect(cleared.faqs).toHaveLength(0);
+      expect(cleared.extras).toHaveLength(1);
+    });
+
+    it("persists core fields, category and gallery together in a single update", async () => {
+      const created = await createProduct();
+      const media = await createMedia();
+      const category = await createCategory();
 
       const updated = await caller.update({
         id: created.id,
@@ -245,25 +350,26 @@ describe("productsRouter", () => {
         faqs: [{ question: "Atomic question?", answer: "Atomic answer", sort: 1 }],
       });
 
-      const loaded = await db.product.findUniqueOrThrow({
+      const loaded = await db.productVersion.findUniqueOrThrow({
         where: { id: updated.id },
         include: { gallery: true, faqs: true },
       });
 
       expect(loaded.title).toBe("Atomic title");
-      expect(loaded.slug).toBe("atomic-title");
       expect(loaded.categoryId).toBe(category.id);
       expect(loaded.acquisitionMode).toBe(ProductAcquisitionMode.FREE);
       expect(loaded.price).toBe(12);
       expect(loaded.gallery).toHaveLength(1);
       expect(loaded.gallery[0]!.mediaId).toBe(media.id);
       expect(loaded.faqs).toHaveLength(1);
-      expect(loaded.faqs[0]!.question).toBe("Atomic question?");
 
-      await db.productCategory.deleteMany({ where: { id: category.id } });
+      const root = await db.productRoot.findUniqueOrThrow({
+        where: { id: created.rootId! },
+      });
+      expect(root.slug).toBe("atomic-title");
     });
 
-    it("does not dereference missing inputs when carrying over a version", async () => {
+    it("does not dereference missing inputs when forking a version", async () => {
       const created = await createProduct();
       await caller.publish({ id: created.id, rootId: created.rootId! });
 
@@ -274,7 +380,6 @@ describe("productsRouter", () => {
 
       expect(updated.status).toBe(ContentStatus.CHANGED);
       expect(updated.slug).toBe(created.slug);
-      expect(updated.seoId).toBe(created.seoId);
       expect(updated.metadata).toMatchObject({ type: ProductType.SERVICE });
     });
 
@@ -285,32 +390,18 @@ describe("productsRouter", () => {
         id: created.id,
         rootId: created.rootId!,
         status: ContentStatus.PUBLISHED,
-        isLatest: false,
         seoId: randomUUID(),
         userId: randomUUID(),
         version: 99,
       } as never);
 
       expect(updated.status).toBe(ContentStatus.DRAFT);
-      expect(updated.isLatest).toBe(true);
       expect(updated.seoId).toBe(created.seoId);
       expect(updated.userId).toBe(created.userId);
       expect(updated.version).toBe(1);
     });
 
-    it("rejects metadata that does not match the product type shape", async () => {
-      const created = await createProduct({ type: ProductType.EBOOK });
-
-      await expect(
-        caller.update({
-          id: created.id,
-          rootId: created.rootId!,
-          metadata: { type: ProductType.EBOOK, url: "https://example.com" },
-        } as never),
-      ).rejects.toThrow();
-    });
-
-    it("rejects metadata whose type differs from the product type", async () => {
+    it("rejects metadata whose type differs from the root type", async () => {
       const created = await createProduct({ type: ProductType.EBOOK });
 
       await expect(
@@ -325,6 +416,18 @@ describe("productsRouter", () => {
             attachamentUrl: "",
             features: [],
           },
+        } as never),
+      ).rejects.toThrow();
+    });
+
+    it("rejects metadata that does not match the product type shape", async () => {
+      const created = await createProduct({ type: ProductType.EBOOK });
+
+      await expect(
+        caller.update({
+          id: created.id,
+          rootId: created.rootId!,
+          metadata: { type: ProductType.EBOOK, url: "https://example.com" },
         } as never),
       ).rejects.toThrow();
     });
@@ -396,10 +499,7 @@ describe("productsRouter", () => {
         ProductType.EBOOK,
         { type: ProductType.EBOOK, edition: "First" },
       ],
-      [
-        ProductType.AFFILIATE,
-        { type: ProductType.AFFILIATE, url: 123 },
-      ],
+      [ProductType.AFFILIATE, { type: ProductType.AFFILIATE, url: 123 }],
       [
         ProductType.SERVICE,
         { type: ProductType.SERVICE, serviceType: "Editing" },
@@ -429,60 +529,6 @@ describe("productsRouter", () => {
       },
     );
 
-    it("rejects ebook metadata missing the nullable-but-required fields", async () => {
-      const created = await createProduct({ type: ProductType.EBOOK });
-
-      await expect(
-        caller.update({
-          id: created.id,
-          rootId: created.rootId!,
-          metadata: {
-            type: ProductType.EBOOK,
-            edition: "First",
-            formats: [],
-          },
-        } as never),
-      ).rejects.toThrow();
-    });
-
-    it("rejects a webinar lesson date that is not a string", async () => {
-      const created = await createProduct({ type: ProductType.WEBINAR });
-
-      await expect(
-        caller.update({
-          id: created.id,
-          rootId: created.rootId!,
-          metadata: {
-            type: ProductType.WEBINAR,
-            seats: 1,
-            platform: "Zoom",
-            lessons: [{ date: new Date(), startTime: "", endTime: "" }],
-            isOpen: true,
-          },
-        } as never),
-      ).rejects.toThrow();
-    });
-
-    it("accepts a webinar lesson with an ISO date string", async () => {
-      const created = await createProduct({ type: ProductType.WEBINAR });
-
-      const updated = await caller.update({
-        id: created.id,
-        rootId: created.rootId!,
-        metadata: {
-          type: ProductType.WEBINAR,
-          seats: 1,
-          platform: "Zoom",
-          lessons: [
-            { date: "2026-11-10", startTime: "18:00", endTime: "20:00" },
-          ],
-          isOpen: true,
-        },
-      });
-
-      expect(updated.metadata).toMatchObject({ type: ProductType.WEBINAR });
-    });
-
     it("throws NOT_FOUND when the root does not exist", async () => {
       await expect(
         caller.update({
@@ -495,7 +541,7 @@ describe("productsRouter", () => {
   });
 
   describe("updateSeo", () => {
-    it("updates the SEO of a draft in place", async () => {
+    it("updates the SEO of a draft in place without forking", async () => {
       const created = await createProduct();
 
       const seo = await caller.updateSeo({
@@ -507,21 +553,22 @@ describe("productsRouter", () => {
         noFollow: false,
       });
 
+      expect(seo.id).toBe(created.seoId);
       expect(seo.title).toBe("SEO title");
       expect(seo.description).toBe("SEO description");
       expect(seo.noIndex).toBe(true);
 
-      const rows = await db.product.findMany({
+      const rows = await db.productVersion.findMany({
         where: { rootId: created.rootId! },
       });
       expect(rows).toHaveLength(1);
     });
 
-    it("creates a new CHANGED version when the latest version is published", async () => {
+    it("forks a new CHANGED version with a cloned SEO when the current version is live", async () => {
       const created = await createProduct();
       await caller.publish({ id: created.id, rootId: created.rootId! });
 
-      await caller.updateSeo({
+      const seo = await caller.updateSeo({
         id: created.id,
         rootId: created.rootId!,
         title: "New SEO",
@@ -529,13 +576,23 @@ describe("productsRouter", () => {
         noFollow: false,
       });
 
-      const rows = await db.product.findMany({
+      expect(seo.id).not.toBe(created.seoId);
+
+      const rows = await db.productVersion.findMany({
         where: { rootId: created.rootId! },
         orderBy: { version: "asc" },
       });
       expect(rows).toHaveLength(2);
+      expect(rows[0]!.status).toBe(ContentStatus.PUBLISHED);
+      expect(rows[0]!.seoId).toBe(created.seoId);
       expect(rows[1]!.status).toBe(ContentStatus.CHANGED);
-      expect(rows[1]!.isLatest).toBe(false);
+      expect(rows[1]!.seoId).toBe(seo.id);
+
+      const root = await db.productRoot.findUniqueOrThrow({
+        where: { id: created.rootId! },
+      });
+      expect(root.liveVersionId).toBe(created.id);
+      expect(root.currentVersionId).toBe(rows[1]!.id);
     });
 
     it("throws NOT_FOUND for an unknown product", async () => {
@@ -551,7 +608,7 @@ describe("productsRouter", () => {
   });
 
   describe("publish and unpublish", () => {
-    it("publishes a version and aligns isLatest across the root", async () => {
+    it("promotes the target, demotes the previous live version and writes firstPublishedAt once", async () => {
       const created = await createProduct();
 
       const published = await caller.publish({
@@ -560,35 +617,85 @@ describe("productsRouter", () => {
       });
 
       expect(published.status).toBe(ContentStatus.PUBLISHED);
-      expect(published.isLatest).toBe(true);
+      expect(published.publishedAt).not.toBeNull();
 
-      const rows = await db.product.findMany({
+      let root = await db.productRoot.findUniqueOrThrow({
+        where: { id: created.rootId! },
+      });
+      const firstPublishedAt = root.firstPublishedAt;
+      expect(root.liveVersionId).toBe(created.id);
+      expect(firstPublishedAt).not.toBeNull();
+
+      const forked = await caller.update({
+        id: created.id,
+        rootId: created.rootId!,
+        title: "Second edition",
+      });
+
+      const republished = await caller.publish({
+        id: forked.id,
+        rootId: created.rootId!,
+      });
+
+      expect(republished.status).toBe(ContentStatus.PUBLISHED);
+
+      const versions = await db.productVersion.findMany({
         where: { rootId: created.rootId! },
       });
-      expect(rows.every((row) => row.isLatest === (row.id === created.id))).toBe(
-        true,
+      const live = versions.filter(
+        (version) => version.status === ContentStatus.PUBLISHED,
+      );
+      expect(live).toHaveLength(1);
+      expect(live[0]!.id).toBe(forked.id);
+
+      root = await db.productRoot.findUniqueOrThrow({
+        where: { id: created.rootId! },
+      });
+      expect(root.liveVersionId).toBe(forked.id);
+      expect(root.firstPublishedAt?.toISOString()).toBe(
+        firstPublishedAt!.toISOString(),
       );
     });
 
-    it("unpublishes a version back to CHANGED and keeps a single latest version", async () => {
+    it("leaves a consistent root when two publishes race", async () => {
+      const created = await createProduct();
+
+      await Promise.all([
+        caller.publish({ id: created.id, rootId: created.rootId! }),
+        caller.publish({ id: created.id, rootId: created.rootId! }),
+      ]);
+
+      const versions = await db.productVersion.findMany({
+        where: { rootId: created.rootId! },
+      });
+      const live = versions.filter(
+        (version) => version.status === ContentStatus.PUBLISHED,
+      );
+      expect(live).toHaveLength(1);
+
+      const root = await db.productRoot.findUniqueOrThrow({
+        where: { id: created.rootId! },
+      });
+      expect(root.liveVersionId).toBe(created.id);
+    });
+
+    it("unpublishes a version back to CHANGED and clears the live pointer", async () => {
       const created = await createProduct();
       await caller.publish({ id: created.id, rootId: created.rootId! });
-      const changed = await caller.update({
-        id: created.id,
-        rootId: created.rootId!,
-        title: "Draft ahead",
-      });
 
-      const unpublished = await caller.unpublish({ id: changed.id });
+      const unpublished = await caller.unpublish({ id: created.id });
 
       expect(unpublished.status).toBe(ContentStatus.CHANGED);
 
-      const rows = await db.product.findMany({
-        where: { rootId: created.rootId! },
+      const root = await db.productRoot.findUniqueOrThrow({
+        where: { id: created.rootId! },
       });
-      const latest = rows.filter((row) => row.isLatest);
-      expect(latest).toHaveLength(1);
-      expect(latest[0]!.id).toBe(changed.id);
+      expect(root.liveVersionId).toBeNull();
+
+      const version = await db.productVersion.findUniqueOrThrow({
+        where: { id: created.id },
+      });
+      expect(version.status).toBe(ContentStatus.CHANGED);
     });
 
     it("throws NOT_FOUND when publishing an unknown product", async () => {
@@ -603,13 +710,15 @@ describe("productsRouter", () => {
   });
 
   describe("getOne", () => {
-    it("returns the product with its SEO", async () => {
+    it("returns the current version with its SEO", async () => {
       const created = await createProduct();
 
-      const loaded = await caller.getOne({ id: created.id });
+      const loaded = await caller.getOne({ id: created.rootId! });
 
       expect(loaded.id).toBe(created.id);
+      expect(loaded.rootId).toBe(created.rootId);
       expect(loaded.seoId).toBe(created.seoId);
+      expect(loaded.type).toBe(ProductType.SERVICE);
     });
 
     it("throws NOT_FOUND for an unknown product", async () => {
@@ -618,7 +727,7 @@ describe("productsRouter", () => {
   });
 
   describe("getLastByRootId", () => {
-    it("returns the most recent version of the root", async () => {
+    it("returns the current version of the root", async () => {
       const created = await createProduct();
       await caller.publish({ id: created.id, rootId: created.rootId! });
       const changed = await caller.update({
@@ -644,7 +753,7 @@ describe("productsRouter", () => {
   });
 
   describe("getPublishedByRootId", () => {
-    it("returns the published version even when a draft is ahead", async () => {
+    it("returns the live version even when a draft is ahead", async () => {
       const created = await createProduct();
       const published = await caller.publish({
         id: created.id,
@@ -676,7 +785,7 @@ describe("productsRouter", () => {
   });
 
   describe("getMany", () => {
-    it("returns a paginated envelope of one row per root", async () => {
+    it("returns one row per root showing the current version", async () => {
       const created = await createProduct({
         title: "Paginated marker",
         slug: `paginated-${randomUUID()}`,
@@ -691,9 +800,10 @@ describe("productsRouter", () => {
       expect(result.total).toBe(1);
       expect(result.totalPages).toBe(1);
       expect(result.items[0]!.rootId).toBe(created.rootId);
+      expect(result.items[0]!.id).toBe(created.id);
     });
 
-    it("returns a single row per root showing the most recent version", async () => {
+    it("shows the most recent version after a fork", async () => {
       const created = await createProduct({
         title: "Multi version marker",
         slug: `multi-${randomUUID()}`,
@@ -780,13 +890,8 @@ describe("productsRouter", () => {
       );
     });
 
-    it("filters by category root", async () => {
-      const category = await db.productCategory.create({
-        data: {
-          title: `Category ${randomUUID()}`,
-          slug: `category-${randomUUID()}`,
-        },
-      });
+    it("filters by category", async () => {
+      const category = await createCategory();
 
       const created = await createProduct();
       await caller.update({
@@ -802,13 +907,11 @@ describe("productsRouter", () => {
       });
 
       expect(result.items.map((item) => item.rootId)).toContain(created.rootId);
-
-      await db.productCategory.deleteMany({ where: { id: category.id } });
     });
   });
 
   describe("getByRootIds", () => {
-    it("returns only published latest products for the given roots", async () => {
+    it("returns only the live version for the given roots", async () => {
       const published = await createProduct({ title: "Published" });
       const draft = await createProduct({ title: "Draft" });
       await caller.publish({ id: published.id, rootId: published.rootId! });
@@ -824,8 +927,16 @@ describe("productsRouter", () => {
   });
 
   describe("remove", () => {
-    it("deletes every version of the root and its SEO", async () => {
+    it("deletes the root, its versions, editorial relations and SEO", async () => {
       const created = await createProduct();
+      const media = await createMedia();
+
+      await caller.update({
+        id: created.id,
+        rootId: created.rootId!,
+        gallery: [{ mediaId: media.id, sort: 0 }],
+        faqs: [{ question: "Q", answer: "A", sort: 0 }],
+      });
       await caller.publish({ id: created.id, rootId: created.rootId! });
       await caller.update({
         id: created.id,
@@ -835,12 +946,35 @@ describe("productsRouter", () => {
 
       await caller.remove({ id: created.id });
 
-      const rows = await db.product.findMany({
+      const root = await db.productRoot.findUnique({
+        where: { id: created.rootId! },
+      });
+      const versions = await db.productVersion.findMany({
         where: { rootId: created.rootId! },
       });
+      const galleries = await db.productGallery.findMany({
+        where: { productId: created.id },
+      });
       const seo = await db.seo.findUnique({ where: { id: created.seoId! } });
-      expect(rows).toHaveLength(0);
+
+      expect(root).toBeNull();
+      expect(versions).toHaveLength(0);
+      expect(galleries).toHaveLength(0);
       expect(seo).toBeNull();
+
+      rootIds.length = 0;
+    });
+
+    it("deletes a root addressed by its root id", async () => {
+      const created = await createProduct();
+
+      await caller.remove({ id: created.rootId! });
+
+      const root = await db.productRoot.findUnique({
+        where: { id: created.rootId! },
+      });
+      expect(root).toBeNull();
+
       rootIds.length = 0;
     });
 

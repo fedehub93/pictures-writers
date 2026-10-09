@@ -1,9 +1,4 @@
-import {
-  Category,
-  Product,
-  ProductCategory,
-  Tag,
-} from "@/generated/prisma";
+import { Category, ProductCategory, Tag } from "@/generated/prisma";
 import { db } from "./db";
 
 const updateSeoRootId = async (seoId: string, rootId: string) => {
@@ -66,30 +61,6 @@ export const createTagSeo = async (tag: Tag) => {
 
   const updatedTagSeo = await updateSeoRootId(tagSeo.id, tagSeo.id);
   return updatedTagSeo;
-};
-
-export const createProductSeo = async (product: Product) => {
-  const productSeo = await db.seo.create({
-    data: {
-      title: product.title,
-      version: 1,
-      description: "",
-      ogTwitterTitle: product.title,
-      ogTwitterDescription: "",
-      ogTwitterType: "card",
-      ogTwitterLocale: "it_IT",
-      products: {
-        connect: { id: product.id },
-      },
-    },
-  });
-
-  if (!productSeo) {
-    return null;
-  }
-
-  const productUPdatedSeo = await updateSeoRootId(productSeo.id, productSeo.id);
-  return productUPdatedSeo;
 };
 
 export const createProductCategorySeo = async (category: ProductCategory) => {

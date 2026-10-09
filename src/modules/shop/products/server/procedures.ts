@@ -5,7 +5,6 @@ import type { Prisma } from "@/generated/prisma";
 
 import { ContentStatus, ProductType } from "@/generated/prisma";
 
-import { createProductSeo } from "@/lib/seo";
 import {
   buildListOrderBy,
   sortByDefaultOrder,
@@ -29,149 +28,55 @@ import {
   productUpdateSeoSchema,
 } from "../schemas";
 
-import {
-  createNewVersion,
-  PRODUCT_METADATA_MISMATCH,
-  PRODUCT_NOT_FOUND,
-} from "../lib/create-new-version";
-import { getDefaultProductMetadata } from "../lib/default-metadata";
+import { createProduct } from "./create-product";
+import { deleteProductRoot } from "./delete-product";
+import { toProductTrpcError } from "./errors";
+import { publishProductVersion, unpublishProductVersion } from "./publish-product";
+import { saveProductVersion } from "./save-product";
+import { updateProductVersionSeo } from "./update-seo";
 import { getPublishedProductByRootId } from "./queries/get-published-product-by-root-id";
-
-const findProductOrThrow = async (id: string) => {
-  const product = await db.product.findUnique({ where: { id } });
-
-  if (!product) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Product not found.",
-    });
-  }
-
-  return product;
-};
 
 export const productsRouter = createTRPCRouter({
   create: permissionProcedure(PERMISSIONS.PRODUCTS_CREATE)
     .input(productInsertSchema)
     .mutation(async ({ input, ctx }) => {
-      const product = await db.product.create({
-        data: {
-          title: input.title,
-          slug: input.slug,
-          type: input.type,
-          version: 1,
-          status: ContentStatus.DRAFT,
-          price: 0,
-          metadata: getDefaultProductMetadata(input.type),
-          userId: ctx.auth.id,
-        },
-      });
-
-      const rootedProduct = await db.product.update({
-        where: { id: product.id },
-        data: { rootId: product.id },
-      });
-
-      await createProductSeo(rootedProduct);
-
-      return db.product.findUniqueOrThrow({
-        where: { id: product.id },
-        include: { seo: true },
-      });
+      return createProduct({ ...input, userId: ctx.auth.id });
     }),
 
   update: permissionProcedure(PERMISSIONS.PRODUCTS_UPDATE)
     .input(productUpdateSchema)
     .mutation(async ({ input }) => {
       try {
-        return await createNewVersion(input);
+        return await saveProductVersion(input);
       } catch (error) {
-        if (error instanceof TRPCError) {
-          throw error;
-        }
-
-        if (error instanceof Error && error.message === PRODUCT_NOT_FOUND) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Il prodotto richiesto non esiste.",
-          });
-        }
-
-        if (
-          error instanceof Error &&
-          error.message === PRODUCT_METADATA_MISMATCH
-        ) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "I metadati non corrispondono al tipo di prodotto.",
-          });
-        }
-
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Errore durante il salvataggio del prodotto.",
-        });
+        throw toProductTrpcError(error);
       }
     }),
 
   updateSeo: permissionProcedure(PERMISSIONS.PRODUCTS_UPDATE)
     .input(productUpdateSeoSchema)
     .mutation(async ({ input }) => {
-      const product = await db.product.findUnique({
-        where: { id: input.id, rootId: input.rootId },
-      });
-
-      if (!product || !product.seoId) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Product not found.",
-        });
+      try {
+        return await updateProductVersionSeo(input);
+      } catch (error) {
+        throw toProductTrpcError(error);
       }
-
-      const updatedSeo = await db.seo.update({
-        where: { id: product.seoId },
-        data: {
-          title: input.title,
-          description: input.description,
-          canonicalUrl: input.canonicalUrl,
-          ogTwitterTitle: input.ogTwitterTitle,
-          ogTwitterDescription: input.ogTwitterDescription,
-          noIndex: input.noIndex,
-          noFollow: input.noFollow,
-        },
-      });
-
-      await createNewVersion({
-        id: product.id,
-        rootId: input.rootId,
-      });
-
-      return updatedSeo;
     }),
 
   remove: permissionProcedure(PERMISSIONS.PRODUCTS_DELETE)
     .input(z.object({ id: z.string().min(1) }))
     .mutation(async ({ input }) => {
-      const product = await findProductOrThrow(input.id);
+      try {
+        const deleted = await deleteProductRoot({ id: input.id });
 
-      const versions = await db.product.findMany({
-        where: { rootId: product.rootId },
-        select: { seoId: true },
-      });
+        revalidateContent("product");
 
-      const deletedProduct = await db.product.deleteMany({
-        where: { rootId: product.rootId },
-      });
-
-      const seoIds = [
-        ...new Set(versions.map((version) => version.seoId).filter(Boolean)),
-      ] as string[];
-
-      if (seoIds.length > 0) {
-        await db.seo.deleteMany({ where: { id: { in: seoIds } } });
+        return deleted;
+      } catch (error) {
+        throw toProductTrpcError(error, {
+          internalMessage: "Errore durante l'eliminazione del prodotto.",
+        });
       }
-
-      return deletedProduct;
     }),
 
   getOne: permissionProcedure(PERMISSIONS.PRODUCTS_READ)
@@ -414,66 +319,32 @@ export const productsRouter = createTRPCRouter({
   publish: permissionProcedure(PERMISSIONS.PRODUCTS_PUBLISH)
     .input(z.object({ id: z.string().min(1), rootId: z.string().min(1) }))
     .mutation(async ({ input }) => {
-      const product = await db.product.findFirst({
-        where: { id: input.id, rootId: input.rootId },
-        select: { title: true, firstPublishedAt: true },
-      });
+      try {
+        const published = await publishProductVersion(input);
 
-      if (!product) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Product not found.",
+        revalidateContent("product");
+
+        return published;
+      } catch (error) {
+        throw toProductTrpcError(error, {
+          internalMessage: "Failed to publish the product",
         });
       }
-
-      if (!product.title) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Missing required fields.",
-        });
-      }
-
-      await db.product.updateMany({
-        where: { rootId: input.rootId },
-        data: { isLatest: false },
-      });
-
-      const now = new Date();
-
-      const publishedProduct = await db.product.update({
-        where: { id: input.id },
-        data: {
-          status: ContentStatus.PUBLISHED,
-          isLatest: true,
-          publishedAt: now,
-          firstPublishedAt:
-            product.firstPublishedAt === null ? now : undefined,
-        },
-        include: { seo: true },
-      });
-
-      revalidateContent("product");
-
-      return publishedProduct;
     }),
 
   unpublish: permissionProcedure(PERMISSIONS.PRODUCTS_PUBLISH)
     .input(z.object({ id: z.string().min(1) }))
     .mutation(async ({ input }) => {
-      const product = await findProductOrThrow(input.id);
+      try {
+        const unpublished = await unpublishProductVersion(input);
 
-      await db.product.updateMany({
-        where: { rootId: product.rootId },
-        data: { isLatest: false },
-      });
+        revalidateContent("product");
 
-      const unpublishedProduct = await db.product.update({
-        where: { id: input.id },
-        data: { status: ContentStatus.CHANGED, isLatest: true },
-      });
-
-      revalidateContent("product");
-
-      return unpublishedProduct;
+        return unpublished;
+      } catch (error) {
+        throw toProductTrpcError(error, {
+          internalMessage: "Failed to unpublish the product",
+        });
+      }
     }),
 });
