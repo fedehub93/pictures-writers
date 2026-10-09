@@ -241,4 +241,78 @@ describe("postsRouter reads via PostRoot + PostVersion", () => {
     expect(drafts.total).toBe(1);
     expect(drafts.items[0]!.status).toBe(ContentStatus.DRAFT);
   });
+
+  it("getMany supports the remaining explicit sorts", async () => {
+    const marker = `Sorts ${randomUUID()}`;
+    const early = await createRootVersion({
+      title: `${marker} early`,
+      status: ContentStatus.DRAFT,
+      version: 1,
+    });
+    const middle = await createRootVersion({
+      title: `${marker} middle`,
+      status: ContentStatus.DRAFT,
+      version: 1,
+    });
+    const late = await createRootVersion({
+      title: `${marker} late`,
+      status: ContentStatus.CHANGED,
+      version: 1,
+    });
+
+    // Set timestamps raw so `@updatedAt` doesn't overwrite them.
+    await db.$executeRaw`
+      UPDATE "PostVersion"
+      SET "createdAt" = ${new Date("2024-01-01")},
+          "updatedAt" = ${new Date("2024-03-01")},
+          "scheduledAt" = ${new Date("2024-02-01")}
+      WHERE "id" = ${early.versionId}`;
+    await db.$executeRaw`
+      UPDATE "PostVersion"
+      SET "createdAt" = ${new Date("2024-01-02")},
+          "updatedAt" = ${new Date("2024-02-01")},
+          "scheduledAt" = NULL
+      WHERE "id" = ${middle.versionId}`;
+    await db.$executeRaw`
+      UPDATE "PostVersion"
+      SET "createdAt" = ${new Date("2024-01-03")},
+          "updatedAt" = ${new Date("2024-01-01")},
+          "scheduledAt" = ${new Date("2024-04-01")}
+      WHERE "id" = ${late.versionId}`;
+
+    const query = (
+      sort: "createdAt" | "updatedAt" | "scheduledAt" | "status",
+      direction: "asc" | "desc",
+    ) =>
+      caller.getMany({ page: 1, pageSize: 50, search: marker, sort, direction });
+
+    const byCreatedAt = await query("createdAt", "desc");
+    expect(byCreatedAt.items.map((item) => item.title)).toEqual([
+      `${marker} late`,
+      `${marker} middle`,
+      `${marker} early`,
+    ]);
+
+    const byUpdatedAt = await query("updatedAt", "desc");
+    expect(byUpdatedAt.items.map((item) => item.title)).toEqual([
+      `${marker} early`,
+      `${marker} middle`,
+      `${marker} late`,
+    ]);
+
+    // `scheduledAt` pins nulls last, so the unscheduled post comes after.
+    const byScheduledAt = await query("scheduledAt", "asc");
+    expect(byScheduledAt.items.map((item) => item.title)).toEqual([
+      `${marker} early`,
+      `${marker} late`,
+      `${marker} middle`,
+    ]);
+
+    const byStatus = await query("status", "asc");
+    expect(byStatus.items.map((item) => item.status)).toEqual([
+      ContentStatus.DRAFT,
+      ContentStatus.DRAFT,
+      ContentStatus.CHANGED,
+    ]);
+  });
 });
