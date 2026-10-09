@@ -176,39 +176,55 @@ export const productsRouter = createTRPCRouter({
           .nullish(),
         type: z.enum(ProductType).nullish(),
         category: z.string().nullish(),
+        // When set, list roots that have a live version and project the live
+        // version instead of the current one. Used by the product pickers
+        // (embedded product, widget, ads item) so an edited-but-live product
+        // stays selectable while the draft reads stay current-version scoped.
+        publishedOnly: z.boolean().nullish(),
         sort: z.enum(PRODUCT_LIST_SORTS).nullish(),
         direction: z.enum(["asc", "desc"]).nullish(),
       }),
     )
     .query(async ({ input }) => {
       const search = input.search?.trim();
+      const publishedOnly = input.publishedOnly === true;
+
+      const versionWhere = {
+        title: search
+          ? { contains: search, mode: "insensitive" as const }
+          : undefined,
+        status:
+          !publishedOnly && input.status ? { in: [input.status] } : undefined,
+        categoryId: input.category ? input.category : undefined,
+      };
+
+      const versionRelation = publishedOnly ? "liveVersion" : "currentVersion";
 
       const where: Prisma.ProductRootWhereInput = {
-        currentVersion: {
-          is: {
-            title: search
-              ? { contains: search, mode: "insensitive" }
-              : undefined,
-            status: input.status ? { in: [input.status] } : undefined,
-            categoryId: input.category ? input.category : undefined,
-          },
-        },
+        ...(publishedOnly
+          ? { liveVersion: { is: versionWhere } }
+          : { currentVersion: { is: versionWhere } }),
         type: input.type ? { in: [input.type] } : undefined,
       };
 
+      const versionInclude = {
+        include: { imageCover: true, category: true },
+      } as const;
+
       const include = {
-        currentVersion: {
-          include: {
-            imageCover: true,
-            category: true,
-          },
-        },
+        currentVersion: versionInclude,
+        liveVersion: versionInclude,
       } satisfies Prisma.ProductRootInclude;
 
-      const mapItem = (
-        root: Prisma.ProductRootGetPayload<{ include: typeof include }>,
-      ) => {
-        const version = root.currentVersion;
+      type RootWithVersions = Prisma.ProductRootGetPayload<{
+        include: typeof include;
+      }>;
+
+      const versionOf = (root: RootWithVersions) =>
+        publishedOnly ? root.liveVersion : root.currentVersion;
+
+      const mapItem = (root: RootWithVersions) => {
+        const version = versionOf(root);
         if (!version) return null;
 
         return {
@@ -235,7 +251,7 @@ export const productsRouter = createTRPCRouter({
           sort: input.sort,
           direction: input.direction,
           sortable: PRODUCT_LIST_SORTS,
-          relation: input.sort === "type" ? undefined : "currentVersion",
+          relation: input.sort === "type" ? undefined : versionRelation,
         });
 
       if (orderBy) {
@@ -265,7 +281,7 @@ export const productsRouter = createTRPCRouter({
 
       const rows = roots
         .map((root) => {
-          const version = root.currentVersion;
+          const version = versionOf(root);
           if (!version) return null;
 
           return {

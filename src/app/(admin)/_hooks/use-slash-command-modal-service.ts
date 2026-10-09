@@ -3,7 +3,8 @@
 import "client-only";
 
 import { useModal } from "./use-modal-store";
-import type { Media, Product } from "@/generated/prisma";
+import type { Media } from "@/generated/prisma";
+import type { ProductListItem } from "@/modules/shop/products/types";
 import type { SlashCommandModalService } from "@/shared/components/tiptap-editor/slash-menu/types";
 
 /**
@@ -29,8 +30,8 @@ export const useAdminSlashCommandModalService =
         });
       },
       openProductPicker: (onSelect) => {
-        onOpen("selectProduct", (product: Product) => {
-          onSelect({ productRootId: product.rootId ?? product.id });
+        onOpen("selectProduct", (product: ProductListItem) => {
+          onSelect({ productRootId: product.rootId });
         });
       },
     };

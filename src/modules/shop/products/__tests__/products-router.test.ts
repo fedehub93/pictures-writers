@@ -827,6 +827,67 @@ describe("productsRouter", () => {
       expect(result.items[0]!.status).toBe(ContentStatus.CHANGED);
     });
 
+    it("lists the live version when publishedOnly is set", async () => {
+      const created = await createProduct({
+        title: "Picker live marker",
+        slug: `picker-live-${randomUUID()}`,
+      });
+      const draft = await createProduct({
+        title: "Picker live marker draft",
+        slug: `picker-draft-${randomUUID()}`,
+      });
+      await caller.publish({ id: created.id, rootId: created.rootId! });
+      await caller.update({
+        id: created.id,
+        rootId: created.rootId!,
+        title: "Picker live marker v2",
+      });
+
+      const live = await caller.getMany({
+        page: 1,
+        pageSize: 50,
+        search: "Picker live marker",
+        publishedOnly: true,
+      });
+
+      expect(live.items.map((item) => item.rootId)).toEqual([created.rootId]);
+      expect(live.items[0]!.id).toBe(created.id);
+      expect(live.items[0]!.title).toBe("Picker live marker");
+      expect(live.items[0]!.status).toBe(ContentStatus.PUBLISHED);
+      expect(live.items.map((item) => item.rootId)).not.toContain(draft.rootId);
+    });
+
+    it("sorts live versions when publishedOnly is combined with an explicit sort", async () => {
+      const marker = `Picker sort ${randomUUID()}`;
+      const alpha = await createProduct({ title: `${marker} Alpha` });
+      const beta = await createProduct({ title: `${marker} Beta` });
+      await caller.publish({ id: alpha.id, rootId: alpha.rootId! });
+      await caller.publish({ id: beta.id, rootId: beta.rootId! });
+      await caller.update({
+        id: alpha.id,
+        rootId: alpha.rootId!,
+        title: `${marker} Alpha v2`,
+      });
+
+      const result = await caller.getMany({
+        page: 1,
+        pageSize: 50,
+        search: marker,
+        publishedOnly: true,
+        sort: "title",
+        direction: "asc",
+      });
+
+      expect(result.items.map((item) => item.rootId)).toEqual([
+        alpha.rootId,
+        beta.rootId,
+      ]);
+      expect(result.items.map((item) => item.title)).toEqual([
+        `${marker} Alpha`,
+        `${marker} Beta`,
+      ]);
+    });
+
     it("sorts by the requested column and direction across all roots", async () => {
       const marker = `Sort marker ${randomUUID()}`;
       const alpha = await createProduct({ title: `${marker} Alpha` });

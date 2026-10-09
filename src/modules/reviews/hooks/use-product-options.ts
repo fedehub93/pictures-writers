@@ -1,7 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { ContentStatus } from "@/generated/prisma";
-
 import { useTRPC } from "@/trpc/client";
 
 export const useProductOptions = (s?: string) => {
@@ -12,7 +10,7 @@ export const useProductOptions = (s?: string) => {
       page: 1,
       pageSize: 100,
       search: s ?? null,
-      status: ContentStatus.PUBLISHED,
+      publishedOnly: true,
     }),
   );
 };

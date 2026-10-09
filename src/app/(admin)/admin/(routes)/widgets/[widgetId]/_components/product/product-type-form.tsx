@@ -4,7 +4,6 @@ import * as z from "zod";
 import Image from "next/image";
 import { ChangeEvent } from "react";
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
-import { Product } from "@/generated/prisma";
 import { Control, useController } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
 import { Grip, Trash2 } from "lucide-react";
@@ -31,6 +30,7 @@ import { widgetFormSchema } from "../widget-form";
 import { cn } from "@/shared/lib/utils";
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 import { WidgetProductType } from "@/types";
+import type { ProductListItem } from "@/modules/shop/products/types";
 
 interface ProductTypeFormProps {
   control: Control<z.infer<typeof widgetFormSchema>>;
@@ -99,7 +99,7 @@ export const ProductTypeForm = ({
     onOpen("selectProduct", onSelectProduct);
   };
 
-  const onSelectProduct = (product: Product) => {
+  const onSelectProduct = (product: ProductListItem) => {
     fieldProducts.onChange([
       ...fieldProducts.value,
       { rootId: product.rootId, sort: fieldProducts.value.length },
