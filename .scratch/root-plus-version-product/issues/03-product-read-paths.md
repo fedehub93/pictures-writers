@@ -4,18 +4,18 @@
 
 **Blocked by:** 02 — Product schema, backfill, and cut-over.
 
-**Status:** ready-for-agent
+**Status:** done
 
 ## Acceptance criteria
 
-- [ ] `getPublishedProductBySlug` resolves `slug → ProductRoot → liveVersion` (null when never published); the `type = AFFILIATE` exclusion reads `type` from the root.
-- [ ] `getProductMetadataBySlug`, `getPublishedProductByRootId`, and `getPublishedProductsBuilding` resolve through root/live; `getProductsPaginatedByFilters` uses the version fields via the root.
-- [ ] `productsRouter.getOne` returns the root with its current version; `getLastByRootId` returns the current version; `getByRootIds` returns the live version for each root (keeping `id`/`rootId` in the shape for the ads item content and admin pickers).
-- [ ] `productsRouter.getMany` is a single `findMany` over `ProductRoot` (with current version); it returns one row per product, supports search, explicit sorts, and the default order "unpublished first, then `publishedAt` desc, `title` asc, `id` asc". The two-phase `distinct rootId` query and the Product-specific `list-sorting` path are gone. The `category` filter uses `categoryId`.
-- [ ] `src/app/sitemap.ts`, `src/lib/llms.ts`, `src/data/widget.ts`, `src/data/webinars.ts`, and `src/modules/mails/lib/mail.ts` read root/live instead of `isLatest`/`status` on `Product`.
-- [ ] Order-service: `getFormOptions` lists roots that have a live version, and order-item name/price snapshots are taken from the live version; `checkout`/`download`/`submission` routes and `src/actions/submit-product-form.ts` resolve the live version.
-- [ ] `docs/adr/...`-named SEO deletion guards (`delete-post.ts`, `delete-page.ts`) count `productVersion`/`productCategory` by `seoId`.
-- [ ] `npx tsc --noEmit` reports no errors in the read-path files touched here.
+- [x] `getPublishedProductBySlug` resolves `slug → ProductRoot → liveVersion` (null when never published); the `type = AFFILIATE` exclusion reads `type` from the root.
+- [x] `getProductMetadataBySlug`, `getPublishedProductByRootId`, and `getPublishedProductsBuilding` resolve through root/live; `getProductsPaginatedByFilters` uses the version fields via the root.
+- [x] `productsRouter.getOne` returns the root with its current version; `getLastByRootId` returns the current version; `getByRootIds` returns the live version for each root (keeping `id`/`rootId` in the shape for the ads item content and admin pickers).
+- [x] `productsRouter.getMany` is a single `findMany` over `ProductRoot` (with current version); it returns one row per product, supports search, explicit sorts, and the default order "unpublished first, then `publishedAt` desc, `title` asc, `id` asc". The two-phase `distinct rootId` query and the Product-specific `list-sorting` path are gone. The `category` filter uses `categoryId`.
+- [x] `src/app/sitemap.ts`, `src/lib/llms.ts`, `src/data/widget.ts`, `src/data/webinars.ts`, and `src/modules/mails/lib/mail.ts` read root/live instead of `isLatest`/`status` on `Product`.
+- [x] Order-service: `getFormOptions` lists roots that have a live version, and order-item name/price snapshots are taken from the live version; `checkout`/`download`/`submission` routes and `src/actions/submit-product-form.ts` resolve the live version.
+- [x] `docs/adr/...`-named SEO deletion guards (`delete-post.ts`, `delete-page.ts`) count `productVersion`/`productCategory` by `seoId`.
+- [x] `npx tsc --noEmit` reports no errors in the read-path files touched here.
 
 ## Notes
 
