@@ -1,7 +1,5 @@
 import { Metadata } from "next";
 
-import { ContentStatus } from "@/generated/prisma";
-
 import { getSettings } from "@/data/settings";
 
 import { db } from "@/shared/lib/db";
@@ -11,66 +9,72 @@ export async function getProductMetadataBySlug(
 ): Promise<Metadata | null> {
   const { siteName, siteShopUrl } = await getSettings();
 
-  const product = await db.product.findFirst({
+  const root = await db.productRoot.findFirst({
     where: {
       slug,
-      status: ContentStatus.PUBLISHED,
-      isLatest: true,
+      liveVersion: { isNot: null },
     },
     include: {
-      imageCover: true,
-      seo: true,
-      category: true,
-      user: true,
+      liveVersion: {
+        include: {
+          imageCover: true,
+          seo: true,
+          category: true,
+          user: true,
+        },
+      },
     },
-    orderBy: { createdAt: "desc" },
   });
 
-  if (!product || !product.seo) {
+  const version = root?.liveVersion;
+
+  if (!root || !version || !version.seo) {
     return null;
   }
 
   return {
-    title: product.seo.title,
-    description: product.seo.description,
+    title: version.seo.title,
+    description: version.seo.description,
     robots: {
-      index: !product.seo.noIndex,
-      follow: !product.seo.noFollow,
+      index: !version.seo.noIndex,
+      follow: !version.seo.noFollow,
       googleBot: {
-        index: !product.seo.noIndex,
-        follow: !product.seo.noFollow,
+        index: !version.seo.noIndex,
+        follow: !version.seo.noFollow,
       },
     },
     alternates: {
-      canonical: product.seo.canonicalUrl
-        ? product.seo.canonicalUrl
-        : `${siteShopUrl}/${product.category?.slug}/${product.slug}/`,
+      canonical: version.seo.canonicalUrl
+        ? version.seo.canonicalUrl
+        : `${siteShopUrl}/${version.category?.slug}/${root.slug}/`,
     },
     openGraph: {
-      title: product.seo.ogTwitterTitle || product.seo.title,
+      title: version.seo.ogTwitterTitle || version.seo.title,
       description:
-        product.seo.ogTwitterDescription || product.seo.description || "",
-      url: product.seo.ogTwitterUrl || "",
+        version.seo.ogTwitterDescription || version.seo.description || "",
+      url: version.seo.ogTwitterUrl || "",
       siteName: siteName!,
-      images: product.imageCover
+      images: version.imageCover
         ? [
             {
-              url: product.imageCover!.url,
-              alt: product.imageCover!.altText || "",
+              url: version.imageCover.url,
+              alt: version.imageCover.altText || "",
             },
           ]
         : [],
       locale: "it_IT",
       type: "article",
-      authors: [`${product.user!.firstName} ${product.user!.lastName}`],
+      authors: [
+        `${version.user!.firstName} ${version.user!.lastName}`,
+      ],
     },
     twitter: {
       card: "summary_large_image",
-      title: product.seo.ogTwitterTitle || product.seo.title,
+      title: version.seo.ogTwitterTitle || version.seo.title,
       description:
-        product.seo.ogTwitterDescription || product.seo.description || "",
-      images: product.imageCover ? [product.imageCover!.url] : [],
-      creator: `${product.user!.firstName} ${product.user!.lastName}`,
+        version.seo.ogTwitterDescription || version.seo.description || "",
+      images: version.imageCover ? [version.imageCover.url] : [],
+      creator: `${version.user!.firstName} ${version.user!.lastName}`,
     },
   };
 }

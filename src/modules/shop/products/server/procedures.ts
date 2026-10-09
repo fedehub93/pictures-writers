@@ -177,47 +177,73 @@ export const productsRouter = createTRPCRouter({
   getOne: permissionProcedure(PERMISSIONS.PRODUCTS_READ)
     .input(z.object({ id: z.string().min(1) }))
     .query(async ({ input }) => {
-      const product = await db.product.findUnique({
+      const root = await db.productRoot.findUnique({
         where: { id: input.id },
-        include: { seo: true },
+        include: {
+          currentVersion: {
+            include: {
+              seo: true,
+              imageCover: true,
+              category: true,
+              gallery: {
+                include: { media: true },
+                orderBy: { sort: "asc" },
+              },
+              faqs: { orderBy: { sort: "asc" } },
+            },
+          },
+        },
       });
 
-      if (!product) {
+      if (!root || !root.currentVersion) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Product not found.",
         });
       }
 
-      return product;
+      return {
+        ...root.currentVersion,
+        rootId: root.id,
+        slug: root.slug,
+        type: root.type,
+      };
     }),
 
   getLastByRootId: permissionProcedure(PERMISSIONS.PRODUCTS_READ)
     .input(z.object({ rootId: z.string().min(1) }))
     .query(async ({ input }) => {
-      const product = await db.product.findFirst({
-        where: { rootId: input.rootId },
-        orderBy: { createdAt: "desc" },
+      const root = await db.productRoot.findUnique({
+        where: { id: input.rootId },
         include: {
-          seo: true,
-          imageCover: true,
-          category: true,
-          gallery: {
-            include: { media: true },
-            orderBy: { sort: "asc" },
+          currentVersion: {
+            include: {
+              seo: true,
+              imageCover: true,
+              category: true,
+              gallery: {
+                include: { media: true },
+                orderBy: { sort: "asc" },
+              },
+              faqs: { orderBy: { sort: "asc" } },
+            },
           },
-          faqs: { orderBy: { sort: "asc" } },
         },
       });
 
-      if (!product) {
+      if (!root || !root.currentVersion) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Product not found.",
         });
       }
 
-      return product;
+      return {
+        ...root.currentVersion,
+        rootId: root.id,
+        slug: root.slug,
+        type: root.type,
+      };
     }),
 
   getPublishedByRootId: permissionProcedure(PERMISSIONS.PRODUCTS_READ)
@@ -252,63 +278,108 @@ export const productsRouter = createTRPCRouter({
     .query(async ({ input }) => {
       const search = input.search?.trim();
 
-      const where: Prisma.ProductWhereInput = {
-        title: search
-          ? { contains: search, mode: "insensitive" as const }
-          : undefined,
-        status: input.status ? { in: [input.status] } : undefined,
+      const where: Prisma.ProductRootWhereInput = {
+        currentVersion: {
+          is: {
+            title: search
+              ? { contains: search, mode: "insensitive" }
+              : undefined,
+            status: input.status ? { in: [input.status] } : undefined,
+            categoryId: input.category ? input.category : undefined,
+          },
+        },
         type: input.type ? { in: [input.type] } : undefined,
-        category: input.category ? { id: input.category } : undefined,
       };
 
-      const currentVersions = await db.product.findMany({
-        where,
-        distinct: ["rootId"],
-        orderBy: [{ rootId: "asc" }, { version: "desc" }],
-        select: {
-          id: true,
-          title: true,
-          status: true,
-          publishedAt: true,
+      const include = {
+        currentVersion: {
+          include: {
+            imageCover: true,
+            category: true,
+          },
         },
-      });
+      } satisfies Prisma.ProductRootInclude;
 
-      const total = currentVersions.length;
-      const totalPages = Math.ceil(total / input.pageSize);
-      const orderBy = buildListOrderBy<Prisma.ProductOrderByWithRelationInput>({
-        sort: input.sort,
-        direction: input.direction,
-        sortable: PRODUCT_LIST_SORTS,
-      });
+      const mapItem = (
+        root: Prisma.ProductRootGetPayload<{ include: typeof include }>,
+      ) => {
+        const version = root.currentVersion;
+        if (!version) return null;
 
-      if (orderBy) {
-        const items = await db.product.findMany({
-          where: { ...where, id: { in: currentVersions.map((v) => v.id) } },
-          include: { imageCover: true, category: true },
-          orderBy,
-          take: input.pageSize,
-          skip: (input.page - 1) * input.pageSize,
+        return {
+          id: version.id,
+          rootId: root.id,
+          title: version.title,
+          slug: root.slug,
+          type: root.type,
+          status: version.status,
+          price: version.price,
+          discountedPrice: version.discountedPrice,
+          metadata: version.metadata,
+          publishedAt: version.publishedAt,
+          firstPublishedAt: root.firstPublishedAt,
+          createdAt: version.createdAt,
+          updatedAt: version.updatedAt,
+          imageCover: version.imageCover,
+          category: version.category,
+        };
+      };
+
+      const orderBy =
+        buildListOrderBy<Prisma.ProductRootOrderByWithRelationInput>({
+          sort: input.sort,
+          direction: input.direction,
+          sortable: PRODUCT_LIST_SORTS,
+          relation: input.sort === "type" ? undefined : "currentVersion",
         });
 
-        return { items, total, totalPages };
+      if (orderBy) {
+        const [roots, total] = await Promise.all([
+          db.productRoot.findMany({
+            where,
+            include,
+            orderBy,
+            take: input.pageSize,
+            skip: (input.page - 1) * input.pageSize,
+          }),
+          db.productRoot.count({ where }),
+        ]);
+
+        const items = roots
+          .map(mapItem)
+          .filter((item): item is NonNullable<typeof item> => item !== null);
+
+        return {
+          items,
+          total,
+          totalPages: Math.ceil(total / input.pageSize),
+        };
       }
 
-      const pageIds = sortByDefaultOrder(currentVersions)
-        .slice((input.page - 1) * input.pageSize, input.page * input.pageSize)
-        .map((product) => product.id);
+      const roots = await db.productRoot.findMany({ where, include });
 
-      const products = await db.product.findMany({
-        where: { id: { in: pageIds } },
-        include: { imageCover: true, category: true },
-      });
-      const productsById = new Map(
-        products.map((product) => [product.id, product]),
-      );
-      const items = pageIds
-        .map((id) => productsById.get(id))
-        .filter(
-          (product): product is (typeof products)[number] => Boolean(product),
-        );
+      const rows = roots
+        .map((root) => {
+          const version = root.currentVersion;
+          if (!version) return null;
+
+          return {
+            id: root.id,
+            title: version.title,
+            status: version.status,
+            publishedAt: version.publishedAt,
+            root,
+          };
+        })
+        .filter((row): row is NonNullable<typeof row> => row !== null);
+
+      const total = rows.length;
+      const totalPages = Math.ceil(total / input.pageSize);
+
+      const items = sortByDefaultOrder(rows)
+        .slice((input.page - 1) * input.pageSize, input.page * input.pageSize)
+        .map(({ root }) => mapItem(root))
+        .filter((item): item is NonNullable<typeof item> => item !== null);
 
       return { items, total, totalPages };
     }),
@@ -316,19 +387,28 @@ export const productsRouter = createTRPCRouter({
   getByRootIds: permissionProcedure(PERMISSIONS.PRODUCTS_READ)
     .input(z.object({ ids: z.array(z.uuid()).nonempty() }))
     .query(async ({ input }) => {
-      return db.product.findMany({
+      const roots = await db.productRoot.findMany({
         where: {
-          status: ContentStatus.PUBLISHED,
-          isLatest: true,
-          rootId: { in: input.ids },
+          id: { in: input.ids },
+          liveVersion: { isNot: null },
         },
-        select: {
-          id: true,
-          rootId: true,
-          title: true,
-          imageCover: { select: { url: true } },
+        include: {
+          liveVersion: {
+            select: {
+              id: true,
+              title: true,
+              imageCover: { select: { url: true } },
+            },
+          },
         },
       });
+
+      return roots.map((root) => ({
+        id: root.liveVersion!.id,
+        rootId: root.id,
+        title: root.liveVersion!.title,
+        imageCover: root.liveVersion!.imageCover,
+      }));
     }),
 
   publish: permissionProcedure(PERMISSIONS.PRODUCTS_PUBLISH)

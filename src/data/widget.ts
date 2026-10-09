@@ -278,12 +278,11 @@ export const getWidgetProducts = async ({
   products,
   limit,
 }: GetWidgetProducts) => {
-  const whereClause: Prisma.ProductWhereInput = {
-    status: ContentStatus.PUBLISHED,
-    isLatest: true,
+  const whereClause: Prisma.ProductRootWhereInput = {
+    liveVersion: { isNot: null },
   };
 
-  let take: any = limit;
+  let take: number | undefined = limit;
 
   switch (productType) {
     case WidgetProductType.ALL:
@@ -291,7 +290,7 @@ export const getWidgetProducts = async ({
 
     case WidgetProductType.SPECIFIC:
       if (products.length > 0) {
-        whereClause.rootId = { in: products.map((p) => p.rootId) };
+        whereClause.id = { in: products.map((p) => p.rootId) };
       }
       take = undefined;
       break;
@@ -300,16 +299,20 @@ export const getWidgetProducts = async ({
       throw new Error("Invalid WidgetProductType");
   }
 
-  const productsData = await db.product.findMany({
+  const roots = await db.productRoot.findMany({
     where: whereClause,
     include: {
-      category: {
-        select: {
-          id: true,
-          slug: true,
+      liveVersion: {
+        include: {
+          category: {
+            select: {
+              id: true,
+              slug: true,
+            },
+          },
+          imageCover: true,
         },
       },
-      imageCover: true,
     },
     orderBy: { createdAt: "desc" },
     take,
@@ -317,8 +320,19 @@ export const getWidgetProducts = async ({
 
   const mappedProducts = [];
 
-  for (const product of productsData) {
-    const purchasedWebinar = await getPurchasedWebinar(product.rootId!);
+  for (const root of roots) {
+    const version = root.liveVersion;
+    if (!version) continue;
+
+    const product = {
+      ...version,
+      rootId: root.id,
+      slug: root.slug,
+      type: root.type,
+    };
+
+    const purchasedWebinar = await getPurchasedWebinar(root.id);
+
     if (isEbookMetadata(product.metadata)) {
       mappedProducts.push({
         ...product,

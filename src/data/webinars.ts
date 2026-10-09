@@ -3,7 +3,7 @@ import { WebinarLesson } from "@/modules/shop/products/types";
 
 export const getPurchasedWebinar = async (webinarRootId: string) => {
   const w = await db.purchase.findMany({
-    where: { productRootId: webinarRootId },
+    where: { productId: webinarRootId },
     select: { id: true },
   });
 

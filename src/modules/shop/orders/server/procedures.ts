@@ -178,14 +178,25 @@ export const ordersRouter = createTRPCRouter({
           select: { id: true, email: true, name: true },
           orderBy: { email: "asc" },
         }),
-        db.product.findMany({
-          where: { isLatest: true },
-          select: { id: true, title: true, price: true },
-          orderBy: { title: "asc" },
+        db.productRoot.findMany({
+          where: { liveVersion: { isNot: null } },
+          select: {
+            id: true,
+            liveVersion: { select: { title: true, price: true } },
+          },
+          orderBy: { liveVersion: { title: "asc" } },
         }),
       ]);
 
-      return { customers, products };
+      const productOptions = products
+        .filter((root) => Boolean(root.liveVersion))
+        .map((root) => ({
+          id: root.id,
+          title: root.liveVersion!.title,
+          price: root.liveVersion!.price,
+        }));
+
+      return { customers, products: productOptions };
     },
   ),
 

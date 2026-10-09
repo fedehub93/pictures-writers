@@ -1,6 +1,5 @@
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
-import { ContentStatus } from "@/generated/prisma";
 
 import { db } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
@@ -10,26 +9,30 @@ export async function POST(req: Request) {
   const { productId } = await req.json();
 
   try {
-    const product = await db.product.findUnique({
+    const root = await db.productRoot.findFirst({
       where: {
-        id: productId,
-        status: ContentStatus.PUBLISHED,
+        OR: [{ id: productId }, { versions: { some: { id: productId } } }],
       },
       select: {
         id: true,
-        rootId: true,
-        title: true,
-        slug: true,
-        price: true,
-        imageCover: {
+        liveVersion: {
           select: {
-            url: true,
+            id: true,
+            title: true,
+            price: true,
+            imageCover: {
+              select: {
+                url: true,
+              },
+            },
           },
         },
       },
     });
 
-    if (!product) {
+    const product = root?.liveVersion;
+
+    if (!root || !product) {
       return new NextResponse("Not found", { status: 400 });
     }
 
@@ -41,7 +44,7 @@ export async function POST(req: Request) {
           product_data: {
             name: product.title,
             description: "PRODUCT DESCRIPTION",
-            images: [product.imageCover?.url!],
+            images: product.imageCover ? [product.imageCover.url] : [],
           },
           unit_amount: convertToSubcurrency(product.price || 0),
         },
@@ -57,8 +60,8 @@ export async function POST(req: Request) {
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/shop/checkout/success`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/shop/checkout/error`,
       metadata: {
-        productId: product.id,
-        productRootId: product.rootId,
+        productId: root.id,
+        productRootId: root.id,
       },
     });
 

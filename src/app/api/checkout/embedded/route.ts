@@ -1,8 +1,8 @@
 import Stripe from "stripe";
 import { NextResponse } from "next/server";
+
 import { db } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
-import { ContentStatus } from "@/generated/prisma";
 
 export async function POST(req: Request) {
   const { productId } = await req.json();
@@ -12,23 +12,28 @@ export async function POST(req: Request) {
     // if (!user || !user.id || !user.emailAddresses?.[0]?.emailAddress) {
     //   return new NextResponse("Unauthorized", { status: 401 });
     // }
-    const product = await db.product.findUnique({
+    const root = await db.productRoot.findFirst({
       where: {
-        id: productId,
-        status: ContentStatus.PUBLISHED,
+        OR: [{ id: productId }, { versions: { some: { id: productId } } }],
       },
       select: {
         id: true,
-        title: true,
-        slug: true,
-        price: true,
-        imageCover: {
+        liveVersion: {
           select: {
-            url: true,
+            id: true,
+            title: true,
+            price: true,
+            imageCover: {
+              select: {
+                url: true,
+              },
+            },
           },
         },
       },
     });
+
+    const product = root?.liveVersion;
 
     // const purchase = await db.purchase.findUnique({
     //   where: {
@@ -43,7 +48,7 @@ export async function POST(req: Request) {
     //   return new NextResponse("Already purchased", { status: 400 });
     // }
 
-    if (!product) {
+    if (!root || !product) {
       return new NextResponse("Not found", { status: 400 });
     }
 
@@ -55,7 +60,7 @@ export async function POST(req: Request) {
           product_data: {
             name: product.title,
             description: "PRODUCT DESCRIPTION",
-            images: [product.imageCover?.url!],
+            images: product.imageCover ? [product.imageCover.url] : [],
           },
           unit_amount: Math.round(1 * 100),
         },
@@ -71,7 +76,7 @@ export async function POST(req: Request) {
     //   },
     // });
 
-    let stripeCustomer = null;
+    const stripeCustomer = null;
 
     if (!stripeCustomer) {
       // stripeCustomer = await stripe.customers.create({
@@ -94,7 +99,7 @@ export async function POST(req: Request) {
       payment_method_types: ["card"],
       automatic_tax: { enabled: true },
       metadata: {
-        productId: product.id,
+        productId: root.id,
         // userId: user.id,
       },
     });
