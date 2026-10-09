@@ -2,7 +2,6 @@ import {
   createLoader,
   parseAsInteger,
   parseAsString,
-  parseAsStringEnum,
 } from "nuqs/server";
 
 import { DEFAULT_PAGE } from "./constants";
@@ -12,7 +11,6 @@ export const filtersSearchParams = {
   page: parseAsInteger
     .withDefault(DEFAULT_PAGE)
     .withOptions({ clearOnDefault: true }),
-  status: parseAsStringEnum(["DRAFT", "CHANGED", "PUBLISHED"] as const),
 };
 
 export const loadSearchParams = createLoader(filtersSearchParams);

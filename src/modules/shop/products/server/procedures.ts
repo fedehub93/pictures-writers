@@ -258,7 +258,7 @@ export const productsRouter = createTRPCRouter({
           : undefined,
         status: input.status ? { in: [input.status] } : undefined,
         type: input.type ? { in: [input.type] } : undefined,
-        category: input.category ? { rootId: input.category } : undefined,
+        category: input.category ? { id: input.category } : undefined,
       };
 
       const currentVersions = await db.product.findMany({

@@ -11,7 +11,6 @@ export type ProductCategoryInsertValues = z.infer<
 
 export const productCategoryUpdateSchema = z.object({
   id: z.string().min(1, { error: "Id is required" }),
-  rootId: z.string().min(1, { error: "Root Id is required" }),
   title: z.string().min(1, { error: "Title is required" }).optional(),
   slug: z.string().min(1, { error: "Slug is required" }).optional(),
   description: z.string().nullable().optional(),
@@ -23,7 +22,6 @@ export type ProductCategoryUpdateValues = z.infer<
 
 export const productCategoryUpdateSeoSchema = z.object({
   id: z.string().min(1, { error: "Id is required" }),
-  rootId: z.string().min(1, { error: "Root Id is required" }),
   title: z.string().optional(),
   description: z.string().nullable().optional(),
   canonicalUrl: z.string().nullable().optional(),

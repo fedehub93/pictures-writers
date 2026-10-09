@@ -23,7 +23,6 @@ import { useOpenProductCategory } from "../../../hooks/use-open-product-category
 import { useProductCategoriesFilters } from "../../../hooks/use-product-categories-filters";
 
 import { ProductCategoriesSearchFilter } from "./product-categories-search-filter";
-import { ProductCategoriesStatusFilter } from "./product-categories-status-filter";
 
 export const ProductCategoriesListHeader = () => {
   const [filters, setFilters] = useProductCategoriesFilters();
@@ -35,13 +34,12 @@ export const ProductCategoriesListHeader = () => {
     trpc.productCategories.getMany.queryOptions(filters),
   );
 
-  const isAnyFilterModified = !!filters.search || !!filters.status;
+  const isAnyFilterModified = !!filters.search;
 
   const onClearFilters = () => {
     setFilters({
       search: "",
       page: DEFAULT_PAGE,
-      status: null,
     });
   };
 
@@ -55,7 +53,6 @@ export const ProductCategoriesListHeader = () => {
         <ScrollArea>
           <div className="flex items-center gap-x-2 p-1">
             <ProductCategoriesSearchFilter />
-            <ProductCategoriesStatusFilter />
             {isAnyFilterModified && (
               <Button
                 variant="outline"

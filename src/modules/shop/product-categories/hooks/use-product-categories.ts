@@ -17,16 +17,16 @@ export const useSuspenseProductCategories = (params: Input) => {
   );
 };
 
-// Hook to fetch the most recent version of a product category using suspense
-export const useSuspenseProductCategory = (rootId: string) => {
+// Hook to fetch a single product category using suspense
+export const useSuspenseProductCategory = (id: string) => {
   const trpc = useTRPC();
 
   return useSuspenseQuery(
-    trpc.productCategories.getLastByRootId.queryOptions({ rootId }),
+    trpc.productCategories.getOne.queryOptions({ id }),
   );
 };
 
-// Hook used by selects to fetch the published categories
+// Hook used by selects to fetch the categories
 export const useProductCategoriesQuery = () => {
   const trpc = useTRPC();
 
@@ -34,7 +34,6 @@ export const useProductCategoriesQuery = () => {
     ...trpc.productCategories.getMany.queryOptions({
       page: DEFAULT_PAGE,
       pageSize: MAX_PAGE_SIZE,
-      status: "PUBLISHED",
     }),
     enabled: true,
     refetchOnMount: true,

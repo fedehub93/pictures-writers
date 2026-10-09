@@ -229,12 +229,7 @@ describe("productsRouter", () => {
         data: {
           title: `Atomic category ${randomUUID()}`,
           slug: `atomic-category-${randomUUID()}`,
-          version: 1,
         },
-      });
-      await db.productCategory.update({
-        where: { id: category.id },
-        data: { rootId: category.id },
       });
 
       const updated = await caller.update({
@@ -265,7 +260,7 @@ describe("productsRouter", () => {
       expect(loaded.faqs).toHaveLength(1);
       expect(loaded.faqs[0]!.question).toBe("Atomic question?");
 
-      await db.productCategory.deleteMany({ where: { rootId: category.id } });
+      await db.productCategory.deleteMany({ where: { id: category.id } });
     });
 
     it("does not dereference missing inputs when carrying over a version", async () => {
@@ -790,12 +785,7 @@ describe("productsRouter", () => {
         data: {
           title: `Category ${randomUUID()}`,
           slug: `category-${randomUUID()}`,
-          version: 1,
         },
-      });
-      await db.productCategory.update({
-        where: { id: category.id },
-        data: { rootId: category.id },
       });
 
       const created = await createProduct();
@@ -808,12 +798,12 @@ describe("productsRouter", () => {
       const result = await caller.getMany({
         page: 1,
         pageSize: 50,
-        category: category.rootId!,
+        category: category.id,
       });
 
       expect(result.items.map((item) => item.rootId)).toContain(created.rootId);
 
-      await db.productCategory.deleteMany({ where: { rootId: category.id } });
+      await db.productCategory.deleteMany({ where: { id: category.id } });
     });
   });
 

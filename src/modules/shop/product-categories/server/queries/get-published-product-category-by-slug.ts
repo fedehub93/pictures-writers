@@ -1,5 +1,4 @@
 import { db } from "@/shared/lib/db";
-import { ContentStatus } from "@/generated/prisma";
 
 type GetPublishedProductCategoryBySlug = {
   slug: string;
@@ -9,15 +8,10 @@ export const getPublishedProductCategoryBySlug = async ({
   slug,
 }: GetPublishedProductCategoryBySlug) => {
   try {
-    const productCategory = await db.productCategory.findFirst({
-      where: {
-        slug,
-        status: ContentStatus.PUBLISHED,
-        isLatest: true,
-      },
+    const productCategory = await db.productCategory.findUnique({
+      where: { slug },
       select: {
         id: true,
-        rootId: true,
         title: true,
         description: true,
 
@@ -30,9 +24,6 @@ export const getPublishedProductCategoryBySlug = async ({
           },
         },
         updatedAt: true,
-      },
-      orderBy: {
-        createdAt: "desc",
       },
     });
 

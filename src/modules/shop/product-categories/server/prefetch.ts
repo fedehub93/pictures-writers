@@ -14,10 +14,10 @@ export const prefetchProductCategories = (params: Input) => {
 };
 
 /**
- * Prefetch the most recent version of a product category root.
+ * Prefetch a single product category.
  */
-export const prefetchProductCategoryByRootId = (rootId: string) => {
+export const prefetchProductCategoryById = (id: string) => {
   return prefetch(
-    trpc.productCategories.getLastByRootId.queryOptions({ rootId }),
+    trpc.productCategories.getOne.queryOptions({ id }),
   );
 };

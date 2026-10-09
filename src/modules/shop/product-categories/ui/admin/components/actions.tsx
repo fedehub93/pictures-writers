@@ -2,17 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  EyeIcon,
-  EyeOffIcon,
-  MoreHorizontalIcon,
-  PencilIcon,
-  Trash2Icon,
-} from "lucide-react";
+import { MoreHorizontalIcon, PencilIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-import { ContentStatus } from "@/generated/prisma";
 
 import { useTRPC } from "@/trpc/client";
 import { usePermission } from "@/shared/providers/authorization-provider";
@@ -33,14 +25,10 @@ import { useProductCategoriesFilters } from "../../../hooks/use-product-categori
 
 interface ProductCategoriesActionProps {
   id: string;
-  rootId: string;
-  status: ContentStatus;
 }
 
 export const ProductCategoriesActions = ({
   id,
-  rootId,
-  status,
 }: ProductCategoriesActionProps) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -48,44 +36,7 @@ export const ProductCategoriesActions = ({
   const [filters] = useProductCategoriesFilters();
 
   const canUpdate = usePermission(PERMISSIONS.PRODUCT_CATEGORIES_UPDATE);
-  const canPublish = usePermission(PERMISSIONS.PRODUCT_CATEGORIES_PUBLISH);
   const canDelete = usePermission(PERMISSIONS.PRODUCT_CATEGORIES_DELETE);
-
-  const publishCategory = useMutation(
-    trpc.productCategories.publish.mutationOptions({
-      onSuccess: async () => {
-        await queryClient.invalidateQueries(
-          trpc.productCategories.getMany.queryFilter(filters),
-        );
-        await queryClient.invalidateQueries(
-          trpc.productCategories.getLastByRootId.queryFilter({ rootId }),
-        );
-        router.refresh();
-        toast.success("Product category published successfully");
-      },
-      onError: (error) => {
-        toast.error(error.message);
-      },
-    }),
-  );
-
-  const unpublishCategory = useMutation(
-    trpc.productCategories.unpublish.mutationOptions({
-      onSuccess: async () => {
-        await queryClient.invalidateQueries(
-          trpc.productCategories.getMany.queryFilter(filters),
-        );
-        await queryClient.invalidateQueries(
-          trpc.productCategories.getLastByRootId.queryFilter({ rootId }),
-        );
-        router.refresh();
-        toast.success("Product category unpublished successfully");
-      },
-      onError: (error) => {
-        toast.error(error.message);
-      },
-    }),
-  );
 
   const removeCategory = useMutation(
     trpc.productCategories.remove.mutationOptions({
@@ -102,16 +53,8 @@ export const ProductCategoriesActions = ({
     }),
   );
 
-  const isPending =
-    publishCategory.isPending ||
-    unpublishCategory.isPending ||
-    removeCategory.isPending;
-
-  const onTogglePublish = () => {
-    if (status === ContentStatus.PUBLISHED) {
-      return unpublishCategory.mutate({ id });
-    }
-    return publishCategory.mutate({ id, rootId });
+  const onDelete = () => {
+    removeCategory.mutate({ id });
   };
 
   return (
@@ -125,36 +68,19 @@ export const ProductCategoriesActions = ({
       <DropdownMenuContent align="end">
         {canUpdate && (
           <DropdownMenuItem asChild>
-            <Link href={`/admin/shop/categories/${rootId}`}>
+            <Link href={`/admin/shop/categories/${id}`}>
               <PencilIcon />
               Edit
             </Link>
           </DropdownMenuItem>
         )}
-        {canPublish && (
-          <DropdownMenuItem onSelect={onTogglePublish} disabled={isPending}>
-            {status === ContentStatus.PUBLISHED ? (
-              <>
-                <EyeOffIcon />
-                Unpublish
-              </>
-            ) : (
-              <>
-                <EyeIcon />
-                Publish
-              </>
-            )}
-          </DropdownMenuItem>
-        )}
         {canDelete && (
           <>
             <DropdownMenuSeparator />
-            <ConfirmModal
-              onConfirm={() => removeCategory.mutate({ id })}
-            >
+            <ConfirmModal onConfirm={onDelete}>
               <Button
                 variant="ghost"
-                disabled={isPending}
+                disabled={removeCategory.isPending}
                 className="bg-destructive px-2! w-full justify-start text-destructive-foreground"
               >
                 <Trash2Icon data-icon="inline-start" />

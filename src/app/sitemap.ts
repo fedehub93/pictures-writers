@@ -137,8 +137,6 @@ const generateProductCategoriesSitemap = async () => {
 
   const categories = await db.productCategory.findMany({
     where: {
-      status: ContentStatus.PUBLISHED,
-      isLatest: true,
       products: {
         some: {
           type: { in: [ProductType.EBOOK, ProductType.SERVICE] },
@@ -149,7 +147,7 @@ const generateProductCategoriesSitemap = async () => {
       seo: true,
     },
     orderBy: {
-      firstPublishedAt: "desc",
+      createdAt: "desc",
     },
   });
 
@@ -157,7 +155,7 @@ const generateProductCategoriesSitemap = async () => {
     .filter((category) => !category.seo?.canonicalUrl)
     .map((category) => ({
       url: `${siteShopUrl}/${category.slug}/`,
-      lastModified: category.publishedAt ?? undefined,
+      lastModified: category.updatedAt,
       changeFrequency: "monthly",
       priority: 1,
     }));
