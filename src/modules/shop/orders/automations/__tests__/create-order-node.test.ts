@@ -6,6 +6,7 @@ import { enqueueRun } from "@/modules/automations/lib/automation-ingestion";
 import { cleanupAutomationTables } from "@/modules/automations/lib/cleanup";
 import { passthroughEffects } from "@/modules/automations/lib/effects";
 import { pumpDueAutomations } from "@/modules/automations/server/automation-runtime";
+import { createProductRoot } from "@/modules/shop/products/lib/__tests__/root-fixtures";
 import { db } from "@/shared/lib/db";
 import {
   AutomationRunStatus,
@@ -14,7 +15,6 @@ import {
   OrderStatus,
   PaymentMethod,
   PaymentStatus,
-  ProductType,
 } from "@/generated/prisma";
 
 import { createOrderNodeCatalogEntry } from "../catalog";
@@ -30,15 +30,9 @@ async function createCustomer() {
 }
 
 async function createProduct(price: number) {
-  return db.product.create({
-    data: {
-      title: `Automation Product ${randomUUID()}`,
-      slug: `automation-product-${randomUUID()}`,
-      type: ProductType.SERVICE,
-      version: 1,
-      price,
-    },
-  });
+  const { root, version } = await createProductRoot({ price });
+  productIds.push(root.id);
+  return { id: root.id, title: version.title };
 }
 
 async function publishGraph(graph: unknown) {
@@ -64,7 +58,7 @@ afterEach(async () => {
     await db.customer.deleteMany({ where: { id: { in: customerIds } } });
   }
   if (productIds.length > 0) {
-    await db.product.deleteMany({ where: { id: { in: productIds } } });
+    await db.productRoot.deleteMany({ where: { id: { in: productIds } } });
   }
   customerIds.length = 0;
   productIds.length = 0;
@@ -85,7 +79,6 @@ describe("CREATE_ORDER node", () => {
     const customer = await createCustomer();
     customerIds.push(customer.id);
     const product = await createProduct(120);
-    productIds.push(product.id);
 
     const automation = await publishGraph({
       nodes: [

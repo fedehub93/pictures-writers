@@ -888,6 +888,35 @@ describe("productsRouter", () => {
       ]);
     });
 
+    it("orders unpublished work first by default", async () => {
+      const marker = `Default order ${randomUUID()}`;
+
+      const published = await createProduct({ title: `${marker} Published` });
+      await caller.publish({ id: published.id, rootId: published.rootId! });
+
+      const changed = await createProduct({ title: `${marker} Changed` });
+      await caller.publish({ id: changed.id, rootId: changed.rootId! });
+      await caller.update({
+        id: changed.id,
+        rootId: changed.rootId!,
+        title: `${marker} Changed v2`,
+      });
+
+      const draft = await createProduct({ title: `${marker} Draft` });
+
+      const result = await caller.getMany({
+        page: 1,
+        pageSize: 50,
+        search: marker,
+      });
+
+      expect(result.items.map((item) => item.rootId)).toEqual([
+        draft.rootId,
+        changed.rootId,
+        published.rootId,
+      ]);
+    });
+
     it("sorts by the requested column and direction across all roots", async () => {
       const marker = `Sort marker ${randomUUID()}`;
       const alpha = await createProduct({ title: `${marker} Alpha` });

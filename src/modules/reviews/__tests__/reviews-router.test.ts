@@ -21,7 +21,8 @@ vi.mock("@/trpc/init", async () => {
 
 import { createCallerFactory } from "@/trpc/init";
 
-import { ProductType } from "@/generated/prisma";
+import { ContentStatus } from "@/generated/prisma";
+import { createProductRoot } from "@/modules/shop/products/lib/__tests__/root-fixtures";
 import { db } from "@/shared/lib/db";
 import { PERMISSIONS, getPermissionAlternatives } from "@/shared/lib/permissions";
 
@@ -34,16 +35,9 @@ const productIds: string[] = [];
 const reviewIds: string[] = [];
 
 async function createProduct() {
-  const product = await db.product.create({
-    data: {
-      title: `Product ${randomUUID()}`,
-      slug: `product-${randomUUID()}`,
-      type: ProductType.SERVICE,
-      version: 1,
-    },
-  });
-  productIds.push(product.id);
-  return product;
+  const { root } = await createProductRoot();
+  productIds.push(root.id);
+  return root;
 }
 
 async function createReview(productId: string, overrides: Record<string, unknown> = {}) {
@@ -72,7 +66,7 @@ afterEach(async () => {
   }
   if (productIds.length > 0) {
     await db.reviews.deleteMany({ where: { productId: { in: productIds } } });
-    await db.product.deleteMany({ where: { id: { in: productIds } } });
+    await db.productRoot.deleteMany({ where: { id: { in: productIds } } });
   }
   productIds.length = 0;
   reviewIds.length = 0;
@@ -288,6 +282,27 @@ describe("reviewsRouter", () => {
 
     it("throws NOT_FOUND for an unknown review", async () => {
       await expect(caller.remove({ id: randomUUID() })).rejects.toThrow();
+    });
+  });
+
+  describe("durability across versions", () => {
+    it("keeps a review attached to the root after a new product version is created", async () => {
+      const product = await createProduct();
+      const review = await createReview(product.id);
+
+      await db.productVersion.create({
+        data: {
+          rootId: product.id,
+          version: 2,
+          status: ContentStatus.CHANGED,
+          title: "New edition",
+        },
+      });
+
+      const loaded = await caller.getOne({ id: review.id });
+
+      expect(loaded.productId).toBe(product.id);
+      expect(loaded.product.id).toBe(product.id);
     });
   });
 

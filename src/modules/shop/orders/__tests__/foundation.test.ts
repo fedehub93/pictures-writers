@@ -7,9 +7,9 @@ import {
   OrderStatus,
   PaymentMethod,
   PaymentStatus,
-  ProductType,
 } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
+import { createProductRoot } from "@/modules/shop/products/lib/__tests__/root-fixtures";
 import { PERMISSIONS, getProcedurePermissions } from "@/shared/lib/permissions";
 
 const NEW_PERMISSION_KEYS = [
@@ -39,7 +39,7 @@ function uniqueOrderNumber(): string {
 afterEach(async () => {
   await db.order.deleteMany({ where: { id: { in: orderIds } } });
   await db.customer.deleteMany({ where: { email: { in: customerEmails } } });
-  await db.product.deleteMany({ where: { id: { in: productIds } } });
+  await db.productRoot.deleteMany({ where: { id: { in: productIds } } });
   customerEmails.length = 0;
   orderIds.length = 0;
   productIds.length = 0;
@@ -97,16 +97,8 @@ describe("order management foundation", () => {
       });
       expect(customer.userId).toBeNull();
 
-      const product = await db.product.create({
-        data: {
-          title: "Writing course",
-          slug: `writing-course-${randomUUID()}`,
-          type: ProductType.SERVICE,
-          version: 1,
-          price: 120,
-        },
-      });
-      productIds.push(product.id);
+      const { root, version } = await createProductRoot({ price: 120 });
+      productIds.push(root.id);
 
       const order = await db.order.create({
         data: {
@@ -115,8 +107,8 @@ describe("order management foundation", () => {
           totalAmount: 120,
           items: {
             create: {
-              productId: product.id,
-              nameSnapshot: product.title,
+              productId: root.id,
+              nameSnapshot: version.title,
               unitPrice: 120,
               quantity: 1,
               totalPrice: 120,
@@ -143,7 +135,7 @@ describe("order management foundation", () => {
       });
       expect(loaded.customer.email).toBe(email);
       expect(loaded.items).toHaveLength(1);
-      expect(loaded.items[0]?.nameSnapshot).toBe(product.title);
+      expect(loaded.items[0]?.nameSnapshot).toBe(version.title);
       expect(loaded.payments).toHaveLength(1);
     });
 
