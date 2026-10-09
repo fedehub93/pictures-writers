@@ -3,6 +3,9 @@ import "server-only";
 import type { Prisma } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 
+import { SCHEDULER_TARGET_TYPES } from "@/modules/scheduler/constants";
+import { cancelScheduledActionTx } from "@/modules/scheduler/lib/scheduled-action-repository";
+
 import { PostError } from "./errors";
 import { acquireRootLock } from "./lock-root-posts";
 
@@ -74,6 +77,21 @@ export async function deletePostRoot({
     }
 
     await acquireRootLock(tx, root.id);
+
+    // A deleted root can never be published, so cancel any pending publication
+    // action rather than leaving the worker to fail against a missing target.
+    const activeActions = await tx.scheduledAction.findMany({
+      where: {
+        targetType: SCHEDULER_TARGET_TYPES.POST_ROOT,
+        targetId: root.id,
+        active: true,
+      },
+      select: { id: true },
+    });
+
+    for (const action of activeActions) {
+      await cancelScheduledActionTx(tx, action.id);
+    }
 
     const versions = await tx.postVersion.findMany({
       where: { rootId: root.id },

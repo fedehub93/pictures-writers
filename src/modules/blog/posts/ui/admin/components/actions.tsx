@@ -131,7 +131,7 @@ export const PostsActions = ({
   );
 
   const onDelete = async () => {
-    removePost.mutate({ id });
+    removePost.mutate({ id: rootId });
   };
 
   const onCancelSchedule = async () => {

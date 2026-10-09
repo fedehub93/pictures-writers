@@ -83,26 +83,7 @@ export const postsRouter = createTRPCRouter({
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
       try {
-        const root =
-          (await db.postRoot.findUnique({
-            where: { id: input.id },
-            select: { id: true },
-          })) ??
-          (await db.postVersion.findUnique({
-            where: { id: input.id },
-            select: { rootId: true },
-          }).then((version) =>
-            version ? { id: version.rootId } : null,
-          ));
-
-        if (!root) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "Post not found",
-          });
-        }
-
-        const deleted = await deletePostRoot({ rootId: root.id });
+        const deleted = await deletePostRoot({ rootId: input.id });
 
         revalidateContent("post", deleted.slug);
 
