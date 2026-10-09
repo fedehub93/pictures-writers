@@ -39,7 +39,7 @@ import { usePostStore } from "../../../store/use-post-store";
 interface AuthorsFormProps {
   initialData: {
     firstPublishedAt: Date | null;
-    postAuthors: {
+    authors: {
       user: User;
       sort: number;
     }[];
@@ -62,7 +62,7 @@ export const AuthorsForm = ({
     resolver: zodResolver(postUpdateSchema),
     defaultValues: {
       authors:
-        initialData?.postAuthors?.map((a) => ({
+        initialData?.authors?.map((a) => ({
           id: a.user.id,
           sort: a.sort,
         })) ?? [],

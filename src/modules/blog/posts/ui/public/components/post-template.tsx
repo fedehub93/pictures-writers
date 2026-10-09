@@ -20,11 +20,11 @@ interface PostTemplateProps {
 }
 
 export const PostTemplate = async ({ post }: PostTemplateProps) => {
-  if (!post.postCategories.length) return null;
+  if (!post.categories.length) return null;
 
   const blocks = await getAdBlocks({
     postRootId: post.rootId!,
-    categoryRootIds: post.postCategories.map((c) => c.category.id),
+    categoryRootIds: post.categories.map((c) => c.category.id),
     tagRootIds: post.tags.map((t) => t.id),
   });
   const normalizedContent = normalizeContent(post.tiptapBodyData, {
@@ -59,9 +59,9 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
             ) : null}
           </div>
           <PostInfo
-            authors={post.postAuthors.map((v) => v.user)}
+            authors={post.authors.map((v) => v.user)}
             publishedAt={post.publishedAt!}
-            categories={post.postCategories.map((c) => c.category)}
+            categories={post.categories.map((c) => c.category)}
           />
           <div className="mx-auto mb-4 max-w-5xl">
             <h1 className="blog-post__title">{post.title}</h1>
@@ -76,7 +76,7 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
         {/* <DisqusLazy config={disqusOptions} /> */}
       </div>
       <div className="blog-post__sidebar">
-        <Sidebar postId={post.id} postCategories={post.postCategories} />
+        <Sidebar postId={post.id} postCategories={post.categories} />
       </div>
     </div>
   );

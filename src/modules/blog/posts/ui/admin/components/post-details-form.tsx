@@ -17,11 +17,11 @@ interface PostDetailsFormProps {
     title: string;
     description: string | null;
     slug: string;
-    postAuthors: {
+    authors: {
       user: User;
       sort: number;
     }[];
-    postCategories: {
+    categories: {
       category: {
         id: string;
         title: string;

@@ -87,13 +87,13 @@ export const columns = columnHelper.columns([
     ),
     sortFn: "text",
   }),
-  columnHelper.accessor("postAuthors", {
+  columnHelper.accessor("authors", {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Authors" />
     ),
     enableSorting: false,
     cell: ({ row }) => {
-      const authors = row.original.postAuthors;
+      const authors = row.original.authors;
 
       return (
         <div className="flex items-center gap-x-4">
