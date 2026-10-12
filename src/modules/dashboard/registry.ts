@@ -93,6 +93,13 @@ export const DEFAULT_DASHBOARD_INSTANCES: DashboardWidgetInstance[] = [
   { key: "pending-orders", definitionId: "pending-orders" },
   { key: "failed-runs", definitionId: "failed-runs" },
   { key: "trend-contacts", definitionId: "trend", config: { metric: "contacts" } },
+  {
+    key: "trend-submissions",
+    definitionId: "trend",
+    config: { metric: "submissions" },
+  },
+  { key: "trend-ebooks", definitionId: "trend", config: { metric: "ebooks" } },
+  { key: "trend-revenue", definitionId: "trend", config: { metric: "revenue" } },
 ];
 
 export const getWidgetDefinition = (id: string) =>

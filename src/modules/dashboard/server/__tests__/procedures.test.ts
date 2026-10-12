@@ -496,6 +496,27 @@ describe("dashboard.getMetrics", () => {
     expect(forbidden).toEqual([]);
   });
 
+  it("exposes each new metric only under its own area permission", async () => {
+    permissionKeysByUser.set("full", [
+      PERMISSIONS.CONTACTS_READ,
+      PERMISSIONS.SUBMISSIONS_READ,
+      PERMISSIONS.DASHBOARD_READ,
+      PERMISSIONS.ORDERS_READ,
+    ]);
+    permissionKeysByUser.set("dashboard-only", [PERMISSIONS.DASHBOARD_READ]);
+
+    const full = await callerFor("full").getMetrics();
+    const dashboardOnly = await callerFor("dashboard-only").getMetrics();
+
+    expect(full.map((metric) => metric.id)).toEqual([
+      "contacts",
+      "submissions",
+      "ebooks",
+      "revenue",
+    ]);
+    expect(dashboardOnly).toEqual([{ id: "ebooks", label: "Download ebook" }]);
+  });
+
   it("gates reading metrics behind dashboard.read", () => {
     expect(getProcedurePermissions("dashboard.getMetrics")).toEqual([
       PERMISSIONS.DASHBOARD_READ,

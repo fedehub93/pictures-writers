@@ -31,6 +31,21 @@ describe("dashboard widget registry", () => {
         definitionId: "trend",
         config: { metric: "contacts" },
       },
+      {
+        key: "trend-submissions",
+        definitionId: "trend",
+        config: { metric: "submissions" },
+      },
+      {
+        key: "trend-ebooks",
+        definitionId: "trend",
+        config: { metric: "ebooks" },
+      },
+      {
+        key: "trend-revenue",
+        definitionId: "trend",
+        config: { metric: "revenue" },
+      },
     ]);
   });
 
@@ -79,12 +94,11 @@ describe("dashboard widget registry", () => {
 
     // The Trend declares no definition permission; its availability comes from
     // the metrics the user may read, not from the layout merge.
-    expect(layout).toEqual([
-      {
-        key: "trend-contacts",
-        definitionId: "trend",
-        config: { metric: "contacts" },
-      },
+    expect(layout.map((instance) => instance.key)).toEqual([
+      "trend-contacts",
+      "trend-submissions",
+      "trend-ebooks",
+      "trend-revenue",
     ]);
   });
 
@@ -103,6 +117,9 @@ describe("dashboard widget registry", () => {
       "scheduled",
       "pending-orders",
       "trend-contacts",
+      "trend-submissions",
+      "trend-ebooks",
+      "trend-revenue",
     ]);
   });
 });
