@@ -31,6 +31,22 @@ export type WidgetSize = (typeof WIDGET_SIZES)[number];
 export type WidgetCategory = "operational" | "analytics";
 
 /**
+ * The presentation groups the widget library sorts Widget definitions into, in
+ * display order. A Widget group is a library taxonomy: distinct from the fascia
+ * a widget belongs to (`WidgetCategory`) and from the permission that gates it.
+ * The labels and colors live in `groups.ts`.
+ */
+export const WIDGET_GROUP_IDS = [
+  "content",
+  "shop",
+  "automations",
+  "analytics",
+] as const;
+
+/** The id of a Widget group: the value a definition declares. */
+export type WidgetGroupId = (typeof WIDGET_GROUP_IDS)[number];
+
+/**
  * Config carried by a Dashboard widget instance. The concrete shape is owned by
  * the widget definition's `configSchema`; it is stored as opaque JSON so a
  * definition can become configurable without a model change.
@@ -116,6 +132,13 @@ export interface WidgetDefinition {
   title: string;
   description?: string;
   icon: LucideIcon;
+  /**
+   * Optional preview image shown on the library card. When absent the card
+   * renders a fallback tile from the definition's group color and `icon`.
+   */
+  previewImage?: string;
+  /** The Widget group the library sorts this definition into. */
+  group: WidgetGroupId;
   /**
    * The area permission that gates the widget. Optional: a widget that derives
    * its availability from other sources (e.g. the metrics a user may read)

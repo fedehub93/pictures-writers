@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { PERMISSIONS } from "@/shared/lib/permissions";
+import { WIDGET_GROUP_IDS } from "@/shared/dashboard/types";
 
 import { getWidgetDefinition, WIDGET_DEFINITIONS } from "../registry";
 
@@ -20,6 +21,19 @@ describe("dashboard widget registry", () => {
     for (const definition of WIDGET_DEFINITIONS) {
       expect(["small", "medium", "full"]).toContain(definition.defaultSize);
     }
+  });
+
+  it("assigns every definition to a Widget group", () => {
+    for (const definition of WIDGET_DEFINITIONS) {
+      expect(WIDGET_GROUP_IDS).toContain(definition.group);
+    }
+
+    expect(getWidgetDefinition("drafts")?.group).toBe("content");
+    expect(getWidgetDefinition("scheduled")?.group).toBe("content");
+    expect(getWidgetDefinition("pending-reviews")?.group).toBe("shop");
+    expect(getWidgetDefinition("pending-orders")?.group).toBe("shop");
+    expect(getWidgetDefinition("failed-runs")?.group).toBe("automations");
+    expect(getWidgetDefinition("trend")?.group).toBe("analytics");
   });
 
   it("gates each operational widget on its area's read permission", () => {

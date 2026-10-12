@@ -15,6 +15,7 @@ export const reviewsDashboardWidgets: WidgetDefinition[] = [
     title: "Reviews to moderate",
     description: "Reviews not published yet.",
     icon: Star,
+    group: "shop",
     permission: PERMISSIONS.REVIEWS_READ,
     defaultSize: "medium",
     component: PendingReviewsWidget,

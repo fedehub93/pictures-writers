@@ -12,6 +12,7 @@ const def = (id: string, permission?: string): WidgetDefinition => ({
   id,
   title: id,
   icon: undefined as unknown as LucideIcon,
+  group: "content",
   permission,
   defaultSize: "small",
   component: () => null,

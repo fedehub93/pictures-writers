@@ -15,6 +15,7 @@ export const schedulerDashboardWidgets: WidgetDefinition[] = [
     title: "Scheduled content",
     description: "Content with a planned publication in the future.",
     icon: CalendarClock,
+    group: "content",
     permission: PERMISSIONS.POSTS_READ,
     defaultSize: "medium",
     component: ScheduledWidget,

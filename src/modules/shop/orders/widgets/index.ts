@@ -15,6 +15,7 @@ export const ordersDashboardWidgets: WidgetDefinition[] = [
     title: "Orders to fulfil",
     description: "Confirmed orders not completed yet.",
     icon: ShoppingCart,
+    group: "shop",
     permission: PERMISSIONS.ORDERS_READ,
     defaultSize: "medium",
     component: PendingOrdersWidget,

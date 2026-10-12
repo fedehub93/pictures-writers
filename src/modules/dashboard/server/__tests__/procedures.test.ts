@@ -46,6 +46,7 @@ const widgetDefinition = (id: string): WidgetDefinition => ({
   id,
   title: id,
   icon: undefined as unknown as WidgetDefinition["icon"],
+  group: "content",
   defaultSize: "medium",
   component: () => null,
 });

@@ -283,8 +283,12 @@ A self-contained unit displayed on the admin dashboard, whose visibility is gove
 _Avoid_: Widget when the dashboard is in scope; card, panel, module.
 
 **Widget definition**:
-The catalog entry describing one kind of Dashboard widget — its identity, the permission it requires, its default size, and, when it is configurable, the config schema it exposes. The Dashboard widget is an instance of a definition: the definition is author-time, the widget is what the user arranges. Definitions are code, not database rows, and each belongs to the module whose data its widget presents.
+The catalog entry describing one kind of Dashboard widget — its identity, the group it belongs to, the permission it requires, its default size, and, when it is configurable, the config schema it exposes. The Dashboard widget is an instance of a definition: the definition is author-time, the widget is what the user arranges. Definitions are code, not database rows, and each belongs to the module whose data its widget presents.
 _Avoid_: Widget type, widget kind.
+
+**Widget group**:
+The presentation category the widget library sorts Widget definitions into (Content, Shop, Automations, Analytics), used to browse the library. It is a library taxonomy, distinct from the fascia a widget belongs to (operational or analytics) and from the permission that gates it.
+_Avoid_: Category, module when the library grouping is in scope.
 
 **Metric**:
 A named, permission-scoped time series of CMS data (e.g. contact growth, form submissions, ebook downloads, revenue) exposed by the dashboard's metric registry. The Trend widget renders exactly one Metric at a time.

@@ -15,6 +15,7 @@ export const postsDashboardWidgets: WidgetDefinition[] = [
     title: "Drafts to publish",
     description: "Posts still in draft, ready to be published.",
     icon: FileText,
+    group: "content",
     permission: PERMISSIONS.POSTS_READ,
     defaultSize: "medium",
     component: DraftsWidget,

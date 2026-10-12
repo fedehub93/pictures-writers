@@ -26,6 +26,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     title: "Trend",
     description: "One site metric over time.",
     icon: TrendingUp,
+    group: "analytics",
     category: "analytics",
     defaultSize: "medium",
     component: TrendWidget,

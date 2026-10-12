@@ -15,6 +15,7 @@ export const automationsDashboardWidgets: WidgetDefinition[] = [
     title: "Failed automations",
     description: "Automation runs that ended with an error.",
     icon: TriangleAlert,
+    group: "automations",
     permission: PERMISSIONS.AUTOMATIONS_READ,
     defaultSize: "medium",
     component: FailedRunsWidget,
