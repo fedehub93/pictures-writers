@@ -5,9 +5,12 @@ import { HydrateClient } from "@/trpc/server";
 import { requireAdminAuth } from "@/shared/lib/auth-utils";
 
 import { DashboardView } from "@/modules/dashboard/ui/views/dashboard-view";
+import { prefetchDashboardLayout } from "@/modules/dashboard/server/prefetch";
 
 const DashboardPage = async () => {
   await requireAdminAuth();
+
+  prefetchDashboardLayout();
 
   return (
     <HydrateClient>

@@ -200,6 +200,24 @@ model User {
   productVersions ProductVersion[]
   customer      Customer?
 
+  dashboardLayout DashboardLayout?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Per-user arrangement of Dashboard widgets. Stores a sparse override (a list
+/// of widget instances keyed by a stable instance key) merged over the
+/// code-defined widget registry. See ADR-0015 and CONTEXT.md "Dashboard
+/// layout".
+model DashboardLayout {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// [DashboardWidgets]
+  widgets Json @default("[]") @db.JsonB
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

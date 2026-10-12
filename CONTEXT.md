@@ -275,3 +275,25 @@ _Avoid_: User time zone, server time zone, per-node time zone.
 **Wait anchor**:
 The rule that turns the Wait node's delay plus a time of day into a resume moment: N calendar days after the current wall date, at that time in the Site time zone, rolled forward one day when the moment has already passed.
 _Avoid_: Absolute delay, countdown, offset.
+
+## Admin dashboard
+
+**Dashboard widget**:
+A self-contained unit displayed on the admin dashboard, whose visibility is governed by the permission it declares and which the backoffice user may reorder or hide. Distinct from the Site widget rendered on the public site.
+_Avoid_: Widget when the dashboard is in scope; card, panel, module.
+
+**Widget definition**:
+The catalog entry describing one kind of Dashboard widget — its identity, the permission it requires, and its default size. The Dashboard widget is an instance of a definition: the definition is author-time, the widget is what the user arranges. Definitions are code, not database rows.
+_Avoid_: Widget type, widget kind.
+
+**Metric**:
+A named, permission-scoped time series of CMS data (e.g. contact growth, form submissions, ebook downloads, revenue) exposed by the dashboard's metric registry. The Trend widget renders exactly one Metric at a time.
+_Avoid_: Statistic, chart, report, KPI.
+
+**Dashboard layout**:
+The ordered set of Dashboard widgets a backoffice user sees, derived from the Widget definitions permitted to that user and adjusted by that user's own arrangement.
+_Avoid_: Dashboard config, dashboard settings.
+
+**Site widget**:
+A configurable block rendered on the public site (hero, popup, post sidebar or bottom), managed under the public Widgets area. Distinct from the Dashboard widget.
+_Avoid_: Widget when the dashboard is in scope.
