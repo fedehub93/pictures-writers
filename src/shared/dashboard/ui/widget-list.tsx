@@ -17,7 +17,9 @@ interface WidgetListProps {
 
 /**
  * The shared body of an operational Dashboard widget: a headline count, a short
- * list of records, and a link to the destination list filtered by status.
+ * list of records, and a link to the destination list filtered by status. It
+ * lives in shared so a domain module's widget renders the same body as every
+ * other.
  */
 export const WidgetList = ({
   count,

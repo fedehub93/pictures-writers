@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 import { useTRPC } from "@/trpc/client";
 
-import type { DashboardWidgetInstance } from "../../types";
+import type { DashboardWidgetInstance } from "@/shared/dashboard/types";
 
 /** How long to wait after the last change before persisting the layout. */
 const SAVE_DEBOUNCE_MS = 600;

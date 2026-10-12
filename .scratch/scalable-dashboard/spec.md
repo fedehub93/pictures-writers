@@ -15,7 +15,7 @@ A registry-driven dashboard composed of two layers:
 - A **fascia operativa** ("what needs my attention now") of self-contained operational widgets, global in their data but arranged per user.
 - A **fascia analytics** of a single generic **Trend** widget rendered once per **Metric**, sharing one date range.
 
-Each dashboard unit is a **Dashboard widget**, an instance of a code-defined **Widget definition**. The registry is a **catalog**, not a default: a new user's dashboard is empty and every widget is added from the library, filtered by the permission each definition declares. The dashboard is **always arrangeable** — there is no edit mode: the user reorders, resizes, hides, adds, and configures widgets directly, and each change is persisted automatically. The layout is stored per user as a JSON document. Analytics are backed by a server-side **Metric** registry, so a new metric is a new registry entry, not a new widget.
+Each dashboard unit is a **Dashboard widget**, an instance of a code-defined **Widget definition**. The registry is a **catalog**, not a default: a new user's dashboard is empty and every widget is added from the library, filtered by the permission each definition declares. The dashboard is **always arrangeable** — there is no edit mode: the user reorders, resizes, removes, adds, and configures widgets directly, and each change is persisted automatically. The layout is stored per user as a JSON document. Analytics are backed by a server-side **Metric** registry, so a new metric is a new registry entry, not a new widget.
 
 ## User Stories
 
@@ -23,7 +23,7 @@ Each dashboard unit is a **Dashboard widget**, an instance of a code-defined **W
 2. As a backoffice user, I want analytics trends (contact growth, form submissions, ebook downloads, revenue/orders) over a date range, so that I can see how the site is performing.
 3. As a backoffice user, I want to see only the widgets I have permission for, so that I am not shown data I cannot access.
 4. As a backoffice user, I want to reorder widgets by dragging directly on the dashboard, so that it reflects my priorities without entering a separate mode.
-5. As a backoffice user, I want to hide widgets I do not care about and re-add them later from a widget library, so that I can tailor the dashboard without losing options.
+5. As a backoffice user, I want to remove widgets I do not care about and re-add them later from a widget library, so that I can tailor the dashboard without losing options.
 6. As a backoffice user, I want to add widgets and choose which metric each Trend shows, so that I can watch several metrics at once.
 7. As a backoffice user, I want to resize each widget among a small set of sizes, so that I can give more room to what matters.
 8. As a backoffice user, I want my arrangement saved automatically, so that I never have to commit it explicitly.
@@ -37,7 +37,7 @@ Each dashboard unit is a **Dashboard widget**, an instance of a code-defined **W
 ### Vocabulary
 
 - **Dashboard widget**: a self-contained unit displayed on the dashboard, governed by the permission it declares, arranged by the user. Distinct from the public **Site widget** (`Widget` model).
-- **Widget definition**: the code-defined catalog entry for a kind of Dashboard widget. Definitions are code, not database rows.
+- **Widget definition**: the code-defined catalog entry for a kind of Dashboard widget. Definitions are code, not database rows, and each is owned by the module whose data its widget presents.
 - **Metric**: a named, permission-scoped time series exposed by the metric registry and rendered by the Trend widget.
 - **Dashboard layout**: the ordered set of Dashboard widgets a user sees.
 
@@ -45,19 +45,20 @@ These are recorded in `CONTEXT.md` under "Admin dashboard".
 
 ### Widget registry
 
-- Dashboard widgets are **code-defined via a registry**, not database-defined. A `registry.ts` in `src/modules/dashboard` imports each widget module and exports a `WidgetDefinition[]`.
+- Dashboard widgets are **code-defined via a registry**, not database-defined. Each definition is **owned by the module whose data its widget presents**; the dashboard is a *composition root* that aggregates the module exports (`src/modules/dashboard/registry.ts`) into a `WidgetDefinition[]` and adds the generic Trend.
+- The shared contract (`WidgetDefinition`, `WidgetComponentProps`, the instance type, `Metric`) lives in `src/shared/dashboard/`, so a domain module depends on the contract, never on the dashboard.
 - The `WidgetDefinition` contract is:
   `{ id, title, description?, icon, permission?, defaultSize, component, configSchema?, defaultConfig? }`.
   - `permission` is optional: operational widgets declare the permission of the area whose data they show; the Trend widget derives its availability from the metrics the user may read.
   - `defaultSize` is a discrete token from a small set (`small`, `medium`, `full`), the size a freshly added instance starts at. The user may override it per instance (see Layout model).
   - `configSchema`/`defaultConfig` are optional; any definition may become configurable without a model change. The Trend widget is the first user.
-- Each widget is **autonomous**: it owns its data query and is wrapped in its own `Suspense` and `ErrorBoundary`. The dashboard does not know about widget queries.
+- Each widget is **autonomous**: it owns its data query and is wrapped in its own `Suspense` and `ErrorBoundary`. The dashboard does not know about widget queries. A widget's query lives in the owning module's router (e.g. `posts.getDrafts`, `orders.getPendingOrders`).
 - Permissions **reuse existing area permissions** (`contacts.read`, `orders.read`, `reviews.read`, `automations.read`, `posts.read`, `submissions.read`). No new widget-level permissions are introduced. `dashboard.read` remains the gate to view the dashboard and to save one's own layout.
 - There is **no default layout**: the registry is a catalog, and a user who has saved nothing has an empty dashboard. The effective layout is the user's saved instances filtered to the definitions that still exist and are permitted. No `Role -> layout` table or admin UI exists.
 
 ### Metric registry
 
-- The metric registry lives server-side at `src/modules/dashboard/server/metrics`, exposing metrics of shape `{ id, label, permission, timeSeries(from, to) }`.
+- The metric registry aggregates metrics that live server-side in the modules that own their data, exposing metrics of shape `{ id, label, permission, timeSeries(from, to) }`. The Trend widget and the `dashboard.getMetrics`/`getMetricSeries` procedures stay in the dashboard (they are generic); each `Metric` is owned by its domain module.
 - The Trend widget exposes **only the metrics the user is permitted to read**. If the user has none, the Trend widget is hidden.
 - Metrics that reuse an existing query do so; v1 metrics are:
   - **Iscritti / contatti** (`contacts.read`) — reuses `contacts.getContactsGrowth`.
@@ -68,18 +69,18 @@ These are recorded in `CONTEXT.md` under "Admin dashboard".
 ### Layout model
 
 - A user's layout is stored in a `DashboardLayout` model, 1:1 with `User`, holding a JSON document typed as `DashboardWidgets`.
-- The JSON is a **list of instances**, each `{ key, definitionId, config?, hidden?, size? }`, where `key` is a stable instance key generated at creation (e.g. `trend-<uuid>`), so reordering, reconfiguring, or resizing an instance never changes its identity.
+- The JSON is a **list of instances**, each `{ key, definitionId, config?, size? }`, where `key` is a stable instance key generated at creation (e.g. `trend-<uuid>`), so reordering, reconfiguring, or resizing an instance never changes its identity.
 - **Multiple instances of the same definition are allowed** (e.g. two Trend widgets with different metrics).
-- There is **no registry default**. The effective layout is the saved instances filtered to those whose definition exists and is still permitted — a pure, tested function. Hidden instances remain in the document (so they can be re-added from the library) but are not rendered.
+- There is **no registry default**. The effective layout is the saved instances filtered to those whose definition exists and is still permitted — a pure, tested function. A legacy `hidden` entry (from the earlier hide behaviour) is discarded on read rather than rendered.
 - `size` is optional: when absent the definition's `defaultSize` applies, so a saved layout tracks a changed default until the user resizes that instance.
 
 ### Arranging (always on)
 
-- There is **no edit mode**. The dashboard is always arrangeable: every card's arrange controls (size, config, hide, drag) are mounted, revealed on hover/focus on pointer devices and kept visible on small (touch) screens.
+- There is **no edit mode**. The dashboard is always arrangeable: every card's arrange controls (size, config, remove, drag) are mounted, revealed on hover/focus on pointer devices and kept visible on small (touch) screens.
 - Widget bodies stay interactive (links clickable); dragging is confined to the drag handle, so no body lock is needed.
 - A **size menu** on every card resizes just that instance among `small`/`medium`/`full`.
-- A **`+` tile** at the end of the grid — and the empty-dashboard prompt — opens a **widget library** filtered by permission; picking an entry adds an instance.
-- Each card shows an **X to hide** it, which sets `hidden` (the entry stays re-addable from the library).
+- A **`+` tile** at the end of the grid — and the empty-dashboard prompt — opens a **widget library** filtered by permission; picking an entry adds an instance at the end of the grid.
+- Each card shows an **X to remove** it: the instance leaves the layout (there is no hidden state), and re-adding it from the library appends a fresh instance at the end.
 - A **gear** on a configurable card opens a **popover generated from `configSchema`** (for the Trend, the metric picker).
 - Changes are persisted with **auto-save**: the whole instance document is saved (debounced) after each change, with a subtle "Saving…/Saved" indicator in the header and a toast only on error. There is no Save/Cancel. A change still inside the debounce window is flushed when the page is left, so the last edit is never dropped.
 - Persistence is via a `dashboard.saveLayout` mutation that operates only on the current user's `DashboardLayout`.
@@ -108,19 +109,25 @@ Analytics: a single Trend definition, configurable per instance to any permitted
 ### Module shape
 
 ```
-src/modules/dashboard/
-  registry.ts                 # WidgetDefinition[] (imports widget modules)
-  types.ts                    # WidgetDefinition, DashboardWidgetInstance, Metric, config schema types
+src/shared/dashboard/          # the contract both the dashboard and the modules depend on
+  types.ts                     # WidgetDefinition, DashboardWidgetInstance, Metric, config schema types
+  ui/                          # WidgetList, WidgetEmpty/states shared by every widget
+  metrics/series.ts            # metric series helpers
+src/modules/dashboard/         # the composition root
+  registry.ts                  # aggregates the modules' WidgetDefinition[] + the Trend
   server/
-    procedures.ts             # dashboard.getLayout, dashboard.saveLayout
-    layout.ts                 # pure permission filter of the saved layout
-    metrics/                  # metric registry + one file per metric
+    procedures.ts              # dashboard.getLayout, dashboard.saveLayout, getMetrics, getMetricSeries
+    layout.ts                  # pure permission filter of the saved layout
+    metrics/registry.ts        # aggregates the modules' Metric[]
     prefetch.ts
   ui/
-    views/dashboard-view.tsx  # rewritten
-    components/               # grid, widget-card, sortable-widget, widget-size-menu, widget-library, dashboard-empty, config-popover, widget-states
-    widgets/                  # operational widget modules
+    views/dashboard-view.tsx   # rewritten
+    components/                # grid, widget-card, sortable-widget, widget-size-menu, widget-library, dashboard-empty, config-popover
+    widgets/trend-widget.tsx   # the generic Trend (the only dashboard-owned widget)
     hooks/
+src/modules/<domain>/          # each domain owns the widgets and metrics whose data it presents
+  widgets/                     # the widget component + its WidgetDefinition[]
+  server/metrics.ts            # its Metric[] (where applicable)
 ```
 
 ### Schema shape
@@ -148,12 +155,13 @@ namespace PrismaJson {
 ## Testing Decisions
 
 - Vitest against the real test database, following the existing project pattern (`tests/global-setup.ts` runs migrations; `beforeEach` cleanup; direct `db` calls).
-- The pure **layout function** is unit-tested in isolation: filtering the saved instances by permission, dropping unknown/unpermitted definitions, preserving order, keeping hidden instances, and multi-instance stability.
+- The pure **layout function** is unit-tested in isolation: filtering the saved instances by permission, dropping unknown/unpermitted definitions and legacy hidden entries, preserving order, and multi-instance stability.
 - The **registry** is tested for shape and permission filtering (catalog order, per-definition permissions, `defaultSize`) and for the Trend's config schema.
-- The pure **edit helpers** (`addInstance`, `hideInstance`, `moveInstance`, `resizeInstance`, `configureInstance`) are unit-tested in isolation.
+- The pure **edit helpers** (`addInstance`, `removeInstance`, `moveInstance`, `updateInstance`) are unit-tested in isolation.
 - The **`dashboard.saveLayout`** procedure is integration-tested: it persists only for the current user, requires `dashboard.read`, and round-trips an instance's config and size.
-- **Metric `timeSeries`** functions are tested for correct period bucketing and permission scoping.
-- Manual acceptance covers arranging, which is always on: drag reorder, hide/re-add via the library, add a Trend and change its metric, resize a widget, the empty first-run state, and auto-save persistence across reload.
+- **Metric `timeSeries`** functions are tested for correct period bucketing and permission scoping, in the module that owns each metric.
+- Each **operational widget's query** (e.g. `posts.getDrafts`) is integration-tested in its module.
+- Manual acceptance covers arranging, which is always on: drag reorder, remove/re-add via the library, add a Trend and change its metric, resize a widget, the empty first-run state, and auto-save persistence across reload.
 
 ## Out of Scope
 
@@ -170,5 +178,5 @@ namespace PrismaJson {
 
 - **Verification needed before implementing click-through**: confirm that each destination list view accepts its status filter via URL query parameters (drafts -> `/admin/posts?status=DRAFT`, orders -> `/admin/shop/orders?status=PENDING`, reviews -> `/admin/shop/reviews`, failed runs -> `/admin/automations/.../executions`, scheduled -> `/admin/schedule`). If a view does not read query params today, add that support or an equivalent deep link.
 - The existing `/api/ebooks/stats` REST endpoint and `use-ebook-stats-query` axios hook should be folded into the metric registry (tRPC) so the dashboard has a single data convention.
-- ADR-0015 records the choice to define widgets in code via a registry with a per-user JSON layout (revised: the registry is a catalog, not a default layout). ADR-0016 records the choice to keep the dashboard always arrangeable with auto-save instead of an edit mode with an explicit Save/Cancel.
+- ADR-0015 records the choice to define widgets in code via a registry with a per-user JSON layout (revised: the registry is a catalog owned by the domain modules, aggregated by the dashboard as a composition root). ADR-0016 records the choice to keep the dashboard always arrangeable with auto-save instead of an edit mode with an explicit Save/Cancel (revised: the X removes an instance, there is no hidden state).
 - `CONTEXT.md` defines Dashboard widget, Widget definition, Dashboard layout, Site widget, and Metric.

@@ -2,7 +2,7 @@ import type {
   DashboardWidgetInstance,
   WidgetDefinition,
   WidgetSize,
-} from "../types";
+} from "@/shared/dashboard/types";
 
 /**
  * Grid placement for each discrete widget size. The dashboard grid is a single

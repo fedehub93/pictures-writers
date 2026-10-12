@@ -2,6 +2,14 @@ import type { LucideIcon } from "lucide-react";
 import type { ComponentType } from "react";
 
 /**
+ * The contract shared by the dashboard and every domain module that contributes
+ * a Dashboard widget or a Metric. It lives here, not in `src/modules/dashboard`,
+ * so a domain module can own its contribution without depending on the dashboard
+ * (the dashboard is the composition root that imports the modules, never the
+ * other way round).
+ */
+
+/**
  * The discrete widget sizes, in ascending order. The single source of truth for
  * the vocabulary: the type, the size menu, and the persistence schema all derive
  * from it.
@@ -76,15 +84,13 @@ export type WidgetConfigSchemaResolver = (
 /**
  * An instance of a Widget definition as placed on a user's Dashboard layout.
  *
- * `key` is a stable instance key: registry defaults use deterministic keys
- * (e.g. `drafts`) while user-created instances get a generated key, so
- * reordering or reconfiguring an instance never changes its identity.
+ * `key` is a stable instance key generated at creation, so reordering,
+ * reconfiguring, or resizing an instance never changes its identity.
  */
 export interface DashboardWidgetInstance {
   key: string;
   definitionId: string;
   config?: WidgetConfig;
-  hidden?: boolean;
   /**
    * The instance's grid size. Optional: when absent the definition's
    * `defaultSize` applies, so a saved layout stays valid as defaults change.
@@ -103,7 +109,7 @@ export interface WidgetComponentProps {
 /**
  * The code-defined catalog entry describing one kind of Dashboard widget.
  * Definitions are code, not database rows; the Dashboard widget is an instance
- * of a definition.
+ * of a definition. A definition is owned by the module whose data it presents.
  */
 export interface WidgetDefinition {
   id: string;
@@ -123,7 +129,7 @@ export interface WidgetDefinition {
   component: ComponentType<WidgetComponentProps>;
   /**
    * Optional config contract for configurable widgets. A definition without one
-   * is not configurable and its card shows no gear in edit mode.
+   * is not configurable and its card shows no gear.
    */
   configSchema?: WidgetConfigSchemaResolver;
   /** Config a newly added instance of this definition starts with. */
@@ -151,7 +157,8 @@ export interface MetricSeries {
 
 /**
  * A named, permission-scoped time series exposed by the server-side metric
- * registry. The Trend widget renders exactly one Metric at a time.
+ * registry. The Trend widget renders exactly one Metric at a time. A Metric is
+ * owned by the module whose data it aggregates.
  */
 export interface Metric {
   id: string;

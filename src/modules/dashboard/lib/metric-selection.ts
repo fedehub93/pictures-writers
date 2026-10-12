@@ -1,4 +1,4 @@
-import type { MetricSummary, WidgetConfig } from "../types";
+import type { MetricSummary, WidgetConfig } from "@/shared/dashboard/types";
 
 /**
  * Resolves which Metric a Trend instance should render, given the metrics the

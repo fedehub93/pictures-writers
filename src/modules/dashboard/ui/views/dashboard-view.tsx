@@ -6,12 +6,17 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import { DatePickerWithRange } from "@/shared/components/date-range";
 import { hasPermission } from "@/shared/lib/permissions";
+import type {
+  DashboardWidgetInstance,
+  WidgetConfigContext,
+} from "@/shared/dashboard/types";
 import { usePermissionKeys } from "@/shared/providers/authorization-provider";
 
 import {
   addInstance,
   createInstanceKey,
   moveInstance,
+  removeInstance,
   updateInstance,
 } from "../../lib/edit-layout";
 import { isAnalyticsInstanceRenderable } from "../../lib/metric-selection";
@@ -20,11 +25,7 @@ import {
   isAnalyticsWidget,
   WIDGET_DEFINITIONS,
 } from "../../registry";
-import { computeDashboardLayout, visibleDashboardWidgets } from "../../server/layout";
-import type {
-  DashboardWidgetInstance,
-  WidgetConfigContext,
-} from "../../types";
+import { computeDashboardLayout } from "../../server/layout";
 
 import { WidgetGrid } from "../components/widget-grid";
 import { useDebouncedSaveLayout } from "../hooks/use-debounced-save-layout";
@@ -81,8 +82,10 @@ export const DashboardView = () => {
   const onUpdate = (key: string, patch: Partial<DashboardWidgetInstance>) =>
     commit(updateInstance(instances, key, patch));
 
-  const onMove = (from: number, to: number) =>
-    commit(moveInstance(instances, from, to));
+  const onRemove = (key: string) => commit(removeInstance(instances, key));
+
+  const onMove = (fromKey: string, toKey: string) =>
+    commit(moveInstance(instances, fromKey, toKey));
 
   const onAdd = (definitionId: string) => {
     const definition = getWidgetDefinition(definitionId);
@@ -104,12 +107,10 @@ export const DashboardView = () => {
     return isAnalyticsInstanceRenderable(instance.config, metrics);
   });
 
-  const hasAnalytics = visibleDashboardWidgets(renderableInstances).some(
-    (instance) => {
-      const definition = getWidgetDefinition(instance.definitionId);
-      return definition ? isAnalyticsWidget(definition) : false;
-    },
-  );
+  const hasAnalytics = renderableInstances.some((instance) => {
+    const definition = getWidgetDefinition(instance.definitionId);
+    return definition ? isAnalyticsWidget(definition) : false;
+  });
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 md:pt-4">
@@ -138,6 +139,7 @@ export const DashboardView = () => {
         permittedDefinitions={permittedDefinitions}
         onMove={onMove}
         onUpdate={onUpdate}
+        onRemove={onRemove}
         onAdd={onAdd}
         configContext={configContext}
       />

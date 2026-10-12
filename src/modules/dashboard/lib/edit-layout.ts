@@ -1,4 +1,4 @@
-import type { DashboardWidgetInstance, WidgetConfig } from "../types";
+import type { DashboardWidgetInstance, WidgetConfig } from "@/shared/dashboard/types";
 
 /**
  * Generates the stable key for a user-created instance. The key never changes
@@ -10,8 +10,8 @@ export const createInstanceKey = (definitionId: string) =>
 /**
  * Applies a patch to the instance with the given key. The key never changes, so
  * an edit affects exactly one instance — two instances of the same definition
- * keep their own state. Hiding, resizing, and reconfiguring all go through this
- * one function.
+ * keep their own state. Resizing and reconfiguring both go through this one
+ * function.
  */
 export const updateInstance = (
   instances: DashboardWidgetInstance[],
@@ -23,66 +23,47 @@ export const updateInstance = (
   );
 
 /**
- * Adds an instance of a definition to the layout. When the layout already holds
- * a hidden instance of that definition, the first one is re-shown (keeping its
- * config) instead of appending a duplicate, so hiding a widget is reversible
- * from the library. A freshly appended instance is seeded with the definition's
- * default config, when it declares one.
+ * Appends a new instance of a definition to the layout, seeded with the
+ * definition's default config when it declares one. The X removes an instance
+ * outright (there is no hidden state), so a freshly added widget always lands at
+ * the end — the position of the library's `+` tile.
  */
 export const addInstance = (
   instances: DashboardWidgetInstance[],
   definitionId: string,
   key: string,
   defaultConfig?: WidgetConfig,
-): DashboardWidgetInstance[] => {
-  const hiddenIndex = instances.findIndex(
-    (instance) => instance.definitionId === definitionId && instance.hidden,
-  );
+): DashboardWidgetInstance[] => [
+  ...instances,
+  { key, definitionId, ...(defaultConfig ? { config: defaultConfig } : {}) },
+];
 
-  if (hiddenIndex !== -1) {
-    return instances.map((instance, index) =>
-      index === hiddenIndex ? { ...instance, hidden: false } : instance,
-    );
-  }
-
-  return [
-    ...instances,
-    { key, definitionId, ...(defaultConfig ? { config: defaultConfig } : {}) },
-  ];
-};
+/** Removes the instance with the given key from the layout. */
+export const removeInstance = (
+  instances: DashboardWidgetInstance[],
+  key: string,
+): DashboardWidgetInstance[] =>
+  instances.filter((instance) => instance.key !== key);
 
 /**
- * Moves a visible instance between two visible positions. The indices are
- * positions among the rendered (non-hidden) instances, matching what the drag
- * layer reports. Visible instances are permuted across the slots they already
- * occupy, so hidden instances keep their absolute place in the layout.
+ * Moves the instance with `fromKey` to the slot currently occupied by `toKey`,
+ * preserving every other instance's position. Identities are keys, not indices,
+ * so a widget that the grid leaves out (e.g. a Trend with no readable metric)
+ * never shifts the mapping between what is dragged and what is persisted.
  */
 export const moveInstance = (
   instances: DashboardWidgetInstance[],
-  fromVisibleIndex: number,
-  toVisibleIndex: number,
+  fromKey: string,
+  toKey: string,
 ): DashboardWidgetInstance[] => {
-  const visibleAbsoluteIndices = instances
-    .map((instance, index) => ({ instance, index }))
-    .filter(({ instance }) => !instance.hidden)
-    .map(({ index }) => index);
+  const from = instances.findIndex((instance) => instance.key === fromKey);
+  const to = instances.findIndex((instance) => instance.key === toKey);
 
-  if (
-    fromVisibleIndex === toVisibleIndex ||
-    visibleAbsoluteIndices[fromVisibleIndex] === undefined ||
-    visibleAbsoluteIndices[toVisibleIndex] === undefined
-  ) {
-    return instances;
-  }
-
-  const reordered = visibleAbsoluteIndices.map((index) => instances[index]);
-  const [moved] = reordered.splice(fromVisibleIndex, 1);
-  reordered.splice(toVisibleIndex, 0, moved);
+  if (from === -1 || to === -1 || from === to) return instances;
 
   const next = [...instances];
-  visibleAbsoluteIndices.forEach((absoluteIndex, position) => {
-    next[absoluteIndex] = reordered[position];
-  });
+  const [moved] = next.splice(from, 1);
+  next.splice(to, 0, moved);
 
   return next;
 };

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { WidgetConfigSelectField } from "../../types";
+import type { WidgetConfigSelectField } from "@/shared/dashboard/types";
 import { configFieldValue, withConfigValue } from "../config";
 
 const field: WidgetConfigSelectField = {

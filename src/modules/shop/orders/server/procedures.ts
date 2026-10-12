@@ -91,6 +91,45 @@ const findOrderOrThrow = async (id: string) => {
 };
 
 export const ordersRouter = createTRPCRouter({
+  /**
+   * Pending orders: the count and the most recent few, for the dashboard's
+   * "Orders to fulfil" widget.
+   */
+  getPendingOrders: permissionProcedure(PERMISSIONS.ORDERS_READ).query(
+    async () => {
+      const where: Prisma.OrderWhereInput = { status: OrderStatus.PENDING };
+
+      const [orders, count] = await Promise.all([
+        db.order.findMany({
+          where,
+          orderBy: { createdAt: "desc" },
+          take: 5,
+          select: {
+            id: true,
+            orderNumber: true,
+            totalAmount: true,
+            currency: true,
+            createdAt: true,
+            customer: { select: { name: true, email: true } },
+          },
+        }),
+        db.order.count({ where }),
+      ]);
+
+      return {
+        count,
+        items: orders.map((order) => ({
+          id: order.id,
+          orderNumber: order.orderNumber,
+          totalAmount: order.totalAmount,
+          currency: order.currency,
+          customerName: order.customer.name ?? order.customer.email,
+          createdAt: order.createdAt,
+        })),
+      };
+    },
+  ),
+
   create: permissionProcedure(PERMISSIONS.ORDERS_CREATE)
     .input(orderInsertSchema)
     .mutation(async ({ input }) => {

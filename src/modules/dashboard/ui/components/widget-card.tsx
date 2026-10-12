@@ -12,15 +12,16 @@ import {
   CardTitle,
 } from "@/shared/ui/card";
 
-import { resolveWidgetSize } from "../../lib/widget-size";
 import type {
   DashboardWidgetInstance,
   WidgetConfigContext,
   WidgetDefinition,
-} from "../../types";
+} from "@/shared/dashboard/types";
+import { WidgetError, WidgetLoading } from "@/shared/dashboard/ui/widget-states";
+
+import { resolveWidgetSize } from "../../lib/widget-size";
 
 import { ConfigPopover } from "./config-popover";
-import { WidgetError, WidgetLoading } from "./widget-states";
 import { WidgetSizeMenu } from "./widget-size-menu";
 
 interface WidgetCardProps {
@@ -30,8 +31,10 @@ interface WidgetCardProps {
   dragHandleRef?: (element: Element | null) => void;
   /** Context a configurable widget's schema resolves against. */
   configContext?: WidgetConfigContext;
-  /** Receives a patch for this instance: hide, resize, or reconfigure it. */
+  /** Receives a patch for this instance: resize or reconfigure it. */
   onUpdate?: (patch: Partial<DashboardWidgetInstance>) => void;
+  /** Removes this instance from the dashboard. */
+  onRemove?: () => void;
 }
 
 const subscribeToNothing = () => () => {};
@@ -68,6 +71,7 @@ export const WidgetCard = ({
   dragHandleRef,
   configContext,
   onUpdate,
+  onRemove,
 }: WidgetCardProps) => {
   const Icon = definition.icon;
   const Widget = definition.component;
@@ -97,8 +101,8 @@ export const WidgetCard = ({
                 type="button"
                 variant="ghost"
                 size="icon-sm"
-                aria-label={`Hide ${definition.title}`}
-                onClick={() => onUpdate({ hidden: true })}
+                aria-label={`Remove ${definition.title}`}
+                onClick={onRemove}
               >
                 <X />
               </Button>

@@ -1,10 +1,9 @@
 import "server-only";
 
+import { buildRangeSeries } from "@/shared/dashboard/metrics/series";
+import type { Metric } from "@/shared/dashboard/types";
 import { db } from "@/shared/lib/db";
 import { PERMISSIONS } from "@/shared/lib/permissions";
-
-import type { Metric } from "../../types";
-import { buildRangeSeries } from "./series";
 
 /**
  * Form submissions: counts `FormSubmission` rows, bucketed by calendar month

@@ -4,8 +4,9 @@ import { describe, expect, it } from "vitest";
 import type {
   DashboardWidgetInstance,
   WidgetDefinition,
-} from "../../types";
-import { computeDashboardLayout, visibleDashboardWidgets } from "../layout";
+} from "@/shared/dashboard/types";
+
+import { computeDashboardLayout } from "../layout";
 
 const def = (id: string, permission?: string): WidgetDefinition => ({
   id,
@@ -19,7 +20,7 @@ const def = (id: string, permission?: string): WidgetDefinition => ({
 const instance = (
   key: string,
   definitionId: string,
-  overrides: Partial<DashboardWidgetInstance> = {},
+  overrides: Partial<DashboardWidgetInstance> & { hidden?: boolean } = {},
 ): DashboardWidgetInstance => ({ key, definitionId, ...overrides });
 
 const allowAll = () => true;
@@ -98,16 +99,14 @@ describe("computeDashboardLayout", () => {
     ]);
   });
 
-  it("keeps hidden instances in the layout so they can be re-added", () => {
+  it("drops a legacy hidden instance instead of resurrecting it", () => {
     const layout = computeDashboardLayout({
       saved: [instance("trend-contacts", "trend", { hidden: true })],
       definitions: [def("trend")],
       canRead: allowAll,
     });
 
-    expect(layout).toEqual([
-      { key: "trend-contacts", definitionId: "trend", hidden: true },
-    ]);
+    expect(layout).toEqual([]);
   });
 
   it("keeps multiple instances of the same definition in a stable order", () => {
@@ -123,21 +122,6 @@ describe("computeDashboardLayout", () => {
     expect(layout.map((item) => item.key)).toEqual([
       "trend-revenue",
       "trend-contacts",
-    ]);
-  });
-});
-
-describe("visibleDashboardWidgets", () => {
-  it("retains hidden instances but excludes them from rendering", () => {
-    const layout = [
-      instance("a", "a"),
-      instance("b", "b", { hidden: true }),
-      instance("c", "c"),
-    ];
-
-    expect(visibleDashboardWidgets(layout).map((item) => item.key)).toEqual([
-      "a",
-      "c",
     ]);
   });
 });

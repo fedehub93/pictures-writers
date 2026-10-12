@@ -14,8 +14,8 @@ import {
 } from "@/shared/ui/chart";
 
 import { resolveMetric } from "../../lib/metric-selection";
-import type { WidgetComponentProps } from "../../types";
-import { WidgetEmpty } from "../components/widget-states";
+import type { WidgetComponentProps } from "@/shared/dashboard/types";
+import { WidgetEmpty } from "@/shared/dashboard/ui/widget-states";
 
 /**
  * The generic analytics widget: renders exactly one Metric. It exposes only the

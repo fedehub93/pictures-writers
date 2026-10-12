@@ -3,13 +3,13 @@
 import { useSortable } from "@dnd-kit/react/sortable";
 
 import { cn } from "@/shared/lib/utils";
-
-import { widgetSizeClass } from "../../lib/widget-size";
 import type {
   DashboardWidgetInstance,
   WidgetConfigContext,
   WidgetDefinition,
-} from "../../types";
+} from "@/shared/dashboard/types";
+
+import { widgetSizeClass } from "../../lib/widget-size";
 
 import { WidgetCard } from "./widget-card";
 
@@ -19,6 +19,7 @@ interface SortableWidgetProps {
   index: number;
   configContext: WidgetConfigContext;
   onUpdate: (key: string, patch: Partial<DashboardWidgetInstance>) => void;
+  onRemove: (key: string) => void;
 }
 
 /**
@@ -32,6 +33,7 @@ export const SortableWidget = ({
   index,
   configContext,
   onUpdate,
+  onRemove,
 }: SortableWidgetProps) => {
   const { ref, handleRef, isDragging } = useSortable({
     id: instance.key,
@@ -51,6 +53,7 @@ export const SortableWidget = ({
         dragHandleRef={handleRef}
         configContext={configContext}
         onUpdate={(patch) => onUpdate(instance.key, patch)}
+        onRemove={() => onRemove(instance.key)}
       />
     </div>
   );

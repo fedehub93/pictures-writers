@@ -9,7 +9,7 @@ import {
   subMonths,
 } from "date-fns";
 
-import type { MetricPoint, MetricSeries } from "../../types";
+import type { MetricPoint, MetricSeries } from "../types";
 
 /** One calendar-month bucket of a Metric series, clamped to the range. */
 export interface MonthBucket {

@@ -1,8 +1,13 @@
 import z from "zod";
 import { db } from "@/shared/lib/db";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 import { revalidateContent } from "@/shared/lib/revalidate-content";
 
-import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import {
+  createTRPCRouter,
+  permissionProcedure,
+  protectedProcedure,
+} from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 
 import { ContentStatus, type Prisma } from "@/generated/prisma";
@@ -46,7 +51,52 @@ import {
 
 import { getPaginatedPosts } from "./queries";
 
+/** How many records the dashboard's drafts widget lists at once. */
+const DASHBOARD_LIST_LIMIT = 5;
+
 export const postsRouter = createTRPCRouter({
+  /**
+   * Draft posts: the count and the most recently edited few, for the dashboard's
+   * "Drafts to publish" widget.
+   */
+  getDrafts: permissionProcedure(PERMISSIONS.POSTS_READ).query(async () => {
+    const where: Prisma.PostRootWhereInput = {
+      currentVersion: { is: { status: ContentStatus.DRAFT } },
+    };
+
+    const [roots, count] = await Promise.all([
+      db.postRoot.findMany({
+        where,
+        orderBy: { currentVersion: { updatedAt: "desc" } },
+        take: DASHBOARD_LIST_LIMIT,
+        select: {
+          id: true,
+          slug: true,
+          currentVersion: {
+            select: { id: true, title: true, updatedAt: true },
+          },
+        },
+      }),
+      db.postRoot.count({ where }),
+    ]);
+
+    const items = roots
+      .map((root) => {
+        const version = root.currentVersion;
+        if (!version) return null;
+
+        return {
+          rootId: root.id,
+          versionId: version.id,
+          title: version.title,
+          updatedAt: version.updatedAt,
+        };
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null);
+
+    return { count, items };
+  }),
+
   create: protectedProcedure
     .input(postInsertSchema.extend({ timezone: z.string().optional() }))
     .mutation(async ({ input, ctx }) => {

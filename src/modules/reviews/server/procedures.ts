@@ -69,6 +69,49 @@ const findReviewOrThrow = async (id: string) => {
 };
 
 export const reviewsRouter = createTRPCRouter({
+  /**
+   * Unpublished reviews: the count and the most recent few, for the dashboard's
+   * "Reviews to moderate" widget.
+   */
+  getPendingReviews: permissionProcedure(PERMISSIONS.REVIEWS_READ).query(
+    async () => {
+      const where: Prisma.ReviewsWhereInput = { status: false };
+
+      const [reviews, count] = await Promise.all([
+        db.reviews.findMany({
+          where,
+          orderBy: { date: "desc" },
+          take: 5,
+          select: {
+            id: true,
+            reviewerName: true,
+            rating: true,
+            date: true,
+            product: {
+              select: {
+                id: true,
+                currentVersion: { select: { title: true } },
+              },
+            },
+          },
+        }),
+        db.reviews.count({ where }),
+      ]);
+
+      return {
+        count,
+        items: reviews.map((review) => ({
+          id: review.id,
+          reviewerName: review.reviewerName ?? "",
+          rating: review.rating,
+          date: review.date,
+          productId: review.product.id,
+          productTitle: review.product.currentVersion?.title ?? "",
+        })),
+      };
+    },
+  ),
+
   create: permissionProcedure(PERMISSIONS.REVIEWS_MANAGE)
     .input(reviewInsertSchema)
     .mutation(async ({ input }) => {

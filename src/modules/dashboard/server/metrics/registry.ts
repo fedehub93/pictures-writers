@@ -1,15 +1,14 @@
 import "server-only";
 
-import type { Metric } from "../../types";
-
-import { contactsMetric } from "./contacts";
-import { ebooksMetric } from "./ebooks";
-import { revenueMetric } from "./revenue";
-import { submissionsMetric } from "./submissions";
+import { submissionsMetric } from "@/modules/forms/submissions/server/metrics";
+import { contactsMetric, ebooksMetric } from "@/modules/mails/contacts/server/metrics";
+import { revenueMetric } from "@/modules/shop/orders/server/metrics";
+import type { Metric } from "@/shared/dashboard/types";
 
 /**
- * The code-defined catalog of analytics Metrics. Adding a metric is one module
- * plus one entry here; the Trend widget supports it with no new UI.
+ * The code-defined catalog of analytics Metrics, aggregated from the modules
+ * that own each metric's data. The dashboard is the composition root: a domain
+ * module registers its Metric and the Trend widget supports it with no new UI.
  */
 export const METRICS: Metric[] = [
   contactsMetric,

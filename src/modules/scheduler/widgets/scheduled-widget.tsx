@@ -5,12 +5,11 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { useTRPC } from "@/trpc/client";
 import { formatDate } from "@/lib/format";
-
-import { WidgetList } from "../components/widget-list";
+import { WidgetList } from "@/shared/dashboard/ui/widget-list";
 
 export const ScheduledWidget = () => {
   const trpc = useTRPC();
-  const { data } = useSuspenseQuery(trpc.dashboard.getScheduled.queryOptions());
+  const { data } = useSuspenseQuery(trpc.scheduler.getScheduled.queryOptions());
 
   return (
     <WidgetList

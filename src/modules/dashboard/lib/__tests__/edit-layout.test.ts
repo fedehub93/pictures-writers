@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import type { DashboardWidgetInstance } from "../../types";
+import type { DashboardWidgetInstance } from "@/shared/dashboard/types";
+
 import {
   addInstance,
   createInstanceKey,
   moveInstance,
+  removeInstance,
   updateInstance,
 } from "../edit-layout";
 
@@ -21,16 +23,10 @@ describe("updateInstance", () => {
   it("applies a patch to exactly the keyed instance", () => {
     const layout = [instance("a", "a"), instance("b", "b")];
 
-    const result = updateInstance(layout, "a", { hidden: true });
-
-    expect(result[0]).toEqual({ key: "a", definitionId: "a", hidden: true });
-    expect(result[1]).toEqual({ key: "b", definitionId: "b" });
-  });
-
-  it("sets the size of the keyed instance", () => {
-    const result = updateInstance([instance("a", "a")], "a", { size: "full" });
+    const result = updateInstance(layout, "a", { size: "full" });
 
     expect(result[0]).toEqual({ key: "a", definitionId: "a", size: "full" });
+    expect(result[1]).toEqual({ key: "b", definitionId: "b" });
   });
 
   it("overrides a previous size on the same instance", () => {
@@ -66,12 +62,12 @@ describe("updateInstance", () => {
   it("leaves the layout untouched when the key is absent", () => {
     const layout = [instance("a", "a")];
 
-    expect(updateInstance(layout, "ghost", { hidden: true })).toEqual(layout);
+    expect(updateInstance(layout, "ghost", { size: "full" })).toEqual(layout);
   });
 });
 
 describe("addInstance", () => {
-  it("appends a new instance when the definition is not present", () => {
+  it("appends a new instance at the end", () => {
     const layout = [instance("a", "a")];
 
     const result = addInstance(layout, "b", "b-1");
@@ -80,19 +76,7 @@ describe("addInstance", () => {
     expect(result[1]).toEqual({ key: "b-1", definitionId: "b" });
   });
 
-  it("re-shows the first hidden instance of the definition instead of duplicating", () => {
-    const layout = [
-      instance("a", "a"),
-      instance("b", "b", { hidden: true }),
-    ];
-
-    const result = addInstance(layout, "b", "b-new");
-
-    expect(keys(result)).toEqual(["a", "b"]);
-    expect(result[1]).toEqual({ key: "b", definitionId: "b", hidden: false });
-  });
-
-  it("appends a second instance while a visible one already exists", () => {
+  it("appends a second instance while one already exists", () => {
     const layout = [instance("trend-contacts", "trend")];
 
     const result = addInstance(layout, "trend", "trend-revenue");
@@ -109,57 +93,47 @@ describe("addInstance", () => {
       config: { metric: "contacts" },
     });
   });
+});
 
-  it("keeps a re-shown hidden instance's own config and size", () => {
-    const layout = [
-      instance("trend-contacts", "trend", {
-        config: { metric: "contacts" },
-        size: "full",
-        hidden: true,
-      }),
-    ];
+describe("removeInstance", () => {
+  it("removes exactly the keyed instance", () => {
+    const layout = [instance("a", "a"), instance("b", "b"), instance("c", "c")];
 
-    const result = addInstance(layout, "trend", "trend-new", {
-      metric: "revenue",
-    });
+    const result = removeInstance(layout, "b");
 
-    expect(result[0]).toEqual({
-      key: "trend-contacts",
-      definitionId: "trend",
-      config: { metric: "contacts" },
-      size: "full",
-      hidden: false,
-    });
+    expect(keys(result)).toEqual(["a", "c"]);
+  });
+
+  it("leaves the layout untouched when the key is absent", () => {
+    const layout = [instance("a", "a")];
+
+    expect(removeInstance(layout, "ghost")).toEqual(layout);
   });
 });
 
 describe("moveInstance", () => {
-  it("reorders visible instances by their visible positions", () => {
+  it("moves an instance to the slot of the target key", () => {
     const layout = [instance("a", "a"), instance("b", "b"), instance("c", "c")];
 
-    const result = moveInstance(layout, 0, 2);
+    const result = moveInstance(layout, "a", "c");
 
     expect(keys(result)).toEqual(["b", "c", "a"]);
   });
 
-  it("keeps hidden instances in place while reordering the visible ones", () => {
-    const layout = [
-      instance("a", "a"),
-      instance("hidden", "x", { hidden: true }),
-      instance("b", "b"),
-      instance("c", "c"),
-    ];
+  it("moves an instance backwards to the slot of the target key", () => {
+    const layout = [instance("a", "a"), instance("b", "b"), instance("c", "c")];
 
-    const result = moveInstance(layout, 0, 2);
+    const result = moveInstance(layout, "c", "a");
 
-    expect(keys(result)).toEqual(["b", "hidden", "c", "a"]);
+    expect(keys(result)).toEqual(["c", "a", "b"]);
   });
 
-  it("returns the layout unchanged when the positions are invalid or equal", () => {
+  it("returns the layout unchanged when a key is unknown or equal", () => {
     const layout = [instance("a", "a"), instance("b", "b")];
 
-    expect(moveInstance(layout, 1, 1)).toBe(layout);
-    expect(moveInstance(layout, 0, 9)).toBe(layout);
+    expect(moveInstance(layout, "a", "a")).toBe(layout);
+    expect(moveInstance(layout, "a", "ghost")).toBe(layout);
+    expect(moveInstance(layout, "ghost", "b")).toBe(layout);
   });
 });
 

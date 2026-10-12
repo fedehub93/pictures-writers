@@ -5,31 +5,33 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { useTRPC } from "@/trpc/client";
 import { formatDate } from "@/lib/format";
+import { WidgetList } from "@/shared/dashboard/ui/widget-list";
 
-import { WidgetList } from "../components/widget-list";
-
-export const FailedRunsWidget = () => {
+export const DraftsWidget = () => {
   const trpc = useTRPC();
-  const { data } = useSuspenseQuery(trpc.dashboard.getFailedRuns.queryOptions());
+  const { data } = useSuspenseQuery(trpc.posts.getDrafts.queryOptions());
 
   return (
     <WidgetList
       count={data.count}
       isEmpty={data.items.length === 0}
-      emptyMessage="No failed automations."
-      href="/admin/automations/executions?status=FAILED"
-      linkLabel="View runs"
+      emptyMessage="No drafts to publish."
+      href="/admin/posts?status=DRAFT"
+      linkLabel="View all drafts"
     >
       {data.items.map((item) => (
-        <li key={item.id} className="flex items-center justify-between gap-3">
+        <li
+          key={item.versionId}
+          className="flex items-center justify-between gap-3"
+        >
           <Link
-            href={`/admin/automations/${item.automationId}/executions/${item.id}`}
+            href={`/admin/posts/${item.rootId}`}
             className="truncate text-sm hover:underline"
           >
-            {item.automationName}
+            {item.title}
           </Link>
           <span className="shrink-0 text-xs text-muted-foreground">
-            {formatDate({ date: item.startedAt })}
+            {formatDate({ date: item.updatedAt })}
           </span>
         </li>
       ))}

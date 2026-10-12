@@ -1,4 +1,4 @@
-import type { WidgetConfig, WidgetConfigField } from "../types";
+import type { WidgetConfig, WidgetConfigField } from "@/shared/dashboard/types";
 
 /**
  * The value a config field should show. The stored value is used only while it

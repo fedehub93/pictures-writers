@@ -13,7 +13,7 @@ import {
 } from "@/shared/ui/dropdown-menu";
 
 import { WIDGET_SIZE_LABEL } from "../../lib/widget-size";
-import { WIDGET_SIZES, type WidgetSize } from "../../types";
+import { WIDGET_SIZES, type WidgetSize } from "@/shared/dashboard/types";
 
 interface WidgetSizeMenuProps {
   /** The instance's current effective size. */

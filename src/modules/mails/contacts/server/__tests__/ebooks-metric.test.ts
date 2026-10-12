@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { db } from "@/shared/lib/db";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 
-import { ebooksMetric } from "../ebooks";
+import { ebooksMetric } from "../metrics";
 
 const contactIds: string[] = [];
 

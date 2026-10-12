@@ -7,7 +7,7 @@ import { OrderStatus } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 
-import { revenueMetric } from "../revenue";
+import { revenueMetric } from "../metrics";
 
 const customerIds: string[] = [];
 const orderIds: string[] = [];

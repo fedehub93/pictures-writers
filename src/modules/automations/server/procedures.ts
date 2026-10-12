@@ -8,7 +8,7 @@ import { db } from "@/shared/lib/db";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 
-import { AutomationStatus } from "@/generated/prisma";
+import { AutomationRunStatus, AutomationStatus } from "@/generated/prisma";
 
 import { formSubmittedNodeValidator } from "@/modules/forms/automations/validate";
 
@@ -89,6 +89,43 @@ const toConnectionRow = (
 });
 
 export const automationsRouter = createTRPCRouter({
+  /**
+   * Failed automation runs: the count and the most recent few, for the
+   * dashboard's "Failed automations" widget.
+   */
+  getFailedRuns: permissionProcedure(PERMISSIONS.AUTOMATIONS_READ).query(
+    async () => {
+      const where = { status: AutomationRunStatus.FAILED };
+
+      const [runs, count] = await Promise.all([
+        db.automationRun.findMany({
+          where,
+          orderBy: { startedAt: "desc" },
+          take: 5,
+          select: {
+            id: true,
+            automationId: true,
+            startedAt: true,
+            error: true,
+            automation: { select: { name: true } },
+          },
+        }),
+        db.automationRun.count({ where }),
+      ]);
+
+      return {
+        count,
+        items: runs.map((run) => ({
+          id: run.id,
+          automationId: run.automationId,
+          automationName: run.automation.name,
+          startedAt: run.startedAt,
+          error: run.error,
+        })),
+      };
+    },
+  ),
+
   execute: permissionProcedure(PERMISSIONS.AUTOMATIONS_WRITE)
     .input(z.object({ id: z.string(), payload: z.unknown().optional() }))
     .mutation(async ({ input }) => {

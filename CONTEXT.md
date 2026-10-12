@@ -279,11 +279,11 @@ _Avoid_: Absolute delay, countdown, offset.
 ## Admin dashboard
 
 **Dashboard widget**:
-A self-contained unit displayed on the admin dashboard, whose visibility is governed by the permission it declares and which the backoffice user may reorder, hide, re-add, and configure. Distinct from the Site widget rendered on the public site.
+A self-contained unit displayed on the admin dashboard, whose visibility is governed by the permission it declares and which the backoffice user may reorder, remove, re-add, and configure. Distinct from the Site widget rendered on the public site.
 _Avoid_: Widget when the dashboard is in scope; card, panel, module.
 
 **Widget definition**:
-The catalog entry describing one kind of Dashboard widget — its identity, the permission it requires, its default size, and, when it is configurable, the config schema it exposes. The Dashboard widget is an instance of a definition: the definition is author-time, the widget is what the user arranges. Definitions are code, not database rows.
+The catalog entry describing one kind of Dashboard widget — its identity, the permission it requires, its default size, and, when it is configurable, the config schema it exposes. The Dashboard widget is an instance of a definition: the definition is author-time, the widget is what the user arranges. Definitions are code, not database rows, and each belongs to the module whose data its widget presents.
 _Avoid_: Widget type, widget kind.
 
 **Metric**:

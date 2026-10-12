@@ -9,7 +9,7 @@
 - [x] Widget loading, empty, and error states are consistent across all widgets.
 - [x] The legacy hardcoded dashboard view and its two bespoke widgets are removed.
 - [x] Dashboard docs and the glossary reflect the shipped behaviour.
-- [ ] Manual end-to-end acceptance passes: default render by permission, edit/reorder/hide/add, metric selection, Salva/Annulla, and persistence across reload.
+- [ ] Manual end-to-end acceptance passes: default render by permission, reorder/remove/re-add, metric selection, and persistence across reload.
 
 ## Comments
 
@@ -28,4 +28,4 @@ Delivered:
 
 Notes:
 
-- Every acceptance behaviour is exercised at the logic level: default render by permission (layout merge + registry permission filtering), edit/reorder/hide/add (edit-layout helpers), metric selection (config helpers + registry picker), Salva/Annulla and persistence across reload (saveLayout round-trip against the test database). The one step that provably needs a human is the browser drag/mouse interaction, so the manual-acceptance checkbox is left open and the issue is `ready-for-human` rather than resolved.
+- Every acceptance behaviour is exercised at the logic level: default render by permission (layout merge + registry permission filtering), reorder/remove/re-add (edit-layout helpers), metric selection (config helpers + registry picker), and persistence across reload (saveLayout round-trip against the test database). The one step that provably needs a human is the browser drag/mouse interaction, so the manual-acceptance checkbox is left open and the issue is `ready-for-human` rather than resolved.

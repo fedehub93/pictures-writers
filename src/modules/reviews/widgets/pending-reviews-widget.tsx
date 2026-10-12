@@ -5,13 +5,12 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { useTRPC } from "@/trpc/client";
 import { Badge } from "@/shared/ui/badge";
-
-import { WidgetList } from "../components/widget-list";
+import { WidgetList } from "@/shared/dashboard/ui/widget-list";
 
 export const PendingReviewsWidget = () => {
   const trpc = useTRPC();
   const { data } = useSuspenseQuery(
-    trpc.dashboard.getPendingReviews.queryOptions(),
+    trpc.reviews.getPendingReviews.queryOptions(),
   );
 
   return (

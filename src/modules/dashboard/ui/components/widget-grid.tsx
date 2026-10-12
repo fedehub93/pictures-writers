@@ -3,14 +3,14 @@
 import { DragDropProvider, type DragEndEvent } from "@dnd-kit/react";
 import { isSortable } from "@dnd-kit/react/sortable";
 
-import { WIDGET_SIZE_CLASS } from "../../lib/widget-size";
-import { getWidgetDefinition } from "../../registry";
-import { visibleDashboardWidgets } from "../../server/layout";
 import type {
   DashboardWidgetInstance,
   WidgetConfigContext,
   WidgetDefinition,
-} from "../../types";
+} from "@/shared/dashboard/types";
+
+import { WIDGET_SIZE_CLASS } from "../../lib/widget-size";
+import { getWidgetDefinition } from "../../registry";
 
 import { DashboardEmpty } from "./dashboard-empty";
 import { SortableWidget } from "./sortable-widget";
@@ -19,39 +19,35 @@ import { WidgetLibraryTile } from "./widget-library";
 interface WidgetGridProps {
   instances: DashboardWidgetInstance[];
   permittedDefinitions: WidgetDefinition[];
-  onMove: (fromVisibleIndex: number, toVisibleIndex: number) => void;
+  onMove: (fromKey: string, toKey: string) => void;
   onUpdate: (key: string, patch: Partial<DashboardWidgetInstance>) => void;
+  onRemove: (key: string) => void;
   onAdd: (definitionId: string) => void;
   configContext: WidgetConfigContext;
 }
 
 /**
- * Renders the layout's visible instances in the responsive dashboard grid. The
+ * Renders the layout's instances in the responsive dashboard grid. The
  * dashboard is always arrangeable, so every cell is sortable and the `+` tile
- * opens the widget library. When nothing is visible, the grid is replaced by the
- * empty-dashboard prompt.
+ * opens the widget library. When there is nothing to show, the grid is replaced
+ * by the empty-dashboard prompt.
  */
 export const WidgetGrid = ({
   instances,
   permittedDefinitions,
   onMove,
   onUpdate,
+  onRemove,
   onAdd,
   configContext,
 }: WidgetGridProps) => {
-  const widgets = visibleDashboardWidgets(instances).flatMap((instance) => {
+  const widgets = instances.flatMap((instance) => {
     const definition = getWidgetDefinition(instance.definitionId);
     return definition ? [{ instance, definition }] : [];
   });
 
   if (widgets.length === 0) {
-    return (
-      <DashboardEmpty
-        definitions={permittedDefinitions}
-        onSelect={onAdd}
-        variant={instances.length > 0 ? "all-hidden" : "empty"}
-      />
-    );
+    return <DashboardEmpty definitions={permittedDefinitions} onSelect={onAdd} />;
   }
 
   const onDragEnd = (event: DragEndEvent) => {
@@ -63,7 +59,11 @@ export const WidgetGrid = ({
     const { initialIndex, index } = source;
     if (initialIndex === index) return;
 
-    onMove(initialIndex, index);
+    const from = widgets[initialIndex]?.instance.key;
+    const to = widgets[index]?.instance.key;
+    if (!from || !to) return;
+
+    onMove(from, to);
   };
 
   return (
@@ -77,6 +77,7 @@ export const WidgetGrid = ({
             index={index}
             configContext={configContext}
             onUpdate={onUpdate}
+            onRemove={onRemove}
           />
         ))}
 

@@ -13,7 +13,7 @@ import {
   DialogTrigger,
 } from "@/shared/ui/dialog";
 
-import type { WidgetDefinition } from "../../types";
+import type { WidgetDefinition } from "@/shared/dashboard/types";
 
 interface WidgetLibraryProps {
   /** The definitions the current user is permitted to add. */

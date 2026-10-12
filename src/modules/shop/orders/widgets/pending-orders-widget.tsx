@@ -4,8 +4,7 @@ import Link from "next/link";
 import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { useTRPC } from "@/trpc/client";
-
-import { WidgetList } from "../components/widget-list";
+import { WidgetList } from "@/shared/dashboard/ui/widget-list";
 
 const formatAmount = (amount: number, currency: string) =>
   new Intl.NumberFormat("it-IT", { style: "currency", currency }).format(amount);
@@ -13,7 +12,7 @@ const formatAmount = (amount: number, currency: string) =>
 export const PendingOrdersWidget = () => {
   const trpc = useTRPC();
   const { data } = useSuspenseQuery(
-    trpc.dashboard.getPendingOrders.queryOptions(),
+    trpc.orders.getPendingOrders.queryOptions(),
   );
 
   return (

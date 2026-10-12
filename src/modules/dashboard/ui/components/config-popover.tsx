@@ -19,7 +19,7 @@ import type {
   DashboardWidgetInstance,
   WidgetConfigContext,
   WidgetDefinition,
-} from "../../types";
+} from "@/shared/dashboard/types";
 
 interface ConfigPopoverProps {
   definition: WidgetDefinition;
