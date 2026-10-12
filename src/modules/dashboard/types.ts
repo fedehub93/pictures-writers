@@ -8,6 +8,13 @@ import type { ComponentType } from "react";
 export type WidgetSize = "small" | "medium" | "full";
 
 /**
+ * The fascia a Dashboard widget belongs to. Operational widgets surface what
+ * needs attention now and ignore the shared date range; analytics widgets are
+ * Trend instances governed by it. Defaults to `operational`.
+ */
+export type WidgetCategory = "operational" | "analytics";
+
+/**
  * Config carried by a Dashboard widget instance. The concrete shape is owned by
  * the widget definition's `configSchema`; it is stored as opaque JSON so a
  * definition can become configurable without a model change.
@@ -53,6 +60,8 @@ export interface WidgetDefinition {
    */
   permission?: string;
   size: WidgetSize;
+  /** Which dashboard fascia the definition belongs to. Defaults to operational. */
+  category?: WidgetCategory;
   component: ComponentType<WidgetComponentProps>;
   /** Optional config contract for configurable widgets. */
   configSchema?: unknown;
@@ -61,3 +70,36 @@ export interface WidgetDefinition {
 
 /** The persisted per-user document: the list of Dashboard widget instances. */
 export type DashboardWidgets = DashboardWidgetInstance[];
+
+/** One point of a Metric's time series: a bucket label and its value. */
+export interface MetricPoint {
+  label: string;
+  value: number;
+}
+
+/**
+ * A Metric's time series over the requested range: the buckets plus the current
+ * total and its growth against the previous comparable period.
+ */
+export interface MetricSeries {
+  points: MetricPoint[];
+  total: number;
+  percentageGrowth: number;
+}
+
+/**
+ * A named, permission-scoped time series exposed by the server-side metric
+ * registry. The Trend widget renders exactly one Metric at a time.
+ */
+export interface Metric {
+  id: string;
+  label: string;
+  permission: string;
+  timeSeries: (from: Date, to: Date) => Promise<MetricSeries>;
+}
+
+/** The client-facing summary of a Metric: enough to list and select it. */
+export interface MetricSummary {
+  id: string;
+  label: string;
+}

@@ -3,6 +3,7 @@ import {
   FileText,
   ShoppingCart,
   Star,
+  TrendingUp,
   TriangleAlert,
 } from "lucide-react";
 
@@ -17,6 +18,7 @@ import { FailedRunsWidget } from "./ui/widgets/failed-runs-widget";
 import { PendingOrdersWidget } from "./ui/widgets/pending-orders-widget";
 import { PendingReviewsWidget } from "./ui/widgets/pending-reviews-widget";
 import { ScheduledWidget } from "./ui/widgets/scheduled-widget";
+import { TrendWidget } from "./ui/widgets/trend-widget";
 
 /**
  * The code-defined catalog of Dashboard widgets. Adding a widget is one module
@@ -68,11 +70,21 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     size: "medium",
     component: FailedRunsWidget,
   },
+  {
+    id: "trend",
+    title: "Andamento",
+    description: "Una metrica del sito nel tempo.",
+    icon: TrendingUp,
+    category: "analytics",
+    size: "medium",
+    component: TrendWidget,
+  },
 ];
 
 /**
  * The registry's default instances, in the order they appear for every user
- * (before the per-user override is applied).
+ * (before the per-user override is applied). Operational widgets come first,
+ * then one Trend instance per seeded metric.
  */
 export const DEFAULT_DASHBOARD_INSTANCES: DashboardWidgetInstance[] = [
   { key: "drafts", definitionId: "drafts" },
@@ -80,7 +92,12 @@ export const DEFAULT_DASHBOARD_INSTANCES: DashboardWidgetInstance[] = [
   { key: "pending-reviews", definitionId: "pending-reviews" },
   { key: "pending-orders", definitionId: "pending-orders" },
   { key: "failed-runs", definitionId: "failed-runs" },
+  { key: "trend-contacts", definitionId: "trend", config: { metric: "contacts" } },
 ];
 
 export const getWidgetDefinition = (id: string) =>
   WIDGET_DEFINITIONS.find((definition) => definition.id === id);
+
+/** Whether a definition belongs to the analytics fascia (governed by the range). */
+export const isAnalyticsWidget = (definition: WidgetDefinition) =>
+  definition.category === "analytics";

@@ -10,6 +10,7 @@ import { Loader2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
 import { useTRPC } from "@/trpc/client";
+import { DatePickerWithRange } from "@/shared/components/date-range";
 import { hasPermission } from "@/shared/lib/permissions";
 import { usePermissionKeys } from "@/shared/providers/authorization-provider";
 import { Button } from "@/shared/ui/button";
@@ -20,11 +21,14 @@ import {
   hideInstance,
   moveInstance,
 } from "../../lib/edit-layout";
+import { isAnalyticsInstanceRenderable } from "../../lib/metric-selection";
 import {
   DEFAULT_DASHBOARD_INSTANCES,
+  getWidgetDefinition,
+  isAnalyticsWidget,
   WIDGET_DEFINITIONS,
 } from "../../registry";
-import { computeDashboardLayout } from "../../server/layout";
+import { computeDashboardLayout, visibleDashboardWidgets } from "../../server/layout";
 import type { DashboardWidgetInstance } from "../../types";
 
 import { WidgetGrid } from "../components/widget-grid";
@@ -34,6 +38,9 @@ export const DashboardView = () => {
   const queryClient = useQueryClient();
   const permissionKeys = usePermissionKeys();
   const { data } = useSuspenseQuery(trpc.dashboard.getLayout.queryOptions());
+  const { data: metrics } = useSuspenseQuery(
+    trpc.dashboard.getMetrics.queryOptions(),
+  );
 
   const canRead = useMemo(
     () => (permission: string) => hasPermission(permissionKeys, permission),
@@ -53,11 +60,14 @@ export const DashboardView = () => {
 
   const permittedDefinitions = useMemo(
     () =>
-      WIDGET_DEFINITIONS.filter(
-        (definition) =>
-          !definition.permission || canRead(definition.permission),
-      ),
-    [canRead],
+      WIDGET_DEFINITIONS.filter((definition) => {
+        const permitted =
+          !definition.permission || canRead(definition.permission);
+        if (!permitted) return false;
+        // The Trend is offered only when the user can read at least one metric.
+        return !isAnalyticsWidget(definition) || metrics.length > 0;
+      }),
+    [canRead, metrics],
   );
 
   // `draft` holds the pending changes; `editing` hides or shows the edit
@@ -115,6 +125,21 @@ export const DashboardView = () => {
 
   const instances = editing && draft ? draft : layout;
 
+  // An analytics instance is rendered only when the user can read a metric for
+  // it; otherwise the Trend has nothing to show and is left out.
+  const renderableInstances = instances.filter((instance) => {
+    const definition = getWidgetDefinition(instance.definitionId);
+    if (!definition || !isAnalyticsWidget(definition)) return true;
+    return isAnalyticsInstanceRenderable(instance.config, metrics);
+  });
+
+  const hasAnalytics = visibleDashboardWidgets(renderableInstances).some(
+    (instance) => {
+      const definition = getWidgetDefinition(instance.definitionId);
+      return definition ? isAnalyticsWidget(definition) : false;
+    },
+  );
+
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 md:pt-4">
       <div className="flex flex-col items-center justify-between gap-y-4 sm:flex-row">
@@ -157,8 +182,17 @@ export const DashboardView = () => {
         </div>
       </div>
 
+      {hasAnalytics ? (
+        <div className="flex flex-col gap-2">
+          <span className="text-sm font-medium text-muted-foreground">
+            Analytics
+          </span>
+          <DatePickerWithRange />
+        </div>
+      ) : null}
+
       <WidgetGrid
-        instances={instances}
+        instances={renderableInstances}
         editing={editing}
         permittedDefinitions={permittedDefinitions}
         onMove={onMove}

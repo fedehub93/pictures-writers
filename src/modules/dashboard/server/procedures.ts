@@ -1,4 +1,5 @@
 import z from "zod";
+import { TRPCError } from "@trpc/server";
 
 import {
   AutomationRunStatus,
@@ -8,13 +9,16 @@ import {
   ScheduledActionStatus,
   ScheduledActionType,
 } from "@/generated/prisma";
+import { getAuthorizedUser } from "@/shared/lib/authorization";
 import { db } from "@/shared/lib/db";
-import { PERMISSIONS } from "@/shared/lib/permissions";
+import { hasPermission, PERMISSIONS } from "@/shared/lib/permissions";
 import {
   createTRPCRouter,
   permissionProcedure,
   protectedProcedure,
 } from "@/trpc/init";
+
+import { getMetric, permittedMetrics } from "./metrics/registry";
 
 /** How many records each operational widget lists at once. */
 const LIST_LIMIT = 5;
@@ -25,6 +29,15 @@ const widgetInstanceSchema = z.object({
   config: z.record(z.string(), z.unknown()).nullish(),
   hidden: z.boolean().optional(),
 });
+
+/** Loads the current user's authorization, failing the request when there is none. */
+const requireUser = async (userId: string) => {
+  const user = await getAuthorizedUser(userId);
+  if (!user) {
+    throw new TRPCError({ code: "FORBIDDEN", message: "Forbidden" });
+  }
+  return user;
+};
 
 export const dashboardRouter = createTRPCRouter({
   /**
@@ -260,4 +273,41 @@ export const dashboardRouter = createTRPCRouter({
       };
     },
   ),
+
+  /**
+   * The metrics the current user may read, for the Trend widget. When this is
+   * empty the user can read no metric, so the Trend has nothing to render and
+   * hides itself.
+   */
+  getMetrics: protectedProcedure.query(async ({ ctx }) => {
+    const user = await requireUser(ctx.auth.id);
+
+    return permittedMetrics((permission) =>
+      hasPermission(user.permissionKeys, permission),
+    ).map(({ id, label }) => ({ id, label }));
+  }),
+
+  /**
+   * The time series of a single metric over a range, for one Trend instance.
+   * Enforces the metric's own permission on top of `dashboard.read`, so a user
+   * without the metric's permission never reads its data.
+   */
+  getMetricSeries: protectedProcedure
+    .input(
+      z.object({
+        metricId: z.string(),
+        from: z.iso.datetime({ message: "Invalid 'from' date format" }),
+        to: z.iso.datetime({ message: "Invalid 'to' date format" }),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const metric = getMetric(input.metricId);
+      const user = await requireUser(ctx.auth.id);
+
+      if (!metric || !hasPermission(user.permissionKeys, metric.permission)) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Forbidden" });
+      }
+
+      return metric.timeSeries(new Date(input.from), new Date(input.to));
+    }),
 });

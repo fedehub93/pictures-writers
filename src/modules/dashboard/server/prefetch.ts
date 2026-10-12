@@ -4,3 +4,8 @@ import { prefetch, trpc } from "@/trpc/server";
 export const prefetchDashboardLayout = () => {
   return prefetch(trpc.dashboard.getLayout.queryOptions());
 };
+
+/** Prefetches the metrics the current user is permitted to read. */
+export const prefetchDashboardMetrics = () => {
+  return prefetch(trpc.dashboard.getMetrics.queryOptions());
+};

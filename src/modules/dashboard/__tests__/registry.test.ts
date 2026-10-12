@@ -10,13 +10,14 @@ import {
 import { computeDashboardLayout } from "../server/layout";
 
 describe("dashboard widget registry", () => {
-  it("declares the operational widgets as the default instances, in order", () => {
+  it("declares the operational widgets plus the Trend, in order", () => {
     expect(WIDGET_DEFINITIONS.map((definition) => definition.id)).toEqual([
       "drafts",
       "scheduled",
       "pending-reviews",
       "pending-orders",
       "failed-runs",
+      "trend",
     ]);
 
     expect(DEFAULT_DASHBOARD_INSTANCES).toEqual([
@@ -25,6 +26,11 @@ describe("dashboard widget registry", () => {
       { key: "pending-reviews", definitionId: "pending-reviews" },
       { key: "pending-orders", definitionId: "pending-orders" },
       { key: "failed-runs", definitionId: "failed-runs" },
+      {
+        key: "trend-contacts",
+        definitionId: "trend",
+        config: { metric: "contacts" },
+      },
     ]);
   });
 
@@ -46,7 +52,24 @@ describe("dashboard widget registry", () => {
     );
   });
 
-  it("never surfaces a widget the user lacks permission for", () => {
+  it("leaves the Trend ungated by a definition permission and marks it analytics", () => {
+    expect(getWidgetDefinition("trend")?.permission).toBeUndefined();
+    expect(getWidgetDefinition("trend")?.category).toBe("analytics");
+  });
+
+  it("seeds a Trend instance for the contact metric", () => {
+    const trend = DEFAULT_DASHBOARD_INSTANCES.find(
+      (instance) => instance.definitionId === "trend",
+    );
+
+    expect(trend).toEqual({
+      key: "trend-contacts",
+      definitionId: "trend",
+      config: { metric: "contacts" },
+    });
+  });
+
+  it("keeps only the ungated Trend when the user holds no area permission", () => {
     const layout = computeDashboardLayout({
       defaults: DEFAULT_DASHBOARD_INSTANCES,
       saved: [],
@@ -54,10 +77,18 @@ describe("dashboard widget registry", () => {
       canRead: () => false,
     });
 
-    expect(layout).toEqual([]);
+    // The Trend declares no definition permission; its availability comes from
+    // the metrics the user may read, not from the layout merge.
+    expect(layout).toEqual([
+      {
+        key: "trend-contacts",
+        definitionId: "trend",
+        config: { metric: "contacts" },
+      },
+    ]);
   });
 
-  it("keeps only the widgets whose permissions the user holds", () => {
+  it("keeps the widgets whose permissions the user holds plus the Trend", () => {
     const layout = computeDashboardLayout({
       defaults: DEFAULT_DASHBOARD_INSTANCES,
       saved: [],
@@ -71,6 +102,7 @@ describe("dashboard widget registry", () => {
       "drafts",
       "scheduled",
       "pending-orders",
+      "trend-contacts",
     ]);
   });
 });

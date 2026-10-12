@@ -19,6 +19,20 @@ vi.mock("@/trpc/init", async () => {
   };
 });
 
+// The metric procedures enforce each metric's own permission through
+// `getAuthorizedUser`. Stub it here with the permission keys the test wants the
+// current user to hold, so the metric registry's filtering is what is exercised.
+const { permissionKeysByUser } = vi.hoisted(() => ({
+  permissionKeysByUser: new Map<string, string[]>(),
+}));
+
+vi.mock("@/shared/lib/authorization", () => ({
+  getAuthorizedUser: async (userId: string) => {
+    const permissionKeys = permissionKeysByUser.get(userId);
+    return permissionKeys ? { id: userId, permissionKeys } : null;
+  },
+}));
+
 import { createCallerFactory } from "@/trpc/init";
 
 import {
@@ -205,6 +219,7 @@ beforeEach(() => {
   customerIds.length = 0;
   orderIds.length = 0;
   automationIds.length = 0;
+  permissionKeysByUser.clear();
 });
 
 afterEach(async () => {
@@ -464,5 +479,72 @@ describe("dashboard.getFailedRuns", () => {
     expect(result.items[0]?.automationId).toBe(failed.automation.id);
     expect(result.items[0]?.automationName).toBe("Flusso rotto");
     expect(result.items[0]?.error).toBe("Boom");
+  });
+});
+
+describe("dashboard.getMetrics", () => {
+  it("returns only the metrics the user is permitted to read", async () => {
+    permissionKeysByUser.set("with-contacts", [PERMISSIONS.CONTACTS_READ]);
+    permissionKeysByUser.set("without-contacts", []);
+
+    const permitted = await callerFor("with-contacts").getMetrics();
+    const forbidden = await callerFor("without-contacts").getMetrics();
+
+    expect(permitted).toEqual([
+      { id: "contacts", label: "Iscritti / contatti" },
+    ]);
+    expect(forbidden).toEqual([]);
+  });
+
+  it("gates reading metrics behind dashboard.read", () => {
+    expect(getProcedurePermissions("dashboard.getMetrics")).toEqual([
+      PERMISSIONS.DASHBOARD_READ,
+    ]);
+    expect(getProcedurePermissions("dashboard.getMetricSeries")).toEqual([
+      PERMISSIONS.DASHBOARD_READ,
+    ]);
+  });
+});
+
+describe("dashboard.getMetricSeries", () => {
+  const from = new Date("2026-01-01T00:00:00.000Z").toISOString();
+  const to = new Date("2026-01-31T23:59:59.000Z").toISOString();
+
+  it("returns the series for a metric the user may read", async () => {
+    permissionKeysByUser.set("contacts", [PERMISSIONS.CONTACTS_READ]);
+
+    const series = await callerFor("contacts").getMetricSeries({
+      metricId: "contacts",
+      from,
+      to,
+    });
+
+    expect(series.points).toHaveLength(6);
+    expect(series).toHaveProperty("total");
+    expect(series).toHaveProperty("percentageGrowth");
+  });
+
+  it("refuses a metric the user may not read", async () => {
+    permissionKeysByUser.set("no-contacts", []);
+
+    await expect(
+      callerFor("no-contacts").getMetricSeries({
+        metricId: "contacts",
+        from,
+        to,
+      }),
+    ).rejects.toThrow();
+  });
+
+  it("refuses an unknown metric id", async () => {
+    permissionKeysByUser.set("contacts", [PERMISSIONS.CONTACTS_READ]);
+
+    await expect(
+      callerFor("contacts").getMetricSeries({
+        metricId: "ghost",
+        from,
+        to,
+      }),
+    ).rejects.toThrow();
   });
 });
