@@ -9,10 +9,7 @@ import {
 
 import { PERMISSIONS } from "@/shared/lib/permissions";
 
-import type {
-  DashboardWidgetInstance,
-  WidgetDefinition,
-} from "./types";
+import type { WidgetDefinition } from "./types";
 import { DraftsWidget } from "./ui/widgets/drafts-widget";
 import { FailedRunsWidget } from "./ui/widgets/failed-runs-widget";
 import { PendingOrdersWidget } from "./ui/widgets/pending-orders-widget";
@@ -22,61 +19,63 @@ import { TrendWidget } from "./ui/widgets/trend-widget";
 
 /**
  * The code-defined catalog of Dashboard widgets. Adding a widget is one module
- * plus one entry here; the dashboard view never changes.
+ * plus one entry here; the dashboard view never changes. The catalog is not a
+ * default layout: a new user's dashboard is empty, and every widget is added
+ * from the library.
  */
 export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
   {
     id: "drafts",
-    title: "Bozze da pubblicare",
-    description: "I post ancora in bozza, pronti per la pubblicazione.",
+    title: "Drafts to publish",
+    description: "Posts still in draft, ready to be published.",
     icon: FileText,
     permission: PERMISSIONS.POSTS_READ,
-    size: "medium",
+    defaultSize: "medium",
     component: DraftsWidget,
   },
   {
     id: "scheduled",
-    title: "Contenuti in programmazione",
-    description: "I contenuti con una pubblicazione pianificata nel futuro.",
+    title: "Scheduled content",
+    description: "Content with a planned publication in the future.",
     icon: CalendarClock,
     permission: PERMISSIONS.POSTS_READ,
-    size: "medium",
+    defaultSize: "medium",
     component: ScheduledWidget,
   },
   {
     id: "pending-reviews",
-    title: "Recensioni da moderare",
-    description: "Le recensioni non ancora pubblicate.",
+    title: "Reviews to moderate",
+    description: "Reviews not published yet.",
     icon: Star,
     permission: PERMISSIONS.REVIEWS_READ,
-    size: "medium",
+    defaultSize: "medium",
     component: PendingReviewsWidget,
   },
   {
     id: "pending-orders",
-    title: "Ordini da completare",
-    description: "Gli ordini confermati e non ancora completati.",
+    title: "Orders to fulfil",
+    description: "Confirmed orders not completed yet.",
     icon: ShoppingCart,
     permission: PERMISSIONS.ORDERS_READ,
-    size: "medium",
+    defaultSize: "medium",
     component: PendingOrdersWidget,
   },
   {
     id: "failed-runs",
-    title: "Automazioni in errore",
-    description: "Le esecuzioni di automazione terminate con un errore.",
+    title: "Failed automations",
+    description: "Automation runs that ended with an error.",
     icon: TriangleAlert,
     permission: PERMISSIONS.AUTOMATIONS_READ,
-    size: "medium",
+    defaultSize: "medium",
     component: FailedRunsWidget,
   },
   {
     id: "trend",
-    title: "Andamento",
-    description: "Una metrica del sito nel tempo.",
+    title: "Trend",
+    description: "One site metric over time.",
     icon: TrendingUp,
     category: "analytics",
-    size: "medium",
+    defaultSize: "medium",
     component: TrendWidget,
     // The Trend is the first configurable widget: the gear lets the user pick
     // which permitted metric this instance renders.
@@ -85,7 +84,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
         {
           type: "select",
           name: "metric",
-          label: "Metrica",
+          label: "Metric",
           options: metrics.map((metric) => ({
             value: metric.id,
             label: metric.label,
@@ -94,27 +93,6 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
       ],
     }),
   },
-];
-
-/**
- * The registry's default instances, in the order they appear for every user
- * (before the per-user override is applied). Operational widgets come first,
- * then one Trend instance per seeded metric.
- */
-export const DEFAULT_DASHBOARD_INSTANCES: DashboardWidgetInstance[] = [
-  { key: "drafts", definitionId: "drafts" },
-  { key: "scheduled", definitionId: "scheduled" },
-  { key: "pending-reviews", definitionId: "pending-reviews" },
-  { key: "pending-orders", definitionId: "pending-orders" },
-  { key: "failed-runs", definitionId: "failed-runs" },
-  { key: "trend-contacts", definitionId: "trend", config: { metric: "contacts" } },
-  {
-    key: "trend-submissions",
-    definitionId: "trend",
-    config: { metric: "submissions" },
-  },
-  { key: "trend-ebooks", definitionId: "trend", config: { metric: "ebooks" } },
-  { key: "trend-revenue", definitionId: "trend", config: { metric: "revenue" } },
 ];
 
 export const getWidgetDefinition = (id: string) =>

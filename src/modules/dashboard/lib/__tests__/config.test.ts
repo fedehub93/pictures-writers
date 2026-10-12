@@ -6,9 +6,9 @@ import { configFieldValue, withConfigValue } from "../config";
 const field: WidgetConfigSelectField = {
   type: "select",
   name: "metric",
-  label: "Metrica",
+  label: "Metric",
   options: [
-    { value: "contacts", label: "Iscritti / contatti" },
+    { value: "contacts", label: "Contacts" },
     { value: "submissions", label: "Form submissions" },
   ],
 };

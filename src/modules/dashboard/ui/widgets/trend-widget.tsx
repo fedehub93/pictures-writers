@@ -55,7 +55,7 @@ const TrendChart = ({ metricId, metricLabel }: TrendChartProps) => {
   );
 
   if (series.points.length === 0) {
-    return <WidgetEmpty message="Nessun dato nel periodo." />;
+    return <WidgetEmpty message="No data in this period." />;
   }
 
   const chartConfig = {
@@ -84,7 +84,7 @@ const TrendChart = ({ metricId, metricLabel }: TrendChartProps) => {
 
       <div className="text-2xl font-bold">{series.total}</div>
       <p className="text-xs text-muted-foreground">
-        {series.percentageGrowth}% rispetto al periodo precedente
+        {series.percentageGrowth}% vs the previous period
       </p>
     </div>
   );

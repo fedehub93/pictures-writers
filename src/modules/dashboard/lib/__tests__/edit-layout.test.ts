@@ -3,10 +3,9 @@ import { describe, expect, it } from "vitest";
 import type { DashboardWidgetInstance } from "../../types";
 import {
   addInstance,
-  configureInstance,
   createInstanceKey,
-  hideInstance,
   moveInstance,
+  updateInstance,
 } from "../edit-layout";
 
 const instance = (
@@ -18,20 +17,56 @@ const instance = (
 const keys = (instances: DashboardWidgetInstance[]) =>
   instances.map((entry) => entry.key);
 
-describe("hideInstance", () => {
-  it("marks the instance with the given key as hidden", () => {
+describe("updateInstance", () => {
+  it("applies a patch to exactly the keyed instance", () => {
     const layout = [instance("a", "a"), instance("b", "b")];
 
-    const result = hideInstance(layout, "a");
+    const result = updateInstance(layout, "a", { hidden: true });
 
     expect(result[0]).toEqual({ key: "a", definitionId: "a", hidden: true });
     expect(result[1]).toEqual({ key: "b", definitionId: "b" });
   });
 
+  it("sets the size of the keyed instance", () => {
+    const result = updateInstance([instance("a", "a")], "a", { size: "full" });
+
+    expect(result[0]).toEqual({ key: "a", definitionId: "a", size: "full" });
+  });
+
+  it("overrides a previous size on the same instance", () => {
+    const layout = [instance("a", "a", { size: "small" })];
+
+    const result = updateInstance(layout, "a", { size: "medium" });
+
+    expect(result[0]).toEqual({ key: "a", definitionId: "a", size: "medium" });
+  });
+
+  it("replaces the config of exactly the keyed instance", () => {
+    const layout = [
+      instance("trend-contacts", "trend", { config: { metric: "contacts" } }),
+      instance("trend-submissions", "trend", { config: { metric: "submissions" } }),
+    ];
+
+    const result = updateInstance(layout, "trend-contacts", {
+      config: { metric: "revenue" },
+    });
+
+    expect(result[0]).toEqual({
+      key: "trend-contacts",
+      definitionId: "trend",
+      config: { metric: "revenue" },
+    });
+    expect(result[1]).toEqual({
+      key: "trend-submissions",
+      definitionId: "trend",
+      config: { metric: "submissions" },
+    });
+  });
+
   it("leaves the layout untouched when the key is absent", () => {
     const layout = [instance("a", "a")];
 
-    expect(hideInstance(layout, "ghost")).toEqual(layout);
+    expect(updateInstance(layout, "ghost", { hidden: true })).toEqual(layout);
   });
 });
 
@@ -75,9 +110,13 @@ describe("addInstance", () => {
     });
   });
 
-  it("keeps a re-shown hidden instance's own config", () => {
+  it("keeps a re-shown hidden instance's own config and size", () => {
     const layout = [
-      instance("trend-contacts", "trend", { config: { metric: "contacts" }, hidden: true }),
+      instance("trend-contacts", "trend", {
+        config: { metric: "contacts" },
+        size: "full",
+        hidden: true,
+      }),
     ];
 
     const result = addInstance(layout, "trend", "trend-new", {
@@ -88,38 +127,9 @@ describe("addInstance", () => {
       key: "trend-contacts",
       definitionId: "trend",
       config: { metric: "contacts" },
+      size: "full",
       hidden: false,
     });
-  });
-});
-
-describe("configureInstance", () => {
-  it("replaces the config of exactly the keyed instance", () => {
-    const layout = [
-      instance("trend-contacts", "trend", { config: { metric: "contacts" } }),
-      instance("trend-submissions", "trend", { config: { metric: "submissions" } }),
-    ];
-
-    const result = configureInstance(layout, "trend-contacts", {
-      metric: "revenue",
-    });
-
-    expect(result[0]).toEqual({
-      key: "trend-contacts",
-      definitionId: "trend",
-      config: { metric: "revenue" },
-    });
-    expect(result[1]).toEqual({
-      key: "trend-submissions",
-      definitionId: "trend",
-      config: { metric: "submissions" },
-    });
-  });
-
-  it("leaves the layout untouched when the key is absent", () => {
-    const layout = [instance("a", "a")];
-
-    expect(configureInstance(layout, "ghost", { metric: "x" })).toEqual(layout);
   });
 });
 

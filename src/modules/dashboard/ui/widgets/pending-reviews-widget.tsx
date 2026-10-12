@@ -18,18 +18,18 @@ export const PendingReviewsWidget = () => {
     <WidgetList
       count={data.count}
       isEmpty={data.items.length === 0}
-      emptyMessage="Nessuna recensione da moderare."
+      emptyMessage="No reviews to moderate."
       href="/admin/shop/reviews?status=false"
-      linkLabel="Modera le recensioni"
+      linkLabel="Moderate reviews"
     >
       {data.items.map((item) => (
         <li key={item.id} className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 flex-col">
             <span className="truncate text-sm">
-              {item.reviewerName || "Anonimo"}
+              {item.reviewerName || "Anonymous"}
             </span>
             <span className="truncate text-xs text-muted-foreground">
-              {item.productTitle || "Prodotto"}
+              {item.productTitle || "Product"}
             </span>
           </div>
           <Badge variant="secondary" className="shrink-0 gap-1 [&_svg]:size-3">

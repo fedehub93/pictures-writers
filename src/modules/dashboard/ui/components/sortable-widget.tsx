@@ -4,7 +4,7 @@ import { useSortable } from "@dnd-kit/react/sortable";
 
 import { cn } from "@/shared/lib/utils";
 
-import { WIDGET_SIZE_CLASS } from "../../lib/widget-size";
+import { widgetSizeClass } from "../../lib/widget-size";
 import type {
   DashboardWidgetInstance,
   WidgetConfigContext,
@@ -17,23 +17,21 @@ interface SortableWidgetProps {
   definition: WidgetDefinition;
   instance: DashboardWidgetInstance;
   index: number;
-  onHide: (key: string) => void;
   configContext: WidgetConfigContext;
-  onConfigure: (key: string, config: Record<string, unknown>) => void;
+  onUpdate: (key: string, patch: Partial<DashboardWidgetInstance>) => void;
 }
 
 /**
- * An editable Dashboard widget: a sortable grid cell wrapping the shared card.
- * Only rendered while editing, so the sortable hooks are never called outside
- * edit mode.
+ * An arrangeable Dashboard widget: a sortable grid cell wrapping the shared
+ * card. The card's controls are always mounted; only the drag gesture is owned
+ * by the sortable.
  */
 export const SortableWidget = ({
   definition,
   instance,
   index,
-  onHide,
   configContext,
-  onConfigure,
+  onUpdate,
 }: SortableWidgetProps) => {
   const { ref, handleRef, isDragging } = useSortable({
     id: instance.key,
@@ -45,19 +43,14 @@ export const SortableWidget = ({
   return (
     <div
       ref={ref}
-      className={cn(
-        WIDGET_SIZE_CLASS[definition.size],
-        isDragging && "opacity-60",
-      )}
+      className={cn(widgetSizeClass(instance, definition), isDragging && "opacity-60")}
     >
       <WidgetCard
         definition={definition}
         instance={instance}
-        editing
         dragHandleRef={handleRef}
-        onHide={() => onHide(instance.key)}
         configContext={configContext}
-        onConfigure={(config) => onConfigure(instance.key, config)}
+        onUpdate={(patch) => onUpdate(instance.key, patch)}
       />
     </div>
   );

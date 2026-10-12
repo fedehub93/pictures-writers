@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/shared/ui/card";
 
+import { resolveWidgetSize } from "../../lib/widget-size";
 import type {
   DashboardWidgetInstance,
   WidgetConfigContext,
@@ -20,20 +21,17 @@ import type {
 
 import { ConfigPopover } from "./config-popover";
 import { WidgetError, WidgetLoading } from "./widget-states";
+import { WidgetSizeMenu } from "./widget-size-menu";
 
 interface WidgetCardProps {
   definition: WidgetDefinition;
   instance: DashboardWidgetInstance;
-  /** When true the card exposes its edit controls and locks the body. */
-  editing?: boolean;
   /** Attaches the drag handle owned by the surrounding sortable. */
   dragHandleRef?: (element: Element | null) => void;
-  /** Hides this instance. Only used while editing. */
-  onHide?: () => void;
   /** Context a configurable widget's schema resolves against. */
   configContext?: WidgetConfigContext;
-  /** Receives this instance's new config. Only used while editing. */
-  onConfigure?: (config: Record<string, unknown>) => void;
+  /** Receives a patch for this instance: hide, resize, or reconfigure it. */
+  onUpdate?: (patch: Partial<DashboardWidgetInstance>) => void;
 }
 
 const subscribeToNothing = () => () => {};
@@ -54,68 +52,73 @@ const useIsClient = () =>
   );
 
 /**
- * The chrome shared by every Dashboard widget: the definition's title and icon
- * in the header, and the widget's own component in the body, wrapped in its own
+ * The chrome shared by every Dashboard widget: the definition's title in the
+ * header, and the widget's own component in the body, wrapped in its own
  * Suspense and error boundary so a widget's loading or failure never takes the
- * card's chrome (or the dashboard) down with it. In edit mode the body's
- * interactions are disabled and the card exposes a drag handle, a control to
- * hide it, and — for a configurable definition — a gear opening its config
- * popover.
+ * card's chrome (or the dashboard) down with it.
+ *
+ * The dashboard is always arrangeable, so the arrange controls (size, config,
+ * hide, drag) are always mounted. They are visually revealed on hover or focus
+ * on pointer devices, and kept visible on small (touch) screens so they remain
+ * reachable without a hover state.
  */
 export const WidgetCard = ({
   definition,
   instance,
-  editing = false,
   dragHandleRef,
-  onHide,
   configContext,
-  onConfigure,
+  onUpdate,
 }: WidgetCardProps) => {
   const Icon = definition.icon;
   const Widget = definition.component;
   const isClient = useIsClient();
 
   return (
-    <Card className="flex h-full flex-col">
+    <Card className="group/card flex h-full flex-col">
       <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{definition.title}</CardTitle>
-        {editing ? (
-          <div className="flex items-center gap-1">
-            {definition.configSchema && configContext && onConfigure ? (
-              <ConfigPopover
-                definition={definition}
-                instance={instance}
-                context={configContext}
-                onChange={onConfigure}
+        {onUpdate ? (
+          <div className="relative flex h-7 items-center">
+            <Icon className="hidden size-4 text-muted-foreground md:block md:transition-opacity md:group-focus-within/card:opacity-0 md:group-hover/card:opacity-0" />
+            <div className="absolute right-0 flex items-center gap-1 bg-card opacity-100 md:opacity-0 md:transition-opacity md:group-focus-within/card:opacity-100 md:group-hover/card:opacity-100">
+              <WidgetSizeMenu
+                size={resolveWidgetSize(instance, definition)}
+                onSelect={(size) => onUpdate({ size })}
               />
-            ) : null}
-            {onHide ? (
+              {definition.configSchema && configContext ? (
+                <ConfigPopover
+                  definition={definition}
+                  instance={instance}
+                  context={configContext}
+                  onChange={(config) => onUpdate({ config })}
+                />
+              ) : null}
               <Button
                 type="button"
                 variant="ghost"
                 size="icon-sm"
-                aria-label={`Nascondi ${definition.title}`}
-                onClick={onHide}
+                aria-label={`Hide ${definition.title}`}
+                onClick={() => onUpdate({ hidden: true })}
               >
                 <X />
               </Button>
-            ) : null}
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              className="cursor-grab touch-none"
-              aria-label={`Trascina ${definition.title}`}
-              ref={dragHandleRef}
-            >
-              <GripVertical />
-            </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                className="cursor-grab touch-none"
+                aria-label={`Drag ${definition.title}`}
+                ref={dragHandleRef}
+              >
+                <GripVertical />
+              </Button>
+            </div>
           </div>
         ) : (
           <Icon className="size-4 text-muted-foreground" />
         )}
       </CardHeader>
-      <CardContent className="flex flex-1 flex-col" inert={editing || undefined}>
+      <CardContent className="flex flex-1 flex-col">
         {isClient ? (
           <Suspense fallback={<WidgetLoading />}>
             <ErrorBoundary fallback={<WidgetError />}>

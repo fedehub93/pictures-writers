@@ -16,9 +16,9 @@ export const FailedRunsWidget = () => {
     <WidgetList
       count={data.count}
       isEmpty={data.items.length === 0}
-      emptyMessage="Nessuna automazione in errore."
+      emptyMessage="No failed automations."
       href="/admin/automations/executions?status=FAILED"
-      linkLabel="Vedi le esecuzioni"
+      linkLabel="View runs"
     >
       {data.items.map((item) => (
         <li key={item.id} className="flex items-center justify-between gap-3">

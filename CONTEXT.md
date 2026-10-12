@@ -291,8 +291,8 @@ A named, permission-scoped time series of CMS data (e.g. contact growth, form su
 _Avoid_: Statistic, chart, report, KPI.
 
 **Dashboard layout**:
-The ordered set of Dashboard widgets a backoffice user sees, derived from the Widget definitions permitted to that user and adjusted by that user's own arrangement.
-_Avoid_: Dashboard config, dashboard settings.
+The ordered set of Dashboard widgets a backoffice user has placed on their dashboard, filtered to the Widget definitions permitted to that user. A user who has placed none has an empty dashboard; there is no seeded default.
+_Avoid_: Dashboard config, dashboard settings, default layout.
 
 **Site widget**:
 A configurable block rendered on the public site (hero, popup, post sidebar or bottom), managed under the public Widgets area. Distinct from the Dashboard widget.

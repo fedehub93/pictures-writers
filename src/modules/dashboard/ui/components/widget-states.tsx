@@ -12,11 +12,7 @@ const stateBodyClassName =
 
 /** The card body shown while a widget's data query is in flight. */
 export const WidgetLoading = () => (
-  <div
-    className={stateBodyClassName}
-    role="status"
-    aria-label="Caricamento in corso"
-  >
+  <div className={stateBodyClassName} role="status" aria-label="Loading">
     <Loader2Icon className="size-5 animate-spin text-muted-foreground" />
   </div>
 );
@@ -25,9 +21,7 @@ export const WidgetLoading = () => (
 export const WidgetError = () => (
   <div className={stateBodyClassName}>
     <AlertCircleIcon className="size-5 text-destructive" />
-    <p className="text-sm text-muted-foreground">
-      Impossibile caricare il widget.
-    </p>
+    <p className="text-sm text-muted-foreground">Unable to load the widget.</p>
   </div>
 );
 

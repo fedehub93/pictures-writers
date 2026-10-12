@@ -16,9 +16,9 @@ export const ScheduledWidget = () => {
     <WidgetList
       count={data.count}
       isEmpty={data.items.length === 0}
-      emptyMessage="Nessun contenuto in programmazione."
+      emptyMessage="No scheduled content."
       href="/admin/schedule?status=SCHEDULED"
-      linkLabel="Vedi la programmazione"
+      linkLabel="View scheduling"
     >
       {data.items.map((item) => (
         <li
@@ -29,7 +29,7 @@ export const ScheduledWidget = () => {
             href={`/admin/posts/${item.rootId}`}
             className="truncate text-sm hover:underline"
           >
-            {item.title || "Post senza titolo"}
+            {item.title || "Untitled post"}
           </Link>
           <span className="shrink-0 text-xs text-muted-foreground">
             {formatDate({ date: item.plannedAt })}

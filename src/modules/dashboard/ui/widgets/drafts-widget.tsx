@@ -16,9 +16,9 @@ export const DraftsWidget = () => {
     <WidgetList
       count={data.count}
       isEmpty={data.items.length === 0}
-      emptyMessage="Nessuna bozza da pubblicare."
+      emptyMessage="No drafts to publish."
       href="/admin/posts?status=DRAFT"
-      linkLabel="Vedi tutte le bozze"
+      linkLabel="View all drafts"
     >
       {data.items.map((item) => (
         <li

@@ -52,13 +52,13 @@ export const ConfigPopover = ({
           type="button"
           variant="ghost"
           size="icon-sm"
-          aria-label={`Configura ${definition.title}`}
+          aria-label={`Configure ${definition.title}`}
         >
           <Settings2 />
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="flex flex-col gap-4">
-        <p className="text-sm font-medium">Configura {definition.title}</p>
+        <p className="text-sm font-medium">Configure {definition.title}</p>
         <FieldGroup className="gap-4">
           {schema.fields.map((field) => {
             const controlId = `widget-${instance.key}-${field.name}`;

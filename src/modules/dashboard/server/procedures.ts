@@ -19,6 +19,7 @@ import {
 } from "@/trpc/init";
 
 import { getMetric, permittedMetrics } from "./metrics/registry";
+import { WIDGET_SIZES } from "../types";
 
 /** How many records each operational widget lists at once. */
 const LIST_LIMIT = 5;
@@ -28,6 +29,7 @@ const widgetInstanceSchema = z.object({
   definitionId: z.string().min(1),
   config: z.record(z.string(), z.unknown()).nullish(),
   hidden: z.boolean().optional(),
+  size: z.enum(WIDGET_SIZES).optional(),
 });
 
 /** Loads the current user's authorization, failing the request when there is none. */
@@ -41,8 +43,8 @@ const requireUser = async (userId: string) => {
 
 export const dashboardRouter = createTRPCRouter({
   /**
-   * The current user's saved layout override. An empty list means "no override
-   * yet", so the registry defaults apply.
+   * The current user's saved layout. An empty list means the user has not added
+   * any widget yet.
    */
   getLayout: protectedProcedure.query(async ({ ctx }) => {
     const layout = await db.dashboardLayout.findUnique({
@@ -70,7 +72,7 @@ export const dashboardRouter = createTRPCRouter({
 
   /**
    * Draft posts: the count and the most recently edited few, for the
-   * "Bozze da pubblicare" widget.
+   * "Drafts to publish" widget.
    */
   getDrafts: permissionProcedure(PERMISSIONS.POSTS_READ).query(async () => {
     const where: Prisma.PostRootWhereInput = {
@@ -112,7 +114,7 @@ export const dashboardRouter = createTRPCRouter({
 
   /**
    * Posts scheduled for a future instant: the count and the soonest few, for the
-   * "Contenuti in programmazione" widget.
+   * "Scheduled content" widget.
    */
   getScheduled: permissionProcedure(PERMISSIONS.POSTS_READ).query(async () => {
     const where: Prisma.ScheduledActionWhereInput = {
@@ -155,7 +157,7 @@ export const dashboardRouter = createTRPCRouter({
 
   /**
    * Unpublished reviews: the count and the most recent few, for the
-   * "Recensioni da moderare" widget.
+   * "Reviews to moderate" widget.
    */
   getPendingReviews: permissionProcedure(PERMISSIONS.REVIEWS_READ).query(
     async () => {
@@ -198,7 +200,7 @@ export const dashboardRouter = createTRPCRouter({
 
   /**
    * Pending orders: the count and the most recent few, for the
-   * "Ordini da completare" widget.
+   * "Orders to fulfil" widget.
    */
   getPendingOrders: permissionProcedure(PERMISSIONS.ORDERS_READ).query(
     async () => {
@@ -237,7 +239,7 @@ export const dashboardRouter = createTRPCRouter({
 
   /**
    * Failed automation runs: the count and the most recent few, for the
-   * "Automazioni in errore" widget.
+   * "Failed automations" widget.
    */
   getFailedRuns: permissionProcedure(PERMISSIONS.AUTOMATIONS_READ).query(
     async () => {

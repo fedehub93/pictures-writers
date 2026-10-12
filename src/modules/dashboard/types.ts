@@ -2,10 +2,18 @@ import type { LucideIcon } from "lucide-react";
 import type { ComponentType } from "react";
 
 /**
- * Discrete size token for a Dashboard widget. Fixed per definition in v1 —
- * it is not user-adjustable.
+ * The discrete widget sizes, in ascending order. The single source of truth for
+ * the vocabulary: the type, the size menu, and the persistence schema all derive
+ * from it.
  */
-export type WidgetSize = "small" | "medium" | "full";
+export const WIDGET_SIZES = ["small", "medium", "full"] as const;
+
+/**
+ * Discrete size token for a Dashboard widget, expressed in grid columns on the
+ * dashboard's six-column `md` grid. A definition declares a default size and
+ * the backoffice user may override it per instance.
+ */
+export type WidgetSize = (typeof WIDGET_SIZES)[number];
 
 /**
  * The fascia a Dashboard widget belongs to. Operational widgets surface what
@@ -77,6 +85,11 @@ export interface DashboardWidgetInstance {
   definitionId: string;
   config?: WidgetConfig;
   hidden?: boolean;
+  /**
+   * The instance's grid size. Optional: when absent the definition's
+   * `defaultSize` applies, so a saved layout stays valid as defaults change.
+   */
+  size?: WidgetSize;
 }
 
 /**
@@ -103,7 +116,8 @@ export interface WidgetDefinition {
    * declares none and is always considered permitted.
    */
   permission?: string;
-  size: WidgetSize;
+  /** The grid size a freshly added instance of this definition starts at. */
+  defaultSize: WidgetSize;
   /** Which dashboard fascia the definition belongs to. Defaults to operational. */
   category?: WidgetCategory;
   component: ComponentType<WidgetComponentProps>;

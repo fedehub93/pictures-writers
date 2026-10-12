@@ -12,48 +12,45 @@ import type {
   WidgetDefinition,
 } from "../../types";
 
+import { DashboardEmpty } from "./dashboard-empty";
 import { SortableWidget } from "./sortable-widget";
-import { WidgetCard } from "./widget-card";
 import { WidgetLibraryTile } from "./widget-library";
 
 interface WidgetGridProps {
   instances: DashboardWidgetInstance[];
-  editing: boolean;
   permittedDefinitions: WidgetDefinition[];
   onMove: (fromVisibleIndex: number, toVisibleIndex: number) => void;
-  onHide: (key: string) => void;
+  onUpdate: (key: string, patch: Partial<DashboardWidgetInstance>) => void;
   onAdd: (definitionId: string) => void;
   configContext: WidgetConfigContext;
-  onConfigure: (key: string, config: Record<string, unknown>) => void;
 }
 
 /**
- * Renders the layout's visible instances in the responsive dashboard grid. In
- * edit mode every cell is a sortable and a `+` tile opens the widget library;
- * otherwise the cells are static.
+ * Renders the layout's visible instances in the responsive dashboard grid. The
+ * dashboard is always arrangeable, so every cell is sortable and the `+` tile
+ * opens the widget library. When nothing is visible, the grid is replaced by the
+ * empty-dashboard prompt.
  */
 export const WidgetGrid = ({
   instances,
-  editing,
   permittedDefinitions,
   onMove,
-  onHide,
+  onUpdate,
   onAdd,
   configContext,
-  onConfigure,
 }: WidgetGridProps) => {
   const widgets = visibleDashboardWidgets(instances).flatMap((instance) => {
     const definition = getWidgetDefinition(instance.definitionId);
     return definition ? [{ instance, definition }] : [];
   });
 
-  if (widgets.length === 0 && !editing) {
+  if (widgets.length === 0) {
     return (
-      <div className="flex flex-1 items-center justify-center">
-        <p className="text-sm text-muted-foreground">
-          Nessun widget disponibile.
-        </p>
-      </div>
+      <DashboardEmpty
+        definitions={permittedDefinitions}
+        onSelect={onAdd}
+        variant={instances.length > 0 ? "all-hidden" : "empty"}
+      />
     );
   }
 
@@ -69,40 +66,27 @@ export const WidgetGrid = ({
     onMove(initialIndex, index);
   };
 
-  const grid = (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-6 md:gap-8">
-      {widgets.map(({ instance, definition }, index) =>
-        editing ? (
+  return (
+    <DragDropProvider onDragEnd={onDragEnd}>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-6 md:gap-8">
+        {widgets.map(({ instance, definition }, index) => (
           <SortableWidget
             key={instance.key}
             definition={definition}
             instance={instance}
             index={index}
-            onHide={onHide}
             configContext={configContext}
-            onConfigure={onConfigure}
+            onUpdate={onUpdate}
           />
-        ) : (
-          <div key={instance.key} className={WIDGET_SIZE_CLASS[definition.size]}>
-            <WidgetCard definition={definition} instance={instance} />
-          </div>
-        ),
-      )}
+        ))}
 
-      {editing ? (
         <div className={WIDGET_SIZE_CLASS.small}>
           <WidgetLibraryTile
             definitions={permittedDefinitions}
             onSelect={onAdd}
           />
         </div>
-      ) : null}
-    </div>
-  );
-
-  return editing ? (
-    <DragDropProvider onDragEnd={onDragEnd}>{grid}</DragDropProvider>
-  ) : (
-    grid
+      </div>
+    </DragDropProvider>
   );
 };

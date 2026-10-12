@@ -20,9 +20,9 @@ export const PendingOrdersWidget = () => {
     <WidgetList
       count={data.count}
       isEmpty={data.items.length === 0}
-      emptyMessage="Nessun ordine da completare."
+      emptyMessage="No orders to fulfil."
       href="/admin/shop/orders?status=PENDING"
-      linkLabel="Vedi gli ordini"
+      linkLabel="View orders"
     >
       {data.items.map((item) => (
         <li key={item.id} className="flex items-center justify-between gap-3">

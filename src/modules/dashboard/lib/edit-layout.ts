@@ -8,30 +8,18 @@ export const createInstanceKey = (definitionId: string) =>
   `${definitionId}-${crypto.randomUUID()}`;
 
 /**
- * Hides the instance with the given key. The instance stays in the layout so it
- * can be re-added from the library; `visibleDashboardWidgets` excludes it from
- * rendering.
+ * Applies a patch to the instance with the given key. The key never changes, so
+ * an edit affects exactly one instance — two instances of the same definition
+ * keep their own state. Hiding, resizing, and reconfiguring all go through this
+ * one function.
  */
-export const hideInstance = (
+export const updateInstance = (
   instances: DashboardWidgetInstance[],
   key: string,
+  patch: Partial<DashboardWidgetInstance>,
 ): DashboardWidgetInstance[] =>
   instances.map((instance) =>
-    instance.key === key ? { ...instance, hidden: true } : instance,
-  );
-
-/**
- * Sets the config of the instance with the given key. The key never changes, so
- * a config edit affects exactly one instance — two instances of the same
- * definition keep their own config.
- */
-export const configureInstance = (
-  instances: DashboardWidgetInstance[],
-  key: string,
-  config: Record<string, unknown>,
-): DashboardWidgetInstance[] =>
-  instances.map((instance) =>
-    instance.key === key ? { ...instance, config } : instance,
+    instance.key === key ? { ...instance, ...patch } : instance,
   );
 
 /**

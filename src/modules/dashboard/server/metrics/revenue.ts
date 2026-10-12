@@ -8,7 +8,7 @@ import type { Metric } from "../../types";
 import { buildRangeSeries } from "./series";
 
 /**
- * Ricavi / ordini: sums `Order.totalAmount` of completed orders by their
+ * Revenue / orders: sums `Order.totalAmount` of completed orders by their
  * completion moment (`completedAt`), bucketed by calendar month over the
  * requested range. Per the domain, order completion is the canonical business
  * moment for analytics, so drafts, pending, and cancelled orders are excluded.
@@ -16,7 +16,7 @@ import { buildRangeSeries } from "./series";
  */
 export const revenueMetric: Metric = {
   id: "revenue",
-  label: "Ricavi / ordini",
+  label: "Revenue / orders",
   permission: PERMISSIONS.ORDERS_READ,
   timeSeries: (from, to) =>
     buildRangeSeries(from, to, async (start, end) => {

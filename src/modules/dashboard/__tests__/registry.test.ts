@@ -2,12 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { PERMISSIONS } from "@/shared/lib/permissions";
 
-import {
-  DEFAULT_DASHBOARD_INSTANCES,
-  getWidgetDefinition,
-  WIDGET_DEFINITIONS,
-} from "../registry";
-import { computeDashboardLayout } from "../server/layout";
+import { getWidgetDefinition, WIDGET_DEFINITIONS } from "../registry";
 
 describe("dashboard widget registry", () => {
   it("declares the operational widgets plus the Trend, in order", () => {
@@ -19,34 +14,12 @@ describe("dashboard widget registry", () => {
       "failed-runs",
       "trend",
     ]);
+  });
 
-    expect(DEFAULT_DASHBOARD_INSTANCES).toEqual([
-      { key: "drafts", definitionId: "drafts" },
-      { key: "scheduled", definitionId: "scheduled" },
-      { key: "pending-reviews", definitionId: "pending-reviews" },
-      { key: "pending-orders", definitionId: "pending-orders" },
-      { key: "failed-runs", definitionId: "failed-runs" },
-      {
-        key: "trend-contacts",
-        definitionId: "trend",
-        config: { metric: "contacts" },
-      },
-      {
-        key: "trend-submissions",
-        definitionId: "trend",
-        config: { metric: "submissions" },
-      },
-      {
-        key: "trend-ebooks",
-        definitionId: "trend",
-        config: { metric: "ebooks" },
-      },
-      {
-        key: "trend-revenue",
-        definitionId: "trend",
-        config: { metric: "revenue" },
-      },
-    ]);
+  it("declares a default size for every definition", () => {
+    for (const definition of WIDGET_DEFINITIONS) {
+      expect(["small", "medium", "full"]).toContain(definition.defaultSize);
+    }
   });
 
   it("gates each operational widget on its area's read permission", () => {
@@ -75,8 +48,8 @@ describe("dashboard widget registry", () => {
   it("generates the Trend's metric picker from the permitted metrics", () => {
     const schema = getWidgetDefinition("trend")?.configSchema?.({
       metrics: [
-        { id: "contacts", label: "Iscritti / contatti" },
-        { id: "revenue", label: "Ricavi / ordini" },
+        { id: "contacts", label: "Contacts" },
+        { id: "revenue", label: "Revenue / orders" },
       ],
     });
 
@@ -85,10 +58,10 @@ describe("dashboard widget registry", () => {
         {
           type: "select",
           name: "metric",
-          label: "Metrica",
+          label: "Metric",
           options: [
-            { value: "contacts", label: "Iscritti / contatti" },
-            { value: "revenue", label: "Ricavi / ordini" },
+            { value: "contacts", label: "Contacts" },
+            { value: "revenue", label: "Revenue / orders" },
           ],
         },
       ],
@@ -105,56 +78,5 @@ describe("dashboard widget registry", () => {
     ]) {
       expect(getWidgetDefinition(id)?.configSchema).toBeUndefined();
     }
-  });
-
-  it("seeds a Trend instance for the contact metric", () => {
-    const trend = DEFAULT_DASHBOARD_INSTANCES.find(
-      (instance) => instance.definitionId === "trend",
-    );
-
-    expect(trend).toEqual({
-      key: "trend-contacts",
-      definitionId: "trend",
-      config: { metric: "contacts" },
-    });
-  });
-
-  it("keeps only the ungated Trend when the user holds no area permission", () => {
-    const layout = computeDashboardLayout({
-      defaults: DEFAULT_DASHBOARD_INSTANCES,
-      saved: [],
-      definitions: WIDGET_DEFINITIONS,
-      canRead: () => false,
-    });
-
-    // The Trend declares no definition permission; its availability comes from
-    // the metrics the user may read, not from the layout merge.
-    expect(layout.map((instance) => instance.key)).toEqual([
-      "trend-contacts",
-      "trend-submissions",
-      "trend-ebooks",
-      "trend-revenue",
-    ]);
-  });
-
-  it("keeps the widgets whose permissions the user holds plus the Trend", () => {
-    const layout = computeDashboardLayout({
-      defaults: DEFAULT_DASHBOARD_INSTANCES,
-      saved: [],
-      definitions: WIDGET_DEFINITIONS,
-      canRead: (permission) =>
-        permission === PERMISSIONS.POSTS_READ ||
-        permission === PERMISSIONS.ORDERS_READ,
-    });
-
-    expect(layout.map((instance) => instance.key)).toEqual([
-      "drafts",
-      "scheduled",
-      "pending-orders",
-      "trend-contacts",
-      "trend-submissions",
-      "trend-ebooks",
-      "trend-revenue",
-    ]);
   });
 });

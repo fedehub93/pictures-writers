@@ -8,7 +8,7 @@ describe("metric registry", () => {
   it("exposes the contact metric with its label and permission", () => {
     expect(getMetric("contacts")).toMatchObject({
       id: "contacts",
-      label: "Iscritti / contatti",
+      label: "Contacts",
       permission: PERMISSIONS.CONTACTS_READ,
     });
   });

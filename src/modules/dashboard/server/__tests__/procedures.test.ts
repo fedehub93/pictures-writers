@@ -57,7 +57,7 @@ const widgetDefinition = (id: string): WidgetDefinition => ({
   id,
   title: id,
   icon: undefined as unknown as WidgetDefinition["icon"],
-  size: "medium",
+  defaultSize: "medium",
   component: () => null,
 });
 
@@ -273,7 +273,7 @@ describe("dashboard.saveLayout", () => {
     const user = await createUser();
     const caller = callerFor(user.id);
     const widgets = [
-      { key: "drafts", definitionId: "drafts" },
+      { key: "drafts", definitionId: "drafts", size: "full" as const },
       { key: "trend-contacts", definitionId: "trend", config: { metric: "contacts" } },
     ];
 
@@ -371,8 +371,8 @@ describe("dashboard.saveLayout", () => {
     const user = await createUser();
     const caller = callerFor(user.id);
 
-    // A reorder, a hidden instance, and a user-added second instance of a
-    // definition that also has a default.
+    // A reorder, a hidden instance, and two user-added instances of one
+    // definition.
     const widgets = [
       { key: "pending-orders", definitionId: "pending-orders" },
       { key: "trend-revenue", definitionId: "trend" },
@@ -385,34 +385,26 @@ describe("dashboard.saveLayout", () => {
 
     const definitions = [
       widgetDefinition("drafts"),
-      widgetDefinition("scheduled"),
       widgetDefinition("pending-orders"),
       widgetDefinition("trend"),
     ];
 
     const layout = computeDashboardLayout({
-      defaults: [
-        { key: "drafts", definitionId: "drafts" },
-        { key: "scheduled", definitionId: "scheduled" },
-        { key: "pending-orders", definitionId: "pending-orders" },
-        { key: "trend-contacts", definitionId: "trend" },
-      ],
       saved,
       definitions,
       canRead: () => true,
     });
 
-    // Saved order wins, a new default (scheduled) is appended, and the hidden
-    // instance is retained but not rendered.
+    // The saved order is preserved and the hidden instance is retained but not
+    // rendered.
     expect(layout.map((instance) => instance.key)).toEqual([
       "pending-orders",
       "trend-revenue",
       "drafts",
       "trend-contacts",
-      "scheduled",
     ]);
     expect(visibleDashboardWidgets(layout).map((instance) => instance.key)).toEqual(
-      ["pending-orders", "trend-revenue", "trend-contacts", "scheduled"],
+      ["pending-orders", "trend-revenue", "trend-contacts"],
     );
   });
 });
@@ -534,9 +526,7 @@ describe("dashboard.getMetrics", () => {
     const permitted = await callerFor("with-contacts").getMetrics();
     const forbidden = await callerFor("without-contacts").getMetrics();
 
-    expect(permitted).toEqual([
-      { id: "contacts", label: "Iscritti / contatti" },
-    ]);
+    expect(permitted).toEqual([{ id: "contacts", label: "Contacts" }]);
     expect(forbidden).toEqual([]);
   });
 
@@ -558,7 +548,7 @@ describe("dashboard.getMetrics", () => {
       "ebooks",
       "revenue",
     ]);
-    expect(dashboardOnly).toEqual([{ id: "ebooks", label: "Download ebook" }]);
+    expect(dashboardOnly).toEqual([{ id: "ebooks", label: "Ebook downloads" }]);
   });
 
   it("gates reading metrics behind dashboard.read", () => {

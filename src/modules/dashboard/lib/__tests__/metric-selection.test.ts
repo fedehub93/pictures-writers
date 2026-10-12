@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { resolveMetric } from "../metric-selection";
 
 const metrics = [
-  { id: "contacts", label: "Iscritti / contatti" },
+  { id: "contacts", label: "Contacts" },
   { id: "submissions", label: "Form submissions" },
 ];
 
@@ -22,11 +22,11 @@ describe("resolveMetric", () => {
   it("falls back to the first permitted metric when the instance carries no config", () => {
     expect(resolveMetric(null, metrics)).toEqual({
       id: "contacts",
-      label: "Iscritti / contatti",
+      label: "Contacts",
     });
     expect(resolveMetric(undefined, metrics)).toEqual({
       id: "contacts",
-      label: "Iscritti / contatti",
+      label: "Contacts",
     });
   });
 

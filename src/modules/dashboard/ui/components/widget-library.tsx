@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Plus } from "lucide-react";
 
 import { Button } from "@/shared/ui/button";
@@ -15,46 +15,39 @@ import {
 
 import type { WidgetDefinition } from "../../types";
 
-interface WidgetLibraryTileProps {
+interface WidgetLibraryProps {
   /** The definitions the current user is permitted to add. */
   definitions: WidgetDefinition[];
   onSelect: (definitionId: string) => void;
+  /** The element that opens the library. */
+  children: ReactNode;
 }
 
 /**
- * The `+` tile at the end of the grid. Opens a library of the permitted widget
- * definitions; picking one adds an instance to the draft layout.
+ * The widget library dialog. It lists the permitted widget definitions and adds
+ * the chosen one to the layout. The trigger is supplied by the caller so the
+ * same library backs both the grid's `+` tile and the empty-dashboard prompt.
  */
-export const WidgetLibraryTile = ({
+export const WidgetLibrary = ({
   definitions,
   onSelect,
-}: WidgetLibraryTileProps) => {
+  children,
+}: WidgetLibraryProps) => {
   const [open, setOpen] = useState(false);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button
-          type="button"
-          variant="outline"
-          className="h-full min-h-32 w-full flex-col gap-2 border-dashed text-muted-foreground"
-        >
-          <Plus className="size-6" />
-          Aggiungi widget
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Aggiungi widget</DialogTitle>
+          <DialogTitle>Add widget</DialogTitle>
           <DialogDescription>
-            Scegli un widget da aggiungere alla tua dashboard.
+            Choose a widget to add to your dashboard.
           </DialogDescription>
         </DialogHeader>
 
         {definitions.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            Nessun widget disponibile.
-          </p>
+          <p className="text-sm text-muted-foreground">No widgets available.</p>
         ) : (
           <ul className="flex flex-col gap-2">
             {definitions.map((definition) => {
@@ -91,3 +84,25 @@ export const WidgetLibraryTile = ({
     </Dialog>
   );
 };
+
+interface WidgetLibraryTileProps {
+  definitions: WidgetDefinition[];
+  onSelect: (definitionId: string) => void;
+}
+
+/** The `+` tile at the end of the grid; opens the widget library. */
+export const WidgetLibraryTile = ({
+  definitions,
+  onSelect,
+}: WidgetLibraryTileProps) => (
+  <WidgetLibrary definitions={definitions} onSelect={onSelect}>
+    <Button
+      type="button"
+      variant="outline"
+      className="h-full min-h-32 w-full flex-col gap-2 border-dashed text-muted-foreground"
+    >
+      <Plus className="size-6" />
+      Add widget
+    </Button>
+  </WidgetLibrary>
+);

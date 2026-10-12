@@ -8,20 +8,20 @@ describe("dashboard widget states", () => {
     const html = renderToStaticMarkup(<WidgetLoading />);
 
     expect(html).toContain('role="status"');
-    expect(html).toContain("Caricamento in corso");
+    expect(html).toContain("Loading");
   });
 
   it("renders the shared error message", () => {
     const html = renderToStaticMarkup(<WidgetError />);
 
-    expect(html).toContain("Impossibile caricare il widget.");
+    expect(html).toContain("Unable to load the widget.");
   });
 
   it("renders the empty message it is given", () => {
     const html = renderToStaticMarkup(
-      <WidgetEmpty message="Nessuna bozza da pubblicare." />,
+      <WidgetEmpty message="No drafts to publish." />,
     );
 
-    expect(html).toContain("Nessuna bozza da pubblicare.");
+    expect(html).toContain("No drafts to publish.");
   });
 });
