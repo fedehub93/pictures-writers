@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // The procedures only need the router builders, not the auth middleware. This
 // mock swaps the permission procedure for a plain one so the round-trip can be
@@ -21,6 +21,7 @@ vi.mock("@/trpc/init", async () => {
 
 import { createCallerFactory } from "@/trpc/init";
 
+import { cleanupAutomationTables } from "@/modules/automations";
 import { AutomationRunStatus } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 
@@ -28,8 +29,6 @@ import { automationsRouter } from "../procedures";
 
 const createCaller = createCallerFactory(automationsRouter);
 const caller = createCaller({ userId: "test-user", auth: { id: "test-user" } });
-
-const automationIds: string[] = [];
 
 async function createRun(
   automationId: string,
@@ -46,20 +45,14 @@ async function createRun(
 }
 
 async function createAutomation(name: string) {
-  const automation = await db.automation.create({ data: { name } });
-  automationIds.push(automation.id);
-  return automation;
+  return db.automation.create({ data: { name } });
 }
 
-beforeEach(() => {
-  automationIds.length = 0;
-});
-
-afterEach(async () => {
-  if (automationIds.length > 0) {
-    await db.automation.deleteMany({ where: { id: { in: automationIds } } });
-  }
-  automationIds.length = 0;
+// `getRuns` reads every automation, so the suite must start from an empty
+// automation set: a sibling test file can leave runs behind, and a per-id
+// cleanup of this file's own rows would not hide them.
+beforeEach(async () => {
+  await cleanupAutomationTables();
 });
 
 describe("automations.getRuns", () => {
