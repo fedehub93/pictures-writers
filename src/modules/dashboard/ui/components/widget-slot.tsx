@@ -3,7 +3,11 @@
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
-import type { DashboardWidgetInstance, WidgetDefinition } from "../../types";
+import type {
+  DashboardWidgetInstance,
+  WidgetConfigContext,
+  WidgetDefinition,
+} from "../../types";
 
 import { WidgetCard } from "./widget-card";
 import { WidgetError, WidgetLoading } from "./widget-states";
@@ -14,6 +18,8 @@ interface WidgetSlotProps {
   editing?: boolean;
   dragHandleRef?: (element: Element | null) => void;
   onHide?: () => void;
+  configContext?: WidgetConfigContext;
+  onConfigure?: (config: Record<string, unknown>) => void;
 }
 
 /**
@@ -27,6 +33,8 @@ export const WidgetSlot = ({
   editing,
   dragHandleRef,
   onHide,
+  configContext,
+  onConfigure,
 }: WidgetSlotProps) => (
   <Suspense fallback={<WidgetLoading />}>
     <ErrorBoundary fallback={<WidgetError />}>
@@ -36,6 +44,8 @@ export const WidgetSlot = ({
         editing={editing}
         dragHandleRef={dragHandleRef}
         onHide={onHide}
+        configContext={configContext}
+        onConfigure={onConfigure}
       />
     </ErrorBoundary>
   </Suspense>

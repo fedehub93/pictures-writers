@@ -283,6 +283,50 @@ describe("dashboard.saveLayout", () => {
     expect(layout.widgets).toEqual(widgets);
   });
 
+  it("persists each instance's config independently and round-trips a change", async () => {
+    const user = await createUser();
+    const caller = callerFor(user.id);
+    const widgets = [
+      {
+        key: "trend-contacts",
+        definitionId: "trend",
+        config: { metric: "contacts" },
+      },
+      {
+        key: "trend-shifted",
+        definitionId: "trend",
+        config: { metric: "revenue" },
+      },
+    ];
+
+    await caller.saveLayout({ widgets });
+    const saved = await caller.getLayout();
+
+    expect(saved.widgets).toEqual(widgets);
+
+    // Re-configuring one instance leaves the other one's config untouched.
+    const next = saved.widgets.map((instance) =>
+      instance.key === "trend-shifted"
+        ? { ...instance, config: { metric: "submissions" } }
+        : instance,
+    );
+    await caller.saveLayout({ widgets: next });
+    const reloaded = await caller.getLayout();
+
+    expect(reloaded.widgets).toEqual([
+      {
+        key: "trend-contacts",
+        definitionId: "trend",
+        config: { metric: "contacts" },
+      },
+      {
+        key: "trend-shifted",
+        definitionId: "trend",
+        config: { metric: "submissions" },
+      },
+    ]);
+  });
+
   it("replaces the previous layout on a second save", async () => {
     const user = await createUser();
     const caller = callerFor(user.id);

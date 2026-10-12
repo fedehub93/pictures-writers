@@ -1,4 +1,4 @@
-import type { DashboardWidgetInstance } from "../types";
+import type { DashboardWidgetInstance, WidgetConfig } from "../types";
 
 /**
  * Generates the stable key for a user-created instance. The key never changes
@@ -21,14 +21,31 @@ export const hideInstance = (
   );
 
 /**
+ * Sets the config of the instance with the given key. The key never changes, so
+ * a config edit affects exactly one instance — two instances of the same
+ * definition keep their own config.
+ */
+export const configureInstance = (
+  instances: DashboardWidgetInstance[],
+  key: string,
+  config: Record<string, unknown>,
+): DashboardWidgetInstance[] =>
+  instances.map((instance) =>
+    instance.key === key ? { ...instance, config } : instance,
+  );
+
+/**
  * Adds an instance of a definition to the layout. When the layout already holds
- * a hidden instance of that definition, the first one is re-shown instead of
- * appending a duplicate, so hiding a widget is reversible from the library.
+ * a hidden instance of that definition, the first one is re-shown (keeping its
+ * config) instead of appending a duplicate, so hiding a widget is reversible
+ * from the library. A freshly appended instance is seeded with the definition's
+ * default config, when it declares one.
  */
 export const addInstance = (
   instances: DashboardWidgetInstance[],
   definitionId: string,
   key: string,
+  defaultConfig?: WidgetConfig,
 ): DashboardWidgetInstance[] => {
   const hiddenIndex = instances.findIndex(
     (instance) => instance.definitionId === definitionId && instance.hidden,
@@ -40,7 +57,10 @@ export const addInstance = (
     );
   }
 
-  return [...instances, { key, definitionId }];
+  return [
+    ...instances,
+    { key, definitionId, ...(defaultConfig ? { config: defaultConfig } : {}) },
+  ];
 };
 
 /**

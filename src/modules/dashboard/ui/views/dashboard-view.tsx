@@ -17,6 +17,7 @@ import { Button } from "@/shared/ui/button";
 
 import {
   addInstance,
+  configureInstance,
   createInstanceKey,
   hideInstance,
   moveInstance,
@@ -29,7 +30,10 @@ import {
   WIDGET_DEFINITIONS,
 } from "../../registry";
 import { computeDashboardLayout, visibleDashboardWidgets } from "../../server/layout";
-import type { DashboardWidgetInstance } from "../../types";
+import type {
+  DashboardWidgetInstance,
+  WidgetConfigContext,
+} from "../../types";
 
 import { WidgetGrid } from "../components/widget-grid";
 
@@ -68,6 +72,13 @@ export const DashboardView = () => {
         return !isAnalyticsWidget(definition) || metrics.length > 0;
       }),
     [canRead, metrics],
+  );
+
+  // Context a configurable widget's schema resolves against (the permitted
+  // metrics, for the Trend's picker).
+  const configContext = useMemo<WidgetConfigContext>(
+    () => ({ metrics }),
+    [metrics],
   );
 
   // `draft` holds the pending changes; `editing` hides or shows the edit
@@ -118,10 +129,20 @@ export const DashboardView = () => {
   const onMove = (from: number, to: number) =>
     updateDraft((current) => moveInstance(current, from, to));
 
-  const onAdd = (definitionId: string) =>
+  const onAdd = (definitionId: string) => {
+    const definition = getWidgetDefinition(definitionId);
     updateDraft((current) =>
-      addInstance(current, definitionId, createInstanceKey(definitionId)),
+      addInstance(
+        current,
+        definitionId,
+        createInstanceKey(definitionId),
+        definition?.defaultConfig,
+      ),
     );
+  };
+
+  const onConfigure = (key: string, config: Record<string, unknown>) =>
+    updateDraft((current) => configureInstance(current, key, config));
 
   const instances = editing && draft ? draft : layout;
 
@@ -198,6 +219,8 @@ export const DashboardView = () => {
         onMove={onMove}
         onHide={onHide}
         onAdd={onAdd}
+        configContext={configContext}
+        onConfigure={onConfigure}
       />
     </div>
   );

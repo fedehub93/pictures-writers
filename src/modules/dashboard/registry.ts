@@ -78,6 +78,21 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     category: "analytics",
     size: "medium",
     component: TrendWidget,
+    // The Trend is the first configurable widget: the gear lets the user pick
+    // which permitted metric this instance renders.
+    configSchema: ({ metrics }) => ({
+      fields: [
+        {
+          type: "select",
+          name: "metric",
+          label: "Metrica",
+          options: metrics.map((metric) => ({
+            value: metric.id,
+            label: metric.label,
+          })),
+        },
+      ],
+    }),
   },
 ];
 

@@ -6,7 +6,11 @@ import { isSortable } from "@dnd-kit/react/sortable";
 import { WIDGET_SIZE_CLASS } from "../../lib/widget-size";
 import { getWidgetDefinition } from "../../registry";
 import { visibleDashboardWidgets } from "../../server/layout";
-import type { DashboardWidgetInstance, WidgetDefinition } from "../../types";
+import type {
+  DashboardWidgetInstance,
+  WidgetConfigContext,
+  WidgetDefinition,
+} from "../../types";
 
 import { SortableWidget } from "./sortable-widget";
 import { WidgetLibraryTile } from "./widget-library";
@@ -19,6 +23,8 @@ interface WidgetGridProps {
   onMove: (fromVisibleIndex: number, toVisibleIndex: number) => void;
   onHide: (key: string) => void;
   onAdd: (definitionId: string) => void;
+  configContext: WidgetConfigContext;
+  onConfigure: (key: string, config: Record<string, unknown>) => void;
 }
 
 /**
@@ -33,6 +39,8 @@ export const WidgetGrid = ({
   onMove,
   onHide,
   onAdd,
+  configContext,
+  onConfigure,
 }: WidgetGridProps) => {
   const widgets = visibleDashboardWidgets(instances).flatMap((instance) => {
     const definition = getWidgetDefinition(instance.definitionId);
@@ -71,6 +79,8 @@ export const WidgetGrid = ({
             instance={instance}
             index={index}
             onHide={onHide}
+            configContext={configContext}
+            onConfigure={onConfigure}
           />
         ) : (
           <div key={instance.key} className={WIDGET_SIZE_CLASS[definition.size]}>

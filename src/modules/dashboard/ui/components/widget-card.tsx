@@ -10,8 +10,11 @@ import {
 
 import type {
   DashboardWidgetInstance,
+  WidgetConfigContext,
   WidgetDefinition,
 } from "../../types";
+
+import { ConfigPopover } from "./config-popover";
 
 interface WidgetCardProps {
   definition: WidgetDefinition;
@@ -22,13 +25,18 @@ interface WidgetCardProps {
   dragHandleRef?: (element: Element | null) => void;
   /** Hides this instance. Only used while editing. */
   onHide?: () => void;
+  /** Context a configurable widget's schema resolves against. */
+  configContext?: WidgetConfigContext;
+  /** Receives this instance's new config. Only used while editing. */
+  onConfigure?: (config: Record<string, unknown>) => void;
 }
 
 /**
  * The chrome shared by every Dashboard widget: the definition's title and icon
  * in the header, and the widget's own component in the body. In edit mode the
- * body's interactions are disabled and the card exposes a drag handle and a
- * control to hide it.
+ * body's interactions are disabled and the card exposes a drag handle, a
+ * control to hide it, and — for a configurable definition — a gear opening its
+ * config popover.
  */
 export const WidgetCard = ({
   definition,
@@ -36,6 +44,8 @@ export const WidgetCard = ({
   editing = false,
   dragHandleRef,
   onHide,
+  configContext,
+  onConfigure,
 }: WidgetCardProps) => {
   const Icon = definition.icon;
   const Widget = definition.component;
@@ -46,6 +56,14 @@ export const WidgetCard = ({
         <CardTitle className="text-sm font-medium">{definition.title}</CardTitle>
         {editing ? (
           <div className="flex items-center gap-1">
+            {definition.configSchema && configContext && onConfigure ? (
+              <ConfigPopover
+                definition={definition}
+                instance={instance}
+                context={configContext}
+                onChange={onConfigure}
+              />
+            ) : null}
             {onHide ? (
               <Button
                 type="button"

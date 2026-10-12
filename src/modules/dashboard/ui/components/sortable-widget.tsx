@@ -5,7 +5,11 @@ import { useSortable } from "@dnd-kit/react/sortable";
 import { cn } from "@/shared/lib/utils";
 
 import { WIDGET_SIZE_CLASS } from "../../lib/widget-size";
-import type { DashboardWidgetInstance, WidgetDefinition } from "../../types";
+import type {
+  DashboardWidgetInstance,
+  WidgetConfigContext,
+  WidgetDefinition,
+} from "../../types";
 
 import { WidgetSlot } from "./widget-slot";
 
@@ -14,6 +18,8 @@ interface SortableWidgetProps {
   instance: DashboardWidgetInstance;
   index: number;
   onHide: (key: string) => void;
+  configContext: WidgetConfigContext;
+  onConfigure: (key: string, config: Record<string, unknown>) => void;
 }
 
 /**
@@ -26,6 +32,8 @@ export const SortableWidget = ({
   instance,
   index,
   onHide,
+  configContext,
+  onConfigure,
 }: SortableWidgetProps) => {
   const { ref, handleRef, isDragging } = useSortable({
     id: instance.key,
@@ -48,6 +56,8 @@ export const SortableWidget = ({
         editing
         dragHandleRef={handleRef}
         onHide={() => onHide(instance.key)}
+        configContext={configContext}
+        onConfigure={(config) => onConfigure(instance.key, config)}
       />
     </div>
   );

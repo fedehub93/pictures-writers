@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 
 import type { DashboardWidgetInstance } from "../../types";
-import { addInstance, createInstanceKey, hideInstance, moveInstance } from "../edit-layout";
+import {
+  addInstance,
+  configureInstance,
+  createInstanceKey,
+  hideInstance,
+  moveInstance,
+} from "../edit-layout";
 
 const instance = (
   key: string,
@@ -57,6 +63,63 @@ describe("addInstance", () => {
     const result = addInstance(layout, "trend", "trend-revenue");
 
     expect(keys(result)).toEqual(["trend-contacts", "trend-revenue"]);
+  });
+
+  it("seeds a freshly appended instance with the definition's default config", () => {
+    const result = addInstance([], "trend", "trend-1", { metric: "contacts" });
+
+    expect(result[0]).toEqual({
+      key: "trend-1",
+      definitionId: "trend",
+      config: { metric: "contacts" },
+    });
+  });
+
+  it("keeps a re-shown hidden instance's own config", () => {
+    const layout = [
+      instance("trend-contacts", "trend", { config: { metric: "contacts" }, hidden: true }),
+    ];
+
+    const result = addInstance(layout, "trend", "trend-new", {
+      metric: "revenue",
+    });
+
+    expect(result[0]).toEqual({
+      key: "trend-contacts",
+      definitionId: "trend",
+      config: { metric: "contacts" },
+      hidden: false,
+    });
+  });
+});
+
+describe("configureInstance", () => {
+  it("replaces the config of exactly the keyed instance", () => {
+    const layout = [
+      instance("trend-contacts", "trend", { config: { metric: "contacts" } }),
+      instance("trend-submissions", "trend", { config: { metric: "submissions" } }),
+    ];
+
+    const result = configureInstance(layout, "trend-contacts", {
+      metric: "revenue",
+    });
+
+    expect(result[0]).toEqual({
+      key: "trend-contacts",
+      definitionId: "trend",
+      config: { metric: "revenue" },
+    });
+    expect(result[1]).toEqual({
+      key: "trend-submissions",
+      definitionId: "trend",
+      config: { metric: "submissions" },
+    });
+  });
+
+  it("leaves the layout untouched when the key is absent", () => {
+    const layout = [instance("a", "a")];
+
+    expect(configureInstance(layout, "ghost", { metric: "x" })).toEqual(layout);
   });
 });
 

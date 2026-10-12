@@ -72,6 +72,41 @@ describe("dashboard widget registry", () => {
     expect(getWidgetDefinition("trend")?.category).toBe("analytics");
   });
 
+  it("generates the Trend's metric picker from the permitted metrics", () => {
+    const schema = getWidgetDefinition("trend")?.configSchema?.({
+      metrics: [
+        { id: "contacts", label: "Iscritti / contatti" },
+        { id: "revenue", label: "Ricavi / ordini" },
+      ],
+    });
+
+    expect(schema).toEqual({
+      fields: [
+        {
+          type: "select",
+          name: "metric",
+          label: "Metrica",
+          options: [
+            { value: "contacts", label: "Iscritti / contatti" },
+            { value: "revenue", label: "Ricavi / ordini" },
+          ],
+        },
+      ],
+    });
+  });
+
+  it("leaves the operational widgets without a config schema", () => {
+    for (const id of [
+      "drafts",
+      "scheduled",
+      "pending-reviews",
+      "pending-orders",
+      "failed-runs",
+    ]) {
+      expect(getWidgetDefinition(id)?.configSchema).toBeUndefined();
+    }
+  });
+
   it("seeds a Trend instance for the contact metric", () => {
     const trend = DEFAULT_DASHBOARD_INSTANCES.find(
       (instance) => instance.definitionId === "trend",
