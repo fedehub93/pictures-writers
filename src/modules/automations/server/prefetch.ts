@@ -26,6 +26,13 @@ export const prefetchAutomationRuns = (params: RunsInput) => {
 };
 
 /**
+ * Prefetch Runs across every automation (the global Executions view)
+ */
+export const prefetchAllAutomationRuns = (params: Omit<RunsInput, "automationId">) => {
+  return prefetch(trpc.automations.getRuns.queryOptions({ ...params }));
+};
+
+/**
  * Prefetch a single Run with its Step ledger
  */
 export const prefetchAutomationRun = (automationId: string, id: string) => {

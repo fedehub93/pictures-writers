@@ -14,12 +14,16 @@ import {
 } from "../../hooks/use-executions";
 
 import { DataTable } from "../components/data-table";
-import { getRunColumns } from "../components/columns";
+import { getGlobalRunColumns, getRunColumns } from "../components/columns";
 
-export const ExecutionsView = ({ automationId }: { automationId: string }) => {
+export const ExecutionsView = ({
+  automationId,
+}: {
+  automationId?: string;
+}) => {
   const [filters, setFilters] = useExecutionsFilters();
   const { data } = useSuspenseAutomationRuns(automationId, filters);
-  const columns = getRunColumns(automationId);
+  const columns = automationId ? getRunColumns(automationId) : getGlobalRunColumns();
 
   return (
     <div className="px-6">

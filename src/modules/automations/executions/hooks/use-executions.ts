@@ -31,7 +31,7 @@ type RunsFilters = {
 };
 
 export const useSuspenseAutomationRuns = (
-  automationId: string,
+  automationId: string | undefined,
   filters: RunsFilters,
 ) => {
   const trpc = useTRPC();

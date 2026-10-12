@@ -21,9 +21,16 @@ vi.mock("@/trpc/init", async () => {
 
 import { createCallerFactory } from "@/trpc/init";
 
-import { ContentStatus } from "@/generated/prisma";
+import {
+  AutomationRunStatus,
+  ContentStatus,
+  OrderStatus,
+  ScheduledActionStatus,
+  ScheduledActionType,
+} from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 import { PERMISSIONS, getProcedurePermissions } from "@/shared/lib/permissions";
+import { createProductRoot } from "@/modules/shop/products/lib/__tests__/root-fixtures";
 
 import { dashboardRouter } from "../procedures";
 
@@ -31,6 +38,11 @@ const createCaller = createCallerFactory(dashboardRouter);
 
 const userIds: string[] = [];
 const rootIds: string[] = [];
+const scheduledActionIds: string[] = [];
+const reviewProductIds: string[] = [];
+const customerIds: string[] = [];
+const orderIds: string[] = [];
+const automationIds: string[] = [];
 
 async function createUser() {
   const user = await db.user.create({
@@ -68,12 +80,140 @@ async function createPost(status: ContentStatus, updatedAt: Date) {
   return { rootId: root.id, versionId: version.id };
 }
 
+async function createScheduledPost({
+  plannedAt,
+  status = ScheduledActionStatus.SCHEDULED,
+  type = ScheduledActionType.PUBLISH_POST,
+  title = `Post ${randomUUID()}`,
+}: {
+  plannedAt: Date;
+  status?: ScheduledActionStatus;
+  type?: ScheduledActionType;
+  title?: string;
+}) {
+  const root = await db.postRoot.create({
+    data: { slug: `post-${randomUUID()}` },
+  });
+  rootIds.push(root.id);
+
+  const version = await db.postVersion.create({
+    data: {
+      rootId: root.id,
+      version: 1,
+      status: ContentStatus.DRAFT,
+      title,
+    },
+  });
+
+  await db.postRoot.update({
+    where: { id: root.id },
+    data: { currentVersionId: version.id },
+  });
+
+  const action = await db.scheduledAction.create({
+    data: {
+      type,
+      targetType: "POST_ROOT",
+      targetId: root.id,
+      plannedAt,
+      timezone: "Europe/Rome",
+      status,
+      idempotencyKey: randomUUID(),
+    },
+  });
+  scheduledActionIds.push(action.id);
+
+  return { rootId: root.id, actionId: action.id, title };
+}
+
+async function createReview(status: boolean, title = "Prodotto") {
+  const { root } = await createProductRoot({ title });
+  reviewProductIds.push(root.id);
+
+  const review = await db.reviews.create({
+    data: {
+      rating: 4,
+      reviewerName: `Recensore ${randomUUID()}`,
+      comment: "Commento",
+      productId: root.id,
+      status,
+      date: new Date(),
+    },
+  });
+
+  return { review, productId: root.id, title };
+}
+
+async function createOrder(status: OrderStatus, totalAmount = 100) {
+  const customer = await db.customer.create({
+    data: { email: `customer-${randomUUID()}@example.com`, name: "Mario Rossi" },
+  });
+  customerIds.push(customer.id);
+
+  const order = await db.order.create({
+    data: {
+      orderNumber: `PW-TEST-${randomUUID().slice(0, 8)}`,
+      status,
+      customerId: customer.id,
+      totalAmount,
+      currency: "EUR",
+    },
+  });
+  orderIds.push(order.id);
+
+  return { order, customer };
+}
+
+async function createRun(
+  status: AutomationRunStatus,
+  name = `Flow ${randomUUID()}`,
+) {
+  const automation = await db.automation.create({ data: { name } });
+  automationIds.push(automation.id);
+
+  const run = await db.automationRun.create({
+    data: {
+      automationId: automation.id,
+      triggerType: "manual",
+      status,
+      graph: {},
+      error: status === AutomationRunStatus.FAILED ? "Boom" : null,
+    },
+  });
+
+  return { run, automation };
+}
+
 beforeEach(() => {
   userIds.length = 0;
   rootIds.length = 0;
+  scheduledActionIds.length = 0;
+  reviewProductIds.length = 0;
+  customerIds.length = 0;
+  orderIds.length = 0;
+  automationIds.length = 0;
 });
 
 afterEach(async () => {
+  if (scheduledActionIds.length > 0) {
+    await db.scheduledAction.deleteMany({
+      where: { id: { in: scheduledActionIds } },
+    });
+  }
+  if (reviewProductIds.length > 0) {
+    await db.productRoot.deleteMany({
+      where: { id: { in: reviewProductIds } },
+    });
+  }
+  if (orderIds.length > 0) {
+    await db.order.deleteMany({ where: { id: { in: orderIds } } });
+  }
+  if (customerIds.length > 0) {
+    await db.customer.deleteMany({ where: { id: { in: customerIds } } });
+  }
+  if (automationIds.length > 0) {
+    await db.automation.deleteMany({ where: { id: { in: automationIds } } });
+  }
   if (rootIds.length > 0) {
     await db.postRoot.deleteMany({ where: { id: { in: rootIds } } });
   }
@@ -83,6 +223,11 @@ afterEach(async () => {
   }
   userIds.length = 0;
   rootIds.length = 0;
+  scheduledActionIds.length = 0;
+  reviewProductIds.length = 0;
+  customerIds.length = 0;
+  orderIds.length = 0;
+  automationIds.length = 0;
 });
 
 describe("dashboard.getLayout", () => {
@@ -173,5 +318,89 @@ describe("dashboard.getDrafts", () => {
       newer.rootId,
       older.rootId,
     ]);
+  });
+});
+
+describe("dashboard.getScheduled", () => {
+  it("counts only future, active PUBLISH_POST actions and lists the soonest first", async () => {
+    const now = Date.now();
+    const soon = await createScheduledPost({
+      plannedAt: new Date(now + 60_000),
+      title: "Prossimo",
+    });
+    const later = await createScheduledPost({
+      plannedAt: new Date(now + 3_600_000),
+      title: "Più tardi",
+    });
+    // Past, terminal, and non-post actions are all excluded.
+    await createScheduledPost({ plannedAt: new Date(now - 60_000) });
+    await createScheduledPost({
+      plannedAt: new Date(now + 60_000),
+      status: ScheduledActionStatus.SUCCEEDED,
+    });
+    await createScheduledPost({
+      plannedAt: new Date(now + 60_000),
+      type: ScheduledActionType.SEND_EMAIL,
+    });
+
+    const result = await callerFor("any-user").getScheduled();
+
+    expect(result.count).toBe(2);
+    expect(result.items.map((item) => item.actionId)).toEqual([
+      soon.actionId,
+      later.actionId,
+    ]);
+    expect(result.items.map((item) => item.title)).toEqual([
+      "Prossimo",
+      "Più tardi",
+    ]);
+    expect(result.items[0]?.rootId).toBe(soon.rootId);
+  });
+});
+
+describe("dashboard.getPendingReviews", () => {
+  it("counts and lists unpublished reviews only", async () => {
+    const pending = await createReview(false, "Prodotto A");
+    await createReview(true, "Prodotto B");
+
+    const result = await callerFor("any-user").getPendingReviews();
+
+    expect(result.count).toBe(1);
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]?.id).toBe(pending.review.id);
+    expect(result.items[0]?.productTitle).toBe("Prodotto A");
+  });
+});
+
+describe("dashboard.getPendingOrders", () => {
+  it("counts and lists pending orders only, with the customer name", async () => {
+    const pending = await createOrder(OrderStatus.PENDING, 250);
+    await createOrder(OrderStatus.DRAFT, 10);
+    await createOrder(OrderStatus.COMPLETED, 10);
+
+    const result = await callerFor("any-user").getPendingOrders();
+
+    expect(result.count).toBe(1);
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]?.id).toBe(pending.order.id);
+    expect(result.items[0]?.totalAmount).toBe(250);
+    expect(result.items[0]?.customerName).toBe("Mario Rossi");
+  });
+});
+
+describe("dashboard.getFailedRuns", () => {
+  it("counts and lists failed runs only, with the automation name", async () => {
+    const failed = await createRun(AutomationRunStatus.FAILED, "Flusso rotto");
+    await createRun(AutomationRunStatus.COMPLETED);
+    await createRun(AutomationRunStatus.RUNNING);
+
+    const result = await callerFor("any-user").getFailedRuns();
+
+    expect(result.count).toBe(1);
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]?.id).toBe(failed.run.id);
+    expect(result.items[0]?.automationId).toBe(failed.automation.id);
+    expect(result.items[0]?.automationName).toBe("Flusso rotto");
+    expect(result.items[0]?.error).toBe("Boom");
   });
 });

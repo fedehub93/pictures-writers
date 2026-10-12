@@ -442,7 +442,7 @@ export const automationsRouter = createTRPCRouter({
   getRuns: permissionProcedure(PERMISSIONS.AUTOMATIONS_READ)
     .input(
       z.object({
-        automationId: z.string(),
+        automationId: z.string().optional(),
         page: z.number().default(DEFAULT_PAGE),
         pageSize: z
           .number()
@@ -461,7 +461,7 @@ export const automationsRouter = createTRPCRouter({
       });
 
       const where = {
-        automationId: input.automationId,
+        ...(input.automationId ? { automationId: input.automationId } : {}),
         status: input.status ?? undefined,
         startedAt: gte || lte ? { gte, lte } : undefined,
       };
@@ -471,12 +471,14 @@ export const automationsRouter = createTRPCRouter({
           where,
           select: {
             id: true,
+            automationId: true,
             status: true,
             triggerType: true,
             startedAt: true,
             endedAt: true,
             error: true,
             cancelReason: true,
+            automation: { select: { id: true, name: true } },
           },
           orderBy: { startedAt: "desc" },
           take: input.pageSize,
