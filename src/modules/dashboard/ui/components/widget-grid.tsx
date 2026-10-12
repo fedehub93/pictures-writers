@@ -13,8 +13,8 @@ import type {
 } from "../../types";
 
 import { SortableWidget } from "./sortable-widget";
+import { WidgetCard } from "./widget-card";
 import { WidgetLibraryTile } from "./widget-library";
-import { WidgetSlot } from "./widget-slot";
 
 interface WidgetGridProps {
   instances: DashboardWidgetInstance[];
@@ -84,7 +84,7 @@ export const WidgetGrid = ({
           />
         ) : (
           <div key={instance.key} className={WIDGET_SIZE_CLASS[definition.size]}>
-            <WidgetSlot definition={definition} instance={instance} />
+            <WidgetCard definition={definition} instance={instance} />
           </div>
         ),
       )}

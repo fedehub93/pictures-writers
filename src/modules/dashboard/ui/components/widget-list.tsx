@@ -4,6 +4,8 @@ import type { ReactNode } from "react";
 
 import { Button } from "@/shared/ui/button";
 
+import { WidgetEmpty } from "./widget-states";
+
 interface WidgetListProps {
   count: number;
   isEmpty: boolean;
@@ -30,7 +32,7 @@ export const WidgetList = ({
       <div className="text-3xl font-bold">{count}</div>
 
       {isEmpty ? (
-        <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+        <WidgetEmpty message={emptyMessage} />
       ) : (
         <ul className="flex flex-col gap-2">{children}</ul>
       )}

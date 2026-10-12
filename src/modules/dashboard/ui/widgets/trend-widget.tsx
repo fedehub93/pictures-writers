@@ -15,6 +15,7 @@ import {
 
 import { resolveMetric } from "../../lib/metric-selection";
 import type { WidgetComponentProps } from "../../types";
+import { WidgetEmpty } from "../components/widget-states";
 
 /**
  * The generic analytics widget: renders exactly one Metric. It exposes only the
@@ -52,6 +53,10 @@ const TrendChart = ({ metricId, metricLabel }: TrendChartProps) => {
   const { data: series } = useSuspenseQuery(
     trpc.dashboard.getMetricSeries.queryOptions({ metricId, from, to }),
   );
+
+  if (series.points.length === 0) {
+    return <WidgetEmpty message="Nessun dato nel periodo." />;
+  }
 
   const chartConfig = {
     value: {

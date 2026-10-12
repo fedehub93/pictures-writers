@@ -1,26 +1,39 @@
 import { AlertCircleIcon, Loader2Icon } from "lucide-react";
 
-import { Card, CardContent } from "@/shared/ui/card";
+/**
+ * The bodies every Dashboard widget shares for its loading, error, and empty
+ * outcomes. They render inside the widget card, so the card's chrome stays put
+ * while its data loads, fails, or turns out empty — identically for every
+ * widget.
+ */
 
-export const WidgetLoading = () => {
-  return (
-    <Card className="flex h-full min-h-32 items-center justify-center">
-      <CardContent className="flex items-center justify-center py-6">
-        <Loader2Icon className="size-5 animate-spin text-muted-foreground" />
-      </CardContent>
-    </Card>
-  );
-};
+const stateBodyClassName =
+  "flex min-h-32 flex-1 flex-col items-center justify-center gap-2 text-center";
 
-export const WidgetError = () => {
-  return (
-    <Card className="flex h-full min-h-32 items-center justify-center">
-      <CardContent className="flex flex-col items-center gap-2 py-6 text-center">
-        <AlertCircleIcon className="size-5 text-red-500" />
-        <p className="text-sm text-muted-foreground">
-          Impossibile caricare il widget.
-        </p>
-      </CardContent>
-    </Card>
-  );
-};
+/** The card body shown while a widget's data query is in flight. */
+export const WidgetLoading = () => (
+  <div
+    className={stateBodyClassName}
+    role="status"
+    aria-label="Caricamento in corso"
+  >
+    <Loader2Icon className="size-5 animate-spin text-muted-foreground" />
+  </div>
+);
+
+/** The card body shown when a widget's data query fails. */
+export const WidgetError = () => (
+  <div className={stateBodyClassName}>
+    <AlertCircleIcon className="size-5 text-destructive" />
+    <p className="text-sm text-muted-foreground">
+      Impossibile caricare il widget.
+    </p>
+  </div>
+);
+
+/** The card body shown when a widget has no data to display. */
+export const WidgetEmpty = ({ message }: { message: string }) => (
+  <p className={`${stateBodyClassName} text-sm text-muted-foreground`}>
+    {message}
+  </p>
+);

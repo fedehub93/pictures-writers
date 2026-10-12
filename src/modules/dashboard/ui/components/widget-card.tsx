@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import { GripVertical, X } from "lucide-react";
 
 import { Button } from "@/shared/ui/button";
@@ -15,6 +17,7 @@ import type {
 } from "../../types";
 
 import { ConfigPopover } from "./config-popover";
+import { WidgetError, WidgetLoading } from "./widget-states";
 
 interface WidgetCardProps {
   definition: WidgetDefinition;
@@ -33,10 +36,12 @@ interface WidgetCardProps {
 
 /**
  * The chrome shared by every Dashboard widget: the definition's title and icon
- * in the header, and the widget's own component in the body. In edit mode the
- * body's interactions are disabled and the card exposes a drag handle, a
- * control to hide it, and — for a configurable definition — a gear opening its
- * config popover.
+ * in the header, and the widget's own component in the body, wrapped in its own
+ * Suspense and error boundary so a widget's loading or failure never takes the
+ * card's chrome (or the dashboard) down with it. In edit mode the body's
+ * interactions are disabled and the card exposes a drag handle, a control to
+ * hide it, and — for a configurable definition — a gear opening its config
+ * popover.
  */
 export const WidgetCard = ({
   definition,
@@ -91,7 +96,11 @@ export const WidgetCard = ({
         )}
       </CardHeader>
       <CardContent className="flex flex-1 flex-col" inert={editing || undefined}>
-        <Widget instance={instance} />
+        <Suspense fallback={<WidgetLoading />}>
+          <ErrorBoundary fallback={<WidgetError />}>
+            <Widget instance={instance} />
+          </ErrorBoundary>
+        </Suspense>
       </CardContent>
     </Card>
   );

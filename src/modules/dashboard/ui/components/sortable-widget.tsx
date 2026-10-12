@@ -11,7 +11,7 @@ import type {
   WidgetDefinition,
 } from "../../types";
 
-import { WidgetSlot } from "./widget-slot";
+import { WidgetCard } from "./widget-card";
 
 interface SortableWidgetProps {
   definition: WidgetDefinition;
@@ -50,7 +50,7 @@ export const SortableWidget = ({
         isDragging && "opacity-60",
       )}
     >
-      <WidgetSlot
+      <WidgetCard
         definition={definition}
         instance={instance}
         editing
