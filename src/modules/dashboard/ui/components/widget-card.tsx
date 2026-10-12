@@ -1,4 +1,6 @@
-import { Suspense } from "react";
+"use client";
+
+import { Suspense, useSyncExternalStore } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { GripVertical, X } from "lucide-react";
 
@@ -34,6 +36,23 @@ interface WidgetCardProps {
   onConfigure?: (config: Record<string, unknown>) => void;
 }
 
+const subscribeToNothing = () => () => {};
+
+/**
+ * Whether the widget body may render yet. The widgets' data queries run through
+ * the browser tRPC client, but the dashboard only prefetches its layout and
+ * metrics — not each widget's data — so rendering a widget during SSR would
+ * fire that client over HTTP from the server, without the request cookies, and
+ * every query would fail as unauthorized. The body therefore waits for the
+ * browser, showing the shared loading state on the server.
+ */
+const useIsClient = () =>
+  useSyncExternalStore(
+    subscribeToNothing,
+    () => true,
+    () => false,
+  );
+
 /**
  * The chrome shared by every Dashboard widget: the definition's title and icon
  * in the header, and the widget's own component in the body, wrapped in its own
@@ -54,6 +73,7 @@ export const WidgetCard = ({
 }: WidgetCardProps) => {
   const Icon = definition.icon;
   const Widget = definition.component;
+  const isClient = useIsClient();
 
   return (
     <Card className="flex h-full flex-col">
@@ -96,11 +116,15 @@ export const WidgetCard = ({
         )}
       </CardHeader>
       <CardContent className="flex flex-1 flex-col" inert={editing || undefined}>
-        <Suspense fallback={<WidgetLoading />}>
-          <ErrorBoundary fallback={<WidgetError />}>
-            <Widget instance={instance} />
-          </ErrorBoundary>
-        </Suspense>
+        {isClient ? (
+          <Suspense fallback={<WidgetLoading />}>
+            <ErrorBoundary fallback={<WidgetError />}>
+              <Widget instance={instance} />
+            </ErrorBoundary>
+          </Suspense>
+        ) : (
+          <WidgetLoading />
+        )}
       </CardContent>
     </Card>
   );
