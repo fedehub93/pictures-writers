@@ -32,7 +32,20 @@ import { db } from "@/shared/lib/db";
 import { PERMISSIONS, getProcedurePermissions } from "@/shared/lib/permissions";
 import { createProductRoot } from "@/modules/shop/products/lib/__tests__/root-fixtures";
 
+import type { WidgetDefinition } from "../../types";
+import {
+  computeDashboardLayout,
+  visibleDashboardWidgets,
+} from "../layout";
 import { dashboardRouter } from "../procedures";
+
+const widgetDefinition = (id: string): WidgetDefinition => ({
+  id,
+  title: id,
+  icon: undefined as unknown as WidgetDefinition["icon"],
+  size: "medium",
+  component: () => null,
+});
 
 const createCaller = createCallerFactory(dashboardRouter);
 
@@ -293,6 +306,55 @@ describe("dashboard.saveLayout", () => {
     expect(getProcedurePermissions("dashboard.saveLayout")).toEqual([
       PERMISSIONS.DASHBOARD_READ,
     ]);
+  });
+
+  it("makes the computed layout reflect the saved order and hidden set", async () => {
+    const user = await createUser();
+    const caller = callerFor(user.id);
+
+    // A reorder, a hidden instance, and a user-added second instance of a
+    // definition that also has a default.
+    const widgets = [
+      { key: "pending-orders", definitionId: "pending-orders" },
+      { key: "trend-revenue", definitionId: "trend" },
+      { key: "drafts", definitionId: "drafts", hidden: true },
+      { key: "trend-contacts", definitionId: "trend" },
+    ];
+
+    await caller.saveLayout({ widgets });
+    const { widgets: saved } = await caller.getLayout();
+
+    const definitions = [
+      widgetDefinition("drafts"),
+      widgetDefinition("scheduled"),
+      widgetDefinition("pending-orders"),
+      widgetDefinition("trend"),
+    ];
+
+    const layout = computeDashboardLayout({
+      defaults: [
+        { key: "drafts", definitionId: "drafts" },
+        { key: "scheduled", definitionId: "scheduled" },
+        { key: "pending-orders", definitionId: "pending-orders" },
+        { key: "trend-contacts", definitionId: "trend" },
+      ],
+      saved,
+      definitions,
+      canRead: () => true,
+    });
+
+    // Saved order wins, a new default (scheduled) is appended, and the hidden
+    // instance is retained but not rendered.
+    expect(layout.map((instance) => instance.key)).toEqual([
+      "pending-orders",
+      "trend-revenue",
+      "drafts",
+      "trend-contacts",
+      "scheduled",
+    ]);
+    expect(visibleDashboardWidgets(layout).map((instance) => instance.key)).toEqual(
+      ["pending-orders", "trend-revenue", "trend-contacts", "scheduled"],
+    );
   });
 });
 
