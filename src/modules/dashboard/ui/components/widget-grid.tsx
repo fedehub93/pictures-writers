@@ -9,7 +9,12 @@ import type {
   WidgetDefinition,
 } from "@/shared/dashboard/types";
 
-import { WIDGET_SIZE_CLASS } from "../../lib/widget-size";
+import {
+  mdColSpan,
+  WIDGET_SIZE_UNITS,
+  widgetSizeUnits,
+} from "../../lib/widget-size";
+import { resolveRowSpans } from "../../lib/widget-rows";
 import { getWidgetDefinition } from "../../registry";
 
 import { DashboardEmpty } from "./dashboard-empty";
@@ -50,6 +55,15 @@ export const WidgetGrid = ({
     return <DashboardEmpty definitions={permittedDefinitions} onSelect={onAdd} />;
   }
 
+  // Pack the widgets and the trailing add tile into the grid row by row,
+  // stretching the last item of any partial row so no row shows a hole.
+  const spans = resolveRowSpans([
+    ...widgets.map(({ instance, definition }) =>
+      widgetSizeUnits(instance, definition),
+    ),
+    WIDGET_SIZE_UNITS.small,
+  ]);
+
   const onDragEnd = (event: DragEndEvent) => {
     if (event.canceled) return;
 
@@ -75,13 +89,14 @@ export const WidgetGrid = ({
             definition={definition}
             instance={instance}
             index={index}
+            columnSpan={spans[index]}
             configContext={configContext}
             onUpdate={onUpdate}
             onRemove={onRemove}
           />
         ))}
 
-        <div className={WIDGET_SIZE_CLASS.small}>
+        <div className={mdColSpan(spans[widgets.length])}>
           <WidgetLibraryTile
             definitions={permittedDefinitions}
             onSelect={onAdd}

@@ -9,7 +9,7 @@ import type {
   WidgetDefinition,
 } from "@/shared/dashboard/types";
 
-import { widgetSizeClass } from "../../lib/widget-size";
+import { mdColSpan } from "../../lib/widget-size";
 
 import { WidgetCard } from "./widget-card";
 
@@ -17,6 +17,8 @@ interface SortableWidgetProps {
   definition: WidgetDefinition;
   instance: DashboardWidgetInstance;
   index: number;
+  /** The grid columns this cell occupies, resolved by the row packer. */
+  columnSpan: number;
   configContext: WidgetConfigContext;
   onUpdate: (key: string, patch: Partial<DashboardWidgetInstance>) => void;
   onRemove: (key: string) => void;
@@ -31,6 +33,7 @@ export const SortableWidget = ({
   definition,
   instance,
   index,
+  columnSpan,
   configContext,
   onUpdate,
   onRemove,
@@ -45,7 +48,7 @@ export const SortableWidget = ({
   return (
     <div
       ref={ref}
-      className={cn(widgetSizeClass(instance, definition), isDragging && "opacity-60")}
+      className={cn(mdColSpan(columnSpan), isDragging && "opacity-60")}
     >
       <WidgetCard
         definition={definition}
