@@ -82,7 +82,7 @@ export const resolveWidgetLayout = (
   };
 };
 
-const clamp = (value: number, min: number, max: number) =>
+export const clamp = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), max);
 
 const overlaps = (a: WidgetGridPlacement, b: WidgetGridPlacement) =>

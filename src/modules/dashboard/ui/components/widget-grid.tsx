@@ -18,6 +18,11 @@ import {
   sortForSingleColumn,
   toGridItems,
 } from "../../lib/grid-layout";
+import {
+  applyLayoutAction,
+  canMoveInstance,
+  type LayoutAction,
+} from "../../lib/keyboard-layout";
 import { getWidgetDefinition } from "../../registry";
 
 import { DashboardEmpty } from "./dashboard-empty";
@@ -29,8 +34,15 @@ interface WidgetGridProps {
   /** Whether the dashboard is in edit mode: grid, drag, and resize enabled. */
   editing: boolean;
   onUpdate: (key: string, patch: Partial<DashboardWidgetInstance>) => void;
-  /** Receives the whole arrangement after a completed move or resize. */
-  onLayoutChange: (items: readonly GridPlacementItem[]) => void;
+  /**
+   * Receives the whole arrangement after a completed move or resize, plus the
+   * key of the widget that moved or resized (absent when unknown), so the
+   * dashboard can announce the change.
+   */
+  onLayoutChange: (
+    items: readonly GridPlacementItem[],
+    changedKey?: string,
+  ) => void;
   onRemove: (key: string) => void;
   onAdd: (definitionId: string) => void;
   configContext: WidgetConfigContext;
@@ -59,7 +71,11 @@ interface ResolvedWidget {
  * by the definition's `minW`/`minH` and `maxW`/`maxH`, which `toGridItems`
  * attaches to the item, so a resize never drops below the legibility floor or
  * above the ceiling. A completed move or resize is reported through
- * `onLayoutChange` for the dashboard to auto-save. When there is nothing to
+ * `onLayoutChange` for the dashboard to auto-save. Because `react-grid-layout`
+ * has no keyboard move or resize, each card also mounts a keyboard layout menu
+ * in edit mode; its action is applied to the instances and compacted here, so
+ * the keyboard path saves exactly the layout a pointer gesture would. When
+ * there is nothing to
  * show, the grid is replaced by the empty-dashboard prompt.
  */
 export const WidgetGrid = ({
@@ -126,6 +142,26 @@ export const WidgetGrid = ({
     return <DashboardEmpty definitions={permittedDefinitions} onSelect={onAdd} />;
   }
 
+  // A keyboard layout action is applied to the instances, then the whole
+  // arrangement is compacted exactly as a pointer move or resize would be, so
+  // the keyboard path saves the same layout a drag would.
+  const onLayoutAction = (key: string, action: LayoutAction) => {
+    const instance = instances.find((entry) => entry.key === key);
+    if (!instance) return;
+    const definition = getWidgetDefinition(instance.definitionId);
+    if (!definition) return;
+
+    const next = applyLayoutAction(instances, key, definition, action);
+    if (next === instances) return;
+
+    const items = toGridItems(
+      next,
+      widgets.map((widget) => widget.definition),
+    );
+
+    onLayoutChange(verticalCompactor.compact(items, GRID_COLUMNS), key);
+  };
+
   const renderCard = ({ instance, definition }: ResolvedWidget) => (
     <WidgetCard
       definition={definition}
@@ -135,6 +171,13 @@ export const WidgetGrid = ({
       highlighted={instance.key === highlightedKey}
       onUpdate={(patch) => onUpdate(instance.key, patch)}
       onRemove={editing ? () => onRemove(instance.key) : undefined}
+      onLayoutAction={
+        editing
+          ? (action) => onLayoutAction(instance.key, action)
+          : undefined
+      }
+      canMoveUp={canMoveInstance(instances, instance.key, -1)}
+      canMoveDown={canMoveInstance(instances, instance.key, 1)}
     />
   );
 
@@ -158,8 +201,12 @@ export const WidgetGrid = ({
           }}
           dragConfig={{ enabled: editing, handle: `.${EDIT_MODE_DRAG_HANDLE}` }}
           resizeConfig={{ enabled: editing }}
-          onDragStop={onLayoutChange}
-          onResizeStop={onLayoutChange}
+          onDragStop={(layout, _oldItem, newItem) =>
+            onLayoutChange(layout, newItem?.i)
+          }
+          onResizeStop={(layout, _oldItem, newItem) =>
+            onLayoutChange(layout, newItem?.i)
+          }
           compactor={verticalCompactor}
           style={editingGridStyle}
         >

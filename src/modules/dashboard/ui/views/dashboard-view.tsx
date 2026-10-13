@@ -27,8 +27,10 @@ import {
   removeInstance,
   updateInstance,
 } from "../../lib/edit-layout";
+import { layoutChangeAnnouncement } from "../../lib/layout-announcement";
 import { isAnalyticsInstanceRenderable } from "../../lib/metric-selection";
 import { permittedLibraryDefinitions } from "../../lib/widget-library";
+import { resolveWidgetTitle } from "../../lib/widget-title";
 import {
   getWidgetDefinition,
   WIDGET_DEFINITIONS,
@@ -106,6 +108,14 @@ export const DashboardView = () => {
   // it landed. Cleared after a short beat.
   const [highlightedKey, setHighlightedKey] = useState<string | null>(null);
 
+  // The most recent layout change, described for the `aria-live` region. The
+  // sequence forces a fresh announcement when the same widget lands in the same
+  // place twice, which an unchanged string would otherwise swallow.
+  const [announcement, setAnnouncement] = useState<{
+    text: string;
+    seq: number;
+  } | null>(null);
+
   useEffect(() => {
     if (!highlightedKey) return;
     const timer = setTimeout(() => setHighlightedKey(null), HIGHLIGHT_MS);
@@ -117,9 +127,31 @@ export const DashboardView = () => {
 
   // A completed move or resize reports the whole arrangement; read it back into
   // the instances (a resize also drags neighbours through compaction) and
-  // auto-save it.
-  const onLayoutChange = (items: readonly GridPlacementItem[]) =>
+  // auto-save it. When the grid names the widget that changed, announce it to
+  // assistive technology with its new position and size.
+  const onLayoutChange = (
+    items: readonly GridPlacementItem[],
+    changedKey?: string,
+  ) => {
     commit(applyGridLayout(instances, items));
+
+    if (!changedKey) return;
+    const item = items.find((entry) => entry.i === changedKey);
+    const instance = instances.find((entry) => entry.key === changedKey);
+    const definition = instance
+      ? getWidgetDefinition(instance.definitionId)
+      : undefined;
+    if (!item || !instance || !definition) return;
+
+    const text = layoutChangeAnnouncement(
+      resolveWidgetTitle(definition, instance, configContext),
+      item,
+    );
+    setAnnouncement((previous) => ({
+      text,
+      seq: (previous?.seq ?? 0) + 1,
+    }));
+  };
 
   const onRemove = (key: string) => commit(removeInstance(instances, key));
 
@@ -148,6 +180,15 @@ export const DashboardView = () => {
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 md:pt-4">
+      <div
+        aria-live="polite"
+        role="status"
+        className="sr-only"
+      >
+        {announcement ? (
+          <span key={announcement.seq}>{announcement.text}</span>
+        ) : null}
+      </div>
       <div className="flex flex-col items-center justify-between gap-y-4 sm:flex-row">
         <h1 className="text-3xl">Dashboard</h1>
         <div className="flex items-center gap-2">

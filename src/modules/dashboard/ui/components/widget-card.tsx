@@ -21,9 +21,12 @@ import type {
 } from "@/shared/dashboard/types";
 import { WidgetError, WidgetLoading } from "@/shared/dashboard/ui/widget-states";
 
+import { resolveWidgetLayout } from "../../lib/grid-layout";
+import type { LayoutAction } from "../../lib/keyboard-layout";
 import { resolveWidgetTitle } from "../../lib/widget-title";
 
 import { ConfigPopover } from "./config-popover";
+import { WidgetLayoutMenu } from "./widget-layout-menu";
 import { WidgetTitle } from "./widget-title";
 
 /**
@@ -45,6 +48,14 @@ interface WidgetCardProps {
   onUpdate?: (patch: Partial<DashboardWidgetInstance>) => void;
   /** Removes this instance from the dashboard. */
   onRemove?: () => void;
+  /**
+   * Applies a keyboard layout action to this instance. Present only in edit
+   * mode, where the card mounts the layout control.
+   */
+  onLayoutAction?: (action: LayoutAction) => void;
+  /** Whether the widget has a neighbour up or down to swap with. */
+  canMoveUp?: boolean;
+  canMoveDown?: boolean;
 }
 
 const subscribeToNothing = () => () => {};
@@ -76,9 +87,9 @@ const useIsClient = () =>
  * The card's non-spatial controls — rename and config — are always mounted.
  * They are visually revealed on hover or focus on pointer devices, and kept
  * visible on small (touch) screens so they remain reachable without a hover
- * state. The spatial controls belong to edit mode: the remove control is only
- * passed in edit mode, and the drag handle is only mounted when `editing`, so a
- * read-mode dashboard shows neither.
+ * state. The spatial controls belong to edit mode: the remove control, the drag
+ * handle, and the keyboard layout menu are only passed or mounted when
+ * `editing`, so a read-mode dashboard shows none.
  */
 export const WidgetCard = ({
   definition,
@@ -88,6 +99,9 @@ export const WidgetCard = ({
   highlighted = false,
   onUpdate,
   onRemove,
+  onLayoutAction,
+  canMoveUp = true,
+  canMoveDown = true,
 }: WidgetCardProps) => {
   const Icon = definition.icon;
   const Widget = definition.component;
@@ -144,6 +158,16 @@ export const WidgetCard = ({
           <div className="relative flex h-7 shrink-0 items-center justify-end">
             <Icon className="hidden size-4 text-muted-foreground md:absolute md:right-0 md:block md:transition-opacity md:group-focus-within/card:opacity-0 md:group-hover/card:opacity-0" />
             <div className="flex items-center gap-1 bg-card opacity-100 md:opacity-0 md:transition-opacity md:group-focus-within/card:opacity-100 md:group-hover/card:opacity-100">
+              {editing && onLayoutAction ? (
+                <WidgetLayoutMenu
+                  title={title}
+                  placement={instance.grid}
+                  bounds={resolveWidgetLayout(definition).bounds}
+                  canMoveUp={canMoveUp}
+                  canMoveDown={canMoveDown}
+                  onAction={onLayoutAction}
+                />
+              ) : null}
               {definition.configSchema && configContext ? (
                 <ConfigPopover
                   definition={definition}
