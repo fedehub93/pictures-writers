@@ -84,7 +84,9 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
         forms.some((form) => form.id === id),
       );
 
-      if (selected.length === 0 || selected.length >= forms.length) return [];
+      if (selected.length === 0 || selected.length >= forms.length) {
+        return [{ key: "forms", label: "All forms" }];
+      }
 
       const names = selected
         .map((id) => forms.find((form) => form.id === id)?.label ?? id)

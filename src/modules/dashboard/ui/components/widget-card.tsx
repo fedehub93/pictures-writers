@@ -23,7 +23,7 @@ import { resolveWidgetSize } from "../../lib/widget-size";
 import { resolveWidgetTitle } from "../../lib/widget-title";
 
 import { ConfigPopover } from "./config-popover";
-import { WidgetFilterSummary } from "./widget-filter-summary";
+import { WidgetFilterChips } from "./widget-filter-chips";
 import { WidgetSizeMenu } from "./widget-size-menu";
 import { WidgetTitle } from "./widget-title";
 
@@ -102,7 +102,7 @@ export const WidgetCard = ({
                 onRename={(next) => onUpdate({ title: next })}
               />
               {configContext ? (
-                <WidgetFilterSummary
+                <WidgetFilterChips
                   definition={definition}
                   instance={instance}
                   context={configContext}

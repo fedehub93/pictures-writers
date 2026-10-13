@@ -23,28 +23,21 @@ describe("configStringValues", () => {
 });
 
 describe("summarizeMultiselect", () => {
-  it("returns no chip when the value matches the default, in any order", () => {
+  it("shows the default selection when nothing is stored", () => {
     expect(
       summarizeMultiselect(undefined, "statuses", options, [
         "DRAFT",
         "PUBLISHED",
       ]),
-    ).toEqual([]);
+    ).toEqual([{ key: "statuses", label: "Draft, Published" }]);
+  });
+
+  it("summarizes the stored value with the option labels, in the stored order", () => {
     expect(
       summarizeMultiselect({ statuses: ["PUBLISHED", "DRAFT"] }, "statuses", options, [
         "DRAFT",
-        "PUBLISHED",
       ]),
-    ).toEqual([]);
-  });
-
-  it("summarizes a value that differs from the default with the option labels", () => {
-    expect(
-      summarizeMultiselect({ statuses: ["DRAFT"] }, "statuses", options, [
-        "DRAFT",
-        "PUBLISHED",
-      ]),
-    ).toEqual([{ key: "statuses", label: "Draft" }]);
+    ).toEqual([{ key: "statuses", label: "Published, Draft" }]);
   });
 
   it("falls back to the raw value when it is not an option", () => {

@@ -214,27 +214,27 @@ describe("dashboard widget titles and filter summaries", () => {
     expect(definition?.resolveTitle?.(emptyContext)).toBe("Trend");
   });
 
-  it("summarizes the Trend's form filter only when it narrows the submissions metric", () => {
+  it("shows the Trend's form filter, defaulting to all forms", () => {
     const definition = getWidgetDefinition("trend");
 
-    // No filter, an empty filter, or the full set all read as wide open.
+    // Nothing narrowed, an empty selection, or the full set all read as all.
     expect(
       definition?.summarizeConfig?.({ metric: "submissions" }, trendContext),
-    ).toEqual([]);
+    ).toEqual([{ key: "forms", label: "All forms" }]);
     expect(
       definition?.summarizeConfig?.(
         { metric: "submissions", forms: [] },
         trendContext,
       ),
-    ).toEqual([]);
+    ).toEqual([{ key: "forms", label: "All forms" }]);
     expect(
       definition?.summarizeConfig?.(
         { metric: "submissions", forms: ["form-feedback", "form-contact"] },
         trendContext,
       ),
-    ).toEqual([]);
+    ).toEqual([{ key: "forms", label: "All forms" }]);
 
-    // A subset is worth a chip, with the names behind the count.
+    // A subset shows the count, with the names behind it.
     expect(
       definition?.summarizeConfig?.(
         { metric: "submissions", forms: ["form-feedback"] },
@@ -251,16 +251,18 @@ describe("dashboard widget titles and filter summaries", () => {
     ).toEqual([]);
   });
 
-  it("summarizes the drafts status filter only when it differs from the default", () => {
+  it("shows the drafts status filter, defaulting to drafts and changed", () => {
     const definition = getWidgetDefinition("drafts");
 
-    expect(definition?.summarizeConfig?.(undefined, emptyContext)).toEqual([]);
+    expect(definition?.summarizeConfig?.(undefined, emptyContext)).toEqual([
+      { key: "statuses", label: "Draft, Changed" },
+    ]);
     expect(
       definition?.summarizeConfig?.(
         { statuses: ["DRAFT", "CHANGED"] },
         emptyContext,
       ),
-    ).toEqual([]);
+    ).toEqual([{ key: "statuses", label: "Draft, Changed" }]);
     expect(
       definition?.summarizeConfig?.({ statuses: ["PUBLISHED"] }, emptyContext),
     ).toEqual([{ key: "statuses", label: "Published" }]);
@@ -272,16 +274,18 @@ describe("dashboard widget titles and filter summaries", () => {
     ).toEqual([{ key: "statuses", label: "Draft, Published" }]);
   });
 
-  it("summarizes the scheduled type filter only when it narrows from all", () => {
+  it("shows the scheduled type filter, defaulting to every type", () => {
     const definition = getWidgetDefinition("scheduled");
 
-    expect(definition?.summarizeConfig?.(undefined, emptyContext)).toEqual([]);
+    expect(definition?.summarizeConfig?.(undefined, emptyContext)).toEqual([
+      { key: "types", label: "Posts, Newsletters" },
+    ]);
     expect(
       definition?.summarizeConfig?.(
         { types: ["PUBLISH_POST", "SEND_EMAIL"] },
         emptyContext,
       ),
-    ).toEqual([]);
+    ).toEqual([{ key: "types", label: "Posts, Newsletters" }]);
     expect(
       definition?.summarizeConfig?.({ types: ["PUBLISH_POST"] }, emptyContext),
     ).toEqual([{ key: "types", label: "Posts" }]);

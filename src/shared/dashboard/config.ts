@@ -21,14 +21,11 @@ export const configStringValues = (
     : [];
 };
 
-const sameStringSet = (a: readonly string[], b: readonly string[]) =>
-  [...a].sort().join("|") === [...b].sort().join("|");
-
 /**
- * Summarises a multi-choice filter as a single chip, or nothing when the stored
- * value still matches the widget's default. Shared by the operational widgets
- * whose only filter is a multiselect, so the "differs from default" rule and
- * the option-label mapping live in one place.
+ * Summarises a multi-choice filter as a single chip showing the selection in
+ * effect — the stored value, or the widget's default when nothing is stored, so
+ * the filter is always visible. Shared by the operational widgets whose only
+ * filter is a multiselect, so the option-label mapping lives in one place.
  */
 export const summarizeMultiselect = (
   config: WidgetConfig | undefined,
@@ -38,8 +35,6 @@ export const summarizeMultiselect = (
 ): WidgetFilterChip[] => {
   const stored = configStringValues(config, field);
   const effective = stored.length > 0 ? stored : defaultValues;
-
-  if (sameStringSet(effective, defaultValues)) return [];
 
   const label = effective
     .map(

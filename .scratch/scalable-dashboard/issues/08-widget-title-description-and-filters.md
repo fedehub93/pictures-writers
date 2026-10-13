@@ -11,8 +11,8 @@
 - [x] The card title is renamed in place and is keyboard-accessible: a focusable, hover/focus-revealed trigger that becomes an input on activation; Enter/blur saves, Escape reverts, an empty value reverts to the default.
 - [x] The effective title is used in the card's visible title and its arrange controls' `aria-label`s; the library keeps listing definitions by their default title.
 - [x] Every card shows the definition's static `description` as a single muted, clamped line under the title.
-- [x] `WidgetDefinition` gains `summarizeConfig?(config, context): WidgetFilterChip[]`; the card renders the chips under the description and shows none when the summary is empty.
-- [x] The Trend, drafts, and scheduled definitions implement `summarizeConfig`, returning chips only when the config differs from the widget's default (the Trend's form filter, once it narrows below every form).
+- [x] `WidgetDefinition` gains `summarizeConfig?(config, context): WidgetFilterChip[]`; the card renders the chips next to the title, always showing the selection in effect (even at its default).
+- [x] The Trend, drafts, and scheduled definitions implement `summarizeConfig`, returning the selection in effect — the Trend's form filter reads "All forms" until narrowed.
 - [x] The Trend's chips summarize the form filter (count), with the selected names in a tooltip; its metric is not a chip (it is the title).
 - [x] The chips of a configurable widget open that widget's config popover.
 - [x] The layout round-trip persists the per-instance `title` (the `dashboard.saveLayout` document already stores opaque JSON).
@@ -30,7 +30,7 @@ Delivered:
 - `src/modules/dashboard/ui/components/widget-filter-chips.tsx` — chips under the description, with a tooltip; on a configurable widget each chip opens the config popover.
 - `src/modules/dashboard/ui/components/widget-card.tsx` — renders the title, description and chips; builds the effective title from the context (empty context fallback so an override is honoured even with no metrics/forms); passes the effective title to the arrange controls' `aria-label`s.
 - `src/modules/dashboard/ui/components/config-popover.tsx` — controllable `open`/`onOpenChange` and a `label`, so a chip opens the same popover and it names the renamed instance.
-- `src/modules/dashboard/registry.ts` — the Trend's `resolveTitle` (metric label) and `summarizeConfig` (form subset: count + names in a tooltip, only once below all; the metric is never a chip).
+- `src/modules/dashboard/registry.ts` — the Trend's `resolveTitle` (metric label) and `summarizeConfig` (form subset: count + names in a tooltip, or "All forms"; the metric is never a chip).
 - `blog/posts/widgets/index.ts` + `scheduler/widgets/index.ts` — `summarizeConfig` via the shared helper.
 - `src/modules/dashboard/server/procedures.ts` — `widgetInstanceSchema` accepts the optional `title`, so `saveLayout` round-trips it.
 - Coverage: `lib/__tests__/widget-title.test.ts` (5), `shared/dashboard/__tests__/config.test.ts` (5), `__tests__/registry.test.ts` (+4 for titles/filter summaries), `server/__tests__/procedures.test.ts` (title in the round-trip).
@@ -40,3 +40,4 @@ Notes:
 
 - The reviews prompted two fixes: the `title` override now wins even when the card has no config context, and the shared `summarizeMultiselect` removed the duplicated `sameSet`/label logic from the two operational modules. The `spec.md` contract list and the "narrows" wording were corrected to "differs from the widget's default", matching the agreed decision.
 - Browser acceptance of the rename (click → edit, Escape/empty) and of the chip→popover interaction is the one step left to a human.
+- Follow-up after a first look: the arrange controls now reserve their own space (no overlap with the title); the title hugs its text, the rename input is capped, and the hover affordance is a dotted underline; the filter chips moved next to the title and are **always shown** (a chip at its default too, e.g. "All forms", "Draft, Changed") rather than only when the config narrows.
