@@ -51,6 +51,8 @@ const widgetDefinition = (id: string): WidgetDefinition => ({
   component: () => null,
 });
 
+const grid = (x = 0, y = 0, w = 6, h = 4) => ({ x, y, w, h });
+
 const createCaller = createCallerFactory(dashboardRouter);
 
 const userIds: string[] = [];
@@ -110,10 +112,15 @@ describe("dashboard.saveLayout", () => {
       {
         key: "drafts",
         definitionId: "drafts",
-        size: "full" as const,
+        grid: grid(0, 0, 12, 5),
         title: "My drafts",
       },
-      { key: "trend-contacts", definitionId: "trend", config: { metric: "contacts" } },
+      {
+        key: "trend-contacts",
+        definitionId: "trend",
+        grid: grid(0, 5, 6, 4),
+        config: { metric: "contacts" },
+      },
     ];
 
     await caller.saveLayout({ widgets });
@@ -129,11 +136,13 @@ describe("dashboard.saveLayout", () => {
       {
         key: "trend-contacts",
         definitionId: "trend",
+        grid: grid(0, 0, 6, 4),
         config: { metric: "contacts" },
       },
       {
         key: "trend-shifted",
         definitionId: "trend",
+        grid: grid(6, 0, 6, 4),
         config: { metric: "revenue" },
       },
     ];
@@ -156,11 +165,13 @@ describe("dashboard.saveLayout", () => {
       {
         key: "trend-contacts",
         definitionId: "trend",
+        grid: grid(0, 0, 6, 4),
         config: { metric: "contacts" },
       },
       {
         key: "trend-shifted",
         definitionId: "trend",
+        grid: grid(6, 0, 6, 4),
         config: { metric: "submissions" },
       },
     ]);
@@ -173,6 +184,7 @@ describe("dashboard.saveLayout", () => {
       {
         key: "trend-submissions",
         definitionId: "trend",
+        grid: grid(3, 0, 9, 4),
         config: { metric: "submissions", forms: ["form-a", "form-b"] },
       },
     ];
@@ -187,15 +199,19 @@ describe("dashboard.saveLayout", () => {
     const user = await createUser();
     const caller = callerFor(user.id);
 
-    await caller.saveLayout({ widgets: [{ key: "drafts", definitionId: "drafts" }] });
     await caller.saveLayout({
-      widgets: [{ key: "drafts", definitionId: "drafts", size: "full" }],
+      widgets: [{ key: "drafts", definitionId: "drafts", grid: grid() }],
+    });
+    await caller.saveLayout({
+      widgets: [
+        { key: "drafts", definitionId: "drafts", grid: grid(6, 0, 6, 4) },
+      ],
     });
 
     const layout = await caller.getLayout();
 
     expect(layout.widgets).toEqual([
-      { key: "drafts", definitionId: "drafts", size: "full" },
+      { key: "drafts", definitionId: "drafts", grid: grid(6, 0, 6, 4) },
     ]);
   });
 
@@ -204,7 +220,7 @@ describe("dashboard.saveLayout", () => {
     const other = await createUser();
 
     await callerFor(owner.id).saveLayout({
-      widgets: [{ key: "drafts", definitionId: "drafts" }],
+      widgets: [{ key: "drafts", definitionId: "drafts", grid: grid() }],
     });
 
     const otherLayout = await callerFor(other.id).getLayout();
@@ -223,16 +239,16 @@ describe("dashboard.saveLayout", () => {
     ]);
   });
 
-  it("makes the computed layout reflect the saved order", async () => {
+  it("round-trips a positioned arrangement through saveLayout and the filter", async () => {
     const user = await createUser();
     const caller = callerFor(user.id);
 
-    // A reorder plus two user-added instances of one definition.
+    // Two instances of one definition, each with its own placement.
     const widgets = [
-      { key: "pending-orders", definitionId: "pending-orders" },
-      { key: "trend-revenue", definitionId: "trend" },
-      { key: "drafts", definitionId: "drafts" },
-      { key: "trend-contacts", definitionId: "trend" },
+      { key: "pending-orders", definitionId: "pending-orders", grid: grid(0, 0, 6, 4) },
+      { key: "trend-revenue", definitionId: "trend", grid: grid(6, 0, 3, 3) },
+      { key: "drafts", definitionId: "drafts", grid: grid(0, 4, 12, 5) },
+      { key: "trend-contacts", definitionId: "trend", grid: grid(9, 0, 3, 3) },
     ];
 
     await caller.saveLayout({ widgets });
@@ -255,6 +271,12 @@ describe("dashboard.saveLayout", () => {
       "trend-revenue",
       "drafts",
       "trend-contacts",
+    ]);
+    expect(layout.map((instance) => instance.grid)).toEqual([
+      grid(0, 0, 6, 4),
+      grid(6, 0, 3, 3),
+      grid(0, 4, 12, 5),
+      grid(9, 0, 3, 3),
     ]);
   });
 });

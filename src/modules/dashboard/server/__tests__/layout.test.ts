@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import type {
   DashboardWidgetInstance,
   WidgetDefinition,
+  WidgetGridPlacement,
 } from "@/shared/dashboard/types";
 
 import { computeDashboardLayout } from "../layout";
@@ -18,11 +19,13 @@ const def = (id: string, permission?: string): WidgetDefinition => ({
   component: () => null,
 });
 
+const grid = (x = 0, y = 0, w = 3, h = 3): WidgetGridPlacement => ({ x, y, w, h });
+
 const instance = (
   key: string,
   definitionId: string,
-  overrides: Partial<DashboardWidgetInstance> & { hidden?: boolean } = {},
-): DashboardWidgetInstance => ({ key, definitionId, ...overrides });
+  overrides: Partial<DashboardWidgetInstance> = {},
+): DashboardWidgetInstance => ({ key, definitionId, grid: grid(), ...overrides });
 
 const allowAll = () => true;
 const allowNone = () => false;
@@ -35,7 +38,9 @@ describe("computeDashboardLayout", () => {
       canRead: allowAll,
     });
 
-    expect(layout).toEqual([{ key: "drafts", definitionId: "drafts" }]);
+    expect(layout).toEqual([
+      { key: "drafts", definitionId: "drafts", grid: grid() },
+    ]);
   });
 
   it("drops a saved widget the user cannot read", () => {
@@ -55,7 +60,7 @@ describe("computeDashboardLayout", () => {
       canRead: allowNone,
     });
 
-    expect(layout).toEqual([{ key: "trend", definitionId: "trend" }]);
+    expect(layout).toEqual([{ key: "trend", definitionId: "trend", grid: grid() }]);
   });
 
   it("preserves the saved order", () => {
@@ -95,19 +100,26 @@ describe("computeDashboardLayout", () => {
       {
         key: "trend-ebooks",
         definitionId: "trend",
+        grid: grid(),
         config: { metric: "ebooks" },
       },
     ]);
   });
 
-  it("drops a legacy hidden instance instead of resurrecting it", () => {
+  it("preserves each instance's placement through the filter", () => {
     const layout = computeDashboardLayout({
-      saved: [instance("trend-contacts", "trend", { hidden: true })],
-      definitions: [def("trend")],
+      saved: [
+        instance("drafts", "drafts", { grid: grid(0, 0, 6, 4) }),
+        instance("pending-orders", "pending-orders", { grid: grid(6, 0, 3, 3) }),
+      ],
+      definitions: [def("drafts"), def("pending-orders")],
       canRead: allowAll,
     });
 
-    expect(layout).toEqual([]);
+    expect(layout.map((item) => item.grid)).toEqual([
+      grid(0, 0, 6, 4),
+      grid(6, 0, 3, 3),
+    ]);
   });
 
   it("keeps multiple instances of the same definition in a stable order", () => {

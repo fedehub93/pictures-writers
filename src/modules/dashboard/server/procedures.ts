@@ -5,7 +5,6 @@ import { getAuthorizedUser } from "@/shared/lib/authorization";
 import { db } from "@/shared/lib/db";
 import { hasPermission, PERMISSIONS } from "@/shared/lib/permissions";
 import {
-  WIDGET_SIZES,
   WIDGET_TITLE_MAX_LENGTH,
 } from "@/shared/dashboard/types";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
@@ -17,12 +16,19 @@ import {
 
 import { getMetric, permittedMetrics } from "./metrics/registry";
 
+const widgetPlacementSchema = z.object({
+  x: z.number().int().nonnegative(),
+  y: z.number().int().nonnegative(),
+  w: z.number().int().positive(),
+  h: z.number().int().positive(),
+});
+
 const widgetInstanceSchema = z.object({
   key: z.string().min(1),
   definitionId: z.string().min(1),
   title: z.string().max(WIDGET_TITLE_MAX_LENGTH).optional(),
   config: z.record(z.string(), z.unknown()).nullish(),
-  size: z.enum(WIDGET_SIZES).optional(),
+  grid: widgetPlacementSchema,
 });
 
 /** Loads the current user's authorization, failing the request when there is none. */

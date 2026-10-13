@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useSyncExternalStore } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { GripVertical, X } from "lucide-react";
+import { X } from "lucide-react";
 
 import { Button } from "@/shared/ui/button";
 import {
@@ -20,21 +20,17 @@ import type {
 } from "@/shared/dashboard/types";
 import { WidgetError, WidgetLoading } from "@/shared/dashboard/ui/widget-states";
 
-import { resolveWidgetSize } from "../../lib/widget-size";
 import { resolveWidgetTitle } from "../../lib/widget-title";
 
 import { ConfigPopover } from "./config-popover";
-import { WidgetSizeMenu } from "./widget-size-menu";
 import { WidgetTitle } from "./widget-title";
 
 interface WidgetCardProps {
   definition: WidgetDefinition;
   instance: DashboardWidgetInstance;
-  /** Attaches the drag handle owned by the surrounding sortable. */
-  dragHandleRef?: (element: Element | null) => void;
   /** Context a configurable widget's schema resolves against. */
   configContext?: WidgetConfigContext;
-  /** Receives a patch for this instance: rename, resize or reconfigure it. */
+  /** Receives a patch for this instance: rename or reconfigure it. */
   onUpdate?: (patch: Partial<DashboardWidgetInstance>) => void;
   /** Removes this instance from the dashboard. */
   onRemove?: () => void;
@@ -66,15 +62,15 @@ const useIsClient = () =>
  * Suspense and error boundary so a widget's loading or failure never takes the
  * card's chrome (or the dashboard) down with it.
  *
- * The dashboard is always arrangeable, so the arrange controls (size, config,
- * remove, drag) are always mounted. They are visually revealed on hover or focus
- * on pointer devices, and kept visible on small (touch) screens so they remain
- * reachable without a hover state.
+ * The card's non-spatial controls — rename, config, remove — are always mounted.
+ * They are visually revealed on hover or focus on pointer devices, and kept
+ * visible on small (touch) screens so they remain reachable without a hover
+ * state. The spatial controls (drag, resize) belong to edit mode and are not
+ * mounted here.
  */
 export const WidgetCard = ({
   definition,
   instance,
-  dragHandleRef,
   configContext,
   onUpdate,
   onRemove,
@@ -119,10 +115,6 @@ export const WidgetCard = ({
           <div className="relative flex h-7 shrink-0 items-center justify-end">
             <Icon className="hidden size-4 text-muted-foreground md:absolute md:right-0 md:block md:transition-opacity md:group-focus-within/card:opacity-0 md:group-hover/card:opacity-0" />
             <div className="flex items-center gap-1 bg-card opacity-100 md:opacity-0 md:transition-opacity md:group-focus-within/card:opacity-100 md:group-hover/card:opacity-100">
-              <WidgetSizeMenu
-                size={resolveWidgetSize(instance, definition)}
-                onSelect={(size) => onUpdate({ size })}
-              />
               {definition.configSchema && configContext ? (
                 <ConfigPopover
                   definition={definition}
@@ -135,25 +127,17 @@ export const WidgetCard = ({
                   onChange={(config) => onUpdate({ config })}
                 />
               ) : null}
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                aria-label={`Remove ${title}`}
-                onClick={onRemove}
-              >
-                <X />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                className="cursor-grab touch-none"
-                aria-label={`Drag ${title}`}
-                ref={dragHandleRef}
-              >
-                <GripVertical />
-              </Button>
+              {onRemove ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={`Remove ${title}`}
+                  onClick={onRemove}
+                >
+                  <X />
+                </Button>
+              ) : null}
             </div>
           </div>
         ) : (

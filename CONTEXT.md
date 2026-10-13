@@ -283,8 +283,12 @@ A self-contained unit displayed on the admin dashboard, whose visibility is gove
 _Avoid_: Widget when the dashboard is in scope; card, panel, module.
 
 **Widget definition**:
-The catalog entry describing one kind of Dashboard widget — its identity, the group it belongs to, the permission it requires, its default title and description, its default size, and, when it is configurable, the config schema it exposes. The Dashboard widget is an instance of a definition: the definition is author-time, the widget is what the user arranges. Definitions are code, not database rows, and each belongs to the module whose data its widget presents.
+The catalog entry describing one kind of Dashboard widget — its identity, the group it belongs to, the permission it requires, its default title and description, its default size preset, and, when it is configurable, the config schema it exposes. The Dashboard widget is an instance of a definition: the definition is author-time, the widget is what the user arranges. Definitions are code, not database rows, and each belongs to the module whose data its widget presents.
 _Avoid_: Widget type, widget kind.
+
+**Widget size preset**:
+One of the discrete sizes — small, medium, full — a Widget definition seeds a newly added Dashboard widget with, and the step by which a widget is resized without a pointer. A Dashboard widget's actual size is its place on the grid; the preset is only the size it started from and a keyboard-resize step.
+_Avoid_: Widget size when referring to a widget's concrete grid placement.
 
 **Widget title override**:
 The display title a backoffice user gives a Dashboard widget, replacing the default title its Widget definition provides on the card. A title override starts empty and clearing it reverts the widget to its default title. Distinct from the definition's default title, which every instance of that kind shares and which can itself depend on the instance's subject.
@@ -303,8 +307,8 @@ A narrowing of a Dashboard widget's data chosen per instance — a subset of for
 _Avoid_: Config, query, parameters, options.
 
 **Dashboard layout**:
-The ordered set of Dashboard widgets a backoffice user has placed on their dashboard, filtered to the Widget definitions permitted to that user. A user who has placed none has an empty dashboard; there is no seeded default.
-_Avoid_: Dashboard config, dashboard settings, default layout.
+The positioned arrangement of Dashboard widgets a backoffice user has placed on their dashboard — each widget occupying its own place and size on a shared grid — filtered to the Widget definitions permitted to that user. A user who has placed none has an empty dashboard; there is no seeded default.
+_Avoid_: Dashboard config, dashboard settings, default layout; ordered list when referring to the layout model.
 
 **Site widget**:
 A configurable block rendered on the public site (hero, popup, post sidebar or bottom), managed under the public Widgets area. Distinct from the Dashboard widget.

@@ -1,6 +1,6 @@
 # The dashboard is always arrangeable, and layout changes are auto-saved
 
-**Status**: accepted.
+**Status**: superseded by [ADR-0019](./0019-dashboard-explicit-edit-mode.md).
 
 The admin dashboard has **no edit mode**: every card's arrange controls (size, config, remove, drag) are always mounted — revealed on hover or focus on pointer devices, kept visible on touch — and widget bodies stay interactive, since dragging is confined to the drag handle. Each change (add, remove, reorder, resize, reconfigure) is persisted automatically with a short debounce and a subtle "Saving…/Saved" indicator; there is no Save/Cancel.
 

@@ -13,19 +13,13 @@ export interface ComputeDashboardLayoutInput {
 }
 
 /**
- * A persisted instance, plus the `hidden` flag older layouts could carry. The X
- * used to hide an instance; it now removes it, so a legacy hidden entry is
- * discarded on read rather than resurrected as a visible widget.
- */
-type PersistedInstance = DashboardWidgetInstance & { hidden?: boolean };
-
-/**
  * Computes the effective Dashboard layout from the user's saved instances.
  *
  * There is no registry default: a user who has saved nothing has an empty
  * dashboard. The saved instances are filtered to those whose definition exists
- * and is still permitted, in the order the user arranged them. Legacy `hidden`
- * entries are dropped.
+ * and is still permitted, preserving each instance's placement. There is no
+ * migration and no legacy hidden state: a saved instance is either permitted
+ * and rendered, or dropped.
  */
 export function computeDashboardLayout({
   saved,
@@ -36,13 +30,10 @@ export function computeDashboardLayout({
     definitions.map((definition) => [definition.id, definition]),
   );
 
-  const isPermitted = (instance: PersistedInstance) => {
-    if (instance.hidden) return false;
+  return saved.filter((instance) => {
     const definition = definitionById.get(instance.definitionId);
     if (!definition) return false;
     if (!definition.permission) return true;
     return canRead(definition.permission);
-  };
-
-  return (saved as PersistedInstance[]).filter(isPermitted);
+  });
 }

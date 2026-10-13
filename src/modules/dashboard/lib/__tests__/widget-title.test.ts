@@ -20,7 +20,12 @@ const definition = (overrides: Partial<WidgetDefinition> = {}): WidgetDefinition
 
 const instance = (
   overrides: Partial<DashboardWidgetInstance> = {},
-): DashboardWidgetInstance => ({ key: "trend-1", definitionId: "trend", ...overrides });
+): DashboardWidgetInstance => ({
+  key: "trend-1",
+  definitionId: "trend",
+  grid: { x: 0, y: 0, w: 6, h: 4 },
+  ...overrides,
+});
 
 const context = { metrics: [], forms: [] };
 

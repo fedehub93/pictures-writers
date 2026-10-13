@@ -1,6 +1,6 @@
 # The dashboard grid fills each row by stretching its last widget
 
-**Status**: accepted.
+**Status**: superseded by [ADR-0018](./0018-dashboard-positioned-grid.md).
 
 Dashboard widgets carry a discrete width (`small`, `medium`, `full`) placed on a fixed six-column grid, but the widths do not tile: `small + medium` (`2 + 3`) leaves a column of the row empty, and arbitrary mixes of thirds and halves leave similar holes. The dashboard therefore **packs its widgets into rows in list order and, whenever a row does not add up to the full grid, stretches the last item of that row to close it** — including the trailing add tile, which tends to absorb the final row's remainder. Rows never show a horizontal hole, and no new dependency or layout engine is introduced.
 

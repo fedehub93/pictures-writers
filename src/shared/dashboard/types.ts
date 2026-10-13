@@ -20,11 +20,26 @@ export const WIDGET_SIZES = ["small", "medium", "full"] as const;
 export const WIDGET_TITLE_MAX_LENGTH = 60;
 
 /**
- * Discrete size token for a Dashboard widget, expressed in grid columns on the
- * dashboard's six-column `md` grid. A definition declares a default size and
- * the backoffice user may override it per instance.
+ * Discrete size token for a Dashboard widget. A definition declares a default
+ * size that seeds a new instance's placement and doubles as a keyboard-resize
+ * step; the instance's actual size is its grid placement.
  */
 export type WidgetSize = (typeof WIDGET_SIZES)[number];
+
+/** A width and height in dashboard grid units, without a position. */
+export interface WidgetGridSize {
+  w: number;
+  h: number;
+}
+
+/**
+ * A Dashboard widget's placement on the dashboard grid: its column and row of
+ * origin plus its width and height, all in grid units.
+ */
+export interface WidgetGridPlacement extends WidgetGridSize {
+  x: number;
+  y: number;
+}
 
 /**
  * The fascia a Dashboard widget belongs to. Operational widgets surface what
@@ -150,10 +165,10 @@ export interface DashboardWidgetInstance {
   title?: string;
   config?: WidgetConfig;
   /**
-   * The instance's grid size. Optional: when absent the definition's
-   * `defaultSize` applies, so a saved layout stays valid as defaults change.
+   * The instance's placement on the dashboard grid. The definition owns the
+   * legibility bounds; the instance owns only where and how large it sits.
    */
-  size?: WidgetSize;
+  grid: WidgetGridPlacement;
 }
 
 /**
@@ -187,8 +202,19 @@ export interface WidgetDefinition {
    * declares none and is always considered permitted.
    */
   permission?: string;
-  /** The grid size a freshly added instance of this definition starts at. */
+  /** The size preset a freshly added instance of this definition is seeded with. */
   defaultSize: WidgetSize;
+  /**
+   * Optional override of the preset's legibility floor (minimum width/height).
+   * Lets a widget that needs more room than its preset allows declare it here,
+   * so the definition — not the stored instance — owns the floor.
+   */
+  minGrid?: WidgetGridSize;
+  /**
+   * Optional override of the preset's maximum width/height. A definition with no
+   * override may grow to the full grid width.
+   */
+  maxGrid?: WidgetGridSize;
   /** Which dashboard fascia the definition belongs to. Defaults to operational. */
   category?: WidgetCategory;
   component: ComponentType<WidgetComponentProps>;

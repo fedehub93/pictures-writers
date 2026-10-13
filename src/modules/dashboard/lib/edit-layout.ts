@@ -1,8 +1,15 @@
-import type { DashboardWidgetInstance, WidgetConfig } from "@/shared/dashboard/types";
+import type {
+  DashboardWidgetInstance,
+  WidgetConfig,
+  WidgetDefinition,
+} from "@/shared/dashboard/types";
+
+import { seedPlacement } from "./grid-layout";
 
 /**
  * Generates the stable key for a user-created instance. The key never changes
- * afterwards, so reordering or reconfiguring an instance keeps its identity.
+ * afterwards, so moving, resizing, or reconfiguring an instance keeps its
+ * identity.
  */
 export const createInstanceKey = (definitionId: string) =>
   `${definitionId}-${crypto.randomUUID()}`;
@@ -10,8 +17,8 @@ export const createInstanceKey = (definitionId: string) =>
 /**
  * Applies a patch to the instance with the given key. The key never changes, so
  * an edit affects exactly one instance — two instances of the same definition
- * keep their own state. Resizing and reconfiguring both go through this one
- * function.
+ * keep their own state. Renaming, reconfiguring, and re-placing all go through
+ * this one function.
  */
 export const updateInstance = (
   instances: DashboardWidgetInstance[],
@@ -23,19 +30,27 @@ export const updateInstance = (
   );
 
 /**
- * Appends a new instance of a definition to the layout, seeded with the
- * definition's default config when it declares one. The X removes an instance
- * outright (there is no hidden state), so a freshly added widget always lands at
- * the end — the position of the library's `+` tile.
+ * Appends a new instance of a definition to the layout, placed in the first
+ * free slot for its preset span and seeded with the definition's default config
+ * when it declares one. The X removes an instance outright (there is no hidden
+ * state).
  */
 export const addInstance = (
   instances: DashboardWidgetInstance[],
-  definitionId: string,
+  definition: WidgetDefinition,
   key: string,
   defaultConfig?: WidgetConfig,
 ): DashboardWidgetInstance[] => [
   ...instances,
-  { key, definitionId, ...(defaultConfig ? { config: defaultConfig } : {}) },
+  {
+    key,
+    definitionId: definition.id,
+    grid: seedPlacement(
+      definition,
+      instances.map((instance) => instance.grid),
+    ),
+    ...(defaultConfig ? { config: defaultConfig } : {}),
+  },
 ];
 
 /** Removes the instance with the given key from the layout. */
@@ -44,26 +59,3 @@ export const removeInstance = (
   key: string,
 ): DashboardWidgetInstance[] =>
   instances.filter((instance) => instance.key !== key);
-
-/**
- * Moves the instance with `fromKey` to the slot currently occupied by `toKey`,
- * preserving every other instance's position. Identities are keys, not indices,
- * so a widget that the grid leaves out (e.g. a Trend with no readable metric)
- * never shifts the mapping between what is dragged and what is persisted.
- */
-export const moveInstance = (
-  instances: DashboardWidgetInstance[],
-  fromKey: string,
-  toKey: string,
-): DashboardWidgetInstance[] => {
-  const from = instances.findIndex((instance) => instance.key === fromKey);
-  const to = instances.findIndex((instance) => instance.key === toKey);
-
-  if (from === -1 || to === -1 || from === to) return instances;
-
-  const next = [...instances];
-  const [moved] = next.splice(from, 1);
-  next.splice(to, 0, moved);
-
-  return next;
-};

@@ -6,6 +6,8 @@ import { TRPCReactProvider } from "@/trpc/client";
 
 import "./admin.css";
 import "@/puck/styles/puck-base.css";
+import "react-grid-layout/css/styles.css";
+import "react-resizable/css/styles.css";
 
 import { Toaster } from "@/shared/ui/sonner";
 import { SidebarInset, SidebarProvider } from "@/shared/ui/sidebar";

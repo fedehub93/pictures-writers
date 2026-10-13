@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 
 import { PERMISSIONS } from "@/shared/lib/permissions";
-import { WIDGET_GROUP_IDS } from "@/shared/dashboard/types";
+import { WIDGET_GROUP_IDS, WIDGET_SIZES } from "@/shared/dashboard/types";
 
+import { resolveWidgetLayout, GRID_COLUMNS } from "../lib/grid-layout";
 import { getWidgetDefinition, WIDGET_DEFINITIONS } from "../registry";
 
 describe("dashboard widget registry", () => {
@@ -17,9 +18,30 @@ describe("dashboard widget registry", () => {
     ]);
   });
 
-  it("declares a default size for every definition", () => {
+  it("declares a valid size preset and resolves valid bounds for every definition", () => {
     for (const definition of WIDGET_DEFINITIONS) {
-      expect(["small", "medium", "full"]).toContain(definition.defaultSize);
+      expect(WIDGET_SIZES).toContain(definition.defaultSize);
+
+      const { seed, bounds } = resolveWidgetLayout(definition);
+
+      expect(seed.w).toBeGreaterThan(0);
+      expect(seed.h).toBeGreaterThan(0);
+      expect(seed.w).toBeLessThanOrEqual(GRID_COLUMNS);
+
+      expect(bounds.minW).toBeGreaterThanOrEqual(1);
+      expect(bounds.minH).toBeGreaterThanOrEqual(1);
+      expect(bounds.minW).toBeLessThanOrEqual(bounds.maxW);
+      expect(bounds.maxW).toBeLessThanOrEqual(GRID_COLUMNS);
+      expect(bounds.maxW).toBeGreaterThanOrEqual(seed.w);
+      expect(seed.w).toBeGreaterThanOrEqual(bounds.minW);
+
+      if (bounds.maxH !== undefined) {
+        expect(bounds.maxH).toBeGreaterThanOrEqual(bounds.minH);
+        expect(seed.h).toBeGreaterThanOrEqual(bounds.minH);
+        expect(seed.h).toBeLessThanOrEqual(bounds.maxH);
+      } else {
+        expect(seed.h).toBeGreaterThanOrEqual(bounds.minH);
+      }
     }
   });
 

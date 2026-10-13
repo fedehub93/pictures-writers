@@ -19,7 +19,6 @@ import { usePermissionKeys } from "@/shared/providers/authorization-provider";
 import {
   addInstance,
   createInstanceKey,
-  moveInstance,
   removeInstance,
   updateInstance,
 } from "../../lib/edit-layout";
@@ -101,17 +100,15 @@ export const DashboardView = () => {
 
   const onRemove = (key: string) => commit(removeInstance(instances, key));
 
-  const onMove = (fromKey: string, toKey: string) =>
-    commit(moveInstance(instances, fromKey, toKey));
-
   const onAdd = (definitionId: string) => {
     const definition = getWidgetDefinition(definitionId);
+    if (!definition) return;
     commit(
       addInstance(
         instances,
-        definitionId,
+        definition,
         createInstanceKey(definitionId),
-        definition?.defaultConfig,
+        definition.defaultConfig,
       ),
     );
   };
@@ -148,7 +145,6 @@ export const DashboardView = () => {
       <WidgetGrid
         instances={renderableInstances}
         permittedDefinitions={permittedDefinitions}
-        onMove={onMove}
         onUpdate={onUpdate}
         onRemove={onRemove}
         onAdd={onAdd}

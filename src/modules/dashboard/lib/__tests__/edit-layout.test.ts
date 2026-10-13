@@ -1,20 +1,48 @@
 import { describe, expect, it } from "vitest";
 
-import type { DashboardWidgetInstance } from "@/shared/dashboard/types";
+import type {
+  DashboardWidgetInstance,
+  WidgetDefinition,
+  WidgetGridPlacement,
+} from "@/shared/dashboard/types";
 
 import {
   addInstance,
   createInstanceKey,
-  moveInstance,
   removeInstance,
   updateInstance,
 } from "../edit-layout";
+
+const definition = (
+  overrides: Partial<WidgetDefinition> = {},
+): WidgetDefinition =>
+  ({
+    id: "widget",
+    title: "Widget",
+    icon: undefined as unknown as WidgetDefinition["icon"],
+    group: "content",
+    defaultSize: "medium",
+    component: () => null,
+    ...overrides,
+  }) as WidgetDefinition;
+
+const placement = (x: number, y: number, w: number, h: number): WidgetGridPlacement => ({
+  x,
+  y,
+  w,
+  h,
+});
 
 const instance = (
   key: string,
   definitionId: string,
   overrides: Partial<DashboardWidgetInstance> = {},
-): DashboardWidgetInstance => ({ key, definitionId, ...overrides });
+): DashboardWidgetInstance => ({
+  key,
+  definitionId,
+  grid: placement(0, 0, 6, 4),
+  ...overrides,
+});
 
 const keys = (instances: DashboardWidgetInstance[]) =>
   instances.map((entry) => entry.key);
@@ -23,18 +51,21 @@ describe("updateInstance", () => {
   it("applies a patch to exactly the keyed instance", () => {
     const layout = [instance("a", "a"), instance("b", "b")];
 
-    const result = updateInstance(layout, "a", { size: "full" });
+    const result = updateInstance(layout, "a", { title: "Renamed" });
 
-    expect(result[0]).toEqual({ key: "a", definitionId: "a", size: "full" });
-    expect(result[1]).toEqual({ key: "b", definitionId: "b" });
+    expect(result[0].title).toBe("Renamed");
+    expect(result[1].title).toBeUndefined();
   });
 
-  it("overrides a previous size on the same instance", () => {
-    const layout = [instance("a", "a", { size: "small" })];
+  it("replaces the placement of exactly the keyed instance", () => {
+    const layout = [instance("a", "a"), instance("b", "b")];
 
-    const result = updateInstance(layout, "a", { size: "medium" });
+    const result = updateInstance(layout, "a", {
+      grid: placement(6, 0, 3, 3),
+    });
 
-    expect(result[0]).toEqual({ key: "a", definitionId: "a", size: "medium" });
+    expect(result[0].grid).toEqual(placement(6, 0, 3, 3));
+    expect(result[1].grid).toEqual(placement(0, 0, 6, 4));
   });
 
   it("replaces the config of exactly the keyed instance", () => {
@@ -47,47 +78,53 @@ describe("updateInstance", () => {
       config: { metric: "revenue" },
     });
 
-    expect(result[0]).toEqual({
-      key: "trend-contacts",
-      definitionId: "trend",
-      config: { metric: "revenue" },
-    });
-    expect(result[1]).toEqual({
-      key: "trend-submissions",
-      definitionId: "trend",
-      config: { metric: "submissions" },
-    });
+    expect(result[0].config).toEqual({ metric: "revenue" });
+    expect(result[1].config).toEqual({ metric: "submissions" });
   });
 
   it("leaves the layout untouched when the key is absent", () => {
     const layout = [instance("a", "a")];
 
-    expect(updateInstance(layout, "ghost", { size: "full" })).toEqual(layout);
+    expect(updateInstance(layout, "ghost", { title: "Renamed" })).toEqual(layout);
   });
 });
 
 describe("addInstance", () => {
-  it("appends a new instance at the end", () => {
-    const layout = [instance("a", "a")];
+  it("appends a new instance in the first free slot for its preset", () => {
+    const layout = [instance("a", "a", { grid: placement(0, 0, 3, 3) })];
 
-    const result = addInstance(layout, "b", "b-1");
+    const result = addInstance(layout, definition({ id: "b", defaultSize: "small" }), "b-1");
 
     expect(keys(result)).toEqual(["a", "b-1"]);
-    expect(result[1]).toEqual({ key: "b-1", definitionId: "b" });
+    expect(result[1]).toMatchObject({
+      key: "b-1",
+      definitionId: "b",
+      grid: { x: 3, y: 0, w: 3, h: 3 },
+    });
   });
 
-  it("appends a second instance while one already exists", () => {
+  it("places a second instance after the first, in the next slot", () => {
     const layout = [instance("trend-contacts", "trend")];
 
-    const result = addInstance(layout, "trend", "trend-revenue");
+    const result = addInstance(
+      layout,
+      definition({ id: "trend", defaultSize: "small" }),
+      "trend-revenue",
+    );
 
     expect(keys(result)).toEqual(["trend-contacts", "trend-revenue"]);
+    expect(result[1].grid).toEqual({ x: 6, y: 0, w: 3, h: 3 });
   });
 
   it("seeds a freshly appended instance with the definition's default config", () => {
-    const result = addInstance([], "trend", "trend-1", { metric: "contacts" });
+    const result = addInstance(
+      [],
+      definition({ id: "trend", defaultSize: "small" }),
+      "trend-1",
+      { metric: "contacts" },
+    );
 
-    expect(result[0]).toEqual({
+    expect(result[0]).toMatchObject({
       key: "trend-1",
       definitionId: "trend",
       config: { metric: "contacts" },
@@ -108,32 +145,6 @@ describe("removeInstance", () => {
     const layout = [instance("a", "a")];
 
     expect(removeInstance(layout, "ghost")).toEqual(layout);
-  });
-});
-
-describe("moveInstance", () => {
-  it("moves an instance to the slot of the target key", () => {
-    const layout = [instance("a", "a"), instance("b", "b"), instance("c", "c")];
-
-    const result = moveInstance(layout, "a", "c");
-
-    expect(keys(result)).toEqual(["b", "c", "a"]);
-  });
-
-  it("moves an instance backwards to the slot of the target key", () => {
-    const layout = [instance("a", "a"), instance("b", "b"), instance("c", "c")];
-
-    const result = moveInstance(layout, "c", "a");
-
-    expect(keys(result)).toEqual(["c", "a", "b"]);
-  });
-
-  it("returns the layout unchanged when a key is unknown or equal", () => {
-    const layout = [instance("a", "a"), instance("b", "b")];
-
-    expect(moveInstance(layout, "a", "a")).toBe(layout);
-    expect(moveInstance(layout, "a", "ghost")).toBe(layout);
-    expect(moveInstance(layout, "ghost", "b")).toBe(layout);
   });
 });
 
