@@ -68,7 +68,7 @@ export const WidgetTitle = ({ title, onRename }: WidgetTitleProps) => {
             cancel();
           }
         }}
-        className="h-7 w-full px-2 text-sm font-medium"
+        className="h-7 w-full max-w-xs px-2 text-sm font-medium"
       />
     );
   }
@@ -79,11 +79,13 @@ export const WidgetTitle = ({ title, onRename }: WidgetTitleProps) => {
       onClick={() => setIsEditing(true)}
       aria-label={`Rename ${title}`}
       className={cn(
-        "group/title -mx-1 flex min-w-0 items-center gap-1 rounded px-1 text-left text-sm font-medium",
-        "transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "group/title -mx-1 flex min-w-0 max-w-full items-center gap-1 rounded px-1 text-left text-sm font-medium",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
       )}
     >
-      <span className="truncate">{title}</span>
+      <span className="truncate group-hover/title:underline group-hover/title:decoration-dotted group-hover/title:underline-offset-4">
+        {title}
+      </span>
       <Pencil className="size-3 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover/title:opacity-100 group-focus-visible/title:opacity-100" />
     </button>
   );

@@ -23,7 +23,7 @@ import { resolveWidgetSize } from "../../lib/widget-size";
 import { resolveWidgetTitle } from "../../lib/widget-title";
 
 import { ConfigPopover } from "./config-popover";
-import { WidgetFilterChips } from "./widget-filter-chips";
+import { WidgetFilterSummary } from "./widget-filter-summary";
 import { WidgetSizeMenu } from "./widget-size-menu";
 import { WidgetTitle } from "./widget-title";
 
@@ -96,10 +96,24 @@ export const WidgetCard = ({
       <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0 pb-2">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           {onUpdate ? (
-            <WidgetTitle
-              title={title}
-              onRename={(next) => onUpdate({ title: next })}
-            />
+            <div className="flex min-w-0 items-center gap-1">
+              <WidgetTitle
+                title={title}
+                onRename={(next) => onUpdate({ title: next })}
+              />
+              {configContext ? (
+                <WidgetFilterSummary
+                  definition={definition}
+                  instance={instance}
+                  context={configContext}
+                  onOpenConfig={
+                    definition.configSchema
+                      ? () => setConfigOpen(true)
+                      : undefined
+                  }
+                />
+              ) : null}
+            </div>
           ) : (
             <CardTitle className="truncate text-sm font-medium">
               {title}
@@ -110,21 +124,11 @@ export const WidgetCard = ({
               {definition.description}
             </p>
           ) : null}
-          {configContext ? (
-            <WidgetFilterChips
-              definition={definition}
-              instance={instance}
-              context={configContext}
-              onOpenConfig={
-                definition.configSchema ? () => setConfigOpen(true) : undefined
-              }
-            />
-          ) : null}
         </div>
         {onUpdate ? (
-          <div className="relative flex h-7 items-center">
-            <Icon className="hidden size-4 text-muted-foreground md:block md:transition-opacity md:group-focus-within/card:opacity-0 md:group-hover/card:opacity-0" />
-            <div className="absolute right-0 flex items-center gap-1 bg-card opacity-100 md:opacity-0 md:transition-opacity md:group-focus-within/card:opacity-100 md:group-hover/card:opacity-100">
+          <div className="relative flex h-7 shrink-0 items-center justify-end">
+            <Icon className="hidden size-4 text-muted-foreground md:absolute md:right-0 md:block md:transition-opacity md:group-focus-within/card:opacity-0 md:group-hover/card:opacity-0" />
+            <div className="flex items-center gap-1 bg-card opacity-100 md:opacity-0 md:transition-opacity md:group-focus-within/card:opacity-100 md:group-hover/card:opacity-100">
               <WidgetSizeMenu
                 size={resolveWidgetSize(instance, definition)}
                 onSelect={(size) => onUpdate({ size })}
