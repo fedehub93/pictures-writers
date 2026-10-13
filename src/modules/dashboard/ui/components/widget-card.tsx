@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useSyncExternalStore } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { X } from "lucide-react";
+import { GripVertical, X } from "lucide-react";
 
 import { Button } from "@/shared/ui/button";
 import {
@@ -25,11 +25,19 @@ import { resolveWidgetTitle } from "../../lib/widget-title";
 import { ConfigPopover } from "./config-popover";
 import { WidgetTitle } from "./widget-title";
 
+/**
+ * The CSS selector `react-grid-layout` uses to start a drag. The grid is only
+ * draggable by this handle, so a widget's body stays interactive while editing.
+ */
+export const EDIT_MODE_DRAG_HANDLE = "widget-drag-handle";
+
 interface WidgetCardProps {
   definition: WidgetDefinition;
   instance: DashboardWidgetInstance;
   /** Context a configurable widget's schema resolves against. */
   configContext?: WidgetConfigContext;
+  /** Whether the dashboard is in edit mode: shows the drag handle. */
+  editing?: boolean;
   /** Receives a patch for this instance: rename or reconfigure it. */
   onUpdate?: (patch: Partial<DashboardWidgetInstance>) => void;
   /** Removes this instance from the dashboard. */
@@ -62,16 +70,18 @@ const useIsClient = () =>
  * Suspense and error boundary so a widget's loading or failure never takes the
  * card's chrome (or the dashboard) down with it.
  *
- * The card's non-spatial controls — rename, config, remove — are always mounted.
+ * The card's non-spatial controls — rename and config — are always mounted.
  * They are visually revealed on hover or focus on pointer devices, and kept
  * visible on small (touch) screens so they remain reachable without a hover
- * state. The spatial controls (drag, resize) belong to edit mode and are not
- * mounted here.
+ * state. The spatial controls belong to edit mode: the remove control is only
+ * passed in edit mode, and the drag handle is only mounted when `editing`, so a
+ * read-mode dashboard shows neither.
  */
 export const WidgetCard = ({
   definition,
   instance,
   configContext,
+  editing = false,
   onUpdate,
   onRemove,
 }: WidgetCardProps) => {
@@ -93,7 +103,16 @@ export const WidgetCard = ({
 
   return (
     <Card className="group/card flex h-full flex-col">
-      <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0 pb-2">
+      <CardHeader className="flex flex-row items-start gap-2 space-y-0 pb-2">
+        {editing ? (
+          <button
+            type="button"
+            aria-label={`Move ${title}`}
+            className={`${EDIT_MODE_DRAG_HANDLE} -ml-1 flex size-6 shrink-0 cursor-grab items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing`}
+          >
+            <GripVertical className="size-4" />
+          </button>
+        ) : null}
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           {onUpdate ? (
             <WidgetTitle

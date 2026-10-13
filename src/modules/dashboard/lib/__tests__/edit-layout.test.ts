@@ -8,6 +8,7 @@ import type {
 
 import {
   addInstance,
+  applyGridLayout,
   createInstanceKey,
   removeInstance,
   updateInstance,
@@ -86,6 +87,69 @@ describe("updateInstance", () => {
     const layout = [instance("a", "a")];
 
     expect(updateInstance(layout, "ghost", { title: "Renamed" })).toEqual(layout);
+  });
+});
+
+describe("applyGridLayout", () => {
+  it("applies each item's placement to its keyed instance", () => {
+    const layout = [
+      instance("a", "a", { grid: placement(0, 0, 6, 4) }),
+      instance("b", "b", { grid: placement(6, 0, 6, 4) }),
+    ];
+
+    const result = applyGridLayout(layout, [
+      { i: "a", x: 6, y: 2, w: 3, h: 5 },
+      { i: "b", x: 0, y: 0, w: 9, h: 3 },
+    ]);
+
+    expect(result[0].grid).toEqual(placement(6, 2, 3, 5));
+    expect(result[1].grid).toEqual(placement(0, 0, 9, 3));
+  });
+
+  it("leaves an instance off the grid at its placement", () => {
+    const layout = [
+      instance("shown", "shown"),
+      instance("hidden", "hidden", { grid: placement(0, 4, 3, 3) }),
+    ];
+
+    const result = applyGridLayout(layout, [
+      { i: "shown", x: 3, y: 0, w: 3, h: 3 },
+    ]);
+
+    expect(result[1].grid).toEqual(placement(0, 4, 3, 3));
+  });
+
+  it("ignores items with no matching instance", () => {
+    const layout = [instance("a", "a")];
+
+    const result = applyGridLayout(layout, [
+      { i: "a", x: 1, y: 1, w: 3, h: 3 },
+      { i: "ghost", x: 6, y: 0, w: 6, h: 4 },
+    ]);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].grid).toEqual(placement(1, 1, 3, 3));
+  });
+
+  it("keeps an instance's identity when its placement is unchanged", () => {
+    const unchanged = instance("a", "a", { grid: placement(0, 0, 6, 4) });
+    const moved = instance("b", "b", { grid: placement(6, 0, 6, 4) });
+
+    const result = applyGridLayout([unchanged, moved], [
+      { i: "a", x: 0, y: 0, w: 6, h: 4 },
+      { i: "b", x: 0, y: 4, w: 6, h: 4 },
+    ]);
+
+    expect(result[0]).toBe(unchanged);
+    expect(result[1]).not.toBe(moved);
+  });
+
+  it("does not mutate the input", () => {
+    const layout = [instance("a", "a", { grid: placement(0, 0, 6, 4) })];
+
+    applyGridLayout(layout, [{ i: "a", x: 6, y: 0, w: 6, h: 4 }]);
+
+    expect(layout[0].grid).toEqual(placement(0, 0, 6, 4));
   });
 });
 

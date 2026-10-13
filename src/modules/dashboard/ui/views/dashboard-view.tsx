@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { Pencil } from "lucide-react";
 
 import { useTRPC } from "@/trpc/client";
 import { DatePickerWithRange } from "@/shared/components/date-range";
@@ -10,6 +11,7 @@ import {
   type SaveStatus,
 } from "@/shared/components/save-status-indicator";
 import { hasPermission } from "@/shared/lib/permissions";
+import { Button } from "@/shared/ui/button";
 import type {
   DashboardWidgetInstance,
   WidgetConfigContext,
@@ -18,7 +20,9 @@ import { usePermissionKeys } from "@/shared/providers/authorization-provider";
 
 import {
   addInstance,
+  applyGridLayout,
   createInstanceKey,
+  type GridPlacementItem,
   removeInstance,
   updateInstance,
 } from "../../lib/edit-layout";
@@ -95,8 +99,15 @@ export const DashboardView = () => {
   // persists every change with a short debounce.
   const { instances, commit, saveState } = useDebouncedSaveLayout(savedLayout);
 
+  // Edit mode is a presentation state, not a commit boundary: entering it
+  // reveals the grid and the spatial controls, and every move still auto-saves.
+  const [editing, setEditing] = useState(false);
+
   const onUpdate = (key: string, patch: Partial<DashboardWidgetInstance>) =>
     commit(updateInstance(instances, key, patch));
+
+  const onMove = (items: readonly GridPlacementItem[]) =>
+    commit(applyGridLayout(instances, items));
 
   const onRemove = (key: string) => commit(removeInstance(instances, key));
 
@@ -130,7 +141,18 @@ export const DashboardView = () => {
     <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 md:pt-4">
       <div className="flex flex-col items-center justify-between gap-y-4 sm:flex-row">
         <h1 className="text-3xl">Dashboard</h1>
-        <SaveStatusIndicator status={SAVE_STATE_STATUS[saveState]} />
+        <div className="flex items-center gap-2">
+          <SaveStatusIndicator status={SAVE_STATE_STATUS[saveState]} />
+          <Button
+            type="button"
+            variant={editing ? "default" : "ghost"}
+            onClick={() => setEditing((current) => !current)}
+            aria-pressed={editing}
+          >
+            <Pencil />
+            {editing ? "Fine" : "Modifica"}
+          </Button>
+        </div>
       </div>
 
       {hasAnalytics ? (
@@ -145,7 +167,9 @@ export const DashboardView = () => {
       <WidgetGrid
         instances={renderableInstances}
         permittedDefinitions={permittedDefinitions}
+        editing={editing}
         onUpdate={onUpdate}
+        onMove={onMove}
         onRemove={onRemove}
         onAdd={onAdd}
         configContext={configContext}
