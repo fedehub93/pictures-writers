@@ -47,7 +47,7 @@ export const WidgetFilterChips = ({
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="flex min-w-0 flex-wrap items-center gap-1">
+      <div className="hidden min-w-0 flex-wrap items-center gap-1 md:flex">
         {chips.map((chip) => {
           const className = cn(chipClass, onOpenConfig && interactiveChipClass);
 

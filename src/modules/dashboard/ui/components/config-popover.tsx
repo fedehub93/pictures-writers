@@ -3,6 +3,7 @@
 import { Settings2 } from "lucide-react";
 
 import { Button } from "@/shared/ui/button";
+import { cn } from "@/shared/lib/utils";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { Field, FieldGroup, FieldLabel } from "@/shared/ui/field";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
@@ -42,6 +43,12 @@ interface ConfigPopoverProps {
   /** Controlled open state, so a filter chip can open the same popover. */
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  /**
+   * Tints the gear primary when the instance's config differs from the
+   * definition's default, so a widget whose filter the user narrowed (and whose
+   * filter chip is hidden on mobile) still signals that it is filtered.
+   */
+  highlight?: boolean;
 }
 
 /**
@@ -58,6 +65,7 @@ export const ConfigPopover = ({
   label,
   open,
   onOpenChange,
+  highlight,
 }: ConfigPopoverProps) => {
   const schema = definition.configSchema?.(context, instance.config ?? null);
   const title = label ?? definition.title;
@@ -72,6 +80,7 @@ export const ConfigPopover = ({
           variant="ghost"
           size="icon-sm"
           aria-label={`Configure ${title}`}
+          className={cn(highlight && "text-primary")}
         >
           <Settings2 />
         </Button>

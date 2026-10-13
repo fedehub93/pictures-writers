@@ -80,7 +80,7 @@ export const WidgetTable = <T,>({
 
   const columnClass = (column: WidgetTableColumn<T>) =>
     cn(
-      column.grow ? "w-full" : "w-px whitespace-nowrap",
+      column.grow ? "w-auto" : "w-px whitespace-nowrap",
       column.align === "right" && "text-right",
       column.className,
     );

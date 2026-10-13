@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/shared/ui/card";
 
+import { configDiffersFromDefault } from "@/shared/dashboard/config";
 import type {
   DashboardWidgetInstance,
   WidgetConfigContext,
@@ -90,6 +91,10 @@ export const WidgetCard = ({
     instance,
     configContext ?? EMPTY_CONFIG_CONTEXT,
   );
+  const hasCustomConfig = configDiffersFromDefault(
+    definition.defaultConfig,
+    instance.config,
+  );
 
   return (
     <Card className="group/card flex h-full flex-col">
@@ -141,6 +146,7 @@ export const WidgetCard = ({
                   label={title}
                   open={configOpen}
                   onOpenChange={setConfigOpen}
+                  highlight={hasCustomConfig}
                   onChange={(config) => onUpdate({ config })}
                 />
               ) : null}
