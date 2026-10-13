@@ -2,7 +2,6 @@ import { CalendarClock } from "lucide-react";
 
 import { ScheduledActionType } from "@/generated/prisma";
 import { PERMISSIONS } from "@/shared/lib/permissions";
-import { summarizeMultiselect } from "@/shared/dashboard/config";
 import type {
   WidgetConfigOption,
   WidgetDefinition,
@@ -49,7 +48,5 @@ export const schedulerDashboardWidgets: WidgetDefinition[] = [
     defaultConfig: {
       types: DEFAULT_TYPES,
     },
-    summarizeConfig: (config) =>
-      summarizeMultiselect(config, "types", TYPE_OPTIONS, DEFAULT_TYPES),
   },
 ];

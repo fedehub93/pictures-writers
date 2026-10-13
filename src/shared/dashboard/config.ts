@@ -1,8 +1,4 @@
-import type {
-  WidgetConfig,
-  WidgetConfigOption,
-  WidgetFilterChip,
-} from "./types";
+import type { WidgetConfig } from "./types";
 
 /**
  * The stored string entries of one config key, dropping anything that is not a
@@ -53,27 +49,4 @@ export const configDiffersFromDefault = (
   return keys.some((key) => !sameValue(config[key], defaultConfig[key]));
 };
 
-/**
- * Summarises a multi-choice filter as a single chip showing the selection in
- * effect — the stored value, or the widget's default when nothing is stored, so
- * the filter is always visible. Shared by the operational widgets whose only
- * filter is a multiselect, so the option-label mapping lives in one place.
- */
-export const summarizeMultiselect = (
-  config: WidgetConfig | undefined,
-  field: string,
-  options: WidgetConfigOption[],
-  defaultValues: readonly string[],
-): WidgetFilterChip[] => {
-  const stored = configStringValues(config, field);
-  const effective = stored.length > 0 ? stored : defaultValues;
 
-  const label = effective
-    .map(
-      (value) =>
-        options.find((option) => option.value === value)?.label ?? value,
-    )
-    .join(", ");
-
-  return [{ key: field, label }];
-};

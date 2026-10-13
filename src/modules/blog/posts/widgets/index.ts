@@ -2,7 +2,6 @@ import { FileText } from "lucide-react";
 
 import { ContentStatus } from "@/generated/prisma";
 import { PERMISSIONS } from "@/shared/lib/permissions";
-import { summarizeMultiselect } from "@/shared/dashboard/config";
 import type {
   WidgetConfigOption,
   WidgetDefinition,
@@ -49,12 +48,5 @@ export const postsDashboardWidgets: WidgetDefinition[] = [
     defaultConfig: {
       statuses: DEFAULT_STATUSES,
     },
-    summarizeConfig: (config) =>
-      summarizeMultiselect(
-        config,
-        "statuses",
-        STATUS_OPTIONS,
-        DEFAULT_STATUSES,
-      ),
   },
 ];

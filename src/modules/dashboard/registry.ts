@@ -5,7 +5,6 @@ import { postsDashboardWidgets } from "@/modules/blog/posts/widgets";
 import { reviewsDashboardWidgets } from "@/modules/reviews/widgets";
 import { schedulerDashboardWidgets } from "@/modules/scheduler/widgets";
 import { ordersDashboardWidgets } from "@/modules/shop/orders/widgets";
-import { configStringValues } from "@/shared/dashboard/config";
 import type {
   WidgetConfigField,
   WidgetDefinition,
@@ -74,32 +73,6 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     },
     resolveTitle: ({ metrics }, config) =>
       resolveMetric(config, metrics)?.label ?? "Trend",
-    summarizeConfig: (config, { metrics, forms }) => {
-      const metric = resolveMetric(config, metrics);
-      if (!metric || metric.id !== "submissions" || forms.length === 0) {
-        return [];
-      }
-
-      const selected = configStringValues(config, "forms").filter((id) =>
-        forms.some((form) => form.id === id),
-      );
-
-      if (selected.length === 0 || selected.length >= forms.length) {
-        return [{ key: "forms", label: "All forms" }];
-      }
-
-      const names = selected
-        .map((id) => forms.find((form) => form.id === id)?.label ?? id)
-        .join(", ");
-
-      return [
-        {
-          key: "forms",
-          label: selected.length === 1 ? "1 form" : `${selected.length} forms`,
-          tooltip: names,
-        },
-      ];
-    },
   },
 ];
 

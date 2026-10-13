@@ -24,7 +24,6 @@ import { resolveWidgetSize } from "../../lib/widget-size";
 import { resolveWidgetTitle } from "../../lib/widget-title";
 
 import { ConfigPopover } from "./config-popover";
-import { WidgetFilterChips } from "./widget-filter-chips";
 import { WidgetSizeMenu } from "./widget-size-menu";
 import { WidgetTitle } from "./widget-title";
 
@@ -101,24 +100,10 @@ export const WidgetCard = ({
       <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0 pb-2">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           {onUpdate ? (
-            <div className="flex min-w-0 items-center gap-1">
-              <WidgetTitle
-                title={title}
-                onRename={(next) => onUpdate({ title: next })}
-              />
-              {configContext ? (
-                <WidgetFilterChips
-                  definition={definition}
-                  instance={instance}
-                  context={configContext}
-                  onOpenConfig={
-                    definition.configSchema
-                      ? () => setConfigOpen(true)
-                      : undefined
-                  }
-                />
-              ) : null}
-            </div>
+            <WidgetTitle
+              title={title}
+              onRename={(next) => onUpdate({ title: next })}
+            />
           ) : (
             <CardTitle className="truncate text-sm font-medium">
               {title}

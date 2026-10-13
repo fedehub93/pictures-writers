@@ -101,18 +101,6 @@ export interface WidgetConfigSchema {
 }
 
 /**
- * One human-readable chip summarising an active Widget filter, built by a
- * definition's `summarizeConfig` and rendered by the generic card. `tooltip`
- * optionally carries the full detail behind a count (e.g. the form names), so
- * the chip itself stays compact on every size.
- */
-export interface WidgetFilterChip {
-  key: string;
-  label: string;
-  tooltip?: string;
-}
-
-/**
  * The client-facing summary of a dynamic Form, for a widget's form picker.
  * Distinct from `MetricSummary`: a Form is a selectable data source, not a
  * time series.
@@ -222,15 +210,6 @@ export interface WidgetDefinition {
    * its metric, e.g. "Contacts"). Falls back to `title` when absent or empty.
    */
   resolveTitle?: (context: WidgetConfigContext, config?: WidgetConfig) => string;
-  /**
-   * Optional human-readable summary of the instance's active filters, rendered
-   * as chips by the generic card. Returns an empty list when the config does
-   * not narrow from its default, so a card shows filters only when they matter.
-   */
-  summarizeConfig?: (
-    config: WidgetConfig | undefined,
-    context: WidgetConfigContext,
-  ) => WidgetFilterChip[];
 }
 
 /** The persisted per-user document: the list of Dashboard widget instances. */
