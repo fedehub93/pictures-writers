@@ -33,8 +33,8 @@ export interface WidgetTableColumn<T> {
   align?: "left" | "right";
   /**
    * Whether the column absorbs the table's spare width. Exactly one column
-   * should grow — the row's primary identifier; every other column shrinks to
-   * its content and, when right-aligned, packs into a tight trailing cluster.
+   * should grow; every other column shrinks to its content. Growing the last
+   * column pins it to the table's trailing edge.
    */
   grow?: boolean;
 }
@@ -61,8 +61,9 @@ interface WidgetTableProps<T> {
 /**
  * The tabular body of a Dashboard list widget: a column header, one row per
  * record, and a footer linking to the full list. It lives in shared so content
- * widgets render the same body; when the card is too narrow the columns scroll
- * horizontally rather than reflowing.
+ * widgets render the same body; the table fills the card's width and its
+ * columns reflow, so a narrow card wraps the flexible column instead of
+ * scrolling sideways.
  */
 export const WidgetTable = <T,>({
   columns,
@@ -89,7 +90,7 @@ export const WidgetTable = <T,>({
       {isEmpty ? (
         <WidgetEmpty message={emptyMessage} />
       ) : (
-        <Table className="min-w-[40rem]">
+        <Table>
           <TableHeader>
             <TableRow>
               {columns.map((column) => (

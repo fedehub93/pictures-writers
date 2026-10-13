@@ -82,23 +82,24 @@ const columns: WidgetTableColumn<ScheduledRow>[] = [
   {
     id: "title",
     header: "Title",
-    grow: true,
-    cell: (row) => (
-      <div className="max-w-md truncate font-medium">
-        {row.url ? (
-          <Link href={row.url as Route} className="hover:underline">
-            {row.title}
-          </Link>
-        ) : (
-          row.title
-        )}
-      </div>
-    ),
+    // Capped, wrapping, and not the growing column so the "Scheduled for"
+    // column stays next to it — on a narrow card the title would otherwise fill
+    // the width and push that column out of view.
+    className: "w-auto max-w-[14rem] whitespace-normal",
+    cell: (row) =>
+      row.url ? (
+        <Link href={row.url as Route} className="font-medium hover:underline">
+          {row.title}
+        </Link>
+      ) : (
+        <span className="font-medium">{row.title}</span>
+      ),
   },
   {
     id: "plannedAt",
     header: "Scheduled for",
     align: "right",
+    grow: true,
     cell: (row) => {
       const { date, time } = formatScheduledAt(row.plannedAt, row.timezone);
 
