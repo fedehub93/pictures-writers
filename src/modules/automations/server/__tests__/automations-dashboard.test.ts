@@ -21,6 +21,8 @@ import { createCallerFactory } from "@/trpc/init";
 import { AutomationRunStatus } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 
+import { cleanupAutomationTables } from "@/modules/automations";
+
 import { automationsRouter } from "../procedures";
 
 const createCaller = createCallerFactory(automationsRouter);
@@ -46,7 +48,10 @@ async function createRun(
   return { run, automation };
 }
 
-beforeEach(() => {
+beforeEach(async () => {
+  // `getFailedRuns` counts runs globally, so a sibling suite that leaves runs
+  // behind would break the assertion. Wipe the automation tables first.
+  await cleanupAutomationTables();
   automationIds.length = 0;
 });
 
