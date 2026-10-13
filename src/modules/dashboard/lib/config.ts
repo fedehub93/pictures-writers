@@ -1,4 +1,8 @@
-import type { WidgetConfig, WidgetConfigField } from "@/shared/dashboard/types";
+import type {
+  WidgetConfig,
+  WidgetConfigField,
+  WidgetConfigMultiSelectField,
+} from "@/shared/dashboard/types";
 
 /**
  * The value a config field should show. The stored value is used only while it
@@ -30,3 +34,30 @@ export const withConfigValue = (
   field: WidgetConfigField,
   value: string,
 ): Record<string, unknown> => ({ ...(config ?? {}), [field.name]: value });
+
+/**
+ * The values a multi-choice config field should show: the stored array, kept
+ * only for values that are still options. Absent or malformed config yields an
+ * empty selection.
+ */
+export const configFieldValues = (
+  config: WidgetConfig | undefined,
+  field: WidgetConfigMultiSelectField,
+): string[] => {
+  const value = config?.[field.name];
+
+  if (!Array.isArray(value)) return [];
+
+  const allowed = new Set(field.options.map((option) => option.value));
+
+  return value.filter(
+    (item): item is string => typeof item === "string" && allowed.has(item),
+  );
+};
+
+/** Returns a copy of the instance config with a multi-choice field replaced. */
+export const withConfigValues = (
+  config: WidgetConfig | undefined,
+  field: WidgetConfigMultiSelectField,
+  values: string[],
+): Record<string, unknown> => ({ ...(config ?? {}), [field.name]: values });

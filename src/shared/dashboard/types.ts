@@ -72,7 +72,18 @@ export interface WidgetConfigSelectField {
   options: WidgetConfigOption[];
 }
 
-export type WidgetConfigField = WidgetConfigSelectField;
+/** A multi-choice field: the config key holds the array of chosen values. */
+export interface WidgetConfigMultiSelectField {
+  type: "multiselect";
+  /** The key written into the instance config. */
+  name: string;
+  label: string;
+  options: WidgetConfigOption[];
+}
+
+export type WidgetConfigField =
+  | WidgetConfigSelectField
+  | WidgetConfigMultiSelectField;
 
 /** The form a configurable widget exposes, generated from its definition. */
 export interface WidgetConfigSchema {
@@ -150,6 +161,11 @@ export interface WidgetDefinition {
   /** Which dashboard fascia the definition belongs to. Defaults to operational. */
   category?: WidgetCategory;
   component: ComponentType<WidgetComponentProps>;
+  /**
+   * Optional card body shown while the widget's data loads. Defaults to the
+   * shared loading state; a table widget supplies a matching skeleton.
+   */
+  loadingFallback?: ComponentType;
   /**
    * Optional config contract for configurable widgets. A definition without one
    * is not configurable and its card shows no gear.

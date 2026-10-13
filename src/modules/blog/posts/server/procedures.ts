@@ -18,6 +18,11 @@ import {
 } from "@/shared/lib/list-sorting";
 
 import {
+  DASHBOARD_AUTHOR_SELECT,
+  toDashboardAuthor,
+} from "@/shared/dashboard/author";
+
+import {
   postInsertSchema,
   postUpdateSchema,
   postUpdateSeoSchema,
@@ -52,50 +57,97 @@ import {
 import { getPaginatedPosts } from "./queries";
 
 /** How many records the dashboard's drafts widget lists at once. */
-const DASHBOARD_LIST_LIMIT = 5;
+const DASHBOARD_LIST_LIMIT = 6;
+
+/** The statuses the dashboard's content widget shows until the user filters. */
+const DASHBOARD_DEFAULT_STATUSES: ContentStatus[] = [
+  ContentStatus.DRAFT,
+  ContentStatus.CHANGED,
+];
 
 export const postsRouter = createTRPCRouter({
   /**
-   * Draft posts: the count and the most recently edited few, for the dashboard's
-   * "Drafts to publish" widget.
+   * Posts awaiting publication: the count and the most recently edited few, for
+   * the dashboard's content widget. Defaults to drafts and changed posts; the
+   * widget may narrow or widen it to any set of statuses.
    */
-  getDrafts: permissionProcedure(PERMISSIONS.POSTS_READ).query(async () => {
-    const where: Prisma.PostRootWhereInput = {
-      currentVersion: { is: { status: ContentStatus.DRAFT } },
-    };
+  getDrafts: permissionProcedure(PERMISSIONS.POSTS_READ)
+    .input(
+      z
+        .object({
+          statuses: z
+            .array(
+              z.enum([
+                ContentStatus.DRAFT,
+                ContentStatus.CHANGED,
+                ContentStatus.PUBLISHED,
+                ContentStatus.SCHEDULED,
+              ]),
+            )
+            .optional(),
+        })
+        .optional(),
+    )
+    .query(async ({ input }) => {
+      const statuses =
+        input?.statuses && input.statuses.length > 0
+          ? input.statuses
+          : DASHBOARD_DEFAULT_STATUSES;
 
-    const [roots, count] = await Promise.all([
-      db.postRoot.findMany({
-        where,
-        orderBy: { currentVersion: { updatedAt: "desc" } },
-        take: DASHBOARD_LIST_LIMIT,
-        select: {
-          id: true,
-          slug: true,
-          currentVersion: {
-            select: { id: true, title: true, updatedAt: true },
+      const where: Prisma.PostRootWhereInput = {
+        currentVersion: { is: { status: { in: statuses } } },
+      };
+
+      const [roots, count] = await Promise.all([
+        db.postRoot.findMany({
+          where,
+          orderBy: { currentVersion: { updatedAt: "desc" } },
+          take: DASHBOARD_LIST_LIMIT,
+          select: {
+            id: true,
+            slug: true,
+            currentVersion: {
+              select: {
+                id: true,
+                title: true,
+                status: true,
+                updatedAt: true,
+                authors: {
+                  orderBy: { sort: "asc" },
+                  take: 1,
+                  select: { user: { select: DASHBOARD_AUTHOR_SELECT } },
+                },
+                user: { select: DASHBOARD_AUTHOR_SELECT },
+                categories: {
+                  orderBy: { sort: "asc" },
+                  select: { category: { select: { id: true, title: true } } },
+                },
+              },
+            },
           },
-        },
-      }),
-      db.postRoot.count({ where }),
-    ]);
+        }),
+        db.postRoot.count({ where }),
+      ]);
 
-    const items = roots
-      .map((root) => {
-        const version = root.currentVersion;
-        if (!version) return null;
+      const items = roots
+        .map((root) => {
+          const version = root.currentVersion;
+          if (!version) return null;
 
-        return {
-          rootId: root.id,
-          versionId: version.id,
-          title: version.title,
-          updatedAt: version.updatedAt,
-        };
-      })
-      .filter((item): item is NonNullable<typeof item> => item !== null);
+          return {
+            rootId: root.id,
+            versionId: version.id,
+            title: version.title,
+            status: version.status,
+            updatedAt: version.updatedAt,
+            author: toDashboardAuthor(version.authors[0]?.user ?? version.user),
+            categories: version.categories.map(({ category }) => category),
+          };
+        })
+        .filter((item): item is NonNullable<typeof item> => item !== null);
 
-    return { count, items };
-  }),
+      return { count, items };
+    }),
 
   create: protectedProcedure
     .input(postInsertSchema.extend({ timezone: z.string().optional() }))

@@ -26,10 +26,12 @@ import {
 import { db } from "@/shared/lib/db";
 
 import { schedulerRouter } from "../server/procedures";
+import { SCHEDULER_TARGET_TYPES } from "../constants";
 
 const createCaller = createCallerFactory(schedulerRouter);
 const rootIds: string[] = [];
 const scheduledActionIds: string[] = [];
+const emailIds: string[] = [];
 
 async function createScheduledPost({
   plannedAt,
@@ -77,9 +79,36 @@ async function createScheduledPost({
   return { rootId: root.id, actionId: action.id, title };
 }
 
+async function createScheduledEmail({
+  plannedAt,
+  title = `Newsletter ${randomUUID()}`,
+}: {
+  plannedAt: Date;
+  title?: string;
+}) {
+  const email = await db.emailSingleSend.create({ data: { name: title } });
+  emailIds.push(email.id);
+
+  const action = await db.scheduledAction.create({
+    data: {
+      type: ScheduledActionType.SEND_EMAIL,
+      targetType: SCHEDULER_TARGET_TYPES.EMAIL_SINGLE_SEND,
+      targetId: email.id,
+      plannedAt,
+      timezone: "Europe/Rome",
+      status: ScheduledActionStatus.SCHEDULED,
+      idempotencyKey: randomUUID(),
+    },
+  });
+  scheduledActionIds.push(action.id);
+
+  return { emailId: email.id, actionId: action.id, title };
+}
+
 beforeEach(() => {
   rootIds.length = 0;
   scheduledActionIds.length = 0;
+  emailIds.length = 0;
 });
 
 afterEach(async () => {
@@ -88,46 +117,63 @@ afterEach(async () => {
       where: { id: { in: scheduledActionIds } },
     });
   }
+  if (emailIds.length > 0) {
+    await db.emailSingleSend.deleteMany({ where: { id: { in: emailIds } } });
+  }
   if (rootIds.length > 0) {
     await db.postRoot.deleteMany({ where: { id: { in: rootIds } } });
   }
   rootIds.length = 0;
   scheduledActionIds.length = 0;
+  emailIds.length = 0;
 });
 
 describe("scheduler.getScheduled", () => {
-  it("counts only future, active PUBLISH_POST actions and lists the soonest first", async () => {
+  it("lists every future, active action and filters by type", async () => {
     const now = Date.now();
     const soon = await createScheduledPost({
       plannedAt: new Date(now + 60_000),
       title: "Prossimo",
     });
+    const email = await createScheduledEmail({
+      plannedAt: new Date(now + 120_000),
+      title: "Newsletter",
+    });
     const later = await createScheduledPost({
       plannedAt: new Date(now + 3_600_000),
       title: "Più tardi",
     });
-    // Past, terminal, and non-post actions are all excluded.
+    // Past and terminal actions are excluded.
     await createScheduledPost({ plannedAt: new Date(now - 60_000) });
     await createScheduledPost({
       plannedAt: new Date(now + 60_000),
       status: ScheduledActionStatus.SUCCEEDED,
     });
-    await createScheduledPost({
-      plannedAt: new Date(now + 60_000),
-      type: ScheduledActionType.SEND_EMAIL,
+
+    const all = await createCaller({ userId: "any-user" }).getScheduled();
+
+    expect(all.count).toBe(3);
+    expect(all.items.map((item) => item.actionId)).toEqual([
+      soon.actionId,
+      email.actionId,
+      later.actionId,
+    ]);
+    expect(all.items.map((item) => item.title)).toEqual([
+      "Prossimo",
+      "Newsletter",
+      "Più tardi",
+    ]);
+    expect(all.items[0]?.targetId).toBe(soon.rootId);
+    expect(all.items[1]?.type).toBe(ScheduledActionType.SEND_EMAIL);
+
+    const postsOnly = await createCaller({ userId: "any-user" }).getScheduled({
+      types: [ScheduledActionType.PUBLISH_POST],
     });
 
-    const result = await createCaller({ userId: "any-user" }).getScheduled();
-
-    expect(result.count).toBe(2);
-    expect(result.items.map((item) => item.actionId)).toEqual([
+    expect(postsOnly.count).toBe(2);
+    expect(postsOnly.items.map((item) => item.actionId)).toEqual([
       soon.actionId,
       later.actionId,
     ]);
-    expect(result.items.map((item) => item.title)).toEqual([
-      "Prossimo",
-      "Più tardi",
-    ]);
-    expect(result.items[0]?.rootId).toBe(soon.rootId);
   });
 });

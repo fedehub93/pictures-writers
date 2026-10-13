@@ -75,6 +75,7 @@ export const WidgetCard = ({
 }: WidgetCardProps) => {
   const Icon = definition.icon;
   const Widget = definition.component;
+  const Loading = definition.loadingFallback ?? WidgetLoading;
   const isClient = useIsClient();
 
   return (
@@ -124,13 +125,13 @@ export const WidgetCard = ({
       </CardHeader>
       <CardContent className="flex flex-1 flex-col">
         {isClient ? (
-          <Suspense fallback={<WidgetLoading />}>
+          <Suspense fallback={<Loading />}>
             <ErrorBoundary fallback={<WidgetError />}>
               <Widget instance={instance} />
             </ErrorBoundary>
           </Suspense>
         ) : (
-          <WidgetLoading />
+          <Loading />
         )}
       </CardContent>
     </Card>

@@ -83,14 +83,52 @@ describe("dashboard widget registry", () => {
   });
 
   it("leaves the operational widgets without a config schema", () => {
-    for (const id of [
-      "drafts",
-      "scheduled",
-      "pending-reviews",
-      "pending-orders",
-      "failed-runs",
-    ]) {
+    for (const id of ["pending-reviews", "pending-orders", "failed-runs"]) {
       expect(getWidgetDefinition(id)?.configSchema).toBeUndefined();
     }
+  });
+
+  it("offers the drafts widget a status filter defaulting to drafts and changed", () => {
+    const definition = getWidgetDefinition("drafts");
+
+    const schema = definition?.configSchema?.({ metrics: [] });
+
+    expect(schema?.fields).toEqual([
+      {
+        type: "multiselect",
+        name: "statuses",
+        label: "Statuses",
+        options: [
+          { value: "DRAFT", label: "Draft" },
+          { value: "CHANGED", label: "Changed" },
+          { value: "SCHEDULED", label: "Scheduled" },
+          { value: "PUBLISHED", label: "Published" },
+        ],
+      },
+    ]);
+    expect(definition?.defaultConfig).toEqual({
+      statuses: ["DRAFT", "CHANGED"],
+    });
+  });
+
+  it("offers the scheduled widget a type filter defaulting to every type", () => {
+    const definition = getWidgetDefinition("scheduled");
+
+    const schema = definition?.configSchema?.({ metrics: [] });
+
+    expect(schema?.fields).toEqual([
+      {
+        type: "multiselect",
+        name: "types",
+        label: "Types",
+        options: [
+          { value: "PUBLISH_POST", label: "Posts" },
+          { value: "SEND_EMAIL", label: "Newsletters" },
+        ],
+      },
+    ]);
+    expect(definition?.defaultConfig).toEqual({
+      types: ["PUBLISH_POST", "SEND_EMAIL"],
+    });
   });
 });

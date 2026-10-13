@@ -62,13 +62,13 @@ afterEach(async () => {
 });
 
 describe("posts.getDrafts", () => {
-  it("counts every draft post and lists the most recently edited first", async () => {
+  it("defaults to drafts and changed posts, most recently edited first", async () => {
     const older = await createPost(
       ContentStatus.DRAFT,
       new Date("2026-01-01T00:00:00.000Z"),
     );
     const newer = await createPost(
-      ContentStatus.DRAFT,
+      ContentStatus.CHANGED,
       new Date("2026-02-01T00:00:00.000Z"),
     );
     await createPost(
@@ -82,6 +82,32 @@ describe("posts.getDrafts", () => {
     expect(result.items.map((item) => item.rootId)).toEqual([
       newer.rootId,
       older.rootId,
+    ]);
+    expect(result.items.map((item) => item.status)).toEqual([
+      ContentStatus.CHANGED,
+      ContentStatus.DRAFT,
+    ]);
+  });
+
+  it("narrows to an explicit set of statuses", async () => {
+    await createPost(ContentStatus.DRAFT, new Date("2026-01-01T00:00:00.000Z"));
+    const changed = await createPost(
+      ContentStatus.CHANGED,
+      new Date("2026-02-01T00:00:00.000Z"),
+    );
+    const published = await createPost(
+      ContentStatus.PUBLISHED,
+      new Date("2026-03-01T00:00:00.000Z"),
+    );
+
+    const result = await createCaller({ userId: "any-user" }).getDrafts({
+      statuses: [ContentStatus.CHANGED, ContentStatus.PUBLISHED],
+    });
+
+    expect(result.count).toBe(2);
+    expect(result.items.map((item) => item.rootId)).toEqual([
+      published.rootId,
+      changed.rootId,
     ]);
   });
 });

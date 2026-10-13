@@ -5,6 +5,10 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { useTRPC } from "@/trpc/client";
 import { DatePickerWithRange } from "@/shared/components/date-range";
+import {
+  SaveStatusIndicator,
+  type SaveStatus,
+} from "@/shared/components/save-status-indicator";
 import { hasPermission } from "@/shared/lib/permissions";
 import type {
   DashboardWidgetInstance,
@@ -28,7 +32,17 @@ import {
 import { computeDashboardLayout } from "../../server/layout";
 
 import { WidgetGrid } from "../components/widget-grid";
-import { useDebouncedSaveLayout } from "../hooks/use-debounced-save-layout";
+import {
+  type SaveState,
+  useDebouncedSaveLayout,
+} from "../hooks/use-debounced-save-layout";
+
+const SAVE_STATE_STATUS: Record<SaveState, SaveStatus> = {
+  idle: "no_change",
+  saving: "saving",
+  saved: "saved",
+  error: "error",
+};
 
 export const DashboardView = () => {
   const trpc = useTRPC();
@@ -116,13 +130,7 @@ export const DashboardView = () => {
     <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 md:pt-4">
       <div className="flex flex-col items-center justify-between gap-y-4 sm:flex-row">
         <h1 className="text-3xl">Dashboard</h1>
-        <span aria-live="polite" className="text-sm text-muted-foreground">
-          {saveState === "saving"
-            ? "Saving…"
-            : saveState === "saved"
-              ? "Saved"
-              : null}
-        </span>
+        <SaveStatusIndicator status={SAVE_STATE_STATUS[saveState]} />
       </div>
 
       {hasAnalytics ? (

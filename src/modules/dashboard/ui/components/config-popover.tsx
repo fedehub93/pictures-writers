@@ -3,6 +3,7 @@
 import { Settings2 } from "lucide-react";
 
 import { Button } from "@/shared/ui/button";
+import { Checkbox } from "@/shared/ui/checkbox";
 import { Field, FieldGroup, FieldLabel } from "@/shared/ui/field";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 import {
@@ -14,7 +15,12 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 
-import { configFieldValue, withConfigValue } from "../../lib/config";
+import {
+  configFieldValue,
+  configFieldValues,
+  withConfigValue,
+  withConfigValues,
+} from "../../lib/config";
 import type {
   DashboardWidgetInstance,
   WidgetConfigContext,
@@ -62,6 +68,50 @@ export const ConfigPopover = ({
         <FieldGroup className="gap-4">
           {schema.fields.map((field) => {
             const controlId = `widget-${instance.key}-${field.name}`;
+
+            if (field.type === "multiselect") {
+              const values = configFieldValues(instance.config, field);
+
+              return (
+                <Field key={field.name}>
+                  <FieldLabel>{field.label}</FieldLabel>
+                  <div className="flex flex-col gap-2">
+                    {field.options.map((option) => {
+                      const optionId = `${controlId}-${option.value}`;
+
+                      return (
+                        <label
+                          key={option.value}
+                          htmlFor={optionId}
+                          className="flex items-center gap-2 text-sm"
+                        >
+                          <Checkbox
+                            id={optionId}
+                            checked={values.includes(option.value)}
+                            onCheckedChange={(checked) => {
+                              const next = checked
+                                ? [...values, option.value]
+                                : values.filter(
+                                    (value) => value !== option.value,
+                                  );
+
+                              // A field with no selection would show nothing;
+                              // keep at least one option chosen.
+                              if (next.length === 0) return;
+
+                              onChange(
+                                withConfigValues(instance.config, field, next),
+                              );
+                            }}
+                          />
+                          {option.label}
+                        </label>
+                      );
+                    })}
+                  </div>
+                </Field>
+              );
+            }
 
             return (
               <Field key={field.name}>

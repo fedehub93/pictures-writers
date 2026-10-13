@@ -6,6 +6,7 @@ import { db } from "@/shared/lib/db";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 
 import { getCalendarEvents } from "../lib/calendar-query";
+import { describeScheduledActions } from "../lib/describe-scheduled-action";
 import type { CalendarEventStatus, CalendarEventType } from "../types";
 
 const calendarEventStatuses: [CalendarEventStatus, ...CalendarEventStatus[]] = [
@@ -27,51 +28,65 @@ const calendarEventStatusSchema = z.enum(calendarEventStatuses);
 const calendarEventTypeSchema = z.enum(calendarEventTypes);
 
 /** How many records the dashboard's scheduled-content widget lists at once. */
-const DASHBOARD_LIST_LIMIT = 5;
+const DASHBOARD_LIST_LIMIT = 6;
 
 export const schedulerRouter = createTRPCRouter({
   /**
-   * Posts scheduled for a future instant: the count and the soonest few, for the
-   * dashboard's "Scheduled content" widget.
+   * Everything scheduled for a future instant — posts to publish, newsletters to
+   * send, and whatever a later action type targets: the count and the soonest
+   * few, for the dashboard's "Scheduled content" widget. `types` narrows it to
+   * the chosen action types; omitting it (or an empty list) lists every type.
    */
-  getScheduled: permissionProcedure(PERMISSIONS.POSTS_READ).query(async () => {
-    const where = {
-      type: ScheduledActionType.PUBLISH_POST,
-      status: ScheduledActionStatus.SCHEDULED,
-      plannedAt: { gte: new Date() },
-    };
+  getScheduled: permissionProcedure(PERMISSIONS.POSTS_READ)
+    .input(
+      z.object({ types: z.array(calendarEventTypeSchema).optional() }).optional(),
+    )
+    .query(async ({ input }) => {
+      const types =
+        input?.types && input.types.length > 0 ? input.types : undefined;
 
-    const [actions, count] = await Promise.all([
-      db.scheduledAction.findMany({
-        where,
-        orderBy: { plannedAt: "asc" },
-        take: DASHBOARD_LIST_LIMIT,
-        select: { id: true, targetId: true, plannedAt: true },
-      }),
-      db.scheduledAction.count({ where }),
-    ]);
+      const where = {
+        status: ScheduledActionStatus.SCHEDULED,
+        plannedAt: { gte: new Date() },
+        ...(types ? { type: { in: types } } : {}),
+      };
 
-    const roots = await db.postRoot.findMany({
-      where: { id: { in: actions.map((action) => action.targetId) } },
-      select: {
-        id: true,
-        currentVersion: { select: { title: true } },
-      },
-    });
-    const titleByRootId = new Map(
-      roots.map((root) => [root.id, root.currentVersion?.title ?? ""]),
-    );
+      const [actions, count] = await Promise.all([
+        db.scheduledAction.findMany({
+          where,
+          orderBy: { plannedAt: "asc" },
+          take: DASHBOARD_LIST_LIMIT,
+          select: {
+            id: true,
+            type: true,
+            targetType: true,
+            targetId: true,
+            plannedAt: true,
+            timezone: true,
+          },
+        }),
+        db.scheduledAction.count({ where }),
+      ]);
 
-    return {
-      count,
-      items: actions.map((action) => ({
-        actionId: action.id,
-        rootId: action.targetId,
-        title: titleByRootId.get(action.targetId) ?? "",
-        plannedAt: action.plannedAt,
-      })),
-    };
-  }),
+      const descriptions = await describeScheduledActions(actions);
+
+      return {
+        count,
+        items: actions.map((action) => {
+          const description = descriptions.get(action.id);
+
+          return {
+            actionId: action.id,
+            type: action.type,
+            targetId: action.targetId,
+            title: description?.title ?? "",
+            url: description?.url ?? "",
+            plannedAt: action.plannedAt,
+            timezone: action.timezone,
+          };
+        }),
+      };
+    }),
 
   getCalendarEvents: protectedProcedure
     .input(
