@@ -33,26 +33,19 @@ afterEach(async () => {
 });
 
 describe("contacts metric", () => {
-  it("buckets contacts into the trailing six months by calendar month", async () => {
-    const now = new Date();
-    // Five months back lands in the second bucket (index 1); two months back
-    // lands in the fifth (index 4). Buckets run from six months ago to last
-    // month, so the current month is intentionally excluded.
-    await createContact(subMonths(now, 5));
-    await createContact(subMonths(now, 5));
-    await createContact(subMonths(now, 2));
+  it("buckets contacts by calendar month over the range", async () => {
+    await createContact(new Date(2099, 3, 10, 12)); // April
+    await createContact(new Date(2099, 4, 10, 12)); // May
+    await createContact(new Date(2099, 4, 20, 12)); // May
 
     const series = await contactsMetric.timeSeries(
-      startOfMonth(now),
-      endOfMonth(now),
+      startOfMonth(new Date(2099, 3, 1)),
+      endOfMonth(new Date(2099, 5, 1)),
     );
 
-    expect(series.points).toHaveLength(6);
-    expect(series.points[1]?.value).toBe(2);
-    expect(series.points[4]?.value).toBe(1);
-    expect(
-      series.points.reduce((total, point) => total + point.value, 0),
-    ).toBe(3);
+    expect(series.points).toHaveLength(3);
+    expect(series.points.map((point) => point.value)).toEqual([1, 2, 0]);
+    expect(series.total).toBe(3);
   });
 
   it("reports the current total and its growth from the range", async () => {

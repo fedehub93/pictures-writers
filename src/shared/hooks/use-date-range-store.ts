@@ -8,14 +8,18 @@ interface DateRangeState {
   resetDateRange: () => void;
 }
 
-const initialFrom = startOfMonth(addMonths(new Date(), -1));
-const initialTo = endOfMonth(addMonths(new Date(), -1));
+/**
+ * The analytics default range: the trailing six full calendar months, through
+ * the end of last month. Six months keeps the Trend charts multi-month by
+ * default while excluding the in-progress current month.
+ */
+export const defaultDateRange = (): DateRange => ({
+  from: startOfMonth(addMonths(new Date(), -6)),
+  to: endOfMonth(addMonths(new Date(), -1)),
+});
 
 export const useDateRangeStore = create<DateRangeState>((set) => ({
-  dateRange: { from: initialFrom, to: initialTo },
+  dateRange: defaultDateRange(),
   setDateRange: (range) => set({ dateRange: range }),
-  resetDateRange: () =>
-    set({
-      dateRange: { from: initialFrom, to: initialTo },
-    }),
+  resetDateRange: () => set({ dateRange: defaultDateRange() }),
 }));

@@ -1,7 +1,7 @@
 import { endOfDay, endOfMonth, startOfDay, startOfMonth } from "date-fns";
 import { describe, expect, it, vi } from "vitest";
 
-import { buildRangeSeries, growthPercentage, monthlyBuckets, seriesFromGrowthStats } from "../series";
+import { buildRangeSeries, growthPercentage, monthlyBuckets } from "../series";
 
 describe("monthlyBuckets", () => {
   it("returns one bucket per calendar month, oldest first", () => {
@@ -84,18 +84,17 @@ describe("growthPercentage", () => {
 });
 
 describe("buildRangeSeries", () => {
-  it("buckets the range by month and totals it with growth from the previous period", async () => {
+  it("buckets the range and weighs growth against the previous equal-length period", async () => {
     const from = new Date(2026, 0, 1, 0);
     const to = new Date(2026, 1, 28, 23);
 
-    // Two monthly buckets (Jan, Feb), the whole range total (Jan–Feb), and the
-    // previous comparable period (Dec–Jan).
+    // A bucket call spans one month, the whole-range call spans two, and the
+    // previous-period call spans the two months before the range.
     const aggregate = vi.fn(async (start: Date, end: Date): Promise<number> => {
-      if (start.getMonth() === 11) return 4;
-      if (start.getMonth() === end.getMonth()) {
+      if (startOfMonth(start).getTime() === startOfMonth(end).getTime()) {
         return start.getMonth() === 0 ? 2 : 3;
       }
-      return 5;
+      return start.getMonth() === 0 ? 5 : 8;
     });
 
     const series = await buildRangeSeries(from, to, aggregate);
@@ -105,37 +104,13 @@ describe("buildRangeSeries", () => {
       { label: expect.any(String), value: 3 },
     ]);
     expect(series.total).toBe(5);
-    expect(series.percentageGrowth).toBe(25);
-  });
-});
+    expect(series.percentageGrowth).toBe(-37.5);
 
-describe("seriesFromGrowthStats", () => {
-  it("maps wrapped growth stats onto a metric series", () => {
-    const series = seriesFromGrowthStats({
-      currentMonthCount: 7,
-      percentageGrowth: 25,
-      chartData: [
-        { month: "January", download: 2 },
-        { month: "February", download: 5 },
-      ],
-    });
-
-    expect(series).toEqual({
-      points: [
-        { label: "January", value: 2 },
-        { label: "February", value: 5 },
-      ],
-      total: 7,
-      percentageGrowth: 25,
-    });
-  });
-
-  it("tolerates missing chart data", () => {
-    const series = seriesFromGrowthStats({
-      currentMonthCount: 0,
-      percentageGrowth: 100,
-    });
-
-    expect(series.points).toEqual([]);
+    // The comparable period is the two months immediately before the range
+    // (shifted by the range's two months), not an overlapping one-month shift.
+    expect(aggregate).toHaveBeenCalledWith(
+      startOfDay(new Date(2025, 10, 1, 0)),
+      endOfDay(new Date(2025, 11, 28, 0)),
+    );
   });
 });

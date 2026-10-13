@@ -52,7 +52,22 @@ describe("download ebook metric", () => {
     expect(ebooksMetric.permission).toBe(PERMISSIONS.DASHBOARD_READ);
   });
 
-  it("wraps the ebook stats: totals the range and reports growth", async () => {
+  it("buckets downloads by calendar month over the range", async () => {
+    await createDownload(monthDate(1));
+    await createDownload(monthDate(0));
+    await createDownload(monthDate(0));
+
+    const series = await ebooksMetric.timeSeries(
+      startOfMonth(subMonths(anchor, 1)),
+      endOfMonth(anchor),
+    );
+
+    expect(series.points).toHaveLength(2);
+    expect(series.points.map((point) => point.value)).toEqual([1, 2]);
+    expect(series.total).toBe(3);
+  });
+
+  it("reports growth against the previous equal-length period", async () => {
     await createDownload(monthDate(0));
     await createDownload(monthDate(0));
     await createDownload(monthDate(1));
@@ -64,19 +79,5 @@ describe("download ebook metric", () => {
 
     expect(series.total).toBe(2);
     expect(series.percentageGrowth).toBe(100);
-  });
-
-  it("renders the trailing six-month buckets the wrapped stats produce", async () => {
-    await createDownload(monthDate(0));
-
-    const series = await ebooksMetric.timeSeries(
-      startOfMonth(anchor),
-      endOfMonth(anchor),
-    );
-
-    expect(series.points).toHaveLength(6);
-    expect(
-      series.points.every((point) => typeof point.value === "number"),
-    ).toBe(true);
   });
 });

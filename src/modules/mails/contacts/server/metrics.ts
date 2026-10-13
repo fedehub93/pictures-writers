@@ -1,41 +1,44 @@
 import "server-only";
 
-import { getEbookDownloadGrowth } from "@/data/email-contact";
-import { seriesFromGrowthStats } from "@/shared/dashboard/metrics/series";
+import { buildRangeSeries } from "@/shared/dashboard/metrics/series";
 import type { Metric } from "@/shared/dashboard/types";
+import { db } from "@/shared/lib/db";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 
-import { getEmailContactsGrowth } from "./data";
-
 /**
- * Contacts: reuses the existing contact growth query. The growth total and
- * percentage come from the selected range; the buckets are the trailing six
- * months that query already produces.
+ * Contacts: counts `EmailContact` rows per calendar month over the requested
+ * range, gated by the contacts area permission.
  */
 export const contactsMetric: Metric = {
   id: "contacts",
   label: "Contacts",
   permission: PERMISSIONS.CONTACTS_READ,
-  timeSeries: async (from, to) => {
-    const stats = await getEmailContactsGrowth(from, to);
-
-    return seriesFromGrowthStats(stats);
-  },
+  timeSeries: (from, to) =>
+    buildRangeSeries(from, to, (start, end) =>
+      db.emailContact.count({
+        where: { createdAt: { gte: start, lte: end } },
+      }),
+    ),
 };
 
 /**
- * Ebook downloads: wraps the existing ebook download stats (folding the former
- * `/api/ebooks/stats` REST logic into the metric registry). The range drives the
- * total and growth; the buckets are the trailing six months that query already
- * produces. Gated by `dashboard.read`, as the REST endpoint was.
+ * Ebook downloads: counts `EmailContactInteraction` rows of type
+ * `ebook_downloaded` per calendar month over the requested range. A contact
+ * holds at most one such interaction (unique `[contactId, interactionType]`),
+ * so the count is unique contacts that downloaded, not download events. Gated
+ * by `dashboard.read`, as the former REST endpoint was.
  */
 export const ebooksMetric: Metric = {
   id: "ebooks",
   label: "Ebook downloads",
   permission: PERMISSIONS.DASHBOARD_READ,
-  timeSeries: async (from, to) => {
-    const stats = await getEbookDownloadGrowth(from, to);
-
-    return seriesFromGrowthStats(stats);
-  },
+  timeSeries: (from, to) =>
+    buildRangeSeries(from, to, (start, end) =>
+      db.emailContactInteraction.count({
+        where: {
+          interactionType: "ebook_downloaded",
+          interactionDate: { gte: start, lte: end },
+        },
+      }),
+    ),
 };

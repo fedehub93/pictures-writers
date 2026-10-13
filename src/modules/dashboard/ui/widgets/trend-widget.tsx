@@ -1,11 +1,13 @@
 "use client";
 
-import { endOfMonth, startOfMonth } from "date-fns";
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { useTRPC } from "@/trpc/client";
-import { useDateRangeStore } from "@/shared/hooks/use-date-range-store";
+import {
+  defaultDateRange,
+  useDateRangeStore,
+} from "@/shared/hooks/use-date-range-store";
 import {
   type ChartConfig,
   ChartContainer,
@@ -66,11 +68,12 @@ const TrendChart = ({ metricId, metricLabel, formIds }: TrendChartProps) => {
   const trpc = useTRPC();
   const { dateRange } = useDateRangeStore();
 
-  const from = (
-    dateRange?.from ? new Date(dateRange.from) : startOfMonth(new Date())
+  const fallback = defaultDateRange();
+  const from = new Date(
+    dateRange?.from ?? fallback.from ?? new Date(),
   ).toISOString();
-  const to = (
-    dateRange?.to ? new Date(dateRange.to) : endOfMonth(new Date())
+  const to = new Date(
+    dateRange?.to ?? fallback.to ?? new Date(),
   ).toISOString();
 
   const { data: series } = useSuspenseQuery(

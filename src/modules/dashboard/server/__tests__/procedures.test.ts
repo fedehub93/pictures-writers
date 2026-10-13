@@ -330,8 +330,8 @@ describe("dashboard.getFormOptions", () => {
 });
 
 describe("dashboard.getMetricSeries", () => {
-  const from = new Date("2026-01-01T00:00:00.000Z").toISOString();
-  const to = new Date("2026-01-31T23:59:59.000Z").toISOString();
+  const from = new Date(2026, 0, 1).toISOString();
+  const to = new Date(2026, 0, 31, 23, 59, 59).toISOString();
 
   it("returns the series for a metric the user may read", async () => {
     permissionKeysByUser.set("contacts", [PERMISSIONS.CONTACTS_READ]);
@@ -342,7 +342,7 @@ describe("dashboard.getMetricSeries", () => {
       to,
     });
 
-    expect(series.points).toHaveLength(6);
+    expect(series.points).toHaveLength(1);
     expect(series).toHaveProperty("total");
     expect(series).toHaveProperty("percentageGrowth");
   });

@@ -72,9 +72,11 @@ export const growthPercentage = (current: number, previous: number): number =>
 /**
  * Builds a Metric time series over the requested range: one point per calendar
  * month, the total over the whole range, and growth against the previous
- * comparable period (the same range shifted back one month). The aggregation is
- * injected so each metric decides what it counts or sums, and the helper is
- * unit testable without a database.
+ * comparable period. The comparable period is the same number of calendar
+ * months immediately before the range, so a multi-month range is compared
+ * against an equally long window rather than an overlapping one-month shift.
+ * The aggregation is injected so each metric decides what it counts or sums,
+ * and the helper is unit testable without a database.
  */
 export const buildRangeSeries = async (
   from: Date,
@@ -91,9 +93,14 @@ export const buildRangeSeries = async (
     });
   }
 
+  const months = buckets.length;
+
   const [total, previousTotal] = await Promise.all([
     aggregate(startOfDay(from), endOfDay(to)),
-    aggregate(startOfDay(subMonths(from, 1)), endOfDay(subMonths(to, 1))),
+    aggregate(
+      startOfDay(subMonths(from, months)),
+      endOfDay(subMonths(to, months)),
+    ),
   ]);
 
   return {
@@ -103,23 +110,3 @@ export const buildRangeSeries = async (
   };
 };
 
-/**
- * The shape of the existing contact/ebook growth stats: a fixed-window chart
- * plus the range total and its growth. Both the contacts and the ebook metric
- * wrap a query in this shape, so the mapping to a MetricSeries lives here once.
- */
-export interface GrowthStatsLike {
-  currentMonthCount: number;
-  percentageGrowth: number;
-  chartData?: { month: string; download: number }[] | null;
-}
-
-/** Maps wrapped growth stats onto a Metric series. */
-export const seriesFromGrowthStats = (stats: GrowthStatsLike): MetricSeries => ({
-  points: (stats.chartData ?? []).map(({ month, download }) => ({
-    label: month,
-    value: download,
-  })),
-  total: stats.currentMonthCount,
-  percentageGrowth: stats.percentageGrowth,
-});
