@@ -83,14 +83,17 @@ const columns: WidgetTableColumn<ScheduledRow>[] = [
     id: "title",
     header: "Title",
     grow: true,
-    cell: (row) =>
-      row.url ? (
-        <Link href={row.url as Route} className="font-medium hover:underline">
-          {row.title}
-        </Link>
-      ) : (
-        <span className="font-medium">{row.title}</span>
-      ),
+    cell: (row) => (
+      <div className="max-w-md truncate font-medium">
+        {row.url ? (
+          <Link href={row.url as Route} className="hover:underline">
+            {row.title}
+          </Link>
+        ) : (
+          row.title
+        )}
+      </div>
+    ),
   },
   {
     id: "plannedAt",
