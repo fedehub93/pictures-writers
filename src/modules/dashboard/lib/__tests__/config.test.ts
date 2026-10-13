@@ -7,6 +7,7 @@ import type {
 import {
   configFieldValue,
   configFieldValues,
+  configStringValues,
   withConfigValue,
   withConfigValues,
 } from "../config";
@@ -85,6 +86,61 @@ describe("configFieldValues", () => {
   it("returns an empty selection when the stored value is absent or malformed", () => {
     expect(configFieldValues(undefined, multiField)).toEqual([]);
     expect(configFieldValues({ statuses: "DRAFT" }, multiField)).toEqual([]);
+  });
+});
+
+const allByDefaultField: WidgetConfigMultiSelectField = {
+  type: "multiselect",
+  name: "forms",
+  label: "Forms",
+  allByDefault: true,
+  options: [
+    { value: "form-a", label: "Form A" },
+    { value: "form-b", label: "Form B" },
+    { value: "form-c", label: "Form C" },
+  ],
+};
+
+describe("configFieldValues (allByDefault)", () => {
+  it("reads an absent selection as every option", () => {
+    expect(configFieldValues(undefined, allByDefaultField)).toEqual([
+      "form-a",
+      "form-b",
+      "form-c",
+    ]);
+  });
+
+  it("reads an empty selection as every option", () => {
+    expect(configFieldValues({ forms: [] }, allByDefaultField)).toEqual([
+      "form-a",
+      "form-b",
+      "form-c",
+    ]);
+  });
+
+  it("still keeps only the stored values that are options", () => {
+    expect(
+      configFieldValues({ forms: ["form-a", "ghost"] }, allByDefaultField),
+    ).toEqual(["form-a"]);
+  });
+
+  it("leaves a field without allByDefault reading an absent selection as none", () => {
+    expect(configFieldValues(undefined, multiField)).toEqual([]);
+  });
+});
+
+describe("configStringValues", () => {
+  it("returns the stored string entries, dropping non-strings", () => {
+    expect(configStringValues({ forms: ["a", 2, "b"] }, "forms")).toEqual([
+      "a",
+      "b",
+    ]);
+  });
+
+  it("returns an empty array when the stored value is absent or malformed", () => {
+    expect(configStringValues(undefined, "forms")).toEqual([]);
+    expect(configStringValues({ forms: "a" }, "forms")).toEqual([]);
+    expect(configStringValues({}, "forms")).toEqual([]);
   });
 });
 

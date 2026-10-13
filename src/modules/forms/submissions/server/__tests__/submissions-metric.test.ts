@@ -85,4 +85,28 @@ describe("submissions metric", () => {
     expect(series.total).toBe(2);
     expect(series.percentageGrowth).toBe(100);
   });
+
+  it("narrows the count to the selected forms and counts every form when none are selected", async () => {
+    const first = await createForm();
+    const second = await createForm();
+    await createSubmission(first.id, monthDate(0));
+    await createSubmission(second.id, monthDate(0));
+    await createSubmission(second.id, monthDate(0));
+
+    const from = startOfMonth(anchor);
+    const to = endOfMonth(anchor);
+
+    const all = await submissionsMetric.timeSeries(from, to);
+    const onlyFirst = await submissionsMetric.timeSeries(from, to, {
+      formIds: [first.id],
+    });
+    const unselected = await submissionsMetric.timeSeries(from, to, {
+      formIds: [],
+    });
+
+    expect(all.total).toBe(3);
+    expect(onlyFirst.total).toBe(1);
+    expect(onlyFirst.points.map((point) => point.value)).toEqual([1]);
+    expect(unselected.total).toBe(3);
+  });
 });

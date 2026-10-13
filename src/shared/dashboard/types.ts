@@ -79,6 +79,13 @@ export interface WidgetConfigMultiSelectField {
   name: string;
   label: string;
   options: WidgetConfigOption[];
+  /**
+   * When set, an absent or empty selection reads as every option. Lets a field
+   * whose default is "all" stay unset until the user narrows it, and keeps the
+   * displayed selection in step with that default. Defaults to off, where an
+   * absent selection reads as none.
+   */
+  allByDefault?: boolean;
 }
 
 export type WidgetConfigField =
@@ -91,21 +98,36 @@ export interface WidgetConfigSchema {
 }
 
 /**
- * Data available when a definition's config schema is resolved for the current
- * user, so a widget can build its choices from permission-scoped data. The
- * Trend's metric picker builds its options from the metrics the user may read.
+ * The client-facing summary of a dynamic Form, for a widget's form picker.
+ * Distinct from `MetricSummary`: a Form is a selectable data source, not a
+ * time series.
  */
-export interface WidgetConfigContext {
-  metrics: MetricSummary[];
+export interface FormSummary {
+  id: string;
+  label: string;
 }
 
 /**
- * A definition's config contract, resolved against the current user's context.
- * A function (rather than a static object) because a definition's options can
- * depend on what the user is permitted to see.
+ * Data available when a definition's config schema is resolved for the current
+ * user, so a widget can build its choices from permission-scoped data. The
+ * Trend's metric picker builds its options from the metrics the user may read,
+ * and its form picker from the forms the user may read.
+ */
+export interface WidgetConfigContext {
+  metrics: MetricSummary[];
+  forms: FormSummary[];
+}
+
+/**
+ * A definition's config contract, resolved against the current user's context
+ * and the instance's current config. A function (rather than a static object)
+ * because a definition's options can depend on what the user is permitted to
+ * see and on what the instance is already configured to do (e.g. the Trend
+ * shows its form picker only once the form-submissions metric is chosen).
  */
 export type WidgetConfigSchemaResolver = (
   context: WidgetConfigContext,
+  config?: WidgetConfig,
 ) => WidgetConfigSchema;
 
 /**
@@ -195,6 +217,16 @@ export interface MetricSeries {
 }
 
 /**
+ * The parameters a caller may pass to a Metric's time-series function, beyond
+ * the date range. Generic so any metric can accept its own scoping without the
+ * Trend (or the metric registry) knowing about each metric's domain: today the
+ * form-submissions metric reads `formIds` to narrow to the selected forms.
+ */
+export interface MetricParams {
+  formIds?: string[];
+}
+
+/**
  * A named, permission-scoped time series exposed by the server-side metric
  * registry. The Trend widget renders exactly one Metric at a time. A Metric is
  * owned by the module whose data it aggregates.
@@ -203,7 +235,11 @@ export interface Metric {
   id: string;
   label: string;
   permission: string;
-  timeSeries: (from: Date, to: Date) => Promise<MetricSeries>;
+  timeSeries: (
+    from: Date,
+    to: Date,
+    params?: MetricParams,
+  ) => Promise<MetricSeries>;
 }
 
 /** The client-facing summary of a Metric: enough to list and select it. */

@@ -65,6 +65,7 @@ describe("dashboard widget registry", () => {
         { id: "contacts", label: "Contacts" },
         { id: "revenue", label: "Revenue / orders" },
       ],
+      forms: [],
     });
 
     expect(schema).toEqual({
@@ -82,6 +83,63 @@ describe("dashboard widget registry", () => {
     });
   });
 
+  it("adds the forms picker only for the form-submissions metric", () => {
+    const definition = getWidgetDefinition("trend");
+    const context = {
+      metrics: [
+        { id: "submissions", label: "Form submissions" },
+        { id: "revenue", label: "Revenue / orders" },
+      ],
+      forms: [
+        { id: "form-feedback", label: "Feedback" },
+        { id: "form-contact", label: "Contatti" },
+      ],
+    };
+    const metricField = {
+      type: "select",
+      name: "metric",
+      label: "Metric",
+      options: [
+        { value: "submissions", label: "Form submissions" },
+        { value: "revenue", label: "Revenue / orders" },
+      ],
+    };
+    const formsField = {
+      type: "multiselect",
+      name: "forms",
+      label: "Forms",
+      allByDefault: true,
+      options: [
+        { value: "form-feedback", label: "Feedback" },
+        { value: "form-contact", label: "Contatti" },
+      ],
+    };
+
+    expect(
+      definition?.configSchema?.(context, { metric: "submissions" })?.fields,
+    ).toEqual([metricField, formsField]);
+
+    // Another metric keeps the picker to the metric alone.
+    expect(
+      definition?.configSchema?.(context, { metric: "revenue" })?.fields,
+    ).toEqual([metricField]);
+
+    // With no config the Trend renders the first permitted metric, so the
+    // picker matches it.
+    expect(definition?.configSchema?.(context)?.fields).toEqual([
+      metricField,
+      formsField,
+    ]);
+
+    // A user who may read no form is not offered the picker.
+    expect(
+      definition?.configSchema?.(
+        { ...context, forms: [] },
+        { metric: "submissions" },
+      )?.fields,
+    ).toEqual([metricField]);
+  });
+
   it("leaves the operational widgets without a config schema", () => {
     for (const id of ["pending-reviews", "pending-orders", "failed-runs"]) {
       expect(getWidgetDefinition(id)?.configSchema).toBeUndefined();
@@ -91,7 +149,7 @@ describe("dashboard widget registry", () => {
   it("offers the drafts widget a status filter defaulting to drafts and changed", () => {
     const definition = getWidgetDefinition("drafts");
 
-    const schema = definition?.configSchema?.({ metrics: [] });
+    const schema = definition?.configSchema?.({ metrics: [], forms: [] });
 
     expect(schema?.fields).toEqual([
       {
@@ -114,7 +172,7 @@ describe("dashboard widget registry", () => {
   it("offers the scheduled widget a type filter defaulting to every type", () => {
     const definition = getWidgetDefinition("scheduled");
 
-    const schema = definition?.configSchema?.({ metrics: [] });
+    const schema = definition?.configSchema?.({ metrics: [], forms: [] });
 
     expect(schema?.fields).toEqual([
       {

@@ -36,23 +36,41 @@ export const withConfigValue = (
 ): Record<string, unknown> => ({ ...(config ?? {}), [field.name]: value });
 
 /**
+ * The stored string entries of one config key, dropping anything that is not a
+ * string. Absent or malformed config yields an empty array.
+ */
+export const configStringValues = (
+  config: WidgetConfig | undefined,
+  name: string,
+): string[] => {
+  const value = config?.[name];
+
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string")
+    : [];
+};
+
+/**
  * The values a multi-choice config field should show: the stored array, kept
  * only for values that are still options. Absent or malformed config yields an
- * empty selection.
+ * empty selection, unless the field is `allByDefault`, in which case an absent
+ * or empty selection reads as every option.
  */
 export const configFieldValues = (
   config: WidgetConfig | undefined,
   field: WidgetConfigMultiSelectField,
 ): string[] => {
-  const value = config?.[field.name];
-
-  if (!Array.isArray(value)) return [];
-
   const allowed = new Set(field.options.map((option) => option.value));
 
-  return value.filter(
-    (item): item is string => typeof item === "string" && allowed.has(item),
+  const selected = configStringValues(config, field.name).filter((value) =>
+    allowed.has(value),
   );
+
+  if (field.allByDefault && selected.length === 0) {
+    return field.options.map((option) => option.value);
+  }
+
+  return selected;
 };
 
 /** Returns a copy of the instance config with a multi-choice field replaced. */

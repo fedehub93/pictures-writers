@@ -51,6 +51,9 @@ export const DashboardView = () => {
   const { data: metrics } = useSuspenseQuery(
     trpc.dashboard.getMetrics.queryOptions(),
   );
+  const { data: forms } = useSuspenseQuery(
+    trpc.dashboard.getFormOptions.queryOptions(),
+  );
 
   const canRead = useMemo(
     () => (permission: string) => hasPermission(permissionKeys, permission),
@@ -83,10 +86,10 @@ export const DashboardView = () => {
   );
 
   // Context a configurable widget's schema resolves against (the permitted
-  // metrics, for the Trend's picker).
+  // metrics and forms, for the Trend's pickers).
   const configContext = useMemo<WidgetConfigContext>(
-    () => ({ metrics }),
-    [metrics],
+    () => ({ metrics, forms }),
+    [metrics, forms],
   );
 
   // The dashboard is always arrangeable: the hook holds the working copy and

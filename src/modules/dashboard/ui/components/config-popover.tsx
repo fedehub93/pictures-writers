@@ -47,7 +47,7 @@ export const ConfigPopover = ({
   context,
   onChange,
 }: ConfigPopoverProps) => {
-  const schema = definition.configSchema?.(context);
+  const schema = definition.configSchema?.(context, instance.config ?? null);
 
   if (!schema || schema.fields.length === 0) return null;
 

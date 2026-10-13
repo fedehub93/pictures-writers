@@ -9,3 +9,8 @@ export const prefetchDashboardLayout = () => {
 export const prefetchDashboardMetrics = () => {
   return prefetch(trpc.dashboard.getMetrics.queryOptions());
 };
+
+/** Prefetches the dynamic forms a Trend may narrow its submissions metric to. */
+export const prefetchDashboardFormOptions = () => {
+  return prefetch(trpc.dashboard.getFormOptions.queryOptions());
+};

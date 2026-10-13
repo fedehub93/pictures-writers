@@ -54,6 +54,8 @@ const widgetDefinition = (id: string): WidgetDefinition => ({
 const createCaller = createCallerFactory(dashboardRouter);
 
 const userIds: string[] = [];
+const formIds: string[] = [];
+const submissionIds: string[] = [];
 
 async function createUser() {
   const user = await db.user.create({
@@ -69,15 +71,25 @@ function callerFor(userId: string) {
 
 beforeEach(() => {
   userIds.length = 0;
+  formIds.length = 0;
+  submissionIds.length = 0;
   permissionKeysByUser.clear();
 });
 
 afterEach(async () => {
+  if (submissionIds.length > 0) {
+    await db.formSubmission.deleteMany({ where: { id: { in: submissionIds } } });
+  }
+  if (formIds.length > 0) {
+    await db.form.deleteMany({ where: { id: { in: formIds } } });
+  }
   if (userIds.length > 0) {
     await db.dashboardLayout.deleteMany({ where: { userId: { in: userIds } } });
     await db.user.deleteMany({ where: { id: { in: userIds } } });
   }
   userIds.length = 0;
+  formIds.length = 0;
+  submissionIds.length = 0;
 });
 
 describe("dashboard.getLayout", () => {
@@ -147,6 +159,23 @@ describe("dashboard.saveLayout", () => {
         config: { metric: "submissions" },
       },
     ]);
+  });
+
+  it("round-trips a Trend's selected forms through saveLayout", async () => {
+    const user = await createUser();
+    const caller = callerFor(user.id);
+    const widgets = [
+      {
+        key: "trend-submissions",
+        definitionId: "trend",
+        config: { metric: "submissions", forms: ["form-a", "form-b"] },
+      },
+    ];
+
+    await caller.saveLayout({ widgets });
+    const saved = await caller.getLayout();
+
+    expect(saved.widgets).toEqual(widgets);
   });
 
   it("replaces the previous layout on a second save", async () => {
@@ -268,6 +297,38 @@ describe("dashboard.getMetrics", () => {
   });
 });
 
+describe("dashboard.getFormOptions", () => {
+  it("lists the dynamic forms and drops the non-rendered shadow forms", async () => {
+    const form = await db.form.create({
+      data: { name: `Feedback ${randomUUID()}` },
+    });
+    formIds.push(form.id);
+
+    permissionKeysByUser.set("with-submissions", [PERMISSIONS.SUBMISSIONS_READ]);
+    const options = await callerFor("with-submissions").getFormOptions();
+
+    expect(options).toContainEqual({ id: form.id, label: form.name });
+    expect(options.map((option) => option.id)).not.toContain(
+      "built-in-form-newsletter",
+    );
+    expect(options.map((option) => option.id)).not.toContain(
+      "built-in-form-ebook",
+    );
+  });
+
+  it("returns no forms to a user who may not read submissions", async () => {
+    permissionKeysByUser.set("no-submissions", []);
+
+    expect(await callerFor("no-submissions").getFormOptions()).toEqual([]);
+  });
+
+  it("gates the form picker behind dashboard.read", () => {
+    expect(getProcedurePermissions("dashboard.getFormOptions")).toEqual([
+      PERMISSIONS.DASHBOARD_READ,
+    ]);
+  });
+});
+
 describe("dashboard.getMetricSeries", () => {
   const from = new Date("2026-01-01T00:00:00.000Z").toISOString();
   const to = new Date("2026-01-31T23:59:59.000Z").toISOString();
@@ -308,5 +369,30 @@ describe("dashboard.getMetricSeries", () => {
         to,
       }),
     ).rejects.toThrow();
+  });
+
+  it("scopes a form-submissions series to the requested forms", async () => {
+    permissionKeysByUser.set("submissions", [PERMISSIONS.SUBMISSIONS_READ]);
+    const form = await db.form.create({
+      data: { name: `Scoped ${randomUUID()}` },
+    });
+    formIds.push(form.id);
+    const submission = await db.formSubmission.create({
+      data: {
+        formId: form.id,
+        data: {},
+        createdAt: new Date("2026-01-15T12:00:00.000Z"),
+      },
+    });
+    submissionIds.push(submission.id);
+
+    const series = await callerFor("submissions").getMetricSeries({
+      metricId: "submissions",
+      from,
+      to,
+      formIds: [form.id],
+    });
+
+    expect(series.total).toBe(1);
   });
 });

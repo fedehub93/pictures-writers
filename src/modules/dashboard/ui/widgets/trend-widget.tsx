@@ -13,9 +13,25 @@ import {
   ChartTooltipContent,
 } from "@/shared/ui/chart";
 
+import { configStringValues } from "../../lib/config";
 import { resolveMetric } from "../../lib/metric-selection";
-import type { WidgetComponentProps } from "@/shared/dashboard/types";
+import type { WidgetComponentProps, WidgetConfig } from "@/shared/dashboard/types";
 import { WidgetEmpty } from "@/shared/dashboard/ui/widget-states";
+
+/** The config key the Trend's form picker writes to. */
+const FORMS_FIELD = "forms";
+
+/**
+ * The instance's selected forms, for the form-submissions metric. Absent or
+ * empty means "every form", so the metric's own unfiltered default applies.
+ */
+const resolveFormIds = (
+  config: WidgetConfig | undefined,
+): string[] | undefined => {
+  const formIds = configStringValues(config, FORMS_FIELD);
+
+  return formIds.length > 0 ? formIds : undefined;
+};
 
 /**
  * The generic analytics widget: renders exactly one Metric. It exposes only the
@@ -31,15 +47,22 @@ export const TrendWidget = ({ instance }: WidgetComponentProps) => {
 
   if (!metric) return null;
 
-  return <TrendChart metricId={metric.id} metricLabel={metric.label} />;
+  return (
+    <TrendChart
+      metricId={metric.id}
+      metricLabel={metric.label}
+      formIds={resolveFormIds(instance.config)}
+    />
+  );
 };
 
 interface TrendChartProps {
   metricId: string;
   metricLabel: string;
+  formIds?: string[];
 }
 
-const TrendChart = ({ metricId, metricLabel }: TrendChartProps) => {
+const TrendChart = ({ metricId, metricLabel, formIds }: TrendChartProps) => {
   const trpc = useTRPC();
   const { dateRange } = useDateRangeStore();
 
@@ -51,7 +74,12 @@ const TrendChart = ({ metricId, metricLabel }: TrendChartProps) => {
   ).toISOString();
 
   const { data: series } = useSuspenseQuery(
-    trpc.dashboard.getMetricSeries.queryOptions({ metricId, from, to }),
+    trpc.dashboard.getMetricSeries.queryOptions({
+      metricId,
+      from,
+      to,
+      formIds,
+    }),
   );
 
   if (series.points.length === 0) {

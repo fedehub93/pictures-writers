@@ -6,6 +6,7 @@ import { requireAdminAuth } from "@/shared/lib/auth-utils";
 
 import { DashboardView } from "@/modules/dashboard/ui/views/dashboard-view";
 import {
+  prefetchDashboardFormOptions,
   prefetchDashboardLayout,
   prefetchDashboardMetrics,
 } from "@/modules/dashboard/server/prefetch";
@@ -15,6 +16,7 @@ const DashboardPage = async () => {
 
   prefetchDashboardLayout();
   prefetchDashboardMetrics();
+  prefetchDashboardFormOptions();
 
   return (
     <HydrateClient>

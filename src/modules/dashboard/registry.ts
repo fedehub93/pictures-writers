@@ -5,7 +5,10 @@ import { postsDashboardWidgets } from "@/modules/blog/posts/widgets";
 import { reviewsDashboardWidgets } from "@/modules/reviews/widgets";
 import { schedulerDashboardWidgets } from "@/modules/scheduler/widgets";
 import { ordersDashboardWidgets } from "@/modules/shop/orders/widgets";
-import type { WidgetDefinition } from "@/shared/dashboard/types";
+import type {
+  WidgetConfigField,
+  WidgetDefinition,
+} from "@/shared/dashboard/types";
 
 import { TrendWidget } from "./ui/widgets/trend-widget";
 
@@ -31,9 +34,10 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     defaultSize: "medium",
     component: TrendWidget,
     // The Trend is the first configurable widget: the gear lets the user pick
-    // which permitted metric this instance renders.
-    configSchema: ({ metrics }) => ({
-      fields: [
+    // which permitted metric this instance renders, and — for the
+    // form-submissions metric — which dynamic forms it counts.
+    configSchema: ({ metrics, forms }, config) => {
+      const fields: WidgetConfigField[] = [
         {
           type: "select",
           name: "metric",
@@ -43,8 +47,29 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
             label: metric.label,
           })),
         },
-      ],
-    }),
+      ];
+
+      // The form filter only means anything for the form-submissions metric, so
+      // it appears only once that metric is selected. With no config yet the
+      // Trend renders the first permitted metric, so the field matches it.
+      const selectedMetric =
+        typeof config?.metric === "string" ? config.metric : metrics[0]?.id;
+
+      if (selectedMetric === "submissions" && forms.length > 0) {
+        fields.push({
+          type: "multiselect",
+          name: "forms",
+          label: "Forms",
+          allByDefault: true,
+          options: forms.map((form) => ({
+            value: form.id,
+            label: form.label,
+          })),
+        });
+      }
+
+      return { fields };
+    },
   },
 ];
 
