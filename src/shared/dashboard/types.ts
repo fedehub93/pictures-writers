@@ -16,6 +16,9 @@ import type { ComponentType } from "react";
  */
 export const WIDGET_SIZES = ["small", "medium", "full"] as const;
 
+/** The maximum length of a Dashboard widget's title override. */
+export const WIDGET_TITLE_MAX_LENGTH = 60;
+
 /**
  * Discrete size token for a Dashboard widget, expressed in grid columns on the
  * dashboard's six-column `md` grid. A definition declares a default size and
@@ -98,6 +101,18 @@ export interface WidgetConfigSchema {
 }
 
 /**
+ * One human-readable chip summarising an active Widget filter, built by a
+ * definition's `summarizeConfig` and rendered by the generic card. `tooltip`
+ * optionally carries the full detail behind a count (e.g. the form names), so
+ * the chip itself stays compact on every size.
+ */
+export interface WidgetFilterChip {
+  key: string;
+  label: string;
+  tooltip?: string;
+}
+
+/**
  * The client-facing summary of a dynamic Form, for a widget's form picker.
  * Distinct from `MetricSummary`: a Form is a selectable data source, not a
  * time series.
@@ -139,6 +154,12 @@ export type WidgetConfigSchemaResolver = (
 export interface DashboardWidgetInstance {
   key: string;
   definitionId: string;
+  /**
+   * The display title the user gave this instance, replacing the definition's
+   * default title. Optional and cleared by emptying it, so a saved layout stays
+   * valid as the definition changes its own title.
+   */
+  title?: string;
   config?: WidgetConfig;
   /**
    * The instance's grid size. Optional: when absent the definition's
@@ -195,6 +216,21 @@ export interface WidgetDefinition {
   configSchema?: WidgetConfigSchemaResolver;
   /** Config a newly added instance of this definition starts with. */
   defaultConfig?: WidgetConfig;
+  /**
+   * The display title an instance of this definition shows before any user
+   * override, derived from the instance's subject (the Trend names itself after
+   * its metric, e.g. "Contacts"). Falls back to `title` when absent or empty.
+   */
+  resolveTitle?: (context: WidgetConfigContext, config?: WidgetConfig) => string;
+  /**
+   * Optional human-readable summary of the instance's active filters, rendered
+   * as chips by the generic card. Returns an empty list when the config does
+   * not narrow from its default, so a card shows filters only when they matter.
+   */
+  summarizeConfig?: (
+    config: WidgetConfig | undefined,
+    context: WidgetConfigContext,
+  ) => WidgetFilterChip[];
 }
 
 /** The persisted per-user document: the list of Dashboard widget instances. */

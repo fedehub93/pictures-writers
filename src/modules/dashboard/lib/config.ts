@@ -1,3 +1,4 @@
+import { configStringValues } from "@/shared/dashboard/config";
 import type {
   WidgetConfig,
   WidgetConfigField,
@@ -34,21 +35,6 @@ export const withConfigValue = (
   field: WidgetConfigField,
   value: string,
 ): Record<string, unknown> => ({ ...(config ?? {}), [field.name]: value });
-
-/**
- * The stored string entries of one config key, dropping anything that is not a
- * string. Absent or malformed config yields an empty array.
- */
-export const configStringValues = (
-  config: WidgetConfig | undefined,
-  name: string,
-): string[] => {
-  const value = config?.[name];
-
-  return Array.isArray(value)
-    ? value.filter((item): item is string => typeof item === "string")
-    : [];
-};
 
 /**
  * The values a multi-choice config field should show: the stored array, kept

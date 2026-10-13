@@ -279,12 +279,16 @@ _Avoid_: Absolute delay, countdown, offset.
 ## Admin dashboard
 
 **Dashboard widget**:
-A self-contained unit displayed on the admin dashboard, whose visibility is governed by the permission it declares and which the backoffice user may reorder, remove, re-add, and configure. Distinct from the Site widget rendered on the public site.
+A self-contained unit displayed on the admin dashboard, whose visibility is governed by the permission it declares and which the backoffice user may reorder, remove, re-add, configure, and rename. It shows the default title and description of its Widget definition, and the active Widget filters, unless the user gives it a title override. Distinct from the Site widget rendered on the public site.
 _Avoid_: Widget when the dashboard is in scope; card, panel, module.
 
 **Widget definition**:
-The catalog entry describing one kind of Dashboard widget — its identity, the group it belongs to, the permission it requires, its default size, and, when it is configurable, the config schema it exposes. The Dashboard widget is an instance of a definition: the definition is author-time, the widget is what the user arranges. Definitions are code, not database rows, and each belongs to the module whose data its widget presents.
+The catalog entry describing one kind of Dashboard widget — its identity, the group it belongs to, the permission it requires, its default title and description, its default size, and, when it is configurable, the config schema it exposes. The Dashboard widget is an instance of a definition: the definition is author-time, the widget is what the user arranges. Definitions are code, not database rows, and each belongs to the module whose data its widget presents.
 _Avoid_: Widget type, widget kind.
+
+**Widget title override**:
+The display title a backoffice user gives a Dashboard widget, replacing the default title its Widget definition provides on the card. A title override starts empty and clearing it reverts the widget to its default title. Distinct from the definition's default title, which every instance of that kind shares and which can itself depend on the instance's subject.
+_Avoid_: Label, custom name, alias.
 
 **Widget group**:
 The presentation category the widget library sorts Widget definitions into (Content, Shop, Automations, Analytics), used to browse the library. It is a library taxonomy, distinct from the fascia a widget belongs to (operational or analytics) and from the permission that gates it.
@@ -293,6 +297,10 @@ _Avoid_: Category, module when the library grouping is in scope.
 **Metric**:
 A named, permission-scoped time series of CMS data (e.g. contact growth, form submissions, ebook downloads, revenue) exposed by the dashboard's metric registry. The Trend widget renders exactly one Metric at a time.
 _Avoid_: Statistic, chart, report, KPI.
+
+**Widget filter**:
+A narrowing of a Dashboard widget's data chosen per instance — a subset of forms, content statuses, or scheduled action types. A filter is optional; when it is left wide open the widget is unfiltered and shows none. Distinct from the Metric a Trend instance renders, which is the widget's subject (named in its title) rather than a restriction on the data.
+_Avoid_: Config, query, parameters, options.
 
 **Dashboard layout**:
 The ordered set of Dashboard widgets a backoffice user has placed on their dashboard, filtered to the Widget definitions permitted to that user. A user who has placed none has an empty dashboard; there is no seeded default.

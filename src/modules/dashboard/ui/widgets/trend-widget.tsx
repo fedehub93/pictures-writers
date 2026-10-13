@@ -15,7 +15,7 @@ import {
   ChartTooltipContent,
 } from "@/shared/ui/chart";
 
-import { configStringValues } from "../../lib/config";
+import { configStringValues } from "@/shared/dashboard/config";
 import { resolveMetric } from "../../lib/metric-selection";
 import type { WidgetComponentProps, WidgetConfig } from "@/shared/dashboard/types";
 import { WidgetEmpty } from "@/shared/dashboard/ui/widget-states";

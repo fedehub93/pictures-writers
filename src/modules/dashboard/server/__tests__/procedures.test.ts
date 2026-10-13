@@ -107,7 +107,12 @@ describe("dashboard.saveLayout", () => {
     const user = await createUser();
     const caller = callerFor(user.id);
     const widgets = [
-      { key: "drafts", definitionId: "drafts", size: "full" as const },
+      {
+        key: "drafts",
+        definitionId: "drafts",
+        size: "full" as const,
+        title: "My drafts",
+      },
       { key: "trend-contacts", definitionId: "trend", config: { metric: "contacts" } },
     ];
 

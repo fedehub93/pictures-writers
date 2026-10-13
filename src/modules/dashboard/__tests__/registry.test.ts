@@ -190,3 +190,100 @@ describe("dashboard widget registry", () => {
     });
   });
 });
+
+describe("dashboard widget titles and filter summaries", () => {
+  const emptyContext = { metrics: [], forms: [] };
+  const trendContext = {
+    metrics: [
+      { id: "contacts", label: "Contacts" },
+      { id: "submissions", label: "Form submissions" },
+    ],
+    forms: [
+      { id: "form-feedback", label: "Feedback" },
+      { id: "form-contact", label: "Contatti" },
+    ],
+  };
+
+  it("names an unrenamed Trend after its metric", () => {
+    const definition = getWidgetDefinition("trend");
+
+    expect(
+      definition?.resolveTitle?.(trendContext, { metric: "submissions" }),
+    ).toBe("Form submissions");
+    expect(definition?.resolveTitle?.(trendContext)).toBe("Contacts");
+    expect(definition?.resolveTitle?.(emptyContext)).toBe("Trend");
+  });
+
+  it("summarizes the Trend's form filter only when it narrows the submissions metric", () => {
+    const definition = getWidgetDefinition("trend");
+
+    // No filter, an empty filter, or the full set all read as wide open.
+    expect(
+      definition?.summarizeConfig?.({ metric: "submissions" }, trendContext),
+    ).toEqual([]);
+    expect(
+      definition?.summarizeConfig?.(
+        { metric: "submissions", forms: [] },
+        trendContext,
+      ),
+    ).toEqual([]);
+    expect(
+      definition?.summarizeConfig?.(
+        { metric: "submissions", forms: ["form-feedback", "form-contact"] },
+        trendContext,
+      ),
+    ).toEqual([]);
+
+    // A subset is worth a chip, with the names behind the count.
+    expect(
+      definition?.summarizeConfig?.(
+        { metric: "submissions", forms: ["form-feedback"] },
+        trendContext,
+      ),
+    ).toEqual([{ key: "forms", label: "1 form", tooltip: "Feedback" }]);
+
+    // The metric is the subject, not a filter: it is never summarized.
+    expect(
+      definition?.summarizeConfig?.(
+        { metric: "contacts", forms: ["form-feedback"] },
+        trendContext,
+      ),
+    ).toEqual([]);
+  });
+
+  it("summarizes the drafts status filter only when it differs from the default", () => {
+    const definition = getWidgetDefinition("drafts");
+
+    expect(definition?.summarizeConfig?.(undefined, emptyContext)).toEqual([]);
+    expect(
+      definition?.summarizeConfig?.(
+        { statuses: ["DRAFT", "CHANGED"] },
+        emptyContext,
+      ),
+    ).toEqual([]);
+    expect(
+      definition?.summarizeConfig?.({ statuses: ["PUBLISHED"] }, emptyContext),
+    ).toEqual([{ key: "statuses", label: "Published" }]);
+    expect(
+      definition?.summarizeConfig?.(
+        { statuses: ["DRAFT", "PUBLISHED"] },
+        emptyContext,
+      ),
+    ).toEqual([{ key: "statuses", label: "Draft, Published" }]);
+  });
+
+  it("summarizes the scheduled type filter only when it narrows from all", () => {
+    const definition = getWidgetDefinition("scheduled");
+
+    expect(definition?.summarizeConfig?.(undefined, emptyContext)).toEqual([]);
+    expect(
+      definition?.summarizeConfig?.(
+        { types: ["PUBLISH_POST", "SEND_EMAIL"] },
+        emptyContext,
+      ),
+    ).toEqual([]);
+    expect(
+      definition?.summarizeConfig?.({ types: ["PUBLISH_POST"] }, emptyContext),
+    ).toEqual([{ key: "types", label: "Posts" }]);
+  });
+});

@@ -2,9 +2,22 @@ import { FileText } from "lucide-react";
 
 import { ContentStatus } from "@/generated/prisma";
 import { PERMISSIONS } from "@/shared/lib/permissions";
-import type { WidgetDefinition } from "@/shared/dashboard/types";
+import { summarizeMultiselect } from "@/shared/dashboard/config";
+import type {
+  WidgetConfigOption,
+  WidgetDefinition,
+} from "@/shared/dashboard/types";
 
 import { DraftsWidget, DraftsWidgetSkeleton } from "./drafts-widget";
+
+const STATUS_OPTIONS: WidgetConfigOption[] = [
+  { value: ContentStatus.DRAFT, label: "Draft" },
+  { value: ContentStatus.CHANGED, label: "Changed" },
+  { value: ContentStatus.SCHEDULED, label: "Scheduled" },
+  { value: ContentStatus.PUBLISHED, label: "Published" },
+];
+
+const DEFAULT_STATUSES = [ContentStatus.DRAFT, ContentStatus.CHANGED];
 
 /**
  * The blog module's contribution to the dashboard catalog: the content widget,
@@ -29,17 +42,19 @@ export const postsDashboardWidgets: WidgetDefinition[] = [
           type: "multiselect",
           name: "statuses",
           label: "Statuses",
-          options: [
-            { value: ContentStatus.DRAFT, label: "Draft" },
-            { value: ContentStatus.CHANGED, label: "Changed" },
-            { value: ContentStatus.SCHEDULED, label: "Scheduled" },
-            { value: ContentStatus.PUBLISHED, label: "Published" },
-          ],
+          options: STATUS_OPTIONS,
         },
       ],
     }),
     defaultConfig: {
-      statuses: [ContentStatus.DRAFT, ContentStatus.CHANGED],
+      statuses: DEFAULT_STATUSES,
     },
+    summarizeConfig: (config) =>
+      summarizeMultiselect(
+        config,
+        "statuses",
+        STATUS_OPTIONS,
+        DEFAULT_STATUSES,
+      ),
   },
 ];

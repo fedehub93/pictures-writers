@@ -15,7 +15,7 @@ A registry-driven dashboard composed of two layers:
 - A **fascia operativa** ("what needs my attention now") of self-contained operational widgets, global in their data but arranged per user.
 - A **fascia analytics** of a single generic **Trend** widget rendered once per **Metric**, sharing one date range.
 
-Each dashboard unit is a **Dashboard widget**, an instance of a code-defined **Widget definition**. The registry is a **catalog**, not a default: a new user's dashboard is empty and every widget is added from the library, filtered by the permission each definition declares. The dashboard is **always arrangeable** — there is no edit mode: the user reorders, resizes, removes, adds, and configures widgets directly, and each change is persisted automatically. The layout is stored per user as a JSON document. Analytics are backed by a server-side **Metric** registry, so a new metric is a new registry entry, not a new widget.
+Each dashboard unit is a **Dashboard widget**, an instance of a code-defined **Widget definition**. The registry is a **catalog**, not a default: a new user's dashboard is empty and every widget is added from the library, filtered by the permission each definition declares. The dashboard is **always arrangeable** — there is no edit mode: the user reorders, resizes, removes, adds, configures, and renames widgets directly, and each change is persisted automatically. The layout is stored per user as a JSON document. Each card reads as a self-description: its title (which the user may rename in place, and which a Trend derives from its metric), the definition's one-line description, and a compact row of its active filters — so a glance is enough to know what a widget is and how it is narrowed. Analytics are backed by a server-side **Metric** registry, so a new metric is a new registry entry, not a new widget.
 
 ## User Stories
 
@@ -31,6 +31,8 @@ Each dashboard unit is a **Dashboard widget**, an instance of a code-defined **W
 10. As a developer, I want to add a new dashboard widget by creating one module and registering it, so that extending the dashboard never requires touching the view.
 11. As a developer, I want to add a new analytics metric by registering a metric source, so that the Trend widget supports it with no new UI.
 12. As a developer, I want adding or removing a definition to change only the catalog and the library, with no data migration, so that the dashboard evolves safely.
+13. As a backoffice user, I want each widget to show what it is and which filters are active, so that I can read the dashboard at a glance and trust what I am looking at.
+14. As a backoffice user, I want to rename a widget — and see a Trend name itself after its metric — so that each card matches how I think about my work.
 
 ## Implementation Decisions
 
@@ -48,7 +50,7 @@ These are recorded in `CONTEXT.md` under "Admin dashboard".
 - Dashboard widgets are **code-defined via a registry**, not database-defined. Each definition is **owned by the module whose data its widget presents**; the dashboard is a *composition root* that aggregates the module exports (`src/modules/dashboard/registry.ts`) into a `WidgetDefinition[]` and adds the generic Trend.
 - The shared contract (`WidgetDefinition`, `WidgetComponentProps`, the instance type, `Metric`) lives in `src/shared/dashboard/`, so a domain module depends on the contract, never on the dashboard.
 - The `WidgetDefinition` contract is:
-  `{ id, title, description?, icon, permission?, defaultSize, component, configSchema?, defaultConfig? }`.
+  `{ id, title, description?, icon, permission?, defaultSize, component, configSchema?, defaultConfig?, resolveTitle?, summarizeConfig? }`.
   - `permission` is optional: operational widgets declare the permission of the area whose data they show; the Trend widget derives its availability from the metrics the user may read.
   - `defaultSize` is a discrete token from a small set (`small`, `medium`, `full`), the size a freshly added instance starts at. The user may override it per instance (see Layout model).
   - `configSchema`/`defaultConfig` are optional; any definition may become configurable without a model change. The Trend widget is the first user.
@@ -84,6 +86,15 @@ These are recorded in `CONTEXT.md` under "Admin dashboard".
 - A **gear** on a configurable card opens a **popover generated from `configSchema`** (for the Trend, the metric picker).
 - Changes are persisted with **auto-save**: the whole instance document is saved (debounced) after each change, with a subtle "Saving…/Saved" indicator in the header and a toast only on error. There is no Save/Cancel. A change still inside the debounce window is flushed when the page is left, so the last edit is never dropped.
 - Persistence is via a `dashboard.saveLayout` mutation that operates only on the current user's `DashboardLayout`.
+
+### Widget chrome (title, description, filters)
+
+- Each card shows the widget's **title** and, beneath it, its **description** — the definition's static explanatory line, always visible as one muted, clamped line. This is the same text the library already uses to describe the kind; it is not editable per instance.
+- A Dashboard widget may be **renamed per instance**. The effective title resolves as: the instance's `title` override when set, else the definition's config-derived default, else the definition's static title. The override is an optional `title` on the instance, persisted in the same per-user JSON as `size`; clearing it reverts to the default. The definition may supply the middle layer via `resolveTitle?(context, config)` so a Trend defaults to its **metric's label** ("Contacts", not "Trend") and follows metric changes; the override still wins.
+- Renaming is **in place and keyboard-accessible**: the title is a focusable, hover/focus-revealed trigger that becomes an input on activation (Enter/blur saves, Escape reverts). The automation editor's name input is the precedent, upgraded with keyboard access.
+- A card surfaces its **active filters** as a compact chip row beneath the description. A definition implements `summarizeConfig?(config, context): WidgetFilterChip[]` — the counterpart of `configSchema` — returning chips only when the instance's config differs from the widget's default, so the generic card stays ignorant of each domain's field semantics and default rules. V1: the Trend summarizes its **form** filter (count, with the names in a tooltip) but not its metric, which is the subject named in the title, and only once the subset narrows below every form; drafts and scheduled summarize their status/type filters when they differ from the default.
+- The chips of a configurable widget **open that widget's config popover**, tying "what is filtered" to the control that changes it.
+- The effective title is used everywhere the card names the widget (the visible title and the arrange controls' `aria-label`s); the library keeps listing definitions by their default title.
 
 ### Date range
 
@@ -172,11 +183,11 @@ namespace PrismaJson {
 - Per-user data scoping of operational widgets (e.g. "my drafts"); operational data is global in v1.
 - Data-driven widget definitions in the database (a mini page-builder).
 - Real-time or auto-refreshing widget data.
-- Custom per-instance widget titles.
 
 ## Further Notes
 
 - **Verification needed before implementing click-through**: confirm that each destination list view accepts its status filter via URL query parameters (drafts -> `/admin/posts?status=DRAFT`, orders -> `/admin/shop/orders?status=PENDING`, reviews -> `/admin/shop/reviews`, failed runs -> `/admin/automations/.../executions`, scheduled -> `/admin/schedule`). If a view does not read query params today, add that support or an equivalent deep link.
 - The existing `/api/ebooks/stats` REST endpoint and `use-ebook-stats-query` axios hook should be folded into the metric registry (tRPC) so the dashboard has a single data convention.
 - ADR-0015 records the choice to define widgets in code via a registry with a per-user JSON layout (revised: the registry is a catalog owned by the domain modules, aggregated by the dashboard as a composition root). ADR-0016 records the choice to keep the dashboard always arrangeable with auto-save instead of an edit mode with an explicit Save/Cancel (revised: the X removes an instance, there is no hidden state).
-- `CONTEXT.md` defines Dashboard widget, Widget definition, Dashboard layout, Site widget, and Metric.
+- `CONTEXT.md` defines Dashboard widget, Widget definition, Widget title override, Widget filter, Dashboard layout, Site widget, and Metric.
+- Widget chrome (per-instance title override, definition description, active-filter chips) is tracked as ticket 08. No ADR: the change is additive and easily reversible, so it is recorded in this spec and the glossary only. The chip row's placement in the header is provisional — a `full`-size widget may move it into the card body if the header gets tall.

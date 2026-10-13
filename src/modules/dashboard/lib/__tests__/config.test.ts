@@ -7,7 +7,6 @@ import type {
 import {
   configFieldValue,
   configFieldValues,
-  configStringValues,
   withConfigValue,
   withConfigValues,
 } from "../config";
@@ -126,21 +125,6 @@ describe("configFieldValues (allByDefault)", () => {
 
   it("leaves a field without allByDefault reading an absent selection as none", () => {
     expect(configFieldValues(undefined, multiField)).toEqual([]);
-  });
-});
-
-describe("configStringValues", () => {
-  it("returns the stored string entries, dropping non-strings", () => {
-    expect(configStringValues({ forms: ["a", 2, "b"] }, "forms")).toEqual([
-      "a",
-      "b",
-    ]);
-  });
-
-  it("returns an empty array when the stored value is absent or malformed", () => {
-    expect(configStringValues(undefined, "forms")).toEqual([]);
-    expect(configStringValues({ forms: "a" }, "forms")).toEqual([]);
-    expect(configStringValues({}, "forms")).toEqual([]);
   });
 });
 

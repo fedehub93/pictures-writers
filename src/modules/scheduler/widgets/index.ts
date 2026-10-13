@@ -2,9 +2,23 @@ import { CalendarClock } from "lucide-react";
 
 import { ScheduledActionType } from "@/generated/prisma";
 import { PERMISSIONS } from "@/shared/lib/permissions";
-import type { WidgetDefinition } from "@/shared/dashboard/types";
+import { summarizeMultiselect } from "@/shared/dashboard/config";
+import type {
+  WidgetConfigOption,
+  WidgetDefinition,
+} from "@/shared/dashboard/types";
 
 import { ScheduledWidget, ScheduledWidgetSkeleton } from "./scheduled-widget";
+
+const TYPE_OPTIONS: WidgetConfigOption[] = [
+  { value: ScheduledActionType.PUBLISH_POST, label: "Posts" },
+  { value: ScheduledActionType.SEND_EMAIL, label: "Newsletters" },
+];
+
+const DEFAULT_TYPES = [
+  ScheduledActionType.PUBLISH_POST,
+  ScheduledActionType.SEND_EMAIL,
+];
 
 /**
  * The scheduler module's contribution to the dashboard catalog: the scheduled
@@ -28,15 +42,14 @@ export const schedulerDashboardWidgets: WidgetDefinition[] = [
           type: "multiselect",
           name: "types",
           label: "Types",
-          options: [
-            { value: ScheduledActionType.PUBLISH_POST, label: "Posts" },
-            { value: ScheduledActionType.SEND_EMAIL, label: "Newsletters" },
-          ],
+          options: TYPE_OPTIONS,
         },
       ],
     }),
     defaultConfig: {
-      types: [ScheduledActionType.PUBLISH_POST, ScheduledActionType.SEND_EMAIL],
+      types: DEFAULT_TYPES,
     },
+    summarizeConfig: (config) =>
+      summarizeMultiselect(config, "types", TYPE_OPTIONS, DEFAULT_TYPES),
   },
 ];
