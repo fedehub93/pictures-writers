@@ -106,7 +106,10 @@ export const DashboardView = () => {
   const onUpdate = (key: string, patch: Partial<DashboardWidgetInstance>) =>
     commit(updateInstance(instances, key, patch));
 
-  const onMove = (items: readonly GridPlacementItem[]) =>
+  // A completed move or resize reports the whole arrangement; read it back into
+  // the instances (a resize also drags neighbours through compaction) and
+  // auto-save it.
+  const onLayoutChange = (items: readonly GridPlacementItem[]) =>
     commit(applyGridLayout(instances, items));
 
   const onRemove = (key: string) => commit(removeInstance(instances, key));
@@ -169,7 +172,7 @@ export const DashboardView = () => {
         permittedDefinitions={permittedDefinitions}
         editing={editing}
         onUpdate={onUpdate}
-        onMove={onMove}
+        onLayoutChange={onLayoutChange}
         onRemove={onRemove}
         onAdd={onAdd}
         configContext={configContext}

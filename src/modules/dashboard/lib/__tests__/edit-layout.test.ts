@@ -106,6 +106,22 @@ describe("applyGridLayout", () => {
     expect(result[1].grid).toEqual(placement(0, 0, 9, 3));
   });
 
+  it("applies a resize together with the compaction it triggers", () => {
+    const layout = [
+      instance("a", "a", { grid: placement(0, 0, 6, 4) }),
+      instance("b", "b", { grid: placement(0, 4, 6, 2) }),
+    ];
+
+    // "a" is resized shorter; vertical compaction floats "b" up into the space.
+    const result = applyGridLayout(layout, [
+      { i: "a", x: 0, y: 0, w: 6, h: 2 },
+      { i: "b", x: 0, y: 2, w: 6, h: 2 },
+    ]);
+
+    expect(result[0].grid).toEqual(placement(0, 0, 6, 2));
+    expect(result[1].grid).toEqual(placement(0, 2, 6, 2));
+  });
+
   it("leaves an instance off the grid at its placement", () => {
     const layout = [
       instance("shown", "shown"),

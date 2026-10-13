@@ -27,10 +27,11 @@ import { WidgetLibraryTile } from "./widget-library";
 interface WidgetGridProps {
   instances: DashboardWidgetInstance[];
   permittedDefinitions: WidgetDefinition[];
-  /** Whether the dashboard is in edit mode: grid visible and drag enabled. */
+  /** Whether the dashboard is in edit mode: grid, drag, and resize enabled. */
   editing: boolean;
   onUpdate: (key: string, patch: Partial<DashboardWidgetInstance>) => void;
-  onMove: (items: readonly GridPlacementItem[]) => void;
+  /** Receives the whole arrangement after a completed move or resize. */
+  onLayoutChange: (items: readonly GridPlacementItem[]) => void;
   onRemove: (key: string) => void;
   onAdd: (definitionId: string) => void;
   configContext: WidgetConfigContext;
@@ -49,18 +50,23 @@ interface ResolvedWidget {
  *
  * Outside edit mode the grid is a clean read surface: no visible grid and no
  * spatial controls; only the widget bodies and the non-spatial rename/config
- * controls are live. In edit mode the grid lines become visible and a drag
- * handle on each card moves it, snapping to cells and compacting upward. A
- * completed move is reported through `onMove` for the dashboard to auto-save;
- * resizing arrives in a later ticket. When there is nothing to show, the grid
- * is replaced by the empty-dashboard prompt.
+ * controls are live. In edit mode the grid lines become visible, a drag handle
+ * on each card moves it, and the default south-east corner handle resizes it —
+ * both snapping to cells and compacting upward. The handle is styled by the
+ * `react-grid-layout`/`react-resizable` stylesheets the admin layout imports,
+ * so it appears on hover like every other RGL surface. Each widget is bounded
+ * by the definition's `minW`/`minH` and `maxW`/`maxH`, which `toGridItems`
+ * attaches to the item, so a resize never drops below the legibility floor or
+ * above the ceiling. A completed move or resize is reported through
+ * `onLayoutChange` for the dashboard to auto-save. When there is nothing to
+ * show, the grid is replaced by the empty-dashboard prompt.
  */
 export const WidgetGrid = ({
   instances,
   permittedDefinitions,
   editing,
   onUpdate,
-  onMove,
+  onLayoutChange,
   onRemove,
   onAdd,
   configContext,
@@ -148,8 +154,9 @@ export const WidgetGrid = ({
             containerPadding: [0, 0],
           }}
           dragConfig={{ enabled: editing, handle: `.${EDIT_MODE_DRAG_HANDLE}` }}
-          resizeConfig={{ enabled: false }}
-          onDragStop={(layout) => onMove(layout)}
+          resizeConfig={{ enabled: editing }}
+          onDragStop={onLayoutChange}
+          onResizeStop={onLayoutChange}
           compactor={verticalCompactor}
           style={editingGridStyle}
         >
