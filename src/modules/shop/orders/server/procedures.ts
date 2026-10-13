@@ -93,7 +93,7 @@ const findOrderOrThrow = async (id: string) => {
 export const ordersRouter = createTRPCRouter({
   /**
    * Pending orders: the count and the most recent few, for the dashboard's
-   * "Orders to fulfil" widget.
+   * "Orders" widget.
    */
   getPendingOrders: permissionProcedure(PERMISSIONS.ORDERS_READ).query(
     async () => {

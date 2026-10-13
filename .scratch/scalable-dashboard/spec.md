@@ -109,11 +109,13 @@ Operational (global data, `count + short list + filtered click-through`):
 
 | Widget | Permission | Source |
 |---|---|---|
-| Drafts to publish | `posts.read` | `PostVersion.status = DRAFT` |
-| Scheduled content | `posts.read` | `ScheduledAction` / `scheduledAt` |
-| Reviews to moderate | `reviews.read` | `Reviews.status = false` |
-| Orders to fulfil | `orders.read` | `Order.status in (PENDING)` |
-| Failed automations | `automations.read` | `AutomationRun.status = FAILED` |
+| Latest Posts | `posts.read` | `PostVersion` by status |
+| Scheduled Content | `posts.read` | `ScheduledAction` / `scheduledAt` |
+| Reviews | `reviews.read` | `Reviews.status = false` |
+| Orders | `orders.read` | `Order.status in (PENDING)` |
+| Automation Runs | `automations.read` | `AutomationRun.status = FAILED` |
+
+Widget titles are deliberately generic; the active filter chip that sits next to each title carries the specifics (e.g. which statuses Latest Posts shows).
 
 Analytics: a single Trend definition, configurable per instance to any permitted metric — Contacts, Form submissions, Ebook downloads, Revenue / orders.
 

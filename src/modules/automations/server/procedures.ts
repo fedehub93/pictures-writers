@@ -91,7 +91,7 @@ const toConnectionRow = (
 export const automationsRouter = createTRPCRouter({
   /**
    * Failed automation runs: the count and the most recent few, for the
-   * dashboard's "Failed automations" widget.
+   * dashboard's "Automation Runs" widget.
    */
   getFailedRuns: permissionProcedure(PERMISSIONS.AUTOMATIONS_READ).query(
     async () => {

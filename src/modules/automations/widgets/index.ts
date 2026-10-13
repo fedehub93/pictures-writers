@@ -12,7 +12,7 @@ import { FailedRunsWidget } from "./failed-runs-widget";
 export const automationsDashboardWidgets: WidgetDefinition[] = [
   {
     id: "failed-runs",
-    title: "Failed automations",
+    title: "Automation Runs",
     description: "Automation runs that ended with an error.",
     icon: TriangleAlert,
     group: "automations",

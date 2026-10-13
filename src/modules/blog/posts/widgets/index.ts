@@ -28,8 +28,8 @@ const DEFAULT_STATUSES = [ContentStatus.DRAFT, ContentStatus.CHANGED];
 export const postsDashboardWidgets: WidgetDefinition[] = [
   {
     id: "drafts",
-    title: "Content to publish",
-    description: "Posts in draft or with unpublished changes.",
+    title: "Latest Posts",
+    description: "Posts, most recently updated first.",
     icon: FileText,
     group: "content",
     permission: PERMISSIONS.POSTS_READ,

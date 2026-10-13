@@ -28,8 +28,8 @@ const DEFAULT_TYPES = [
 export const schedulerDashboardWidgets: WidgetDefinition[] = [
   {
     id: "scheduled",
-    title: "Scheduled content",
-    description: "Content with a planned publication in the future.",
+    title: "Scheduled Content",
+    description: "Content planned to go out in the future.",
     icon: CalendarClock,
     group: "content",
     permission: PERMISSIONS.POSTS_READ,

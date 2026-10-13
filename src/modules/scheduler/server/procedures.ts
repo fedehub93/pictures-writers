@@ -34,7 +34,7 @@ export const schedulerRouter = createTRPCRouter({
   /**
    * Everything scheduled for a future instant — posts to publish, newsletters to
    * send, and whatever a later action type targets: the count and the soonest
-   * few, for the dashboard's "Scheduled content" widget. `types` narrows it to
+   * few, for the dashboard's "Scheduled Content" widget. `types` narrows it to
    * the chosen action types; omitting it (or an empty list) lists every type.
    */
   getScheduled: permissionProcedure(PERMISSIONS.POSTS_READ)

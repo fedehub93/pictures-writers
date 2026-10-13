@@ -71,7 +71,7 @@ const findReviewOrThrow = async (id: string) => {
 export const reviewsRouter = createTRPCRouter({
   /**
    * Unpublished reviews: the count and the most recent few, for the dashboard's
-   * "Reviews to moderate" widget.
+   * "Reviews" widget.
    */
   getPendingReviews: permissionProcedure(PERMISSIONS.REVIEWS_READ).query(
     async () => {

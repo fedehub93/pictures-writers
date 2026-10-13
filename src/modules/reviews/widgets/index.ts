@@ -12,8 +12,8 @@ import { PendingReviewsWidget } from "./pending-reviews-widget";
 export const reviewsDashboardWidgets: WidgetDefinition[] = [
   {
     id: "pending-reviews",
-    title: "Reviews to moderate",
-    description: "Reviews not published yet.",
+    title: "Reviews",
+    description: "Customer reviews awaiting moderation.",
     icon: Star,
     group: "shop",
     permission: PERMISSIONS.REVIEWS_READ,

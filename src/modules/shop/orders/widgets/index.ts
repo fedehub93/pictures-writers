@@ -12,8 +12,8 @@ import { PendingOrdersWidget } from "./pending-orders-widget";
 export const ordersDashboardWidgets: WidgetDefinition[] = [
   {
     id: "pending-orders",
-    title: "Orders to fulfil",
-    description: "Confirmed orders not completed yet.",
+    title: "Orders",
+    description: "Orders awaiting completion.",
     icon: ShoppingCart,
     group: "shop",
     permission: PERMISSIONS.ORDERS_READ,
