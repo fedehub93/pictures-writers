@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Pencil } from "lucide-react";
 
@@ -12,9 +12,10 @@ import {
 } from "@/shared/components/save-status-indicator";
 import { hasPermission } from "@/shared/lib/permissions";
 import { Button } from "@/shared/ui/button";
-import type {
-  DashboardWidgetInstance,
-  WidgetConfigContext,
+import {
+  isAnalyticsWidget,
+  type DashboardWidgetInstance,
+  type WidgetConfigContext,
 } from "@/shared/dashboard/types";
 import { usePermissionKeys } from "@/shared/providers/authorization-provider";
 
@@ -27,14 +28,15 @@ import {
   updateInstance,
 } from "../../lib/edit-layout";
 import { isAnalyticsInstanceRenderable } from "../../lib/metric-selection";
+import { permittedLibraryDefinitions } from "../../lib/widget-library";
 import {
   getWidgetDefinition,
-  isAnalyticsWidget,
   WIDGET_DEFINITIONS,
 } from "../../registry";
 import { computeDashboardLayout } from "../../server/layout";
 
 import { WidgetGrid } from "../components/widget-grid";
+import { AddWidgetButton } from "../components/widget-library";
 import {
   type SaveState,
   useDebouncedSaveLayout,
@@ -46,6 +48,9 @@ const SAVE_STATE_STATUS: Record<SaveState, SaveStatus> = {
   saved: "saved",
   error: "error",
 };
+
+/** How long a newly added widget stays highlighted. */
+const HIGHLIGHT_MS = 2000;
 
 export const DashboardView = () => {
   const trpc = useTRPC();
@@ -78,13 +83,7 @@ export const DashboardView = () => {
 
   const permittedDefinitions = useMemo(
     () =>
-      WIDGET_DEFINITIONS.filter((definition) => {
-        const permitted =
-          !definition.permission || canRead(definition.permission);
-        if (!permitted) return false;
-        // The Trend is offered only when the user can read at least one metric.
-        return !isAnalyticsWidget(definition) || metrics.length > 0;
-      }),
+      permittedLibraryDefinitions(WIDGET_DEFINITIONS, canRead, metrics.length),
     [canRead, metrics],
   );
 
@@ -103,6 +102,16 @@ export const DashboardView = () => {
   // reveals the grid and the spatial controls, and every move still auto-saves.
   const [editing, setEditing] = useState(false);
 
+  // The instance just added, so its card can flash and the user can find where
+  // it landed. Cleared after a short beat.
+  const [highlightedKey, setHighlightedKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!highlightedKey) return;
+    const timer = setTimeout(() => setHighlightedKey(null), HIGHLIGHT_MS);
+    return () => clearTimeout(timer);
+  }, [highlightedKey]);
+
   const onUpdate = (key: string, patch: Partial<DashboardWidgetInstance>) =>
     commit(updateInstance(instances, key, patch));
 
@@ -117,14 +126,11 @@ export const DashboardView = () => {
   const onAdd = (definitionId: string) => {
     const definition = getWidgetDefinition(definitionId);
     if (!definition) return;
+    const key = createInstanceKey(definitionId);
     commit(
-      addInstance(
-        instances,
-        definition,
-        createInstanceKey(definitionId),
-        definition.defaultConfig,
-      ),
+      addInstance(instances, definition, key, definition.defaultConfig),
     );
+    setHighlightedKey(key);
   };
 
   // An analytics instance is rendered only when the user can read a metric for
@@ -176,7 +182,10 @@ export const DashboardView = () => {
         onRemove={onRemove}
         onAdd={onAdd}
         configContext={configContext}
+        highlightedKey={highlightedKey}
       />
+
+      <AddWidgetButton definitions={permittedDefinitions} onSelect={onAdd} />
     </div>
   );
 };

@@ -51,7 +51,7 @@ const matchesQuery = (definition: WidgetDefinition, query: string) =>
  * The widget library. On desktop it is a dialog opening the group sidebar and
  * grid side by side; below the mobile breakpoint the same content is shown in a
  * bottom drawer, mirroring `ResponsiveDialog`. The trigger is supplied by the
- * caller so the same library backs both the grid's `+` tile and the
+ * caller so the same library backs both the persistent `+` control and the
  * empty-dashboard prompt.
  */
 export const WidgetLibrary = ({
@@ -371,24 +371,28 @@ const NoResults = ({ query, onClear }: NoResultsProps) => (
   </div>
 );
 
-interface WidgetLibraryTileProps {
+interface AddWidgetButtonProps {
   definitions: WidgetDefinition[];
   onSelect: (definitionId: string) => void;
 }
 
-/** The `+` tile at the end of the grid; opens the widget library. */
-export const WidgetLibraryTile = ({
+/**
+ * The persistent `+` control, pinned to the bottom-right of the viewport. It
+ * opens the widget library in both read and edit mode, so adding a widget is
+ * never gated behind arranging.
+ */
+export const AddWidgetButton = ({
   definitions,
   onSelect,
-}: WidgetLibraryTileProps) => (
+}: AddWidgetButtonProps) => (
   <WidgetLibrary definitions={definitions} onSelect={onSelect}>
     <Button
       type="button"
-      variant="outline"
-      className="h-full min-h-32 w-full flex-col gap-2 border-dashed text-muted-foreground"
+      size="icon-lg"
+      aria-label="Add widget"
+      className="fixed bottom-6 right-6 z-50 size-12 rounded-full shadow-lg md:bottom-8 md:right-8"
     >
-      <Plus className="size-6" />
-      Add widget
+      <Plus className="size-5" />
     </Button>
   </WidgetLibrary>
 );

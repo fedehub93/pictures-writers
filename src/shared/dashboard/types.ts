@@ -241,6 +241,14 @@ export interface WidgetDefinition {
 /** The persisted per-user document: the list of Dashboard widget instances. */
 export type DashboardWidgets = DashboardWidgetInstance[];
 
+/**
+ * Whether a definition belongs to the analytics fascia (the Trend). The single
+ * source for the "is analytics" rule, so the library and the grid's render
+ * filter gate the same widget identically.
+ */
+export const isAnalyticsWidget = (definition: WidgetDefinition): boolean =>
+  definition.category === "analytics";
+
 /** One point of a Metric's time series: a bucket label and its value. */
 export interface MetricPoint {
   label: string;

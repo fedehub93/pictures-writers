@@ -13,6 +13,7 @@ import {
 } from "@/shared/ui/card";
 
 import { configDiffersFromDefault } from "@/shared/dashboard/config";
+import { cn } from "@/shared/lib/utils";
 import type {
   DashboardWidgetInstance,
   WidgetConfigContext,
@@ -38,6 +39,8 @@ interface WidgetCardProps {
   configContext?: WidgetConfigContext;
   /** Whether the dashboard is in edit mode: shows the drag handle. */
   editing?: boolean;
+  /** Whether to highlight the card briefly, e.g. right after it was added. */
+  highlighted?: boolean;
   /** Receives a patch for this instance: rename or reconfigure it. */
   onUpdate?: (patch: Partial<DashboardWidgetInstance>) => void;
   /** Removes this instance from the dashboard. */
@@ -82,6 +85,7 @@ export const WidgetCard = ({
   instance,
   configContext,
   editing = false,
+  highlighted = false,
   onUpdate,
   onRemove,
 }: WidgetCardProps) => {
@@ -102,7 +106,13 @@ export const WidgetCard = ({
   );
 
   return (
-    <Card className="group/card flex h-full flex-col">
+    <Card
+      className={cn(
+        "group/card flex h-full flex-col transition-shadow duration-500",
+        highlighted &&
+          "ring-2 ring-primary ring-offset-2 ring-offset-background",
+      )}
+    >
       <CardHeader className="flex flex-row items-start gap-2 space-y-0 pb-2">
         {editing ? (
           <button

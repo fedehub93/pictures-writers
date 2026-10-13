@@ -78,7 +78,3 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
 
 export const getWidgetDefinition = (id: string) =>
   WIDGET_DEFINITIONS.find((definition) => definition.id === id);
-
-/** Whether a definition belongs to the analytics fascia (governed by the range). */
-export const isAnalyticsWidget = (definition: WidgetDefinition) =>
-  definition.category === "analytics";

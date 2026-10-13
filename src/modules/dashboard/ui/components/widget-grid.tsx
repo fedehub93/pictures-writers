@@ -22,7 +22,6 @@ import { getWidgetDefinition } from "../../registry";
 
 import { DashboardEmpty } from "./dashboard-empty";
 import { EDIT_MODE_DRAG_HANDLE, WidgetCard } from "./widget-card";
-import { WidgetLibraryTile } from "./widget-library";
 
 interface WidgetGridProps {
   instances: DashboardWidgetInstance[];
@@ -35,6 +34,8 @@ interface WidgetGridProps {
   onRemove: (key: string) => void;
   onAdd: (definitionId: string) => void;
   configContext: WidgetConfigContext;
+  /** The instance just added, highlighted briefly so the user can find it. */
+  highlightedKey?: string | null;
 }
 
 interface ResolvedWidget {
@@ -70,6 +71,7 @@ export const WidgetGrid = ({
   onRemove,
   onAdd,
   configContext,
+  highlightedKey,
 }: WidgetGridProps) => {
   const isMobile = useIsMobile();
   const { width, containerRef, mounted } = useContainerWidth({
@@ -130,6 +132,7 @@ export const WidgetGrid = ({
       instance={instance}
       configContext={configContext}
       editing={editing}
+      highlighted={instance.key === highlightedKey}
       onUpdate={(patch) => onUpdate(instance.key, patch)}
       onRemove={editing ? () => onRemove(instance.key) : undefined}
     />
@@ -167,10 +170,6 @@ export const WidgetGrid = ({
           ))}
         </GridLayout>
       )}
-
-      <div className="mt-4">
-        <WidgetLibraryTile definitions={permittedDefinitions} onSelect={onAdd} />
-      </div>
     </div>
   );
 };
