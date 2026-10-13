@@ -8,6 +8,7 @@ import type {
   WidgetConfigContext,
   WidgetDefinition,
 } from "@/shared/dashboard/types";
+import { useIsCoarsePointer } from "@/shared/hooks/use-coarse-pointer";
 import { useIsMobile } from "@/shared/hooks/use-mobile";
 
 import type { GridPlacementItem } from "../../lib/edit-layout";
@@ -59,13 +60,20 @@ interface ResolvedWidget {
  * Renders the positioned layout: a twelve-column `react-grid-layout` grid from
  * `md` up, with vertical compaction so widgets float up and leave no vertical
  * hole. Below `md` the arrangement collapses to a single column ordered by row
- * then column.
+ * then column — a read-only rendering of the same canonical placement, so
+ * shrinking the viewport never rewrites the layout and widening it shows the
+ * arrangement unchanged. The collapsed view stacks full-width cards and
+ * imposes no per-column minimum width, which is what used to push the old
+ * fixed-column grid into horizontal scroll.
  *
  * Outside edit mode the grid is a clean read surface: no visible grid and no
  * spatial controls; only the widget bodies and the non-spatial rename/config
  * controls are live. In edit mode the grid lines become visible, a drag handle
  * on each card moves it, and the default south-east corner handle resizes it —
- * both snapping to cells and compacting upward. The handle is styled by the
+ * both snapping to cells and compacting upward. On a coarse pointer (touch)
+ * the resize handle is unavailable and resizing cannot be triggered, since
+ * imprecise touch resizing fights the user; dragging to reorder stays available
+ * wherever the grid renders. The resize handle is styled by the
  * `react-grid-layout`/`react-resizable` stylesheets the admin layout imports,
  * so it appears on hover like every other RGL surface. Each widget is bounded
  * by the definition's `minW`/`minH` and `maxW`/`maxH`, which `toGridItems`
@@ -74,9 +82,10 @@ interface ResolvedWidget {
  * `onLayoutChange` for the dashboard to auto-save. Because `react-grid-layout`
  * has no keyboard move or resize, each card also mounts a keyboard layout menu
  * in edit mode; its action is applied to the instances and compacted here, so
- * the keyboard path saves exactly the layout a pointer gesture would. When
- * there is nothing to
- * show, the grid is replaced by the empty-dashboard prompt.
+ * the keyboard path saves exactly the layout a pointer gesture would — and,
+ * since the menu does not depend on the grid's DOM, it still works at the
+ * single-column width. When there is nothing to show, the grid is replaced by
+ * the empty-dashboard prompt.
  */
 export const WidgetGrid = ({
   instances,
@@ -90,6 +99,7 @@ export const WidgetGrid = ({
   highlightedKey,
 }: WidgetGridProps) => {
   const isMobile = useIsMobile();
+  const isCoarsePointer = useIsCoarsePointer();
   const { width, containerRef, mounted } = useContainerWidth({
     measureBeforeMount: true,
   });
@@ -167,7 +177,7 @@ export const WidgetGrid = ({
       definition={definition}
       instance={instance}
       configContext={configContext}
-      editing={editing}
+      showDragHandle={editing && !isMobile}
       highlighted={instance.key === highlightedKey}
       onUpdate={(patch) => onUpdate(instance.key, patch)}
       onRemove={editing ? () => onRemove(instance.key) : undefined}
@@ -200,7 +210,7 @@ export const WidgetGrid = ({
             containerPadding: [0, 0],
           }}
           dragConfig={{ enabled: editing, handle: `.${EDIT_MODE_DRAG_HANDLE}` }}
-          resizeConfig={{ enabled: editing }}
+          resizeConfig={{ enabled: editing && !isCoarsePointer }}
           onDragStop={(layout, _oldItem, newItem) =>
             onLayoutChange(layout, newItem?.i)
           }

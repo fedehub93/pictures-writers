@@ -40,8 +40,11 @@ interface WidgetCardProps {
   instance: DashboardWidgetInstance;
   /** Context a configurable widget's schema resolves against. */
   configContext?: WidgetConfigContext;
-  /** Whether the dashboard is in edit mode: shows the drag handle. */
-  editing?: boolean;
+  /**
+   * Whether to mount the grip handle. Only mounted where the grid can actually
+   * be dragged: edit mode on a viewport wide enough to render the grid.
+   */
+  showDragHandle?: boolean;
   /** Whether to highlight the card briefly, e.g. right after it was added. */
   highlighted?: boolean;
   /** Receives a patch for this instance: rename or reconfigure it. */
@@ -88,14 +91,16 @@ const useIsClient = () =>
  * They are visually revealed on hover or focus on pointer devices, and kept
  * visible on small (touch) screens so they remain reachable without a hover
  * state. The spatial controls belong to edit mode: the remove control, the drag
- * handle, and the keyboard layout menu are only passed or mounted when
- * `editing`, so a read-mode dashboard shows none.
+ * handle, and the keyboard layout menu are only passed or mounted while
+ * editing, so a read-mode dashboard shows none. The drag handle is mounted only
+ * where the grid can actually be dragged — edit mode on a wide viewport — so
+ * the collapsed single-column view never shows a handle that does nothing.
  */
 export const WidgetCard = ({
   definition,
   instance,
   configContext,
-  editing = false,
+  showDragHandle = false,
   highlighted = false,
   onUpdate,
   onRemove,
@@ -128,7 +133,7 @@ export const WidgetCard = ({
       )}
     >
       <CardHeader className="flex flex-row items-start gap-2 space-y-0 pb-2">
-        {editing ? (
+        {showDragHandle ? (
           <button
             type="button"
             aria-label={`Move ${title}`}
@@ -158,7 +163,7 @@ export const WidgetCard = ({
           <div className="relative flex h-7 shrink-0 items-center justify-end">
             <Icon className="hidden size-4 text-muted-foreground md:absolute md:right-0 md:block md:transition-opacity md:group-focus-within/card:opacity-0 md:group-hover/card:opacity-0" />
             <div className="flex items-center gap-1 bg-card opacity-100 md:opacity-0 md:transition-opacity md:group-focus-within/card:opacity-100 md:group-hover/card:opacity-100">
-              {editing && onLayoutAction ? (
+              {onLayoutAction ? (
                 <WidgetLayoutMenu
                   title={title}
                   placement={instance.grid}
