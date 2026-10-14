@@ -11,8 +11,8 @@ import type { ComponentType } from "react";
 
 /**
  * The discrete widget sizes, in ascending order. The single source of truth for
- * the vocabulary: the type, the size menu, and the persistence schema all derive
- * from it.
+ * the size-preset vocabulary: the `WidgetSize` type and the keyboard resize
+ * stops both derive from it.
  */
 export const WIDGET_SIZES = ["small", "medium", "full"] as const;
 

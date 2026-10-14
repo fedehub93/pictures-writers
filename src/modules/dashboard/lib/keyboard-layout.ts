@@ -42,10 +42,7 @@ const stopsFor = (
   const seen = new Set<number>();
 
   return WIDGET_SIZES.flatMap((size) => {
-    const value = Math.min(
-      Math.max(WIDGET_SIZE_PRESETS[size].seed[axis], min),
-      max,
-    );
+    const value = clamp(WIDGET_SIZE_PRESETS[size].seed[axis], min, max);
     if (seen.has(value)) return [];
     seen.add(value);
     return [{ label: WIDGET_SIZE_LABEL[size], value }];
