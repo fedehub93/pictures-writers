@@ -45,6 +45,20 @@ describe("dashboard widget registry", () => {
     }
   });
 
+  it("gives the table widgets a wider, taller floor than the list widgets", () => {
+    expect(getWidgetDefinition("drafts")?.minGrid).toEqual({ w: 6, h: 4 });
+    expect(getWidgetDefinition("scheduled")?.minGrid).toEqual({ w: 6, h: 4 });
+
+    for (const id of [
+      "pending-reviews",
+      "pending-orders",
+      "failed-runs",
+      "trend",
+    ]) {
+      expect(getWidgetDefinition(id)?.minGrid).toEqual({ w: 3, h: 3 });
+    }
+  });
+
   it("assigns every definition to a Widget group", () => {
     for (const definition of WIDGET_DEFINITIONS) {
       expect(WIDGET_GROUP_IDS).toContain(definition.group);

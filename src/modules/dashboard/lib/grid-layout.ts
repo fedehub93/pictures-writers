@@ -10,10 +10,10 @@ import type {
 export const GRID_COLUMNS = 12;
 
 /** The pixel height of one grid row. */
-export const GRID_ROW_HEIGHT = 80;
+export const GRID_ROW_HEIGHT = 64;
 
 /** The [x, y] gap between grid cells, in pixels. */
-export const GRID_MARGIN = 16;
+export const GRID_MARGIN = 12;
 
 interface WidgetPreset {
   /** The placement a newly added instance of the preset is seeded with. */

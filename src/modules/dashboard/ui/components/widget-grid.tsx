@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, type CSSProperties } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { GridLayout, useContainerWidth, verticalCompactor } from "react-grid-layout";
+import { GridBackground } from "react-grid-layout/extras";
 
 import type {
   DashboardWidgetInstance,
@@ -104,6 +105,24 @@ export const WidgetGrid = ({
     measureBeforeMount: true,
   });
 
+  // The height the grid fills: the wrapper grows to the residual space of the
+  // dashboard column (and past it when the widgets are taller), so the grid
+  // background reaches the bottom of the viewport instead of stopping at the
+  // last widget. Measured after mount to avoid a hydration mismatch.
+  const [fillHeight, setFillHeight] = useState(0);
+
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!element) return;
+
+    const measure = () => setFillHeight(element.clientHeight);
+    measure();
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [containerRef]);
+
   const widgets = useMemo<ResolvedWidget[]>(
     () =>
       instances.flatMap((instance) => {
@@ -131,22 +150,19 @@ export const WidgetGrid = ({
     });
   }, [instances, widgets]);
 
-  // The visible grid: faint lines aligned to the cell pitch, drawn only while
-  // editing. The pitch matches react-grid-layout's own column/row maths with a
-  // zero container padding, so the lines sit on the cell boundaries. The line
-  // colour is the theme's border token (`--color-border`), which the admin
-  // theme resolves to a full oklch colour — not HSL channels.
-  const columnWidth = Math.max(
-    0,
-    (width - GRID_MARGIN * (GRID_COLUMNS - 1)) / GRID_COLUMNS,
+  // How many rows the filled area holds, so an item can be dropped into the
+  // empty space below the last widget but not dragged off the bottom of the
+  // screen. Never below the rows already occupied, or the grid would clamp a
+  // saved placement on load.
+  const occupiedRows = gridItems.reduce(
+    (lowest, item) => Math.max(lowest, item.y + item.h),
+    1,
   );
-  const gridLine = "var(--color-border) 1px, transparent 1px";
-  const editingGridStyle: CSSProperties | undefined = editing
-    ? {
-        backgroundImage: `linear-gradient(to right, ${gridLine}), linear-gradient(to bottom, ${gridLine})`,
-        backgroundSize: `${columnWidth + GRID_MARGIN}px ${GRID_ROW_HEIGHT + GRID_MARGIN}px`,
-      }
-    : undefined;
+  const fillRows = Math.max(
+    1,
+    Math.ceil((fillHeight + GRID_MARGIN) / (GRID_ROW_HEIGHT + GRID_MARGIN)),
+  );
+  const maxRows = Math.max(fillRows, occupiedRows);
 
   if (widgets.length === 0) {
     return <DashboardEmpty definitions={permittedDefinitions} onSelect={onAdd} />;
@@ -192,7 +208,7 @@ export const WidgetGrid = ({
   );
 
   return (
-    <div ref={containerRef}>
+    <div ref={containerRef} className="relative flex-1">
       {!mounted ? null : isMobile ? (
         <div className="flex flex-col gap-4">
           {singleColumnWidgets.map((widget) => (
@@ -200,32 +216,49 @@ export const WidgetGrid = ({
           ))}
         </div>
       ) : (
-        <GridLayout
-          width={width}
-          layout={gridItems}
-          gridConfig={{
-            cols: GRID_COLUMNS,
-            rowHeight: GRID_ROW_HEIGHT,
-            margin: [GRID_MARGIN, GRID_MARGIN],
-            containerPadding: [0, 0],
-          }}
-          dragConfig={{ enabled: editing, handle: `.${EDIT_MODE_DRAG_HANDLE}` }}
-          resizeConfig={{ enabled: editing && !isCoarsePointer }}
-          onDragStop={(layout, _oldItem, newItem) =>
-            onLayoutChange(layout, newItem?.i)
-          }
-          onResizeStop={(layout, _oldItem, newItem) =>
-            onLayoutChange(layout, newItem?.i)
-          }
-          compactor={verticalCompactor}
-          style={editingGridStyle}
-        >
-          {widgets.map((widget) => (
-            <div key={widget.instance.key} className="h-full">
-              {renderCard(widget)}
-            </div>
-          ))}
-        </GridLayout>
+        <>
+          {editing && fillHeight > 0 ? (
+            <GridBackground
+              width={width}
+              cols={GRID_COLUMNS}
+              rowHeight={GRID_ROW_HEIGHT}
+              margin={[GRID_MARGIN, GRID_MARGIN]}
+              containerPadding={[0, 0]}
+              rows="auto"
+              height={fillHeight}
+              color="var(--color-border)"
+              borderRadius={6}
+              style={{ opacity: 0.35 }}
+            />
+          ) : null}
+          <GridLayout
+            width={width}
+            layout={gridItems}
+            gridConfig={{
+              cols: GRID_COLUMNS,
+              rowHeight: GRID_ROW_HEIGHT,
+              margin: [GRID_MARGIN, GRID_MARGIN],
+              containerPadding: [0, 0],
+              maxRows,
+            }}
+            dragConfig={{ enabled: editing, handle: `.${EDIT_MODE_DRAG_HANDLE}` }}
+            resizeConfig={{ enabled: editing && !isCoarsePointer }}
+            onDragStop={(layout, _oldItem, newItem) =>
+              onLayoutChange(layout, newItem?.i)
+            }
+            onResizeStop={(layout, _oldItem, newItem) =>
+              onLayoutChange(layout, newItem?.i)
+            }
+            compactor={verticalCompactor}
+            style={editing ? { minHeight: fillHeight } : undefined}
+          >
+            {widgets.map((widget) => (
+              <div key={widget.instance.key} className="h-full">
+                {renderCard(widget)}
+              </div>
+            ))}
+          </GridLayout>
+        </>
       )}
     </div>
   );

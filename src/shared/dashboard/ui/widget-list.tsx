@@ -29,14 +29,19 @@ export const WidgetList = ({
   linkLabel,
   children,
 }: WidgetListProps) => {
+  // The list scrolls when it outgrows the card; the headline count and the
+  // footer link stay put, so the card clips rather than spilling over its
+  // neighbour.
   return (
-    <div className="flex h-full flex-col gap-3">
-      <div className="text-3xl font-bold">{count}</div>
+    <div className="flex h-full min-h-0 flex-col gap-3">
+      <div className="text-2xl font-bold">{count}</div>
 
       {isEmpty ? (
         <WidgetEmpty message={emptyMessage} />
       ) : (
-        <ul className="flex flex-col gap-2">{children}</ul>
+        <ul className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
+          {children}
+        </ul>
       )}
 
       <Button variant="link" size="sm" className="mt-auto self-start" asChild>

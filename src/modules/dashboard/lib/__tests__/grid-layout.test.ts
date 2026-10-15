@@ -9,12 +9,22 @@ import type {
 import {
   firstFreeSlot,
   GRID_COLUMNS,
+  GRID_MARGIN,
+  GRID_ROW_HEIGHT,
   resolveWidgetLayout,
   seedPlacement,
   sortForSingleColumn,
   toGridItems,
   WIDGET_SIZE_PRESETS,
 } from "../grid-layout";
+
+describe("grid geometry", () => {
+  it("uses a twelve-column grid with an even cell pitch", () => {
+    expect(GRID_COLUMNS).toBe(12);
+    expect(GRID_ROW_HEIGHT).toBe(64);
+    expect(GRID_MARGIN).toBe(12);
+  });
+});
 
 const definition = (
   overrides: Partial<WidgetDefinition> = {},

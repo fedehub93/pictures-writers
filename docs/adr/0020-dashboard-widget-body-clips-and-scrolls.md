@@ -1,0 +1,7 @@
+# A Dashboard widget's body clips and scrolls inside its card
+
+**Status**: accepted.
+
+A positioned grid lets a Dashboard widget be resized below the height its content needs — and content length is dynamic (a table lists up to six records, a list up to five), so a widget can never be sized to fit its content in general. Every card therefore **clips its content** (`overflow-hidden`) and the shared bodies handle overflow themselves: `WidgetTable` scrolls only its row area, keeping the header pinned and the footer in place; `WidgetList` scrolls only its list, keeping the count and footer; the Trend chart stretches to fill instead of holding a fixed aspect ratio. Each definition declares a per-widget `minGrid` floor — a table `{ w: 6, h: 4 }`, a list and the Trend `{ w: 3, h: 3 }` — sized so the typical content fits at the minimum and a scrollbar appears only for the record that does not.
+
+**Considered options.** Sizing the box to its content (raising the minimum until everything fits) was rejected: content length is data, not design, so the floor would have to track the server's list cap and leave tables unable to shrink at all. Truncating the extra rows without a scrollbar was rejected because it hides records silently; the "N of M" footer already tells the user how many exist. A single generic scroll wrapper around the whole card body was rejected because it scrolls the table's column headers out of view, which is exactly what a dashboard table should keep fixed.

@@ -18,6 +18,8 @@ export const ordersDashboardWidgets: WidgetDefinition[] = [
     group: "shop",
     permission: PERMISSIONS.ORDERS_READ,
     defaultSize: "medium",
+    // Room for the headline count, a couple of rows, and the footer link.
+    minGrid: { w: 3, h: 3 },
     component: PendingOrdersWidget,
   },
 ];

@@ -127,12 +127,12 @@ export const WidgetCard = ({
   return (
     <Card
       className={cn(
-        "group/card flex h-full flex-col transition-shadow duration-500",
+        "group/card flex h-full flex-col overflow-hidden transition-shadow duration-500",
         highlighted &&
           "ring-2 ring-primary ring-offset-2 ring-offset-background",
       )}
     >
-      <CardHeader className="flex flex-row items-start gap-2 space-y-0 pb-2">
+      <CardHeader className="flex flex-row items-start gap-2 space-y-0 p-4 pb-2">
         {showDragHandle ? (
           <button
             type="button"
@@ -202,7 +202,7 @@ export const WidgetCard = ({
           <Icon className="size-4 text-muted-foreground" />
         )}
       </CardHeader>
-      <CardContent className="flex flex-1 flex-col">
+      <CardContent className="flex min-h-0 flex-1 flex-col p-4 pt-0">
         {isClient ? (
           <Suspense fallback={<Loading />}>
             <ErrorBoundary fallback={<WidgetError />}>

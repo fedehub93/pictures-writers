@@ -80,46 +80,60 @@ export const WidgetTable = <T,>({
 
   const columnClass = (column: WidgetTableColumn<T>) =>
     cn(
+      "px-3",
       column.grow ? "w-auto" : "w-px whitespace-nowrap",
       column.align === "right" && "text-right",
       column.className,
     );
 
+  // Only the row area scrolls when a widget is shorter than its content: the
+  // header stays pinned (`sticky`) and the footer stays put below, so the card
+  // clips instead of spilling over the widget beneath it. The shared `Table`'s
+  // own wrapper is neutralised to `overflow-visible` so this element is the one
+  // scroll container the sticky header anchors to.
   return (
-    <div className="flex h-full flex-col gap-3">
+    <div className="flex h-full min-h-0 flex-col gap-3">
       {isEmpty ? (
         <WidgetEmpty message={emptyMessage} />
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              {columns.map((column) => (
-                <TableHead key={column.id} className={columnClass(column)}>
-                  {column.header}
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.map((row) => {
-              const href = rowHref(row);
+        <div className="min-h-0 flex-1 overflow-auto [&>div]:overflow-visible">
+          <Table>
+            <TableHeader className="sticky top-0 z-10 bg-card">
+              <TableRow>
+                {columns.map((column) => (
+                  <TableHead
+                    key={column.id}
+                    className={cn(columnClass(column), "h-10 text-xs")}
+                  >
+                    {column.header}
+                  </TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {rows.map((row) => {
+                const href = rowHref(row);
 
-              return (
-                <TableRow
-                  key={rowKey(row)}
-                  className={href ? "cursor-pointer" : undefined}
-                  onClick={href ? () => router.push(href) : undefined}
-                >
-                  {columns.map((column) => (
-                    <TableCell key={column.id} className={columnClass(column)}>
-                      {column.cell(row)}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+                return (
+                  <TableRow
+                    key={rowKey(row)}
+                    className={href ? "cursor-pointer" : undefined}
+                    onClick={href ? () => router.push(href) : undefined}
+                  >
+                    {columns.map((column) => (
+                      <TableCell
+                        key={column.id}
+                        className={cn(columnClass(column), "py-2.5")}
+                      >
+                        {column.cell(row)}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
       )}
 
       <div className="mt-auto flex items-center justify-between gap-3 text-xs text-muted-foreground">

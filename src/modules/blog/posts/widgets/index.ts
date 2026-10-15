@@ -33,6 +33,9 @@ export const postsDashboardWidgets: WidgetDefinition[] = [
     group: "content",
     permission: PERMISSIONS.POSTS_READ,
     defaultSize: "full",
+    // A table needs room for its header, a few rows, and the footer to stay
+    // legible; below this the body scrolls instead of spilling out of the card.
+    minGrid: { w: 6, h: 4 },
     component: DraftsWidget,
     loadingFallback: DraftsWidgetSkeleton,
     configSchema: () => ({

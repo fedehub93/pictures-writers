@@ -33,6 +33,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     group: "analytics",
     category: "analytics",
     defaultSize: "medium",
+    minGrid: { w: 3, h: 3 },
     component: TrendWidget,
     // The Trend is the first configurable widget: the gear lets the user pick
     // which permitted metric this instance renders, and — for the

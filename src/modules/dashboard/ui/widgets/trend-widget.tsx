@@ -97,8 +97,8 @@ const TrendChart = ({ metricId, metricLabel, formIds }: TrendChartProps) => {
   } satisfies ChartConfig;
 
   return (
-    <div className="flex h-full flex-col gap-3">
-      <ChartContainer config={chartConfig}>
+    <div className="flex h-full min-h-0 flex-col gap-3">
+      <ChartContainer config={chartConfig} className="aspect-auto min-h-0 flex-1">
         <BarChart accessibilityLayer data={series.points}>
           <CartesianGrid vertical={false} />
           <XAxis
