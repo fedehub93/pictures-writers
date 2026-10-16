@@ -1,8 +1,13 @@
 import z from "zod";
 import { db } from "@/shared/lib/db";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 import { revalidateContent } from "@/shared/lib/revalidate-content";
 
-import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
+import {
+  createTRPCRouter,
+  permissionProcedure,
+  protectedProcedure,
+} from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 
 import { ContentStatus, type Prisma } from "@/generated/prisma";
@@ -13,12 +18,18 @@ import {
 } from "@/shared/lib/list-sorting";
 
 import {
+  DASHBOARD_AUTHOR_SELECT,
+  toDashboardAuthor,
+} from "@/shared/dashboard/author";
+
+import {
   postInsertSchema,
   postUpdateSchema,
   postUpdateSeoSchema,
 } from "../schemas";
 
 import {
+  DASHBOARD_LIST_LIMIT,
   DEFAULT_PAGE,
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,
@@ -46,7 +57,96 @@ import {
 
 import { getPaginatedPosts } from "./queries";
 
+/** The statuses the dashboard's content widget shows until the user filters. */
+const DASHBOARD_DEFAULT_STATUSES: ContentStatus[] = [
+  ContentStatus.DRAFT,
+  ContentStatus.CHANGED,
+];
+
 export const postsRouter = createTRPCRouter({
+  /**
+   * Posts awaiting publication: the count and the most recently edited few, for
+   * the dashboard's content widget. Defaults to drafts and changed posts; the
+   * widget may narrow or widen it to any set of statuses.
+   */
+  getDrafts: permissionProcedure(PERMISSIONS.POSTS_READ)
+    .input(
+      z
+        .object({
+          statuses: z
+            .array(
+              z.enum([
+                ContentStatus.DRAFT,
+                ContentStatus.CHANGED,
+                ContentStatus.PUBLISHED,
+                ContentStatus.SCHEDULED,
+              ]),
+            )
+            .optional(),
+        })
+        .optional(),
+    )
+    .query(async ({ input }) => {
+      const statuses =
+        input?.statuses && input.statuses.length > 0
+          ? input.statuses
+          : DASHBOARD_DEFAULT_STATUSES;
+
+      const where: Prisma.PostRootWhereInput = {
+        currentVersion: { is: { status: { in: statuses } } },
+      };
+
+      const [roots, count] = await Promise.all([
+        db.postRoot.findMany({
+          where,
+          orderBy: { currentVersion: { updatedAt: "desc" } },
+          take: DASHBOARD_LIST_LIMIT,
+          select: {
+            id: true,
+            slug: true,
+            currentVersion: {
+              select: {
+                id: true,
+                title: true,
+                status: true,
+                updatedAt: true,
+                authors: {
+                  orderBy: { sort: "asc" },
+                  take: 1,
+                  select: { user: { select: DASHBOARD_AUTHOR_SELECT } },
+                },
+                user: { select: DASHBOARD_AUTHOR_SELECT },
+                categories: {
+                  orderBy: { sort: "asc" },
+                  select: { category: { select: { id: true, title: true } } },
+                },
+              },
+            },
+          },
+        }),
+        db.postRoot.count({ where }),
+      ]);
+
+      const items = roots
+        .map((root) => {
+          const version = root.currentVersion;
+          if (!version) return null;
+
+          return {
+            rootId: root.id,
+            versionId: version.id,
+            title: version.title,
+            status: version.status,
+            updatedAt: version.updatedAt,
+            author: toDashboardAuthor(version.authors[0]?.user ?? version.user),
+            categories: version.categories.map(({ category }) => category),
+          };
+        })
+        .filter((item): item is NonNullable<typeof item> => item !== null);
+
+      return { count, items };
+    }),
+
   create: protectedProcedure
     .input(postInsertSchema.extend({ timezone: z.string().optional() }))
     .mutation(async ({ input, ctx }) => {

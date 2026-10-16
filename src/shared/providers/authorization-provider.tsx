@@ -25,3 +25,7 @@ export function AuthorizationProvider({
 export function usePermission(permission: string) {
   return hasPermission(useContext(AuthorizationContext), permission);
 }
+
+export function usePermissionKeys() {
+  return useContext(AuthorizationContext);
+}

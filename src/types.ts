@@ -11,6 +11,7 @@ import type {
 import type { Data } from "@puckeditor/core";
 
 import type { FormRootInstance } from "./modules/forms/builder/types/core";
+import type { DashboardWidgets as DashboardWidgetsType } from "./shared/dashboard/types";
 import type { ProductMetadata as ProductMetadataType } from "./modules/shop/products/types";
 import type { SavedComponents } from "./puck/config";
 
@@ -26,6 +27,7 @@ declare global {
     type ProductMetadata = ProductMetadataType | null | undefined;
     type WidgetMetadata = any;
     type Scripts = SettingsScripts[] | null | undefined;
+    type DashboardWidgets = DashboardWidgetsType;
   }
 }
 

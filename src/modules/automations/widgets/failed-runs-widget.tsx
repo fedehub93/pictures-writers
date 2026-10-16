@@ -1,0 +1,52 @@
+"use client";
+
+import Link from "next/link";
+import { useSuspenseQuery } from "@tanstack/react-query";
+
+import { useTRPC } from "@/trpc/client";
+import { formatDate } from "@/lib/format";
+import {
+  WidgetList,
+  WidgetListSkeleton,
+} from "@/shared/dashboard/ui/widget-list";
+
+import { DASHBOARD_LIST_LIMIT } from "../constants";
+
+export const FailedRunsWidget = () => {
+  const trpc = useTRPC();
+  const { data } = useSuspenseQuery(
+    trpc.automations.getFailedRuns.queryOptions(),
+  );
+
+  return (
+    <WidgetList
+      count={data.count}
+      isEmpty={data.items.length === 0}
+      emptyMessage="No failed automations."
+      href="/admin/automations/executions?status=FAILED"
+      linkLabel="View runs"
+    >
+      {data.items.map((item) => (
+        <li key={item.id} className="flex items-center justify-between gap-3">
+          <Link
+            href={`/admin/automations/${item.automationId}/executions/${item.id}`}
+            className="truncate text-sm hover:underline"
+          >
+            {item.automationName}
+          </Link>
+          <span className="shrink-0 text-xs text-muted-foreground">
+            {formatDate({ date: item.startedAt })}
+          </span>
+        </li>
+      ))}
+    </WidgetList>
+  );
+};
+
+export const FailedRunsWidgetSkeleton = () => (
+  <WidgetListSkeleton
+    rows={DASHBOARD_LIST_LIMIT}
+    href="/admin/automations/executions?status=FAILED"
+    linkLabel="View runs"
+  />
+);

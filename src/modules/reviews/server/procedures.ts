@@ -10,6 +10,7 @@ import { revalidateContent } from "@/shared/lib/revalidate-content";
 import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 
 import {
+  DASHBOARD_LIST_LIMIT,
   DEFAULT_PAGE,
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,
@@ -69,6 +70,61 @@ const findReviewOrThrow = async (id: string) => {
 };
 
 export const reviewsRouter = createTRPCRouter({
+  /**
+   * Reviews for the dashboard's "Reviews" widget: the count and the most recent
+   * few. Defaults to every review; the widget may narrow it to published or
+   * unpublished ones.
+   */
+  getSummary: permissionProcedure(PERMISSIONS.REVIEWS_READ)
+    .input(
+      z
+        .object({ status: z.array(z.boolean()).optional() })
+        .optional(),
+    )
+    .query(async ({ input }) => {
+      const statuses =
+        input?.status && input.status.length > 0 ? input.status : undefined;
+
+      const where: Prisma.ReviewsWhereInput = statuses
+        ? { OR: statuses.map((status) => ({ status })) }
+        : {};
+
+      const [reviews, count] = await Promise.all([
+        db.reviews.findMany({
+          where,
+          orderBy: { date: "desc" },
+          take: DASHBOARD_LIST_LIMIT,
+          select: {
+            id: true,
+            reviewerName: true,
+            rating: true,
+            date: true,
+            status: true,
+            product: {
+              select: {
+                id: true,
+                currentVersion: { select: { title: true } },
+              },
+            },
+          },
+        }),
+        db.reviews.count({ where }),
+      ]);
+
+      return {
+        count,
+        items: reviews.map((review) => ({
+          id: review.id,
+          reviewerName: review.reviewerName ?? "",
+          rating: review.rating,
+          date: review.date,
+          status: review.status,
+          productId: review.product.id,
+          productTitle: review.product.currentVersion?.title ?? "",
+        })),
+      };
+    }),
+
   create: permissionProcedure(PERMISSIONS.REVIEWS_MANAGE)
     .input(reviewInsertSchema)
     .mutation(async ({ input }) => {

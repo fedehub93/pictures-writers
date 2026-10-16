@@ -15,6 +15,12 @@ import type {
   CalendarEventType,
   GetCalendarEventsInput,
 } from "../types";
+import { SCHEDULER_TARGET_TYPES } from "../constants";
+
+import {
+  buildScheduledActionUrl,
+  describeScheduledActions,
+} from "./describe-scheduled-action";
 
 const TERMINAL_STATUSES: ScheduledActionStatus[] = [
   ScheduledActionStatus.SUCCEEDED,
@@ -24,22 +30,6 @@ const TERMINAL_STATUSES: ScheduledActionStatus[] = [
 
 function isTerminalStatus(status: ScheduledActionStatus): boolean {
   return TERMINAL_STATUSES.includes(status);
-}
-
-function buildActionUrl(targetType: string, targetId: string): string {
-  if (targetType === "POST_ROOT") {
-    return `/admin/posts/${targetId}`;
-  }
-
-  if (targetType === "EMAIL_SINGLE_SEND") {
-    return `/admin/mails/single-sends/${targetId}`;
-  }
-
-  return "";
-}
-
-function buildManualPostUrl(rootId: string): string {
-  return `/admin/posts/${rootId}`;
 }
 
 function resolveActionStart(action: {
@@ -145,67 +135,16 @@ export async function getCalendarEvents({
     orderBy: [{ plannedAt: "asc" }],
   });
 
-  const postRootIds: string[] = [];
-  const emailSingleSendIds: string[] = [];
-
-  for (const action of actions) {
-    if (action.type === ScheduledActionType.PUBLISH_POST) {
-      postRootIds.push(action.targetId);
-    } else if (action.type === ScheduledActionType.SEND_EMAIL) {
-      emailSingleSendIds.push(action.targetId);
-    }
-  }
-
-  const [postRootsForActions, emailSingleSends] = await Promise.all([
-    postRootIds.length > 0
-      ? db.postRoot.findMany({
-          where: { id: { in: postRootIds } },
-          select: {
-            id: true,
-            currentVersion: {
-              select: {
-                title: true,
-              },
-            },
-          },
-        })
-      : Promise.resolve([]),
-    emailSingleSendIds.length > 0
-      ? db.emailSingleSend.findMany({
-          where: { id: { in: emailSingleSendIds } },
-          select: { id: true, name: true },
-        })
-      : Promise.resolve([]),
-  ]);
-
-  const titleByRootId = new Map<string, { title: string }>();
-  for (const postRoot of postRootsForActions) {
-    if (!titleByRootId.has(postRoot.id)) {
-      titleByRootId.set(postRoot.id, {
-        title: postRoot.currentVersion?.title ?? "Unknown post",
-      });
-    }
-  }
-
-  const emailById = new Map(emailSingleSends.map((e) => [e.id, e]));
+  const descriptions = await describeScheduledActions(actions);
 
   const actionEvents: CalendarEvent[] = actions.map((action) => {
-    let title = "Unknown";
-
-    if (action.type === ScheduledActionType.PUBLISH_POST) {
-      const post = titleByRootId.get(action.targetId);
-      title = post?.title ?? "Unknown post";
-    } else if (action.type === ScheduledActionType.SEND_EMAIL) {
-      const email = emailById.get(action.targetId);
-      title = email?.name ?? "Unknown newsletter";
-    }
-
+    const description = descriptions.get(action.id);
     const start = resolveActionStart(action);
 
     return {
       id: action.id,
       type: action.type,
-      title,
+      title: description?.title ?? "Unknown",
       start,
       end: addHours(start, 1),
       timezone: action.timezone,
@@ -215,7 +154,7 @@ export async function getCalendarEvents({
       plannedAt: action.plannedAt,
       executedAt: action.executedAt,
       overdue: isOverdue(action),
-      url: buildActionUrl(action.targetType, action.targetId),
+      url: description?.url ?? "",
     };
   });
 
@@ -292,7 +231,7 @@ export async function getCalendarEvents({
       plannedAt: null,
       executedAt: post.publishedAt,
       overdue: false,
-      url: buildManualPostUrl(root.id),
+      url: buildScheduledActionUrl(SCHEDULER_TARGET_TYPES.POST_ROOT, root.id),
     });
   }
 

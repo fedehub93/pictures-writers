@@ -19,7 +19,7 @@ import { ExecutionsFilters } from "./executions-filters";
 export const ExecutionsListHeader = ({
   automationId,
 }: {
-  automationId: string;
+  automationId?: string;
 }) => {
   const [filters, setFilters] = useExecutionsFilters();
   const trpc = useTRPC();
@@ -48,14 +48,16 @@ export const ExecutionsListHeader = ({
   return (
     <div className="flex flex-col gap-y-4 px-6 py-4">
       <div className="flex items-center gap-x-2">
-        <Button variant="ghost" size="icon-sm" asChild>
-          <Link
-            href={`/admin/automations/${automationId}/`}
-            aria-label="Back to editor"
-          >
-            <ArrowLeftIcon />
-          </Link>
-        </Button>
+        {automationId && (
+          <Button variant="ghost" size="icon-sm" asChild>
+            <Link
+              href={`/admin/automations/${automationId}/`}
+              aria-label="Back to editor"
+            >
+              <ArrowLeftIcon />
+            </Link>
+          </Button>
+        )}
         <div className="min-w-0 flex-1">
           <ContentHeader label="Executions" totalEntries={data?.total ?? 0} />
         </div>

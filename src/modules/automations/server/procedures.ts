@@ -8,12 +8,13 @@ import { db } from "@/shared/lib/db";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 
-import { AutomationStatus } from "@/generated/prisma";
+import { AutomationRunStatus, AutomationStatus } from "@/generated/prisma";
 
 import { formSubmittedNodeValidator } from "@/modules/forms/automations/validate";
 
 import {
   AUTOMATION_RUN_STATUSES,
+  DASHBOARD_LIST_LIMIT,
   DEFAULT_PAGE,
   DEFAULT_PAGE_SIZE,
   INITIAL_NODE_TYPE,
@@ -89,6 +90,43 @@ const toConnectionRow = (
 });
 
 export const automationsRouter = createTRPCRouter({
+  /**
+   * Failed automation runs: the count and the most recent few, for the
+   * dashboard's "Automation Runs" widget.
+   */
+  getFailedRuns: permissionProcedure(PERMISSIONS.AUTOMATIONS_READ).query(
+    async () => {
+      const where = { status: AutomationRunStatus.FAILED };
+
+      const [runs, count] = await Promise.all([
+        db.automationRun.findMany({
+          where,
+          orderBy: { startedAt: "desc" },
+          take: DASHBOARD_LIST_LIMIT,
+          select: {
+            id: true,
+            automationId: true,
+            startedAt: true,
+            error: true,
+            automation: { select: { name: true } },
+          },
+        }),
+        db.automationRun.count({ where }),
+      ]);
+
+      return {
+        count,
+        items: runs.map((run) => ({
+          id: run.id,
+          automationId: run.automationId,
+          automationName: run.automation.name,
+          startedAt: run.startedAt,
+          error: run.error,
+        })),
+      };
+    },
+  ),
+
   execute: permissionProcedure(PERMISSIONS.AUTOMATIONS_WRITE)
     .input(z.object({ id: z.string(), payload: z.unknown().optional() }))
     .mutation(async ({ input }) => {
@@ -442,7 +480,7 @@ export const automationsRouter = createTRPCRouter({
   getRuns: permissionProcedure(PERMISSIONS.AUTOMATIONS_READ)
     .input(
       z.object({
-        automationId: z.string(),
+        automationId: z.string().optional(),
         page: z.number().default(DEFAULT_PAGE),
         pageSize: z
           .number()
@@ -461,7 +499,7 @@ export const automationsRouter = createTRPCRouter({
       });
 
       const where = {
-        automationId: input.automationId,
+        ...(input.automationId ? { automationId: input.automationId } : {}),
         status: input.status ?? undefined,
         startedAt: gte || lte ? { gte, lte } : undefined,
       };
@@ -471,12 +509,14 @@ export const automationsRouter = createTRPCRouter({
           where,
           select: {
             id: true,
+            automationId: true,
             status: true,
             triggerType: true,
             startedAt: true,
             endedAt: true,
             error: true,
             cancelReason: true,
+            automation: { select: { id: true, name: true } },
           },
           orderBy: { startedAt: "desc" },
           take: input.pageSize,

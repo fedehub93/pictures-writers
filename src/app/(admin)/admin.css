@@ -597,3 +597,19 @@
   pointer-events: none;
   height: 0;
 }
+
+/* react-grid-layout paints its drag/resize placeholder red by default. Use a
+   neutral theme tone instead, shaped like the card it stands in for. The extra
+   `.react-grid-layout` ancestor raises specificity above the library's own
+   rule, which is imported after this file. */
+.react-grid-layout .react-grid-item.react-grid-placeholder {
+  background: var(--muted-foreground);
+  opacity: 0.18;
+  border-radius: var(--radius);
+}
+
+/* The resize handle's chevron is hard-black on every theme; take it from the
+   theme's muted foreground so it reads on dark backgrounds too. */
+.react-grid-layout .react-grid-item > .react-resizable-handle::after {
+  border-color: var(--muted-foreground);
+}

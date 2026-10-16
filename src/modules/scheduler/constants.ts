@@ -1,6 +1,7 @@
-import "server-only";
-
 export const SCHEDULER_BATCH_SIZE = 50;
+
+/** How many records the dashboard's scheduled-content widget lists at once. */
+export const DASHBOARD_LIST_LIMIT = 6;
 
 /**
  * Header used by the external cron trigger to authenticate against the

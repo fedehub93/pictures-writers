@@ -121,6 +121,12 @@ export const getProcedurePermission = (path: string): string => {
   const [rawArea, operation = ""] = path.split(".");
   const area = AREA_ALIASES[rawArea] ?? rawArea;
 
+  // The dashboard area is read-only: `dashboard.read` gates viewing it and
+  // saving one's own layout. There is no dashboard.manage.
+  if (area === "dashboard") {
+    return `${area}.read`;
+  }
+
   if (READ_OPERATIONS.has(operation) || operation.startsWith("get")) {
     return `${area}.read`;
   }
