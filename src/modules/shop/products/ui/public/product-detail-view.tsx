@@ -116,7 +116,6 @@ export const ProductDetailView = async ({ product }: ProductDetailViewProps) => 
               title: product.category.title,
               href: `/shop/${product.category.slug}/`,
             },
-            { title: product.title },
           ]}
         />
         {isEbookMetadata(product.metadata) && (

@@ -75,7 +75,6 @@ const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
               title: product.title,
               href: `/shop/${product.category.slug}/${productSlug}/`,
             },
-            { title: "Submission" },
           ]}
         />
         <div className="col-span-full w-full py-6 md:py-10 pb-28 flex flex-col md:flex-row gap-y-8 gap-x-8 xl:px-0">

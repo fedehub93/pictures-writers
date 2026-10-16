@@ -17,27 +17,27 @@ interface BreadcrumbsProps {
 }
 
 export const Breadcrumbs = ({ items }: BreadcrumbsProps) => {
-  const linkItems = items.slice(0, -1);
-  const currentItem = items.at(-1);
-
   return (
     <Breadcrumb className="col-span-full">
       <BreadcrumbList>
-        {linkItems.map((item) => (
-          <React.Fragment key={item.title}>
-            <BreadcrumbItem>
-              <BreadcrumbLink className="text-base" href={item.href}>
-                {item.title}
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-          </React.Fragment>
-        ))}
-        <BreadcrumbItem>
-          <BreadcrumbPage className="text-base">
-            {currentItem?.title}
-          </BreadcrumbPage>
-        </BreadcrumbItem>
+        {items.map((item, index) => {
+          const isLast = index === items.length - 1;
+
+          return (
+            <React.Fragment key={item.title}>
+              <BreadcrumbItem>
+                {isLast && !item.href ? (
+                  <BreadcrumbPage>{item.title}</BreadcrumbPage>
+                ) : (
+                  <BreadcrumbLink href={item.href}>
+                    {item.title}
+                  </BreadcrumbLink>
+                )}
+              </BreadcrumbItem>
+              {!isLast && <BreadcrumbSeparator />}
+            </React.Fragment>
+          );
+        })}
       </BreadcrumbList>
     </Breadcrumb>
   );
