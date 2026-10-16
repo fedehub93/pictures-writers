@@ -43,7 +43,7 @@ export const WebinarCard = async ({
   return (
     <div
       key={title}
-      className="flex flex-col justify-center items-center w-80 border rounded-lg relative shadow-lg bg-foreground-primary mt-4"
+      className="mx-auto flex w-full max-w-[20rem] flex-col justify-center items-center border rounded-lg relative shadow-lg bg-foreground-primary mt-4"
     >
       <div
         className={cn(

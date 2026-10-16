@@ -31,7 +31,7 @@ export const EbookCard = ({
   return (
     <div
       key={title}
-      className="flex flex-col justify-center items-center w-72 border rounded-lg overflow-hidden shadow-lg "
+      className="mx-auto flex w-full max-w-[18rem] flex-col justify-center items-center border rounded-lg overflow-hidden shadow-lg "
     >
       <div className="w-full border-b flex items-center justify-center group overflow-hidden">
         <Link

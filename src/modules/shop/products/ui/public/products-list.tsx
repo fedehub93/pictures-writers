@@ -76,7 +76,7 @@ export const ProductsList = ({ categorySlug, products }: ProductsListProps) => {
         return (
           <div
             key={p.title}
-            className="flex flex-col justify-center items-center w-72 rounded-lg overflow-hidden shadow-lg bg-primary-foreground"
+            className="mx-auto flex w-full max-w-[18rem] flex-col justify-center items-center rounded-lg overflow-hidden shadow-lg bg-primary-foreground"
           >
             <div className="w-full border-b flex items-center justify-center group overflow-hidden h-60">
               <Link
