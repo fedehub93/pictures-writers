@@ -34,7 +34,7 @@ export const ProductBottomCta = ({
       <div className="max-w-5xl mx-auto flex items-center justify-between px-4 py-3">
         {/* Prezzo se presente */}
         {price ? (
-          <div className="flex flex-col">
+          <div className="flex flex-col pl-12">
             {discountedPrice && discountedPrice !== price && (
               <span className="text-sm line-through text-muted-foreground">
                 €{discountedPrice}

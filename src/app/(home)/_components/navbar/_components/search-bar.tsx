@@ -38,7 +38,7 @@ export const SearchBar = () => {
       </Button>
       <div
         className={cn(
-          "bg-white fixed top-20 left-0 h-0 w-screen transition-all duration-500 overflow-hidden px-6 shadow-xl opacity-0 md:hidden",
+          "bg-white fixed top-32 left-0 h-0 w-screen transition-all duration-500 overflow-hidden px-6 shadow-xl opacity-0 md:hidden",
           isOpen && "h-auto min-h-20 opacity-100",
         )}
       >

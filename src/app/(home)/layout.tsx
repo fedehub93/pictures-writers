@@ -21,7 +21,6 @@ import { AppScripts } from "@/shared/components/scripts";
 
 import { OrganizationJsonLd } from "./_components/seo/json-ld/organization";
 import { WebSiteJsonLd } from "./_components/seo/json-ld/website";
-import { BottomBanner } from "./_components/bottom-banner";
 
 const figtree = Figtree({ subsets: ["latin"] });
 
@@ -68,9 +67,8 @@ export default async function RootLayout({
         <QueryProvider>
           <div className={cn(`h-full`, figtree.className)}>
             <Navbar />
-            <main className="pt-20">{children}</main>
+            <main className="pt-32 md:pt-28">{children}</main>
             <Footer />
-            {/* <BottomBanner /> */}
           </div>
         </QueryProvider>
         {/* <SpeedInsights /> */}

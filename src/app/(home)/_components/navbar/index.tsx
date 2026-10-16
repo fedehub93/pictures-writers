@@ -5,17 +5,13 @@ import { Button } from "@/shared/ui/button";
 import { Nav } from "./_components/nav";
 import { MobileNavbar } from "./_components/mobile-navbar";
 
+import { AnnouncementBar } from "./_components/announcement-bar";
 import { SearchBar } from "./_components/search-bar";
 
 export const Navbar = async () => {
   return (
     <header className="fixed top-0 z-50 w-full border-b">
-      {/* <div className="flex gap-x-4 w-full px-4 items-center justify-center py-1 border-b bg-violet-100">
-        Acquista ora il miglior libro sulla sceneggiatura cinematografica!
-        <Button type="button" role="button">
-          Prova
-        </Button>
-      </div> */}
+      <AnnouncementBar />
       <div className="h-20 inset-y-0 w-full z-50 p-4 flex items-center shadow-2xs bg-primary-foreground ">
         <div className="w-full mx-auto flex justify-between md:max-w-6xl">
           <Link href="/" className="flex items-center gap-x-4">
