@@ -111,6 +111,12 @@ export const WidgetGrid = ({
   // last widget. Measured after mount to avoid a hydration mismatch.
   const [fillHeight, setFillHeight] = useState(0);
 
+  // Whether a pointer resize is in progress. While it is, the grid's row cap is
+  // lifted (see `maxRows`) so a widget can grow past the rows its neighbours
+  // already occupy — otherwise the last widget, sitting at the bottom of the
+  // content, would have no row below it to grow into.
+  const [resizing, setResizing] = useState(false);
+
   useEffect(() => {
     const element = containerRef.current;
     if (!element) return;
@@ -153,7 +159,9 @@ export const WidgetGrid = ({
   // How many rows the filled area holds, so an item can be dropped into the
   // empty space below the last widget but not dragged off the bottom of the
   // screen. Never below the rows already occupied, or the grid would clamp a
-  // saved placement on load.
+  // saved placement on load. A pointer resize is exempt: uncapping the rows
+  // while resizing lets the bottom-most widget grow taller than the content it
+  // sits under (the page scrolls), which the cap would otherwise forbid.
   const occupiedRows = gridItems.reduce(
     (lowest, item) => Math.max(lowest, item.y + item.h),
     1,
@@ -162,7 +170,9 @@ export const WidgetGrid = ({
     1,
     Math.ceil((fillHeight + GRID_MARGIN) / (GRID_ROW_HEIGHT + GRID_MARGIN)),
   );
-  const maxRows = Math.max(fillRows, occupiedRows);
+  const maxRows = resizing
+    ? Number.POSITIVE_INFINITY
+    : Math.max(fillRows, occupiedRows);
 
   if (widgets.length === 0) {
     return <DashboardEmpty definitions={permittedDefinitions} onSelect={onAdd} />;
@@ -246,9 +256,11 @@ export const WidgetGrid = ({
             onDragStop={(layout, _oldItem, newItem) =>
               onLayoutChange(layout, newItem?.i)
             }
-            onResizeStop={(layout, _oldItem, newItem) =>
-              onLayoutChange(layout, newItem?.i)
-            }
+            onResizeStart={() => setResizing(true)}
+            onResizeStop={(layout, _oldItem, newItem) => {
+              setResizing(false);
+              onLayoutChange(layout, newItem?.i);
+            }}
             compactor={verticalCompactor}
             style={editing ? { minHeight: fillHeight } : undefined}
           >

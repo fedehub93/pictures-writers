@@ -14,6 +14,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/shared/ui/chart";
+import { Skeleton } from "@/shared/ui/skeleton";
 
 import { configStringValues } from "@/shared/dashboard/config";
 import { resolveMetric } from "../../lib/metric-selection";
@@ -120,3 +121,33 @@ const TrendChart = ({ metricId, metricLabel, formIds }: TrendChartProps) => {
     </div>
   );
 };
+
+/**
+ * Fixed, varied bar heights for the loading chart. Deterministic on purpose: a
+ * random layout would differ between the server and the first client render.
+ */
+const SKELETON_BARS = [42, 66, 50, 78, 58, 88, 70, 52, 74, 46, 82, 62];
+
+/**
+ * The loading body of the Trend widget: a stand-in bar chart, so the card shows
+ * the chart's shape rather than a spinner while the metric loads.
+ */
+export const TrendWidgetSkeleton = () => (
+  <div
+    className="flex h-full min-h-0 flex-col gap-3"
+    role="status"
+    aria-label="Loading"
+  >
+    <div className="flex min-h-0 flex-1 items-end gap-2">
+      {SKELETON_BARS.map((height, index) => (
+        <Skeleton
+          key={index}
+          className="flex-1"
+          style={{ height: `${height}%` }}
+        />
+      ))}
+    </div>
+    <Skeleton className="h-8 w-12" />
+    <Skeleton className="h-3 w-40" />
+  </div>
+);

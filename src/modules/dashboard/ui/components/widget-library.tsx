@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { Plus, Search } from "lucide-react";
+import { Search } from "lucide-react";
 
 import { Button } from "@/shared/ui/button";
 import {
@@ -30,8 +30,14 @@ interface WidgetLibraryProps {
   /** The definitions the current user is permitted to add. */
   definitions: WidgetDefinition[];
   onSelect: (definitionId: string) => void;
-  /** The element that opens the library. */
-  children: ReactNode;
+  /**
+   * The element that opens the library. Omit it when the open state is
+   * controlled from outside (e.g. opened from a dashboard menu item).
+   */
+  children?: ReactNode;
+  /** Controlled open state; when omitted the library manages its own. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 interface WidgetLibrarySection {
@@ -58,10 +64,18 @@ export const WidgetLibrary = ({
   definitions,
   onSelect,
   children,
+  open: controlledOpen,
+  onOpenChange,
 }: WidgetLibraryProps) => {
   const isMobile = useIsMobile();
-  const [open, setOpen] = useState(false);
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const [query, setQuery] = useState("");
+
+  const open = controlledOpen ?? uncontrolledOpen;
+  const setOpen = (next: boolean) => {
+    if (controlledOpen === undefined) setUncontrolledOpen(next);
+    onOpenChange?.(next);
+  };
   const [activeGroup, setActiveGroup] = useState<WidgetGroupId | null>(null);
   const [mobileGroup, setMobileGroup] = useState<WidgetGroupId | null>(null);
 
@@ -222,7 +236,7 @@ export const WidgetLibrary = ({
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={handleOpenChange} handleOnly>
-        <DrawerTrigger asChild>{children}</DrawerTrigger>
+        {children ? <DrawerTrigger asChild>{children}</DrawerTrigger> : null}
         <DrawerContent className="h-[90vh] gap-0 p-0">
           <DrawerHeader className="border-b px-4 py-4 text-left">
             <DrawerTitle>Add widget</DrawerTitle>
@@ -238,7 +252,7 @@ export const WidgetLibrary = ({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      {children ? <DialogTrigger asChild>{children}</DialogTrigger> : null}
       <DialogContent className="flex max-h-[85vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl lg:h-[85vh] lg:max-w-5xl">
         <DialogHeader className="border-b px-6 py-4">
           <DialogTitle>Add widget</DialogTitle>
@@ -371,28 +385,4 @@ const NoResults = ({ query, onClear }: NoResultsProps) => (
   </div>
 );
 
-interface AddWidgetButtonProps {
-  definitions: WidgetDefinition[];
-  onSelect: (definitionId: string) => void;
-}
 
-/**
- * The persistent `+` control, pinned to the bottom-right of the viewport. It
- * opens the widget library in both read and edit mode, so adding a widget is
- * never gated behind arranging.
- */
-export const AddWidgetButton = ({
-  definitions,
-  onSelect,
-}: AddWidgetButtonProps) => (
-  <WidgetLibrary definitions={definitions} onSelect={onSelect}>
-    <Button
-      type="button"
-      size="icon-lg"
-      aria-label="Add widget"
-      className="fixed bottom-6 right-6 z-50 size-12 rounded-full shadow-lg md:bottom-8 md:right-8"
-    >
-      <Plus className="size-5" />
-    </Button>
-  </WidgetLibrary>
-);

@@ -1,6 +1,6 @@
 # The dashboard has an explicit edit mode
 
-**Status**: accepted. Supersedes [ADR-0016](./0016-dashboard-always-arrangeable-auto-save.md).
+**Status**: accepted. Supersedes [ADR-0016](./0016-dashboard-always-arrangeable-auto-save.md). The toggle and the add control became floating buttons in [ADR-0021](./0021-dashboard-actions-as-floating-buttons.md).
 
 ADR-0016 kept the dashboard always arrangeable — every card's controls always mounted — because every arrange action is reversible and an edit/commit mode costs a place you enter and leave. That reasoning held while arranging was only drag-to-reorder among discrete sizes. It stops holding once arranging means dragging a positioned grid with resize handles: a visible grid and corner handles on an always-live dashboard are visually noisy and give the read surface a permanent authoring state. Every serious comparable dashboard (Grafana, Metabase, Sentry, Datadog, Power BI, Shopify, GA4) gates arranging behind an edit mode, and accessibility guidance warns against an always-draggable grid.
 

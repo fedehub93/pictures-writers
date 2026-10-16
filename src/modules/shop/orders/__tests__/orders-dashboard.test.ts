@@ -63,20 +63,31 @@ afterEach(async () => {
   orderIds.length = 0;
 });
 
-describe("orders.getPendingOrders", () => {
-  it("counts and lists pending orders only, with the customer name", async () => {
-    const pending = await createOrder(OrderStatus.PENDING, 250);
+describe("orders.getSummary", () => {
+  it("lists every order by default, with the customer name", async () => {
+    await createOrder(OrderStatus.PENDING, 250);
     await createOrder(OrderStatus.DRAFT, 10);
     await createOrder(OrderStatus.COMPLETED, 10);
 
-    const result = await createCaller({
-      userId: "any-user",
-    }).getPendingOrders();
+    const result = await createCaller({ userId: "any-user" }).getSummary();
+
+    expect(result.count).toBe(3);
+    expect(result.items).toHaveLength(3);
+  });
+
+  it("narrows to the requested statuses", async () => {
+    const pending = await createOrder(OrderStatus.PENDING, 250);
+    await createOrder(OrderStatus.DRAFT, 10);
+
+    const result = await createCaller({ userId: "any-user" }).getSummary({
+      statuses: [OrderStatus.PENDING],
+    });
 
     expect(result.count).toBe(1);
     expect(result.items).toHaveLength(1);
     expect(result.items[0]?.id).toBe(pending.order.id);
     expect(result.items[0]?.totalAmount).toBe(250);
+    expect(result.items[0]?.status).toBe(OrderStatus.PENDING);
     expect(result.items[0]?.customerName).toBe("Mario Rossi");
   });
 });

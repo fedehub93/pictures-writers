@@ -14,6 +14,7 @@ import { formSubmittedNodeValidator } from "@/modules/forms/automations/validate
 
 import {
   AUTOMATION_RUN_STATUSES,
+  DASHBOARD_LIST_LIMIT,
   DEFAULT_PAGE,
   DEFAULT_PAGE_SIZE,
   INITIAL_NODE_TYPE,
@@ -101,7 +102,7 @@ export const automationsRouter = createTRPCRouter({
         db.automationRun.findMany({
           where,
           orderBy: { startedAt: "desc" },
-          take: 5,
+          take: DASHBOARD_LIST_LIMIT,
           select: {
             id: true,
             automationId: true,

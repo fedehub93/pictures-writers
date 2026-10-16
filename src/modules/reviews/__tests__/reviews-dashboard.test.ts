@@ -55,18 +55,29 @@ afterEach(async () => {
   productIds.length = 0;
 });
 
-describe("reviews.getPendingReviews", () => {
-  it("counts and lists unpublished reviews only", async () => {
+describe("reviews.getSummary", () => {
+  it("lists every review by default", async () => {
+    await createReview(false, "Prodotto A");
+    await createReview(true, "Prodotto B");
+
+    const result = await createCaller({ userId: "any-user" }).getSummary();
+
+    expect(result.count).toBe(2);
+    expect(result.items).toHaveLength(2);
+  });
+
+  it("narrows to the requested statuses", async () => {
     const pending = await createReview(false, "Prodotto A");
     await createReview(true, "Prodotto B");
 
-    const result = await createCaller({
-      userId: "any-user",
-    }).getPendingReviews();
+    const result = await createCaller({ userId: "any-user" }).getSummary({
+      status: [false],
+    });
 
     expect(result.count).toBe(1);
     expect(result.items).toHaveLength(1);
     expect(result.items[0]?.id).toBe(pending.review.id);
+    expect(result.items[0]?.status).toBe(false);
     expect(result.items[0]?.productTitle).toBe("Prodotto A");
   });
 });

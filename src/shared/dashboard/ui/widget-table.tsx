@@ -20,6 +20,12 @@ import {
 import { WidgetEmpty } from "./widget-states";
 
 /**
+ * The visual form of a column's placeholder while the widget loads: a plain
+ * bar, a pill-shaped badge, a round avatar, or an avatar with a name beside it.
+ */
+export type WidgetCellShape = "text" | "badge" | "avatar" | "person";
+
+/**
  * One column of a WidgetTable: its header and how a row renders in it. The
  * owning widget declares its columns; the table only lays them out.
  */
@@ -37,7 +43,38 @@ export interface WidgetTableColumn<T> {
    * column pins it to the table's trailing edge.
    */
   grow?: boolean;
+  /**
+   * The placeholder drawn in this column while the widget loads, so the loading
+   * body mirrors the loaded table. Defaults to `text`, a plain bar.
+   */
+  skeleton?: WidgetCellShape;
 }
+
+/**
+ * The subset of a column's fields that drive its layout, independent of the row
+ * type. Lets the table and its loading skeleton lay out the same columns with
+ * one helper, without threading the row generic through either.
+ */
+type WidgetColumnLayout = Pick<
+  WidgetTableColumn<unknown>,
+  "grow" | "align" | "className" | "skeleton"
+>;
+
+const columnClass = (column: WidgetColumnLayout, fixed = false) =>
+  cn(
+    "px-3",
+    // In fixed layout the browser divides the width equally across columns and
+    // every cell is clipped to one line, so a value too long to fit ellipsizes
+    // instead of overlapping its neighbour. `grow` no longer affects layout
+    // there; a column takes a wider share via `className` (e.g. `w-1/3`).
+    fixed
+      ? "truncate"
+      : column.grow
+        ? "w-auto"
+        : "w-px whitespace-nowrap",
+    column.align === "right" && "text-right",
+    column.className,
+  );
 
 interface WidgetTableProps<T> {
   columns: WidgetTableColumn<T>[];
@@ -55,6 +92,15 @@ interface WidgetTableProps<T> {
   /** The full, filtered destination list. */
   href: Route;
   linkLabel: string;
+  /**
+   * Whether the columns hold fixed, equal widths instead of sizing to their
+   * content. A many-column widget spreads evenly rather than squeezing its
+   * short columns against the trailing edge; a column can take a wider share
+   * (`className: "w-1/3"`) or step out on a narrow card with a container-query
+   * class (`className: "hidden @lg:table-cell"`), since the card is a
+   * `@container` and every cell truncates rather than overlapping.
+   */
+  fixed?: boolean;
   emptyMessage: string;
 }
 
@@ -73,18 +119,11 @@ export const WidgetTable = <T,>({
   count,
   href,
   linkLabel,
+  fixed = false,
   emptyMessage,
 }: WidgetTableProps<T>) => {
   const router = useRouter();
   const isEmpty = rows.length === 0;
-
-  const columnClass = (column: WidgetTableColumn<T>) =>
-    cn(
-      "px-3",
-      column.grow ? "w-auto" : "w-px whitespace-nowrap",
-      column.align === "right" && "text-right",
-      column.className,
-    );
 
   // Only the row area scrolls when a widget is shorter than its content: the
   // header stays pinned (`sticky`) and the footer stays put below, so the card
@@ -97,13 +136,13 @@ export const WidgetTable = <T,>({
         <WidgetEmpty message={emptyMessage} />
       ) : (
         <div className="min-h-0 flex-1 overflow-auto [&>div]:overflow-visible">
-          <Table>
+          <Table className={fixed ? "table-fixed" : undefined}>
             <TableHeader className="sticky top-0 z-10 bg-card">
               <TableRow>
                 {columns.map((column) => (
                   <TableHead
                     key={column.id}
-                    className={cn(columnClass(column), "h-10 text-xs")}
+                    className={cn(columnClass(column, fixed), "h-10 text-xs")}
                   >
                     {column.header}
                   </TableHead>
@@ -123,7 +162,7 @@ export const WidgetTable = <T,>({
                     {columns.map((column) => (
                       <TableCell
                         key={column.id}
-                        className={cn(columnClass(column), "py-2.5")}
+                        className={cn(columnClass(column, fixed), "py-2.5")}
                       >
                         {column.cell(row)}
                       </TableCell>
@@ -146,31 +185,99 @@ export const WidgetTable = <T,>({
   );
 };
 
-interface WidgetTableSkeletonProps {
-  columns: number;
+const SkeletonCell = ({ column }: { column: WidgetColumnLayout }) => {
+  switch (column.skeleton ?? "text") {
+    case "avatar":
+      return (
+        <span className="inline-flex">
+          <Skeleton className="size-6 rounded-full" />
+        </span>
+      );
+    case "person":
+      return (
+        <span className="inline-flex items-center gap-2">
+          <Skeleton className="size-6 rounded-full" />
+          <Skeleton className="h-4 w-20" />
+        </span>
+      );
+    case "badge":
+      return <Skeleton className="inline-block h-5 w-14 rounded-full" />;
+    default:
+      return (
+        <Skeleton
+          className={cn("inline-block h-4", column.grow ? "w-2/3" : "w-16")}
+        />
+      );
+  }
+};
+
+interface WidgetTableSkeletonProps<T> {
+  /** The same columns the loaded table renders, so the two layouts match. */
+  columns: WidgetTableColumn<T>[];
+  /** How many placeholder rows to draw. Defaults to the shared widget cap. */
   rows?: number;
+  /** Destination the footer link points at while the data loads. */
+  href: Route;
+  linkLabel: string;
+  /** Whether the columns hold fixed, equal widths, matching the loaded table. */
+  fixed?: boolean;
 }
 
 /**
- * The loading body of a table widget: as many placeholder rows as the widget
- * lists, so the card does not jump when the data arrives.
+ * The loading body of a table widget: the widget's own columns — real headers,
+ * widths, and alignment, drawn as a real table — with every data cell replaced
+ * by a placeholder shaped after the kind of cell it stands in for, and the
+ * footer in place. The card therefore lays out as it will once the data
+ * arrives and does not jump.
  */
-export const WidgetTableSkeleton = ({
+export const WidgetTableSkeleton = <T,>({
   columns,
   rows = 5,
-}: WidgetTableSkeletonProps) => (
-  <div className="flex flex-col gap-4" role="status" aria-label="Loading">
-    <div className="flex gap-4">
-      {Array.from({ length: columns }).map((_, index) => (
-        <Skeleton key={index} className="h-4 flex-1" />
-      ))}
+  href,
+  linkLabel,
+  fixed = false,
+}: WidgetTableSkeletonProps<T>) => (
+  <div className="flex h-full min-h-0 flex-col gap-3">
+    <div
+      className="min-h-0 flex-1 overflow-auto [&>div]:overflow-visible"
+      role="status"
+      aria-label="Loading"
+    >
+      <Table className={fixed ? "table-fixed" : undefined}>
+        <TableHeader className="sticky top-0 z-10 bg-card">
+          <TableRow>
+            {columns.map((column) => (
+              <TableHead
+                key={column.id}
+                className={cn(columnClass(column, fixed), "h-10 text-xs")}
+              >
+                {column.header}
+              </TableHead>
+            ))}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {Array.from({ length: rows }).map((_, rowIndex) => (
+            <TableRow key={rowIndex}>
+              {columns.map((column) => (
+                <TableCell
+                  key={column.id}
+                  className={cn(columnClass(column, fixed), "py-2.5")}
+                >
+                  <SkeletonCell column={column} />
+                </TableCell>
+              ))}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
-    {Array.from({ length: rows }).map((_, rowIndex) => (
-      <div key={rowIndex} className="flex gap-4">
-        {Array.from({ length: columns }).map((_, columnIndex) => (
-          <Skeleton key={columnIndex} className="h-4 flex-1" />
-        ))}
-      </div>
-    ))}
+
+    <div className="mt-auto flex items-center justify-between gap-3 text-xs text-muted-foreground">
+      <Skeleton className="h-3 w-16" />
+      <Button variant="link" size="sm" className="h-auto p-0" asChild>
+        <Link href={href}>{linkLabel}</Link>
+      </Button>
+    </div>
   </div>
 );

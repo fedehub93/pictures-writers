@@ -11,8 +11,8 @@ describe("dashboard widget registry", () => {
     expect(WIDGET_DEFINITIONS.map((definition) => definition.id)).toEqual([
       "drafts",
       "scheduled",
-      "pending-reviews",
-      "pending-orders",
+      "reviews",
+      "orders",
       "failed-runs",
       "trend",
     ]);
@@ -45,16 +45,16 @@ describe("dashboard widget registry", () => {
     }
   });
 
-  it("gives the table widgets a wider, taller floor than the list widgets", () => {
-    expect(getWidgetDefinition("drafts")?.minGrid).toEqual({ w: 6, h: 4 });
-    expect(getWidgetDefinition("scheduled")?.minGrid).toEqual({ w: 6, h: 4 });
+  it("gives the table widgets a taller floor than the list widgets", () => {
+    for (const id of ["drafts", "scheduled", "orders", "reviews"]) {
+      expect(getWidgetDefinition(id)?.minGrid?.h).toBe(4);
+    }
 
-    for (const id of [
-      "pending-reviews",
-      "pending-orders",
-      "failed-runs",
-      "trend",
-    ]) {
+    for (const id of ["orders", "reviews"]) {
+      expect(getWidgetDefinition(id)?.minGrid).toEqual({ w: 6, h: 4 });
+    }
+
+    for (const id of ["failed-runs", "trend"]) {
       expect(getWidgetDefinition(id)?.minGrid).toEqual({ w: 3, h: 3 });
     }
   });
@@ -66,8 +66,8 @@ describe("dashboard widget registry", () => {
 
     expect(getWidgetDefinition("drafts")?.group).toBe("content");
     expect(getWidgetDefinition("scheduled")?.group).toBe("content");
-    expect(getWidgetDefinition("pending-reviews")?.group).toBe("shop");
-    expect(getWidgetDefinition("pending-orders")?.group).toBe("shop");
+    expect(getWidgetDefinition("reviews")?.group).toBe("shop");
+    expect(getWidgetDefinition("orders")?.group).toBe("shop");
     expect(getWidgetDefinition("failed-runs")?.group).toBe("automations");
     expect(getWidgetDefinition("trend")?.group).toBe("analytics");
   });
@@ -79,10 +79,10 @@ describe("dashboard widget registry", () => {
     expect(getWidgetDefinition("scheduled")?.permission).toBe(
       PERMISSIONS.POSTS_READ,
     );
-    expect(getWidgetDefinition("pending-reviews")?.permission).toBe(
+    expect(getWidgetDefinition("reviews")?.permission).toBe(
       PERMISSIONS.REVIEWS_READ,
     );
-    expect(getWidgetDefinition("pending-orders")?.permission).toBe(
+    expect(getWidgetDefinition("orders")?.permission).toBe(
       PERMISSIONS.ORDERS_READ,
     );
     expect(getWidgetDefinition("failed-runs")?.permission).toBe(
@@ -176,10 +176,52 @@ describe("dashboard widget registry", () => {
     ).toEqual([metricField]);
   });
 
-  it("leaves the operational widgets without a config schema", () => {
-    for (const id of ["pending-reviews", "pending-orders", "failed-runs"]) {
-      expect(getWidgetDefinition(id)?.configSchema).toBeUndefined();
-    }
+  it("leaves the automations widget without a config schema", () => {
+    expect(getWidgetDefinition("failed-runs")?.configSchema).toBeUndefined();
+  });
+
+  it("offers the orders widget a status filter defaulting to every status", () => {
+    const definition = getWidgetDefinition("orders");
+
+    const schema = definition?.configSchema?.({ metrics: [], forms: [] });
+
+    expect(schema?.fields).toEqual([
+      {
+        type: "multiselect",
+        name: "statuses",
+        label: "Statuses",
+        options: [
+          { value: "DRAFT", label: "Draft" },
+          { value: "PENDING", label: "Pending" },
+          { value: "COMPLETED", label: "Completed" },
+          { value: "CANCELLED", label: "Cancelled" },
+        ],
+      },
+    ]);
+    expect(definition?.defaultConfig).toEqual({
+      statuses: ["DRAFT", "PENDING", "COMPLETED", "CANCELLED"],
+    });
+  });
+
+  it("offers the reviews widget a status filter defaulting to every status", () => {
+    const definition = getWidgetDefinition("reviews");
+
+    const schema = definition?.configSchema?.({ metrics: [], forms: [] });
+
+    expect(schema?.fields).toEqual([
+      {
+        type: "multiselect",
+        name: "status",
+        label: "Status",
+        options: [
+          { value: "true", label: "Published" },
+          { value: "false", label: "Unpublished" },
+        ],
+      },
+    ]);
+    expect(definition?.defaultConfig).toEqual({
+      status: ["true", "false"],
+    });
   });
 
   it("offers the drafts widget a status filter defaulting to drafts and changed", () => {

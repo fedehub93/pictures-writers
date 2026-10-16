@@ -54,7 +54,7 @@ These are recorded in `CONTEXT.md` under "Admin dashboard".
   - `permission` is optional: operational widgets declare the permission of the area whose data they show; the Trend widget derives its availability from the metrics the user may read.
   - `defaultSize` is a discrete token from a small set (`small`, `medium`, `full`), the size a freshly added instance starts at. The user may override it per instance (see Layout model).
   - `configSchema`/`defaultConfig` are optional; any definition may become configurable without a model change. The Trend widget is the first user.
-- Each widget is **autonomous**: it owns its data query and is wrapped in its own `Suspense` and `ErrorBoundary`. The dashboard does not know about widget queries. A widget's query lives in the owning module's router (e.g. `posts.getDrafts`, `orders.getPendingOrders`).
+- Each widget is **autonomous**: it owns its data query and is wrapped in its own `Suspense` and `ErrorBoundary`. The dashboard does not know about widget queries. A widget's query lives in the owning module's router (e.g. `posts.getDrafts`, `orders.getSummary`).
 - Permissions **reuse existing area permissions** (`contacts.read`, `orders.read`, `reviews.read`, `automations.read`, `posts.read`, `submissions.read`). No new widget-level permissions are introduced. `dashboard.read` remains the gate to view the dashboard and to save one's own layout.
 - There is **no default layout**: the registry is a catalog, and a user who has saved nothing has an empty dashboard. The effective layout is the user's saved instances filtered to the definitions that still exist and are permitted. No `Role -> layout` table or admin UI exists.
 
@@ -110,8 +110,8 @@ Operational (global data, `count + short list + filtered click-through`):
 |---|---|---|
 | Latest Posts | `posts.read` | `PostVersion` by status |
 | Scheduled Content | `posts.read` | `ScheduledAction` / `scheduledAt` |
-| Reviews | `reviews.read` | `Reviews.status = false` |
-| Orders | `orders.read` | `Order.status in (PENDING)` |
+| Reviews | `reviews.read` | `Review` by published state |
+| Orders | `orders.read` | `Order` by status |
 | Automation Runs | `automations.read` | `AutomationRun.status = FAILED` |
 
 Widget titles are deliberately generic; the config popover — signalled by the primary-tinted gear when a filter is applied — carries the specifics (e.g. which statuses Latest Posts shows).

@@ -29,6 +29,7 @@ import {
 } from "../schemas";
 
 import {
+  DASHBOARD_LIST_LIMIT,
   DEFAULT_PAGE,
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,
@@ -55,9 +56,6 @@ import {
 } from "../lib/schedule-post";
 
 import { getPaginatedPosts } from "./queries";
-
-/** How many records the dashboard's drafts widget lists at once. */
-const DASHBOARD_LIST_LIMIT = 6;
 
 /** The statuses the dashboard's content widget shows until the user filters. */
 const DASHBOARD_DEFAULT_STATUSES: ContentStatus[] = [

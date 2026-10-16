@@ -110,9 +110,9 @@ describe("computeDashboardLayout", () => {
     const layout = computeDashboardLayout({
       saved: [
         instance("drafts", "drafts", { grid: grid(0, 0, 6, 4) }),
-        instance("pending-orders", "pending-orders", { grid: grid(6, 0, 3, 3) }),
+        instance("orders", "orders", { grid: grid(6, 0, 3, 3) }),
       ],
-      definitions: [def("drafts"), def("pending-orders")],
+      definitions: [def("drafts"), def("orders")],
       canRead: allowAll,
     });
 

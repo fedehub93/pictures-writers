@@ -79,7 +79,7 @@ export const WidgetTitle = ({ title, onRename }: WidgetTitleProps) => {
       onClick={() => setIsEditing(true)}
       aria-label={`Rename ${title}`}
       className={cn(
-        "group/title -mx-1 flex min-w-0 max-w-full items-center gap-1 rounded px-1 text-left text-sm font-medium",
+        "group/title -mx-1 flex w-fit min-w-0 max-w-full items-center gap-1 rounded px-1 text-left text-sm font-medium",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
       )}
     >

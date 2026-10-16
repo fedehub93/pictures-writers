@@ -16,6 +16,8 @@ import {
   type WidgetTableColumn,
 } from "@/shared/dashboard/ui/widget-table";
 
+import { DASHBOARD_LIST_LIMIT } from "../constants";
+
 interface ScheduledRow {
   actionId: string;
   type: ScheduledActionType;
@@ -77,6 +79,7 @@ const columns: WidgetTableColumn<ScheduledRow>[] = [
   {
     id: "type",
     header: "Type",
+    skeleton: "badge",
     cell: (row) => <TypeBadge type={row.type} />,
   },
   {
@@ -154,4 +157,11 @@ export const ScheduledWidget = ({ instance }: WidgetComponentProps) => {
   );
 };
 
-export const ScheduledWidgetSkeleton = () => <WidgetTableSkeleton columns={3} />;
+export const ScheduledWidgetSkeleton = () => (
+  <WidgetTableSkeleton
+    columns={columns}
+    rows={DASHBOARD_LIST_LIMIT}
+    href="/admin/schedule?status=SCHEDULED"
+    linkLabel="View scheduling"
+  />
+);

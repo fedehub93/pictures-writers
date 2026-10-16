@@ -8,6 +8,7 @@ import { PERMISSIONS } from "@/shared/lib/permissions";
 import { getCalendarEvents } from "../lib/calendar-query";
 import { describeScheduledActions } from "../lib/describe-scheduled-action";
 import type { CalendarEventStatus, CalendarEventType } from "../types";
+import { DASHBOARD_LIST_LIMIT } from "../constants";
 
 const calendarEventStatuses: [CalendarEventStatus, ...CalendarEventStatus[]] = [
   ScheduledActionStatus.SCHEDULED,
@@ -26,9 +27,6 @@ const calendarEventTypes: [CalendarEventType, ...CalendarEventType[]] = [
 
 const calendarEventStatusSchema = z.enum(calendarEventStatuses);
 const calendarEventTypeSchema = z.enum(calendarEventTypes);
-
-/** How many records the dashboard's scheduled-content widget lists at once. */
-const DASHBOARD_LIST_LIMIT = 6;
 
 export const schedulerRouter = createTRPCRouter({
   /**

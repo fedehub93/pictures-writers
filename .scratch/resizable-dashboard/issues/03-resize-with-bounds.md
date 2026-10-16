@@ -25,5 +25,6 @@ Verified: `npx tsc --noEmit` clean, `npx eslint src/modules/dashboard` clean, fu
 
 Notes:
 
+- Later fix: the grid's `maxRows` cap (added with the grid-fill work) also bounded resize, so the bottom-most widget could not grow once the content filled the viewport. `WidgetGrid` now lifts the cap while a pointer resize is in progress (`onResizeStart`/`onResizeStop`); drag stays bounded exactly as before, and the page scrolls as the widget grows.
 - Pointer-only resize is built here; making it unavailable on a coarse pointer is ticket 06.
 - Manual acceptance (drag-resize a corner, snap, floor/ceiling, compaction, reload) is covered by ticket 07.

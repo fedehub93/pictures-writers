@@ -15,7 +15,8 @@ import { db } from "@/shared/lib/db";
 import { PERMISSIONS } from "@/shared/lib/authorization";
 import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 
-import { orderInsertSchema, orderListSchema } from "../schemas";
+import { DASHBOARD_LIST_LIMIT } from "../constants";
+import { orderInsertSchema, orderListSchema, orderStatusSchema } from "../schemas";
 import { emitOrderCompleted } from "../automations/emit";
 import {
   createOrderRecord,
@@ -92,23 +93,36 @@ const findOrderOrThrow = async (id: string) => {
 
 export const ordersRouter = createTRPCRouter({
   /**
-   * Pending orders: the count and the most recent few, for the dashboard's
-   * "Orders" widget.
+   * Orders for the dashboard's "Orders" widget: the count and the most recent
+   * few. Defaults to every status; the widget may narrow it to any set.
    */
-  getPendingOrders: permissionProcedure(PERMISSIONS.ORDERS_READ).query(
-    async () => {
-      const where: Prisma.OrderWhereInput = { status: OrderStatus.PENDING };
+  getSummary: permissionProcedure(PERMISSIONS.ORDERS_READ)
+    .input(
+      z
+        .object({ statuses: z.array(orderStatusSchema).optional() })
+        .optional(),
+    )
+    .query(async ({ input }) => {
+      const statuses =
+        input?.statuses && input.statuses.length > 0
+          ? input.statuses
+          : undefined;
+
+      const where: Prisma.OrderWhereInput = statuses
+        ? { status: { in: statuses } }
+        : {};
 
       const [orders, count] = await Promise.all([
         db.order.findMany({
           where,
           orderBy: { createdAt: "desc" },
-          take: 5,
+          take: DASHBOARD_LIST_LIMIT,
           select: {
             id: true,
             orderNumber: true,
             totalAmount: true,
             currency: true,
+            status: true,
             createdAt: true,
             customer: { select: { name: true, email: true } },
           },
@@ -123,12 +137,12 @@ export const ordersRouter = createTRPCRouter({
           orderNumber: order.orderNumber,
           totalAmount: order.totalAmount,
           currency: order.currency,
+          status: order.status,
           customerName: order.customer.name ?? order.customer.email,
           createdAt: order.createdAt,
         })),
       };
-    },
-  ),
+    }),
 
   create: permissionProcedure(PERMISSIONS.ORDERS_CREATE)
     .input(orderInsertSchema)

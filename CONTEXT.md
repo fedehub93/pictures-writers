@@ -303,7 +303,7 @@ A named, permission-scoped time series of CMS data (e.g. contact growth, form su
 _Avoid_: Statistic, chart, report, KPI.
 
 **Widget filter**:
-A narrowing of a Dashboard widget's data chosen per instance — a subset of forms, content statuses, or scheduled action types. A filter is optional; when it is left wide open the widget is unfiltered and shows none. Distinct from the Metric a Trend instance renders, which is the widget's subject (named in its title) rather than a restriction on the data.
+A narrowing of a Dashboard widget's data chosen per instance — a subset of forms, content statuses, scheduled action types, order statuses, or review publication states. A filter is optional; when it is left wide open the widget is unfiltered and shows none. Distinct from the Metric a Trend instance renders, which is the widget's subject (named in its title) rather than a restriction on the data.
 _Avoid_: Config, query, parameters, options.
 
 **Dashboard layout**:

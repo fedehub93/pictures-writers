@@ -11,7 +11,10 @@ import type {
 } from "@/shared/dashboard/types";
 
 import { resolveMetric } from "./lib/metric-selection";
-import { TrendWidget } from "./ui/widgets/trend-widget";
+import {
+  TrendWidget,
+  TrendWidgetSkeleton,
+} from "./ui/widgets/trend-widget";
 
 /**
  * The code-defined catalog of Dashboard widgets. The dashboard is the
@@ -35,6 +38,7 @@ export const WIDGET_DEFINITIONS: WidgetDefinition[] = [
     defaultSize: "medium",
     minGrid: { w: 3, h: 3 },
     component: TrendWidget,
+    loadingFallback: TrendWidgetSkeleton,
     // The Trend is the first configurable widget: the gear lets the user pick
     // which permitted metric this instance renders, and — for the
     // form-submissions metric — which dynamic forms it counts.

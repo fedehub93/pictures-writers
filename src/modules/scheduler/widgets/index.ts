@@ -35,7 +35,7 @@ export const schedulerDashboardWidgets: WidgetDefinition[] = [
     defaultSize: "full",
     // A table needs room for its header, a few rows, and the footer to stay
     // legible; below this the body scrolls instead of spilling out of the card.
-    minGrid: { w: 6, h: 4 },
+    minGrid: { w: 4, h: 4 },
     component: ScheduledWidget,
     loadingFallback: ScheduledWidgetSkeleton,
     configSchema: () => ({

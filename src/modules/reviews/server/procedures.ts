@@ -10,6 +10,7 @@ import { revalidateContent } from "@/shared/lib/revalidate-content";
 import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 
 import {
+  DASHBOARD_LIST_LIMIT,
   DEFAULT_PAGE,
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,
@@ -70,23 +71,35 @@ const findReviewOrThrow = async (id: string) => {
 
 export const reviewsRouter = createTRPCRouter({
   /**
-   * Unpublished reviews: the count and the most recent few, for the dashboard's
-   * "Reviews" widget.
+   * Reviews for the dashboard's "Reviews" widget: the count and the most recent
+   * few. Defaults to every review; the widget may narrow it to published or
+   * unpublished ones.
    */
-  getPendingReviews: permissionProcedure(PERMISSIONS.REVIEWS_READ).query(
-    async () => {
-      const where: Prisma.ReviewsWhereInput = { status: false };
+  getSummary: permissionProcedure(PERMISSIONS.REVIEWS_READ)
+    .input(
+      z
+        .object({ status: z.array(z.boolean()).optional() })
+        .optional(),
+    )
+    .query(async ({ input }) => {
+      const statuses =
+        input?.status && input.status.length > 0 ? input.status : undefined;
+
+      const where: Prisma.ReviewsWhereInput = statuses
+        ? { OR: statuses.map((status) => ({ status })) }
+        : {};
 
       const [reviews, count] = await Promise.all([
         db.reviews.findMany({
           where,
           orderBy: { date: "desc" },
-          take: 5,
+          take: DASHBOARD_LIST_LIMIT,
           select: {
             id: true,
             reviewerName: true,
             rating: true,
             date: true,
+            status: true,
             product: {
               select: {
                 id: true,
@@ -105,12 +118,12 @@ export const reviewsRouter = createTRPCRouter({
           reviewerName: review.reviewerName ?? "",
           rating: review.rating,
           date: review.date,
+          status: review.status,
           productId: review.product.id,
           productTitle: review.product.currentVersion?.title ?? "",
         })),
       };
-    },
-  ),
+    }),
 
   create: permissionProcedure(PERMISSIONS.REVIEWS_MANAGE)
     .input(reviewInsertSchema)

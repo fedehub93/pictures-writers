@@ -3,7 +3,10 @@ import { TriangleAlert } from "lucide-react";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 import type { WidgetDefinition } from "@/shared/dashboard/types";
 
-import { FailedRunsWidget } from "./failed-runs-widget";
+import {
+  FailedRunsWidget,
+  FailedRunsWidgetSkeleton,
+} from "./failed-runs-widget";
 
 /**
  * The automations module's contribution to the dashboard catalog: the failed
@@ -21,5 +24,6 @@ export const automationsDashboardWidgets: WidgetDefinition[] = [
     // Room for the headline count, a couple of rows, and the footer link.
     minGrid: { w: 3, h: 3 },
     component: FailedRunsWidget,
+    loadingFallback: FailedRunsWidgetSkeleton,
   },
 ];

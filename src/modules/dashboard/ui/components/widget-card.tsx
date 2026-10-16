@@ -202,7 +202,7 @@ export const WidgetCard = ({
           <Icon className="size-4 text-muted-foreground" />
         )}
       </CardHeader>
-      <CardContent className="flex min-h-0 flex-1 flex-col p-4 pt-0">
+      <CardContent className="@container flex min-h-0 flex-1 flex-col p-4 pt-0">
         {isClient ? (
           <Suspense fallback={<Loading />}>
             <ErrorBoundary fallback={<WidgetError />}>

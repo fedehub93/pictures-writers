@@ -2,15 +2,18 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Pencil } from "lucide-react";
+import { Check, Pencil, Plus } from "lucide-react";
 
 import { useTRPC } from "@/trpc/client";
 import { DatePickerWithRange } from "@/shared/components/date-range";
+import { ErrorState } from "@/shared/components/error-state";
+import { LoadingState } from "@/shared/components/loading-state";
 import {
   SaveStatusIndicator,
   type SaveStatus,
 } from "@/shared/components/save-status-indicator";
 import { hasPermission } from "@/shared/lib/permissions";
+import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import {
   isAnalyticsWidget,
@@ -38,7 +41,7 @@ import {
 import { computeDashboardLayout } from "../../server/layout";
 
 import { WidgetGrid } from "../components/widget-grid";
-import { AddWidgetButton } from "../components/widget-library";
+import { WidgetLibrary } from "../components/widget-library";
 import {
   type SaveState,
   useDebouncedSaveLayout,
@@ -103,6 +106,10 @@ export const DashboardView = () => {
   // Edit mode is a presentation state, not a commit boundary: entering it
   // reveals the grid and the spatial controls, and every move still auto-saves.
   const [editing, setEditing] = useState(false);
+
+  // Whether the widget library is open, controlled here so a menu item can open
+  // it without the library owning a trigger of its own.
+  const [libraryOpen, setLibraryOpen] = useState(false);
 
   // The instance just added, so its card can flash and the user can find where
   // it landed. Cleared after a short beat.
@@ -179,7 +186,9 @@ export const DashboardView = () => {
   });
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8 md:pt-4">
+    // The bottom padding reserves room for the floating actions so the last
+    // widget can scroll clear of them.
+    <div className="flex flex-1 flex-col gap-4 p-4 pb-32 md:gap-8 md:p-8 md:pt-4 md:pb-32">
       <div
         aria-live="polite"
         role="status"
@@ -191,19 +200,15 @@ export const DashboardView = () => {
       </div>
       <div className="flex flex-col items-center justify-between gap-y-4 sm:flex-row">
         <h1 className="text-3xl">Dashboard</h1>
-        <div className="flex items-center gap-2">
-          <SaveStatusIndicator status={SAVE_STATE_STATUS[saveState]} />
-          <Button
-            type="button"
-            variant={editing ? "default" : "ghost"}
-            onClick={() => setEditing((current) => !current)}
-            aria-pressed={editing}
-          >
-            <Pencil />
-            {editing ? "Fine" : "Modifica"}
-          </Button>
-        </div>
+        <SaveStatusIndicator status={SAVE_STATE_STATUS[saveState]} />
       </div>
+
+      <WidgetLibrary
+        definitions={permittedDefinitions}
+        onSelect={onAdd}
+        open={libraryOpen}
+        onOpenChange={setLibraryOpen}
+      />
 
       {hasAnalytics ? (
         <div className="flex flex-col gap-2">
@@ -226,7 +231,43 @@ export const DashboardView = () => {
         highlightedKey={highlightedKey}
       />
 
-      <AddWidgetButton definitions={permittedDefinitions} onSelect={onAdd} />
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-center gap-3 md:bottom-8 md:right-8">
+        <Button
+          type="button"
+          size="icon-lg"
+          variant="secondary"
+          aria-label={editing ? "Fine" : "Modifica"}
+          aria-pressed={editing}
+          className={cn(
+            "rounded-full shadow-lg",
+            editing && "ring-2 ring-ring ring-offset-2 ring-offset-background",
+          )}
+          onClick={() => setEditing((current) => !current)}
+        >
+          {editing ? <Check className="size-5" /> : <Pencil className="size-5" />}
+        </Button>
+        <Button
+          type="button"
+          size="icon-lg"
+          variant="default"
+          aria-label="Aggiungi widget"
+          className="rounded-full shadow-lg"
+          onClick={() => setLibraryOpen(true)}
+        >
+          <Plus className="size-5" />
+        </Button>
+      </div>
     </div>
   );
 };
+
+export const DashboardViewLoading = () => (
+  <LoadingState
+    title="Loading Dashboard"
+    description="This may take a few seconds"
+  />
+);
+
+export const DashboardViewError = () => (
+  <ErrorState title="Error Dashboard" description="Something went wrong" />
+);

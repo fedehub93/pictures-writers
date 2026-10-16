@@ -15,3 +15,6 @@ export const POST_LIST_SORTS = [
 export const POST_BATCH = 5;
 
 export const LATEST_PUBLISHED_POST = 4;
+
+/** How many records the dashboard's drafts widget lists at once. */
+export const DASHBOARD_LIST_LIMIT = 6;

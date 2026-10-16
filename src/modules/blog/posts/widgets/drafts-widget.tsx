@@ -17,6 +17,8 @@ import {
   type WidgetTableColumn,
 } from "@/shared/dashboard/ui/widget-table";
 
+import { DASHBOARD_LIST_LIMIT } from "../constants";
+
 interface ContentRow {
   rootId: string;
   versionId: string;
@@ -85,6 +87,9 @@ const columns: WidgetTableColumn<ContentRow>[] = [
     id: "title",
     header: "Title",
     grow: true,
+    // The title keeps the largest share in fixed layout; the four short columns
+    // split the rest evenly, so none is squeezed against the trailing edge.
+    className: "w-1/3",
     cell: (row) => (
       <Link
         href={`/admin/posts/${row.rootId}`}
@@ -98,18 +103,25 @@ const columns: WidgetTableColumn<ContentRow>[] = [
     id: "status",
     header: "Status",
     align: "right",
+    skeleton: "badge",
     cell: (row) => <StatusBadge status={row.status} />,
   },
   {
     id: "author",
     header: "Author",
     align: "right",
+    skeleton: "avatar",
+    // Secondary columns step out as the card narrows, so the title and status
+    // always have room. The author goes first, the categories next.
+    className: "hidden @md:table-cell",
     cell: (row) => <WidgetAuthorAvatar author={row.author} />,
   },
   {
     id: "categories",
     header: "Categories",
     align: "right",
+    skeleton: "badge",
+    className: "hidden @lg:table-cell",
     cell: (row) => <CategoryBadges categories={row.categories} />,
   },
   {
@@ -140,9 +152,18 @@ export const DraftsWidget = ({ instance }: WidgetComponentProps) => {
       count={data.count}
       href="/admin/posts"
       linkLabel="View all posts"
+      fixed
       emptyMessage="No content to publish."
     />
   );
 };
 
-export const DraftsWidgetSkeleton = () => <WidgetTableSkeleton columns={5} />;
+export const DraftsWidgetSkeleton = () => (
+  <WidgetTableSkeleton
+    columns={columns}
+    rows={DASHBOARD_LIST_LIMIT}
+    href="/admin/posts"
+    linkLabel="View all posts"
+    fixed
+  />
+);

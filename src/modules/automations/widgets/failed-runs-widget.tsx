@@ -5,7 +5,12 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 
 import { useTRPC } from "@/trpc/client";
 import { formatDate } from "@/lib/format";
-import { WidgetList } from "@/shared/dashboard/ui/widget-list";
+import {
+  WidgetList,
+  WidgetListSkeleton,
+} from "@/shared/dashboard/ui/widget-list";
+
+import { DASHBOARD_LIST_LIMIT } from "../constants";
 
 export const FailedRunsWidget = () => {
   const trpc = useTRPC();
@@ -37,3 +42,11 @@ export const FailedRunsWidget = () => {
     </WidgetList>
   );
 };
+
+export const FailedRunsWidgetSkeleton = () => (
+  <WidgetListSkeleton
+    rows={DASHBOARD_LIST_LIMIT}
+    href="/admin/automations/executions?status=FAILED"
+    linkLabel="View runs"
+  />
+);

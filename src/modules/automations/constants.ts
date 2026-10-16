@@ -44,6 +44,9 @@ export const MAX_CANCEL_REASON_LENGTH = 500;
 
 /// Safety cap on consecutive batches a single pump drains (see pumpDueAutomations).
 export const AUTOMATION_PUMP_MAX_BATCHES = 100;
+
+/** How many records the dashboard's automation-runs widget lists at once. */
+export const DASHBOARD_LIST_LIMIT = 5;
 export const AUTOMATION_SECRET_HEADER = "x-scheduled-publication-secret";
 
 /// Header an external caller uses to present a webhook trigger secret.

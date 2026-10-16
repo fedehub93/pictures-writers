@@ -245,7 +245,7 @@ describe("dashboard.saveLayout", () => {
 
     // Two instances of one definition, each with its own placement.
     const widgets = [
-      { key: "pending-orders", definitionId: "pending-orders", grid: grid(0, 0, 6, 4) },
+      { key: "orders", definitionId: "orders", grid: grid(0, 0, 6, 4) },
       { key: "trend-revenue", definitionId: "trend", grid: grid(6, 0, 3, 3) },
       { key: "drafts", definitionId: "drafts", grid: grid(0, 4, 12, 5) },
       { key: "trend-contacts", definitionId: "trend", grid: grid(9, 0, 3, 3) },
@@ -256,7 +256,7 @@ describe("dashboard.saveLayout", () => {
 
     const definitions = [
       widgetDefinition("drafts"),
-      widgetDefinition("pending-orders"),
+      widgetDefinition("orders"),
       widgetDefinition("trend"),
     ];
 
@@ -267,7 +267,7 @@ describe("dashboard.saveLayout", () => {
     });
 
     expect(layout.map((instance) => instance.key)).toEqual([
-      "pending-orders",
+      "orders",
       "trend-revenue",
       "drafts",
       "trend-contacts",
