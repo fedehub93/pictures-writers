@@ -89,7 +89,7 @@ export const PostPagination = ({
 
   return (
     <Pagination>
-      <PaginationContent>
+      <PaginationContent className="flex-wrap justify-center">
         <PaginationItem>
           <Button
             role="button"
