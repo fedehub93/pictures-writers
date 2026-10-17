@@ -1,5 +1,6 @@
 "use client";
 
+import { type ReactNode } from "react";
 import { ArrowLeftIcon, MailOpenIcon } from "lucide-react";
 
 import { Button } from "@/shared/ui/button";
@@ -20,12 +21,15 @@ interface ConversationDetailProps {
   conversation?: ConversationGetOne;
   isLoading: boolean;
   onBack: () => void;
+  /** Composer rendered under the thread; kept out of this file's dependencies. */
+  replySlot?: ReactNode;
 }
 
 export const ConversationDetail = ({
   conversation,
   isLoading,
   onBack,
+  replySlot,
 }: ConversationDetailProps) => {
   if (isLoading) {
     return <ConversationDetailSkeleton />;
@@ -80,6 +84,8 @@ export const ConversationDetail = ({
           ))}
         </div>
       </ScrollArea>
+
+      {replySlot}
     </div>
   );
 };

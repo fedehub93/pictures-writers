@@ -6,6 +6,8 @@ import {
   EmailProviderAdapter,
   InboundAttachmentMetadata,
   InboundEmail,
+  SendOneToOneParams,
+  SendOneToOneResult,
   SyncResult,
   VerifiedWebhookEvent,
   WebhookSignatureHeaders,
@@ -662,6 +664,55 @@ export class ResendAdapter implements EmailProviderAdapter {
       return {
         success: false,
         error: err?.message || "Unknown error during Resend broadcast creation",
+      };
+    }
+  }
+
+  // ─── Outbound one-to-one ─────────────────────────────────────────────────────
+
+  /**
+   * Send a single transactional email via `emails.send`. Attachments are
+   * passed as URL-based `path` entries so the provider downloads them from our
+   * storage instead of receiving an inline payload.
+   */
+  async sendOneToOne({
+    to,
+    from,
+    subject,
+    html,
+    text,
+    replyTo,
+    attachments,
+  }: SendOneToOneParams): Promise<SendOneToOneResult> {
+    try {
+      const { data, error } = await this.resendClient.emails.send({
+        to: [to],
+        from,
+        subject,
+        html,
+        text,
+        replyTo: replyTo ? [replyTo] : undefined,
+        attachments: attachments?.length
+          ? attachments.map((attachment) => ({
+              filename: attachment.filename,
+              contentType: attachment.contentType,
+              path: attachment.url,
+            }))
+          : undefined,
+      });
+
+      if (error || !data) {
+        return {
+          success: false,
+          error: error?.message || "Unknown error during one-to-one send",
+        };
+      }
+
+      return { success: true, externalId: data.id };
+    } catch (err: any) {
+      return {
+        success: false,
+        error: err?.message || "Unknown error during one-to-one send",
       };
     }
   }

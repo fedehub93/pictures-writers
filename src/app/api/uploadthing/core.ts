@@ -29,6 +29,11 @@ export const ourFileRouter = {
   impressionFile: f({
     pdf: { maxFileSize: "16MB", maxFileCount: 1 },
   }).onUploadComplete(() => {}),
+  emailAttachments: f({
+    blob: { maxFileSize: "16MB", maxFileCount: 10 },
+  })
+    .middleware(() => handleAuth())
+    .onUploadComplete(() => {}),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;

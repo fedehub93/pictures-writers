@@ -22,6 +22,7 @@ import { useConversation, useConversations } from "../../hooks/use-conversations
 import { AccountSelector } from "../components/account-selector";
 import { ConversationDetail } from "../components/conversation-detail";
 import { ConversationList } from "../components/conversation-list";
+import { ReplyComposer } from "../components/composer/reply-composer";
 
 export const ConversationsView = () => {
   const { data: accounts } = useSuspenseAllowedEmailAccounts();
@@ -62,6 +63,10 @@ export const ConversationsView = () => {
     useConversations(selectedAccountId);
   const { data: conversation, isLoading: isLoadingConversation } =
     useConversation(selectedConversationId);
+
+  const selectedAccount = accounts.find(
+    (account) => account.id === selectedAccountId,
+  );
 
   if (accounts.length === 0) {
     return (
@@ -127,6 +132,15 @@ export const ConversationsView = () => {
                 ...current,
                 conversationId: undefined,
               }))
+            }
+            replySlot={
+              conversation ? (
+                <ReplyComposer
+                  key={conversation.id}
+                  conversation={conversation}
+                  account={selectedAccount}
+                />
+              ) : undefined
             }
           />
         </section>

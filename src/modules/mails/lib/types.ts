@@ -137,6 +137,34 @@ export type DeleteContactResult = {
   errors: string[];
 };
 
+// ─── Outbound one-to-one email (application → provider) ──────────────────────
+
+/**
+ * An outbound attachment already uploaded to application storage. The provider
+ * fetches it from `url` rather than receiving an inline payload.
+ */
+export type OutboundAttachment = {
+  filename: string;
+  contentType: string;
+  url: string;
+  size?: number;
+};
+
+/** Parameters for a single one-to-one email send. */
+export type SendOneToOneParams = {
+  to: string;
+  from: string;
+  subject: string;
+  html: string;
+  text?: string;
+  replyTo?: string;
+  attachments?: OutboundAttachment[];
+};
+
+export type SendOneToOneResult =
+  | { success: true; externalId?: string }
+  | { success: false; error: string };
+
 export interface EmailProviderAdapter extends EmailInboundAdapter {
   syncSegment(externalId: string | null, name: string): Promise<SyncResult>;
   syncContactsBatch(
@@ -191,4 +219,11 @@ export interface EmailProviderAdapter extends EmailInboundAdapter {
     externalCampaignId?: string;
     error?: string;
   }>;
+
+  /**
+   * Send a single one-to-one email to a specific recipient, outside the
+   * broadcast/marketing pipeline. Attachments are referenced by their
+   * application-storage URL.
+   */
+  sendOneToOne(params: SendOneToOneParams): Promise<SendOneToOneResult>;
 }

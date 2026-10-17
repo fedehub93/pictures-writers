@@ -65,6 +65,36 @@ export function messagePreview(
   return messageBody(message).replace(/\s+/g, " ").trim().slice(0, maxLength);
 }
 
+/** Prefix a subject with `Re:` unless it already is a reply. */
+export function replySubject(subject?: string | null): string {
+  const trimmed = subject?.trim();
+  if (!trimmed) return "Re:";
+  return /^re:/i.test(trimmed) ? trimmed : `Re: ${trimmed}`;
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/**
+ * Render an `EmailAccount` signature as editor HTML so it can be pre-filled in
+ * the reply composer. Plain text only (untrusted); newlines become paragraphs.
+ */
+export function signatureToHtml(signature?: string | null): string {
+  const trimmed = signature?.trim();
+  if (!trimmed) return "";
+
+  return trimmed
+    .split(/\r?\n/)
+    .map((line) => (line.trim() ? `<p>${escapeHtml(line)}</p>` : "<p></p>"))
+    .join("");
+}
+
 export function initials(value: string, fallback = "?"): string {
   const trimmed = value.trim();
   if (!trimmed) return fallback;

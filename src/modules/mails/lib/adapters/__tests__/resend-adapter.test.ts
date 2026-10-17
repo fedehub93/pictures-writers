@@ -21,6 +21,7 @@ type FakeResendClient = {
     create: ReturnType<typeof vi.fn>;
   };
   emails: {
+    send: ReturnType<typeof vi.fn>;
     receiving: {
       get: ReturnType<typeof vi.fn>;
       attachments: {
@@ -50,6 +51,7 @@ function createFakeClient(): FakeResendClient {
       create: vi.fn(),
     },
     emails: {
+      send: vi.fn(),
       receiving: {
         get: vi.fn(),
         attachments: {
@@ -475,6 +477,102 @@ describe("ResendAdapter.sendBulk", () => {
 
     const createArgs = fake.broadcasts.create.mock.calls[0][0];
     expect(createArgs.previewText).toBeUndefined();
+  });
+});
+
+// ─── sendOneToOne ─────────────────────────────────────────────────────────────
+
+describe("ResendAdapter.sendOneToOne", () => {
+  it("sends with URL-based attachments and returns the provider id", async () => {
+    const fake = createFakeClient();
+    fake.emails.send.mockResolvedValue({
+      data: { id: "email-1" },
+      ...ok,
+    });
+
+    const adapter = makeAdapter(fake);
+    const result = await adapter.sendOneToOne({
+      to: "contact@example.com",
+      from: "Support <support@example.com>",
+      subject: "Re: Hello",
+      html: "<p>Hi there</p>",
+      text: "Hi there",
+      replyTo: "support@example.com",
+      attachments: [
+        {
+          filename: "report.pdf",
+          contentType: "application/pdf",
+          url: "https://files.test/report.pdf",
+        },
+      ],
+    });
+
+    expect(result).toEqual({ success: true, externalId: "email-1" });
+    expect(fake.emails.send).toHaveBeenCalledWith({
+      to: ["contact@example.com"],
+      from: "Support <support@example.com>",
+      subject: "Re: Hello",
+      html: "<p>Hi there</p>",
+      text: "Hi there",
+      replyTo: ["support@example.com"],
+      attachments: [
+        {
+          filename: "report.pdf",
+          contentType: "application/pdf",
+          path: "https://files.test/report.pdf",
+        },
+      ],
+    });
+  });
+
+  it("omits replyTo and attachments when absent", async () => {
+    const fake = createFakeClient();
+    fake.emails.send.mockResolvedValue({ data: { id: "email-2" }, ...ok });
+
+    const adapter = makeAdapter(fake);
+    await adapter.sendOneToOne({
+      to: "contact@example.com",
+      from: "support@example.com",
+      subject: "Hello",
+      html: "<p>Hi</p>",
+    });
+
+    const payload = fake.emails.send.mock.calls[0][0];
+    expect(payload.replyTo).toBeUndefined();
+    expect(payload.attachments).toBeUndefined();
+  });
+
+  it("returns a failure result when the provider rejects the send", async () => {
+    const fake = createFakeClient();
+    fake.emails.send.mockResolvedValue({
+      data: null,
+      error: { message: "domain not verified", name: "validation_error" },
+    });
+
+    const adapter = makeAdapter(fake);
+    const result = await adapter.sendOneToOne({
+      to: "contact@example.com",
+      from: "support@example.com",
+      subject: "Hello",
+      html: "<p>Hi</p>",
+    });
+
+    expect(result).toEqual({ success: false, error: "domain not verified" });
+  });
+
+  it("returns a failure result when the client throws", async () => {
+    const fake = createFakeClient();
+    fake.emails.send.mockRejectedValue(new Error("network down"));
+
+    const adapter = makeAdapter(fake);
+    const result = await adapter.sendOneToOne({
+      to: "contact@example.com",
+      from: "support@example.com",
+      subject: "Hello",
+      html: "<p>Hi</p>",
+    });
+
+    expect(result).toEqual({ success: false, error: "network down" });
   });
 });
 

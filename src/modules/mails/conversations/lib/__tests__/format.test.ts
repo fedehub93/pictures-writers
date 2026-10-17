@@ -6,6 +6,8 @@ import {
   htmlToText,
   initials,
   messagePreview,
+  replySubject,
+  signatureToHtml,
 } from "../format";
 
 describe("conversation format helpers", () => {
@@ -98,6 +100,45 @@ describe("conversation format helpers", () => {
       expect(
         formatRelativeTime(new Date("2026-08-28T12:00:00.000Z"), now),
       ).toBe("28 Aug");
+    });
+  });
+
+  describe("replySubject", () => {
+    it("prefixes a subject with Re:", () => {
+      expect(replySubject("Query about socks")).toBe("Re: Query about socks");
+    });
+
+    it("does not double-prefix an existing reply", () => {
+      expect(replySubject("Re: Query about socks")).toBe(
+        "Re: Query about socks",
+      );
+      expect(replySubject("RE: Query about socks")).toBe(
+        "RE: Query about socks",
+      );
+    });
+
+    it("falls back to a bare Re: for a missing subject", () => {
+      expect(replySubject(null)).toBe("Re:");
+      expect(replySubject("  ")).toBe("Re:");
+    });
+  });
+
+  describe("signatureToHtml", () => {
+    it("renders each line as a paragraph", () => {
+      expect(signatureToHtml("Best,\nSupport")).toBe(
+        "<p>Best,</p><p>Support</p>",
+      );
+    });
+
+    it("escapes HTML from untrusted signatures", () => {
+      expect(signatureToHtml("<script>alert(1)</script>")).toBe(
+        "<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>",
+      );
+    });
+
+    it("returns an empty string for a missing signature", () => {
+      expect(signatureToHtml(null)).toBe("");
+      expect(signatureToHtml("   ")).toBe("");
     });
   });
 });

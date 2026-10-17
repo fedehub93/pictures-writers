@@ -19,9 +19,33 @@ vi.mock("@/trpc/init", async () => {
   };
 });
 
+// The send use-case is exercised against the real database in
+// `send-one-to-one.test.ts`; here we only verify the procedure's permission
+// scoping and error mapping, so the provider call is replaced with a spy.
+const { sendConversationMessageMock } = vi.hoisted(() => ({
+  sendConversationMessageMock: vi.fn(),
+}));
+
+vi.mock("@/modules/mails/conversations/lib/send-one-to-one", () => {
+  class ConversationSendError extends Error {
+    constructor(
+      message: string,
+      public readonly code: string,
+    ) {
+      super(message);
+    }
+  }
+
+  return {
+    ConversationSendError,
+    sendConversationMessage: sendConversationMessageMock,
+  };
+});
+
 import { createCallerFactory } from "@/trpc/init";
 
 import { db } from "@/shared/lib/db";
+import { ConversationSendError } from "@/modules/mails/conversations/lib/send-one-to-one";
 
 import { conversationsRouter } from "../procedures";
 
@@ -110,6 +134,7 @@ async function createMessage(
 beforeEach(async () => {
   accountIds.length = 0;
   userIds.length = 0;
+  sendConversationMessageMock.mockReset();
 
   const user = await createUser();
   userId = user.id;
@@ -252,6 +277,106 @@ describe("conversationsRouter", () => {
       const conversation = await createConversation(account.id);
 
       await expect(caller.getOne({ id: conversation.id })).rejects.toThrow();
+    });
+  });
+
+  describe("sendReply", () => {
+    it("sends through the use-case for an accessible conversation", async () => {
+      const account = await createAccount([userId]);
+      const conversation = await createConversation(account.id);
+
+      sendConversationMessageMock.mockResolvedValue({
+        conversationId: conversation.id,
+        messageId: "message-1",
+        providerId: "provider-1",
+      });
+
+      const result = await caller.sendReply({
+        conversationId: conversation.id,
+        bodyHtml: "<p>Thanks</p>",
+        bodyText: "Thanks",
+        attachments: [
+          {
+            filename: "quote.pdf",
+            contentType: "application/pdf",
+            url: "https://files.test/quote.pdf",
+          },
+        ],
+      });
+
+      expect(result).toEqual({
+        conversationId: conversation.id,
+        messageId: "message-1",
+        providerId: "provider-1",
+      });
+      expect(sendConversationMessageMock).toHaveBeenCalledWith({
+        conversationId: conversation.id,
+        subject: undefined,
+        bodyHtml: "<p>Thanks</p>",
+        bodyText: "Thanks",
+        attachments: [
+          {
+            filename: "quote.pdf",
+            contentType: "application/pdf",
+            url: "https://files.test/quote.pdf",
+          },
+        ],
+      });
+    });
+
+    it("rejects an account the user is not assigned to without sending", async () => {
+      const account = await createAccount();
+      const conversation = await createConversation(account.id);
+
+      await expect(
+        caller.sendReply({
+          conversationId: conversation.id,
+          bodyHtml: "<p>Thanks</p>",
+        }),
+      ).rejects.toThrow();
+
+      expect(sendConversationMessageMock).not.toHaveBeenCalled();
+    });
+
+    it("rejects an unknown conversation", async () => {
+      await expect(
+        caller.sendReply({
+          conversationId: randomUUID(),
+          bodyHtml: "<p>Thanks</p>",
+        }),
+      ).rejects.toThrow();
+
+      expect(sendConversationMessageMock).not.toHaveBeenCalled();
+    });
+
+    it("requires a message body", async () => {
+      const account = await createAccount([userId]);
+      const conversation = await createConversation(account.id);
+
+      await expect(
+        caller.sendReply({
+          conversationId: conversation.id,
+          bodyHtml: "   ",
+        }),
+      ).rejects.toThrow();
+
+      expect(sendConversationMessageMock).not.toHaveBeenCalled();
+    });
+
+    it("maps a quota failure to TOO_MANY_REQUESTS", async () => {
+      const account = await createAccount([userId]);
+      const conversation = await createConversation(account.id);
+
+      sendConversationMessageMock.mockRejectedValue(
+        new ConversationSendError("quota reached", "QUOTA_EXCEEDED"),
+      );
+
+      await expect(
+        caller.sendReply({
+          conversationId: conversation.id,
+          bodyHtml: "<p>Thanks</p>",
+        }),
+      ).rejects.toMatchObject({ code: "TOO_MANY_REQUESTS" });
     });
   });
 });

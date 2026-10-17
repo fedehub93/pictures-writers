@@ -8,7 +8,15 @@ import { PERMISSIONS } from "@/shared/lib/permissions";
 import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 
 import { messagePreview } from "../lib/format";
-import { conversationGetOneSchema, conversationListSchema } from "../schemas";
+import {
+  ConversationSendError,
+  sendConversationMessage,
+} from "../lib/send-one-to-one";
+import {
+  conversationGetOneSchema,
+  conversationListSchema,
+  conversationSendSchema,
+} from "../schemas";
 import { assertAccountAccess } from "./access";
 
 const listMessageSelect = {
@@ -95,5 +103,53 @@ export const conversationsRouter = createTRPCRouter({
       }
 
       return conversation;
+    }),
+
+  sendReply: permissionProcedure(PERMISSIONS.MAIL_READ)
+    .input(conversationSendSchema)
+    .mutation(async ({ ctx, input }) => {
+      const conversation = await db.conversation.findFirst({
+        where: { id: input.conversationId, deletedAt: null },
+        select: { emailAccountId: true },
+      });
+
+      if (!conversation) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Conversation not found",
+        });
+      }
+
+      // Sending is scoped by the same per-account permission as reading, so a
+      // user who cannot see an inbox cannot send from it either.
+      await assertAccountAccess(ctx.auth.id, conversation.emailAccountId);
+
+      try {
+        return await sendConversationMessage({
+          conversationId: input.conversationId,
+          subject: input.subject,
+          bodyHtml: input.bodyHtml,
+          bodyText: input.bodyText,
+          attachments: input.attachments?.map((attachment) => ({
+            filename: attachment.filename,
+            contentType: attachment.contentType,
+            size: attachment.size,
+            url: attachment.url,
+          })),
+        });
+      } catch (error) {
+        if (error instanceof ConversationSendError) {
+          throw new TRPCError({
+            code:
+              error.code === "QUOTA_EXCEEDED"
+                ? "TOO_MANY_REQUESTS"
+                : error.code === "NOT_FOUND"
+                  ? "NOT_FOUND"
+                  : "BAD_REQUEST",
+            message: error.message,
+          });
+        }
+        throw error;
+      }
     }),
 });
