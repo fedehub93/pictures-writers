@@ -4,6 +4,7 @@ import { db } from "@/shared/lib/db";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 import { contactInsertSchema, contactUpdateSchema } from "../schemas";
+import { ALL_AUDIENCES_ID } from "../lib/constants";
 
 import {
   syncContactWithProvider,
@@ -138,7 +139,8 @@ export const contactsRouter = createTRPCRouter({
       const contacts = await db.emailContact.findMany({
         where: {
           audiences:
-            input.audienceId && input.audienceId.toUpperCase() !== "ALL"
+            input.audienceId &&
+            input.audienceId.toUpperCase() !== ALL_AUDIENCES_ID.toUpperCase()
               ? {
                   some: {
                     id: input.audienceId,

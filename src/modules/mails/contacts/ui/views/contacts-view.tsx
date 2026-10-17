@@ -5,6 +5,8 @@ import { ContentHeader } from "@/app/(admin)/_components/content/content-header"
 import { LoadingState } from "@/shared/components/loading-state";
 import { ErrorState } from "@/shared/components/error-state";
 
+import { MAIL_SECTIONS } from "@/modules/mails/lib/sections";
+
 import { DataTable } from "../components/data-table";
 import { columns } from "../components/columns";
 
@@ -17,7 +19,11 @@ export const ContactsView = ({ audienceId }: { audienceId: string }) => {
     <>
       <UpdateContactDialog audienceId={audienceId} />
       <div className="h-full w-full flex flex-col gap-y-4 px-6 py-3">
-        <ContentHeader label="Contacts" totalEntries={data.length} />
+        <ContentHeader
+          label="Contacts"
+          totalEntries={data.length}
+          section={MAIL_SECTIONS.marketing}
+        />
         <DataTable audienceId={audienceId} columns={columns} data={data} />
       </div>
     </>

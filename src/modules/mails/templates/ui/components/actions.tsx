@@ -31,7 +31,7 @@ export const TemplateAction = ({ id }: TemplateActionProps) => {
           trpc.templates.getMany.queryOptions(),
         );
         toast.success("Template duplicated successfully");
-        router.push(`/admin/mails/templates/${data.id}`);
+        router.push(`/admin/mails/marketing/templates/${data.id}`);
       },
       onError: (error) => {
         toast.error(error.message || "Failed to duplicate template");
@@ -48,7 +48,7 @@ export const TemplateAction = ({ id }: TemplateActionProps) => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <Link href={`/admin/mails/templates/${id}`}>
+        <Link href={`/admin/mails/marketing/templates/${id}`}>
           <DropdownMenuItem>
             <PencilIcon />
             Edit

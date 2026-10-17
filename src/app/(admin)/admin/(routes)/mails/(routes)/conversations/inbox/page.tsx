@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -11,6 +12,8 @@ import {
   ConversationsViewError,
   ConversationsViewLoading,
 } from "@/modules/mails/conversations/ui/views/conversations-view";
+
+export const metadata: Metadata = { title: "Inbox · Conversations" };
 
 const ConversationsInboxPage = async () => {
   await requireAdminAuth();

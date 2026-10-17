@@ -18,6 +18,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 
 import { useSuspenseAllowedEmailAccounts } from "@/modules/mails/accounts";
+import { MAIL_SECTIONS } from "@/modules/mails/lib/sections";
 
 import { useConversation, useConversations } from "../../hooks/use-conversations";
 import { AccountSelector } from "../components/account-selector";
@@ -103,7 +104,11 @@ export const ConversationsView = () => {
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden">
       <div className="px-6 pt-3">
-        <ContentHeader label="Inbox" totalEntries={conversations?.length ?? 0} />
+        <ContentHeader
+          label="Inbox"
+          totalEntries={conversations?.length ?? 0}
+          section={MAIL_SECTIONS.conversations}
+        />
       </div>
 
       <div className="flex min-h-0 flex-1">

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -11,6 +12,8 @@ import {
   AudiencesViewError,
   AudiencesViewLoading,
 } from "@/modules/mails/audiences/ui/views/audiences-view";
+
+export const metadata: Metadata = { title: "Audiences · Marketing" };
 
 const ContactsPage = async () => {
   await requireAdminAuth();

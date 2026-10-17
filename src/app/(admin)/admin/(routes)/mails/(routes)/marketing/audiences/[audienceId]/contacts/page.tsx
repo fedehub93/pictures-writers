@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -12,6 +13,8 @@ import {
   ContactsViewError,
   ContactsViewLoading,
 } from "@/modules/mails/contacts/ui/views/contacts-view";
+
+export const metadata: Metadata = { title: "Contacts · Marketing" };
 
 const AudienceIdContactsPage = async ({
   params,

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -10,6 +11,8 @@ import {
   TemplatesViewLoading,
 } from "@/modules/mails/templates";
 import { prefetchTemplates } from "@/modules/mails/templates/server";
+
+export const metadata: Metadata = { title: "Email Templates · Marketing" };
 
 const TemplatesPage = async () => {
   await requireAdminAuth();

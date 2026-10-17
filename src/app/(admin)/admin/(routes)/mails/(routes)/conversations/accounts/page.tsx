@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -11,6 +12,8 @@ import {
   EmailAccountsViewError,
   EmailAccountsViewLoading,
 } from "@/modules/mails/accounts/ui/views/accounts-view";
+
+export const metadata: Metadata = { title: "Accounts · Conversations" };
 
 const EmailAccountsPage = async () => {
   await requireAdminAuth();

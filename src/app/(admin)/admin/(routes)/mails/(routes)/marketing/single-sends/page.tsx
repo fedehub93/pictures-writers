@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -11,6 +12,8 @@ import {
 } from "@/modules/mails/single-sends/ui/views/single-sends-view";
 
 import { prefetchSingleSends } from "@/modules/mails/single-sends/server/prefetch";
+
+export const metadata: Metadata = { title: "Single Sends · Marketing" };
 
 const EmailSingleSends = async () => {
   await requireAdminAuth();

@@ -26,6 +26,7 @@ import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 import { ProgressDialog } from "@/app/(admin)/_components/modals/progress-dialog";
 
 import { useOpenContact } from "../../hooks/use-open-contact";
+import { ALL_AUDIENCES_ID } from "../../lib/constants";
 
 import { type DataTableFeatures } from "./data-table-features";
 
@@ -96,6 +97,9 @@ export function DataTableToolbar<TData extends RowData>({
   };
 
   const isFiltered = table.state.columnFilters.length > 0;
+  // Import/sync is scoped to a single audience, so it is unavailable on the
+  // all-contacts view.
+  const canImport = audienceId !== ALL_AUDIENCES_ID;
 
   return (
     <>
@@ -132,10 +136,12 @@ export function DataTableToolbar<TData extends RowData>({
               <PlusCircleIcon />
               New contact
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onHandleImport}>
-              <ArrowDownIcon />
-              Import
-            </DropdownMenuItem>
+            {canImport && (
+              <DropdownMenuItem onClick={onHandleImport}>
+                <ArrowDownIcon />
+                Import
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
