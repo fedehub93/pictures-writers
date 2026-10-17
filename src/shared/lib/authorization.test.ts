@@ -27,6 +27,16 @@ describe("authorization policy", () => {
     ]);
   });
 
+  it("maps emailAccounts procedures through the area alias", () => {
+    expect(getProcedurePermissions("emailAccounts.getMany")).toEqual([
+      PERMISSIONS.EMAIL_ACCOUNTS_READ,
+    ]);
+    expect(getProcedurePermissions("emailAccounts.update")).toEqual([
+      "email-accounts.update",
+      PERMISSIONS.EMAIL_ACCOUNTS_MANAGE,
+    ]);
+  });
+
   it("allows manage-only modules to use their manage permission", () => {
     expect(getProcedurePermissions("forms.updateContent")).toEqual([
       "forms.update",

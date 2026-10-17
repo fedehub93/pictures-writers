@@ -6,6 +6,7 @@ import type { Route } from "next";
 import Link from "next/link";
 
 import {
+  AtSignIcon,
   BlocksIcon,
   BookImageIcon,
   BoxIcon,
@@ -171,6 +172,12 @@ const data: Record<string, NavObject[]> = {
           url: "/admin/mails/templates",
           Icon: LayoutPanelTopIcon,
           permission: "templates.read",
+        },
+        {
+          title: "Email accounts",
+          url: "/admin/mails/accounts" as Route,
+          Icon: AtSignIcon,
+          permission: "email-accounts.read",
         },
         {
           title: "Settings",
