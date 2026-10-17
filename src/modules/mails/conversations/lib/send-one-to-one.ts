@@ -1,14 +1,18 @@
 import "server-only";
 
 import { db } from "@/shared/lib/db";
-import { getTodayEmailsAvailable } from "@/modules/mails/lib/mail";
-import { resolveAdapter } from "@/modules/mails/lib/core";
 import type {
   EmailProviderAdapter,
   OutboundAttachment,
 } from "@/modules/mails/lib/types";
 
 import { replySubject } from "./format";
+import {
+  assertTransactionalQuota,
+  outboundMessageCreateData,
+  resolveProviderAdapter,
+} from "./outbound";
+import { resolveFrom } from "./sender";
 
 export type ConversationSendErrorCode =
   | "NOT_FOUND"
@@ -40,16 +44,6 @@ export interface SendConversationMessageResult {
   providerId?: string;
 }
 
-/** Compose the provider `from` value from the account's display name. */
-function resolveFrom(account: {
-  name: string;
-  displayName: string | null;
-  email: string;
-}): string {
-  const displayName = account.displayName?.trim() || account.name.trim();
-  return displayName ? `${displayName} <${account.email}>` : account.email;
-}
-
 /**
  * Send a one-to-one reply inside a conversation: enforce the transactional
  * quota, hand the message to the provider, then record the OUTBOUND
@@ -67,15 +61,15 @@ export async function sendConversationMessage(
     throw new ConversationSendError("Conversation not found", "NOT_FOUND");
   }
 
-  const available = await getTodayEmailsAvailable();
-  if (available <= 0) {
-    throw new ConversationSendError(
-      "The daily transactional email quota has been reached",
-      "QUOTA_EXCEEDED",
-    );
-  }
+  await assertTransactionalQuota(
+    (message) => new ConversationSendError(message, "QUOTA_EXCEEDED"),
+  );
 
-  const adapter = input.adapter ?? (await resolveProviderAdapter());
+  const adapter =
+    input.adapter ??
+    (await resolveProviderAdapter(
+      (message) => new ConversationSendError(message, "PROVIDER_ERROR"),
+    ));
 
   const account = conversation.emailAccount;
   const from = resolveFrom(account);
@@ -104,31 +98,18 @@ export async function sendConversationMessage(
 
   const messageId = await db.$transaction(async (transaction) => {
     const message = await transaction.emailMessage.create({
-      data: {
+      data: outboundMessageCreateData({
         conversationId: conversation.id,
-        direction: "OUTBOUND",
-        status: "SENT",
         subject,
         bodyHtml: input.bodyHtml,
-        bodyText: input.bodyText ?? null,
+        bodyText: input.bodyText,
         fromAddress: from,
         toAddresses: [conversation.contactEmail],
-        ccAddresses: [],
-        bccAddresses: [],
-        externalId: result.externalId ?? null,
+        externalId: result.externalId,
         inReplyTo: lastMessage?.messageId ?? null,
+        attachments: input.attachments,
         sentAt: new Date(),
-        attachments: input.attachments?.length
-          ? {
-              create: input.attachments.map((attachment) => ({
-                filename: attachment.filename,
-                contentType: attachment.contentType,
-                size: attachment.size ?? null,
-                url: attachment.url,
-              })),
-            }
-          : undefined,
-      },
+      }),
     });
 
     await transaction.conversation.update({
@@ -144,16 +125,4 @@ export async function sendConversationMessage(
     messageId,
     providerId: result.externalId,
   };
-}
-
-/** Resolve the global provider adapter, failing with a typed error. */
-async function resolveProviderAdapter(): Promise<EmailProviderAdapter> {
-  try {
-    return await resolveAdapter();
-  } catch {
-    throw new ConversationSendError(
-      "The email provider is not configured",
-      "PROVIDER_ERROR",
-    );
-  }
 }

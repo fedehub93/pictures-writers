@@ -2,12 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 
 import { useTRPC } from "@/trpc/client";
 
-export const useConversations = (emailAccountId?: string) => {
+export const useConversations = (
+  emailAccountId?: string,
+  archived = false,
+) => {
   const trpc = useTRPC();
 
   return useQuery(
     trpc.conversations.getMany.queryOptions(
-      { emailAccountId: emailAccountId ?? "" },
+      { emailAccountId: emailAccountId ?? "", archived },
       { enabled: Boolean(emailAccountId) },
     ),
   );

@@ -148,3 +148,22 @@ export function formatMessageDate(value: Date | string): string {
   const date = typeof value === "string" ? new Date(value) : value;
   return format(date, "EEE d MMM yyyy, HH:mm");
 }
+
+/**
+ * Split a free-form display name into `firstName` / `lastName` parts for a
+ * manually-created `EmailContact`. The first token is the first name; the rest
+ * form the last name.
+ */
+export function splitName(name?: string | null): {
+  firstName: string | null;
+  lastName: string | null;
+} {
+  const trimmed = name?.trim();
+  if (!trimmed) return { firstName: null, lastName: null };
+
+  const [first, ...rest] = trimmed.split(/\s+/);
+  return {
+    firstName: first || null,
+    lastName: rest.length > 0 ? rest.join(" ") : null,
+  };
+}

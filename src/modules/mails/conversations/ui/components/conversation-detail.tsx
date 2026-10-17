@@ -21,6 +21,8 @@ interface ConversationDetailProps {
   conversation?: ConversationGetOne;
   isLoading: boolean;
   onBack: () => void;
+  /** Actions rendered in the header; kept out of this file's dependencies. */
+  actionsSlot?: ReactNode;
   /** Composer rendered under the thread; kept out of this file's dependencies. */
   replySlot?: ReactNode;
 }
@@ -29,6 +31,7 @@ export const ConversationDetail = ({
   conversation,
   isLoading,
   onBack,
+  actionsSlot,
   replySlot,
 }: ConversationDetailProps) => {
   if (isLoading) {
@@ -67,7 +70,7 @@ export const ConversationDetail = ({
         >
           <ArrowLeftIcon />
         </Button>
-        <div className="flex min-w-0 flex-col">
+        <div className="flex min-w-0 flex-1 flex-col">
           <h2 className="truncate text-base font-semibold">{subject}</h2>
           <span className="truncate text-xs text-muted-foreground">
             {conversation.contactName
@@ -75,6 +78,7 @@ export const ConversationDetail = ({
               : conversation.contactEmail}
           </span>
         </div>
+        {actionsSlot}
       </header>
 
       <ScrollArea className="min-h-0 flex-1">

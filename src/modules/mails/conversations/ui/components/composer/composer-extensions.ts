@@ -8,7 +8,9 @@ import StarterKit from "@tiptap/starter-kit";
  * (headings, images, tables, embeds, slash menu) that a one-to-one reply does
  * not need.
  */
-export const createComposerExtensions = () => [
+export const createComposerExtensions = (
+  placeholder = "Write your reply…",
+) => [
   StarterKit.configure({
     heading: false,
     codeBlock: false,
@@ -25,7 +27,7 @@ export const createComposerExtensions = () => [
   }),
   TextAlign.configure({ types: ["paragraph"] }),
   Placeholder.configure({
-    placeholder: "Write your reply…",
+    placeholder,
     showOnlyWhenEditable: true,
     showOnlyCurrent: true,
     emptyEditorClass: "is-editor-empty",

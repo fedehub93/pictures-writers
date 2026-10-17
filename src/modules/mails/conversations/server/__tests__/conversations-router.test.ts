@@ -22,8 +22,9 @@ vi.mock("@/trpc/init", async () => {
 // The send use-case is exercised against the real database in
 // `send-one-to-one.test.ts`; here we only verify the procedure's permission
 // scoping and error mapping, so the provider call is replaced with a spy.
-const { sendConversationMessageMock } = vi.hoisted(() => ({
+const { sendConversationMessageMock, sendNewMessageMock } = vi.hoisted(() => ({
   sendConversationMessageMock: vi.fn(),
+  sendNewMessageMock: vi.fn(),
 }));
 
 vi.mock("@/modules/mails/conversations/lib/send-one-to-one", () => {
@@ -42,10 +43,24 @@ vi.mock("@/modules/mails/conversations/lib/send-one-to-one", () => {
   };
 });
 
+vi.mock("@/modules/mails/conversations/lib/send-new-message", () => {
+  class NewMessageError extends Error {
+    constructor(
+      message: string,
+      public readonly code: string,
+    ) {
+      super(message);
+    }
+  }
+
+  return { NewMessageError, sendNewMessage: sendNewMessageMock };
+});
+
 import { createCallerFactory } from "@/trpc/init";
 
 import { db } from "@/shared/lib/db";
 import { ConversationSendError } from "@/modules/mails/conversations/lib/send-one-to-one";
+import { NewMessageError } from "@/modules/mails/conversations/lib/send-new-message";
 
 import { conversationsRouter } from "../procedures";
 
@@ -53,6 +68,7 @@ const createCaller = createCallerFactory(conversationsRouter);
 
 const accountIds: string[] = [];
 const userIds: string[] = [];
+const contactIds: string[] = [];
 
 let caller: ReturnType<typeof createCaller>;
 let userId: string;
@@ -86,6 +102,7 @@ async function createConversation(
     contactName: string | null;
     hasUnread: boolean;
     deletedAt: Date | null;
+    archivedAt: Date | null;
   }> = {},
 ) {
   return db.conversation.create({
@@ -95,6 +112,7 @@ async function createConversation(
       contactName: overrides.contactName ?? null,
       hasUnread: overrides.hasUnread ?? false,
       deletedAt: overrides.deletedAt ?? null,
+      archivedAt: overrides.archivedAt ?? null,
     },
   });
 }
@@ -134,7 +152,9 @@ async function createMessage(
 beforeEach(async () => {
   accountIds.length = 0;
   userIds.length = 0;
+  contactIds.length = 0;
   sendConversationMessageMock.mockReset();
+  sendNewMessageMock.mockReset();
 
   const user = await createUser();
   userId = user.id;
@@ -145,11 +165,15 @@ afterEach(async () => {
   if (accountIds.length > 0) {
     await db.emailAccount.deleteMany({ where: { id: { in: accountIds } } });
   }
+  if (contactIds.length > 0) {
+    await db.emailContact.deleteMany({ where: { id: { in: contactIds } } });
+  }
   if (userIds.length > 0) {
     await db.user.deleteMany({ where: { id: { in: userIds } } });
   }
   accountIds.length = 0;
   userIds.length = 0;
+  contactIds.length = 0;
 });
 
 describe("conversationsRouter", () => {
@@ -190,6 +214,23 @@ describe("conversationsRouter", () => {
       const result = await caller.getMany({ emailAccountId: account.id });
 
       expect(result.map((c) => c.id)).toEqual([visible.id]);
+    });
+
+    it("hides archived conversations unless the archived view is requested", async () => {
+      const account = await createAccount([userId]);
+      const active = await createConversation(account.id);
+      const archived = await createConversation(account.id, {
+        archivedAt: new Date(),
+      });
+
+      const inbox = await caller.getMany({ emailAccountId: account.id });
+      const archive = await caller.getMany({
+        emailAccountId: account.id,
+        archived: true,
+      });
+
+      expect(inbox.map((c) => c.id)).toEqual([active.id]);
+      expect(archive.map((c) => c.id)).toEqual([archived.id]);
     });
 
     it("flags the last message when it carries attachments", async () => {
@@ -377,6 +418,218 @@ describe("conversationsRouter", () => {
           bodyHtml: "<p>Thanks</p>",
         }),
       ).rejects.toMatchObject({ code: "TOO_MANY_REQUESTS" });
+    });
+  });
+
+  describe("sendNew", () => {
+    it("sends through the use-case for an accessible account", async () => {
+      const account = await createAccount([userId]);
+
+      sendNewMessageMock.mockResolvedValue({
+        conversationId: "conversation-1",
+        messageId: "message-1",
+        providerId: "provider-1",
+      });
+
+      const result = await caller.sendNew({
+        emailAccountId: account.id,
+        to: "newcomer@example.com",
+        subject: "Hello",
+        bodyHtml: "<p>Hello</p>",
+        bodyText: "Hello",
+      });
+
+      expect(result).toEqual({
+        conversationId: "conversation-1",
+        messageId: "message-1",
+        providerId: "provider-1",
+      });
+      expect(sendNewMessageMock).toHaveBeenCalledWith({
+        emailAccountId: account.id,
+        to: "newcomer@example.com",
+        subject: "Hello",
+        bodyHtml: "<p>Hello</p>",
+        bodyText: "Hello",
+        attachments: undefined,
+      });
+    });
+
+    it("rejects an account the user is not assigned to without sending", async () => {
+      const account = await createAccount();
+
+      await expect(
+        caller.sendNew({
+          emailAccountId: account.id,
+          to: "newcomer@example.com",
+          subject: "Hello",
+          bodyHtml: "<p>Hello</p>",
+        }),
+      ).rejects.toThrow();
+
+      expect(sendNewMessageMock).not.toHaveBeenCalled();
+    });
+
+    it("requires a valid recipient address", async () => {
+      const account = await createAccount([userId]);
+
+      await expect(
+        caller.sendNew({
+          emailAccountId: account.id,
+          to: "not-an-email",
+          subject: "Hello",
+          bodyHtml: "<p>Hello</p>",
+        }),
+      ).rejects.toThrow();
+
+      expect(sendNewMessageMock).not.toHaveBeenCalled();
+    });
+
+    it("maps a quota failure to TOO_MANY_REQUESTS", async () => {
+      const account = await createAccount([userId]);
+
+      sendNewMessageMock.mockRejectedValue(
+        new NewMessageError("quota reached", "QUOTA_EXCEEDED"),
+      );
+
+      await expect(
+        caller.sendNew({
+          emailAccountId: account.id,
+          to: "newcomer@example.com",
+          subject: "Hello",
+          bodyHtml: "<p>Hello</p>",
+        }),
+      ).rejects.toMatchObject({ code: "TOO_MANY_REQUESTS" });
+    });
+  });
+
+  describe("setArchived", () => {
+    it("archives and unarchives a conversation", async () => {
+      const account = await createAccount([userId]);
+      const conversation = await createConversation(account.id);
+
+      const archived = await caller.setArchived({
+        id: conversation.id,
+        archived: true,
+      });
+      expect(archived.archivedAt).not.toBeNull();
+
+      await caller.getMany({ emailAccountId: account.id }).then((result) => {
+        expect(result.map((c) => c.id)).not.toContain(conversation.id);
+      });
+
+      const unarchived = await caller.setArchived({
+        id: conversation.id,
+        archived: false,
+      });
+      expect(unarchived.archivedAt).toBeNull();
+    });
+
+    it("rejects a conversation on an account the user is not assigned to", async () => {
+      const account = await createAccount();
+      const conversation = await createConversation(account.id);
+
+      await expect(
+        caller.setArchived({ id: conversation.id, archived: true }),
+      ).rejects.toThrow();
+    });
+  });
+
+  describe("remove", () => {
+    it("soft-deletes a conversation", async () => {
+      const account = await createAccount([userId]);
+      const conversation = await createConversation(account.id);
+
+      await caller.remove({ id: conversation.id });
+
+      const stored = await db.conversation.findUniqueOrThrow({
+        where: { id: conversation.id },
+      });
+      expect(stored.deletedAt).not.toBeNull();
+
+      await expect(caller.getOne({ id: conversation.id })).rejects.toThrow();
+      const inbox = await caller.getMany({ emailAccountId: account.id });
+      expect(inbox).toHaveLength(0);
+    });
+
+    it("rejects an unknown conversation", async () => {
+      await expect(caller.remove({ id: randomUUID() })).rejects.toThrow();
+    });
+
+    it("rejects a conversation on an account the user is not assigned to", async () => {
+      const account = await createAccount();
+      const conversation = await createConversation(account.id);
+
+      await expect(caller.remove({ id: conversation.id })).rejects.toThrow();
+    });
+  });
+
+  describe("createContact", () => {
+    it("creates a contact from the conversation sender and links it", async () => {
+      const account = await createAccount([userId]);
+      const conversation = await createConversation(account.id, {
+        contactEmail: `jessica-${randomUUID()}@example.com`,
+        contactName: "Jessica Ball",
+      });
+
+      const contact = await caller.createContact({ id: conversation.id });
+      contactIds.push(contact.id);
+
+      expect(contact).toMatchObject({
+        email: conversation.contactEmail,
+        firstName: "Jessica",
+        lastName: "Ball",
+        isSubscriber: false,
+      });
+
+      const stored = await db.conversation.findUniqueOrThrow({
+        where: { id: conversation.id },
+      });
+      expect(stored.contactId).toBe(contact.id);
+    });
+
+    it("reuses an existing contact instead of duplicating it", async () => {
+      const account = await createAccount([userId]);
+      const email = `existing-${randomUUID()}@example.com`;
+      const existing = await db.emailContact.create({
+        data: { email, firstName: "Existing" },
+      });
+      contactIds.push(existing.id);
+      const conversation = await createConversation(account.id, {
+        contactEmail: email,
+      });
+
+      const contact = await caller.createContact({ id: conversation.id });
+
+      expect(contact.id).toBe(existing.id);
+      expect(
+        await db.emailContact.count({ where: { email } }),
+      ).toBe(1);
+    });
+
+    it("returns the linked contact when the conversation is already linked", async () => {
+      const account = await createAccount([userId]);
+      const existing = await db.emailContact.create({
+        data: { email: `linked-${randomUUID()}@example.com` },
+      });
+      contactIds.push(existing.id);
+      const conversation = await createConversation(account.id);
+      await db.conversation.update({
+        where: { id: conversation.id },
+        data: { contactId: existing.id },
+      });
+
+      const contact = await caller.createContact({ id: conversation.id });
+
+      expect(contact.id).toBe(existing.id);
+    });
+
+    it("rejects a conversation on an account the user is not assigned to", async () => {
+      const account = await createAccount();
+      const conversation = await createConversation(account.id);
+
+      await expect(
+        caller.createContact({ id: conversation.id }),
+      ).rejects.toThrow();
     });
   });
 });
