@@ -4,8 +4,49 @@ import {
   CreateContactResult,
   DeleteContactResult,
   EmailProviderAdapter,
+  InboundAttachmentMetadata,
+  InboundEmail,
   SyncResult,
+  VerifiedWebhookEvent,
+  WebhookSignatureHeaders,
 } from "../types";
+
+/** Read a header case-insensitively from a `Record<string, string>`. */
+function readHeader(
+  headers: Record<string, string> | null | undefined,
+  name: string,
+): string | undefined {
+  if (!headers) return undefined;
+  const lower = name.toLowerCase();
+  for (const [key, value] of Object.entries(headers)) {
+    if (key.toLowerCase() === lower) return value;
+  }
+  return undefined;
+}
+
+/** Split a `References`/`In-Reply-To` header into individual message ids. */
+function parseMessageIds(raw: string | undefined): string[] {
+  if (!raw) return [];
+  return raw
+    .split(/[\s,]+/)
+    .map((id) => id.trim())
+    .filter(Boolean);
+}
+
+/** Map the provider's attachment shape to the inbound metadata contract. */
+function toAttachmentMetadata(attachment: {
+  id: string;
+  filename?: string | null;
+  content_type: string;
+  size: number;
+}): InboundAttachmentMetadata {
+  return {
+    externalId: attachment.id,
+    filename: attachment.filename ?? "attachment",
+    contentType: attachment.content_type,
+    size: attachment.size ?? undefined,
+  };
+}
 
 // Helper utility per mettere in pausa l'esecuzione
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -623,5 +664,107 @@ export class ResendAdapter implements EmailProviderAdapter {
         error: err?.message || "Unknown error during Resend broadcast creation",
       };
     }
+  }
+
+  // ─── Inbound (receiving) ───────────────────────────────────────────────────
+
+  /**
+   * Verify the Svix signature on an inbound webhook and decode the event.
+   * Throws when the signature is invalid or the payload is malformed.
+   */
+  verifyWebhook({
+    payload,
+    headers,
+    webhookSecret,
+  }: {
+    payload: string;
+    headers: WebhookSignatureHeaders;
+    webhookSecret: string;
+  }): VerifiedWebhookEvent {
+    const event = this.resendClient.webhooks.verify({
+      payload,
+      headers,
+      webhookSecret,
+    }) as VerifiedWebhookEvent;
+
+    return event;
+  }
+
+  /**
+   * Fetch the full body of a received email plus its attachment metadata.
+   * The body lives behind a separate endpoint (GET /inbounds/{id}) so the
+   * webhook payload stays small.
+   */
+  async fetchInbound(externalId: string): Promise<InboundEmail> {
+    const { data, error } = await this.resendClient.emails.receiving.get(
+      externalId,
+    );
+
+    if (error || !data) {
+      throw new Error(
+        error?.message || `Impossible to fetch inbound email ${externalId}`,
+      );
+    }
+
+    const inReplyTo = readHeader(data.headers, "in-reply-to");
+    const references = parseMessageIds(readHeader(data.headers, "references"));
+
+    return {
+      externalId: data.id,
+      messageId: data.message_id,
+      inReplyTo,
+      references,
+      from: data.from,
+      to: data.to ?? [],
+      cc: data.cc ?? [],
+      bcc: data.bcc ?? [],
+      subject: data.subject,
+      bodyHtml: data.html ?? undefined,
+      bodyText: data.text ?? undefined,
+      receivedAt: new Date(data.created_at),
+      attachments: (data.attachments ?? []).map(toAttachmentMetadata),
+    };
+  }
+
+  /** List the attachments (metadata only) of a received email. */
+  async listInboundAttachments(
+    externalId: string,
+  ): Promise<InboundAttachmentMetadata[]> {
+    const { data, error } =
+      await this.resendClient.emails.receiving.attachments.list({
+        emailId: externalId,
+      });
+
+    if (error) {
+      throw new Error(
+        error.message || `Impossible to list attachments for ${externalId}`,
+      );
+    }
+
+    return (data?.data ?? []).map(toAttachmentMetadata);
+  }
+
+  /** Resolve a short-lived signed download URL for a single attachment. */
+  async getAttachmentDownloadUrl(
+    emailExternalId: string,
+    attachmentExternalId: string,
+  ): Promise<{ url: string; expiresAt?: Date }> {
+    const { data, error } =
+      await this.resendClient.emails.receiving.attachments.get({
+        emailId: emailExternalId,
+        id: attachmentExternalId,
+      });
+
+    if (error || !data) {
+      throw new Error(
+        error?.message ||
+          `Impossible to resolve attachment ${attachmentExternalId}`,
+      );
+    }
+
+    return {
+      url: data.download_url,
+      expiresAt: data.expires_at ? new Date(data.expires_at) : undefined,
+    };
   }
 }

@@ -40,11 +40,104 @@ export type CreateContactResult = {
   newExternalId?: string;
 };
 
+// ─── Inbound email (provider → application) ──────────────────────────────────
+
+/** Attachment metadata as reported by the provider. No signed URL yet. */
+export type InboundAttachmentMetadata = {
+  externalId: string;
+  filename: string;
+  contentType: string;
+  size?: number;
+};
+
+/** A fully fetched inbound email body plus its attachment metadata. */
+export type InboundEmail = {
+  externalId: string;
+  messageId?: string;
+  inReplyTo?: string;
+  references: string[];
+  from: string;
+  to: string[];
+  cc: string[];
+  bcc: string[];
+  subject?: string;
+  bodyHtml?: string;
+  bodyText?: string;
+  receivedAt: Date;
+  attachments: InboundAttachmentMetadata[];
+};
+
+/** Raw `email.received` payload embedded in a provider webhook event. */
+export type InboundWebhookData = {
+  email_id: string;
+  message_id: string;
+  from: string;
+  to: string[];
+  cc: string[];
+  bcc: string[];
+  received_for: string[];
+  subject: string;
+  created_at: string;
+};
+
+/** Headers used to verify a provider webhook signature. */
+export type WebhookSignatureHeaders = {
+  id: string;
+  timestamp: string;
+  signature: string;
+};
+
+/** Result of verifying a provider webhook signature. */
+export type VerifiedWebhookEvent =
+  | { type: "email.received"; data: InboundWebhookData }
+  | { type: string; data: unknown };
+
+/**
+ * Narrow a verified webhook event to an inbound email. Needed because the
+ * generic variant's `type` is a plain `string`, which the compiler cannot
+ * exclude by discrimination alone.
+ */
+export function isReceivedEmailEvent(
+  event: VerifiedWebhookEvent,
+): event is { type: "email.received"; data: InboundWebhookData } {
+  return event.type === "email.received";
+}
+
+/**
+ * Provider contract for receiving email. Implemented by adapters that can
+ * receive inbound messages (currently Resend).
+ */
+export interface EmailInboundAdapter {
+  /**
+   * Verify a webhook signature and decode the event. Must throw when the
+   * signature is invalid.
+   */
+  verifyWebhook(params: {
+    payload: string;
+    headers: WebhookSignatureHeaders;
+    webhookSecret: string;
+  }): VerifiedWebhookEvent;
+
+  /** Fetch the full body and attachment metadata of a received email. */
+  fetchInbound(externalId: string): Promise<InboundEmail>;
+
+  /** List attachment metadata for a received email. */
+  listInboundAttachments(
+    externalId: string,
+  ): Promise<InboundAttachmentMetadata[]>;
+
+  /** Resolve a short-lived download URL for a single attachment. */
+  getAttachmentDownloadUrl(
+    emailExternalId: string,
+    attachmentExternalId: string,
+  ): Promise<{ url: string; expiresAt?: Date }>;
+}
+
 export type DeleteContactResult = {
   errors: string[];
 };
 
-export interface EmailProviderAdapter {
+export interface EmailProviderAdapter extends EmailInboundAdapter {
   syncSegment(externalId: string | null, name: string): Promise<SyncResult>;
   syncContactsBatch(
     contacts: {

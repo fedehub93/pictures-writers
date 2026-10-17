@@ -20,6 +20,18 @@ type FakeResendClient = {
   broadcasts: {
     create: ReturnType<typeof vi.fn>;
   };
+  emails: {
+    receiving: {
+      get: ReturnType<typeof vi.fn>;
+      attachments: {
+        list: ReturnType<typeof vi.fn>;
+        get: ReturnType<typeof vi.fn>;
+      };
+    };
+  };
+  webhooks: {
+    verify: ReturnType<typeof vi.fn>;
+  };
 };
 
 function createFakeClient(): FakeResendClient {
@@ -36,6 +48,18 @@ function createFakeClient(): FakeResendClient {
     },
     broadcasts: {
       create: vi.fn(),
+    },
+    emails: {
+      receiving: {
+        get: vi.fn(),
+        attachments: {
+          list: vi.fn(),
+          get: vi.fn(),
+        },
+      },
+    },
+    webhooks: {
+      verify: vi.fn(),
     },
   };
 }
@@ -451,5 +475,209 @@ describe("ResendAdapter.sendBulk", () => {
 
     const createArgs = fake.broadcasts.create.mock.calls[0][0];
     expect(createArgs.previewText).toBeUndefined();
+  });
+});
+
+// ─── Inbound (receiving) ─────────────────────────────────────────────────────
+
+describe("ResendAdapter.verifyWebhook", () => {
+  it("delegates to the Resend webhook verifier with the raw inputs", () => {
+    const fake = createFakeClient();
+    const event = {
+      type: "email.received",
+      data: { email_id: "inbound-1" },
+    };
+    fake.webhooks.verify.mockReturnValue(event);
+
+    const adapter = makeAdapter(fake);
+    const result = adapter.verifyWebhook({
+      payload: "{\"type\":\"email.received\"}",
+      headers: { id: "msg_1", timestamp: "123", signature: "v1,abc" },
+      webhookSecret: "whsec_test",
+    });
+
+    expect(result).toBe(event);
+    expect(fake.webhooks.verify).toHaveBeenCalledWith({
+      payload: "{\"type\":\"email.received\"}",
+      headers: { id: "msg_1", timestamp: "123", signature: "v1,abc" },
+      webhookSecret: "whsec_test",
+    });
+  });
+});
+
+describe("ResendAdapter.fetchInbound", () => {
+  it("maps the received email body and attachment metadata", async () => {
+    const fake = createFakeClient();
+    fake.emails.receiving.get.mockResolvedValue({
+      data: {
+        object: "email",
+        id: "inbound-1",
+        to: ["support@example.com"],
+        from: "Alice <alice@example.com>",
+        created_at: "2026-10-17T10:00:00.000Z",
+        subject: "Hello",
+        bcc: null,
+        cc: ["cc@example.com"],
+        reply_to: null,
+        received_for: ["support@example.com"],
+        html: "<p>Hi</p>",
+        text: "Hi",
+        headers: {
+          "In-Reply-To": "<parent@example.com>",
+          References: "<root@example.com> <parent@example.com>",
+        },
+        message_id: "<msg-1@example.com>",
+        raw: null,
+        attachments: [
+          {
+            id: "att-1",
+            filename: "report.pdf",
+            size: 1234,
+            content_type: "application/pdf",
+            content_id: null,
+            content_disposition: "attachment",
+          },
+        ],
+      },
+      ...ok,
+    });
+
+    const adapter = makeAdapter(fake);
+    const inbound = await adapter.fetchInbound("inbound-1");
+
+    expect(fake.emails.receiving.get).toHaveBeenCalledWith("inbound-1");
+    expect(inbound).toMatchObject({
+      externalId: "inbound-1",
+      messageId: "<msg-1@example.com>",
+      inReplyTo: "<parent@example.com>",
+      references: ["<root@example.com>", "<parent@example.com>"],
+      from: "Alice <alice@example.com>",
+      to: ["support@example.com"],
+      cc: ["cc@example.com"],
+      bcc: [],
+      subject: "Hello",
+      bodyHtml: "<p>Hi</p>",
+      bodyText: "Hi",
+      attachments: [
+        {
+          externalId: "att-1",
+          filename: "report.pdf",
+          contentType: "application/pdf",
+          size: 1234,
+        },
+      ],
+    });
+    expect(inbound.receivedAt.toISOString()).toBe("2026-10-17T10:00:00.000Z");
+  });
+
+  it("throws when the provider returns an error", async () => {
+    const fake = createFakeClient();
+    fake.emails.receiving.get.mockResolvedValue({
+      data: null,
+      error: { message: "not found", name: "not_found" },
+    });
+
+    const adapter = makeAdapter(fake);
+
+    await expect(adapter.fetchInbound("missing")).rejects.toThrow(
+      "not found",
+    );
+  });
+});
+
+describe("ResendAdapter.listInboundAttachments", () => {
+  it("maps attachment metadata", async () => {
+    const fake = createFakeClient();
+    fake.emails.receiving.attachments.list.mockResolvedValue({
+      data: {
+        object: "list",
+        has_more: false,
+        data: [
+          {
+            id: "att-1",
+            filename: "report.pdf",
+            size: 1234,
+            content_type: "application/pdf",
+            content_disposition: "attachment",
+            download_url: "https://provider.test/att-1",
+            expires_at: "2026-10-17T11:00:00.000Z",
+          },
+          {
+            id: "att-2",
+            filename: null,
+            size: 10,
+            content_type: "text/plain",
+            content_disposition: "inline",
+            download_url: "https://provider.test/att-2",
+            expires_at: "2026-10-17T11:00:00.000Z",
+          },
+        ],
+      },
+      ...ok,
+    });
+
+    const adapter = makeAdapter(fake);
+    const attachments = await adapter.listInboundAttachments("inbound-1");
+
+    expect(fake.emails.receiving.attachments.list).toHaveBeenCalledWith({
+      emailId: "inbound-1",
+    });
+    expect(attachments).toEqual([
+      {
+        externalId: "att-1",
+        filename: "report.pdf",
+        contentType: "application/pdf",
+        size: 1234,
+      },
+      {
+        externalId: "att-2",
+        filename: "attachment",
+        contentType: "text/plain",
+        size: 10,
+      },
+    ]);
+  });
+});
+
+describe("ResendAdapter.getAttachmentDownloadUrl", () => {
+  it("returns the signed URL and expiry", async () => {
+    const fake = createFakeClient();
+    fake.emails.receiving.attachments.get.mockResolvedValue({
+      data: {
+        object: "attachment",
+        id: "att-1",
+        filename: "report.pdf",
+        size: 1234,
+        content_type: "application/pdf",
+        content_disposition: "attachment",
+        download_url: "https://provider.test/att-1?sig=abc",
+        expires_at: "2026-10-17T11:00:00.000Z",
+      },
+      ...ok,
+    });
+
+    const adapter = makeAdapter(fake);
+    const result = await adapter.getAttachmentDownloadUrl("inbound-1", "att-1");
+
+    expect(fake.emails.receiving.attachments.get).toHaveBeenCalledWith({
+      emailId: "inbound-1",
+      id: "att-1",
+    });
+    expect(result.url).toBe("https://provider.test/att-1?sig=abc");
+    expect(result.expiresAt?.toISOString()).toBe("2026-10-17T11:00:00.000Z");
+  });
+
+  it("throws when the provider returns an error", async () => {
+    const fake = createFakeClient();
+    fake.emails.receiving.attachments.get.mockResolvedValue({
+      data: null,
+      error: { message: "expired", name: "expired" },
+    });
+
+    const adapter = makeAdapter(fake);
+
+    await expect(
+      adapter.getAttachmentDownloadUrl("inbound-1", "att-1"),
+    ).rejects.toThrow("expired");
   });
 });

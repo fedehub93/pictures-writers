@@ -61,6 +61,7 @@ Create `.env` (see existing `.env` for reference). Required variables include:
 - `UPLOADTHING_TOKEN` — UploadThing token
 - `NEXT_SENDGRID_KEY` — SendGrid API key
 - `NEXT_RESEND_KEY` — Resend API key
+- `NEXT_RESEND_WEBHOOK_SECRET` — Resend webhook signing secret (inbound `email.received` verification)
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` / `STRIPE_API_KEY` / `STRIPE_WEBHOOK_SECRET`
 - `NEXT_GA_TRACKING_ID` / `NEXT_GTAG_CONTAINER_ID` — Google Analytics/Tag Manager
 - `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` — reCAPTCHA
