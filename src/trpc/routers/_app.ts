@@ -8,6 +8,7 @@ import { customersRouter } from "@/modules/shop/customers/server/procedures";
 import { dashboardRouter } from "@/modules/dashboard/server/procedures";
 import { emailAccountsRouter } from "@/modules/mails/accounts/server/procedures";
 import { contactsRouter } from "@/modules/mails/contacts/server/procedures";
+import { conversationsRouter } from "@/modules/mails/conversations/server/procedures";
 import { formsRouter } from "@/modules/forms/server/procedures";
 import { formSubmissionsRouter } from "@/modules/forms/submissions/server/procedures";
 import { ordersRouter } from "@/modules/shop/orders/server/procedures";
@@ -30,6 +31,7 @@ export const appRouter = createTRPCRouter({
   credentials: credentialsRouter,
   categories: categoriesRouter,
   contacts: contactsRouter,
+  conversations: conversationsRouter,
   customers: customersRouter,
   dashboard: dashboardRouter,
   emailAccounts: emailAccountsRouter,

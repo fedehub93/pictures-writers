@@ -156,6 +156,12 @@ const data: Record<string, NavObject[]> = {
       Icon: MailsIcon,
       items: [
         {
+          title: "Inbox",
+          url: "/admin/mails/inbox" as Route,
+          Icon: InboxIcon,
+          permission: "mail.read",
+        },
+        {
           title: "Single Sends",
           url: "/admin/mails/single-sends",
           Icon: MailPlusIcon,

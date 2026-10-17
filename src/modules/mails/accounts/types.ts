@@ -8,3 +8,6 @@ export type EmailAccountGetOne =
   inferRouterOutputs<AppRouter>["emailAccounts"]["getOne"];
 
 export type EmailAccountGetManyRow = EmailAccountsGetMany[number];
+
+export type EmailAccountAllowed =
+  inferRouterOutputs<AppRouter>["emailAccounts"]["getAllowed"][number];
