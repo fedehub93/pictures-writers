@@ -5,6 +5,7 @@ import { TRPCError } from "@trpc/server";
 import { db } from "@/shared/lib/db";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 import { recordAdministrativeActivity } from "@/modules/administrative-activity";
+import type { Integration } from "@/generated/prisma";
 import {
   createTRPCRouter,
   permissionProcedure,
@@ -17,7 +18,6 @@ import {
   applySecretsUpdate,
   withIntegrationResolutionCache,
   invalidateCachedIntegrationSecrets,
-  isIntegrationProvider,
   type IntegrationProvider,
   type ResendIntegrationSecrets,
 } from "@/modules/integrations/lib";
@@ -42,26 +42,13 @@ export { resetIntegrationTestRateLimit };
 const RESEND_ENV_KEY = "NEXT_RESEND_KEY";
 const RESEND_WEBHOOK_SECRET_ENV_KEY = "NEXT_RESEND_WEBHOOK_SECRET";
 
-function withCache<T>(fn: () => T): T {
-  return withIntegrationResolutionCache(fn);
-}
-
-function assertKnownProvider(provider: string): asserts provider is IntegrationProvider {
-  if (!isIntegrationProvider(provider)) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: `Unknown integration provider: ${provider}`,
-    });
-  }
-}
-
 const readProcedure = permissionProcedure(
   PERMISSIONS.INTEGRATIONS_READ,
-).use(({ next }) => withCache(() => next()));
+).use(({ next }) => withIntegrationResolutionCache(() => next()));
 
 const manageProcedure = permissionProcedure(
   PERMISSIONS.INTEGRATIONS_MANAGE,
-).use(({ next }) => withCache(() => next()));
+).use(({ next }) => withIntegrationResolutionCache(() => next()));
 
 function decryptSecretKeys(encrypted: string): string[] {
   try {
@@ -72,24 +59,39 @@ function decryptSecretKeys(encrypted: string): string[] {
   }
 }
 
+function toIntegrationListItem(
+  provider: IntegrationProvider,
+  row?: Integration | null,
+) {
+  const secretKeys = row ? decryptSecretKeys(row.secretEncrypted) : [];
+  return {
+    provider,
+    isEnabled: row?.isEnabled ?? false,
+    hasApiKey: secretKeys.includes("apiKey"),
+    hasWebhookSecret: secretKeys.includes("webhookSecret"),
+    lastTestedAt: row?.lastTestedAt ?? null,
+    lastTestStatus: row?.lastTestStatus ?? null,
+  };
+}
+
 function buildAuditPayload(row: Awaited<ReturnType<typeof findOrBuildIntegration>>) {
   if (!row) return undefined;
   return buildIntegrationAuditPayload(row, decryptSecretKeys(row.secretEncrypted));
 }
 
-async function findOrBuildIntegration(provider: string) {
+async function findOrBuildIntegration(provider: string): Promise<Integration> {
   return (
-    (await db.integration.findUnique({ where: { provider } })) ?? {
+    (await db.integration.findUnique({ where: { provider } })) ??
+    ({
       id: "",
       provider,
       isEnabled: false,
-      config: {},
       secretEncrypted: encryptIntegrationSecrets({}),
       lastTestedAt: null,
       lastTestStatus: null,
       createdAt: new Date(),
       updatedAt: new Date(),
-    }
+    } as Integration)
   );
 }
 
@@ -109,7 +111,6 @@ async function upsertIntegration(
   data: {
     isEnabled?: boolean;
     secrets?: Partial<Record<keyof ResendIntegrationSecrets, string | null | undefined>>;
-    config?: Record<string, unknown>;
   },
 ) {
   const existing = await db.integration.findUnique({ where: { provider } });
@@ -122,20 +123,16 @@ async function upsertIntegration(
     ? applySecretsUpdate(currentSecrets as ResendIntegrationSecrets, data.secrets)
     : (currentSecrets as ResendIntegrationSecrets);
 
-  const nextConfig = data.config ?? (existing ? (existing.config as Record<string, unknown>) : {});
-
   return db.integration.upsert({
     where: { provider },
     create: {
       provider,
       isEnabled: data.isEnabled ?? false,
       secretEncrypted: encryptIntegrationSecrets(nextSecrets),
-      config: nextConfig,
     },
     update: {
       isEnabled: data.isEnabled,
       secretEncrypted: encryptIntegrationSecrets(nextSecrets),
-      config: nextConfig,
     },
   });
 }
@@ -149,32 +146,20 @@ export const integrationsRouter = createTRPCRouter({
     const knownProviders: IntegrationProvider[] = [INTEGRATION_PROVIDER_RESEND];
     const rowByProvider = new Map(rows.map((row) => [row.provider, row]));
 
-    return knownProviders.map((provider) => {
-      const row = rowByProvider.get(provider);
-      const secretKeys = row ? decryptSecretKeys(row.secretEncrypted) : [];
-      return {
-        provider,
-        isEnabled: row?.isEnabled ?? false,
-        hasApiKey: secretKeys.includes("apiKey"),
-        hasWebhookSecret: secretKeys.includes("webhookSecret"),
-        lastTestedAt: row?.lastTestedAt ?? null,
-        lastTestStatus: row?.lastTestStatus ?? null,
-      };
-    });
+    return knownProviders.map((provider) =>
+      toIntegrationListItem(provider, rowByProvider.get(provider)),
+    );
   }),
 
   update: manageProcedure
     .input(integrationUpdateSchema)
     .mutation(async ({ input, ctx }) => {
-      assertKnownProvider(input.provider);
-
       const beforeRow = await findOrBuildIntegration(input.provider);
       const before = buildAuditPayload(beforeRow);
 
       const updated = await upsertIntegration(input.provider, {
         isEnabled: input.isEnabled,
         secrets: input.secrets,
-        config: input.config,
       });
 
       const after = buildIntegrationAuditPayload(
@@ -193,21 +178,12 @@ export const integrationsRouter = createTRPCRouter({
         }),
       });
 
-      return {
-        provider: updated.provider,
-        isEnabled: updated.isEnabled,
-        hasApiKey: after.hasApiKey,
-        hasWebhookSecret: after.hasWebhookSecret,
-        lastTestedAt: updated.lastTestedAt,
-        lastTestStatus: updated.lastTestStatus,
-      };
+      return toIntegrationListItem(input.provider, updated);
     }),
 
   setEnabled: manageProcedure
     .input(integrationSetEnabledSchema)
     .mutation(async ({ input, ctx }) => {
-      assertKnownProvider(input.provider);
-
       const row = await getIntegrationOrThrow(input.provider);
       const before = buildAuditPayload(row);
 
@@ -232,21 +208,12 @@ export const integrationsRouter = createTRPCRouter({
         }),
       });
 
-      return {
-        provider: updated.provider,
-        isEnabled: updated.isEnabled,
-        hasApiKey: after.hasApiKey,
-        hasWebhookSecret: after.hasWebhookSecret,
-        lastTestedAt: updated.lastTestedAt,
-        lastTestStatus: updated.lastTestStatus,
-      };
+      return toIntegrationListItem(input.provider, updated);
     }),
 
   importFromEnv: manageProcedure
     .input(integrationProviderParamSchema)
     .mutation(async ({ input, ctx }) => {
-      assertKnownProvider(input.provider);
-
       if (input.provider !== INTEGRATION_PROVIDER_RESEND) {
         throw new TRPCError({
           code: "BAD_REQUEST",
@@ -291,21 +258,12 @@ export const integrationsRouter = createTRPCRouter({
         }),
       });
 
-      return {
-        provider: updated.provider,
-        isEnabled: updated.isEnabled,
-        hasApiKey: after.hasApiKey,
-        hasWebhookSecret: after.hasWebhookSecret,
-        lastTestedAt: updated.lastTestedAt,
-        lastTestStatus: updated.lastTestStatus,
-      };
+      return toIntegrationListItem(input.provider, updated);
     }),
 
   test: manageProcedure
     .input(integrationProviderParamSchema)
     .mutation(async ({ input, ctx }) => {
-      assertKnownProvider(input.provider);
-
       const rateLimit = checkIntegrationTestRateLimit(input.provider);
       if (!rateLimit.allowed) {
         throw new TRPCError({
@@ -380,13 +338,6 @@ export const integrationsRouter = createTRPCRouter({
         });
       }
 
-      return {
-        provider: updated.provider,
-        isEnabled: updated.isEnabled,
-        hasApiKey: after.hasApiKey,
-        hasWebhookSecret: after.hasWebhookSecret,
-        lastTestedAt: updated.lastTestedAt,
-        lastTestStatus: updated.lastTestStatus,
-      };
+      return toIntegrationListItem(input.provider, updated);
     }),
 });

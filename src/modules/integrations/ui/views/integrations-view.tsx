@@ -1,10 +1,11 @@
 "use client";
 
+import "client-only";
+
 import { useState } from "react";
 
 import { LoadingState } from "@/shared/components/loading-state";
 import { ErrorState } from "@/shared/components/error-state";
-import { Button } from "@/shared/ui/button";
 import { PlugIcon } from "lucide-react";
 
 import {
@@ -33,9 +34,9 @@ export const IntegrationsView = () => {
   const handleEdit = (values: IntegrationFormValues) => {
     if (!editingIntegration) return;
 
-    updateMutation.mutate(
+      updateMutation.mutate(
       {
-        provider: editingIntegration.provider,
+        provider: editingIntegration.provider as "resend",
         isEnabled: values.isEnabled,
         secrets: {
           apiKey: values.removeApiKey
@@ -67,7 +68,6 @@ export const IntegrationsView = () => {
           <p className="text-sm text-muted-foreground">
             No integrations available.
           </p>
-          <Button variant="outline">Add integration</Button>
         </div>
       ) : (
         <div className="flex flex-col gap-4">

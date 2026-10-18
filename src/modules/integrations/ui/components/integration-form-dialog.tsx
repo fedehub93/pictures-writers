@@ -1,8 +1,10 @@
 "use client";
 
+import "client-only";
+
 import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useWatch, type Resolver } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import * as z from "zod";
 
 import { Button } from "@/shared/ui/button";
@@ -20,9 +22,9 @@ import {
 const formSchema = z
   .object({
     apiKey: z.string().optional(),
-    removeApiKey: z.boolean().default(false),
+    removeApiKey: z.boolean().optional(),
     webhookSecret: z.string().optional(),
-    removeWebhookSecret: z.boolean().default(false),
+    removeWebhookSecret: z.boolean().optional(),
     isEnabled: z.boolean().optional(),
   })
   .refine(
@@ -60,7 +62,7 @@ export const IntegrationFormDialog = ({
   isPending,
 }: IntegrationFormDialogProps) => {
   const form = useForm<IntegrationFormValues>({
-    resolver: zodResolver(formSchema) as Resolver<IntegrationFormValues>,
+    resolver: zodResolver(formSchema),
     defaultValues: {
       apiKey: "",
       removeApiKey: false,
@@ -89,10 +91,6 @@ export const IntegrationFormDialog = ({
     }
   }, [open, defaultIsEnabled, form]);
 
-  const handleSubmit = (values: IntegrationFormValues) => {
-    onSubmit(values);
-  };
-
   return (
     <ResponsiveDialog
       title={`Edit ${provider} integration`}
@@ -101,7 +99,7 @@ export const IntegrationFormDialog = ({
       onOpenChange={onOpenChange}
     >
       <form
-        onSubmit={form.handleSubmit(handleSubmit)}
+        onSubmit={form.handleSubmit(onSubmit)}
         className="flex flex-col gap-6"
       >
         <FieldGroup>

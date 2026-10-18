@@ -10,7 +10,7 @@ export interface ActivityData {
   [key: string]: ActivityValue | ActivityData | ActivityValue[] | ActivityData[];
 }
 
-const safeKey = /^(accountStatus|action|bio|config|email|expiresAt|firstName|hasApiKey|hasWebhookSecret|imageUrl|invitationId|isActive|key|lastName|lastTestStatus|lastTestedAt|name|permissionIds|provider|role|roleId|status)$/;
+const safeKey = /^(accountStatus|action|bio|config|email|expiresAt|firstName|hasApiKey|hasWebhookSecret|imageUrl|invitationId|isActive|isEnabled|key|lastName|lastTestStatus|lastTestedAt|name|permissionIds|provider|role|roleId|status)$/;
 
 export const sanitizeActivityData = (value: ActivityData | undefined): ActivityData | undefined => {
   if (!value) return undefined;

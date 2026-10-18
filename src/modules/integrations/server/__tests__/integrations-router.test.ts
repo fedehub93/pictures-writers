@@ -49,7 +49,6 @@ const userIds: string[] = [];
 const activityIds: string[] = [];
 
 let caller: ReturnType<typeof createCaller>;
-let userId: string;
 
 const originalResendKey = process.env.NEXT_RESEND_KEY;
 const originalWebhookSecret = process.env.NEXT_RESEND_WEBHOOK_SECRET;
@@ -95,7 +94,6 @@ beforeEach(async () => {
   emailsList.mockReset();
 
   const user = await createUser();
-  userId = user.id;
   caller = createCaller({ userId: user.id, auth: { id: user.id } });
 
   await db.integration.deleteMany({
@@ -316,6 +314,7 @@ describe("integrationsRouter", () => {
 
     it("throws NOT_FOUND for an unknown provider", async () => {
       await expect(
+        // @ts-expect-error testing runtime validation of an invalid provider
         caller.setEnabled({ provider: "unknown", isEnabled: true }),
       ).rejects.toThrow();
     });

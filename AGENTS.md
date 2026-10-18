@@ -62,8 +62,8 @@ Create `.env` (see existing `.env` for reference). Required variables include:
 - `AUTOMATION_CREDENTIALS_KEY` — Legacy fallback key used to decrypt existing automation `Credential` rows created before `SECRETS_ENCRYPTION_KEY` was introduced.
 - `UPLOADTHING_TOKEN` — UploadThing token
 - `NEXT_SENDGRID_KEY` — SendGrid API key
-- `NEXT_RESEND_KEY` — Resend API key
-- `NEXT_RESEND_WEBHOOK_SECRET` — Resend webhook signing secret (inbound `email.received` verification)
+- `NEXT_RESEND_KEY` — Resend API key. After the Resend integration row is created in Settings → Integrations, this becomes a bootstrap fallback only and can be removed once the integration is verified.
+- `NEXT_RESEND_WEBHOOK_SECRET` — Resend webhook signing secret (inbound `email.received` verification). Like `NEXT_RESEND_KEY`, this becomes a bootstrap fallback once stored in the Resend integration.
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` / `STRIPE_API_KEY` / `STRIPE_WEBHOOK_SECRET`
 - `NEXT_GA_TRACKING_ID` / `NEXT_GTAG_CONTAINER_ID` — Google Analytics/Tag Manager
 - `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` — reCAPTCHA

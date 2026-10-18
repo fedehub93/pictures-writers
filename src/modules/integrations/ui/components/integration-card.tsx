@@ -1,5 +1,7 @@
 "use client";
 
+import "client-only";
+
 import {
   CheckCircleIcon,
   EditIcon,
@@ -54,6 +56,7 @@ export const IntegrationCard = ({
 }: IntegrationCardProps) => {
   const isConfigured = integration.hasApiKey;
   const hasPassedTest = integration.lastTestStatus === "SUCCESS";
+  const isBusy = isToggling || isTesting || isImporting;
 
   return (
     <Card className="w-full">
@@ -123,7 +126,7 @@ export const IntegrationCard = ({
           variant="outline"
           size="sm"
           onClick={onEdit}
-          disabled={isToggling || isTesting || isImporting}
+          disabled={isBusy}
         >
           <EditIcon data-icon="inline-start" />
           Edit credentials
@@ -132,7 +135,7 @@ export const IntegrationCard = ({
           variant="outline"
           size="sm"
           onClick={onImport}
-          disabled={isToggling || isTesting || isImporting}
+          disabled={isBusy}
         >
           <ImportIcon data-icon="inline-start" />
           {isImporting ? "Importing..." : "Import from env"}
@@ -141,7 +144,7 @@ export const IntegrationCard = ({
           variant="outline"
           size="sm"
           onClick={onTest}
-          disabled={isToggling || isTesting || isImporting || !integration.isEnabled}
+          disabled={isBusy || !integration.isEnabled}
         >
           <PlayIcon data-icon="inline-start" />
           {isTesting ? "Testing..." : "Test connection"}
@@ -150,7 +153,7 @@ export const IntegrationCard = ({
           <Switch
             checked={integration.isEnabled}
             onCheckedChange={onToggleEnabled}
-            disabled={isToggling || isTesting || isImporting}
+            disabled={isBusy}
             aria-label={`Toggle ${integration.provider} integration`}
           />
         </div>

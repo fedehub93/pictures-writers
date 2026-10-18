@@ -1,7 +1,17 @@
 import * as z from "zod";
 
+import {
+  isIntegrationProvider,
+  type IntegrationProvider,
+} from "@/modules/integrations/lib";
+
+const integrationProvider = z.custom<IntegrationProvider>(
+  (value) => typeof value === "string" && isIntegrationProvider(value),
+  { message: "Invalid integration provider" },
+);
+
 export const integrationProviderParamSchema = z.object({
-  provider: z.string(),
+  provider: integrationProvider,
 });
 
 export const integrationSecretsUpdateSchema = z.object({
@@ -10,14 +20,13 @@ export const integrationSecretsUpdateSchema = z.object({
 });
 
 export const integrationUpdateSchema = z.object({
-  provider: z.string(),
+  provider: integrationProvider,
   isEnabled: z.boolean().optional(),
   secrets: integrationSecretsUpdateSchema.optional(),
-  config: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const integrationSetEnabledSchema = z.object({
-  provider: z.string(),
+  provider: integrationProvider,
   isEnabled: z.boolean(),
 });
 

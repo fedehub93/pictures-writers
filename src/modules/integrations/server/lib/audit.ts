@@ -12,11 +12,11 @@ export type IntegrationAuditAction =
   | "INTEGRATION_TESTED";
 
 export interface IntegrationAuditPayload {
+  [key: string]: string | number | boolean | null;
   provider: string;
   isEnabled: boolean;
   hasApiKey: boolean;
   hasWebhookSecret: boolean;
-  config?: Record<string, unknown>;
   lastTestedAt: string | null;
   lastTestStatus: string | null;
 }
@@ -36,11 +36,10 @@ export function buildIntegrationAuditPayload(
     isEnabled: row.isEnabled,
     hasApiKey: secretKeys.includes("apiKey"),
     hasWebhookSecret: secretKeys.includes("webhookSecret"),
-    config: (row.config as Record<string, unknown> | undefined) ?? undefined,
     lastTestedAt: row.lastTestedAt?.toISOString() ?? null,
     lastTestStatus: row.lastTestStatus ?? null,
   };
-  return payload as unknown as ActivityData;
+  return payload as ActivityData;
 }
 
 export function buildIntegrationActivityInput(
