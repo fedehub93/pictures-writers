@@ -159,6 +159,10 @@ export type SendOneToOneParams = {
   text?: string;
   replyTo?: string;
   attachments?: OutboundAttachment[];
+  /// Extra transport headers forwarded verbatim to the provider.
+  headers?: Record<string, string>;
+  /// Opaque idempotency key forwarded to providers that support it.
+  idempotencyKey?: string;
 };
 
 export type SendOneToOneResult =

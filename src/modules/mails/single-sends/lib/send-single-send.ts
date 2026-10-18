@@ -2,7 +2,7 @@ import "server-only";
 
 import { db } from "@/shared/lib/db";
 import type { EmailProviderAdapter } from "@/modules/mails/lib/types";
-import { getProviderAdapter } from "@/modules/mails/lib/core";
+import { resolveAdapter } from "@/modules/mails/lib/core";
 import { resolveSender } from "@/modules/mails/lib/sender";
 
 export class EmailSendError extends Error {
@@ -113,7 +113,7 @@ export async function sendSingleSend({
 
     effectiveReplyTo ??= settings.emailResponse ?? undefined;
 
-    effectiveAdapter ??= getProviderAdapter(settings.emailProvider);
+    effectiveAdapter ??= await resolveAdapter();
   }
 
   // const template = Handlebars.compile(singleSend.bodyHtml);

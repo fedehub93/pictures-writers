@@ -56,11 +56,11 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 export class ResendAdapter implements EmailProviderAdapter {
   private resendClient: Resend;
 
-  constructor() {
-    if (!process.env.NEXT_RESEND_KEY) {
-      throw new Error("NEXT_RESEND_KEY is missing in environment variables");
+  constructor({ apiKey }: { apiKey: string }) {
+    if (!apiKey) {
+      throw new Error("Resend API key is required");
     }
-    this.resendClient = new Resend(process.env.NEXT_RESEND_KEY);
+    this.resendClient = new Resend(apiKey);
   }
 
   async syncSegment(
@@ -683,23 +683,29 @@ export class ResendAdapter implements EmailProviderAdapter {
     text,
     replyTo,
     attachments,
+    headers,
+    idempotencyKey,
   }: SendOneToOneParams): Promise<SendOneToOneResult> {
     try {
-      const { data, error } = await this.resendClient.emails.send({
-        to: [to],
-        from,
-        subject,
-        html,
-        text,
-        replyTo: replyTo ? [replyTo] : undefined,
-        attachments: attachments?.length
-          ? attachments.map((attachment) => ({
-              filename: attachment.filename,
-              contentType: attachment.contentType,
-              path: attachment.url,
-            }))
-          : undefined,
-      });
+      const { data, error } = await this.resendClient.emails.send(
+        {
+          to: [to],
+          from,
+          subject,
+          html,
+          text,
+          replyTo: replyTo ? [replyTo] : undefined,
+          attachments: attachments?.length
+            ? attachments.map((attachment) => ({
+                filename: attachment.filename,
+                contentType: attachment.contentType,
+                path: attachment.url,
+              }))
+            : undefined,
+          headers,
+        },
+        idempotencyKey ? { idempotencyKey } : undefined,
+      );
 
       if (error || !data) {
         return {

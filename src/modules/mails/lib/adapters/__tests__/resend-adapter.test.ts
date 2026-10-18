@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 
 import { ResendAdapter } from "../resend-adapter";
 
@@ -67,20 +67,12 @@ function createFakeClient(): FakeResendClient {
 }
 
 function makeAdapter(fake: FakeResendClient): ResendAdapter {
-  const adapter = new ResendAdapter();
+  const adapter = new ResendAdapter({ apiKey: "re_test_dummy" });
   (adapter as unknown as { resendClient: unknown }).resendClient = fake;
   return adapter;
 }
 
 const ok = { error: null };
-
-beforeEach(() => {
-  process.env.NEXT_RESEND_KEY = "re_test_dummy";
-});
-
-afterEach(() => {
-  delete process.env.NEXT_RESEND_KEY;
-});
 
 // ─── upsertContact — update path (contact exists) ───────────────────────────
 
@@ -508,21 +500,24 @@ describe("ResendAdapter.sendOneToOne", () => {
     });
 
     expect(result).toEqual({ success: true, externalId: "email-1" });
-    expect(fake.emails.send).toHaveBeenCalledWith({
-      to: ["contact@example.com"],
-      from: "Support <support@example.com>",
-      subject: "Re: Hello",
-      html: "<p>Hi there</p>",
-      text: "Hi there",
-      replyTo: ["support@example.com"],
-      attachments: [
-        {
-          filename: "report.pdf",
-          contentType: "application/pdf",
-          path: "https://files.test/report.pdf",
-        },
-      ],
-    });
+    expect(fake.emails.send).toHaveBeenCalledWith(
+      {
+        to: ["contact@example.com"],
+        from: "Support <support@example.com>",
+        subject: "Re: Hello",
+        html: "<p>Hi there</p>",
+        text: "Hi there",
+        replyTo: ["support@example.com"],
+        attachments: [
+          {
+            filename: "report.pdf",
+            contentType: "application/pdf",
+            path: "https://files.test/report.pdf",
+          },
+        ],
+      },
+      undefined,
+    );
   });
 
   it("omits replyTo and attachments when absent", async () => {
@@ -537,9 +532,10 @@ describe("ResendAdapter.sendOneToOne", () => {
       html: "<p>Hi</p>",
     });
 
-    const payload = fake.emails.send.mock.calls[0][0];
+    const [payload, options] = fake.emails.send.mock.calls[0];
     expect(payload.replyTo).toBeUndefined();
     expect(payload.attachments).toBeUndefined();
+    expect(options).toBeUndefined();
   });
 
   it("returns a failure result when the provider rejects the send", async () => {
@@ -573,6 +569,32 @@ describe("ResendAdapter.sendOneToOne", () => {
     });
 
     expect(result).toEqual({ success: false, error: "network down" });
+  });
+
+  it("forwards headers and idempotency key to the provider", async () => {
+    const fake = createFakeClient();
+    fake.emails.send.mockResolvedValue({ data: { id: "email-3" }, ...ok });
+
+    const adapter = makeAdapter(fake);
+    await adapter.sendOneToOne({
+      to: "contact@example.com",
+      from: "support@example.com",
+      subject: "Hello",
+      html: "<p>Hi</p>",
+      headers: { "List-Unsubscribe": "<https://app.test/unsubscribe>" },
+      idempotencyKey: "key-123",
+    });
+
+    expect(fake.emails.send).toHaveBeenCalledWith(
+      expect.objectContaining({
+        headers: { "List-Unsubscribe": "<https://app.test/unsubscribe>" },
+      }),
+      { idempotencyKey: "key-123" },
+    );
+  });
+
+  it("throws when constructed without an api key", () => {
+    expect(() => new ResendAdapter({ apiKey: "" })).toThrow();
   });
 });
 
