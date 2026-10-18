@@ -1,36 +1,27 @@
 import "server-only";
 
-import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
+import {
+  decryptSecret,
+  encryptSecret,
+  ENCRYPTION_PREFIX,
+  getEncryptionKey,
+} from "@/shared/lib/secrets-encryption";
 
-const CREDENTIALS_KEY_ENV = "AUTOMATION_CREDENTIALS_KEY";
-const ENCRYPTION_PREFIX = "enc:v1:";
 const IV_LENGTH = 12;
 const TAG_LENGTH = 16;
 
+/**
+ * Returns the legacy automation credentials encryption key.
+ *
+ * Kept for backwards compatibility with existing imports; new credential
+ * secrets are encrypted with the primary `SECRETS_ENCRYPTION_KEY`.
+ */
 export function getCredentialEncryptionKey(): Buffer {
-  const key = process.env[CREDENTIALS_KEY_ENV];
-
-  if (!key) {
-    throw new Error(
-      `Missing ${CREDENTIALS_KEY_ENV} environment variable. Set it before using automation credentials.`,
-    );
-  }
-
-  return createHash("sha256").update(key).digest();
+  return getEncryptionKey("legacy");
 }
 
 export function encryptCredentialSecret(secret: string): string {
-  const key = getCredentialEncryptionKey();
-  const iv = randomBytes(IV_LENGTH);
-  const cipher = createCipheriv("aes-256-gcm", key, iv);
-  const encrypted = Buffer.concat([
-    cipher.update(secret, "utf8"),
-    cipher.final(),
-  ]);
-  const tag = cipher.getAuthTag();
-
-  const payload = Buffer.concat([iv, tag, encrypted]).toString("base64");
-  return `${ENCRYPTION_PREFIX}${payload}`;
+  return encryptSecret(secret, "primary");
 }
 
 export function decryptCredentialSecret(encrypted: string): string {
@@ -38,21 +29,19 @@ export function decryptCredentialSecret(encrypted: string): string {
     return encrypted;
   }
 
-  const payload = encrypted.slice(ENCRYPTION_PREFIX.length);
-  const buffer = Buffer.from(payload, "base64");
+  const withoutPrefix = encrypted.slice(ENCRYPTION_PREFIX.length);
+  const keyIdSeparator = withoutPrefix.indexOf(":");
 
-  if (buffer.length < IV_LENGTH + TAG_LENGTH) {
-    return encrypted;
+  if (keyIdSeparator === -1) {
+    // Old-format rows produced before the shared keyId format.
+    // Preserve the legacy fallback for too-short payloads.
+    const buffer = Buffer.from(withoutPrefix, "base64");
+    if (buffer.length < IV_LENGTH + TAG_LENGTH) {
+      return encrypted;
+    }
+
+    return decryptSecret(`${ENCRYPTION_PREFIX}legacy:${withoutPrefix}`);
   }
 
-  const iv = buffer.subarray(0, IV_LENGTH);
-  const tag = buffer.subarray(IV_LENGTH, IV_LENGTH + TAG_LENGTH);
-  const value = buffer.subarray(IV_LENGTH + TAG_LENGTH);
-  const decipher = createDecipheriv("aes-256-gcm", getCredentialEncryptionKey(), iv);
-  decipher.setAuthTag(tag);
-
-  return Buffer.concat([
-    decipher.update(value),
-    decipher.final(),
-  ]).toString("utf8");
+  return decryptSecret(encrypted);
 }

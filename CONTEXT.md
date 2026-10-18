@@ -314,6 +314,16 @@ _Avoid_: User time zone, server time zone, per-node time zone.
 The rule that turns the Wait node's delay plus a time of day into a resume moment: N calendar days after the current wall date, at that time in the Site time zone, rolled forward one day when the moment has already passed.
 _Avoid_: Absolute delay, countdown, offset.
 
+## External integrations
+
+**Provider**:
+An external service a CMS feature talks to, identified by the service itself rather than by the credentials used to reach it (email, file storage, analytics, payments).
+_Avoid_: Vendor, integration when referring to the service.
+
+**Integration**:
+The configured connection from this site to one Provider: the Provider it targets, whether it is active, its non-secret configuration, and its stored secrets.
+_Avoid_: Connection (reserved for Automations), account, settings.
+
 ## Admin dashboard
 
 **Dashboard widget**:
