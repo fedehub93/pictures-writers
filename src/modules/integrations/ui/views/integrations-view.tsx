@@ -36,7 +36,7 @@ export const IntegrationsView = () => {
 
       updateMutation.mutate(
       {
-          provider: editingIntegration.provider as "resend",
+          provider: editingIntegration.provider,
         secrets: {
           apiKey: values.removeApiKey
             ? null

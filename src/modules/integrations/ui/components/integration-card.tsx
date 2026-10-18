@@ -23,9 +23,10 @@ import {
 import { Switch } from "@/shared/ui/switch";
 import { Badge } from "@/shared/ui/badge";
 import { cn } from "@/shared/lib/utils";
+import type { IntegrationProvider } from "@/modules/integrations/lib";
 
 export interface IntegrationListItem {
-  provider: string;
+  provider: IntegrationProvider;
   isEnabled: boolean;
   hasApiKey: boolean;
   hasWebhookSecret: boolean;

@@ -18,6 +18,7 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/shared/ui/field";
+import type { IntegrationProvider } from "@/modules/integrations/lib";
 
 const formSchema = z
   .object({
@@ -44,7 +45,7 @@ const formSchema = z
 export type IntegrationFormValues = z.infer<typeof formSchema>;
 
 interface IntegrationFormDialogProps {
-  provider: string;
+  provider: IntegrationProvider;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (values: IntegrationFormValues) => void;

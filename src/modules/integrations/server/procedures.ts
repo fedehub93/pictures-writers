@@ -79,7 +79,9 @@ function buildAuditPayload(row: Awaited<ReturnType<typeof findOrBuildIntegration
   return buildIntegrationAuditPayload(row, decryptSecretKeys(row.secretEncrypted));
 }
 
-async function findOrBuildIntegration(provider: string): Promise<Integration> {
+async function findOrBuildIntegration(
+  provider: IntegrationProvider,
+): Promise<Integration> {
   return (
     (await db.integration.findUnique({ where: { provider } })) ??
     ({
@@ -95,7 +97,7 @@ async function findOrBuildIntegration(provider: string): Promise<Integration> {
   );
 }
 
-async function getIntegrationOrThrow(provider: string) {
+async function getIntegrationOrThrow(provider: IntegrationProvider) {
   const row = await db.integration.findUnique({ where: { provider } });
   if (!row) {
     throw new TRPCError({
@@ -162,10 +164,7 @@ export const integrationsRouter = createTRPCRouter({
         secrets: input.secrets,
       });
 
-      const after = buildIntegrationAuditPayload(
-        updated,
-        decryptSecretKeys(updated.secretEncrypted),
-      );
+      const after = buildAuditPayload(updated);
 
       await recordAdministrativeActivity(db, {
         actorId: ctx.auth.id,
@@ -192,10 +191,7 @@ export const integrationsRouter = createTRPCRouter({
         data: { isEnabled: input.isEnabled },
       });
 
-      const after = buildIntegrationAuditPayload(
-        updated,
-        decryptSecretKeys(updated.secretEncrypted),
-      );
+      const after = buildAuditPayload(updated);
 
       await recordAdministrativeActivity(db, {
         actorId: ctx.auth.id,
@@ -242,10 +238,7 @@ export const integrationsRouter = createTRPCRouter({
 
       invalidateCachedIntegrationSecrets(input.provider);
 
-      const after = buildIntegrationAuditPayload(
-        updated,
-        decryptSecretKeys(updated.secretEncrypted),
-      );
+      const after = buildAuditPayload(updated);
 
       await recordAdministrativeActivity(db, {
         actorId: ctx.auth.id,
@@ -322,10 +315,7 @@ export const integrationsRouter = createTRPCRouter({
         },
       });
 
-      const after = buildIntegrationAuditPayload(
-        updated,
-        decryptSecretKeys(updated.secretEncrypted),
-      );
+      const after = buildAuditPayload(updated);
 
       await recordAdministrativeActivity(db, {
         actorId: ctx.auth.id,
