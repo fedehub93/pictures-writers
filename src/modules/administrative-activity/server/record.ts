@@ -6,11 +6,11 @@ import { db } from "@/shared/lib/db";
 
 type ActivityClient = typeof db | Prisma.TransactionClient;
 type ActivityValue = string | number | boolean | null;
-interface ActivityData {
+export interface ActivityData {
   [key: string]: ActivityValue | ActivityData | ActivityValue[] | ActivityData[];
 }
 
-const safeKey = /^(accountStatus|action|bio|email|expiresAt|firstName|imageUrl|invitationId|isActive|key|lastName|name|permissionIds|role|roleId|status)$/;
+const safeKey = /^(accountStatus|action|bio|config|email|expiresAt|firstName|hasApiKey|hasWebhookSecret|imageUrl|invitationId|isActive|key|lastName|lastTestStatus|lastTestedAt|name|permissionIds|provider|role|roleId|status)$/;
 
 export const sanitizeActivityData = (value: ActivityData | undefined): ActivityData | undefined => {
   if (!value) return undefined;

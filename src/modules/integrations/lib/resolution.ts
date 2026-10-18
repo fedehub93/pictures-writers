@@ -5,6 +5,10 @@ import { db } from "@/shared/lib/db";
 import { INTEGRATION_PROVIDER_RESEND, type IntegrationProvider } from "./constants";
 import { decryptIntegrationSecrets } from "./secrets";
 import {
+  getCachedIntegrationSecrets,
+  setCachedIntegrationSecrets,
+} from "./resolution-cache";
+import {
   IntegrationResolutionError,
   type IntegrationSecrets,
   type IntegrationSecretsByProvider,
@@ -71,15 +75,24 @@ const resolvers: {
  *   field.
  * - Malformed ciphertext → throws an explicit error.
  *
- * Resolution is not cached across requests. Callers that need per-request
- * memoization should wrap this function and invalidate it explicitly.
+ * Resolution is memoized per request when callers wrap the work with
+ * `withIntegrationResolutionCache`. The cache can be invalidated explicitly
+ * via `invalidateCachedIntegrationSecrets` within the same request scope.
  */
 export async function resolveIntegrationSecrets<P extends IntegrationProvider>(
   provider: P,
 ): Promise<IntegrationSecrets<P>> {
+  const cached = getCachedIntegrationSecrets(provider);
+  if (cached) {
+    return cached;
+  }
+
   const resolver = resolvers[provider];
   if (!resolver) {
     throw new IntegrationResolutionError(`Unknown integration provider: ${provider}`);
   }
-  return resolver();
+
+  const result = await resolver();
+  setCachedIntegrationSecrets(provider, result);
+  return result;
 }

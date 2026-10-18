@@ -7,6 +7,8 @@ import {
   encryptIntegrationSecrets,
   resolveIntegrationSecrets,
   IntegrationResolutionError,
+  withIntegrationResolutionCache,
+  invalidateCachedIntegrationSecrets,
 } from "../";
 
 async function resetIntegrationTable() {
@@ -200,5 +202,74 @@ describe("integration secrets encryption", () => {
     const encrypted = encryptIntegrationSecrets({ apiKey: "secret" });
 
     expect(encrypted).toMatch(/^enc:v1:primary:/);
+  });
+});
+
+describe("integration resolution cache", () => {
+  const originalPrimary = process.env.SECRETS_ENCRYPTION_KEY;
+
+  beforeEach(async () => {
+    process.env.SECRETS_ENCRYPTION_KEY = "primary-key-0123456789abcdef";
+    await db.integration.deleteMany({
+      where: { provider: INTEGRATION_PROVIDER_RESEND },
+    });
+  });
+
+  afterEach(async () => {
+    if (originalPrimary === undefined) {
+      delete process.env.SECRETS_ENCRYPTION_KEY;
+    } else {
+      process.env.SECRETS_ENCRYPTION_KEY = originalPrimary;
+    }
+
+    await db.integration.deleteMany({
+      where: { provider: INTEGRATION_PROVIDER_RESEND },
+    });
+  });
+
+  it("memoizes resolution within a cached execution", async () => {
+    await db.integration.create({
+      data: {
+        provider: INTEGRATION_PROVIDER_RESEND,
+        isEnabled: true,
+        secretEncrypted: encryptIntegrationSecrets({ apiKey: "cached-key" }),
+      },
+    });
+
+    const result = await withIntegrationResolutionCache(async () => {
+      const first = await resolveIntegrationSecrets(INTEGRATION_PROVIDER_RESEND);
+      const second = await resolveIntegrationSecrets(INTEGRATION_PROVIDER_RESEND);
+      expect(first).toBe(second);
+      return first;
+    });
+
+    expect(result.apiKey).toBe("cached-key");
+  });
+
+  it("invalidates the cached resolution on demand", async () => {
+    await db.integration.create({
+      data: {
+        provider: INTEGRATION_PROVIDER_RESEND,
+        isEnabled: true,
+        secretEncrypted: encryptIntegrationSecrets({ apiKey: "old-key" }),
+      },
+    });
+
+    await withIntegrationResolutionCache(async () => {
+      const first = await resolveIntegrationSecrets(INTEGRATION_PROVIDER_RESEND);
+      expect(first.apiKey).toBe("old-key");
+
+      await db.integration.update({
+        where: { provider: INTEGRATION_PROVIDER_RESEND },
+        data: {
+          secretEncrypted: encryptIntegrationSecrets({ apiKey: "new-key" }),
+        },
+      });
+
+      invalidateCachedIntegrationSecrets(INTEGRATION_PROVIDER_RESEND);
+
+      const second = await resolveIntegrationSecrets(INTEGRATION_PROVIDER_RESEND);
+      expect(second.apiKey).toBe("new-key");
+    });
   });
 });

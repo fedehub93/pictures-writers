@@ -88,6 +88,8 @@ export const PERMISSIONS = {
   AUTOMATIONS_WRITE: "automations.write",
   MAIL_READ: "mail.read",
   MAIL_MANAGE: "mail.manage",
+  INTEGRATIONS_READ: "integrations.read",
+  INTEGRATIONS_MANAGE: "integrations.manage",
 } as const;
 
 export type PermissionKey = string;

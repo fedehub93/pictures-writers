@@ -22,8 +22,8 @@ describe("provider setup guides", () => {
     const text = JSON.stringify(guide);
     expect(text).toContain("email.received");
     expect(text).toContain("/api/webhooks/resend/");
-    expect(text).toContain("NEXT_RESEND_KEY");
-    expect(text).toContain("NEXT_RESEND_WEBHOOK_SECRET");
+    expect(text).toContain("Settings → Integrations");
+    expect(text).toContain("signing secret");
     expect(text).toMatch(/receiving/i);
     expect(text).toMatch(/MX/);
   });

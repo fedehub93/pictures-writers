@@ -28,6 +28,10 @@ const routes: {label:string, href: Route}[] = [
     href: "/admin/settings/languages",
   },
   {
+    label: "Integrations",
+    href: "/admin/settings/integrations" as Route,
+  },
+  {
     label: "Database",
     href: "/admin/settings/database",
   },

@@ -37,7 +37,7 @@ export const PROVIDER_SETUP_GUIDES: Record<
   RESEND: {
     title: "Configuring Resend",
     intro:
-      "Resend must be set up outside this app before one-to-one sending and receiving work.",
+      "Resend is configured from Settings → Integrations. Credentials are stored encrypted in the database and are write-only.",
     steps: [
       {
         title: "Verify a sending domain",
@@ -59,8 +59,8 @@ export const PROVIDER_SETUP_GUIDES: Record<
       {
         title: "Create a full-access API key",
         description:
-          "A sending-only key cannot read received email. Store a full-access key in the server environment so both sending and receiving endpoints are allowed.",
-        code: ["NEXT_RESEND_KEY"],
+          "A sending-only key cannot read received email. Create a full-access key in Resend and paste it into Settings → Integrations → Resend.",
+        code: ["Settings → Integrations → Resend"],
         links: [{ label: "API keys", href: "https://resend.com/api-keys" }],
       },
       {
@@ -73,8 +73,8 @@ export const PROVIDER_SETUP_GUIDES: Record<
       {
         title: "Store the webhook signing secret",
         description:
-          "Copy the endpoint's signing secret and set it in the server environment, then restart or redeploy. Requests without a valid signature are rejected.",
-        code: ["NEXT_RESEND_WEBHOOK_SECRET"],
+          "Copy the endpoint's signing secret and paste it into the Resend integration in Settings → Integrations. It is stored encrypted and never returned to the browser.",
+        code: ["Settings → Integrations → Resend"],
       },
       {
         title: "Create an Email Account",
