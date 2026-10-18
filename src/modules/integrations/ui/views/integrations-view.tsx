@@ -3,10 +3,14 @@
 import "client-only";
 
 import { useState } from "react";
+import { PlugIcon } from "lucide-react";
 
 import { LoadingState } from "@/shared/components/loading-state";
 import { ErrorState } from "@/shared/components/error-state";
-import { PlugIcon } from "lucide-react";
+import { Empty, EmptyDescription, EmptyMedia, EmptyTitle } from "@/shared/ui/empty";
+import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
+import { PERMISSIONS } from "@/shared/lib/permissions";
+import { usePermission } from "@/shared/providers/authorization-provider";
 
 import {
   useImportIntegrationFromEnv,
@@ -15,14 +19,17 @@ import {
   useTestIntegration,
   useUpdateIntegration,
 } from "../hooks/use-integrations";
-import { IntegrationCard, type IntegrationListItem } from "../components/integration-card";
+import { IntegrationCard } from "../components/integration-card";
+import { IntegrationDetailsDialog } from "../components/integration-details-dialog";
 import {
   IntegrationFormDialog,
   type IntegrationFormValues,
 } from "../components/integration-form-dialog";
+import type { IntegrationListItem } from "@/modules/integrations/lib";
 
 export const IntegrationsView = () => {
   const { data: integrations } = useSuspenseIntegrations();
+  const canManage = usePermission(PERMISSIONS.INTEGRATIONS_MANAGE);
   const updateMutation = useUpdateIntegration();
   const setEnabledMutation = useSetIntegrationEnabled();
   const importMutation = useImportIntegrationFromEnv();
@@ -30,17 +37,17 @@ export const IntegrationsView = () => {
 
   const [editingIntegration, setEditingIntegration] =
     useState<IntegrationListItem | null>(null);
+  const [detailsIntegration, setDetailsIntegration] =
+    useState<IntegrationListItem | null>(null);
 
   const handleEdit = (values: IntegrationFormValues) => {
     if (!editingIntegration) return;
 
-      updateMutation.mutate(
+    updateMutation.mutate(
       {
-          provider: editingIntegration.provider,
+        provider: editingIntegration.provider,
         secrets: {
-          apiKey: values.removeApiKey
-            ? null
-            : values.apiKey || undefined,
+          apiKey: values.removeApiKey ? null : values.apiKey || undefined,
           webhookSecret: values.removeWebhookSecret
             ? null
             : values.webhookSecret || undefined,
@@ -53,28 +60,31 @@ export const IntegrationsView = () => {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-1">
-        <h2 className="text-lg font-bold">Integrations</h2>
-        <p className="text-sm text-muted-foreground">
-          Manage third-party integrations and their credentials.
-        </p>
-      </div>
+    <div className="flex h-full w-full flex-col gap-y-4 px-6 py-3">
+      <ContentHeader
+        label="Integrations"
+        totalEntries={integrations.length}
+      />
 
       {integrations.length === 0 ? (
-        <div className="flex flex-col items-center gap-4 rounded-md border p-8">
-          <PlugIcon className="size-8 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">
-            No integrations available.
-          </p>
-        </div>
+        <Empty className="border">
+          <EmptyMedia variant="icon">
+            <PlugIcon />
+          </EmptyMedia>
+          <EmptyTitle>No integrations available</EmptyTitle>
+          <EmptyDescription>
+            Integration providers will appear here once they are available.
+          </EmptyDescription>
+        </Empty>
       ) : (
-        <div className="flex flex-col gap-4">
+        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
           {integrations.map((integration) => (
             <IntegrationCard
               key={integration.provider}
               integration={integration}
+              canManage={canManage}
               onEdit={() => setEditingIntegration(integration)}
+              onDetails={() => setDetailsIntegration(integration)}
               onImport={() =>
                 importMutation.mutate({ provider: integration.provider })
               }
@@ -106,6 +116,15 @@ export const IntegrationsView = () => {
           isPending={updateMutation.isPending}
         />
       )}
+
+      {detailsIntegration && (
+        <IntegrationDetailsDialog
+          integration={detailsIntegration}
+          onOpenChange={(open: boolean) => {
+            if (!open) setDetailsIntegration(null);
+          }}
+        />
+      )}
     </div>
   );
 };
@@ -118,5 +137,8 @@ export const IntegrationsViewLoading = () => (
 );
 
 export const IntegrationsViewError = () => (
-  <ErrorState title="Error loading integrations" description="Something went wrong" />
+  <ErrorState
+    title="Error loading integrations"
+    description="Something went wrong"
+  />
 );

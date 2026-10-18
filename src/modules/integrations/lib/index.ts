@@ -19,6 +19,7 @@ export {
 } from "./resolution-cache";
 
 export type {
+  IntegrationListItem,
   ResendIntegrationSecrets,
   IntegrationSecretsByProvider,
   IntegrationSecrets,

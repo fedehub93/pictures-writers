@@ -19,6 +19,7 @@ import {
   MailsIcon,
   MegaphoneIcon,
   NotebookPenIcon,
+  PlugIcon,
   ReceiptTextIcon,
   SettingsIcon,
   ShieldCheckIcon,
@@ -248,6 +249,12 @@ export const navData: Record<string, NavObject[]> = {
           permission: "automations.read",
         },
       ],
+    },
+    {
+      title: "Integrations",
+      url: "/admin/integrations" as Route,
+      Icon: PlugIcon,
+      permission: "integrations.read",
     },
     {
       title: "Settings",

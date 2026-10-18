@@ -1,5 +1,15 @@
 import type { IntegrationProvider } from "./constants";
 
+/** Read-only projection of an integration row returned by the router. */
+export interface IntegrationListItem {
+  provider: IntegrationProvider;
+  isEnabled: boolean;
+  hasApiKey: boolean;
+  hasWebhookSecret: boolean;
+  lastTestedAt: Date | null;
+  lastTestStatus: string | null;
+}
+
 export type ResendIntegrationSecrets = {
   apiKey: string;
   webhookSecret?: string;

@@ -3,12 +3,11 @@
 import "client-only";
 
 import {
-  CheckCircleIcon,
-  EditIcon,
   ImportIcon,
+  InfoIcon,
+  MoreHorizontalIcon,
   PlayIcon,
-  PlugIcon,
-  XCircleIcon,
+  Settings2Icon,
 } from "lucide-react";
 
 import { Button } from "@/shared/ui/button";
@@ -20,23 +19,24 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/ui/card";
-import { Switch } from "@/shared/ui/switch";
 import { Badge } from "@/shared/ui/badge";
-import { cn } from "@/shared/lib/utils";
-import type { IntegrationProvider } from "@/modules/integrations/lib";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/shared/ui/dropdown-menu";
+import { Switch } from "@/shared/ui/switch";
+import type { IntegrationListItem } from "@/modules/integrations/lib";
 
-export interface IntegrationListItem {
-  provider: IntegrationProvider;
-  isEnabled: boolean;
-  hasApiKey: boolean;
-  hasWebhookSecret: boolean;
-  lastTestedAt: Date | null;
-  lastTestStatus: string | null;
-}
+import { INTEGRATION_PROVIDER_META } from "./provider-meta";
+import { CredentialStatusList, TestStatus } from "./integration-status";
 
 interface IntegrationCardProps {
   integration: IntegrationListItem;
+  canManage: boolean;
   onEdit: () => void;
+  onDetails: () => void;
   onImport: () => void;
   onTest: () => void;
   onToggleEnabled: (enabled: boolean) => void;
@@ -47,7 +47,9 @@ interface IntegrationCardProps {
 
 export const IntegrationCard = ({
   integration,
+  canManage,
   onEdit,
+  onDetails,
   onImport,
   onTest,
   onToggleEnabled,
@@ -55,109 +57,89 @@ export const IntegrationCard = ({
   isTesting,
   isImporting,
 }: IntegrationCardProps) => {
-  const isConfigured = integration.hasApiKey || integration.hasWebhookSecret;
-  const hasPassedTest = integration.lastTestStatus === "SUCCESS";
+  const { Icon, ...meta } = INTEGRATION_PROVIDER_META[integration.provider];
   const isBusy = isToggling || isTesting || isImporting;
 
   return (
-    <Card className="w-full">
+    <Card className="flex flex-col">
       <CardHeader className="flex flex-row items-start justify-between gap-4">
+        <div className="flex size-12 items-center justify-center rounded-lg border bg-muted/40 text-foreground">
+          <Icon className="size-7" />
+        </div>
+        {canManage ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="text-muted-foreground"
+                aria-label={`${meta.name} actions`}
+              >
+                <MoreHorizontalIcon />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem disabled={isBusy} onSelect={onImport}>
+                <ImportIcon />
+                Import from environment
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={isBusy || !integration.isEnabled}
+                onSelect={onTest}
+              >
+                <PlayIcon />
+                Test connection
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : null}
+      </CardHeader>
+
+      <CardContent className="flex flex-1 flex-col gap-4">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
-            <PlugIcon className="size-5 text-muted-foreground" />
-            <CardTitle className="capitalize">{integration.provider}</CardTitle>
+            <CardTitle className="text-base">{meta.name}</CardTitle>
+            <Badge
+              variant={integration.isEnabled ? "default" : "secondary"}
+            >
+              {integration.isEnabled ? "Enabled" : "Disabled"}
+            </Badge>
           </div>
-          <CardDescription>
-            {isConfigured
-              ? "Credentials are stored in the database."
-              : "No credentials configured yet."}
-          </CardDescription>
+          <CardDescription>{meta.description}</CardDescription>
         </div>
-        <Badge
-          variant={integration.isEnabled ? "default" : "secondary"}
-          className="capitalize"
-        >
-          {integration.isEnabled ? "Enabled" : "Disabled"}
-        </Badge>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-4">
-        <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
-          <div className="flex items-center gap-2">
-            <span
-              className={cn(
-                "size-2 rounded-full",
-                integration.hasApiKey ? "bg-green-500" : "bg-muted-foreground",
-              )}
-            />
-            <span className="text-muted-foreground">API key</span>
-            <span>{integration.hasApiKey ? "Present" : "Missing"}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span
-              className={cn(
-                "size-2 rounded-full",
-                integration.hasWebhookSecret
-                  ? "bg-green-500"
-                  : "bg-muted-foreground",
-              )}
-            />
-            <span className="text-muted-foreground">Webhook secret</span>
-            <span>{integration.hasWebhookSecret ? "Present" : "Missing"}</span>
-          </div>
+
+        <div className="flex flex-col gap-2">
+          <CredentialStatusList integration={integration} />
+          <TestStatus integration={integration} />
         </div>
-        {integration.lastTestedAt && (
-          <div className="flex items-center gap-2 text-sm">
-            {hasPassedTest ? (
-              <CheckCircleIcon className="size-4 text-green-500" />
-            ) : (
-              <XCircleIcon className="size-4 text-destructive" />
-            )}
-            <span className="text-muted-foreground">Last test</span>
-            <span className="capitalize">
-              {integration.lastTestStatus?.toLowerCase()}
-            </span>
-            <span className="text-muted-foreground">
-              {integration.lastTestedAt.toLocaleString()}
-            </span>
-          </div>
-        )}
       </CardContent>
-      <CardFooter className="flex flex-wrap gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onEdit}
-          disabled={isBusy}
-        >
-          <EditIcon data-icon="inline-start" />
-          Edit credentials
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onImport}
-          disabled={isBusy}
-        >
-          <ImportIcon data-icon="inline-start" />
-          {isImporting ? "Importing..." : "Import from env"}
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onTest}
-          disabled={isBusy || !integration.isEnabled}
-        >
-          <PlayIcon data-icon="inline-start" />
-          {isTesting ? "Testing..." : "Test connection"}
-        </Button>
-        <div className="ml-auto flex items-center gap-2">
+
+      <CardFooter className="mt-auto flex items-center justify-between gap-2 border-t pt-6">
+        <div className="flex items-center gap-2">
+          {canManage ? (
+            <Button
+              variant="outline"
+              size="icon-sm"
+              onClick={onEdit}
+              disabled={isBusy}
+              aria-label="Edit credentials"
+            >
+              <Settings2Icon />
+            </Button>
+          ) : null}
+          <Button variant="outline" size="sm" onClick={onDetails}>
+            <InfoIcon data-icon="inline-start" />
+            Details
+          </Button>
+        </div>
+        {canManage ? (
           <Switch
             checked={integration.isEnabled}
             onCheckedChange={onToggleEnabled}
             disabled={isBusy || !integration.hasApiKey}
-            aria-label={`Toggle ${integration.provider} integration`}
+            aria-label={`Toggle ${meta.name} integration`}
           />
-        </div>
+        ) : null}
       </CardFooter>
     </Card>
   );

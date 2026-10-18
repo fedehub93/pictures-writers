@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useTRPC } from "@/trpc/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -15,7 +15,6 @@ import { GenericSelect } from "@/shared/components/form-component/generic-select
 import { GenericInput } from "@/shared/components/form-component/generic-input";
 import { settingsUpdateSchema, SettingsUpdateValues } from "../../schemas";
 import { SettingsGet } from "../../types";
-import { ProviderSetupHelp } from "./provider-setup-help";
 
 interface EmailSettingsFormProps {
   settings: SettingsGet;
@@ -42,11 +41,6 @@ export const EmailSettingsForm = ({ settings }: EmailSettingsFormProps) => {
   });
 
   const { isValid, isSubmitting } = form.formState;
-
-  const selectedProvider = useWatch({
-    control: form.control,
-    name: "emailProvider",
-  });
 
   const updateSettings = useMutation(
     trpc.mailSettings.update.mutationOptions({
@@ -108,15 +102,6 @@ export const EmailSettingsForm = ({ settings }: EmailSettingsFormProps) => {
               label="Email Provider"
               options={[EmailProvider.SENDGRID, EmailProvider.RESEND]}
               containerProps={{ className: "min-w-40" }}
-              labelAccessory={
-                <ProviderSetupHelp
-                  provider={
-                    selectedProvider ??
-                    settings.emailProvider ??
-                    EmailProvider.SENDGRID
-                  }
-                />
-              }
             />
 
             <GenericInput

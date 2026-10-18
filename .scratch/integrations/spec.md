@@ -102,11 +102,11 @@ La lettura di una credenziale da un componente client viene rimossa; le chiavi n
 
 ### 6. UI e permessi
 
-Pagina Integrations sotto Settings, con una card per provider. Per Resend mostra: stato abilitato, presenza delle credenziali, ultimo test, campi segreti write-only, azione di test, azione di importazione dall'ambiente.
+Pagina Integrations **di primo livello** (`/admin/integrations`), separata da Settings nella sidebar, con una card per provider disposte in griglia. Per Resend mostra: logo del provider, stato abilitato, presenza delle credenziali, ultimo test, campi segreti write-only, azione di test, azione di importazione dall'ambiente e un dialog di dettaglio che ospita la guida di configurazione del provider (spostata dalle impostazioni email al selettore della singola integrazione).
 
 I segreti non sono mai restituiti dalle procedure di lettura. Il campo vuoto in modifica mantiene il valore corrente. Non esiste un endpoint di reveal.
 
-Permessi dedicati `integrations.read` e `integrations.manage`.
+Permessi dedicati `integrations.read` e `integrations.manage`; le azioni di gestione nella UI sono nascoste agli utenti in sola lettura.
 
 ### 7. Audit
 

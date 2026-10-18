@@ -1,4 +1,4 @@
-import type { EmailProvider } from "@/generated/prisma";
+import type { IntegrationProvider } from "./constants";
 
 /** An external documentation or dashboard link shown inside a setup step. */
 export interface ProviderSetupLink {
@@ -18,7 +18,7 @@ export interface ProviderSetupStep {
   links?: ProviderSetupLink[];
 }
 
-/** The complete setup checklist for one email provider. */
+/** The complete setup checklist for one integration provider. */
 export interface ProviderSetupGuide {
   title: string;
   intro?: string;
@@ -26,18 +26,18 @@ export interface ProviderSetupGuide {
 }
 
 /**
- * Provider setup guides, keyed by `EmailProvider`. Each adapter owns its own
- * external configuration story, so adding an adapter means adding an entry
- * here; a `null` entry means the provider has no guide yet.
+ * Provider setup guides, keyed by `IntegrationProvider`. Each provider owns
+ * its external configuration story, so adding a provider means adding an
+ * entry here; a `null` entry means the provider has no guide yet.
  */
 export const PROVIDER_SETUP_GUIDES: Record<
-  EmailProvider,
+  IntegrationProvider,
   ProviderSetupGuide | null
 > = {
-  RESEND: {
+  resend: {
     title: "Configuring Resend",
     intro:
-      "Resend is configured from Settings → Integrations. Credentials are stored encrypted in the database and are write-only.",
+      "Resend credentials are stored encrypted in the database and are write-only. Follow these steps to connect your account.",
     steps: [
       {
         title: "Verify a sending domain",
@@ -59,8 +59,8 @@ export const PROVIDER_SETUP_GUIDES: Record<
       {
         title: "Create a full-access API key",
         description:
-          "A sending-only key cannot read received email. Create a full-access key in Resend and paste it into Settings → Integrations → Resend.",
-        code: ["Settings → Integrations → Resend"],
+          "A sending-only key cannot read received email. Create a full-access key in Resend and paste it into this integration's credentials.",
+        code: ["Integrations → Resend → Edit credentials"],
         links: [{ label: "API keys", href: "https://resend.com/api-keys" }],
       },
       {
@@ -73,8 +73,8 @@ export const PROVIDER_SETUP_GUIDES: Record<
       {
         title: "Store the webhook signing secret",
         description:
-          "Copy the endpoint's signing secret and paste it into the Resend integration in Settings → Integrations. It is stored encrypted and never returned to the browser.",
-        code: ["Settings → Integrations → Resend"],
+          "Copy the endpoint's signing secret and paste it into the Resend integration's credentials. It is stored encrypted and never returned to the browser.",
+        code: ["Integrations → Resend → Edit credentials"],
       },
       {
         title: "Create an Email Account",
@@ -88,5 +88,4 @@ export const PROVIDER_SETUP_GUIDES: Record<
       },
     ],
   },
-  SENDGRID: null,
 };

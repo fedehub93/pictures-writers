@@ -6,7 +6,8 @@
 
 **Status:** ready-for-agent
 
-- [ ] Integrations appears under Settings and lists Resend with its enabled state, credential presence, and last test result.
+- [x] Integrations is a top-level sidebar entry (`/admin/integrations`), separate from Settings, and lists Resend as a card in a grid with its enabled state, credential presence, and last test result.
+- [x] Each integration card shows the provider logo (official Resend lettermark) and opens a details dialog.
 - [ ] `integrations.read` and `integrations.manage` permissions are defined and assigned to existing system roles via migration or seed.
 - [ ] Secrets are write-only: they are never returned by any read operation and never pre-filled on edit.
 - [ ] Secret update semantics are explicit: absent field keeps current value, `null` removes the secret, non-empty string replaces it.
@@ -17,6 +18,6 @@
 - [ ] The connection test is rate-limited per provider to avoid abuse of the Resend API.
 - [ ] Successful and failed tests persist `lastTestedAt` and `lastTestStatus`.
 - [ ] Create, update, enable/disable, import, and test produce audit entries with a manually-built payload that excludes `secretEncrypted`, `apiKey`, `webhookSecret`, and any derived secret.
-- [ ] Provider setup guidance reflects the new configuration path.
+- [x] Provider setup guidance is moved from email settings into the integration's own details dialog and reflects the new configuration path.
 - [ ] Residual bootstrap environment variables are documented.
 - [ ] Tests cover write-only reads, keep/remove/replace secret semantics, enable/disable, import, test result mapping, rate limiting, and audit redaction.
