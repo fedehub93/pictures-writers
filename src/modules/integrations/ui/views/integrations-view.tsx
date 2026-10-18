@@ -36,8 +36,7 @@ export const IntegrationsView = () => {
 
       updateMutation.mutate(
       {
-        provider: editingIntegration.provider as "resend",
-        isEnabled: values.isEnabled,
+          provider: editingIntegration.provider as "resend",
         secrets: {
           apiKey: values.removeApiKey
             ? null
@@ -103,7 +102,6 @@ export const IntegrationsView = () => {
           onOpenChange={(open: boolean) => {
             if (!open) setEditingIntegration(null);
           }}
-          defaultIsEnabled={editingIntegration.isEnabled}
           onSubmit={handleEdit}
           isPending={updateMutation.isPending}
         />

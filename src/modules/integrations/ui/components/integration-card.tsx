@@ -54,7 +54,7 @@ export const IntegrationCard = ({
   isTesting,
   isImporting,
 }: IntegrationCardProps) => {
-  const isConfigured = integration.hasApiKey;
+  const isConfigured = integration.hasApiKey || integration.hasWebhookSecret;
   const hasPassedTest = integration.lastTestStatus === "SUCCESS";
   const isBusy = isToggling || isTesting || isImporting;
 
@@ -153,7 +153,7 @@ export const IntegrationCard = ({
           <Switch
             checked={integration.isEnabled}
             onCheckedChange={onToggleEnabled}
-            disabled={isBusy}
+            disabled={isBusy || !integration.hasApiKey}
             aria-label={`Toggle ${integration.provider} integration`}
           />
         </div>

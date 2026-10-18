@@ -305,7 +305,13 @@ export const integrationsRouter = createTRPCRouter({
         });
       }
 
-      const testResult = await testResendConnection(secrets.apiKey);
+      let testResult: Awaited<ReturnType<typeof testResendConnection>>;
+      try {
+        testResult = await testResendConnection(secrets.apiKey);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        testResult = { success: false, error: message };
+      }
 
       const status = testResult.success ? "SUCCESS" : "FAILURE";
       const updated = await db.integration.update({

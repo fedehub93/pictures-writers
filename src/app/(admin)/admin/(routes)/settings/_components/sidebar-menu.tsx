@@ -30,7 +30,7 @@ const routes: {label:string, href: Route}[] = [
   {
     label: "Integrations",
     // Typed routes will pick up the new page on the next build; cast until then.
-    href: "/admin/settings/integrations" as Route,
+    href: "/admin/settings/integrations/" as Route,
   },
   {
     label: "Database",

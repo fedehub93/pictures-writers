@@ -422,6 +422,22 @@ describe("integrationsRouter", () => {
       expect(row.lastTestStatus).toBe("FAILURE");
     });
 
+    it("persists FAILURE when the connection test throws", async () => {
+      await createIntegration({
+        isEnabled: true,
+        secrets: { apiKey: "test-key" },
+      });
+      emailsList.mockRejectedValue(new Error("Network error"));
+
+      await expect(
+        caller.test({ provider: INTEGRATION_PROVIDER_RESEND }),
+      ).rejects.toThrow("Network error");
+
+      const row = await db.integration.findFirstOrThrow();
+      integrationIds.push(row.id);
+      expect(row.lastTestStatus).toBe("FAILURE");
+    });
+
     it("throws when the integration is disabled", async () => {
       await createIntegration({ isEnabled: false, secrets: { apiKey: "test-key" } });
 

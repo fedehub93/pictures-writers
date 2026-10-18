@@ -25,7 +25,6 @@ const formSchema = z
     removeApiKey: z.boolean().optional(),
     webhookSecret: z.string().optional(),
     removeWebhookSecret: z.boolean().optional(),
-    isEnabled: z.boolean().optional(),
   })
   .refine(
     (data) => !(data.removeApiKey && data.apiKey),
@@ -48,7 +47,6 @@ interface IntegrationFormDialogProps {
   provider: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  defaultIsEnabled: boolean;
   onSubmit: (values: IntegrationFormValues) => void;
   isPending?: boolean;
 }
@@ -57,7 +55,6 @@ export const IntegrationFormDialog = ({
   provider,
   open,
   onOpenChange,
-  defaultIsEnabled,
   onSubmit,
   isPending,
 }: IntegrationFormDialogProps) => {
@@ -68,7 +65,6 @@ export const IntegrationFormDialog = ({
       removeApiKey: false,
       webhookSecret: "",
       removeWebhookSecret: false,
-      isEnabled: defaultIsEnabled,
     },
   });
 
@@ -77,7 +73,6 @@ export const IntegrationFormDialog = ({
     control: form.control,
     name: "removeWebhookSecret",
   });
-  const isEnabled = useWatch({ control: form.control, name: "isEnabled" });
 
   useEffect(() => {
     if (open) {
@@ -86,10 +81,9 @@ export const IntegrationFormDialog = ({
         removeApiKey: false,
         webhookSecret: "",
         removeWebhookSecret: false,
-        isEnabled: defaultIsEnabled,
       });
     }
-  }, [open, defaultIsEnabled, form]);
+  }, [open, form]);
 
   return (
     <ResponsiveDialog
@@ -157,17 +151,6 @@ export const IntegrationFormDialog = ({
             </FieldLabel>
           </Field>
 
-          <Field orientation="horizontal">
-            <Checkbox
-              id="isEnabled"
-              checked={isEnabled}
-              onCheckedChange={(checked) =>
-                form.setValue("isEnabled", checked === true)
-              }
-              disabled={isPending}
-            />
-            <FieldLabel htmlFor="isEnabled">Enabled</FieldLabel>
-          </Field>
         </FieldGroup>
 
         <div className="flex justify-end gap-2">
