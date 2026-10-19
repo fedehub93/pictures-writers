@@ -21,5 +21,6 @@ export type {
   IntegrationSecretsByProvider,
   IntegrationSecrets,
   IntegrationSecretsUpdate,
+  IntegrationResolutionReason,
 } from "./types";
 export { IntegrationResolutionError } from "./types";

@@ -23,11 +23,17 @@ async function resolveResendSecrets(): Promise<IntegrationSecretsByProvider["res
   });
 
   if (!row) {
-    throw new IntegrationResolutionError("Resend integration is not configured");
+    throw new IntegrationResolutionError(
+      "Resend integration is not configured",
+      "not_configured",
+    );
   }
 
   if (!row.isEnabled) {
-    throw new IntegrationResolutionError("Resend integration is disabled");
+    throw new IntegrationResolutionError(
+      "Resend integration is disabled",
+      "disabled",
+    );
   }
 
   let secrets: ResendIntegrationSecrets;
@@ -37,12 +43,16 @@ async function resolveResendSecrets(): Promise<IntegrationSecretsByProvider["res
     const message = error instanceof Error ? error.message : String(error);
     throw new IntegrationResolutionError(
       `Resend integration secrets cannot be decrypted: ${message}`,
+      "undecryptable",
     );
   }
 
   const apiKey = secrets.apiKey;
   if (!apiKey) {
-    throw new IntegrationResolutionError("Resend integration is incomplete: apiKey is required");
+    throw new IntegrationResolutionError(
+      "Resend integration is incomplete: apiKey is required",
+      "incomplete",
+    );
   }
 
   return {
@@ -81,7 +91,10 @@ export async function resolveIntegrationSecrets<P extends IntegrationProvider>(
 
   const resolver = resolvers[provider];
   if (!resolver) {
-    throw new IntegrationResolutionError(`Unknown integration provider: ${provider}`);
+    throw new IntegrationResolutionError(
+      `Unknown integration provider: ${provider}`,
+      "unknown_provider",
+    );
   }
 
   const result = await resolver();

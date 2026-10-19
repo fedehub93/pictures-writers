@@ -1,11 +1,34 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import {
+  IntegrationResolutionError,
+  resolveIntegrationSecrets,
+} from "@/modules/integrations/lib";
 import { resolveAdapter } from "@/modules/mails/lib/provider";
 import { handleInboundEmail } from "@/modules/mails/conversations/lib/handle-inbound-email";
 import type { EmailProviderAdapter } from "@/modules/mails/lib/types";
 import { inboundAdapterStubs } from "@/modules/mails/lib/__tests__/inbound-adapter-stubs";
 
 import { POST } from "./route";
+
+vi.mock("@/modules/integrations/lib", () => {
+  class IntegrationResolutionError extends Error {
+    readonly reason: string;
+
+    constructor(message: string, reason: string) {
+      super(message);
+      this.name = "IntegrationResolutionError";
+      this.reason = reason;
+    }
+  }
+
+  return {
+    INTEGRATION_PROVIDER_RESEND: "resend",
+    IntegrationResolutionError,
+    resolveIntegrationSecrets: vi.fn(),
+    withIntegrationResolutionCache: <T>(fn: () => T) => fn(),
+  };
+});
 
 vi.mock("@/modules/mails/lib/provider", () => ({
   resolveAdapter: vi.fn(),
@@ -21,11 +44,23 @@ vi.mock("@/modules/mails/conversations/lib/attachment-storage", () => ({
   })),
 }));
 
-function makeRequest(options: { signed?: boolean; body?: string } = {}) {
+const WEBHOOK_SECRET = "integration-webhook-secret";
+
+function currentTimestamp(): number {
+  return Math.floor(Date.now() / 1000);
+}
+
+function makeRequest(
+  options: {
+    signed?: boolean;
+    body?: string;
+    timestamp?: number | string;
+  } = {},
+) {
   const headers = new Headers({ "content-type": "application/json" });
   if (options.signed !== false) {
     headers.set("svix-id", "msg_1");
-    headers.set("svix-timestamp", "1234567890");
+    headers.set("svix-timestamp", String(options.timestamp ?? currentTimestamp()));
     headers.set("svix-signature", "v1,abc");
   }
 
@@ -70,11 +105,13 @@ function makeAdapter(
 describe("POST /api/webhooks/resend", () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    process.env.NEXT_RESEND_WEBHOOK_SECRET = "whsec_test";
+    vi.mocked(resolveIntegrationSecrets).mockResolvedValue({
+      apiKey: "integration-api-key",
+      webhookSecret: WEBHOOK_SECRET,
+    });
   });
 
   afterEach(() => {
-    delete process.env.NEXT_RESEND_WEBHOOK_SECRET;
     vi.restoreAllMocks();
   });
 
@@ -82,19 +119,122 @@ describe("POST /api/webhooks/resend", () => {
     const response = await POST(makeRequest({ signed: false }));
 
     expect(response.status).toBe(400);
+    expect(resolveIntegrationSecrets).not.toHaveBeenCalled();
     expect(handleInboundEmail).not.toHaveBeenCalled();
   });
 
-  it("returns 400 when the signature is rejected", async () => {
-    vi.mocked(resolveAdapter).mockResolvedValue(
-      makeAdapter(() => {
-        throw new Error("bad signature");
-      }),
+  it("returns 400 for a stale timestamp", async () => {
+    const response = await POST(
+      makeRequest({ timestamp: currentTimestamp() - 301 }),
+    );
+
+    expect(response.status).toBe(400);
+    expect(resolveAdapter).not.toHaveBeenCalled();
+    expect(handleInboundEmail).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 for a timestamp too far in the future", async () => {
+    const response = await POST(
+      makeRequest({ timestamp: currentTimestamp() + 301 }),
+    );
+
+    expect(response.status).toBe(400);
+    expect(resolveAdapter).not.toHaveBeenCalled();
+    expect(handleInboundEmail).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 for a non-numeric timestamp", async () => {
+    const response = await POST(makeRequest({ timestamp: "not-a-number" }));
+
+    expect(response.status).toBe(400);
+    expect(resolveAdapter).not.toHaveBeenCalled();
+  });
+
+  it("returns the not-configured response when no integration row exists", async () => {
+    vi.mocked(resolveIntegrationSecrets).mockRejectedValue(
+      new IntegrationResolutionError(
+        "Resend integration is not configured",
+        "not_configured",
+      ),
+    );
+
+    const response = await POST(makeRequest());
+    const result = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(result).toEqual({ status: "not_configured" });
+    expect(resolveAdapter).not.toHaveBeenCalled();
+    expect(handleInboundEmail).not.toHaveBeenCalled();
+  });
+
+  it("returns 500 when the integration is disabled", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.mocked(resolveIntegrationSecrets).mockRejectedValue(
+      new IntegrationResolutionError(
+        "Resend integration is disabled",
+        "disabled",
+      ),
     );
 
     const response = await POST(makeRequest());
 
+    expect(response.status).toBe(500);
+    expect(resolveAdapter).not.toHaveBeenCalled();
+    expect(handleInboundEmail).not.toHaveBeenCalled();
+  });
+
+  it("returns 500 when integration secrets cannot be decrypted", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.mocked(resolveIntegrationSecrets).mockRejectedValue(
+      new IntegrationResolutionError(
+        "Resend integration secrets cannot be decrypted",
+        "undecryptable",
+      ),
+    );
+
+    const response = await POST(makeRequest());
+
+    expect(response.status).toBe(500);
+    expect(handleInboundEmail).not.toHaveBeenCalled();
+  });
+
+  it("returns the not-configured response when the webhook secret is missing", async () => {
+    vi.mocked(resolveIntegrationSecrets).mockResolvedValue({
+      apiKey: "integration-api-key",
+    });
+
+    const response = await POST(makeRequest());
+    const result = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(result).toEqual({ status: "not_configured" });
+    expect(resolveAdapter).not.toHaveBeenCalled();
+    expect(handleInboundEmail).not.toHaveBeenCalled();
+  });
+
+  it("returns 500 when resolution fails for an unexpected reason", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.mocked(resolveIntegrationSecrets).mockRejectedValue(
+      new Error("database unavailable"),
+    );
+
+    const response = await POST(makeRequest());
+
+    expect(response.status).toBe(500);
+  });
+
+  it("returns 400 when the signature is rejected", async () => {
+    const verifyWebhook = vi.fn(() => {
+      throw new Error("bad signature");
+    });
+    vi.mocked(resolveAdapter).mockResolvedValue(makeAdapter(verifyWebhook));
+
+    const response = await POST(makeRequest());
+
     expect(response.status).toBe(400);
+    expect(verifyWebhook).toHaveBeenCalledWith(
+      expect.objectContaining({ webhookSecret: WEBHOOK_SECRET }),
+    );
     expect(handleInboundEmail).not.toHaveBeenCalled();
   });
 
@@ -131,10 +271,11 @@ describe("POST /api/webhooks/resend", () => {
       subject: "Hello",
       created_at: "2026-10-17T10:00:00.000Z",
     };
-    const adapter = makeAdapter(() => ({
+    const verifyWebhook = vi.fn(() => ({
       type: "email.received",
       data: eventData,
     }));
+    const adapter = makeAdapter(verifyWebhook);
     vi.mocked(resolveAdapter).mockResolvedValue(adapter);
     vi.mocked(handleInboundEmail).mockResolvedValue({
       status: "processed",
@@ -151,6 +292,9 @@ describe("POST /api/webhooks/resend", () => {
       conversationId: "conversation-1",
       messageId: "message-1",
     });
+    expect(verifyWebhook).toHaveBeenCalledWith(
+      expect.objectContaining({ webhookSecret: WEBHOOK_SECRET }),
+    );
     expect(handleInboundEmail).toHaveBeenCalledWith(
       eventData,
       expect.objectContaining({ adapter }),

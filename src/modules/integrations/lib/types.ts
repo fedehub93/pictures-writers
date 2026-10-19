@@ -22,10 +22,20 @@ export type IntegrationSecretsByProvider = {
 export type IntegrationSecrets<P extends IntegrationProvider> =
   IntegrationSecretsByProvider[P];
 
+export type IntegrationResolutionReason =
+  | "not_configured"
+  | "disabled"
+  | "incomplete"
+  | "undecryptable"
+  | "unknown_provider";
+
 export class IntegrationResolutionError extends Error {
-  constructor(message: string) {
+  readonly reason: IntegrationResolutionReason;
+
+  constructor(message: string, reason: IntegrationResolutionReason) {
     super(message);
     this.name = "IntegrationResolutionError";
+    this.reason = reason;
   }
 }
 
