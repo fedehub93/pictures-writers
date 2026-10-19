@@ -3,10 +3,108 @@ import "server-only";
 import { db } from "@/shared/lib/db";
 import type {
   EmailInboundAdapter,
+  InboundAttachmentMetadata,
   InboundWebhookData,
 } from "@/modules/mails/lib/types";
 
 import type { AttachmentStorage } from "./attachment-storage";
+
+const ATTACHMENT_DOWNLOAD_ATTEMPTS = 3;
+const ATTACHMENT_RETRY_DELAYS_MS = [0, 250, 1000];
+const RETRYABLE_DOWNLOAD_STATUSES = new Set([
+  403, 404, 408, 425, 429, 500, 502, 503, 504,
+]);
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/** Host and signature presence, safe to log without leaking signed params. */
+function downloadUrlDiagnostics(rawUrl: string) {
+  try {
+    const url = new URL(rawUrl);
+    return {
+      host: url.host,
+      signed:
+        url.searchParams.has("Key-Pair-Id") ||
+        url.searchParams.has("Signature") ||
+        url.searchParams.has("signature") ||
+        url.searchParams.has("X-Amz-Signature"),
+    };
+  } catch {
+    return { host: "<invalid>", signed: false };
+  }
+}
+
+type DownloadFailure = {
+  error?: Error;
+  status?: number;
+  url?: string;
+  expiresAt?: Date;
+};
+
+/**
+ * Download an attachment from the provider. Signed URLs are short-lived, so
+ * every attempt re-resolves a fresh URL before fetching; 403/404/5xx are
+ * treated as retryable because the CDN can lag behind the webhook delivery.
+ */
+async function downloadAttachment(params: {
+  adapter: EmailInboundAdapter;
+  emailExternalId: string;
+  attachment: InboundAttachmentMetadata;
+}): Promise<Uint8Array<ArrayBuffer>> {
+  const { adapter, emailExternalId, attachment } = params;
+  const failure: DownloadFailure = {};
+
+  for (let attempt = 0; attempt < ATTACHMENT_DOWNLOAD_ATTEMPTS; attempt++) {
+    const delay = ATTACHMENT_RETRY_DELAYS_MS[attempt] ?? 1000;
+    if (delay > 0) await sleep(delay);
+
+    try {
+      const { url, expiresAt } = await adapter.getAttachmentDownloadUrl(
+        emailExternalId,
+        attachment.externalId,
+      );
+      failure.url = url;
+      failure.expiresAt = expiresAt;
+
+      const response = await fetch(url, {
+        cache: "no-store",
+        redirect: "follow",
+        headers: { "user-agent": "pictures-writers/1.0" },
+      });
+
+      if (response.ok) {
+        return new Uint8Array(await response.arrayBuffer());
+      }
+
+      failure.status = response.status;
+      failure.error = new Error(
+        `Attachment download failed with status ${response.status}`,
+      );
+
+      if (!RETRYABLE_DOWNLOAD_STATUSES.has(response.status)) break;
+    } catch (error) {
+      failure.status = undefined;
+      failure.error =
+        error instanceof Error ? error : new Error(String(error));
+    }
+  }
+
+  const { host, signed } = failure.url
+    ? downloadUrlDiagnostics(failure.url)
+    : { host: "<none>", signed: false };
+
+  console.error("[RESEND_INBOUND_WEBHOOK] attachment download failed", {
+    attachmentId: attachment.externalId,
+    status: failure.status,
+    host,
+    signed,
+    expiresAt: failure.expiresAt?.toISOString(),
+  });
+
+  throw failure.error ?? new Error("Attachment download failed");
+}
 
 export type InboundHandlingResult =
   | { status: "processed"; conversationId: string; messageId: string }
@@ -89,14 +187,15 @@ export async function handleInboundEmail(
   // Copy each attachment from the provider's expiring URL into our storage.
   const storedAttachments = [];
   for (const attachment of inbound.attachments) {
-    const { url } = await deps.adapter.getAttachmentDownloadUrl(
-      inbound.externalId,
-      attachment.externalId,
-    );
+    const content = await downloadAttachment({
+      adapter: deps.adapter,
+      emailExternalId: inbound.externalId,
+      attachment,
+    });
     const stored = await deps.storage.store({
       filename: attachment.filename,
       contentType: attachment.contentType,
-      sourceUrl: url,
+      content,
     });
     storedAttachments.push({
       filename: attachment.filename,

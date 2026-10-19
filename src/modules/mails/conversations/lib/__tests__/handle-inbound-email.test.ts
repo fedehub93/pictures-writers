@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { db } from "@/shared/lib/db";
 import type {
@@ -62,10 +62,17 @@ function makeAdapter(inbound: InboundEmail): EmailInboundAdapter {
 
 function makeStorage(): {
   storage: AttachmentStorage;
-  stored: { filename: string; contentType: string; sourceUrl: string }[];
+  stored: {
+    filename: string;
+    contentType: string;
+    content: Uint8Array<ArrayBuffer>;
+  }[];
 } {
-  const stored: { filename: string; contentType: string; sourceUrl: string }[] =
-    [];
+  const stored: {
+    filename: string;
+    contentType: string;
+    content: Uint8Array<ArrayBuffer>;
+  }[] = [];
   return {
     stored,
     storage: {
@@ -76,6 +83,8 @@ function makeStorage(): {
     },
   };
 }
+
+const fetchMock = vi.fn<typeof fetch>();
 
 describe("handleInboundEmail", () => {
   const createdAccountIds: string[] = [];
@@ -95,11 +104,17 @@ describe("handleInboundEmail", () => {
   }
 
   beforeEach(async () => {
+    vi.stubGlobal("fetch", fetchMock);
+    fetchMock.mockReset();
+    fetchMock.mockResolvedValue(new Response("attachment", { status: 200 }));
+
     await db.emailAccount.deleteMany({});
     createdAccountIds.length = 0;
   });
 
   afterEach(async () => {
+    vi.unstubAllGlobals();
+
     if (createdAccountIds.length > 0) {
       await db.emailAccount.deleteMany({
         where: { id: { in: createdAccountIds } },
@@ -157,14 +172,83 @@ describe("handleInboundEmail", () => {
       url: "https://storage.test/report.pdf",
     });
 
-    // The provider URL was copied into application storage.
-    expect(stored).toEqual([
-      {
-        filename: "report.pdf",
-        contentType: "application/pdf",
-        sourceUrl: "https://provider.test/att-1",
-      },
+    // The provider URL was downloaded and the bytes copied into storage.
+    expect(stored).toHaveLength(1);
+    expect(stored[0]).toMatchObject({
+      filename: "report.pdf",
+      contentType: "application/pdf",
+    });
+    expect(new TextDecoder().decode(stored[0].content)).toBe("attachment");
+  });
+
+  it("re-resolves the URL and retries when the signed download is forbidden", async () => {
+    await createAccount();
+    const { storage, stored } = makeStorage();
+    const inbound = inboundEmail({
+      attachments: [
+        {
+          externalId: "att-1",
+          filename: "report.pdf",
+          contentType: "application/pdf",
+        },
+      ],
+    });
+    const adapter = makeAdapter(inbound);
+    const urls: string[] = [];
+    adapter.getAttachmentDownloadUrl = async (_emailId, attachmentId) => {
+      const url = `https://provider.test/${attachmentId}?attempt=${urls.length}`;
+      urls.push(url);
+      return { url };
+    };
+
+    fetchMock
+      .mockResolvedValueOnce(new Response("denied", { status: 403 }))
+      .mockResolvedValueOnce(new Response("payload", { status: 200 }));
+
+    const result = await handleInboundEmail(webhookEvent(), {
+      adapter,
+      storage,
+    });
+
+    expect(result.status).toBe("processed");
+    expect(urls).toEqual([
+      "https://provider.test/att-1?attempt=0",
+      "https://provider.test/att-1?attempt=1",
     ]);
+    expect(new TextDecoder().decode(stored[0].content)).toBe("payload");
+    expect(await db.emailMessage.count()).toBe(1);
+  });
+
+  it("retries when resolving the signed URL itself fails", async () => {
+    await createAccount();
+    const { storage, stored } = makeStorage();
+    const inbound = inboundEmail({
+      attachments: [
+        {
+          externalId: "att-1",
+          filename: "report.pdf",
+          contentType: "application/pdf",
+        },
+      ],
+    });
+    const adapter = makeAdapter(inbound);
+    let resolutions = 0;
+    adapter.getAttachmentDownloadUrl = async () => {
+      resolutions += 1;
+      if (resolutions === 1) throw new Error("provider unavailable");
+      return { url: "https://provider.test/att-1" };
+    };
+
+    fetchMock.mockResolvedValueOnce(new Response("payload", { status: 200 }));
+
+    const result = await handleInboundEmail(webhookEvent(), {
+      adapter,
+      storage,
+    });
+
+    expect(result.status).toBe("processed");
+    expect(resolutions).toBe(2);
+    expect(new TextDecoder().decode(stored[0].content)).toBe("payload");
   });
 
   it("reuses the conversation for the same contact across messages", async () => {

@@ -12,18 +12,19 @@ export interface AttachmentStorage {
   store(params: {
     filename: string;
     contentType: string;
-    sourceUrl: string;
+    content: Uint8Array<ArrayBuffer>;
   }): Promise<{ url: string }>;
 }
 
 /** Production implementation backed by UploadThing. */
 export function createUploadThingStorage(utapi: UTApi = new UTApi()): AttachmentStorage {
   return {
-    async store({ filename, sourceUrl }) {
-      const result = await utapi.uploadFilesFromUrl({
-        url: sourceUrl,
-        name: `${randomUUID()}-${filename}`,
-      });
+    async store({ filename, contentType, content }) {
+      const result = await utapi.uploadFiles(
+        new File([content], `${randomUUID()}-${filename}`, {
+          type: contentType,
+        }),
+      );
 
       if (result.error || !result.data) {
         throw new Error(
