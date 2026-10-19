@@ -44,25 +44,6 @@ export const useSetIntegrationEnabled = () => {
   );
 };
 
-export const useImportIntegrationFromEnv = () => {
-  const trpc = useTRPC();
-  const queryClient = useQueryClient();
-
-  return useMutation(
-    trpc.integrations.importFromEnv.mutationOptions({
-      onSuccess: async () => {
-        await queryClient.invalidateQueries(
-          trpc.integrations.getMany.queryOptions(),
-        );
-        toast.success("Credentials imported from environment");
-      },
-      onError: (error) => {
-        toast.error(error.message);
-      },
-    }),
-  );
-};
-
 export const useTestIntegration = () => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();

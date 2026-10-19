@@ -12,9 +12,9 @@ Il problema è destinato a crescere: ogni nuovo servizio esterno aggiunge un'alt
 
 ## Solution
 
-Introdurre una feature **Integrations**: una riga per ogni servizio esterno configurato, con credenziali cifrate a riposo, stato abilitato/disabilitato, configurazione non segreta, test di connessione e importazione esplicita dai valori d'ambiente esistenti.
+Introdurre una feature **Integrations**: una riga per ogni servizio esterno configurato, con credenziali cifrate a riposo, stato abilitato/disabilitato, configurazione non segreta e test di connessione.
 
-La v1 copre **solo Resend**, perché è il caso già completamente cablato e perché il modulo email è il motore del bisogno. Il modello è però progettato per accogliere gli altri provider uno alla volta. Durante la v1 l'ambiente resta un fallback: se non esiste una riga `Integration`, il comportamento attuale non cambia. Quando la riga esiste, il database vince.
+La v1 copre **solo Resend**, perché è il caso già completamente cablato e perché il modulo email è il motore del bisogno. Il modello è però progettato per accogliere gli altri provider uno alla volta. **La riga `Integration` è l'unica fonte delle credenziali**: non esiste fallback alle variabili d'ambiente e non esiste un'azione di importazione dall'ambiente. Un'installazione senza riga è "non configurata" e fallisce in modo esplicito finché l'admin non incolla le credenziali dal backoffice.
 
 Il risultato per l'admin: una pagina Integrations in cui vede Resend, il suo stato, l'ultimo test, e può sostituire le chiavi senza toccare il deploy. Il risultato per lo sviluppatore: un unico punto di risoluzione delle credenziali, con semantica esplicita per "non configurato", "disabilitato" e "incompleto".
 
@@ -28,14 +28,14 @@ Il risultato per l'admin: una pagina Integrations in cui vede Resend, il suo sta
 6. As an admin, I want a blank secret field on edit to keep the current secret, so that I can change non-secret settings without retyping keys.
 7. As an admin, I want to test the Resend connection on demand, so that I can verify a key before relying on it.
 8. As an admin, I want to see when the connection was last tested and whether it succeeded, so that I can distinguish "never tried" from "tried and broken".
-9. As an admin, I want to disable Resend explicitly, so that outgoing email stops instead of silently falling back to an environment value.
-10. As an admin, I want to import the current environment credentials with one explicit action, so that migrating to database-backed configuration is fast.
+9. As an admin, I want to disable Resend explicitly, so that outgoing email stops until it is re-enabled.
+10. As an admin, I want to be told explicitly when a provider is not configured, so that I know what to fix before email silently stops.
 11. As an admin, I want outbound email to keep working even when the webhook secret is absent, so that a missing inbound configuration doesn't break sending.
 12. As an admin, I want the inbound webhook to report a clear "not configured" state, so that I can understand why received email stopped.
 13. As an admin, I want integration changes to be audited, so that I can see who changed a connection and when, without exposing secret values.
 14. As an admin with read-only access, I want to view integrations without being able to change them, so that permissions remain meaningful.
 15. As a developer, I want a single server-only resolver that returns decrypted credentials for a provider, so that no feature reads environment variables directly.
-16. As a developer, I want the resolver to fall back to environment variables only when no integration row exists, so that existing installs keep working during migration.
+16. As a developer, I want the resolver to report an explicit "not configured" state when no integration row exists, so that there is a single source of truth for credentials.
 17. As a developer, I want a disabled integration to fail loudly instead of falling back, so that "disabled" means disabled.
 18. As a developer, I want provider-specific metadata and test logic to live behind a provider descriptor, so that adding a provider doesn't touch the generic integration CRUD.
 19. As a developer, I want the existing encrypted Credential store and the new integration secrets to share one encryption implementation, so that there is one crypto path to review and rotate.
@@ -74,7 +74,7 @@ La chiave viene letta da `SECRETS_ENCRYPTION_KEY`, con fallback a `AUTOMATION_CR
 
 Il resolver server-only per provider distingue tre stati:
 
-- **Nessuna riga**: fallback alle variabili d'ambiente. È lo stato di ogni installazione non ancora migrata.
+- **Nessuna riga**: stato "non configurato". Errore esplicito che nomina il provider; nessun fallback alle variabili d'ambiente.
 - **Riga disabilitata**: errore esplicito. Nessun fallback silenzioso.
 - **Riga abilitata ma incompleta**: errore esplicito che nomina il campo mancante. Per Resend l'API key è obbligatoria; il webhook secret è opzionale.
 
@@ -102,7 +102,7 @@ La lettura di una credenziale da un componente client viene rimossa; le chiavi n
 
 ### 6. UI e permessi
 
-Pagina Integrations **di primo livello** (`/admin/integrations`), separata da Settings nella sidebar, con una card per provider disposte in griglia. Per Resend mostra: logo del provider, stato abilitato, presenza delle credenziali, ultimo test, campi segreti write-only, azione di test, azione di importazione dall'ambiente e un dialog di dettaglio che ospita la guida di configurazione del provider (spostata dalle impostazioni email al selettore della singola integrazione).
+Pagina Integrations **di primo livello** (`/admin/integrations`), separata da Settings nella sidebar, con una card per provider disposte in griglia. Per Resend mostra: logo del provider, stato abilitato, presenza delle credenziali, ultimo test, campi segreti write-only, azione di test e un dialog di dettaglio che ospita la guida di configurazione del provider (spostata dalle impostazioni email al selettore della singola integrazione).
 
 I segreti non sono mai restituiti dalle procedure di lettura. Il campo vuoto in modifica mantiene il valore corrente. Non esiste un endpoint di reveal.
 
@@ -110,7 +110,7 @@ Permessi dedicati `integrations.read` e `integrations.manage`; le azioni di gest
 
 ### 7. Audit
 
-Create, update, enable/disable, test e import producono una voce in `AdministrativeActivity`. Il payload è sanificato: nessun valore di segreto, nemmeno cifrato. La allowlist del sanitizer va estesa per i campi non segreti dell'integrazione, oppure il payload viene costruito già ristretto.
+Create, update, enable/disable e test producono una voce in `AdministrativeActivity`. Il payload è sanificato: nessun valore di segreto, nemmeno cifrato. La allowlist del sanitizer va estesa per i campi non segreti dell'integrazione, oppure il payload viene costruito già ristretto.
 
 ### 8. Cache
 
@@ -122,7 +122,7 @@ Nessuna cache cross-request in v1. La risoluzione può usare memoizzazione per-r
 
 ### 10. Variabili d'ambiente residue
 
-Restano bootstrap-only: database, auth, chiave di cifratura, secret dello scheduler e le variabili `NEXT_PUBLIC_*` (bundlate a build time). L'obiettivo "rimuovere le env" della v1 significa: rimuovere `NEXT_RESEND_KEY` e `NEXT_RESEND_WEBHOOK_SECRET` dal percorso runtime una volta completata la migrazione; non significa eliminare tutte le variabili.
+Restano bootstrap-only le variabili d'infrastruttura: database, auth, chiave di cifratura, secret dello scheduler e le variabili `NEXT_PUBLIC_*` (bundlate a build time). Le credenziali dei provider **non sono mai** lette dall'ambiente: `NEXT_RESEND_KEY` e `NEXT_RESEND_WEBHOOK_SECRET` sono rimosse dal percorso runtime e l'unica via è la riga `Integration`. La rotazione avviene solo dal backoffice.
 
 ## Security Decisions
 
@@ -170,10 +170,6 @@ Il payload di update distingue tra:
 
 Questo evita sia la cancellazione accidentale sia l'impossibilità di rimuovere un segreto opzionale.
 
-### 19. Invalidazione della cache per-request dopo import
-
-Se il resolver usa memoizzazione per-request, l'azione "import from environment" invalida esplicitamente la cache del provider interessato nello stesso request, in modo che una lettura successiva nello stesso ciclo di vita della richiesta veda i valori appena importati.
-
 ## Testing Decisions
 
 ### Cosa rende un buon test
@@ -182,13 +178,13 @@ I test verificano comportamento esterno, non dettagli implementativi: quale cred
 
 ### Seam 1 — Risoluzione dell'adapter email
 
-Il seam più alto è la risoluzione dell'adapter usata dal modulo email. Copre: nessuna riga → env; riga abilitata → credenziale dal database; riga disabilitata → errore; riga incompleta → errore; adapter costruito con la chiave risolta.
+Il seam più alto è la risoluzione dell'adapter usata dal modulo email. Copre: nessuna riga → stato "non configurato"; riga abilitata → credenziale dal database; riga disabilitata → errore; riga incompleta → errore; adapter costruito con la chiave risolta.
 
-Prior art: i test esistenti dell'adapter Resend e i test del modulo email che impostano variabili d'ambiente.
+Prior art: i test esistenti dell'adapter Resend e i test del modulo email.
 
 ### Seam 2 — Router tRPC delle integrazioni
 
-Router DB-backed, nello stile dei router esistenti: update non restituisce segreti; campo vuoto mantiene il segreto; enable/disable; import dall'ambiente non restituisce il valore importato; test di connessione mappa successo e fallimento; audit senza segreti.
+Router DB-backed, nello stile dei router esistenti: update non restituisce segreti; campo vuoto mantiene il segreto; enable/disable; test di connessione mappa successo e fallimento; audit senza segreti.
 
 Prior art: i test dei router di categoria e degli account email.
 
@@ -205,7 +201,8 @@ La UI admin (componenti sottili) e il descriptor oltre al suo comportamento osse
 ## Out of Scope
 
 - UploadThing, GTM/GA, Stripe, reCAPTCHA e qualunque provider diverso da Resend.
-- Rimozione fisica della colonna `EmailSetting.emailApiKey` e delle variabili d'ambiente: fase successiva, dopo che la migrazione è stata esercitata.
+- Rimozione fisica della colonna `EmailSetting.emailApiKey` (percorso SendGrid legacy): fase successiva.
+- Importazione automatica delle credenziali dalle variabili d'ambiente: deliberatamente non supportata (vedi ADR 0023).
 - Spostamento del selettore `emailProvider` da `EmailSetting` a `Integration`: ha senso con un secondo provider email.
 - Rifacimento del percorso SendGrid legacy.
 - Rotazione e re-encryption delle chiavi.
@@ -216,8 +213,9 @@ La UI admin (componenti sottili) e il descriptor oltre al suo comportamento osse
 
 ## Further Notes
 
-- Le decisioni “segreti nel database invece che in env” e “non riusare `Credential` per le integrazioni” sono candidate a un ADR: sono difficili da invertire, sorprendenti senza contesto, e nascono da un trade-off reale.
+- La decisione "la riga `Integration` è l'unica fonte delle credenziali" (e il rifiuto deliberato di un fallback env e dell'import dall'ambiente) è registrata nell'ADR 0023: `docs/adr/0023-integration-is-the-only-credential-source.md`.
 - Una checklist di sicurezza pre-merge è disponibile in `security-review.md`; deve essere completata prima di chiudere l'ultimo ticket.
+- La procedura di migrazione manuale per le installazioni che usavano solo le env è in `docs/integrations-runbook.md`.
 - Il glossario in `CONTEXT.md` è già stato esteso con **Provider** e **Integration**; `Connection` resta riservato alle automazioni.
 - Il bug latente per cui l'invio Resend richiedeva la presenza di `EmailSetting.emailApiKey` ma usava l'env va risolto in questa feature, non lasciato come debito.
 - La feature è pensata per essere estesa un provider alla volta: ogni nuovo provider è la prova che il descriptor e lo schema dei segreti reggono.

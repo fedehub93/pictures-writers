@@ -36,9 +36,3 @@ export function setCachedIntegrationSecrets<P extends IntegrationProvider>(
 ): void {
   resolutionCache.getStore()?.set(provider, secrets);
 }
-
-export function invalidateCachedIntegrationSecrets(
-  provider: IntegrationProvider,
-): void {
-  resolutionCache.getStore()?.delete(provider);
-}

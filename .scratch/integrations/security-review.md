@@ -16,9 +16,8 @@ Questo documento raccoglie i controlli di sicurezza da eseguire prima di conside
 - [ ] Il resolver Integration è marcato `import "server-only"`.
 - [ ] Nessun codice client (componenti React, browser, bundle) può leggere, pre-fetchare o ricevere segreti.
 - [ ] Nessuna cache cross-request: una modifica salvata ha effetto immediatamente nella richiesta successiva.
-- [ ] La memoizzazione per-request viene invalidata dall'azione "import from environment".
 - [ ] Stati del resolver:
-  - nessuna riga → fallback a `NEXT_RESEND_KEY` / `NEXT_RESEND_WEBHOOK_SECRET`;
+  - nessuna riga → stato "non configurato", nessun fallback alle env;
   - riga disabilitata → errore esplicito, nessun fallback;
   - riga abilitata ma senza API key → errore che nomina il campo mancante;
   - riga abilitata con API key → chiave dal database.
@@ -50,7 +49,7 @@ Questo documento raccoglie i controlli di sicurezza da eseguire prima di conside
 
 ## Audit
 
-- [ ] Ogni create/update/enable/disable/import/test produce una voce in `AdministrativeActivity`.
+- [ ] Ogni create/update/enable/disable/test produce una voce in `AdministrativeActivity`.
 - [ ] Il payload `before`/`after` è costruito manualmente con solo: `provider`, `isEnabled`, `config`, `lastTestedAt`, `lastTestStatus`, `outcome`.
 - [ ] `secretEncrypted`, `apiKey`, `webhookSecret` e valori derivati non compaiono mai nei log.
 - [ ] I test verificano che audit rows non contengano segreti.
@@ -73,17 +72,17 @@ Questo documento raccoglie i controlli di sicurezza da eseguire prima di conside
 
 ## Variabili d'ambiente e operazioni
 
-- [ ] `NEXT_RESEND_KEY` e `NEXT_RESEND_WEBHOOK_SECRET` sono documentate come rimovibili solo dopo migrazione verificata.
+- [ ] `NEXT_RESEND_KEY` e `NEXT_RESEND_WEBHOOK_SECRET` non sono lette da nessun percorso runtime.
 - [ ] `SECRETS_ENCRYPTION_KEY` è classificata bootstrap-only.
 - [ ] Il backup del DB senza `SECRETS_ENCRYPTION_KEY` non permette di recuperare i segreti: questo è documentato nella runbook.
-- [ ] La rimozione delle env richiede verifica: riga presente, abilitata, test OK, webhook funzionante.
+- [ ] La runbook (`docs/integrations-runbook.md`) descrive la migrazione manuale per le installazioni che usavano solo le env.
 
 ## Test da aggiungere/rinforzare
 
 - [ ] Round-trip cifratura con `keyId` e selezione corretta della chiave.
 - [ ] Decrypt fallisce su ciphertext malformato per Integration.
 - [ ] Compatibilità righe `Credential` legacy senza `keyId`.
-- [ ] Nessuna riga → env; riga abilitata → DB; riga disabilitata → errore; riga incompleta → errore.
+- [ ] Nessuna riga → stato "non configurato"; riga abilitata → DB; riga disabilitata → errore; riga incompleta → errore.
 - [ ] Adapter costruito con chiave iniettata; nessuna lettura di `process.env`.
 - [ ] tRPC read non restituisce segreti.
 - [ ] Update con `null` rimuove il segreto; update senza campo mantiene il segreto.
@@ -93,7 +92,7 @@ Questo documento raccoglie i controlli di sicurezza da eseguire prima di conside
 
 ## Decisioni da registrare come ADR (opzionale)
 
-- Segreti a riposo nel database invece che in variabili d'ambiente.
+- **Registrata in ADR 0023**: la riga `Integration` è l'unica fonte delle credenziali; niente fallback alle env, niente import dall'ambiente.
 - Formato cifratura con `keyId` per supportare rotazione e chiavi legacy.
 - Entità `Integration` separata da `Credential`.
 - Webhook secret opzionale con risposta "not configured".

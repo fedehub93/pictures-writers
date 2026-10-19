@@ -17,7 +17,6 @@ import {
   decryptIntegrationSecrets,
   applySecretsUpdate,
   withIntegrationResolutionCache,
-  invalidateCachedIntegrationSecrets,
   type IntegrationProvider,
   type ResendIntegrationSecrets,
 } from "@/modules/integrations/lib";
@@ -38,9 +37,6 @@ import {
 } from "./schemas";
 
 export { resetIntegrationTestRateLimit };
-
-const RESEND_ENV_KEY = "NEXT_RESEND_KEY";
-const RESEND_WEBHOOK_SECRET_ENV_KEY = "NEXT_RESEND_WEBHOOK_SECRET";
 
 const readProcedure = permissionProcedure(
   PERMISSIONS.INTEGRATIONS_READ,
@@ -197,53 +193,6 @@ export const integrationsRouter = createTRPCRouter({
         actorId: ctx.auth.id,
         ...buildIntegrationActivityInput({
           action: input.isEnabled ? "INTEGRATION_ENABLED" : "INTEGRATION_DISABLED",
-          targetId: updated.id,
-          outcome: "SUCCESS",
-          before,
-          after,
-        }),
-      });
-
-      return toIntegrationListItem(input.provider, updated);
-    }),
-
-  importFromEnv: manageProcedure
-    .input(integrationProviderParamSchema)
-    .mutation(async ({ input, ctx }) => {
-      if (input.provider !== INTEGRATION_PROVIDER_RESEND) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: `Provider ${input.provider} does not support environment import`,
-        });
-      }
-
-      const apiKey = process.env[RESEND_ENV_KEY];
-      if (!apiKey) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: `Environment variable ${RESEND_ENV_KEY} is not set`,
-        });
-      }
-
-      const beforeRow = await findOrBuildIntegration(input.provider);
-      const before = buildAuditPayload(beforeRow);
-
-      const updated = await upsertIntegration(input.provider, {
-        isEnabled: true,
-        secrets: {
-          apiKey,
-          webhookSecret: process.env[RESEND_WEBHOOK_SECRET_ENV_KEY],
-        },
-      });
-
-      invalidateCachedIntegrationSecrets(input.provider);
-
-      const after = buildAuditPayload(updated);
-
-      await recordAdministrativeActivity(db, {
-        actorId: ctx.auth.id,
-        ...buildIntegrationActivityInput({
-          action: "INTEGRATION_IMPORTED",
           targetId: updated.id,
           outcome: "SUCCESS",
           before,

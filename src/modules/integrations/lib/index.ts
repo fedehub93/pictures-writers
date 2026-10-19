@@ -13,10 +13,7 @@ export {
 
 export { resolveIntegrationSecrets } from "./resolution";
 
-export {
-  withIntegrationResolutionCache,
-  invalidateCachedIntegrationSecrets,
-} from "./resolution-cache";
+export { withIntegrationResolutionCache } from "./resolution-cache";
 
 export type {
   IntegrationListItem,

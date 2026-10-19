@@ -10,12 +10,10 @@ import {
 import { resolveAdapter, getProviderAdapter } from "../provider";
 
 describe("resolveAdapter", () => {
-  const originalResendKey = process.env.NEXT_RESEND_KEY;
   const originalPrimaryKey = process.env.SECRETS_ENCRYPTION_KEY;
 
   beforeEach(async () => {
     process.env.SECRETS_ENCRYPTION_KEY = "primary-key-0123456789abcdef";
-    process.env.NEXT_RESEND_KEY = "env-resend-key";
     await db.emailSetting.deleteMany();
     await db.integration.deleteMany({ where: { provider: INTEGRATION_PROVIDER_RESEND } });
   });
@@ -25,12 +23,6 @@ describe("resolveAdapter", () => {
       delete process.env.SECRETS_ENCRYPTION_KEY;
     } else {
       process.env.SECRETS_ENCRYPTION_KEY = originalPrimaryKey;
-    }
-
-    if (originalResendKey === undefined) {
-      delete process.env.NEXT_RESEND_KEY;
-    } else {
-      process.env.NEXT_RESEND_KEY = originalResendKey;
     }
     await db.emailSetting.deleteMany();
     await db.integration.deleteMany({ where: { provider: INTEGRATION_PROVIDER_RESEND } });
@@ -47,31 +39,13 @@ describe("resolveAdapter", () => {
     });
   }
 
-  it("constructs the Resend adapter with the environment key when no integration row exists", async () => {
+  it("throws not configured when no integration row exists", async () => {
     await seedSettings();
 
-    const adapter = await resolveAdapter();
-
-    expect(adapter).toBeDefined();
+    await expect(resolveAdapter()).rejects.toThrow(/not configured/i);
   });
 
   it("constructs the Resend adapter with the database key when an enabled integration row exists", async () => {
-    await seedSettings();
-    await db.integration.create({
-      data: {
-        provider: INTEGRATION_PROVIDER_RESEND,
-        isEnabled: true,
-        secretEncrypted: encryptIntegrationSecrets({ apiKey: "db-resend-key" }),
-      },
-    });
-
-    const adapter = await resolveAdapter();
-
-    expect(adapter).toBeDefined();
-  });
-
-  it("prefers the database key over the environment key", async () => {
-    delete process.env.NEXT_RESEND_KEY;
     await seedSettings();
     await db.integration.create({
       data: {

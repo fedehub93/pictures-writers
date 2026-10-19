@@ -13,7 +13,6 @@ import { PERMISSIONS } from "@/shared/lib/permissions";
 import { usePermission } from "@/shared/providers/authorization-provider";
 
 import {
-  useImportIntegrationFromEnv,
   useSetIntegrationEnabled,
   useSuspenseIntegrations,
   useTestIntegration,
@@ -32,7 +31,6 @@ export const IntegrationsView = () => {
   const canManage = usePermission(PERMISSIONS.INTEGRATIONS_MANAGE);
   const updateMutation = useUpdateIntegration();
   const setEnabledMutation = useSetIntegrationEnabled();
-  const importMutation = useImportIntegrationFromEnv();
   const testMutation = useTestIntegration();
 
   const [editingIntegration, setEditingIntegration] =
@@ -85,9 +83,6 @@ export const IntegrationsView = () => {
               canManage={canManage}
               onEdit={() => setEditingIntegration(integration)}
               onDetails={() => setDetailsIntegration(integration)}
-              onImport={() =>
-                importMutation.mutate({ provider: integration.provider })
-              }
               onTest={() =>
                 testMutation.mutate({ provider: integration.provider })
               }
@@ -99,7 +94,6 @@ export const IntegrationsView = () => {
               }
               isToggling={setEnabledMutation.isPending}
               isTesting={testMutation.isPending}
-              isImporting={importMutation.isPending}
             />
           ))}
         </div>

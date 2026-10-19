@@ -8,7 +8,6 @@ export type IntegrationAuditAction =
   | "INTEGRATION_UPDATED"
   | "INTEGRATION_ENABLED"
   | "INTEGRATION_DISABLED"
-  | "INTEGRATION_IMPORTED"
   | "INTEGRATION_TESTED";
 
 export interface IntegrationAuditPayload {

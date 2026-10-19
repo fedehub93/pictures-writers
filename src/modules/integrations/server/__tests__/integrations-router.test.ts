@@ -50,8 +50,6 @@ const activityIds: string[] = [];
 
 let caller: ReturnType<typeof createCaller>;
 
-const originalResendKey = process.env.NEXT_RESEND_KEY;
-const originalWebhookSecret = process.env.NEXT_RESEND_WEBHOOK_SECRET;
 const originalPrimaryKey = process.env.SECRETS_ENCRYPTION_KEY;
 
 async function createUser() {
@@ -87,8 +85,6 @@ beforeEach(async () => {
   activityIds.length = 0;
 
   process.env.SECRETS_ENCRYPTION_KEY = "primary-key-0123456789abcdef";
-  process.env.NEXT_RESEND_KEY = "env-resend-key";
-  delete process.env.NEXT_RESEND_WEBHOOK_SECRET;
 
   resetIntegrationTestRateLimit(INTEGRATION_PROVIDER_RESEND);
   emailsList.mockReset();
@@ -123,18 +119,6 @@ afterEach(async () => {
     delete process.env.SECRETS_ENCRYPTION_KEY;
   } else {
     process.env.SECRETS_ENCRYPTION_KEY = originalPrimaryKey;
-  }
-
-  if (originalResendKey === undefined) {
-    delete process.env.NEXT_RESEND_KEY;
-  } else {
-    process.env.NEXT_RESEND_KEY = originalResendKey;
-  }
-
-  if (originalWebhookSecret === undefined) {
-    delete process.env.NEXT_RESEND_WEBHOOK_SECRET;
-  } else {
-    process.env.NEXT_RESEND_WEBHOOK_SECRET = originalWebhookSecret;
   }
 });
 
@@ -336,53 +320,6 @@ describe("integrationsRouter", () => {
       });
       expect(activity).not.toBeNull();
       activityIds.push(activity!.id);
-    });
-  });
-
-  describe("importFromEnv", () => {
-    it("copies environment credentials into the integration without returning them", async () => {
-      process.env.NEXT_RESEND_KEY = "imported-key";
-      process.env.NEXT_RESEND_WEBHOOK_SECRET = "imported-secret";
-
-      const result = await caller.importFromEnv({
-        provider: INTEGRATION_PROVIDER_RESEND,
-      });
-
-      const row = await db.integration.findFirstOrThrow();
-      integrationIds.push(row.id);
-
-      expect(result.hasApiKey).toBe(true);
-      expect(result.hasWebhookSecret).toBe(true);
-      expect(result.isEnabled).toBe(true);
-      expect(row.isEnabled).toBe(true);
-    });
-
-    it("throws when the environment key is missing", async () => {
-      delete process.env.NEXT_RESEND_KEY;
-
-      await expect(
-        caller.importFromEnv({ provider: INTEGRATION_PROVIDER_RESEND }),
-      ).rejects.toThrow();
-    });
-
-    it("records an audit entry without secret values", async () => {
-      process.env.NEXT_RESEND_KEY = "imported-key";
-
-      await caller.importFromEnv({ provider: INTEGRATION_PROVIDER_RESEND });
-
-      const row = await db.integration.findFirstOrThrow();
-      integrationIds.push(row.id);
-
-      const activity = await db.administrativeActivity.findFirst({
-        where: { targetType: "INTEGRATION", action: "INTEGRATION_IMPORTED" },
-      });
-      expect(activity).not.toBeNull();
-      activityIds.push(activity!.id);
-
-      const after = activity!.after as Record<string, unknown>;
-      expect(Object.keys(after)).not.toContain("apiKey");
-      expect(Object.keys(after)).not.toContain("webhookSecret");
-      expect(Object.keys(after)).not.toContain("secretEncrypted");
     });
   });
 

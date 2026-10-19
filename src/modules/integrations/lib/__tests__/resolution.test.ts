@@ -8,7 +8,6 @@ import {
   resolveIntegrationSecrets,
   IntegrationResolutionError,
   withIntegrationResolutionCache,
-  invalidateCachedIntegrationSecrets,
 } from "../";
 
 async function resetIntegrationTable() {
@@ -22,14 +21,10 @@ function encryptResendSecrets(secrets: { apiKey?: string; webhookSecret?: string
 }
 
 describe("resolveIntegrationSecrets", () => {
-  const originalResendKey = process.env.NEXT_RESEND_KEY;
-  const originalWebhookSecret = process.env.NEXT_RESEND_WEBHOOK_SECRET;
   const originalPrimaryKey = process.env.SECRETS_ENCRYPTION_KEY;
 
   beforeEach(async () => {
     process.env.SECRETS_ENCRYPTION_KEY = "primary-key-0123456789abcdef";
-    process.env.NEXT_RESEND_KEY = "env-resend-key";
-    delete process.env.NEXT_RESEND_WEBHOOK_SECRET;
     await resetIntegrationTable();
   });
 
@@ -40,41 +35,12 @@ describe("resolveIntegrationSecrets", () => {
       process.env.SECRETS_ENCRYPTION_KEY = originalPrimaryKey;
     }
 
-    if (originalResendKey === undefined) {
-      delete process.env.NEXT_RESEND_KEY;
-    } else {
-      process.env.NEXT_RESEND_KEY = originalResendKey;
-    }
-
-    if (originalWebhookSecret === undefined) {
-      delete process.env.NEXT_RESEND_WEBHOOK_SECRET;
-    } else {
-      process.env.NEXT_RESEND_WEBHOOK_SECRET = originalWebhookSecret;
-    }
-
     await resetIntegrationTable();
   });
 
-  it("falls back to environment variables when no integration row exists", async () => {
-    const secrets = await resolveIntegrationSecrets(INTEGRATION_PROVIDER_RESEND);
-
-    expect(secrets.apiKey).toBe("env-resend-key");
-    expect(secrets.webhookSecret).toBeUndefined();
-  });
-
-  it("includes the webhook secret from the environment when present", async () => {
-    process.env.NEXT_RESEND_WEBHOOK_SECRET = "env-webhook-secret";
-
-    const secrets = await resolveIntegrationSecrets(INTEGRATION_PROVIDER_RESEND);
-
-    expect(secrets.webhookSecret).toBe("env-webhook-secret");
-  });
-
-  it("throws an explicit error when no row exists and the env key is missing", async () => {
-    delete process.env.NEXT_RESEND_KEY;
-
+  it("reports not configured when no integration row exists", async () => {
     await expect(resolveIntegrationSecrets(INTEGRATION_PROVIDER_RESEND)).rejects.toThrow(
-      IntegrationResolutionError,
+      /\bResend\b.*not configured/i,
     );
   });
 
@@ -127,20 +93,6 @@ describe("resolveIntegrationSecrets", () => {
   });
 
   it("throws an explicit error when the integration row is disabled", async () => {
-    await db.integration.create({
-      data: {
-        provider: INTEGRATION_PROVIDER_RESEND,
-        isEnabled: false,
-        secretEncrypted: encryptResendSecrets({ apiKey: "db-resend-key" }),
-      },
-    });
-
-    await expect(resolveIntegrationSecrets(INTEGRATION_PROVIDER_RESEND)).rejects.toThrow(
-      /disabled/i,
-    );
-  });
-
-  it("does not fall back to the environment when the row is disabled", async () => {
     await db.integration.create({
       data: {
         provider: INTEGRATION_PROVIDER_RESEND,
@@ -244,32 +196,5 @@ describe("integration resolution cache", () => {
     });
 
     expect(result.apiKey).toBe("cached-key");
-  });
-
-  it("invalidates the cached resolution on demand", async () => {
-    await db.integration.create({
-      data: {
-        provider: INTEGRATION_PROVIDER_RESEND,
-        isEnabled: true,
-        secretEncrypted: encryptIntegrationSecrets({ apiKey: "old-key" }),
-      },
-    });
-
-    await withIntegrationResolutionCache(async () => {
-      const first = await resolveIntegrationSecrets(INTEGRATION_PROVIDER_RESEND);
-      expect(first.apiKey).toBe("old-key");
-
-      await db.integration.update({
-        where: { provider: INTEGRATION_PROVIDER_RESEND },
-        data: {
-          secretEncrypted: encryptIntegrationSecrets({ apiKey: "new-key" }),
-        },
-      });
-
-      invalidateCachedIntegrationSecrets(INTEGRATION_PROVIDER_RESEND);
-
-      const second = await resolveIntegrationSecrets(INTEGRATION_PROVIDER_RESEND);
-      expect(second.apiKey).toBe("new-key");
-    });
   });
 });

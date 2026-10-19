@@ -23,16 +23,7 @@ async function resolveResendSecrets(): Promise<IntegrationSecretsByProvider["res
   });
 
   if (!row) {
-    const apiKey = process.env.NEXT_RESEND_KEY;
-    if (!apiKey) {
-      throw new IntegrationResolutionError(
-        "Resend API key is not configured (no integration row and NEXT_RESEND_KEY is missing)",
-      );
-    }
-    return {
-      apiKey,
-      webhookSecret: process.env.NEXT_RESEND_WEBHOOK_SECRET,
-    };
+    throw new IntegrationResolutionError("Resend integration is not configured");
   }
 
   if (!row.isEnabled) {
@@ -69,15 +60,16 @@ const resolvers: {
 /**
  * Resolve decrypted secrets for a configured integration provider.
  *
- * - No integration row → falls back to the legacy environment variables.
+ * - No integration row → "not configured", throws an explicit error naming
+ *   the provider. The environment is never consulted.
  * - Disabled row → throws an explicit error.
  * - Enabled but incomplete row → throws an explicit error naming the missing
  *   field.
  * - Malformed ciphertext → throws an explicit error.
  *
- * Resolution is memoized per request when callers wrap the work with
- * `withIntegrationResolutionCache`. The cache can be invalidated explicitly
- * via `invalidateCachedIntegrationSecrets` within the same request scope.
+ * The integration row is the only source of credentials. Resolution is
+ * memoized per request when callers wrap the work with
+ * `withIntegrationResolutionCache`.
  */
 export async function resolveIntegrationSecrets<P extends IntegrationProvider>(
   provider: P,

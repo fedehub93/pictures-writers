@@ -3,7 +3,6 @@
 import "client-only";
 
 import {
-  ImportIcon,
   InfoIcon,
   MoreHorizontalIcon,
   PlayIcon,
@@ -37,12 +36,10 @@ interface IntegrationCardProps {
   canManage: boolean;
   onEdit: () => void;
   onDetails: () => void;
-  onImport: () => void;
   onTest: () => void;
   onToggleEnabled: (enabled: boolean) => void;
   isToggling?: boolean;
   isTesting?: boolean;
-  isImporting?: boolean;
 }
 
 export const IntegrationCard = ({
@@ -50,15 +47,13 @@ export const IntegrationCard = ({
   canManage,
   onEdit,
   onDetails,
-  onImport,
   onTest,
   onToggleEnabled,
   isToggling,
   isTesting,
-  isImporting,
 }: IntegrationCardProps) => {
   const { Icon, ...meta } = INTEGRATION_PROVIDER_META[integration.provider];
-  const isBusy = isToggling || isTesting || isImporting;
+  const isBusy = isToggling || isTesting;
 
   return (
     <Card className="flex flex-col">
@@ -79,10 +74,6 @@ export const IntegrationCard = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem disabled={isBusy} onSelect={onImport}>
-                <ImportIcon />
-                Import from environment
-              </DropdownMenuItem>
               <DropdownMenuItem
                 disabled={isBusy || !integration.isEnabled}
                 onSelect={onTest}

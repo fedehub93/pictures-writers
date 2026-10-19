@@ -4,7 +4,7 @@
 
 **Blocked by:** 01 (Shared secrets encryption)
 
-**Status:** ready-for-human
+**Status:** done
 
 - [x] An `Integration` row exists per provider, with unique provider key, enabled flag, non-secret configuration, encrypted secrets, and last-test metadata.
 - [x] The provider key is a validated string, not a database enum.
@@ -36,3 +36,5 @@ Key changes:
 - Added tests for resolution states, secret update semantics, adapter construction, and provider resolution.
 
 Full test suite: 1171 tests passing.
+
+**Partially superseded by ticket 05** (`05-remove-env-fallback-and-import.md`): the resolver no longer falls back to the environment when no row exists — it reports "not configured" — and per-request cache invalidation on import is gone. The body above records what was built at the time.
