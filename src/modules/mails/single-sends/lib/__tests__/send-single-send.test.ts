@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 
 import { db } from "@/shared/lib/db";
 import type { EmailProviderAdapter } from "@/modules/mails/lib/types";
+import { inboundAdapterStubs } from "@/modules/mails/lib/__tests__/inbound-adapter-stubs";
 
 import {
   sendSingleSend,
@@ -18,6 +19,7 @@ describe("sendSingleSend", () => {
     behavior: "success" | "permanent-failure" | "transient-failure" = "success",
   ): EmailProviderAdapter => {
     return {
+      ...inboundAdapterStubs,
       syncSegment: async () => ({ errors: [] }),
       syncContactsBatch: async () => ({
         success: true,

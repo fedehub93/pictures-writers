@@ -1,5 +1,6 @@
+import "server-only";
+
 import * as sgMail from "@sendgrid/mail";
-import { Resend } from "resend";
 import { endOfDay, startOfDay } from "date-fns";
 import handlebars from "handlebars";
 
@@ -13,6 +14,7 @@ import { createContactByEmail } from "@/data/email-contact";
 import { renderTiptapHtml } from "@/shared/components/tiptap-renderer/helpers/render-tiptap-html";
 import { GenericEmail } from "./types";
 import { resolveSender } from "./sender";
+import { resolveAdapter } from "./provider";
 
 import { handleProductPurchased } from "../../../lib/event-handler";
 
@@ -90,23 +92,25 @@ export const sendResendEmail = async (
 ) => {
   const settings = await db.emailSetting.findFirst();
 
-  if (!settings || !settings.emailApiKey || !settings.emailSender) return false;
+  if (!settings || !settings.emailSender) return false;
 
   if (!html) return false;
 
-  const resend = new Resend(process.env.NEXT_RESEND_KEY);
+  const adapter = await resolveAdapter();
 
-  await resend.emails.send(
-    {
-      to,
-      from,
-      subject,
-      html,
-      replyTo,
-      headers,
-    },
-    idempotencyKey ? { idempotencyKey } : undefined,
-  );
+  const result = await adapter.sendOneToOne({
+    to,
+    from,
+    subject,
+    html,
+    replyTo,
+    headers,
+    idempotencyKey,
+  });
+
+  if (!result.success) {
+    return false;
+  }
 
   if (options.log !== false) {
     await recordSend({ to, from, subject, type, idempotencyKey });
@@ -298,24 +302,28 @@ export const sendFreeEbookEmail = async (
 
 export const getEmailsSentToday = async () => {
   const today = new Date();
-  const startOfToday = startOfDay(today);
-  const endOfToday = endOfDay(today);
+  const createdAt = { gte: startOfDay(today), lte: endOfDay(today) };
 
-  const emailsSentToday = await db.emailSendLog.count({
-    where: {
-      createdAt: {
-        gte: startOfToday,
-        lte: endOfToday,
-      },
-    },
-  });
+  // `maxEmailsPerDay` is the provider's transactional quota. It counts:
+  //  - `EmailSendLog` rows: system/transactional sends (orders, ebooks, and
+  //    automation steps), which record themselves there for auditability;
+  //  - OUTBOUND `EmailMessage` rows: one-to-one conversation replies.
+  // Marketing broadcasts (SingleSends) are intentionally excluded — they go
+  // through the provider's broadcast pipeline and write to neither table.
+  const [systemSends, oneToOneSends] = await Promise.all([
+    db.emailSendLog.count({ where: { createdAt } }),
+    db.emailMessage.count({ where: { direction: "OUTBOUND", createdAt } }),
+  ]);
 
-  return emailsSentToday;
+  return systemSends + oneToOneSends;
 };
 
 export const getTodayEmailsAvailable = async () => {
   const settings = await db.emailSetting.findFirst();
-  if (!settings || !settings.maxEmailsPerDay) return 0;
+  // An unconfigured limit means sending is not capped.
+  if (settings?.maxEmailsPerDay == null) {
+    return Number.POSITIVE_INFINITY;
+  }
 
   const emailsSentToday = await getEmailsSentToday();
 

@@ -66,6 +66,8 @@ export const PERMISSIONS = {
   SINGLE_SENDS_MANAGE: "single-sends.manage",
   EMAIL_SETTINGS_READ: "email-settings.read",
   EMAIL_SETTINGS_MANAGE: "email-settings.manage",
+  EMAIL_ACCOUNTS_READ: "email-accounts.read",
+  EMAIL_ACCOUNTS_MANAGE: "email-accounts.manage",
   SETTINGS_READ: "settings.read",
   SETTINGS_UPDATE: "settings.update",
   WIDGETS_READ: "widgets.read",
@@ -86,6 +88,8 @@ export const PERMISSIONS = {
   AUTOMATIONS_WRITE: "automations.write",
   MAIL_READ: "mail.read",
   MAIL_MANAGE: "mail.manage",
+  INTEGRATIONS_READ: "integrations.read",
+  INTEGRATIONS_MANAGE: "integrations.manage",
 } as const;
 
 export type PermissionKey = string;
@@ -97,6 +101,7 @@ export const hasPermission = (
 
 const AREA_ALIASES: Record<string, string> = {
   mailSettings: "email-settings",
+  emailAccounts: "email-accounts",
   submissions: "submissions",
   singleSends: "single-sends",
   productCategories: "product-categories",

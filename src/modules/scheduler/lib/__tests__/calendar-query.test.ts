@@ -451,7 +451,7 @@ describe("calendar query", () => {
 
       const events = await getCalendarEvents({ from, to });
       expect(events[0]?.title).toBe("Weekly Newsletter");
-      expect(events[0]?.url).toBe(`/admin/mails/single-sends/${email.id}`);
+      expect(events[0]?.url).toBe(`/admin/mails/marketing/single-sends/${email.id}`);
     });
   });
 });

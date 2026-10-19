@@ -4,6 +4,8 @@ import { ContentHeader } from "@/app/(admin)/_components/content/content-header"
 import { LoadingState } from "@/shared/components/loading-state";
 import { ErrorState } from "@/shared/components/error-state";
 
+import { MAIL_SECTIONS } from "@/modules/mails/lib/sections";
+
 import { useSuspenseTemplates } from "../../hooks/use-templates";
 
 import { CreateTemplateDialog } from "../components/create-template-dialog";
@@ -17,7 +19,11 @@ export const TemplatesView = () => {
     <>
       <CreateTemplateDialog />
       <div className="h-full w-full flex flex-col gap-y-4 px-6 py-3">
-        <ContentHeader label="Email Templates" totalEntries={data.length} />
+        <ContentHeader
+          label="Email Templates"
+          totalEntries={data.length}
+          section={MAIL_SECTIONS.marketing}
+        />
         <DataTable columns={columns} data={data} />
       </div>
     </>

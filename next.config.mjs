@@ -1,6 +1,16 @@
 import path from "path";
 import withBundleAnalyzer from "@next/bundle-analyzer";
 
+// The Mails admin routes were split into the `marketing` and `conversations`
+// sections; keep old bookmarks and stored URLs working.
+const mailRouteMoves = [
+  ["templates", "marketing/templates"],
+  ["audiences", "marketing/audiences"],
+  ["single-sends", "marketing/single-sends"],
+  ["inbox", "conversations/inbox"],
+  ["accounts", "conversations/accounts"],
+];
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   async rewrites() {
@@ -28,6 +38,11 @@ const nextConfig = {
         destination: "/concorso-tre-colori-2026/",
         permanent: true,
       },
+      ...mailRouteMoves.map(([from, to]) => ({
+        source: `/admin/mails/${from}/:path*`,
+        destination: `/admin/mails/${to}/:path*`,
+        permanent: true,
+      })),
     ];
   },
   images: {

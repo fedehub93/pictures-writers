@@ -40,11 +40,136 @@ export type CreateContactResult = {
   newExternalId?: string;
 };
 
+// ─── Inbound email (provider → application) ──────────────────────────────────
+
+/** Attachment metadata as reported by the provider. No signed URL yet. */
+export type InboundAttachmentMetadata = {
+  externalId: string;
+  filename: string;
+  contentType: string;
+  size?: number;
+};
+
+/** A fully fetched inbound email body plus its attachment metadata. */
+export type InboundEmail = {
+  externalId: string;
+  messageId?: string;
+  inReplyTo?: string;
+  references: string[];
+  from: string;
+  to: string[];
+  cc: string[];
+  bcc: string[];
+  subject?: string;
+  bodyHtml?: string;
+  bodyText?: string;
+  receivedAt: Date;
+  attachments: InboundAttachmentMetadata[];
+};
+
+/** Raw `email.received` payload embedded in a provider webhook event. */
+export type InboundWebhookData = {
+  email_id: string;
+  message_id: string;
+  from: string;
+  to: string[];
+  cc: string[];
+  bcc: string[];
+  received_for: string[];
+  subject: string;
+  created_at: string;
+};
+
+/** Headers used to verify a provider webhook signature. */
+export type WebhookSignatureHeaders = {
+  id: string;
+  timestamp: string;
+  signature: string;
+};
+
+/** Result of verifying a provider webhook signature. */
+export type VerifiedWebhookEvent =
+  | { type: "email.received"; data: InboundWebhookData }
+  | { type: string; data: unknown };
+
+/**
+ * Narrow a verified webhook event to an inbound email. Needed because the
+ * generic variant's `type` is a plain `string`, which the compiler cannot
+ * exclude by discrimination alone.
+ */
+export function isReceivedEmailEvent(
+  event: VerifiedWebhookEvent,
+): event is { type: "email.received"; data: InboundWebhookData } {
+  return event.type === "email.received";
+}
+
+/**
+ * Provider contract for receiving email. Implemented by adapters that can
+ * receive inbound messages (currently Resend).
+ */
+export interface EmailInboundAdapter {
+  /**
+   * Verify a webhook signature and decode the event. Must throw when the
+   * signature is invalid.
+   */
+  verifyWebhook(params: {
+    payload: string;
+    headers: WebhookSignatureHeaders;
+    webhookSecret: string;
+  }): VerifiedWebhookEvent;
+
+  /** Fetch the full body and attachment metadata of a received email. */
+  fetchInbound(externalId: string): Promise<InboundEmail>;
+
+  /** List attachment metadata for a received email. */
+  listInboundAttachments(
+    externalId: string,
+  ): Promise<InboundAttachmentMetadata[]>;
+
+  /** Resolve a short-lived download URL for a single attachment. */
+  getAttachmentDownloadUrl(
+    emailExternalId: string,
+    attachmentExternalId: string,
+  ): Promise<{ url: string; expiresAt?: Date }>;
+}
+
 export type DeleteContactResult = {
   errors: string[];
 };
 
-export interface EmailProviderAdapter {
+// ─── Outbound one-to-one email (application → provider) ──────────────────────
+
+/**
+ * An outbound attachment already uploaded to application storage. The provider
+ * fetches it from `url` rather than receiving an inline payload.
+ */
+export type OutboundAttachment = {
+  filename: string;
+  contentType: string;
+  url: string;
+  size?: number;
+};
+
+/** Parameters for a single one-to-one email send. */
+export type SendOneToOneParams = {
+  to: string;
+  from: string;
+  subject: string;
+  html: string;
+  text?: string;
+  replyTo?: string;
+  attachments?: OutboundAttachment[];
+  /// Extra transport headers forwarded verbatim to the provider.
+  headers?: Record<string, string>;
+  /// Opaque idempotency key forwarded to providers that support it.
+  idempotencyKey?: string;
+};
+
+export type SendOneToOneResult =
+  | { success: true; externalId?: string }
+  | { success: false; error: string };
+
+export interface EmailProviderAdapter extends EmailInboundAdapter {
   syncSegment(externalId: string | null, name: string): Promise<SyncResult>;
   syncContactsBatch(
     contacts: {
@@ -98,4 +223,11 @@ export interface EmailProviderAdapter {
     externalCampaignId?: string;
     error?: string;
   }>;
+
+  /**
+   * Send a single one-to-one email to a specific recipient, outside the
+   * broadcast/marketing pipeline. Attachments are referenced by their
+   * application-storage URL.
+   */
+  sendOneToOne(params: SendOneToOneParams): Promise<SendOneToOneResult>;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, type LucideIcon } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 import {
@@ -18,7 +18,21 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/shared/ui/sidebar";
-import { NavObject } from "./app-sidebar";
+
+import { type NavItem, type NavObject } from "./nav-data";
+
+function NavLink({ item }: { item: NavItem }) {
+  return (
+    <SidebarMenuSubItem>
+      <SidebarMenuSubButton asChild>
+        <Link href={item.url}>
+          {item.Icon && <item.Icon />}
+          {item.title}
+        </Link>
+      </SidebarMenuSubButton>
+    </SidebarMenuSubItem>
+  );
+}
 
 export function NavMain({
   label,
@@ -34,7 +48,9 @@ export function NavMain({
       </SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => {
-          if (!item.items?.length) {
+          const hasChildren = Boolean(item.items?.length || item.groups?.length);
+
+          if (!hasChildren) {
             return (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton asChild>
@@ -46,6 +62,7 @@ export function NavMain({
               </SidebarMenuItem>
             );
           }
+
           return (
             <Collapsible key={item.title} asChild className="group/collapsible">
               <SidebarMenuItem>
@@ -56,19 +73,26 @@ export function NavMain({
                     <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <SidebarMenuSub>
-                    {item.items?.map((subItem) => (
-                      <SidebarMenuSubItem key={subItem.title}>
-                        <SidebarMenuSubButton asChild>
-                          <Link href={subItem.url}>
-                            {subItem.Icon && <subItem.Icon />}
-                            {subItem.title}{" "}
-                          </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    ))}
-                  </SidebarMenuSub>
+                <CollapsibleContent className="flex flex-col gap-1">
+                  {item.groups?.map((group) => (
+                    <div key={group.label}>
+                      <div className="px-2 pt-1 pb-0.5 text-xs font-medium text-muted-foreground">
+                        {group.label}
+                      </div>
+                      <SidebarMenuSub>
+                        {group.items.map((subItem) => (
+                          <NavLink key={subItem.title} item={subItem} />
+                        ))}
+                      </SidebarMenuSub>
+                    </div>
+                  ))}
+                  {item.items?.length ? (
+                    <SidebarMenuSub>
+                      {item.items.map((subItem) => (
+                        <NavLink key={subItem.title} item={subItem} />
+                      ))}
+                    </SidebarMenuSub>
+                  ) : null}
                 </CollapsibleContent>
               </SidebarMenuItem>
             </Collapsible>

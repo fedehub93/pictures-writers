@@ -200,6 +200,8 @@ model User {
   productVersions ProductVersion[]
   customer      Customer?
 
+  emailAccountPermissions EmailAccountUserPermission[]
+
   dashboardLayout DashboardLayout?
 
   createdAt DateTime @default(now())
@@ -665,6 +667,7 @@ model EmailContact {
   audiences           EmailAudience[]
   interactions        EmailContactInteraction[]
   emailSingleSendLogs EmailSingleSendLog[]
+  conversations       Conversation[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -748,6 +751,131 @@ model EmailSingleSendLog {
   updatedAt DateTime @updatedAt
 
   @@unique([contactId, singleSendId])
+}
+
+// ─── Email conversations (inbound + one-to-one) ───────────────────────────────
+// Provider is global (EmailSetting). EmailAccount records live on top of it and
+// represent an address plus its display name, signature and activation state.
+// See ADR-0022 and CONTEXT.md "Email conversations".
+
+enum EmailMessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum EmailMessageStatus {
+  RECEIVED
+  SENT
+  DELIVERED
+  BOUNCED
+  FAILED
+}
+
+model EmailAccount {
+  id String @id @default(uuid())
+
+  name        String
+  email       String  @unique
+  displayName String?
+  signature   String?
+
+  isActive  Boolean @default(true)
+  isDefault Boolean @default(false)
+
+  userPermissions EmailAccountUserPermission[]
+  conversations   Conversation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EmailAccountUserPermission {
+  id String @id @default(uuid())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  emailAccount   EmailAccount @relation(fields: [emailAccountId], references: [id], onDelete: Cascade)
+  emailAccountId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, emailAccountId])
+}
+
+model Conversation {
+  id String @id @default(uuid())
+
+  contactEmail String
+  contactName  String?
+
+  contact   EmailContact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  contactId String?
+
+  emailAccount   EmailAccount @relation(fields: [emailAccountId], references: [id], onDelete: Cascade)
+  emailAccountId String
+
+  messages  EmailMessage[]
+  hasUnread Boolean        @default(false)
+
+  archivedAt DateTime?
+  deletedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([emailAccountId])
+  @@index([contactEmail])
+}
+
+model EmailMessage {
+  id String @id @default(uuid())
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId String
+
+  direction EmailMessageDirection
+  status    EmailMessageStatus    @default(RECEIVED)
+
+  subject      String?
+  bodyHtml     String?
+  bodyText     String?
+  fromAddress  String
+  toAddresses  String[]
+  ccAddresses  String[]
+  bccAddresses String[]
+
+  messageId  String?
+  inReplyTo  String?
+  references String[]
+  externalId String?
+
+  sentAt DateTime?
+
+  attachments EmailAttachment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([conversationId])
+  @@index([externalId])
+}
+
+model EmailAttachment {
+  id String @id @default(uuid())
+
+  emailMessage   EmailMessage @relation(fields: [emailMessageId], references: [id], onDelete: Cascade)
+  emailMessageId String
+
+  filename    String
+  contentType String
+  size        Int?
+  url         String
+  externalId  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum ProductType {
@@ -1523,4 +1651,22 @@ model Payment {
   metadata  Json?
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
+}
+
+model Integration {
+  id String @id @default(uuid())
+
+  provider String @unique
+  isEnabled Boolean @default(false)
+
+  /// [IntegrationConfig]
+  config Json @default("{}") @db.JsonB
+
+  secretEncrypted String
+
+  lastTestedAt  DateTime?
+  lastTestStatus String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

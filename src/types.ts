@@ -28,6 +28,7 @@ declare global {
     type WidgetMetadata = any;
     type Scripts = SettingsScripts[] | null | undefined;
     type DashboardWidgets = DashboardWidgetsType;
+    type IntegrationConfig = Record<string, unknown>;
   }
 }
 

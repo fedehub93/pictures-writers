@@ -58,9 +58,10 @@ Create `.env` (see existing `.env` for reference). Required variables include:
 
 - `DATABASE_URL` — PostgreSQL connection string
 - `NEXT_PUBLIC_APP_URL` — e.g. `http://localhost:3000`
+- `SECRETS_ENCRYPTION_KEY` — Random 32+ byte value used to encrypt stored secrets (automation credentials and integration secrets). Generate with `openssl rand -base64 32` or equivalent; do not use a human passphrase.
+- `AUTOMATION_CREDENTIALS_KEY` — Legacy fallback key used to decrypt existing automation `Credential` rows created before `SECRETS_ENCRYPTION_KEY` was introduced.
 - `UPLOADTHING_TOKEN` — UploadThing token
 - `NEXT_SENDGRID_KEY` — SendGrid API key
-- `NEXT_RESEND_KEY` — Resend API key
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` / `STRIPE_API_KEY` / `STRIPE_WEBHOOK_SECRET`
 - `NEXT_GA_TRACKING_ID` / `NEXT_GTAG_CONTAINER_ID` — Google Analytics/Tag Manager
 - `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` — reCAPTCHA

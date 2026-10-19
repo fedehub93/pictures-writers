@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 import { db } from "@/shared/lib/db";
 import type { EmailProviderAdapter } from "@/modules/mails/lib/types";
+import { inboundAdapterStubs } from "@/modules/mails/lib/__tests__/inbound-adapter-stubs";
 
 import { importContactsIntoAudience } from "../sync";
 
@@ -39,6 +40,7 @@ function createFakeAdapter(overrides: {
     overrides.syncSegment ?? (async () => ({ errors: [] }));
 
   return {
+    ...inboundAdapterStubs,
     calls,
     syncSegment: async (externalId, name) => {
       calls.syncSegment.push([externalId, name]);

@@ -138,6 +138,44 @@ _Avoid_: Clone, version when referring to this action.
 The short summary text an inbox shows alongside the subject line before the message is opened. It accompanies the subject on an outgoing email and is not part of an Email template's design.
 _Avoid_: Preview text when referring to the concept (that is the UI label), summary line.
 
+## Email accounts and conversations
+
+**Marketing email**:
+A bulk or segmented send to subscribers, implemented through `EmailSingleSend` or automations. Not counted against `maxEmailsPerDay`.
+_Avoid_: Newsletter when referring to the CMS entity; broadcast when the distinction from one-to-one matters.
+
+**Transactional email**:
+An automatic or one-to-one email tied to a specific interaction (order, conversation, confirmation). Counted against `maxEmailsPerDay`.
+_Avoid_: System email when the limit applies.
+
+**Email account**:
+An email address managed by the CMS for inbound and outbound conversations. It belongs to the globally configured provider and has a receiving address, display name, and signature. It can be enabled for one or more backoffice users.
+_Avoid_: Mailbox, inbox when referring to the CMS entity.
+
+**Email account permission**:
+The association between a backoffice user and the `EmailAccount` records they may use.
+_Avoid_: Account assignment.
+
+**Conversation**:
+A sequence of inbound and outbound emails between an external contact and an `EmailAccount`, grouped by the contact's email address and belonging to one `EmailAccount`.
+_Avoid_: Thread, ticket when referring to the CMS entity.
+
+**Inbound email**:
+A message received through a provider webhook and associated with an `EmailAccount` based on the `to` address.
+_Avoid_: Received message when the direction matters.
+
+**Outbound one-to-one email**:
+A message sent manually by an admin to an email address through an `EmailAccount`. Distinct from marketing sends.
+_Avoid_: Direct message, reply when the entity is a stored email.
+
+**Email attachment**:
+A file attached to an inbound or outbound email, persisted in application storage and owned by its parent `EmailMessage`.
+_Avoid_: File, upload when the context is email.
+
+**Unread conversation**:
+A conversation that has received a new inbound email not yet seen by an admin.
+_Avoid_: New message when referring to the conversation state.
+
 ## Backoffice users and authorization
 
 **Backoffice user**:
@@ -275,6 +313,16 @@ _Avoid_: User time zone, server time zone, per-node time zone.
 **Wait anchor**:
 The rule that turns the Wait node's delay plus a time of day into a resume moment: N calendar days after the current wall date, at that time in the Site time zone, rolled forward one day when the moment has already passed.
 _Avoid_: Absolute delay, countdown, offset.
+
+## External integrations
+
+**Provider**:
+An external service a CMS feature talks to, identified by the service itself rather than by the credentials used to reach it (email, file storage, analytics, payments).
+_Avoid_: Vendor, integration when referring to the service.
+
+**Integration**:
+The configured connection from this site to one Provider: the Provider it targets, whether it is active, its non-secret configuration, and its stored secrets.
+_Avoid_: Connection (reserved for Automations), account, settings.
 
 ## Admin dashboard
 

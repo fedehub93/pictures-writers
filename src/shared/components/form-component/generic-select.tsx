@@ -18,6 +18,7 @@ interface GenericSelectProps<
   control: Control<T>;
   name: Path<T>;
   label: string;
+  labelAccessory?: React.ReactNode;
   containerProps?: React.HTMLAttributes<HTMLDivElement>;
   options: string[];
 }
@@ -26,6 +27,7 @@ export const GenericSelect = <T extends FieldValues>({
   control,
   name,
   label,
+  labelAccessory,
   onBlur,
   onChange,
   containerProps,
@@ -39,11 +41,14 @@ export const GenericSelect = <T extends FieldValues>({
       render={({ field }) => (
         <FormItem
           className={cn(
-            "flex flex-col space-y-2",
+            "relative flex flex-col space-y-2",
             containerProps?.className ? containerProps.className : "",
           )}
         >
           <FormLabel htmlFor={`rhf_select_${field.name}`}>{label}</FormLabel>
+          {labelAccessory ? (
+            <div className="absolute right-0 top-0">{labelAccessory}</div>
+          ) : null}
           <Select
             {...field}
             value={field.value}

@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 
 import { db } from "@/shared/lib/db";
 import type { EmailProviderAdapter } from "@/modules/mails/lib/types";
+import { inboundAdapterStubs } from "@/modules/mails/lib/__tests__/inbound-adapter-stubs";
 
 import { syncContactWithProvider, createContactOnProvider } from "../sync";
 
@@ -24,6 +25,7 @@ function createFakeAdapter(overrides: {
   };
 
   return {
+    ...inboundAdapterStubs,
     calls,
     syncSegment: async () => ({ errors: [] }),
     syncContactsBatch: async () => ({
