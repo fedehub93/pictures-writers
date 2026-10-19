@@ -4,7 +4,7 @@ import { useState } from "react";
 import {
   ArchiveIcon,
   ArchiveRestoreIcon,
-  MoreVerticalIcon,
+  ReplyIcon,
   Trash2Icon,
   UserPlusIcon,
 } from "lucide-react";
@@ -21,14 +21,6 @@ import {
   AlertDialogTitle,
 } from "@/shared/ui/alert-dialog";
 import { Button } from "@/shared/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/shared/ui/dropdown-menu";
-import { cn } from "@/shared/lib/utils";
 
 import {
   useCreateContactFromConversation,
@@ -39,11 +31,15 @@ import { type ConversationGetOne } from "../../types";
 
 interface ConversationActionsProps {
   conversation: ConversationGetOne;
+  onReply?: () => void;
+  onArchived?: () => void;
   onDeleted?: (id: string) => void;
 }
 
 export const ConversationActions = ({
   conversation,
+  onReply,
+  onArchived,
   onDeleted,
 }: ConversationActionsProps) => {
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -58,10 +54,13 @@ export const ConversationActions = ({
     setArchived.mutate(
       { id: conversation.id, archived: !isArchived },
       {
-        onSuccess: () =>
+        onSuccess: () => {
           toast.success(
             isArchived ? "Conversation unarchived" : "Conversation archived",
-          ),
+          );
+          // The thread leaves the current view, so close it.
+          onArchived?.();
+        },
         onError: (error) => toast.error(error.message),
       },
     );
@@ -93,43 +92,53 @@ export const ConversationActions = ({
 
   return (
     <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
+      <div className="flex items-center gap-0.5">
+        {onReply && (
           <Button
             variant="ghost"
-            size="icon"
-            aria-label="Conversation actions"
+            size="icon-sm"
+            onClick={onReply}
+            aria-label="Reply"
+            title="Reply"
           >
-            <MoreVerticalIcon />
+            <ReplyIcon />
           </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          {!conversation.contactId && (
-            <DropdownMenuItem
-              disabled={createContact.isPending}
-              onSelect={handleCreateContact}
-            >
-              <UserPlusIcon />
-              Create contact
-            </DropdownMenuItem>
-          )}
-          <DropdownMenuItem
-            disabled={setArchived.isPending}
-            onSelect={handleArchiveToggle}
+        )}
+
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={handleArchiveToggle}
+          disabled={setArchived.isPending}
+          aria-label={isArchived ? "Unarchive" : "Archive"}
+          title={isArchived ? "Unarchive" : "Archive"}
+        >
+          {isArchived ? <ArchiveRestoreIcon /> : <ArchiveIcon />}
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={() => setConfirmOpen(true)}
+          aria-label="Delete conversation"
+          title="Delete"
+        >
+          <Trash2Icon />
+        </Button>
+
+        {!conversation.contactId && (
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={handleCreateContact}
+            disabled={createContact.isPending}
+            aria-label="Create contact"
+            title="Create contact"
           >
-            {isArchived ? <ArchiveRestoreIcon /> : <ArchiveIcon />}
-            {isArchived ? "Unarchive" : "Archive"}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            className="text-destructive focus:text-destructive"
-            onSelect={() => setConfirmOpen(true)}
-          >
-            <Trash2Icon />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            <UserPlusIcon />
+          </Button>
+        )}
+      </div>
 
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>
@@ -145,9 +154,7 @@ export const ConversationActions = ({
             <AlertDialogAction
               onClick={handleDelete}
               disabled={remove.isPending}
-              className={cn(
-                "bg-destructive text-white hover:bg-destructive/90",
-              )}
+              className="bg-destructive text-white hover:bg-destructive/90"
             >
               Delete
             </AlertDialogAction>

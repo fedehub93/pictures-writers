@@ -1,7 +1,7 @@
 "use client";
 
 import { type ReactNode } from "react";
-import { ArrowLeftIcon, MailOpenIcon } from "lucide-react";
+import { ArrowLeftIcon, MailOpenIcon, ReplyIcon } from "lucide-react";
 
 import { Button } from "@/shared/ui/button";
 import {
@@ -21,6 +21,8 @@ interface ConversationDetailProps {
   conversation?: ConversationGetOne;
   isLoading: boolean;
   onBack: () => void;
+  /** Opens the reply composer; the footer bar hides once it is open. */
+  onReply?: () => void;
   /** Actions rendered in the header; kept out of this file's dependencies. */
   actionsSlot?: ReactNode;
   /** Composer rendered under the thread; kept out of this file's dependencies. */
@@ -31,6 +33,7 @@ export const ConversationDetail = ({
   conversation,
   isLoading,
   onBack,
+  onReply,
   actionsSlot,
   replySlot,
 }: ConversationDetailProps) => {
@@ -40,64 +43,83 @@ export const ConversationDetail = ({
 
   if (!conversation) {
     return (
-      <Empty className="border-0">
-        <EmptyHeader>
-          <EmptyMedia variant="icon">
-            <MailOpenIcon />
-          </EmptyMedia>
-          <EmptyTitle>No conversation selected</EmptyTitle>
-          <EmptyDescription>
-            Pick a conversation from the list to read the full thread.
-          </EmptyDescription>
-        </EmptyHeader>
-      </Empty>
+      <div className="flex h-full min-h-0 w-full items-center justify-center rounded-xl border bg-background">
+        <Empty className="border-0">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <MailOpenIcon />
+            </EmptyMedia>
+            <EmptyTitle>No conversation selected</EmptyTitle>
+            <EmptyDescription>
+              Pick a conversation from the list to read the full thread.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      </div>
     );
   }
 
   const subject =
     conversation.messages.find((message) => message.subject)?.subject ??
     "(No subject)";
+  const messageCount = conversation.messages.length;
+  const contactLabel = conversation.contactName
+    ? `${conversation.contactName} · ${conversation.contactEmail}`
+    : conversation.contactEmail;
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-col">
-      <header className="flex items-center gap-3 border-b px-4 py-3 md:px-6">
+    <div className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-xl border bg-background shadow-sm">
+      <header className="flex items-start gap-3 border-b px-4 py-4 md:px-6">
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden"
+          className="shrink-0 md:hidden"
           onClick={onBack}
           aria-label="Back to inbox"
         >
           <ArrowLeftIcon />
         </Button>
         <div className="flex min-w-0 flex-1 flex-col">
-          <h2 className="truncate text-base font-semibold">{subject}</h2>
-          <span className="truncate text-xs text-muted-foreground">
-            {conversation.contactName
-              ? `${conversation.contactName} · ${conversation.contactEmail}`
-              : conversation.contactEmail}
-          </span>
+          <h2 className="truncate text-lg leading-tight font-semibold">
+            {subject}
+          </h2>
+          <p className="mt-1 truncate text-xs text-muted-foreground">
+            {messageCount} {messageCount === 1 ? "message" : "messages"} ·{" "}
+            {contactLabel}
+          </p>
         </div>
-        {actionsSlot}
+        {actionsSlot && <div className="shrink-0">{actionsSlot}</div>}
       </header>
 
       <ScrollArea className="min-h-0 flex-1">
-        <div className="flex flex-col gap-4 p-4 md:p-6">
+        <div className="flex flex-col">
           {conversation.messages.map((message) => (
             <MessageItem key={message.id} message={message} />
           ))}
         </div>
       </ScrollArea>
 
-      {replySlot}
+      {replySlot ??
+        (onReply ? (
+          <div className="border-t p-3">
+            <button
+              type="button"
+              onClick={onReply}
+              className="flex w-full items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+            >
+              <ReplyIcon className="size-4" />
+              Reply to {conversation.contactName ?? conversation.contactEmail}…
+            </button>
+          </div>
+        ) : null)}
     </div>
   );
 };
 
 const ConversationDetailSkeleton = () => {
   return (
-    <div className="flex h-full min-h-0 w-full flex-col">
-      <div className="flex flex-col gap-2 border-b px-4 py-3 md:px-6">
+    <div className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-xl border bg-background">
+      <div className="flex flex-col gap-2 border-b px-4 py-4 md:px-6">
         <Skeleton className="h-5 w-64" />
         <Skeleton className="h-3 w-40" />
       </div>

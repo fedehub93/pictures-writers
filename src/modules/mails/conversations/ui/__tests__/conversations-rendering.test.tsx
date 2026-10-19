@@ -23,6 +23,13 @@ const unreadConversation: ConversationListItem = {
     direction: "INBOUND",
     sentAt: new Date("2026-10-17T11:58:00.000Z"),
     hasAttachments: true,
+    attachments: [
+      {
+        id: "attachment-preview-1",
+        filename: "Financial_Reports.pdf",
+        contentType: "application/pdf",
+      },
+    ],
   },
 };
 
@@ -39,11 +46,12 @@ const readConversation: ConversationListItem = {
     direction: "INBOUND",
     sentAt: new Date("2026-10-17T09:00:00.000Z"),
     hasAttachments: false,
+    attachments: [],
   },
 };
 
 describe("inbox rendering", () => {
-  it("renders sender, subject and preview for each conversation", () => {
+  it("renders sender, subject, preview and attachments for each conversation", () => {
     const html = renderToStaticMarkup(
       <ConversationList
         conversations={[unreadConversation, readConversation]}
@@ -56,6 +64,7 @@ describe("inbox rendering", () => {
     expect(html).toContain("Jessica Ball");
     expect(html).toContain("Query about recently purchased soccer socks");
     expect(html).toContain("Greetings. I have purchased some socks");
+    expect(html).toContain("Financial_Reports.pdf");
     expect(html).toContain("danny.reid@example.com");
   });
 
@@ -139,7 +148,8 @@ describe("conversation detail rendering", () => {
     );
 
     expect(html).toContain("Query about recently purchased soccer socks");
-    expect(html).toContain("Jessica Ball &lt;jessica.ball@example.com&gt;");
+    expect(html).toContain("Jessica Ball");
+    expect(html).toContain("&lt;jessica.ball@example.com&gt;");
     expect(html).toContain("Greetings. I have purchased some socks");
     expect(html).toContain("workflow-data.pdf");
     expect(html).toContain('href="https://files.example/workflow-data.pdf"');

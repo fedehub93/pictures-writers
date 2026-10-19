@@ -3,8 +3,6 @@
 import { useMemo, useState } from "react";
 import { InboxIcon } from "lucide-react";
 
-import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
-
 import { ErrorState } from "@/shared/components/error-state";
 import { LoadingState } from "@/shared/components/loading-state";
 import { cn } from "@/shared/lib/utils";
@@ -15,20 +13,20 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/shared/ui/empty";
-import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 
 import { useSuspenseAllowedEmailAccounts } from "@/modules/mails/accounts";
-import { MAIL_SECTIONS } from "@/modules/mails/lib/sections";
 
 import { useConversation, useConversations } from "../../hooks/use-conversations";
 import { AccountSelector } from "../components/account-selector";
 import { ConversationActions } from "../components/conversation-actions";
 import { ConversationDetail } from "../components/conversation-detail";
-import { ConversationList } from "../components/conversation-list";
+import { ConversationListPanel } from "../components/conversation-list-panel";
 import { ReplyComposer } from "../components/composer/reply-composer";
-import { NewMessageDialog } from "../components/new-message-dialog";
-
-type ConversationView = "inbox" | "archived";
+import { NewMessagePanel } from "../components/composer/new-message-panel";
+import {
+  MailboxNav,
+  type ConversationView,
+} from "../components/mailbox-nav";
 
 export const ConversationsView = () => {
   const { data: accounts } = useSuspenseAllowedEmailAccounts();
@@ -54,6 +52,7 @@ export const ConversationsView = () => {
   }, [preferredAccountId, accounts, defaultAccountId]);
 
   const [view, setView] = useState<ConversationView>("inbox");
+  const [isComposing, setIsComposing] = useState(false);
 
   // The open thread is tracked with its account, so switching accounts clears
   // it without a synchronising effect.
@@ -61,14 +60,23 @@ export const ConversationsView = () => {
     accountId?: string;
     conversationId?: string;
   }>({});
+  const [replyingTo, setReplyingTo] = useState<string>();
 
   const selectedConversationId =
     selection.accountId === selectedAccountId
       ? selection.conversationId
       : undefined;
 
-  const { data: conversations, isLoading: isLoadingConversations } =
-    useConversations(selectedAccountId, view === "archived");
+  const inboxQuery = useConversations(selectedAccountId, false);
+  const archivedQuery = useConversations(selectedAccountId, true);
+  const activeQuery = view === "inbox" ? inboxQuery : archivedQuery;
+
+  const conversations = activeQuery.data ?? [];
+  const inboxUnreadCount = (inboxQuery.data ?? []).filter(
+    (conversation) => conversation.hasUnread,
+  ).length;
+  const archivedCount = archivedQuery.data?.length ?? 0;
+
   const { data: conversation, isLoading: isLoadingConversation } =
     useConversation(selectedConversationId);
 
@@ -95,112 +103,137 @@ export const ConversationsView = () => {
     );
   }
 
+  const isDetailOpen = isComposing || Boolean(selectedConversationId);
+
   const openConversation = (accountId: string, conversationId: string) => {
-    setView("inbox");
     setPreferredAccountId(accountId);
+    setView("inbox");
     setSelection({ accountId, conversationId });
+    setIsComposing(false);
+    setReplyingTo(undefined);
+  };
+
+  const closeConversation = () => {
+    setSelection((current) => ({ ...current, conversationId: undefined }));
+    setReplyingTo(undefined);
+  };
+
+  const handleAccountChange = (accountId: string) => {
+    setPreferredAccountId(accountId);
+    setSelection({});
+    setIsComposing(false);
+    setReplyingTo(undefined);
+  };
+
+  const handleViewChange = (next: ConversationView) => {
+    setView(next);
+    setSelection({});
+    setIsComposing(false);
+    setReplyingTo(undefined);
+  };
+
+  const startCompose = () => {
+    setIsComposing(true);
+    setReplyingTo(undefined);
+  };
+
+  const handleDeleted = () => {
+    closeConversation();
+    setIsComposing(false);
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden">
-      <div className="px-6 pt-3">
-        <ContentHeader
-          label="Inbox"
-          totalEntries={conversations?.length ?? 0}
-          section={MAIL_SECTIONS.conversations}
+    <div className="flex h-full min-h-0 flex-1 gap-4 overflow-hidden p-4">
+      <MailboxNav
+        accounts={accounts}
+        accountId={selectedAccountId}
+        onAccountChange={handleAccountChange}
+        view={view}
+        onViewChange={handleViewChange}
+        inboxUnreadCount={inboxUnreadCount}
+        archivedCount={archivedCount}
+        onCompose={startCompose}
+      />
+
+      <div
+        className={cn(
+          "min-h-0 flex-col overflow-hidden rounded-xl border bg-background shadow-sm",
+          isDetailOpen
+            ? "hidden md:flex md:w-88 md:shrink-0"
+            : "flex w-full",
+        )}
+      >
+        <ConversationListPanel
+          key={`${selectedAccountId}-${view}`}
+          conversations={conversations}
+          isLoading={activeQuery.isLoading}
+          selectedId={selectedConversationId}
+          onSelect={(conversationId) => {
+            setIsComposing(false);
+            setReplyingTo(undefined);
+            setSelection({
+              accountId: selectedAccountId,
+              conversationId,
+            });
+          }}
+          lastUpdatedAt={activeQuery.dataUpdatedAt}
+          isRefreshing={activeQuery.isFetching && !activeQuery.isLoading}
+          onRefresh={() => void activeQuery.refetch()}
+          onCompose={startCompose}
+          accountSelector={
+            <AccountSelector
+              accounts={accounts}
+              value={selectedAccountId}
+              onChange={handleAccountChange}
+            />
+          }
         />
       </div>
 
-      <div className="flex min-h-0 flex-1">
-        <aside
-          className={cn(
-            "flex min-h-0 w-full flex-col border-r md:w-96",
-            selectedConversationId && "hidden md:flex",
-          )}
-        >
-          <div className="flex flex-col gap-3 border-b p-3">
-            <div className="flex items-center gap-2">
-              <div className="min-w-0 flex-1">
-                <AccountSelector
-                  accounts={accounts}
-                  value={selectedAccountId}
-                  onChange={setPreferredAccountId}
-                />
-              </div>
-              <NewMessageDialog
-                accounts={accounts}
-                defaultAccountId={selectedAccountId}
-                onSent={openConversation}
-              />
-            </div>
-
-            <Tabs
-              value={view}
-              onValueChange={(value) => {
-                setView(value as ConversationView);
-                setSelection((current) => ({
-                  ...current,
-                  conversationId: undefined,
-                }));
-              }}
-            >
-              <TabsList className="w-full">
-                <TabsTrigger value="inbox">Inbox</TabsTrigger>
-                <TabsTrigger value="archived">Archived</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-
-          <ConversationList
-            conversations={conversations ?? []}
-            isLoading={isLoadingConversations}
-            selectedId={selectedConversationId}
-            onSelect={(id) =>
-              setSelection({ accountId: selectedAccountId, conversationId: id })
-            }
+      <section
+        className={cn("flex min-h-0 flex-1", !isDetailOpen && "hidden")}
+      >
+        {isComposing ? (
+          <NewMessagePanel
+            accounts={accounts}
+            defaultAccountId={selectedAccountId}
+            onDiscard={() => setIsComposing(false)}
+            onSent={openConversation}
           />
-        </aside>
-
-        <section
-          className={cn(
-            "min-h-0 flex-1",
-            selectedConversationId ? "flex" : "hidden md:flex",
-          )}
-        >
+        ) : (
           <ConversationDetail
             conversation={conversation}
             isLoading={isLoadingConversation}
-            onBack={() =>
-              setSelection((current) => ({
-                ...current,
-                conversationId: undefined,
-              }))
+            onBack={closeConversation}
+            onReply={
+              conversation
+                ? () => setReplyingTo(conversation.id)
+                : undefined
             }
             actionsSlot={
               conversation ? (
                 <ConversationActions
                   conversation={conversation}
-                  onDeleted={() =>
-                    setSelection((current) => ({
-                      ...current,
-                      conversationId: undefined,
-                    }))
-                  }
+                  onReply={() => setReplyingTo(conversation.id)}
+                  onArchived={closeConversation}
+                  onDeleted={handleDeleted}
                 />
               ) : undefined
             }
             replySlot={
-              conversation ? (
+              conversation && replyingTo === conversation.id ? (
                 <ReplyComposer
                   key={conversation.id}
                   conversation={conversation}
                   account={selectedAccount}
+                  onSent={() => setReplyingTo(undefined)}
+                  onDiscard={() => setReplyingTo(undefined)}
                 />
               ) : undefined
             }
           />
-        </section>
-      </div>
+        )}
+      </section>
     </div>
   );
 };

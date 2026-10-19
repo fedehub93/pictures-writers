@@ -20,6 +20,8 @@ interface ConversationListProps {
   isLoading: boolean;
   selectedId?: string;
   onSelect: (id: string) => void;
+  emptyTitle?: string;
+  emptyDescription?: string;
 }
 
 export const ConversationList = ({
@@ -27,6 +29,8 @@ export const ConversationList = ({
   isLoading,
   selectedId,
   onSelect,
+  emptyTitle = "No conversations",
+  emptyDescription = "Inbound and outbound messages for this account appear here.",
 }: ConversationListProps) => {
   if (isLoading) {
     return <ConversationListSkeleton />;
@@ -39,10 +43,8 @@ export const ConversationList = ({
           <EmptyMedia variant="icon">
             <InboxIcon />
           </EmptyMedia>
-          <EmptyTitle>No conversations</EmptyTitle>
-          <EmptyDescription>
-            Inbound and outbound messages for this account appear here.
-          </EmptyDescription>
+          <EmptyTitle>{emptyTitle}</EmptyTitle>
+          <EmptyDescription>{emptyDescription}</EmptyDescription>
         </EmptyHeader>
       </Empty>
     );
@@ -68,15 +70,19 @@ const ConversationListSkeleton = () => {
   return (
     <div className="flex flex-col">
       {Array.from({ length: 6 }).map((_, index) => (
-        <div key={index} className="flex items-start gap-3 border-b px-4 py-3">
-          <Skeleton className="size-9 shrink-0 rounded-full" />
+        <div
+          key={index}
+          className="flex items-start gap-3 border-b px-4 py-3.5"
+        >
+          <Skeleton className="size-10 shrink-0 rounded-full" />
           <div className="flex min-w-0 flex-1 flex-col gap-2">
             <div className="flex items-center justify-between gap-2">
-              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-28" />
               <Skeleton className="h-3 w-8" />
             </div>
-            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-4 w-44" />
             <Skeleton className="h-3 w-full" />
+            <Skeleton className="h-3 w-4/5" />
           </div>
         </div>
       ))}

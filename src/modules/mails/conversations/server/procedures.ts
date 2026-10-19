@@ -35,7 +35,11 @@ const listMessageSelect = {
   direction: true,
   sentAt: true,
   createdAt: true,
-  attachments: { select: { id: true } },
+  attachments: {
+    select: { id: true, filename: true, contentType: true },
+    orderBy: { createdAt: "asc" as const },
+    take: 3,
+  },
 } satisfies Prisma.EmailMessageSelect;
 
 /**
@@ -132,6 +136,7 @@ export const conversationsRouter = createTRPCRouter({
                 direction: lastMessage.direction,
                 sentAt: lastMessage.sentAt ?? lastMessage.createdAt,
                 hasAttachments: lastMessage.attachments.length > 0,
+                attachments: lastMessage.attachments,
               }
             : null,
         };

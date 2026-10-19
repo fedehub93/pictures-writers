@@ -15,9 +15,14 @@ export const useSetConversationArchived = (emailAccountId?: string) => {
         );
 
         if (emailAccountId) {
-          queryClient.invalidateQueries(
-            trpc.conversations.getMany.queryFilter({ emailAccountId }),
-          );
+          for (const archived of [false, true]) {
+            queryClient.invalidateQueries(
+              trpc.conversations.getMany.queryFilter({
+                emailAccountId,
+                archived,
+              }),
+            );
+          }
         }
       },
     }),
@@ -37,9 +42,14 @@ export const useRemoveConversation = (emailAccountId?: string) => {
         );
 
         if (emailAccountId) {
-          queryClient.invalidateQueries(
-            trpc.conversations.getMany.queryFilter({ emailAccountId }),
-          );
+          for (const archived of [false, true]) {
+            queryClient.invalidateQueries(
+              trpc.conversations.getMany.queryFilter({
+                emailAccountId,
+                archived,
+              }),
+            );
+          }
         }
       },
     }),

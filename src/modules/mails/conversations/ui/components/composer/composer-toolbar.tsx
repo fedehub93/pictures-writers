@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import {
   AlignCenter,
   AlignLeft,
@@ -15,9 +15,9 @@ import {
   Underline,
   Undo2,
 } from "lucide-react";
-import { Editor, useEditorState } from "@tiptap/react";
+import { type Editor, useEditorState } from "@tiptap/react";
 
-import { MarkButton } from "@/shared/components/tiptap-editor/mark-button";
+import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import {
@@ -26,13 +26,48 @@ import {
   PopoverTrigger,
 } from "@/shared/ui/popover";
 import { Separator } from "@/shared/ui/separator";
-import { Toggle } from "@/shared/ui/toggle";
 
 interface ComposerToolbarProps {
   editor: Editor | null;
+  className?: string;
 }
 
-export const ComposerToolbar = ({ editor }: ComposerToolbarProps) => {
+interface ToolbarButtonProps {
+  label: string;
+  children: ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+  active?: boolean;
+}
+
+const ToolbarButton = ({
+  label,
+  children,
+  onClick,
+  disabled,
+  active,
+}: ToolbarButtonProps) => {
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon"
+      className={cn(
+        "size-8 text-muted-foreground hover:text-foreground",
+        active && "bg-accent text-accent-foreground",
+      )}
+      disabled={disabled}
+      onClick={onClick}
+      aria-label={label}
+      aria-pressed={active}
+      title={label}
+    >
+      {children}
+    </Button>
+  );
+};
+
+export const ComposerToolbar = ({ editor, className }: ComposerToolbarProps) => {
   const [linkUrl, setLinkUrl] = useState("");
   const [linkOpen, setLinkOpen] = useState(false);
 
@@ -85,120 +120,119 @@ export const ComposerToolbar = ({ editor }: ComposerToolbarProps) => {
       return;
     }
 
-    editor
-      .chain()
-      .focus()
-      .extendMarkRange("link")
-      .setLink({ href })
-      .run();
+    editor.chain().focus().extendMarkRange("link").setLink({ href }).run();
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-1 border-b px-2 py-1.5">
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        className="size-8"
+    <div
+      className={cn(
+        "flex flex-wrap items-center gap-0.5 border-b bg-muted/40 px-2 py-1.5",
+        className,
+      )}
+    >
+      <ToolbarButton
+        label="Undo"
         disabled={!state.canUndo}
         onClick={() => editor.chain().focus().undo().run()}
-        aria-label="Undo"
       >
         <Undo2 className="size-4" />
-      </Button>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        className="size-8"
+      </ToolbarButton>
+      <ToolbarButton
+        label="Redo"
         disabled={!state.canRedo}
         onClick={() => editor.chain().focus().redo().run()}
-        aria-label="Redo"
       >
         <Redo2 className="size-4" />
-      </Button>
+      </ToolbarButton>
 
-      <Separator orientation="vertical" className="mx-1 h-6" />
+      <Separator orientation="vertical" className="mx-1 h-5" />
 
-      <MarkButton
-        onClick={() => editor.chain().focus().toggleBold().run()}
-        isActive={state.bold}
-        Icon={Bold}
+      <ToolbarButton
         label="Bold"
-      />
-      <MarkButton
-        onClick={() => editor.chain().focus().toggleItalic().run()}
-        isActive={state.italic}
-        Icon={Italic}
+        active={state.bold}
+        onClick={() => editor.chain().focus().toggleBold().run()}
+      >
+        <Bold className="size-4" />
+      </ToolbarButton>
+      <ToolbarButton
         label="Italic"
-      />
-      <MarkButton
-        onClick={() => editor.chain().focus().toggleUnderline().run()}
-        isActive={state.underline}
-        Icon={Underline}
+        active={state.italic}
+        onClick={() => editor.chain().focus().toggleItalic().run()}
+      >
+        <Italic className="size-4" />
+      </ToolbarButton>
+      <ToolbarButton
         label="Underline"
-      />
-      <MarkButton
-        onClick={() => editor.chain().focus().toggleStrike().run()}
-        isActive={state.strike}
-        Icon={Strikethrough}
+        active={state.underline}
+        onClick={() => editor.chain().focus().toggleUnderline().run()}
+      >
+        <Underline className="size-4" />
+      </ToolbarButton>
+      <ToolbarButton
         label="Strikethrough"
-      />
+        active={state.strike}
+        onClick={() => editor.chain().focus().toggleStrike().run()}
+      >
+        <Strikethrough className="size-4" />
+      </ToolbarButton>
 
-      <Separator orientation="vertical" className="mx-1 h-6" />
+      <Separator orientation="vertical" className="mx-1 h-5" />
 
-      <MarkButton
-        onClick={() =>
-          editor.chain().focus().setTextAlign("left").run()
-        }
-        isActive={state.alignLeft}
-        Icon={AlignLeft}
+      <ToolbarButton
         label="Align left"
-      />
-      <MarkButton
-        onClick={() =>
-          editor.chain().focus().setTextAlign("center").run()
-        }
-        isActive={state.alignCenter}
-        Icon={AlignCenter}
+        active={state.alignLeft}
+        onClick={() => editor.chain().focus().setTextAlign("left").run()}
+      >
+        <AlignLeft className="size-4" />
+      </ToolbarButton>
+      <ToolbarButton
         label="Align center"
-      />
-      <MarkButton
-        onClick={() =>
-          editor.chain().focus().setTextAlign("right").run()
-        }
-        isActive={state.alignRight}
-        Icon={AlignRight}
+        active={state.alignCenter}
+        onClick={() => editor.chain().focus().setTextAlign("center").run()}
+      >
+        <AlignCenter className="size-4" />
+      </ToolbarButton>
+      <ToolbarButton
         label="Align right"
-      />
+        active={state.alignRight}
+        onClick={() => editor.chain().focus().setTextAlign("right").run()}
+      >
+        <AlignRight className="size-4" />
+      </ToolbarButton>
 
-      <Separator orientation="vertical" className="mx-1 h-6" />
+      <Separator orientation="vertical" className="mx-1 h-5" />
 
-      <MarkButton
-        onClick={() => editor.chain().focus().toggleBulletList().run()}
-        isActive={state.bulletList}
-        Icon={List}
+      <ToolbarButton
         label="Bullet list"
-      />
-      <MarkButton
-        onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        isActive={state.orderedList}
-        Icon={ListOrdered}
+        active={state.bulletList}
+        onClick={() => editor.chain().focus().toggleBulletList().run()}
+      >
+        <List className="size-4" />
+      </ToolbarButton>
+      <ToolbarButton
         label="Numbered list"
-      />
+        active={state.orderedList}
+        onClick={() => editor.chain().focus().toggleOrderedList().run()}
+      >
+        <ListOrdered className="size-4" />
+      </ToolbarButton>
 
       <Popover open={linkOpen} onOpenChange={setLinkOpen}>
         <PopoverTrigger asChild>
-          <Toggle
+          <Button
             type="button"
-            variant="outline"
-            size="sm"
-            pressed={state.link}
+            variant="ghost"
+            size="icon"
+            className={cn(
+              "size-8 text-muted-foreground hover:text-foreground",
+              state.link && "bg-accent text-accent-foreground",
+            )}
             aria-label="Link"
-            className="bg-background"
+            aria-pressed={state.link}
+            title="Link"
           >
             <LinkIcon className="size-4" />
-          </Toggle>
+          </Button>
         </PopoverTrigger>
         <PopoverContent align="start" className="w-72">
           <div className="flex flex-col gap-2">

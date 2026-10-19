@@ -6,6 +6,7 @@ import {
   htmlToText,
   initials,
   messagePreview,
+  parseAddress,
   replySubject,
   signatureToHtml,
 } from "../format";
@@ -52,6 +53,28 @@ describe("conversation format helpers", () => {
 
     it("returns an empty string when there is no body", () => {
       expect(messagePreview({})).toBe("");
+    });
+  });
+
+  describe("parseAddress", () => {
+    it("splits a display name and email", () => {
+      expect(parseAddress("Jessica Ball <jessica@example.com>")).toEqual({
+        name: "Jessica Ball",
+        email: "jessica@example.com",
+      });
+    });
+
+    it("strips surrounding quotes from the display name", () => {
+      expect(parseAddress('"Jessica Ball" <jessica@example.com>')).toEqual({
+        name: "Jessica Ball",
+        email: "jessica@example.com",
+      });
+    });
+
+    it("returns a bare address with no name", () => {
+      expect(parseAddress("jessica@example.com")).toEqual({
+        email: "jessica@example.com",
+      });
     });
   });
 

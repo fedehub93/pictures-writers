@@ -19,9 +19,15 @@ export const useSendReply = (emailAccountId?: string) => {
         );
 
         if (emailAccountId) {
-          queryClient.invalidateQueries(
-            trpc.conversations.getMany.queryFilter({ emailAccountId }),
-          );
+          // Both views are refreshed so the inbox/archived counts stay exact.
+          for (const archived of [false, true]) {
+            queryClient.invalidateQueries(
+              trpc.conversations.getMany.queryFilter({
+                emailAccountId,
+                archived,
+              }),
+            );
+          }
         }
       },
     }),

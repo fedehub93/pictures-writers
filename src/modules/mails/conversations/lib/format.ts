@@ -95,6 +95,23 @@ export function signatureToHtml(signature?: string | null): string {
     .join("");
 }
 
+/**
+ * Parse an email header address such as `"Jessica Ball" <jessica@example.com>`
+ * or a bare address into its display name and email parts.
+ */
+export function parseAddress(raw: string): { name?: string; email: string } {
+  const match = raw.match(/^\s*(.*?)\s*<([^>]+)>\s*$/);
+
+  if (!match) {
+    return { email: raw.trim() };
+  }
+
+  const name = match[1]?.trim().replace(/^"|"$/g, "").trim();
+  const email = match[2]?.trim() ?? raw.trim();
+
+  return name ? { name, email } : { email };
+}
+
 export function initials(value: string, fallback = "?"): string {
   const trimmed = value.trim();
   if (!trimmed) return fallback;

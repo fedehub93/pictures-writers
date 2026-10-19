@@ -14,7 +14,8 @@ import { useSendReply } from "../../../hooks/use-send-reply";
 import { replySubject, signatureToHtml } from "../../../lib/format";
 import { type ConversationGetOne } from "../../../types";
 import {
-  ComposerAttachments,
+  ComposerAttachmentButtons,
+  ComposerAttachmentList,
   type ComposerAttachment,
 } from "./composer-attachments";
 import { createComposerExtensions } from "./composer-extensions";
@@ -23,9 +24,18 @@ import { ComposerToolbar } from "./composer-toolbar";
 interface ReplyComposerProps {
   conversation: ConversationGetOne;
   account?: EmailAccountAllowed;
+  /** Called after a reply was sent successfully. */
+  onSent?: () => void;
+  /** Called when the user dismisses the composer. */
+  onDiscard?: () => void;
 }
 
-export const ReplyComposer = ({ conversation, account }: ReplyComposerProps) => {
+export const ReplyComposer = ({
+  conversation,
+  account,
+  onSent,
+  onDiscard,
+}: ReplyComposerProps) => {
   const lastSubject = useMemo(() => {
     const withSubject = [...conversation.messages]
       .reverse()
@@ -50,7 +60,7 @@ export const ReplyComposer = ({ conversation, account }: ReplyComposerProps) => 
     editorProps: {
       attributes: {
         class:
-          "prose prose-sm max-w-none min-h-40 px-3 py-2 text-sm focus:outline-none",
+          "prose prose-sm max-w-none min-h-40 px-4 py-3 text-sm focus:outline-none",
       },
     },
   });
@@ -59,6 +69,10 @@ export const ReplyComposer = ({ conversation, account }: ReplyComposerProps) => 
     editor?.commands.setContent(initialHtml);
     setSubject(replySubject(lastSubject));
     setAttachments([]);
+  };
+
+  const handleAddAttachments = (files: ComposerAttachment[]) => {
+    setAttachments((current) => [...current, ...files]);
   };
 
   const handleSend = () => {
@@ -82,6 +96,7 @@ export const ReplyComposer = ({ conversation, account }: ReplyComposerProps) => 
         onSuccess: () => {
           toast.success("Reply sent");
           reset();
+          onSent?.();
         },
         onError: (error) => toast.error(error.message),
       },
@@ -90,52 +105,64 @@ export const ReplyComposer = ({ conversation, account }: ReplyComposerProps) => 
 
   return (
     <div className="border-t bg-background">
-      <div className="flex flex-col gap-2 p-3 md:p-4">
-        <div className="flex items-center gap-2">
-          <span className="w-16 shrink-0 text-xs font-medium text-muted-foreground">
-            To
-          </span>
-          <Input readOnly value={conversation.contactEmail} className="h-9" />
-        </div>
+      <div className="flex items-center gap-2 px-4 py-2">
+        <span className="w-14 shrink-0 text-xs font-medium text-muted-foreground">
+          From
+        </span>
+        <span className="truncate text-sm text-muted-foreground">
+          {account?.email ?? "your account"}
+        </span>
+      </div>
 
-        {account && (
-          <div className="flex items-center gap-2">
-            <span className="w-16 shrink-0 text-xs font-medium text-muted-foreground">
-              From
-            </span>
-            <span className="truncate text-sm text-muted-foreground">
-              {account.email}
-            </span>
-          </div>
-        )}
+      <div className="flex items-center gap-2 border-t px-4 py-2">
+        <span className="w-14 shrink-0 text-xs font-medium text-muted-foreground">
+          To
+        </span>
+        <Input
+          readOnly
+          value={conversation.contactEmail}
+          className="h-8 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
+          aria-label="To"
+        />
+      </div>
 
-        <div className="flex items-center gap-2">
-          <span className="w-16 shrink-0 text-xs font-medium text-muted-foreground">
-            Subject
-          </span>
-          <Input
-            value={subject}
-            onChange={(event) => setSubject(event.target.value)}
-            className="h-9"
-          />
-        </div>
+      <div className="flex items-center gap-2 border-t px-4 py-2">
+        <span className="w-14 shrink-0 text-xs font-medium text-muted-foreground">
+          Subject
+        </span>
+        <Input
+          value={subject}
+          onChange={(event) => setSubject(event.target.value)}
+          className="h-8 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
+          aria-label="Subject"
+        />
+      </div>
 
-        <div className="overflow-hidden rounded-md border">
-          <ComposerToolbar editor={editor} />
-          <EditorContent editor={editor} />
-        </div>
+      <div className="border-t">
+        <ComposerToolbar editor={editor} />
+        <EditorContent editor={editor} />
+      </div>
 
-        <ComposerAttachments
-          value={attachments}
-          onChange={setAttachments}
+      <ComposerAttachmentList
+        value={attachments}
+        onChange={setAttachments}
+        disabled={sendReply.isPending}
+        className="border-t px-4 py-3"
+      />
+
+      <div className="flex items-center justify-between gap-2 border-t px-4 py-3">
+        <ComposerAttachmentButtons
+          onAdd={handleAddAttachments}
           disabled={sendReply.isPending}
         />
-
-        <div className="flex items-center justify-end gap-2">
+        <div className="flex items-center gap-2">
           <Button
             type="button"
             variant="ghost"
-            onClick={reset}
+            onClick={() => {
+              reset();
+              onDiscard?.();
+            }}
             disabled={sendReply.isPending}
           >
             Discard
