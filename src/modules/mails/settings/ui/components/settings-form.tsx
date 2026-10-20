@@ -74,7 +74,7 @@ export const EmailSettingsForm = ({ settings }: EmailSettingsFormProps) => {
               containerProps={{ className: "min-w-40 flex-auto" }}
               label="Default sender name"
               disabled={isPending || isSubmitting}
-              placeholder="support@pictureswriters.com"
+              placeholder="support@mail.pictureswriters.com"
             />
 
             <GenericInput
@@ -92,7 +92,7 @@ export const EmailSettingsForm = ({ settings }: EmailSettingsFormProps) => {
               containerProps={{ className: "min-w-40 flex-auto" }}
               label="Default response email"
               disabled={isPending || isSubmitting}
-              placeholder="support@pictureswriters.com"
+              placeholder="support@mail.pictureswriters.com"
             />
           </div>
           <div className="flex flex-wrap gap-4">

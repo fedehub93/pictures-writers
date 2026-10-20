@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
+import { CONTACT_EMAIL } from "@/constants";
+
 import { newSubscription } from "@/actions/new-subscription";
 
 export const NewSubscriptionForm = () => {
@@ -52,7 +54,7 @@ export const NewSubscriptionForm = () => {
               <br />
               <br />
               Rieffettuare la sottoscrizione o effetuare una richiesta tramite{" "}
-              <strong>support@pitcuterwriters.com</strong>.
+              <strong>{CONTACT_EMAIL}</strong>.
             </p>
           </>
         ) : (

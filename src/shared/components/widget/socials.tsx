@@ -1,6 +1,7 @@
 import { SocialKey } from "@/generated/prisma";
 import { SocialIcon } from "react-social-icons";
 
+import { CONTACT_EMAIL } from "@/constants";
 import { getWidgetSocials } from "@/data/widget";
 
 interface WidgetSocialProps {
@@ -32,7 +33,7 @@ export const WidgetSocial = async ({ label, socials }: WidgetSocialProps) => {
         })}
 
         <SocialIcon
-          href="mailto:support@pictureswriters.com"
+          href={`mailto:${CONTACT_EMAIL}`}
           network="email"
           style={{ height: 45, width: 45 }}
           className="p-2 scale-90 hover:scale-[1.02] transition-all duration-500 cursor-pointer"

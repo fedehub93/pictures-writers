@@ -80,7 +80,7 @@ const EmailTesterFormContent = ({ settings }: EmailTesterFormProps) => {
                   <FormControl>
                     <Input
                       disabled={isSubmitting}
-                      placeholder="support@pictureswriters.com"
+                      placeholder="support@mail.pictureswriters.com"
                       {...field}
                     />
                   </FormControl>

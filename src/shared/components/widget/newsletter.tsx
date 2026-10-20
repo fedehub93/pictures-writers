@@ -14,6 +14,8 @@ import { Button } from "@/shared/ui/button";
 
 import { SubscribeSchemaValibot } from "@/schemas";
 
+import { CONTACT_EMAIL } from "@/constants";
+
 import { subscribe } from "@/actions/subscribe";
 
 import { GoogleRecaptchaV3 } from "@/shared/components/google-recaptchav3";
@@ -112,7 +114,7 @@ const WidgetNewsletter = ({ label }: WidgetNewsletter) => {
               <u>riprova</u>
             </button>{" "}
             oppure contattaci scrivendo a{" "}
-            <strong>support@pictureswriters.com</strong>.
+            <strong>{CONTACT_EMAIL}</strong>.
           </p>
         </div>
       )}

@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
+import { CONTACT_EMAIL } from "@/constants";
+
 import { removeSubscription } from "@/actions/remove-subscription";
 
 export const RemoveSubscriptionForm = () => {
@@ -52,7 +54,7 @@ export const RemoveSubscriptionForm = () => {
               <br />
               <br />
               Riprova o effetua una richiesta tramite
-              <strong>support@pitcuterwriters.com</strong>.
+              <strong>{CONTACT_EMAIL}</strong>.
             </p>
           </>
         ) : (
