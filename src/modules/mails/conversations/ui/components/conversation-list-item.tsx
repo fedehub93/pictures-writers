@@ -7,29 +7,31 @@ import { cn } from "@/shared/lib/utils";
 import { formatRelativeTime } from "../../lib/format";
 import { type ConversationListItem as ConversationListItemType } from "../../types";
 import { ContactAvatar } from "./contact-avatar";
+import { ConversationReadMenu } from "./conversation-read-menu";
 
 interface ConversationListItemProps {
   conversation: ConversationListItemType;
   isSelected: boolean;
   onSelect: (id: string) => void;
+  onMarkRead?: (id: string) => void;
+  onMarkUnread?: (id: string) => void;
 }
 
 export const ConversationListItem = ({
   conversation,
   isSelected,
   onSelect,
+  onMarkRead,
+  onMarkUnread,
 }: ConversationListItemProps) => {
   const displayName = conversation.contactName ?? conversation.contactEmail;
   const { lastMessage } = conversation;
   const attachments = lastMessage?.attachments ?? [];
 
   return (
-    <button
-      type="button"
-      onClick={() => onSelect(conversation.id)}
-      aria-current={isSelected ? "true" : undefined}
+    <div
       className={cn(
-        "relative flex w-full items-start gap-3 border-b px-4 py-3.5 text-left transition-colors hover:bg-accent/50 focus-visible:bg-accent/50 focus-visible:outline-none",
+        "relative flex w-full items-start gap-2 border-b px-4 py-3.5 transition-colors hover:bg-accent/50",
         isSelected && "bg-accent hover:bg-accent",
       )}
     >
@@ -40,6 +42,12 @@ export const ConversationListItem = ({
         />
       )}
 
+      <button
+        type="button"
+        onClick={() => onSelect(conversation.id)}
+        aria-current={isSelected ? "true" : undefined}
+        className="flex min-w-0 flex-1 items-start gap-3 rounded-md text-left outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+      >
       <div className="relative shrink-0">
         <ContactAvatar name={displayName} className="size-10" />
         {conversation.isUnread && (
@@ -103,6 +111,13 @@ export const ConversationListItem = ({
           </div>
         )}
       </div>
-    </button>
+      </button>
+
+      <ConversationReadMenu
+        isUnread={conversation.isUnread}
+        onMarkRead={() => onMarkRead?.(conversation.id)}
+        onMarkUnread={() => onMarkUnread?.(conversation.id)}
+      />
+    </div>
   );
 };

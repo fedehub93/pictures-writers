@@ -65,6 +65,37 @@ async function getActiveConversation<T extends Prisma.ConversationSelect>(
   return conversation;
 }
 
+/** Derive the caller's unread flag from the read watermark. */
+function isUnreadFor(
+  lastInboundAt: Date | null,
+  lastReadAt: Date | null,
+): boolean {
+  return (
+    lastInboundAt !== null &&
+    (lastReadAt === null || lastInboundAt.getTime() > lastReadAt.getTime())
+  );
+}
+
+/**
+ * Write the caller's read watermark for a conversation, creating the personal
+ * state row lazily. `null` clears the watermark so all inbound mail is unread
+ * again.
+ */
+async function setConversationReadState(
+  userId: string,
+  conversationId: string,
+  lastReadAt: Date | null,
+) {
+  return db.conversationUserState.upsert({
+    where: {
+      userId_conversationId: { userId, conversationId },
+    },
+    create: { userId, conversationId, lastReadAt },
+    update: { lastReadAt },
+    select: { conversationId: true, lastReadAt: true },
+  });
+}
+
 /** Map a use-case send error code onto the closest tRPC code. */
 function trpcCodeForSendError(
   code: ConversationSendErrorCode | NewMessageErrorCode,
@@ -132,10 +163,7 @@ export const conversationsRouter = createTRPCRouter({
           id: conversation.id,
           contactEmail: conversation.contactEmail,
           contactName: conversation.contactName,
-          isUnread:
-            conversation.lastInboundAt !== null &&
-            (lastReadAt === null ||
-              conversation.lastInboundAt.getTime() > lastReadAt.getTime()),
+          isUnread: isUnreadFor(conversation.lastInboundAt, lastReadAt),
           updatedAt: conversation.updatedAt,
           messageCount: conversation._count.messages,
           lastMessage: lastMessage
@@ -212,6 +240,11 @@ export const conversationsRouter = createTRPCRouter({
             orderBy: { createdAt: "asc" },
             include: { attachments: { orderBy: { createdAt: "asc" } } },
           },
+          userStates: {
+            where: { userId: ctx.auth.id },
+            take: 1,
+            select: { lastReadAt: true },
+          },
         },
       });
 
@@ -222,7 +255,50 @@ export const conversationsRouter = createTRPCRouter({
         });
       }
 
-      return conversation;
+      const { userStates, ...conversationWithoutState } = conversation;
+
+      return {
+        ...conversationWithoutState,
+        isUnread: isUnreadFor(
+          conversation.lastInboundAt,
+          userStates[0]?.lastReadAt ?? null,
+        ),
+      };
+    }),
+
+  /** Move the caller's read watermark to now, clearing the unread state. */
+  markRead: permissionProcedure(PERMISSIONS.MAIL_READ)
+    .input(conversationIdSchema)
+    .mutation(async ({ ctx, input }) => {
+      const { emailAccountId } = await getActiveConversation(input.id, {
+        emailAccountId: true,
+      });
+      await assertAccountAccess(ctx.auth.id, emailAccountId);
+
+      const state = await setConversationReadState(
+        ctx.auth.id,
+        input.id,
+        new Date(),
+      );
+
+      return { id: state.conversationId, lastReadAt: state.lastReadAt };
+    }),
+
+  /**
+   * Clear the caller's read watermark so every inbound message becomes unread
+   * again. A missing state row is created, preserving the same semantics.
+   */
+  markUnread: permissionProcedure(PERMISSIONS.MAIL_READ)
+    .input(conversationIdSchema)
+    .mutation(async ({ ctx, input }) => {
+      const { emailAccountId } = await getActiveConversation(input.id, {
+        emailAccountId: true,
+      });
+      await assertAccountAccess(ctx.auth.id, emailAccountId);
+
+      const state = await setConversationReadState(ctx.auth.id, input.id, null);
+
+      return { id: state.conversationId, lastReadAt: state.lastReadAt };
     }),
 
   sendReply: permissionProcedure(PERMISSIONS.MAIL_READ)
@@ -237,8 +313,9 @@ export const conversationsRouter = createTRPCRouter({
       // user who cannot see an inbox cannot send from it either.
       await assertAccountAccess(ctx.auth.id, emailAccountId);
 
+      let result;
       try {
-        return await sendConversationMessage({
+        result = await sendConversationMessage({
           conversationId: input.conversationId,
           subject: input.subject,
           bodyHtml: input.bodyHtml,
@@ -254,6 +331,16 @@ export const conversationsRouter = createTRPCRouter({
         }
         throw error;
       }
+
+      // Replying is an explicit acknowledgement: keep the conversation read
+      // even when it was opened while the window was hidden.
+      await setConversationReadState(
+        ctx.auth.id,
+        input.conversationId,
+        new Date(),
+      );
+
+      return result;
     }),
 
   /**

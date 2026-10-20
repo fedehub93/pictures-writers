@@ -22,7 +22,12 @@ export const useConversation = (id?: string) => {
   return useQuery(
     trpc.conversations.getOne.queryOptions(
       { id: id ?? "" },
-      { enabled: Boolean(id) },
+      {
+        enabled: Boolean(id),
+        // An open conversation polls so a reply that arrives while it is
+        // visible can be marked read without a reload.
+        refetchInterval: 30_000,
+      },
     ),
   );
 };

@@ -80,6 +80,20 @@ describe("inbox rendering", () => {
     expect(html).toContain('aria-label="Unread"');
   });
 
+  it("renders a kebab menu on each conversation row", () => {
+    const html = renderToStaticMarkup(
+      <ConversationList
+        conversations={[unreadConversation]}
+        isLoading={false}
+        onSelect={noop}
+        onMarkRead={noop}
+        onMarkUnread={noop}
+      />,
+    );
+
+    expect(html).toContain('aria-label="Conversation actions"');
+  });
+
   it("shows an empty state when the account has no conversations", () => {
     const html = renderToStaticMarkup(
       <ConversationList conversations={[]} isLoading={false} onSelect={noop} />,
@@ -95,6 +109,7 @@ const thread: ConversationGetOne = {
   contactName: "Jessica Ball",
   contactId: null,
   emailAccountId: "account-1",
+  isUnread: true,
   lastMessageAt: new Date("2026-10-17T11:58:00.000Z"),
   lastInboundAt: new Date("2026-10-17T11:58:00.000Z"),
   archivedAt: null,
@@ -138,6 +153,37 @@ const thread: ConversationGetOne = {
   ],
 };
 
+const baseMessage = thread.messages[0]!;
+
+function messageWithBody(id: string, body: string, at: string) {
+  return {
+    ...baseMessage,
+    id,
+    bodyText: body,
+    bodyHtml: `<p>${body}</p>`,
+    sentAt: new Date(at),
+    createdAt: new Date(at),
+    attachments: [],
+  };
+}
+
+const twoMessageConversation: ConversationGetOne = {
+  ...thread,
+  messages: [
+    messageWithBody("message-1", "First body", "2026-10-17T11:00:00.000Z"),
+    messageWithBody("message-2", "Second body", "2026-10-17T11:58:00.000Z"),
+  ],
+};
+
+const longConversation: ConversationGetOne = {
+  ...thread,
+  messages: [
+    messageWithBody("message-1", "Oldest body", "2026-10-17T10:00:00.000Z"),
+    messageWithBody("message-2", "Middle body", "2026-10-17T11:00:00.000Z"),
+    messageWithBody("message-3", "Newest body", "2026-10-17T11:58:00.000Z"),
+  ],
+};
+
 describe("conversation detail rendering", () => {
   it("renders the thread with sender, subject, body and attachments", () => {
     const html = renderToStaticMarkup(
@@ -164,5 +210,35 @@ describe("conversation detail rendering", () => {
     );
 
     expect(html).toContain("No conversation selected");
+  });
+
+  it("collapses every message but the newest in a conversation longer than two", () => {
+    const html = renderToStaticMarkup(
+      <ConversationDetail
+        conversation={longConversation}
+        isLoading={false}
+        onBack={noop}
+      />,
+    );
+
+    expect(html).not.toContain("Oldest body");
+    expect(html).not.toContain("Middle body");
+    expect(html).toContain("Newest body");
+    expect(html).toContain("Click the header to show this message.");
+    expect(html.match(/aria-expanded="false"/g)).toHaveLength(2);
+  });
+
+  it("keeps a two-message conversation fully expanded", () => {
+    const html = renderToStaticMarkup(
+      <ConversationDetail
+        conversation={twoMessageConversation}
+        isLoading={false}
+        onBack={noop}
+      />,
+    );
+
+    expect(html).toContain("First body");
+    expect(html).toContain("Second body");
+    expect(html).not.toContain('aria-expanded="false"');
   });
 });

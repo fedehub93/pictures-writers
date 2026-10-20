@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { InboxIcon } from "lucide-react";
+import { toast } from "sonner";
 
 import { ErrorState } from "@/shared/components/error-state";
 import { LoadingState } from "@/shared/components/loading-state";
@@ -16,11 +17,17 @@ import {
 
 import { useSuspenseAllowedEmailAccounts } from "@/modules/mails/accounts";
 
+import {
+  useMarkConversationRead,
+  useMarkConversationUnread,
+} from "../../hooks/use-conversation-actions";
+import { useMarkReadOnOpen } from "../../hooks/use-mark-read-on-open";
 import { useConversation, useConversations } from "../../hooks/use-conversations";
 import { AccountSelector } from "../components/account-selector";
 import { ConversationActions } from "../components/conversation-actions";
 import { ConversationDetail } from "../components/conversation-detail";
 import { ConversationListPanel } from "../components/conversation-list-panel";
+import { ConversationReadMenu } from "../components/conversation-read-menu";
 import { ReplyComposer } from "../components/composer/reply-composer";
 import { NewMessagePanel } from "../components/composer/new-message-panel";
 import {
@@ -79,6 +86,25 @@ export const ConversationsView = () => {
 
   const { data: conversation, isLoading: isLoadingConversation } =
     useConversation(selectedConversationId);
+
+  const markRead = useMarkConversationRead();
+  const markUnread = useMarkConversationUnread();
+
+  // Opening a visible conversation, and new inbound mail while it is open,
+  // marks it read. A manual "mark unread" is left alone until the next inbound
+  // message.
+  useMarkReadOnOpen(conversation);
+
+  const handleMarkRead = (id: string) => {
+    markRead.mutate({ id }, { onError: (error) => toast.error(error.message) });
+  };
+
+  const handleMarkUnread = (id: string) => {
+    markUnread.mutate(
+      { id },
+      { onError: (error) => toast.error(error.message) },
+    );
+  };
 
   const selectedAccount = accounts.find(
     (account) => account.id === selectedAccountId,
@@ -168,6 +194,8 @@ export const ConversationsView = () => {
           conversations={conversations}
           isLoading={activeQuery.isLoading}
           selectedId={selectedConversationId}
+          onMarkRead={handleMarkRead}
+          onMarkUnread={handleMarkUnread}
           onSelect={(conversationId) => {
             setIsComposing(false);
             setReplyingTo(undefined);
@@ -212,12 +240,19 @@ export const ConversationsView = () => {
             }
             actionsSlot={
               conversation ? (
-                <ConversationActions
-                  conversation={conversation}
-                  onReply={() => setReplyingTo(conversation.id)}
-                  onArchived={closeConversation}
-                  onDeleted={handleDeleted}
-                />
+                <div className="flex items-center gap-0.5">
+                  <ConversationReadMenu
+                    isUnread={conversation.isUnread}
+                    onMarkRead={() => handleMarkRead(conversation.id)}
+                    onMarkUnread={() => handleMarkUnread(conversation.id)}
+                  />
+                  <ConversationActions
+                    conversation={conversation}
+                    onReply={() => setReplyingTo(conversation.id)}
+                    onArchived={closeConversation}
+                    onDeleted={handleDeleted}
+                  />
+                </div>
               ) : undefined
             }
             replySlot={

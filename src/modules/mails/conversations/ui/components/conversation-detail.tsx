@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { ArrowLeftIcon, MailOpenIcon, ReplyIcon } from "lucide-react";
 
 import { Button } from "@/shared/ui/button";
@@ -14,6 +14,12 @@ import {
 import { ScrollArea } from "@/shared/ui/scroll-area";
 import { Skeleton } from "@/shared/ui/skeleton";
 
+import {
+  initialExpandedMessageIds,
+  isConversationMessageExpanded,
+  shouldCollapseEarlierMessages,
+  toggleExpandedMessage,
+} from "../../lib/message-expansion";
 import { type ConversationGetOne } from "../../types";
 import { MessageItem } from "./message-item";
 
@@ -37,6 +43,25 @@ export const ConversationDetail = ({
   actionsSlot,
   replySlot,
 }: ConversationDetailProps) => {
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  // Expansion is local to the open conversation. A conversation with more than
+  // two messages opens with only the newest expanded.
+  const [expansion, setExpansion] = useState<{
+    conversationId?: string;
+    expandedIds: Set<string>;
+  }>({ expandedIds: new Set() });
+
+  const conversationId = conversation?.id;
+  const messageCount = conversation?.messages.length ?? 0;
+
+  // Land on the newest message when a conversation opens, and keep following
+  // it as new messages arrive.
+  useEffect(() => {
+    if (!conversationId) return;
+    bottomRef.current?.scrollIntoView({ block: "end" });
+  }, [conversationId, messageCount]);
+
   if (isLoading) {
     return <ConversationDetailSkeleton />;
   }
@@ -62,10 +87,28 @@ export const ConversationDetail = ({
   const subject =
     conversation.messages.find((message) => message.subject)?.subject ??
     "(No subject)";
-  const messageCount = conversation.messages.length;
   const contactLabel = conversation.contactName
     ? `${conversation.contactName} · ${conversation.contactEmail}`
     : conversation.contactEmail;
+
+  const expandedIds =
+    expansion.conversationId === conversation.id
+      ? expansion.expandedIds
+      : initialExpandedMessageIds(conversation.messages.map(({ id }) => id));
+
+  const toggleMessage = (messageId: string) => {
+    setExpansion((current) => {
+      const base =
+        current.conversationId === conversation.id
+          ? current.expandedIds
+          : initialExpandedMessageIds(conversation.messages.map(({ id }) => id));
+
+      return {
+        conversationId: conversation.id,
+        expandedIds: toggleExpandedMessage(base, messageId),
+      };
+    });
+  };
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-xl border bg-background shadow-sm">
@@ -93,9 +136,32 @@ export const ConversationDetail = ({
 
       <ScrollArea className="min-h-0 flex-1">
         <div className="flex flex-col">
-          {conversation.messages.map((message) => (
-            <MessageItem key={message.id} message={message} />
-          ))}
+          {conversation.messages.map((message, index) => {
+            const expanded = isConversationMessageExpanded({
+              messageId: message.id,
+              index,
+              messageCount: conversation.messages.length,
+              expandedIds,
+            });
+
+            // Only earlier messages are collapsible; the newest stays open and
+            // its header is not a dead toggle.
+            const collapsible =
+              shouldCollapseEarlierMessages(conversation.messages.length) &&
+              index < conversation.messages.length - 1;
+
+            return (
+              <MessageItem
+                key={message.id}
+                message={message}
+                collapsed={!expanded}
+                onToggle={
+                  collapsible ? () => toggleMessage(message.id) : undefined
+                }
+              />
+            );
+          })}
+          <div ref={bottomRef} aria-hidden="true" />
         </div>
       </ScrollArea>
 

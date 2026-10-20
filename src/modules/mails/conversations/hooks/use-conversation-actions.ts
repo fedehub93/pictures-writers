@@ -2,6 +2,21 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useTRPC } from "@/trpc/client";
 
+/** Read state affects every list view, the counts and the open conversation. */
+function invalidateReadState(
+  queryClient: ReturnType<typeof useQueryClient>,
+  trpc: ReturnType<typeof useTRPC>,
+  id: string,
+) {
+  queryClient.invalidateQueries({
+    queryKey: trpc.conversations.getMany.queryKey(),
+  });
+  queryClient.invalidateQueries(trpc.conversations.getCounts.queryFilter());
+  queryClient.invalidateQueries(
+    trpc.conversations.getOne.queryFilter({ id }),
+  );
+}
+
 /** Archive or unarchive a conversation. */
 export const useSetConversationArchived = (emailAccountId?: string) => {
   const trpc = useTRPC();
@@ -58,6 +73,30 @@ export const useRemoveConversation = (emailAccountId?: string) => {
           }
         }
       },
+    }),
+  );
+};
+
+/** Move the caller's read watermark to now. */
+export const useMarkConversationRead = () => {
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    trpc.conversations.markRead.mutationOptions({
+      onSuccess: (data) => invalidateReadState(queryClient, trpc, data.id),
+    }),
+  );
+};
+
+/** Clear the caller's read watermark so all inbound mail is unread again. */
+export const useMarkConversationUnread = () => {
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    trpc.conversations.markUnread.mutationOptions({
+      onSuccess: (data) => invalidateReadState(queryClient, trpc, data.id),
     }),
   );
 };

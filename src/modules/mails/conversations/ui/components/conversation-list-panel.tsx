@@ -31,6 +31,8 @@ interface ConversationListPanelProps {
   isLoading: boolean;
   selectedId?: string;
   onSelect: (id: string) => void;
+  onMarkRead?: (id: string) => void;
+  onMarkUnread?: (id: string) => void;
   /** Epoch ms of the last successful fetch, for the "Last refreshed" label. */
   lastUpdatedAt?: number;
   isRefreshing: boolean;
@@ -45,6 +47,8 @@ export const ConversationListPanel = ({
   isLoading,
   selectedId,
   onSelect,
+  onMarkRead,
+  onMarkUnread,
   lastUpdatedAt,
   isRefreshing,
   onRefresh,
@@ -186,6 +190,8 @@ export const ConversationListPanel = ({
             isLoading={isLoading}
             selectedId={selectedId}
             onSelect={onSelect}
+            onMarkRead={onMarkRead}
+            onMarkUnread={onMarkUnread}
           />
         )}
       </div>

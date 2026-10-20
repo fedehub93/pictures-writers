@@ -460,6 +460,135 @@ describe("conversationsRouter", () => {
     });
   });
 
+  describe("read state", () => {
+    it("walks never read, read, new inbound and unread transitions", async () => {
+      const account = await createAccount([userId]);
+      const conversation = await createConversation(account.id);
+      await createMessage(conversation.id, {
+        sentAt: new Date("2026-10-17T10:00:00.000Z"),
+      });
+
+      expect((await caller.getOne({ id: conversation.id })).isUnread).toBe(true);
+
+      await caller.markRead({ id: conversation.id });
+
+      const afterRead = await db.conversationUserState.findUniqueOrThrow({
+        where: {
+          userId_conversationId: {
+            userId,
+            conversationId: conversation.id,
+          },
+        },
+      });
+      expect(afterRead.lastReadAt).toBeInstanceOf(Date);
+      expect((await caller.getOne({ id: conversation.id })).isUnread).toBe(
+        false,
+      );
+
+      await createMessage(conversation.id, {
+        sentAt: new Date(afterRead.lastReadAt!.getTime() + 1),
+      });
+      expect((await caller.getOne({ id: conversation.id })).isUnread).toBe(true);
+
+      await caller.markUnread({ id: conversation.id });
+
+      const afterUnread = await db.conversationUserState.findUniqueOrThrow({
+        where: {
+          userId_conversationId: {
+            userId,
+            conversationId: conversation.id,
+          },
+        },
+      });
+      expect(afterUnread.lastReadAt).toBeNull();
+      expect((await caller.getOne({ id: conversation.id })).isUnread).toBe(true);
+
+      await caller.markRead({ id: conversation.id });
+      expect((await caller.getOne({ id: conversation.id })).isUnread).toBe(
+        false,
+      );
+    });
+
+    it("keeps the read watermark personal", async () => {
+      const otherUser = await createUser();
+      const account = await createAccount([userId, otherUser.id]);
+      const conversation = await createConversation(account.id);
+      await createMessage(conversation.id);
+
+      await caller.markRead({ id: conversation.id });
+
+      const theirs = createCaller({
+        userId: otherUser.id,
+        auth: { id: otherUser.id },
+      });
+      expect((await theirs.getOne({ id: conversation.id })).isUnread).toBe(true);
+
+      await theirs.markUnread({ id: conversation.id });
+      expect((await caller.getOne({ id: conversation.id })).isUnread).toBe(
+        false,
+      );
+    });
+
+    it("creates a state row when marking unread without one", async () => {
+      const account = await createAccount([userId]);
+      const conversation = await createConversation(account.id);
+      await createMessage(conversation.id);
+
+      await caller.markUnread({ id: conversation.id });
+
+      const state = await db.conversationUserState.findUnique({
+        where: {
+          userId_conversationId: {
+            userId,
+            conversationId: conversation.id,
+          },
+        },
+      });
+      expect(state?.lastReadAt).toBeNull();
+    });
+
+    it("rejects a conversation on an account the user is not assigned to", async () => {
+      const account = await createAccount();
+      const conversation = await createConversation(account.id);
+
+      await expect(caller.markRead({ id: conversation.id })).rejects.toThrow();
+      await expect(
+        caller.markUnread({ id: conversation.id }),
+      ).rejects.toThrow();
+
+      expect(
+        await db.conversationUserState.count({
+          where: { conversationId: conversation.id },
+        }),
+      ).toBe(0);
+    });
+
+    it("marks the thread read when replying", async () => {
+      const account = await createAccount([userId]);
+      const conversation = await createConversation(account.id);
+      sendConversationMessageMock.mockResolvedValue({
+        conversationId: conversation.id,
+        messageId: "message-1",
+        providerId: "provider-1",
+      });
+
+      await caller.sendReply({
+        conversationId: conversation.id,
+        bodyHtml: "<p>Thanks</p>",
+      });
+
+      const state = await db.conversationUserState.findUniqueOrThrow({
+        where: {
+          userId_conversationId: {
+            userId,
+            conversationId: conversation.id,
+          },
+        },
+      });
+      expect(state.lastReadAt).toBeInstanceOf(Date);
+    });
+  });
+
   describe("sendReply", () => {
     it("sends through the use-case for an accessible conversation", async () => {
       const account = await createAccount([userId]);

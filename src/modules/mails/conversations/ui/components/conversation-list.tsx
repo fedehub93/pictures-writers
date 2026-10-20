@@ -20,6 +20,8 @@ interface ConversationListProps {
   isLoading: boolean;
   selectedId?: string;
   onSelect: (id: string) => void;
+  onMarkRead?: (id: string) => void;
+  onMarkUnread?: (id: string) => void;
   emptyTitle?: string;
   emptyDescription?: string;
 }
@@ -29,6 +31,8 @@ export const ConversationList = ({
   isLoading,
   selectedId,
   onSelect,
+  onMarkRead,
+  onMarkUnread,
   emptyTitle = "No conversations",
   emptyDescription = "Inbound and outbound messages for this account appear here.",
 }: ConversationListProps) => {
@@ -59,6 +63,8 @@ export const ConversationList = ({
             conversation={conversation}
             isSelected={conversation.id === selectedId}
             onSelect={onSelect}
+            onMarkRead={onMarkRead}
+            onMarkUnread={onMarkUnread}
           />
         ))}
       </div>

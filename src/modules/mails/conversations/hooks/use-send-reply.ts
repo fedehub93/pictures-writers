@@ -17,6 +17,9 @@ export const useSendReply = (emailAccountId?: string) => {
         queryClient.invalidateQueries(
           trpc.conversations.getOne.queryFilter({ id: data.conversationId }),
         );
+        queryClient.invalidateQueries(
+          trpc.conversations.getCounts.queryFilter(),
+        );
 
         if (emailAccountId) {
           // Both views are refreshed so the inbox/archived counts stay exact.
