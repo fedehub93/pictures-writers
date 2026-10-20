@@ -4,7 +4,10 @@ import {
   conversationReadAction,
   conversationReadHandledKey,
 } from "../../hooks/use-mark-read-on-open";
-import { readActionLabel } from "../components/conversation-read-menu";
+import {
+  readActionLabel,
+  starActionLabel,
+} from "../components/conversation-read-menu";
 
 const key = conversationReadHandledKey(
   "conversation-1",
@@ -81,5 +84,12 @@ describe("read action label", () => {
   it("offers the opposite read action", () => {
     expect(readActionLabel(true)).toBe("Mark as read");
     expect(readActionLabel(false)).toBe("Mark as unread");
+  });
+});
+
+describe("star action label", () => {
+  it("offers the opposite star action using the canonical term", () => {
+    expect(starActionLabel(false)).toBe("Star");
+    expect(starActionLabel(true)).toBe("Unstar");
   });
 });

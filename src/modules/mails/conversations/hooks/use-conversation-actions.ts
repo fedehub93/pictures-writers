@@ -2,15 +2,15 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useTRPC } from "@/trpc/client";
 
+import { invalidateConversationLists } from "./invalidate-conversation-lists";
+
 /** Read state affects every list view, the counts and the open conversation. */
 function invalidateReadState(
   queryClient: ReturnType<typeof useQueryClient>,
   trpc: ReturnType<typeof useTRPC>,
   id: string,
 ) {
-  queryClient.invalidateQueries({
-    queryKey: trpc.conversations.getMany.queryKey(),
-  });
+  invalidateConversationLists(queryClient, trpc);
   queryClient.invalidateQueries(trpc.conversations.getCounts.queryFilter());
   queryClient.invalidateQueries(
     trpc.conversations.getOne.queryFilter({ id }),
@@ -18,7 +18,7 @@ function invalidateReadState(
 }
 
 /** Archive or unarchive a conversation. */
-export const useSetConversationArchived = (emailAccountId?: string) => {
+export const useSetConversationArchived = () => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
@@ -31,24 +31,14 @@ export const useSetConversationArchived = (emailAccountId?: string) => {
         queryClient.invalidateQueries(
           trpc.conversations.getCounts.queryFilter(),
         );
-
-        if (emailAccountId) {
-          for (const archived of [false, true]) {
-            queryClient.invalidateQueries(
-              trpc.conversations.getMany.queryFilter({
-                emailAccountId,
-                archived,
-              }),
-            );
-          }
-        }
+        invalidateConversationLists(queryClient, trpc);
       },
     }),
   );
 };
 
 /** Soft-delete a conversation. */
-export const useRemoveConversation = (emailAccountId?: string) => {
+export const useRemoveConversation = () => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
@@ -61,17 +51,7 @@ export const useRemoveConversation = (emailAccountId?: string) => {
         queryClient.invalidateQueries(
           trpc.conversations.getCounts.queryFilter(),
         );
-
-        if (emailAccountId) {
-          for (const archived of [false, true]) {
-            queryClient.invalidateQueries(
-              trpc.conversations.getMany.queryFilter({
-                emailAccountId,
-                archived,
-              }),
-            );
-          }
-        }
+        invalidateConversationLists(queryClient, trpc);
       },
     }),
   );
@@ -97,6 +77,23 @@ export const useMarkConversationUnread = () => {
   return useMutation(
     trpc.conversations.markUnread.mutationOptions({
       onSuccess: (data) => invalidateReadState(queryClient, trpc, data.id),
+    }),
+  );
+};
+
+/** Star or unstar a conversation for the caller. */
+export const useSetConversationStarred = () => {
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    trpc.conversations.setStarred.mutationOptions({
+      onSuccess: (data) => {
+        invalidateConversationLists(queryClient, trpc);
+        queryClient.invalidateQueries(
+          trpc.conversations.getOne.queryFilter({ id: data.id }),
+        );
+      },
     }),
   );
 };

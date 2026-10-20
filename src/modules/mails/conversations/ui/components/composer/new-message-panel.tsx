@@ -50,7 +50,7 @@ export const NewMessagePanel = ({
   const [attachments, setAttachments] = useState<ComposerAttachment[]>([]);
 
   const account = accounts.find((item) => item.id === accountId);
-  const sendNew = useSendNewMessage(accountId);
+  const sendNew = useSendNewMessage();
 
   const editor = useEditor({
     extensions: createComposerExtensions("Write your message…"),

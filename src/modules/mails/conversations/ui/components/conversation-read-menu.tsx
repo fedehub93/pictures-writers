@@ -1,6 +1,12 @@
 "use client";
 
-import { MailIcon, MailOpenIcon, MoreHorizontalIcon } from "lucide-react";
+import {
+  MailIcon,
+  MailOpenIcon,
+  MoreHorizontalIcon,
+  StarIcon,
+  StarOffIcon,
+} from "lucide-react";
 
 import { Button } from "@/shared/ui/button";
 import {
@@ -15,38 +21,60 @@ export function readActionLabel(isUnread: boolean): string {
   return isUnread ? "Mark as read" : "Mark as unread";
 }
 
+/** Star is the canonical term for the personal important filter. */
+export function starActionLabel(isStarred: boolean): string {
+  return isStarred ? "Unstar" : "Star";
+}
+
 interface ConversationReadMenuItemsProps {
   isUnread: boolean;
+  isStarred: boolean;
   onMarkRead?: () => void;
   onMarkUnread?: () => void;
+  onToggleStar?: () => void;
 }
 
 export const ConversationReadMenuItems = ({
   isUnread,
+  isStarred,
   onMarkRead,
   onMarkUnread,
+  onToggleStar,
 }: ConversationReadMenuItemsProps) => {
-  const Icon = isUnread ? MailOpenIcon : MailIcon;
+  const ReadIcon = isUnread ? MailOpenIcon : MailIcon;
+  const StarToggleIcon = isStarred ? StarOffIcon : StarIcon;
 
   return (
-    <DropdownMenuItem onSelect={isUnread ? onMarkRead : onMarkUnread}>
-      <Icon />
-      {readActionLabel(isUnread)}
-    </DropdownMenuItem>
+    <>
+      {onToggleStar && (
+        <DropdownMenuItem onSelect={onToggleStar}>
+          <StarToggleIcon />
+          {starActionLabel(isStarred)}
+        </DropdownMenuItem>
+      )}
+      <DropdownMenuItem onSelect={isUnread ? onMarkRead : onMarkUnread}>
+        <ReadIcon />
+        {readActionLabel(isUnread)}
+      </DropdownMenuItem>
+    </>
   );
 };
 
 interface ConversationReadMenuProps {
   isUnread: boolean;
+  isStarred: boolean;
   onMarkRead?: () => void;
   onMarkUnread?: () => void;
+  onToggleStar?: () => void;
 }
 
 /** Kebab menu used on a conversation row and in the detail header. */
 export const ConversationReadMenu = ({
   isUnread,
+  isStarred,
   onMarkRead,
   onMarkUnread,
+  onToggleStar,
 }: ConversationReadMenuProps) => {
   return (
     <DropdownMenu>
@@ -64,8 +92,10 @@ export const ConversationReadMenu = ({
       <DropdownMenuContent align="end">
         <ConversationReadMenuItems
           isUnread={isUnread}
+          isStarred={isStarred}
           onMarkRead={onMarkRead}
           onMarkUnread={onMarkUnread}
+          onToggleStar={onToggleStar}
         />
       </DropdownMenuContent>
     </DropdownMenu>

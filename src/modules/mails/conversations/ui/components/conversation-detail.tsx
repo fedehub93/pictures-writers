@@ -22,6 +22,7 @@ import {
 } from "../../lib/message-expansion";
 import { type ConversationGetOne } from "../../types";
 import { MessageItem } from "./message-item";
+import { StarBadge } from "./star-badge";
 
 interface ConversationDetailProps {
   conversation?: ConversationGetOne;
@@ -123,8 +124,9 @@ export const ConversationDetail = ({
           <ArrowLeftIcon />
         </Button>
         <div className="flex min-w-0 flex-1 flex-col">
-          <h2 className="truncate text-lg leading-tight font-semibold">
-            {subject}
+          <h2 className="flex min-w-0 items-center gap-2 text-lg leading-tight font-semibold">
+            {conversation.isStarred && <StarBadge className="size-4" />}
+            <span className="truncate">{subject}</span>
           </h2>
           <p className="mt-1 truncate text-xs text-muted-foreground">
             {messageCount} {messageCount === 1 ? "message" : "messages"} ·{" "}

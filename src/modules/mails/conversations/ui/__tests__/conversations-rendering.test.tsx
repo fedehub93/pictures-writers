@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import { ConversationDetail } from "../components/conversation-detail";
 import { ConversationList } from "../components/conversation-list";
+import { MailboxNav } from "../components/mailbox-nav";
 import {
   type ConversationGetOne,
   type ConversationListItem,
@@ -15,6 +16,7 @@ const unreadConversation: ConversationListItem = {
   contactEmail: "jessica.ball@example.com",
   contactName: "Jessica Ball",
   isUnread: true,
+  isStarred: true,
   updatedAt: new Date("2026-10-17T11:58:00.000Z"),
   messageCount: 2,
   lastMessage: {
@@ -38,6 +40,7 @@ const readConversation: ConversationListItem = {
   contactEmail: "danny.reid@example.com",
   contactName: null,
   isUnread: false,
+  isStarred: false,
   updatedAt: new Date("2026-10-17T09:00:00.000Z"),
   messageCount: 1,
   lastMessage: {
@@ -101,6 +104,42 @@ describe("inbox rendering", () => {
 
     expect(html).toContain("No conversations");
   });
+
+  it("marks a starred conversation with the canonical term", () => {
+    const html = renderToStaticMarkup(
+      <ConversationList
+        conversations={[unreadConversation, readConversation]}
+        isLoading={false}
+        onSelect={noop}
+      />,
+    );
+
+    expect(html).toContain('aria-label="Starred"');
+    expect(html).not.toContain("Important");
+    expect(html).not.toContain("Flagged");
+  });
+});
+
+describe("mailbox navigation", () => {
+  it("offers Starred alongside the inbox and archive views", () => {
+    const html = renderToStaticMarkup(
+      <MailboxNav
+        accounts={[]}
+        view="inbox"
+        onViewChange={noop}
+        onAccountChange={noop}
+        inboxUnreadCount={0}
+        archivedCount={0}
+        onCompose={noop}
+      />,
+    );
+
+    expect(html).toContain("Inbox");
+    expect(html).toContain("Starred");
+    expect(html).toContain("Archived");
+    expect(html).not.toContain("Important");
+    expect(html).not.toContain("Flagged");
+  });
 });
 
 const thread: ConversationGetOne = {
@@ -110,6 +149,7 @@ const thread: ConversationGetOne = {
   contactId: null,
   emailAccountId: "account-1",
   isUnread: true,
+  isStarred: true,
   lastMessageAt: new Date("2026-10-17T11:58:00.000Z"),
   lastInboundAt: new Date("2026-10-17T11:58:00.000Z"),
   archivedAt: null,

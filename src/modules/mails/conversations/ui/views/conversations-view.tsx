@@ -20,9 +20,11 @@ import { useSuspenseAllowedEmailAccounts } from "@/modules/mails/accounts";
 import {
   useMarkConversationRead,
   useMarkConversationUnread,
+  useSetConversationStarred,
 } from "../../hooks/use-conversation-actions";
 import { useMarkReadOnOpen } from "../../hooks/use-mark-read-on-open";
 import { useConversation, useConversations } from "../../hooks/use-conversations";
+import { type ConversationView } from "../../schemas";
 import { AccountSelector } from "../components/account-selector";
 import { ConversationActions } from "../components/conversation-actions";
 import { ConversationDetail } from "../components/conversation-detail";
@@ -30,10 +32,7 @@ import { ConversationListPanel } from "../components/conversation-list-panel";
 import { ConversationReadMenu } from "../components/conversation-read-menu";
 import { ReplyComposer } from "../components/composer/reply-composer";
 import { NewMessagePanel } from "../components/composer/new-message-panel";
-import {
-  MailboxNav,
-  type ConversationView,
-} from "../components/mailbox-nav";
+import { MailboxNav } from "../components/mailbox-nav";
 
 export const ConversationsView = () => {
   const { data: accounts } = useSuspenseAllowedEmailAccounts();
@@ -74,9 +73,14 @@ export const ConversationsView = () => {
       ? selection.conversationId
       : undefined;
 
-  const inboxQuery = useConversations(selectedAccountId, false);
-  const archivedQuery = useConversations(selectedAccountId, true);
-  const activeQuery = view === "inbox" ? inboxQuery : archivedQuery;
+  const inboxQuery = useConversations(selectedAccountId, "inbox");
+  const starredQuery = useConversations(selectedAccountId, "starred");
+  const archivedQuery = useConversations(selectedAccountId, "archived");
+  const activeQuery = {
+    inbox: inboxQuery,
+    starred: starredQuery,
+    archived: archivedQuery,
+  }[view];
 
   const conversations = activeQuery.data ?? [];
   const inboxUnreadCount = (inboxQuery.data ?? []).filter(
@@ -89,6 +93,7 @@ export const ConversationsView = () => {
 
   const markRead = useMarkConversationRead();
   const markUnread = useMarkConversationUnread();
+  const setStarred = useSetConversationStarred();
 
   // Opening a visible conversation, and new inbound mail while it is open,
   // marks it read. A manual "mark unread" is left alone until the next inbound
@@ -102,6 +107,13 @@ export const ConversationsView = () => {
   const handleMarkUnread = (id: string) => {
     markUnread.mutate(
       { id },
+      { onError: (error) => toast.error(error.message) },
+    );
+  };
+
+  const handleToggleStar = (id: string, starred: boolean) => {
+    setStarred.mutate(
+      { id, starred },
       { onError: (error) => toast.error(error.message) },
     );
   };
@@ -196,6 +208,7 @@ export const ConversationsView = () => {
           selectedId={selectedConversationId}
           onMarkRead={handleMarkRead}
           onMarkUnread={handleMarkUnread}
+          onToggleStar={handleToggleStar}
           onSelect={(conversationId) => {
             setIsComposing(false);
             setReplyingTo(undefined);
@@ -243,8 +256,12 @@ export const ConversationsView = () => {
                 <div className="flex items-center gap-0.5">
                   <ConversationReadMenu
                     isUnread={conversation.isUnread}
+                    isStarred={conversation.isStarred}
                     onMarkRead={() => handleMarkRead(conversation.id)}
                     onMarkUnread={() => handleMarkUnread(conversation.id)}
+                    onToggleStar={() =>
+                      handleToggleStar(conversation.id, !conversation.isStarred)
+                    }
                   />
                   <ConversationActions
                     conversation={conversation}

@@ -33,6 +33,7 @@ interface ConversationListPanelProps {
   onSelect: (id: string) => void;
   onMarkRead?: (id: string) => void;
   onMarkUnread?: (id: string) => void;
+  onToggleStar?: (id: string, starred: boolean) => void;
   /** Epoch ms of the last successful fetch, for the "Last refreshed" label. */
   lastUpdatedAt?: number;
   isRefreshing: boolean;
@@ -49,6 +50,7 @@ export const ConversationListPanel = ({
   onSelect,
   onMarkRead,
   onMarkUnread,
+  onToggleStar,
   lastUpdatedAt,
   isRefreshing,
   onRefresh,
@@ -192,6 +194,7 @@ export const ConversationListPanel = ({
             onSelect={onSelect}
             onMarkRead={onMarkRead}
             onMarkUnread={onMarkUnread}
+            onToggleStar={onToggleStar}
           />
         )}
       </div>

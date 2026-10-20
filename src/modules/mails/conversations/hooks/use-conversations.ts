@@ -2,15 +2,17 @@ import { useQuery } from "@tanstack/react-query";
 
 import { useTRPC } from "@/trpc/client";
 
+import { type ConversationView } from "../schemas";
+
 export const useConversations = (
   emailAccountId?: string,
-  archived = false,
+  view: ConversationView = "inbox",
 ) => {
   const trpc = useTRPC();
 
   return useQuery(
     trpc.conversations.getMany.queryOptions(
-      { emailAccountId: emailAccountId ?? "", archived },
+      { emailAccountId: emailAccountId ?? "", view },
       { enabled: Boolean(emailAccountId) },
     ),
   );

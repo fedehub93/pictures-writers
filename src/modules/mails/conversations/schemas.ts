@@ -1,14 +1,19 @@
 import * as z from "zod";
 
+export const conversationViewSchema = z.enum([
+  "inbox",
+  "starred",
+  "archived",
+]);
+
+export type ConversationView = z.infer<typeof conversationViewSchema>;
+
 export const conversationListSchema = z.object({
   emailAccountId: z
     .string()
     .min(1, { error: "An email account is required" }),
-  /**
-   * When `true` only archived conversations are returned; otherwise archived
-   * threads are hidden from the main inbox.
-   */
-  archived: z.boolean().optional(),
+  /** Which mailbox view to query. Defaults to the inbox. */
+  view: conversationViewSchema.optional(),
 });
 
 export type ConversationListInput = z.infer<typeof conversationListSchema>;
@@ -72,6 +77,11 @@ export type ConversationNewMessageInput = z.infer<
 export const conversationArchiveSchema = z.object({
   id: z.string().min(1, { error: "Id is required" }),
   archived: z.boolean(),
+});
+
+export const conversationStarSchema = z.object({
+  id: z.string().min(1, { error: "Id is required" }),
+  starred: z.boolean(),
 });
 
 export const conversationIdSchema = z.object({

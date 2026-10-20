@@ -267,7 +267,7 @@ describe("conversationsRouter", () => {
       const inbox = await caller.getMany({ emailAccountId: account.id });
       const archive = await caller.getMany({
         emailAccountId: account.id,
-        archived: true,
+        view: "archived",
       });
 
       expect(inbox.map((c) => c.id)).toEqual([active.id]);
@@ -316,6 +316,169 @@ describe("conversationsRouter", () => {
       await expect(
         caller.getMany({ emailAccountId: account.id }),
       ).rejects.toThrow();
+    });
+  });
+
+  describe("starring", () => {
+    it("stars a conversation for the caller only, creating a state row", async () => {
+      const otherUser = await createUser();
+      const account = await createAccount([userId, otherUser.id]);
+      const conversation = await createConversation(account.id);
+
+      const result = await caller.setStarred({
+        id: conversation.id,
+        starred: true,
+      });
+
+      expect(result.starredAt).toBeInstanceOf(Date);
+
+      const state = await db.conversationUserState.findUniqueOrThrow({
+        where: {
+          userId_conversationId: {
+            userId,
+            conversationId: conversation.id,
+          },
+        },
+      });
+      expect(state.starredAt).toBeInstanceOf(Date);
+
+      const mine = await caller.getMany({
+        emailAccountId: account.id,
+        view: "starred",
+      });
+      expect(mine.map((row) => row.id)).toEqual([conversation.id]);
+      expect(mine[0]!.isStarred).toBe(true);
+      expect((await caller.getOne({ id: conversation.id })).isStarred).toBe(
+        true,
+      );
+
+      const theirCaller = createCaller({
+        userId: otherUser.id,
+        auth: { id: otherUser.id },
+      });
+      expect(
+        await theirCaller.getMany({
+          emailAccountId: account.id,
+          view: "starred",
+        }),
+      ).toHaveLength(0);
+      const theirInbox = await theirCaller.getMany({
+        emailAccountId: account.id,
+      });
+      expect(theirInbox[0]!.isStarred).toBe(false);
+    });
+
+    it("removes an unstarred conversation from the Starred view", async () => {
+      const account = await createAccount([userId]);
+      const conversation = await createConversation(account.id);
+
+      await caller.setStarred({ id: conversation.id, starred: true });
+      await caller.setStarred({ id: conversation.id, starred: false });
+
+      const starred = await caller.getMany({
+        emailAccountId: account.id,
+        view: "starred",
+      });
+      expect(starred).toHaveLength(0);
+
+      const inbox = await caller.getMany({ emailAccountId: account.id });
+      expect(inbox[0]!.isStarred).toBe(false);
+
+      const state = await db.conversationUserState.findUniqueOrThrow({
+        where: {
+          userId_conversationId: {
+            userId,
+            conversationId: conversation.id,
+          },
+        },
+      });
+      expect(state.starredAt).toBeNull();
+    });
+
+    it("keeps a starred archived conversation in the Starred view", async () => {
+      const account = await createAccount([userId]);
+      const conversation = await createConversation(account.id, {
+        archivedAt: new Date("2026-10-17T10:00:00.000Z"),
+      });
+
+      await caller.setStarred({ id: conversation.id, starred: true });
+
+      const starred = await caller.getMany({
+        emailAccountId: account.id,
+        view: "starred",
+      });
+      expect(starred.map((conversation) => conversation.id)).toEqual([
+        conversation.id,
+      ]);
+
+      const archived = await caller.getMany({
+        emailAccountId: account.id,
+        view: "archived",
+      });
+      expect(archived.map((conversation) => conversation.id)).toEqual([
+        conversation.id,
+      ]);
+    });
+
+    it("orders the Starred view by newest activity", async () => {
+      const account = await createAccount([userId]);
+      const older = await createConversation(account.id, {
+        lastMessageAt: new Date("2026-10-17T10:00:00.000Z"),
+      });
+      const newer = await createConversation(account.id, {
+        lastMessageAt: new Date("2026-10-17T11:00:00.000Z"),
+      });
+
+      await caller.setStarred({ id: older.id, starred: true });
+      await caller.setStarred({ id: newer.id, starred: true });
+
+      const result = await caller.getMany({
+        emailAccountId: account.id,
+        view: "starred",
+      });
+
+      expect(result.map((conversation) => conversation.id)).toEqual([
+        newer.id,
+        older.id,
+      ]);
+    });
+
+    it("does not change the conversation activity timestamps", async () => {
+      const account = await createAccount([userId]);
+      const conversation = await createConversation(account.id);
+      await createMessage(conversation.id, {
+        sentAt: new Date("2026-10-17T10:00:00.000Z"),
+      });
+
+      const before = await db.conversation.findUniqueOrThrow({
+        where: { id: conversation.id },
+      });
+
+      await caller.setStarred({ id: conversation.id, starred: true });
+
+      const after = await db.conversation.findUniqueOrThrow({
+        where: { id: conversation.id },
+      });
+
+      expect(after.updatedAt.getTime()).toBe(before.updatedAt.getTime());
+      expect(after.lastMessageAt?.getTime()).toBe(
+        before.lastMessageAt?.getTime(),
+      );
+    });
+
+    it("rejects a conversation on an account the user is not assigned to", async () => {
+      const account = await createAccount();
+      const conversation = await createConversation(account.id);
+
+      await expect(
+        caller.setStarred({ id: conversation.id, starred: true }),
+      ).rejects.toThrow();
+
+      expect(
+        await db.conversationUserState.count({
+          where: { conversationId: conversation.id },
+        }),
+      ).toBe(0);
     });
   });
 

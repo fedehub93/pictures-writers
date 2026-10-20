@@ -44,8 +44,8 @@ export const ConversationActions = ({
 }: ConversationActionsProps) => {
   const [confirmOpen, setConfirmOpen] = useState(false);
 
-  const setArchived = useSetConversationArchived(conversation.emailAccountId);
-  const remove = useRemoveConversation(conversation.emailAccountId);
+  const setArchived = useSetConversationArchived();
+  const remove = useRemoveConversation();
   const createContact = useCreateContactFromConversation();
 
   const isArchived = Boolean(conversation.archivedAt);

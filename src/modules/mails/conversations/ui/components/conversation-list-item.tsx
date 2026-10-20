@@ -8,6 +8,7 @@ import { formatRelativeTime } from "../../lib/format";
 import { type ConversationListItem as ConversationListItemType } from "../../types";
 import { ContactAvatar } from "./contact-avatar";
 import { ConversationReadMenu } from "./conversation-read-menu";
+import { StarBadge } from "./star-badge";
 
 interface ConversationListItemProps {
   conversation: ConversationListItemType;
@@ -15,6 +16,7 @@ interface ConversationListItemProps {
   onSelect: (id: string) => void;
   onMarkRead?: (id: string) => void;
   onMarkUnread?: (id: string) => void;
+  onToggleStar?: (id: string, starred: boolean) => void;
 }
 
 export const ConversationListItem = ({
@@ -23,6 +25,7 @@ export const ConversationListItem = ({
   onSelect,
   onMarkRead,
   onMarkUnread,
+  onToggleStar,
 }: ConversationListItemProps) => {
   const displayName = conversation.contactName ?? conversation.contactEmail;
   const { lastMessage } = conversation;
@@ -61,13 +64,16 @@ export const ConversationListItem = ({
 
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <div className="flex items-baseline justify-between gap-2">
-          <span
-            className={cn(
-              "truncate text-sm",
-              conversation.isUnread ? "font-semibold" : "font-medium",
-            )}
-          >
-            {displayName}
+          <span className="flex min-w-0 items-center gap-1">
+            {conversation.isStarred && <StarBadge className="size-3.5" />}
+            <span
+              className={cn(
+                "truncate text-sm",
+                conversation.isUnread ? "font-semibold" : "font-medium",
+              )}
+            >
+              {displayName}
+            </span>
           </span>
           <span className="shrink-0 text-xs text-muted-foreground">
             {formatRelativeTime(
@@ -115,8 +121,14 @@ export const ConversationListItem = ({
 
       <ConversationReadMenu
         isUnread={conversation.isUnread}
+        isStarred={conversation.isStarred}
         onMarkRead={() => onMarkRead?.(conversation.id)}
         onMarkUnread={() => onMarkUnread?.(conversation.id)}
+        onToggleStar={
+          onToggleStar
+            ? () => onToggleStar(conversation.id, !conversation.isStarred)
+            : undefined
+        }
       />
     </div>
   );

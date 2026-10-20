@@ -4,6 +4,7 @@ import {
   ArchiveIcon,
   InboxIcon,
   PenSquareIcon,
+  StarIcon,
   type LucideIcon,
 } from "lucide-react";
 
@@ -12,9 +13,8 @@ import { Button } from "@/shared/ui/button";
 
 import { type EmailAccountAllowed } from "@/modules/mails/accounts/types";
 
+import { type ConversationView } from "../../schemas";
 import { AccountSelector } from "./account-selector";
-
-export type ConversationView = "inbox" | "archived";
 
 interface MailboxNavProps {
   accounts: EmailAccountAllowed[];
@@ -77,6 +77,12 @@ export const MailboxNav = ({
           count={inboxUnreadCount}
           active={view === "inbox"}
           onClick={() => onViewChange("inbox")}
+        />
+        <MailboxNavItem
+          icon={StarIcon}
+          label="Starred"
+          active={view === "starred"}
+          onClick={() => onViewChange("starred")}
         />
         <MailboxNavItem
           icon={ArchiveIcon}

@@ -25,6 +25,8 @@ import {
   conversationListSchema,
   conversationNewMessageSchema,
   conversationSendSchema,
+  conversationStarSchema,
+  type ConversationView,
 } from "../schemas";
 import { assertAccountAccess } from "./access";
 
@@ -63,6 +65,39 @@ async function getActiveConversation<T extends Prisma.ConversationSelect>(
   }
 
   return conversation;
+}
+
+/**
+ * Translate a mailbox view into a `where` clause. Views are queries over the
+ * shared conversation, not containers. Starred includes archived threads but
+ * never deleted ones; it is the caller's personal filter.
+ */
+function viewWhere(
+  userId: string,
+  view: ConversationView,
+): Prisma.ConversationWhereInput {
+  switch (view) {
+    case "archived":
+      return { deletedAt: null, archivedAt: { not: null } };
+    case "starred":
+      return {
+        deletedAt: null,
+        userStates: { some: { userId, starredAt: { not: null } } },
+      };
+    case "inbox":
+      return { deletedAt: null, archivedAt: null };
+    default: {
+      const exhaustive: never = view;
+      throw new Error(`Unhandled conversation view: ${String(exhaustive)}`);
+    }
+  }
+}
+
+/** Whether the caller's personal state row marks the thread as starred. */
+function isStarredFor(
+  state: { starredAt: Date | null } | undefined,
+): boolean {
+  return state?.starredAt != null;
 }
 
 /** Derive the caller's unread flag from the read watermark. */
@@ -134,10 +169,7 @@ export const conversationsRouter = createTRPCRouter({
       const conversations = await db.conversation.findMany({
         where: {
           emailAccountId: input.emailAccountId,
-          deletedAt: null,
-          // Archived conversations are hidden from the main inbox and surfaced
-          // only in the archived view.
-          archivedAt: input.archived ? { not: null } : null,
+          ...viewWhere(ctx.auth.id, input.view ?? "inbox"),
         },
         orderBy: [{ lastMessageAt: { sort: "desc", nulls: "last" } }],
         include: {
@@ -149,7 +181,7 @@ export const conversationsRouter = createTRPCRouter({
           userStates: {
             where: { userId: ctx.auth.id },
             take: 1,
-            select: { lastReadAt: true },
+            select: { lastReadAt: true, starredAt: true },
           },
           _count: { select: { messages: true } },
         },
@@ -157,13 +189,17 @@ export const conversationsRouter = createTRPCRouter({
 
       return conversations.map((conversation) => {
         const lastMessage = conversation.messages[0];
-        const lastReadAt = conversation.userStates[0]?.lastReadAt ?? null;
+        const state = conversation.userStates[0];
 
         return {
           id: conversation.id,
           contactEmail: conversation.contactEmail,
           contactName: conversation.contactName,
-          isUnread: isUnreadFor(conversation.lastInboundAt, lastReadAt),
+          isUnread: isUnreadFor(
+            conversation.lastInboundAt,
+            state?.lastReadAt ?? null,
+          ),
+          isStarred: isStarredFor(state),
           updatedAt: conversation.updatedAt,
           messageCount: conversation._count.messages,
           lastMessage: lastMessage
@@ -243,7 +279,7 @@ export const conversationsRouter = createTRPCRouter({
           userStates: {
             where: { userId: ctx.auth.id },
             take: 1,
-            select: { lastReadAt: true },
+            select: { lastReadAt: true, starredAt: true },
           },
         },
       });
@@ -256,13 +292,15 @@ export const conversationsRouter = createTRPCRouter({
       }
 
       const { userStates, ...conversationWithoutState } = conversation;
+      const state = userStates[0];
 
       return {
         ...conversationWithoutState,
         isUnread: isUnreadFor(
           conversation.lastInboundAt,
-          userStates[0]?.lastReadAt ?? null,
+          state?.lastReadAt ?? null,
         ),
+        isStarred: isStarredFor(state),
       };
     }),
 
@@ -299,6 +337,38 @@ export const conversationsRouter = createTRPCRouter({
       const state = await setConversationReadState(ctx.auth.id, input.id, null);
 
       return { id: state.conversationId, lastReadAt: state.lastReadAt };
+    }),
+
+  /**
+   * Star or unstar a conversation for the caller. Only the personal state row
+   * changes, so the shared conversation and its inbox ordering are untouched.
+   */
+  setStarred: permissionProcedure(PERMISSIONS.MAIL_READ)
+    .input(conversationStarSchema)
+    .mutation(async ({ ctx, input }) => {
+      const { emailAccountId } = await getActiveConversation(input.id, {
+        emailAccountId: true,
+      });
+      await assertAccountAccess(ctx.auth.id, emailAccountId);
+
+      const starredAt = input.starred ? new Date() : null;
+      const state = await db.conversationUserState.upsert({
+        where: {
+          userId_conversationId: {
+            userId: ctx.auth.id,
+            conversationId: input.id,
+          },
+        },
+        create: {
+          userId: ctx.auth.id,
+          conversationId: input.id,
+          starredAt,
+        },
+        update: { starredAt },
+        select: { conversationId: true, starredAt: true },
+      });
+
+      return { id: state.conversationId, starredAt: state.starredAt };
     }),
 
   sendReply: permissionProcedure(PERMISSIONS.MAIL_READ)

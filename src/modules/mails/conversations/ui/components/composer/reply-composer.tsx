@@ -51,7 +51,7 @@ export const ReplyComposer = ({
   const [subject, setSubject] = useState(() => replySubject(lastSubject));
   const [attachments, setAttachments] = useState<ComposerAttachment[]>([]);
 
-  const sendReply = useSendReply(conversation.emailAccountId);
+  const sendReply = useSendReply();
 
   const editor = useEditor({
     extensions: createComposerExtensions(),
