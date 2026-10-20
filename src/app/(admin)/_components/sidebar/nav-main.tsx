@@ -10,16 +10,19 @@ import {
   SidebarMenuItem,
 } from "@/shared/ui/sidebar";
 
-import { type NavItem } from "./nav-data";
+import { type NavBadgeCounts, type NavItem } from "./nav-data";
+import { NavBadge } from "./nav-badge";
 
 export function NavMain({
   label,
   items,
   activeUrl,
+  badges,
 }: {
   label?: string;
   items: NavItem[];
   activeUrl?: string;
+  badges?: NavBadgeCounts;
 }) {
   return (
     <SidebarGroup className="py-1.5">
@@ -35,6 +38,9 @@ export function NavMain({
               <Link href={item.url}>
                 {item.Icon && <item.Icon />}
                 <span>{item.title}</span>
+                {item.badgeKey ? (
+                  <NavBadge count={badges?.[item.badgeKey]} />
+                ) : null}
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

@@ -15,9 +15,16 @@ import {
   SidebarRail,
 } from "@/shared/ui/sidebar";
 import Logo from "@/shared/components/logo";
+import { hasPermission, PERMISSIONS } from "@/shared/lib/permissions";
+import { useMailboxCounts } from "@/modules/mails/conversations/hooks/use-mailbox-counts";
 
 import { NavMain } from "./nav-main";
-import { filterNavData, getActiveNavUrl, navData } from "./nav-data";
+import {
+  filterNavData,
+  getActiveNavUrl,
+  navData,
+  type NavBadgeCounts,
+} from "./nav-data";
 
 export function AppSidebar({
   permissionKeys,
@@ -28,6 +35,13 @@ export function AppSidebar({
   const pathname = usePathname();
   const visibleData = filterNavData(navData, permissionKeys);
   const activeUrl = getActiveNavUrl(visibleData, pathname);
+
+  const canReadMail = hasPermission(permissionKeys, PERMISSIONS.MAIL_READ);
+  const { data: counts } = useMailboxCounts(canReadMail);
+
+  const badges: NavBadgeCounts = {
+    "mail-unread": canReadMail ? counts?.totalUnread : undefined,
+  };
 
   return (
     <Sidebar {...props}>
@@ -54,6 +68,7 @@ export function AppSidebar({
             label={section.label}
             items={section.items}
             activeUrl={activeUrl}
+            badges={badges}
           />
         ))}
       </SidebarContent>

@@ -30,11 +30,20 @@ import {
 
 import { hasPermission } from "@/shared/lib/permissions";
 
+/**
+ * Keys for the numeric badges a nav entry can carry. The rendering layer
+ * supplies the values, so nav data never fetches anything itself.
+ */
+export type NavBadgeKey = "mail-unread";
+
+export type NavBadgeCounts = Partial<Record<NavBadgeKey, number>>;
+
 export type NavItem = {
   title: string;
   url: Route;
   Icon?: LucideIcon;
   permission?: string;
+  badgeKey?: NavBadgeKey;
 };
 
 /**
@@ -60,6 +69,7 @@ export const navData: NavSection[] = [
         url: "/admin/inbox",
         Icon: InboxIcon,
         permission: "mail.read",
+        badgeKey: "mail-unread",
       },
     ],
   },

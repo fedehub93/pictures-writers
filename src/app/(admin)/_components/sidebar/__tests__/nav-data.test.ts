@@ -129,6 +129,15 @@ describe("admin navigation structure", () => {
     expect(titlesOf("Access")).toEqual(["Users", "Roles"]);
   });
 
+  it("marks only the Inbox entry for an unread badge", () => {
+    const badged = navData
+      .flatMap((entry) => entry.items)
+      .filter((item) => item.badgeKey);
+
+    expect(badged.map((item) => item.title)).toEqual(["Inbox"]);
+    expect(badged[0]?.badgeKey).toBe("mail-unread");
+  });
+
   it("points every entry at a distinct page that exists", () => {
     const urls = navData.flatMap((entry) =>
       entry.items.map((item) => item.url),

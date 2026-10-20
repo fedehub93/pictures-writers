@@ -13,6 +13,9 @@ export const useSetConversationArchived = (emailAccountId?: string) => {
         queryClient.invalidateQueries(
           trpc.conversations.getOne.queryFilter({ id: data.id }),
         );
+        queryClient.invalidateQueries(
+          trpc.conversations.getCounts.queryFilter(),
+        );
 
         if (emailAccountId) {
           for (const archived of [false, true]) {
@@ -39,6 +42,9 @@ export const useRemoveConversation = (emailAccountId?: string) => {
       onSuccess: (data) => {
         queryClient.removeQueries(
           trpc.conversations.getOne.queryFilter({ id: data.id }),
+        );
+        queryClient.invalidateQueries(
+          trpc.conversations.getCounts.queryFilter(),
         );
 
         if (emailAccountId) {
