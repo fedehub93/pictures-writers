@@ -19,12 +19,8 @@ import { hasPermission, PERMISSIONS } from "@/shared/lib/permissions";
 import { useMailboxCounts } from "@/modules/mails/conversations/hooks/use-mailbox-counts";
 
 import { NavMain } from "./nav-main";
-import {
-  filterNavData,
-  getActiveNavUrl,
-  navData,
-  type NavBadgeCounts,
-} from "./nav-data";
+import { filterNavData, getActiveNavUrl, navData } from "./nav-data";
+import { getNavBadges } from "./nav-badges";
 
 export function AppSidebar({
   permissionKeys,
@@ -39,9 +35,7 @@ export function AppSidebar({
   const canReadMail = hasPermission(permissionKeys, PERMISSIONS.MAIL_READ);
   const { data: counts } = useMailboxCounts(canReadMail);
 
-  const badges: NavBadgeCounts = {
-    "mail-unread": canReadMail ? counts?.totalUnread : undefined,
-  };
+  const badges = getNavBadges(permissionKeys, counts?.totalUnread);
 
   return (
     <Sidebar {...props}>
