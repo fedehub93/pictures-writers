@@ -173,8 +173,44 @@ A file attached to an inbound or outbound email, persisted in application storag
 _Avoid_: File, upload when the context is email.
 
 **Unread conversation**:
-A conversation that has received a new inbound email not yet seen by an admin.
-_Avoid_: New message when referring to the conversation state.
+A conversation that has received a new inbound email not yet seen by a given backoffice user. Read state is personal: two users with access to the same email account may see the same conversation as unread and read respectively.
+_Avoid_: New message when referring to the conversation state; unread inbox when the scope is per-user.
+
+**Conversation read state**:
+Per-backoffice-user information about a conversation: whether its inbound mail has been read and whether that user starred it. It is personal and never changes what other users see.
+_Avoid_: Seen flag, unread flag when referring to the stored state (the flag is derived).
+
+**Mailbox view**:
+One of the named ways of looking at the mail of an Email account — Inbox, Sent, Starred, Archive, Trash. A view is a query, not a container: messages are never moved into one, and a conversation appears in every view whose rule it satisfies.
+_Avoid_: Folder, label, mailbox when referring to the view.
+
+**Inbox**:
+The Mailbox view of conversations that are neither archived nor deleted.
+_Avoid_: Mailbox, folder when referring to the view.
+
+**Sent**:
+The Mailbox view listing outbound one-to-one messages, newest first, across conversations. Distinct from a Conversation, which groups inbound and outbound mail by contact.
+_Avoid_: Outbox; sent conversations.
+
+**Archive**:
+The Mailbox view of conversations whose triage is finished. Archiving removes a conversation from the Inbox without deleting it.
+_Avoid_: Done, closed.
+
+**Trash**:
+The Mailbox view of deleted conversations, where a conversation can be restored or permanently deleted.
+_Avoid_: Bin, recycle bin.
+
+**Starred conversation**:
+A conversation a backoffice user marked as important to them. The star is personal state and never changes what other users see.
+_Avoid_: Flagged, important when referring to the stored state.
+
+**Shared triage**:
+The rule that archiving, restoring, and permanently deleting a conversation act on the conversation itself, so they affect every backoffice user who can access its Email account. Read state and star are personal and exempt.
+_Avoid_: Team state; shared read.
+
+**Filtered**:
+The mailbox navigation group that gathers views narrowing the mail rather than listing a mailbox: Starred and Archive. It is a presentation grouping, not a Mailbox view.
+_Avoid_: Folder group; custom mailbox.
 
 ## Backoffice users and authorization
 

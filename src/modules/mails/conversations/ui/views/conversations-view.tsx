@@ -73,7 +73,7 @@ export const ConversationsView = () => {
 
   const conversations = activeQuery.data ?? [];
   const inboxUnreadCount = (inboxQuery.data ?? []).filter(
-    (conversation) => conversation.hasUnread,
+    (conversation) => conversation.isUnread,
   ).length;
   const archivedCount = archivedQuery.data?.length ?? 0;
 

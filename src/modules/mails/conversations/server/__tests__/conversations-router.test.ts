@@ -100,7 +100,8 @@ async function createConversation(
   overrides: Partial<{
     contactEmail: string;
     contactName: string | null;
-    hasUnread: boolean;
+    lastMessageAt: Date | null;
+    lastInboundAt: Date | null;
     deletedAt: Date | null;
     archivedAt: Date | null;
   }> = {},
@@ -110,7 +111,8 @@ async function createConversation(
       emailAccountId,
       contactEmail: overrides.contactEmail ?? `contact-${randomUUID()}@example.com`,
       contactName: overrides.contactName ?? null,
-      hasUnread: overrides.hasUnread ?? false,
+      lastMessageAt: overrides.lastMessageAt ?? null,
+      lastInboundAt: overrides.lastInboundAt ?? null,
       deletedAt: overrides.deletedAt ?? null,
       archivedAt: overrides.archivedAt ?? null,
     },
@@ -126,14 +128,17 @@ async function createMessage(
     bodyHtml: string | null;
     fromAddress: string;
     toAddresses: string[];
+    sentAt: Date;
   }> = {},
   attachments: { filename: string; contentType: string; url: string }[] = [],
 ) {
-  return db.emailMessage.create({
+  const direction = overrides.direction ?? "INBOUND";
+  const sentAt = overrides.sentAt ?? new Date();
+  const message = await db.emailMessage.create({
     data: {
       conversationId,
-      direction: overrides.direction ?? "INBOUND",
-      status: overrides.direction === "OUTBOUND" ? "SENT" : "RECEIVED",
+      direction,
+      status: direction === "OUTBOUND" ? "SENT" : "RECEIVED",
       subject: overrides.subject ?? "Subject",
       bodyText: overrides.bodyText === undefined ? "Body" : overrides.bodyText,
       bodyHtml: overrides.bodyHtml ?? null,
@@ -141,12 +146,22 @@ async function createMessage(
       toAddresses: overrides.toAddresses ?? ["support@example.com"],
       ccAddresses: [],
       bccAddresses: [],
-      sentAt: new Date(),
+      sentAt,
       attachments: attachments.length
         ? { create: attachments }
         : undefined,
     },
   });
+
+  await db.conversation.update({
+    where: { id: conversationId },
+    data: {
+      lastMessageAt: sentAt,
+      ...(direction === "INBOUND" ? { lastInboundAt: sentAt } : {}),
+    },
+  });
+
+  return message;
 }
 
 beforeEach(async () => {
@@ -184,26 +199,52 @@ describe("conversationsRouter", () => {
         contactEmail: "older@example.com",
         contactName: "Older Contact",
       });
-      await createMessage(older.id, { bodyText: "Older body" });
+      await createMessage(older.id, {
+        bodyText: "Older body",
+        sentAt: new Date("2026-10-17T11:00:00.000Z"),
+      });
       const newer = await createConversation(account.id, {
         contactEmail: "newer@example.com",
       });
-      await createMessage(newer.id, { bodyText: "Newer body" });
-
-      // Bump the first conversation so it becomes the most recent activity.
-      await db.conversation.update({
-        where: { id: older.id },
-        data: { hasUnread: true },
+      await createMessage(newer.id, {
+        bodyText: "Newer body",
+        sentAt: new Date("2026-10-17T10:00:00.000Z"),
       });
 
       const result = await caller.getMany({ emailAccountId: account.id });
 
       expect(result.map((c) => c.id)).toEqual([older.id, newer.id]);
-      expect(result[0]!.hasUnread).toBe(true);
+      expect(result[0]!.isUnread).toBe(true);
       expect(result[0]!.contactName).toBe("Older Contact");
       expect(result[0]!.messageCount).toBe(1);
       expect(result[0]!.lastMessage?.snippet).toBe("Older body");
       expect(result[0]!.lastMessage?.direction).toBe("INBOUND");
+    });
+
+    it("derives unread per user, not per conversation", async () => {
+      const otherUser = await createUser();
+      const account = await createAccount([userId, otherUser.id]);
+      const conversation = await createConversation(account.id);
+      const message = await createMessage(conversation.id, {
+        sentAt: new Date("2026-10-17T10:00:00.000Z"),
+      });
+
+      await db.conversationUserState.create({
+        data: {
+          userId: otherUser.id,
+          conversationId: conversation.id,
+          lastReadAt: new Date(message.sentAt!.getTime() + 1_000),
+        },
+      });
+
+      const mine = await caller.getMany({ emailAccountId: account.id });
+      const theirs = await createCaller({
+        userId: otherUser.id,
+        auth: { id: otherUser.id },
+      }).getMany({ emailAccountId: account.id });
+
+      expect(mine[0]!.isUnread).toBe(true);
+      expect(theirs[0]!.isUnread).toBe(false);
     });
 
     it("excludes soft-deleted conversations", async () => {
@@ -275,6 +316,104 @@ describe("conversationsRouter", () => {
       await expect(
         caller.getMany({ emailAccountId: account.id }),
       ).rejects.toThrow();
+    });
+  });
+
+  describe("getCounts", () => {
+    it("counts unread and archived conversations per accessible account", async () => {
+      const account = await createAccount([userId]);
+      const emptyAccount = await createAccount([userId]);
+      const inaccessible = await createAccount();
+
+      const unread = await createConversation(account.id);
+      await createMessage(unread.id, {
+        sentAt: new Date("2026-10-17T10:00:00.000Z"),
+      });
+
+      const archived = await createConversation(account.id, {
+        archivedAt: new Date("2026-10-17T10:05:00.000Z"),
+      });
+      await createMessage(archived.id, {
+        sentAt: new Date("2026-10-17T10:05:00.000Z"),
+      });
+
+      const deleted = await createConversation(account.id, {
+        deletedAt: new Date("2026-10-17T10:10:00.000Z"),
+      });
+      await createMessage(deleted.id, {
+        sentAt: new Date("2026-10-17T10:10:00.000Z"),
+      });
+
+      const read = await createConversation(account.id);
+      const readMessage = await createMessage(read.id, {
+        sentAt: new Date("2026-10-17T10:15:00.000Z"),
+      });
+      await db.conversationUserState.create({
+        data: {
+          userId,
+          conversationId: read.id,
+          lastReadAt: new Date(readMessage.sentAt!.getTime() + 1_000),
+        },
+      });
+
+      const hidden = await createConversation(inaccessible.id);
+      await createMessage(hidden.id);
+
+      const result = await caller.getCounts();
+
+      expect(result.totalUnread).toBe(1);
+      expect(result.accounts).toHaveLength(2);
+      expect(result.accounts).toEqual(
+        expect.arrayContaining([
+          { emailAccountId: account.id, unread: 1, archived: 1 },
+          { emailAccountId: emptyAccount.id, unread: 0, archived: 0 },
+        ]),
+      );
+      expect(
+        result.accounts.some(
+          (entry) => entry.emailAccountId === inaccessible.id,
+        ),
+      ).toBe(false);
+    });
+
+    it("keeps read state personal to each user", async () => {
+      const otherUser = await createUser();
+      const account = await createAccount([userId, otherUser.id]);
+      const conversation = await createConversation(account.id);
+      const message = await createMessage(conversation.id, {
+        sentAt: new Date("2026-10-17T10:00:00.000Z"),
+      });
+
+      await db.conversationUserState.create({
+        data: {
+          userId: otherUser.id,
+          conversationId: conversation.id,
+          lastReadAt: new Date(message.sentAt!.getTime() + 1_000),
+        },
+      });
+
+      const mine = await caller.getCounts();
+      const theirs = await createCaller({
+        userId: otherUser.id,
+        auth: { id: otherUser.id },
+      }).getCounts();
+
+      expect(mine.totalUnread).toBe(1);
+      expect(theirs.totalUnread).toBe(0);
+    });
+
+    it("returns zero for a user without account permissions", async () => {
+      const account = await createAccount([userId]);
+      const conversation = await createConversation(account.id);
+      await createMessage(conversation.id);
+
+      const outsider = await createUser();
+      const result = await createCaller({
+        userId: outsider.id,
+        auth: { id: outsider.id },
+      }).getCounts();
+
+      expect(result).toEqual({ totalUnread: 0, accounts: [] });
     });
   });
 

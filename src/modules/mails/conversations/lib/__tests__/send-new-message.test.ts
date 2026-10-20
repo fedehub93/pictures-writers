@@ -105,8 +105,9 @@ describe("sendNewMessage", () => {
       emailAccountId: account.id,
       contactEmail: "newcomer@example.com",
       contactId: null,
-      hasUnread: false,
+      lastInboundAt: null,
     });
+    expect(message.conversation.lastMessageAt).toEqual(message.sentAt);
     expect(message.attachments).toHaveLength(1);
     expect(message.attachments[0]).toMatchObject({
       filename: "intro.pdf",

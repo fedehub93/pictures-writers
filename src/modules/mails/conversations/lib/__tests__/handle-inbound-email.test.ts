@@ -152,7 +152,8 @@ describe("handleInboundEmail", () => {
     expect(conversation).not.toBeNull();
     expect(conversation!.contactEmail).toBe("alice@example.com");
     expect(conversation!.contactName).toBe("Alice");
-    expect(conversation!.hasUnread).toBe(true);
+    expect(conversation!.lastMessageAt).toEqual(inbound.receivedAt);
+    expect(conversation!.lastInboundAt).toEqual(inbound.receivedAt);
     expect(conversation!.messages).toHaveLength(1);
 
     const message = conversation!.messages[0];
@@ -259,9 +260,14 @@ describe("handleInboundEmail", () => {
       adapter: makeAdapter(inboundEmail({ externalId: "inbound-1" })),
       storage,
     });
+    const later = new Date("2026-10-17T12:00:00.000Z");
     await handleInboundEmail(webhookEvent({ email_id: "inbound-2" }), {
       adapter: makeAdapter(
-        inboundEmail({ externalId: "inbound-2", subject: "Re: Hello" }),
+        inboundEmail({
+          externalId: "inbound-2",
+          subject: "Re: Hello",
+          receivedAt: later,
+        }),
       ),
       storage,
     });
@@ -272,7 +278,35 @@ describe("handleInboundEmail", () => {
 
     expect(conversations).toHaveLength(1);
     expect(conversations[0].messages).toHaveLength(2);
-    expect(conversations[0].hasUnread).toBe(true);
+    expect(conversations[0].lastMessageAt).toEqual(later);
+    expect(conversations[0].lastInboundAt).toEqual(later);
+  });
+
+  it("keeps activity timestamps monotonic for out-of-order mail", async () => {
+    await createAccount();
+    const { storage } = makeStorage();
+    const later = new Date("2026-10-17T12:00:00.000Z");
+
+    await handleInboundEmail(webhookEvent({ email_id: "inbound-1" }), {
+      adapter: makeAdapter(
+        inboundEmail({ externalId: "inbound-1", receivedAt: later }),
+      ),
+      storage,
+    });
+    await handleInboundEmail(webhookEvent({ email_id: "inbound-2" }), {
+      adapter: makeAdapter(
+        inboundEmail({
+          externalId: "inbound-2",
+          receivedAt: new Date("2026-10-17T11:00:00.000Z"),
+        }),
+      ),
+      storage,
+    });
+
+    const conversation = await db.conversation.findFirstOrThrow();
+
+    expect(conversation.lastMessageAt).toEqual(later);
+    expect(conversation.lastInboundAt).toEqual(later);
   });
 
   it("discards mail addressed to an unknown account", async () => {

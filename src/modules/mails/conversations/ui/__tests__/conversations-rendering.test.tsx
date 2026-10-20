@@ -14,7 +14,7 @@ const unreadConversation: ConversationListItem = {
   id: "conversation-1",
   contactEmail: "jessica.ball@example.com",
   contactName: "Jessica Ball",
-  hasUnread: true,
+  isUnread: true,
   updatedAt: new Date("2026-10-17T11:58:00.000Z"),
   messageCount: 2,
   lastMessage: {
@@ -37,7 +37,7 @@ const readConversation: ConversationListItem = {
   id: "conversation-2",
   contactEmail: "danny.reid@example.com",
   contactName: null,
-  hasUnread: false,
+  isUnread: false,
   updatedAt: new Date("2026-10-17T09:00:00.000Z"),
   messageCount: 1,
   lastMessage: {
@@ -95,7 +95,8 @@ const thread: ConversationGetOne = {
   contactName: "Jessica Ball",
   contactId: null,
   emailAccountId: "account-1",
-  hasUnread: false,
+  lastMessageAt: new Date("2026-10-17T11:58:00.000Z"),
+  lastInboundAt: new Date("2026-10-17T11:58:00.000Z"),
   archivedAt: null,
   deletedAt: null,
   createdAt: new Date("2026-10-17T11:00:00.000Z"),

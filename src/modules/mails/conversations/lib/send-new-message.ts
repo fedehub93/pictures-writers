@@ -6,6 +6,7 @@ import type {
   OutboundAttachment,
 } from "@/modules/mails/lib/types";
 
+import { stampConversationActivity } from "./conversation-activity";
 import {
   assertTransactionalQuota,
   outboundMessageCreateData,
@@ -138,9 +139,14 @@ export async function sendNewMessage(
         }),
       });
 
+      await stampConversationActivity(transaction, {
+        conversationId: conversation.id,
+        at: message.sentAt ?? message.createdAt,
+      });
+
       await transaction.conversation.update({
         where: { id: conversation.id },
-        data: { updatedAt: new Date(), archivedAt: null },
+        data: { archivedAt: null },
       });
 
       return { conversationId: conversation.id, messageId: message.id };

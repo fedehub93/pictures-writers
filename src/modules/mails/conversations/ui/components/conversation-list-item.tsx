@@ -42,7 +42,7 @@ export const ConversationListItem = ({
 
       <div className="relative shrink-0">
         <ContactAvatar name={displayName} className="size-10" />
-        {conversation.hasUnread && (
+        {conversation.isUnread && (
           <span
             role="status"
             aria-label="Unread"
@@ -56,20 +56,22 @@ export const ConversationListItem = ({
           <span
             className={cn(
               "truncate text-sm",
-              conversation.hasUnread ? "font-semibold" : "font-medium",
+              conversation.isUnread ? "font-semibold" : "font-medium",
             )}
           >
             {displayName}
           </span>
           <span className="shrink-0 text-xs text-muted-foreground">
-            {formatRelativeTime(conversation.updatedAt)}
+            {formatRelativeTime(
+              conversation.lastMessage?.sentAt ?? conversation.updatedAt,
+            )}
           </span>
         </div>
 
         <span
           className={cn(
             "truncate text-sm",
-            conversation.hasUnread
+            conversation.isUnread
               ? "font-semibold text-foreground"
               : "text-foreground/90",
           )}

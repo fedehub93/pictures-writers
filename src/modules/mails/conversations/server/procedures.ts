@@ -108,12 +108,17 @@ export const conversationsRouter = createTRPCRouter({
           // only in the archived view.
           archivedAt: input.archived ? { not: null } : null,
         },
-        orderBy: { updatedAt: "desc" },
+        orderBy: [{ lastMessageAt: { sort: "desc", nulls: "last" } }],
         include: {
           messages: {
             orderBy: { createdAt: "desc" },
             take: 1,
             select: listMessageSelect,
+          },
+          userStates: {
+            where: { userId: ctx.auth.id },
+            take: 1,
+            select: { lastReadAt: true },
           },
           _count: { select: { messages: true } },
         },
@@ -121,12 +126,16 @@ export const conversationsRouter = createTRPCRouter({
 
       return conversations.map((conversation) => {
         const lastMessage = conversation.messages[0];
+        const lastReadAt = conversation.userStates[0]?.lastReadAt ?? null;
 
         return {
           id: conversation.id,
           contactEmail: conversation.contactEmail,
           contactName: conversation.contactName,
-          hasUnread: conversation.hasUnread,
+          isUnread:
+            conversation.lastInboundAt !== null &&
+            (lastReadAt === null ||
+              conversation.lastInboundAt.getTime() > lastReadAt.getTime()),
           updatedAt: conversation.updatedAt,
           messageCount: conversation._count.messages,
           lastMessage: lastMessage
@@ -142,6 +151,48 @@ export const conversationsRouter = createTRPCRouter({
         };
       });
     }),
+
+  /**
+   * Unread and archived totals for every account the caller may access.
+   * Unread is derived in SQL because Prisma cannot compare `Conversation` and
+   * `ConversationUserState` columns across a relation; a missing state row
+   * counts as never read.
+   */
+  getCounts: permissionProcedure(PERMISSIONS.MAIL_READ).query(async ({ ctx }) => {
+    const accounts = await db.$queryRaw<
+      { emailAccountId: string; unread: number; archived: number }[]
+    >(Prisma.sql`
+      SELECT
+        permission."emailAccountId" AS "emailAccountId",
+        COUNT(conversation."id") FILTER (
+          WHERE conversation."deletedAt" IS NULL
+            AND conversation."archivedAt" IS NULL
+            AND conversation."lastInboundAt" IS NOT NULL
+            AND (
+              state."lastReadAt" IS NULL
+              OR conversation."lastInboundAt" > state."lastReadAt"
+            )
+        )::int AS "unread",
+        COUNT(conversation."id") FILTER (
+          WHERE conversation."deletedAt" IS NULL
+            AND conversation."archivedAt" IS NOT NULL
+        )::int AS "archived"
+      FROM "EmailAccountUserPermission" AS permission
+      LEFT JOIN "Conversation" AS conversation
+        ON conversation."emailAccountId" = permission."emailAccountId"
+      LEFT JOIN "ConversationUserState" AS state
+        ON state."conversationId" = conversation."id"
+        AND state."userId" = permission."userId"
+      WHERE permission."userId" = ${ctx.auth.id}
+      GROUP BY permission."emailAccountId"
+      ORDER BY permission."emailAccountId"
+    `);
+
+    return {
+      totalUnread: accounts.reduce((total, account) => total + account.unread, 0),
+      accounts,
+    };
+  }),
 
   getOne: permissionProcedure(PERMISSIONS.MAIL_READ)
     .input(conversationGetOneSchema)

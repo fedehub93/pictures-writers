@@ -8,6 +8,7 @@ import type {
 } from "@/modules/mails/lib/types";
 
 import type { AttachmentStorage } from "./attachment-storage";
+import { stampConversationActivity } from "./conversation-activity";
 
 const ATTACHMENT_DOWNLOAD_ATTEMPTS = 3;
 const ATTACHMENT_RETRY_DELAYS_MS = [0, 250, 1000];
@@ -251,17 +252,20 @@ export async function handleInboundEmail(
     },
   });
 
-  await db.conversation.update({
-    where: { id: conversation.id },
-    data: {
-      hasUnread: true,
-      // Backfill the display name when the thread is reused and the first
-      // message had none.
-      ...(existingConversation && !existingConversation.contactName && sender.name
-        ? { contactName: sender.name }
-        : {}),
-    },
+  await stampConversationActivity(db, {
+    conversationId: conversation.id,
+    at: message.sentAt ?? message.createdAt,
+    inbound: true,
   });
+
+  // Backfill the display name when the conversation is reused and the first
+  // message had none.
+  if (existingConversation && !existingConversation.contactName && sender.name) {
+    await db.conversation.update({
+      where: { id: conversation.id },
+      data: { contactName: sender.name },
+    });
+  }
 
   return {
     status: "processed",

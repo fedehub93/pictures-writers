@@ -183,15 +183,15 @@ describe("sendConversationMessage", () => {
     expect(sent[0]!.from).toBe(`Support <${account.email}>`);
   });
 
-  it("bumps the conversation's activity so the thread floats to the top", async () => {
+  it("stamps the conversation's last message time so the thread floats to the top", async () => {
     const account = await createAccount();
     const conversation = await createConversation(account.id);
-    const before = conversation.updatedAt;
+    const before = new Date();
     const { adapter } = recordingAdapter();
 
     await new Promise((resolve) => setTimeout(resolve, 5));
 
-    await sendConversationMessage({
+    const result = await sendConversationMessage({
       conversationId: conversation.id,
       bodyHtml: "<p>Hi</p>",
       adapter,
@@ -200,7 +200,13 @@ describe("sendConversationMessage", () => {
     const updated = await db.conversation.findUniqueOrThrow({
       where: { id: conversation.id },
     });
-    expect(updated.updatedAt.getTime()).toBeGreaterThan(before.getTime());
+    const message = await db.emailMessage.findUniqueOrThrow({
+      where: { id: result.messageId },
+    });
+
+    expect(updated.lastMessageAt).toEqual(message.sentAt);
+    expect(updated.lastMessageAt!.getTime()).toBeGreaterThan(before.getTime());
+    expect(updated.lastInboundAt).toBeNull();
   });
 
   it("rejects with NOT_FOUND for an unknown conversation", async () => {

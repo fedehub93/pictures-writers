@@ -201,6 +201,7 @@ model User {
   customer      Customer?
 
   emailAccountPermissions EmailAccountUserPermission[]
+  conversationStates      ConversationUserState[]
 
   dashboardLayout DashboardLayout?
 
@@ -816,17 +817,43 @@ model Conversation {
   emailAccount   EmailAccount @relation(fields: [emailAccountId], references: [id], onDelete: Cascade)
   emailAccountId String
 
-  messages  EmailMessage[]
-  hasUnread Boolean        @default(false)
+  messages EmailMessage[]
+
+  lastMessageAt DateTime?
+  lastInboundAt DateTime?
 
   archivedAt DateTime?
   deletedAt  DateTime?
+
+  userStates ConversationUserState[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([emailAccountId])
   @@index([contactEmail])
+}
+
+/// Personal read and star state for a conversation. A missing row means the
+/// user has never read the conversation. Archiving and deletion stay on
+/// `Conversation` because they describe the shared item (ADR-0025).
+model ConversationUserState {
+  id String @id @default(uuid())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId String
+
+  lastReadAt DateTime?
+  starredAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, conversationId])
+  @@index([userId])
 }
 
 model EmailMessage {
