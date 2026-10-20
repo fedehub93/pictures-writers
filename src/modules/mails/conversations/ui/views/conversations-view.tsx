@@ -22,9 +22,10 @@ import {
   useMarkConversationUnread,
   useSetConversationStarred,
 } from "../../hooks/use-conversation-actions";
-import { useMarkReadOnOpen } from "../../hooks/use-mark-read-on-open";
 import { useConversation, useConversations } from "../../hooks/use-conversations";
-import { type ConversationView } from "../../schemas";
+import { useMailboxCounts } from "../../hooks/use-mailbox-counts";
+import { useMarkReadOnOpen } from "../../hooks/use-mark-read-on-open";
+import { useSentMessages } from "../../hooks/use-sent-messages";
 import { AccountSelector } from "../components/account-selector";
 import { ConversationActions } from "../components/conversation-actions";
 import { ConversationDetail } from "../components/conversation-detail";
@@ -32,7 +33,12 @@ import { ConversationListPanel } from "../components/conversation-list-panel";
 import { ConversationReadMenu } from "../components/conversation-read-menu";
 import { ReplyComposer } from "../components/composer/reply-composer";
 import { NewMessagePanel } from "../components/composer/new-message-panel";
-import { MailboxNav } from "../components/mailbox-nav";
+import { MailboxNav, type MailboxView } from "../components/mailbox-nav";
+import { SentMessagesPanel } from "../components/sent-messages-panel";
+import {
+  resetMailboxInteraction,
+  type MailboxSelection,
+} from "./mailbox-interaction";
 
 export const ConversationsView = () => {
   const { data: accounts } = useSuspenseAllowedEmailAccounts();
@@ -57,15 +63,12 @@ export const ConversationsView = () => {
     return defaultAccountId;
   }, [preferredAccountId, accounts, defaultAccountId]);
 
-  const [view, setView] = useState<ConversationView>("inbox");
+  const [view, setView] = useState<MailboxView>("inbox");
   const [isComposing, setIsComposing] = useState(false);
 
   // The open thread is tracked with its account, so switching accounts clears
   // it without a synchronising effect.
-  const [selection, setSelection] = useState<{
-    accountId?: string;
-    conversationId?: string;
-  }>({});
+  const [selection, setSelection] = useState<MailboxSelection>({});
   const [replyingTo, setReplyingTo] = useState<string>();
 
   const selectedConversationId =
@@ -76,17 +79,24 @@ export const ConversationsView = () => {
   const inboxQuery = useConversations(selectedAccountId, "inbox");
   const starredQuery = useConversations(selectedAccountId, "starred");
   const archivedQuery = useConversations(selectedAccountId, "archived");
-  const activeQuery = {
+  const trashQuery = useConversations(selectedAccountId, "trash");
+  const conversationQueries = {
     inbox: inboxQuery,
     starred: starredQuery,
     archived: archivedQuery,
-  }[view];
+    trash: trashQuery,
+  };
+  const sentQuery = useSentMessages(selectedAccountId, view === "sent");
+  const sentMessages = sentQuery.data ?? [];
 
-  const conversations = activeQuery.data ?? [];
-  const inboxUnreadCount = (inboxQuery.data ?? []).filter(
-    (conversation) => conversation.isUnread,
-  ).length;
-  const archivedCount = archivedQuery.data?.length ?? 0;
+  // Counts come from SQL rather than from the loaded lists, so they include
+  // conversations beyond the first page and refresh with the polling hook.
+  const { data: counts } = useMailboxCounts();
+  const selectedCounts = counts?.accounts.find(
+    (account) => account.emailAccountId === selectedAccountId,
+  );
+  const inboxUnreadCount = selectedCounts?.unread ?? 0;
+  const archivedCount = selectedCounts?.archived ?? 0;
 
   const { data: conversation, isLoading: isLoadingConversation } =
     useConversation(selectedConversationId);
@@ -156,18 +166,30 @@ export const ConversationsView = () => {
     setReplyingTo(undefined);
   };
 
-  const handleAccountChange = (accountId: string) => {
-    setPreferredAccountId(accountId);
-    setSelection({});
-    setIsComposing(false);
-    setReplyingTo(undefined);
+  const resetInteraction = () => {
+    const next = resetMailboxInteraction();
+    setSelection(next.selection);
+    setIsComposing(next.isComposing);
+    setReplyingTo(next.replyingTo);
   };
 
-  const handleViewChange = (next: ConversationView) => {
+  const handleAccountChange = (accountId: string) => {
+    setPreferredAccountId(accountId);
+    resetInteraction();
+  };
+
+  const handleViewChange = (next: MailboxView) => {
     setView(next);
-    setSelection({});
+    resetInteraction();
+  };
+
+  const selectConversation = (conversationId: string) => {
     setIsComposing(false);
     setReplyingTo(undefined);
+    setSelection({
+      accountId: selectedAccountId,
+      conversationId,
+    });
   };
 
   const startCompose = () => {
@@ -179,6 +201,14 @@ export const ConversationsView = () => {
     closeConversation();
     setIsComposing(false);
   };
+
+  const accountSelector = (
+    <AccountSelector
+      accounts={accounts}
+      value={selectedAccountId}
+      onChange={handleAccountChange}
+    />
+  );
 
   return (
     <div className="flex h-full min-h-0 flex-1 gap-4 overflow-hidden p-4">
@@ -201,34 +231,39 @@ export const ConversationsView = () => {
             : "flex w-full",
         )}
       >
-        <ConversationListPanel
-          key={`${selectedAccountId}-${view}`}
-          conversations={conversations}
-          isLoading={activeQuery.isLoading}
-          selectedId={selectedConversationId}
-          onMarkRead={handleMarkRead}
-          onMarkUnread={handleMarkUnread}
-          onToggleStar={handleToggleStar}
-          onSelect={(conversationId) => {
-            setIsComposing(false);
-            setReplyingTo(undefined);
-            setSelection({
-              accountId: selectedAccountId,
-              conversationId,
-            });
-          }}
-          lastUpdatedAt={activeQuery.dataUpdatedAt}
-          isRefreshing={activeQuery.isFetching && !activeQuery.isLoading}
-          onRefresh={() => void activeQuery.refetch()}
-          onCompose={startCompose}
-          accountSelector={
-            <AccountSelector
-              accounts={accounts}
-              value={selectedAccountId}
-              onChange={handleAccountChange}
-            />
-          }
-        />
+        {view === "sent" ? (
+          <SentMessagesPanel
+            key={`${selectedAccountId}-sent`}
+            messages={sentMessages}
+            isLoading={sentQuery.isLoading}
+            onOpen={selectConversation}
+            lastUpdatedAt={sentQuery.dataUpdatedAt}
+            isRefreshing={sentQuery.isFetching && !sentQuery.isLoading}
+            onRefresh={() => void sentQuery.refetch()}
+            onCompose={startCompose}
+            accountSelector={accountSelector}
+          />
+        ) : (
+          <ConversationListPanel
+            key={`${selectedAccountId}-${view}`}
+            conversations={conversationQueries[view].data ?? []}
+            isLoading={conversationQueries[view].isLoading}
+            selectedId={selectedConversationId}
+            onMarkRead={handleMarkRead}
+            onMarkUnread={handleMarkUnread}
+            onToggleStar={handleToggleStar}
+            onSelect={view === "trash" ? undefined : selectConversation}
+            showActions={view !== "trash"}
+            lastUpdatedAt={conversationQueries[view].dataUpdatedAt}
+            isRefreshing={
+              conversationQueries[view].isFetching &&
+              !conversationQueries[view].isLoading
+            }
+            onRefresh={() => void conversationQueries[view].refetch()}
+            onCompose={startCompose}
+            accountSelector={accountSelector}
+          />
+        )}
       </div>
 
       <section

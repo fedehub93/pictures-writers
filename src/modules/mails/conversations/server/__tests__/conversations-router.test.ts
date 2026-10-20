@@ -129,6 +129,7 @@ async function createMessage(
     fromAddress: string;
     toAddresses: string[];
     sentAt: Date;
+    createdAt: Date;
   }> = {},
   attachments: { filename: string; contentType: string; url: string }[] = [],
 ) {
@@ -147,6 +148,7 @@ async function createMessage(
       ccAddresses: [],
       bccAddresses: [],
       sentAt,
+      createdAt: overrides.createdAt ?? sentAt,
       attachments: attachments.length
         ? { create: attachments }
         : undefined,
@@ -272,6 +274,61 @@ describe("conversationsRouter", () => {
 
       expect(inbox.map((c) => c.id)).toEqual([active.id]);
       expect(archive.map((c) => c.id)).toEqual([archived.id]);
+    });
+
+    it("lists only trashed conversations, most recently deleted first", async () => {
+      const account = await createAccount([userId]);
+      await createConversation(account.id);
+      const deletedEarlier = await createConversation(account.id, {
+        deletedAt: new Date("2026-10-17T10:00:00.000Z"),
+        lastMessageAt: new Date("2026-10-17T12:00:00.000Z"),
+      });
+      const deletedLater = await createConversation(account.id, {
+        deletedAt: new Date("2026-10-17T11:00:00.000Z"),
+        lastMessageAt: new Date("2026-10-17T09:00:00.000Z"),
+      });
+
+      const trash = await caller.getMany({
+        emailAccountId: account.id,
+        view: "trash",
+      });
+      const inbox = await caller.getMany({ emailAccountId: account.id });
+
+      expect(trash.map((conversation) => conversation.id)).toEqual([
+        deletedLater.id,
+        deletedEarlier.id,
+      ]);
+      expect(inbox.map((conversation) => conversation.id)).not.toContain(
+        deletedEarlier.id,
+      );
+    });
+
+    it("excludes trashed conversations from Starred and Archive", async () => {
+      const account = await createAccount([userId]);
+      const starredThenTrashed = await createConversation(account.id);
+      await caller.setStarred({ id: starredThenTrashed.id, starred: true });
+      const archivedThenTrashed = await createConversation(account.id, {
+        archivedAt: new Date("2026-10-17T10:00:00.000Z"),
+      });
+      const deletedAt = new Date("2026-10-17T11:00:00.000Z");
+      await db.conversation.updateMany({
+        where: {
+          id: { in: [starredThenTrashed.id, archivedThenTrashed.id] },
+        },
+        data: { deletedAt },
+      });
+
+      const starred = await caller.getMany({
+        emailAccountId: account.id,
+        view: "starred",
+      });
+      const archived = await caller.getMany({
+        emailAccountId: account.id,
+        view: "archived",
+      });
+
+      expect(starred).toHaveLength(0);
+      expect(archived).toHaveLength(0);
     });
 
     it("flags the last message when it carries attachments", async () => {
@@ -479,6 +536,114 @@ describe("conversationsRouter", () => {
           where: { conversationId: conversation.id },
         }),
       ).toBe(0);
+    });
+  });
+
+  describe("getSentMessages", () => {
+    it("returns outbound messages newest first, with recipients and attachment hints", async () => {
+      const account = await createAccount([userId]);
+      const conversation = await createConversation(account.id);
+      await createMessage(conversation.id, {
+        direction: "INBOUND",
+        subject: "Inbound message",
+        sentAt: new Date("2026-10-17T12:00:00.000Z"),
+      });
+      const older = await createMessage(conversation.id, {
+        direction: "OUTBOUND",
+        subject: "Older outbound",
+        bodyText: "Older body",
+        toAddresses: ["first@example.com"],
+        // A delayed send: creation order, not `sentAt`, must decide the list.
+        sentAt: new Date("2026-10-17T12:30:00.000Z"),
+        createdAt: new Date("2026-10-17T10:00:00.000Z"),
+      });
+      const newer = await createMessage(
+        conversation.id,
+        {
+          direction: "OUTBOUND",
+          subject: "Newer outbound",
+          bodyText: "Newer body",
+          toAddresses: ["second@example.com"],
+          sentAt: new Date("2026-10-17T11:00:00.000Z"),
+          createdAt: new Date("2026-10-17T11:00:00.000Z"),
+        },
+        [
+          {
+            filename: "quote.pdf",
+            contentType: "application/pdf",
+            url: "https://files/quote.pdf",
+          },
+        ],
+      );
+
+      const result = await caller.getSentMessages({
+        emailAccountId: account.id,
+      });
+
+      expect(result.map((message) => message.id)).toEqual([newer.id, older.id]);
+      expect(result[0]).toMatchObject({
+        conversationId: conversation.id,
+        subject: "Newer outbound",
+        recipients: ["second@example.com"],
+        snippet: "Newer body",
+      });
+      expect(result[0]!.attachments).toHaveLength(1);
+      expect(result[1]!.attachments).toHaveLength(0);
+    });
+
+    it("excludes outbound messages in trashed conversations", async () => {
+      const account = await createAccount([userId]);
+      const active = await createConversation(account.id);
+      const trashed = await createConversation(account.id, {
+        deletedAt: new Date("2026-10-17T10:00:00.000Z"),
+      });
+      const visible = await createMessage(active.id, {
+        direction: "OUTBOUND",
+        subject: "Visible",
+        sentAt: new Date("2026-10-17T10:00:00.000Z"),
+      });
+      await createMessage(trashed.id, {
+        direction: "OUTBOUND",
+        subject: "Trashed",
+        sentAt: new Date("2026-10-17T11:00:00.000Z"),
+      });
+
+      const result = await caller.getSentMessages({
+        emailAccountId: account.id,
+      });
+
+      expect(result.map((message) => message.id)).toEqual([visible.id]);
+    });
+
+    it("excludes outbound messages from other accounts", async () => {
+      const account = await createAccount([userId]);
+      const other = await createAccount([userId]);
+      const mine = await createConversation(account.id);
+      const theirs = await createConversation(other.id);
+      const visible = await createMessage(mine.id, {
+        direction: "OUTBOUND",
+        sentAt: new Date("2026-10-17T10:00:00.000Z"),
+      });
+      await createMessage(theirs.id, {
+        direction: "OUTBOUND",
+        sentAt: new Date("2026-10-17T11:00:00.000Z"),
+      });
+
+      const result = await caller.getSentMessages({
+        emailAccountId: account.id,
+      });
+
+      expect(result.map((message) => message.id)).toEqual([visible.id]);
+    });
+
+    it("rejects an account the user is not assigned to", async () => {
+      const account = await createAccount();
+      const conversation = await createConversation(account.id);
+      await createMessage(conversation.id, { direction: "OUTBOUND" });
+
+      await expect(
+        caller.getSentMessages({ emailAccountId: account.id }),
+      ).rejects.toThrow();
     });
   });
 

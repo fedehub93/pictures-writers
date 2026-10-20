@@ -14,3 +14,13 @@ export function invalidateConversationLists(
     queryKey: trpc.conversations.getMany.queryKey(),
   });
 }
+
+/** Sent lists by account; a send or a trash changes their rows. */
+export function invalidateSentMessages(
+  queryClient: ReturnType<typeof useQueryClient>,
+  trpc: ReturnType<typeof useTRPC>,
+) {
+  queryClient.invalidateQueries({
+    queryKey: trpc.conversations.getSentMessages.queryKey(),
+  });
+}

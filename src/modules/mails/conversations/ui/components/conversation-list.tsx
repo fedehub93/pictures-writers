@@ -19,7 +19,8 @@ interface ConversationListProps {
   conversations: ConversationListItemType[];
   isLoading: boolean;
   selectedId?: string;
-  onSelect: (id: string) => void;
+  onSelect?: (id: string) => void;
+  showActions?: boolean;
   onMarkRead?: (id: string) => void;
   onMarkUnread?: (id: string) => void;
   onToggleStar?: (id: string, starred: boolean) => void;
@@ -32,6 +33,7 @@ export const ConversationList = ({
   isLoading,
   selectedId,
   onSelect,
+  showActions = true,
   onMarkRead,
   onMarkUnread,
   onToggleStar,
@@ -65,6 +67,7 @@ export const ConversationList = ({
             conversation={conversation}
             isSelected={conversation.id === selectedId}
             onSelect={onSelect}
+            showActions={showActions}
             onMarkRead={onMarkRead}
             onMarkUnread={onMarkUnread}
             onToggleStar={onToggleStar}

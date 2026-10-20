@@ -2,7 +2,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useTRPC } from "@/trpc/client";
 
-import { invalidateConversationLists } from "./invalidate-conversation-lists";
+import {
+  invalidateConversationLists,
+  invalidateSentMessages,
+} from "./invalidate-conversation-lists";
 
 /**
  * Send a reply inside a conversation. On success both the open thread and the
@@ -22,8 +25,9 @@ export const useSendReply = () => {
         queryClient.invalidateQueries(
           trpc.conversations.getCounts.queryFilter(),
         );
-        // Every mailbox view is refreshed so the lists and counts stay exact.
+        // Every mailbox and sent view is refreshed so the lists stay exact.
         invalidateConversationLists(queryClient, trpc);
+        invalidateSentMessages(queryClient, trpc);
       },
     }),
   );

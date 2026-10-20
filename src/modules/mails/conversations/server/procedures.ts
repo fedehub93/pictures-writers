@@ -26,9 +26,19 @@ import {
   conversationNewMessageSchema,
   conversationSendSchema,
   conversationStarSchema,
+  sentMessagesSchema,
   type ConversationView,
 } from "../schemas";
 import { assertAccountAccess } from "./access";
+
+const messageAttachmentSelect = {
+  select: { id: true, filename: true, contentType: true },
+  orderBy: { createdAt: "asc" as const },
+  take: 3,
+} satisfies Pick<
+  Prisma.EmailMessage$attachmentsArgs,
+  "select" | "orderBy" | "take"
+>;
 
 const listMessageSelect = {
   subject: true,
@@ -37,11 +47,19 @@ const listMessageSelect = {
   direction: true,
   sentAt: true,
   createdAt: true,
-  attachments: {
-    select: { id: true, filename: true, contentType: true },
-    orderBy: { createdAt: "asc" as const },
-    take: 3,
-  },
+  attachments: messageAttachmentSelect,
+} satisfies Prisma.EmailMessageSelect;
+
+const sentMessageSelect = {
+  id: true,
+  conversationId: true,
+  subject: true,
+  bodyText: true,
+  bodyHtml: true,
+  toAddresses: true,
+  sentAt: true,
+  createdAt: true,
+  attachments: messageAttachmentSelect,
 } satisfies Prisma.EmailMessageSelect;
 
 /**
@@ -84,6 +102,8 @@ function viewWhere(
         deletedAt: null,
         userStates: { some: { userId, starredAt: { not: null } } },
       };
+    case "trash":
+      return { deletedAt: { not: null } };
     case "inbox":
       return { deletedAt: null, archivedAt: null };
     default: {
@@ -166,12 +186,18 @@ export const conversationsRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       await assertAccountAccess(ctx.auth.id, input.emailAccountId);
 
+      const view = input.view ?? "inbox";
       const conversations = await db.conversation.findMany({
         where: {
           emailAccountId: input.emailAccountId,
-          ...viewWhere(ctx.auth.id, input.view ?? "inbox"),
+          ...viewWhere(ctx.auth.id, view),
         },
-        orderBy: [{ lastMessageAt: { sort: "desc", nulls: "last" } }],
+        // Trash is a deletion log, so it is ordered by when each thread was
+        // trashed rather than by its last message.
+        orderBy:
+          view === "trash"
+            ? [{ deletedAt: { sort: "desc", nulls: "last" } }]
+            : [{ lastMessageAt: { sort: "desc", nulls: "last" } }],
         include: {
           messages: {
             orderBy: { createdAt: "desc" },
@@ -214,6 +240,37 @@ export const conversationsRouter = createTRPCRouter({
             : null,
         };
       });
+    }),
+
+  /** Outbound messages for one account, newest send first. */
+  getSentMessages: permissionProcedure(PERMISSIONS.MAIL_READ)
+    .input(sentMessagesSchema)
+    .query(async ({ ctx, input }) => {
+      await assertAccountAccess(ctx.auth.id, input.emailAccountId);
+
+      const messages = await db.emailMessage.findMany({
+        where: {
+          direction: "OUTBOUND",
+          // A trashed conversation no longer has a reachable thread, so its
+          // sent messages leave the Sent view with it.
+          conversation: {
+            emailAccountId: input.emailAccountId,
+            deletedAt: null,
+          },
+        },
+        orderBy: [{ createdAt: "desc" }],
+        select: sentMessageSelect,
+      });
+
+      return messages.map((message) => ({
+        id: message.id,
+        conversationId: message.conversationId,
+        subject: message.subject,
+        recipients: message.toAddresses,
+        snippet: messagePreview(message),
+        sentAt: message.sentAt ?? message.createdAt,
+        attachments: message.attachments,
+      }));
     }),
 
   /**
@@ -459,7 +516,7 @@ export const conversationsRouter = createTRPCRouter({
       });
     }),
 
-  /** Soft-delete a conversation; a future trash view can surface `deletedAt`. */
+  /** Soft-delete a conversation into Trash. */
   remove: permissionProcedure(PERMISSIONS.MAIL_READ)
     .input(conversationIdSchema)
     .mutation(async ({ ctx, input }) => {

@@ -2,7 +2,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useTRPC } from "@/trpc/client";
 
-import { invalidateConversationLists } from "./invalidate-conversation-lists";
+import {
+  invalidateConversationLists,
+  invalidateSentMessages,
+} from "./invalidate-conversation-lists";
 
 /**
  * Send a brand-new one-to-one message. On success the mailbox lists are
@@ -14,7 +17,10 @@ export const useSendNewMessage = () => {
 
   return useMutation(
     trpc.conversations.sendNew.mutationOptions({
-      onSuccess: () => invalidateConversationLists(queryClient, trpc),
+      onSuccess: () => {
+        invalidateConversationLists(queryClient, trpc);
+        invalidateSentMessages(queryClient, trpc);
+      },
     }),
   );
 };

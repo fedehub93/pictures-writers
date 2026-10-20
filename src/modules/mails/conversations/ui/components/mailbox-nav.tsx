@@ -4,7 +4,9 @@ import {
   ArchiveIcon,
   InboxIcon,
   PenSquareIcon,
+  SendIcon,
   StarIcon,
+  Trash2Icon,
   type LucideIcon,
 } from "lucide-react";
 
@@ -16,12 +18,15 @@ import { type EmailAccountAllowed } from "@/modules/mails/accounts/types";
 import { type ConversationView } from "../../schemas";
 import { AccountSelector } from "./account-selector";
 
+/** UI views include Sent, which is a message list rather than a conversation list. */
+export type MailboxView = ConversationView | "sent";
+
 interface MailboxNavProps {
   accounts: EmailAccountAllowed[];
   accountId?: string;
   onAccountChange: (id: string) => void;
-  view: ConversationView;
-  onViewChange: (view: ConversationView) => void;
+  view: MailboxView;
+  onViewChange: (view: MailboxView) => void;
   inboxUnreadCount: number;
   archivedCount: number;
   onCompose: () => void;
@@ -67,30 +72,50 @@ export const MailboxNav = ({
         />
       </div>
 
-      <nav className="flex flex-col gap-1">
-        <span className="px-2 pb-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-          Mailbox
-        </span>
-        <MailboxNavItem
-          icon={InboxIcon}
-          label="Inbox"
-          count={inboxUnreadCount}
-          active={view === "inbox"}
-          onClick={() => onViewChange("inbox")}
-        />
-        <MailboxNavItem
-          icon={StarIcon}
-          label="Starred"
-          active={view === "starred"}
-          onClick={() => onViewChange("starred")}
-        />
-        <MailboxNavItem
-          icon={ArchiveIcon}
-          label="Archived"
-          count={archivedCount}
-          active={view === "archived"}
-          onClick={() => onViewChange("archived")}
-        />
+      <nav className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1">
+          <span className="px-2 pb-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+            Mailbox
+          </span>
+          <MailboxNavItem
+            icon={InboxIcon}
+            label="Inbox"
+            count={inboxUnreadCount}
+            active={view === "inbox"}
+            onClick={() => onViewChange("inbox")}
+          />
+          <MailboxNavItem
+            icon={SendIcon}
+            label="Sent"
+            active={view === "sent"}
+            onClick={() => onViewChange("sent")}
+          />
+          <MailboxNavItem
+            icon={Trash2Icon}
+            label="Trash"
+            active={view === "trash"}
+            onClick={() => onViewChange("trash")}
+          />
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <span className="px-2 pb-1 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+            Filtered
+          </span>
+          <MailboxNavItem
+            icon={StarIcon}
+            label="Starred"
+            active={view === "starred"}
+            onClick={() => onViewChange("starred")}
+          />
+          <MailboxNavItem
+            icon={ArchiveIcon}
+            label="Archive"
+            count={archivedCount}
+            active={view === "archived"}
+            onClick={() => onViewChange("archived")}
+          />
+        </div>
       </nav>
     </aside>
   );

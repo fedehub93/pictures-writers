@@ -7,6 +7,11 @@ export type ConversationsGetMany =
 
 export type ConversationListItem = ConversationsGetMany[number];
 
+export type SentMessagesGetMany =
+  inferRouterOutputs<AppRouter>["conversations"]["getSentMessages"];
+
+export type SentMessageListItem = SentMessagesGetMany[number];
+
 export type ConversationGetOne =
   inferRouterOutputs<AppRouter>["conversations"]["getOne"];
 

@@ -2,7 +2,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useTRPC } from "@/trpc/client";
 
-import { invalidateConversationLists } from "./invalidate-conversation-lists";
+import {
+  invalidateConversationLists,
+  invalidateSentMessages,
+} from "./invalidate-conversation-lists";
 
 /** Read state affects every list view, the counts and the open conversation. */
 function invalidateReadState(
@@ -52,6 +55,7 @@ export const useRemoveConversation = () => {
           trpc.conversations.getCounts.queryFilter(),
         );
         invalidateConversationLists(queryClient, trpc);
+        invalidateSentMessages(queryClient, trpc);
       },
     }),
   );

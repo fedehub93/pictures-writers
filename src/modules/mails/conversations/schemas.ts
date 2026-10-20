@@ -4,6 +4,7 @@ export const conversationViewSchema = z.enum([
   "inbox",
   "starred",
   "archived",
+  "trash",
 ]);
 
 export type ConversationView = z.infer<typeof conversationViewSchema>;
@@ -17,6 +18,14 @@ export const conversationListSchema = z.object({
 });
 
 export type ConversationListInput = z.infer<typeof conversationListSchema>;
+
+export const sentMessagesSchema = z.object({
+  emailAccountId: z
+    .string()
+    .min(1, { error: "An email account is required" }),
+});
+
+export type SentMessagesInput = z.infer<typeof sentMessagesSchema>;
 
 export const conversationGetOneSchema = z.object({
   id: z.string().min(1, { error: "Id is required" }),

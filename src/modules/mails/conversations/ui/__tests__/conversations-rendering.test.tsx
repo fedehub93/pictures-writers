@@ -4,9 +4,11 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { ConversationDetail } from "../components/conversation-detail";
 import { ConversationList } from "../components/conversation-list";
 import { MailboxNav } from "../components/mailbox-nav";
+import { SentMessageList } from "../components/sent-message-list";
 import {
   type ConversationGetOne,
   type ConversationListItem,
+  type SentMessageListItem,
 } from "../../types";
 
 const noop = () => {};
@@ -121,24 +123,75 @@ describe("inbox rendering", () => {
 });
 
 describe("mailbox navigation", () => {
-  it("offers Starred alongside the inbox and archive views", () => {
+  it("groups mailbox and filtered views with their canonical labels", () => {
     const html = renderToStaticMarkup(
       <MailboxNav
         accounts={[]}
         view="inbox"
         onViewChange={noop}
         onAccountChange={noop}
-        inboxUnreadCount={0}
-        archivedCount={0}
+        inboxUnreadCount={4}
+        archivedCount={2}
         onCompose={noop}
       />,
     );
 
+    expect(html).toContain("Mailbox");
     expect(html).toContain("Inbox");
+    expect(html).toContain("Sent");
+    expect(html).toContain("Trash");
+    expect(html).toContain("Filtered");
     expect(html).toContain("Starred");
-    expect(html).toContain("Archived");
+    expect(html).toContain("Archive");
+    expect(html).not.toContain("Archived");
     expect(html).not.toContain("Important");
     expect(html).not.toContain("Flagged");
+    expect(html).toContain(">4<");
+    expect(html).toContain(">2<");
+  });
+});
+
+const sentMessages: SentMessageListItem[] = [
+  {
+    id: "message-1",
+    conversationId: "conversation-1",
+    subject: "Re: Invoice",
+    recipients: ["client@example.com"],
+    snippet: "Here is the quote you asked for",
+    sentAt: new Date("2026-10-17T11:58:00.000Z"),
+    attachments: [
+      {
+        id: "attachment-1",
+        filename: "quote.pdf",
+        contentType: "application/pdf",
+      },
+    ],
+  },
+];
+
+describe("sent message list rendering", () => {
+  it("renders outbound messages with recipients, subject, preview and attachments", () => {
+    const html = renderToStaticMarkup(
+      <SentMessageList
+        messages={sentMessages}
+        isLoading={false}
+        onOpen={noop}
+      />,
+    );
+
+    expect(html).toContain("client@example.com");
+    expect(html).toContain("Re: Invoice");
+    expect(html).toContain("Here is the quote you asked for");
+    expect(html).toContain("quote.pdf");
+    expect(html).toContain('aria-label="Open conversation"');
+  });
+
+  it("shows an empty state when nothing was sent", () => {
+    const html = renderToStaticMarkup(
+      <SentMessageList messages={[]} isLoading={false} onOpen={noop} />,
+    );
+
+    expect(html).toContain("No sent messages");
   });
 });
 
