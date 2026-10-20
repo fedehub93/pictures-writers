@@ -18,8 +18,10 @@ import {
 import { useSuspenseAllowedEmailAccounts } from "@/modules/mails/accounts";
 
 import {
+  useDeleteConversationForever,
   useMarkConversationRead,
   useMarkConversationUnread,
+  useRestoreConversation,
   useSetConversationStarred,
 } from "../../hooks/use-conversation-actions";
 import { useConversation, useConversations } from "../../hooks/use-conversations";
@@ -104,6 +106,8 @@ export const ConversationsView = () => {
   const markRead = useMarkConversationRead();
   const markUnread = useMarkConversationUnread();
   const setStarred = useSetConversationStarred();
+  const restore = useRestoreConversation();
+  const deleteForever = useDeleteConversationForever();
 
   // Opening a visible conversation, and new inbound mail while it is open,
   // marks it read. A manual "mark unread" is left alone until the next inbound
@@ -125,6 +129,26 @@ export const ConversationsView = () => {
     setStarred.mutate(
       { id, starred },
       { onError: (error) => toast.error(error.message) },
+    );
+  };
+
+  const handleRestore = (id: string) => {
+    restore.mutate(
+      { id },
+      {
+        onSuccess: () => toast.success("Conversation restored"),
+        onError: (error) => toast.error(error.message),
+      },
+    );
+  };
+
+  const handleDeleteForever = (id: string) => {
+    deleteForever.mutate(
+      { id },
+      {
+        onSuccess: () => toast.success("Conversation permanently deleted"),
+        onError: (error) => toast.error(error.message),
+      },
     );
   };
 
@@ -252,6 +276,10 @@ export const ConversationsView = () => {
             onMarkRead={handleMarkRead}
             onMarkUnread={handleMarkUnread}
             onToggleStar={handleToggleStar}
+            onRestore={view === "trash" ? handleRestore : undefined}
+            onDeleteForever={
+              view === "trash" ? handleDeleteForever : undefined
+            }
             onSelect={view === "trash" ? undefined : selectConversation}
             showActions={view !== "trash"}
             lastUpdatedAt={conversationQueries[view].dataUpdatedAt}

@@ -24,6 +24,8 @@ interface ConversationListProps {
   onMarkRead?: (id: string) => void;
   onMarkUnread?: (id: string) => void;
   onToggleStar?: (id: string, starred: boolean) => void;
+  onRestore?: (id: string) => void;
+  onDeleteForever?: (id: string) => void;
   emptyTitle?: string;
   emptyDescription?: string;
 }
@@ -37,6 +39,8 @@ export const ConversationList = ({
   onMarkRead,
   onMarkUnread,
   onToggleStar,
+  onRestore,
+  onDeleteForever,
   emptyTitle = "No conversations",
   emptyDescription = "Inbound and outbound messages for this account appear here.",
 }: ConversationListProps) => {
@@ -71,6 +75,8 @@ export const ConversationList = ({
             onMarkRead={onMarkRead}
             onMarkUnread={onMarkUnread}
             onToggleStar={onToggleStar}
+            onRestore={onRestore}
+            onDeleteForever={onDeleteForever}
           />
         ))}
       </div>

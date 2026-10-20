@@ -8,6 +8,7 @@ import { formatRelativeTime } from "../../lib/format";
 import { type ConversationListItem as ConversationListItemType } from "../../types";
 import { ContactAvatar } from "./contact-avatar";
 import { ConversationReadMenu } from "./conversation-read-menu";
+import { ConversationTrashMenu } from "./conversation-trash-menu";
 import { StarBadge } from "./star-badge";
 
 interface ConversationListItemProps {
@@ -19,6 +20,9 @@ interface ConversationListItemProps {
   onMarkRead?: (id: string) => void;
   onMarkUnread?: (id: string) => void;
   onToggleStar?: (id: string, starred: boolean) => void;
+  /** Trash-only actions. When present, they replace the read/star menu. */
+  onRestore?: (id: string) => void;
+  onDeleteForever?: (id: string) => void;
 }
 
 export const ConversationListItem = ({
@@ -29,6 +33,8 @@ export const ConversationListItem = ({
   onMarkRead,
   onMarkUnread,
   onToggleStar,
+  onRestore,
+  onDeleteForever,
 }: ConversationListItemProps) => {
   const displayName = conversation.contactName ?? conversation.contactEmail;
   const { lastMessage } = conversation;
@@ -123,7 +129,13 @@ export const ConversationListItem = ({
       </div>
       </button>
 
-      {showActions && (
+      {onRestore && onDeleteForever ? (
+        <ConversationTrashMenu
+          conversation={conversation}
+          onRestore={() => onRestore(conversation.id)}
+          onDeleteForever={() => onDeleteForever(conversation.id)}
+        />
+      ) : showActions ? (
         <ConversationReadMenu
           isUnread={conversation.isUnread}
           isStarred={conversation.isStarred}
@@ -135,7 +147,7 @@ export const ConversationListItem = ({
               : undefined
           }
         />
-      )}
+      ) : null}
     </div>
   );
 };

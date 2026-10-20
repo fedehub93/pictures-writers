@@ -42,7 +42,7 @@ export const AccountSelector = ({
             {selected?.name ?? "Select an account"}
           </span>
           {selected?.email && (
-            <span className="w-full truncate text-[10px] tracking-tight text-muted-foreground">
+            <span className="w-full truncate text-xs tracking-tight text-muted-foreground">
               {selected.email}
             </span>
           )}

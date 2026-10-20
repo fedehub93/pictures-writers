@@ -41,6 +41,7 @@ vi.mock("@/modules/mails/conversations/lib/handle-inbound-email", () => ({
 vi.mock("@/modules/mails/conversations/lib/attachment-storage", () => ({
   createUploadThingStorage: vi.fn(() => ({
     store: vi.fn(async () => ({ url: "https://storage.test/file" })),
+    delete: vi.fn(),
   })),
 }));
 

@@ -7,6 +7,7 @@ import { db } from "@/shared/lib/db";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 
+import { createUploadThingStorage } from "../lib/attachment-storage";
 import { messagePreview, splitName } from "../lib/format";
 import {
   NewMessageError,
@@ -72,6 +73,37 @@ async function getActiveConversation<T extends Prisma.ConversationSelect>(
 ): Promise<Prisma.ConversationGetPayload<{ select: T }>> {
   const conversation = await db.conversation.findFirst({
     where: { id, deletedAt: null },
+    select,
+  });
+
+  if (!conversation) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Conversation not found",
+    });
+  }
+
+  return conversation;
+}
+
+/**
+ * Load a trashed conversation with the requested fields. Deletion and restore
+ * are only valid from Trash, and a conversation on an account the caller cannot
+ * access is indistinguishable from a missing one.
+ */
+async function getTrashedConversation<T extends Prisma.ConversationSelect>(
+  userId: string,
+  id: string,
+  select: T,
+): Promise<Prisma.ConversationGetPayload<{ select: T }>> {
+  const conversation = await db.conversation.findFirst({
+    where: {
+      id,
+      deletedAt: { not: null },
+      emailAccount: {
+        userPermissions: { some: { userId } },
+      },
+    },
     select,
   });
 
@@ -529,6 +561,74 @@ export const conversationsRouter = createTRPCRouter({
         where: { id: input.id },
         data: { deletedAt: new Date() },
       });
+
+      return { id: input.id };
+    }),
+
+  /**
+   * Restore a trashed conversation. `archivedAt` is untouched, so an archived
+   * thread returns to Archive and every other thread returns to the Inbox.
+   */
+  restore: permissionProcedure(PERMISSIONS.MAIL_READ)
+    .input(conversationIdSchema)
+    .mutation(async ({ ctx, input }) => {
+      await getTrashedConversation(ctx.auth.id, input.id, { id: true });
+
+      return db.conversation.update({
+        where: { id: input.id },
+        data: { deletedAt: null },
+        select: { id: true },
+      });
+    }),
+
+  /**
+   * Permanently delete a trashed conversation. The delete re-checks the Trash
+   * state so a conversation restored concurrently is not destroyed, and stored
+   * attachment files are removed best-effort afterwards: a storage failure must
+   * not keep the rows alive.
+   */
+  deleteForever: permissionProcedure(PERMISSIONS.MAIL_READ)
+    .input(conversationIdSchema)
+    .mutation(async ({ ctx, input }) => {
+      const conversation = await getTrashedConversation(ctx.auth.id, input.id, {
+        id: true,
+        messages: {
+          select: { attachments: { select: { url: true } } },
+        },
+      });
+
+      const attachmentUrls = conversation.messages.flatMap((message) =>
+        message.attachments.map((attachment) => attachment.url),
+      );
+
+      const deleted = await db.conversation.deleteMany({
+        where: {
+          id: input.id,
+          deletedAt: { not: null },
+          emailAccount: {
+            userPermissions: { some: { userId: ctx.auth.id } },
+          },
+        },
+      });
+
+      if (deleted.count === 0) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Conversation not found",
+        });
+      }
+
+      if (attachmentUrls.length > 0) {
+        try {
+          await createUploadThingStorage().delete(attachmentUrls);
+        } catch (error) {
+          console.error(
+            "[CONVERSATIONS] attachment cleanup failed",
+            { conversationId: input.id },
+            error,
+          );
+        }
+      }
 
       return { id: input.id };
     }),

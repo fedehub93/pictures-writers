@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import { ConversationDetail } from "../components/conversation-detail";
 import { ConversationList } from "../components/conversation-list";
+import { deleteForeverTitle } from "../components/conversation-trash-menu";
 import { MailboxNav } from "../components/mailbox-nav";
 import { SentMessageList } from "../components/sent-message-list";
 import {
@@ -119,6 +120,29 @@ describe("inbox rendering", () => {
     expect(html).toContain('aria-label="Starred"');
     expect(html).not.toContain("Important");
     expect(html).not.toContain("Flagged");
+  });
+});
+
+describe("trash actions", () => {
+  it("renders restore and permanent delete actions on trash rows", () => {
+    const html = renderToStaticMarkup(
+      <ConversationList
+        conversations={[readConversation]}
+        isLoading={false}
+        showActions={false}
+        onRestore={noop}
+        onDeleteForever={noop}
+      />,
+    );
+
+    expect(html).toContain('aria-label="Trash actions"');
+    expect(html).not.toContain('aria-label="Conversation actions"');
+  });
+
+  it("names the conversation in the permanent delete confirmation", () => {
+    expect(deleteForeverTitle("Jessica Ball")).toBe(
+      "Permanently delete conversation with Jessica Ball?",
+    );
   });
 });
 

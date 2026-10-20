@@ -20,6 +20,21 @@ function invalidateReadState(
   );
 }
 
+/**
+ * Trashing, restoring or permanently deleting drops the cached detail and
+ * changes every list, the counts and the Sent view.
+ */
+function invalidateAfterLifecycleChange(
+  queryClient: ReturnType<typeof useQueryClient>,
+  trpc: ReturnType<typeof useTRPC>,
+  id: string,
+) {
+  queryClient.removeQueries(trpc.conversations.getOne.queryFilter({ id }));
+  queryClient.invalidateQueries(trpc.conversations.getCounts.queryFilter());
+  invalidateConversationLists(queryClient, trpc);
+  invalidateSentMessages(queryClient, trpc);
+}
+
 /** Archive or unarchive a conversation. */
 export const useSetConversationArchived = () => {
   const trpc = useTRPC();
@@ -47,16 +62,8 @@ export const useRemoveConversation = () => {
 
   return useMutation(
     trpc.conversations.remove.mutationOptions({
-      onSuccess: (data) => {
-        queryClient.removeQueries(
-          trpc.conversations.getOne.queryFilter({ id: data.id }),
-        );
-        queryClient.invalidateQueries(
-          trpc.conversations.getCounts.queryFilter(),
-        );
-        invalidateConversationLists(queryClient, trpc);
-        invalidateSentMessages(queryClient, trpc);
-      },
+      onSuccess: (data) =>
+        invalidateAfterLifecycleChange(queryClient, trpc, data.id),
     }),
   );
 };
@@ -98,6 +105,32 @@ export const useSetConversationStarred = () => {
           trpc.conversations.getOne.queryFilter({ id: data.id }),
         );
       },
+    }),
+  );
+};
+
+/** Restore a trashed conversation to the Inbox, or to Archive if archived. */
+export const useRestoreConversation = () => {
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    trpc.conversations.restore.mutationOptions({
+      onSuccess: (data) =>
+        invalidateAfterLifecycleChange(queryClient, trpc, data.id),
+    }),
+  );
+};
+
+/** Permanently delete a trashed conversation and its stored attachments. */
+export const useDeleteConversationForever = () => {
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    trpc.conversations.deleteForever.mutationOptions({
+      onSuccess: (data) =>
+        invalidateAfterLifecycleChange(queryClient, trpc, data.id),
     }),
   );
 };

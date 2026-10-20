@@ -80,6 +80,7 @@ function makeStorage(): {
         stored.push(params);
         return { url: `https://storage.test/${params.filename}` };
       },
+      async delete() {},
     },
   };
 }

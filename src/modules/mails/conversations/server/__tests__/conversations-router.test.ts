@@ -56,6 +56,20 @@ vi.mock("@/modules/mails/conversations/lib/send-new-message", () => {
   return { NewMessageError, sendNewMessage: sendNewMessageMock };
 });
 
+// Permanent deletion removes stored attachment files through the storage
+// adapter. The network call is replaced so the router test can assert the
+// cleanup without reaching UploadThing.
+const { attachmentStorageMock } = vi.hoisted(() => ({
+  attachmentStorageMock: {
+    store: vi.fn(),
+    delete: vi.fn(),
+  },
+}));
+
+vi.mock("@/modules/mails/conversations/lib/attachment-storage", () => ({
+  createUploadThingStorage: () => attachmentStorageMock,
+}));
+
 import { createCallerFactory } from "@/trpc/init";
 
 import { db } from "@/shared/lib/db";
@@ -172,6 +186,9 @@ beforeEach(async () => {
   contactIds.length = 0;
   sendConversationMessageMock.mockReset();
   sendNewMessageMock.mockReset();
+  attachmentStorageMock.store.mockReset();
+  attachmentStorageMock.delete.mockReset();
+  attachmentStorageMock.delete.mockResolvedValue(undefined);
 
   const user = await createUser();
   userId = user.id;
@@ -1156,6 +1173,193 @@ describe("conversationsRouter", () => {
       const conversation = await createConversation(account.id);
 
       await expect(caller.remove({ id: conversation.id })).rejects.toThrow();
+    });
+  });
+
+  describe("restore", () => {
+    it("returns a trashed conversation to the inbox", async () => {
+      const account = await createAccount([userId]);
+      const conversation = await createConversation(account.id, {
+        deletedAt: new Date("2026-10-17T11:00:00.000Z"),
+      });
+
+      await caller.restore({ id: conversation.id });
+
+      const stored = await db.conversation.findUniqueOrThrow({
+        where: { id: conversation.id },
+      });
+      expect(stored.deletedAt).toBeNull();
+
+      const inbox = await caller.getMany({ emailAccountId: account.id });
+      expect(inbox.map((row) => row.id)).toEqual([conversation.id]);
+
+      const trash = await caller.getMany({
+        emailAccountId: account.id,
+        view: "trash",
+      });
+      expect(trash).toHaveLength(0);
+    });
+
+    it("returns an archived conversation to the Archive", async () => {
+      const account = await createAccount([userId]);
+      const conversation = await createConversation(account.id, {
+        deletedAt: new Date("2026-10-17T11:00:00.000Z"),
+        archivedAt: new Date("2026-10-17T09:00:00.000Z"),
+      });
+
+      await caller.restore({ id: conversation.id });
+
+      const archive = await caller.getMany({
+        emailAccountId: account.id,
+        view: "archived",
+      });
+      const inbox = await caller.getMany({ emailAccountId: account.id });
+
+      expect(archive.map((row) => row.id)).toEqual([conversation.id]);
+      expect(inbox).toHaveLength(0);
+    });
+
+    it("rejects an active conversation as missing", async () => {
+      const account = await createAccount([userId]);
+      const conversation = await createConversation(account.id);
+
+      await expect(
+        caller.restore({ id: conversation.id }),
+      ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    });
+
+    it("rejects a conversation on an account the user is not assigned to", async () => {
+      const account = await createAccount();
+      const conversation = await createConversation(account.id, {
+        deletedAt: new Date("2026-10-17T11:00:00.000Z"),
+      });
+
+      await expect(
+        caller.restore({ id: conversation.id }),
+      ).rejects.toMatchObject({ code: "NOT_FOUND" });
+
+      const stored = await db.conversation.findUniqueOrThrow({
+        where: { id: conversation.id },
+      });
+      expect(stored.deletedAt).not.toBeNull();
+    });
+  });
+
+  describe("deleteForever", () => {
+    it("hard-deletes the conversation with its messages and attachments", async () => {
+      const account = await createAccount([userId]);
+      const conversation = await createConversation(account.id, {
+        deletedAt: new Date("2026-10-17T11:00:00.000Z"),
+      });
+      await createMessage(conversation.id, {}, [
+        {
+          filename: "invoice.pdf",
+          contentType: "application/pdf",
+          url: "https://files/invoice.pdf",
+        },
+      ]);
+
+      const result = await caller.deleteForever({ id: conversation.id });
+
+      expect(result).toEqual({ id: conversation.id });
+      expect(
+        await db.conversation.findUnique({ where: { id: conversation.id } }),
+      ).toBeNull();
+      expect(
+        await db.emailMessage.count({
+          where: { conversationId: conversation.id },
+        }),
+      ).toBe(0);
+      expect(
+        await db.emailAttachment.count({
+          where: { emailMessage: { conversationId: conversation.id } },
+        }),
+      ).toBe(0);
+    });
+
+    it("attempts to remove stored attachment files", async () => {
+      const account = await createAccount([userId]);
+      const conversation = await createConversation(account.id, {
+        deletedAt: new Date("2026-10-17T11:00:00.000Z"),
+      });
+      await createMessage(conversation.id, {}, [
+        {
+          filename: "one.pdf",
+          contentType: "application/pdf",
+          url: "https://files/one.pdf",
+        },
+        {
+          filename: "two.pdf",
+          contentType: "application/pdf",
+          url: "https://files/two.pdf",
+        },
+      ]);
+
+      await caller.deleteForever({ id: conversation.id });
+
+      expect(attachmentStorageMock.delete).toHaveBeenCalledWith([
+        "https://files/one.pdf",
+        "https://files/two.pdf",
+      ]);
+    });
+
+    it("deletes the rows even when storage cleanup fails", async () => {
+      const account = await createAccount([userId]);
+      const conversation = await createConversation(account.id, {
+        deletedAt: new Date("2026-10-17T11:00:00.000Z"),
+      });
+      await createMessage(conversation.id, {}, [
+        {
+          filename: "stuck.pdf",
+          contentType: "application/pdf",
+          url: "https://files/stuck.pdf",
+        },
+      ]);
+      attachmentStorageMock.delete.mockRejectedValue(
+        new Error("storage unavailable"),
+      );
+      const consoleError = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => undefined);
+
+      await expect(
+        caller.deleteForever({ id: conversation.id }),
+      ).resolves.toEqual({ id: conversation.id });
+
+      expect(
+        await db.conversation.findUnique({ where: { id: conversation.id } }),
+      ).toBeNull();
+      consoleError.mockRestore();
+    });
+
+    it("rejects an active conversation without deleting it", async () => {
+      const account = await createAccount([userId]);
+      const conversation = await createConversation(account.id);
+
+      await expect(
+        caller.deleteForever({ id: conversation.id }),
+      ).rejects.toMatchObject({ code: "NOT_FOUND" });
+
+      expect(
+        await db.conversation.findUnique({ where: { id: conversation.id } }),
+      ).not.toBeNull();
+      expect(attachmentStorageMock.delete).not.toHaveBeenCalled();
+    });
+
+    it("rejects a conversation on an account the user is not assigned to", async () => {
+      const account = await createAccount();
+      const conversation = await createConversation(account.id, {
+        deletedAt: new Date("2026-10-17T11:00:00.000Z"),
+      });
+
+      await expect(
+        caller.deleteForever({ id: conversation.id }),
+      ).rejects.toMatchObject({ code: "NOT_FOUND" });
+
+      expect(
+        await db.conversation.findUnique({ where: { id: conversation.id } }),
+      ).not.toBeNull();
+      expect(attachmentStorageMock.delete).not.toHaveBeenCalled();
     });
   });
 
