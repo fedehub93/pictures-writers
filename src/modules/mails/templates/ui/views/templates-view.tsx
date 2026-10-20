@@ -4,8 +4,6 @@ import { ContentHeader } from "@/app/(admin)/_components/content/content-header"
 import { LoadingState } from "@/shared/components/loading-state";
 import { ErrorState } from "@/shared/components/error-state";
 
-import { MAIL_SECTIONS } from "@/modules/mails/lib/sections";
-
 import { useSuspenseTemplates } from "../../hooks/use-templates";
 
 import { CreateTemplateDialog } from "../components/create-template-dialog";
@@ -22,7 +20,7 @@ export const TemplatesView = () => {
         <ContentHeader
           label="Email Templates"
           totalEntries={data.length}
-          section={MAIL_SECTIONS.marketing}
+          section="Marketing"
         />
         <DataTable columns={columns} data={data} />
       </div>

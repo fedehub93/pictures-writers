@@ -5,8 +5,6 @@ import { ContentHeader } from "@/app/(admin)/_components/content/content-header"
 import { LoadingState } from "@/shared/components/loading-state";
 import { ErrorState } from "@/shared/components/error-state";
 
-import { MAIL_SECTIONS } from "@/modules/mails/lib/sections";
-
 import { DataTable } from "../components/data-table";
 import { columns } from "../components/columns";
 
@@ -22,7 +20,7 @@ export const ContactsView = ({ audienceId }: { audienceId: string }) => {
         <ContentHeader
           label="Contacts"
           totalEntries={data.length}
-          section={MAIL_SECTIONS.marketing}
+          section="Marketing"
         />
         <DataTable audienceId={audienceId} columns={columns} data={data} />
       </div>

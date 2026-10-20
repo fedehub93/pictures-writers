@@ -115,7 +115,7 @@ export const AudiencesAction = ({
               Edit
             </DropdownMenuItem>
           )}
-          <Link href={`/admin/mails/marketing/audiences/${id}/contacts`}>
+          <Link href={`/admin/marketing/audiences/${id}/contacts`}>
             <DropdownMenuItem>
               <EyeIcon />
               View contacts

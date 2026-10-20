@@ -18,7 +18,7 @@ export function buildScheduledActionUrl(
     case SCHEDULER_TARGET_TYPES.POST_ROOT:
       return `/admin/posts/${targetId}`;
     case SCHEDULER_TARGET_TYPES.EMAIL_SINGLE_SEND:
-      return `/admin/mails/marketing/single-sends/${targetId}`;
+      return `/admin/marketing/single-sends/${targetId}`;
     default:
       return "";
   }

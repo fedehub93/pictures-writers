@@ -613,3 +613,39 @@
 .react-grid-layout .react-grid-item > .react-resizable-handle::after {
   border-color: var(--muted-foreground);
 }
+
+/* Admin sidebar: the scrollbar is a thin rail whose thumb only appears while
+   the pointer is over the sidebar content or it has keyboard focus. WebKit
+   keeps the 6px rail reserved, so growing the nav never shifts the content. */
+[data-slot="sidebar-content"] {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+[data-slot="sidebar-content"]:hover,
+[data-slot="sidebar-content"]:focus-within {
+  scrollbar-color: color-mix(in oklab, var(--muted-foreground) 40%, transparent)
+    transparent;
+}
+
+[data-slot="sidebar-content"]::-webkit-scrollbar {
+  width: 6px;
+}
+
+[data-slot="sidebar-content"]::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+[data-slot="sidebar-content"]::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background-color: transparent;
+}
+
+[data-slot="sidebar-content"]:hover::-webkit-scrollbar-thumb,
+[data-slot="sidebar-content"]:focus-within::-webkit-scrollbar-thumb {
+  background-color: color-mix(
+    in oklab,
+    var(--muted-foreground) 40%,
+    transparent
+  );
+}

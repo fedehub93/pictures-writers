@@ -22,7 +22,7 @@ export const CreateTemplateDialog = () => {
     >
       <TemplateForm
         onSuccess={(id?: string) => {
-          router.push(`/admin/mails/marketing/templates/${id}`);
+          router.push(`/admin/marketing/templates/${id}`);
           onClose();
         }}
         onCancel={() => onClose()}

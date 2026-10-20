@@ -56,7 +56,7 @@ export const columns = columnHelper.columns([
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <Link href={`/admin/mails/marketing/single-sends/${id}`}>
+            <Link href={`/admin/marketing/single-sends/${id}`}>
               <DropdownMenuItem>
                 <PencilIcon />
                 Edit

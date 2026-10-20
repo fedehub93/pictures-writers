@@ -5,8 +5,6 @@ import { ContentHeader } from "@/app/(admin)/_components/content/content-header"
 import { LoadingState } from "@/shared/components/loading-state";
 import { ErrorState } from "@/shared/components/error-state";
 
-import { MAIL_SECTIONS } from "@/modules/mails/lib/sections";
-
 import { EmailAccountDialog } from "../components/account-dialog";
 import { DataTable } from "../components/data-table";
 import { columns } from "../components/columns";
@@ -23,7 +21,7 @@ export const EmailAccountsView = () => {
         <ContentHeader
           label="Email Accounts"
           totalEntries={data.length}
-          section={MAIL_SECTIONS.conversations}
+          section="Settings"
         />
         <DataTable columns={columns} data={data} />
       </div>

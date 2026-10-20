@@ -69,7 +69,7 @@ export const TemplateEditorForm = ({ template }: EmailEditorFormProps) => {
       onSuccess: () => {
         queryClient.invalidateQueries(trpc.templates.getMany.queryOptions());
         toast.success("Template deleted successfully!");
-        router.push("/admin/mails/marketing/templates");
+        router.push("/admin/marketing/templates");
         router.refresh();
       },
       onError: (error) => {

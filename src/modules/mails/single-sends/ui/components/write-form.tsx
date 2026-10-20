@@ -125,7 +125,7 @@ export const WriteForm = ({ singleSend }: WriteFormProps) => {
       onSuccess: () => {
         queryClient.invalidateQueries(trpc.singleSends.getMany.queryOptions());
 
-        router.push(`/admin/mails/marketing/single-sends`);
+        router.push(`/admin/marketing/single-sends`);
       },
     }),
   );

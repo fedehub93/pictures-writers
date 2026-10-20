@@ -8,7 +8,7 @@ import { cn } from "@/shared/lib/utils";
 
 const routes: {label:string, href: Route}[] = [
   {
-    label: "Main",
+    label: "General",
     href: "/admin/settings/main",
   },
   {

@@ -13,7 +13,7 @@ import {
   EmailAccountsViewLoading,
 } from "@/modules/mails/accounts/ui/views/accounts-view";
 
-export const metadata: Metadata = { title: "Accounts · Conversations" };
+export const metadata: Metadata = { title: "Email accounts" };
 
 const EmailAccountsPage = async () => {
   await requireAdminAuth();

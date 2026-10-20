@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import {
   Sidebar,
@@ -16,7 +17,7 @@ import {
 import Logo from "@/shared/components/logo";
 
 import { NavMain } from "./nav-main";
-import { filterNavData, navData } from "./nav-data";
+import { filterNavData, getActiveNavUrl, navData } from "./nav-data";
 
 export function AppSidebar({
   permissionKeys,
@@ -24,7 +25,9 @@ export function AppSidebar({
 }: React.ComponentProps<typeof Sidebar> & {
   permissionKeys: readonly string[];
 }) {
+  const pathname = usePathname();
   const visibleData = filterNavData(navData, permissionKeys);
+  const activeUrl = getActiveNavUrl(visibleData, pathname);
 
   return (
     <Sidebar {...props}>
@@ -45,18 +48,14 @@ export function AppSidebar({
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {visibleData.navMain.length > 0 && (
-          <NavMain label="Blog" items={visibleData.navMain} />
-        )}
-        {visibleData.shop.length > 0 && (
-          <NavMain label="Shop" items={visibleData.shop} />
-        )}
-        {visibleData.tools.length > 0 && (
-          <NavMain label="Tools" items={visibleData.tools} />
-        )}
-        {visibleData.others.length > 0 && (
-          <NavMain label="Others" items={visibleData.others} />
-        )}
+        {visibleData.map((section) => (
+          <NavMain
+            key={section.label ?? section.items[0]?.title}
+            label={section.label}
+            items={section.items}
+            activeUrl={activeUrl}
+          />
+        ))}
       </SidebarContent>
       <SidebarRail />
     </Sidebar>

@@ -13,9 +13,9 @@ import {
   ConversationsViewLoading,
 } from "@/modules/mails/conversations/ui/views/conversations-view";
 
-export const metadata: Metadata = { title: "Inbox · Conversations" };
+export const metadata: Metadata = { title: "Inbox" };
 
-const ConversationsInboxPage = async () => {
+const InboxPage = async () => {
   await requireAdminAuth();
 
   prefetchAllowedEmailAccounts();
@@ -31,4 +31,4 @@ const ConversationsInboxPage = async () => {
   );
 };
 
-export default ConversationsInboxPage;
+export default InboxPage;
