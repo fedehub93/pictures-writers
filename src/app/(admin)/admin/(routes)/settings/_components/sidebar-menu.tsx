@@ -27,10 +27,6 @@ const routes: {label:string, href: Route}[] = [
     label: "Languages",
     href: "/admin/settings/languages",
   },
-  {
-    label: "Database",
-    href: "/admin/settings/database",
-  },
 ];
 
 export const SidebarMenu = () => {
