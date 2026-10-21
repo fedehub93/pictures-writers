@@ -3,7 +3,6 @@ import { Suspense } from "react";
 import { Figtree } from "next/font/google";
 import { GoogleTagManager } from "@next/third-parties/google";
 import HolyLoader from "holy-loader";
-import Script from "next/script";
 
 import "./home.css";
 import "@/puck/styles/puck-base.css";
@@ -80,10 +79,6 @@ export default async function RootLayout({
         {process.env.NODE_ENV === "production" && (
           <AppScripts scripts={settings.scripts} />
         )}
-        <Script
-          src={`https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`}
-          strategy="beforeInteractive"
-        />
       </body>
       {process.env.NODE_ENV === "production" && (
         <>
