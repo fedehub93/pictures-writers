@@ -153,7 +153,7 @@ Le citazioni di terze parti governano le **raccomandazioni**. Portfolio, non una
 
 Google non li richiede per AI Overviews; ChatGPT/Claude/Perplexity e gli agenti d'acquisto sì. Implementati in questa fase (§7.1):
 
-- **`/robots.txt`** — policy esplicita per i crawler AI (GPTBot, ChatGPT-User, PerplexityBot, ClaudeBot, anthropic-ai, Google-Extended, Bingbot) + `Content-Usage` come segnale di intento. Il `Disallow` esistente resta invariato.
+- **`/robots.txt`** — policy esplicita per i crawler AI (GPTBot, ChatGPT-User, PerplexityBot, ClaudeBot, anthropic-ai, Google-Extended, Bingbot). Il `Disallow` esistente resta invariato. `Content-Usage` (bozza IETF aipref) è stato rimosso: Google lo segnala come direttiva sconosciuta e nessun crawler lo onora.
 - **`/llms.txt`** — contesto sintetico per gli LLM: cos'è PW, per chi, quando usarla, pagine chiave, servizi.
 - **`/llms-full.txt`** — catalogo completo (post + prodotti + FAQ) in un unico file, una sola richiesta.
 
@@ -169,7 +169,7 @@ Google non li richiede per AI Overviews; ChatGPT/Claude/Perplexity e gli agenti 
 
 | # | File | Modifica |
 |---|------|----------|
-| 1 | `src/app/robots.ts` | Regole esplicite `Allow` per i crawler AI + `Content-Usage` |
+| 1 | `src/app/robots.ts` | Regole esplicite `Allow` per i crawler AI |
 | 2 | `src/app/llms.txt/route.ts` | Nuovo — `llms.txt` dinamico |
 | 3 | `src/app/llms-full.txt/route.ts` | Nuovo — catalogo completo |
 | 4 | `src/app/(home)/_components/seo/json-ld/organization.tsx` | `description`, `contactPoint`, `address` (country) |
