@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Figtree } from "next/font/google";
 import { GoogleTagManager } from "@next/third-parties/google";
 import HolyLoader from "holy-loader";
@@ -21,6 +22,7 @@ import { AppScripts } from "@/shared/components/scripts";
 
 import { OrganizationJsonLd } from "./_components/seo/json-ld/organization";
 import { WebSiteJsonLd } from "./_components/seo/json-ld/website";
+import { PageViewTracker } from "./_components/page-view-tracker";
 
 const figtree = Figtree({ subsets: ["latin"] });
 
@@ -51,6 +53,9 @@ export default async function RootLayout({
     <html lang="it" suppressHydrationWarning>
       <HolyLoader color="var(--primary)" />
       <body className={figtree.className}>
+        <Suspense fallback={null}>
+          <PageViewTracker />
+        </Suspense>
         <OrganizationJsonLd
           name={settings.siteName!}
           url={`${settings.siteUrl!}/`}
