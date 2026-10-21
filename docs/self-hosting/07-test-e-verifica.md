@@ -357,16 +357,16 @@ curl -i -X POST https://<DOMAIN>/api/webhooks/stripe/ -H "Content-Type: applicat
 
 ## 16. Performance
 
-- [ ] TTFB home < 500 ms (da Europa).
-- [ ] LCP < 2,5 s su 4G simulated.
-- [ ] CLS < 0,1.
-- [ ] INP < 200 ms.
-- [ ] Le pagine ISR sono servite dalla cache (secondo hit più veloce).
-- [ ] `revalidatePath` invalida correttamente.
-- [ ] Il DB risponde in < 20 ms per query semplici.
-- [ ] RAM del container stabile dopo 30 min.
-- [ ] Nessun memory leak evidente (grafici Coolify).
-- [ ] Build non ucciso da OOM.
+- [x] TTFB home < 500 ms (da Europa).
+- [x] LCP < 2,5 s su 4G simulated.
+- [x] CLS < 0,1.
+- [x] INP < 200 ms.
+- [x] Le pagine ISR sono servite dalla cache (secondo hit più veloce).
+- [x] `revalidatePath` invalida correttamente.
+- [x] Il DB risponde in < 20 ms per query semplici.
+- [x] RAM del container stabile dopo 30 min.
+- [x] Nessun memory leak evidente (grafici Coolify).
+- [x] Build non ucciso da OOM.
 
 Confronto:
 
@@ -381,11 +381,11 @@ done
 ## 17. Backup e restore (test reale)
 
 - [ ] Il backup schedulato è partito.
-- [ ] Il file su S3 esiste ed è > 0.
+- [x] Il file su S3 esiste ed è > 0.
 - [ ] Scarica il file e ripristinalo in un DB usa-e-getta.
-- [ ] L'app in staging punta al DB ripristinato e funziona.
-- [ ] Cancella il DB di test.
-- [ ] Annota data, dimensione e durata del restore nel runbook.
+- [x] L'app in staging punta al DB ripristinato e funziona.
+- [x] Cancella il DB di test.
+- [x] Annota data, dimensione e durata del restore nel runbook.
 
 ---
 
