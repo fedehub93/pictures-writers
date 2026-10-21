@@ -55,7 +55,7 @@ export const HeroSection = (): JSX.Element => {
               className="object-cover"
               sizes="(max-width: 1023px) 90vw, 35vw"
               src="/hero-section-pana.png"
-              priority
+              preload
             />
           </div>
         </div>

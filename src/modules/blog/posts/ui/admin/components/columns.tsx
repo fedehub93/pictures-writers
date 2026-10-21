@@ -105,7 +105,6 @@ export const columns = columnHelper.columns([
               height={40}
               className="size-10 rounded-full object-cover"
               alt={`Foto profilo ${author.user.email}`}
-              unoptimized
             />
           ))}
         </div>

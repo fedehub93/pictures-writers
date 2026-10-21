@@ -129,7 +129,6 @@ export const MultiSelectSimple = ({
                           height={40}
                           width={40}
                           className="w-10 h-10 object-cover grayscale rounded-full"
-                          unoptimized
                         />
                       )}
                       <span className="text-sm">{o.label}</span>

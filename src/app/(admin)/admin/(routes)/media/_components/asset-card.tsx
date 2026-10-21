@@ -57,7 +57,6 @@ export const AssetCard = ({
             className="object-cover"
             alt={name}
             src={url}
-            unoptimized
           />
         )}
         {type === MediaType.FILE && (

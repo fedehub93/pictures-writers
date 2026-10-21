@@ -68,7 +68,6 @@ export const columns = columnHelper.columns([
             alt={imageCover.altText || ""}
             fill
             className="rounded-md object-contain"
-            unoptimized
           />
         </div>
       );

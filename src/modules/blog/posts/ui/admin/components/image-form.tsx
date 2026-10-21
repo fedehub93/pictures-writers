@@ -157,7 +157,6 @@ export const ImageForm = ({ initialData, rootId, postId }: ImageFormProps) => {
                 fill
                 className="object-cover rounded-md"
                 src={previewMedia.url}
-                unoptimized
               />
             </div>
           </div>

@@ -115,7 +115,6 @@ export const GenericImage = <T extends FieldValues>({
                 fill
                 className="object-cover rounded-md "
                 src={image}
-                unoptimized
               />
             </div>
           </div>

@@ -34,7 +34,6 @@ export const columns = columnHelper.columns([
             alt="Photo profile"
             fill
             className="rounded-md object-cover"
-            unoptimized
           />
         </div>
       );

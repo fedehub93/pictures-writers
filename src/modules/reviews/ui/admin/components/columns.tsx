@@ -70,7 +70,6 @@ export const columns = columnHelper.columns([
                 alt={product.imageCover.altText || "Product Image"}
                 fill
                 className="rounded-md object-contain p-2"
-                unoptimized
               />
             )}
             {!product.imageCover && (

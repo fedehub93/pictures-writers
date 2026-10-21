@@ -163,7 +163,6 @@ export const ProductGalleryForm = ({
                           alt={`${item.mediaId}-${index}`}
                           className="object-cover"
                           fill
-                          unoptimized
                         />
                       )}
                     </div>

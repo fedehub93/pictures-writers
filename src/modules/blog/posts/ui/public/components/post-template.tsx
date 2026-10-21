@@ -50,7 +50,7 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
                 alt={post.imageCover.altText || ""}
                 fill
                 sizes="(max-width:1280px) 90vw, 40vw"
-                priority
+                preload
                 className="blog-post__image"
                 placeholder="blur"
                 blurDataURL={imageWithPlaceholder?.placeholder}

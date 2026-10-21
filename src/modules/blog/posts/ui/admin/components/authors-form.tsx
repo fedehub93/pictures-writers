@@ -232,7 +232,6 @@ export const AuthorsForm = ({
                                   height={40}
                                   width={40}
                                   className="size-10 object-cover grayscale rounded-full"
-                                  unoptimized
                                 />
                               ) : (
                                 <div className="size-10 bg-gray-300 rounded-full shrink-0" />

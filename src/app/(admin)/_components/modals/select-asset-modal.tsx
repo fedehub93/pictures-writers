@@ -99,7 +99,6 @@ export const SelectAssetModal = () => {
                           fill
                           sizes="35vw"
                           className="object-cover rounded-md"
-                          unoptimized
                         />
                       )}
                       {item.type === MediaType.FILE && (

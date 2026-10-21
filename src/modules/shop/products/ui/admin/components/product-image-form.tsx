@@ -151,7 +151,6 @@ export const ProductImageForm = ({
               fill
               className="object-cover rounded-md"
               src={previewMedia.url}
-              unoptimized
             />
           </div>
         )}

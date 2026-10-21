@@ -86,7 +86,6 @@ export const EmbeddedImage = ({
               fill
               className="object-cover rounded-md"
               src={node.attrs.src}
-              unoptimized
             />
           </div>
         </div>

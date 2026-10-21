@@ -264,7 +264,6 @@ export const PostTypeForm = ({
                                             alt={"image"}
                                             fill
                                             className="object-cover"
-                                            unoptimized
                                           />
                                         </div>
                                         <div

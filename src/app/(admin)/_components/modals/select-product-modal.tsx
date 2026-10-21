@@ -89,7 +89,6 @@ export const SelectProductModal = () => {
                           onClick={() => onSelect(item)}
                           fill
                           className="object-contain rounded-md"
-                          unoptimized
                         />
                       </div>
                       <div className="text-sm px-2 line-clamp-2">

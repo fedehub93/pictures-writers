@@ -15,7 +15,9 @@ export const WebinarInfo = async ({
   imageCover,
   tiptapDescription,
 }: WebinarInfoProps) => {
-  const imageWithPlaceholder = await getPlaceholderImage(imageCover?.url!);
+  const imageWithPlaceholder = imageCover?.url
+    ? await getPlaceholderImage(imageCover.url)
+    : null;
 
   return (
     <div className="flex flex-col space-y-4">
@@ -26,10 +28,10 @@ export const WebinarInfo = async ({
             alt={imageCover.altText || ""}
             fill
             sizes="(max-width:1280px) 90vw, 40vw"
-            priority
+            preload
             className="blog-post__image"
             placeholder="blur"
-            blurDataURL={imageWithPlaceholder.placeholder}
+            blurDataURL={imageWithPlaceholder?.placeholder}
           />
         ) : null}
       </div>

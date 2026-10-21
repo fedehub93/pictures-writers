@@ -80,7 +80,6 @@ export const EmbeddedProduct = ({
               alt={productTitle}
               fill
               className="object-cover rounded-md"
-              unoptimized
             />
           </div>
         )}
