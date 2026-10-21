@@ -16,6 +16,15 @@ const DISALLOW = [
 ];
 
 /**
+ * AI usage preferences, per the IETF aipref drafts (`Content-Usage` rule).
+ * Vocabulary is `search`, `ai-use`, `train-ai` with `y`/`n` values — not
+ * Cloudflare's `Content-Signal` (`ai-input`/`ai-train` with `yes`/`no`).
+ * The drafts are not final and crawlers are free to ignore it; Google reports
+ * it as an unknown directive without affecting crawl or indexing.
+ */
+const CONTENT_USAGE = "search=y, ai-use=y, train-ai=y";
+
+/**
  * AI crawlers we explicitly allow. Being cited by AI answers requires these
  * bots to have access: blocking any of them means that engine cannot cite us.
  * `CCBot` (Common Crawl, training-only) is intentionally left to the default
@@ -44,13 +53,16 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
         allow: ["/"],
         disallow: DISALLOW,
         other: {
-          "Content-Usage": "search=yes, ai-input=yes, ai-train=yes",
+          "Content-Usage": CONTENT_USAGE,
         },
       },
       ...AI_CRAWLERS.map((userAgent) => ({
         userAgent,
         allow: ["/"],
         disallow: DISALLOW,
+        other: {
+          "Content-Usage": CONTENT_USAGE,
+        },
       })),
     ],
     sitemap: [`${siteUrl}/sitemap.xml`],
