@@ -5,7 +5,15 @@ import { ProductAcquisitionMode } from "@/generated/prisma";
 import { EbookType } from "@/modules/shop/products/types";
 
 vi.mock("@/app/(home)/_components/modals/free-digital-download-modal", () => ({
-  FreeDigitalDownloadModal: () => <div>generic-download-modal</div>,
+  FreeDigitalDownloadModal: ({
+    content,
+  }: {
+    content?: { children: unknown[] } | null;
+  }) => (
+    <div>
+      generic-download-modal:{String(content?.children.length ?? "no-content")}
+    </div>
+  ),
 }));
 
 import { EbookInfo } from "../ebook-info";
@@ -32,6 +40,36 @@ describe("ebook product page download modal", () => {
     );
 
     expect(html).toContain("generic-download-modal");
+  });
+
+  it("passes the linked form content to the download modal", () => {
+    const html = renderToStaticMarkup(
+      <EbookInfo
+        {...baseProps}
+        formId="form-1"
+        formContent={{
+          id: "root",
+          isContainer: true,
+          type: "Root",
+          properties: {
+            submission: {
+              onSuccess: { type: "toast", successMessage: "Ok" },
+            },
+          },
+          children: [],
+        }}
+      />,
+    );
+
+    expect(html).toContain("generic-download-modal:0");
+  });
+
+  it("falls back to the minimum fields when the form has no builder content", () => {
+    const html = renderToStaticMarkup(
+      <EbookInfo {...baseProps} formId="form-1" formContent={null} />,
+    );
+
+    expect(html).toContain("generic-download-modal:no-content");
   });
 
   it("mounts no download modal when the free ebook has no linked form", () => {

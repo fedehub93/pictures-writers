@@ -6,10 +6,12 @@ import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { CircleAlert, CircleCheck } from "lucide-react";
 import { toast } from "sonner";
 import { sendGTMEvent } from "@next/third-parties/google";
 
 import type { FormActionResponse } from "@/actions/submit-form";
+import { Alert, AlertDescription } from "@/shared/ui/alert";
 
 import type { FormRootInstance } from "../../../types/core";
 
@@ -58,14 +60,16 @@ export function RootFormComponent({
             ? values.email.split("@")[1]
             : "unknown";
 
-        sendGTMEvent({
-          event: gtmEventName,
-          form_type: "form_submission",
-          form_location: "*",
-          page_path: window.location.pathname,
-          page_title: document.title,
-          email_domain: emailDomain,
-        });
+        if (gtmEventName) {
+          sendGTMEvent({
+            event: gtmEventName,
+            form_type: "form_submission",
+            form_location: "*",
+            page_path: window.location.pathname,
+            page_title: document.title,
+            email_domain: emailDomain,
+          });
+        }
         setSuccess(result.message);
 
         if (submission.onSuccess.type === "toast") {
@@ -91,11 +95,17 @@ export function RootFormComponent({
           <FormNodeRenderer key={node.id} node={node} />
         ))}
 
-        {error && <div className="p-4 mb-4 bg-accent rounded">{error}</div>}
+        {error && (
+          <Alert variant="destructive">
+            <CircleAlert />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
         {success && (
-          <div className="p-4 mb-4 bg-primary text-primary-foreground shadow-2xs rounded">
-            {success}
-          </div>
+          <Alert>
+            <CircleCheck />
+            <AlertDescription>{success}</AlertDescription>
+          </Alert>
         )}
       </form>
     </FormProvider>

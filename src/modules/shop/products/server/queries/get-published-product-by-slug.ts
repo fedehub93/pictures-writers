@@ -72,6 +72,13 @@ export const getPublishedProductBySlug = async (slug: string) => {
               lastName: true,
             },
           },
+          form: {
+            select: {
+              id: true,
+              content: true,
+              gtmEventName: true,
+            },
+          },
         },
       },
     },

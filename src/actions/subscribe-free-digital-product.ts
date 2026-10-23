@@ -50,6 +50,12 @@ export const subscribeFreeDigitalProduct = async (
     }
 
     const { email, rootId } = validatedFields.output;
+    // Keep any additional answers a richer lead-magnet form collected, while
+    // enforcing the values the download flow relies on.
+    const submissionData = {
+      ...validatedFields.output,
+      privacyConsent: true,
+    };
 
     // 3. Load the live product and the form that drives the download
     const product = await getPublishedProductByRootId(rootId);
@@ -112,7 +118,7 @@ export const subscribeFreeDigitalProduct = async (
       data: {
         formId: form.id,
         email,
-        data: { email, rootId, privacyConsent: true },
+        data: submissionData,
       },
     });
 
@@ -122,7 +128,7 @@ export const subscribeFreeDigitalProduct = async (
         formId: form.id,
         email,
         contactId: contact.id,
-        data: { email, rootId },
+        data: submissionData,
       });
     } catch (automationError) {
       console.error(

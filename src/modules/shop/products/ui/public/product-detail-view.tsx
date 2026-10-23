@@ -125,6 +125,8 @@ export const ProductDetailView = async ({ product }: ProductDetailViewProps) => 
               rootId={product.rootId!}
               slug={product.slug}
               formId={product.formId}
+              formContent={product.form?.content ?? null}
+              formGtmEventName={product.form?.gtmEventName ?? null}
               title={product.title}
               acquisitionMode={product.acquisitionMode}
               imageCoverUrl={product.imageCover?.url ?? ""}

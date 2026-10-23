@@ -247,6 +247,33 @@ describe("subscribeFreeDigitalProduct", () => {
     expect(version.title).toBe("Workbook gratuito");
   });
 
+  it("keeps extra answers collected by a richer lead-magnet form", async () => {
+    const email = uniqueEmail();
+    const form = await createDownloadForm();
+    const { root } = await createEbookProduct(form.id);
+    await configureDeliveryTemplate();
+
+    const result = await subscribeFreeDigitalProduct(
+      {
+        ...validDownload(root.id, email),
+        nome: "Ada",
+      },
+      "token",
+    );
+
+    expect(result.success).toBe(true);
+
+    const submission = await db.formSubmission.findFirstOrThrow({
+      where: { formId: form.id, email },
+    });
+    expect(submission.data).toMatchObject({
+      email,
+      rootId: root.id,
+      privacyConsent: true,
+      nome: "Ada",
+    });
+  });
+
   it("rejects a product that is not linked to a form", async () => {
     const email = uniqueEmail();
     const { root } = await createEbookProduct(null);

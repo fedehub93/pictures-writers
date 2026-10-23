@@ -17,9 +17,16 @@ export const propertiesSchema = z.object({
 export type PropertiesFormSchemaType = z.infer<typeof propertiesSchema>;
 
 export const buildSchema = ({
+  label,
   validation: { required },
 }: CheckboxFieldProperties): z.ZodType => {
-  let schema = z.boolean().default(false);
+  const schema = z.boolean().default(false);
+
+  if (required) {
+    return schema.refine((value) => value === true, {
+      error: `${label} is required!`,
+    });
+  }
 
   return schema;
 };

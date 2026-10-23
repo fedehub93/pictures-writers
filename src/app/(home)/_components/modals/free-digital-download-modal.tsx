@@ -1,25 +1,23 @@
 "use client";
 
-import { Dispatch, SetStateAction, useState, useTransition } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { Controller, useForm } from "react-hook-form";
-import * as v from "valibot";
-import { valibotResolver } from "@hookform/resolvers/valibot";
-import { CircleAlert, CircleCheck } from "lucide-react";
-import { BeatLoader } from "react-spinners";
-import toast from "react-hot-toast";
+import { CircleCheck } from "lucide-react";
 
 import {
   PRODUCT_DETAIL_PAGE_SOURCE,
   buildDigitalDownloadEvent,
 } from "@/modules/shop/products/lib/digital-download-event";
 import { submitDigitalDownload } from "@/modules/shop/products/lib/digital-download-submission";
-import { FreeDigitalDownloadSchemaValibot } from "@/schemas";
+import {
+  extractFreeDigitalDownloadFields,
+  resolveFreeDigitalDownloadFormContent,
+} from "@/modules/shop/products/lib/free-download-form";
+import { FormRunner } from "@/modules/forms/builder/runner/form-runner";
+import type { FormRootInstance } from "@/modules/forms/builder/types/core";
 import { GoogleRecaptchaV3 } from "@/shared/components/google-recaptchav3";
 import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert";
 import { Button } from "@/shared/ui/button";
-import { Checkbox } from "@/shared/ui/checkbox";
 import {
   Dialog,
   DialogClose,
@@ -29,21 +27,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/ui/dialog";
-import {
-  Field,
-  FieldContent,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/shared/ui/field";
-import { Form } from "@/shared/ui/form";
-import { Input } from "@/shared/ui/input";
 
 import { getCaptchaToken } from "../utils/captcha";
 
 interface FreeDigitalDownloadModalProps {
   rootId: string;
   formId: string;
+  content?: FormRootInstance | null;
+  gtmEventName?: string | null;
   productSlug: string;
   title: string;
   imageCoverUrl: string;
@@ -54,82 +45,60 @@ interface FreeDigitalDownloadModalProps {
 export const FreeDigitalDownloadModal = ({
   rootId,
   formId,
+  content,
+  gtmEventName,
   productSlug,
   title,
   imageCoverUrl,
   isOpen,
   setIsOpen,
 }: FreeDigitalDownloadModalProps) => {
-  const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
-  const [isPending, startTransition] = useTransition();
-  const [isRecaptchaLoading, setIsRecaptchaLoading] = useState(false);
 
-  const form = useForm<v.InferInput<typeof FreeDigitalDownloadSchemaValibot>>({
-    resolver: valibotResolver(FreeDigitalDownloadSchemaValibot),
-    mode: "onChange",
-    defaultValues: {
-      email: "",
-      rootId,
-      privacyConsent: false,
-    },
-  });
-
-  const { isSubmitting, isValid } = form.formState;
+  const resolvedContent = resolveFreeDigitalDownloadFormContent(content);
 
   const onHandleOpenChange = (open: boolean) => {
     setIsOpen(open);
-    setError("");
     setSuccess("");
-
-    if (!open) {
-      form.reset();
-    }
   };
 
-  const onHandleSubmit = (
-    values: v.InferInput<typeof FreeDigitalDownloadSchemaValibot>,
-  ) => {
-    startTransition(async () => {
-      try {
-        setError("");
-        setSuccess("");
+  const onHandleSubmit = async (values: Record<string, unknown>) => {
+    const { email, privacyConsent } = extractFreeDigitalDownloadFields(
+      values,
+      resolvedContent,
+    );
 
-        setIsRecaptchaLoading(true);
-        const recaptchaToken = await getCaptchaToken("subscribe_product");
-        setIsRecaptchaLoading(false);
+    const recaptchaToken = await getCaptchaToken("subscribe_product");
 
-        if (!recaptchaToken) {
-          toast.error("Security verification failed. Please try again.");
-          return;
-        }
+    if (!recaptchaToken) {
+      return {
+        success: false,
+        message: "Security verification failed. Please try again.",
+      };
+    }
 
-        const data = await submitDigitalDownload({
-          values,
-          recaptchaToken,
-          event: buildDigitalDownloadEvent({
-            productId: rootId,
-            productSlug,
-            productName: title,
-            formId,
-            source: PRODUCT_DETAIL_PAGE_SOURCE,
-          }),
-        });
-
-        if (!data.success) {
-          setError(data.message);
-          return;
-        }
-
-        setSuccess(data.message);
-      } catch (_error) {
-        setIsRecaptchaLoading(false);
-        setError(
-          "Qualcosa è andato storto. Prego riprovare o contattare il supporto.",
-        );
-        setSuccess("");
-      }
+    const data = await submitDigitalDownload({
+      values: {
+        ...values,
+        email,
+        rootId,
+        privacyConsent,
+      },
+      recaptchaToken,
+      event: buildDigitalDownloadEvent({
+        productId: rootId,
+        productSlug,
+        productName: title,
+        formId,
+        source: PRODUCT_DETAIL_PAGE_SOURCE,
+      }),
     });
+
+    if (data.success) {
+      setSuccess(data.message);
+    }
+
+    return data;
   };
 
   return (
@@ -157,114 +126,31 @@ export const FreeDigitalDownloadModal = ({
             />
           )}
 
-          {error && (
-            <Alert variant="destructive">
-              <CircleAlert />
-              <AlertTitle>Download non riuscito</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          {success && (
+          {success ? (
             <Alert>
               <CircleCheck />
               <AlertTitle>Controlla la tua email</AlertTitle>
               <AlertDescription>{success}</AlertDescription>
             </Alert>
+          ) : (
+            <>
+              <FormRunner
+                id={formId}
+                onSubmitHandler={onHandleSubmit}
+                content={resolvedContent}
+                gtmEventName={gtmEventName ?? null}
+              />
+              <GoogleRecaptchaV3 />
+            </>
           )}
 
-          {isPending && !success ? <BeatLoader className="mx-auto" /> : null}
-
-          {!isPending && !success && (
-            <Form {...form}>
-              <form
-                className="w-full"
-                onSubmit={form.handleSubmit(onHandleSubmit)}
-              >
-                <FieldGroup>
-                  <Controller
-                    control={form.control}
-                    name="email"
-                    render={({ field, fieldState }) => (
-                      <Field data-invalid={fieldState.invalid}>
-                        <FieldLabel htmlFor="free-digital-download-email">
-                          Email
-                        </FieldLabel>
-                        <Input
-                          {...field}
-                          id="free-digital-download-email"
-                          type="email"
-                          inputMode="email"
-                          autoComplete="email"
-                          placeholder="mario.rossi@gmail.com"
-                          aria-invalid={fieldState.invalid}
-                          disabled={isSubmitting}
-                        />
-                        {fieldState.invalid && (
-                          <FieldError errors={[fieldState.error]} />
-                        )}
-                      </Field>
-                    )}
-                  />
-
-                  <Controller
-                    control={form.control}
-                    name="privacyConsent"
-                    render={({ field, fieldState }) => (
-                      <Field
-                        orientation="horizontal"
-                        data-invalid={fieldState.invalid}
-                      >
-                        <Checkbox
-                          id="free-digital-download-privacy"
-                          checked={field.value === true}
-                          onCheckedChange={(checked) =>
-                            field.onChange(checked === true)
-                          }
-                          aria-invalid={fieldState.invalid}
-                          disabled={isSubmitting}
-                        />
-                        <FieldContent>
-                          <FieldLabel htmlFor="free-digital-download-privacy">
-                            Accetto la{" "}
-                            <Link
-                              href="https://www.iubenda.com/privacy-policy/49078580"
-                              className="text-primary underline"
-                            >
-                              Privacy Policy
-                            </Link>{" "}
-                            di Pictures Writers.
-                          </FieldLabel>
-                          {fieldState.invalid && (
-                            <FieldError errors={[fieldState.error]} />
-                          )}
-                        </FieldContent>
-                      </Field>
-                    )}
-                  />
-
-                  <GoogleRecaptchaV3 />
-
-                  <DialogFooter className="flex-row justify-between gap-2">
-                    <DialogClose asChild className="flex-1">
-                      <Button type="button" variant="outline">
-                        Chiudi
-                      </Button>
-                    </DialogClose>
-                    <Button
-                      className="flex-1"
-                      type="submit"
-                      disabled={
-                        !isValid || isSubmitting || isRecaptchaLoading
-                      }
-                    >
-                      Scarica gratis
-                    </Button>
-                  </DialogFooter>
-                </FieldGroup>
-              </form>
-            </Form>
-          )}
+          <DialogFooter className="w-full flex-row justify-end">
+            <DialogClose asChild>
+              <Button type="button" variant="outline">
+                Chiudi
+              </Button>
+            </DialogClose>
+          </DialogFooter>
         </div>
       </DialogContent>
     </Dialog>

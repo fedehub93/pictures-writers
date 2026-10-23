@@ -10,7 +10,7 @@ export const SubscribeSchemaValibot = v.object({
   email: EmailSchemaValibot,
 });
 
-export const FreeDigitalDownloadSchemaValibot = v.object({
+export const FreeDigitalDownloadSchemaValibot = v.looseObject({
   email: EmailSchemaValibot,
   rootId: v.pipe(v.string(), v.nonEmpty("A product is required.")),
   privacyConsent: v.pipe(

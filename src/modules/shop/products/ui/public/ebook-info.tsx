@@ -7,6 +7,7 @@ import { BookOpenText, CalendarDays, Earth, Weight } from "lucide-react";
 import { Badge } from "@/shared/ui/badge";
 import { Separator } from "@/shared/ui/separator";
 import { formatBytes, formatDate, formatPrice } from "@/lib/format";
+import type { FormRootInstance } from "@/modules/forms/builder/types/core";
 import { EbookFormat } from "@/modules/shop/products/types";
 
 import { FreeDigitalDownloadModal } from "@/app/(home)/_components/modals/free-digital-download-modal";
@@ -18,6 +19,8 @@ interface EbookInfoProps extends PropsWithChildren {
   rootId: string;
   slug: string;
   formId: string | null;
+  formContent?: FormRootInstance | null;
+  formGtmEventName?: string | null;
   title: string;
   imageCoverUrl: string;
   acquisitionMode: ProductAcquisitionMode;
@@ -38,6 +41,8 @@ export const EbookInfo = ({
   rootId,
   slug,
   formId,
+  formContent,
+  formGtmEventName,
   title,
   acquisitionMode,
   imageCoverUrl,
@@ -114,6 +119,8 @@ export const EbookInfo = ({
         <FreeDigitalDownloadModal
           rootId={rootId}
           formId={formId}
+          content={formContent}
+          gtmEventName={formGtmEventName}
           productSlug={slug}
           title={title}
           imageCoverUrl={imageCoverUrl}
