@@ -1,8 +1,10 @@
 import { randomUUID } from "node:crypto";
 
+import { endOfMonth, startOfMonth } from "date-fns";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { cleanupAutomationTables } from "@/modules/automations/lib/cleanup";
+import { submissionsMetric } from "@/modules/forms/submissions/server/metrics";
 import {
   AutomationStatus,
   EmailProvider,
@@ -11,7 +13,10 @@ import {
 } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 import { createProductRoot } from "@/modules/shop/products/lib/__tests__/root-fixtures";
-import { FORM_SUBMITTED_NODE_TYPE } from "@/modules/forms/automations/constants";
+import {
+  FORM_SUBMITTED_NODE_TYPE,
+  FORM_SUBMITTED_TRIGGER_TYPE,
+} from "@/modules/forms/automations/constants";
 
 vi.mock("@/lib/recaptcha", () => ({
   verifyRecaptcha: vi.fn(async () => ({ success: true })),
@@ -223,6 +228,7 @@ describe("subscribeFreeDigitalProduct", () => {
     expect(interaction).not.toBeNull();
 
     const run = await db.automationRun.findFirstOrThrow();
+    expect(run.triggerType).toBe(FORM_SUBMITTED_TRIGGER_TYPE);
     expect(run.payload).toMatchObject({ formId: form.id, email });
 
     expect(sendEmail).toHaveBeenCalledTimes(1);
@@ -339,5 +345,53 @@ describe("subscribeFreeDigitalProduct", () => {
     expect(result.success).toBe(false);
     expect(await db.formSubmission.count({ where: { email } })).toBe(0);
     expect(sendEmail).not.toHaveBeenCalled();
+  });
+
+  it("does not start a Run for an automation scoped to another form", async () => {
+    const email = uniqueEmail();
+    const form = await createDownloadForm();
+    const { root } = await createEbookProduct(form.id);
+    await configureDeliveryTemplate();
+    await publishFormAutomation("some-other-form");
+
+    const result = await subscribeFreeDigitalProduct(
+      validDownload(root.id, email),
+      "token",
+    );
+
+    expect(result.success).toBe(true);
+    expect(await db.automationRun.count()).toBe(0);
+  });
+
+  it("shows downloads in the Form submissions metric, scoped by linked form", async () => {
+    const firstForm = await createDownloadForm("workbook_downloaded");
+    const secondForm = await createDownloadForm("template_downloaded");
+    const first = await createEbookProduct(firstForm.id);
+    const second = await createEbookProduct(secondForm.id);
+    await configureDeliveryTemplate();
+
+    await subscribeFreeDigitalProduct(
+      validDownload(first.root.id, uniqueEmail()),
+      "token",
+    );
+    await subscribeFreeDigitalProduct(
+      validDownload(second.root.id, uniqueEmail()),
+      "token",
+    );
+
+    const from = startOfMonth(new Date());
+    const to = endOfMonth(new Date());
+
+    const allDownloads = await submissionsMetric.timeSeries(from, to, {
+      formIds: [firstForm.id, secondForm.id],
+    });
+    const firstProductDownloads = await submissionsMetric.timeSeries(
+      from,
+      to,
+      { formIds: [firstForm.id] },
+    );
+
+    expect(allDownloads.total).toBe(2);
+    expect(firstProductDownloads.total).toBe(1);
   });
 });

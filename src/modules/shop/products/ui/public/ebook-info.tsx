@@ -9,6 +9,7 @@ import { Separator } from "@/shared/ui/separator";
 import { formatBytes, formatDate, formatPrice } from "@/lib/format";
 import { EbookFormat } from "@/modules/shop/products/types";
 
+import { FreeDigitalDownloadModal } from "@/app/(home)/_components/modals/free-digital-download-modal";
 import { FreeEbookModal } from "@/app/(home)/_components/modals/free-ebook-modal";
 import { BuyButton } from "./buy-button";
 import { BoxInfo } from "./box-info";
@@ -16,6 +17,8 @@ import { ProductAcquisitionMode } from "@/generated/prisma";
 
 interface EbookInfoProps extends PropsWithChildren {
   rootId: string;
+  slug: string;
+  formId: string | null;
   title: string;
   imageCoverUrl: string;
   acquisitionMode: ProductAcquisitionMode;
@@ -34,6 +37,8 @@ interface EbookInfoProps extends PropsWithChildren {
 
 export const EbookInfo = ({
   rootId,
+  slug,
+  formId,
   title,
   acquisitionMode,
   imageCoverUrl,
@@ -106,13 +111,26 @@ export const EbookInfo = ({
         />
       </div>
       <Separator />
-      <FreeEbookModal
-        rootId={rootId}
-        title={title}
-        imageCoverUrl={imageCoverUrl}
-        isOpen={isOpen}
-        setIsOpen={setIsOpen}
-      />
+      {acquisitionMode === ProductAcquisitionMode.FORM &&
+        (formId ? (
+          <FreeDigitalDownloadModal
+            rootId={rootId}
+            formId={formId}
+            productSlug={slug}
+            title={title}
+            imageCoverUrl={imageCoverUrl}
+            isOpen={isOpen}
+            setIsOpen={setIsOpen}
+          />
+        ) : (
+          <FreeEbookModal
+            rootId={rootId}
+            title={title}
+            imageCoverUrl={imageCoverUrl}
+            isOpen={isOpen}
+            setIsOpen={setIsOpen}
+          />
+        ))}
     </div>
   );
 };

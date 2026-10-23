@@ -343,6 +343,21 @@ describe("dashboard.getFormOptions", () => {
     );
   });
 
+  it("lists a lead-magnet form so its downloads can be filtered per product", async () => {
+    const form = await db.form.create({
+      data: {
+        name: `Workbook ${randomUUID()}`,
+        interactionType: "workbook_downloaded",
+      },
+    });
+    formIds.push(form.id);
+
+    permissionKeysByUser.set("with-submissions", [PERMISSIONS.SUBMISSIONS_READ]);
+    const options = await callerFor("with-submissions").getFormOptions();
+
+    expect(options).toContainEqual({ id: form.id, label: form.name });
+  });
+
   it("returns no forms to a user who may not read submissions", async () => {
     permissionKeysByUser.set("no-submissions", []);
 
@@ -398,28 +413,48 @@ describe("dashboard.getMetricSeries", () => {
     ).rejects.toThrow();
   });
 
-  it("scopes a form-submissions series to the requested forms", async () => {
+  it("scopes a form-submissions series to all or one lead-magnet form", async () => {
     permissionKeysByUser.set("submissions", [PERMISSIONS.SUBMISSIONS_READ]);
-    const form = await db.form.create({
-      data: { name: `Scoped ${randomUUID()}` },
-    });
-    formIds.push(form.id);
-    const submission = await db.formSubmission.create({
+    const workbookForm = await db.form.create({
       data: {
-        formId: form.id,
-        data: {},
-        createdAt: new Date("2026-01-15T12:00:00.000Z"),
+        name: `Workbook ${randomUUID()}`,
+        interactionType: "workbook_downloaded",
       },
     });
-    submissionIds.push(submission.id);
+    const templateForm = await db.form.create({
+      data: {
+        name: `Template ${randomUUID()}`,
+        interactionType: "template_downloaded",
+      },
+    });
+    formIds.push(workbookForm.id, templateForm.id);
 
-    const series = await callerFor("submissions").getMetricSeries({
+    for (const formId of [workbookForm.id, templateForm.id]) {
+      const submission = await db.formSubmission.create({
+        data: {
+          formId,
+          data: {},
+          createdAt: new Date("2026-01-15T12:00:00.000Z"),
+        },
+      });
+      submissionIds.push(submission.id);
+    }
+
+    const caller = callerFor("submissions");
+    const allDownloads = await caller.getMetricSeries({
       metricId: "submissions",
       from,
       to,
-      formIds: [form.id],
+      formIds: [workbookForm.id, templateForm.id],
+    });
+    const workbookDownloads = await caller.getMetricSeries({
+      metricId: "submissions",
+      from,
+      to,
+      formIds: [workbookForm.id],
     });
 
-    expect(series.total).toBe(1);
+    expect(allDownloads.total).toBe(2);
+    expect(workbookDownloads.total).toBe(1);
   });
 });

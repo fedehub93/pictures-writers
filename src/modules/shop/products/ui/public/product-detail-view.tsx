@@ -123,6 +123,8 @@ export const ProductDetailView = async ({ product }: ProductDetailViewProps) => 
             <ProductGallery gallery={product.gallery} />
             <EbookInfo
               rootId={product.rootId!}
+              slug={product.slug}
+              formId={product.formId}
               title={product.title}
               acquisitionMode={product.acquisitionMode}
               imageCoverUrl={product.imageCover?.url ?? ""}
