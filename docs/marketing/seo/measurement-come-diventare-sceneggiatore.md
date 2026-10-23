@@ -2,7 +2,7 @@
 
 **Hub page:** `/come-diventare-sceneggiatore-la-guida-definitiva/`
 **Precedente al nuovo articolo:** vedi snapshot baseline al giorno 0 (il post era già indicizzato, va misurato il delta, non è una pagina nuova).
-**Riferimenti:** `.agents/content-strategy.md` §8 (KPI e Metriche) · `.agents/serp-come-diventare-sceneggiatore.md` (deliverable riscrittura) · `.agents/product-marketing.md`.
+**Riferimenti:** `docs/marketing/strategy/content-strategy.md` §8 (KPI e Metriche) · `docs/marketing/seo/serp-come-diventare-sceneggiatore.md` (deliverable riscrittura) · `docs/marketing/strategy/product-marketing.md`.
 
 Le scadenze sono allineate alla *Trimestral Review* della strategy (§8). Obiettivo: distinguere *tecnicità* (da sistemare subito) da *performance* (da valutare a 30/90 giorni).
 

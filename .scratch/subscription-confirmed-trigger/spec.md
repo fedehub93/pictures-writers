@@ -84,4 +84,4 @@ Il modulo `mails` (proprietario di contatti e newsletter) registra un nuovo trig
 
 - ADR: `docs/adr/0007-separate-consent-from-verification.md`.
 - Glossario in `CONTEXT.md` (Contact, Subscriber, Verified address, Confirmation).
-- Riferimenti: `.scratch/hardcoded-forms-in-automations/spec.md` (fuori scope già previsto), `.scratch/automations/issues/09-form-submitted-trigger.md`, `.agents/emails.md` §2/G4.
+- Riferimenti: `.scratch/hardcoded-forms-in-automations/spec.md` (fuori scope già previsto), `.scratch/automations/issues/09-form-submitted-trigger.md`, `docs/marketing/email/emails.md` §2/G4.

@@ -13,7 +13,7 @@ Tutti i componenti vivono in `src/app/(home)/_components/seo/json-ld/` e usano `
 | Pagina | Schema | Componente |
 |---|---|---|
 | Tutto il sito (layout) | WebSite + Organization (`sameAs`) | `website.tsx` |
-| Post blog | BlogPosting + BreadcrumbList + VideoObject (YouTube) | `blog-posting.tsx` |
+| Post blog | BlogPosting + VideoObject (YouTube) · **BreadcrumbList mancante** (verificato sull'HTML live il 22/10) | `blog-posting.tsx` |
 | Blog `/blog/` | ItemList | `item-list.tsx` |
 | Blog `/blog/<page>`/categoria/tag | ItemList | `item-list.tsx` |
 | Pagine prodotto shop | Product + BreadcrumbList + FAQPage | `product.tsx` |

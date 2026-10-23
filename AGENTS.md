@@ -385,3 +385,7 @@ Use the default triage labels: `needs-triage`, `needs-info`, `ready-for-agent`, 
 ### Domain docs
 
 This is a single-context repo using root `CONTEXT.md` and `docs/adr/`. See `docs/agents/domain.md`.
+
+### Marketing & SEO docs
+
+Strategy, content, SEO, email and launch documents live in `docs/marketing/` (they used to sit in `.agents/`). Start from `docs/marketing/README.md` for the map, reading order and current status.

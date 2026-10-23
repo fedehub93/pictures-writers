@@ -3,7 +3,7 @@
 **Document version:** v1
 **Last updated:** 2026-10-06
 **Status:** Copy pronta da inserire in admin (pagina ancora da creare)
-**Riferimenti:** `.agents/launch-individuale.md` (v6), `.agents/newsletter.md` (v10)
+**Riferimenti:** `docs/marketing/launch/launch-individuale.md` (v6), `docs/marketing/email/newsletter.md` (v10)
 
 Contenuto della product page, modellato sulla pagina del gruppo (`/shop/corsi-di-sceneggiatura/laboratorio-di-scrittura-di-un-soggetto/`). Le testimonianze del gruppo sono riusate come prova del **metodo** (identico).
 

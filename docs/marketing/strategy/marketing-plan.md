@@ -1,10 +1,10 @@
-# Pictures Writers — Piano di Marketing v1
+# Pictures Writers — Piano di Marketing v1.1
 
 **Preparato con:** metodologia `marketing-plan` (fCMO / framework AARRR, 13 sezioni)
 **Per:** Federico Verrengia e il team di Pictures Writers
-**Data:** 2026-10-02
+**Data:** 2026-10-02 · **Aggiornato:** 2026-10-22 (stato §3, dato g30 hub 1A)
 **Orizzonte:** ottobre 2026 – settembre 2027
-**Status:** Bozza v1 — per revisione del team
+**Status:** In esecuzione — settimane 3–4 su 12
 
 > Come leggere questo documento. Le sezioni 4–8 (Acquisition, Activation, Retention, Referral, Revenue) dicono *cosa facciamo*. La sezione 12 è il menù completo di *cosa è possibile* (139 tattiche). La sezione 9 è ciò che parte subito. Ogni riferimento interno usa `§N`.
 
@@ -45,7 +45,7 @@ Tutto il resto compone sopra queste sei.
 
 ## 2. Quadro strategico
 
-Questa sezione distilla posizionamento, ICP e voce in una pagina che chiunque del team può leggere per orientarsi. Il dettaglio completo vive in `.agents/product-marketing.md`.
+Questa sezione distilla posizionamento, ICP e voce in una pagina che chiunque del team può leggere per orientarsi. Il dettaglio completo vive in `docs/marketing/strategy/product-marketing.md`.
 
 ### Cos'è Pictures Writers, in una frase
 
@@ -59,7 +59,7 @@ Il frame che definisce la categoria: *le scuole ti vendono un calendario, i free
 
 ### Per chi siamo (ICP distillato)
 
-Sceneggiatori italiani, aspiranti e professionisti. Tre profili (da `.agents/product-marketing.md`):
+Sceneggiatori italiani, aspiranti e professionisti. Tre profili (da `docs/marketing/strategy/product-marketing.md`):
 
 - **Aspirante**: non sa da dove iniziare, informazioni frammentate → vuole un percorso chiaro dalla teoria alla pratica.
 - **Alle prime armi**: ha scritto qualcosa, non sa se è buono, è isolato → vuole un feedback qualificato e costruttivo.
@@ -77,7 +77,7 @@ Vendita diretta di servizi (editing Double View), corsi/laboratori (€300) e pr
 
 ### Voce del brand (non negoziabile)
 
-Da `.agents/product-marketing.md`, valida per ogni sezione e ogni copy:
+Da `docs/marketing/strategy/product-marketing.md`, valida per ogni sezione e ogni copy:
 
 - **Tono:** italiano caldo, professionale ma accessibile, ispirazionale senza essere retorico.
 - **Stile:** diretto e conversazionale, uso del "tu", parole semplici ma precise, niente linguaggio accademico.
@@ -123,7 +123,7 @@ Modello content + commerce one-off (non subscription SaaS). Equivalente: **Fase 
 | Asset | Stato | Leva di marketing |
 |---|---|---|
 | 226 articoli pubblicati (3 categorie, 16 tag) | Live | Base SEO ampia; serve fiocco (hub + interlinking) |
-| Hub 1A "Come scrivere una sceneggiatura" | Riscritto e pubblicato (22/09/2026) | Pillar SEO centrale; baseline 98 impr., 0 click, pos. 10.94 |
+| Hub 1A "Come scrivere una sceneggiatura" | Riscritto e pubblicato (22/09/2026) · **g30 misurato (22/10)** | Pillar SEO centrale; pos. media 18,3→13,1 · CTR 1,01%→1,59% · 4→6 click/28gg · `FAQPage` presente, nessun rich result mostrato (limite di Google, non un difetto) |
 | Hub 1B "Come diventare sceneggiatore" | Riscritto e pubblicato (01/10/2026) | Pillar formazione; struttura SERP-first + FAQ |
 | 800+ iscritti newsletter | Live | Canale proprietario; base di ricavo |
 | 500+ download ebook gratuito | Live | Lead magnet di ingresso funzionante |
@@ -145,8 +145,8 @@ Modello content + commerce one-off (non subscription SaaS). Equivalente: **Fase 
 
 | Elemento | Stato | Blocco |
 |---|---|---|
-| 5 lead magnet (Template Soggetto, Scaletta 6-12-6, Checklist Format, Logline, Calendario Concorsi 2027) | Progettati | Da produrre (PDF + pagina) |
-| Pagina One hub `/pagina-uno` | Progettato | Da creare; link in attesa |
+| 5 lead magnet (Template Soggetto, Scaletta 6-12-6, Checklist Format, Logline, Calendario Concorsi 2027) | LM1 contenuto pronto, 4 da progettare | LM1: impaginare + pagina + form → `docs/marketing/content/lead-magnet-01-template-soggetto.md` |
+| Hub Pagina Uno | **Esiste già** come categoria: `/blog/pagina-uno/` (una sessantina di analisi linkate) | Copy scarno (H1 "Pagina uno", description di quattro parole): da potenziare. Creare un secondo URL `/pagina-uno` rischia duplicazione |
 | Laboratorio 1:1 | Progettato | Naming, date, sistema prenotazione slot |
 | S3 post-acquisto (corso/editing) | Progettato | Gap interazioni G2/G3 |
 | S5 re-engagement | Progettato | Gap interazioni + decisione incentivo |
@@ -161,12 +161,12 @@ Modello content + commerce one-off (non subscription SaaS). Equivalente: **Fase 
 | Nessun lead magnet oltre all'ebook | Il funnel cattura solo dal blog verso un unico asset | Produrre i 5 template (§4, Move 3) |
 | 1:1 senza date/naming/prenotazione | Il prodotto più redditizio resta fermo | Chiudere naming, date, sistema slot (§5, §8) |
 | Prezzo S1-E5 template a €200 vs €300 reale | Email pubblicata con prezzo sbagliato | Riallineare il template a €300 (immediato) |
-| Pagina uno hub non live | Link in sospeso nei due hub; cluster analisi incompleto | Creare `/pagina-uno` (§4) |
+| Hub Pagina Uno con copy scarno | La categoria `/blog/pagina-uno/` esiste e raccoglie una sessantina di analisi, ma H1 e description sono minimi e non presidiano query come "esempi di sceneggiatura". Nessun link in sospeso: entrambi gli hub puntano già alla categoria | Potenziare la categoria esistente, non creare un secondo URL (§4) |
 | Q4 2027 (lug–set) senza calendario | Buco nella programmazione a 9 mesi | Estendere il calendario in Q3 (§10) |
 
 ### Snapshot rubric (17 sezioni) — *scored from materials*
 
-Punteggio 0–5 da materiali esistenti (`.agents/*`), non da audit formale. Federico può contestare qualsiasi voce con dati migliori.
+Punteggio 0–5 da materiali esistenti (`docs/marketing/**`), non da audit formale. Federico può contestare qualsiasi voce con dati migliori.
 
 | # | Sezione | Punteggio | Note |
 |---|---|---|---|
@@ -185,12 +185,26 @@ Punteggio 0–5 da materiali esistenti (`.agents/*`), non da audit formale. Fede
 | 13 | CRO | **2** | Piano e quick win fatti; nessun test eseguito, nessuna strumentazione |
 | 14 | GTM launches | **2** | Laboratori a coorti funzionano; 1:1 non lanciato, nessun playbook riutilizzabile |
 | 15 | Ads | **0** | Nessun paid — riflette il Tier, non una debolezza (da non penalizzare) |
-| 16 | SEO | **3** | Base ampia ma traffico minimo (1.000 utenti/mese, 0 click su hub); cluster in costruzione |
+| 16 | SEO | **3** | Base ampia ma traffico minimo (1.000 utenti/mese); hub 1A a 6 click/28gg e pos. 13; cluster in costruzione |
 | 17 | Internationalization | **1** | Italiano-only, esplicitamente rimandato (§13) |
 
 **Totale: 45 / 85 (53%).**
 
 **Lettura della forma.** Forte su **voce (11), contenuti (7), posizionamento (1)** — la "testa" del brand è solida e distintiva. Debole su **misurazione e conversione (13), onboarding (8), lancio (14) e competitor (6)** — la "coda" operativa che trasforma l'attenzione in ricavi non è ancora cablata. La forma dice esattamente dove va il piano: **Activation + Revenue sono le sezioni più lunghe**, perché lì è il buco più largo. Acquisition resta importante ma è già in gran parte costruita.
+
+### Stato al 2026-10-22 — il piano è a 17 giorni su 90
+
+**Dove si è andati avanti:** contenuti e SEO. Due hub riscritti, fondamenta AI, schema, CRO quick win, S1/S2/S4 live, performance (`next/image`, `page_view` su navigazione).
+
+**Dove si è rimasti indietro:** conversione e misurazione. **Zero lead magnet su 5**, `/pagina-uno` non live, eventi `course_purchased`/`editing_purchased` assenti (S3/S5 bloccate), nessuna baseline lead→cliente.
+
+**Decisione presa il 05/10:** attribuzione offline (Measurement Protocol) parcheggiata — a ~12 ordini/anno è rumore statistico. Non è un debito aperto: è una scelta, con soglia di riapertura a ~20 ordini/mese.
+
+**Dato nuovo (g30 hub 1A, GSC 22/10):** posizione media 18,3→**13,1** · CTR 1,01%→**1,59%** · click 4→**6**/28gg · quota click del cluster 1A sul sito 23,1%→**29,0%**. Il ranking si muove, il volume resta tappato dalla posizione. Dettaglio e soglie del giorno 90 in `docs/marketing/seo/measurement-come-scrivere-una-sceneggiatura.md`.
+
+**Mosse §9 non chiuse (settimane 1–2):** eventi interazione, LM1–LM2, baseline lead→cliente. Avviate: finestra laboratori (8→27/10) e riallineamento del prezzo nel copy (template in automazioni ancora da verificare).
+
+**Prossime tre mosse (novembre, in ordine):** 1) **LM1 Template Soggetto** — sblocca la CTA sugli spoke che già ricevono traffico e alimenta S1, che è live; 2) **categoria `/blog/pagina-uno/`** — title, H1 e description su una pagina che ha già una sessantina di analisi linkate (non creare un secondo URL: duplicherebbe); 3) **S3 post-acquisto**, che si sblocca solo dopo gli eventi di interazione.
 
 ---
 
@@ -214,10 +228,10 @@ Acquisizione quasi interamente organica:
 ### Il piano
 
 **Move 1 — Chiudere i cluster SEO (motore principale).**
-Eseguire il calendario di `.agents/content-strategy.md`: completare i cluster 1A (Come scrivere) e 1B (Formazione) con gli spoke pianificati, creare l'hub `/pagina-uno`, pubblicare 4–6 nuove analisi a trimestre. Regola: ogni spoke linka l'hub e viceversa (interlinking), ogni articolo ha una CTA verso un lead magnet. Obiettivo: portare "sceneggiatura" e "come scrivere una sceneggiatura" dalla posizione ~11 alla pagina 1, e aumentare il CTR da 0%.
+Eseguire il calendario di `docs/marketing/strategy/content-strategy.md`: completare i cluster 1A (Come scrivere) e 1B (Formazione) con gli spoke pianificati, creare l'hub `/pagina-uno`, pubblicare 4–6 nuove analisi a trimestre. Regola: ogni spoke linka l'hub e viceversa (interlinking), ogni articolo ha una CTA verso un lead magnet. Obiettivo: portare "sceneggiatura" e "come scrivere una sceneggiatura" dalla posizione ~11 alla pagina 1, e aumentare il CTR da 0%.
 
 **Move 2 — Chiudere la roadmap AI/agent-readiness (vantaggio asimmetrico).**
-Da `.agents/ai-seo.md` §7.2: (a) answer block da 40–60 parole su 6 pagine chiave; (b) FAQ + `FAQPage` sui hub (non solo prodotti); (c) `/pricing.md` con il listino editing; (d) **dati originali**: il sondaggio "Cosa pensano gli sceneggiatori italiani" → report "Stato della sceneggiatura italiana"; (e) presenza off-site (3 articoli LinkedIn, 3 analisi Pagina Uno su YouTube con trascrizione, 5 pitch podcast). I dati originali sono la mossa a leva più alta: nessun concorrente italiano li ha, e gli LLM citano statistiche (+37%) e fonti (+40%).
+Da `docs/marketing/seo/ai-seo.md` §7.2: (a) answer block da 40–60 parole su 6 pagine chiave; (b) FAQ + `FAQPage` sui hub (non solo prodotti); (c) `/pricing.md` con il listino editing; (d) **dati originali**: il sondaggio "Cosa pensano gli sceneggiatori italiani" → report "Stato della sceneggiatura italiana"; (e) presenza off-site (3 articoli LinkedIn, 3 analisi Pagina Uno su YouTube con trascrizione, 5 pitch podcast). I dati originali sono la mossa a leva più alta: nessun concorrente italiano li ha, e gli LLM citano statistiche (+37%) e fonti (+40%).
 
 **Move 3 — Costruire i 5 lead magnet (carburante del funnel).**
 Template Soggetto, Template Scaletta 6-12-6, Checklist Format, Template Logline, Calendario Concorsi 2027. Ognuno: PDF + pagina di atterraggio + CTA su 2–3 articoli affini. Trasformano il traffico in email, che è l'asset che non dipende dall'algoritmo. Calendario Concorsi è il più "fresco" e ricorrente (aggiornamento annuale).
@@ -264,7 +278,7 @@ Held. Non attivare prima di: (a) conversione pagata attribuita, (b) pagina 1 su 
 
 ### Stato attuale
 
-Il percorso esiste ma ha interruzioni: blog → (widget newsletter / popup / CTA) → ebook/template → email → feedback gratuito → laboratorio/editing. Il top-funnel è **già tracciato** in GTM/GA4 (newsletter, download, submit, `cta_click`): sappiamo quante iscrizioni e download avvengono. Il buco è a valle: la conversione a pagamento è **offline** (email + bonifico), quindi non sappiamo quante richieste diventano clienti. Problemi noti (da `.agents/cro.md`): popup blog non configurato bene, form a 4 campi, prova sociale non above-the-fold sulle pagine servizio. Sul fronte email, S1 e S2 sono live: chi si iscrive riceve già l'onboarding.
+Il percorso esiste ma ha interruzioni: blog → (widget newsletter / popup / CTA) → ebook/template → email → feedback gratuito → laboratorio/editing. Il top-funnel è **già tracciato** in GTM/GA4 (newsletter, download, submit, `cta_click`): sappiamo quante iscrizioni e download avvengono. Il buco è a valle: la conversione a pagamento è **offline** (email + bonifico), quindi non sappiamo quante richieste diventano clienti. Problemi noti (da `docs/marketing/content/cro.md`): popup blog non configurato bene, form a 4 campi, prova sociale non above-the-fold sulle pagine servizio. Sul fronte email, S1 e S2 sono live: chi si iscrive riceve già l'onboarding.
 
 ### Il piano
 
@@ -278,7 +292,7 @@ S2 è già pubblicata. Il passo successivo è leggerla con i dati: tasso di aper
 È a costo zero e già live. Va messo dove la persona ha appena ricevuto valore: dopo aver letto un articolo su struttura/dialogo, dopo E4 di S1, sulle pagine dei servizi. Logica: "prima pagina gratis" = assaggio del Double View = ponte naturale all'editing a pagamento.
 
 **Move 4 — Completare i quick win CRO e le pagine di conversione.**
-Chiudere i residui di `.agents/cro.md`: rating vicino al prezzo, CTA sticky mobile sull'editing, doppia CTA, "Cosa ricevi esattamente", risk reversal, articoli correlati. Creare le pagine di atterraggio dei 5 lead magnet (una per asset).
+Chiudere i residui di `docs/marketing/content/cro.md`: rating vicino al prezzo, CTA sticky mobile sull'editing, doppia CTA, "Cosa ricevi esattamente", risk reversal, articoli correlati. Creare le pagine di atterraggio dei 5 lead magnet (una per asset).
 
 **Move 5 — Verificare la gerarchia CTA homepage con i dati di ricavo.**
 La gerarchia è stata invertita (Laboratori & Corsi primari, Editing secondario) sulla base di un rapporto corsi:editing di 13:1 da confermare. Appena la misurazione è live, verificare con lo split di ricavo reale in GA4 e correggere se necessario.
@@ -635,7 +649,7 @@ Un fondatore solo + una libreria di skill di marketing + gli strumenti già in c
 | **Retention** | **Automations engine + Resend (il più maturo)** | GA4 MCP (attribuzione eventi) |
 | **Referral** | UTM/GA4 | (Q3+) Dub.co |
 | **Revenue** | admin, email, GA4 (pagamenti offline) | marker “pagato” + GA4 Measurement Protocol; Stripe MCP solo se si passa all'online |
-| **Cross-cutting** | Admin/prodotto, `.agents/*` documenti | repository di contesto condiviso |
+| **Cross-cutting** | Admin/prodotto, `docs/marketing/*` documenti | repository di contesto condiviso |
 
 **Stato attuale: GTM/GA4 sono attivi (eventi top-funnel live); nessun MCP è cablato.** La priorità Q1 è rendere attribuibile il pagamento offline e (opzionale) cablare GA4 MCP — perché è ciò che rende il resto verificabile.
 
@@ -924,20 +938,20 @@ Perché questa: cattura in un unico numero le tre cose che devono muoversi insie
 
 ### Appendice — link ai documenti (relativi al repo)
 
-**Documenti di contesto in repo (`.agents/`):**
-- `.agents/product-marketing.md` — posizionamento, ICP, voce
-- `.agents/content-strategy.md` — calendario 60/30/10, cluster, funnel
-- `.agents/ai-seo.md` — agent-readiness, roadmap AI
-- `.agents/emails.md` — S1–S5, infrastruttura, test
-- `.agents/newsletter.md` — playbook S4, numeri di ottobre
-- `.agents/cro.md` — audit pagine, quick win, test
-- `.agents/launch-individuale.md` — piano lancio 1:1
-- `.agents/schema.md` — JSON-LD
-- `.agents/serp-come-scrivere-una-sceneggiatura.md`, `.agents/serp-come-diventare-sceneggiatore.md` — riscritture hub
-- `.agents/measurement-*.md` — piani di misurazione per hub
+**Documenti di contesto in repo (`docs/marketing/`):**
+- `docs/marketing/strategy/product-marketing.md` — posizionamento, ICP, voce
+- `docs/marketing/strategy/content-strategy.md` — calendario 60/30/10, cluster, funnel
+- `docs/marketing/seo/ai-seo.md` — agent-readiness, roadmap AI
+- `docs/marketing/email/emails.md` — S1–S5, infrastruttura, test
+- `docs/marketing/email/newsletter.md` — playbook S4, numeri di ottobre
+- `docs/marketing/content/cro.md` — audit pagine, quick win, test
+- `docs/marketing/launch/launch-individuale.md` — piano lancio 1:1
+- `docs/marketing/seo/schema.md` — JSON-LD
+- `docs/marketing/seo/serp-come-scrivere-una-sceneggiatura.md`, `docs/marketing/seo/serp-come-diventare-sceneggiatore.md` — riscritture hub
+- `docs/marketing/seo/measurement-*.md` — piani di misurazione per hub
 
 **Nota sulla provenienza dei numeri.** Traffico, iscritti, recensioni e download provengono dai materiali sopra e dagli eventi GTM/GA4 già attivi. **Ricavi, CAC e conversione pagata** sono `[TBD]`: il pagamento è offline (email + bonifico), quindi va reso attribuibile prima di qualsiasi proiezione quantitativa (vedi decisione aperta #1).
 
 ---
 
-*Pictures Writers — Piano di Marketing v1. Preparato il 2026-10-02. Per revisione e discussione del team.*
+*Pictures Writers — Piano di Marketing v1.1. Preparato il 2026-10-02, aggiornato il 2026-10-22 (stato §3).*

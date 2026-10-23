@@ -3,7 +3,7 @@
 **Document version:** v1
 **Last updated:** 2026-10-02
 **Status:** Fase 8 della roadmap SEO (ai-seo)
-**Contesto:** `.agents/product-marketing.md`, `.agents/content-strategy.md`, `.agents/schema.md`
+**Contesto:** `docs/marketing/strategy/product-marketing.md`, `docs/marketing/strategy/content-strategy.md`, `docs/marketing/seo/schema.md`
 
 ---
 

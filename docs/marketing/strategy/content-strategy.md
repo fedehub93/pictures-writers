@@ -1,7 +1,7 @@
 # Content Strategy — Pictures Writers
 
-**Document version:** v1
-**Last updated:** 2026-09-16
+**Document version:** v1.1
+**Last updated:** 2026-10-22
 **Status:** Fase 3 della roadmap SEO
 
 ---
@@ -201,7 +201,7 @@ Blog post (search) → Lead magnet CTA → Form → Email nurtured →
   → Editing Double View (decision)
 ```
 
-**Nota sull'attrezzo intermedio (S1 email):** il passaggio dall'ebook al laboratorio è mediato dal **feedback gratuito sulla prima pagina** (`/feedback-gratuito-sceneggiatura/`), scelto perché già live e a costo di implementazione zero. In parallelo si costruisce un **template/checklist soggetto** (vedi tabella sopra) per testarlo in futuro nella stessa posizione, come A/B (test `T-INT` in `.agents/emails.md`), confrontando i dati dei due attrezzi.
+**Nota sull'attrezzo intermedio (S1 email):** il passaggio dall'ebook al laboratorio è mediato dal **feedback gratuito sulla prima pagina** (`/feedback-gratuito-sceneggiatura/`), scelto perché già live e a costo di implementazione zero. In parallelo si costruisce un **template/checklist soggetto** (vedi tabella sopra) per testarlo in futuro nella stessa posizione, come A/B (test `T-INT` in `docs/marketing/email/emails.md`), confrontando i dati dei due attrezzi.
 
 ---
 
@@ -262,8 +262,8 @@ Blog post (search) → Lead magnet CTA → Form → Email nurtured →
 ### Business Metrics (ottimizzare)
 - **Conversion rate:** Blog → Lead magnet → Iscrizione newsletter
 - **Lead → Customer:** Newsletter → Acquisto corso/editing
-- **Organic traffic growth:** +X% mese su mese per pillar cluster
-- **Keyword rankings:** Posizione media per "come scrivere sceneggiatura", "scuola sceneggiatura Italia", ecc.
+- **Organic traffic growth:** **+30% click/28 gg sul cluster 1A** vs baseline 22/10/2026 (360 → ≥470), misurato *anche* come **quota sul totale sito** (29,0% → ≥33%) per neutralizzare la stagionalità. Soglie di decisione complete (PASS/PARZIALE/FAIL) in `docs/marketing/seo/measurement-come-scrivere-una-sceneggiatura.md`.
+- **Keyword rankings:** Posizione media per "come scrivere sceneggiatura", "scuola sceneggiatura Italia", ecc. Target hub: exact query `come scrivere una sceneggiatura` in **top 5 entro il giorno 180** (al 22/10: 9,78) e CTR ≥ 3%.
 
 ### Trimestral Review
 Ogni 3 mesi:
@@ -311,4 +311,5 @@ La prossima fase (copywriting) dovrà:
 ---
 
 ## Changelog
+- v1.1 (2026-10-22) — §8: definito il "X" di *Organic traffic growth* (+30% click/28 gg sul cluster 1A, quota sito 29,0%→≥33%) e aggiunto target di ranking/CTR; baseline dal measurement del giorno 30 dell'hub (GSC 22/10).
 - v1 (2026-09-16) — Initial content strategy document.

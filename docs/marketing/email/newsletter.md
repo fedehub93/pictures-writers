@@ -4,12 +4,12 @@
 **Last updated:** 2026-10-02
 **Status:** workstream operativo — broadcast settimanale
 
-Esecuzione del flusso **S4** progettato in `.agents/emails.md` §7. Qui vivono il playbook operativo e le issue scritte (a differenza di `emails.md`, che resta il design delle sequence).
+Esecuzione del flusso **S4** progettato in `docs/marketing/email/emails.md` §7. Qui vivono il playbook operativo e le issue scritte (a differenza di `emails.md`, che resta il design delle sequence).
 
 ## 1. Contesto e decisioni
 
 - Canale **owned**, ~800 iscritti; ultimo invio 2-3 mesi fa → serve una fase di **riattivazione**, non solo ripresa.
-- **Laboratori:** finestra iscrizioni **8 → 27 ottobre** (gruppo + 1:1, 300€), avvio **3 novembre**. Il gruppo riapre come sempre; l'1:1 è il nuovo formato. Vedi `.agents/launch-individuale.md`.
+- **Laboratori:** finestra iscrizioni **8 → 27 ottobre** (gruppo + 1:1, 300€), avvio **3 novembre**. Il gruppo riapre come sempre; l'1:1 è il nuovo formato. Vedi `docs/marketing/launch/launch-individuale.md`.
 - **Cadenza decisa:** settimanale (lun), formato alternato **piena/leggera**, **+ invii a scadenza al bisogno** (apertura, ultima chiamata).
 - **Deliverability:** dopo un silenzio lungo, ripartire con contenuto di valore. La **Issue 1 (lun 5) è ritorno soft** (nessuna vendita); l'**apertura iscrizioni è un'email separata** (Extra, gio 8). Monitorare bounce/spam.
 
@@ -35,7 +35,7 @@ Esecuzione del flusso **S4** progettato in `.agents/emails.md` §7. Qui vivono i
 
 > **Finestra iscrizioni:** gio 8 → mar 27 ottobre. **Avvio laboratori:** mar 3 novembre.
 > **Invii:** lun 5 (Issue 1, ritorno soft) · gio 8 (Extra, apertura iscrizioni) · lun 12 (Issue 2) · lun 19 (Issue 3) · gio 22 (Issue 4, ultima chiamata).
-> Calendario di riferimento: `.agents/content-strategy.md` §4 (Trimestre 1, Ott-Dic 2026).
+> Calendario di riferimento: `docs/marketing/strategy/content-strategy.md` §4 (Trimestre 1, Ott-Dic 2026).
 
 ### Issue 1 — Ritorno / riattivazione (il soggetto è il vero lavoro) ✅ scritta
 **Send:** lunedì 5 ottobre
@@ -209,7 +209,7 @@ Esecuzione del flusso **S4** progettato in `.agents/emails.md` §7. Qui vivono i
 **Nota:** send separata e a **offerta unica** (mai "gruppo o 1:1" nella stessa email). Angolo = l'edizione del gruppo finita con una sola persona, andata bene. Avvio 10/11, 5 posti. **Bloccata dalla creazione della product page** (il link CTA deve essere live prima dell'invio).
 
 ### Avvio (extra del 3 novembre)
-Email di benvenuto/conferma agli iscritti (dettagli prima sessione, come accedere), derivabile dalla conferma acquisto in `.agents/launch-individuale.md` §8.
+Email di benvenuto/conferma agli iscritti (dettagli prima sessione, come accedere), derivabile dalla conferma acquisto in `docs/marketing/launch/launch-individuale.md` §8.
 
 **Sondaggio → social (non email):** lo speciale "Sondaggio sceneggiatura italiana 2026" (calendario `content-strategy` §4) si sposta **sui social** (poll/domande), più adatto al canale. I risultati diventano una **newsletter di dicembre** ("Cosa pensano gli sceneggiatori italiani"): contenuto di valore + prova di community.
 
@@ -217,9 +217,9 @@ Email di benvenuto/conferma agli iscritti (dettagli prima sessione, come acceder
 
 - **Finestra iscrizioni:** 8 → 27 ottobre (chiusa prima dell'avvio). L'apertura è l'**Extra** di ottobre (gio 8), non un'email di novembre.
 - **Avvio:** 3 novembre.
-- **Prezzi:** 300€ per entrambi (gruppo e 1:1). La differenza tra i due è il **formato** (collettivo vs 1:1), non il prezzo. Vedi `.agents/launch-individuale.md` §7.
+- **Prezzi:** 300€ per entrambi (gruppo e 1:1). La differenza tra i due è il **formato** (collettivo vs 1:1), non il prezzo. Vedi `docs/marketing/launch/launch-individuale.md` §7.
 - **Pre-annuncio:** saltato (l'apertura è l'Extra di gio 8); eventuale teaser social nel weekend.
-- **Arco 1:1:** il copy di `.agents/launch-individuale.md` §8 (pre-annuncio → early-bird → ultima chiamata → conferma) non serve per questa finestra a canale unico; resta per edizioni/coorti future o per una gestione a lista d'attesa.
+- **Arco 1:1:** il copy di `docs/marketing/launch/launch-individuale.md` §8 (pre-annuncio → early-bird → ultima chiamata → conferma) non serve per questa finestra a canale unico; resta per edizioni/coorti future o per una gestione a lista d'attesa.
 - **Gruppo:** riapertura comunicata nell'Extra di apertura (gio 8, apertura congiunta gruppo + 1:1).
 
 ## 5. Changelog
@@ -231,5 +231,5 @@ Email di benvenuto/conferma agli iscritti (dettagli prima sessione, come acceder
 - v6 (2026-10-02) — **Issue 2 riscritta: dal tema "tre documenti" al secondo atto.** La versione precedente spiegava la differenza soggetto/trattamento/scaletta ma chiudeva su Pagina Uno, un non-sequitur (un'analisi di sceneggiatura finita non mostra i documenti a monte). Nuovo tema: pillola sulla **struttura del secondo atto** (la parte che cede più spesso) + analisi **Little Miss Sunshine** come prova concreta, CTA a `/scomporre-il-secondo-atto-little-miss-sunshine/` (live). Testo reso in voce umana e senza trattini lunghi. La riga di raccordo della Issue 1 va riallineata a mano (a cura dell'utente).
 - v7 (2026-10-02) — **Frase ispirazionale di chiusura dopo il CTA.** Aggiunta una riga motivazionale dopo il bottone e prima della firma su Issue 2 (`Il secondo atto è dove si decide se quella storia arriverà mai alla fine.`), Issue 3 (`A volte non serve riscrivere tutto. Serve qualcuno che ti dica da dove ripartire.`) e Issue 4 (`Un'idea tenuta nel cassetto non diventa mai un film.`). Convenzione codificata nel playbook §2. Issue 1 lasciata all'utente.
 - v8 (2026-10-02) — **Ottobre ricalendarizzato sulla finestra iscrizioni 5-27 (avvio 3/11).** Il pre-annuncio a fine ottobre era incompatibile con la chiusura del 27. Nuovo piano: **Issue 1 (lun 5) = ritorno + apertura iscrizioni**, Issue 2 (lun 12) valore + richiamo finestra aperta, Issue 3 (lun 19) valore, **Issue 4 (gio 22) = ultima chiamata** a scadenza (fuori cadenza del lunedì per dare margine). Aggiunta email di avvio 3/11 e opzione teaser social nel weekend. Issue 1 riscritta (ruolo cambiato da ritorno soft ad apertura): hook "il soggetto è il vero lavoro" mantenuto come lead-in dell'offerta. Aggiornati §1, §3, §4.
-- v10 (2026-10-06) — **1:1 fuori dalla finestra del gruppo.** L'**Extra di gio 8 diventa a offerta singola sul gruppo** (rimosso l'1:1: stesso prezzo/stesso esito creava confusione); **Issue 4** allineata (niente "in gruppo / 1:1"). Il **Laboratorio 1:1** ha ora una **send dedicata a offerta unica** post-finestra (oggetto "Il laboratorio con una sola persona"), lancio diretto con avvio **10/11** e 5 posti; angolo = l'edizione del gruppo finita con una sola persona; **i due consulenti** sono il differenziatore. Blocco: creazione della product page. Vedi `.agents/launch-individuale.md` v4-v6.
+- v10 (2026-10-06) — **1:1 fuori dalla finestra del gruppo.** L'**Extra di gio 8 diventa a offerta singola sul gruppo** (rimosso l'1:1: stesso prezzo/stesso esito creava confusione); **Issue 4** allineata (niente "in gruppo / 1:1"). Il **Laboratorio 1:1** ha ora una **send dedicata a offerta unica** post-finestra (oggetto "Il laboratorio con una sola persona"), lancio diretto con avvio **10/11** e 5 posti; angolo = l'edizione del gruppo finita con una sola persona; **i due consulenti** sono il differenziatore. Blocco: creazione della product page. Vedi `docs/marketing/launch/launch-individuale.md` v4-v6.
 - v9 (2026-10-02) — **Ritorno e apertura separati: Issue 1 (lun 5) soft + Extra apertura (gio 8).** Applicata la regola playbook "valore prima della richiesta": la Issue 1 torna a essere **ritorno soft, senza vendita** (CTA all'articolo sul soggetto), l'apertura iscrizioni diventa l'**Extra di giovedì 8** ("da oggi aperte, fino al 27, si parte il 3/11"), self-contained. Finestra iscrizioni 8→27. Ponte tra le due: riga "Giovedì ti scriviamo di nuovo: c'è una novità" in Issue 1. Rimosso il pre-annuncio (ora superfluo: la Issue 1 lo fa in forma soft). Issue 2-4 invariate. Aggiornati §1, §3, §4.

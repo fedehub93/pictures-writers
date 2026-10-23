@@ -9,7 +9,7 @@ As a result the team cannot:
 - Create and manage Customers from the admin area.
 - Create Orders manually and associate them with Products.
 - Mark an offline payment as received and complete an Order.
-- Track paid conversions in Google Analytics 4, which leaves a critical gap in the marketing funnel described in `.agents/product-marketing.md` and `.agents/marketing-plan.md`.
+- Track paid conversions in Google Analytics 4, which leaves a critical gap in the marketing funnel described in `docs/marketing/strategy/product-marketing.md` and `docs/marketing/strategy/marketing-plan.md`.
 
 The first real flow that must be supported is: a visitor fills a public Form, the system creates a Customer and a pending Order, the business receives an offline payment, and an admin completes the Order. Completing the Order is the canonical business moment that must fire a `purchase` event to GA4 and can start post-purchase Automations.
 
@@ -168,6 +168,6 @@ model Payment {
 ## Further Notes
 
 - Order completion is the canonical business moment. It must remain the single trigger for GA4 purchase events and post-purchase Automations.
-- The GA4 `purchase` event directly addresses the top operational priority in `.agents/marketing-plan.md`: making offline paid conversions attributable.
+- The GA4 `purchase` event directly addresses the top operational priority in `docs/marketing/strategy/marketing-plan.md`: making offline paid conversions attributable.
 - `orderDate` is a record/reporting field and does not change when the GA4 `purchase` event fires. GA4 timestamps events at receipt and cannot be backdated beyond 72 hours, so imported historical orders still land on the import date in GA4. Use `orderDate` from the database for accurate historical reporting.
 - `Purchase` remains a legacy table. A future migration should be a deliberate, separate effort once the new Order system is stable and Stripe is reactivated.

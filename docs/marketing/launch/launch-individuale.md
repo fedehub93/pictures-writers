@@ -2,7 +2,7 @@
 
 **Document version:** v1
 **Status:** Pronto al lancio — avvio **10/11/2026** (5 sessioni settimanali, prenotazione via form). Lancio diretto, senza run founder. Bloccante: creare la product page.
-**Skill di riferimento:** `launch` (ORB + 5 fasi) — context: `.agents/product-marketing.md`
+**Skill di riferimento:** `launch` (ORB + 5 fasi) — context: `docs/marketing/strategy/product-marketing.md`
 
 ---
 
@@ -84,7 +84,7 @@
 Il CMS separa già tutto per prodotto (URL `/shop/[categoria]/[slug]`, title/description, schema, FAQ). Il rischio è di copy/intent, non tecnico.
 
 1. **Stesso job → flusso "formato", non "nuovo argomento".** Gruppo: "laboratorio di sceneggiatura di gruppo", "corso di gruppo per soggetto". Individuale: "laboratorio individuale", "percorso 1:1 soggetto", "scrivere un soggetto con un tutor/consulente", "mentoring sceneggiatura individuale". Evitare che entrambe le pagine puntino al solo termine "scrivere un soggetto" senza modale: gruppo→"corso di gruppo", individuale→"individuale 1:1".
-2. **Schema** (completato fase 6, in `.agents/schema.md`): ogni prodotto `ProductType.WEBINAR` emette `Course` (`courseMode`: online, offer) + `Event` per lezione — decisione sul type, non sullo slug di categoria, quindi niente coupling al rename. `learningResourceType` non valorizzato in pagina (il valore specifico 1:1 non vale per gli altri webinar). `@id` distinti (`#course`/`#course-instance`, `#event-N`).
+2. **Schema** (completato fase 6, in `docs/marketing/seo/schema.md`): ogni prodotto `ProductType.WEBINAR` emette `Course` (`courseMode`: online, offer) + `Event` per lezione — decisione sul type, non sullo slug di categoria, quindi niente coupling al rename. `learningResourceType` non valorizzato in pagina (il valore specifico 1:1 non vale per gli altri webinar). `@id` distinti (`#course`/`#course-instance`, `#event-N`).
 3. **Interlinking "vs"** — il laboratorio linka al gruppo con "Preferisci farlo in gruppo? Edizione collettiva a 300€"; il gruppo viceversa ("Vuoi più attenzione sulla tua idea? Percorso 1:1 a 300€"). Stesso prezzo: la differenza è il **formato** (collettivo vs 1:1), non il prezzo.
 4. **FAQ distinte** (`product.faqs`) — gruppo: "come funziona la classe?". Individuale: "quante sessioni mi dedicano?", "devo avere già un'idea?", "le sessioni vengono registrate? No — è un lavoro 1:1 di analisi e brainstorming", "cosa consegno a fine percorso? Un soggetto alla terza stesura, come nel corso di gruppo".
 5. **Seo fields valorizzati** — title/description unici, non derivati dal nome.
@@ -141,7 +141,7 @@ Usa il template `webinarTemplateId` già cablato nel sistema (oggetto attuale: "
 - [ ] Pagina soggetto (pillar/spoke) aggiornata con CTA laboratorio
 - [ ] Waitlist / form attivi
 - [ ] Testimonianze fase 1 raccolte (2-3 ex-studenti)
-- [x] Schema Course/Event implementati (fase 6, in `.agents/schema.md`)
+- [x] Schema Course/Event implementati (fase 6, in `docs/marketing/seo/schema.md`)
 - [ ] FAQ compilate (sezione anti-obbiezioni)
 - [ ] Sequenza email pronta
 

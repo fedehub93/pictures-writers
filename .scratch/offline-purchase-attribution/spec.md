@@ -2,7 +2,7 @@
 
 **Status:** parked (2026-10-05)
 
-Parked deliberately, not abandoned. At the current volume (~2 orders / 2 months, ≈12/year) GA4 channel-level attribution is statistical noise: precise plumbing would feed a report that cannot drive a decision. The marketing plan (`.agents/marketing-plan.md`, decision #1) names offline attribution as the top operational gap, but the plan itself allows the cheaper alternative — a "paid" marker plus manual monthly reconciliation. The admin Order lifecycle already is that marker; what this feature added was only the GA4 attribution layer, at a cost that the volume does not yet justify (a permanent Measurement Protocol secret, a fragile Customer→EmailContact email bridge, GTM container surgery).
+Parked deliberately, not abandoned. At the current volume (~2 orders / 2 months, ≈12/year) GA4 channel-level attribution is statistical noise: precise plumbing would feed a report that cannot drive a decision. The marketing plan (`docs/marketing/strategy/marketing-plan.md`, decision #1) names offline attribution as the top operational gap, but the plan itself allows the cheaper alternative — a "paid" marker plus manual monthly reconciliation. The admin Order lifecycle already is that marker; what this feature added was only the GA4 attribution layer, at a cost that the volume does not yet justify (a permanent Measurement Protocol secret, a fragile Customer→EmailContact email bridge, GTM container surgery).
 
 **Revival threshold:** reopen when measured orders exceed ~20/month, or when paid acquisition starts (attribution then decides where budget goes).
 
@@ -20,7 +20,7 @@ Today the GA4 `purchase` event is fired client-side from the admin's browser whe
 - The visitor's GA4 identity (`client_id`) is never captured anywhere, so there is no way to connect an offline payment to the content or channel that produced the lead.
 - The event depends on the admin's browser, device, cookies and Consent Mode state — none of which represent the buyer.
 
-The marketing plan (`.agents/marketing-plan.md`, decision #1) names this as the number-one operational gap: the top-funnel is tracked, but offline revenue is not attributable. The plan recommends a marker on the buyer plus a server-side GA4 event via the Measurement Protocol. This feature implements that method instead of the client-side shortcut.
+The marketing plan (`docs/marketing/strategy/marketing-plan.md`, decision #1) names this as the number-one operational gap: the top-funnel is tracked, but offline revenue is not attributable. The plan recommends a marker on the buyer plus a server-side GA4 event via the Measurement Protocol. This feature implements that method instead of the client-side shortcut.
 
 ## Solution
 
@@ -81,7 +81,7 @@ Reading the `_ga` cookie is consent-aware by construction: once Consent Mode V2 
 
 ## Further Notes
 
-- This closes the number-one operational gap in `.agents/marketing-plan.md` (attribution of paid offline conversions) using the method the plan recommended (a marker on the buyer plus a server-side GA4 event) rather than the client-side shortcut delivered earlier.
+- This closes the number-one operational gap in `docs/marketing/strategy/marketing-plan.md` (attribution of paid offline conversions) using the method the plan recommended (a marker on the buyer plus a server-side GA4 event) rather than the client-side shortcut delivered earlier.
 - The `metadata` name follows the repo's existing convention; the meaning lives in the typed JSON alias and its doc comment.
 - Because the identity is resolved by email, a Customer whose email never passed through a form has no `client_id` and will not produce a purchase event. This is intentional: it avoids fabricating unattributable conversions.
 - Once Consent Mode V2 lands, `_ga` will be absent when analytics storage is denied and the purchase will simply not be sent — no additional gating needed in the order code.

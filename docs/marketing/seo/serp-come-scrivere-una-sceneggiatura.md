@@ -5,7 +5,7 @@
 **Status:** Fase 4 (copy) — deliverable per aggiornamento CMS (da incollare manualmente, NON via DB)
 **Articolo:** `/come-scrivere-una-sceneggiatura/` — aggiorna il post esistente
 
-**Riferimenti:** `.agents/content-strategy.md` (Cluster 1A) · `.agents/copywriting.md` §3 (HUB 1) · `.agents/product-marketing.md`
+**Riferimenti:** `docs/marketing/strategy/content-strategy.md` (Cluster 1A) · `docs/marketing/content/copywriting.md` §3 (HUB 1) · `docs/marketing/strategy/product-marketing.md`
 
 **Nota v2:** la v1 era ancora ancorata allo scheletro a 10 step del vecchio articolo (universo narrativo, premessa, software) — contenuti che **non** fanno parte dell'intent di questa query. La v2 è ristrutturata sullo schema che i top 3 della SERP premiano davvero (vedi §1.3): sezioni tematiche, più snelle, in ordine SERP.
 

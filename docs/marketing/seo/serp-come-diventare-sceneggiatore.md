@@ -5,7 +5,7 @@
 **Status:** Fase 2 (SEO audit + riscrittura) — deliverable per aggiornamento CMS (da incollare manualmente, NON via DB)
 **Articolo:** `/come-diventare-sceneggiatore-la-guida-definitiva/` — aggiorna il post esistente
 
-**Riferimenti:** `.agents/content-strategy.md` (Cluster 1B) · `.agents/copywriting.md` §4 (HUB 2) · `.agents/product-marketing.md` · `.agents/serp-come-scrivere-una-sceneggiatura.md` (modello di formato)
+**Riferimenti:** `docs/marketing/strategy/content-strategy.md` (Cluster 1B) · `docs/marketing/content/copywriting.md` §4 (HUB 2) · `docs/marketing/strategy/product-marketing.md` · `docs/marketing/seo/serp-come-scrivere-una-sceneggiatura.md` (modello di formato)
 
 ---
 
