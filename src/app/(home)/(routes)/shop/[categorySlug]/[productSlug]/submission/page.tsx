@@ -56,7 +56,7 @@ const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
     ? await db.form.findFirst({ where: { id: product.formId } })
     : null;
 
-  if (!form) {
+  if (!form || !form.content) {
     return notFound();
   }
 
@@ -87,7 +87,7 @@ const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
                 <div className="bg-card border rounded-lg shadow p-4 flex flex-col space-y-4">
                   <SubmissionFormV2
                     rootId={product.rootId!}
-                    content={form.content!}
+                    content={form.content}
                     gtmEventName={form.gtmEventName}
                   />
                 </div>
