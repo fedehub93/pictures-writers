@@ -25,7 +25,7 @@ Se accetti 30–60 minuti di downtime e vuoi fare tutto in una volta, puoi salta
 - **Branch Neon**: non è un branch Git. È una copia indipendente del database (schema + dati) in un certo momento, con il suo endpoint e la sua connection string. Creandolo dal branch di produzione (di solito `main` o `production`) puoi testare e scrivere senza toccare la produzione. Non sostituisce un backup: per quello serve anche un dump.
 - **Connessione direct vs pooled**: Neon mostra due URL. La **direct** (host senza `-pooler`) è una connessione normale al database. La **pooled** passa da PgBouncer (transaction mode), utile per ambienti serverless ma può interferire con le migrazioni Prisma. Sulla VPS usa la **direct**.
 - **Canonical**: il dominio “ufficiale” del sito, ad esempio `https://example.com` oppure `https://www.example.com`. Serve a evitare contenuti duplicati per la SEO. Si riflette in `Settings.siteUrl` (DB), nei redirect del proxy e in `NEXT_PUBLIC_APP_URL`. Non cambiarlo durante la migrazione.
-- **TTL DNS**: per quanti secondi i resolver e i browser tengono in cache un record DNS. Se è `3600`, dopo il cambio IP qualcuno può ancora vedere il vecchio server per un'ora. Portalo a `300` secondi prima del cutover, così propagazione e rollback sono rapidi.
+- **TTL DNS**: per quanti secondi i resolver e i browser tengono in cache un record DNS. Se è `3600`, dopo il cambio IP qualcuno può ancora vedere il vecchio server per un'ora. Qui resta a `900` secondi: propagazione e rollback possono richiedere fino a ~15 minuti.
 - **Backup Hetzner vs dump su S3**: il backup Hetzner è un'immagine dell'intera VPS (disco, Docker, volumi): copre la perdita del server, ma è grossolano e non protegge da una cancellazione logica o da una migrazione sbagliata. Il dump `pg_dump` di Coolify è un backup **logico** del database; caricarlo su S3/R2/B2 lo mette **off-site**, così sopravvive alla perdita della VPS. Servono entrambi.
 
 ---
@@ -42,7 +42,7 @@ Fatto:
 - Branch Neon creato; connessione **direct** disponibile.
 - Server scelto: **CAX21** (4 vCPU, 8 GB, 80 GB) invece di CAX11, per avere margine sui build Next.js.
 - Canonical: **apex** `https://pictureswriters.com`; `www` → apex.
-- TTL DNS attuale: **900 s** (da abbassare a 300 s prima del cutover).
+- TTL DNS: **900 s** (scelta finale: resta invariato; propagazione e rollback fino a ~15 minuti).
 - Backup: per ora manuale; il backup locale schedulato di Coolify si configura in fase 2.
 - Coolify installato: **v4.4.6**, dashboard `https://coolify.pictureswriters.com` con HTTPS, 2FA attivo, porte 8000/6001/6002 chiuse.
 - PostgreSQL di destinazione: **18** (Coolify 4.4.6 non offre più la 15). Database applicativo `pictures_writers` creato da `template0` con locale `C`/`UTF8`; backup notturno locale attivo, S3 da aggiungere appena disponibile.
@@ -51,7 +51,7 @@ Fatto:
 Da chiudere (non bloccano la fase 1):
 
 - [ ] Confermare di avere i valori reali di `SECRETS_ENCRYPTION_KEY`, `BETTER_AUTH_SECRET`, `AUTOMATION_CREDENTIALS_KEY` e delle altre env necessarie (Stripe, UploadThing, ecc.) nel password manager.
-- [ ] Portare il TTL a **300 s** e attendere almeno 15 minuti (vecchio TTL) prima del cutover.
+- [x] TTL DNS lasciato a **900 s** (nessuna modifica prima del cutover).
 - [ ] Configurare il backup locale schedulato in fase 2 e scaricare il primo dump sul PC.
 
 **Puoi iniziare la fase 1.** Non passare alla fase 4/6/8 finché i tre segreti critici non sono confermati.
@@ -96,7 +96,7 @@ Obiettivo: avere tutti i valori, i backup e le informazioni prima di creare qual
 
 - [ ] **Decidi il canonical**: il dominio preferito tra apex (`https://example.com`) e `www` (`https://www.example.com`). Guarda quale dei due reindirizza all'altro e controlla `Settings.siteUrl` nel DB. Non cambiarlo durante la migrazione.
 
-- [ ] **Abbassa il TTL DNS a 300 s** sui record `A`/`AAAA`/`CNAME` del dominio, dal pannello del provider DNS (Cloudflare, Vercel DNS o registrar). Fallo almeno 24 h prima del cutover; dopo la migrazione potrai rialzarlo.
+- [ ] **TTL DNS: resta a 900 s.** Non serve abbassarlo prima del cutover; tieni presente che propagazione e rollback possono richiedere fino a ~15 minuti.
 
 - [ ] **Crea un bucket S3** (Cloudflare R2, Backblaze B2 o Hetzner Object Storage) per i **dump logici** del database. Non sostituisce il backup Hetzner della VPS: serve a conservare una copia off-site che sopravvive alla perdita o alla corruzione del server. Con 54 MB è praticamente gratis.
 

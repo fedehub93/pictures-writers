@@ -12,7 +12,7 @@ Data: ________  Operatore: ________  Dominio: ________  VPS IP: ________
 - [ ] Versione Neon annotata (`SHOW server_version`): __________
 - [ ] Dimensione DB annotata: __________
 - [ ] Branch Neon `staging` creato.
-- [ ] TTL DNS abbassato a ≤300 s.
+- [ ] TTL DNS lasciato a 900 s (nessuna modifica).
 - [ ] Dominio canonical deciso: ☐ apex ☐ www
 - [ ] `Settings.siteUrl` verificato: ______________________________
 - [ ] Finestra di manutenzione scelta: __________________________

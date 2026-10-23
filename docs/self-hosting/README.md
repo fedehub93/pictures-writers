@@ -38,7 +38,7 @@ La migrazione "big bang" (DNS + DB + app nello stesso momento) è quella che fa 
 | Fase | Cosa succede | Downtime | Rischio |
 |---|---|---|---|
 | **A. Collaudo** | VPS + Coolify + Postgres di test, app deployata su un sottodominio `staging`, DB ripristinato da un **branch Neon** | zero | nullo per la produzione |
-| **B. Cutover app** | Il DNS del dominio reale punta alla VPS, ma la VPS usa **ancora Neon** | 0–5 min (TTL) | basso, rollback = DNS |
+| **B. Cutover app** | Il DNS del dominio reale punta alla VPS, ma la VPS usa **ancora Neon** | 0–15 min (TTL 900 s) | basso, rollback = DNS |
 | **C. Cutover database** | Si ferma l'app, si fa il dump finale da Neon, si ripristina nel Postgres locale, si cambia `DATABASE_URL` | 5–30 min (dipende dalla dimensione) | medio, ma con rollback documentato |
 
 Questa sequenza permette di verificare **tutta l'applicazione in produzione** prima di toccare il database. Se qualcosa non funziona nella fase B, si riporta il DNS su Vercel in pochi minuti.

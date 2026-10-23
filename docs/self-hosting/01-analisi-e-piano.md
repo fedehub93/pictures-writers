@@ -322,7 +322,7 @@ Queste modifiche si possono fare **prima** del cutover, in un branch separato, e
 - [ ] Annotare la dimensione del DB.
 - [ ] Creare un branch Neon `staging` (o `pre-migration`).
 - [ ] Verificare quale dominio è canonical: apex o `www` (guarda `Settings.siteUrl` nel DB e la configurazione Vercel).
-- [ ] Abbassare il TTL dei record DNS a 300 s (meglio 60 s) **almeno 24 h prima** del cutover.
+- [ ] Lasciare il TTL dei record DNS a **900 s** (nessuna modifica prima del cutover; propagazione e rollback fino a ~15 minuti).
 - [ ] Verificare le credenziali di Stripe, Resend, UploadThing, reCAPTCHA.
 - [ ] Decidere la finestra per il cutover DB (orario di basso traffico).
 - [ ] Leggere `07-test-e-verifica.md` e stampare `checklist-finale.md`.

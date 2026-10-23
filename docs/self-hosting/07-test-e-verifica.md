@@ -380,9 +380,9 @@ done
 
 ## 17. Backup e restore (test reale)
 
-- [ ] Il backup schedulato è partito.
+- [x] Il backup schedulato è partito.
 - [x] Il file su S3 esiste ed è > 0.
-- [ ] Scarica il file e ripristinalo in un DB usa-e-getta.
+- [x] Scarica il file e ripristinalo in un DB usa-e-getta.
 - [x] L'app in staging punta al DB ripristinato e funziona.
 - [x] Cancella il DB di test.
 - [x] Annota data, dimensione e durata del restore nel runbook.

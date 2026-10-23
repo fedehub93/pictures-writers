@@ -65,14 +65,11 @@ Non cambiare questa scelta durante la migrazione. Farlo invaliderebbe cookie e c
 >
 > `trailingSlash: true` in `next.config.mjs` aggiunge lo slash alle **URL delle route** (e redirige `/blog` → `/blog/`). **Non** modifica `Settings.siteUrl` né `NEXT_PUBLIC_APP_URL`: quei valori restano senza slash finale, perché il codice aggiunge già i separatori (`${siteUrl}/...`). Se metti lo slash anche lì, ottieni `//`.
 
-### 1.4 Abbassa il TTL
+### 1.4 TTL DNS
 
-Almeno **24 ore prima**:
+Il TTL dei record `A`/`AAAA`/`CNAME` resta **900 secondi**: è una scelta finale, non va abbassato prima del cutover.
 
-- porta il TTL dei record `A`/`AAAA`/`CNAME` a **300 secondi** (meglio 60 se il provider lo consente);
-- attendi la scadenza del vecchio TTL (fino a 24–48 h, ma per un TTL già basso bastano poche ore).
-
-Questo riduce la finestra di propagazione e rende il rollback quasi immediato.
+Conseguenza: dopo il cambio DNS la propagazione può richiedere fino a ~15 minuti, e anche il rollback (ripristino dei record Vercel) può richiedere altrettanto.
 
 ### 1.5 Verifica i servizi esterni
 
@@ -101,7 +98,7 @@ Questo riduce la finestra di propagazione e rende il rollback quasi immediato.
 
 - [ ] Fase A completata e collaudata.
 - [ ] Fase B pronta: app su VPS con Neon, dominio di staging funzionante.
-- [ ] TTL DNS abbassato.
+- [ ] TTL DNS confermato a 900 s (nessuna modifica).
 - [ ] Backup Neon recente.
 - [ ] `checklist-finale.md` stampata.
 - [ ] Finestra di cutover comunicata (se necessario).
@@ -229,7 +226,7 @@ Se vuoi il proxy Cloudflare:
 ### Rollback (fase B)
 
 1. Riporta i record DNS ai valori Vercel annotati.
-2. Attendi il TTL (300 s).
+2. Attendi il TTL (fino a ~15 minuti).
 3. Verifica `dig`.
 4. Vercel è ancora lì: il sito torna online.
 5. Non serve toccare Neon: entrambe le app usano lo stesso DB.
@@ -294,7 +291,7 @@ Se il sito ha utenti:
 
 ## 8. Checklist del cutover (riassunto)
 
-- [ ] TTL basso da ≥24 h.
+- [ ] TTL DNS a 900 s (nessuna modifica necessaria).
 - [ ] App su VPS con Neon, staging collaudato.
 - [ ] Env di produzione impostate, build completato.
 - [ ] Domini aggiunti in Coolify.
