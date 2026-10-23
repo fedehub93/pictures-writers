@@ -17,7 +17,7 @@ export function ButtonFormComponent({
   const { label } = elementInstance.properties;
 
   return (
-    <Button type="submit" className="self-end">
+    <Button type="submit" className="self-end" disabled={isSubmitting}>
       {isSubmitting && <Loader2Icon className="size-4 animate-spin" />}
       {label}
     </Button>

@@ -90,6 +90,54 @@ describe("free download form content", () => {
       properties: { label: "Scarica gratis" },
     });
   });
+
+  it("adds the minimum fields to richer content that omits one", () => {
+    const content: FormRootInstance = {
+      ...DEFAULT_FREE_DIGITAL_DOWNLOAD_FORM_CONTENT,
+      children: [
+        {
+          id: "nome",
+          isContainer: false,
+          type: "TextField",
+          properties: {
+            name: "nome",
+            label: "Nome",
+            helperText: "",
+            placeholder: "",
+            inputType: TextInputEnum.Text,
+            validation: { required: false },
+          },
+        },
+        {
+          id: "freelance",
+          isContainer: false,
+          type: "CheckboxField",
+          properties: {
+            name: "freelance",
+            label: "Sono un freelance",
+            helperText: "",
+            validation: { required: false },
+          },
+        },
+        {
+          id: "submit",
+          isContainer: false,
+          type: "Button",
+          properties: { label: "Invia" },
+        },
+      ],
+    };
+
+    const resolved = resolveFreeDigitalDownloadFormContent(content);
+
+    expect(resolved.children.map((node) => node.id)).toEqual([
+      "nome",
+      "freelance",
+      "free-download-email",
+      "free-download-privacy",
+      "submit",
+    ]);
+  });
 });
 
 describe("extractFreeDigitalDownloadFields", () => {
@@ -117,7 +165,7 @@ describe("extractFreeDigitalDownloadFields", () => {
             label: "La tua email",
             helperText: "",
             placeholder: "",
-            inputType: TextInputEnum.Email,
+            inputType: TextInputEnum.Text,
             validation: { required: true },
           },
         },
@@ -126,8 +174,8 @@ describe("extractFreeDigitalDownloadFields", () => {
           isContainer: false,
           type: "CheckboxField",
           properties: {
-            name: "accetto_la_privacy",
-            label: "Accetto la privacy",
+            name: "accetto_i_termini",
+            label: "Accetto i termini",
             helperText: "",
             validation: { required: true },
           },
@@ -137,7 +185,7 @@ describe("extractFreeDigitalDownloadFields", () => {
 
     expect(
       extractFreeDigitalDownloadFields(
-        { la_tua_email: "reader@example.com", accetto_la_privacy: true },
+        { la_tua_email: "reader@example.com", accetto_i_termini: true },
         renamed,
       ),
     ).toEqual({ email: "reader@example.com", privacyConsent: true });

@@ -2,9 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import type { FormRootInstance } from "@/modules/forms/builder/types/core";
-import {
-  DEFAULT_FREE_DIGITAL_DOWNLOAD_FORM_CONTENT,
-} from "@/modules/shop/products/lib/free-download-form";
+import { TextInputEnum } from "@/modules/forms/builder/types/properties";
+import { DEFAULT_FREE_DIGITAL_DOWNLOAD_FORM_CONTENT } from "@/modules/shop/products/lib/free-download-form";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
@@ -70,7 +69,7 @@ describe("FreeDigitalDownloadModal", () => {
             label: "Come ti chiami?",
             helperText: "",
             placeholder: "",
-            inputType: "text",
+            inputType: TextInputEnum.Text,
             validation: { required: false },
           },
         },

@@ -86,10 +86,45 @@ const hasSubmitButton = (nodes: FormNodeDynamicInstance[]): boolean =>
       (node.isContainer && hasSubmitButton(node.children)),
   );
 
+type FlatField = ReturnType<typeof getFlatFields>[number];
+
+const fieldText = (field: FlatField) =>
+  `${field.properties.name} ${field.properties.label}`;
+
+const isEmailField = (field: FlatField) =>
+  field.type === "TextField" &&
+  (field.properties.name === "email" ||
+    field.properties.inputType === TextInputEnum.Email ||
+    /e-?mail/i.test(fieldText(field)));
+
+const isConsentField = (field: FlatField) =>
+  field.type === "CheckboxField" &&
+  /privacy|consent|termini|terms/i.test(fieldText(field));
+
+const insertBeforeRootButton = (
+  children: FormNodeDynamicInstance[],
+  fields: FormNodeDynamicInstance[],
+): FormNodeDynamicInstance[] => {
+  const buttonIndex = children.findIndex(
+    (node) => !node.isContainer && node.type === "Button",
+  );
+
+  if (buttonIndex === -1) {
+    return [...children, ...fields];
+  }
+
+  return [
+    ...children.slice(0, buttonIndex),
+    ...fields,
+    ...children.slice(buttonIndex),
+  ];
+};
+
 /**
  * Uses the linked form's builder content when it exists, and falls back to the
- * minimal email + privacy layout for legacy lead-magnet forms. Forms authored
- * without a submit button get one appended so they stay usable in the modal.
+ * minimal email + privacy layout for legacy lead-magnet forms. Missing
+ * required fields and the submit button are appended so an authored form stays
+ * usable in the modal, while richer content is preserved.
  */
 export const resolveFreeDigitalDownloadFormContent = (
   content: FormRootInstance | null | undefined,
@@ -102,27 +137,33 @@ export const resolveFreeDigitalDownloadFormContent = (
     return DEFAULT_FREE_DIGITAL_DOWNLOAD_FORM_CONTENT;
   }
 
-  if (hasSubmitButton(content.children)) {
-    return content;
+  const fields = getFlatFields(content.children);
+  const missingFields: FormNodeDynamicInstance[] = [];
+
+  if (!fields.some(isEmailField)) {
+    missingFields.push(emailField);
   }
 
-  return { ...content, children: [...content.children, submitButton] };
+  if (!fields.some(isConsentField)) {
+    missingFields.push(privacyField);
+  }
+
+  const children =
+    missingFields.length > 0
+      ? insertBeforeRootButton(content.children, missingFields)
+      : content.children;
+
+  if (hasSubmitButton(children)) {
+    return children === content.children ? content : { ...content, children };
+  }
+
+  return { ...content, children: [...children, submitButton] };
 };
 
 interface FreeDigitalDownloadFields {
   email: string;
   privacyConsent: boolean;
 }
-
-const isEmailField = (field: ReturnType<typeof getFlatFields>[number]) =>
-  field.type === "TextField" &&
-  (field.properties.name === "email" ||
-    field.properties.inputType === "email");
-
-const isConsentField = (field: ReturnType<typeof getFlatFields>[number]) =>
-  field.type === "CheckboxField" &&
-  (field.properties.name === "privacyConsent" ||
-    /privacy/i.test(`${field.properties.name} ${field.properties.label}`));
 
 /**
  * Maps the values produced by `FormRunner` to the fields the download action
