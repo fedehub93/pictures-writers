@@ -1,6 +1,7 @@
 "use client";
 
 import type { Route } from "next";
+import type { ReactNode } from "react";
 
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,11 +25,13 @@ export function RootFormComponent({
   elementInstance,
   onSubmitHandler,
   gtmEventName,
+  footer,
 }: {
   id: string;
   elementInstance: FormRootInstance;
   onSubmitHandler: (values: Record<string, any>) => Promise<FormActionResponse>;
   gtmEventName: string | null;
+  footer?: ReactNode;
 }) {
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
@@ -101,6 +104,9 @@ export function RootFormComponent({
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
+
+        {footer}
+
         {success && (
           <Alert>
             <CircleCheck />

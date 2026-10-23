@@ -2,7 +2,8 @@
 
 import { Dispatch, SetStateAction, useState } from "react";
 import Image from "next/image";
-import { CircleCheck } from "lucide-react";
+import { CircleCheck, Loader2 } from "lucide-react";
+import { useFormContext, useFormState } from "react-hook-form";
 
 import {
   PRODUCT_DETAIL_PAGE_SOURCE,
@@ -11,6 +12,7 @@ import {
 import { submitDigitalDownload } from "@/modules/shop/products/lib/digital-download-submission";
 import {
   extractFreeDigitalDownloadFields,
+  removeFreeDigitalDownloadSubmitButtons,
   resolveFreeDigitalDownloadFormContent,
 } from "@/modules/shop/products/lib/free-download-form";
 import { FormRunner } from "@/modules/forms/builder/runner/form-runner";
@@ -29,6 +31,18 @@ import {
 } from "@/shared/ui/dialog";
 
 import { getCaptchaToken } from "../utils/captcha";
+
+const FreeDownloadSubmitButton = () => {
+  const { control } = useFormContext();
+  const { isSubmitting } = useFormState({ control });
+
+  return (
+    <Button className="flex-1" type="submit" disabled={isSubmitting}>
+      {isSubmitting && <Loader2 className="animate-spin" />}
+      Scarica gratis
+    </Button>
+  );
+};
 
 interface FreeDigitalDownloadModalProps {
   rootId: string;
@@ -55,7 +69,9 @@ export const FreeDigitalDownloadModal = ({
 }: FreeDigitalDownloadModalProps) => {
   const [success, setSuccess] = useState<string | undefined>("");
 
-  const resolvedContent = resolveFreeDigitalDownloadFormContent(content);
+  const resolvedContent = removeFreeDigitalDownloadSubmitButtons(
+    resolveFreeDigitalDownloadFormContent(content),
+  );
 
   const onHandleOpenChange = (open: boolean) => {
     setIsOpen(open);
@@ -133,24 +149,26 @@ export const FreeDigitalDownloadModal = ({
               <AlertDescription>{success}</AlertDescription>
             </Alert>
           ) : (
-            <>
-              <FormRunner
-                id={formId}
-                onSubmitHandler={onHandleSubmit}
-                content={resolvedContent}
-                gtmEventName={gtmEventName ?? null}
-              />
-              <GoogleRecaptchaV3 />
-            </>
+            <FormRunner
+              id={formId}
+              onSubmitHandler={onHandleSubmit}
+              content={resolvedContent}
+              gtmEventName={gtmEventName ?? null}
+              footer={
+                <div className="flex w-full flex-col gap-2">
+                  <GoogleRecaptchaV3 />
+                  <DialogFooter className="flex-row justify-between gap-2">
+                    <DialogClose asChild className="flex-1">
+                      <Button type="button" variant="outline">
+                        Chiudi
+                      </Button>
+                    </DialogClose>
+                    <FreeDownloadSubmitButton />
+                  </DialogFooter>
+                </div>
+              }
+            />
           )}
-
-          <DialogFooter className="w-full flex-row justify-end">
-            <DialogClose asChild>
-              <Button type="button" variant="outline">
-                Chiudi
-              </Button>
-            </DialogClose>
-          </DialogFooter>
         </div>
       </DialogContent>
     </Dialog>

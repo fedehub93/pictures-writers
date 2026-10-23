@@ -54,6 +54,9 @@ describe("FreeDigitalDownloadModal", () => {
     expect(html).toContain("Email");
     expect(html).toContain("Pictures Writers.");
     expect(html).toContain("Scarica gratis");
+
+    expect(html.indexOf("reCAPTCHA")).toBeLessThan(html.indexOf("Chiudi"));
+    expect(html.indexOf("Chiudi")).toBeLessThan(html.indexOf("Scarica gratis"));
   });
 
   it("renders the additional fields authored in a richer form", () => {

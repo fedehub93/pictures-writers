@@ -6,24 +6,18 @@ import { TextInputEnum } from "@/modules/forms/builder/types/properties";
 import {
   DEFAULT_FREE_DIGITAL_DOWNLOAD_FORM_CONTENT,
   extractFreeDigitalDownloadFields,
+  removeFreeDigitalDownloadSubmitButtons,
   resolveFreeDigitalDownloadFormContent,
 } from "../free-download-form";
 
-const contentWithoutButton = (): FormRootInstance => ({
-  ...DEFAULT_FREE_DIGITAL_DOWNLOAD_FORM_CONTENT,
-  children: DEFAULT_FREE_DIGITAL_DOWNLOAD_FORM_CONTENT.children.filter(
-    (node) => node.type !== "Button",
-  ),
-});
-
 describe("free download form content", () => {
-  it("provides the minimum lead-magnet fields (email, privacy, submit)", () => {
+  it("provides the minimum lead-magnet fields (email, privacy)", () => {
     const types =
       DEFAULT_FREE_DIGITAL_DOWNLOAD_FORM_CONTENT.children.map(
         (node) => node.type,
       );
 
-    expect(types).toEqual(["TextField", "CheckboxField", "Button"]);
+    expect(types).toEqual(["TextField", "CheckboxField"]);
 
     const [email, privacy] = DEFAULT_FREE_DIGITAL_DOWNLOAD_FORM_CONTENT.children;
 
@@ -56,7 +50,7 @@ describe("free download form content", () => {
     ).toBe(DEFAULT_FREE_DIGITAL_DOWNLOAD_FORM_CONTENT);
   });
 
-  it("keeps richer form content untouched when it already has a button", () => {
+  it("keeps richer form content untouched when it already has the minimum fields", () => {
     const richContent: FormRootInstance = {
       ...DEFAULT_FREE_DIGITAL_DOWNLOAD_FORM_CONTENT,
       children: [
@@ -78,17 +72,6 @@ describe("free download form content", () => {
     };
 
     expect(resolveFreeDigitalDownloadFormContent(richContent)).toBe(richContent);
-  });
-
-  it("appends a submit button to content authored without one", () => {
-    const content = contentWithoutButton();
-    const resolved = resolveFreeDigitalDownloadFormContent(content);
-
-    expect(content.children.some((node) => node.type === "Button")).toBe(false);
-    expect(resolved.children.at(-1)).toMatchObject({
-      type: "Button",
-      properties: { label: "Scarica gratis" },
-    });
   });
 
   it("adds the minimum fields to richer content that omits one", () => {
@@ -133,10 +116,48 @@ describe("free download form content", () => {
     expect(resolved.children.map((node) => node.id)).toEqual([
       "nome",
       "freelance",
+      "submit",
       "free-download-email",
       "free-download-privacy",
-      "submit",
     ]);
+  });
+});
+
+describe("removeFreeDigitalDownloadSubmitButtons", () => {
+  it("removes submit buttons so the modal can render its own footer", () => {
+    const content = {
+      ...DEFAULT_FREE_DIGITAL_DOWNLOAD_FORM_CONTENT,
+      children: [
+        ...DEFAULT_FREE_DIGITAL_DOWNLOAD_FORM_CONTENT.children,
+        {
+          id: "nested",
+          isContainer: true as const,
+          type: "Grid" as const,
+          properties: { label: "Grid", columns: 2 },
+          children: [
+            {
+              id: "nested-button",
+              isContainer: false as const,
+              type: "Button" as const,
+              properties: { label: "Invia" },
+            },
+          ],
+        },
+      ],
+    } satisfies FormRootInstance;
+
+    const stripped = removeFreeDigitalDownloadSubmitButtons(content);
+
+    expect(
+      JSON.stringify(stripped).includes('"type":"Button"'),
+    ).toBe(false);
+    expect(stripped.children.some((node) => node.type === "Grid")).toBe(true);
+  });
+
+  it("keeps content without buttons untouched", () => {
+    const content = DEFAULT_FREE_DIGITAL_DOWNLOAD_FORM_CONTENT;
+
+    expect(removeFreeDigitalDownloadSubmitButtons(content)).toBe(content);
   });
 });
 

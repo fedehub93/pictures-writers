@@ -1,5 +1,4 @@
 import type {
-  FormDisplayInstance,
   FormElementInstance,
   FormNodeDynamicInstance,
   FormRootInstance,
@@ -8,13 +7,6 @@ import { getFlatFields } from "@/modules/forms/builder/helpers/get-flat-fields";
 import { TextInputEnum } from "@/modules/forms/builder/types/properties";
 
 const PRIVACY_POLICY_URL = "https://www.iubenda.com/privacy-policy/49078580";
-
-const submitButton: FormDisplayInstance<"Button"> = {
-  id: "free-download-submit",
-  isContainer: false,
-  type: "Button",
-  properties: { label: "Scarica gratis" },
-};
 
 const emailField: FormElementInstance<"TextField"> = {
   id: "free-download-email",
@@ -76,7 +68,7 @@ export const DEFAULT_FREE_DIGITAL_DOWNLOAD_FORM_CONTENT: FormRootInstance = {
       },
     },
   },
-  children: [emailField, privacyField, submitButton],
+  children: [emailField, privacyField],
 };
 
 const hasSubmitButton = (nodes: FormNodeDynamicInstance[]): boolean =>
@@ -101,30 +93,41 @@ const isConsentField = (field: FlatField) =>
   field.type === "CheckboxField" &&
   /privacy|consent|termini|terms/i.test(fieldText(field));
 
-const insertBeforeRootButton = (
-  children: FormNodeDynamicInstance[],
-  fields: FormNodeDynamicInstance[],
-): FormNodeDynamicInstance[] => {
-  const buttonIndex = children.findIndex(
-    (node) => !node.isContainer && node.type === "Button",
-  );
+const withoutSubmitButtons = (
+  nodes: FormNodeDynamicInstance[],
+): FormNodeDynamicInstance[] =>
+  nodes.flatMap((node): FormNodeDynamicInstance[] => {
+    if (!node.isContainer && node.type === "Button") {
+      return [];
+    }
 
-  if (buttonIndex === -1) {
-    return [...children, ...fields];
+    if (node.isContainer) {
+      return [{ ...node, children: withoutSubmitButtons(node.children) }];
+    }
+
+    return [node];
+  });
+
+/**
+ * Removes the authored submit button so the modal can render its own footer
+ * (close + submit) inside the form, keeping the two actions on one row.
+ */
+export const removeFreeDigitalDownloadSubmitButtons = (
+  content: FormRootInstance,
+): FormRootInstance => {
+  if (!hasSubmitButton(content.children)) {
+    return content;
   }
 
-  return [
-    ...children.slice(0, buttonIndex),
-    ...fields,
-    ...children.slice(buttonIndex),
-  ];
+  return { ...content, children: withoutSubmitButtons(content.children) };
 };
 
 /**
  * Uses the linked form's builder content when it exists, and falls back to the
  * minimal email + privacy layout for legacy lead-magnet forms. Missing
- * required fields and the submit button are appended so an authored form stays
- * usable in the modal, while richer content is preserved.
+ * required fields are appended so an authored form stays usable in the modal,
+ * while richer content is preserved. The submit action lives in the modal
+ * footer, so no button is added here.
  */
 export const resolveFreeDigitalDownloadFormContent = (
   content: FormRootInstance | null | undefined,
@@ -148,16 +151,9 @@ export const resolveFreeDigitalDownloadFormContent = (
     missingFields.push(privacyField);
   }
 
-  const children =
-    missingFields.length > 0
-      ? insertBeforeRootButton(content.children, missingFields)
-      : content.children;
-
-  if (hasSubmitButton(children)) {
-    return children === content.children ? content : { ...content, children };
-  }
-
-  return { ...content, children: [...children, submitButton] };
+  return missingFields.length > 0
+    ? { ...content, children: [...content.children, ...missingFields] }
+    : content;
 };
 
 interface FreeDigitalDownloadFields {

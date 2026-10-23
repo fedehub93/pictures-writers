@@ -1,5 +1,7 @@
 "use client";
 
+import type { ReactNode } from "react";
+
 import { FormActionResponse } from "@/actions/submit-form";
 import type { FormRootInstance } from "../types/core";
 import { RootFormComponent } from "../ui/layouts/root/form-component";
@@ -9,6 +11,7 @@ interface FormRunnerProps {
   onSubmitHandler: (values: Record<string, any>) => Promise<FormActionResponse>;
   content: FormRootInstance;
   gtmEventName: string | null;
+  footer?: ReactNode;
 }
 
 export const FormRunner = ({
@@ -16,6 +19,7 @@ export const FormRunner = ({
   onSubmitHandler,
   content,
   gtmEventName,
+  footer,
 }: FormRunnerProps) => {
   return (
     <RootFormComponent
@@ -23,6 +27,7 @@ export const FormRunner = ({
       onSubmitHandler={onSubmitHandler}
       gtmEventName={gtmEventName}
       elementInstance={content}
+      footer={footer}
     />
   );
 };
