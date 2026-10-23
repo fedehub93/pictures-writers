@@ -300,6 +300,100 @@ export const sendFreeEbookEmail = async (
   return true;
 };
 
+/**
+ * Renders the delivery email for a free digital download.
+ *
+ * Returns `null` when the global template is not configured, the product is not
+ * a live `EBOOK`, or its metadata carries no downloadable format. Callers treat
+ * `null` as "delivery unavailable" and must not record a download, so a
+ * misconfigured setting never creates a submission the visitor cannot fulfil.
+ */
+export const buildFreeDigitalDownloadEmail = async (
+  email: string,
+  rootId: string,
+): Promise<GenericEmail | null> => {
+  const settings = await db.emailSetting.findFirst();
+
+  if (
+    !settings ||
+    !settings.emailSender ||
+    !settings.emailProvider ||
+    !settings.freeDigitalDownloadTemplateId
+  ) {
+    return null;
+  }
+
+  const root = await db.productRoot.findFirst({
+    where: {
+      id: rootId,
+      type: ProductType.EBOOK,
+      liveVersion: { isNot: null },
+    },
+    select: {
+      slug: true,
+      liveVersion: {
+        select: {
+          id: true,
+          title: true,
+          tiptapDescription: true,
+          metadata: true,
+          imageCover: {
+            select: {
+              url: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const product = root?.liveVersion;
+
+  if (!product || !isEbookMetadata(product.metadata)) return null;
+
+  // Prefer the PDF when present, otherwise deliver the first configured format.
+  const format =
+    product.metadata.formats.find((item) => item.type === "pdf") ??
+    product.metadata.formats[0];
+
+  if (!format) return null;
+
+  const downloadTemplate = await db.emailTemplate.findUnique({
+    where: {
+      id: settings.freeDigitalDownloadTemplateId,
+    },
+  });
+
+  if (!downloadTemplate?.bodyHtml) return null;
+
+  const template = handlebars.compile(downloadTemplate.bodyHtml);
+  const appUrl = (
+    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
+  ).replace(/\/+$/, "");
+  const downloadUrl = `${appUrl}/api/products/download?id=${encodeURIComponent(
+    rootId,
+  )}&format=${format.type}`;
+
+  return {
+    to: email,
+    from: resolveSender(settings)!,
+    subject: `Il tuo download gratuito: ${product.title}`,
+    html: template({
+      email,
+      id: product.id,
+      rootId,
+      slug: root.slug,
+      title: product.title,
+      description: renderTiptapHtml(product.tiptapDescription),
+      format: format.type,
+      imageCoverUrl: product.imageCover?.url,
+      downloadUrl,
+    }),
+    type: "free_digital_download_email",
+    replyTo: settings.emailResponse ?? undefined,
+  };
+};
+
 export const getEmailsSentToday = async () => {
   const today = new Date();
   const createdAt = { gte: startOfDay(today), lte: endOfDay(today) };

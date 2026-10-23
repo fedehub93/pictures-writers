@@ -49,6 +49,22 @@ export async function handleEbookDownloaded() {
   }
 }
 
+export async function handleDigitalDownloaded() {
+  const users = await db.user.findMany({
+    where: {},
+  });
+
+  for (const user of users) {
+    await db.notification.create({
+      data: {
+        userId: user.id,
+        type: "DIGITAL_DOWNLOAD",
+        message: `È stato eseguito il download di un prodotto digitale gratuito!`,
+      },
+    });
+  }
+}
+
 export async function handleProductPurchased({ type }: { type: ProductType }) {
   const users = await db.user.findMany({
     where: {},
