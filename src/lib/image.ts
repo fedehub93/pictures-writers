@@ -14,24 +14,28 @@ export type MapImageToMetadata = {
   placeholder: MetadataImage | null;
 };
 
+const FALLBACK_PLACEHOLDER =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mOsa2yqBwAFCAICLICSyQAAAABJRU5ErkJggg==";
+
 function bufferToBase64(buffer: Buffer): string {
   return `data:image/png;base64,${buffer.toString("base64")}`;
 }
 
-async function getFileBuffer(filepath: string) {
-  if (filepath.startsWith("http")) {
-    const response = await fetch(filepath);
-    if (!response.ok) throw new Error("Errore nel recupero dell'immagine");
-    return Buffer.from(await response.arrayBuffer());
-  } else {
-    const realFilepath = path.join(process.cwd(), "public", filepath);
-    return fs.readFile(realFilepath);
-  }
+async function getLocalFileBuffer(filepath: string) {
+  const realFilepath = path.join(process.cwd(), "public", filepath);
+  return fs.readFile(realFilepath);
 }
 
 export async function getPlaceholderImage(filepath: string) {
+  if (!filepath || /^https?:\/\//i.test(filepath)) {
+    return {
+      src: filepath,
+      placeholder: FALLBACK_PLACEHOLDER,
+    };
+  }
+
   try {
-    const originalBuffer = await getFileBuffer(filepath);
+    const originalBuffer = await getLocalFileBuffer(filepath);
     const resizedBuffer = await sharp(originalBuffer).resize(20).toBuffer();
     return {
       src: filepath,
@@ -40,8 +44,7 @@ export async function getPlaceholderImage(filepath: string) {
   } catch {
     return {
       src: filepath,
-      placeholder:
-        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mOsa2yqBwAFCAICLICSyQAAAABJRU5ErkJggg==",
+      placeholder: FALLBACK_PLACEHOLDER,
     };
   }
 }
