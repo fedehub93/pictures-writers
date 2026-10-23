@@ -18,6 +18,7 @@ import {
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -27,6 +28,8 @@ import { Skeleton } from "@/shared/ui/skeleton";
 import { settingsUpdateSchema, SettingsUpdateValues } from "../../schemas";
 import { SettingsGet } from "../../types";
 import { useSuspenseTemplates } from "@/modules/mails/templates";
+
+const NO_TEMPLATE_VALUE = "__none__";
 
 interface EmailSubscriptionFormProps {
   settings: SettingsGet;
@@ -45,6 +48,8 @@ const EmailSubscriptionFormContent = ({
       id: settings.id,
       subscriptionTemplateId: settings.subscriptionTemplateId ?? null,
       freeEbookTemplateId: settings.freeEbookTemplateId ?? null,
+      freeDigitalDownloadTemplateId:
+        settings.freeDigitalDownloadTemplateId ?? null,
       webinarTemplateId: settings.webinarTemplateId ?? null,
     },
   });
@@ -128,6 +133,37 @@ const EmailSubscriptionFormContent = ({
                           {template.name}
                         </SelectItem>
                       ))}
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="freeDigitalDownloadTemplateId"
+              render={({ field }) => (
+                <FormItem className="flex-auto min-w-40">
+                  <FormLabel>Free digital download template</FormLabel>
+                  <Select
+                    value={field.value ?? NO_TEMPLATE_VALUE}
+                    onValueChange={(value) =>
+                      field.onChange(value === NO_TEMPLATE_VALUE ? null : value)
+                    }
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an email template" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value={NO_TEMPLATE_VALUE}>None</SelectItem>
+                        {templates.map((template) => (
+                          <SelectItem key={template.name} value={template.id}>
+                            {template.name}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
                     </SelectContent>
                   </Select>
                 </FormItem>

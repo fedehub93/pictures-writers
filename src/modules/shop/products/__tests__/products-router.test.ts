@@ -42,6 +42,7 @@ const rootIds: string[] = [];
 const mediaIds: string[] = [];
 const userIds: string[] = [];
 const categoryIds: string[] = [];
+const formIds: string[] = [];
 let caller: ReturnType<typeof createCaller>;
 let userId: string;
 
@@ -117,6 +118,9 @@ afterEach(async () => {
   if (categoryIds.length > 0) {
     await db.productCategory.deleteMany({ where: { id: { in: categoryIds } } });
   }
+  if (formIds.length > 0) {
+    await db.form.deleteMany({ where: { id: { in: formIds } } });
+  }
   if (userIds.length > 0) {
     await db.user.deleteMany({ where: { id: { in: userIds } } });
   }
@@ -124,6 +128,7 @@ afterEach(async () => {
   mediaIds.length = 0;
   userIds.length = 0;
   categoryIds.length = 0;
+  formIds.length = 0;
 });
 
 describe("productsRouter", () => {
@@ -367,6 +372,30 @@ describe("productsRouter", () => {
         where: { id: created.rootId! },
       });
       expect(root.slug).toBe("atomic-title");
+    });
+
+    it("persists the linked form for a form-acquired product", async () => {
+      const created = await createProduct({ type: ProductType.EBOOK });
+      const form = await db.form.create({
+        data: {
+          name: `Free download ${randomUUID()}`,
+          interactionType: "ebook_downloaded",
+        },
+      });
+      formIds.push(form.id);
+
+      const updated = await caller.update({
+        id: created.id,
+        rootId: created.rootId!,
+        acquisitionMode: ProductAcquisitionMode.FORM,
+        formId: form.id,
+      });
+
+      const loaded = await db.productVersion.findUniqueOrThrow({
+        where: { id: updated.id },
+      });
+      expect(loaded.acquisitionMode).toBe(ProductAcquisitionMode.FORM);
+      expect(loaded.formId).toBe(form.id);
     });
 
     it("does not dereference missing inputs when forking a version", async () => {

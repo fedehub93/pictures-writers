@@ -28,10 +28,13 @@ import { useAutoSave } from "@/modules/blog/shared/hooks/use-auto-save";
 import { productUpdateSchema } from "../../../schemas";
 import { useProductsFilters } from "../../../hooks/use-products-filters";
 
+import { ProductFormSelect } from "./product-form-select";
+
 const formSchema = productUpdateSchema.pick({
   id: true,
   rootId: true,
   acquisitionMode: true,
+  formId: true,
   price: true,
   discountedPrice: true,
   isFree: true,
@@ -51,6 +54,7 @@ interface ProductPricingFormProps {
   rootId: string;
   initialData: {
     acquisitionMode: ProductAcquisitionMode;
+    formId: string | null;
     price: number | null;
     discountedPrice: number | null;
     isFree: boolean;
@@ -72,12 +76,15 @@ export const ProductPricingForm = ({
       id,
       rootId,
       acquisitionMode: initialData.acquisitionMode,
+      formId: initialData.formId,
       price: initialData.price ?? 0,
       discountedPrice: initialData.discountedPrice ?? 0,
       isFree: initialData.isFree,
     },
     mode: "onChange",
   });
+
+  const acquisitionMode = form.watch("acquisitionMode");
 
   const { mutate: updateProduct, isPending } = useMutation(
     trpc.products.update.mutationOptions({
@@ -138,6 +145,13 @@ export const ProductPricingForm = ({
             </Field>
           )}
         />
+        {acquisitionMode === ProductAcquisitionMode.FORM && (
+          <ProductFormSelect
+            control={form.control}
+            disabled={isPending}
+            onChange={handleAutoSave}
+          />
+        )}
         <GenericMoneyInput
           control={form.control}
           name="price"

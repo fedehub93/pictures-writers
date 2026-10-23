@@ -6,7 +6,11 @@ import { Prisma } from "@/generated/prisma";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 
-import { formInsertSchema, formUpdateSchema } from "../schemas";
+import {
+  formInsertSchema,
+  formUpdateSchema,
+  normalizeInteractionType,
+} from "../schemas";
 import type { FormRootInstance } from "../builder/types/core";
 
 import {
@@ -23,6 +27,7 @@ export const formsRouter = createTRPCRouter({
       const form = await db.form.create({
         data: {
           ...input,
+          interactionType: normalizeInteractionType(input.interactionType),
           content: {
             id: "root",
             type: "Root",
@@ -46,7 +51,12 @@ export const formsRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       const updatedForm = await db.form.update({
         where: { id: input.id },
-        data: { ...input },
+        data: {
+          ...input,
+          ...(input.interactionType !== undefined && {
+            interactionType: normalizeInteractionType(input.interactionType),
+          }),
+        },
       });
 
       if (!updatedForm) {

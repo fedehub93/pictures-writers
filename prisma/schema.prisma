@@ -609,6 +609,9 @@ model EmailSetting {
   webinarTemplate   EmailTemplate? @relation(name: "emailSetting3", fields: [webinarTemplateId], references: [id], onDelete: Cascade)
   webinarTemplateId String?
 
+  freeDigitalDownloadTemplate   EmailTemplate? @relation(name: "emailSetting4", fields: [freeDigitalDownloadTemplateId], references: [id], onDelete: Cascade)
+  freeDigitalDownloadTemplateId String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -626,9 +629,10 @@ model EmailTemplate {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  emailSettingSubscription EmailSetting[] @relation(name: "emailSetting1")
-  emailSettingFreeEbook    EmailSetting[] @relation(name: "emailSetting2")
-  emailSettingWebinar      EmailSetting[] @relation(name: "emailSetting3")
+  emailSettingSubscription       EmailSetting[] @relation(name: "emailSetting1")
+  emailSettingFreeEbook          EmailSetting[] @relation(name: "emailSetting2")
+  emailSettingWebinar            EmailSetting[] @relation(name: "emailSetting3")
+  emailSettingFreeDigitalDownload EmailSetting[] @relation(name: "emailSetting4")
 }
 
 enum AudienceType {
@@ -1211,6 +1215,10 @@ model Form {
   gtmEventName String? // es: "form_submission_laboratorio"
   gtmCategory  String? // es: "lead" o "submission"
   gtmLabel     String? // es: "Laboratorio di scrittura novembre"
+
+  /// Interaction written on the Contact when this form is submitted, e.g.
+  /// "ebook_downloaded" or "workbook_downloaded".
+  interactionType String?
 
   productVersions ProductVersion[]
   submissions FormSubmission[]

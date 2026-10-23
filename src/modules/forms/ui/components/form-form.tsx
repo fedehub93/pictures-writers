@@ -41,6 +41,7 @@ export const FormForm = ({
       gtmLabel: initialValues?.gtmLabel ?? "",
       gtmEventName: initialValues?.gtmEventName ?? "",
       gtmCategory: initialValues?.gtmCategory ?? "",
+      interactionType: initialValues?.interactionType ?? "",
     },
   });
 
@@ -119,6 +120,13 @@ export const FormForm = ({
           name="gtmCategory"
           label="GTM Category"
           placeholder="lead"
+          disabled={isPending}
+        />
+        <GenericInput
+          control={form.control}
+          name="interactionType"
+          label="Interaction type"
+          placeholder="ebook_downloaded"
           disabled={isPending}
         />
 

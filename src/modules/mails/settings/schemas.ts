@@ -21,6 +21,7 @@ export const settingsInsertSchema = z.object({
   maxEmailsPerDay: z.coerce.number<number>().int().optional(),
   subscriptionTemplateId: z.string().nullable().optional(),
   freeEbookTemplateId: z.string().nullable().optional(),
+  freeDigitalDownloadTemplateId: z.string().nullable().optional(),
   webinarTemplateId: z.string().nullable().optional(),
 });
 
