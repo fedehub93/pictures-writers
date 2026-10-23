@@ -47,7 +47,6 @@ const EmailSubscriptionFormContent = ({
     defaultValues: {
       id: settings.id,
       subscriptionTemplateId: settings.subscriptionTemplateId ?? null,
-      freeEbookTemplateId: settings.freeEbookTemplateId ?? null,
       freeDigitalDownloadTemplateId:
         settings.freeDigitalDownloadTemplateId ?? null,
       webinarTemplateId: settings.webinarTemplateId ?? null,
@@ -88,34 +87,6 @@ const EmailSubscriptionFormContent = ({
               render={({ field }) => (
                 <FormItem className="flex-auto min-w-40">
                   <FormLabel>Subscription Template</FormLabel>
-                  <Select
-                    value={field.value ?? ""}
-                    onValueChange={(value) =>
-                      field.onChange(value === "" ? null : value)
-                    }
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select an email template" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {templates.map((template) => (
-                        <SelectItem key={template.name} value={template.id}>
-                          {template.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="freeEbookTemplateId"
-              render={({ field }) => (
-                <FormItem className="flex-auto min-w-40">
-                  <FormLabel>Free Ebook Template</FormLabel>
                   <Select
                     value={field.value ?? ""}
                     onValueChange={(value) =>

@@ -33,22 +33,6 @@ export async function handleUserSubscribed() {
   }
 }
 
-export async function handleEbookDownloaded() {
-  const users = await db.user.findMany({
-    where: {},
-  });
-
-  for (const user of users) {
-    await db.notification.create({
-      data: {
-        userId: user.id,
-        type: "EBOOK_DOWNLOADED",
-        message: `È stato eseguito il download dell'ebook!`,
-      },
-    });
-  }
-}
-
 export async function handleDigitalDownloaded() {
   const users = await db.user.findMany({
     where: {},

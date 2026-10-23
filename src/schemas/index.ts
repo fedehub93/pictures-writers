@@ -1,7 +1,5 @@
 import * as v from "valibot";
 
-import { EbookType } from "@/modules/shop/products/types";
-
 export const EmailSchemaValibot = v.pipe(
   v.string(),
   v.nonEmpty("Please enter your email."),
@@ -10,12 +8,6 @@ export const EmailSchemaValibot = v.pipe(
 
 export const SubscribeSchemaValibot = v.object({
   email: EmailSchemaValibot,
-});
-
-export const FreeEbookSchemaValibot = v.object({
-  email: EmailSchemaValibot,
-  rootId: v.string(),
-  format: v.enum(EbookType),
 });
 
 export const FreeDigitalDownloadSchemaValibot = v.object({

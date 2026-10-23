@@ -10,7 +10,6 @@ import { formatBytes, formatDate, formatPrice } from "@/lib/format";
 import { EbookFormat } from "@/modules/shop/products/types";
 
 import { FreeDigitalDownloadModal } from "@/app/(home)/_components/modals/free-digital-download-modal";
-import { FreeEbookModal } from "@/app/(home)/_components/modals/free-ebook-modal";
 import { BuyButton } from "./buy-button";
 import { BoxInfo } from "./box-info";
 import { ProductAcquisitionMode } from "@/generated/prisma";
@@ -85,7 +84,7 @@ export const EbookInfo = ({
         <p>
           Formato: <span className="font-bold">PDF</span>
         </p>
-        {acquisitionMode === ProductAcquisitionMode.FORM && (
+        {acquisitionMode === ProductAcquisitionMode.FORM && formId && (
           <BuyButton setIsOpen={setIsOpen} />
         )}
       </div>
@@ -111,26 +110,17 @@ export const EbookInfo = ({
         />
       </div>
       <Separator />
-      {acquisitionMode === ProductAcquisitionMode.FORM &&
-        (formId ? (
-          <FreeDigitalDownloadModal
-            rootId={rootId}
-            formId={formId}
-            productSlug={slug}
-            title={title}
-            imageCoverUrl={imageCoverUrl}
-            isOpen={isOpen}
-            setIsOpen={setIsOpen}
-          />
-        ) : (
-          <FreeEbookModal
-            rootId={rootId}
-            title={title}
-            imageCoverUrl={imageCoverUrl}
-            isOpen={isOpen}
-            setIsOpen={setIsOpen}
-          />
-        ))}
+      {acquisitionMode === ProductAcquisitionMode.FORM && formId && (
+        <FreeDigitalDownloadModal
+          rootId={rootId}
+          formId={formId}
+          productSlug={slug}
+          title={title}
+          imageCoverUrl={imageCoverUrl}
+          isOpen={isOpen}
+          setIsOpen={setIsOpen}
+        />
+      )}
     </div>
   );
 };

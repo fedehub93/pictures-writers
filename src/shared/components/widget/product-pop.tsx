@@ -7,11 +7,11 @@ import { useMediaQuery } from "usehooks-ts";
 import { BeatLoader } from "react-spinners";
 import { valibotResolver } from "@hookform/resolvers/valibot";
 import Link from "next/link";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { sendGTMEvent } from "@next/third-parties/google";
 
 import { Button } from "@/shared/ui/button";
+import { Checkbox } from "@/shared/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -23,9 +23,12 @@ import { getLocalStorage, setLocalStorage } from "@/lib/storage-helper";
 import { Form } from "@/shared/ui/form";
 
 import { WidgetProductPopActionType } from "@/types";
-import { EbookType } from "@/modules/shop/products/types";
-import { FreeEbookSchemaValibot } from "@/schemas";
-import { subscribeFreeEbook } from "@/actions/subscribe-free-ebook";
+import {
+  PRODUCT_POP_SOURCE,
+  buildDigitalDownloadEvent,
+} from "@/modules/shop/products/lib/digital-download-event";
+import { submitDigitalDownload } from "@/modules/shop/products/lib/digital-download-submission";
+import { FreeDigitalDownloadSchemaValibot } from "@/schemas";
 
 import { GoogleRecaptchaV3 } from "@/shared/components/google-recaptchav3";
 
@@ -33,12 +36,13 @@ import { GenericInput } from "@/shared/components/form-component/generic-input";
 
 import { getCaptchaToken } from "@/app/(home)/_components/utils/captcha";
 
-const FREE_EBOOK_MODAL_KEY = "freeEbookModalShown";
+const FREE_DIGITAL_DOWNLOAD_MODAL_KEY = "freeEbookModalShown";
 
 interface WidgetProductPopProps {
   rootId: string;
   title: string;
   slug: string;
+  formId: string | null;
   imageCoverUrl: string;
   label: string;
   autoOpenDelay: number;
@@ -49,6 +53,7 @@ export const WidgetProductPop = ({
   rootId,
   title,
   slug,
+  formId,
   imageCoverUrl,
   label,
   actionType,
@@ -64,12 +69,13 @@ export const WidgetProductPop = ({
 
   const autoOpenDelayMs = autoOpenDelay * 1000;
 
-  const form = useForm<v.InferInput<typeof FreeEbookSchemaValibot>>({
-    resolver: valibotResolver(FreeEbookSchemaValibot),
+  const form = useForm<v.InferInput<typeof FreeDigitalDownloadSchemaValibot>>({
+    resolver: valibotResolver(FreeDigitalDownloadSchemaValibot),
+    mode: "onChange",
     defaultValues: {
       email: "",
       rootId,
-      format: EbookType.PDF,
+      privacyConsent: false,
     },
   });
 
@@ -77,7 +83,7 @@ export const WidgetProductPop = ({
 
   useEffect(() => {
     if (true) {
-      const lastShown = getLocalStorage(FREE_EBOOK_MODAL_KEY, false);
+      const lastShown = getLocalStorage(FREE_DIGITAL_DOWNLOAD_MODAL_KEY, false);
       const now = new Date().getTime();
 
       // Controlla se sono passate più di 24 ore
@@ -96,18 +102,22 @@ export const WidgetProductPop = ({
   // Funzione per impostare l'expire time nel localStorage
   const setPopupExpiration = () => {
     const now = new Date().getTime();
-    setLocalStorage(FREE_EBOOK_MODAL_KEY, now.toString());
+    setLocalStorage(FREE_DIGITAL_DOWNLOAD_MODAL_KEY, now.toString());
   };
 
-  const onHandleSubmit = async (
-    values: v.InferInput<typeof FreeEbookSchemaValibot>
+  const onHandleSubmit = (
+    values: v.InferInput<typeof FreeDigitalDownloadSchemaValibot>,
   ) => {
-    try {
-      setError("");
-      setSuccess("");
+    if (!formId) {
+      setError("Questo prodotto non ha ancora un modulo di download.");
+      return;
+    }
 
-      startTransition(async () => {
-        // Execute reCAPTCHA first
+    startTransition(async () => {
+      try {
+        setError("");
+        setSuccess("");
+
         setIsRecaptchaLoading(true);
         const recaptchaToken = await getCaptchaToken("subscribe_product");
         setIsRecaptchaLoading(false);
@@ -117,35 +127,32 @@ export const WidgetProductPop = ({
           return;
         }
 
-        subscribeFreeEbook(values, recaptchaToken).then((data) => {
-          if (!data.success) {
-            setError(data.message);
-            setSuccess("");
-          }
-
-          if (data.success && typeof window !== "undefined") {
-            setError("");
-            setSuccess(data.message);
-            sendGTMEvent({
-              event: "ebook_download",
-              product_name: title,
-              product_id: rootId,
-              form_type: "ebook",
-              form_location: "ebook_details_page",
-              page_path: window.location.pathname,
-              page_title: document.title,
-              email_domain: values.email.split("@")[1],
-            });
-          }
+        const data = await submitDigitalDownload({
+          values,
+          recaptchaToken,
+          event: buildDigitalDownloadEvent({
+            productId: rootId,
+            productSlug: slug,
+            productName: title,
+            formId,
+            source: PRODUCT_POP_SOURCE,
+          }),
         });
-      });
-    } catch (error) {
-      setIsRecaptchaLoading(false);
-      setError(
-        "Qualcosa è andato storto. Prego riprovare o contattare il supporto."
-      );
-      setSuccess("");
-    }
+
+        if (!data.success) {
+          setError(data.message);
+          return;
+        }
+
+        setSuccess(data.message);
+      } catch (_error) {
+        setIsRecaptchaLoading(false);
+        setError(
+          "Qualcosa è andato storto. Prego riprovare o contattare il supporto.",
+        );
+        setSuccess("");
+      }
+    });
   };
 
   const onHandleOpenChange = (isOpen: boolean) => {
@@ -198,58 +205,89 @@ export const WidgetProductPop = ({
               <div className="w-full text-3xl font-extrabold leading-8">
                 {title}
               </div>
-              {error && (
-                <div className="p-4 bg-destructive shadow-2xs rounded-md mb-2 font-bold">
-                  {error}
-                </div>
-              )}
-              {success && (
-                <div className="p-4 bg-emerald-100 shadow-2xs rounded-md mb-2">
-                  {success}
-                </div>
-              )}
-
-              {isPending && !success ? (
-                <BeatLoader className="mx-auto" />
+              {!formId ? (
+                <Button asChild className="font-bold mt-8">
+                  <Link href={`/shop/ebooks/${slug}`} prefetch>
+                    Vai al prodotto
+                  </Link>
+                </Button>
               ) : (
-                <Form {...form}>
-                  <form
-                    className="flex items-center gap-x-2"
-                    onSubmit={form.handleSubmit(onHandleSubmit)}
-                  >
-                    <div className="flex flex-col gap-y-4">
-                      <GenericInput
-                        control={form.control}
-                        name="email"
-                        label="Email"
-                        placeholder="mario.rossi@gmail.com"
-                        disabled={isSubmitting}
-                      />
-                      <div>
-                        <div className="text-xs text-muted-foreground">
-                          * Confermando il modulo accetti la&nbsp;
-                          <Link
-                            className="text-primary"
-                            href="https://www.iubenda.com/privacy-policy/49078580"
-                          >
-                            Privacy Policy
-                          </Link>{" "}
-                          di Pictures Writers.
-                        </div>
-                        <GoogleRecaptchaV3 />
-                      </div>
-                      <DialogFooter className="flex flex-row gap-x-2 justify-between">
-                        <Button
-                          className="flex-1"
-                          type="submit"
-                          disabled={isSubmitting || !isValid}
-                        >
-                          Download eBook
-                        </Button>
-                      </DialogFooter>
+                <>
+                  {error && (
+                    <div className="p-4 bg-destructive shadow-2xs rounded-md mb-2 font-bold">
+                      {error}
                     </div>
-                  </form>
-                </Form>
+                  )}
+                  {success && (
+                    <div className="p-4 bg-emerald-100 shadow-2xs rounded-md mb-2">
+                      {success}
+                    </div>
+                  )}
+
+                  {isPending && !success ? (
+                    <BeatLoader className="mx-auto" />
+                  ) : (
+                    <Form {...form}>
+                      <form
+                        className="flex items-center gap-x-2"
+                        onSubmit={form.handleSubmit(onHandleSubmit)}
+                      >
+                        <div className="flex flex-col gap-y-4">
+                          <GenericInput
+                            control={form.control}
+                            name="email"
+                            label="Email"
+                            placeholder="mario.rossi@gmail.com"
+                            disabled={isSubmitting}
+                          />
+                          <Controller
+                            control={form.control}
+                            name="privacyConsent"
+                            render={({ field }) => (
+                              <div className="flex items-start gap-x-2">
+                                <Checkbox
+                                  id="product-pop-privacy"
+                                  checked={field.value === true}
+                                  onCheckedChange={(checked) =>
+                                    field.onChange(checked === true)
+                                  }
+                                  disabled={isSubmitting}
+                                />
+                                <label
+                                  htmlFor="product-pop-privacy"
+                                  className="text-xs text-muted-foreground"
+                                >
+                                  Accetto la{" "}
+                                  <Link
+                                    className="text-primary"
+                                    href="https://www.iubenda.com/privacy-policy/49078580"
+                                  >
+                                    Privacy Policy
+                                  </Link>{" "}
+                                  di Pictures Writers.
+                                </label>
+                              </div>
+                            )}
+                          />
+                          <div>
+                            <GoogleRecaptchaV3 />
+                          </div>
+                          <DialogFooter className="flex flex-row gap-x-2 justify-between">
+                            <Button
+                              className="flex-1"
+                              type="submit"
+                              disabled={
+                                isSubmitting || !isValid || isRecaptchaLoading
+                              }
+                            >
+                              Scarica gratis
+                            </Button>
+                          </DialogFooter>
+                        </div>
+                      </form>
+                    </Form>
+                  )}
+                </>
               )}
             </div>
           )}

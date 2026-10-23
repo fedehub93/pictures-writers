@@ -9,10 +9,7 @@ import {
 } from "@/shared/dashboard/types";
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 
-import {
-  BUILT_IN_EBOOK_FORM_ID,
-  BUILT_IN_NEWSLETTER_FORM_ID,
-} from "@/modules/forms/built-in-forms";
+import { BUILT_IN_NEWSLETTER_FORM_ID } from "@/modules/forms/built-in-forms";
 
 import { getMetric, permittedMetrics } from "./metrics/registry";
 
@@ -84,9 +81,9 @@ export const dashboardRouter = createTRPCRouter({
 
   /**
    * The dynamic forms a Trend's submissions filter may narrow to, for the
-   * current user. Excludes the non-rendered shadow forms (newsletter, eBook),
-   * which never receive a `FormSubmission`, so the picker offers only forms
-   * that can actually have data. Empty when the user may not read submissions.
+   * current user. Excludes the non-rendered newsletter shadow form, which never
+   * receives a `FormSubmission`, so the picker offers only forms that can
+   * actually have data. Empty when the user may not read submissions.
    */
   getFormOptions: protectedProcedure.query(async ({ ctx }) => {
     const user = await requireUser(ctx.auth.id);
@@ -97,7 +94,7 @@ export const dashboardRouter = createTRPCRouter({
 
     const forms = await db.form.findMany({
       where: {
-        id: { notIn: [BUILT_IN_NEWSLETTER_FORM_ID, BUILT_IN_EBOOK_FORM_ID] },
+        id: { notIn: [BUILT_IN_NEWSLETTER_FORM_ID] },
       },
       orderBy: { name: "asc" },
       select: { id: true, name: true },

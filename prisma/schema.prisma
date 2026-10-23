@@ -603,9 +603,6 @@ model EmailSetting {
   subscriptionTemplate   EmailTemplate? @relation(name: "emailSetting1", fields: [subscriptionTemplateId], references: [id], onDelete: Cascade)
   subscriptionTemplateId String?
 
-  freeEbookTemplate   EmailTemplate? @relation(name: "emailSetting2", fields: [freeEbookTemplateId], references: [id], onDelete: Cascade)
-  freeEbookTemplateId String?
-
   webinarTemplate   EmailTemplate? @relation(name: "emailSetting3", fields: [webinarTemplateId], references: [id], onDelete: Cascade)
   webinarTemplateId String?
 
@@ -630,7 +627,6 @@ model EmailTemplate {
   updatedAt DateTime @updatedAt
 
   emailSettingSubscription       EmailSetting[] @relation(name: "emailSetting1")
-  emailSettingFreeEbook          EmailSetting[] @relation(name: "emailSetting2")
   emailSettingWebinar            EmailSetting[] @relation(name: "emailSetting3")
   emailSettingFreeDigitalDownload EmailSetting[] @relation(name: "emailSetting4")
 }

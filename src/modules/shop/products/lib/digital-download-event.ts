@@ -1,8 +1,11 @@
 export const DIGITAL_DOWNLOAD_EVENT_NAME = "digital_download";
 
 export const PRODUCT_DETAIL_PAGE_SOURCE = "product_detail_page";
+export const PRODUCT_POP_SOURCE = "product_pop";
 
-export type DigitalDownloadSource = typeof PRODUCT_DETAIL_PAGE_SOURCE;
+export type DigitalDownloadSource =
+  | typeof PRODUCT_DETAIL_PAGE_SOURCE
+  | typeof PRODUCT_POP_SOURCE;
 
 interface DigitalDownloadEventInput {
   productId: string;

@@ -47,6 +47,18 @@ describe("add_digital_download_plumbing migration", () => {
     await client.query("BEGIN");
 
     try {
+      // The cleanup migration removes the legacy column and shadow form. Put
+      // them back inside this transaction so the original migration can be
+      // replayed and exercised against its historical schema.
+      await client.query(
+        `ALTER TABLE "EmailSetting" ADD COLUMN IF NOT EXISTS "freeEbookTemplateId" TEXT`,
+      );
+      await client.query(
+        `INSERT INTO "Form" ("id", "name", "updatedAt")
+         VALUES ('built-in-form-ebook', 'eBook (interno)', CURRENT_TIMESTAMP)
+         ON CONFLICT ("id") DO NOTHING`,
+      );
+
       await client.query(
         `INSERT INTO "EmailTemplate" ("id", "name", "updatedAt")
          VALUES ($1, 'Legacy ebook template', CURRENT_TIMESTAMP)`,

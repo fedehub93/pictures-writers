@@ -325,7 +325,7 @@ describe("dashboard.getMetrics", () => {
 });
 
 describe("dashboard.getFormOptions", () => {
-  it("lists the dynamic forms and drops the non-rendered shadow forms", async () => {
+  it("lists the dynamic forms and drops the non-rendered newsletter shadow form", async () => {
     const form = await db.form.create({
       data: { name: `Feedback ${randomUUID()}` },
     });
@@ -337,9 +337,6 @@ describe("dashboard.getFormOptions", () => {
     expect(options).toContainEqual({ id: form.id, label: form.name });
     expect(options.map((option) => option.id)).not.toContain(
       "built-in-form-newsletter",
-    );
-    expect(options.map((option) => option.id)).not.toContain(
-      "built-in-form-ebook",
     );
   });
 

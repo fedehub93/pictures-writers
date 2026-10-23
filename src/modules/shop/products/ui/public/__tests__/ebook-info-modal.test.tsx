@@ -8,10 +8,6 @@ vi.mock("@/app/(home)/_components/modals/free-digital-download-modal", () => ({
   FreeDigitalDownloadModal: () => <div>generic-download-modal</div>,
 }));
 
-vi.mock("@/app/(home)/_components/modals/free-ebook-modal", () => ({
-  FreeEbookModal: () => <div>legacy-ebook-modal</div>,
-}));
-
 import { EbookInfo } from "../ebook-info";
 
 const baseProps = {
@@ -36,13 +32,11 @@ describe("ebook product page download modal", () => {
     );
 
     expect(html).toContain("generic-download-modal");
-    expect(html).not.toContain("legacy-ebook-modal");
   });
 
-  it("keeps the legacy modal as the fallback when no form is linked", () => {
+  it("mounts no download modal when the free ebook has no linked form", () => {
     const html = renderToStaticMarkup(<EbookInfo {...baseProps} formId={null} />);
 
-    expect(html).toContain("legacy-ebook-modal");
     expect(html).not.toContain("generic-download-modal");
   });
 
@@ -56,6 +50,5 @@ describe("ebook product page download modal", () => {
     );
 
     expect(html).not.toContain("generic-download-modal");
-    expect(html).not.toContain("legacy-ebook-modal");
   });
 });

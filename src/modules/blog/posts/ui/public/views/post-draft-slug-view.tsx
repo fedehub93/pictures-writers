@@ -86,6 +86,7 @@ export const PostDraftSlugView = async ({ slug }: PostDraftSlugViewProps) => {
           rootId={product.rootId!}
           title={product.title}
           slug={product.slug}
+          formId={product.formId}
           imageCoverUrl={product.imageCover?.url ?? ""}
           label={widgetPopup.metadata.label}
           actionType={widgetPopup.metadata.actionType}

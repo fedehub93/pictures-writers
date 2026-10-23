@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { cleanupAutomationTables } from "@/modules/automations/lib/cleanup";
 import { submissionsMetric } from "@/modules/forms/submissions/server/metrics";
+import { ebooksMetric } from "@/modules/mails/contacts/server/metrics";
 import {
   AutomationStatus,
   EmailProvider,
@@ -361,6 +362,50 @@ describe("subscribeFreeDigitalProduct", () => {
 
     expect(result.success).toBe(true);
     expect(await db.automationRun.count()).toBe(0);
+  });
+
+  it("keeps the existing free ebook working through the generic form", async () => {
+    const email = uniqueEmail();
+    const form = await db.form.findUniqueOrThrow({
+      where: { id: "free-ebook-download" },
+    });
+    const { root } = await createEbookProduct(form.id);
+    await configureDeliveryTemplate();
+    await publishFormAutomation(form.id);
+
+    const from = startOfMonth(new Date());
+    const to = endOfMonth(new Date());
+    const before = await ebooksMetric.timeSeries(from, to);
+
+    const result = await subscribeFreeDigitalProduct(
+      validDownload(root.id, email),
+      "token",
+    );
+
+    expect(result.success).toBe(true);
+    expect(
+      await db.formSubmission.count({ where: { formId: form.id, email } }),
+    ).toBe(1);
+
+    const contact = await db.emailContact.findFirstOrThrow({
+      where: { email },
+    });
+    expect(
+      await db.emailContactInteraction.count({
+        where: {
+          contactId: contact.id,
+          interactionType: "ebook_downloaded",
+        },
+      }),
+    ).toBe(1);
+
+    // The legacy `ebooks` metric is preserved as the unique-contact view.
+    const after = await ebooksMetric.timeSeries(from, to);
+    expect(after.total).toBe(before.total + 1);
+
+    // The existing ebook's nurture sequence follows the new linked form.
+    const run = await db.automationRun.findFirstOrThrow();
+    expect(run.payload).toMatchObject({ formId: form.id, email });
   });
 
   it("shows downloads in the Form submissions metric, scoped by linked form", async () => {
