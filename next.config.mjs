@@ -1,13 +1,21 @@
 import path from "path";
 import withBundleAnalyzer from "@next/bundle-analyzer";
 
+import {
+  MEDIA_DEVICE_SIZES,
+  MEDIA_IMAGE_SIZES,
+  MEDIA_IMAGE_QUALITIES,
+  UPLOADTHING_FILE_ORIGIN,
+  UPLOADTHING_FILE_PATH,
+} from "./src/modules/media/lib/image-ladder.mjs";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   async rewrites() {
     return [
       {
         source: "/assets/:id",
-        destination: "https://ghhc7ejbae.ufs.sh/f/:id",
+        destination: `${UPLOADTHING_FILE_ORIGIN}${UPLOADTHING_FILE_PATH}:id`,
       },
     ];
   },
@@ -31,30 +39,15 @@ const nextConfig = {
     ];
   },
   images: {
-    minimumCacheTTL: 2678400,
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "utfs.io",
-      },
-      {
-        protocol: "https",
-        hostname: "ghhc7ejbae.ufs.sh",
-        pathname: "/f/*",
-      },
-      {
-        protocol: "https",
-        hostname: "pictureswriters.com",
-        pathname: "/assets/**",
-      },
-      {
-        protocol: "https",
-        hostname: "**.pictureswriters.com",
-        pathname: "/assets/**",
-      },
-    ],
-    qualities: [75, 100],
-    formats: ["image/webp"],
+    // Media is delivered from the storage provider's CDN by a pure loader: no
+    // `/_next/image` route, no remote patterns and no on-VPS resizing. The
+    // ladder is shared with the media processor so the loader only ever asks
+    // for widths that exist.
+    loader: "custom",
+    loaderFile: "./src/modules/media/lib/image-loader.ts",
+    deviceSizes: [...MEDIA_DEVICE_SIZES],
+    imageSizes: [...MEDIA_IMAGE_SIZES],
+    qualities: [...MEDIA_IMAGE_QUALITIES],
   },
   trailingSlash: true,
   typedRoutes: true,

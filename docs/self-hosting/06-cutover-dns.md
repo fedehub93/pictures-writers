@@ -265,8 +265,8 @@ Attenzione:
 
 - Una sola istanza: nessuna scalabilità orizzontale automatica. Per questo sito va bene.
 - Il disco è locale: la cache ISR si perde a ogni deploy/restart (accettato da ADR-0001).
-- Le immagini sono `unoptimized: true`, quindi la VPS non fa ottimizzazione immagini (come su Vercel). I file arrivano da UploadThing.
-- `sharp` viene usato per i placeholder: consuma CPU al primo render di una pagina con immagini remote. Con una cache ISR calda è trascurabile.
+- Le immagini usano un **loader custom** di `next/image`: la VPS non ridimensiona nulla durante le visite e `/_next/image` non è più nel percorso di consegna. I file arrivano direttamente dal CDN di UploadThing: l'originale finché la rendition corrispondente non esiste, la rendition AVIF/WebP quando è stata generata.
+- `sharp` gira solo nei job di processing (upload e backfill), mai nel render di una pagina. La cache immagini storica di Next è quindi irrilevante e può essere rimossa senza impatto.
 
 Misure da fare prima/dopo:
 

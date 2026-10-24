@@ -6,6 +6,7 @@ import { SelectAssetModal } from "../modals/select-asset-modal";
 import { SelectUrlModal } from "../modals/select-url-modal";
 import { EditLinkModal } from "../modals/edit-link-modal";
 import { EditMediaModal } from "../modals/edit-media-modal";
+import { ReplaceMediaModal } from "../modals/replace-media-modal";
 import { ImportAudienceContacts } from "../modals/import-audience-contacts";
 import { EditUserModal } from "../modals/edit-user-modal";
 import { CreateUserModal } from "../modals/create-user-modal";
@@ -30,6 +31,7 @@ export const ModalProvider = () => {
       <CreateMediaModal />
       <CreateUserModal />
       <EditMediaModal />
+      <ReplaceMediaModal />
       <EditUserModal />
       <SelectAssetModal />
       <SelectPostModal />

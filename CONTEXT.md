@@ -98,6 +98,40 @@ _Avoid_: Tag-based invalidation when referring to the chosen approach.
 The coarse time-based `revalidate` value on public routes (24h) that self-heals content if an on-demand revalidation is missed. It is a safety net, not the source of freshness.
 _Avoid_: Cache TTL when referring to the strategy.
 
+## Media
+
+**Media**:
+The logical identity of one uploaded file in the library: its name, type, storage key, size, checksum, alt text, and the manifest of the renditions derived from it. One Media per original file; content references the Media, never a rendition.
+_Avoid_: Asset, file, attachment when referring to the library entity; using Media for a derived rendition.
+
+**Media type**:
+The kind of file a Media holds - image, video, audio, document - which decides what metadata is meaningful and whether the file is processed at all.
+_Avoid_: Kind, media category; MIME type, which is a property of the file rather than the library category.
+
+**Media rendition**:
+A derived copy of a Media's original at one fixed width and format, produced once, stored as its own object under the Media's storage key, and never authored or referenced by content.
+_Avoid_: Variant, size, thumbnail, transformed image.
+
+**Media profile**:
+A named entry in the rendition ladder, pairing a use in the interface with the widths and formats generated for it. Selecting a profile for a content role is configuration; the numbers behind it are code.
+_Avoid_: Preset, variant.
+
+**Storage key**:
+The stable, storage-agnostic path identifying an object inside the media bucket, from which the provider URL is derived. A Media keeps the original's key; a rendition derives its own from it.
+_Avoid_: Path, filename, URL when referring to the identifier.
+
+**Storage driver**:
+The adapter that writes, deletes and addresses objects for one storage Provider. One per installation, chosen by configuration.
+_Avoid_: Provider, which is the external service; storage integration, which would be the Provider plus its stored secrets.
+
+**Media revision**:
+A counter on a Media that changes when its original file is replaced, giving every rendition a new storage key so no cache can serve the previous file.
+_Avoid_: Version, reserved for the reviewed revisions of Post, Page and Product.
+
+**Archived media**:
+A Media hidden from the library while remaining served and referenceable by published content. Permanent deletion is a separate, manual act that removes its whole storage prefix.
+_Avoid_: Deleted, trashed, soft-deleted as a model concept.
+
 ## Forms
 
 **Form**:

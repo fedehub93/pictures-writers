@@ -15,6 +15,8 @@
     "test:db:up": "docker compose up -d db",
     "test:db:down": "docker compose down",
     "test:db:reset": "docker compose down -v && docker compose up -d db",
+    "media:backfill-metadata": "tsx --conditions=react-server scripts/backfill-media-metadata.ts",
+    "media:backfill-renditions": "tsx --conditions=react-server scripts/backfill-media-renditions.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {

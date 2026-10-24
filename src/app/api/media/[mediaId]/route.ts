@@ -3,6 +3,12 @@ import { NextResponse } from "next/server";
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
 
+import { mediaLibrarySelect } from "@/modules/media/lib/media-library";
+import { deleteMediaPermanently } from "@/modules/media/server/media-service";
+import { getStorageDriver } from "@/modules/media/server/storage";
+
+import { mediaErrorResponse } from "../_lib/media-error-response";
+
 export async function PATCH(
   req: Request,
   props: {
@@ -24,11 +30,40 @@ export async function PATCH(
     const asset = await db.media.update({
       where: { id: mediaId },
       data: { ...values },
+      select: mediaLibrarySelect,
     });
 
     return NextResponse.json(asset);
   } catch (error) {
     console.log("[MEDIA_ID_PATCH]", error);
     return new NextResponse("Internal Error", { status: 500 });
+  }
+}
+
+export async function DELETE(
+  _req: Request,
+  props: {
+    params: Promise<{
+      mediaId: string;
+    }>;
+  },
+) {
+  const { mediaId } = await props.params;
+
+  try {
+    const user = await authAdmin();
+
+    if (!user) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    await deleteMediaPermanently({
+      driver: getStorageDriver(),
+      mediaId,
+    });
+
+    return NextResponse.json({ status: "OK" });
+  } catch (error) {
+    return mediaErrorResponse(error, "[MEDIA_DELETE]");
   }
 }

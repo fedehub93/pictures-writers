@@ -42,6 +42,7 @@ export const getPublishedPostBySlug = async (slug: string) => {
             select: {
               url: true,
               altText: true,
+              metadata: true,
             },
           },
           authors: {

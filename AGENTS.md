@@ -261,7 +261,7 @@ src/
 ### Build output
 
 - Next.js builds to `.next/`
-- Images are configured as `unoptimized: true` in `next.config.mjs`
+- Images use a custom `next/image` loader (`src/modules/media/lib/image-loader.ts`): renditions are served straight from the storage CDN and the Next optimizer route is not used for media
 - Trailing slashes are enabled (`trailingSlash: true`)
 
 ### Deployment (Vercel)
@@ -355,7 +355,7 @@ Some features use Next.js App Router API routes directly under `src/app/api/`, i
 
 3. **Trailing slashes**: `trailingSlash: true` is set. All URLs should use trailing slashes.
 
-4. **Images**: `unoptimized: true` is set. Next.js Image component won't optimize images automatically.
+4. **Images**: a custom loader is configured, so `/_next/image` is not used for media. Renditions are pregenerated at upload time (see ADR-0026); widths come from the shared ladder in `src/modules/media/lib/image-ladder.mjs`.
 
 5. **No middleware file**: Auth is handled per-page via `requireAdminAuth()` and via Better Auth API routes.
 

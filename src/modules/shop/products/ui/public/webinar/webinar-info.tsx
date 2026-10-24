@@ -2,22 +2,24 @@ import Image from "next/image";
 
 import { TipTapRendererV2 } from "@/shared/components/tiptap-renderer";
 
-import { getPlaceholderImage } from "@/lib/image";
+import { getMediaBlurDataURL } from "@/modules/media/lib/media-metadata";
 
 interface WebinarInfoProps {
   title: string;
-  imageCover: { url: string; altText: string | null } | null;
+  imageCover: {
+    url: string;
+    altText: string | null;
+    metadata: PrismaJson.MediaMetadata;
+  } | null;
   tiptapDescription: PrismaJson.TipTapBodyData | null;
 }
 
-export const WebinarInfo = async ({
+export const WebinarInfo = ({
   title,
   imageCover,
   tiptapDescription,
 }: WebinarInfoProps) => {
-  const imageWithPlaceholder = imageCover?.url
-    ? await getPlaceholderImage(imageCover.url)
-    : null;
+  const blurDataURL = getMediaBlurDataURL(imageCover);
 
   return (
     <div className="flex flex-col space-y-4">
@@ -30,8 +32,12 @@ export const WebinarInfo = async ({
             sizes="(max-width:1280px) 90vw, 40vw"
             preload
             className="blog-post__image"
-            placeholder="blur"
-            blurDataURL={imageWithPlaceholder?.placeholder}
+            {...(blurDataURL
+              ? {
+                  placeholder: "blur",
+                  blurDataURL,
+                }
+              : {})}
           />
         ) : null}
       </div>

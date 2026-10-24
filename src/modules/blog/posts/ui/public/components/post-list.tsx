@@ -1,5 +1,7 @@
 import type { GetPaginatedPostsByFiltersReturn } from "@/modules/blog/posts/server/queries";
 
+import { getMediaBlurDataURL } from "@/modules/media/lib/media-metadata";
+
 import Sidebar from "@/app/(home)/_components/sidebar";
 
 import { PostCard } from "./post-card";
@@ -24,6 +26,7 @@ export const PostList = ({ posts, currentPage, totalPages }: PostListProps) => {
             categories={post.categories.map((c) => c.category)}
             imageCoverUrl={post.imageCover?.url || ""}
             imageCoverAlt={post.imageCover?.altText || ""}
+            imageCoverBlurDataURL={getMediaBlurDataURL(post.imageCover)}
             authors={post.authors.map((v) => v.user)}
             updatedAt={post.updatedAt}
           />

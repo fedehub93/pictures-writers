@@ -36,6 +36,7 @@ export const getPublishedProductBySlug = async (slug: string) => {
             select: {
               url: true,
               altText: true,
+              metadata: true,
             },
           },
           gallery: {
