@@ -25,6 +25,17 @@ export type MediaLibraryItem = Prisma.MediaGetPayload<{
   select: typeof mediaLibrarySelect;
 }>;
 
+/** Which half of the library the admin is looking at. */
+export type MediaLibraryView = "active" | "archived";
+
+/** A library row plus its relational reference count for the current page. */
+export interface MediaLibraryEntry extends MediaLibraryItem {
+  usageCount: number;
+}
+
+export const MEDIA_USAGE_NOTE =
+  "Used in counts relational references only. References embedded in rich text or page data are not counted.";
+
 export function formatMediaDimensions(
   media: Pick<MediaLibraryItem, "metadata">,
 ): string | null {

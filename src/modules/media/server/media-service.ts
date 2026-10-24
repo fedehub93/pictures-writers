@@ -6,7 +6,10 @@ import { MediaType } from "@/generated/prisma";
 
 import { db } from "@/shared/lib/db";
 
-import { buildMediaDeliveryUrl } from "@/modules/media/lib/manifest";
+import {
+  buildMediaDeliveryUrl,
+  withMediaDeliveryArchived,
+} from "@/modules/media/lib/manifest";
 import {
   mediaLibrarySelect,
   type MediaLibraryItem,
@@ -14,6 +17,7 @@ import {
 import type { MediaRendition } from "@/modules/media/types";
 
 import { checksumOf } from "./image-bytes";
+import { countMediaReferencesFor } from "./media-usage";
 import { generateRenditions, normaliseImage } from "./process-image";
 import type { StorageDriver } from "./storage";
 
@@ -67,6 +71,29 @@ export class MediaNotFoundError extends Error {
   constructor(readonly mediaId: string) {
     super(`Media not found: "${mediaId}"`);
     this.name = "MediaNotFoundError";
+  }
+}
+
+export class MediaNotArchivedError extends Error {
+  constructor(readonly mediaId: string) {
+    super(
+      "Only archived media can be permanently deleted. Archive it first.",
+    );
+    this.name = "MediaNotArchivedError";
+  }
+}
+
+export class MediaInUseError extends Error {
+  constructor(
+    readonly mediaId: string,
+    readonly usage: number,
+  ) {
+    super(
+      `This media is referenced by ${usage} content ${
+        usage === 1 ? "item" : "items"
+      }. Remove those references before deleting it. References embedded in rich text or page data are not counted.`,
+    );
+    this.name = "MediaInUseError";
   }
 }
 
@@ -424,4 +451,134 @@ export async function replaceMediaFile({
   }
 
   return media;
+}
+
+/**
+ * Hides a Media from the library without touching its bytes or references.
+ * Archived media keep being served (the loader falls back to the original),
+ * which is why archiving is reversible and never clears a cover.
+ */
+export async function archiveMedia(mediaId: string): Promise<MediaLibraryItem> {
+  const existing = await db.media.findUnique({ where: { id: mediaId } });
+
+  if (!existing) throw new MediaNotFoundError(mediaId);
+  if (existing.archivedAt) {
+    return db.media.findUniqueOrThrow({
+      where: { id: mediaId },
+      select: mediaLibrarySelect,
+    });
+  }
+
+  return db.media.update({
+    where: { id: mediaId },
+    data: {
+      archivedAt: new Date(),
+      url: withMediaDeliveryArchived(existing.url, true),
+    },
+    select: mediaLibrarySelect,
+  });
+}
+
+/**
+ * Brings an archived Media back into the library and re-enables its
+ * renditions.
+ */
+export async function restoreMedia(mediaId: string): Promise<MediaLibraryItem> {
+  const existing = await db.media.findUnique({ where: { id: mediaId } });
+
+  if (!existing) throw new MediaNotFoundError(mediaId);
+  if (!existing.archivedAt) {
+    return db.media.findUniqueOrThrow({
+      where: { id: mediaId },
+      select: mediaLibrarySelect,
+    });
+  }
+
+  return db.media.update({
+    where: { id: mediaId },
+    data: {
+      archivedAt: null,
+      url: withMediaDeliveryArchived(existing.url, false),
+    },
+    select: mediaLibrarySelect,
+  });
+}
+
+export interface DeleteMediaPermanentlyOptions {
+  driver: StorageDriver;
+  mediaId: string;
+}
+
+export interface DeleteMediaPermanentlyBatchOptions {
+  driver: StorageDriver;
+  mediaIds: string[];
+}
+
+/**
+ * Permanently removes archived Media.
+ *
+ * Every id is validated before anything is touched: an active Media or one
+ * still referenced by content aborts the whole batch, so a selected cover is
+ * never cleared silently. Storage is deleted before the rows, and every object
+ * lives under `<mediaId>/`, which makes the prefix the unit of cleanup.
+ */
+export async function deleteMediaPermanentlyBatch({
+  driver,
+  mediaIds,
+}: DeleteMediaPermanentlyBatchOptions): Promise<number> {
+  const uniqueIds = [...new Set(mediaIds)];
+  if (uniqueIds.length === 0) return 0;
+
+  const media = await db.media.findMany({
+    where: { id: { in: uniqueIds } },
+  });
+
+  const found = new Set(media.map((item) => item.id));
+  const missing = uniqueIds.find((id) => !found.has(id));
+  if (missing) throw new MediaNotFoundError(missing);
+
+  const active = media.find((item) => item.archivedAt === null);
+  if (active) throw new MediaNotArchivedError(active.id);
+
+  const usage = await countMediaReferencesFor(uniqueIds);
+  const referenced = uniqueIds.find((id) => (usage.get(id) ?? 0) > 0);
+  if (referenced) {
+    throw new MediaInUseError(referenced, usage.get(referenced) ?? 0);
+  }
+
+  for (const item of media) {
+    const prefix = `${item.id}/`;
+
+    try {
+      await driver.deletePrefix(prefix);
+    } catch (error) {
+      throw new MediaProcessingError(
+        "The stored objects could not be removed. Nothing was deleted.",
+        { cause: error },
+      );
+    }
+
+    // Media created before the storage seam keep their original outside the
+    // Media prefix. Legacy UploadThing file keys are not addressable by
+    // customId, so a failure here only leaves that legacy object behind.
+    if (item.key && !item.key.startsWith(prefix)) {
+      await driver.delete(item.key).catch((error) => {
+        console.error(
+          "[MEDIA_DELETE] Could not remove the legacy original",
+          error,
+        );
+      });
+    }
+  }
+
+  await db.media.deleteMany({ where: { id: { in: uniqueIds } } });
+
+  return uniqueIds.length;
+}
+
+export async function deleteMediaPermanently({
+  driver,
+  mediaId,
+}: DeleteMediaPermanentlyOptions): Promise<void> {
+  await deleteMediaPermanentlyBatch({ driver, mediaIds: [mediaId] });
 }

@@ -139,6 +139,32 @@ export function buildMediaDeliveryUrl(
 }
 
 /**
+ * Rewrites the archive flag inside an existing delivery token. A URL without
+ * a token cannot answer renditions anyway, so it is returned untouched.
+ */
+export function withMediaDeliveryArchived(
+  src: string,
+  archived: boolean,
+): string {
+  const { url } = parseSrc(src);
+  const manifest = decodeMediaManifest(
+    url.searchParams.get(MEDIA_MANIFEST_PARAM),
+  );
+
+  if (!manifest || manifest.archived === archived) return src;
+
+  return buildMediaDeliveryUrl(stripMediaManifest(src), {
+    revision: manifest.revision,
+    archived,
+    renditions: manifest.renditions.map((rendition) => ({
+      url: rendition.url,
+      width: rendition.width,
+      format: rendition.format,
+    })),
+  });
+}
+
+/**
  * Removes the delivery token, returning the original URL exactly as stored.
  */
 export function stripMediaManifest(src: string): string {

@@ -1,42 +1,38 @@
 import { NextResponse } from "next/server";
-import { UTApi } from "uploadthing/server";
 
-import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
 
-const utapi = new UTApi();
+import { deleteMediaPermanentlyBatch } from "@/modules/media/server/media-service";
+import { getStorageDriver } from "@/modules/media/server/storage";
+
+import { mediaErrorResponse } from "../_lib/media-error-response";
 
 export async function DELETE(req: Request) {
   try {
     const user = await authAdmin();
-    const values = await req.json();
+    const values = (await req.json()) as unknown;
 
     if (!user) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    for (const id of values) {
-      const deletedAsset = await db.media.delete({
-        where: {
-          id,
-        },
-        select: {
-          id: true,
-          key: true,
-        },
-      });
-
-      if (deletedAsset && deletedAsset.key) {
-        await utapi.deleteFiles(deletedAsset.key);
-      }
+    if (
+      !Array.isArray(values) ||
+      !values.every((value): value is string => typeof value === "string")
+    ) {
+      return NextResponse.json(
+        { error: "A list of media ids is required." },
+        { status: 400 },
+      );
     }
 
-    return NextResponse.json({
-      status: "OK",
-      message: "ASSETS DELETED SUCCESSFULLY",
+    const deleted = await deleteMediaPermanentlyBatch({
+      driver: getStorageDriver(),
+      mediaIds: values,
     });
+
+    return NextResponse.json({ deleted });
   } catch (error) {
-    console.log("[MEDIA_BULK_DELETE]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    return mediaErrorResponse(error, "[MEDIA_BULK_DELETE]");
   }
 }

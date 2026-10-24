@@ -9,7 +9,11 @@ import {
   UPLOADTHING_FILE_PATH,
 } from "../image-ladder.mjs";
 import { resolveMediaImageSource } from "../image-loader";
-import { buildMediaDeliveryUrl, encodeMediaManifest } from "../manifest";
+import {
+  buildMediaDeliveryUrl,
+  encodeMediaManifest,
+  withMediaDeliveryArchived,
+} from "../manifest";
 import type { MediaRendition } from "../../types";
 
 type DeliveredRendition = MediaRendition & { url: string };
@@ -233,5 +237,21 @@ describe("resolveMediaImageSource", () => {
         renditions: [{ url: rendition(960).url, width: 960, format: "avif" }],
       }),
     );
+  });
+
+  it("switches an existing delivery URL to the original when archived", () => {
+    const src = srcWithRenditions([rendition(960)]);
+
+    const archived = withMediaDeliveryArchived(src, true);
+
+    expect(resolveMediaImageSource(archived, 960)).toBe(ORIGINAL);
+
+    const restored = withMediaDeliveryArchived(archived, false);
+
+    expect(resolveMediaImageSource(restored, 960)).toBe(rendition(960).url);
+  });
+
+  it("leaves a URL without a delivery token unchanged when archiving", () => {
+    expect(withMediaDeliveryArchived(ORIGINAL, true)).toBe(ORIGINAL);
   });
 });
