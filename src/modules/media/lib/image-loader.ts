@@ -78,15 +78,19 @@ export function resolveMediaImageSource(src: string, width: number): string {
   if (isPassthrough(src)) return src;
 
   const { url, absolute } = parseSrc(src);
-  if (!isManaged(url, absolute)) return src;
+  const manifest = decodeMediaManifest(
+    url.searchParams.get(MEDIA_MANIFEST_PARAM),
+  );
+
+  // A delivery token is self-describing and carries only validated URLs. It is
+  // trusted for a managed provider URL or a relative (local driver) URL, never
+  // for a third-party host, whose images must pass through untouched.
+  const isRelativeDelivery = !absolute && manifest !== null;
+  if (!isManaged(url, absolute) && !isRelativeDelivery) return src;
 
   const originalUrl = url.pathname.startsWith(LEGACY_ASSET_PREFIX)
     ? legacyAssetOriginal(url)
     : stripMediaManifest(serializeSrc(url, absolute));
-
-  const manifest = decodeMediaManifest(
-    url.searchParams.get(MEDIA_MANIFEST_PARAM),
-  );
 
   if (!manifest || manifest.archived) return originalUrl;
 

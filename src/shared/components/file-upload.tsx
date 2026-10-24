@@ -15,6 +15,7 @@ export type FileUploadOnChange = {
   name: string;
   url: string;
   size: number;
+  mimeType?: string;
 };
 
 interface FileUploadProps {
@@ -95,6 +96,7 @@ export const FileUpload = ({
             name: res?.[0].name,
             url: res?.[0].url,
             size: res?.[0].size,
+            mimeType: res?.[0].type,
           });
           setIsFocused && setIsFocused(false);
         }}

@@ -1,12 +1,20 @@
 import { NextResponse } from "next/server";
 
-import { db } from "@/lib/db";
+import { MediaType } from "@/generated/prisma";
+import { db } from "@/shared/lib/db";
 import { authAdmin } from "@/lib/auth-service";
 
 import {
   mediaLibrarySelect,
   type MediaLibraryItem,
 } from "@/modules/media/lib/media-library";
+import {
+  createMediaFromUpload,
+  DuplicateMediaError,
+  MediaProcessingError,
+  type MediaUploadSource,
+} from "@/modules/media/server/media-service";
+import { getStorageDriver } from "@/modules/media/server/storage";
 
 const MEDIA_BATCH = 3;
 
@@ -87,21 +95,57 @@ export async function GET(req: Request) {
   }
 }
 
+type MediaUploadPayload = Partial<MediaUploadSource> & { override?: boolean };
+
 export async function POST(req: Request) {
   try {
     const user = await authAdmin();
-    const values = await req.json();
+    const values = (await req.json()) as MediaUploadPayload;
 
     if (!user) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const media = await db.media.create({
-      data: { ...values },
-      select: mediaLibrarySelect,
-    });
+    if (!values.name || !values.url) {
+      return NextResponse.json(
+        { error: "A name and an uploaded file are required." },
+        { status: 400 },
+      );
+    }
 
-    return NextResponse.json(media);
+    const source: MediaUploadSource = {
+      key: values.key ?? null,
+      url: values.url,
+      name: values.name,
+      type: values.type ?? MediaType.FILE,
+      altText: values.altText ?? null,
+      mimeType: values.mimeType ?? null,
+      size: values.size ?? null,
+    };
+
+    try {
+      const media = await createMediaFromUpload({
+        driver: getStorageDriver(),
+        source,
+        override: values.override === true,
+      });
+
+      return NextResponse.json(media);
+    } catch (error) {
+      if (error instanceof DuplicateMediaError) {
+        return NextResponse.json(
+          { duplicate: true, media: error.existing },
+          { status: 409 },
+        );
+      }
+
+      if (error instanceof MediaProcessingError) {
+        console.log("[MEDIA_POST]", error);
+        return NextResponse.json({ error: error.message }, { status: 422 });
+      }
+
+      throw error;
+    }
   } catch (error) {
     console.log("[MEDIA_POST]", error);
     return new NextResponse("Internal Error", { status: 500 });

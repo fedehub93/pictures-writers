@@ -1,12 +1,24 @@
 "use client";
 
+import { useState } from "react";
 import axios from "axios";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 import { MediaType } from "@/generated/prisma";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/shared/ui/alert-dialog";
 import {
   Dialog,
   DialogContent,
@@ -48,15 +60,30 @@ const formSchema = z.object({
   altText: z.optional(z.string()),
   type: z.enum(MediaType),
   size: z.number(),
+  mimeType: z.optional(z.string()),
 });
 
+type MediaFormValues = z.infer<typeof formSchema>;
+
+interface DuplicateMedia {
+  id: string;
+  name: string;
+}
+
+interface DuplicateState {
+  media: DuplicateMedia;
+  values: MediaFormValues;
+}
+
 export const CreateMediaModal = () => {
-  const { isOpen, onClose, type } = useModal();
+  const { isOpen, onClose, type, onCallback } = useModal();
   const router = useRouter();
+  const [duplicate, setDuplicate] = useState<DuplicateState | null>(null);
+  const [isOverriding, setIsOverriding] = useState(false);
 
   const isModalOpen = isOpen && type === "createMediaAsset";
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<MediaFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       key: "",
@@ -65,31 +92,70 @@ export const CreateMediaModal = () => {
       altText: "",
       type: MediaType.IMAGE,
       size: 0,
+      mimeType: "",
     },
   });
 
-  const isLoading = form.formState.isSubmitting;
+  const isLoading = form.formState.isSubmitting || isOverriding;
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const submitValues = async (values: MediaFormValues, override = false) => {
     try {
-      await axios.post("/api/media", values);
+      if (override) setIsOverriding(true);
 
+      const response = await axios.post("/api/media", { ...values, override });
+
+      onCallback?.(response.data);
       form.reset();
+      setDuplicate(null);
       onClose();
     } catch (error) {
-      console.log(error);
+      if (axios.isAxiosError(error) && error.response?.status === 409) {
+        setDuplicate({ media: error.response.data.media, values });
+        return;
+      }
+
+      const message =
+        axios.isAxiosError(error) && error.response?.data?.error
+          ? error.response.data.error
+          : "Something went wrong";
+
+      toast.error(message);
     } finally {
+      setIsOverriding(false);
       router.refresh();
     }
   };
 
+  const onSubmit = (values: MediaFormValues) => submitValues(values);
+
   const handleClose = () => {
     form.reset();
+    setDuplicate(null);
     onClose();
   };
 
+  const useExisting = () => {
+    if (!duplicate) return;
+
+    onCallback?.(duplicate.media);
+    toast.success(`Using "${duplicate.media.name}"`);
+    setDuplicate(null);
+    form.reset();
+    onClose();
+    router.refresh();
+  };
+
+  const uploadAnyway = () => {
+    if (!duplicate) return;
+
+    const { values } = duplicate;
+    setDuplicate(null);
+    void submitValues(values, true);
+  };
+
   return (
-    <Dialog open={isModalOpen} onOpenChange={handleClose}>
+    <>
+      <Dialog open={isModalOpen} onOpenChange={handleClose}>
       <DialogContent className="bg-white text-black p-0 overflow-hidden">
         <DialogHeader className="pt-8 px-6">
           <DialogTitle className="text-2xl text-center font-bold">
@@ -112,11 +178,18 @@ export const CreateMediaModal = () => {
                         <FileUpload
                           endpoint="mediaAsset"
                           value={field.value}
-                          onChange={({ key, name, url, size }) => {
+                          onChange={({ key, name, url, size, mimeType }) => {
                             field.onChange(url);
                             form.setValue("key", key);
                             form.setValue("name", name);
                             form.setValue("size", size);
+                            form.setValue("mimeType", mimeType ?? "");
+
+                            if (mimeType?.startsWith("image/")) {
+                              form.setValue("type", MediaType.IMAGE);
+                            } else if (mimeType) {
+                              form.setValue("type", MediaType.FILE);
+                            }
                           }}
                         />
                       </FormControl>
@@ -136,7 +209,7 @@ export const CreateMediaModal = () => {
                       <Select
                         disabled={isLoading}
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger className="bg-zinc-300/50 border-0 focus:ring-0 text-black ring-offset-0 focus:ring-offset-0 capitalize outline-hidden">
@@ -233,5 +306,31 @@ export const CreateMediaModal = () => {
         </Form>
       </DialogContent>
     </Dialog>
+    <AlertDialog
+      open={duplicate !== null}
+      onOpenChange={(open) => {
+        if (!open) setDuplicate(null);
+      }}
+    >
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>This file is already in the library</AlertDialogTitle>
+          <AlertDialogDescription>
+            &quot;{duplicate?.media.name}&quot; has the same content. Use the
+            existing asset, or upload a second copy with its own name and alt
+            text.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={useExisting}>
+            Use existing
+          </AlertDialogCancel>
+          <AlertDialogAction onClick={uploadAnyway} disabled={isOverriding}>
+            {isOverriding ? "Uploading..." : "Upload anyway"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  </>
   );
 };

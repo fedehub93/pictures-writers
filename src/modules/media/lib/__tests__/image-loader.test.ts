@@ -171,6 +171,42 @@ describe("resolveMediaImageSource", () => {
     expect(resolveMediaImageSource(src, 960)).toBe(ORIGINAL);
   });
 
+  it("resolves a rendition carried by a local-driver delivery URL", () => {
+    const src = buildMediaDeliveryUrl("/media/media-1/1/original", {
+      revision: 1,
+      archived: false,
+      renditions: [
+        {
+          url: "/media/media-1/1/960.avif",
+          width: 960,
+          format: "avif",
+        },
+      ],
+    });
+
+    expect(resolveMediaImageSource(src, 960)).toBe("/media/media-1/1/960.avif");
+    expect(resolveMediaImageSource(src, 100)).toBe(
+      "/media/media-1/1/original",
+    );
+  });
+
+  it("passes an external URL carrying a stray delivery token through unchanged", () => {
+    const external = "https://images.example.com/avatar.jpg";
+    const src = buildMediaDeliveryUrl(external, {
+      revision: 1,
+      archived: false,
+      renditions: [
+        {
+          url: "https://images.example.com/rendition.jpg",
+          width: 960,
+          format: "avif",
+        },
+      ],
+    });
+
+    expect(resolveMediaImageSource(src, 960)).toBe(src);
+  });
+
   it("never requests a width outside the configured ladder", () => {
     const everyWidth = MEDIA_RENDITION_WIDTHS.map((width) => rendition(width));
     const src = srcWithRenditions(everyWidth);
