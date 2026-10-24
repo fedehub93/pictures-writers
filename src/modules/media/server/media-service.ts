@@ -34,6 +34,21 @@ export interface CreateMediaFromUploadOptions {
   override?: boolean;
 }
 
+/**
+ * Only the uploaded object and its MIME are needed: a replacement never
+ * changes the Media's identity, name or type.
+ */
+export interface MediaReplacementSource {
+  key: string;
+  mimeType?: string | null;
+}
+
+export interface ReplaceMediaFileOptions {
+  driver: StorageDriver;
+  mediaId: string;
+  source: MediaReplacementSource;
+}
+
 export class DuplicateMediaError extends Error {
   constructor(readonly existing: MediaLibraryItem) {
     super(`A media with the same checksum already exists: "${existing.id}"`);
@@ -48,12 +63,23 @@ export class MediaProcessingError extends Error {
   }
 }
 
+export class MediaNotFoundError extends Error {
+  constructor(readonly mediaId: string) {
+    super(`Media not found: "${mediaId}"`);
+    this.name = "MediaNotFoundError";
+  }
+}
+
 function findDuplicate(checksum: string): Promise<MediaLibraryItem | null> {
   return db.media.findFirst({
     where: { checksum, archivedAt: null },
     select: mediaLibrarySelect,
     orderBy: { createdAt: "asc" },
   });
+}
+
+function revisionPrefix(mediaId: string, revision: number): string {
+  return `${mediaId}/${revision}/`;
 }
 
 async function createPlainMedia(
@@ -71,6 +97,135 @@ async function createPlainMedia(
     },
     select: mediaLibrarySelect,
   });
+}
+
+interface StoredImageVersion {
+  key: string;
+  url: string;
+  size: number;
+  mimeType: string;
+  metadata: PrismaJson.MediaMetadata;
+  renditions: MediaRendition[];
+}
+
+interface StoredPlainVersion {
+  key: string;
+  url: string;
+  size: number;
+  mimeType: string | null;
+}
+
+async function writeImageVersion({
+  driver,
+  id,
+  revision,
+  bytes,
+  archived,
+}: {
+  driver: StorageDriver;
+  id: string;
+  revision: number;
+  bytes: Uint8Array<ArrayBuffer>;
+  archived: boolean;
+}): Promise<StoredImageVersion> {
+  const prefix = revisionPrefix(id, revision);
+
+  try {
+    const image = await normaliseImage(bytes);
+    const generated = await generateRenditions(image);
+    const originalKey = `${prefix}original`;
+
+    await driver.put(originalKey, image.bytes, image.mimeType);
+
+    const manifest: MediaRendition[] = [];
+    for (const rendition of generated) {
+      const key = `${prefix}${rendition.width}.${rendition.format}`;
+      await driver.put(key, rendition.bytes, `image/${rendition.format}`);
+
+      manifest.push({
+        key,
+        width: rendition.width,
+        height: rendition.height,
+        bytes: rendition.bytes.byteLength,
+        format: rendition.format,
+      });
+    }
+
+    const originalUrl = await driver.url(originalKey);
+    const renditionUrls = await Promise.all(
+      manifest.map((rendition) => driver.url(rendition.key)),
+    );
+    const url = buildMediaDeliveryUrl(originalUrl, {
+      revision,
+      archived,
+      renditions: manifest.map((rendition, index) => ({
+        width: rendition.width,
+        format: rendition.format,
+        url: renditionUrls[index],
+      })),
+    });
+
+    return {
+      key: originalKey,
+      url,
+      size: image.bytes.byteLength,
+      mimeType: image.mimeType,
+      metadata: image.metadata as PrismaJson.MediaMetadata,
+      renditions: manifest,
+    };
+  } catch (error) {
+    await driver.deletePrefix(prefix).catch(() => undefined);
+    throw error;
+  }
+}
+
+async function writePlainVersion({
+  driver,
+  id,
+  revision,
+  bytes,
+  mimeType,
+}: {
+  driver: StorageDriver;
+  id: string;
+  revision: number;
+  bytes: Uint8Array<ArrayBuffer>;
+  mimeType: string | null;
+}): Promise<StoredPlainVersion> {
+  const prefix = revisionPrefix(id, revision);
+  const key = `${prefix}original`;
+
+  try {
+    await driver.put(key, bytes, mimeType ?? "application/octet-stream");
+
+    return {
+      key,
+      url: await driver.url(key),
+      size: bytes.byteLength,
+      mimeType,
+    };
+  } catch (error) {
+    await driver.deletePrefix(prefix).catch(() => undefined);
+    throw error;
+  }
+}
+
+function storedImageFields(
+  stored: StoredImageVersion,
+  revision: number,
+  checksum: string,
+) {
+  return {
+    key: stored.key,
+    url: stored.url,
+    size: stored.size,
+    type: MediaType.IMAGE,
+    mimeType: stored.mimeType,
+    checksum,
+    revision,
+    metadata: stored.metadata,
+    renditions: stored.renditions as PrismaJson.MediaRenditions,
+  };
 }
 
 /**
@@ -117,56 +272,22 @@ export async function createMediaFromUpload({
   const id = randomUUID();
   const revision = 1;
   const prefix = `${id}/`;
-  const originalKey = `${id}/${revision}/original`;
 
   try {
-    const image = await normaliseImage(originalBytes);
-    const generated = await generateRenditions(image);
-
-    await driver.put(originalKey, image.bytes, image.mimeType);
-
-    const manifest: MediaRendition[] = [];
-    for (const rendition of generated) {
-      const key = `${id}/${revision}/${rendition.width}.${rendition.format}`;
-      await driver.put(key, rendition.bytes, `image/${rendition.format}`);
-
-      manifest.push({
-        key,
-        width: rendition.width,
-        height: rendition.height,
-        bytes: rendition.bytes.byteLength,
-        format: rendition.format,
-      });
-    }
-
-    const originalUrl = await driver.url(originalKey);
-    const renditionUrls = await Promise.all(
-      manifest.map((rendition) => driver.url(rendition.key)),
-    );
-    const url = buildMediaDeliveryUrl(originalUrl, {
+    const stored = await writeImageVersion({
+      driver,
+      id,
       revision,
+      bytes: originalBytes,
       archived: false,
-      renditions: manifest.map((rendition, index) => ({
-        width: rendition.width,
-        format: rendition.format,
-        url: renditionUrls[index],
-      })),
     });
 
     const media = await db.media.create({
       data: {
+        ...storedImageFields(stored, revision, checksum),
         id,
         name: source.name,
-        key: originalKey,
-        url,
-        size: image.bytes.byteLength,
-        type: MediaType.IMAGE,
         altText: source.altText || null,
-        mimeType: image.mimeType,
-        checksum,
-        revision,
-        metadata: image.metadata as PrismaJson.MediaMetadata,
-        renditions: manifest as PrismaJson.MediaRenditions,
       },
       select: mediaLibrarySelect,
     });
@@ -189,4 +310,118 @@ export async function createMediaFromUpload({
       { cause: error },
     );
   }
+}
+
+/**
+ * Replaces the bytes of an existing Media without changing its identity.
+ *
+ * The new revision is written under `<mediaId>/<revision>/` first, the row is
+ * updated, and only then the previous revision's prefix is removed. A failure
+ * before the row update deletes only the new prefix, so the old bytes remain
+ * delivered exactly as before.
+ */
+export async function replaceMediaFile({
+  driver,
+  mediaId,
+  source,
+}: ReplaceMediaFileOptions): Promise<MediaLibraryItem> {
+  const existing = await db.media.findUnique({ where: { id: mediaId } });
+
+  if (!existing) throw new MediaNotFoundError(mediaId);
+
+  if (!source.key) {
+    throw new MediaProcessingError(
+      "The replacement file cannot be processed because its storage key is missing.",
+    );
+  }
+
+  let bytes: Uint8Array<ArrayBuffer>;
+  try {
+    bytes = await driver.get(source.key);
+  } catch (error) {
+    throw new MediaProcessingError(
+      "The replacement file could not be read from storage.",
+      { cause: error },
+    );
+  }
+
+  const revision = existing.revision + 1;
+  const mediaPrefix = `${mediaId}/`;
+  const newPrefix = revisionPrefix(mediaId, revision);
+  const previousPrefix = revisionPrefix(mediaId, existing.revision);
+  const checksum = checksumOf(bytes);
+
+  let media: MediaLibraryItem;
+
+  try {
+    if (existing.type === MediaType.IMAGE) {
+      const stored = await writeImageVersion({
+        driver,
+        id: mediaId,
+        revision,
+        bytes,
+        archived: existing.archivedAt !== null,
+      });
+
+      media = await db.media.update({
+        where: { id: mediaId },
+        data: storedImageFields(stored, revision, checksum),
+        select: mediaLibrarySelect,
+      });
+    } else {
+      const stored = await writePlainVersion({
+        driver,
+        id: mediaId,
+        revision,
+        bytes,
+        mimeType: source.mimeType || existing.mimeType,
+      });
+
+      media = await db.media.update({
+        where: { id: mediaId },
+        data: {
+          key: stored.key,
+          url: stored.url,
+          size: stored.size,
+          mimeType: stored.mimeType,
+          checksum,
+          revision,
+          metadata: null,
+          renditions: null,
+        },
+        select: mediaLibrarySelect,
+      });
+    }
+  } catch (error) {
+    await driver.deletePrefix(newPrefix).catch(() => undefined);
+
+    if (error instanceof MediaProcessingError) throw error;
+
+    throw new MediaProcessingError(
+      "The file could not be replaced. The previous version is still in place.",
+      { cause: error },
+    );
+  }
+
+  // The row already points at the new revision, so a cleanup hiccup must not
+  // turn a successful replacement into a reported failure. The objects are no
+  // longer reachable from any Media URL.
+  await driver.deletePrefix(previousPrefix).catch((error) => {
+    console.error("[MEDIA_REPLACE] Could not remove the previous revision", error);
+  });
+
+  // Media created before the storage seam keep their original at the legacy
+  // upload key rather than under the prefix. Best-effort removal stops the old
+  // bytes from being served, but legacy UploadThing file keys are not
+  // addressable by customId and simply stay behind.
+  if (existing.key && !existing.key.startsWith(mediaPrefix)) {
+    await driver.delete(existing.key).catch(() => undefined);
+  }
+
+  // The uploaded object was only the processing input.
+  if (!source.key.startsWith(mediaPrefix)) {
+    await driver.delete(source.key).catch(() => undefined);
+  }
+
+  return media;
 }

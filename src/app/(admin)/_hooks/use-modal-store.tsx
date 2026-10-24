@@ -3,6 +3,7 @@ import { create } from "zustand";
 export type ModalType =
   | "createMediaAsset"
   | "editMediaAsset"
+  | "replaceMediaAsset"
   | "selectAsset"
   | "selectPost"
   | "selectProduct"

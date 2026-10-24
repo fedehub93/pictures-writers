@@ -16,7 +16,9 @@ import type { MediaRendition } from "@/modules/media/types";
 import {
   createMediaFromUpload,
   DuplicateMediaError,
+  MediaNotFoundError,
   MediaProcessingError,
+  replaceMediaFile,
 } from "../media-service";
 import { createLocalStorageDriver } from "../storage/local";
 import {
@@ -27,13 +29,14 @@ import {
 async function createPng(
   width = 2000,
   height = 1200,
+  background = { r: 20, g: 160, b: 80 },
 ): Promise<Uint8Array<ArrayBuffer>> {
   const buffer = await sharp({
     create: {
       width,
       height,
       channels: 3,
-      background: { r: 20, g: 160, b: 80 },
+      background,
     },
   })
     .png()
@@ -309,4 +312,224 @@ describe("createMediaFromUpload", () => {
       expect(row.renditions).toBeNull();
     },
   );
+});
+
+describe("replaceMediaFile", () => {
+  let root: string;
+  let driver: StorageDriver;
+  let mediaIds: string[];
+
+  beforeEach(async () => {
+    mediaIds = [];
+    root = await mkdtemp(path.join(tmpdir(), "media-replace-"));
+    driver = createLocalStorageDriver({ root, publicBaseUrl: "/media" });
+  });
+
+  afterEach(async () => {
+    if (mediaIds.length > 0) {
+      await db.media.deleteMany({ where: { id: { in: mediaIds } } });
+    }
+    await rm(root, { recursive: true, force: true });
+  });
+
+  async function putSource(
+    bytes: Uint8Array<ArrayBuffer>,
+    target: StorageDriver = driver,
+    contentType = "image/png",
+  ): Promise<string> {
+    const key = `uploads/${randomUUID()}`;
+    await target.put(key, bytes, contentType);
+    return key;
+  }
+
+  async function createImageMedia(key: string) {
+    const media = await createMediaFromUpload({
+      driver,
+      source: sourceFor(key),
+    });
+    mediaIds.push(media.id);
+    return media;
+  }
+
+  function replace(mediaId: string, key: string, target: StorageDriver = driver) {
+    return replaceMediaFile({
+      driver: target,
+      mediaId,
+      source: { key, mimeType: "image/png" },
+    });
+  }
+
+  it("bumps the revision, writes new keys and removes the previous prefix", async () => {
+    const first = await createImageMedia(await putSource(await createPng()));
+    const before = await db.media.findUniqueOrThrow({ where: { id: first.id } });
+    const previousManifest = before.renditions as MediaRendition[];
+    const previousRenditionKeys = previousManifest.map((rendition) => rendition.key);
+
+    const replacementBytes = await createPng(1200, 800, {
+      r: 210,
+      g: 40,
+      b: 60,
+    });
+    const media = await replace(first.id, await putSource(replacementBytes));
+
+    expect(media.id).toBe(first.id);
+    expect(media.name).toBe("Uploaded image");
+    expect(media.altText).toBe("Alt text");
+    expect(media.revision).toBe(2);
+    expect(media.key).toBe(`${first.id}/2/original`);
+    expect(media.size).toBe((await driver.get(media.key!)).byteLength);
+
+    const row = await db.media.findUniqueOrThrow({ where: { id: first.id } });
+    const manifest = row.renditions as MediaRendition[];
+
+    expect(row.checksum).toBe(
+      createHash("sha256").update(replacementBytes).digest("hex"),
+    );
+    expect(manifest).toHaveLength(MEDIA_RENDITION_WIDTHS.length * 2);
+    expect(
+      manifest.every((rendition) => rendition.key.startsWith(`${first.id}/2/`)),
+    ).toBe(true);
+
+    for (const key of previousRenditionKeys) {
+      await expect(driver.get(key)).rejects.toBeInstanceOf(
+        StorageObjectNotFoundError,
+      );
+    }
+    await expect(driver.get(before.key!)).rejects.toBeInstanceOf(
+      StorageObjectNotFoundError,
+    );
+  });
+
+  it("keeps delivering the new revision through the same Media", async () => {
+    const first = await createImageMedia(await putSource(await createPng()));
+    const media = await replace(
+      first.id,
+      await putSource(await createPng(1200, 800, { r: 210, g: 40, b: 60 })),
+    );
+    const row = await db.media.findUniqueOrThrow({ where: { id: first.id } });
+    const manifest = row.renditions as MediaRendition[];
+    const rendition = manifest.find(
+      (entry) => entry.width === 720 && entry.format === "avif",
+    );
+
+    expect(resolveMediaImageSource(media.url, 720)).toBe(
+      await driver.url(rendition!.key),
+    );
+  });
+
+  it("keeps content references pointing at the same Media", async () => {
+    const first = await createImageMedia(await putSource(await createPng()));
+    const seo = await db.seo.create({
+      data: {
+        title: "Referencing content",
+        version: 1,
+        ogTwitterImageId: first.id,
+      },
+    });
+
+    try {
+      const replaced = await replace(
+        first.id,
+        await putSource(await createPng(1200, 800, { r: 210, g: 40, b: 60 })),
+      );
+      const after = await db.seo.findUniqueOrThrow({ where: { id: seo.id } });
+
+      expect(replaced.id).toBe(first.id);
+      expect(after.ogTwitterImageId).toBe(first.id);
+    } finally {
+      await db.seo.delete({ where: { id: seo.id } });
+    }
+  });
+
+  it("leaves the previous revision intact and delivered when the replacement fails", async () => {
+    const first = await createImageMedia(await putSource(await createPng()));
+    const before = await db.media.findUniqueOrThrow({ where: { id: first.id } });
+    const previousManifest = before.renditions as MediaRendition[];
+
+    const failingDriver: StorageDriver = {
+      ...driver,
+      put: async (target, data, contentType) => {
+        if (target.startsWith(`${first.id}/2/`) && target.includes("/360.avif")) {
+          throw new Error("simulated boom");
+        }
+        await driver.put(target, data, contentType);
+      },
+    };
+
+    const error = await replace(
+      first.id,
+      await putSource(await createPng(1200, 800, { r: 210, g: 40, b: 60 })),
+      failingDriver,
+    ).catch((reason) => reason);
+
+    expect(error).toBeInstanceOf(MediaProcessingError);
+
+    const row = await db.media.findUniqueOrThrow({ where: { id: first.id } });
+    expect(row.revision).toBe(1);
+    expect(row.key).toBe(before.key);
+    expect(row.url).toBe(before.url);
+    expect(row.renditions).toEqual(before.renditions);
+
+    await expect(driver.get(before.key!)).resolves.toBeDefined();
+    for (const rendition of previousManifest) {
+      await expect(driver.get(rendition.key)).resolves.toBeDefined();
+    }
+    await expect(
+      driver.deletePrefix(`${first.id}/2/`),
+    ).resolves.toBe(0);
+  });
+
+  it("rejects an unknown Media without writing anything", async () => {
+    const mediaId = randomUUID();
+
+    await expect(
+      replace(mediaId, await putSource(await createPng())),
+    ).rejects.toBeInstanceOf(MediaNotFoundError);
+
+    await expect(driver.deletePrefix(`${mediaId}/`)).resolves.toBe(0);
+  });
+
+  it("replaces a non-image file without generating renditions", async () => {
+    const oldBytes = new Uint8Array([1, 2, 3, 4]);
+    const media = await createMediaFromUpload({
+      driver,
+      source: {
+        key: await putSource(oldBytes, driver, "application/pdf"),
+        url: "https://ghhc7ejbae.ufs.sh/f/legacy.pdf",
+        name: "Brochure.pdf",
+        type: MediaType.FILE,
+        mimeType: "application/pdf",
+        size: 4,
+        altText: null,
+      },
+    });
+    mediaIds.push(media.id);
+
+    const newBytes = new Uint8Array([9, 8, 7, 6, 5, 4, 3]);
+    const replaced = await replaceMediaFile({
+      driver,
+      mediaId: media.id,
+      source: {
+        key: await putSource(newBytes, driver, "application/pdf"),
+        mimeType: "application/pdf",
+      },
+    });
+
+    expect(replaced).toMatchObject({
+      id: media.id,
+      type: MediaType.FILE,
+      revision: 2,
+      key: `${media.id}/2/original`,
+      size: newBytes.byteLength,
+      mimeType: "application/pdf",
+      checksum: createHash("sha256").update(newBytes).digest("hex"),
+    });
+
+    const row = await db.media.findUniqueOrThrow({ where: { id: media.id } });
+    expect(row.renditions).toBeNull();
+    expect(new Uint8Array(await driver.get(row.key!))).toEqual(newBytes);
+    await expect(driver.get(media.key!)).rejects.toBeInstanceOf(
+      StorageObjectNotFoundError,
+    );
+  });
 });

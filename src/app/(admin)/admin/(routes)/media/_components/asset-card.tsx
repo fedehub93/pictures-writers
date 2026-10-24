@@ -61,13 +61,22 @@ export const AssetCard = ({ media, onCheckboxChange }: AssetCardProps) => {
     onOpen("editMediaAsset", undefined, { id, name, altText: altText || "" });
   };
 
+  const onHandleReplace = () => {
+    onOpen("replaceMediaAsset", undefined, { id, name, type });
+  };
+
   return (
     <div className="relative group hover:shadow-2xs transition overflow-hidden border rounded-lg h-full">
       <div className="absolute p-4 z-10 w-full flex items-center justify-between">
         <Checkbox checked={isChecked} onCheckedChange={handleCheckboxChange} />
-        <Button variant="outline" size="sm" onClick={onHandleEdit}>
-          Edit
-        </Button>
+        <div className="flex items-center gap-x-2">
+          <Button variant="outline" size="sm" onClick={onHandleReplace}>
+            Replace
+          </Button>
+          <Button variant="outline" size="sm" onClick={onHandleEdit}>
+            Edit
+          </Button>
+        </div>
       </div>
       <div className="relative w-full aspect-video rounded-md overflow-hidden">
         {type === MediaType.IMAGE && (
