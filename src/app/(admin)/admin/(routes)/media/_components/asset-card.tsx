@@ -10,28 +10,47 @@ import { formatBytes } from "@/lib/format";
 import { File } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
+import {
+  formatMediaDimensions,
+  type MediaLibraryItem,
+} from "@/modules/media/lib/media-library";
 
 interface AssetCardProps {
-  id: string;
-  name: string;
-  altText: string;
-  url: string;
-  type: MediaType;
-  size: number;
+  media: MediaLibraryItem;
   onCheckboxChange: (id: string, isChecked: boolean) => void;
 }
 
-export const AssetCard = ({
-  id,
-  name,
-  altText,
-  url,
-  type,
-  size,
-  onCheckboxChange,
-}: AssetCardProps) => {
+function DetailRow({
+  label,
+  value,
+  title,
+  mono = false,
+}: {
+  label: string;
+  value: string;
+  title?: string;
+  mono?: boolean;
+}) {
+  return (
+    <div className="flex justify-between items-center gap-x-4">
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <span
+        className={`text-xs truncate ${mono ? "font-mono" : ""}`}
+        title={title ?? value}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
+
+export const AssetCard = ({ media, onCheckboxChange }: AssetCardProps) => {
   const [isChecked, setIsChecked] = useState(false);
   const { onOpen } = useModal();
+
+  const { id, name, altText, url, type, size, mimeType, checksum, revision } =
+    media;
+  const dimensions = formatMediaDimensions(media);
 
   const handleCheckboxChange = (checked: boolean) => {
     setIsChecked(checked);
@@ -39,7 +58,7 @@ export const AssetCard = ({
   };
 
   const onHandleEdit = () => {
-    onOpen("editMediaAsset", undefined, { id, name, altText });
+    onOpen("editMediaAsset", undefined, { id, name, altText: altText || "" });
   };
 
   return (
@@ -54,8 +73,9 @@ export const AssetCard = ({
         {type === MediaType.IMAGE && (
           <Image
             fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             className="object-cover"
-            alt={name}
+            alt={altText || name}
             src={url}
           />
         )}
@@ -70,11 +90,18 @@ export const AssetCard = ({
           </div>
           <Badge>{type}</Badge>
         </div>
-        <div className="flex justify-between items-center gap-x-4">
-          <div className="text-sm truncate font-medium group-hover:text-sky-700 transition">
-            {formatBytes(size)}
-          </div>
-        </div>
+        <DetailRow label="Size" value={formatBytes(size || 0)} />
+        {dimensions && <DetailRow label="Dimensions" value={dimensions} />}
+        {mimeType && <DetailRow label="MIME" value={mimeType} />}
+        {checksum && (
+          <DetailRow
+            label="Checksum"
+            value={checksum.slice(0, 12)}
+            title={checksum}
+            mono
+          />
+        )}
+        {revision > 1 && <DetailRow label="Revision" value={`v${revision}`} />}
       </div>
     </div>
   );

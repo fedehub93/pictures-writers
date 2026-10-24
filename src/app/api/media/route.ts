@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 
-import { Media } from "@/generated/prisma";
-
 import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
+
+import {
+  mediaLibrarySelect,
+  type MediaLibraryItem,
+} from "@/modules/media/lib/media-library";
 
 const MEDIA_BATCH = 3;
 
@@ -20,17 +23,20 @@ export async function GET(req: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    let media: Media[] = [];
+    let media: MediaLibraryItem[] = [];
     let totalMedia = 0;
 
     const skip = (page - 1) * MEDIA_BATCH;
     const take = MEDIA_BATCH;
+    const where = {
+      name: { contains: s, mode: "insensitive" as const },
+      archivedAt: null,
+    };
 
     if (cursor) {
       const assets = await db.media.findMany({
-        where: {
-          name: { contains: s, mode: "insensitive" },
-        },
+        where,
+        select: mediaLibrarySelect,
         take: MEDIA_BATCH,
         skip: 1,
         cursor: { id: cursor },
@@ -49,16 +55,15 @@ export async function GET(req: Request) {
     } else {
       [media, totalMedia] = await db.$transaction([
         db.media.findMany({
-          where: {
-            name: { contains: s, mode: "insensitive" },
-          },
+          where,
+          select: mediaLibrarySelect,
           take,
           skip,
           orderBy: {
             createdAt: "desc",
           },
         }),
-        db.media.count(),
+        db.media.count({ where }),
       ]);
     }
 
@@ -93,6 +98,7 @@ export async function POST(req: Request) {
 
     const media = await db.media.create({
       data: { ...values },
+      select: mediaLibrarySelect,
     });
 
     return NextResponse.json(media);

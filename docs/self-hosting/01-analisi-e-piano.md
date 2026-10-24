@@ -110,7 +110,7 @@ Conseguenza: **il container di build deve raggiungere PostgreSQL**. Non è un de
 - UploadThing: il browser carica i file **direttamente** su UploadThing; il server riceve solo i metadati. Gli allegati inbound di Resend vengono copiati su UploadThing dal server.
 - Le email escono verso SendGrid/Resend.
 - Stripe: checkout verso Stripe, webhook in ingresso.
-- `sharp` viene usato **a runtime** per generare i placeholder delle immagini (`src/lib/image.ts`), leggendo da `public/` o da URL remoti.
+- `sharp` viene usato **solo nei job di processing** (backfill dei metadati ora; generazione delle rendition al momento dell'upload in seguito). Durante una visita la VPS non tocca le immagini: un loader custom di `next/image` serve la rendition già presente sul CDN e ripiega sull'originale.
 - `date-fns-tz` + `Settings.timezone` per scheduling e automazioni.
 
 ### 3.3 Cosa non esiste (e quindi non va migrato)

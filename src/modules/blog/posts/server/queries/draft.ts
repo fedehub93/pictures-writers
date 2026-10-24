@@ -73,6 +73,7 @@ export const getDraftPostBySlug = async (slug: string) => {
             select: {
               url: true,
               altText: true,
+              metadata: true,
             },
           },
           authors: {

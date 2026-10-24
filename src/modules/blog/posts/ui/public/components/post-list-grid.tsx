@@ -1,5 +1,7 @@
 import type { GetPostsByFiltersReturn } from "@/modules/blog/posts/server/queries";
 
+import { getMediaBlurDataURL } from "@/modules/media/lib/media-metadata";
+
 import { PostCard } from "./post-card";
 
 interface PostListGridProps {
@@ -19,6 +21,7 @@ export const PostListGrid = ({ posts }: PostListGridProps) => {
             categories={post.categories.map((c) => c.category)}
             imageCoverUrl={post.imageCover?.url || ""}
             imageCoverAlt={post.imageCover?.altText || ""}
+            imageCoverBlurDataURL={getMediaBlurDataURL(post.imageCover)}
             authors={post.authors.map((v) => v.user)}
             updatedAt={post.updatedAt}
           />

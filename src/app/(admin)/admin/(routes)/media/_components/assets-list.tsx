@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { Trash } from "lucide-react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { Media } from "@/generated/prisma";
 import toast from "react-hot-toast";
+
+import type { MediaLibraryItem } from "@/modules/media/lib/media-library";
 
 import { Button } from "@/shared/ui/button";
 import { AssetCard } from "./asset-card";
@@ -15,7 +16,7 @@ import { SearchInput } from "@/app/(admin)/_components/search-input";
 import { MediaActions } from "./actions";
 
 interface AssetListProps {
-  items: Media[];
+  items: MediaLibraryItem[];
   pagination: {
     page: number;
     perPage: number;
@@ -24,7 +25,7 @@ interface AssetListProps {
   };
 }
 
-interface AssetWithCheckbox extends Media {
+interface AssetWithCheckbox extends MediaLibraryItem {
   isChecked: boolean;
 }
 
@@ -87,12 +88,7 @@ export const AssetsList = ({ items, pagination }: AssetListProps) => {
         {assets.map((item) => (
           <AssetCard
             key={item.id}
-            id={item.id}
-            name={item.name}
-            altText={item.altText || ""}
-            url={item.url}
-            type={item.type}
-            size={item.size || 0}
+            media={item}
             onCheckboxChange={handleCheckboxChange}
           />
         ))}

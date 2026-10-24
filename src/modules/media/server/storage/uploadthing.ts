@@ -42,8 +42,17 @@ export function createUploadThingStorageDriver(
   fetchImpl: typeof fetch = fetch,
 ): StorageDriver {
   async function urlFor(key: string): Promise<string | null> {
-    const { data } = await api.getFileUrls([key], { keyType: "customId" });
-    return data[0]?.url ?? null;
+    // Objects written after the storage seam landed are addressed by customId.
+    // Objects uploaded before it only have UploadThing's generated file key,
+    // which is still what legacy Media rows store in `key`.
+    const byCustomId = await api
+      .getFileUrls([key], { keyType: "customId" })
+      .catch(() => ({ data: [] as readonly { key: string; url: string }[] }));
+
+    if (byCustomId.data[0]?.url) return byCustomId.data[0].url;
+
+    const byFileKey = await api.getFileUrls([key], { keyType: "fileKey" });
+    return byFileKey.data[0]?.url ?? null;
   }
 
   return {

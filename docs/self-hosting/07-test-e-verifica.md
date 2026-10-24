@@ -146,7 +146,7 @@ Ripeti almeno le sezioni 1–8 dopo la fase C (database locale).
 - [x] Cancellazione multipla (bulk).
 - [x] Il file cancellato non è più raggiungibile.
 - [x] L'URL `/assets/:id` funziona.
-- [x] Le immagini remote generano il placeholder (sharp) senza errori nei log.
+- [x] Le immagini di copertina/hero usano il blur placeholder letto da `Media.metadata`, senza errori nei log e senza `sharp` nel render.
 - [x] Upload da un form pubblico (submission).
 - [x] Upload di un allegato email (composer).
 

@@ -194,6 +194,36 @@ Se ti serve un RPO più basso, aggiungi WAL archiving/PITR (pgBackRest/WAL-G) e 
 
 ---
 
+## 4bis. Media: consegna e backfill metadati
+
+### 4bis.1 Come vengono servite le immagini
+
+La VPS **non** ottimizza le immagini durante una visita. Un loader custom di `next/image` (`src/modules/media/lib/image-loader.ts`) restituisce l'URL di una rendition già presente sul CDN di UploadThing, oppure l'originale quando la rendition non esiste ancora. Le rendition vengono prodotte dai job di processing (upload e backfill); finché non esistono, il loader serve l'originale. `/_next/image` e i vecchi oggetti in `.next/cache/images` non sono più usati.
+
+La scala delle larghezze è una costante condivisa (`src/modules/media/lib/image-ladder.mjs`) tra `next.config.mjs` e il processore: il loader non può chiedere una larghezza che non venga generata.
+
+### 4bis.2 Backfill dei metadati
+
+Dopo il primo deploy che include il modello `Media` arricchito, le immagini storiche non hanno MIME, dimensioni, checksum né placeholder. Il job li calcola una volta, in modo idempotente:
+
+```bash
+# anteprima: legge le sorgenti ma non scrive
+MEDIA_BACKFILL_DRY_RUN=1 npm run media:backfill-metadata
+
+# esecuzione (finestra di basso traffico)
+MEDIA_BACKFILL_CONCURRENCY=4 npm run media:backfill-metadata
+```
+
+- Il job processa solo `MediaType.IMAGE`; PDF, audio e video restano intatti.
+- Le sorgenti non raggiungibili vengono riportate e saltate, senza interrompere il resto.
+- Rieseguirlo è sicuro: le righe già complete vengono saltate (`updated: 0`).
+- La concorrenza predefinita è 4; alzala solo se la VPS non ha altro carico.
+- Il report finale elenca `scanned`, `updated`, `skipped` e i `failed` con il motivo.
+
+Finché il backfill non è completo il loader serve gli originali: nessuna immagine rotta e nessun blocco del deploy.
+
+---
+
 ## 5. Monitoraggio e alert
 
 ### 5.1 Coolify

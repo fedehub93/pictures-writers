@@ -13,6 +13,10 @@ import type { Data } from "@puckeditor/core";
 import type { FormRootInstance } from "./modules/forms/builder/types/core";
 import type { DashboardWidgets as DashboardWidgetsType } from "./shared/dashboard/types";
 import type { ProductMetadata as ProductMetadataType } from "./modules/shop/products/types";
+import type {
+  MediaMetadata as MediaMetadataType,
+  MediaRendition as MediaRenditionType,
+} from "./modules/media/types";
 import type { SavedComponents } from "./puck/config";
 
 export type TiptapContent = HTMLContent | JSONContent | JSONContent[] | null;
@@ -25,6 +29,8 @@ declare global {
     type FormFields = any;
     type FormContentState = FormRootInstance;
     type ProductMetadata = ProductMetadataType | null | undefined;
+    type MediaMetadata = MediaMetadataType | null | undefined;
+    type MediaRenditions = MediaRenditionType[] | null | undefined;
     type WidgetMetadata = any;
     type Scripts = SettingsScripts[] | null | undefined;
     type DashboardWidgets = DashboardWidgetsType;

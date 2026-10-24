@@ -2,7 +2,8 @@ import Image from "next/image";
 
 import { getAdBlocks } from "@/data/ad-blocks";
 
-import { getPlaceholderImage } from "@/lib/image";
+import { MEDIA_IMAGE_DEFAULT_QUALITY } from "@/modules/media/lib/image-ladder.mjs";
+import { getMediaBlurDataURL } from "@/modules/media/lib/media-metadata";
 
 import { PostInfo } from "@/modules/blog/posts/ui/public/components/post-info";
 import Sidebar from "@/app/(home)/_components/sidebar";
@@ -35,9 +36,7 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
         : 0,
   });
 
-  const imageWithPlaceholder = post.imageCover
-    ? await getPlaceholderImage(post.imageCover.url)
-    : null;
+  const blurDataURL = getMediaBlurDataURL(post.imageCover);
 
   return (
     <div className="blog-post">
@@ -52,9 +51,13 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
                 sizes="(max-width:1280px) 90vw, 40vw"
                 preload
                 className="blog-post__image"
-                placeholder="blur"
-                blurDataURL={imageWithPlaceholder?.placeholder}
-                quality={100}
+                quality={MEDIA_IMAGE_DEFAULT_QUALITY}
+                {...(blurDataURL
+                  ? {
+                      placeholder: "blur",
+                      blurDataURL,
+                    }
+                  : {})}
               />
             ) : null}
           </div>

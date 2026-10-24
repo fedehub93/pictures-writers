@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
 
+import { mediaLibrarySelect } from "@/modules/media/lib/media-library";
+
 export async function PATCH(
   req: Request,
   props: {
@@ -24,6 +26,7 @@ export async function PATCH(
     const asset = await db.media.update({
       where: { id: mediaId },
       data: { ...values },
+      select: mediaLibrarySelect,
     });
 
     return NextResponse.json(asset);

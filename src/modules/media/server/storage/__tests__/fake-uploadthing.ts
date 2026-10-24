@@ -62,11 +62,25 @@ export function createFakeUploadThingApi() {
       return { success: true, deletedCount };
     },
 
-    async getFileUrls(customIds, opts) {
+    async getFileUrls(keys, opts) {
+      if (opts?.keyType === "fileKey") {
+        return {
+          data: keys.flatMap((key) => {
+            const file = [...files.values()].find(
+              (candidate) => candidate.key === key,
+            );
+            if (!file) return [];
+            return [
+              { key: file.key, url: `${UFS_URL}${encodeURIComponent(file.key)}` },
+            ];
+          }),
+        };
+      }
+
       requireCustomIdKeys(opts);
 
       return {
-        data: customIds.flatMap((customId) => {
+        data: keys.flatMap((customId) => {
           const file = files.get(customId);
           if (!file) return [];
           return [{ key: file.key, url: `${UFS_URL}${encodeURIComponent(file.key)}` }];

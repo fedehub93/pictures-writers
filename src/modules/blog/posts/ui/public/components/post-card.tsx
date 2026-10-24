@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { User } from "@/generated/prisma";
 
-import { getPlaceholderImage } from "@/lib/image";
+import { MEDIA_IMAGE_DEFAULT_QUALITY } from "@/modules/media/lib/image-ladder.mjs";
 import { getAuthorsString } from "@/data/user";
 
 import { PostInfo } from "./post-info";
@@ -14,21 +14,22 @@ interface PostCardProps {
   categories: { title: string; slug: string }[];
   imageCoverUrl: string;
   imageCoverAlt: string;
+  imageCoverBlurDataURL?: string | null;
   authors: User[];
   updatedAt: Date;
 }
 
-export const PostCard = async ({
+export const PostCard = ({
   title,
   description,
   slug,
   categories,
   imageCoverUrl,
   imageCoverAlt,
+  imageCoverBlurDataURL,
   authors,
   updatedAt,
 }: PostCardProps) => {
-  const imageWithPlaceholder = await getPlaceholderImage(imageCoverUrl);
   const authorsString = getAuthorsString(authors);
 
   return (
@@ -47,11 +48,15 @@ export const PostCard = async ({
               src={imageCoverUrl}
               alt={imageCoverAlt || "Post card"}
               fill
-              sizes="(max-width:1280px) 90w, 40vw"
-              quality={75}
+              sizes="(max-width:1280px) 90vw, 40vw"
+              quality={MEDIA_IMAGE_DEFAULT_QUALITY}
               className="object-cover"
-              placeholder="blur"
-              blurDataURL={imageWithPlaceholder.placeholder}
+              {...(imageCoverBlurDataURL
+                ? {
+                    placeholder: "blur",
+                    blurDataURL: imageCoverBlurDataURL,
+                  }
+                : {})}
             />
           ) : null}
         </div>

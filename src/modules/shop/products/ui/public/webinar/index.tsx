@@ -15,7 +15,11 @@ interface WebinarProps {
   id: string;
   title: string;
   tiptapDescription: TiptapContent;
-  image: { url: string; altText: string | null } | null;
+  image: {
+    url: string;
+    altText: string | null;
+    metadata: PrismaJson.MediaMetadata;
+  } | null;
   price: number | null;
   discountedPrice: number | null;
   acquisitionMode: ProductAcquisitionMode;

@@ -3,6 +3,8 @@ import { db } from "@/lib/db";
 import { requirePermission } from "@/shared/lib/auth-utils";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 
+import { mediaLibrarySelect } from "@/modules/media/lib/media-library";
+
 import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
 import { AssetsList } from "./_components/assets-list";
 
@@ -25,18 +27,22 @@ const MediaPage = async (props: {
   const skip = (page - 1) * PER_PAGE;
   const take = PER_PAGE;
 
+  const where = {
+    name: { contains: query, mode: "insensitive" as const },
+    archivedAt: null,
+  };
+
   const [assets, totalAssets] = await db.$transaction([
     db.media.findMany({
-      where: {
-        name: { contains: query, mode: "insensitive" },
-      },
+      where,
+      select: mediaLibrarySelect,
       take,
       skip,
       orderBy: {
         createdAt: "desc",
       },
     }),
-    db.media.count(),
+    db.media.count({ where }),
   ]);
 
   const pagination = {
