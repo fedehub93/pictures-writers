@@ -194,7 +194,7 @@ Se ti serve un RPO più basso, aggiungi WAL archiving/PITR (pgBackRest/WAL-G) e 
 
 ---
 
-## 4bis. Media: consegna e backfill metadati
+## 4bis. Media: consegna, backfill metadati e rendition
 
 ### 4bis.1 Come vengono servite le immagini
 
@@ -221,6 +221,67 @@ MEDIA_BACKFILL_CONCURRENCY=4 npm run media:backfill-metadata
 - Il report finale elenca `scanned`, `updated`, `skipped` e i `failed` con il motivo.
 
 Finché il backfill non è completo il loader serve gli originali: nessuna immagine rotta e nessun blocco del deploy.
+
+### 4bis.3 Backfill delle rendition
+
+Le immagini caricate dopo il deploy che include il processore hanno già le rendition. Le immagini storiche no: fino a quando non vengono elaborate, il loader restituisce il loro originale. Il job genera, una volta sola, l'originale normalizzato e l'intera scala di rendition (AVIF e WebP per ogni larghezza) per tutte le `Media` di tipo immagine che ne sono prive.
+
+**Quando eseguirlo.** Dopo il backfill dei metadati (4bis.2), una sola volta, in una finestra di basso traffico (notte o domenica). Non durante un deploy: il job genera circa 8.000–10.000 oggetti e usa CPU per `sharp`. Non è pianificato: resta un comando manuale.
+
+```bash
+# anteprima: elenca solo le Media in attesa, non legge né scrive nulla
+MEDIA_BACKFILL_DRY_RUN=1 npm run media:backfill-renditions
+
+# esecuzione (finestra di basso traffico)
+MEDIA_RENDITION_BACKFILL_CONCURRENCY=2 npm run media:backfill-renditions
+```
+
+Dentro il container dell'app:
+
+```bash
+docker exec -it <APP_CONTAINER> npm run media:backfill-renditions
+```
+
+- Processa solo `MediaType.IMAGE`; PDF, audio e video non vengono toccati.
+- La concorrenza predefinita è **2**. Conta le immagini elaborate in parallelo, non le rendition: ogni immagine esegue in sequenza i tagli della scala. Alzala solo se la VPS è altrimenti inattiva; su 4 vCPU non conviene superare 2–4.
+- È idempotente: le Media che hanno già un manifest di rendition vengono saltate, quindi rieseguirlo non duplica oggetti né riscrive righe.
+- Una sorgente non raggiungibile o non decodificabile finisce nell'elenco `failed` con il motivo e non interrompe il resto. Le altre immagini continuano a essere elaborate.
+- Se un'immagine fallisce, il job rimuove gli oggetti parziali della nuova revisione quando il prefisso era vuoto; l'originale gi� in consegna non viene mai rimosso. L'immagine continua a essere servita come prima e un rerun sovrascrive eventuali rendition orfane.
+- L'originale storico **non viene cancellato**: gli URL assoluti dentro Puck, TipTap, email e annunci continuano a funzionare. Solo gli URL della libreria (e quindi le pagine che usano la relazione `Media`) passano alle rendition.
+- Un'immagine archiviata viene elaborata ma continua a essere servita come originale; ripristinandola, il loader torna a usare le rendition.
+
+**Come leggere il report.** Alla fine il comando stampa un JSON:
+
+| Campo | Significato |
+|---|---|
+| `scanned` | Media immagine esaminate (escluse le altre tipologie). |
+| `processed` | Media elaborate con successo in questa esecuzione. |
+| `skipped` | Media che avevano già le rendition: non sono state toccate. |
+| `pending` | Lavoro trovato all'avvio: in dry-run è l'anteprima, in esecuzione reale corrisponde a `processed + failed`. |
+| `failed` | Sorgenti non elaborate, con `mediaId`, `name` e `reason` (es. `source not found in storage`, `no readable storage key`, immagine non decodificabile). |
+| `dryRun` | `true` se è stata un'anteprima. |
+
+Esempio di esecuzione completa:
+
+```json
+{
+  "scanned": 2,
+  "processed": 1,
+  "skipped": 0,
+  "pending": [
+    { "mediaId": "0f...", "name": "cover.jpg" },
+    { "mediaId": "3a...", "name": "missing.jpg" }
+  ],
+  "failed": [
+    { "mediaId": "3a...", "name": "missing.jpg", "reason": "source not found in storage" }
+  ],
+  "dryRun": false
+}
+```
+
+Se `failed` non è vuoto, controlla che l'oggetto esista ancora sul provider con la chiave indicata: un URL UploadThing cancellato non è recuperabile. Le Media fallite restano servite come originali e possono essere riprovate con lo stesso comando.
+
+**Verifica.** Dopo il run, dal sito controlla che una pagina con immagine storica serva un URL di rendition (`.avif`/`.webp` sul CDN) invece dell'originale, e che il media library mostri ancora una sola riga per file. Il job non modifica i contenuti: se un URL assoluto dentro un testo punta ancora all'originale, è atteso.
 
 ---
 

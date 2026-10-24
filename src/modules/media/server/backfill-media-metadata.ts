@@ -6,11 +6,10 @@ import { db } from "@/shared/lib/db";
 
 import { storageKeyFromMediaUrl } from "@/modules/media/lib/url";
 
+import { describeBackfillFailure } from "./backfill-failure";
+import { forEachWithConcurrency } from "./bounded-concurrency";
 import { inspectImage } from "./inspect-image";
-import {
-  StorageObjectNotFoundError,
-  type StorageDriver,
-} from "./storage";
+import type { StorageDriver } from "./storage";
 
 export interface MediaMetadataBackfillFailure {
   mediaId: string;
@@ -69,32 +68,6 @@ function hasCompleteMetadata(media: BackfillMedia): boolean {
   );
 }
 
-async function forEachWithConcurrency<T>(
-  items: T[],
-  concurrency: number,
-  worker: (item: T) => Promise<void>,
-): Promise<void> {
-  const limit = Math.max(1, Math.min(concurrency, items.length || 1));
-  let cursor = 0;
-
-  const runners = Array.from({ length: limit }, async () => {
-    while (cursor < items.length) {
-      const item = items[cursor];
-      cursor += 1;
-      await worker(item);
-    }
-  });
-
-  await Promise.all(runners);
-}
-
-function failureReason(error: unknown): string {
-  if (error instanceof StorageObjectNotFoundError) {
-    return "source not found in storage";
-  }
-  if (error instanceof Error) return error.message;
-  return String(error);
-}
 
 /**
  * Fills the metadata of every image Media that is missing it. It only writes
@@ -182,9 +155,9 @@ export async function backfillMediaMetadata({
       report.failed.push({
         mediaId: item.id,
         name: item.name,
-        reason: failureReason(error),
+        reason: describeBackfillFailure(error),
       });
-      onProgress?.(`fail ${item.id}: ${failureReason(error)}`);
+      onProgress?.(`fail ${item.id}: ${describeBackfillFailure(error)}`);
     }
   });
 

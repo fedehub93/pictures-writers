@@ -351,6 +351,30 @@ docker top <APP_CONTAINER>
 
 ---
 
+## 6bis. Media: backfill metadati e rendition
+
+```bash
+# Anteprima metadati (legge le sorgenti, non scrive)
+docker exec -it <APP_CONTAINER> env MEDIA_BACKFILL_DRY_RUN=1 \
+  npm run media:backfill-metadata
+
+# Backfill metadati (finestra di basso traffico)
+docker exec -it <APP_CONTAINER> env MEDIA_BACKFILL_CONCURRENCY=4 \
+  npm run media:backfill-metadata
+
+# Anteprima rendition (elenca le Media in attesa, non legge né scrive)
+docker exec -it <APP_CONTAINER> env MEDIA_BACKFILL_DRY_RUN=1 \
+  npm run media:backfill-renditions
+
+# Backfill rendition (dopo i metadati, finestra di basso traffico)
+docker exec -it <APP_CONTAINER> env MEDIA_RENDITION_BACKFILL_CONCURRENCY=2 \
+  npm run media:backfill-renditions
+```
+
+Il report finale è JSON: `processed` = immagini completate, `skipped` = già elaborate, `failed` = sorgenti con il motivo. Dettagli in `docs/self-hosting/08-operations-runbook.md`, sezione 4bis.
+
+---
+
 ## 7. TLS
 
 ```bash

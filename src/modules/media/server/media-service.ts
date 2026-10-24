@@ -105,8 +105,17 @@ function findDuplicate(checksum: string): Promise<MediaLibraryItem | null> {
   });
 }
 
-function revisionPrefix(mediaId: string, revision: number): string {
+export function mediaRevisionPrefix(mediaId: string, revision: number): string {
   return `${mediaId}/${revision}/`;
+}
+
+/** Whether a storage key is the original or a rendition of one revision. */
+export function isMediaRevisionKey(
+  mediaId: string,
+  revision: number,
+  key: string,
+): boolean {
+  return key.startsWith(mediaRevisionPrefix(mediaId, revision));
 }
 
 async function createPlainMedia(
@@ -126,7 +135,7 @@ async function createPlainMedia(
   });
 }
 
-interface StoredImageVersion {
+interface StoredImageRevision {
   key: string;
   url: string;
   size: number;
@@ -135,27 +144,36 @@ interface StoredImageVersion {
   renditions: MediaRendition[];
 }
 
-interface StoredPlainVersion {
+interface StoredPlainRevision {
   key: string;
   url: string;
   size: number;
   mimeType: string | null;
 }
 
-async function writeImageVersion({
-  driver,
-  id,
-  revision,
-  bytes,
-  archived,
-}: {
+export interface WriteImageRevisionOptions {
   driver: StorageDriver;
   id: string;
   revision: number;
   bytes: Uint8Array<ArrayBuffer>;
   archived: boolean;
-}): Promise<StoredImageVersion> {
-  const prefix = revisionPrefix(id, revision);
+  /**
+   * Roll back the objects written under this revision on failure. A backfill
+   * that reuses an existing original must not: deleting the prefix would
+   * remove the object the Media is currently delivered from.
+   */
+  cleanupOnFailure?: boolean;
+}
+
+export async function writeImageRevision({
+  driver,
+  id,
+  revision,
+  bytes,
+  archived,
+  cleanupOnFailure = true,
+}: WriteImageRevisionOptions): Promise<StoredImageRevision> {
+  const prefix = mediaRevisionPrefix(id, revision);
 
   try {
     const image = await normaliseImage(bytes);
@@ -201,12 +219,14 @@ async function writeImageVersion({
       renditions: manifest,
     };
   } catch (error) {
-    await driver.deletePrefix(prefix).catch(() => undefined);
+    if (cleanupOnFailure) {
+      await driver.deletePrefix(prefix).catch(() => undefined);
+    }
     throw error;
   }
 }
 
-async function writePlainVersion({
+async function writePlainRevision({
   driver,
   id,
   revision,
@@ -218,8 +238,8 @@ async function writePlainVersion({
   revision: number;
   bytes: Uint8Array<ArrayBuffer>;
   mimeType: string | null;
-}): Promise<StoredPlainVersion> {
-  const prefix = revisionPrefix(id, revision);
+}): Promise<StoredPlainRevision> {
+  const prefix = mediaRevisionPrefix(id, revision);
   const key = `${prefix}original`;
 
   try {
@@ -237,8 +257,8 @@ async function writePlainVersion({
   }
 }
 
-function storedImageFields(
-  stored: StoredImageVersion,
+export function storedImageFields(
+  stored: StoredImageRevision,
   revision: number,
   checksum: string,
 ) {
@@ -301,7 +321,7 @@ export async function createMediaFromUpload({
   const prefix = `${id}/`;
 
   try {
-    const stored = await writeImageVersion({
+    const stored = await writeImageRevision({
       driver,
       id,
       revision,
@@ -374,15 +394,15 @@ export async function replaceMediaFile({
 
   const revision = existing.revision + 1;
   const mediaPrefix = `${mediaId}/`;
-  const newPrefix = revisionPrefix(mediaId, revision);
-  const previousPrefix = revisionPrefix(mediaId, existing.revision);
+  const newPrefix = mediaRevisionPrefix(mediaId, revision);
+  const previousPrefix = mediaRevisionPrefix(mediaId, existing.revision);
   const checksum = checksumOf(bytes);
 
   let media: MediaLibraryItem;
 
   try {
     if (existing.type === MediaType.IMAGE) {
-      const stored = await writeImageVersion({
+      const stored = await writeImageRevision({
         driver,
         id: mediaId,
         revision,
@@ -396,7 +416,7 @@ export async function replaceMediaFile({
         select: mediaLibrarySelect,
       });
     } else {
-      const stored = await writePlainVersion({
+      const stored = await writePlainRevision({
         driver,
         id: mediaId,
         revision,
