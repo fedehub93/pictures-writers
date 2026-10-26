@@ -21,7 +21,7 @@ A regression test (`src/app/(home)/_components/__tests__/navigation-prefetch.tes
 Third-party behavior is unchanged:
 
 - GTM is still rendered in `src/app/(home)/layout.tsx` through `@next/third-parties/google` `<GoogleTagManager>`, which uses `next/script`'s default `afterInteractive` strategy. Its timing is unchanged; deferring it to `lazyOnload` or removing it would delay when GTM and the consent-mode/analytics tags it controls fire.
-- Iubenda still loads through `AppScripts` (`src/shared/components/scripts.tsx`) from `settings.scripts`, preserving the per-script `strategy` (including `beforeInteractive`) stored in the database. Moving or deferring those scripts is a GDPR/consent decision and was left unchanged.
+- Iubenda still loads through `AppScripts` (`src/shared/components/scripts.tsx`) from `settings.scripts`, preserving the per-script `strategy` (including `beforeInteractive`) stored in the database. A test (`src/shared/components/__tests__/scripts.test.tsx`) locks in that strategy passthrough. Moving or deferring those scripts is a GDPR/consent decision and was left unchanged.
 
 The rationale is recorded in `docs/adr/0028-no-explicit-prefetch-and-third-party-scripts.md`.
 
