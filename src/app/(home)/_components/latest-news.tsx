@@ -74,7 +74,6 @@ export const LatestNews = async () => {
                     <Link
                       href={`/${post.slug}`}
                       className="w-full h-full inset-0 absolute z-10"
-                      prefetch
                     />
                     <Image
                       alt={post.imageCover.altText || ""}
@@ -107,7 +106,6 @@ export const LatestNews = async () => {
                 <Link
                   href={`/${post.slug}`}
                   className="font-medium text-primary-public flex items-center gap-x-2 transition-colors hover:text-primary"
-                  prefetch
                 >
                   Scopri di più <ChevronRight className="size-5" />
                 </Link>

@@ -1,27 +1,25 @@
-import * as v from "valibot";
+import * as z from "zod/mini";
 
-export const EmailSchemaValibot = v.pipe(
-  v.string(),
-  v.nonEmpty("Please enter your email."),
-  v.email("The email address is badly formatted."),
+export const EmailSchema = z.pipe(
+  z.string().check(z.minLength(1, "Please enter your email.")),
+  z.email("The email address is badly formatted."),
 );
 
-export const SubscribeSchemaValibot = v.object({
-  email: EmailSchemaValibot,
+export const SubscribeSchema = z.object({
+  email: EmailSchema,
 });
 
-export const FreeDigitalDownloadSchemaValibot = v.looseObject({
-  email: EmailSchemaValibot,
-  rootId: v.pipe(v.string(), v.nonEmpty("A product is required.")),
-  privacyConsent: v.pipe(
-    v.boolean(),
-    v.value(true, "You must accept the privacy policy."),
+export const FreeDigitalDownloadSchema = z.looseObject({
+  email: EmailSchema,
+  rootId: z.string().check(z.minLength(1, "A product is required.")),
+  privacyConsent: z.boolean().check(
+    z.refine((value) => value === true, "You must accept the privacy policy."),
   ),
 });
 
-export const ContactSchemaValibot = v.object({
-  name: v.pipe(v.string(), v.nonEmpty("Name is required")),
-  email: EmailSchemaValibot,
-  subject: v.pipe(v.string(), v.nonEmpty("Subject is required")),
-  message: v.pipe(v.string(), v.nonEmpty("Message is required")),
+export const ContactSchema = z.object({
+  name: z.string().check(z.minLength(1, "Name is required")),
+  email: EmailSchema,
+  subject: z.string().check(z.minLength(1, "Subject is required")),
+  message: z.string().check(z.minLength(1, "Message is required")),
 });

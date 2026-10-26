@@ -1,0 +1,32 @@
+{
+  "routes": {
+    "/": {
+      "clientJsCompressed": 704865,
+      "clientCssCompressed": 35007
+    },
+    "/blog/[slug]": {
+      "clientJsCompressed": 357285,
+      "clientCssCompressed": 35007
+    },
+    "/shop": {
+      "clientJsCompressed": 1138552,
+      "clientCssCompressed": 35007
+    },
+    "/shop/[categorySlug]": {
+      "clientJsCompressed": 1138552,
+      "clientCssCompressed": 35007
+    },
+    "/shop/[categorySlug]/[productSlug]": {
+      "clientJsCompressed": 1138552,
+      "clientCssCompressed": 35007
+    },
+    "/shop/checkout": {
+      "clientJsCompressed": 352064,
+      "clientCssCompressed": 35007
+    },
+    "/sign-in": {
+      "clientJsCompressed": 418892,
+      "clientCssCompressed": 26352
+    }
+  }
+}

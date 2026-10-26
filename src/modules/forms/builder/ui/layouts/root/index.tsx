@@ -1,11 +1,18 @@
 "use client";
 
+import "client-only";
+import { lazy } from "react";
 import { GridIcon } from "lucide-react";
 
 import type { RootType, FormRoot } from "../../../types/core";
 import type { RootProperties } from "../../../types/properties";
 import { RootDesignerComponent } from "./designer-component";
-import { RootPropertiesComponent } from "./properties-component";
+
+const RootPropertiesComponent = lazy(() =>
+  import("./properties-component").then((module) => ({
+    default: module.RootPropertiesComponent,
+  })),
+);
 
 const type: RootType = "Root";
 

@@ -2,8 +2,8 @@
 
 import { useForm } from "react-hook-form";
 import { useMemo, useState, useTransition } from "react";
-import * as v from "valibot";
-import { valibotResolver } from "@hookform/resolvers/valibot";
+import * as z from "zod/mini";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { BeatLoader } from "react-spinners";
 import { sendGTMEvent } from "@next/third-parties/google";
 import { toast } from "sonner";
@@ -55,51 +55,43 @@ export default function DynamicForm({
     return <div className="text-destructive">Invalid form configuration</div>;
   }
   const schema = useMemo(() => {
-    const shape: Record<string, any> = {};
+    const shape: Record<string, z.ZodMiniType> = {};
 
     for (const field of jsonFields) {
-      let validator: any = v.string();
+      let validator: z.ZodMiniType = z.string();
 
-      // 🔹 Gestisci i tipi base
       switch (field.type) {
         case "text":
         case "textarea":
-          validator = v.pipe(v.string());
-          if (field.required)
-            validator = v.pipe(
-              validator,
-              v.minLength(1, `${field.label} è obbligatorio`),
-            );
+          validator = field.required
+            ? z.string().check(z.minLength(1, `${field.label} è obbligatorio`))
+            : z.string();
           break;
 
         case "email":
-          validator = v.pipe(
-            v.string(),
-            v.email(`${field.label || "Email"} non è valida`),
-          );
-          if (field.required) validator = v.pipe(validator, v.minLength(1));
+          validator = z.email(`${field.label || "Email"} non è valida`);
           break;
 
         case "checkbox":
           validator = field.required
-            ? v.literal(true, `${field.label} deve essere accettato`)
-            : v.boolean();
+            ? z.literal(true, { error: `${field.label} deve essere accettato` })
+            : z.boolean();
           break;
 
         case "file":
           validator = field.required
-            ? v.array(v.any(), `${field.label} è obbligatorio`)
-            : v.optional(v.array(v.any()));
+            ? z.array(z.any(), { error: `${field.label} è obbligatorio` })
+            : z.optional(z.array(z.any()));
           break;
 
         default:
-          validator = v.any();
+          validator = z.any();
       }
 
       shape[field.name] = validator;
     }
 
-    return v.object(shape);
+    return z.object(shape);
   }, [jsonFields]);
 
   // 👇 Crea defaultValues dinamicamente
@@ -121,14 +113,14 @@ export default function DynamicForm({
   }, [jsonFields]);
 
   const form = useForm({
-    resolver: valibotResolver(schema),
+    resolver: zodResolver(schema),
     mode: "all",
     defaultValues,
   });
 
   const { isSubmitting } = form.formState;
 
-  const onSubmit = async (values: Record<string, string>) => {
+  const onSubmit = async (values: Record<string, unknown>) => {
     try {
       setError("");
       setSuccess("");

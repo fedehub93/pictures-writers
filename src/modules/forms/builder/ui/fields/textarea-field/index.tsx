@@ -1,12 +1,21 @@
+"use client";
+
+import "client-only";
+import { lazy } from "react";
 import { MessageSquareTextIcon } from "lucide-react";
 
 import type { ElementsType, FormElement } from "../../../types/core";
 import type { TextareaFieldProperties } from "../../../types/properties";
 
 import { TextareaFieldDesignerComponent } from "./designer-component";
-import { TextareaFieldPropertiesComponent } from "./properties-component";
 import { buildSchema } from "./schemas";
 import { TextareaFieldFormComponent } from "./form-component";
+
+const TextareaFieldPropertiesComponent = lazy(() =>
+  import("./properties-component").then((module) => ({
+    default: module.TextareaFieldPropertiesComponent,
+  })),
+);
 
 const type: ElementsType = "TextareaField";
 

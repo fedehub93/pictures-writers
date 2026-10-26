@@ -7,6 +7,7 @@ import {
 
 import { faqItemsSchema } from "@/modules/faq";
 
+import { SERVICE_FEATURE_ICON_NAMES } from "./lib/service-feature-icon-names";
 import { EbookType } from "./types";
 
 /**
@@ -64,7 +65,7 @@ export const serviceMetadataSchema = z.object({
   features: z.array(
     z.object({
       title: z.string(),
-      Icon: z.string(),
+      Icon: z.enum(SERVICE_FEATURE_ICON_NAMES),
       description: z.string(),
     }),
   ),

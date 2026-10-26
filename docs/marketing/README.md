@@ -38,7 +38,7 @@ docs/marketing/
 | `seo/measurement-come-scrivere-una-sceneggiatura.md` | Misurazione hub 1A: baseline, giorno 30 chiuso, soglie giorno 90 | 🔄 giorno 90 aperto | 22/10/2026 |
 | `seo/measurement-come-diventare-sceneggiatore.md` | Misurazione hub 2B | 🔄 | 01/10/2026 |
 | `email/emails.md` | Design sequence S1–S5 + infrastruttura | ✅ S1/S2/S4 live · ⏳ S3/S5 | 02/10/2026 |
-| `email/newsletter.md` | Playbook operativo S4, piani mensili | 🔄 | 07/10/2026 |
+| `email/newsletter.md` | Playbook operativo S4, piani mensili | 🔄 | 26/10/2026 |
 | `launch/launch-individuale.md` | Piano di lancio Laboratorio 1:1 (pre-annuncio → vendita) | 🔄 finestra 8–27/10 | 07/10/2026 |
 | `launch/laboratorio-1-1-product-page.md` | Brief e copy della product page 1:1 | 🔄 | 07/10/2026 |
 

@@ -1,8 +1,8 @@
 "use client";
 
-import * as v from "valibot";
+import type { z } from "zod/mini";
 import { useForm } from "react-hook-form";
-import { valibotResolver } from "@hookform/resolvers/valibot";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { BeatLoader } from "react-spinners";
@@ -12,7 +12,7 @@ import toast from "react-hot-toast";
 import { Form } from "@/shared/ui/form";
 import { Button } from "@/shared/ui/button";
 
-import { SubscribeSchemaValibot } from "@/schemas";
+import { SubscribeSchema } from "@/schemas";
 
 import { CONTACT_EMAIL } from "@/constants";
 
@@ -34,8 +34,8 @@ const WidgetNewsletter = ({ label }: WidgetNewsletter) => {
   const [isPending, startTransition] = useTransition();
   const [isRecaptchaLoading, setIsRecaptchaLoading] = useState(false);
 
-  const form = useForm<v.InferInput<typeof SubscribeSchemaValibot>>({
-    resolver: valibotResolver(SubscribeSchemaValibot),
+  const form = useForm<z.input<typeof SubscribeSchema>>({
+    resolver: zodResolver(SubscribeSchema),
     defaultValues: {
       email: "",
     },
@@ -43,9 +43,7 @@ const WidgetNewsletter = ({ label }: WidgetNewsletter) => {
 
   const { isSubmitting, isValid } = form.formState;
 
-  const onSubmit = async (
-    values: v.InferInput<typeof SubscribeSchemaValibot>
-  ) => {
+  const onSubmit = async (values: z.input<typeof SubscribeSchema>) => {
     try {
       setError("");
       setSuccess("");

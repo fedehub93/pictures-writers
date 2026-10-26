@@ -1,8 +1,8 @@
 "use client";
 
-import * as v from "valibot";
+import type { z } from "zod/mini";
 import { useForm } from "react-hook-form";
-import { valibotResolver } from "@hookform/resolvers/valibot";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useTransition, type JSX } from "react";
 import { Globe, Mail } from "lucide-react";
 import Link from "next/link";
@@ -15,7 +15,7 @@ import { Form } from "@/shared/ui/form";
 import { Button } from "@/shared/ui/button";
 
 import { contact } from "@/actions/contact";
-import { ContactSchemaValibot } from "@/schemas";
+import { ContactSchema } from "@/schemas";
 import { CONTACT_EMAIL } from "@/constants";
 
 import { GoogleRecaptchaV3 } from "@/shared/components/google-recaptchav3";
@@ -31,8 +31,8 @@ export const ContactUs = (): JSX.Element => {
   const [isPending, startTransition] = useTransition();
   const [isRecaptchaLoading, setIsRecaptchaLoading] = useState(false);
 
-  const form = useForm<v.InferInput<typeof ContactSchemaValibot>>({
-    resolver: valibotResolver(ContactSchemaValibot),
+  const form = useForm<z.input<typeof ContactSchema>>({
+    resolver: zodResolver(ContactSchema),
     defaultValues: {
       name: "",
       email: "",
@@ -43,9 +43,7 @@ export const ContactUs = (): JSX.Element => {
 
   const { isValid, isSubmitting } = form.formState;
 
-  const onSubmit = async (
-    values: v.InferInput<typeof ContactSchemaValibot>
-  ) => {
+  const onSubmit = async (values: z.input<typeof ContactSchema>) => {
     try {
       setError("");
       setSuccess("");

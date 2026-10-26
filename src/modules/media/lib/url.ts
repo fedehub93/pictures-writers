@@ -1,5 +1,6 @@
 import {
   LEGACY_ASSET_PREFIX,
+  UPLOADTHING_FILE_ORIGIN,
   UPLOADTHING_FILE_PATH,
 } from "./image-ladder.mjs";
 
@@ -45,6 +46,22 @@ export function isUploadThingUrl(url: URL): boolean {
 
 export function isPicturesWritersUrl(url: URL): boolean {
   return matchesHost(url.hostname, PICTURES_WRITERS_HOST_SUFFIXES);
+}
+
+/**
+ * Origin a browser will actually fetch an UploadThing image from. Legacy
+ * relative `/assets/<key>` URLs are rewritten by the loader to the `.ufs.sh`
+ * origin, while modern images use either `.ufs.sh` or `utfs.io`; callers must
+ * preconnect to the effective origin instead of assuming a single hostname.
+ */
+export function getUploadThingOrigin(src: string): string | null {
+  const { url, absolute } = parseSrc(src);
+
+  if (!absolute && url.pathname.startsWith(LEGACY_ASSET_PREFIX)) {
+    return UPLOADTHING_FILE_ORIGIN;
+  }
+
+  return absolute && isUploadThingUrl(url) ? url.origin : null;
 }
 
 /**

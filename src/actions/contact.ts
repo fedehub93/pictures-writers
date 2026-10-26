@@ -1,9 +1,9 @@
 "use server";
 
-import * as v from "valibot";
+import type { z } from "zod/mini";
 
 import { db } from "@/lib/db";
-import { ContactSchemaValibot } from "@/schemas";
+import { ContactSchema } from "@/schemas";
 import { createContactByEmail } from "@/data/email-contact";
 import { handleContactRequested } from "@/lib/event-handler";
 import { verifyRecaptcha } from "@/lib/recaptcha";
@@ -11,7 +11,7 @@ import { BUILT_IN_CONTACT_FORM_ID } from "@/modules/forms/built-in-forms";
 import { emitFormSubmitted } from "@/modules/forms/automations/emit";
 
 export const contact = async (
-  values: v.InferInput<typeof ContactSchemaValibot>,
+  values: z.input<typeof ContactSchema>,
   recaptchaToken: string,
 ) => {
   try {
@@ -30,7 +30,7 @@ export const contact = async (
     }
 
     // 2. Validate the form data
-    const validatedFields = v.parse(ContactSchemaValibot, values);
+    const validatedFields = ContactSchema.parse(values);
     const { name, email, subject, message } = validatedFields;
 
     await db.formSubmission.create({

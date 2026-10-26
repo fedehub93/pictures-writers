@@ -1,7 +1,7 @@
 # Newsletter — Pictures Writers (esecuzione S4)
 
-**Document version:** v1
-**Last updated:** 2026-10-02
+**Document version:** v12
+**Last updated:** 2026-10-26
 **Status:** workstream operativo — broadcast settimanale
 
 Esecuzione del flusso **S4** progettato in `docs/marketing/email/emails.md` §7. Qui vivono il playbook operativo e le issue scritte (a differenza di `emails.md`, che resta il design delle sequence).
@@ -34,7 +34,7 @@ Esecuzione del flusso **S4** progettato in `docs/marketing/email/emails.md` §7.
 ## 3. Ottobre 2026 — riattivazione + apertura laboratori
 
 > **Finestra iscrizioni:** gio 8 → mar 27 ottobre. **Avvio laboratori:** mar 3 novembre.
-> **Invii:** lun 5 (Issue 1, ritorno soft) · gio 8 (Extra, apertura iscrizioni) · lun 12 (Issue 2) · lun 19 (Issue 3) · gio 22 (Issue 4, ultima chiamata).
+> **Invii:** lun 5 (Issue 1, ritorno soft) · gio 8 (Extra, apertura iscrizioni) · lun 12 (Issue 2) · lun 19 (Issue 3) · gio 22 (Issue 4, ultima chiamata) · lun 26 (Issue 5, valore) · gio 29 (Extra, lancio 1:1).
 > Calendario di riferimento: `docs/marketing/strategy/content-strategy.md` §4 (Trimestre 1, Ott-Dic 2026).
 
 ### Issue 1 — Ritorno / riattivazione (il soggetto è il vero lavoro) ✅ scritta
@@ -151,6 +151,38 @@ Esecuzione del flusso **S4** progettato in `docs/marketing/email/emails.md` §7.
 **CTA:** Iscriviti ai laboratori → `/shop/corsi-di-sceneggiatura/`
 **Nota:** invio a scadenza, fuori dalla cadenza del lunedì, per lasciare giorni di margine prima della chiusura (27). La versione precedente (pre-annuncio a fine ottobre) non reggeva la finestra iscrizioni 8-27.
 
+### Issue 5 — Cosa vuole il tuo protagonista ✅ scritta
+**Tipo:** piena · **Send:** lunedì 26 ottobre
+**Oggetto:** Cosa vuole il tuo protagonista?
+**Preview:** Non cosa gli succede. Cosa vuole. È lì che si decide se la storia tiene.
+**Body:**
+> Ciao,
+> c'è una domanda che facciamo sempre prima di leggere una sceneggiatura:
+> cosa vuole il protagonista?
+>
+> Non cosa gli succede.
+> Non cosa impara alla fine.
+> Cosa vuole, in modo concreto, e cosa è disposto a perdere per ottenerlo.
+>
+> Senza un "vuole" chiaro la storia non parte.
+> Con un "vuole" chiaro, ogni scena ha un motivo per esistere:
+> - l'obiettivo dà direzione
+> - l'ostacolo dà tensione
+> - la posta in gioco dà peso a ogni scelta
+>
+> Si vede bene in un film che conosci: **Whiplash**.
+> Andrew vuole diventare uno dei grandi. Fletcher è l'ostacolo. Il costo è tutto il resto: le relazioni, la salute, il suo stesso senso di sé.
+> Il film regge perché ogni scena mette alla prova quel "vuole", fino all'ultima battuta.
+>
+> **[Leggi l'analisi →]** `/sceneggiatura-whiplash-pagina-uno/`
+>
+> Se non sai cosa vuole il tuo protagonista, non hai ancora una storia. Hai una situazione.
+>
+> A presto,
+> il team di Pictures Writers
+**CTA:** Leggi l'analisi → `/sceneggiatura-whiplash-pagina-uno/`
+**Nota:** piena di solo valore, quattro giorni dopo l'ultima chiamata del gruppo. Non contiene vendita: prepara la send 1:1 di giovedì 29 (valore prima della richiesta). Nessuna scadenza concorsi verificata: la sezione scadenze resta fuori.
+
 ### Extra — Apertura iscrizioni laboratori ✅ scritta
 **Tipo:** speciale (a scadenza) · **Send:** giovedì 8 ottobre
 **Oggetto:** Sono aperte le iscrizioni ai laboratori
@@ -174,7 +206,7 @@ Esecuzione del flusso **S4** progettato in `docs/marketing/email/emails.md` §7.
 **Nota:** apertura iscrizioni **solo gruppo** (finestra 8-27 ott, avvio 3 nov). Email self-contained: non rimanda alla Issue 1. Il formato 1:1 **non entra qui**: diventerebbe confusante (stesso prezzo, stesso esito) → ha una send dedicata a offerta unica dopo la finestra (vedi sotto).
 
 ### Send 1:1 — Lancio Laboratorio 1:1 ✅ scritta
-**Tipo:** speciale a scadenza · **Send:** dopo la finestra del gruppo (post 27/10, es. mer 28 o gio 29)
+**Tipo:** speciale a scadenza · **Send:** giovedì 29 ottobre
 **Oggetto:** Il laboratorio con una sola persona
 **Preview:** Non era previsto. È andata benissimo. Ora è una scelta.
 **Body:**
@@ -197,7 +229,7 @@ Esecuzione del flusso **S4** progettato in `docs/marketing/email/emails.md` §7.
 > La differenza non è cosa impari. È quanta attenzione è tutta sulla tua idea.
 > Stesso prezzo del corso di gruppo: 300€.
 >
-> **[Scopri il Lab 1:1 →]** `/shop/laboratorio-individuale/`
+> **[Scopri il Lab 1:1 →]** `/shop/laboratorio-individuale/laboratorio-1-1-soggetto/`
 >
 > Si parte il **10 novembre**. I posti sono **5**.
 >
@@ -205,24 +237,167 @@ Esecuzione del flusso **S4** progettato in `docs/marketing/email/emails.md` §7.
 >
 > A presto,
 > il team di Pictures Writers
-**CTA:** Scopri il Lab 1:1 → `/shop/laboratorio-individuale/`
-**Nota:** send separata e a **offerta unica** (mai "gruppo o 1:1" nella stessa email). Angolo = l'edizione del gruppo finita con una sola persona, andata bene. Avvio 10/11, 5 posti. **Bloccata dalla creazione della product page** (il link CTA deve essere live prima dell'invio).
-
-### Avvio (extra del 3 novembre)
-Email di benvenuto/conferma agli iscritti (dettagli prima sessione, come accedere), derivabile dalla conferma acquisto in `docs/marketing/launch/launch-individuale.md` §8.
+**CTA:** Scopri il Lab 1:1 → `/shop/laboratorio-individuale/laboratorio-1-1-soggetto/`
+**Nota:** send separata e a **offerta unica** (mai "gruppo o 1:1" nella stessa email). Angolo = l'edizione del gruppo finita con una sola persona, andata bene. Avvio 10/11, 5 posti. **Bloccata dalla creazione della product page e della categoria `laboratorio-individuale`** (il link CTA deve essere live prima dell'invio). **Audience:** `lead` (mai acquistato); escludere dall'invio chi ha già fatto il laboratorio di gruppo, se il segmento è tracciabile (gli ex-studenti hanno già svolto quel job).
 
 **Sondaggio → social (non email):** lo speciale "Sondaggio sceneggiatura italiana 2026" (calendario `content-strategy` §4) si sposta **sui social** (poll/domande), più adatto al canale. I risultati diventano una **newsletter di dicembre** ("Cosa pensano gli sceneggiatori italiani"): contenuto di valore + prova di community.
 
-## 4. Novembre 2026 — avvio laboratori
+## 4. Novembre 2026 — avvio laboratori e regime settimanale
 
-- **Finestra iscrizioni:** 8 → 27 ottobre (chiusa prima dell'avvio). L'apertura è l'**Extra** di ottobre (gio 8), non un'email di novembre.
-- **Avvio:** 3 novembre.
-- **Prezzi:** 300€ per entrambi (gruppo e 1:1). La differenza tra i due è il **formato** (collettivo vs 1:1), non il prezzo. Vedi `docs/marketing/launch/launch-individuale.md` §7.
-- **Pre-annuncio:** saltato (l'apertura è l'Extra di gio 8); eventuale teaser social nel weekend.
+> **Finestra gruppo:** chiusa il 27 ottobre. **Avvio gruppo:** 3 novembre.
+> **Lancio 1:1:** giovedì 29 ottobre. **Avvio 1:1:** 10 novembre, 5 posti.
+> **Cadenza:** lunedì, pieno/leggero alternati; extra a scadenza quando serve.
+
+### Calendario
+
+| Data | Tipo | Contenuto | CTA primaria |
+|---|---|---|---|
+| lun 26 ott | Piena | Cosa vuole il protagonista (Whiplash) | Leggi l'analisi |
+| gio 29 ott | Speciale | Lancio Laboratorio 1:1 | Scopri il Lab 1:1 |
+| lun 2 nov | Leggera | I tre atti, senza giri di parole | Rivedi i tre atti |
+| mar 3 nov | Transazionale | Avvio gruppo, solo iscritti | — |
+| gio 5 nov | Speciale | Ultima chiamata 1:1, solo se restano posti | Prendi il tuo posto |
+| lun 9 nov | Piena | Beat, scena, sequenza (Squid Game) | Leggi la guida |
+| lun 16 nov | Leggera | La prima pagina | Richiedi il feedback |
+| lun 23 nov | Piena (facoltativa) | Il dialogo che dice troppo (Casablanca) | Mandaci il copione |
+
+**Regole di questa finestra:**
+- **Arco dei contenuti:** protagonista (5) → struttura (6) → beat/scena/sequenza (7) → prima pagina (8) → dialogo (9). Dal macro al micro; la micro-conversione (feedback) arriva solo alla issue 8, dopo tre invii di valore.
+- **Issue 5:** è nel §3 perché cade ancora a ottobre; qui compare solo nel calendario.
+- **Alternanza:** piena/leggera sulle issue del lunedì; le due speciali 1:1 (29/10 e 5/11) sono fuori cadenza e non contano nell'alternanza.
+- **Nessuna scadenza concorsi:** per questa finestra non ci sono date verificate. Meglio un'email self-contained che una data sbagliata. Le scadenze tornano appena il calendario concorsi è aggiornato.
+- **Segmentazione:** la CTA di fondo verso l'editing (issue 9) vale per `fans` e per chi ha già un testo; per il segmento `lead` va sostituita con il feedback gratuito (`/feedback-gratuito-sceneggiatura/`). Le issue 5, 6, 7 e 8 hanno CTA neutre (analisi, guida, feedback) e restano identiche per tutti.
+- **Guardrail deliverability:** se l'unsubscribe della sequenza 26/10-29/10 supera lo 0,5%, annullare l'extra del 5/11 e tornare alla sola cadenza del lunedì. La lista è piccola: meglio perdere un promemoria che la reputazione del dominio.
+- **Prezzi:** 300€ per entrambi (gruppo e 1:1). La differenza è il **formato** (collettivo vs 1:1), non il prezzo. Vedi `docs/marketing/launch/launch-individuale.md` §7.
+- **Pre-annuncio:** saltato; l'apertura del gruppo è stata l'Extra di gio 8. Eventuale teaser social nel weekend.
 - **Arco 1:1:** il copy di `docs/marketing/launch/launch-individuale.md` §8 (pre-annuncio → early-bird → ultima chiamata → conferma) non serve per questa finestra a canale unico; resta per edizioni/coorti future o per una gestione a lista d'attesa.
-- **Gruppo:** riapertura comunicata nell'Extra di apertura (gio 8, apertura congiunta gruppo + 1:1).
+- **Gruppo:** riapertura comunicata nell'Extra di apertura (gio 8). L'avvio del 3/11 è transazionale, non newsletter.
+
+### Issue 6 — I tre atti, senza giri di parole ✅ scritta
+**Tipo:** leggera · **Send:** lunedì 2 novembre
+**Oggetto:** I tre atti, senza giri di parole
+**Preview:** Il primo giorno di laboratorio partiamo sempre da qui. Vale anche se non sei in laboratorio.
+**Body:**
+> Ciao,
+> oggi una cosa sola, la più utile prima di iniziare una storia:
+> la struttura in tre atti.
+>
+> Non è una formula da riempire.
+> È il modo più rapido per capire se la tua idea ha un inizio, un conflitto e una fine, e se quel finale risponde alla domanda che hai posto all'inizio.
+>
+> Un concetto, esempi compresi.
+> È da lì che partiamo sempre, anche in laboratorio.
+>
+> **[Rivedi i tre atti →]** `/la-struttura-in-tre-atti-di-una-sceneggiatura/`
+>
+> Una storia senza struttura non è libera. È solo dispersa.
+>
+> A presto,
+> il team di Pictures Writers
+**CTA:** Rivedi i tre atti → `/la-struttura-in-tre-atti-di-una-sceneggiatura/`
+**Nota:** leggera, un solo link. Il giorno dopo parte il laboratorio di gruppo: l'email resta di valore e non chiede nulla a chi non è iscritto.
+
+### Avvio 3 novembre (transazionale, non newsletter)
+Email di benvenuto/conferma **solo agli iscritti al gruppo**: dettagli della prima sessione e come accedere. Derivabile dalla conferma acquisto (`webinarTemplateId`) e, per il formato 1:1, da `docs/marketing/launch/launch-individuale.md` §8. Non va all'audience newsletter.
+
+### Extra — Ultima chiamata Laboratorio 1:1 (a scadenza) ✅ scritta
+**Tipo:** speciale a scadenza · **Send:** giovedì 5 novembre
+**Oggetto:** Ultimi posti per il Laboratorio 1:1
+**Preview:** Si parte martedì 10. I posti sono cinque.
+**Body:**
+> Ciao,
+> martedì 10 novembre parte il **Laboratorio 1:1**.
+> Cinque posti. Cinque sessioni. I due consulenti solo sulla tua idea.
+>
+> Se stai aspettando il momento giusto, questo è il momento.
+> I posti sono cinque: quando finiscono, finiscono.
+>
+> **[Prendi il tuo posto →]** `/shop/laboratorio-individuale/laboratorio-1-1-soggetto/`
+>
+> Un'idea che rimandi ancora un po' resta un'idea. Una che lavori con qualcuno diventa un soggetto.
+>
+> A presto,
+> il team di Pictures Writers
+**CTA:** Prendi il tuo posto → `/shop/laboratorio-individuale/laboratorio-1-1-soggetto/`
+**Nota:** invio a scadenza, **solo se dopo la send del 29 restano posti**. Se l'edizione è esaurita, annullare. Non mescolare gruppo e 1:1. Stessa audience della send del 29 (`lead`, esclusi ex-studenti del gruppo).
+
+### Issue 7 — Beat, scena, sequenza: non sono sinonimi ✅ scritta
+**Tipo:** piena · **Send:** lunedì 9 novembre
+**Oggetto:** Beat, scena, sequenza: non sono sinonimi
+**Preview:** Tre livelli diversi. Confonderli blocca la storia senza che tu te ne accorga.
+**Body:**
+> Ciao,
+> beat, scena e sequenza vengono usati come sinonimi. Non lo sono.
+> Sono tre livelli diversi, e confonderli è uno dei motivi per cui una sceneggiatura sembra procedere senza andare da nessuna parte.
+>
+> - **Il beat** è il più piccolo cambiamento emotivo o decisionale dentro una scena. Un gesto, un'esitazione, una battuta che sposta l'equilibrio.
+> - **La scena** è un'unità di tempo e spazio, e deve chiudersi con un cambio di valore. Se all'inizio e alla fine è tutto uguale, non è una scena.
+> - **La sequenza** è un gruppo di scene che costruisce un arco più ampio e si chiude con una svolta.
+>
+> Si vede bene in **Squid Game**, nella regola del voto dopo ogni gioco: quel blocco è una sequenza. Dentro ci sono scene, come la discussione e i flashback, e beat, come un pulsante premuto in silenzio o una voce che si rompe. Ogni livello fa il suo lavoro.
+>
+> **[Leggi la guida →]** `/beat-scena-e-sequenza-in-sceneggiatura/`
+>
+> Il test rapido: se non sai dire cosa cambia tra l'inizio e la fine di una scena, non hai una scena. Hai un pezzo di dialogo.
+>
+> A presto,
+> il team di Pictures Writers
+**CTA:** Leggi la guida → `/beat-scena-e-sequenza-in-sceneggiatura/`
+**Nota:** piena costruita intorno alla guida live su beat/scena/sequenza. Sostituisce la precedente Issue 7 ("La scena che non cambia niente", The Social Network): erano lo stesso territorio a due settimane di distanza, e la guida lo copre con più precisione, esempio incluso. Niente Pagina Uno in questa issue: l'analisi è dentro la guida (Squid Game). La CTA editing resta sulla Issue 9. CTA neutra, identica per `fans` e `lead`.
+
+### Issue 8 — La prima pagina ✅ scritta
+**Tipo:** leggera · **Send:** lunedì 16 novembre
+**Oggetto:** La prima pagina basta?
+**Preview:** Non deve spiegare tutto. Deve far venire voglia di leggere la seconda.
+**Body:**
+> Ciao,
+> una cosa sola, oggi.
+> La prima pagina non deve spiegare tutto.
+> Deve far venire voglia di leggere la seconda.
+>
+> Se hai già una scena d'apertura, mandacela.
+> La leggiamo come leggiamo i copioni che arrivano in studio e ti diciamo cosa funziona, cosa frena e da dove ripartire. Gratis.
+>
+> **[Richiedi il feedback →]** `/feedback-gratuito-sceneggiatura/`
+>
+> Una storia comincia quando qualcuno, dopo la prima pagina, vuole leggere la seconda.
+>
+> A presto,
+> il team di Pictures Writers
+**CTA:** Richiedi il feedback → `/feedback-gratuito-sceneggiatura/`
+**Nota:** leggera, un solo link. Micro-conversione, non vendita. Riprende l'attrezzo intermedio della S1 (feedback sulla prima pagina).
+
+### Issue 9 — Il dialogo che dice troppo (facoltativa) ✅ scritta
+**Tipo:** piena · **Send:** lunedì 23 novembre
+**Oggetto:** Il dialogo che dice troppo
+**Preview:** Se il personaggio dice quello che pensa, il pubblico smette di ascoltare.
+**Body:**
+> Ciao,
+> il dialogo non serve a spiegare. Serve a nascondere.
+> Quando un personaggio dice esattamente quello che pensa, il pubblico smette di ascoltare: non c'è più niente da scoprire.
+>
+> Il sottotesto è la differenza tra una battuta scritta e una battuta che resta:
+> - il personaggio dice una cosa e ne intende un'altra
+> - l'ostacolo non è detto, è implicito
+> - la tensione nasce da ciò che non viene detto
+>
+> **Casablanca** è il manuale: Rick e Ilsa parlano del passato senza dirlo mai per intero. Ogni battuta è una porta socchiusa, non una spiegazione.
+> [Leggi l'analisi](/sceneggiatura-casablanca-pagina-uno/)
+>
+> Se vuoi lavorare sul dialogo del tuo copione, l'editing è il posto giusto:
+>
+> **[Mandaci il copione →]** `/shop/servizi-di-editing/sceneggiatura-di-lungometraggio/`
+>
+> Un dialogo forte non dice tutto. Lascia qualcosa fuori dalla porta.
+>
+> A presto,
+> il team di Pictures Writers
+**CTA:** Mandaci il copione → `/shop/servizi-di-editing/sceneggiatura-di-lungometraggio/`
+**Nota:** piena, oltre metà novembre. CTA editing (per `lead`: feedback gratuito). Facoltativa: se il ritmo di produzione si allunga, slitta a dicembre senza rompere la cadenza.
 
 ## 5. Changelog
+- v12 (2026-10-26) — **Issue 7 ricentrata sulla guida beat/scena/sequenza.** Sostituita "La scena che non cambia niente" (The Social Network) con una piena costruita intorno a `/beat-scena-e-sequenza-in-sceneggiatura/`: i tre livelli (beat, scena, sequenza), esempio Squid Game, CTA unica "Leggi la guida". Motivo: stesso territorio della vecchia issue a due settimane di distanza; la guida lo copre con più precisione e porta traffico a un articolo già live. La CTA editing si sposta sulla Issue 9; aggiornati calendario, arco dei contenuti e segmentazione.
+- v11 (2026-10-26) — **Piano 26 ottobre → 23 novembre.** Aggiunte **Issue 5** (lun 26/10, piena: cosa vuole il protagonista, analisi Whiplash), **Issue 6** (lun 2/11, leggera: i tre atti, senza giri di parole), **Issue 7** (lun 9/11, piena: la scena che non cambia niente, The Social Network, CTA editing), **Issue 8** (lun 16/11, leggera: la prima pagina, feedback gratuito) e **Issue 9** (lun 23/11, piena facoltativa: il dialogo che dice troppo, Casablanca). Aggiunta l'**extra 1:1 di gio 5/11** (ultima chiamata, solo se restano posti) e fissata la **send 1:1 a gio 29/10** con link alla product page `/shop/laboratorio-individuale/laboratorio-1-1-soggetto/`. Alternanza piena/leggera rispettata; nessuna scadenza concorsi inventata; guardrail unsubscribe 0,5% sulla sequenza 26-29/10. La send 1:1 resta **bloccata** finché product page e categoria non sono live; audience `lead`, esclusi gli ex-studenti del gruppo. Rimosso il duplicato dell'email di avvio 3/11, ora solo transazionale.
 - v1 (2026-10-02) — Aperto il workstream newsletter. Contesto (silenzio 2-3 mesi, rilancio novembre), playbook operativo, piano ottobre (4 issue settimanali) e Issue 1 scritta; novembre in attesa della scala prezzi.
 - v2 (2026-10-02) — **Voce e firma:** firma newsletter = `il team di Pictures Writers`, voce al **plurale** (noi/abbiamo); Issue 1 riallineata. **Prezzi:** laboratori allineati a **300€** (gruppo e 1:1), novembre sbloccato.
 - v3 (2026-10-02) — **Issue 2-4 scritte** (self-contained: gli articoli del calendario "Differenza soggetto/trattamento/scaletta" e "10 errori" non sono ancora live). Sondaggio spostato **ai social**, risultati in una newsletter di dicembre. Novembre: pre-annuncio (Issue 4) + email di apertura (extra). Voce plurale e firma `il team di Pictures Writers`.

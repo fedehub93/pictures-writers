@@ -1,7 +1,8 @@
-import * as LucideIcons from "lucide-react";
+import { getServiceFeatureIcon } from "../../../lib/service-feature-icons";
+import type { ServiceMetadata } from "../../../types";
 
 interface ServiceBoxsProps {
-  features: { title: string; Icon: string; description: string }[];
+  features: ServiceMetadata["features"];
 }
 
 export const ServiceBoxs = ({ features }: ServiceBoxsProps) => {
@@ -19,8 +20,8 @@ export const ServiceBoxs = ({ features }: ServiceBoxsProps) => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {features.map((f, i) => {
-            const IconComp = (LucideIcons as any)[f.Icon];
+          {features.map((f) => {
+            const IconComp = getServiceFeatureIcon(f.Icon);
             return (
               <div
                 key={f.title}

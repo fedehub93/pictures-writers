@@ -1,7 +1,8 @@
+import { Suspense } from "react";
 import { XIcon } from "lucide-react";
 import { Button } from "@/shared/ui/button";
 
-import type { FormNodeInstance } from "../../types/core";
+import type { FormNodeInstance, PropertiesComponent } from "../../types/core";
 import { useDesigner } from "../../store/designer-provider";
 import { findNodeRecursively } from "../../helpers";
 import { FormNodes } from "../../registry";
@@ -16,9 +17,7 @@ export const SidebarNodeProperties = () => {
   if (!node) return null;
 
   const PropertiesForm = FormNodes[node.type]
-    .propertiesComponent as React.ComponentType<{
-    elementInstance: FormNodeInstance;
-  }>;
+    .propertiesComponent as PropertiesComponent<FormNodeInstance>;
 
   const onClose = () => {
     setActiveNodeId(null);
@@ -34,7 +33,9 @@ export const SidebarNodeProperties = () => {
           <XIcon className="size-4" />
         </Button>
       </div>
-      <PropertiesForm key={node.id} elementInstance={node} />
+      <Suspense fallback={<p className="text-sm text-muted-foreground">Loading properties...</p>}>
+        <PropertiesForm key={node.id} elementInstance={node} />
+      </Suspense>
     </div>
   );
 };

@@ -1,11 +1,11 @@
-import { z } from "zod";
+import * as z from "zod/mini";
 
 import type { FormRootInstance } from "../types/core";
 import { FormElements } from "../registry";
 import { getFlatFields } from "../helpers/get-flat-fields";
 
-export function generateFormSchema(state: FormRootInstance): z.ZodObject<any> {
-  const schemaShape: Record<string, z.ZodType> = {};
+export function generateFormSchema(state: FormRootInstance): z.ZodMiniObject {
+  const schemaShape: Record<string, z.ZodMiniType> = {};
 
   const fields = getFlatFields(state.children);
 
@@ -16,7 +16,7 @@ export function generateFormSchema(state: FormRootInstance): z.ZodObject<any> {
     // Correlated union error
     const buildSchema = blueprint.buildSchema as (
       properties: typeof field.properties,
-    ) => z.ZodType;
+    ) => z.ZodMiniType;
 
     if (fieldName) {
       schemaShape[fieldName] = buildSchema(field.properties);

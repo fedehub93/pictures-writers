@@ -1,10 +1,10 @@
 "use server";
 
-import * as v from "valibot";
+import type { z } from "zod/mini";
 
 import { ProductAcquisitionMode, ProductType } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
-import { FreeDigitalDownloadSchemaValibot } from "@/schemas";
+import { FreeDigitalDownloadSchema } from "@/schemas";
 import {
   buildFreeDigitalDownloadEmail,
   sendEmail,
@@ -17,7 +17,7 @@ import { emitFormSubmitted } from "@/modules/forms/automations/emit";
 import { getPublishedProductByRootId } from "@/modules/shop/products";
 
 export const subscribeFreeDigitalProduct = async (
-  values: v.InferInput<typeof FreeDigitalDownloadSchemaValibot>,
+  values: z.input<typeof FreeDigitalDownloadSchema>,
   recaptchaToken: string,
 ) => {
   try {
@@ -36,24 +36,22 @@ export const subscribeFreeDigitalProduct = async (
     }
 
     // 2. Validate the submission (email + privacy consent)
-    const validatedFields = v.safeParse(
-      FreeDigitalDownloadSchemaValibot,
-      values,
-    );
+    const validatedFields = FreeDigitalDownloadSchema.safeParse(values);
 
     if (!validatedFields.success) {
       return {
         success: false,
         message:
-          validatedFields.issues[0]?.message ?? "I dati inseriti non sono validi.",
+          validatedFields.error.issues[0]?.message ??
+          "I dati inseriti non sono validi.",
       };
     }
 
-    const { email, rootId } = validatedFields.output;
+    const { email, rootId } = validatedFields.data;
     // Keep any additional answers a richer lead-magnet form collected, while
     // enforcing the values the download flow relies on.
     const submissionData = {
-      ...validatedFields.output,
+      ...validatedFields.data,
       privacyConsent: true,
     };
 

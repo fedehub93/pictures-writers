@@ -1,13 +1,13 @@
-import z from "zod";
+import * as z from "zod/mini";
 
 import type { SelectFieldProperties } from "../../../types/properties";
 
 export const propertiesSchema = z.object({
-  name: z.string().min(1, { error: "Name is required" }),
-  label: z.string().min(1, { error: "Label is required" }),
+  name: z.string().check(z.minLength(1, { error: "Name is required" })),
+  label: z.string().check(z.minLength(1, { error: "Label is required" })),
   helperText: z
     .string()
-    .max(200, { error: "Maximum characters reached (200)" }),
+    .check(z.maxLength(200, { error: "Maximum characters reached (200)" })),
   placeholder: z.string(),
   options: z.array(z.string()),
   validation: z.object({
@@ -20,11 +20,11 @@ export type PropertiesFormSchemaType = z.infer<typeof propertiesSchema>;
 export const buildSchema = ({
   label,
   validation: { required },
-}: SelectFieldProperties): z.ZodType => {
-  let schema = z.string();
+}: SelectFieldProperties): z.ZodMiniType => {
+  let schema: z.ZodMiniType = z.string();
 
   if (required) {
-    schema = schema.min(1, { error: `${label} is required!` });
+    schema = schema.check(z.minLength(1, { error: `${label} is required!` }));
   }
 
   return schema;

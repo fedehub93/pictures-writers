@@ -4,6 +4,8 @@ import { Button } from "@/shared/ui/button";
 import { CheckIcon } from "lucide-react";
 import Link from "next/link";
 
+import type { ServiceMetadata } from "../../types";
+
 interface ServiceCardProps {
   title: string;
   categorySlug: string;
@@ -11,7 +13,7 @@ interface ServiceCardProps {
   serviceType: string;
   target: string;
   competitorPrice: number;
-  features: { title: string; Icon: string; description: string }[];
+  features: ServiceMetadata["features"];
   price: number | null;
 }
 

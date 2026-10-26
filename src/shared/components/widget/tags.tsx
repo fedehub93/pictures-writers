@@ -23,7 +23,6 @@ const WidgetTags = ({ label, tags }: TagsProps) => {
             key={tag.slug}
             className="text-sm leading-3 text-gray-600"
             href={`/blog/${tag.slug}`}
-            prefetch
           >
             <Badge>{tag.title}</Badge>
           </Link>

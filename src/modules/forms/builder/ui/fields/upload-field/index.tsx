@@ -1,5 +1,7 @@
 "use client";
 
+import "client-only";
+import { lazy } from "react";
 import { UploadIcon } from "lucide-react";
 
 import type { ElementsType, FormElement } from "../../../types/core";
@@ -8,9 +10,14 @@ import type { UploadFieldProperties } from "../../../types/properties";
 
 import { UploadFieldDesignerComponent } from "./designer-component";
 import { UploadFieldFormComponent } from "./form-component";
-import { UploadFieldPropertiesComponent } from "./properties-component";
 
 import { buildSchema } from "./schemas";
+
+const UploadFieldPropertiesComponent = lazy(() =>
+  import("./properties-component").then((module) => ({
+    default: module.UploadFieldPropertiesComponent,
+  })),
+);
 
 const type: ElementsType = "UploadField";
 

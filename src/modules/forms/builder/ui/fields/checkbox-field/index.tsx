@@ -1,11 +1,20 @@
+"use client";
+
+import "client-only";
+import { lazy } from "react";
 import { SquareCheckIcon } from "lucide-react";
 import type { ElementsType, FormElement } from "../../../types/core";
 import type { CheckboxFieldProperties } from "../../../types/properties";
 
 import { buildSchema } from "./schemas";
 import { CheckboxFieldDesignerComponent } from "./designer-component";
-import { CheckboxFieldPropertiesComponent } from "./properties-component";
 import { CheckboxFieldFormComponent } from "./form-component";
+
+const CheckboxFieldPropertiesComponent = lazy(() =>
+  import("./properties-component").then((module) => ({
+    default: module.CheckboxFieldPropertiesComponent,
+  })),
+);
 
 const type: ElementsType = "CheckboxField";
 
