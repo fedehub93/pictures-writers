@@ -27,7 +27,7 @@ export const LinkRenderer = ({ mark, children }: LinkProps) => {
   let target = isExternalLink ? "_blank" : undefined;
 
   return (
-    <NextLink href={mark.attrs.href} rel={rel} target={target} prefetch className="underline text-primary">
+    <NextLink href={mark.attrs.href} rel={rel} target={target} className="underline text-primary">
       {children}
     </NextLink>
   );

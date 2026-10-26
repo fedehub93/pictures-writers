@@ -95,7 +95,7 @@ export const WebinarCard = async ({
         )}
         <div className="flex flex-col text-xl font-bold">
           <Button asChild type="button" className="bg-foreground">
-            <Link href={href} prefetch>
+            <Link href={href}>
               {isOpen ? "Scopri" : "Iscriviti alla lista d'attesa"}
             </Link>
           </Button>

@@ -30,7 +30,7 @@ export const ServicesCta = () => (
           </p>
           <div className="mt-auto pt-6">
             <Button asChild size="lg" className="w-full sm:w-auto">
-              <Link href="/shop/corsi-di-sceneggiatura" prefetch>
+              <Link href="/shop/corsi-di-sceneggiatura">
                 Scopri i laboratori
               </Link>
             </Button>
@@ -50,7 +50,7 @@ export const ServicesCta = () => (
           </p>
           <div className="mt-auto pt-6">
             <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
-              <Link href="/shop/servizi-di-editing" prefetch>
+              <Link href="/shop/servizi-di-editing">
                 Richiedi la tua analisi
               </Link>
             </Button>

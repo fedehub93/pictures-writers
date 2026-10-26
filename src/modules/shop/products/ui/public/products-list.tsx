@@ -81,7 +81,6 @@ export const ProductsList = ({ categorySlug, products }: ProductsListProps) => {
             <div className="w-full border-b flex items-center justify-center group overflow-hidden h-60">
               <Link
                 href={href}
-                prefetch
                 className="group-hover:scale-105 transition-all duration-700 h-full"
               >
                 <Image

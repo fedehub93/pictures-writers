@@ -189,11 +189,11 @@ export const WidgetProductPop = ({
               <div className="w-full text-3xl font-extrabold leading-8">
                 {title}
               </div>
-              <Button asChild className="font-bold mt-8">
-                <Link href={`/shop/ebooks/${slug}`} prefetch>
-                  Vai al prodotto
-                </Link>
-              </Button>
+                <Button asChild className="font-bold mt-8">
+                  <Link href={`/shop/ebooks/${slug}`}>
+                    Vai al prodotto
+                  </Link>
+                </Button>
             </div>
           )}
           {actionType === WidgetProductPopActionType.FILL_FORM && (
@@ -207,7 +207,7 @@ export const WidgetProductPop = ({
               </div>
               {!formId ? (
                 <Button asChild className="font-bold mt-8">
-                  <Link href={`/shop/ebooks/${slug}`} prefetch>
+                <Link href={`/shop/ebooks/${slug}`}>
                     Vai al prodotto
                   </Link>
                 </Button>

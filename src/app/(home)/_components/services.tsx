@@ -40,7 +40,7 @@ export const CreativeFeatures = () => (
               e affinare le tue competenze nella scrittura per il cinema.
             </p>
             <div className="mt-4 flex space-x-4">
-              <Link href="/blog/sceneggiatura" prefetch>
+              <Link href="/blog/sceneggiatura">
                 <Button className="bg-primary">Blog</Button>
               </Link>
             </div>
@@ -74,7 +74,7 @@ export const CreativeFeatures = () => (
               coinvolgenti.
             </p>
             <div className="mt-4 flex space-x-4">
-              <Link href="/blog/pagina-uno" prefetch>
+              <Link href="/blog/pagina-uno">
                 <Button className="bg-primary">
                   Esempi di sceneggiature di film famosi
                 </Button>
@@ -109,12 +109,12 @@ export const CreativeFeatures = () => (
               concept alla prima stesura.
             </p>
             <div className="mt-4 flex flex-wrap gap-4">
-              <Link href="/shop/servizi-di-editing" prefetch>
+              <Link href="/shop/servizi-di-editing">
                 <Button className="bg-primary">
                   Scopri l&apos;editing Double View
                 </Button>
               </Link>
-              <Link href="/shop/corsi-di-sceneggiatura" prefetch>
+              <Link href="/shop/corsi-di-sceneggiatura">
                 <Button variant="outline">
                   Guarda i corsi
                 </Button>

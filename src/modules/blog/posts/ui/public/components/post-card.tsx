@@ -39,7 +39,6 @@ export const PostCard = ({
     >
       <Link
         href={`/${slug}`}
-        prefetch
         className=" flex min-h-full flex-col bg-primary-foreground no-underline"
       >
         <div className="relative aspect-video w-full">
