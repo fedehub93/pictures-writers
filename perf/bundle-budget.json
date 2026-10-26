@@ -1,0 +1,33 @@
+{
+  "note": "Initial budgets are deliberately generous. Update them intentionally when a bundle change is accepted; see docs/performance/bundle-budget.md.",
+  "routes": {
+    "/": {
+      "clientJs": 950000,
+      "clientCss": 50000
+    },
+    "/blog/[slug]": {
+      "clientJs": 500000,
+      "clientCss": 50000
+    },
+    "/shop": {
+      "clientJs": 1500000,
+      "clientCss": 50000
+    },
+    "/shop/[categorySlug]": {
+      "clientJs": 1500000,
+      "clientCss": 50000
+    },
+    "/shop/[categorySlug]/[productSlug]": {
+      "clientJs": 1500000,
+      "clientCss": 50000
+    },
+    "/shop/checkout": {
+      "clientJs": 500000,
+      "clientCss": 50000
+    },
+    "/sign-in": {
+      "clientJs": 600000,
+      "clientCss": 40000
+    }
+  }
+}
