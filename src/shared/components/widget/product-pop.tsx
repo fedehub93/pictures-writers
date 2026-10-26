@@ -190,7 +190,7 @@ export const WidgetProductPop = ({
                 {title}
               </div>
                 <Button asChild className="font-bold mt-8">
-                  <Link href={`/shop/ebooks/${slug}`}>
+                  <Link prefetch={false} href={`/shop/ebooks/${slug}`}>
                     Vai al prodotto
                   </Link>
                 </Button>
@@ -207,7 +207,7 @@ export const WidgetProductPop = ({
               </div>
               {!formId ? (
                 <Button asChild className="font-bold mt-8">
-                <Link href={`/shop/ebooks/${slug}`}>
+                <Link prefetch={false} href={`/shop/ebooks/${slug}`}>
                     Vai al prodotto
                   </Link>
                 </Button>

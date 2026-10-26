@@ -57,11 +57,12 @@ export const WidgetProduct = async ({
                 <Link
                   key={product.title}
                   href={`/shop/${categorySlug}/${product.slug}`}
+                  prefetch={false}
                   className="flex items-center md:items-start text-gray-600  flex-col group"
                 >
                   {product.imageCover ? (
                     <Image
-                      src={product.imageCover?.url!}
+                      src={product.imageCover.url}
                       alt="eBook gratuito sull'introduzione alla sceneggiatura cinematografica"
                       width={200}
                       height={400}
@@ -144,6 +145,7 @@ export const WidgetProduct = async ({
                           >
                             <Link
                               href={`/shop/${categorySlug}/${product.slug}`}
+                              prefetch={false}
                             >
                               Scopri
                             </Link>
@@ -207,7 +209,9 @@ export const WidgetProduct = async ({
                         type="button"
                         className="bg-foreground hover:bg-primary font-bold transition-colors shadow-lg"
                       >
-                        <Link href={product.slug as Route}>Vedi Dettagli</Link>
+                        <Link prefetch={false} href={product.slug as Route}>
+                          Vedi Dettagli
+                        </Link>
                       </Button>
                     </div>
                   )}

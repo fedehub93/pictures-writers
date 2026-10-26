@@ -46,6 +46,7 @@ export const ProductRenderer = async ({ node }: ProductRendererProps) => {
             <Button asChild>
               <NextLink
                 href={`/shop/ebooks/${product.slug as string}`}
+                prefetch={false}
                 rel="noopener noreferrer nofollow"
                 target={"_blank"}
               >

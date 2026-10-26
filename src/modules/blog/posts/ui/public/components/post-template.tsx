@@ -57,6 +57,7 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
                 fill
                 sizes="(max-width:1280px) 90vw, 40vw"
                 fetchPriority="high"
+                loading="eager"
                 className="blog-post__image"
                 quality={MEDIA_IMAGE_DEFAULT_QUALITY}
                 {...(blurDataURL
