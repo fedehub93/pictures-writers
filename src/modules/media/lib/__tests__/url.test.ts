@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { UPLOADTHING_FILE_ORIGIN } from "../image-ladder.mjs";
 import { getUploadThingOrigin } from "../url";
 
 describe("getUploadThingOrigin", () => {
@@ -15,8 +16,14 @@ describe("getUploadThingOrigin", () => {
     );
   });
 
-  it("ignores relative and non-UploadThing URLs", () => {
-    expect(getUploadThingOrigin("/assets/abc123")).toBeNull();
+  it("returns the legacy rewrite origin for relative /assets URLs", () => {
+    expect(getUploadThingOrigin("/assets/abc123")).toBe(
+      UPLOADTHING_FILE_ORIGIN,
+    );
+  });
+
+  it("ignores other relative and non-UploadThing URLs", () => {
+    expect(getUploadThingOrigin("/media/cover.jpg")).toBeNull();
     expect(getUploadThingOrigin("https://example.com/cover.jpg")).toBeNull();
   });
 });

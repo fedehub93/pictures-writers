@@ -7,7 +7,14 @@ import * as z from "zod";
 
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Form, FormField, FormItem, FormLabel } from "@/shared/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/shared/ui/form";
 import {
   Select,
   SelectContent,
@@ -170,12 +177,14 @@ export const ProductServiceMetadataForm = ({
                             onValueChange={field.onChange}
                             disabled={isPending}
                           >
-                            <SelectTrigger
-                              id={`feature-icon-${index}`}
-                              className="w-full"
-                            >
-                              <SelectValue placeholder="Select an icon" />
-                            </SelectTrigger>
+                            <FormControl>
+                              <SelectTrigger
+                                id={`feature-icon-${index}`}
+                                className="w-full"
+                              >
+                                <SelectValue placeholder="Select an icon" />
+                              </SelectTrigger>
+                            </FormControl>
                             <SelectContent>
                               {SERVICE_FEATURE_ICON_NAMES.map((icon) => (
                                 <SelectItem key={icon} value={icon}>
@@ -184,6 +193,7 @@ export const ProductServiceMetadataForm = ({
                               ))}
                             </SelectContent>
                           </Select>
+                          <FormMessage />
                         </FormItem>
                       )}
                     />
