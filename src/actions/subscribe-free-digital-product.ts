@@ -1,6 +1,6 @@
 "use server";
 
-import type { z } from "zod";
+import type { z } from "zod/mini";
 
 import { ProductAcquisitionMode, ProductType } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";

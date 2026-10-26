@@ -1,6 +1,6 @@
 "use client";
 
-import type { z } from "zod";
+import type { z } from "zod/mini";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useTransition, type JSX } from "react";

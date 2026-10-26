@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { useMemo, useState, useTransition } from "react";
-import { z } from "zod";
+import * as z from "zod/mini";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { BeatLoader } from "react-spinners";
 import { sendGTMEvent } from "@next/third-parties/google";
@@ -55,16 +55,16 @@ export default function DynamicForm({
     return <div className="text-destructive">Invalid form configuration</div>;
   }
   const schema = useMemo(() => {
-    const shape: Record<string, z.ZodType> = {};
+    const shape: Record<string, z.ZodMiniType> = {};
 
     for (const field of jsonFields) {
-      let validator: z.ZodType = z.string();
+      let validator: z.ZodMiniType = z.string();
 
       switch (field.type) {
         case "text":
         case "textarea":
           validator = field.required
-            ? z.string().min(1, `${field.label} è obbligatorio`)
+            ? z.string().check(z.minLength(1, `${field.label} è obbligatorio`))
             : z.string();
           break;
 
@@ -81,7 +81,7 @@ export default function DynamicForm({
         case "file":
           validator = field.required
             ? z.array(z.any(), { error: `${field.label} è obbligatorio` })
-            : z.array(z.any()).optional();
+            : z.optional(z.array(z.any()));
           break;
 
         default:

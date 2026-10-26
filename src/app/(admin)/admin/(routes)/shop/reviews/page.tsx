@@ -8,11 +8,11 @@ import { requirePermission } from "@/shared/lib/auth-utils";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 
 import {
-  ReviewsListHeader,
   ReviewsView,
   ReviewsViewError,
   ReviewsViewLoading,
-} from "@/modules/reviews";
+} from "@/modules/reviews/ui/admin/views/reviews-view";
+import { ReviewsListHeader } from "@/modules/reviews/ui/admin/components/reviews-list-header";
 import { loadSearchParams } from "@/modules/reviews/params";
 import { prefetchReviews } from "@/modules/reviews/server/prefetch";
 

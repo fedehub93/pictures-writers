@@ -1,6 +1,6 @@
 "use server";
 
-import type { z } from "zod";
+import type { z } from "zod/mini";
 
 import { SubscribeSchema } from "@/schemas";
 import { generateSubscriptionToken } from "@/lib/tokens";

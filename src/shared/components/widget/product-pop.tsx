@@ -1,6 +1,6 @@
 "use client";
 
-import type { z } from "zod";
+import type { z } from "zod/mini";
 import Image from "next/image";
 import { useEffect, useState, useTransition } from "react";
 import { useMediaQuery } from "usehooks-ts";

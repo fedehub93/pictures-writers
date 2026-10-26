@@ -1,4 +1,4 @@
-import z from "zod";
+import type * as z from "zod/mini";
 
 import type { LucideIcon } from "lucide-react";
 import type { ComponentType, LazyExoticComponent } from "react";
@@ -131,7 +131,9 @@ export type FormRoot<TType extends RootType = RootType> = BaseFormBlueprint<
 export type FormElement<TType extends ElementsType = ElementsType> =
   BaseFormBlueprint<TType, FormElementInstance<TType>> & {
     isContainer: false;
-    buildSchema: (properties: FormElementPropertiesByType[TType]) => z.ZodType;
+    buildSchema: (
+      properties: FormElementPropertiesByType[TType],
+    ) => z.ZodMiniType;
     getInitialValue: (
       properties: FormElementPropertiesByType[TType],
     ) => FormElementValueByType[TType];

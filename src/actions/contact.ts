@@ -1,6 +1,6 @@
 "use server";
 
-import type { z } from "zod";
+import type { z } from "zod/mini";
 
 import { db } from "@/lib/db";
 import { ContactSchema } from "@/schemas";
