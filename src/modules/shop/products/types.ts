@@ -3,6 +3,8 @@ import { inferRouterOutputs } from "@trpc/server";
 import { ProductType } from "@/generated/prisma";
 import { AppRouter } from "@/trpc/routers/_app";
 
+import type { ServiceFeatureIconName } from "./lib/service-feature-icon-names";
+
 export type ProductsGetMany =
   inferRouterOutputs<AppRouter>["products"]["getMany"];
 
@@ -72,7 +74,11 @@ export type ServiceMetadata = {
   competitorPrice: number;
   target: string;
   attachamentUrl: string;
-  features: { title: string; Icon: string; description: string }[];
+  features: {
+    title: string;
+    Icon: ServiceFeatureIconName;
+    description: string;
+  }[];
 };
 
 export type ProductMetadata =

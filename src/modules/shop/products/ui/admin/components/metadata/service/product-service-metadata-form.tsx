@@ -12,6 +12,7 @@ import { Form } from "@/shared/ui/form";
 import { GenericInput } from "@/shared/components/form-component/generic-input";
 import { GenericTextarea } from "@/shared/components/form-component/generic-textarea";
 
+import { DEFAULT_SERVICE_FEATURE_ICON_NAME } from "../../../../../lib/service-feature-icon-names";
 import { productUpdateSchema, serviceMetadataSchema } from "../../../../../schemas";
 import { type ServiceMetadata } from "../../../../../types";
 import { useUpdateProductMetadata } from "../../../../../hooks/use-update-product-metadata";
@@ -115,7 +116,11 @@ export const ProductServiceMetadataForm = ({
                   size="sm"
                   disabled={isPending}
                   onClick={() =>
-                    append({ title: "", Icon: "", description: "" })
+                    append({
+                      title: "",
+                      Icon: DEFAULT_SERVICE_FEATURE_ICON_NAME,
+                      description: "",
+                    })
                   }
                 >
                   <Plus className="h-4 w-4" />
