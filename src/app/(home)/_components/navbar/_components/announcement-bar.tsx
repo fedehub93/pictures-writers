@@ -20,6 +20,7 @@ export const AnnouncementBar = () => {
   return (
     <Link
       href={LAB_URL}
+      prefetch={false}
       onClick={onClick}
       className="flex h-12 items-center justify-center bg-primary px-4 text-center text-primary-foreground md:h-8"
     >
