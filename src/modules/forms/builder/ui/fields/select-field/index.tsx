@@ -1,11 +1,20 @@
+"use client";
+
+import "client-only";
+import { lazy } from "react";
 import { ListChevronsUpDownIcon } from "lucide-react";
 import type { ElementsType, FormElement } from "../../../types/core";
 import type { SelectFieldProperties } from "../../../types/properties";
 
 import { SelectFieldDesignerComponent } from "./designer-component";
 import { buildSchema } from "./schemas";
-import { SelectFieldPropertiesComponent } from "./properties-component";
 import { SelectFieldFormComponent } from "./form-component";
+
+const SelectFieldPropertiesComponent = lazy(() =>
+  import("./properties-component").then((module) => ({
+    default: module.SelectFieldPropertiesComponent,
+  })),
+);
 
 const type: ElementsType = "SelectField";
 

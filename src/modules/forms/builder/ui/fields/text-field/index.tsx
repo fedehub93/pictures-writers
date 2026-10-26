@@ -1,5 +1,7 @@
 "use client";
 
+import "client-only";
+import { lazy } from "react";
 import { TypeIcon } from "lucide-react";
 
 import type { ElementsType, FormElement } from "../../../types/core";
@@ -11,9 +13,14 @@ import {
 
 import { TextFieldDesignerComponent } from "./designer-component";
 import { TextFieldFormComponent } from "./form-component";
-import { TextFieldPropertiesComponent } from "./properties-component";
 
 import { buildSchema } from "./schemas";
+
+const TextFieldPropertiesComponent = lazy(() =>
+  import("./properties-component").then((module) => ({
+    default: module.TextFieldPropertiesComponent,
+  })),
+);
 
 const type: ElementsType = "TextField";
 

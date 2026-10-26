@@ -138,6 +138,38 @@ _Avoid_: Deleted, trashed, soft-deleted as a model concept.
 A reusable form definition stored in the CMS, whose fields and content drive the public submission UI and whose submissions are recorded per Form. A Form can be embedded in pages and products, and Automations can subscribe to its submissions.
 _Avoid_: Modulo, contact form when referring to the CMS entity.
 
+**Form element**:
+A configurable unit inside a Form definition — a field, a layout, or a display block. It has a public rendering part, a designer canvas part, and a properties-editing part.
+_Avoid_: Field when referring to layouts or display blocks.
+
+**Form runner**:
+The public-facing engine that renders a Form definition and collects submissions. Distinct from the form designer used in the backoffice.
+_Avoid_: Form renderer when referring to the runtime engine.
+
+**Form designer**:
+The backoffice drag-and-drop interface where a Form definition is composed and configured.
+_Avoid_: Form builder when referring to the UI surface specifically.
+
+**Properties component**:
+The backoffice UI for editing the configuration of a single Form element, such as labels, validation rules, or rich default content.
+_Avoid_: Settings panel, edit panel.
+
+**Designer component**:
+The backoffice UI representation of a Form element inside the drag-and-drop canvas.
+_Avoid_: Canvas item, preview card.
+
+**Form component**:
+The public UI representation of a Form element as shown to visitors.
+_Avoid_: Input component when referring to non-field elements.
+
+**Form schema**:
+The validation rules derived from a Form definition and used when a submission is validated.
+_Avoid_: Validation object, Zod schema when referring to the concept.
+
+**Initial value**:
+The default value assigned to a Form element when a new submission begins.
+_Avoid_: Default field value.
+
 ## Contacts and subscriptions
 
 **Contact**:

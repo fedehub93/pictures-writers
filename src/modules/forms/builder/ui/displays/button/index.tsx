@@ -1,10 +1,19 @@
+"use client";
+
+import "client-only";
+import { lazy } from "react";
 import { MousePointerClickIcon } from "lucide-react";
 
 import type { DisplayType, FormDisplay } from "../../../types/core";
 
 import { ButtonDesignerComponent } from "./designer-component";
-import { ButtonPropertiesComponent } from "./properties-component";
 import { ButtonFormComponent } from "./form-component";
+
+const ButtonPropertiesComponent = lazy(() =>
+  import("./properties-component").then((module) => ({
+    default: module.ButtonPropertiesComponent,
+  })),
+);
 
 const type: DisplayType = "Button";
 

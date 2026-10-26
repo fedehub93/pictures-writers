@@ -1,6 +1,7 @@
 import z from "zod";
 
 import type { LucideIcon } from "lucide-react";
+import type { ComponentType, LazyExoticComponent } from "react";
 
 import type {
   RootProperties,
@@ -32,6 +33,14 @@ export type DesignerBtnElement = {
   label: string;
 };
 
+export type NodeComponentProps<TNodeInstance extends BaseNodeInstance> = {
+  elementInstance: TNodeInstance;
+};
+
+export type PropertiesComponent<TNodeInstance extends BaseNodeInstance> =
+  | ComponentType<NodeComponentProps<TNodeInstance>>
+  | LazyExoticComponent<ComponentType<NodeComponentProps<TNodeInstance>>>;
+
 export type BaseFormBlueprint<
   TType extends NodesType,
   TNodeInstance extends BaseNodeInstance,
@@ -40,9 +49,9 @@ export type BaseFormBlueprint<
   isContainer: boolean;
   construct: (id: string) => TNodeInstance;
   designerBtnElement: DesignerBtnElement;
-  designerComponent: React.ComponentType<{ elementInstance: TNodeInstance }>;
-  formComponent: React.ComponentType<{ elementInstance: TNodeInstance }>;
-  propertiesComponent: React.ComponentType<{ elementInstance: TNodeInstance }>;
+  designerComponent: React.ComponentType<NodeComponentProps<TNodeInstance>>;
+  formComponent: React.ComponentType<NodeComponentProps<TNodeInstance>>;
+  propertiesComponent: PropertiesComponent<TNodeInstance>;
 };
 
 export interface BaseNodeInstance {
