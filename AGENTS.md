@@ -26,7 +26,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - **File uploads**: UploadThing
 - **Page builder**: Puck editor (`@puckeditor/core`)
 - **Rich text**: TipTap
-- **Forms**: React Hook Form + Valibot/Zod
+- **Forms**: React Hook Form + Zod
 - **State**: Zustand, TanStack Query (React Query)
 - **Tables**: TanStack Table
 - **Drag & drop**: `@hello-pangea/dnd`, `@dnd-kit/react`

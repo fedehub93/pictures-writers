@@ -1,8 +1,8 @@
 "use server";
 
-import * as v from "valibot";
+import type { z } from "zod";
 
-import { SubscribeSchemaValibot } from "@/schemas";
+import { SubscribeSchema } from "@/schemas";
 import { generateSubscriptionToken } from "@/lib/tokens";
 import { sendSubscriptionEmail } from "@/modules/mails/lib/mail";
 import { createContactByEmail } from "@/data/email-contact";
@@ -11,8 +11,8 @@ import { BUILT_IN_NEWSLETTER_FORM_ID } from "@/modules/forms/built-in-forms";
 import { emitFormSubmitted } from "@/modules/forms/automations/emit";
 
 export const subscribe = async (
-  values: v.InferInput<typeof SubscribeSchemaValibot>,
-  recaptchaToken: string
+  values: z.input<typeof SubscribeSchema>,
+  recaptchaToken: string,
 ) => {
   try {
     // 1. Verify reCAPTCHA first
@@ -30,7 +30,7 @@ export const subscribe = async (
     }
 
     // 2. Validate the form data
-    const validatedFields = v.parse(SubscribeSchemaValibot, values);
+    const validatedFields = SubscribeSchema.parse(values);
     const { email } = validatedFields;
 
     const existingContact = await createContactByEmail(email);

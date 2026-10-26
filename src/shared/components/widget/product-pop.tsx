@@ -1,11 +1,11 @@
 "use client";
 
-import * as v from "valibot";
+import type { z } from "zod";
 import Image from "next/image";
 import { useEffect, useState, useTransition } from "react";
 import { useMediaQuery } from "usehooks-ts";
 import { BeatLoader } from "react-spinners";
-import { valibotResolver } from "@hookform/resolvers/valibot";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { Controller, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
@@ -28,7 +28,7 @@ import {
   buildDigitalDownloadEvent,
 } from "@/modules/shop/products/lib/digital-download-event";
 import { submitDigitalDownload } from "@/modules/shop/products/lib/digital-download-submission";
-import { FreeDigitalDownloadSchemaValibot } from "@/schemas";
+import { FreeDigitalDownloadSchema } from "@/schemas";
 
 import { GoogleRecaptchaV3 } from "@/shared/components/google-recaptchav3";
 
@@ -69,8 +69,8 @@ export const WidgetProductPop = ({
 
   const autoOpenDelayMs = autoOpenDelay * 1000;
 
-  const form = useForm<v.InferInput<typeof FreeDigitalDownloadSchemaValibot>>({
-    resolver: valibotResolver(FreeDigitalDownloadSchemaValibot),
+  const form = useForm<z.input<typeof FreeDigitalDownloadSchema>>({
+    resolver: zodResolver(FreeDigitalDownloadSchema),
     mode: "onChange",
     defaultValues: {
       email: "",
@@ -106,7 +106,7 @@ export const WidgetProductPop = ({
   };
 
   const onHandleSubmit = (
-    values: v.InferInput<typeof FreeDigitalDownloadSchemaValibot>,
+    values: z.input<typeof FreeDigitalDownloadSchema>,
   ) => {
     if (!formId) {
       setError("Questo prodotto non ha ancora un modulo di download.");
