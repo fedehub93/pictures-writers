@@ -48,6 +48,17 @@ export function isPicturesWritersUrl(url: URL): boolean {
 }
 
 /**
+ * Origin a browser will actually fetch an absolute UploadThing image from.
+ * UploadThing serves both `.ufs.sh` and `utfs.io` hosts, so callers must
+ * preconnect to the URL's origin instead of assuming a single CDN hostname.
+ */
+export function getUploadThingOrigin(src: string): string | null {
+  const { url, absolute } = parseSrc(src);
+
+  return absolute && isUploadThingUrl(url) ? url.origin : null;
+}
+
+/**
  * Only browser-fetchable rendition URLs are allowed into an `<img src>`. The
  * token that carries them is client input, so reject data/blob/javascript
  * schemes instead of trusting it.

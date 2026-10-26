@@ -1,8 +1,7 @@
-/* eslint-disable @next/next/no-img-element -- the custom media loader cannot emit a density srcset for this local asset */
-
 const Logo = () => {
   return (
     <div className="rounded-full">
+      {/* eslint-disable-next-line @next/next/no-img-element -- the custom media loader cannot emit a density srcset for this local asset */}
       <img
         src="/logo-48.webp"
         srcSet="/logo-48.webp 1x, /logo-96.webp 2x, /logo-144.webp 3x"
@@ -11,7 +10,7 @@ const Logo = () => {
         alt="Pictures Writers"
         loading="eager"
         decoding="async"
-        className="h-12 w-12 object-contain"
+        className="object-contain"
       />
     </div>
   );

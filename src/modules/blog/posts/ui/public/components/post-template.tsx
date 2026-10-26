@@ -3,11 +3,9 @@ import { preconnect } from "react-dom";
 
 import { getAdBlocks } from "@/data/ad-blocks";
 
-import {
-  MEDIA_IMAGE_DEFAULT_QUALITY,
-  UPLOADTHING_FILE_ORIGIN,
-} from "@/modules/media/lib/image-ladder.mjs";
+import { MEDIA_IMAGE_DEFAULT_QUALITY } from "@/modules/media/lib/image-ladder.mjs";
 import { getMediaBlurDataURL } from "@/modules/media/lib/media-metadata";
+import { getUploadThingOrigin } from "@/modules/media/lib/url";
 
 import { PostInfo } from "@/modules/blog/posts/ui/public/components/post-info";
 import Sidebar from "@/app/(home)/_components/sidebar";
@@ -27,7 +25,10 @@ interface PostTemplateProps {
 export const PostTemplate = async ({ post }: PostTemplateProps) => {
   if (!post.categories.length) return null;
 
-  preconnect(UPLOADTHING_FILE_ORIGIN);
+  const coverOrigin = post.imageCover
+    ? getUploadThingOrigin(post.imageCover.url)
+    : null;
+  if (coverOrigin) preconnect(coverOrigin);
 
   const blocks = await getAdBlocks({
     postRootId: post.rootId!,
@@ -55,7 +56,6 @@ export const PostTemplate = async ({ post }: PostTemplateProps) => {
                 alt={post.imageCover.altText || ""}
                 fill
                 sizes="(max-width:1280px) 90vw, 40vw"
-                preload
                 fetchPriority="high"
                 className="blog-post__image"
                 quality={MEDIA_IMAGE_DEFAULT_QUALITY}

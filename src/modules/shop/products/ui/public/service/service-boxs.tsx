@@ -1,7 +1,8 @@
 import { getServiceFeatureIcon } from "../../../lib/service-feature-icons";
+import type { ServiceMetadata } from "../../../types";
 
 interface ServiceBoxsProps {
-  features: { title: string; Icon: string; description: string }[];
+  features: ServiceMetadata["features"];
 }
 
 export const ServiceBoxs = ({ features }: ServiceBoxsProps) => {

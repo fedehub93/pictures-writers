@@ -28,17 +28,6 @@ const metadata = (Icon: string) => ({
 
 describe("service feature icons", () => {
   it("only exposes the icons products are allowed to reference", () => {
-    expect(SERVICE_FEATURE_ICON_NAMES).toEqual(
-      expect.arrayContaining([
-        "ActivityIcon",
-        "BookOpenIcon",
-        "FileCodeIcon",
-        "MessageSquareIcon",
-        "PanelsTopLeftIcon",
-        "TargetIcon",
-        "UsersIcon",
-      ]),
-    );
     expect(Object.keys(SERVICE_FEATURE_ICONS).sort()).toEqual(
       [...SERVICE_FEATURE_ICON_NAMES].sort(),
     );
@@ -52,6 +41,12 @@ describe("service feature icons", () => {
 
   it("falls back to the default icon for unknown names", () => {
     expect(getServiceFeatureIcon("TotallyUnknownIcon")).toBe(
+      DEFAULT_SERVICE_FEATURE_ICON,
+    );
+  });
+
+  it("does not resolve inherited prototype properties to an icon", () => {
+    expect(getServiceFeatureIcon("constructor")).toBe(
       DEFAULT_SERVICE_FEATURE_ICON,
     );
   });

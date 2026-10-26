@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import Logo from "../logo";
 
 describe("logo", () => {
-  it("serves a density srcset of small webp assets instead of the 500px png", () => {
+  it("serves a density srcset of small webp assets instead of the png", () => {
     const html = renderToStaticMarkup(<Logo />).toLowerCase();
 
     expect(html).toContain('src="/logo-48.webp"');

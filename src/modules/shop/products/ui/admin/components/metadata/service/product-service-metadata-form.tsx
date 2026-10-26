@@ -7,12 +7,22 @@ import * as z from "zod";
 
 import { Button } from "@/shared/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
-import { Form } from "@/shared/ui/form";
+import { Form, FormField, FormItem, FormLabel } from "@/shared/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/ui/select";
 
 import { GenericInput } from "@/shared/components/form-component/generic-input";
 import { GenericTextarea } from "@/shared/components/form-component/generic-textarea";
 
-import { DEFAULT_SERVICE_FEATURE_ICON_NAME } from "../../../../../lib/service-feature-icon-names";
+import {
+  DEFAULT_SERVICE_FEATURE_ICON_NAME,
+  SERVICE_FEATURE_ICON_NAMES,
+} from "../../../../../lib/service-feature-icon-names";
 import { productUpdateSchema, serviceMetadataSchema } from "../../../../../schemas";
 import { type ServiceMetadata } from "../../../../../types";
 import { useUpdateProductMetadata } from "../../../../../hooks/use-update-product-metadata";
@@ -147,13 +157,35 @@ export const ProductServiceMetadataForm = ({
                       disabled={isPending}
                       containerProps={{ className: "flex-1" }}
                     />
-                    <GenericInput
+                    <FormField
                       control={form.control}
                       name={`metadata.features.${index}.Icon`}
-                      label="Icon"
-                      placeholder="es. Plus"
-                      disabled={isPending}
-                      containerProps={{ className: "flex-1" }}
+                      render={({ field }) => (
+                        <FormItem className="flex flex-1 flex-col space-y-2">
+                          <FormLabel htmlFor={`feature-icon-${index}`}>
+                            Icon
+                          </FormLabel>
+                          <Select
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            disabled={isPending}
+                          >
+                            <SelectTrigger
+                              id={`feature-icon-${index}`}
+                              className="w-full"
+                            >
+                              <SelectValue placeholder="Select an icon" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {SERVICE_FEATURE_ICON_NAMES.map((icon) => (
+                                <SelectItem key={icon} value={icon}>
+                                  {icon}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </FormItem>
+                      )}
                     />
                     <Button
                       type="button"

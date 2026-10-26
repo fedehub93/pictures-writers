@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 import {
-  SERVICE_FEATURE_ICON_NAMES,
+  DEFAULT_SERVICE_FEATURE_ICON_NAME,
   type ServiceFeatureIconName,
 } from "./service-feature-icon-names";
 
@@ -30,13 +30,12 @@ export const SERVICE_FEATURE_ICONS = {
 } as const satisfies Record<ServiceFeatureIconName, LucideIcon>;
 
 export const DEFAULT_SERVICE_FEATURE_ICON =
-  SERVICE_FEATURE_ICONS.FileCodeIcon;
+  SERVICE_FEATURE_ICONS[DEFAULT_SERVICE_FEATURE_ICON_NAME];
 
 export function getServiceFeatureIcon(name: string): LucideIcon {
-  return (
-    SERVICE_FEATURE_ICONS[name as ServiceFeatureIconName] ??
-    DEFAULT_SERVICE_FEATURE_ICON
-  );
-}
+  if (Object.hasOwn(SERVICE_FEATURE_ICONS, name)) {
+    return SERVICE_FEATURE_ICONS[name as ServiceFeatureIconName];
+  }
 
-export { SERVICE_FEATURE_ICON_NAMES, type ServiceFeatureIconName };
+  return DEFAULT_SERVICE_FEATURE_ICON;
+}
