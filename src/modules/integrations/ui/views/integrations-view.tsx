@@ -20,11 +20,11 @@ import {
 } from "../hooks/use-integrations";
 import { IntegrationCard } from "../components/integration-card";
 import { IntegrationDetailsDialog } from "../components/integration-details-dialog";
-import {
-  IntegrationFormDialog,
-  type IntegrationFormValues,
-} from "../components/integration-form-dialog";
 import type { IntegrationListItem } from "@/modules/integrations/lib";
+import {
+  getIntegrationDescriptor,
+  type IntegrationProviderFormValues,
+} from "@/modules/integrations/lib/providers";
 
 export const IntegrationsView = () => {
   const { data: integrations } = useSuspenseIntegrations();
@@ -38,18 +38,19 @@ export const IntegrationsView = () => {
   const [detailsIntegration, setDetailsIntegration] =
     useState<IntegrationListItem | null>(null);
 
-  const handleEdit = (values: IntegrationFormValues) => {
+  const editingDescriptor = editingIntegration
+    ? getIntegrationDescriptor(editingIntegration.provider)
+    : null;
+  const EditingForm = editingDescriptor?.adminForm;
+
+  const handleEdit = (values: IntegrationProviderFormValues) => {
     if (!editingIntegration) return;
 
     updateMutation.mutate(
       {
         provider: editingIntegration.provider,
-        secrets: {
-          apiKey: values.removeApiKey ? null : values.apiKey || undefined,
-          webhookSecret: values.removeWebhookSecret
-            ? null
-            : values.webhookSecret || undefined,
-        },
+        config: values.config,
+        secrets: values.secrets,
       },
       {
         onSuccess: () => setEditingIntegration(null),
@@ -99,17 +100,19 @@ export const IntegrationsView = () => {
         </div>
       )}
 
-      {editingIntegration && (
-        <IntegrationFormDialog
-          provider={editingIntegration.provider}
-          open={!!editingIntegration}
+      {editingIntegration && EditingForm && editingDescriptor ? (
+        <EditingForm
+          open
           onOpenChange={(open: boolean) => {
             if (!open) setEditingIntegration(null);
           }}
+          providerName={editingDescriptor.presentation.name}
+          config={editingIntegration.config}
+          secrets={editingIntegration.secrets}
           onSubmit={handleEdit}
           isPending={updateMutation.isPending}
         />
-      )}
+      ) : null}
 
       {detailsIntegration && (
         <IntegrationDetailsDialog

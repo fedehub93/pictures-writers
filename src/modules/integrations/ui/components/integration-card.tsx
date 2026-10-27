@@ -27,8 +27,8 @@ import {
 } from "@/shared/ui/dropdown-menu";
 import { Switch } from "@/shared/ui/switch";
 import type { IntegrationListItem } from "@/modules/integrations/lib";
+import { getIntegrationDescriptor } from "@/modules/integrations/lib/providers";
 
-import { INTEGRATION_PROVIDER_META } from "./provider-meta";
 import { CredentialStatusList, TestStatus } from "./integration-status";
 
 interface IntegrationCardProps {
@@ -52,7 +52,8 @@ export const IntegrationCard = ({
   isToggling,
   isTesting,
 }: IntegrationCardProps) => {
-  const { Icon, ...meta } = INTEGRATION_PROVIDER_META[integration.provider];
+  const { presentation } = getIntegrationDescriptor(integration.provider);
+  const { Icon } = presentation;
   const isBusy = isToggling || isTesting;
 
   return (
@@ -61,14 +62,14 @@ export const IntegrationCard = ({
         <div className="flex size-12 items-center justify-center rounded-lg border bg-muted/40 text-foreground">
           <Icon className="size-7" />
         </div>
-        {canManage ? (
+        {canManage && integration.hasConnectionTest ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon-sm"
                 className="text-muted-foreground"
-                aria-label={`${meta.name} actions`}
+                aria-label={`${presentation.name} actions`}
               >
                 <MoreHorizontalIcon />
               </Button>
@@ -89,14 +90,14 @@ export const IntegrationCard = ({
       <CardContent className="flex flex-1 flex-col gap-4">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
-            <CardTitle className="text-base">{meta.name}</CardTitle>
+            <CardTitle className="text-base">{presentation.name}</CardTitle>
             <Badge
               variant={integration.isEnabled ? "default" : "secondary"}
             >
               {integration.isEnabled ? "Enabled" : "Disabled"}
             </Badge>
           </div>
-          <CardDescription>{meta.description}</CardDescription>
+          <CardDescription>{presentation.description}</CardDescription>
         </div>
 
         <div className="flex flex-col gap-2">
@@ -113,7 +114,7 @@ export const IntegrationCard = ({
               size="icon-sm"
               onClick={onEdit}
               disabled={isBusy}
-              aria-label="Edit credentials"
+              aria-label="Edit integration"
             >
               <Settings2Icon />
             </Button>
@@ -127,8 +128,11 @@ export const IntegrationCard = ({
           <Switch
             checked={integration.isEnabled}
             onCheckedChange={onToggleEnabled}
-            disabled={isBusy || !integration.hasApiKey}
-            aria-label={`Toggle ${meta.name} integration`}
+            disabled={
+              isBusy ||
+              (!integration.isEnabled && !integration.canEnable)
+            }
+            aria-label={`Toggle ${presentation.name} integration`}
           />
         ) : null}
       </CardFooter>

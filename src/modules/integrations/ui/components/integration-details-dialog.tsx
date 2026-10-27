@@ -6,8 +6,8 @@ import { ResponsiveDialog } from "@/shared/components/responsive-dialog";
 import { Badge } from "@/shared/ui/badge";
 import { Separator } from "@/shared/ui/separator";
 import type { IntegrationListItem } from "@/modules/integrations/lib";
+import { getIntegrationDescriptor } from "@/modules/integrations/lib/providers";
 
-import { INTEGRATION_PROVIDER_META } from "./provider-meta";
 import { ProviderSetupChecklist } from "./provider-setup-guide";
 import { CredentialStatusList, TestStatus } from "./integration-status";
 
@@ -20,12 +20,12 @@ export const IntegrationDetailsDialog = ({
   integration,
   onOpenChange,
 }: IntegrationDetailsDialogProps) => {
-  const meta = INTEGRATION_PROVIDER_META[integration.provider];
+  const { presentation } = getIntegrationDescriptor(integration.provider);
 
   return (
     <ResponsiveDialog
-      title={meta.name}
-      description="Connection status and setup guide."
+      title={presentation.name}
+      description="Configuration status and setup guide."
       open
       onOpenChange={onOpenChange}
     >
@@ -41,7 +41,7 @@ export const IntegrationDetailsDialog = ({
           <CredentialStatusList integration={integration} />
 
           <TestStatus integration={integration} />
-          {!integration.lastTestedAt ? (
+          {integration.hasConnectionTest && !integration.lastTestedAt ? (
             <p className="text-sm text-muted-foreground">
               This connection has never been tested.
             </p>

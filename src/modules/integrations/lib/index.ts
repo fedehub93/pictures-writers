@@ -1,4 +1,5 @@
 export {
+  INTEGRATION_PROVIDER_IUBENDA,
   INTEGRATION_PROVIDER_RESEND,
   INTEGRATION_PROVIDERS,
   isIntegrationProvider,
@@ -13,10 +14,32 @@ export {
 
 export { resolveIntegrationSecrets } from "./resolution";
 
+export { resolveIntegrationPublicConfig } from "./public-config";
+
 export { withIntegrationResolutionCache } from "./resolution-cache";
+
+export {
+  INTEGRATION_DESCRIPTORS,
+  getIntegrationDescriptor,
+  getIntegrationSecretPresence,
+  parseIntegrationConfig,
+} from "./providers";
+export type {
+  IntegrationConnectionTest,
+  IntegrationConnectionTestContext,
+  IntegrationConnectionTestResult,
+  IntegrationProviderDescriptor,
+  IntegrationProviderFormProps,
+  IntegrationProviderFormValues,
+  IntegrationProviderPresentation,
+  IntegrationSecretField,
+  IntegrationSecretPresence,
+} from "./providers";
 
 export type {
   IntegrationListItem,
+  IntegrationPublicConfig,
+  IntegrationPublicConfigByProvider,
   ResendIntegrationSecrets,
   IntegrationSecretsByProvider,
   IntegrationSecrets,

@@ -18,7 +18,8 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/shared/ui/field";
-import type { IntegrationProvider } from "@/modules/integrations/lib";
+
+import type { IntegrationProviderFormProps } from "@/modules/integrations/lib/providers/types";
 
 const formSchema = z
   .object({
@@ -27,39 +28,25 @@ const formSchema = z
     webhookSecret: z.string().optional(),
     removeWebhookSecret: z.boolean().optional(),
   })
-  .refine(
-    (data) => !(data.removeApiKey && data.apiKey),
-    {
-      message: "Cannot remove and replace the API key at the same time.",
-      path: ["apiKey"],
-    },
-  )
-  .refine(
-    (data) => !(data.removeWebhookSecret && data.webhookSecret),
-    {
-      message: "Cannot remove and replace the webhook secret at the same time.",
-      path: ["webhookSecret"],
-    },
-  );
+  .refine((data) => !(data.removeApiKey && data.apiKey), {
+    message: "Cannot remove and replace the API key at the same time.",
+    path: ["apiKey"],
+  })
+  .refine((data) => !(data.removeWebhookSecret && data.webhookSecret), {
+    message: "Cannot remove and replace the webhook secret at the same time.",
+    path: ["webhookSecret"],
+  });
 
-export type IntegrationFormValues = z.infer<typeof formSchema>;
+type ResendFormValues = z.infer<typeof formSchema>;
 
-interface IntegrationFormDialogProps {
-  provider: IntegrationProvider;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSubmit: (values: IntegrationFormValues) => void;
-  isPending?: boolean;
-}
-
-export const IntegrationFormDialog = ({
-  provider,
+export const ResendIntegrationForm = ({
   open,
   onOpenChange,
+  providerName,
   onSubmit,
   isPending,
-}: IntegrationFormDialogProps) => {
-  const form = useForm<IntegrationFormValues>({
+}: IntegrationProviderFormProps) => {
+  const form = useForm<ResendFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       apiKey: "",
@@ -88,13 +75,22 @@ export const IntegrationFormDialog = ({
 
   return (
     <ResponsiveDialog
-      title={`Edit ${provider} integration`}
+      title={`Edit ${providerName} integration`}
       description="Credentials are write-only. Leave a field empty to keep the current value, or check Remove to delete it."
       open={open}
       onOpenChange={onOpenChange}
     >
       <form
-        onSubmit={form.handleSubmit(onSubmit)}
+        onSubmit={form.handleSubmit((values) =>
+          onSubmit({
+            secrets: {
+              apiKey: values.removeApiKey ? null : values.apiKey || undefined,
+              webhookSecret: values.removeWebhookSecret
+                ? null
+                : values.webhookSecret || undefined,
+            },
+          }),
+        )}
         className="flex flex-col gap-6"
       >
         <FieldGroup>
@@ -110,7 +106,13 @@ export const IntegrationFormDialog = ({
             <FieldDescription>
               The API key is never shown after it is saved.
             </FieldDescription>
-            <FieldError errors={form.formState.errors.apiKey ? [{ message: form.formState.errors.apiKey.message }] : undefined} />
+            <FieldError
+              errors={
+                form.formState.errors.apiKey
+                  ? [{ message: form.formState.errors.apiKey.message }]
+                  : undefined
+              }
+            />
           </Field>
           <Field orientation="horizontal">
             <Checkbox
@@ -136,7 +138,13 @@ export const IntegrationFormDialog = ({
             <FieldDescription>
               Required only if you receive inbound email webhooks from Resend.
             </FieldDescription>
-            <FieldError errors={form.formState.errors.webhookSecret ? [{ message: form.formState.errors.webhookSecret.message }] : undefined} />
+            <FieldError
+              errors={
+                form.formState.errors.webhookSecret
+                  ? [{ message: form.formState.errors.webhookSecret.message }]
+                  : undefined
+              }
+            />
           </Field>
           <Field orientation="horizontal">
             <Checkbox
@@ -151,7 +159,6 @@ export const IntegrationFormDialog = ({
               Remove webhook secret
             </FieldLabel>
           </Field>
-
         </FieldGroup>
 
         <div className="flex justify-end gap-2">

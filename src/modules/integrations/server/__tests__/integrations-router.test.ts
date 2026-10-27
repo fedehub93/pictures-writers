@@ -21,6 +21,10 @@ vi.mock("@/trpc/init", async () => {
 
 const emailsList = vi.fn();
 
+vi.mock("@/shared/lib/revalidate-content", () => ({
+  revalidateContent: vi.fn(),
+}));
+
 vi.mock("resend", () => ({
   Resend: vi.fn().mockImplementation(function () {
     return { emails: { list: emailsList } };
@@ -30,8 +34,10 @@ vi.mock("resend", () => ({
 import { createCallerFactory } from "@/trpc/init";
 
 import { db } from "@/shared/lib/db";
+import { revalidateContent } from "@/shared/lib/revalidate-content";
 
 import {
+  INTEGRATION_PROVIDER_IUBENDA,
   INTEGRATION_PROVIDER_RESEND,
   encryptIntegrationSecrets,
   decryptIntegrationSecrets,
@@ -50,6 +56,14 @@ const activityIds: string[] = [];
 
 let caller: ReturnType<typeof createCaller>;
 
+const iubendaConfig = {
+  siteId: "3303495",
+  cookiePolicyId: "123456",
+  lang: "it",
+  autoblocking: true,
+  consentMode: true,
+};
+
 const originalPrimaryKey = process.env.SECRETS_ENCRYPTION_KEY;
 
 async function createUser() {
@@ -62,6 +76,7 @@ async function createUser() {
 
 async function createIntegration(overrides: {
   isEnabled?: boolean;
+  config?: Record<string, unknown>;
   secrets?: { apiKey?: string; webhookSecret?: string };
   lastTestedAt?: Date;
   lastTestStatus?: string;
@@ -70,9 +85,26 @@ async function createIntegration(overrides: {
     data: {
       provider: INTEGRATION_PROVIDER_RESEND,
       isEnabled: overrides.isEnabled ?? false,
+      config: overrides.config ?? {},
       secretEncrypted: encryptIntegrationSecrets(overrides.secrets ?? {}),
       lastTestedAt: overrides.lastTestedAt ?? null,
       lastTestStatus: overrides.lastTestStatus ?? null,
+    },
+  });
+  integrationIds.push(integration.id);
+  return integration;
+}
+
+async function createIubendaIntegration(overrides: {
+  isEnabled?: boolean;
+  config?: Record<string, unknown>;
+} = {}) {
+  const integration = await db.integration.create({
+    data: {
+      provider: INTEGRATION_PROVIDER_IUBENDA,
+      isEnabled: overrides.isEnabled ?? false,
+      config: overrides.config ?? iubendaConfig,
+      secretEncrypted: encryptIntegrationSecrets({}),
     },
   });
   integrationIds.push(integration.id);
@@ -87,14 +119,14 @@ beforeEach(async () => {
   process.env.SECRETS_ENCRYPTION_KEY = "primary-key-0123456789abcdef";
 
   resetIntegrationTestRateLimit(INTEGRATION_PROVIDER_RESEND);
+  resetIntegrationTestRateLimit(INTEGRATION_PROVIDER_IUBENDA);
   emailsList.mockReset();
+  vi.mocked(revalidateContent).mockClear();
 
   const user = await createUser();
   caller = createCaller({ userId: user.id, auth: { id: user.id } });
 
-  await db.integration.deleteMany({
-    where: { provider: INTEGRATION_PROVIDER_RESEND },
-  });
+  await db.integration.deleteMany();
   await db.administrativeActivity.deleteMany({
     where: { targetType: "INTEGRATION" },
   });
@@ -133,47 +165,120 @@ describe("integrationsRouter", () => {
       });
 
       const result = await caller.getMany();
+      const resend = result.find(
+        (integration) => integration.provider === INTEGRATION_PROVIDER_RESEND,
+      );
 
-      expect(result).toHaveLength(1);
-      expect(result[0]).toMatchObject({
+      expect(result).toHaveLength(2);
+      expect(resend).toMatchObject({
         provider: INTEGRATION_PROVIDER_RESEND,
         isEnabled: true,
-        hasApiKey: true,
-        hasWebhookSecret: false,
+        canEnable: true,
+        hasConnectionTest: true,
+        config: {},
         lastTestStatus: "SUCCESS",
       });
-      expect(result[0]!.lastTestedAt).toBeInstanceOf(Date);
+      expect(resend!.lastTestedAt).toBeInstanceOf(Date);
+      expect(resend!.secrets).toEqual([
+        {
+          key: "apiKey",
+          label: "API key",
+          required: true,
+          present: true,
+        },
+        {
+          key: "webhookSecret",
+          label: "Webhook secret",
+          required: false,
+          present: false,
+        },
+      ]);
     });
 
     it("returns an unconfigured entry when no integration row exists", async () => {
       const result = await caller.getMany();
+      const resend = result.find(
+        (integration) => integration.provider === INTEGRATION_PROVIDER_RESEND,
+      );
 
-      expect(result).toHaveLength(1);
-      expect(result[0]).toMatchObject({
+      expect(result).toHaveLength(2);
+      expect(resend).toMatchObject({
         provider: INTEGRATION_PROVIDER_RESEND,
         isEnabled: false,
-        hasApiKey: false,
-        hasWebhookSecret: false,
+        canEnable: false,
+        hasConnectionTest: true,
+        config: {},
         lastTestedAt: null,
         lastTestStatus: null,
       });
+      expect(resend!.secrets).toEqual([
+        {
+          key: "apiKey",
+          label: "API key",
+          required: true,
+          present: false,
+        },
+        {
+          key: "webhookSecret",
+          label: "Webhook secret",
+          required: false,
+          present: false,
+        },
+      ]);
     });
 
-    it("never returns secret values or ciphertext", async () => {
+    it("never returns secret values, ciphertext, or provider-specific credential fields", async () => {
       await createIntegration({
         secrets: { apiKey: "secret-key", webhookSecret: "secret-webhook" },
       });
 
       const result = await caller.getMany();
+      const resend = result.find(
+        (integration) => integration.provider === INTEGRATION_PROVIDER_RESEND,
+      );
 
-      const keys = Object.keys(result[0]!);
+      const keys = Object.keys(resend!);
       expect(keys).not.toContain("secretEncrypted");
       expect(keys).not.toContain("apiKey");
       expect(keys).not.toContain("webhookSecret");
-      expect(result[0]).toMatchObject({
-        hasApiKey: true,
-        hasWebhookSecret: true,
+      expect(keys).not.toContain("hasApiKey");
+      expect(keys).not.toContain("hasWebhookSecret");
+      expect(resend!.secrets).toEqual([
+        {
+          key: "apiKey",
+          label: "API key",
+          required: true,
+          present: true,
+        },
+        {
+          key: "webhookSecret",
+          label: "Webhook secret",
+          required: false,
+          present: true,
+        },
+      ]);
+      const serialized = JSON.stringify(result);
+      expect(serialized).not.toContain("secret-key");
+      expect(serialized).not.toContain("secret-webhook");
+    });
+
+    it("lists Iubenda with configuration but no credentials or connection test", async () => {
+      await createIubendaIntegration({ isEnabled: true });
+
+      const result = await caller.getMany();
+      const iubenda = result.find(
+        (integration) => integration.provider === INTEGRATION_PROVIDER_IUBENDA,
+      );
+
+      expect(iubenda).toMatchObject({
+        provider: INTEGRATION_PROVIDER_IUBENDA,
+        isEnabled: true,
+        canEnable: true,
+        hasConnectionTest: false,
+        config: iubendaConfig,
       });
+      expect(iubenda!.secrets).toEqual([]);
+      expect(JSON.stringify(iubenda)).not.toMatch(/apiKey|webhookSecret/i);
     });
   });
 
@@ -188,7 +293,45 @@ describe("integrationsRouter", () => {
       integrationIds.push((await db.integration.findFirstOrThrow()).id);
 
       expect(updated.isEnabled).toBe(true);
-      expect(updated.hasApiKey).toBe(true);
+      expect(updated.canEnable).toBe(true);
+      expect(updated.secrets).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ key: "apiKey", present: true }),
+        ]),
+      );
+    });
+
+    it("rejects enabling when the provider's rule is not satisfied", async () => {
+      await expect(
+        caller.update({
+          provider: INTEGRATION_PROVIDER_RESEND,
+          isEnabled: true,
+        }),
+      ).rejects.toThrow(/required configuration or credentials/i);
+
+      const row = await db.integration.findFirst();
+      expect(row).toBeNull();
+    });
+
+    it("rejects removing a required secret while the provider is enabled", async () => {
+      await createIntegration({
+        isEnabled: true,
+        secrets: { apiKey: "old-key" },
+      });
+
+      await expect(
+        caller.update({
+          provider: INTEGRATION_PROVIDER_RESEND,
+          secrets: { apiKey: null },
+        }),
+      ).rejects.toThrow(/required configuration or credentials/i);
+
+      const row = await db.integration.findFirstOrThrow();
+      const secrets = decryptIntegrationSecrets(row.secretEncrypted) as {
+        apiKey?: string;
+      };
+      expect(secrets.apiKey).toBe("old-key");
+      expect(row.isEnabled).toBe(true);
     });
 
     it("replaces a secret with a non-empty string", async () => {
@@ -275,9 +418,78 @@ describe("integrationsRouter", () => {
       activityIds.push(activity!.id);
 
       const after = activity!.after as Record<string, unknown>;
-      expect(after.hasApiKey).toBe(true);
+      expect(after.secretKeys).toEqual(["apiKey"]);
+      expect(after.config).toEqual({});
       expect(Object.keys(after)).not.toContain("apiKey");
       expect(Object.keys(after)).not.toContain("secretEncrypted");
+      expect(JSON.stringify(after)).not.toContain("audit-key");
+    });
+
+    it("persists Iubenda configuration and enables it in one call", async () => {
+      const updated = await caller.update({
+        provider: INTEGRATION_PROVIDER_IUBENDA,
+        config: iubendaConfig,
+        isEnabled: true,
+      });
+
+      integrationIds.push(
+        (await db.integration.findFirstOrThrow({
+          where: { provider: INTEGRATION_PROVIDER_IUBENDA },
+        })).id,
+      );
+
+      expect(updated).toMatchObject({
+        provider: INTEGRATION_PROVIDER_IUBENDA,
+        isEnabled: true,
+        canEnable: true,
+        hasConnectionTest: false,
+        config: iubendaConfig,
+      });
+      expect(updated.secrets).toEqual([]);
+    });
+
+    it("rejects enabling Iubenda when its configuration is incomplete", async () => {
+      await expect(
+        caller.update({
+          provider: INTEGRATION_PROVIDER_IUBENDA,
+          config: {
+            siteId: "3303495",
+            lang: "it",
+          },
+          isEnabled: true,
+        }),
+      ).rejects.toThrow(/invalid configuration/i);
+
+      const row = await db.integration.findFirst({
+        where: { provider: INTEGRATION_PROVIDER_IUBENDA },
+      });
+      expect(row).toBeNull();
+    });
+
+    it("records Iubenda configuration in the audit payload without credentials", async () => {
+      await caller.update({
+        provider: INTEGRATION_PROVIDER_IUBENDA,
+        config: iubendaConfig,
+        isEnabled: true,
+      });
+
+      const row = await db.integration.findFirstOrThrow({
+        where: { provider: INTEGRATION_PROVIDER_IUBENDA },
+      });
+      integrationIds.push(row.id);
+
+      const activity = await db.administrativeActivity.findFirstOrThrow({
+        where: {
+          targetType: "INTEGRATION",
+          action: "INTEGRATION_CREATED",
+          targetId: row.id,
+        },
+      });
+      activityIds.push(activity.id);
+
+      const after = activity.after as Record<string, unknown>;
+      expect(after.config).toEqual(iubendaConfig);
+      expect(after.secretKeys).toEqual([]);
     });
   });
 
@@ -303,8 +515,46 @@ describe("integrationsRouter", () => {
       ).rejects.toThrow();
     });
 
-    it("records an audit entry for enable/disable", async () => {
+    it("rejects enabling when the provider's rule is not satisfied", async () => {
       const integration = await createIntegration({ isEnabled: false });
+
+      await expect(
+        caller.setEnabled({
+          provider: INTEGRATION_PROVIDER_RESEND,
+          isEnabled: true,
+        }),
+      ).rejects.toThrow(/required configuration or credentials/i);
+
+      const reloaded = await db.integration.findUniqueOrThrow({
+        where: { id: integration.id },
+      });
+      expect(reloaded.isEnabled).toBe(false);
+    });
+
+    it("rejects enabling when the stored required secret is blank", async () => {
+      const integration = await createIntegration({
+        isEnabled: false,
+        secrets: { apiKey: "" },
+      });
+
+      await expect(
+        caller.setEnabled({
+          provider: INTEGRATION_PROVIDER_RESEND,
+          isEnabled: true,
+        }),
+      ).rejects.toThrow(/invalid credentials/i);
+
+      const reloaded = await db.integration.findUniqueOrThrow({
+        where: { id: integration.id },
+      });
+      expect(reloaded.isEnabled).toBe(false);
+    });
+
+    it("records an audit entry for enable/disable", async () => {
+      const integration = await createIntegration({
+        isEnabled: false,
+        secrets: { apiKey: "test-key" },
+      });
 
       await caller.setEnabled({
         provider: INTEGRATION_PROVIDER_RESEND,
@@ -320,6 +570,39 @@ describe("integrationsRouter", () => {
       });
       expect(activity).not.toBeNull();
       activityIds.push(activity!.id);
+    });
+
+    it("enables a configured Iubenda integration", async () => {
+      const integration = await createIubendaIntegration({ isEnabled: false });
+
+      await caller.setEnabled({
+        provider: INTEGRATION_PROVIDER_IUBENDA,
+        isEnabled: true,
+      });
+
+      const reloaded = await db.integration.findUniqueOrThrow({
+        where: { id: integration.id },
+      });
+      expect(reloaded.isEnabled).toBe(true);
+    });
+
+    it("rejects enabling Iubenda when its configuration is incomplete", async () => {
+      const integration = await createIubendaIntegration({
+        isEnabled: false,
+        config: { siteId: "3303495" },
+      });
+
+      await expect(
+        caller.setEnabled({
+          provider: INTEGRATION_PROVIDER_IUBENDA,
+          isEnabled: true,
+        }),
+      ).rejects.toThrow(/required configuration or credentials/i);
+
+      const reloaded = await db.integration.findUniqueOrThrow({
+        where: { id: integration.id },
+      });
+      expect(reloaded.isEnabled).toBe(false);
     });
   });
 
@@ -431,6 +714,45 @@ describe("integrationsRouter", () => {
       expect(activity).not.toBeNull();
       activityIds.push(activity!.id);
       expect(activity!.outcome).toBe("FAILURE");
+    });
+  });
+
+  describe("public revalidation", () => {
+    it("revalidates the public root layout after update", async () => {
+      await caller.update({
+        provider: INTEGRATION_PROVIDER_IUBENDA,
+        config: iubendaConfig,
+      });
+      integrationIds.push(
+        (await db.integration.findFirstOrThrow({
+          where: { provider: INTEGRATION_PROVIDER_IUBENDA },
+        })).id,
+      );
+
+      expect(revalidateContent).toHaveBeenCalledWith("settings");
+    });
+
+    it("revalidates the public root layout after enable/disable", async () => {
+      await createIubendaIntegration({ isEnabled: false });
+
+      await caller.setEnabled({
+        provider: INTEGRATION_PROVIDER_IUBENDA,
+        isEnabled: true,
+      });
+
+      expect(revalidateContent).toHaveBeenCalledWith("settings");
+    });
+
+    it("revalidates the public root layout after a connection test", async () => {
+      await createIntegration({
+        isEnabled: true,
+        secrets: { apiKey: "test-key" },
+      });
+      emailsList.mockResolvedValue({ data: [], error: null });
+
+      await caller.test({ provider: INTEGRATION_PROVIDER_RESEND });
+
+      expect(revalidateContent).toHaveBeenCalledWith("settings");
     });
   });
 });

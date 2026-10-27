@@ -61,9 +61,9 @@ async function resolveResendSecrets(): Promise<IntegrationSecretsByProvider["res
   };
 }
 
-const resolvers: {
+const resolvers: Partial<{
   [P in IntegrationProvider]: Resolver<P>;
-} = {
+}> = {
   [INTEGRATION_PROVIDER_RESEND]: resolveResendSecrets,
 };
 
@@ -92,8 +92,8 @@ export async function resolveIntegrationSecrets<P extends IntegrationProvider>(
   const resolver = resolvers[provider];
   if (!resolver) {
     throw new IntegrationResolutionError(
-      `Unknown integration provider: ${provider}`,
-      "unknown_provider",
+      `Integration ${provider} has no credential resolver`,
+      "no_secrets",
     );
   }
 

@@ -88,4 +88,37 @@ export const PROVIDER_SETUP_GUIDES: Record<
       },
     ],
   },
+  iubenda: {
+    title: "Configuring Iubenda",
+    intro:
+      "Iubenda stores only public identifiers. Once the configuration is complete, enable the integration to render the consent banner on the public site.",
+    steps: [
+      {
+        title: "Open the Cookie Solution embed",
+        description:
+          "In the Iubenda dashboard open Privacy Controls and Cookie Solution → Embed and copy the numeric site ID and cookie policy ID from the generated snippet.",
+        links: [
+          {
+            label: "Iubenda dashboard",
+            href: "https://www.iubenda.com/dashboard",
+          },
+        ],
+      },
+      {
+        title: "Match the banner language",
+        description:
+          "Choose the language of the public site. Italian and English are available in the form.",
+      },
+      {
+        title: "Choose the loader",
+        description:
+          "Keep autoblocking on for the recommended loader that blocks third parties before consent. Turn it off to use the sync loader instead.",
+      },
+      {
+        title: "Enable the integration",
+        description:
+          "Save the configuration, then enable Iubenda. The banner and its scripts render in the document head on the next request.",
+      },
+    ],
+  },
 };
