@@ -1,11 +1,17 @@
 import type { IntegrationProvider } from "./constants";
+import type { IntegrationSecretPresence } from "./providers/types";
 
 /** Read-only projection of an integration row returned by the router. */
 export interface IntegrationListItem {
   provider: IntegrationProvider;
   isEnabled: boolean;
-  hasApiKey: boolean;
-  hasWebhookSecret: boolean;
+  /** Non-secret provider configuration, validated by the provider schema. */
+  config: Record<string, unknown>;
+  /** Provider-agnostic presence summary. Never contains secret values. */
+  secrets: IntegrationSecretPresence[];
+  /** Whether the provider's enable rule is currently satisfied. */
+  canEnable: boolean;
+  hasConnectionTest: boolean;
   lastTestedAt: Date | null;
   lastTestStatus: string | null;
 }

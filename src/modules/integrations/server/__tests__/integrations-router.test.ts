@@ -62,6 +62,7 @@ async function createUser() {
 
 async function createIntegration(overrides: {
   isEnabled?: boolean;
+  config?: Record<string, unknown>;
   secrets?: { apiKey?: string; webhookSecret?: string };
   lastTestedAt?: Date;
   lastTestStatus?: string;
@@ -70,6 +71,7 @@ async function createIntegration(overrides: {
     data: {
       provider: INTEGRATION_PROVIDER_RESEND,
       isEnabled: overrides.isEnabled ?? false,
+      config: overrides.config ?? {},
       secretEncrypted: encryptIntegrationSecrets(overrides.secrets ?? {}),
       lastTestedAt: overrides.lastTestedAt ?? null,
       lastTestStatus: overrides.lastTestStatus ?? null,
@@ -138,11 +140,26 @@ describe("integrationsRouter", () => {
       expect(result[0]).toMatchObject({
         provider: INTEGRATION_PROVIDER_RESEND,
         isEnabled: true,
-        hasApiKey: true,
-        hasWebhookSecret: false,
+        canEnable: true,
+        hasConnectionTest: true,
+        config: {},
         lastTestStatus: "SUCCESS",
       });
       expect(result[0]!.lastTestedAt).toBeInstanceOf(Date);
+      expect(result[0]!.secrets).toEqual([
+        {
+          key: "apiKey",
+          label: "API key",
+          required: true,
+          present: true,
+        },
+        {
+          key: "webhookSecret",
+          label: "Webhook secret",
+          required: false,
+          present: false,
+        },
+      ]);
     });
 
     it("returns an unconfigured entry when no integration row exists", async () => {
@@ -152,14 +169,29 @@ describe("integrationsRouter", () => {
       expect(result[0]).toMatchObject({
         provider: INTEGRATION_PROVIDER_RESEND,
         isEnabled: false,
-        hasApiKey: false,
-        hasWebhookSecret: false,
+        canEnable: false,
+        hasConnectionTest: true,
+        config: {},
         lastTestedAt: null,
         lastTestStatus: null,
       });
+      expect(result[0]!.secrets).toEqual([
+        {
+          key: "apiKey",
+          label: "API key",
+          required: true,
+          present: false,
+        },
+        {
+          key: "webhookSecret",
+          label: "Webhook secret",
+          required: false,
+          present: false,
+        },
+      ]);
     });
 
-    it("never returns secret values or ciphertext", async () => {
+    it("never returns secret values, ciphertext, or provider-specific credential fields", async () => {
       await createIntegration({
         secrets: { apiKey: "secret-key", webhookSecret: "secret-webhook" },
       });
@@ -170,10 +202,25 @@ describe("integrationsRouter", () => {
       expect(keys).not.toContain("secretEncrypted");
       expect(keys).not.toContain("apiKey");
       expect(keys).not.toContain("webhookSecret");
-      expect(result[0]).toMatchObject({
-        hasApiKey: true,
-        hasWebhookSecret: true,
-      });
+      expect(keys).not.toContain("hasApiKey");
+      expect(keys).not.toContain("hasWebhookSecret");
+      expect(result[0]!.secrets).toEqual([
+        {
+          key: "apiKey",
+          label: "API key",
+          required: true,
+          present: true,
+        },
+        {
+          key: "webhookSecret",
+          label: "Webhook secret",
+          required: false,
+          present: true,
+        },
+      ]);
+      const serialized = JSON.stringify(result);
+      expect(serialized).not.toContain("secret-key");
+      expect(serialized).not.toContain("secret-webhook");
     });
   });
 
@@ -188,7 +235,45 @@ describe("integrationsRouter", () => {
       integrationIds.push((await db.integration.findFirstOrThrow()).id);
 
       expect(updated.isEnabled).toBe(true);
-      expect(updated.hasApiKey).toBe(true);
+      expect(updated.canEnable).toBe(true);
+      expect(updated.secrets).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ key: "apiKey", present: true }),
+        ]),
+      );
+    });
+
+    it("rejects enabling when the provider's rule is not satisfied", async () => {
+      await expect(
+        caller.update({
+          provider: INTEGRATION_PROVIDER_RESEND,
+          isEnabled: true,
+        }),
+      ).rejects.toThrow(/required configuration or credentials/i);
+
+      const row = await db.integration.findFirst();
+      expect(row).toBeNull();
+    });
+
+    it("rejects removing a required secret while the provider is enabled", async () => {
+      await createIntegration({
+        isEnabled: true,
+        secrets: { apiKey: "old-key" },
+      });
+
+      await expect(
+        caller.update({
+          provider: INTEGRATION_PROVIDER_RESEND,
+          secrets: { apiKey: null },
+        }),
+      ).rejects.toThrow(/required configuration or credentials/i);
+
+      const row = await db.integration.findFirstOrThrow();
+      const secrets = decryptIntegrationSecrets(row.secretEncrypted) as {
+        apiKey?: string;
+      };
+      expect(secrets.apiKey).toBe("old-key");
+      expect(row.isEnabled).toBe(true);
     });
 
     it("replaces a secret with a non-empty string", async () => {
@@ -275,9 +360,11 @@ describe("integrationsRouter", () => {
       activityIds.push(activity!.id);
 
       const after = activity!.after as Record<string, unknown>;
-      expect(after.hasApiKey).toBe(true);
+      expect(after.secretKeys).toEqual(["apiKey"]);
+      expect(after.config).toEqual({});
       expect(Object.keys(after)).not.toContain("apiKey");
       expect(Object.keys(after)).not.toContain("secretEncrypted");
+      expect(JSON.stringify(after)).not.toContain("audit-key");
     });
   });
 
@@ -303,8 +390,46 @@ describe("integrationsRouter", () => {
       ).rejects.toThrow();
     });
 
-    it("records an audit entry for enable/disable", async () => {
+    it("rejects enabling when the provider's rule is not satisfied", async () => {
       const integration = await createIntegration({ isEnabled: false });
+
+      await expect(
+        caller.setEnabled({
+          provider: INTEGRATION_PROVIDER_RESEND,
+          isEnabled: true,
+        }),
+      ).rejects.toThrow(/required configuration or credentials/i);
+
+      const reloaded = await db.integration.findUniqueOrThrow({
+        where: { id: integration.id },
+      });
+      expect(reloaded.isEnabled).toBe(false);
+    });
+
+    it("rejects enabling when the stored required secret is blank", async () => {
+      const integration = await createIntegration({
+        isEnabled: false,
+        secrets: { apiKey: "" },
+      });
+
+      await expect(
+        caller.setEnabled({
+          provider: INTEGRATION_PROVIDER_RESEND,
+          isEnabled: true,
+        }),
+      ).rejects.toThrow(/invalid credentials/i);
+
+      const reloaded = await db.integration.findUniqueOrThrow({
+        where: { id: integration.id },
+      });
+      expect(reloaded.isEnabled).toBe(false);
+    });
+
+    it("records an audit entry for enable/disable", async () => {
+      const integration = await createIntegration({
+        isEnabled: false,
+        secrets: { apiKey: "test-key" },
+      });
 
       await caller.setEnabled({
         provider: INTEGRATION_PROVIDER_RESEND,

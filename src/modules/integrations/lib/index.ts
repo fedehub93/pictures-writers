@@ -15,6 +15,24 @@ export { resolveIntegrationSecrets } from "./resolution";
 
 export { withIntegrationResolutionCache } from "./resolution-cache";
 
+export {
+  INTEGRATION_DESCRIPTORS,
+  getIntegrationDescriptor,
+  getIntegrationSecretPresence,
+  parseIntegrationConfig,
+} from "./providers";
+export type {
+  IntegrationConnectionTest,
+  IntegrationConnectionTestContext,
+  IntegrationConnectionTestResult,
+  IntegrationProviderDescriptor,
+  IntegrationProviderFormProps,
+  IntegrationProviderFormValues,
+  IntegrationProviderPresentation,
+  IntegrationSecretField,
+  IntegrationSecretPresence,
+} from "./providers";
+
 export type {
   IntegrationListItem,
   ResendIntegrationSecrets,

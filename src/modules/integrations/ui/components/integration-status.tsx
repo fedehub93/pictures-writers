@@ -28,28 +28,40 @@ const CredentialRow = ({
   </div>
 );
 
-/** Write-only credential presence for the providers that expose ones. */
+/** Write-only credential presence for every secret a provider declares. */
 export const CredentialStatusList = ({
   integration,
 }: {
   integration: IntegrationListItem;
-}) => (
-  <div className="flex flex-col gap-2 text-sm">
-    <CredentialRow label="API key" present={integration.hasApiKey} />
-    <CredentialRow
-      label="Webhook secret"
-      present={integration.hasWebhookSecret}
-    />
-  </div>
-);
+}) => {
+  if (integration.secrets.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        This provider requires no credentials.
+      </p>
+    );
+  }
 
-/** Last connection-test result, or `null` when the connection never ran one. */
+  return (
+    <div className="flex flex-col gap-2 text-sm">
+      {integration.secrets.map((secret) => (
+        <CredentialRow
+          key={secret.key}
+          label={secret.label}
+          present={secret.present}
+        />
+      ))}
+    </div>
+  );
+};
+
+/** Last connection-test result, or `null` when the provider has no test. */
 export const TestStatus = ({
   integration,
 }: {
   integration: IntegrationListItem;
 }) => {
-  if (!integration.lastTestedAt) return null;
+  if (!integration.hasConnectionTest || !integration.lastTestedAt) return null;
 
   const hasPassed = integration.lastTestStatus === "SUCCESS";
 

@@ -1,9 +1,3 @@
-import "client-only";
-
-import type { ComponentType } from "react";
-
-import type { IntegrationProvider } from "@/modules/integrations/lib";
-
 /** Official Resend lettermark, rendered in `currentColor` to follow the theme. */
 export const ResendIcon = ({ className }: { className?: string }) => (
   <svg
@@ -20,22 +14,3 @@ export const ResendIcon = ({ className }: { className?: string }) => (
     />
   </svg>
 );
-
-interface ProviderPresentation {
-  name: string;
-  description: string;
-  Icon: ComponentType<{ className?: string }>;
-}
-
-/** Display name, description and logo for every integration provider. */
-export const INTEGRATION_PROVIDER_META: Record<
-  IntegrationProvider,
-  ProviderPresentation
-> = {
-  resend: {
-    name: "Resend",
-    description:
-      "Send transactional and marketing email, and receive inbound mail through webhooks.",
-    Icon: ResendIcon,
-  },
-};
