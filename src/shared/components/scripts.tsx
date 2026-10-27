@@ -1,28 +1,6 @@
 import Script from "next/script";
 
-import { ScriptStrategy, SettingsScripts } from "@/types";
-
-const getStrategy = (script: SettingsScripts): ScriptStrategy | undefined => {
-  if (!script.src) return script.strategy;
-
-  if (script.src.includes("cs.iubenda.com/sync/")) {
-    return ScriptStrategy.lazyOnLoad;
-  }
-
-  if (script.src.includes("cdn.iubenda.com/cs/iubenda_cs.js")) {
-    return ScriptStrategy.beforeInteractive;
-  }
-
-  if (script.src.includes("iubenda.com")) {
-    return ScriptStrategy.afterInteractive;
-  }
-
-  if (script.strategy === ScriptStrategy.beforeInteractive) {
-    return ScriptStrategy.afterInteractive;
-  }
-
-  return script.strategy;
-};
+import { resolveScriptStrategy, SettingsScripts } from "@/types";
 
 const getSrc = (src: string | undefined) => {
   if (!src) return src;
@@ -39,11 +17,10 @@ export const AppScripts = async ({
 
   return (
     <>
-      {/* Configurazione inline dello script */}
       {scripts.map((s) => {
         if (!s.enabled) return null;
 
-        const strategy = getStrategy(s);
+        const strategy = resolveScriptStrategy(s.strategy);
 
         if (s.content) {
           return (

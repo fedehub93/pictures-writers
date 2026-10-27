@@ -35,43 +35,24 @@ function collectStrategies(tree: ReactNode) {
     .filter(Boolean);
 }
 
+function collectSources(tree: ReactNode) {
+  return collectElements(tree)
+    .map((element) => (element.props as { src?: string }).src)
+    .filter(Boolean);
+}
+
 describe("AppScripts", () => {
-  it("keeps the iubenda loader early and defers sync", async () => {
+  it("degrades beforeInteractive scripts to afterInteractive", async () => {
     const tree = await AppScripts({
       scripts: [
         {
-          name: "iubenda-config",
+          name: "inline",
           strategy: ScriptStrategy.beforeInteractive,
-          content: "window.__iubenda = true;",
+          content: "window.__critical = true;",
           enabled: true,
         },
         {
-          name: "iubenda-cs",
-          src: "https://cdn.iubenda.com/cs/iubenda_cs.js",
-          strategy: ScriptStrategy.beforeInteractive,
-          enabled: true,
-        },
-        {
-          name: "iubenda-sync",
-          src: "https://cs.iubenda.com/sync/3303495.js",
-          strategy: ScriptStrategy.beforeInteractive,
-          enabled: true,
-        },
-      ],
-    });
-
-    expect(collectStrategies(tree)).toEqual([
-      ScriptStrategy.beforeInteractive,
-      ScriptStrategy.beforeInteractive,
-      ScriptStrategy.lazyOnLoad,
-    ]);
-  });
-
-  it("downgrades other external beforeInteractive scripts", async () => {
-    const tree = await AppScripts({
-      scripts: [
-        {
-          name: "critical-src",
+          name: "external",
           src: "https://example.com/critical.js",
           strategy: ScriptStrategy.beforeInteractive,
           enabled: true,
@@ -81,25 +62,92 @@ describe("AppScripts", () => {
 
     expect(collectStrategies(tree)).toEqual([
       ScriptStrategy.afterInteractive,
+      ScriptStrategy.afterInteractive,
     ]);
+  });
+
+  it("passes the other strategies through unchanged", async () => {
+    const tree = await AppScripts({
+      scripts: [
+        {
+          name: "after",
+          src: "https://example.com/after.js",
+          strategy: ScriptStrategy.afterInteractive,
+          enabled: true,
+        },
+        {
+          name: "lazy",
+          src: "https://example.com/lazy.js",
+          strategy: ScriptStrategy.lazyOnLoad,
+          enabled: true,
+        },
+        {
+          name: "worker",
+          src: "https://example.com/worker.js",
+          strategy: ScriptStrategy.worker,
+          enabled: true,
+        },
+      ],
+    });
+
+    expect(collectStrategies(tree)).toEqual([
+      ScriptStrategy.afterInteractive,
+      ScriptStrategy.lazyOnLoad,
+      ScriptStrategy.worker,
+    ]);
+  });
+
+  it("applies no provider-specific strategy rules", async () => {
+    const tree = await AppScripts({
+      scripts: [
+        {
+          name: "iubenda-cs",
+          src: "https://cdn.iubenda.com/cs/iubenda_cs.js",
+          strategy: ScriptStrategy.lazyOnLoad,
+          enabled: true,
+        },
+        {
+          name: "iubenda-sync",
+          src: "https://cs.iubenda.com/sync/3303495.js",
+          strategy: ScriptStrategy.afterInteractive,
+          enabled: true,
+        },
+      ],
+    });
+
+    expect(collectStrategies(tree)).toEqual([
+      ScriptStrategy.lazyOnLoad,
+      ScriptStrategy.afterInteractive,
+    ]);
+  });
+
+  it("skips disabled scripts", async () => {
+    const tree = await AppScripts({
+      scripts: [
+        {
+          name: "disabled",
+          src: "https://example.com/disabled.js",
+          strategy: ScriptStrategy.afterInteractive,
+          enabled: false,
+        },
+      ],
+    });
+
+    expect(collectSources(tree)).toEqual([]);
   });
 
   it("normalizes protocol-relative sources to https", async () => {
     const tree = await AppScripts({
       scripts: [
         {
-          name: "iubenda-cs",
-          src: "//cdn.iubenda.com/cs/iubenda_cs.js",
-          strategy: ScriptStrategy.beforeInteractive,
+          name: "protocol-relative",
+          src: "//cdn.example.com/script.js",
+          strategy: ScriptStrategy.afterInteractive,
           enabled: true,
         },
       ],
     });
 
-    const srcs = collectElements(tree)
-      .map((element) => (element.props as { src?: string }).src)
-      .filter(Boolean);
-
-    expect(srcs).toEqual(["https://cdn.iubenda.com/cs/iubenda_cs.js"]);
+    expect(collectSources(tree)).toEqual(["https://cdn.example.com/script.js"]);
   });
 });

@@ -30,7 +30,11 @@ import {
 } from "@/shared/ui/select";
 import { Checkbox } from "@/shared/ui/checkbox";
 import { Textarea } from "@/shared/ui/textarea";
-import { ScriptStrategy } from "@/types";
+import {
+  ScriptStrategy,
+  SELECTABLE_SCRIPT_STRATEGIES,
+  resolveScriptStrategy,
+} from "@/types";
 import { useSettings } from "../../_components/providers/settings-provider";
 import {
   Accordion,
@@ -57,7 +61,10 @@ const MainSettingsPage = () => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const { settings } = useSettings();
-  const scripts = settings?.scripts || [];
+  const scripts = (settings?.scripts || []).map((script) => ({
+    ...script,
+    strategy: resolveScriptStrategy(script.strategy),
+  }));
 
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(formSchema),
@@ -167,7 +174,7 @@ const MainSettingsPage = () => {
                                   <SelectValue placeholder="Seleziona una strategia" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {Object.values(ScriptStrategy).map((s) => (
+                                  {SELECTABLE_SCRIPT_STRATEGIES.map((s) => (
                                     <SelectItem key={s} value={s}>
                                       {s}
                                     </SelectItem>

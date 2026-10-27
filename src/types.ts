@@ -224,6 +224,19 @@ export enum ScriptStrategy {
   worker = "worker",
 }
 
+export const SELECTABLE_SCRIPT_STRATEGIES = [
+  ScriptStrategy.afterInteractive,
+  ScriptStrategy.lazyOnLoad,
+  ScriptStrategy.worker,
+] as const;
+
+export const resolveScriptStrategy = (
+  strategy: ScriptStrategy | undefined,
+): ScriptStrategy | undefined =>
+  strategy === ScriptStrategy.beforeInteractive
+    ? ScriptStrategy.afterInteractive
+    : strategy;
+
 export type SettingsScripts = {
   name?: string;
   src?: string;
