@@ -46,7 +46,7 @@ export interface IntegrationProviderFormProps {
 
 export type IntegrationConfigSchema = z.ZodType<
   Record<string, unknown>,
-  Record<string, unknown>
+  unknown
 >;
 
 export type IntegrationSecretsSchema = z.ZodType<

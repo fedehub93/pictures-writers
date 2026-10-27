@@ -1,4 +1,5 @@
 import type { IntegrationProvider } from "./constants";
+import type { IubendaConfig } from "./providers/iubenda-config";
 import type { IntegrationSecretPresence } from "./providers/types";
 
 /** Read-only projection of an integration row returned by the router. */
@@ -23,16 +24,27 @@ export type ResendIntegrationSecrets = {
 
 export type IntegrationSecretsByProvider = {
   resend: ResendIntegrationSecrets;
+  /** Iubenda has no credentials; resolving secrets for it is a programming error. */
+  iubenda: Record<string, never>;
 };
 
 export type IntegrationSecrets<P extends IntegrationProvider> =
   IntegrationSecretsByProvider[P];
+
+export type IntegrationPublicConfigByProvider = {
+  resend: Record<string, unknown>;
+  iubenda: IubendaConfig;
+};
+
+export type IntegrationPublicConfig<P extends IntegrationProvider> =
+  IntegrationPublicConfigByProvider[P];
 
 export type IntegrationResolutionReason =
   | "not_configured"
   | "disabled"
   | "incomplete"
   | "undecryptable"
+  | "no_secrets"
   | "unknown_provider";
 
 export class IntegrationResolutionError extends Error {

@@ -2,6 +2,7 @@ import "server-only";
 
 import type { IntegrationProvider } from "@/modules/integrations/lib/constants";
 import type { IntegrationProviderDescriptor } from "@/modules/integrations/lib/providers/types";
+import { iubendaIntegrationDescriptor } from "@/modules/integrations/lib/providers/iubenda";
 import { resendIntegrationDescriptor } from "@/modules/integrations/lib/providers/resend";
 
 import { testResendConnection } from "./lib/test-resend";
@@ -16,6 +17,7 @@ const SERVER_DESCRIPTORS = {
     connectionTest: ({ secrets }) =>
       testResendConnection(secrets.apiKey ?? ""),
   },
+  iubenda: iubendaIntegrationDescriptor,
 } satisfies Record<IntegrationProvider, IntegrationProviderDescriptor>;
 
 export function getServerIntegrationDescriptor(

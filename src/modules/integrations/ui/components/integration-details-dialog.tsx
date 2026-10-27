@@ -25,7 +25,7 @@ export const IntegrationDetailsDialog = ({
   return (
     <ResponsiveDialog
       title={presentation.name}
-      description="Connection status and setup guide."
+      description="Configuration status and setup guide."
       open
       onOpenChange={onOpenChange}
     >

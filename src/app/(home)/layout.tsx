@@ -11,6 +11,10 @@ import { cn } from "@/shared/lib/utils";
 
 import { ToastProvider } from "@/shared/providers/toast-provider";
 import { getSettings } from "@/data/settings";
+import { INTEGRATION_PROVIDER_IUBENDA } from "@/modules/integrations/lib/constants";
+import { resolveIntegrationPublicConfig } from "@/modules/integrations/lib/public-config";
+import { withIntegrationResolutionCache } from "@/modules/integrations/lib/resolution-cache";
+import { IubendaCmp } from "@/modules/integrations/ui/public/iubenda-cmp";
 
 import { Navbar } from "@/app/(home)/_components/navbar";
 import { Footer } from "@/app/(home)/_components/footer";
@@ -44,13 +48,21 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const settings = await getSettings();
+  const [settings, iubendaConfig] = await Promise.all([
+    getSettings(),
+    withIntegrationResolutionCache(() =>
+      resolveIntegrationPublicConfig(INTEGRATION_PROVIDER_IUBENDA),
+    ),
+  ]);
 
   const socialUrls = settings.socials
     .filter((s): s is typeof s & { url: string } => !!s.url)
     .map((s) => s.url);
   return (
     <html lang="it" suppressHydrationWarning>
+      <head>
+        <IubendaCmp config={iubendaConfig} />
+      </head>
       <HolyLoader color="var(--primary)" />
       <body className={figtree.className}>
         {process.env.NODE_ENV === "production" && (

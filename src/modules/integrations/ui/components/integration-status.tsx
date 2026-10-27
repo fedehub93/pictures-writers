@@ -36,9 +36,11 @@ export const CredentialStatusList = ({
 }) => {
   if (integration.secrets.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground">
-        This provider requires no credentials.
-      </p>
+      <div className="flex items-center gap-2 text-sm">
+        <PresenceDot present={integration.canEnable} />
+        <span className="text-muted-foreground">Configuration</span>
+        <span>{integration.canEnable ? "Configured" : "Not configured"}</span>
+      </div>
     );
   }
 

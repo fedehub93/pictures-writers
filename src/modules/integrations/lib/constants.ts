@@ -1,6 +1,10 @@
 export const INTEGRATION_PROVIDER_RESEND = "resend";
+export const INTEGRATION_PROVIDER_IUBENDA = "iubenda";
 
-export const INTEGRATION_PROVIDERS = [INTEGRATION_PROVIDER_RESEND] as const;
+export const INTEGRATION_PROVIDERS = [
+  INTEGRATION_PROVIDER_RESEND,
+  INTEGRATION_PROVIDER_IUBENDA,
+] as const;
 
 export type IntegrationProvider = (typeof INTEGRATION_PROVIDERS)[number];
 

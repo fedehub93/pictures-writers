@@ -114,7 +114,7 @@ export const IntegrationCard = ({
               size="icon-sm"
               onClick={onEdit}
               disabled={isBusy}
-              aria-label="Edit credentials"
+              aria-label="Edit integration"
             >
               <Settings2Icon />
             </Button>

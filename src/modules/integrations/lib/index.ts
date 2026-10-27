@@ -1,4 +1,5 @@
 export {
+  INTEGRATION_PROVIDER_IUBENDA,
   INTEGRATION_PROVIDER_RESEND,
   INTEGRATION_PROVIDERS,
   isIntegrationProvider,
@@ -12,6 +13,8 @@ export {
 } from "./secrets";
 
 export { resolveIntegrationSecrets } from "./resolution";
+
+export { resolveIntegrationPublicConfig } from "./public-config";
 
 export { withIntegrationResolutionCache } from "./resolution-cache";
 
@@ -35,6 +38,8 @@ export type {
 
 export type {
   IntegrationListItem,
+  IntegrationPublicConfig,
+  IntegrationPublicConfigByProvider,
   ResendIntegrationSecrets,
   IntegrationSecretsByProvider,
   IntegrationSecrets,

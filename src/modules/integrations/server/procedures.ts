@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 
 import { db } from "@/shared/lib/db";
 import { PERMISSIONS } from "@/shared/lib/permissions";
+import { revalidateContent } from "@/shared/lib/revalidate-content";
 import { recordAdministrativeActivity } from "@/modules/administrative-activity";
 import type { Integration } from "@/generated/prisma";
 import {
@@ -110,6 +111,14 @@ async function getIntegrationOrThrow(provider: IntegrationProvider) {
     });
   }
   return row;
+}
+
+/**
+ * Integrations render from the public root layout, so every mutation must
+ * invalidate it for the next request.
+ */
+function revalidatePublicIntegrations() {
+  revalidateContent("settings");
 }
 
 function assertCanEnable(
@@ -257,6 +266,8 @@ export const integrationsRouter = createTRPCRouter({
         }),
       });
 
+      revalidatePublicIntegrations();
+
       return toIntegrationListItem(input.provider, updated);
     }),
 
@@ -293,6 +304,8 @@ export const integrationsRouter = createTRPCRouter({
           after,
         }),
       });
+
+      revalidatePublicIntegrations();
 
       return toIntegrationListItem(input.provider, updated);
     }),
@@ -366,6 +379,8 @@ export const integrationsRouter = createTRPCRouter({
           after,
         }),
       });
+
+      revalidatePublicIntegrations();
 
       if (!testResult.success) {
         throw new TRPCError({
