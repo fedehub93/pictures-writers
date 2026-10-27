@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Figtree } from "next/font/google";
-import { GoogleTagManager } from "@next/third-parties/google";
 import HolyLoader from "holy-loader";
 
 import "./home.css";
@@ -14,7 +13,6 @@ import { getSettings } from "@/data/settings";
 import { INTEGRATION_PROVIDER_IUBENDA } from "@/modules/integrations/lib/constants";
 import { resolveIntegrationPublicConfig } from "@/modules/integrations/lib/public-config";
 import { withIntegrationResolutionCache } from "@/modules/integrations/lib/resolution-cache";
-import { IubendaCmp } from "@/modules/integrations/ui/public/iubenda-cmp";
 
 import { Navbar } from "@/app/(home)/_components/navbar";
 import { Footer } from "@/app/(home)/_components/footer";
@@ -26,7 +24,7 @@ import { AppScripts } from "@/shared/components/scripts";
 import { OrganizationJsonLd } from "./_components/seo/json-ld/organization";
 import { WebSiteJsonLd } from "./_components/seo/json-ld/website";
 import { PageViewTracker } from "./_components/page-view-tracker";
-import { ConsentModeDefaults } from "./_components/consent-mode-defaults";
+import { PublicHeadScripts } from "./_components/public-head-scripts";
 
 const figtree = Figtree({ subsets: ["latin"] });
 
@@ -61,16 +59,17 @@ export default async function RootLayout({
   return (
     <html lang="it" suppressHydrationWarning>
       <head>
-        <IubendaCmp config={iubendaConfig} />
+        <PublicHeadScripts
+          iubendaConfig={iubendaConfig}
+          gtmId={
+            process.env.NODE_ENV === "production"
+              ? process.env.NEXT_GTAG_CONTAINER_ID
+              : undefined
+          }
+        />
       </head>
       <HolyLoader color="var(--primary)" />
       <body className={figtree.className}>
-        {process.env.NODE_ENV === "production" && (
-          <>
-            <ConsentModeDefaults />
-            <GoogleTagManager gtmId={process.env.NEXT_GTAG_CONTAINER_ID!} />
-          </>
-        )}
         <Suspense fallback={null}>
           <PageViewTracker />
         </Suspense>

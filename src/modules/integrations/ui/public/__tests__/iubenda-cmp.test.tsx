@@ -1,4 +1,5 @@
 import { isValidElement, type ReactElement, type ReactNode } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 
 import { describe, expect, it } from "vitest";
 
@@ -70,6 +71,18 @@ describe("IubendaCmp", () => {
     expect(props(loader).async).toBeFalsy();
   });
 
+  it("keeps the runtime after the configuration and loader in the rendered markup", () => {
+    const html = renderToStaticMarkup(<IubendaCmp config={config} />);
+    const configurationIndex = html.indexOf('id="iubenda-configuration"');
+    const loaderIndex = html.indexOf('id="iubenda-loader"');
+    const runtimeIndex = html.indexOf('id="iubenda-runtime"');
+
+    expect(configurationIndex).toBeGreaterThanOrEqual(0);
+    expect(loaderIndex).toBeGreaterThan(configurationIndex);
+    expect(runtimeIndex).toBeGreaterThan(loaderIndex);
+    expect(html).toMatch(/id="iubenda-runtime"[^>]*\sasync=""/);
+  });
+
   it("uses the sync loader when autoblocking is off", () => {
     const elements = collectElements(
       IubendaCmp({ config: { ...config, autoblocking: false } }),
@@ -90,6 +103,14 @@ describe("IubendaCmp", () => {
     expect(html).toContain('"cookiePolicyId":123456');
     expect(html).toContain('"lang":"it"');
     expect(html).toContain('"googleConsentMode":true');
+  });
+
+  it("writes the Consent Mode flag as false when the admin disables it", () => {
+    const html = renderToStaticMarkup(
+      <IubendaCmp config={{ ...config, consentMode: false }} />,
+    );
+
+    expect(html).toContain('"googleConsentMode":false');
   });
 
   it("renders nothing without a resolved configuration", () => {

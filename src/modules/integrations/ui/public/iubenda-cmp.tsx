@@ -44,10 +44,14 @@ export const IubendaCmp = ({ config }: { config: IubendaConfig | null }) => {
         type="text/javascript"
         src={loaderUrl(config)}
       />
+      {/* React 19 hoists async scripts to the top of the document. Giving the
+          tag an itemProp keeps it where it is written, after the configuration
+          and loader, while still loading asynchronously. */}
       <script
         id="iubenda-runtime"
         type="text/javascript"
         async
+        itemProp="iubenda-runtime"
         src={IUBENDA_RUNTIME_URL}
       />
     </>
