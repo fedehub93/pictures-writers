@@ -107,6 +107,20 @@ export function decodeMediaManifest(
 }
 
 /**
+ * Whether a delivery URL carries a readable rendition manifest.
+ *
+ * Images without a manifest are passed through unchanged by the image loader,
+ * so components must mark them as `unoptimized` to opt out of the loader.
+ */
+export function hasMediaDeliveryManifest(src: string): boolean {
+  const { url } = parseSrc(src);
+
+  return (
+    decodeMediaManifest(url.searchParams.get(MEDIA_MANIFEST_PARAM)) !== null
+  );
+}
+
+/**
  * Builds the value to put in `<Image src>` for a Media. Media without
  * renditions keeps its plain original URL (the loader falls back to it).
  */

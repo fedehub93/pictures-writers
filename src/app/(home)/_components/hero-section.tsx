@@ -1,7 +1,7 @@
 "use client";
 
 import { JSX } from "react";
-import Image from "next/image";
+import { preload } from "react-dom";
 import { ChevronDownCircleIcon } from "lucide-react";
 
 import Link from "next/link";
@@ -10,6 +10,12 @@ import { Button } from "@/shared/ui/button";
 import { Badge } from "@/shared/ui/badge";
 
 export const HeroSection = (): JSX.Element => {
+  preload("/hero-section-pana.png", {
+    as: "image",
+    media: "(min-width: 1024px)",
+    fetchPriority: "high",
+  });
+
   return (
     <section className="w-full bg-background border-b border-b-accent px-4 lg:px-6 py-12 lg:py-8 lg:h-[calc(100vh-80px)] flex items-center">
       <div className="mx-auto max-w-lg text-center md:max-w-(--breakpoint-md) lg:max-w-6xl lg:text-left">
@@ -48,16 +54,11 @@ export const HeroSection = (): JSX.Element => {
             </div>
           </div>
 
-          <div className="rounded-lg aspect-square relative hidden lg:block">
-            <Image
-              alt="jumbotron"
-              fill
-              className="object-cover"
-              sizes="(max-width: 1023px) 90vw, 35vw"
-              src="/hero-section-pana.png"
-              preload
-            />
-          </div>
+          <div
+            aria-hidden="true"
+            className="rounded-lg aspect-square relative hidden lg:block bg-cover bg-center"
+            style={{ backgroundImage: "url('/hero-section-pana.png')" }}
+          />
         </div>
         <div className="mt-8 lg:mt-20 w-full flex justify-center">
           <a

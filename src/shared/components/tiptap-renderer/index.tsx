@@ -10,6 +10,7 @@ import { ProductRenderer } from "./extensions/product/ui/product-renderer";
 import { ImageRenderer } from "./extensions/image/ui/image-renderer";
 import { LinkRenderer } from "./extensions/link/ui/link-renderer";
 import { AdItemRenderer } from "./extensions/ads/ui/ad-item-renderer";
+import { YouTubeFacade } from "./extensions/youtube/ui/youtube-facade";
 
 type Props = {
   content: TiptapContent;
@@ -44,13 +45,7 @@ const TipTapRendererV2 = ({ content, preview = false }: Props) => {
           return <ImageRenderer node={node} />;
         },
         youtube: ({ node }) => {
-          return (
-            <iframe
-              src={node.attrs.src}
-              allowFullScreen
-              className="h-full w-full aspect-video"
-            />
-          );
+          return <YouTubeFacade src={node.attrs.src} start={node.attrs.start} />;
         },
         adBlock: ({ node }) => {
           return (

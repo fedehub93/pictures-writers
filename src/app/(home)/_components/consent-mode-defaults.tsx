@@ -1,0 +1,23 @@
+import Script from "next/script";
+
+const consentDefaults = `
+window.dataLayer = window.dataLayer || [];
+window.gtag = window.gtag || function () {
+  window.dataLayer.push(arguments);
+};
+window.gtag("consent", "default", {
+  ad_storage: "denied",
+  ad_user_data: "denied",
+  ad_personalization: "denied",
+  analytics_storage: "denied",
+  functionality_storage: "granted",
+  security_storage: "granted",
+  wait_for_update: 500
+});
+`;
+
+export const ConsentModeDefaults = () => (
+  <Script id="consent-mode-default" strategy="beforeInteractive">
+    {consentDefaults}
+  </Script>
+);

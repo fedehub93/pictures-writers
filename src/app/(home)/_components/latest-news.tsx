@@ -6,7 +6,7 @@ import { it } from "date-fns/locale";
 
 import { getAuthorsString } from "@/data/user";
 import { db } from "@/lib/db";
-import { Button } from "@/shared/ui/button";
+import { hasMediaDeliveryManifest } from "@/modules/media/lib/manifest";
 
 export const LatestNews = async () => {
   const latestRoots = await db.postRoot.findMany({
@@ -81,6 +81,9 @@ export const LatestNews = async () => {
                       fill
                       className="object-cover"
                       sizes="(max-width: 1023px) 75vw, 20vw"
+                      unoptimized={!hasMediaDeliveryManifest(
+                        post.imageCover.url,
+                      )}
                     />
                   </div>
                 ) : null}

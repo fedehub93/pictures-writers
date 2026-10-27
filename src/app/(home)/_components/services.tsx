@@ -22,6 +22,7 @@ export const CreativeFeatures = () => (
               fill
               sizes="(max-width: 1023px) 90vw, 35vw"
               className="object-cover"
+              unoptimized
             />
           </div>
 
@@ -54,6 +55,7 @@ export const CreativeFeatures = () => (
               fill
               sizes="(max-width: 1023px) 90vw, 35vw"
               className="object-cover"
+              unoptimized
             />
           </div>
 

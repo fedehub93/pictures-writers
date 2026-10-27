@@ -22,6 +22,7 @@ import { AppScripts } from "@/shared/components/scripts";
 import { OrganizationJsonLd } from "./_components/seo/json-ld/organization";
 import { WebSiteJsonLd } from "./_components/seo/json-ld/website";
 import { PageViewTracker } from "./_components/page-view-tracker";
+import { ConsentModeDefaults } from "./_components/consent-mode-defaults";
 
 const figtree = Figtree({ subsets: ["latin"] });
 
@@ -52,6 +53,12 @@ export default async function RootLayout({
     <html lang="it" suppressHydrationWarning>
       <HolyLoader color="var(--primary)" />
       <body className={figtree.className}>
+        {process.env.NODE_ENV === "production" && (
+          <>
+            <ConsentModeDefaults />
+            <GoogleTagManager gtmId={process.env.NEXT_GTAG_CONTAINER_ID!} />
+          </>
+        )}
         <Suspense fallback={null}>
           <PageViewTracker />
         </Suspense>
@@ -80,11 +87,6 @@ export default async function RootLayout({
           <AppScripts scripts={settings.scripts} />
         )}
       </body>
-      {process.env.NODE_ENV === "production" && (
-        <>
-          <GoogleTagManager gtmId={process.env.NEXT_GTAG_CONTAINER_ID!} />
-        </>
-      )}
     </html>
   );
 }
