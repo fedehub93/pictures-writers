@@ -419,11 +419,11 @@ _Avoid_: Absolute delay, countdown, offset.
 ## External integrations
 
 **Provider**:
-An external service a CMS feature talks to, identified by the service itself rather than by the credentials used to reach it (email, file storage, analytics, payments).
+An external service a CMS feature talks to, identified by the service itself rather than by the credentials used to reach it (email, file storage, analytics, payments, consent management).
 _Avoid_: Vendor, integration when referring to the service.
 
 **Integration**:
-The configured connection from this site to one Provider: the Provider it targets, whether it is active, its non-secret configuration, and its stored secrets.
+The site's configuration for one Provider: the Provider it targets, whether it is active, its non-secret configuration, and, when the Provider needs them, its stored secrets. Secrets are optional: a Provider such as a consent manager may be configured entirely through public identifiers and declare no secret fields at all.
 _Avoid_: Connection (reserved for Automations), account, settings.
 
 ## Admin dashboard
