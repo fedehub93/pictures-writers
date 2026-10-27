@@ -7,7 +7,7 @@ import { db } from "@/shared/lib/db";
 import { isJSONContent, isWidgetProductPopMetadata } from "@/type-guards";
 
 import { getSettings } from "@/data/settings";
-import { getPublishedProductByRootId } from "@/modules/shop/products";
+import { getPublishedProductByRootId } from "@/modules/shop/products/server/queries/get-published-product-by-root-id";
 
 import { WidgetProductPop } from "@/shared/components/widget/product-pop";
 

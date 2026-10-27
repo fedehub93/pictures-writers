@@ -8,7 +8,7 @@ import {
   isAffiliateMetadata,
   isEbookMetadata,
 } from "@/modules/shop/products/types";
-import { getPublishedProductByRootId } from "@/modules/shop/products";
+import { getPublishedProductByRootId } from "@/modules/shop/products/server/queries/get-published-product-by-root-id";
 
 interface ProductRendererProps {
   node: Node;
