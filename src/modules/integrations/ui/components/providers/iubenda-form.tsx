@@ -201,11 +201,12 @@ export const IubendaIntegrationForm = ({
             />
             <div className="flex flex-col gap-1">
               <FieldLabel htmlFor="iubenda-consent-mode">
-                Manage Google Consent Mode
+                Use the Iubenda GTM template for Consent Mode
               </FieldLabel>
               <FieldDescription>
-                Let Iubenda own Google Consent Mode while this integration is
-                enabled.
+                {consentMode
+                  ? "Keep the iubenda Privacy Controls and Cookie Solution tag active in GTM: it sets default consent to denied and applies the banner's updates."
+                  : "No consent signals are managed by Iubenda. Pause the Iubenda template in GTM as well."}
               </FieldDescription>
             </div>
           </Field>

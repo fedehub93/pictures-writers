@@ -15,9 +15,13 @@ Both reads use the per-request cache when the caller wraps the work in `withInte
 
 Fail-open exists only for public rendering, where a missing third-party provider must not take the page down. Credential consumers stay fail-loud because a silently absent key turns into lost mail or unauthenticated requests rather than a degraded public page.
 
-## The CMP owns Consent Mode
+## The CMP owns Consent Mode through the GTM template
 
-While Iubenda is enabled with its consent-mode option, Iubenda owns both default consent and consent updates. We deleted the hand-written consent-default component. Nothing replaces it when Iubenda is absent or disabled: GTM keeps its default behaviour and the operator is responsible for consent configuration. That is an accepted consequence, not a fallback. GTM stays `afterInteractive`.
+While Iubenda is enabled with its consent-mode option, Iubenda owns the consent decisions. The CMP emits `googleConsentMode: "template"`, which delegates both default consent and consent updates to the Iubenda GTM template. The template runs on Consent Initialization, before any other GTM tag, sets every purpose to denied, and applies the updates the CMP pushes to `_iub.gtmDataLayer` and `_iub.gtmDataLayerV2`. The template must stay active while the integration is enabled.
+
+With the GTM template paused, the direct `googleConsentMode: true` mode emitted consent updates but did not establish a denied default: the first GA4 request went out with `_ga` cookies and no denied `gcs` signal. The template is what provides the default. We chose `"template"` because it is Iubenda's documented manual-embedding mode: the template owns both the denied defaults and the updates, and it also emits `iubenda_gtm_consent_event` for custom tags. We kept the hand-written consent-default component deleted: the GTM template is now the single default-deny mechanism.
+
+When Iubenda is absent or disabled, the site emits no CMP and no consent signals. If the GTM template is still active, however, it keeps defaulting consent to denied with no banner to update consent. Disabling the integration therefore also requires pausing the Iubenda template in GTM; that is an operational step, not something the site can enforce. GTM stays `afterInteractive`.
 
 ## Document order is a contract
 
@@ -27,7 +31,7 @@ When present, enabled, and complete, the public root layout emits in `<head>`, i
 2. the autoblocking or sync loader selected by configuration;
 3. the asynchronous CMP runtime script.
 
-When GTM is configured and renders in production, it comes after that block. The CMP block is raw inline markup rather than `next/script`, so the document itself determines the order instead of framework convention. A rendering test asserts the sequence and the runtime's `async` attribute; this is a tested contract, not a comment. The runtime also carries an `itemProp` so React 19 does not hoist the async script ahead of the configuration block.
+When GTM is configured and renders in production, it comes after that block. Inside GTM, the Iubenda template runs on Consent Initialization, so its denied defaults land before the GA4 configuration and `page_view` tags. The CMP block is raw inline markup rather than `next/script`, so the document itself determines the order instead of framework convention. A rendering test asserts the sequence and the runtime's `async` attribute; this is a tested contract, not a comment. The runtime also carries an `itemProp` so React 19 does not hoist the async script ahead of the configuration block.
 
 `settings.scripts` remains an escape hatch for one-off snippets, but it no longer knows anything about Iubenda: no URL matching, no forced strategies. `beforeInteractive` is no longer offered in the admin and persisted values render as `afterInteractive`.
 
@@ -38,7 +42,8 @@ When GTM is configured and renders in production, it comes after that block. The
 - **Auto-parse the old script rows into integration configuration**: rejected because the values are free text inside arbitrary snippets; the operator performs the cutover explicitly (see `docs/integrations-runbook.md`).
 - **Render the CMP with `next/script`**: rejected because framework insertion and hoisting rules, not the document, would decide the order relative to GTM.
 - **Make the public configuration read fail-loud**: rejected because a missing or broken third-party provider would take the public site down instead of removing one banner.
-- **Keep hand-written consent defaults alongside the CMP**: rejected because Iubenda owns Consent Mode while enabled; competing defaults make the effective consent state ambiguous.
+- **Rely on `googleConsentMode: true` with the template only for defaults**: rejected because it splits ownership (template defaults, CMP updates) and never emits `iubenda_gtm_consent_event`; with the template paused it also has no denied default.
+- **Re-add the hand-written consent-default block**: rejected because the Iubenda GTM template already provides a guaranteed Consent Initialization default and also emits `iubenda_gtm_consent_event` for custom tags.
 - **Give Iubenda stored secrets**: rejected because its identifiers are public configuration and there is nothing to authenticate against.
 - **Environment fallback for credentials**: still rejected under ADR 0023.
 
@@ -46,7 +51,8 @@ When GTM is configured and renders in production, it comes after that block. The
 
 - The Integrations page is the only configuration surface for Iubenda; enabling requires a complete configuration, enforced server-side.
 - A missing, disabled, or incomplete integration emits nothing and logs a structured `public_config_unavailable` line; the public site keeps rendering.
-- With Iubenda disabled there is no default consent signal at all, by design.
+- The Iubenda GTM template must stay active while Consent Mode is enabled; it is the component that sets the denied defaults and applies the banner's updates.
+- With Iubenda disabled the site emits no CMP; the operator must also pause the Iubenda template, otherwise it keeps consent denied with nothing to update it.
 - Saving an integration or toggling its enabled state revalidates the public root layout, so changes reach the next request.
 - A reintroduced ordering bug fails the head-rendering test.
 - ADR 0028's third-party-scripts section is amended: Iubenda is no longer loaded by `AppScripts`.

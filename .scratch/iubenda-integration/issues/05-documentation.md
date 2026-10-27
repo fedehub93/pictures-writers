@@ -6,7 +6,7 @@
 
 **Status:** done
 
-- [x] A new ADR records that Integration admits providers without secrets, that public configuration reads fail open while credential reads stay fail-loud, that the CMP owns Consent Mode, and that script order is contractual; rejected options are listed.
+- [x] A new ADR records that Integration admits providers without secrets, that public configuration reads fail open while credential reads stay fail-loud, that the CMP owns Consent Mode through the Iubenda GTM template, and that script order is contractual; rejected options are listed.
 - [x] ADR 0028 is amended: its third-party-scripts section no longer claims Iubenda and the script model are untouched.
 - [x] The glossary defines `Integration` with optional secrets and lists consent management among the examples of `Provider`.
 - [x] The operator cutover order (remove old entries, deploy disabled, configure, enable in preview, then production) is documented in the integrations runbook.

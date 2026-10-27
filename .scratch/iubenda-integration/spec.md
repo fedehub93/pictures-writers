@@ -16,7 +16,7 @@ Iubenda — the site's consent management provider — is configured today as ar
 
 Make Iubenda a first-class provider inside the Integrations module and generalize `Integration` so a provider may have non-secret configuration and no secrets at all.
 
-An admin opens Integrations, enters the Iubenda identifiers, validates and enables the provider. The public site then renders the CMP configuration and its scripts in the document head, before GTM. Iubenda owns Google Consent Mode while it is enabled; the hand-written consent defaults are removed. When the integration is absent, disabled, or incomplete, nothing is emitted and the public site keeps working.
+An admin opens Integrations, enters the Iubenda identifiers, validates and enables the provider. The public site then renders the CMP configuration and its scripts in the document head, before GTM. Iubenda manages Google Consent Mode through its GTM template while it is enabled; the hand-written consent defaults are removed. When the integration is absent, disabled, or incomplete, nothing is emitted and the public site keeps working.
 
 The generic custom-scripts list remains as an escape hatch for one-off snippets, but it loses every Iubenda-specific rule.
 
@@ -92,9 +92,11 @@ Non-secret configuration:
 - `cookiePolicyId` — required;
 - `lang` — required, at least `it` and `en`;
 - `autoblocking` — boolean, default `true`; `true` selects the autoblocking loader, `false` selects the sync loader;
-- `consentMode` — boolean, default `true`; when true, the CMP configuration declares Google Consent Mode.
+- `consentMode` — boolean, default `true`; when true, the CMP configuration emits `googleConsentMode: "template"` and delegates Consent Mode to the Iubenda GTM template.
 
 Iubenda has no secrets and no connection test. It declares that it affects the public site.
+
+The Iubenda GTM template must be active in the container with a Consent Initialization trigger. It sets the denied defaults before any GA4 tag and applies the consent updates emitted by the CMP. Without the template the CMP has no bridge to GTM: the denied defaults are not established and the updates are not applied. The CMP is still embedded in the document head; the template only applies its Consent Mode signals.
 
 When present, enabled, and complete, the public root layout emits, in `<head>` and in this order:
 
@@ -112,9 +114,9 @@ Rendering is driven by the integration's enabled state in every environment — 
 
 ### 4. Consent Mode ownership
 
-While Iubenda is enabled and its `consentMode` flag is on, Iubenda owns both default consent and consent updates.
+While Iubenda is enabled and its `consentMode` flag is on, Iubenda owns the consent decisions. The CMP delegates default consent and consent updates to the Iubenda GTM template, which runs on Consent Initialization before any GA4 tag.
 
-The hand-written consent-default component is deleted. No replacement is emitted when Iubenda is absent or disabled: GTM keeps its default behaviour and the operator is responsible for the configuration. This is an accepted consequence, not a fallback.
+The hand-written consent-default component is deleted. No replacement is emitted when Iubenda is absent or disabled: GTM keeps its default behaviour **provided the Iubenda GTM template is also paused**. Leaving the template active with the integration disabled keeps consent denied with no banner to update it. This is an operational step, not a fallback.
 
 GTM remains `afterInteractive` and is rendered after the CMP block. Page view tracking is unaffected because the GTM helper creates its own data layer queue.
 
@@ -150,7 +152,7 @@ Create, update, enable, and disable continue to produce administrative activity 
 
 ### 9. Documentation
 
-- A new ADR records: Integration admits providers without secrets; public configuration reads fail open; the CMP owns Consent Mode; ordering is contractual.
+- A new ADR records: Integration admits providers without secrets; public configuration reads fail open; the CMP owns Consent Mode through the Iubenda GTM template; ordering is contractual.
 - ADR 0028 is amended because its third-party-scripts section states that Iubenda and the script model are untouched.
 - `CONTEXT.md` updates the `Integration` definition so secrets are optional, and adds consent management to the examples of `Provider`.
 

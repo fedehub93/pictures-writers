@@ -91,7 +91,7 @@ export const PROVIDER_SETUP_GUIDES: Record<
   iubenda: {
     title: "Configuring Iubenda",
     intro:
-      "Iubenda stores only public identifiers. Once the configuration is complete, enable the integration to render the consent banner on the public site.",
+      "Iubenda stores only public identifiers. Once the configuration is complete, enable the integration to render the consent banner on the public site. The Iubenda GTM template must be active for Google Consent Mode.",
     steps: [
       {
         title: "Open the Cookie Solution embed",
@@ -113,6 +113,17 @@ export const PROVIDER_SETUP_GUIDES: Record<
         title: "Choose the loader",
         description:
           "Keep autoblocking on for the recommended loader that blocks third parties before consent. Turn it off to use the sync loader instead.",
+      },
+      {
+        title: "Keep the GTM template active",
+        description:
+          "In Google Tag Manager, activate the iubenda Privacy Controls and Cookie Solution template with a Consent Initialization - All Pages trigger. It sets default consent to denied and applies the banner's updates. If you turn this option off in the integration, pause this tag as well.",
+        links: [
+          {
+            label: "GTM setup guide",
+            href: "https://www.iubenda.com/en/help/74198-google-consent-mode-set-up-google-tag-manager-with-iubenda",
+          },
+        ],
       },
       {
         title: "Enable the integration",

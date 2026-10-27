@@ -7,7 +7,7 @@ function buildConfigurationScript(config: IubendaConfig): string {
     siteId: Number(config.siteId),
     cookiePolicyId: Number(config.cookiePolicyId),
     lang: config.lang,
-    googleConsentMode: config.consentMode,
+    googleConsentMode: config.consentMode ? "template" : false,
   }).replace(/</g, "\\u003c");
 
   return `var _iub = _iub || [];\n_iub.csConfiguration = ${payload};`;

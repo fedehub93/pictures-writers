@@ -20,4 +20,8 @@
 
 React 19 hoists `<script async src>`, which moved the Iubenda runtime ahead of the configuration block. The runtime now carries an `itemProp`, which makes React render it in place while keeping the `async` attribute. A static-markup test in `iubenda-cmp.test.tsx` guards that order.
 
-The deleted `ConsentModeDefaults` means no consent signal exists when Iubenda is off, as the spec requires. The remaining preview smoke (banner visible, choices persist, no tags before consent) needs a human with a deployed preview.
+The deleted `ConsentModeDefaults` means the site no longer emits a hand-written default block. When Iubenda is off the site emits no CMP or consent signal, but the Iubenda GTM template must also be paused: otherwise it keeps consent denied with no banner to update the consent state. The remaining preview smoke (banner visible, choices persist, no tags before consent) needs a human with a deployed preview.
+
+## Comments
+
+2026-10-27: The original `googleConsentMode: true` payload only sent consent updates. Testing showed the first GA4 request could still run before any consent signal, with `_ga` cookies and no denied `gcs`. The CMP now emits `"googleConsentMode": "template"`; the Iubenda GTM template on Consent Initialization sets the denied defaults and applies the updates. The template must stay active while the integration is enabled, and must be paused when the integration is disabled. See ADR 0031 and `docs/integrations-runbook.md`.

@@ -22,4 +22,14 @@ describe("provider setup guides", () => {
     expect(text).toMatch(/receiving/i);
     expect(text).toMatch(/MX/);
   });
+
+  it("tells the admin to keep the Iubenda GTM template active", () => {
+    const guide = PROVIDER_SETUP_GUIDES.iubenda;
+    expect(guide).not.toBeNull();
+
+    const text = JSON.stringify(guide);
+    expect(text).toContain("Consent Initialization");
+    expect(text).toMatch(/Denied/i);
+    expect(text).toMatch(/pause/i);
+  });
 });

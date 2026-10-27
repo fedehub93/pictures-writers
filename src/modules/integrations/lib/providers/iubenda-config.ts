@@ -14,7 +14,8 @@ const numericId = (label: string) =>
  * Non-secret Iubenda configuration.
  *
  * `autoblocking` selects the loader: true uses the autoblocking loader, false
- * uses the sync loader. `consentMode` makes the CMP own Google Consent Mode.
+ * uses the sync loader. `consentMode` delegates Google Consent Mode to the
+ * Iubenda GTM template.
  */
 export const iubendaConfigSchema = z.object({
   siteId: numericId("Site ID"),

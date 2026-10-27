@@ -93,7 +93,7 @@ describe("IubendaCmp", () => {
     );
   });
 
-  it("writes the CMP configuration with the Consent Mode flag", () => {
+  it("delegates Consent Mode to the Iubenda GTM template", () => {
     const elements = collectElements(IubendaCmp({ config })).filter(
       (element) => props(element).id,
     );
@@ -102,7 +102,7 @@ describe("IubendaCmp", () => {
     expect(html).toContain('_iub.csConfiguration = {"siteId":3303495');
     expect(html).toContain('"cookiePolicyId":123456');
     expect(html).toContain('"lang":"it"');
-    expect(html).toContain('"googleConsentMode":true');
+    expect(html).toContain('"googleConsentMode":"template"');
   });
 
   it("writes the Consent Mode flag as false when the admin disables it", () => {
