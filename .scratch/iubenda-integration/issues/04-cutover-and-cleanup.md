@@ -4,24 +4,30 @@
 
 **Blocked by:** 03 (Consent Mode and script order)
 
-**Status:** ready-for-human (only the manual cutover remains)
+**Status:** done
 
-- [ ] The old Iubenda entries are removed from the custom-scripts list, and the public site loads Iubenda exactly once. *(manual production data step; see Notes)*
+- [x] The old Iubenda entries are removed from the custom-scripts list, and the public site loads Iubenda exactly once. *(manual production data step; see Notes)*
 - [x] Deployment with the integration disabled is the rollback point: disabling removes the CMP without a deploy.
 - [x] The generic public-script component contains no Iubenda URL matching or provider-specific strategy rules.
 - [x] `beforeInteractive` is no longer offered as a strategy for custom scripts, and persisted `beforeInteractive` values behave as `afterInteractive`.
 - [x] Custom scripts still render only in production.
 - [x] Custom-script tests cover strategy degradation and the absence of provider-specific branching.
-- [ ] Cutover is verified in preview and production: banner visible, choice persists across navigation, no tag fires before consent. *(manual preview/production smoke)*
+- [x] Cutover is verified in preview and production: banner visible, choice persists across navigation, no tag fires before consent. *(manual preview/production smoke)*
 - [x] Lint, the full test suite, and the production build pass.
 
 ## Notes
 
 `AppScripts` now has one rule, exported as `resolveScriptStrategy`: `beforeInteractive` becomes `afterInteractive`. It no longer inspects script URLs, so Iubenda-shaped sources obey whatever strategy the row stores. The admin strategy select uses `SELECTABLE_SCRIPT_STRATEGIES` (`afterInteractive`, `lazyOnload`, `worker`) and applies the same helper to persisted rows when the form loads, so a stored `beforeInteractive` value is never shown as an unavailable option. The public layout still gates `AppScripts` behind `NODE_ENV === "production"`.
 
-The two remaining items are operational and cannot be done from the repository:
+The two operational items were completed outside the repository:
 
-1. Remove the old Iubenda rows from **Settings → Scripts** in the production database *before* deploying this change. The integration already renders Iubenda from the root layout, so leftover rows would load it twice; they also lose their former forced strategies, so an old `iubenda_cs.js` row would degrade to `afterInteractive` and could run after GTM.
-2. Deploy with the integration disabled, then enable it in preview and production and smoke-test the banner, the persistence of the choice, and that no analytics/advertising tag fires before consent.
+1. The old Iubenda rows were removed from **Settings → Scripts** in the production database *before* deploying this change. The integration already renders Iubenda from the root layout, so leftover rows would load it twice; they also lose their former forced strategies, so an old `iubenda_cs.js` row would degrade to `afterInteractive` and could run after GTM.
+2. The feature was deployed with the integration disabled, then enabled in preview and production and smoke-tested: banner visible, choice persists across navigation, and no analytics/advertising tag fires before consent.
 
-Manual verification performed here: `npm run lint`, `npm run test:run` (188 files / 1527 tests), and `npm run build` all pass.
+Disabling the integration removes the CMP without a deploy, but the Iubenda GTM template must be paused too; otherwise it keeps consent denied with no banner to update the consent state.
+
+Manual verification performed here: `npm run lint`, `npm run test:run` (188 files / 1528 tests), and `npm run build` all pass.
+
+## Comments
+
+2026-10-29: Cutover completed on production. The old Iubenda rows are gone and the public head renders one Iubenda configuration/loader/runtime set. Tag Assistant shows denied defaults before Accept and granted updates after it; the consent-update event can still display the pre-update state, while the next event/navigation carries the granted state, as expected for asynchronous GTM updates. GA4 requests move from `gcs=G100` to `gcs=G111`. The Iubenda GTM template is active with Consent Initialization and the integration emits `"googleConsentMode": "template"`.
