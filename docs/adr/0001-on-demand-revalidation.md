@@ -6,7 +6,7 @@ Public content (posts, Puck pages, shop products) was previously propagated by t
 
 We replace full rebuilds with on-demand revalidation. Public content routes keep ISR with a coarse 24h backstop (`revalidate = 86400`) and `dynamicParams = true` for on-demand generation of new slugs. A shared `revalidateContent()` helper calls `revalidatePath` on the affected surfaces (the content path, `/blog` segment via `layout`, the `/` home layout — which renders `LatestNews` from the DB, blog categories/tags, and `sitemap.xml`) from the publish/unpublish/schedule flows and the scheduler runner. `triggerWebhookBuild()` is removed from those flows; the admin build button remains only as an emergency fallback.
 
-This eliminates full builds for content changes, propagates edits instantly, and behaves identically on Vercel and self-hosted `next start`.
+This eliminates full builds for content changes, propagates edits instantly, and works the same on any host that runs `next start` (currently the self-hosted Coolify container).
 
 ## Considered options
 

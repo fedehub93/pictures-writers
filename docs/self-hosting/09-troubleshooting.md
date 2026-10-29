@@ -41,7 +41,7 @@ free -h
 **Rimedio:**
 
 - Non usare `--legacy-peer-deps` alla cieca.
-- Confronta con il build Vercel funzionante: usa la stessa versione di npm e Node.
+- Confronta con un build locale funzionante: usa la stessa versione di npm e Node.
 - Controlla `overrides` in `package.json`.
 
 ### `prisma generate` → `Environment variable not found: DATABASE_URL`
@@ -247,21 +247,21 @@ Non usare `migrate reset` in produzione.
 - Usa `CREATE INDEX CONCURRENTLY`.
 - Controlla `pg_locks` e `pg_stat_activity`.
 
-### `prisma migrate deploy` si blocca con Neon / "advisory lock"
+### `prisma migrate deploy` si blocca / "advisory lock"
 
-**Causa:** stai usando la connessione **pooled** di Neon (transaction mode). Le advisory lock di Prisma non funzionano come previsto attraverso il pooler.
+**Causa:** un'altra migrazione o un deploy concorrente tiene la advisory lock, oppure `DATABASE_URL` punta a un pooler invece che al PostgreSQL interno di Coolify.
 
 **Rimedio:**
 
-1. Preferito: usa la connessione **direct** (host senza `-pooler`). È quella consigliata in fase B.
-2. Solo se non puoi: imposta `PRISMA_SCHEMA_DISABLE_ADVISORY_LOCK=true` **temporaneamente** e toglila appena possibile. Disabilitare le lock riduce la protezione contro migrazioni concorrenti.
-3. Non impostare mai `PRISMA_SCHEMA_DISABLE_ADVISORY_LOCK=[SENSITIVE]`: non è un valore valido.
+1. Usa l'URL interno del servizio Postgres Coolify (host senza `-pooler`).
+2. Assicurati che non ci siano due deploy o due `migrate deploy` in parallelo.
+3. Solo come ultima risorsa, imposta `PRISMA_SCHEMA_DISABLE_ADVISORY_LOCK=true` **temporaneamente** e toglila appena possibile: disabilitare le lock riduce la protezione contro migrazioni concorrenti.
 
-### Il CLI Vercel mostra `[SENSITIVE]` invece del valore
+### Una variabile Coolify è "Locked"
 
-**Causa:** la variabile è marcata "Sensitive" in Vercel. Per design non è più leggibile, né dalla dashboard né dalla CLI.
+**Causa:** in Coolify una variabile può essere marcata **Locked** per impedirne la copia accidentale; il valore resta disponibile al container ma non è leggibile dalla UI.
 
-**Rimedio:** recuperala dal provider (Neon, Stripe, UploadThing, ecc.) o dal `.env` locale, oppure ruotala. Vedi `appendice-a-variabili-ambiente.md` §5. Non usare `[SENSITIVE]` come valore.
+**Rimedio:** recuperala dal password manager o dal provider (Stripe, UploadThing, Resend, ecc.) e ruotala se il valore è perso. Vedi `appendice-a-variabili-ambiente.md`.
 
 ---
 

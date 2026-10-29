@@ -1,6 +1,8 @@
 # Appendice A — Variabili d'ambiente
 
-Riferimento completo per Coolify. Nessun valore reale è incluso: usa il password manager e il pannello Vercel.
+Riferimento completo per Coolify. Nessun valore reale è incluso: usa il password manager.
+
+> **Stato attuale:** la produzione usa il PostgreSQL locale di Coolify. Le parti che citano Neon/Vercel (fase B e sezione 5) sono storiche e non servono più.
 
 ---
 
@@ -49,33 +51,22 @@ Riferimento completo per Coolify. Nessun valore reale è incluso: usa il passwor
 
 | Variabile | Esempio | Build | Runtime | Segreta | Note |
 |---|---|:---:|:---:|:---:|---|
-| `DATABASE_URL` | `postgresql://postgres:<PASS>@postgres-<uuid>:5432/postgres?schema=public` | ✅ | ✅ | ✅ | URL interno Coolify (fase C) o Neon (fase B) |
+| `DATABASE_URL` | `postgresql://postgres:<PASS>@postgres-<uuid>:5432/postgres?schema=public` | ✅ | ✅ | ✅ | URL interno del PostgreSQL Coolify |
 
-Formati:
+Formato:
 
 ```dotenv
-# Coolify interno (consigliato in produzione)
+# PostgreSQL locale di Coolify (produzione)
 DATABASE_URL=postgresql://postgres:<PASSWORD>@postgres-<UUID>:5432/postgres?schema=public
-
-# Neon direct (consigliata in fase B: runtime, build e migrazioni)
-DATABASE_URL=postgresql://<USER>:<PASSWORD>@ep-<...>.<region>.aws.neon.tech/<DB>?sslmode=require&channel_binding=require
-
-# Neon pooled (se proprio ti serve: host con "-pooler")
-# DATABASE_URL=postgresql://<USER>:<PASSWORD>@ep-<...>-pooler.<region>.aws.neon.tech/<DB>?sslmode=require&channel_binding=require
 ```
 
-> In fase B usa la connessione **direct**. Il pooler Neon (transaction mode) può dare problemi con `prisma migrate deploy` e le advisory lock. Una singola VPS non ha bisogno del pooler.
+> L'URL interno usa il nome del servizio Postgres sulla rete Docker di Coolify. Non serve alcun pooler: una singola VPS con il pool `pg` dell'app basta.
 
 Se la password contiene caratteri speciali (`@`, `:`, `/`, `?`, `#`), codificala in URL (`%40`, `%3A`, ecc.) oppure usa una password alfanumerica.
 
 ### 3.2.1 `PRISMA_SCHEMA_DISABLE_ADVISORY_LOCK`
 
-In Vercel potrebbe esistere questa variabile, marcata "Sensitive". **Non serve in Coolify** se usi:
-
-- la connessione **direct** di Neon (fase B);
-- il PostgreSQL locale (fase C).
-
-Era probabilmente impostata a `true` per far funzionare `prisma migrate deploy` attraverso il pooler Neon. Con una connessione diretta le advisory lock funzionano e non va disabilitata. **Non impostarla** a `[SENSITIVE]`: se proprio ti serve, il valore è `true`, ma preferisci cambiare connessione. Vedi `09-troubleshooting.md` §3.
+**Non serve** con il PostgreSQL locale di Coolify: le advisory lock funzionano sulla connessione diretta. Era usata per far funzionare `prisma migrate deploy` attraverso un pooler. **Non impostarla**: se le migrazioni si bloccano, controlla di stare usando l'URL interno del database, non un pooler. Vedi `09-troubleshooting.md` §3.
 
 | Variabile | Esempio | Build | Runtime | Segreta | Note |
 |---|---|:---:|:---:|:---:|---|
@@ -166,28 +157,28 @@ BETTER_AUTH_URL=https://<DOMAIN>
 
 DATABASE_URL=postgresql://postgres:<DB_PASSWORD>@postgres-<UUID>:5432/postgres?schema=public
 
-BETTER_AUTH_SECRET=<DA_VERCEL>
-SECRETS_ENCRYPTION_KEY=<DA_VERCEL>
-AUTOMATION_CREDENTIALS_KEY=<DA_VERCEL>
+BETTER_AUTH_SECRET=<DAL_PASSWORD_MANAGER>
+SECRETS_ENCRYPTION_KEY=<DAL_PASSWORD_MANAGER>
+AUTOMATION_CREDENTIALS_KEY=<DAL_PASSWORD_MANAGER>
 NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=<GENERATA>
 
-UPLOADTHING_TOKEN=<DA_VERCEL>
+UPLOADTHING_TOKEN=<DAL_PASSWORD_MANAGER>
 
-STRIPE_API_KEY=<DA_VERCEL>
-STRIPE_WEBHOOK_SECRET=<DA_VERCEL>
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=<DA_VERCEL>
+STRIPE_API_KEY=<DAL_PASSWORD_MANAGER>
+STRIPE_WEBHOOK_SECRET=<DAL_PASSWORD_MANAGER>
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=<DAL_PASSWORD_MANAGER>
 
 # Email: nessuna di queste serve a runtime.
 # - SendGrid: EmailSetting.emailApiKey nel DB
 # - Resend: Integration nel DB
 # Verifica da Admin → Email Settings / Integrations dopo il restore.
 
-NEXT_GTAG_CONTAINER_ID=<DA_VERCEL>
-NEXT_GA_TRACKING_ID=<DA_VERCEL>
-NEXT_PUBLIC_RECAPTCHA_SITE_KEY=<DA_VERCEL>
-RECAPTCHA_SECRET_KEY=<DA_VERCEL>
+NEXT_GTAG_CONTAINER_ID=<DAL_PASSWORD_MANAGER>
+NEXT_GA_TRACKING_ID=<DAL_PASSWORD_MANAGER>
+NEXT_PUBLIC_RECAPTCHA_SITE_KEY=<DAL_PASSWORD_MANAGER>
+RECAPTCHA_SECRET_KEY=<DAL_PASSWORD_MANAGER>
 
-SCHEDULED_PUBLICATION_SECRET=<DA_VERCEL>
+SCHEDULED_PUBLICATION_SECRET=<DAL_PASSWORD_MANAGER>
 
 NIXPACKS_NODE_VERSION=24
 NODE_OPTIONS=--max-old-space-size=3072
@@ -202,36 +193,11 @@ BETTER_AUTH_URL=https://staging.<DOMAIN>
 
 ---
 
-## 5. Estrazione da Vercel
+## 5. Estrazione delle variabili (storico)
 
-### Opzione A — CLI (comoda)
+La fase di estrazione da Vercel è conclusa: i valori di produzione vivono ora solo nell'ambiente Coolify e nel password manager. Non esiste più una fonte Vercel/Neon da cui copiare.
 
-```powershell
-npm i -g vercel
-vercel login
-vercel link
-vercel env ls production
-vercel env pull .env.production --environment=production
-```
-
-Poi:
-
-- copia i valori nel password manager;
-- **cancella** `.env.production` dal disco;
-- verifica che non sia tracciato: `git status`.
-
-> `.env.production` non è nel `.gitignore` attuale. Aggiungilo o cancellalo subito.
-
-### Opzione B — Dashboard
-
-Vercel → Project → Settings → Environment Variables → Production. Copia una per una.
-
-### Cosa NON copiare
-
-- `VERCEL_URL`, `VERCEL_ENV`, `VERCEL_REGION`, `NEXT_RUNTIME`.
-- Variabili di sviluppo (`NEXT_PUBLIC_APP_URL=http://localhost:3000`).
-- `DATABASE_URL` di Neon **pooled** per il DB locale (usa l'URL interno Coolify).
-- `AUTOMATIONS_DEV_PUMP`.
+Le uniche variabili che non vanno riprese da un vecchio ambiente sono quelle specifiche della piattaforma (`VERCEL_URL`, `VERCEL_ENV`, `VERCEL_REGION`, `NEXT_RUNTIME`), le variabili di sviluppo (`NEXT_PUBLIC_APP_URL=http://localhost:3000`, `AUTOMATIONS_DEV_PUMP`) e qualsiasi URL di database diverso dall'URL interno del PostgreSQL Coolify.
 
 ---
 

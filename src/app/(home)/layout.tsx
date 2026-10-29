@@ -93,7 +93,6 @@ export default async function RootLayout({
             <Footer />
           </div>
         </QueryProvider>
-        {/* <SpeedInsights /> */}
         {process.env.NODE_ENV === "production" && (
           <AppScripts scripts={settings.scripts} />
         )}

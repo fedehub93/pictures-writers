@@ -127,15 +127,9 @@ git push
 
 Coolify ricostruisce. Più lento ma tracciabile.
 
-### 3.3 Rollback DNS (solo fase B)
+### 3.3 Se la VPS è irraggiungibile
 
-Se la VPS è irraggiungibile e Vercel è ancora attivo:
-
-1. Riporta i record DNS ai valori Vercel.
-2. Attendi il TTL.
-3. Verifica.
-
-Dopo la fase C, Vercel punta a Neon e non è un rollback del DB.
+Non esiste più un fallback DNS verso Vercel/Neon: la produzione è la VPS. Il ripristino passa da Hetzner/Coolify (riavvio del server, restore dello snapshot o ripristino del backup del database), non da un cambio di record DNS.
 
 ---
 
@@ -579,7 +573,7 @@ Non aggiungere repliche finché non hai una cache condivisa e una strategia per 
 - Dominio: invariato.
 - Stripe/Resend/UploadThing: invariati.
 - Controlla mensilmente il pannello Hetzner per volumi/snapshot dimenticati.
-- Dopo 30 giorni dal cutover, cancella Vercel e Neon: è il risparmio vero.
+- Vercel e Neon sono già stati cancellati: la produzione e il database vivono solo su Hetzner/Coolify.
 
 ---
 

@@ -2,8 +2,9 @@
 
 Questa cartella contiene il piano completo, passo per passo, per spostare **Pictures Writers** da Vercel + NeonDB a una VPS Hetzner (CAX21) gestita con Coolify, **senza perdere nessuna funzionalità**.
 
-> Stato del documento: scritto il **20 ottobre 2026** sullo stato attuale del repository.
-> Rileggi sempre le sezioni "Verifica" prima di eseguire un comando in produzione.
+> **Stato: migrazione completata.** Pictures Writers gira in produzione su Hetzner + Coolify con PostgreSQL locale; Vercel e Neon sono dismessi. Questa cartella resta come resoconto storico della migrazione. Per l'operatività quotidiana usa `08-operations-runbook.md`.
+>
+> Il documento è stato scritto il **20 ottobre 2026** sullo stato del repository di allora. Rileggi sempre le sezioni "Verifica" prima di eseguire un comando in produzione.
 
 ---
 

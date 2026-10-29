@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Pictures Writers
 
-## Getting Started
+Full-stack CMS, blog and shop built with Next.js 16, React 19, Prisma and PostgreSQL. It powers a public website, an admin dashboard, a Puck page builder, email marketing, automations and Stripe checkout.
 
-First, run the development server:
+## Local development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The dev server runs on [http://localhost:3000](http://localhost:3000) with Turbopack.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Prisma runs against a local PostgreSQL database. Create `.env` from the existing reference, then:
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+```bash
+npx prisma migrate dev
+npx prisma studio   # optional
+```
 
-## Learn More
+For tests, use the disposable PostgreSQL container (port `5433`):
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run test:db:up
+npm run test:run
+npm run test:db:down
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`.env.test` must point at a dedicated test database; Vitest refuses to run against the dev or production database.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## Useful commands
 
-## Deploy on Vercel
+```bash
+npm run lint                 # ESLint
+npm run test:run             # Vitest, single run
+npm run build                # Next.js production build
+npm run build:production     # Prisma generate + migrate deploy + build
+npm run start                # next start
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Architecture
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- `src/app/` — App Router pages, admin/auth/home route groups and API routes
+- `src/modules/` — feature modules (blog, mails, forms, pages, dashboard, media, scheduler, automations)
+- `src/shared/` — shared UI, hooks, providers and server utilities
+- `src/puck/` — Puck editor configuration and custom blocks
+- `prisma/schema.prisma` — database schema
+
+## Deployment
+
+Production runs on a self-hosted Hetzner VPS (ARM64) managed with Coolify. The Next.js app and PostgreSQL run as Docker containers; Coolify's Traefik handles TLS and the reverse proxy. There is no Vercel deployment and no Neon database.
+
+- Coolify build command: `npx prisma migrate deploy && npm run build`
+- Coolify start command: `sh scripts/start-production.sh`
+- Environment variables live in Coolify, not in a file on the server
+- Deployment, rollback, backup and restore: `docs/self-hosting/08-operations-runbook.md`
+- Environment variable reference: `docs/self-hosting/appendice-a-variabili-ambiente.md`
+- Hosting decision: `docs/adr/0032-self-hosted-hetzner-coolify.md`
+
+Agent instructions and project conventions are in `AGENTS.md`; the domain glossary is in `CONTEXT.md`.

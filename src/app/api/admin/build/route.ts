@@ -11,8 +11,9 @@ export async function POST(_req: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    // Emergency "revalidate everything" — replaces the old full Vercel rebuild.
-    // Revalidates root layout (navbar/footer/global) and sitemap.
+    // Emergency "revalidate everything" — there is no full rebuild to trigger
+    // on the self-hosted container. Revalidates root layout (navbar/footer/global)
+    // and sitemap.
     revalidateContent("all");
 
     return NextResponse.json({ status: true });

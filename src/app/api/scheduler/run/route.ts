@@ -13,11 +13,9 @@ function constantTimeCompare(a: string, b: string) {
   return timingSafeEqual(hashSecret(a), hashSecret(b));
 }
 
-// Vercel Hobby max execution time. 60s is the cap for legacy (non-fluid)
-// functions and is safe on fluid compute too, with plenty of headroom for the
-// cron worker: due actions left unfinished are reclaimed at the next 5-minute
-// tick thanks to the action lease. If runs approach 60s (see function logs),
-// enable fluid compute and raise this to 300s.
+// Hosting hint only: self-hosted `next start` does not enforce it. 60s keeps
+// each cron invocation short, and due actions left unfinished are reclaimed at
+// the next 5-minute tick thanks to the action lease.
 export const maxDuration = 60;
 
 export async function POST(req: Request) {

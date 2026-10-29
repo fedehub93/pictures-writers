@@ -23,7 +23,7 @@ Requests without the header, or with a mismatched value, receive `401 Unauthoriz
 
 ## Production: cron-job.org
 
-In addition to the scheduler job (`/api/scheduler/run/`), configure a second cron-job.org job:
+Production runs on the self-hosted Hetzner VPS (Coolify) with `next start`. There is no background worker or platform scheduler in the container, so an external cron is required. In addition to the scheduler job (`/api/scheduler/run/`), configure a second cron-job.org job:
 
 1. Create a new cron job with:
    - **Title**: `Run automations`

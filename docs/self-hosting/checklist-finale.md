@@ -1,5 +1,7 @@
 # Checklist finale — stampa e spunta
 
+> **Storico:** la migrazione è completata. Questa checklist serve solo come traccia di ciò che è stato fatto, non come elenco di attività ancora aperte.
+
 Data: ________  Operatore: ________  Dominio: ________  VPS IP: ________
 
 ---

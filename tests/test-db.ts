@@ -17,15 +17,16 @@ const TEST_ENV_PATH = path.resolve(process.cwd(), ".env.test");
  * refuses to start. This guarantees that the destructive table cleanup used
  * by the tests can never run against the database the app uses.
  *
- * A dedicated Neon branch that reuses the same database name is fine: the URL
- * (host/project) is different, so it is not treated as the dev database.
+ * A dedicated test database that reuses the same database name is fine: the
+ * URL (host/port/database) is different, so it is not treated as the dev
+ * database.
  */
 export function resolveTestDatabaseUrl(): string {
   if (!existsSync(TEST_ENV_PATH)) {
     throw new Error(
       `".env.test" is missing. Vitest runs only against a dedicated test database. ` +
         'Create ".env.test" containing ' +
-        "DATABASE_URL=<connection string of a dedicated test database or Neon branch>. " +
+        "DATABASE_URL=<connection string of a dedicated test database>. " +
         "The dev/production DATABASE_URL in .env is never used by tests.",
     );
   }
@@ -43,7 +44,7 @@ export function resolveTestDatabaseUrl(): string {
     throw new Error(
       "DATABASE_URL in .env.test is identical to the DATABASE_URL in .env " +
         "(the dev/production database). Tests must run against a separate database " +
-        "(e.g. a dedicated Neon branch). Refusing to run.",
+        "(e.g. the local docker compose test database). Refusing to run.",
     );
   }
 

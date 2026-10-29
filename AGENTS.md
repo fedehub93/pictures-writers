@@ -30,6 +30,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - **State**: Zustand, TanStack Query (React Query)
 - **Tables**: TanStack Table
 - **Drag & drop**: `@hello-pangea/dnd`, `@dnd-kit/react`
+- **Deployment**: Self-hosted on a Hetzner VPS (ARM64) managed with Coolify; app and PostgreSQL run as containers, TLS/reverse proxy via Coolify's Traefik. Vercel is no longer used.
 
 ### Architecture
 
@@ -57,14 +58,20 @@ npm install
 Create `.env` (see existing `.env` for reference). Required variables include:
 
 - `DATABASE_URL` — PostgreSQL connection string
-- `NEXT_PUBLIC_APP_URL` — e.g. `http://localhost:3000`
+- `NEXT_PUBLIC_APP_URL` — public URL of the site, e.g. `http://localhost:3000`; in production the Coolify service URL/domain
+- `BETTER_AUTH_URL` — same public URL; required by Better Auth in production
+- `BETTER_AUTH_SECRET` — Better Auth signing secret
 - `SECRETS_ENCRYPTION_KEY` — Random 32+ byte value used to encrypt stored secrets (automation credentials and integration secrets). Generate with `openssl rand -base64 32` or equivalent; do not use a human passphrase.
 - `AUTOMATION_CREDENTIALS_KEY` — Legacy fallback key used to decrypt existing automation `Credential` rows created before `SECRETS_ENCRYPTION_KEY` was introduced.
+- `SCHEDULED_PUBLICATION_SECRET` — shared secret for the scheduler and automations cron endpoints
+- `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` — stable build-time key so Server Actions survive rolling deploys
 - `UPLOADTHING_TOKEN` — UploadThing token
 - `NEXT_SENDGRID_KEY` — SendGrid API key
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` / `STRIPE_API_KEY` / `STRIPE_WEBHOOK_SECRET`
 - `NEXT_GA_TRACKING_ID` / `NEXT_GTAG_CONTAINER_ID` — Google Analytics/Tag Manager
 - `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` — reCAPTCHA
+
+In production these live in the Coolify application environment, not in a file on the server. See `docs/self-hosting/appendice-a-variabili-ambiente.md` for the full table and build/runtime scope.
 
 ### Database setup
 
@@ -75,7 +82,7 @@ npx prisma generate
 # Run migrations
 npx prisma migrate dev
 
-# Deploy migrations (production/Vercel)
+# Deploy migrations (production/Coolify)
 npx prisma migrate deploy
 
 # Open Prisma Studio
@@ -118,19 +125,22 @@ To analyze bundle size:
 npm run build:analyze
 ```
 
-### Vercel build (includes Prisma steps)
+### Production build (includes Prisma steps)
 
 ```bash
-npm run vercel-build
+npm run build:production
 ```
 
-This runs `prisma generate`, `prisma migrate deploy`, and `next build`.
+This runs `prisma generate`, `prisma migrate deploy`, and `next build`. In Coolify the equivalent build command is `npx prisma migrate deploy && npm run build`; migrations must run before the build because the prerender reads the database.
 
 ### Start production server
 
 ```bash
-npm run start
+npm run start                 # next start
+sh scripts/start-production.sh  # migrate (with retry) then next start; used by Coolify
 ```
+
+`scripts/start-production.sh` is the Coolify start command. It retries `prisma migrate deploy` while the database container is still starting, then execs `npm run start`.
 
 ---
 
@@ -162,7 +172,7 @@ npm run test:db:reset   # recreate it from scratch (drops the volume)
 DATABASE_URL=postgresql://postgres:postgres@localhost:5433/pictures_writers_test
 ```
 
-CI (`.github/workflows/test.yml`) provisions the same `postgres:16` as a service container and creates `.env` / `.env.test` at runtime. Don't point the test database at Neon: frequent test runs keep the Neon compute awake and cost money.
+CI (`.github/workflows/test.yml`) provisions the same `postgres:16` as a service container and creates `.env` / `.env.test` at runtime. Don't point the test database at the production Coolify PostgreSQL: tests run migrations and can wipe data.
 
 > **Out-of-sync client gotcha**: `generated/prisma` is gitignored. If schema changes aren't reflected, run `npx prisma generate` — a stale client can make tests fail with "column does not exist".
 
@@ -264,15 +274,35 @@ src/
 - Images use a custom `next/image` loader (`src/modules/media/lib/image-loader.ts`): renditions are served straight from the storage CDN and the Next optimizer route is not used for media
 - Trailing slashes are enabled (`trailingSlash: true`)
 
-### Deployment (Vercel)
+### Deployment (Hetzner VPS + Coolify)
 
-The project is configured for Vercel:
+Production is a single Hetzner VPS (ARM64, Ubuntu) managed with Coolify. The Next.js app and PostgreSQL run as Docker containers in the same Coolify project/environment; Coolify's Traefik terminates TLS with Let's Encrypt. There is no Vercel deployment and no Neon database anymore.
 
-```bash
-npm run vercel-build
-```
+Coolify configuration:
 
-This handles Prisma generate, migrate deploy, and Next.js build.
+| Setting | Value |
+| --- | --- |
+| Build pack | Nixpacks |
+| Install command | `npm ci --include=dev` |
+| Build command | `npx prisma migrate deploy && npm run build` |
+| Start command | `sh scripts/start-production.sh` |
+| Exposed port | `3000` |
+
+Rules that follow from this setup:
+
+- The build container must reach PostgreSQL because `next build` prerenders pages that call Prisma (`getSettings`, `generateStaticParams`, sitemap/robots). This is why migrations run inside the build command, before `next build`.
+- Don't use Coolify's "Pre-deployment command" for migrations: it runs in the old container and is skipped on the first deploy. Keep migrations in the build command and the start script.
+- Rolling deploys keep the old container alive while the new one builds, so migrations must be backwards compatible (expand/contract) and `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` must stay stable.
+- `NEXT_PUBLIC_*` variables are inlined at build time: changing one requires a redeploy, not a restart.
+- ISR cache is in-memory and per instance. The deployment is single-instance by design; freshness relies on `revalidatePath` (ADR-0001), with the 24h ISR backstop as a safety net.
+- Scheduled publication and automations still need the external cron-job.org jobs hitting `/api/scheduler/run/` and `/api/automations/run/`; there is no background worker inside the production container.
+
+Operational docs:
+
+- Full migration plan (historical): `docs/self-hosting/`
+- Deploy, rollback, backup and restore runbook: `docs/self-hosting/08-operations-runbook.md`
+- Environment variable reference: `docs/self-hosting/appendice-a-variabili-ambiente.md`
+- Hosting decision: ADR-0032 (`docs/adr/0032-self-hosted-hetzner-coolify.md`)
 
 ### Important build config
 
@@ -349,7 +379,7 @@ Some features use Next.js App Router API routes directly under `src/app/api/`, i
 
 ## Common Gotchas
 
-1. **Prisma binary on Vercel**: Next.js 16 may exclude Prisma `.so.node` binary. This is mitigated via `outputFileTracingIncludes` in `next.config.mjs`.
+1. **Prisma binary tracing**: Next.js 16 may exclude the Prisma `.so.node` binary from the build trace. This is mitigated via `outputFileTracingIncludes` in `next.config.mjs` and matters for the self-hosted container too.
 
 2. **Handlebars bundling**: Handlebars is aliased to `handlebars/dist/handlebars.js` in both Turbopack and Webpack configs.
 

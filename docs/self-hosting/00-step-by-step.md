@@ -30,11 +30,13 @@ Se accetti 30–60 minuti di downtime e vuoi fare tutto in una volta, puoi salta
 
 ---
 
-## Checkpoint del progetto (20–21 ottobre 2026)
+## Checkpoint del progetto (migrazione completata)
 
-Stato attuale (21 ottobre 2026): **fasi 0–4 completate**. App in staging su `https://staging.pictureswriters.com`, PostgreSQL 18 di Coolify con il dump del branch Neon `staging` ripristinato e verificato, healthcheck attivo. Prossimo passo: **fase 5 (collaudo)**.
+**Migrazione completata.** La produzione gira su Hetzner + Coolify con PostgreSQL 18 locale; app, database e TLS sono gestiti dai container Coolify. Vercel e Neon sono dismessi. Questo documento resta come traccia storica del percorso; per l'operatività quotidiana usa `08-operations-runbook.md`.
 
-Stato fase 0: **quasi completa**.
+Di seguito il checkpoint originale della fase di preparazione (20–21 ottobre 2026).
+
+Stato alla fase 0: **quasi completa**.
 
 Fatto:
 

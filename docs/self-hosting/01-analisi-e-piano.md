@@ -1,6 +1,8 @@
 # 01 — Analisi, inventario e piano
 
-Questo documento fotografa **tutto ciò che Pictures Writers usa oggi** e stabilisce cosa va migrato, cosa resta esterno e cosa può rompersi. Serve a non scoprire a metà strada una funzione dimenticata.
+> **Storico:** questo è lo snapshot pre-migrazione (Vercel + Neon). La produzione attuale è su Hetzner + Coolify con PostgreSQL locale. Tieni questo file solo per capire il contesto della migrazione.
+
+Questo documento fotografa **tutto ciò che Pictures Writers usava prima della migrazione** e stabilisce cosa andava migrato, cosa resta esterno e cosa poteva rompersi.
 
 ---
 
@@ -119,9 +121,9 @@ Conseguenza: **il container di build deve raggiungere PostgreSQL**. Non è un de
 - Nessun uso di `waitUntil`, `after()`, `unstable_cache`, Edge Runtime.
 - Nessun WebSocket/queue esterna.
 - Nessun filesystem persistente usato per gli upload (tutto su UploadThing).
-- `@vercel/speed-insights` è installato ma **commentato** in `src/app/(home)/layout.tsx`.
+- `@vercel/speed-insights` era installato ma commentato; è stato rimosso con la migrazione.
 - `maxDuration` è dichiarato in due route ma su self-hosting viene ignorato (nessun limite serverless: i job possono durare di più).
-- `src/lib/vercel.ts` contiene `triggerWebhookBuild`, ma **non è più chiamato da nessuna parte**. Il pulsante admin "Build website" usa `revalidateContent("all")`. Il campo `Settings.deployWebhookUrl` è quindi vestigiale: puoi lasciarlo o svuotarlo, non influenza il deploy.
+- `src/lib/vercel.ts` conteneva `triggerWebhookBuild`, mai chiamato; il file è stato rimosso. Il pulsante admin "Build website" usa `revalidateContent("all")`. Il campo `Settings.deployWebhookUrl` resta vestigiale: puoi lasciarlo o svuotarlo, non influenza il deploy.
 - Non ci sono Vercel Cron né `vercel.json`.
 
 ---

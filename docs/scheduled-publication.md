@@ -6,7 +6,7 @@ This document describes the automatic scheduled-publication setup for blog Posts
 
 Editors can schedule a `DRAFT` or `CHANGED` Post for future publication. The Post moves to the `SCHEDULED` status and is published automatically when the scheduled time is reached. Newsletter single sends can be scheduled the same way.
 
-Automatic publication is triggered by a **single external recurring cron job** hosted on [cron-job.org](https://cron-job.org). The job calls a protected application endpoint deployed on Vercel every five minutes. The endpoint triggers the **common scheduler worker**, which processes every due scheduled action (scheduled Post publications and newsletter sends) in a bounded batch. The cron is only the trigger; it does not inspect or mutate content itself.
+Automatic publication is triggered by a **single external recurring cron job** hosted on [cron-job.org](https://cron-job.org). The job calls a protected application endpoint on the self-hosted Hetzner VPS (Coolify) every five minutes. The endpoint triggers the **common scheduler worker**, which processes every due scheduled action (scheduled Post publications and newsletter sends) in a bounded batch. The cron is only the trigger; it does not inspect or mutate content itself.
 
 ## Endpoint
 
@@ -16,7 +16,7 @@ Automatic publication is triggered by a **single external recurring cron job** h
 
 The endpoint compares the value of the `x-scheduled-publication-secret` header with the `SCHEDULED_PUBLICATION_SECRET` environment variable. Requests without the header, or with a mismatched value, receive `401 Unauthorized`. Infrastructure failures return `500 Internal Server Error`. A successful run returns `200 OK` even when individual actions fail.
 
-After each run the endpoint triggers a Vercel production build **only when at least one scheduled Post was actually published**. Newsletter-only runs never trigger a build.
+Publishing a Post revalidates the affected public routes on demand (`revalidatePath`, see ADR-0001). No full rebuild is triggered: content changes propagate from the running container, and the 24h ISR backstop is only a safety net.
 
 ## cron-job.org configuration
 
@@ -30,9 +30,9 @@ After each run the endpoint triggers a Vercel production build **only when at le
 3. Generate a long, random value for `SCHEDULED_PUBLICATION_SECRET` in your deployment environment (for example with `openssl rand -hex 32`) and copy it into the cron-job.org header.
 4. Do **not** commit the secret to the repository.
 
-## Why cron-job.org and not Vercel Cron
+## Why an external cron
 
-Vercel Cron is intentionally **not** used for this feature. The Hobby plan schedule precision does not satisfy the five-minute polling requirement. Vercel only hosts the endpoint and executes the short-lived function; cron-job.org provides the recurring trigger.
+The production container runs `next start` and has no background worker or platform scheduler. The self-hosted setup therefore keeps cron-job.org as the recurring trigger; the application only exposes the protected endpoint. This also keeps the polling interval independent of any hosting plan's schedule precision.
 
 ## One job, many items
 
@@ -40,7 +40,7 @@ The cron job does **not** create one schedule per item. A single recurring job p
 
 ## Batch limits
 
-Each invocation processes at most `SCHEDULER_BATCH_SIZE` (currently `50`) due actions. If more actions are due, they are picked up by subsequent invocations. This prevents a large queue from exceeding Vercel Function execution limits.
+Each invocation processes at most `SCHEDULER_BATCH_SIZE` (currently `50`) due actions. If more actions are due, they are picked up by subsequent invocations. This keeps each request short and lets the action lease reclaim unfinished work on the next tick.
 
 ## Failure handling
 
