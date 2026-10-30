@@ -4,6 +4,15 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Mailbox panes. The conversation row is its own query container, so these
+   answer the width the admin sidebar leaves it rather than the viewport: two
+   panes need the list (352px) and a thread floor of 360px plus their gap, and
+   three add the nav rail (280px). Keep the arithmetic in this comment and the
+   thresholds in one place so the panes and their controls cannot drift. */
+@custom-variant two-panes (@container (width >= 45.5rem));
+@custom-variant three-panes (@container (width >= 64rem));
+@custom-variant one-pane (@container (width < 45.5rem));
+
 :root {
   --background: oklch(0.9818 0.0054 95.0986);
   --foreground: oklch(0.3438 0.0269 95.7226);

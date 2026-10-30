@@ -37,7 +37,7 @@ export const MessageItem = ({
       <ContactAvatar name={senderName} className="size-10" />
 
       <span className="flex min-w-0 flex-1 flex-col">
-        <span className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+        <span className="flex min-w-0 items-center gap-x-1.5">
           <span className="truncate text-sm font-semibold">{senderName}</span>
           {sender.name && (
             <span className="truncate text-xs text-muted-foreground">
@@ -45,10 +45,15 @@ export const MessageItem = ({
             </span>
           )}
         </span>
-        <span className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+        <span className="mt-0.5 flex min-w-0 items-center gap-x-2 text-xs text-muted-foreground">
           <span className="truncate">to {message.toAddresses.join(", ")}</span>
-          <span aria-hidden="true">·</span>
-          <time dateTime={new Date(sentAt).toISOString()}>
+          <span aria-hidden="true" className="shrink-0">
+            ·
+          </span>
+          <time
+            className="shrink-0"
+            dateTime={new Date(sentAt).toISOString()}
+          >
             {formatMessageDate(sentAt)}
           </time>
         </span>

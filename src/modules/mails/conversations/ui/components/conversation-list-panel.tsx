@@ -45,6 +45,8 @@ interface ConversationListPanelProps {
   onCompose: () => void;
   /** Account switcher for small screens; the rail owns it on large screens. */
   accountSelector?: ReactNode;
+  /** View switcher for the modes where the rail is not on screen. */
+  viewSelector?: ReactNode;
 }
 
 export const ConversationListPanel = ({
@@ -63,6 +65,7 @@ export const ConversationListPanel = ({
   onRefresh,
   onCompose,
   accountSelector,
+  viewSelector,
 }: ConversationListPanelProps) => {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
@@ -107,7 +110,16 @@ export const ConversationListPanel = ({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex flex-col gap-3 border-b p-3">
-        {accountSelector && <div className="lg:hidden">{accountSelector}</div>}
+        {(accountSelector || viewSelector) && (
+          <div className="flex items-center gap-2 three-panes:hidden">
+            {accountSelector && (
+              <div className="min-w-0 flex-1">{accountSelector}</div>
+            )}
+            {viewSelector && (
+              <div className="w-36 shrink-0">{viewSelector}</div>
+            )}
+          </div>
+        )}
 
         <div className="flex items-center gap-2">
           <div className="relative min-w-0 flex-1">
@@ -136,7 +148,7 @@ export const ConversationListPanel = ({
           <Button
             type="button"
             size="icon"
-            className="lg:hidden"
+            className="three-panes:hidden"
             onClick={onCompose}
             aria-label="Compose"
             title="Compose"

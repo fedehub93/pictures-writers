@@ -58,7 +58,11 @@ export default async function RootLayout({
               <AuthorizationProvider permissionKeys={authorizedUser?.permissionKeys ?? []}>
                 <SidebarProvider className="h-screen overflow-hidden">
                   <AppSidebar permissionKeys={authorizedUser?.permissionKeys ?? []} />
-                  <SidebarInset className="min-h-0">
+                  {/* `min-w-0` is load-bearing: a flex item's automatic minimum is
+                      its content's intrinsic width, so a page with wide content
+                      would widen the inset past the viewport and push the header
+                      actions off screen instead of shrinking. */}
+                  <SidebarInset className="min-h-0 min-w-0">
                     <Header user={user} />
                     <Container>{children}</Container>
                   </SidebarInset>

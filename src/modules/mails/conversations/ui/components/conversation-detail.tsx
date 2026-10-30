@@ -166,12 +166,13 @@ export const ConversationDetail = ({
   };
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded-xl border bg-background shadow-sm">
+    <div className="flex h-full min-h-0 w-full min-w-0 flex-col overflow-hidden rounded-xl border bg-background shadow-sm">
       <header className="flex items-start gap-3 border-b px-4 py-4 md:px-6">
         <Button
           variant="ghost"
           size="icon"
-          className="shrink-0 md:hidden"
+          // Visible exactly when the conversation list is not beside the thread.
+          className="hidden shrink-0 one-pane:inline-flex"
           onClick={onBack}
           aria-label="Back to inbox"
         >
@@ -239,10 +240,12 @@ export const ConversationDetail = ({
             <button
               type="button"
               onClick={onReply}
-              className="flex w-full items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+              className="flex w-full items-center gap-2 overflow-hidden rounded-md border bg-background px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
             >
-              <ReplyIcon className="size-4" />
-              Reply to {conversation.contactName ?? conversation.contactEmail}…
+              <ReplyIcon className="size-4 shrink-0" />
+              <span className="min-w-0 truncate">
+                Reply to {conversation.contactName ?? conversation.contactEmail}…
+              </span>
             </button>
           </div>
         ) : null)}

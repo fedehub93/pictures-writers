@@ -47,7 +47,7 @@ export const MailboxNav = ({
   return (
     <aside
       className={cn(
-        "hidden w-[280px] shrink-0 flex-col gap-5 overflow-y-auto p-3 lg:flex",
+        "hidden w-[280px] shrink-0 flex-col gap-5 overflow-y-auto p-3 three-panes:flex",
         className,
       )}
       aria-label="Mailbox"

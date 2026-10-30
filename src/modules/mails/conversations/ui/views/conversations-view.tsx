@@ -36,6 +36,7 @@ import { ConversationReadMenu } from "../components/conversation-read-menu";
 import { ReplyComposer } from "../components/composer/reply-composer";
 import { NewMessagePanel } from "../components/composer/new-message-panel";
 import { MailboxNav, type MailboxView } from "../components/mailbox-nav";
+import { MailboxViewSelector } from "../components/mailbox-view-selector";
 import { SentMessagesPanel } from "../components/sent-messages-panel";
 import {
   resetMailboxInteraction,
@@ -234,8 +235,20 @@ export const ConversationsView = () => {
     />
   );
 
+  const viewSelector = (
+    <MailboxViewSelector
+      view={view}
+      onViewChange={handleViewChange}
+      inboxUnreadCount={inboxUnreadCount}
+      archivedCount={archivedCount}
+    />
+  );
+
+  // The row is its own query container: the panes respond to the space the
+  // admin sidebar actually leaves them, not to the viewport, so collapsing the
+  // sidebar can unlock a pane that a viewport breakpoint would keep hidden.
   return (
-    <div className="flex h-full min-h-0 flex-1 gap-4 overflow-hidden p-4">
+    <div className="@container flex h-full min-h-0 flex-1 gap-4 overflow-hidden p-4">
       <MailboxNav
         accounts={accounts}
         accountId={selectedAccountId}
@@ -249,9 +262,9 @@ export const ConversationsView = () => {
 
       <div
         className={cn(
-          "min-h-0 flex-col overflow-hidden rounded-xl border bg-background shadow-sm",
+          "min-h-0 min-w-0 flex-col overflow-hidden rounded-xl border bg-background shadow-sm",
           isDetailOpen
-            ? "hidden md:flex md:w-88 md:shrink-0"
+            ? "hidden two-panes:flex two-panes:w-88 two-panes:shrink-0"
             : "flex w-full",
         )}
       >
@@ -266,6 +279,7 @@ export const ConversationsView = () => {
             onRefresh={() => void sentQuery.refetch()}
             onCompose={startCompose}
             accountSelector={accountSelector}
+            viewSelector={viewSelector}
           />
         ) : (
           <ConversationListPanel
@@ -290,12 +304,18 @@ export const ConversationsView = () => {
             onRefresh={() => void conversationQueries[view].refetch()}
             onCompose={startCompose}
             accountSelector={accountSelector}
+            viewSelector={viewSelector}
           />
         )}
       </div>
 
+      {/* `min-w-0` is load-bearing: a flex item's automatic minimum is its
+          content's intrinsic width, so without it the thread refuses to shrink
+          below its longest unbreakable line. The row then overflows, and the
+          surrounding `overflow-hidden` turns that into a hard clip that also
+          takes the header actions with it. */}
       <section
-        className={cn("flex min-h-0 flex-1", !isDetailOpen && "hidden")}
+        className={cn("flex min-h-0 min-w-0 flex-1", !isDetailOpen && "hidden")}
       >
         {isComposing ? (
           <NewMessagePanel
