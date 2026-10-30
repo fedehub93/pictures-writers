@@ -335,7 +335,7 @@ const MESSAGE_DOCUMENT_BASE_STYLES = `
 html { background: #ffffff; }
 body {
   margin: 0;
-  padding: 0;
+  padding: 16px;
   background: #ffffff;
   color: #1a1a1a;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -343,6 +343,48 @@ body {
   line-height: 1.6;
   overflow-wrap: anywhere;
   word-break: break-word;
+}
+p {
+  margin: 0 0 0.75em;
+}
+p:last-child {
+  margin-bottom: 0;
+}
+body > :last-child {
+  margin-bottom: 0;
+}
+h1, h2, h3, h4, h5, h6 {
+  margin: 1em 0 0.5em;
+  font-weight: 600;
+  line-height: 1.3;
+}
+h1 { font-size: 1.35em; }
+h2 { font-size: 1.2em; }
+h3 { font-size: 1.1em; }
+h4, h5, h6 { font-size: 1em; }
+ul, ol {
+  margin: 0 0 0.75em;
+  padding-left: 1.25em;
+}
+li {
+  margin: 0.15em 0;
+}
+li > ul, li > ol {
+  margin: 0.15em 0 0;
+}
+blockquote {
+  margin: 0 0 0.75em;
+  padding: 0.15em 0 0.15em 0.75em;
+  border-left: 2px solid #d8d8d8;
+  color: #4a4a4a;
+}
+hr {
+  margin: 1em 0;
+  border: 0;
+  border-top: 1px solid #e2e2e2;
+}
+img {
+  height: auto;
 }
 img, table {
   max-width: 100%;
@@ -354,7 +396,12 @@ a {
   color: #0b5fff;
 }
 pre {
+  margin: 0 0 0.75em;
   white-space: pre-wrap;
+}
+code, pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.95em;
 }
 `.trim();
 
@@ -369,13 +416,13 @@ export const MESSAGE_DOCUMENT_SCRIPT = `(function () {
   }
 
   function reportHeight() {
-    var root = document.documentElement;
     var body = document.body;
-    var height = Math.max(
-      root ? root.scrollHeight : 0,
-      body ? body.scrollHeight : 0
-    );
-    post({ type: "message-height", height: Math.ceil(height) });
+    if (!body) return;
+
+    post({
+      type: "message-height",
+      height: Math.ceil(body.getBoundingClientRect().height)
+    });
   }
 
   function handleClick(event) {
@@ -396,7 +443,6 @@ export const MESSAGE_DOCUMENT_SCRIPT = `(function () {
 
   if (typeof ResizeObserver === "function") {
     var observer = new ResizeObserver(reportHeight);
-    observer.observe(document.documentElement);
     if (document.body) observer.observe(document.body);
   }
 
@@ -413,7 +459,7 @@ export const MESSAGE_DOCUMENT_SCRIPT = `(function () {
 })();`;
 
 export const MESSAGE_DOCUMENT_SCRIPT_HASH =
-  "UP7Vi9WZIjHIeVtmjUIbUxF9IjP+m+Bpt2cz/51nmF8=";
+  "kRdd49E4yYpxQFWkFrZcNC/6Jc4V5bJLs43j/+anLhA=";
 
 function contentSecurityPolicy(allowRemoteImages: boolean): string {
   return [

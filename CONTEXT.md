@@ -254,6 +254,10 @@ _Avoid_: Body, plain text, snippet when referring to the stored part (the snippe
 Images, CSS `url()` references and other resources referenced by an email body that point outside the message itself, so loading them confirms to the sender that the message was opened. Remote content is blocked by default and revealed per message.
 _Avoid_: External images, tracking pixels, remote assets when referring to every such reference.
 
+**Message sheet**:
+The light, isolated surface inside the thread where an email's HTML part is rendered — inset from the message header, rounded and bordered, with its own typographic rhythm. It is deliberately light in both admin themes so the sender's colours stay readable; it is not a theme-aware surface.
+_Avoid_: Bubble, card, preview when referring to the rendered body.
+
 **Unread conversation**:
 A conversation that has received a new inbound email not yet seen by a given backoffice user. Read state is personal: two users with access to the same email account may see the same conversation as unread and read respectively.
 _Avoid_: New message when referring to the conversation state; unread inbox when the scope is per-user.

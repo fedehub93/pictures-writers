@@ -371,6 +371,7 @@ describe("conversation detail rendering", () => {
     expect(html).toContain('download="workflow-data.pdf"');
     expect(html).toContain("Received");
     expect(html).not.toContain("Show images");
+    expect(html).not.toContain("Remote images are blocked");
   });
 
   it("renders an outbound formatted message in the same sandboxed frame", () => {
@@ -415,6 +416,8 @@ describe("conversation detail rendering", () => {
     );
 
     expect(remoteHtml).toContain("Show images");
+    expect(remoteHtml).toContain("Remote images are blocked for this message.");
+    expect(remoteHtml).not.toContain("Hide images");
     expect(remoteHtml).toContain('aria-pressed="false"');
     expect(remoteHtml).not.toContain("tracker.test");
   });

@@ -1,6 +1,6 @@
 "use client";
 
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeftIcon, MailOpenIcon, ReplyIcon } from "lucide-react";
 
 import { Button } from "@/shared/ui/button";
@@ -11,7 +11,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/shared/ui/empty";
-import { ScrollArea } from "@/shared/ui/scroll-area";
 import { Skeleton } from "@/shared/ui/skeleton";
 
 import {
@@ -20,6 +19,7 @@ import {
   shouldCollapseEarlierMessages,
   toggleExpandedMessage,
 } from "../../lib/message-expansion";
+import { isNearThreadBottom } from "../../lib/thread-scroll";
 import { type ConversationGetOne } from "../../types";
 import { MessageItem } from "./message-item";
 import { StarBadge } from "./star-badge";
@@ -44,7 +44,12 @@ export const ConversationDetail = ({
   actionsSlot,
   replySlot,
 }: ConversationDetailProps) => {
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Whether the thread should keep following its newest message. Reading an
+  // older part of a conversation is never interrupted by a new arrival.
+  const followsNewest = useRef(true);
 
   // Expansion is local to the open conversation. A conversation with more than
   // two messages opens with only the newest expanded.
@@ -56,12 +61,58 @@ export const ConversationDetail = ({
   const conversationId = conversation?.id;
   const messageCount = conversation?.messages.length ?? 0;
 
-  // Land on the newest message when a conversation opens, and keep following
-  // it as new messages arrive.
+  const scrollToNewest = useCallback(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+
+    viewport.scrollTop = viewport.scrollHeight;
+  }, []);
+
+  const handleScroll = () => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+
+    followsNewest.current = isNearThreadBottom({
+      scrollTop: viewport.scrollTop,
+      clientHeight: viewport.clientHeight,
+      scrollHeight: viewport.scrollHeight,
+    });
+  };
+
+  // Land on the newest message when a conversation opens.
   useEffect(() => {
     if (!conversationId) return;
-    bottomRef.current?.scrollIntoView({ block: "end" });
-  }, [conversationId, messageCount]);
+
+    followsNewest.current = true;
+    scrollToNewest();
+
+    const frame = window.requestAnimationFrame(scrollToNewest);
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [conversationId, scrollToNewest]);
+
+  // Follow new messages only while the reader was already at the bottom.
+  useEffect(() => {
+    if (!conversationId || !followsNewest.current) return;
+
+    scrollToNewest();
+  }, [conversationId, messageCount, scrollToNewest]);
+
+  // Message frames report their height over the following frames. While the
+  // thread is following its newest message, each report re-anchors to the end;
+  // otherwise the reading position is left alone.
+  useEffect(() => {
+    const content = contentRef.current;
+    if (!content || typeof ResizeObserver !== "function") return;
+
+    const observer = new ResizeObserver(() => {
+      if (followsNewest.current) scrollToNewest();
+    });
+
+    observer.observe(content);
+
+    return () => observer.disconnect();
+  }, [conversationId, scrollToNewest]);
 
   if (isLoading) {
     return <ConversationDetailSkeleton />;
@@ -98,6 +149,9 @@ export const ConversationDetail = ({
       : initialExpandedMessageIds(conversation.messages.map(({ id }) => id));
 
   const toggleMessage = (messageId: string) => {
+    // Opening an earlier message is a deliberate move away from the newest one.
+    followsNewest.current = false;
+
     setExpansion((current) => {
       const base =
         current.conversationId === conversation.id
@@ -136,8 +190,21 @@ export const ConversationDetail = ({
         {actionsSlot && <div className="shrink-0">{actionsSlot}</div>}
       </header>
 
-      <ScrollArea className="min-h-0 flex-1">
-        <div className="flex flex-col">
+      <div
+        ref={viewportRef}
+        onScroll={handleScroll}
+        // Any deliberate interaction inside the thread (expanding a message,
+        // revealing images) means the reader is no longer waiting for the
+        // thread to settle, so following the newest message stops.
+        onPointerDown={() => {
+          followsNewest.current = false;
+        }}
+        tabIndex={0}
+        role="region"
+        aria-label="Message thread"
+        className="mail-thread-scroll min-h-0 flex-1 overflow-y-auto focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none"
+      >
+        <div ref={contentRef} className="flex flex-col">
           {conversation.messages.map((message, index) => {
             const expanded = isConversationMessageExpanded({
               messageId: message.id,
@@ -163,9 +230,8 @@ export const ConversationDetail = ({
               />
             );
           })}
-          <div ref={bottomRef} aria-hidden="true" />
         </div>
-      </ScrollArea>
+      </div>
 
       {replySlot ??
         (onReply ? (

@@ -88,6 +88,7 @@ export const MessageItem = ({
               <MessageBody
                 html={bodyHtml}
                 title={`Message from ${senderName}`}
+                messageId={message.id}
               />
             </div>
           ) : (

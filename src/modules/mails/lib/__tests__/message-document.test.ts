@@ -41,6 +41,24 @@ describe("buildMessageDocument", () => {
     expect(html).toContain("overflow-wrap: anywhere");
   });
 
+  it("pads the sheet and normalizes the block rhythm", () => {
+    const { html } = buildMessageDocument("<p>Hello</p>");
+
+    expect(html).toContain("padding: 16px");
+    expect(html).toContain("p {\n  margin: 0 0 0.75em;\n}");
+    expect(html).toContain("padding-left: 1.25em");
+    expect(html).toContain("border-left: 2px solid #d8d8d8");
+    expect(html).toContain("height: auto");
+  });
+
+  it("reports a height that can shrink with the content", () => {
+    // The document's own scrollHeight is pinned to the frame's viewport, so it
+    // could only ever grow; the body's rect is the shrinkable measurement.
+    expect(MESSAGE_DOCUMENT_SCRIPT).toContain(
+      "body.getBoundingClientRect().height",
+    );
+  });
+
   it("runs exactly one script, the pinned one", () => {
     const { html } = buildMessageDocument("<p>Hello</p>");
     const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];

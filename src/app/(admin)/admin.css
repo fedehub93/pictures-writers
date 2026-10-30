@@ -649,3 +649,38 @@
     transparent
   );
 }
+
+/* Mailbox thread: the same thin rail as the sidebar, but the thumb stays
+   visible so the reader can see where they are. A native scrollbar is painted
+   by the browser during scrolling, so it cannot lag behind the content the way
+   a JS-driven custom scrollbar does when message frames resize. */
+.mail-thread-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--muted-foreground) 35%, transparent)
+    transparent;
+}
+
+.mail-thread-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.mail-thread-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mail-thread-scroll::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background-color: color-mix(
+    in oklab,
+    var(--muted-foreground) 35%,
+    transparent
+  );
+}
+
+.mail-thread-scroll:hover::-webkit-scrollbar-thumb {
+  background-color: color-mix(
+    in oklab,
+    var(--muted-foreground) 60%,
+    transparent
+  );
+}
