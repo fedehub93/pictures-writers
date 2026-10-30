@@ -5,36 +5,14 @@ import {
   format,
 } from "date-fns";
 
-const NAMED_ENTITIES: Record<string, string> = {
-  "&nbsp;": " ",
-  "&amp;": "&",
-  "&lt;": "<",
-  "&gt;": ">",
-  "&quot;": '"',
-  "&#39;": "'",
-  "&apos;": "'",
-};
-
-function decodeEntities(value: string): string {
-  return value
-    .replace(/&#(\d+);/g, (_, code: string) =>
-      String.fromCodePoint(Number(code)),
-    )
-    .replace(/&#x([0-9a-f]+);/gi, (_, code: string) =>
-      String.fromCodePoint(parseInt(code, 16)),
-    )
-    .replace(
-      /&(nbsp|amp|lt|gt|quot|#39|apos);/gi,
-      (entity) => NAMED_ENTITIES[entity.toLowerCase()] ?? entity,
-    );
-}
+import { decodeHtmlEntities } from "@/modules/mails/lib/html-entities";
 
 /**
  * Email bodies are untrusted, so the inbox never renders their HTML. It shows
  * the `text/plain` part or, failing that, text derived from this stripper.
  */
 export function htmlToText(html: string): string {
-  return decodeEntities(
+  return decodeHtmlEntities(
     html
       .replace(/<style[\s\S]*?<\/style>/gi, " ")
       .replace(/<script[\s\S]*?<\/script>/gi, " ")

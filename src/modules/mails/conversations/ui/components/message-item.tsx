@@ -10,6 +10,7 @@ import {
 import { type EmailMessageGetOne } from "../../types";
 import { AttachmentList } from "./attachment-list";
 import { ContactAvatar } from "./contact-avatar";
+import { MessageBody } from "./message-body";
 
 interface MessageItemProps {
   message: EmailMessageGetOne;
@@ -25,6 +26,7 @@ export const MessageItem = ({
 }: MessageItemProps) => {
   const isOutbound = message.direction === "OUTBOUND";
   const body = messageBody(message);
+  const bodyHtml = message.bodyHtml?.trim();
   const sender = parseAddress(message.fromAddress);
   const senderName = sender.name ?? sender.email;
   const sentAt = message.sentAt ?? message.createdAt;
@@ -81,9 +83,18 @@ export const MessageItem = ({
         </p>
       ) : (
         <>
-          <div className="mt-4 text-sm leading-relaxed break-words whitespace-pre-wrap">
-            {body || "This message has no content."}
-          </div>
+          {bodyHtml ? (
+            <div className="mt-4">
+              <MessageBody
+                html={bodyHtml}
+                title={`Message from ${senderName}`}
+              />
+            </div>
+          ) : (
+            <div className="mt-4 text-sm leading-relaxed break-words whitespace-pre-wrap">
+              {body || "This message has no content."}
+            </div>
+          )}
 
           {message.attachments.length > 0 && (
             <div className="mt-4">

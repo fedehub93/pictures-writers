@@ -270,6 +270,50 @@ const thread: ConversationGetOne = {
   ],
 };
 
+const textOnlyConversation: ConversationGetOne = {
+  ...thread,
+  messages: [
+    {
+      ...thread.messages[0]!,
+      id: "message-text",
+      bodyHtml: null,
+      bodyText: "Plain body only",
+      attachments: [],
+    },
+  ],
+};
+
+const remoteImageConversation: ConversationGetOne = {
+  ...thread,
+  messages: [
+    {
+      ...thread.messages[0]!,
+      id: "message-remote",
+      bodyHtml:
+        '<p>Hello</p><img src="https://tracker.test/pixel.gif" alt="tracked">',
+      bodyText: "Hello",
+      attachments: [],
+    },
+  ],
+};
+
+const outboundConversation: ConversationGetOne = {
+  ...thread,
+  messages: [
+    {
+      ...thread.messages[0]!,
+      id: "message-outbound",
+      direction: "OUTBOUND",
+      subject: "Re: Query about recently purchased soccer socks",
+      bodyHtml: "<p>Thanks for <strong>your patience</strong></p>",
+      bodyText: "Thanks for your patience",
+      fromAddress: "Support Team <support@example.com>",
+      toAddresses: ["jessica.ball@example.com"],
+      attachments: [],
+    },
+  ],
+};
+
 const baseMessage = thread.messages[0]!;
 
 function messageWithBody(id: string, body: string, at: string) {
@@ -302,7 +346,7 @@ const longConversation: ConversationGetOne = {
 };
 
 describe("conversation detail rendering", () => {
-  it("renders the thread with sender, subject, body and attachments", () => {
+  it("renders the thread with sender, subject, sandboxed body and attachments", () => {
     const html = renderToStaticMarkup(
       <ConversationDetail
         conversation={thread}
@@ -314,11 +358,65 @@ describe("conversation detail rendering", () => {
     expect(html).toContain("Query about recently purchased soccer socks");
     expect(html).toContain("Jessica Ball");
     expect(html).toContain("&lt;jessica.ball@example.com&gt;");
-    expect(html).toContain("Greetings. I have purchased some socks");
+    expect(html).toContain('sandbox="allow-scripts"');
+    expect(html).toContain('title="Message from Jessica Ball"');
+    expect(html).toMatch(/srcdoc="/i);
+    expect(html).toContain("Content-Security-Policy");
+    expect(html).toContain("default-src");
+    expect(html).toContain("style-src");
+    expect(html).toContain("script-src");
+    expect(html).toContain("&lt;p&gt;Greetings. I have purchased some socks");
     expect(html).toContain("workflow-data.pdf");
     expect(html).toContain('href="https://files.example/workflow-data.pdf"');
     expect(html).toContain('download="workflow-data.pdf"');
     expect(html).toContain("Received");
+    expect(html).not.toContain("Show images");
+  });
+
+  it("renders an outbound formatted message in the same sandboxed frame", () => {
+    const html = renderToStaticMarkup(
+      <ConversationDetail
+        conversation={outboundConversation}
+        isLoading={false}
+        onBack={noop}
+      />,
+    );
+
+    expect(html).toContain("Sent");
+    expect(html).toContain('sandbox="allow-scripts"');
+    expect(html).toContain('title="Message from Support Team"');
+    expect(html).toMatch(/srcdoc="/i);
+    expect(html).toContain("Thanks for ");
+    expect(html).toContain("&lt;strong&gt;your patience&lt;/strong&gt;");
+  });
+
+  it("keeps the plain-text path for a message without HTML", () => {
+    const html = renderToStaticMarkup(
+      <ConversationDetail
+        conversation={textOnlyConversation}
+        isLoading={false}
+        onBack={noop}
+      />,
+    );
+
+    expect(html).toContain("Plain body only");
+    expect(html).not.toMatch(/srcdoc=/i);
+    expect(html).not.toContain('sandbox="allow-scripts"');
+    expect(html).not.toContain("Show images");
+  });
+
+  it("shows the images control only when the message has remote content", () => {
+    const remoteHtml = renderToStaticMarkup(
+      <ConversationDetail
+        conversation={remoteImageConversation}
+        isLoading={false}
+        onBack={noop}
+      />,
+    );
+
+    expect(remoteHtml).toContain("Show images");
+    expect(remoteHtml).toContain('aria-pressed="false"');
+    expect(remoteHtml).not.toContain("tracker.test");
   });
 
   it("prompts to pick a conversation when none is selected", () => {
@@ -343,6 +441,7 @@ describe("conversation detail rendering", () => {
     expect(html).toContain("Newest body");
     expect(html).toContain("Click the header to show this message.");
     expect(html.match(/aria-expanded="false"/g)).toHaveLength(2);
+    expect(html.match(/<iframe/g)).toHaveLength(1);
   });
 
   it("keeps a two-message conversation fully expanded", () => {
@@ -357,5 +456,6 @@ describe("conversation detail rendering", () => {
     expect(html).toContain("First body");
     expect(html).toContain("Second body");
     expect(html).not.toContain('aria-expanded="false"');
+    expect(html.match(/<iframe/g)).toHaveLength(2);
   });
 });
