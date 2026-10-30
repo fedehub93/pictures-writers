@@ -105,6 +105,7 @@ Questi non sono consigli generici: derivano dal codice di Pictures Writers.
 | [`appendice-a-variabili-ambiente.md`](./appendice-a-variabili-ambiente.md) | Tabella completa delle variabili, scope build/runtime, valori | Durante il deploy |
 | [`appendice-b-dockerfile.md`](./appendice-b-dockerfile.md) | Dockerfile standalone alternativo, build ARM, entrypoint migrazioni | Se Nixpacks non basta |
 | [`appendice-c-comandi.md`](./appendice-c-comandi.md) | Comandi copia-incolla: dump, restore, verifiche, cron, log, emergency | Sempre |
+| [`appendice-d-gui-database.md`](./appendice-d-gui-database.md) | GUI sicura per il DB in due livelli: tunnel SSH, poi gateway e N database | Quando devi leggere o correggere dati a mano |
 | [`checklist-finale.md`](./checklist-finale.md) | Checklist stampabile pre/post cutover | Giorno del cutover |
 
 ---

@@ -521,6 +521,7 @@ echo | openssl s_client -servername <DOMAIN> -connect <DOMAIN>:443 2>/dev/null |
 - Segreti nel password manager, mai in chat/repo/log.
 - Backup cifrati se contengono PII (contatti email).
 - `/api/database/backup/` protetto o rimosso.
+- Accesso umano al DB solo via tunnel SSH, con ruolo `gui_rw` (niente superuser): vedi `appendice-d-gui-database.md`.
 - Aggiornamenti di sicurezza automatici.
 - Controlla `docker ps` per container inattesi.
 - Monitora accessi SSH falliti (`fail2ban-client status sshd`).

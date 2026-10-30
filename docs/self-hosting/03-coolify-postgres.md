@@ -415,6 +415,8 @@ Prima di passare al deploy, verifica:
 - [ ] Il backup schedulato è configurato e testato.
 - [ ] Le notifiche Coolify sono attive.
 
+> Se aggiungi un gateway per la GUI del database, verifica che ascolti **solo** su `127.0.0.1` (`ss -tlnp`): procedura in `appendice-d-gui-database.md`.
+
 ---
 
 ## 7. Comandi utili
