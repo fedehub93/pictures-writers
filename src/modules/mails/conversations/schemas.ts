@@ -54,7 +54,6 @@ export const conversationSendSchema = z.object({
     .string()
     .trim()
     .min(1, { error: "A message body is required" }),
-  bodyText: z.string().trim().optional(),
   attachments: z.array(conversationAttachmentSchema).max(10).optional(),
 });
 
@@ -75,7 +74,6 @@ export const conversationNewMessageSchema = z.object({
     .string()
     .trim()
     .min(1, { error: "A message body is required" }),
-  bodyText: z.string().trim().optional(),
   attachments: z.array(conversationAttachmentSchema).max(10).optional(),
 });
 

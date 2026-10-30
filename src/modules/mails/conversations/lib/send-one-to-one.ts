@@ -1,6 +1,7 @@
 import "server-only";
 
 import { db } from "@/shared/lib/db";
+import { htmlToPlainText } from "@/modules/mails/lib/html-to-text";
 import type {
   EmailProviderAdapter,
   OutboundAttachment,
@@ -32,7 +33,6 @@ export class ConversationSendError extends Error {
 export interface SendConversationMessageInput {
   conversationId: string;
   bodyHtml: string;
-  bodyText?: string;
   subject?: string;
   attachments?: OutboundAttachment[];
   /** Injected adapter for testing; resolved from settings otherwise. */
@@ -82,13 +82,14 @@ export async function sendConversationMessage(
   });
 
   const subject = input.subject?.trim() || replySubject(lastMessage?.subject);
+  const bodyText = htmlToPlainText(input.bodyHtml);
 
   const result = await adapter.sendOneToOne({
     to: conversation.contactEmail,
     from,
     subject,
     html: input.bodyHtml,
-    text: input.bodyText,
+    text: bodyText,
     replyTo: account.email,
     attachments: input.attachments,
   });
@@ -103,7 +104,7 @@ export async function sendConversationMessage(
         conversationId: conversation.id,
         subject,
         bodyHtml: input.bodyHtml,
-        bodyText: input.bodyText,
+        bodyText,
         fromAddress: from,
         toAddresses: [conversation.contactEmail],
         externalId: result.externalId,

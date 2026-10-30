@@ -948,7 +948,6 @@ describe("conversationsRouter", () => {
       const result = await caller.sendReply({
         conversationId: conversation.id,
         bodyHtml: "<p>Thanks</p>",
-        bodyText: "Thanks",
         attachments: [
           {
             filename: "quote.pdf",
@@ -967,7 +966,6 @@ describe("conversationsRouter", () => {
         conversationId: conversation.id,
         subject: undefined,
         bodyHtml: "<p>Thanks</p>",
-        bodyText: "Thanks",
         attachments: [
           {
             filename: "quote.pdf",
@@ -1049,7 +1047,6 @@ describe("conversationsRouter", () => {
         to: "newcomer@example.com",
         subject: "Hello",
         bodyHtml: "<p>Hello</p>",
-        bodyText: "Hello",
       });
 
       expect(result).toEqual({
@@ -1062,7 +1059,6 @@ describe("conversationsRouter", () => {
         to: "newcomer@example.com",
         subject: "Hello",
         bodyHtml: "<p>Hello</p>",
-        bodyText: "Hello",
         attachments: undefined,
       });
     });

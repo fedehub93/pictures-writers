@@ -60,12 +60,14 @@ describe("sendNewMessage", () => {
     const account = await createAccount();
     const { adapter, sent } = recordingAdapter();
 
+    const bodyHtml =
+      "<p>Nice to meet you</p><ol><li>First step</li><li>Second step</li></ol>";
+
     const result = await sendNewMessage({
       emailAccountId: account.id,
       to: "newcomer@example.com",
       subject: "Hello there",
-      bodyHtml: "<p>Nice to meet you</p>",
-      bodyText: "Nice to meet you",
+      bodyHtml,
       attachments: [
         {
           filename: "intro.pdf",
@@ -82,8 +84,8 @@ describe("sendNewMessage", () => {
       to: "newcomer@example.com",
       from: `Support Team <${account.email}>`,
       subject: "Hello there",
-      html: "<p>Nice to meet you</p>",
-      text: "Nice to meet you",
+      html: bodyHtml,
+      text: "Nice to meet you\n1. First step\n2. Second step",
       replyTo: account.email,
     });
 
@@ -101,6 +103,9 @@ describe("sendNewMessage", () => {
       externalId: "provider-1",
       conversationId: result.conversationId,
     });
+    expect(message.bodyText).toBe(
+      "Nice to meet you\n1. First step\n2. Second step",
+    );
     expect(message.conversation).toMatchObject({
       emailAccountId: account.id,
       contactEmail: "newcomer@example.com",

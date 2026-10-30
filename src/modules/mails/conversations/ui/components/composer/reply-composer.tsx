@@ -89,7 +89,6 @@ export const ReplyComposer = ({
         conversationId: conversation.id,
         subject,
         bodyHtml: editor.getHTML(),
-        bodyText,
         attachments,
       },
       {

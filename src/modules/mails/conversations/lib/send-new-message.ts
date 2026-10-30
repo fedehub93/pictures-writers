@@ -1,6 +1,7 @@
 import "server-only";
 
 import { db } from "@/shared/lib/db";
+import { htmlToPlainText } from "@/modules/mails/lib/html-to-text";
 import type {
   EmailProviderAdapter,
   OutboundAttachment,
@@ -33,7 +34,6 @@ export interface SendNewMessageInput {
   to: string;
   subject: string;
   bodyHtml: string;
-  bodyText?: string;
   attachments?: OutboundAttachment[];
   /** Injected adapter for testing; resolved from settings otherwise. */
   adapter?: EmailProviderAdapter;
@@ -75,13 +75,14 @@ export async function sendNewMessage(
 
   const from = resolveFrom(account);
   const recipient = input.to.trim().toLowerCase();
+  const bodyText = htmlToPlainText(input.bodyHtml);
 
   const result = await adapter.sendOneToOne({
     to: recipient,
     from,
     subject: input.subject,
     html: input.bodyHtml,
-    text: input.bodyText,
+    text: bodyText,
     replyTo: account.email,
     attachments: input.attachments,
   });
@@ -130,7 +131,7 @@ export async function sendNewMessage(
           conversationId: conversation.id,
           subject: input.subject,
           bodyHtml: input.bodyHtml,
-          bodyText: input.bodyText,
+          bodyText,
           fromAddress: from,
           toAddresses: [recipient],
           externalId: result.externalId,

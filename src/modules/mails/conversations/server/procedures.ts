@@ -478,7 +478,6 @@ export const conversationsRouter = createTRPCRouter({
           conversationId: input.conversationId,
           subject: input.subject,
           bodyHtml: input.bodyHtml,
-          bodyText: input.bodyText,
           attachments: toOutboundAttachments(input.attachments),
         });
       } catch (error) {
@@ -518,7 +517,6 @@ export const conversationsRouter = createTRPCRouter({
           to: input.to,
           subject: input.subject,
           bodyHtml: input.bodyHtml,
-          bodyText: input.bodyText,
           attachments: toOutboundAttachments(input.attachments),
         });
       } catch (error) {

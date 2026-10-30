@@ -97,10 +97,12 @@ describe("sendConversationMessage", () => {
     await seedInboundMessage(conversation.id, "Query about socks");
     const { adapter, sent } = recordingAdapter();
 
+    const bodyHtml =
+      "<p>Thanks for reaching out</p><ul><li>Socks</li><li>Shoes</li></ul>";
+
     const result = await sendConversationMessage({
       conversationId: conversation.id,
-      bodyHtml: "<p>Thanks for reaching out</p>",
-      bodyText: "Thanks for reaching out",
+      bodyHtml,
       attachments: [
         {
           filename: "quote.pdf",
@@ -117,8 +119,8 @@ describe("sendConversationMessage", () => {
       to: "jessica@example.com",
       from: `Support Team <${account.email}>`,
       subject: "Re: Query about socks",
-      html: "<p>Thanks for reaching out</p>",
-      text: "Thanks for reaching out",
+      html: bodyHtml,
+      text: "Thanks for reaching out\n- Socks\n- Shoes",
       replyTo: account.email,
       attachments: [
         {
@@ -144,6 +146,7 @@ describe("sendConversationMessage", () => {
       externalId: "provider-1",
       inReplyTo: "<orig@example.com>",
     });
+    expect(message.bodyText).toBe("Thanks for reaching out\n- Socks\n- Shoes");
     expect(message.sentAt).not.toBeNull();
     expect(message.attachments).toHaveLength(1);
     expect(message.attachments[0]).toMatchObject({

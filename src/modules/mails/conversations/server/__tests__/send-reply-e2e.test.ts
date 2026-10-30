@@ -119,7 +119,6 @@ describe("conversations.sendReply end-to-end", () => {
     const result = await caller.sendReply({
       conversationId: conversation.id,
       bodyHtml: "<p>Thanks for reaching out</p>",
-      bodyText: "Thanks for reaching out",
       attachments: [
         {
           filename: "quote.pdf",

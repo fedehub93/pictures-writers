@@ -102,7 +102,6 @@ export const NewMessagePanel = ({
         to: to.trim(),
         subject: subject.trim(),
         bodyHtml: editor.getHTML(),
-        bodyText,
         attachments,
       },
       {

@@ -5,37 +5,29 @@ import {
   format,
 } from "date-fns";
 
-import { decodeHtmlEntities } from "@/modules/mails/lib/html-entities";
+import { htmlToPlainText } from "@/modules/mails/lib/html-to-text";
+
+export { htmlToPlainText as htmlToText };
 
 /**
- * Email bodies are untrusted, so the inbox never renders their HTML. It shows
- * the `text/plain` part or, failing that, text derived from this stripper.
+ * Resolve a stored message body to readable text. Prefer the composed HTML so
+ * historical rows with a lossy text part (or none) still read correctly; only
+ * fall back to the stored text when there is no HTML-derived text.
  */
-export function htmlToText(html: string): string {
-  return decodeHtmlEntities(
-    html
-      .replace(/<style[\s\S]*?<\/style>/gi, " ")
-      .replace(/<script[\s\S]*?<\/script>/gi, " ")
-      .replace(/<br\s*\/?>/gi, "\n")
-      .replace(/<\/(p|div|li|tr|h[1-6])>/gi, "\n")
-      .replace(/<[^>]+>/g, " "),
-  )
-    .replace(/[ \t]+/g, " ")
-    .replace(/[ \t]*\n[ \t]*/g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-}
-
 export function messageBody(message: {
   bodyText?: string | null;
   bodyHtml?: string | null;
 }): string {
-  const text = message.bodyText?.trim();
-  if (text) return text;
+  const html = message.bodyHtml?.trim();
+  if (html) {
+    const text = htmlToPlainText(html);
+    if (text) return text;
+  }
 
-  return message.bodyHtml ? htmlToText(message.bodyHtml) : "";
+  return message.bodyText?.trim() ?? "";
 }
 
+/** A single-line snippet derived from the same text as the body. */
 export function messagePreview(
   message: { bodyText?: string | null; bodyHtml?: string | null },
   maxLength = 180,

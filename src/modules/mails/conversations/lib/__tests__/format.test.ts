@@ -35,8 +35,17 @@ describe("conversation format helpers", () => {
   });
 
   describe("messagePreview", () => {
-    it("prefers the text body and collapses whitespace", () => {
+    it("falls back to the text body and collapses whitespace", () => {
       expect(messagePreview({ bodyText: "a\n\nb   c" })).toBe("a b c");
+    });
+
+    it("prefers the html body over a stale text part", () => {
+      expect(
+        messagePreview({
+          bodyHtml: "<ul><li>Fresh</li><li>List</li></ul>",
+          bodyText: "stale preview",
+        }),
+      ).toBe("- Fresh - List");
     });
 
     it("falls back to the html body", () => {
