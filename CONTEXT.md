@@ -238,6 +238,18 @@ _Avoid_: Direct message, reply when the entity is a stored email.
 A file attached to an inbound or outbound email, persisted in application storage and owned by its parent `EmailMessage`.
 _Avoid_: File, upload when the context is email.
 
+**HTML part**:
+The formatted body of an email, stored on `EmailMessage.bodyHtml`. It is what the composer sent or the sender's provider delivered, and it is untrusted: the mailbox never injects it as markup into the admin document.
+_Avoid_: Body, content, raw HTML when the HTML/text distinction matters.
+
+**Text part**:
+The plain-text body of an email, stored on `EmailMessage.bodyText`. Outbound mail derives it from the HTML part and composers never supply it; it is the fallback for a message with no HTML part, not the preferred source for rendering or previews.
+_Avoid_: Body, plain text, snippet when referring to the stored part (the snippet is a separate preview derived from the HTML part, with the text part as fallback).
+
+**Remote content**:
+Images, CSS `url()` references and other resources referenced by an email body that point outside the message itself, so loading them confirms to the sender that the message was opened. Remote content is blocked by default and revealed per message.
+_Avoid_: External images, tracking pixels, remote assets when referring to every such reference.
+
 **Unread conversation**:
 A conversation that has received a new inbound email not yet seen by a given backoffice user. Read state is personal: two users with access to the same email account may see the same conversation as unread and read respectively.
 _Avoid_: New message when referring to the conversation state; unread inbox when the scope is per-user.
