@@ -103,53 +103,60 @@ export const ReplyComposer = ({
   };
 
   return (
-    <div className="border-t bg-background">
-      <div className="flex items-center gap-2 px-4 py-2">
-        <span className="w-14 shrink-0 text-xs font-medium text-muted-foreground">
-          From
-        </span>
-        <span className="truncate text-sm text-muted-foreground">
-          {account?.email ?? "your account"}
-        </span>
+    // Capped at a share of the detail pane: the thread above it keeps at least a
+    // third, the body scrolls inside, and the title rows compress, so the actions
+    // can never be pushed out of view.
+    <div className="flex max-h-[65%] min-h-0 flex-col overflow-hidden border-t bg-background">
+      <div className="min-h-0 overflow-y-auto">
+        <div className="flex items-center gap-2 px-4 py-2">
+          <span className="w-14 shrink-0 text-xs font-medium text-muted-foreground">
+            From
+          </span>
+          <span className="truncate text-sm text-muted-foreground">
+            {account?.email ?? "your account"}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2 border-t px-4 py-2">
+          <span className="w-14 shrink-0 text-xs font-medium text-muted-foreground">
+            To
+          </span>
+          <Input
+            readOnly
+            value={conversation.contactEmail}
+            className="h-8 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
+            aria-label="To"
+          />
+        </div>
+
+        <div className="flex items-center gap-2 border-t px-4 py-2">
+          <span className="w-14 shrink-0 text-xs font-medium text-muted-foreground">
+            Subject
+          </span>
+          <Input
+            value={subject}
+            onChange={(event) => setSubject(event.target.value)}
+            className="h-8 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
+            aria-label="Subject"
+          />
+        </div>
       </div>
 
-      <div className="flex items-center gap-2 border-t px-4 py-2">
-        <span className="w-14 shrink-0 text-xs font-medium text-muted-foreground">
-          To
-        </span>
-        <Input
-          readOnly
-          value={conversation.contactEmail}
-          className="h-8 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
-          aria-label="To"
-        />
-      </div>
-
-      <div className="flex items-center gap-2 border-t px-4 py-2">
-        <span className="w-14 shrink-0 text-xs font-medium text-muted-foreground">
-          Subject
-        </span>
-        <Input
-          value={subject}
-          onChange={(event) => setSubject(event.target.value)}
-          className="h-8 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
-          aria-label="Subject"
-        />
-      </div>
-
-      <div className="border-t">
+      <div className="flex min-h-0 flex-1 flex-col border-t">
         <ComposerToolbar editor={editor} />
-        <EditorContent editor={editor} />
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <EditorContent editor={editor} />
+
+          <ComposerAttachmentList
+            value={attachments}
+            onChange={setAttachments}
+            disabled={sendReply.isPending}
+            className="border-t px-4 py-3"
+          />
+        </div>
       </div>
 
-      <ComposerAttachmentList
-        value={attachments}
-        onChange={setAttachments}
-        disabled={sendReply.isPending}
-        className="border-t px-4 py-3"
-      />
-
-      <div className="flex items-center justify-between gap-2 border-t px-4 py-3">
+      <div className="flex shrink-0 items-center justify-between gap-2 border-t px-4 py-3">
         <ComposerAttachmentButtons
           onAdd={handleAddAttachments}
           disabled={sendReply.isPending}

@@ -98,18 +98,21 @@ export const ConversationDetail = ({
     scrollToNewest();
   }, [conversationId, messageCount, scrollToNewest]);
 
-  // Message frames report their height over the following frames. While the
-  // thread is following its newest message, each report re-anchors to the end;
-  // otherwise the reading position is left alone.
+  // The thread re-anchors to its newest message while the reader is following
+  // it. Both the content and the viewport are observed: message frames report
+  // their height as they measure, and the viewport changes when the reply
+  // composer grows, which must not push the message being answered out of view.
   useEffect(() => {
     const content = contentRef.current;
-    if (!content || typeof ResizeObserver !== "function") return;
+    const viewport = viewportRef.current;
+    if (!content || !viewport || typeof ResizeObserver !== "function") return;
 
     const observer = new ResizeObserver(() => {
       if (followsNewest.current) scrollToNewest();
     });
 
     observer.observe(content);
+    observer.observe(viewport);
 
     return () => observer.disconnect();
   }, [conversationId, scrollToNewest]);
