@@ -281,6 +281,35 @@ describe("createContactOnProvider", () => {
     expect(updated?.externalId).toBe("created-resend-id");
   });
 
+  it("recreates the provider contact after revocation deleted it there", async () => {
+    // Unsubscribe keeps the local row and only deletes the provider-side
+    // contact, so the stored externalId points at something that no longer
+    // exists. Re-confirmation must create a fresh provider contact and replace
+    // the stale id rather than reuse it.
+    const contact = await createContact("recreated@test.com", {
+      externalId: "deleted-provider-id",
+      isSubscriber: true,
+    });
+
+    const adapter = createFakeAdapter({
+      createContact: async (...args) => {
+        adapter.calls.createContact.push(args);
+        return { errors: [], newExternalId: "fresh-provider-id" };
+      },
+    });
+
+    const result = await createContactOnProvider(contact.id, adapter);
+
+    expect(result).toBe("fresh-provider-id");
+    expect(adapter.calls.createContact).toHaveLength(1);
+    expect(adapter.calls.createContact[0][5]).toEqual([]);
+
+    const updated = await db.emailContact.findUniqueOrThrow({
+      where: { id: contact.id },
+    });
+    expect(updated.externalId).toBe("fresh-provider-id");
+  });
+
   it("throws when createContact fails", async () => {
     const contact = await createContact("fail-create@test.com");
 

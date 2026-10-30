@@ -17,10 +17,10 @@ export interface SubscriptionConfirmedEventInput {
 
 /**
  * Entry point for the internal `subscription.confirmed` event. Called by the
- * confirmation action once a contact's address has been verified for the first
- * time; it hands a domain-shaped payload and the canonical address as
- * idempotency key to the domain-agnostic engine. No scoping, so no
- * `matchesNode`.
+ * confirmation action when a contact becomes a subscribed, verified address —
+ * its first confirmation or a reactivation after unsubscribe (ADR-0035); it
+ * hands a domain-shaped payload and the canonical address as idempotency key to
+ * the domain-agnostic engine. No scoping, so no `matchesNode`.
  */
 export async function emitSubscriptionConfirmed(
   input: SubscriptionConfirmedEventInput,

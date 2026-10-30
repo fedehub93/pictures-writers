@@ -37,6 +37,7 @@ vi.mock("../emit", async (importOriginal) => {
 
 import { newSubscription } from "@/actions/new-subscription";
 import { handleUserSubscribed } from "@/lib/event-handler";
+import { createContactOnProvider } from "@/modules/mails/lib/core";
 import { emitSubscriptionConfirmed } from "../emit";
 
 const registry = mergeNodeRegistries(
@@ -78,10 +79,15 @@ async function publishGraph(graph: unknown) {
   });
 }
 
-async function createContact(email: string, verified = false) {
+async function createContact(
+  email: string,
+  verified = false,
+  isSubscriber = true,
+) {
   return db.emailContact.create({
     data: {
       email,
+      isSubscriber,
       emailVerified: verified ? new Date() : null,
     },
   });
@@ -231,12 +237,14 @@ describe("newSubscription confirmation semantics", () => {
       where: { id: contact.id },
     });
     expect(updated.emailVerified).not.toBeNull();
+    expect(updated.isSubscriber).toBe(true);
 
     const interaction = await db.emailContactInteraction.findFirst({
       where: { contactId: contact.id, interactionType: "user_subscribed" },
     });
     expect(interaction).not.toBeNull();
     expect(handleUserSubscribed).toHaveBeenCalledTimes(1);
+    expect(createContactOnProvider).toHaveBeenCalledWith(contact.id);
   });
 
   it("deduplicates subscription.confirmed Runs by canonical address across spellings", async () => {
@@ -337,6 +345,66 @@ describe("newSubscription confirmation semantics", () => {
       where: { contactId: contact.id, interactionType: "user_subscribed" },
     });
     expect(interaction).toBeNull();
+
+    const updated = await db.emailContact.findUniqueOrThrow({
+      where: { id: contact.id },
+    });
+    expect(updated.isSubscriber).toBe(true);
+  });
+
+  it("restores consent and emits when a cancelled contact re-confirms", async () => {
+    const email = uniqueEmail();
+    const contact = await createContact(email, true, false);
+    const token = await createToken(email);
+    await publishGraph(subscriptionConfirmedGraph);
+
+    const result = await newSubscription(token.token);
+
+    expect(result).toEqual({ success: "Email verified!" });
+
+    const updated = await db.emailContact.findUniqueOrThrow({
+      where: { id: contact.id },
+    });
+    expect(updated.isSubscriber).toBe(true);
+    expect(updated.emailVerified).not.toBeNull();
+
+    const run = await db.automationRun.findFirstOrThrow();
+    expect(run.triggerType).toBe(SUBSCRIPTION_CONFIRMED_TRIGGER_TYPE);
+    expect(run.idempotencyKey).toBe(email);
+    expect(run.payload).toMatchObject({ email, contactId: contact.id });
+
+    const interaction = await db.emailContactInteraction.findFirst({
+      where: { contactId: contact.id, interactionType: "user_subscribed" },
+    });
+    expect(interaction).not.toBeNull();
+    expect(handleUserSubscribed).toHaveBeenCalledTimes(1);
+
+    // The provider deleted the contact when consent was revoked; confirmation
+    // must recreate it with the restored consent.
+    expect(createContactOnProvider).toHaveBeenCalledWith(contact.id);
+  });
+
+  it("leaves a cancelled contact unchanged when the link is not confirmed", async () => {
+    const email = uniqueEmail();
+    const contact = await createContact(email, true, false);
+    const token = await createToken(email);
+    await db.emailSubscriptionToken.update({
+      where: { id: token.id },
+      data: { expires: new Date(Date.now() - 1000) },
+    });
+    await publishGraph(subscriptionConfirmedGraph);
+
+    const result = await newSubscription(token.token);
+
+    expect(result).toEqual({ error: "Token has expired" });
+
+    const unchanged = await db.emailContact.findUniqueOrThrow({
+      where: { id: contact.id },
+    });
+    expect(unchanged.isSubscriber).toBe(false);
+    expect(unchanged.emailVerified).toEqual(contact.emailVerified);
+    expect(await db.automationRun.count()).toBe(0);
+    expect(createContactOnProvider).not.toHaveBeenCalled();
   });
 
   it("does not start a form.submitted Automation from a confirmation", async () => {
