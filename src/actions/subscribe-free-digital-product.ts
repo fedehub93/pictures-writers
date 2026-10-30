@@ -15,6 +15,7 @@ import { verifyRecaptcha } from "@/lib/recaptcha";
 import { createContactOnProvider } from "@/modules/mails/lib/core";
 import { emitFormSubmitted } from "@/modules/forms/automations/emit";
 import { getPublishedProductByRootId } from "@/modules/shop/products";
+import { normalizeEmail } from "@/shared/lib/email";
 
 export const subscribeFreeDigitalProduct = async (
   values: z.input<typeof FreeDigitalDownloadSchema>,
@@ -47,7 +48,13 @@ export const subscribeFreeDigitalProduct = async (
       };
     }
 
-    const { email, rootId } = validatedFields.data;
+    const { rootId } = validatedFields.data;
+    const email = normalizeEmail(validatedFields.data.email);
+
+    if (!email) {
+      return { success: false, message: "Email non valida! Riprovare." };
+    }
+
     // Keep any additional answers a richer lead-magnet form collected, while
     // enforcing the values the download flow relies on.
     const submissionData = {
@@ -111,6 +118,10 @@ export const subscribeFreeDigitalProduct = async (
       form.interactionType ?? undefined,
     );
 
+    if (!contact) {
+      return { success: false, message: "Qualcosa è andato storto! Riprovare." };
+    }
+
     // 6. Record the download as a submission of the linked form
     await db.formSubmission.create({
       data: {
@@ -124,7 +135,7 @@ export const subscribeFreeDigitalProduct = async (
     try {
       await emitFormSubmitted({
         formId: form.id,
-        email,
+        email: contact.email,
         contactId: contact.id,
         data: submissionData,
       });

@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { getPublishedProductByRootId } from "@/modules/shop/products";
 import { createContactByEmail } from "@/data/email-contact";
 import { emitFormSubmitted } from "@/modules/forms/automations/emit";
+import { normalizeEmail } from "@/shared/lib/email";
 
 export async function POST(
   req: Request,
@@ -54,7 +55,8 @@ export async function POST(
       );
     }
 
-    const emailFromBody = body.email || null;
+    const emailFromBody =
+      typeof body.email === "string" ? normalizeEmail(body.email) : null;
 
     // Salva la submission
     const submission = await db.formSubmission.create({
@@ -65,9 +67,9 @@ export async function POST(
       },
     });
 
-    // Emission needs an email: the contact is its idempotency key source and
-    // the payload's responder. An address-less submission keeps the old
-    // behaviour (200 with the stored submission, no contact, no emit).
+    // Emission needs an email: the contact is keyed by it and the payload's
+    // responder is the canonical address. An address-less submission keeps the
+    // old behaviour (200 with the stored submission, no contact, no emit).
     if (emailFromBody) {
       const contact = await createContactByEmail(
         emailFromBody,
@@ -75,13 +77,13 @@ export async function POST(
       );
 
       // Start any automation listening for this internal event. The forms
-      // module chooses the idempotency key (the contact id) so a repeated
-      // submission from the same contact cannot start a second nurture cycle
+      // module uses the canonical address as the idempotency key so a repeated
+      // submission from the same person cannot start a second nurture cycle
       // (ADR-0005).
       try {
         await emitFormSubmitted({
           formId: product.formId,
-          email: emailFromBody,
+          email: contact?.email ?? emailFromBody,
           contactId: contact?.id ?? null,
           data: body,
         });

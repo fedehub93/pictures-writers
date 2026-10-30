@@ -121,7 +121,7 @@ describe("contact action emit", () => {
     const createdContact = await db.emailContact.findFirstOrThrow({
       where: { email },
     });
-    expect(run.idempotencyKey).toBe(createdContact.id);
+    expect(run.idempotencyKey).toBe(createdContact.email);
   });
 
   it("keeps the CONTACT_REQUESTED notification and does not add FORM_SUBMITTED", async () => {
@@ -140,6 +140,31 @@ describe("contact action emit", () => {
     await contact(validSubmission(uniqueEmail()), "token");
 
     expect(await db.automationRun.count()).toBe(0);
+  });
+
+  it("stores the canonical address while the submission data keeps the typed spelling", async () => {
+    const typedEmail = `Contact-${randomUUID()}@Example.COM`;
+    const canonicalEmail = typedEmail.toLowerCase();
+    await publishGraph(BUILT_IN_CONTACT_FORM_ID);
+
+    const result = await contact(validSubmission(typedEmail), "token");
+
+    expect(result.success).toBe(true);
+
+    const submission = await db.formSubmission.findFirstOrThrow({
+      where: { formId: BUILT_IN_CONTACT_FORM_ID, email: canonicalEmail },
+    });
+    expect(submission.email).toBe(canonicalEmail);
+    expect(submission.data).toMatchObject({ email: typedEmail });
+
+    const createdContact = await db.emailContact.findFirstOrThrow({
+      where: { email: canonicalEmail },
+    });
+    expect(createdContact.email).toBe(canonicalEmail);
+
+    const run = await db.automationRun.findFirstOrThrow();
+    expect(run.payload).toMatchObject({ email: canonicalEmail });
+    expect(run.idempotencyKey).toBe(canonicalEmail);
   });
 
   it("never lets an emit failure block the submission", async () => {

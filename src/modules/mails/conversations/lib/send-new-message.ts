@@ -1,6 +1,7 @@
 import "server-only";
 
 import { db } from "@/shared/lib/db";
+import { normalizeEmail } from "@/shared/lib/email";
 import { htmlToPlainText } from "@/modules/mails/lib/html-to-text";
 import type {
   EmailProviderAdapter,
@@ -74,7 +75,7 @@ export async function sendNewMessage(
     ));
 
   const from = resolveFrom(account);
-  const recipient = input.to.trim().toLowerCase();
+  const recipient = normalizeEmail(input.to) ?? input.to.trim().toLowerCase();
   const bodyText = htmlToPlainText(input.bodyHtml);
 
   const result = await adapter.sendOneToOne({
@@ -95,6 +96,7 @@ export async function sendNewMessage(
     async (transaction) => {
       const contact = await transaction.emailContact.findFirst({
         where: { email: { equals: recipient, mode: "insensitive" } },
+        orderBy: { createdAt: "asc" },
         select: { id: true, firstName: true, lastName: true },
       });
 

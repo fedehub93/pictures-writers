@@ -3,6 +3,7 @@ import "server-only";
 import type { AutomationEffect } from "@/modules/automations/lib/effects";
 import type { JsonObject, JsonValue } from "@/modules/automations/lib/graph";
 import { db } from "@/shared/lib/db";
+import { normalizeEmail } from "@/shared/lib/email";
 
 function asObject(value: JsonValue | undefined): JsonObject {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -75,8 +76,20 @@ export function createSequenceDeliveryPolicy(
       return inner(request);
     }
 
-    const contact = await db.emailContact.findUnique({
-      where: { email: recipient },
+    const normalizedRecipient = normalizeEmail(recipient);
+
+    if (!normalizedRecipient) {
+      return inner(request);
+    }
+
+    // Case-insensitive and deterministic, like every Contact lookup: the
+    // interpolated recipient may not match the stored spelling, and a legacy
+    // pair must always resolve to the same row.
+    const contact = await db.emailContact.findFirst({
+      where: {
+        email: { equals: normalizedRecipient, mode: "insensitive" },
+      },
+      orderBy: { createdAt: "asc" },
       select: { id: true, isSubscriber: true },
     });
 

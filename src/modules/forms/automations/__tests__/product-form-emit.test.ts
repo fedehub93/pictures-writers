@@ -128,8 +128,25 @@ describe("product form action emit", () => {
     const createdContact = await db.emailContact.findFirstOrThrow({
       where: { email },
     });
-    expect(run.idempotencyKey).toBe(createdContact.id);
+    expect(run.idempotencyKey).toBe(createdContact.email);
     expect(handleFormSubmitted).toHaveBeenCalledTimes(1);
+  });
+
+  it("stores an email-less submission without creating a contact or a Run", async () => {
+    const { rootId } = await createFormProduct(CONFIGURED_FORM_ID);
+    await publishGraph(CONFIGURED_FORM_ID);
+    const contactsBefore = await db.emailContact.count();
+
+    const result = await submitProductForm(rootId, { name: "Ada" }, "token");
+
+    expect(result.success).toBe(true);
+    expect(
+      await db.formSubmission.findFirst({
+        where: { formId: CONFIGURED_FORM_ID, email: null },
+      }),
+    ).not.toBeNull();
+    expect(await db.emailContact.count()).toBe(contactsBefore);
+    expect(await db.automationRun.count()).toBe(0);
   });
 
   it("does not start a Run for an Automation scoped to a different form", async () => {
@@ -191,7 +208,7 @@ describe("product submission route emit", () => {
     const createdContact = await db.emailContact.findFirstOrThrow({
       where: { email },
     });
-    expect(run.idempotencyKey).toBe(createdContact.id);
+    expect(run.idempotencyKey).toBe(createdContact.email);
   });
 
   it("does not start a Run for an Automation scoped to a different form", async () => {

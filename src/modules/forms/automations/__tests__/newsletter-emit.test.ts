@@ -116,7 +116,27 @@ describe("newsletter action emit", () => {
     const createdContact = await db.emailContact.findFirstOrThrow({
       where: { email },
     });
-    expect(run.idempotencyKey).toBe(createdContact.id);
+    expect(run.idempotencyKey).toBe(createdContact.email);
+  });
+
+  it("deduplicates Runs by canonical address across different spellings", async () => {
+    const email = uniqueEmail();
+    await publishGraph(BUILT_IN_NEWSLETTER_FORM_ID);
+
+    await subscribe({ email: email.toUpperCase() }, "token");
+    await subscribe({ email }, "token");
+
+    expect(await db.automationRun.count()).toBe(1);
+
+    const run = await db.automationRun.findFirstOrThrow();
+    expect(run.idempotencyKey).toBe(email);
+    expect(run.payload).toMatchObject({ email, data: { email } });
+
+    expect(
+      await db.emailContact.count({
+        where: { email: { equals: email, mode: "insensitive" } },
+      }),
+    ).toBe(1);
   });
 
   it("executes the scoped Automation end to end", async () => {

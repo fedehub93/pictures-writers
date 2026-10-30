@@ -11,6 +11,7 @@ import {
   isWebinarMetadata,
 } from "@/modules/shop/products/types";
 import { createContactByEmail } from "@/data/email-contact";
+import { normalizeEmail } from "@/shared/lib/email";
 import { renderTiptapHtml } from "@/shared/components/tiptap-renderer/helpers/render-tiptap-html";
 import { GenericEmail } from "./types";
 import { resolveSender } from "./sender";
@@ -141,6 +142,13 @@ export const sendWebinarPurchaseEmail = async (
   email: string,
   productRootId: string,
 ) => {
+  const recipient = normalizeEmail(email);
+
+  // A purchase without a usable address must not create a Contact: with a
+  // single canonical identity, an empty string would become the contact of
+  // every anonymous purchase.
+  if (!recipient) return false;
+
   const settings = await db.emailSetting.findFirst();
 
   if (!settings || !settings.emailSender || !settings.webinarTemplateId)
@@ -176,7 +184,7 @@ export const sendWebinarPurchaseEmail = async (
 
   if (!webinar || !isWebinarMetadata(webinar.metadata)) return false;
 
-  await createContactByEmail(email, "webinar_purchased");
+  await createContactByEmail(recipient, "webinar_purchased");
 
   const webinarTemplate = await db.emailTemplate.findUnique({
     where: {
@@ -189,11 +197,11 @@ export const sendWebinarPurchaseEmail = async (
   const template = handlebars.compile(webinarTemplate.bodyHtml);
 
   await sendEmail({
-    to: email,
+    to: recipient,
     from: resolveSender(settings)!,
     subject: `Webinar: ${webinar.title} acquistato con successo`,
     html: template({
-      email,
+      email: recipient,
       id: webinar.id,
       title: webinar.title,
       description: renderTiptapHtml(webinar.tiptapDescription),

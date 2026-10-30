@@ -6,6 +6,7 @@ import { handleFormSubmitted } from "@/lib/event-handler";
 
 import { verifyRecaptcha } from "@/lib/recaptcha";
 import { db } from "@/lib/db";
+import { normalizeEmail } from "@/shared/lib/email";
 
 export type FormActionResponse = {
   success: boolean;
@@ -47,7 +48,8 @@ export const submitForm = async (
       return { success: false, message: "Invalid submission data format" };
     }
 
-    const emailFromBody = values.email || null;
+    const emailFromBody =
+      typeof values.email === "string" ? normalizeEmail(values.email) : null;
 
     if (!emailFromBody) {
       return {
@@ -56,7 +58,8 @@ export const submitForm = async (
       };
     }
 
-    // Salva la submission
+    // The submission keeps the typed answers in `data` and stores the canonical
+    // address in `email`, so both the audit trail and the joins stay correct.
     await db.formSubmission.create({
       data: {
         formId: formId,
@@ -68,12 +71,13 @@ export const submitForm = async (
     const contact = await createContactByEmail(emailFromBody, "submit_form");
 
     // Start any automation listening for this internal event. The forms module
-    // chooses the idempotency key (the contact id) so a repeated submission
-    // from the same contact cannot start a second nurture cycle (ADR-0005).
+    // uses the canonical address as the idempotency key so a repeated
+    // submission from the same person cannot start a second nurture cycle
+    // (ADR-0005).
     try {
       await emitFormSubmitted({
         formId,
-        email: emailFromBody,
+        email: contact?.email ?? emailFromBody,
         contactId: contact?.id ?? null,
         data: values,
       });

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { db } from "@/shared/lib/db";
+import { normalizeEmail } from "@/shared/lib/email";
 import type {
   EmailInboundAdapter,
   InboundAttachmentMetadata,
@@ -208,7 +209,8 @@ export async function handleInboundEmail(
   }
 
   const sender = parseEmailAddress(inbound.from);
-  const contactEmail = sender.email;
+  // The address is the Conversation grouping key, so store one canonical form.
+  const contactEmail = normalizeEmail(sender.email) ?? sender.email;
 
   const existingConversation = await db.conversation.findFirst({
     where: {

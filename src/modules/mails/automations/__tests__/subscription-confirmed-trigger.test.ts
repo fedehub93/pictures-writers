@@ -225,7 +225,7 @@ describe("newSubscription confirmation semantics", () => {
       contactId: contact.id,
       confirmedAt: expect.any(String),
     });
-    expect(run.idempotencyKey).toBe(contact.id);
+    expect(run.idempotencyKey).toBe(email);
 
     const updated = await db.emailContact.findUniqueOrThrow({
       where: { id: contact.id },
@@ -258,6 +258,42 @@ describe("newSubscription confirmation semantics", () => {
       config: { recipient: contact.email },
     });
     expect(run.status).toBe(AutomationRunStatus.COMPLETED);
+  });
+
+  it("writes the canonical form on the contact it confirms", async () => {
+    const email = uniqueEmail();
+    const contact = await createContact(email.toUpperCase());
+    const token = await createToken(email);
+
+    const result = await newSubscription(token.token);
+
+    expect(result).toEqual({ success: "Email verified!" });
+
+    const updated = await db.emailContact.findUniqueOrThrow({
+      where: { id: contact.id },
+    });
+    expect(updated.email).toBe(email);
+    expect(updated.emailVerified).not.toBeNull();
+  });
+
+  it("confirms even when canonicalising would collide with a legacy twin", async () => {
+    const canonical = uniqueEmail();
+    const legacy = await createContact(canonical.toUpperCase());
+    const twin = await createContact(canonical);
+    const token = await createToken(canonical);
+
+    const result = await newSubscription(token.token);
+
+    expect(result).toEqual({ success: "Email verified!" });
+
+    const confirmed = await db.emailContact.findUniqueOrThrow({
+      where: { id: legacy.id },
+    });
+    // The pair stays inert rather than failing the confirmation on the unique
+    // index; the lookup keeps resolving both spellings to the older row.
+    expect(confirmed.email).toBe(canonical.toUpperCase());
+    expect(confirmed.emailVerified).not.toBeNull();
+    expect(twin.email).toBe(canonical);
   });
 
   it("does not emit or notify when an already verified contact re-confirms", async () => {

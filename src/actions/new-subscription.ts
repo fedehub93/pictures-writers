@@ -1,14 +1,19 @@
 "use server";
 
 import { db } from "@/lib/db";
+import { Prisma } from "@/generated/prisma";
 import { getSubscriptionTokenByToken } from "@/data/subscription-token";
 import {
   addContactInteraction,
   getContactByEmail,
 } from "@/data/email-contact";
+import { normalizeEmail } from "@/shared/lib/email";
 import { createContactOnProvider } from "@/modules/mails/lib/core";
 import { emitSubscriptionConfirmed } from "@/modules/mails/automations/emit";
 import { handleUserSubscribed } from "@/lib/event-handler";
+
+const isUniqueConstraintError = (error: unknown) =>
+  error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
 
 export const newSubscription = async (token: string) => {
   const existingToken = await getSubscriptionTokenByToken(token);
@@ -22,22 +27,49 @@ export const newSubscription = async (token: string) => {
     return { error: "Token has expired" };
   }
 
-  const existingUser = await getContactByEmail(existingToken.email);
+  const tokenEmail = normalizeEmail(existingToken.email);
+  if (!tokenEmail) {
+    return { error: "Email does not exist!" };
+  }
+
+  const existingUser = await getContactByEmail(tokenEmail);
   if (!existingUser) {
     return { error: "Email does not exist!" };
   }
+
+  // Write the canonical form, not the signup's typed form: confirmation is the
+  // only place that rewrites an existing row, so leaving `existingToken.email`
+  // here would undo the normalization on the first confirmation.
+  const canonicalEmail = normalizeEmail(existingUser.email) ?? tokenEmail;
 
   // `emailVerified` is the marker of a first-time confirmation: it is only set
   // here, so a null value means the address has never been confirmed before.
   const wasVerified = existingUser.emailVerified != null;
 
-  await db.emailContact.update({
-    where: { id: existingUser.id },
-    data: {
-      emailVerified: new Date(),
-      email: existingToken.email,
-    },
-  });
+  try {
+    await db.emailContact.update({
+      where: { id: existingUser.id },
+      data: {
+        emailVerified: new Date(),
+        email: canonicalEmail,
+      },
+    });
+  } catch (error) {
+    // A legacy pair may match here: canonicalising the older row would collide
+    // with its canonical twin. Confirming is more important than renaming, so
+    // keep the stored spelling in that case (the pair is inert by design).
+    if (
+      !isUniqueConstraintError(error) ||
+      canonicalEmail === existingUser.email
+    ) {
+      throw error;
+    }
+
+    await db.emailContact.update({
+      where: { id: existingUser.id },
+      data: { emailVerified: new Date() },
+    });
+  }
 
   if (!wasVerified) {
     await addContactInteraction(existingUser.id, "user_subscribed");
@@ -46,7 +78,7 @@ export const newSubscription = async (token: string) => {
     // Never let an automation error break the public confirmation flow.
     try {
       await emitSubscriptionConfirmed({
-        email: existingToken.email,
+        email: canonicalEmail,
         contactId: existingUser.id,
         confirmedAt: new Date(),
       });

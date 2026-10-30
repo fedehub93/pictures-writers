@@ -1,10 +1,13 @@
 import z from "zod";
+import { Prisma, type EmailContact } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
 import { TRPCError } from "@trpc/server";
 import { contactInsertSchema, contactUpdateSchema } from "../schemas";
 import { ALL_AUDIENCES_ID } from "../lib/constants";
+import { getContactByEmail } from "@/data/email-contact";
+import { normalizeEmail } from "@/shared/lib/email";
 
 import {
   syncContactWithProvider,
@@ -15,25 +18,62 @@ import {
 
 import { getEmailContactsGrowth } from "./data";
 
+const isUniqueConstraintError = (error: unknown) =>
+  error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
+
+const contactAlreadyExistsError = () =>
+  new TRPCError({
+    code: "CONFLICT",
+    // Explicit, not the Prisma constraint text: the admin should understand
+    // the address already exists, and the API must not silently reuse the row.
+    message: "A contact with this email already exists.",
+  });
+
 export const contactsRouter = createTRPCRouter({
   create: protectedProcedure
     .input(contactInsertSchema)
     .mutation(async ({ input }) => {
-      const contact = await db.emailContact.create({
-        data: {
-          email: input.email,
-          firstName: input.firstName,
-          lastName: input.lastName,
-          isSubscriber: input.isSubscriber,
-          audiences: input.audiences?.length
-            ? {
-                connect: input.audiences.map((a: { id: string }) => ({
-                  id: a.id,
-                })),
-              }
-            : undefined,
-        },
-      });
+      const email = normalizeEmail(input.email);
+
+      if (!email) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Email is required",
+        });
+      }
+
+      // The canonical write alone would not catch a legacy row: the
+      // insensitive lookup does.
+      if (await getContactByEmail(email)) {
+        throw contactAlreadyExistsError();
+      }
+
+      let contact: EmailContact;
+
+      try {
+        contact = await db.emailContact.create({
+          data: {
+            email,
+            firstName: input.firstName,
+            lastName: input.lastName,
+            isSubscriber: input.isSubscriber,
+            audiences: input.audiences?.length
+              ? {
+                  connect: input.audiences.map((a: { id: string }) => ({
+                    id: a.id,
+                  })),
+                }
+              : undefined,
+          },
+        });
+      } catch (error) {
+        // Covers the race between the lookup above and the insert.
+        if (isUniqueConstraintError(error)) {
+          throw contactAlreadyExistsError();
+        }
+
+        throw error;
+      }
 
       // Propagate to provider — non-blocking
       const propagation = await propagateContactCreate(contact.id);

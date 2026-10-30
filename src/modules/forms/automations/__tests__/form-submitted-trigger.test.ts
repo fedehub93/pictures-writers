@@ -102,7 +102,7 @@ describe("form.submitted trigger", () => {
       email: contact.email,
       data: { name: "Ada", tier: "pro" },
     });
-    expect(run.idempotencyKey).toBe(contact.id);
+    expect(run.idempotencyKey).toBe(contact.email);
   });
 
   it("carries the responder's contact id in the Run payload", async () => {

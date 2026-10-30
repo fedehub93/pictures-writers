@@ -5,6 +5,8 @@ import { TRPCError } from "@trpc/server";
 import { Prisma } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 import { PERMISSIONS } from "@/shared/lib/permissions";
+import { normalizeEmail } from "@/shared/lib/email";
+import { getContactByEmail } from "@/data/email-contact";
 import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 
 import { createUploadThingStorage } from "../lib/attachment-storage";
@@ -656,18 +658,24 @@ export const conversationsRouter = createTRPCRouter({
       }
 
       const { firstName, lastName } = splitName(conversation.contactName);
+      const email = normalizeEmail(conversation.contactEmail);
 
-      const existing = await db.emailContact.findFirst({
-        where: {
-          email: { equals: conversation.contactEmail, mode: "insensitive" },
-        },
-      });
+      if (!email) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Conversation has no valid email address",
+        });
+      }
+
+      // Same insensitive lookup as every other Contact read, through the
+      // shared helper instead of a second copy of the query.
+      const existing = await getContactByEmail(email);
 
       const contact =
         existing ??
         (await db.emailContact.create({
           data: {
-            email: conversation.contactEmail,
+            email,
             firstName,
             lastName,
             // A correspondent is not a marketing subscriber unless they opt in.

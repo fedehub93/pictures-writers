@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { db } from "@/lib/db";
 import { sendWebinarPurchaseEmail } from "@/modules/mails/lib/mail";
+import { normalizeEmail } from "@/shared/lib/email";
 
 export async function POST(req: Request) {
   const body = await req.text();
@@ -24,7 +25,7 @@ export async function POST(req: Request) {
 
   const session = event.data.object as Stripe.Checkout.Session;
   const productRootId = session?.metadata?.productId;
-  const email = session?.customer_details?.email ?? "";
+  const email = normalizeEmail(session?.customer_details?.email ?? "") ?? "";
 
   if (event.type === "checkout.session.completed") {
     if (!productRootId) {
