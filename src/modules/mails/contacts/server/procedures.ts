@@ -1,5 +1,7 @@
+import "server-only";
+
 import z from "zod";
-import { Prisma, type EmailContact } from "@/generated/prisma";
+import { type EmailContact } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 
 import { createTRPCRouter, protectedProcedure } from "@/trpc/init";
@@ -8,6 +10,7 @@ import { contactInsertSchema, contactUpdateSchema } from "../schemas";
 import { ALL_AUDIENCES_ID } from "../lib/constants";
 import { getContactByEmail } from "@/data/email-contact";
 import { normalizeEmail } from "@/shared/lib/email";
+import { isUniqueConstraintError } from "@/shared/lib/prisma-errors";
 
 import {
   syncContactWithProvider,
@@ -17,9 +20,6 @@ import {
 } from "../../lib/core";
 
 import { getEmailContactsGrowth } from "./data";
-
-const isUniqueConstraintError = (error: unknown) =>
-  error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
 
 const contactAlreadyExistsError = () =>
   new TRPCError({

@@ -173,8 +173,12 @@ _Avoid_: Default field value.
 ## Contacts and subscriptions
 
 **Contact**:
-An email address captured by any public entry point (contact form, newsletter, lead magnet, product form), with no implication about consent or ownership.
-_Avoid_: Lead, user, member when referring to the captured address.
+The single representation of an email address in the platform, created by any public entry point (contact form, newsletter, lead magnet, product form). One address is one Contact, however it was written when captured; a Contact may belong to many Audiences and may or may not be a Subscriber.
+_Avoid_: Lead, user, member, profile when referring to the captured address.
+
+**Canonical address**:
+The form of an email address that the platform treats as its identity. Two addresses that differ only in capitalisation are the same address, and therefore the same Contact; addresses that differ in any other way — an extra dot, a `+tag`, a different local part or domain — are different addresses and different Contacts.
+_Avoid_: Normalized email, lowercase address, email key.
 
 **Subscriber**:
 A Contact who consented to receive marketing email. Consent is revoked — not deleted — when they unsubscribe.

@@ -94,6 +94,10 @@ export async function sendNewMessage(
 
   const { conversationId, messageId } = await db.$transaction(
     async (transaction) => {
+      // Transaction-bound copy of the shared Contact lookup: it must stay on
+      // `transaction` so the Contact and Conversation see the same snapshot.
+      // Keep the insensitive match and `createdAt` order in sync with
+      // `getContactByEmail`.
       const contact = await transaction.emailContact.findFirst({
         where: { email: { equals: recipient, mode: "insensitive" } },
         orderBy: { createdAt: "asc" },

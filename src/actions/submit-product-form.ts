@@ -58,23 +58,23 @@ export const submitProductForm = async (
       return { success: false, message: "Invalid submission data format" };
     }
 
-    const emailFromBody =
+    const responderEmail =
       typeof values.email === "string" ? normalizeEmail(values.email) : null;
 
     // Salva la submission
-    const submission = await db.formSubmission.create({
+    await db.formSubmission.create({
       data: {
         formId: product.formId,
-        email: emailFromBody,
+        email: responderEmail,
         data: values,
       },
     });
 
     // An address-less submission is still recorded, but it cannot own a Contact
     // or start an automation: those are keyed by the address.
-    if (emailFromBody) {
+    if (responderEmail) {
       const contact = await createContactByEmail(
-        emailFromBody,
+        responderEmail,
         "submit_product_form",
       );
 
@@ -85,7 +85,7 @@ export const submitProductForm = async (
       try {
         await emitFormSubmitted({
           formId: product.formId,
-          email: contact?.email ?? emailFromBody,
+          email: contact?.email ?? responderEmail,
           contactId: contact?.id ?? null,
           data: values,
         });

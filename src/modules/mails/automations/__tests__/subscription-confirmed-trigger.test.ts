@@ -239,6 +239,30 @@ describe("newSubscription confirmation semantics", () => {
     expect(handleUserSubscribed).toHaveBeenCalledTimes(1);
   });
 
+  it("deduplicates subscription.confirmed Runs by canonical address across spellings", async () => {
+    const email = uniqueEmail();
+    const contact = await createContact(email);
+    await publishGraph(subscriptionConfirmedGraph);
+    const now = new Date("2026-09-26T10:00:00.000Z");
+
+    await emitSubscriptionConfirmed({
+      email: email.toUpperCase(),
+      contactId: contact.id,
+      confirmedAt: now,
+    });
+    await emitSubscriptionConfirmed({
+      email,
+      contactId: contact.id,
+      confirmedAt: now,
+    });
+
+    expect(await db.automationRun.count()).toBe(1);
+
+    const run = await db.automationRun.findFirstOrThrow();
+    expect(run.idempotencyKey).toBe(email);
+    expect(run.payload).toMatchObject({ email, contactId: contact.id });
+  });
+
   it("executes the subscription Automation end to end", async () => {
     const email = uniqueEmail();
     const contact = await createContact(email);

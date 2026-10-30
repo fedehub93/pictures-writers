@@ -65,7 +65,8 @@ export async function emitFormSubmitted(
     payload,
     // The canonical address, not the Contact id: it stays stable even if two
     // rows for the same person reappear (race, future path bypassing the
-    // helper), so the double Run stays impossible (ADR-0005).
+    // helper), so the double Run stays impossible. ADR-0005 keeps the key
+    // opaque; ADR-0034 makes the address the identity.
     idempotencyKey: email,
     now,
     // Only Automations whose trigger is scoped to this exact form react; the

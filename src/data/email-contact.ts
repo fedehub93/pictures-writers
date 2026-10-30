@@ -1,9 +1,6 @@
-import { Prisma } from "@/generated/prisma";
 import { db } from "@/lib/db";
 import { normalizeEmail } from "@/shared/lib/email";
-
-const isUniqueConstraintError = (error: unknown) =>
-  error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
+import { isUniqueConstraintError } from "@/shared/lib/prisma-errors";
 
 export const getContactByEmail = async (email: string) => {
   const normalizedEmail = normalizeEmail(email);
@@ -44,9 +41,21 @@ export const getContactById = async (id: string) => {
   }
 };
 
+export interface NewContactDefaults {
+  firstName?: string | null;
+  lastName?: string | null;
+  /**
+   * Consent is separate from identity: capture paths default to `true`
+   * (newsletter/product forms), while a correspondent saved from the mailbox is
+   * not a subscriber unless they opt in.
+   */
+  isSubscriber?: boolean;
+}
+
 export const createContactByEmail = async (
   email: string | null | undefined,
-  interactionType?: string
+  interactionType?: string,
+  defaults: NewContactDefaults = {}
 ) => {
   const normalizedEmail = normalizeEmail(email ?? "");
 
@@ -62,7 +71,9 @@ export const createContactByEmail = async (
       contact = await db.emailContact.create({
         data: {
           email: normalizedEmail,
-          isSubscriber: true,
+          isSubscriber: defaults.isSubscriber ?? true,
+          firstName: defaults.firstName,
+          lastName: defaults.lastName,
         },
       });
     } catch (error) {

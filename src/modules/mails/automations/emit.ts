@@ -40,7 +40,8 @@ export async function emitSubscriptionConfirmed(
   return enqueueEventRuns({
     triggerType: SUBSCRIPTION_CONFIRMED_TRIGGER_TYPE,
     payload,
-    // Canonical address as key, mirroring `emitFormSubmitted` (ADR-0005).
+    // Canonical address as key, mirroring `emitFormSubmitted`: ADR-0005 keeps
+    // the key opaque, ADR-0034 makes the address the identity.
     idempotencyKey: email,
   });
 }

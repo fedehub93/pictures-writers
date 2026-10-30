@@ -48,10 +48,10 @@ export const submitForm = async (
       return { success: false, message: "Invalid submission data format" };
     }
 
-    const emailFromBody =
+    const responderEmail =
       typeof values.email === "string" ? normalizeEmail(values.email) : null;
 
-    if (!emailFromBody) {
+    if (!responderEmail) {
       return {
         success: false,
         message: "Email non valida! Riprovare.",
@@ -63,12 +63,12 @@ export const submitForm = async (
     await db.formSubmission.create({
       data: {
         formId: formId,
-        email: emailFromBody,
+        email: responderEmail,
         data: values,
       },
     });
 
-    const contact = await createContactByEmail(emailFromBody, "submit_form");
+    const contact = await createContactByEmail(responderEmail, "submit_form");
 
     // Start any automation listening for this internal event. The forms module
     // uses the canonical address as the idempotency key so a repeated
@@ -77,7 +77,7 @@ export const submitForm = async (
     try {
       await emitFormSubmitted({
         formId,
-        email: contact?.email ?? emailFromBody,
+        email: contact?.email ?? responderEmail,
         contactId: contact?.id ?? null,
         data: values,
       });

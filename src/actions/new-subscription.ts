@@ -1,19 +1,16 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { Prisma } from "@/generated/prisma";
 import { getSubscriptionTokenByToken } from "@/data/subscription-token";
 import {
   addContactInteraction,
   getContactByEmail,
 } from "@/data/email-contact";
 import { normalizeEmail } from "@/shared/lib/email";
+import { isUniqueConstraintError } from "@/shared/lib/prisma-errors";
 import { createContactOnProvider } from "@/modules/mails/lib/core";
 import { emitSubscriptionConfirmed } from "@/modules/mails/automations/emit";
 import { handleUserSubscribed } from "@/lib/event-handler";
-
-const isUniqueConstraintError = (error: unknown) =>
-  error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
 
 export const newSubscription = async (token: string) => {
   const existingToken = await getSubscriptionTokenByToken(token);

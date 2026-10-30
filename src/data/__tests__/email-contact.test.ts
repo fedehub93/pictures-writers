@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   createContactByEmail,
@@ -99,6 +99,34 @@ describe("createContactByEmail", () => {
     expect(await createContactByEmail("   ")).toBeNull();
 
     expect(await db.emailContact.count()).toBe(before);
+  });
+
+  it("re-reads after a unique violation instead of surfacing it", async () => {
+    const email = uniqueEmail("p2002");
+    const originalFindFirst = db.emailContact.findFirst.bind(db.emailContact);
+    // Force both initial lookups to miss, so the second insert really hits the
+    // unique index and only the catch-and-re-read can save it.
+    let forcedMisses = 2;
+    const spy = vi.spyOn(db.emailContact, "findFirst").mockImplementation(((
+      args: Parameters<typeof originalFindFirst>[0],
+    ) => {
+      if (forcedMisses > 0) {
+        forcedMisses -= 1;
+        return Promise.resolve(null);
+      }
+
+      return originalFindFirst(args);
+    }) as typeof db.emailContact.findFirst);
+
+    try {
+      const first = await createContactByEmail(email);
+      const second = await createContactByEmail(email);
+
+      expect(second?.id).toBe(first?.id);
+      expect(forcedMisses).toBe(0);
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   it("survives two concurrent captures with a single row", async () => {
