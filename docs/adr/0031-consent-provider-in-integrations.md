@@ -9,7 +9,7 @@ We then moved the consent provider into Integrations. Iubenda declares no secret
 ## Two read contracts, opposite failure semantics
 
 - **Credentials** keep the fail-loud contract of ADR 0023. The server-only resolver throws explicit errors for a missing row, a disabled row, incomplete secrets, and undecryptable ciphertext.
-- **Public configuration** is fail-open. A server-only read returns the provider's non-secret configuration or `null`, and never throws: missing, disabled, incomplete, and unexpected read errors all produce `null`, with one structured log line per request.
+- **Public configuration** is fail-open. A server-only read returns the provider's non-secret configuration or `null`, and never throws: missing, disabled, incomplete, and unexpected read errors all produce `null`. A missing or disabled integration is the normal state of an optional provider and stays silent; an incomplete configuration or an unexpected read error logs one structured `public_config_unavailable` line per request, because those need attention.
 
 Both reads use the per-request cache when the caller wraps the work in `withIntegrationResolutionCache`.
 
@@ -50,7 +50,7 @@ When the GTM integration is enabled and complete, it comes after that block, in 
 ## Consequences
 
 - The Integrations page is the only configuration surface for Iubenda; enabling requires a complete configuration, enforced server-side.
-- A missing, disabled, or incomplete integration emits nothing and logs a structured `public_config_unavailable` line; the public site keeps rendering.
+- A missing or disabled integration emits nothing and stays silent; an incomplete configuration or a read error also emits nothing but logs a structured `public_config_unavailable` line. Either way the public site keeps rendering.
 - The Iubenda GTM template must stay active while Consent Mode is enabled; it is the component that sets the denied defaults and applies the banner's updates.
 - With Iubenda disabled the site emits no CMP; the operator must also pause the Iubenda template, otherwise it keeps consent denied with nothing to update it.
 - Saving an integration or toggling its enabled state revalidates the public root layout, so changes reach the next request.

@@ -16,6 +16,18 @@ type PublicConfigUnavailableReason =
   | "incomplete"
   | "error";
 
+/**
+ * Only states that need someone to act are logged.
+ *
+ * A provider that was never configured, or that the operator disabled, is a
+ * normal state for an optional integration: it emits nothing and stays silent.
+ * An enabled row whose configuration does not validate, or a read failure, is
+ * worth a line so the cause is visible without opening the backoffice.
+ */
+function needsAttention(reason: PublicConfigUnavailableReason): boolean {
+  return reason === "incomplete" || reason === "error";
+}
+
 function logUnavailable(
   provider: IntegrationProvider,
   reason: PublicConfigUnavailableReason,
@@ -34,7 +46,10 @@ function unavailable(
   provider: IntegrationProvider,
   reason: PublicConfigUnavailableReason,
 ): null {
-  logUnavailable(provider, reason);
+  if (needsAttention(reason)) {
+    logUnavailable(provider, reason);
+  }
+
   setCachedIntegrationPublicConfig(provider, null);
   return null;
 }
@@ -45,6 +60,10 @@ function unavailable(
  * Fail-open by design: a missing row, a disabled row, an incomplete config and
  * an unexpected read error all return `null` instead of throwing. Public pages
  * must keep rendering when a third-party provider is not configured.
+ *
+ * Missing and disabled rows are normal states for an optional provider and are
+ * not logged; incomplete configuration and read errors log one structured
+ * `public_config_unavailable` line per request.
  *
  * Results (including `null`) are memoized per request when callers wrap the
  * work with `withIntegrationResolutionCache`.
