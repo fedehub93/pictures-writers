@@ -79,30 +79,38 @@ describe("resolveIntegrationPublicConfig", () => {
     }
   });
 
-  it("returns null when the integration row is missing", async () => {
+  it("returns null when the integration row is missing, without logging", async () => {
     await expect(
       resolveIntegrationPublicConfig(INTEGRATION_PROVIDER_IUBENDA),
     ).resolves.toBeNull();
-    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn).not.toHaveBeenCalled();
   });
 
-  it("returns null when the integration is disabled", async () => {
+  it("returns null when the integration is disabled, without logging", async () => {
     await createIubendaRow({ isEnabled: false });
 
     await expect(
       resolveIntegrationPublicConfig(INTEGRATION_PROVIDER_IUBENDA),
     ).resolves.toBeNull();
+    expect(warn).not.toHaveBeenCalled();
   });
 
-  it("returns null when the configuration is incomplete", async () => {
+  it("returns null when the configuration is incomplete and logs it", async () => {
     await createIubendaRow({ config: { siteId: "3303495" } });
 
     await expect(
       resolveIntegrationPublicConfig(INTEGRATION_PROVIDER_IUBENDA),
     ).resolves.toBeNull();
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(JSON.parse(warn.mock.calls[0][0] as string)).toEqual({
+      area: "integrations",
+      event: "public_config_unavailable",
+      provider: INTEGRATION_PROVIDER_IUBENDA,
+      reason: "incomplete",
+    });
   });
 
-  it("returns null when the configuration is invalid", async () => {
+  it("returns null when the configuration is invalid and logs it", async () => {
     await createIubendaRow({
       config: { ...completeConfig, siteId: "not-a-number" },
     });
@@ -110,6 +118,7 @@ describe("resolveIntegrationPublicConfig", () => {
     await expect(
       resolveIntegrationPublicConfig(INTEGRATION_PROVIDER_IUBENDA),
     ).resolves.toBeNull();
+    expect(warn).toHaveBeenCalledTimes(1);
   });
 
   it("returns the parsed configuration for a complete enabled row", async () => {
@@ -161,7 +170,7 @@ describe("resolveIntegrationPublicConfig", () => {
       expect(second).toBeNull();
     });
 
-    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn).not.toHaveBeenCalled();
   });
 
   describe("Google Tag Manager", () => {
@@ -173,27 +182,29 @@ describe("resolveIntegrationPublicConfig", () => {
       ).resolves.toEqual(completeGtmConfig);
     });
 
-    it("returns null when the integration row is missing", async () => {
+    it("returns null when the integration row is missing, without logging", async () => {
       await expect(
         resolveIntegrationPublicConfig(INTEGRATION_PROVIDER_GTM),
       ).resolves.toBeNull();
-      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn).not.toHaveBeenCalled();
     });
 
-    it("returns null when the integration is disabled", async () => {
+    it("returns null when the integration is disabled, without logging", async () => {
       await createGtmRow({ isEnabled: false });
 
       await expect(
         resolveIntegrationPublicConfig(INTEGRATION_PROVIDER_GTM),
       ).resolves.toBeNull();
+      expect(warn).not.toHaveBeenCalled();
     });
 
-    it("returns null when the container id is invalid", async () => {
+    it("returns null when the container id is invalid and logs it", async () => {
       await createGtmRow({ config: { containerId: "GT-XXXX" } });
 
       await expect(
         resolveIntegrationPublicConfig(INTEGRATION_PROVIDER_GTM),
       ).resolves.toBeNull();
+      expect(warn).toHaveBeenCalledTimes(1);
     });
   });
 });
