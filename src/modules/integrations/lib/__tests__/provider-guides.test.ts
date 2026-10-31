@@ -32,4 +32,17 @@ describe("provider setup guides", () => {
     expect(text).toMatch(/Denied/i);
     expect(text).toMatch(/pause/i);
   });
+
+  it("tells the admin where the GTM container id comes from and who owns consent", () => {
+    const guide = PROVIDER_SETUP_GUIDES.gtm;
+    expect(guide).not.toBeNull();
+
+    const text = JSON.stringify(guide);
+    expect(text).toContain("GTM-XXXXXXX");
+    expect(text).toMatch(/container id/i);
+    expect(text).toContain("GA4");
+    expect(text).toMatch(/tags/i);
+    expect(text).toContain("Consent Mode");
+    expect(text).toMatch(/Iubenda/i);
+  });
 });

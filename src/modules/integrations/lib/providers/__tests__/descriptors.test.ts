@@ -86,4 +86,35 @@ describe("integration provider descriptors", () => {
       }),
     ).toBe(false);
   });
+
+  it("describes Google Tag Manager as a public provider without credentials or a test", () => {
+    const descriptor = getIntegrationDescriptor("gtm");
+
+    expect(descriptor.presentation.name).toBe("Google Tag Manager");
+    expect(descriptor.presentation.description).toMatch(/container/i);
+    expect(descriptor.secretFields).toEqual([]);
+    expect(descriptor.secretsSchema).toBeUndefined();
+    expect(descriptor.connectionTest).toBeUndefined();
+    expect(descriptor.affectsPublicSite).toBe(true);
+  });
+
+  it("readies Google Tag Manager only for a valid container id", () => {
+    const descriptor = getIntegrationDescriptor("gtm");
+
+    expect(
+      descriptor.isReady({
+        config: { containerId: "GTM-ABC1234" },
+        secretKeys: [],
+      }),
+    ).toBe(true);
+    expect(
+      descriptor.isReady({ config: {}, secretKeys: [] }),
+    ).toBe(false);
+    expect(
+      descriptor.isReady({
+        config: { containerId: "GT-XXXX" },
+        secretKeys: [],
+      }),
+    ).toBe(false);
+  });
 });

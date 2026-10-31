@@ -2,6 +2,7 @@ import "server-only";
 
 import type { IntegrationProvider } from "@/modules/integrations/lib/constants";
 import type { IntegrationProviderDescriptor } from "@/modules/integrations/lib/providers/types";
+import { gtmIntegrationDescriptor } from "@/modules/integrations/lib/providers/gtm";
 import { iubendaIntegrationDescriptor } from "@/modules/integrations/lib/providers/iubenda";
 import { resendIntegrationDescriptor } from "@/modules/integrations/lib/providers/resend";
 
@@ -18,6 +19,7 @@ const SERVER_DESCRIPTORS = {
       testResendConnection(secrets.apiKey ?? ""),
   },
   iubenda: iubendaIntegrationDescriptor,
+  gtm: gtmIntegrationDescriptor,
 } satisfies Record<IntegrationProvider, IntegrationProviderDescriptor>;
 
 export function getServerIntegrationDescriptor(

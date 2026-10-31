@@ -1,4 +1,5 @@
 import type { IntegrationProvider } from "../constants";
+import { gtmIntegrationDescriptor } from "./gtm";
 import { iubendaIntegrationDescriptor } from "./iubenda";
 import { resendIntegrationDescriptor } from "./resend";
 import type {
@@ -14,6 +15,7 @@ import type {
 export const INTEGRATION_DESCRIPTORS = {
   resend: resendIntegrationDescriptor,
   iubenda: iubendaIntegrationDescriptor,
+  gtm: gtmIntegrationDescriptor,
 } satisfies Record<IntegrationProvider, IntegrationProviderDescriptor>;
 
 export function getIntegrationDescriptor(

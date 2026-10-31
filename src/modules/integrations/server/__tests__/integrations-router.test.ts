@@ -37,6 +37,7 @@ import { db } from "@/shared/lib/db";
 import { revalidateContent } from "@/shared/lib/revalidate-content";
 
 import {
+  INTEGRATION_PROVIDER_GTM,
   INTEGRATION_PROVIDER_IUBENDA,
   INTEGRATION_PROVIDER_RESEND,
   encryptIntegrationSecrets,
@@ -63,6 +64,8 @@ const iubendaConfig = {
   autoblocking: true,
   consentMode: true,
 };
+
+const gtmConfig = { containerId: "GTM-ABC1234" };
 
 const originalPrimaryKey = process.env.SECRETS_ENCRYPTION_KEY;
 
@@ -111,6 +114,22 @@ async function createIubendaIntegration(overrides: {
   return integration;
 }
 
+async function createGtmIntegration(overrides: {
+  isEnabled?: boolean;
+  config?: Record<string, unknown>;
+} = {}) {
+  const integration = await db.integration.create({
+    data: {
+      provider: INTEGRATION_PROVIDER_GTM,
+      isEnabled: overrides.isEnabled ?? false,
+      config: overrides.config ?? gtmConfig,
+      secretEncrypted: encryptIntegrationSecrets({}),
+    },
+  });
+  integrationIds.push(integration.id);
+  return integration;
+}
+
 beforeEach(async () => {
   integrationIds.length = 0;
   userIds.length = 0;
@@ -120,6 +139,7 @@ beforeEach(async () => {
 
   resetIntegrationTestRateLimit(INTEGRATION_PROVIDER_RESEND);
   resetIntegrationTestRateLimit(INTEGRATION_PROVIDER_IUBENDA);
+  resetIntegrationTestRateLimit(INTEGRATION_PROVIDER_GTM);
   emailsList.mockReset();
   vi.mocked(revalidateContent).mockClear();
 
@@ -169,7 +189,7 @@ describe("integrationsRouter", () => {
         (integration) => integration.provider === INTEGRATION_PROVIDER_RESEND,
       );
 
-      expect(result).toHaveLength(2);
+      expect(result).toHaveLength(3);
       expect(resend).toMatchObject({
         provider: INTEGRATION_PROVIDER_RESEND,
         isEnabled: true,
@@ -201,7 +221,7 @@ describe("integrationsRouter", () => {
         (integration) => integration.provider === INTEGRATION_PROVIDER_RESEND,
       );
 
-      expect(result).toHaveLength(2);
+      expect(result).toHaveLength(3);
       expect(resend).toMatchObject({
         provider: INTEGRATION_PROVIDER_RESEND,
         isEnabled: false,
@@ -279,6 +299,25 @@ describe("integrationsRouter", () => {
       });
       expect(iubenda!.secrets).toEqual([]);
       expect(JSON.stringify(iubenda)).not.toMatch(/apiKey|webhookSecret/i);
+    });
+
+    it("lists Google Tag Manager with configuration but no credentials or connection test", async () => {
+      await createGtmIntegration({ isEnabled: true });
+
+      const result = await caller.getMany();
+      const gtm = result.find(
+        (integration) => integration.provider === INTEGRATION_PROVIDER_GTM,
+      );
+
+      expect(gtm).toMatchObject({
+        provider: INTEGRATION_PROVIDER_GTM,
+        isEnabled: true,
+        canEnable: true,
+        hasConnectionTest: false,
+        config: gtmConfig,
+      });
+      expect(gtm!.secrets).toEqual([]);
+      expect(JSON.stringify(gtm)).not.toMatch(/apiKey|webhookSecret/i);
     });
   });
 
@@ -491,6 +530,84 @@ describe("integrationsRouter", () => {
       expect(after.config).toEqual(iubendaConfig);
       expect(after.secretKeys).toEqual([]);
     });
+
+    it("persists a normalised Google Tag Manager container id and enables it in one call", async () => {
+      const updated = await caller.update({
+        provider: INTEGRATION_PROVIDER_GTM,
+        config: { containerId: "  gtm-abc1234  " },
+        isEnabled: true,
+      });
+
+      integrationIds.push(
+        (await db.integration.findFirstOrThrow({
+          where: { provider: INTEGRATION_PROVIDER_GTM },
+        })).id,
+      );
+
+      expect(updated).toMatchObject({
+        provider: INTEGRATION_PROVIDER_GTM,
+        isEnabled: true,
+        canEnable: true,
+        hasConnectionTest: false,
+        config: gtmConfig,
+      });
+      expect(updated.secrets).toEqual([]);
+    });
+
+    it("rejects a malformed Google Tag Manager container id", async () => {
+      await expect(
+        caller.update({
+          provider: INTEGRATION_PROVIDER_GTM,
+          config: { containerId: "GT-XXXX" },
+        }),
+      ).rejects.toThrow(/invalid configuration/i);
+
+      const row = await db.integration.findFirst({
+        where: { provider: INTEGRATION_PROVIDER_GTM },
+      });
+      expect(row).toBeNull();
+    });
+
+    it("rejects enabling Google Tag Manager without a container id", async () => {
+      await expect(
+        caller.update({
+          provider: INTEGRATION_PROVIDER_GTM,
+          config: {},
+          isEnabled: true,
+        }),
+      ).rejects.toThrow(/invalid configuration/i);
+
+      const row = await db.integration.findFirst({
+        where: { provider: INTEGRATION_PROVIDER_GTM },
+      });
+      expect(row).toBeNull();
+    });
+
+    it("records Google Tag Manager configuration in the audit payload without credentials", async () => {
+      await caller.update({
+        provider: INTEGRATION_PROVIDER_GTM,
+        config: gtmConfig,
+        isEnabled: true,
+      });
+
+      const row = await db.integration.findFirstOrThrow({
+        where: { provider: INTEGRATION_PROVIDER_GTM },
+      });
+      integrationIds.push(row.id);
+
+      const activity = await db.administrativeActivity.findFirstOrThrow({
+        where: {
+          targetType: "INTEGRATION",
+          action: "INTEGRATION_CREATED",
+          targetId: row.id,
+        },
+      });
+      activityIds.push(activity.id);
+
+      const after = activity.after as Record<string, unknown>;
+      expect(after.config).toEqual(gtmConfig);
+      expect(after.secretKeys).toEqual([]);
+    });
   });
 
   describe("setEnabled", () => {
@@ -595,6 +712,39 @@ describe("integrationsRouter", () => {
       await expect(
         caller.setEnabled({
           provider: INTEGRATION_PROVIDER_IUBENDA,
+          isEnabled: true,
+        }),
+      ).rejects.toThrow(/required configuration or credentials/i);
+
+      const reloaded = await db.integration.findUniqueOrThrow({
+        where: { id: integration.id },
+      });
+      expect(reloaded.isEnabled).toBe(false);
+    });
+
+    it("enables a configured Google Tag Manager integration", async () => {
+      const integration = await createGtmIntegration({ isEnabled: false });
+
+      await caller.setEnabled({
+        provider: INTEGRATION_PROVIDER_GTM,
+        isEnabled: true,
+      });
+
+      const reloaded = await db.integration.findUniqueOrThrow({
+        where: { id: integration.id },
+      });
+      expect(reloaded.isEnabled).toBe(true);
+    });
+
+    it("rejects enabling Google Tag Manager when the container id is invalid", async () => {
+      const integration = await createGtmIntegration({
+        isEnabled: false,
+        config: { containerId: "GT-XXXX" },
+      });
+
+      await expect(
+        caller.setEnabled({
+          provider: INTEGRATION_PROVIDER_GTM,
           isEnabled: true,
         }),
       ).rejects.toThrow(/required configuration or credentials/i);
