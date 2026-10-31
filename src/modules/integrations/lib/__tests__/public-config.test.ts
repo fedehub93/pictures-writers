@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { db } from "@/shared/lib/db";
 
 import {
+  INTEGRATION_PROVIDER_GTM,
   INTEGRATION_PROVIDER_IUBENDA,
   encryptIntegrationSecrets,
   resolveIntegrationPublicConfig,
@@ -17,9 +18,15 @@ const completeConfig = {
   consentMode: true,
 };
 
+const completeGtmConfig = { containerId: "GTM-ABC1234" };
+
 async function resetIntegrations() {
   await db.integration.deleteMany({
-    where: { provider: INTEGRATION_PROVIDER_IUBENDA },
+    where: {
+      provider: {
+        in: [INTEGRATION_PROVIDER_IUBENDA, INTEGRATION_PROVIDER_GTM],
+      },
+    },
   });
 }
 
@@ -32,6 +39,20 @@ async function createIubendaRow(overrides: {
       provider: INTEGRATION_PROVIDER_IUBENDA,
       isEnabled: overrides.isEnabled ?? true,
       config: overrides.config ?? completeConfig,
+      secretEncrypted: encryptIntegrationSecrets({}),
+    },
+  });
+}
+
+async function createGtmRow(overrides: {
+  isEnabled?: boolean;
+  config?: Record<string, unknown>;
+} = {}) {
+  return db.integration.create({
+    data: {
+      provider: INTEGRATION_PROVIDER_GTM,
+      isEnabled: overrides.isEnabled ?? true,
+      config: overrides.config ?? completeGtmConfig,
       secretEncrypted: encryptIntegrationSecrets({}),
     },
   });
@@ -141,5 +162,38 @@ describe("resolveIntegrationPublicConfig", () => {
     });
 
     expect(warn).toHaveBeenCalledTimes(1);
+  });
+
+  describe("Google Tag Manager", () => {
+    it("returns the container id for an enabled, complete row", async () => {
+      await createGtmRow();
+
+      await expect(
+        resolveIntegrationPublicConfig(INTEGRATION_PROVIDER_GTM),
+      ).resolves.toEqual(completeGtmConfig);
+    });
+
+    it("returns null when the integration row is missing", async () => {
+      await expect(
+        resolveIntegrationPublicConfig(INTEGRATION_PROVIDER_GTM),
+      ).resolves.toBeNull();
+      expect(warn).toHaveBeenCalledTimes(1);
+    });
+
+    it("returns null when the integration is disabled", async () => {
+      await createGtmRow({ isEnabled: false });
+
+      await expect(
+        resolveIntegrationPublicConfig(INTEGRATION_PROVIDER_GTM),
+      ).resolves.toBeNull();
+    });
+
+    it("returns null when the container id is invalid", async () => {
+      await createGtmRow({ config: { containerId: "GT-XXXX" } });
+
+      await expect(
+        resolveIntegrationPublicConfig(INTEGRATION_PROVIDER_GTM),
+      ).resolves.toBeNull();
+    });
   });
 });

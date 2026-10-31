@@ -66,4 +66,33 @@ describe("PublicHeadScripts", () => {
 
     expect(html).toBe("");
   });
+
+  it("passes the container id to the GTM script source", async () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <PublicHeadScripts iubendaConfig={null} gtmId="GTM-ABC1234" />,
+      );
+    });
+
+    expect(document.getElementById("_next-gtm")?.getAttribute("src")).toBe(
+      "https://www.googletagmanager.com/gtm.js?id=GTM-ABC1234",
+    );
+
+    await act(async () => {
+      root.unmount();
+    });
+  });
+
+  it("emits no GTM markup when no container id is resolved", () => {
+    const html = renderToStaticMarkup(
+      <PublicHeadScripts iubendaConfig={config} gtmId={undefined} />,
+    );
+
+    expect(html).not.toContain("_next-gtm");
+    expect(html).toContain("iubenda-runtime");
+  });
 });

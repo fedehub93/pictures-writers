@@ -68,7 +68,6 @@ Create `.env` (see existing `.env` for reference). Required variables include:
 - `UPLOADTHING_TOKEN` — UploadThing token
 - `NEXT_SENDGRID_KEY` — SendGrid API key
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` / `STRIPE_API_KEY` / `STRIPE_WEBHOOK_SECRET`
-- `NEXT_GA_TRACKING_ID` / `NEXT_GTAG_CONTAINER_ID` — Google Analytics/Tag Manager
 - `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` — reCAPTCHA
 
 In production these live in the Coolify application environment, not in a file on the server. See `docs/self-hosting/appendice-a-variabili-ambiente.md` for the full table and build/runtime scope.

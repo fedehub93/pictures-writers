@@ -116,14 +116,14 @@ openssl rand -base64 32
 | `NEXT_RESEND_KEY` | — | — | — | — | **Obsoleta**: non è letta dal codice. La fonte è solo `Integration` nel DB (ADR-0023) |
 | `NEXT_RESEND_WEBHOOK_SECRET` | — | — | — | — | **Obsoleta**: il webhook secret è in `Integration` |
 
-### 3.8 Analytics e reCAPTCHA
+### 3.8 reCAPTCHA
 
 | Variabile | Esempio | Build | Runtime | Segreta | Note |
 |---|---|:---:|:---:|:---:|---|
-| `NEXT_GTAG_CONTAINER_ID` | `GTM-XXXXXX` | ✅ | ✅ | ❌ | Letta nel layout home, che viene prerenderizzato |
-| `NEXT_GA_TRACKING_ID` | `G-XXXXXXXXXX` | ✅ | ✅ | ❌ | Attualmente non usata nel codice; impostala per coerenza |
 | `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` | `<site key>` | ✅ | ✅ | ❌ | Pubblica; vincolata ai domini |
 | `RECAPTCHA_SECRET_KEY` | `<secret key>` | ❌ | ✅ | ✅ | Server |
+
+Google Tag Manager non è più una variabile d'ambiente: il container id si configura da **Integrations** (`gtm`), con validazione e audit come gli altri provider (ADR-0031), e viene letto dalla riga `Integration` sul server; il layout pubblico viene rivalidato al salvataggio (ADR-0036). `NEXT_GA_TRACKING_ID` non è letta da nessun punto del codice: GA4 resta un tag dentro il container.
 
 ### 3.9 Scheduler e automazioni
 
@@ -173,8 +173,6 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=<DAL_PASSWORD_MANAGER>
 # - Resend: Integration nel DB
 # Verifica da Admin → Email Settings / Integrations dopo il restore.
 
-NEXT_GTAG_CONTAINER_ID=<DAL_PASSWORD_MANAGER>
-NEXT_GA_TRACKING_ID=<DAL_PASSWORD_MANAGER>
 NEXT_PUBLIC_RECAPTCHA_SITE_KEY=<DAL_PASSWORD_MANAGER>
 RECAPTCHA_SECRET_KEY=<DAL_PASSWORD_MANAGER>
 

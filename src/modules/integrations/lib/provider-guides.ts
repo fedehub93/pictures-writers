@@ -132,4 +132,47 @@ export const PROVIDER_SETUP_GUIDES: Record<
       },
     ],
   },
+  gtm: {
+    title: "Configuring Google Tag Manager",
+    intro:
+      "Google Tag Manager stores only the public container id. GA4 and every other tag live inside the container, not in this app; consent stays with the Iubenda template.",
+    steps: [
+      {
+        title: "Find the container id",
+        description:
+          "In Google Tag Manager open Admin → Container → Install Google Tag Manager and copy the id shown in the snippet. It looks like GTM-XXXXXXX: paste the id only, not the whole snippet.",
+        code: ["GTM-XXXXXXX"],
+        links: [
+          { label: "Tag Manager dashboard", href: "https://tagmanager.google.com/" },
+        ],
+      },
+      {
+        title: "Keep the tags inside the container",
+        description:
+          "GA4 and the other tags are configured and published in the GTM workspace. This integration only stores the container id, so changes to tags and triggers do not require a deploy.",
+        links: [
+          {
+            label: "Tag Manager quick start",
+            href: "https://support.google.com/tagmanager/answer/6103696",
+          },
+        ],
+      },
+      {
+        title: "Leave Consent Mode to Iubenda",
+        description:
+          "Keep the iubenda Privacy Controls and Cookie Solution template active in the container with a Consent Initialization - All Pages trigger. It sets consent to denied before a choice and forwards the banner's updates to every tag; the GTM integration does not manage consent.",
+        links: [
+          {
+            label: "GTM setup guide",
+            href: "https://www.iubenda.com/en/help/74198-google-consent-mode-set-up-google-tag-manager-with-iubenda",
+          },
+        ],
+      },
+      {
+        title: "Save the container id",
+        description:
+          "Paste the id into the Container ID field and save. No credentials or connection test are needed: the id is public, so Tag Assistant against the public site is the real verification.",
+      },
+    ],
+  },
 };

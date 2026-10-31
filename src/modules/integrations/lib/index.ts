@@ -1,10 +1,13 @@
 export {
+  INTEGRATION_PROVIDER_GTM,
   INTEGRATION_PROVIDER_IUBENDA,
   INTEGRATION_PROVIDER_RESEND,
   INTEGRATION_PROVIDERS,
   isIntegrationProvider,
 } from "./constants";
 export type { IntegrationProvider } from "./constants";
+
+export type { GtmConfig } from "./providers/gtm-config";
 
 export {
   encryptIntegrationSecrets,
