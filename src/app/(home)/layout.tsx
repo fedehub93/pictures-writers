@@ -10,7 +10,10 @@ import { cn } from "@/shared/lib/utils";
 
 import { ToastProvider } from "@/shared/providers/toast-provider";
 import { getSettings } from "@/data/settings";
-import { INTEGRATION_PROVIDER_IUBENDA } from "@/modules/integrations/lib/constants";
+import {
+  INTEGRATION_PROVIDER_GTM,
+  INTEGRATION_PROVIDER_IUBENDA,
+} from "@/modules/integrations/lib/constants";
 import { resolveIntegrationPublicConfig } from "@/modules/integrations/lib/public-config";
 import { withIntegrationResolutionCache } from "@/modules/integrations/lib/resolution-cache";
 
@@ -46,10 +49,13 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [settings, iubendaConfig] = await Promise.all([
+  const [settings, iubendaConfig, gtmConfig] = await Promise.all([
     getSettings(),
     withIntegrationResolutionCache(() =>
       resolveIntegrationPublicConfig(INTEGRATION_PROVIDER_IUBENDA),
+    ),
+    withIntegrationResolutionCache(() =>
+      resolveIntegrationPublicConfig(INTEGRATION_PROVIDER_GTM),
     ),
   ]);
 
@@ -61,11 +67,7 @@ export default async function RootLayout({
       <head>
         <PublicHeadScripts
           iubendaConfig={iubendaConfig}
-          gtmId={
-            process.env.NODE_ENV === "production"
-              ? process.env.NEXT_GTAG_CONTAINER_ID
-              : undefined
-          }
+          gtmId={gtmConfig?.containerId}
         />
       </head>
       <HolyLoader color="var(--primary)" />

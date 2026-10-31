@@ -114,11 +114,16 @@ async function getIntegrationOrThrow(provider: IntegrationProvider) {
 }
 
 /**
- * Integrations render from the public root layout, so every mutation must
- * invalidate it for the next request.
+ * Only providers that render on the public site need to invalidate it. Saving
+ * Resend or recording a connection test only changes admin-only data, so those
+ * mutations leave the public cache alone.
  */
-function revalidatePublicIntegrations() {
-  revalidateContent("settings");
+function revalidatePublicIntegrations(
+  descriptor: IntegrationProviderDescriptor,
+) {
+  if (descriptor.affectsPublicSite) {
+    revalidateContent("settings");
+  }
 }
 
 function assertCanEnable(
@@ -266,7 +271,7 @@ export const integrationsRouter = createTRPCRouter({
         }),
       });
 
-      revalidatePublicIntegrations();
+      revalidatePublicIntegrations(descriptor);
 
       return toIntegrationListItem(input.provider, updated);
     }),
@@ -305,7 +310,7 @@ export const integrationsRouter = createTRPCRouter({
         }),
       });
 
-      revalidatePublicIntegrations();
+      revalidatePublicIntegrations(descriptor);
 
       return toIntegrationListItem(input.provider, updated);
     }),
@@ -380,7 +385,7 @@ export const integrationsRouter = createTRPCRouter({
         }),
       });
 
-      revalidatePublicIntegrations();
+      revalidatePublicIntegrations(descriptor);
 
       if (!testResult.success) {
         throw new TRPCError({

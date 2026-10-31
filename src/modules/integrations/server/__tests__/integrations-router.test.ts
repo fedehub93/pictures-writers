@@ -868,7 +868,32 @@ describe("integrationsRouter", () => {
   });
 
   describe("public revalidation", () => {
-    it("revalidates the public root layout after update", async () => {
+    it("revalidates the public root layout when a public integration is saved", async () => {
+      await caller.update({
+        provider: INTEGRATION_PROVIDER_GTM,
+        config: gtmConfig,
+      });
+      integrationIds.push(
+        (await db.integration.findFirstOrThrow({
+          where: { provider: INTEGRATION_PROVIDER_GTM },
+        })).id,
+      );
+
+      expect(revalidateContent).toHaveBeenCalledWith("settings");
+    });
+
+    it("revalidates the public root layout when a public integration is enabled or disabled", async () => {
+      await createGtmIntegration({ isEnabled: false });
+
+      await caller.setEnabled({
+        provider: INTEGRATION_PROVIDER_GTM,
+        isEnabled: true,
+      });
+
+      expect(revalidateContent).toHaveBeenCalledWith("settings");
+    });
+
+    it("revalidates Iubenda changes because it renders publicly", async () => {
       await caller.update({
         provider: INTEGRATION_PROVIDER_IUBENDA,
         config: iubendaConfig,
@@ -882,7 +907,7 @@ describe("integrationsRouter", () => {
       expect(revalidateContent).toHaveBeenCalledWith("settings");
     });
 
-    it("revalidates the public root layout after enable/disable", async () => {
+    it("revalidates Iubenda toggles because it renders publicly", async () => {
       await createIubendaIntegration({ isEnabled: false });
 
       await caller.setEnabled({
@@ -893,7 +918,32 @@ describe("integrationsRouter", () => {
       expect(revalidateContent).toHaveBeenCalledWith("settings");
     });
 
-    it("revalidates the public root layout after a connection test", async () => {
+    it("does not revalidate when an admin-only integration is saved", async () => {
+      await createIntegration({ secrets: { apiKey: "test-key" } });
+
+      await caller.update({
+        provider: INTEGRATION_PROVIDER_RESEND,
+        secrets: { apiKey: "updated-key" },
+      });
+
+      expect(revalidateContent).not.toHaveBeenCalled();
+    });
+
+    it("does not revalidate when an admin-only integration is toggled", async () => {
+      await createIntegration({
+        isEnabled: true,
+        secrets: { apiKey: "test-key" },
+      });
+
+      await caller.setEnabled({
+        provider: INTEGRATION_PROVIDER_RESEND,
+        isEnabled: false,
+      });
+
+      expect(revalidateContent).not.toHaveBeenCalled();
+    });
+
+    it("does not revalidate after a connection test", async () => {
       await createIntegration({
         isEnabled: true,
         secrets: { apiKey: "test-key" },
@@ -902,7 +952,7 @@ describe("integrationsRouter", () => {
 
       await caller.test({ provider: INTEGRATION_PROVIDER_RESEND });
 
-      expect(revalidateContent).toHaveBeenCalledWith("settings");
+      expect(revalidateContent).not.toHaveBeenCalled();
     });
   });
 });
