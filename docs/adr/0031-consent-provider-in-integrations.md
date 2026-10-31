@@ -31,7 +31,7 @@ When present, enabled, and complete, the public root layout emits in `<head>`, i
 2. the autoblocking or sync loader selected by configuration;
 3. the asynchronous CMP runtime script.
 
-When GTM is configured and renders in production, it comes after that block. Inside GTM, the Iubenda template runs on Consent Initialization, so its denied defaults land before the GA4 configuration and `page_view` tags. The CMP block is raw inline markup rather than `next/script`, so the document itself determines the order instead of framework convention. A rendering test asserts the sequence and the runtime's `async` attribute; this is a tested contract, not a comment. The runtime also carries an `itemProp` so React 19 does not hoist the async script ahead of the configuration block.
+When the GTM integration is enabled and complete, it comes after that block, in any environment. Inside GTM, the Iubenda template runs on Consent Initialization, so its denied defaults land before the GA4 configuration and `page_view` tags. The CMP block is raw inline markup rather than `next/script`, so the document itself determines the order instead of framework convention. A rendering test asserts the sequence and the runtime's `async` attribute; this is a tested contract, not a comment. The runtime also carries an `itemProp` so React 19 does not hoist the async script ahead of the configuration block.
 
 `settings.scripts` remains an escape hatch for one-off snippets, but it no longer knows anything about Iubenda: no URL matching, no forced strategies. `beforeInteractive` is no longer offered in the admin and persisted values render as `afterInteractive`.
 

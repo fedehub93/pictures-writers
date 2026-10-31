@@ -147,8 +147,6 @@ Elenco completo ricavato dal codice e dal `.env` (senza valori). Dettaglio in `a
 | `NEXT_SENDGRID_KEY` | **non necessaria a runtime** | — | — | — | L'invio usa `EmailSetting.emailApiKey` nel DB; la env è solo un default (client) nel form impostazioni |
 | `NEXT_RESEND_KEY` | **obsoleta** | — | — | — | non è letta dal codice: la fonte è solo `Integration` nel DB (ADR-0023) |
 | `NEXT_RESEND_WEBHOOK_SECRET` | **obsoleta** | — | — | — | non è letta dal codice: il webhook secret è in `Integration` |
-| `NEXT_GTAG_CONTAINER_ID` | GTM | ❌ | ✅ | ❌ | |
-| `NEXT_GA_TRACKING_ID` | GA | ❌ | ✅ | ❌ | |
 | `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` | reCAPTCHA client | ✅ | ✅ | ❌ | |
 | `RECAPTCHA_SECRET_KEY` | verifica reCAPTCHA | ❌ | ✅ | ✅ | |
 | `SCHEDULED_PUBLICATION_SECRET` | scheduler + automazioni | ❌ | ✅ | ✅ | stesso valore nei cron |

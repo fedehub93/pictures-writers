@@ -154,9 +154,9 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=<VALORE_DA_VERCEL>
 # - NEXT_RESEND_KEY / NEXT_RESEND_WEBHOOK_SECRET: la fonte è Integration (ADR-0023).
 # Verifica le credenziali da Admin → Email Settings / Integrations dopo il restore.
 
-# ── Analytics / Antibot ─────────────────────────────────
-NEXT_GTAG_CONTAINER_ID=<VALORE_DA_VERCEL>
-NEXT_GA_TRACKING_ID=<VALORE_DA_VERCEL>
+# ── Antibot / reCAPTCHA ─────────────────────────────────
+# Google Tag Manager non è una variabile: il container id si configura
+# da Admin → Integrations (provider gtm) dopo il restore.
 NEXT_PUBLIC_RECAPTCHA_SITE_KEY=<VALORE_DA_VERCEL>
 RECAPTCHA_SECRET_KEY=<VALORE_DA_VERCEL>
 
@@ -197,7 +197,6 @@ e rideploya. Il resto resta identico.
 | `DATABASE_URL` | ✅ | ✅ |
 | `NEXT_PUBLIC_*` | ✅ | ✅ |
 | `TZ` | ✅ | ✅ |
-| `NEXT_GTAG_CONTAINER_ID` | ✅ | ✅ |
 | `BETTER_AUTH_URL` | ❌ | ✅ |
 | `BETTER_AUTH_SECRET` | ❌ | ✅ |
 | `SECRETS_ENCRYPTION_KEY` | ❌ | ✅ |
@@ -210,7 +209,9 @@ e rideploya. Il resto resta identico.
 | `NIXPACKS_NODE_VERSION` / `NODE_OPTIONS` | ✅ | ❌ (NODE_OPTIONS può restare anche runtime) |
 | `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` | ✅ | ✅ |
 
-> **Attenzione alle variabili lette in Server Components prerenderizzati.** `src/app/(home)/layout.tsx` legge `NEXT_GTAG_CONTAINER_ID` e `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` e viene prerenderizzato: quei valori finiscono nell'HTML di build. Devono essere presenti **in build**, altrimenti GTM/reCAPTCHA spariscono dal sito statico. Vale lo stesso per `TZ` se il rendering delle date lo usa.
+> **Attenzione alle variabili lette in Server Components prerenderizzati.** Le variabili `NEXT_PUBLIC_*` vengono inlined nel bundle durante `next build`: in particolare `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` deve essere presente **in build**, altrimenti reCAPTCHA sparisce dal sito statico. Vale lo stesso per `TZ` se il rendering delle date lo usa.
+>
+> Google Tag Manager non rientra in questo caso: il container id non è una variabile d'ambiente ma una riga `Integration`, letta dal database. Al salvataggio il layout pubblico viene rivalidato (`revalidatePath`), quindi un cambio non richiede un redeploy — a differenza delle `NEXT_PUBLIC_*`, che sono cotte nel bundle.
 >
 > `DATABASE_URL` in build è inevitabile con questo codice: `prisma generate` e il prerender leggono il DB. Coolify la passa come build arg: chi ha accesso alle immagini Docker sul server può vederla. Per un progetto singolo è accettabile; per hardening avanzato vedi `appendice-b-dockerfile.md` (BuildKit secrets / utente DB dedicato).
 
