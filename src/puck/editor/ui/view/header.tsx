@@ -21,22 +21,25 @@ import { Skeleton } from "@/shared/ui/skeleton";
 
 import { useEditorStore } from "../../store/use-editor-store";
 import { HeaderActions } from "../components/header-actions";
+import type { EditorHeaderProps } from "./editor";
 
 const usePuck = createUsePuck<Config>();
 
-export const BuilderHeader = () => {
+export const BuilderHeader = ({ header }: { header?: EditorHeaderProps }) => {
   const trpc = useTRPC();
-  const { rootId } = useParams<{ rootId: string }>();
+  const { rootId } = useParams<{ rootId?: string }>();
   const { viewports } = usePuck((s) => s.appState.ui);
   const history = usePuck((s) => s.history);
   const dispatch = usePuck((s) => s.dispatch);
 
   const { scale, setScale, isAutoZoom, setIsAutoZoom } = useEditorStore();
 
+  // A caller that supplies its own header (the Site region editor) is not
+  // editing a Page, so skip the page query entirely.
   const { data: page } = useQuery({
     ...trpc.pages.getLastByRootId.queryOptions(
-      { rootId: rootId },
-      { enabled: !!rootId },
+      { rootId: rootId ?? "" },
+      { enabled: !!rootId && !header },
     ),
   });
 
@@ -96,7 +99,7 @@ export const BuilderHeader = () => {
           <div className="h-4 w-px bg-border hidden md:block" /> */}
 
           <h1 className="text-sm font-medium text-foreground hidden md:block">
-            {page?.title}
+            {header?.title ?? page?.title}
           </h1>
         </div>
 
@@ -194,8 +197,11 @@ export const BuilderHeader = () => {
 
           <div className="h-4 w-px bg-border mx-1" />
 
-          {!page && <Skeleton className="h-8 min-w-10 lg:min-w-60" />}
-          {page && (
+          {header?.actions}
+          {!header && !page && (
+            <Skeleton className="h-8 min-w-10 lg:min-w-60" />
+          )}
+          {!header && page && (
             <HeaderActions
               page={{
                 id: page.id,

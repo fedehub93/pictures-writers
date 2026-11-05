@@ -99,6 +99,8 @@ function resolvePuckData(
   current: { puckData: PrismaJson.PuckData | null },
 ): PrismaJson.PuckData {
   if (input.puckData != null) {
+    // Region documents can contain blocks outside the page component map
+    // (Brand, LinkList, Copyright); dehydration only looks for Form blocks.
     return dehydratePuckForms(input.puckData);
   }
 

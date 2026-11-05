@@ -75,6 +75,7 @@ describe("admin navigation structure", () => {
       "Categories",
       "Tags",
       "Widgets",
+      "Site layout",
     ]);
   });
 

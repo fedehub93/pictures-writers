@@ -1,5 +1,4 @@
 import * as z from "zod";
-import { HydratedComponents } from "@/puck/config";
 import { Data } from "@puckeditor/core";
 
 import { SITE_REGION_KEYS } from "./constants";
@@ -17,7 +16,9 @@ export type SiteRegionCreateValues = z.infer<typeof siteRegionCreateSchema>;
 export const siteRegionUpdateSchema = z.object({
   id: z.string().min(1, { error: "Id is required" }),
   rootId: z.string().min(1, { error: "Root Id is required" }),
-  puckData: z.custom<Data<HydratedComponents>>().nullable().optional(),
+  // Site regions have their own palettes, so the document is not limited to
+  // the page component map. The forms are dehydrated server-side before save.
+  puckData: z.custom<Data>().nullable().optional(),
 });
 
 export type SiteRegionUpdateValues = z.infer<typeof siteRegionUpdateSchema>;

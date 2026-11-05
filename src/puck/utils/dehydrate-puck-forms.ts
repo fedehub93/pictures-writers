@@ -1,9 +1,14 @@
 import type { Content, Data } from "@puckeditor/core";
-import type { SavedComponents, HydratedComponents } from "../config"; // Adatta il path
+import type { SavedComponents } from "../config";
 
-export function dehydratePuckForms(
-  puckData: Data<HydratedComponents>,
-): Data<SavedComponents> {
+/**
+ * Strip the inline content of Form blocks before persisting a Puck document.
+ *
+ * The input is intentionally typed as the broad `Data`: Site regions have
+ * palettes wider than the page component map, and dehydration only needs to
+ * find Form blocks.
+ */
+export function dehydratePuckForms(puckData: Data): Data<SavedComponents> {
   const data = structuredClone(puckData) as unknown as Data<SavedComponents>;
 
   if (!data) return data;

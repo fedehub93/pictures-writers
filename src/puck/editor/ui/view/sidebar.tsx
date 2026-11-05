@@ -11,8 +11,14 @@ import {
   HeadingIcon,
   TextIcon,
   InfoIcon,
+  TagIcon,
+  ListIcon,
+  CopyrightIcon,
+  LayoutGridIcon,
+  Rows3Icon,
+  type LucideIcon,
 } from "lucide-react";
-import { Drawer, Puck } from "@puckeditor/core";
+import { Config, createUsePuck, Drawer, Puck } from "@puckeditor/core";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { ScrollArea } from "@/shared/ui/scroll-area";
@@ -20,18 +26,36 @@ import { Input } from "@/shared/ui/input";
 import { Badge } from "@/shared/ui/badge";
 import { Card } from "@/shared/ui/card";
 
-const atomicElements = [
-  { name: "Container", icon: SquareIcon },
-  { name: "Heading", icon: HeadingIcon },
-  { name: "Text", icon: TextIcon },
-  { name: "Image", icon: ImageIcon },
-  { name: "Icon", icon: SmileIcon },
-  { name: "Link", icon: LinkIcon },
-  { name: "Form", icon: FormIcon },
-  { name: "Separator", icon: SeparatorHorizontalIcon },
-];
+const usePuck = createUsePuck<Config>();
+
+const ELEMENT_ICONS: Record<string, LucideIcon> = {
+  Container: SquareIcon,
+  Flex: Rows3Icon,
+  Grid: LayoutGridIcon,
+  Heading: HeadingIcon,
+  Text: TextIcon,
+  Image: ImageIcon,
+  Icon: SmileIcon,
+  Link: LinkIcon,
+  Form: FormIcon,
+  Separator: SeparatorHorizontalIcon,
+  Brand: TagIcon,
+  LinkList: ListIcon,
+  Copyright: CopyrightIcon,
+};
+
+const ELEMENT_LABELS: Record<string, string> = {
+  LinkList: "Link list",
+};
 
 export const ElementsPanel = () => {
+  const config = usePuck((state) => state.config);
+  const elements = Object.keys(config.components).map((name) => ({
+    name,
+    label: ELEMENT_LABELS[name] ?? name,
+    icon: ELEMENT_ICONS[name] ?? SquareIcon,
+  }));
+
   return (
     <div className="flex flex-col w-full h-full bg-background">
       {/* Header: shrink-0 previene la compressione */}
@@ -97,22 +121,18 @@ export const ElementsPanel = () => {
               {/* Elements Grid */}
               <Drawer>
                 <div className="grid grid-cols-2 gap-3 pb-8">
-                  {atomicElements.map((element) => (
+                  {elements.map((element) => (
                     <Drawer.Item key={element.name} name={element.name}>
                       {() => (
                         <Card className="relative max-w-40 mx-auto flex flex-col items-center justify-center p-4 h-22.5 cursor-pointer hover:border-primary/50 transition-colors shadow-sm rounded-md">
                           <div className="absolute top-2 right-2 text-muted-foreground">
-                            {/* {element.isPro ? (
-                              <CrownIcon className="h-3 w-3 text-rose-400 fill-rose-400" />
-                            ) : ( */}
                             <GripIcon className="h-3 w-3 opacity-50" />
-                            {/* )} */}
                           </div>
 
                           <div className="flex flex-col items-center">
                             <element.icon className="size-6 text-slate-600 mb-2 stroke-[1.5]" />
                             <span className="text-xs text-slate-600 font-medium">
-                              {element.name}
+                              {element.label}
                             </span>
                           </div>
                         </Card>
