@@ -189,7 +189,8 @@ model User {
   invitationsCreated Invitation[]             @relation("InvitationCreator")
   activitiesAsActor  AdministrativeActivity[] @relation("ActivityActor")
 
-  pageVersions PageVersion[]
+  pageVersions       PageVersion[]
+  siteRegionVersions SiteRegionVersion[]
 
   postVersions PostVersion[]
   categories   Category[]
@@ -453,6 +454,63 @@ model PageVersion {
 
   currentForRoot PageRoot? @relation("PageRootCurrentVersion")
   liveForRoot    PageRoot? @relation("PageRootLiveVersion")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([rootId, version])
+  @@index([rootId])
+  @@index([status, scheduledAt])
+}
+
+enum SiteRegionKey {
+  HEADER
+  FOOTER
+}
+
+/// Logical identity of a global Site region (header, footer). Mirrors
+/// PageRoot but is keyed by a fixed enum instead of a slug, because an
+/// Installation has at most one row per region. See CONTEXT.md "Site region".
+model SiteRegion {
+  id  String        @id @default(uuid())
+  key SiteRegionKey @unique
+
+  firstPublishedAt DateTime?
+
+  currentVersion   SiteRegionVersion? @relation("SiteRegionCurrentVersion", fields: [currentVersionId], references: [id], onDelete: SetNull)
+  currentVersionId String?            @unique
+
+  liveVersion   SiteRegionVersion? @relation("SiteRegionLiveVersion", fields: [liveVersionId], references: [id], onDelete: SetNull)
+  liveVersionId String?            @unique
+
+  versions SiteRegionVersion[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// One revision of a Site region. Owns the mutable Puck content and a
+/// sequential version number scoped to its root.
+model SiteRegionVersion {
+  id String @id @default(uuid())
+
+  version Int
+
+  status   ContentStatus @default(DRAFT)
+  /// [PuckData]
+  puckData Json?         @db.JsonB
+
+  root   SiteRegion @relation(fields: [rootId], references: [id], onDelete: Cascade)
+  rootId String
+
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId String?
+
+  publishedAt DateTime?
+  scheduledAt DateTime?
+
+  currentForRoot SiteRegion? @relation("SiteRegionCurrentVersion")
+  liveForRoot    SiteRegion? @relation("SiteRegionLiveVersion")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
