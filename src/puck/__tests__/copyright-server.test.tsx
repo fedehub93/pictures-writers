@@ -1,0 +1,36 @@
+import { renderToStaticMarkup } from "react-dom/server";
+import { beforeEach, describe, expect, it } from "vitest";
+
+import { db } from "@/shared/lib/db";
+
+import { CopyrightServer } from "../blocks/Copyright/server";
+
+async function setSiteName(siteName: string) {
+  const settings = await db.settings.findFirst({ select: { id: true } });
+
+  if (settings) {
+    await db.settings.update({
+      where: { id: settings.id },
+      data: { siteName },
+    });
+    return;
+  }
+
+  await db.settings.create({ data: { siteName } });
+}
+
+describe("Copyright server render", () => {
+  beforeEach(async () => {
+    await setSiteName("Acme Test Site");
+  });
+
+  it("reads the site name from Settings", async () => {
+    const element = await CopyrightServer({ showYear: true });
+
+    const html = renderToStaticMarkup(element);
+
+    expect(html).toContain("©");
+    expect(html).toContain(String(new Date().getFullYear()));
+    expect(html).toContain("Acme Test Site");
+  });
+});

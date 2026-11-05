@@ -419,6 +419,47 @@ describe("resolveSmartLinksInPuckData", () => {
     expect((data.content[0]!.props.link as LinkProps).type).toBe("external");
   });
 
+  it("resolves links stored in array props such as LinkList.links", async () => {
+    const { root } = await createPage("Pagina del footer");
+
+    const data = {
+      root: {},
+      content: [
+        {
+          type: "LinkList",
+          props: {
+            id: "footer-links",
+            title: "Risorse",
+            links: [
+              {
+                link: {
+                  type: "external",
+                  url: "/blog/",
+                  label: "Blog",
+                } satisfies LinkProps,
+              },
+              { link: { type: "page", pageId: root.id } satisfies LinkProps },
+            ],
+          },
+        },
+      ],
+    };
+
+    const resolved = await resolveSmartLinksInPuckData(data);
+
+    expect(resolved.content[0]!.props.links[0]!.link).toEqual({
+      label: "Blog",
+      href: "/blog/",
+      openInNewTab: undefined,
+    });
+    expect(resolved.content[0]!.props.links[1]!.link).toEqual({
+      label: "Pagina del footer",
+      href: `/${root.slug}/`,
+      openInNewTab: undefined,
+    });
+    expect(data.content[0]!.props.links[0]!.link.type).toBe("external");
+  });
+
   it("is used when a published page is fetched", async () => {
     const target = await createPage("Pagina target");
     const source = await createPage("Pagina con link");

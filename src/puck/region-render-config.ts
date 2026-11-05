@@ -4,7 +4,7 @@ import type { SiteRegionKey } from "@/generated/prisma";
 
 import type { RootProps } from "./root";
 import {
-  renderComponentConfigs,
+  regionComponentConfigs,
   rootRenderConfig,
   type RenderComponentName,
 } from "./render-config";
@@ -16,6 +16,7 @@ const SHARED_REGION_COMPONENTS = [
   "Container",
   "Flex",
   "Grid",
+  "Brand",
   "Heading",
   "Text",
   "Link",
@@ -25,8 +26,8 @@ const SHARED_REGION_COMPONENTS = [
 /**
  * Blocks rendered inside a Header region.
  *
- * `Brand`, `AnnouncementBar`, `NavbarBlock` and `SearchBar` join this list
- * with their own blocks (header and navbar tickets).
+ * `AnnouncementBar`, `NavbarBlock` and `SearchBar` join this list with their
+ * own blocks (header and navbar tickets).
  */
 export const HEADER_RENDER_COMPONENTS = [
   ...SHARED_REGION_COMPONENTS,
@@ -35,20 +36,22 @@ export const HEADER_RENDER_COMPONENTS = [
 /**
  * Blocks rendered inside a Footer region.
  *
- * `LinkList` and `Copyright` join this list with their own blocks (footer
- * ticket).
+ * `LinkList` and `Copyright` are footer-only: they are deliberately absent
+ * from the page and header palettes.
  */
 export const FOOTER_RENDER_COMPONENTS = [
   ...SHARED_REGION_COMPONENTS,
   "Form",
   "Separator",
+  "LinkList",
+  "Copyright",
 ] as const satisfies readonly RenderComponentName[];
 
 function pickComponentConfigs(
   names: readonly RenderComponentName[],
 ): Config<any, RootProps>["components"] {
   return Object.fromEntries(
-    names.map((name) => [name, renderComponentConfigs[name]]),
+    names.map((name) => [name, regionComponentConfigs[name]]),
   ) as Config<any, RootProps>["components"];
 }
 

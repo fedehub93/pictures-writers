@@ -25,6 +25,27 @@ describe("renderConfigForRegion", () => {
 
     expect(header).not.toContain("Form");
     expect(header).not.toContain("Separator");
+    expect(header).not.toContain("LinkList");
+    expect(header).not.toContain("Copyright");
+  });
+
+  it("makes the footer blocks available only in the footer palette", () => {
+    const footer = Object.keys(renderConfigForRegion("FOOTER").components);
+
+    expect(footer).toContain("LinkList");
+    expect(footer).toContain("Copyright");
+    expect(Object.keys(pageRenderConfig.components)).not.toContain("LinkList");
+    expect(Object.keys(pageRenderConfig.components)).not.toContain("Copyright");
+  });
+
+  it("makes the Brand block available in both regions but not in pages", () => {
+    expect(Object.keys(renderConfigForRegion("HEADER").components)).toContain(
+      "Brand",
+    );
+    expect(Object.keys(renderConfigForRegion("FOOTER").components)).toContain(
+      "Brand",
+    );
+    expect(Object.keys(pageRenderConfig.components)).not.toContain("Brand");
   });
 
   it("makes the Text block available in both regions", () => {

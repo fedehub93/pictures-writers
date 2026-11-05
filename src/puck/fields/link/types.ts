@@ -31,6 +31,14 @@ export type SmartLink =
 export type LinkProps = SmartLink & { label?: string };
 
 /**
+ * One row of an editable list of links (LinkList, Copyright).
+ *
+ * The link is nested so an array field can hold a single SmartLink editor per
+ * row; the server-side resolver walks into it like any other value.
+ */
+export type LinkListItem = { link?: LinkProps | LegacyLinkProps };
+
+/**
  * Shape written by Link blocks before the SmartLink model existed.
  *
  * It is still accepted at runtime so published documents do not break.

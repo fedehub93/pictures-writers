@@ -29,6 +29,11 @@ import { FormBlockUi } from "./blocks/Form/ui/form";
 import { SeparatorBlockUi } from "./blocks/Separator/ui/separator";
 import { IconBlockUi } from "./blocks/Icon/ui/icon";
 import { LinkBlockUi } from "./blocks/Link/ui/link";
+import { LinkList } from "./blocks/LinkList";
+import { Copyright } from "./blocks/Copyright";
+import { CopyrightServer } from "./blocks/Copyright/server";
+import { Brand } from "./blocks/Brand";
+import { BrandServer } from "./blocks/Brand/server";
 
 export const rootRenderConfig: RootConfig<RootProps> = {
   fields: {
@@ -47,7 +52,9 @@ export const rootRenderConfig: RootConfig<RootProps> = {
  * Names of the blocks with a public render function.
  *
  * Kept as a tuple so region palettes are checked against it at compile time.
- * Adding a block means adding its key here and its render function below.
+ * Page blocks live in `renderComponentConfigs`; footer-only blocks live in
+ * `regionOnlyRenderComponentConfigs` and are merged by
+ * `regionComponentConfigs`.
  */
 export const RENDER_COMPONENT_NAMES = [
   "Container",
@@ -60,6 +67,9 @@ export const RENDER_COMPONENT_NAMES = [
   "Heading",
   "Text",
   "Link",
+  "Brand",
+  "LinkList",
+  "Copyright",
 ] as const;
 
 export type RenderComponentName = (typeof RENDER_COMPONENT_NAMES)[number];
@@ -198,6 +208,47 @@ export const renderComponentConfigs: Config<any, RootProps>["components"] = {
       return <LinkBlockUi link={link} styleVars={styleVars} />;
     },
   },
+};
+
+/**
+ * Render functions for blocks that only exist in a Site region palette.
+ *
+ * `Copyright` swaps the database-free editor render for a server renderer so
+ * the public footer can read the site name from Settings.
+ */
+const regionOnlyRenderComponentConfigs: Config<any, RootProps>["components"] =
+  {
+    Brand: {
+      ...Brand,
+      render: ({ showLogo, showSiteName, customText, customLogoUrl }) => (
+        <BrandServer
+          showLogo={showLogo}
+          showSiteName={showSiteName}
+          customText={customText}
+          customLogoUrl={customLogoUrl}
+        />
+      ),
+    },
+    LinkList,
+    Copyright: {
+      ...Copyright,
+      render: ({ showYear, extraText, links }) => (
+        <CopyrightServer
+          showYear={showYear}
+          extraText={extraText}
+          links={links}
+        />
+      ),
+    },
+  };
+
+/**
+ * Full render map used by Site regions: the shared blocks plus the
+ * region-only ones.
+ */
+export const regionComponentConfigs: Config<any, RootProps>["components"] = {
+  ...renderComponentConfigs,
+  ...regionOnlyRenderComponentConfigs,
 };
 
 export const pageRenderConfig: Config<any, RootProps> = {
