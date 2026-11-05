@@ -23,11 +23,16 @@ import { saveSiteRegionVersion } from "./save-site-region";
 
 export const siteRegionsRouter = createTRPCRouter({
   /**
-   * Published version of a region, as consumed by the public layout.
+   * Published version of a region, as consumed by the admin/API callers.
+   *
+   * SmartLink props stay raw here: only the public layout resolves them, so an
+   * editor bootstrapped from this query cannot save resolved URLs back.
    */
   getByKey: protectedProcedure
     .input(z.object({ key: siteRegionKeySchema }))
-    .query(async ({ input }) => getLiveRegionByKey(input.key)),
+    .query(async ({ input }) =>
+      getLiveRegionByKey(input.key, { resolveLinks: false }),
+    ),
 
   /**
    * Editable (current) version of a region. Returns `null` when the region has

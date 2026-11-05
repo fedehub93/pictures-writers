@@ -3,11 +3,15 @@ import { LinkIcon } from "lucide-react";
 import { withAccordionField } from "@/puck/utils/with-accordion-field";
 
 import { LinkView } from "./ui/view/link-view";
+import { normalizeLinkProps } from "./types";
+import type { LegacyLinkProps, LinkProps } from "./types";
 
-export interface LinkProps {
-  label?: string;
-  href?: string;
-}
+export type {
+  LegacyLinkProps,
+  LinkProps,
+  SmartLink,
+  SmartLinkType,
+} from "./types";
 
 export const LinkField = withAccordionField(
   "Link",
@@ -17,25 +21,11 @@ export const LinkField = withAccordionField(
     value,
   }: {
     onChange: (value: LinkProps) => void;
-    value: LinkProps;
+    value: LinkProps | LegacyLinkProps | null | undefined;
   }) => {
-    const state = value ?? {};
+    const state = normalizeLinkProps(value) ?? { type: "external", url: "" };
 
-    const update = (updates: LinkProps) => {
-      onChange({
-        ...state,
-        ...updates,
-      });
-    };
-
-    const resetProp = (key: keyof LinkProps) => {
-      const newState = { ...state };
-      delete newState[key];
-
-      onChange(newState);
-    };
-
-    return <LinkView state={state} onUpdate={update} resetProp={resetProp} />;
+    return <LinkView state={state} onUpdate={onChange} />;
   },
   true,
 );

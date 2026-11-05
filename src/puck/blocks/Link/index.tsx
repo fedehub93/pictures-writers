@@ -34,8 +34,9 @@ export const LinkBlock: ComponentConfig<LinkBlockProps> = {
   },
   defaultProps: {
     link: {
+      type: "external",
+      url: "",
       label: "Inserisci il tuo link",
-      href: "",
     },
     typography: {
       desktop: {
