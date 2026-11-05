@@ -17,8 +17,12 @@ import {
 import { resolveIntegrationPublicConfig } from "@/modules/integrations/lib/public-config";
 import { withIntegrationResolutionCache } from "@/modules/integrations/lib/resolution-cache";
 
-import { Navbar } from "@/app/(home)/_components/navbar";
-import { Footer } from "@/app/(home)/_components/footer";
+import { resolveRegionPuckData } from "@/modules/site-regions/lib/default-regions";
+import { getCachedLiveRegionByKey } from "@/modules/site-regions/server/queries";
+
+import { PuckRender } from "@/puck/render-config";
+import { renderConfigForRegion } from "@/puck/region-render-config";
+
 import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
 
 import { QueryProvider } from "@/shared/providers/query-provider";
@@ -49,7 +53,13 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [settings, iubendaConfig, gtmConfig] = await Promise.all([
+  const [
+    settings,
+    iubendaConfig,
+    gtmConfig,
+    headerRegion,
+    footerRegion,
+  ] = await Promise.all([
     getSettings(),
     withIntegrationResolutionCache(() =>
       resolveIntegrationPublicConfig(INTEGRATION_PROVIDER_IUBENDA),
@@ -57,7 +67,12 @@ export default async function RootLayout({
     withIntegrationResolutionCache(() =>
       resolveIntegrationPublicConfig(INTEGRATION_PROVIDER_GTM),
     ),
+    getCachedLiveRegionByKey("HEADER"),
+    getCachedLiveRegionByKey("FOOTER"),
   ]);
+
+  const headerPuckData = resolveRegionPuckData("HEADER", headerRegion);
+  const footerPuckData = resolveRegionPuckData("FOOTER", footerRegion);
 
   const socialUrls = settings.socials
     .filter((s): s is typeof s & { url: string } => !!s.url)
@@ -90,9 +105,22 @@ export default async function RootLayout({
         <ToastProvider />
         <QueryProvider>
           <div className={cn(`h-full`, figtree.className)}>
-            <Navbar />
-            <main className="pt-32 md:pt-28">{children}</main>
-            <Footer />
+            {/* Site regions flow with the page, so `main` needs no fixed
+                navbar offset. A future fixed header block is responsible for
+                reserving its own space. */}
+            <header>
+              <PuckRender
+                config={renderConfigForRegion("HEADER")}
+                initialData={headerPuckData}
+              />
+            </header>
+            <main>{children}</main>
+            <footer>
+              <PuckRender
+                config={renderConfigForRegion("FOOTER")}
+                initialData={footerPuckData}
+              />
+            </footer>
           </div>
         </QueryProvider>
         {process.env.NODE_ENV === "production" && (

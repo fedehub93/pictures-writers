@@ -1,6 +1,6 @@
 import "server-only";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 import {
   ContentStatus,
@@ -8,6 +8,8 @@ import {
   type SiteRegionVersion,
 } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
+
+import { SITE_REGIONS_CACHE_TAG } from "../constants";
 
 import { SiteRegionError } from "./errors";
 import { acquireSiteRegionLock } from "./lock-site-region";
@@ -30,6 +32,16 @@ export interface UnpublishedSiteRegion {
   id: string;
   key: SiteRegionKey;
   liveVersionId: string | null;
+}
+
+/**
+ * A Site region renders in the public layout, so a change must invalidate every
+ * page. The tag clears the cached layout read; the path invalidates the ISR
+ * output. See ADR-0001 for the revalidation strategy.
+ */
+function revalidateSiteRegionLayout(): void {
+  revalidatePath("/", "layout");
+  revalidateTag(SITE_REGIONS_CACHE_TAG, { expire: 0 });
 }
 
 /**
@@ -88,9 +100,7 @@ export async function publishSiteRegionVersion({
     return { ...published, key: root.key };
   });
 
-  // A Site region renders in the public layout, so every page must be
-  // invalidated. See ADR-0001 for the revalidation strategy.
-  revalidatePath("/", "layout");
+  revalidateSiteRegionLayout();
 
   return published;
 }
@@ -136,7 +146,7 @@ export async function unpublishSiteRegion({
     return { id: root.id, key: root.key, liveVersionId: null };
   });
 
-  revalidatePath("/", "layout");
+  revalidateSiteRegionLayout();
 
   return unpublished;
 }

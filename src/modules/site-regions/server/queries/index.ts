@@ -1,4 +1,5 @@
 export {
+  getCachedLiveRegionByKey,
   getLiveRegionByKey,
   type GetLiveRegionByKey,
 } from "./get-live-region-by-key";

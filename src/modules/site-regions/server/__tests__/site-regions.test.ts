@@ -22,10 +22,11 @@ vi.mock("@/trpc/init", async () => {
 vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
   revalidateTag: vi.fn(),
+  unstable_cache: (callback: unknown) => callback,
 }));
 
 import { createCallerFactory } from "@/trpc/init";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 import type { Data } from "@puckeditor/core";
 
@@ -33,6 +34,7 @@ import { ContentStatus } from "@/generated/prisma";
 import type { HydratedComponents } from "@/puck/config";
 import { db } from "@/shared/lib/db";
 
+import { SITE_REGIONS_CACHE_TAG } from "../../constants";
 import {
   getLiveRegionByKey,
   getRegionWithVersions,
@@ -313,6 +315,9 @@ describe("siteRegionsRouter publish", () => {
     expect(root.liveVersionId).toBe(created.id);
     expect(root.firstPublishedAt).toBeInstanceOf(Date);
     expect(revalidatePath).toHaveBeenCalledWith("/", "layout");
+    expect(revalidateTag).toHaveBeenCalledWith(SITE_REGIONS_CACHE_TAG, {
+      expire: 0,
+    });
   });
 
   it("demotes the previous live version when publishing a fork", async () => {
@@ -384,6 +389,9 @@ describe("siteRegionsRouter unpublish", () => {
 
     expect(result.liveVersionId).toBeNull();
     expect(revalidatePath).toHaveBeenCalledWith("/", "layout");
+    expect(revalidateTag).toHaveBeenCalledWith(SITE_REGIONS_CACHE_TAG, {
+      expire: 0,
+    });
 
     const root = await db.siteRegion.findUniqueOrThrow({
       where: { id: created.rootId },
