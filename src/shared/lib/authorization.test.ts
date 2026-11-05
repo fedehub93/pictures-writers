@@ -66,6 +66,10 @@ describe("authorization policy", () => {
     expect(getProcedurePermissions("siteRegions.getCurrent")).toEqual([
       "site_layout.read",
     ]);
+    expect(getProcedurePermissions("siteRegions.create")).toEqual([
+      "site_layout.update",
+      "site_layout.manage",
+    ]);
     expect(getProcedurePermissions("siteRegions.update")).toEqual([
       "site_layout.update",
       "site_layout.manage",

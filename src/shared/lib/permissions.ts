@@ -27,6 +27,9 @@ export const PERMISSIONS = {
   PAGES_UPDATE: "pages.update",
   PAGES_DELETE: "pages.delete",
   PAGES_PUBLISH: "pages.publish",
+  SITE_LAYOUT_READ: "site_layout.read",
+  SITE_LAYOUT_UPDATE: "site_layout.update",
+  SITE_LAYOUT_PUBLISH: "site_layout.publish",
   PRODUCTS_READ: "products.read",
   PRODUCTS_CREATE: "products.create",
   PRODUCTS_UPDATE: "products.update",
@@ -131,6 +134,12 @@ export const getProcedurePermission = (path: string): string => {
   // saving one's own layout. There is no dashboard.manage.
   if (area === "dashboard") {
     return `${area}.read`;
+  }
+
+  // Site layout has no create action: a region root is created on demand when
+  // the admin opens its editor, so creating is part of the update surface.
+  if (area === "site_layout" && operation === "create") {
+    return `${area}.update`;
   }
 
   if (READ_OPERATIONS.has(operation) || operation.startsWith("get")) {

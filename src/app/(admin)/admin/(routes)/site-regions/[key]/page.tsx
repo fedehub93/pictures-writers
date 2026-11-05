@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
-import { requireAdminAuth } from "@/shared/lib/auth-utils";
+import { requirePermission } from "@/shared/lib/auth-utils";
+import { PERMISSIONS } from "@/shared/lib/permissions";
 
 import { SiteRegionEditorView } from "@/modules/site-regions/ui/views/site-region-editor-view";
 import { createSiteRegion } from "@/modules/site-regions/server/create-site-region";
@@ -12,7 +13,7 @@ interface SiteRegionEditorPageProps {
 }
 
 const SiteRegionEditorPage = async ({ params }: SiteRegionEditorPageProps) => {
-  const session = await requireAdminAuth();
+  const session = await requirePermission(PERMISSIONS.SITE_LAYOUT_UPDATE);
   const { key: rawKey } = await params;
 
   const key = siteRegionKeySchema.safeParse(rawKey.toUpperCase());

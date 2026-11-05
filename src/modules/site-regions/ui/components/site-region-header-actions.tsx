@@ -10,6 +10,8 @@ import { toast } from "sonner";
 
 import { useTRPC } from "@/trpc/client";
 
+import { PERMISSIONS } from "@/shared/lib/permissions";
+import { usePermission } from "@/shared/providers/authorization-provider";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 
@@ -31,6 +33,8 @@ export const SiteRegionHeaderActions = ({
   const queryClient = useQueryClient();
   const appState = usePuck((state) => state.appState);
   const [editorState, setEditorState] = useState(region);
+  const canUpdate = usePermission(PERMISSIONS.SITE_LAYOUT_UPDATE);
+  const canPublish = usePermission(PERMISSIONS.SITE_LAYOUT_PUBLISH);
 
   const isPublished = editorState.version.status === "PUBLISHED";
   const regionKey = editorState.key;
@@ -117,37 +121,41 @@ export const SiteRegionHeaderActions = ({
         {getSiteRegionStatusLabel(editorState.version.status)}
       </Badge>
 
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        disabled={isBusy}
-        onClick={onSave}
-      >
-        {isSaving ? (
-          <Loader2Icon data-icon="inline-start" className="animate-spin" />
-        ) : (
-          <SaveIcon data-icon="inline-start" />
-        )}
-        Save
-      </Button>
+      {canUpdate && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={isBusy}
+          onClick={onSave}
+        >
+          {isSaving ? (
+            <Loader2Icon data-icon="inline-start" className="animate-spin" />
+          ) : (
+            <SaveIcon data-icon="inline-start" />
+          )}
+          Save
+        </Button>
+      )}
 
-      <Button
-        type="button"
-        variant={isPublished ? "destructive" : "default"}
-        size="sm"
-        disabled={isBusy}
-        onClick={onTogglePublish}
-      >
-        {isPublishing ? (
-          <Loader2Icon data-icon="inline-start" className="animate-spin" />
-        ) : isPublished ? (
-          <EyeOffIcon data-icon="inline-start" />
-        ) : (
-          <EyeIcon data-icon="inline-start" />
-        )}
-        {isPublished ? "Unpublish" : "Publish"}
-      </Button>
+      {canPublish && (
+        <Button
+          type="button"
+          variant={isPublished ? "destructive" : "default"}
+          size="sm"
+          disabled={isBusy}
+          onClick={onTogglePublish}
+        >
+          {isPublishing ? (
+            <Loader2Icon data-icon="inline-start" className="animate-spin" />
+          ) : isPublished ? (
+            <EyeOffIcon data-icon="inline-start" />
+          ) : (
+            <EyeIcon data-icon="inline-start" />
+          )}
+          {isPublished ? "Unpublish" : "Publish"}
+        </Button>
+      )}
     </div>
   );
 };

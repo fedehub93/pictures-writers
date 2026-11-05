@@ -37,7 +37,7 @@ Build the backend CRUD and publish flow for Site regions, mirroring the pages mo
 - `getCurrent` and `getByKey` return `null` (not an error) when a region has not been created or published yet, which is what the admin "create on open" flow and the layout fallback need.
 - `update` only accepts the root's current version; a stale id raises `CONFLICT`. This is stricter than the pages module, whose API can rewrite any version id.
 - The permission area is wired through `AREA_ALIASES` (`siteRegions` → `site_layout`) so ticket 10 only needs to seed the permissions. Until then every procedure fails closed with `FORBIDDEN`.
-- **Ticket 10 follow-up**: the path rule maps `create` to `site_layout.create`, but the spec only defines `read`/`update`/`publish`. Ticket 10 must either add a `create` action or remap `create` to `site_layout.update` (e.g. via `permissionProcedure`).
+- **Ticket 10 follow-up**: the path rule maps `create` to `site_layout.create`, but the spec only defines `read`/`update`/`publish`. Ticket 10 must either add a `create` action or remap `create` to `site_layout.update` (e.g. via `permissionProcedure`). Resolved in ticket 10 by remapping `siteRegions.create` to `site_layout.update` in `getProcedurePermission`.
 - `publish` and `unpublish` both call `revalidatePath("/", "layout")` from `publish-site-region.ts`, as tickets 02 and 10 require.
 - `getRegionWithVersions` is consumed directly by server components (ticket 07), not through tRPC, mirroring how the pages admin reads its queries.
 

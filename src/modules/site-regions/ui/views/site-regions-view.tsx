@@ -1,11 +1,9 @@
-import Link from "next/link";
 import { format } from "date-fns";
-import { PanelBottomIcon, PanelTopIcon, PencilIcon } from "lucide-react";
+import { PanelBottomIcon, PanelTopIcon } from "lucide-react";
 
 import type { SiteRegionKey } from "@/generated/prisma";
 
 import { Badge } from "@/shared/ui/badge";
-import { Button } from "@/shared/ui/button";
 import {
   Card,
   CardContent,
@@ -21,6 +19,7 @@ import {
   getSiteRegionStatusVariant,
   type SiteRegionSummary,
 } from "../../lib/region-presentation";
+import { SiteRegionEditAction } from "../components/site-region-edit-action";
 import { SiteRegionPublishAction } from "../components/site-region-publish-action";
 
 const REGION_ICONS: Record<SiteRegionKey, typeof PanelTopIcon> = {
@@ -89,12 +88,7 @@ const SiteRegionCard = ({ region }: { region: SiteRegionSummary }) => {
         </div>
       </CardContent>
       <CardFooter className="justify-between gap-2">
-        <Button variant="outline" size="sm" asChild>
-          <Link href={`/admin/site-regions/${region.key}`}>
-            <PencilIcon data-icon="inline-start" />
-            Edit layout
-          </Link>
-        </Button>
+        <SiteRegionEditAction regionKey={region.key} />
         <SiteRegionPublishAction region={region} />
       </CardFooter>
     </Card>

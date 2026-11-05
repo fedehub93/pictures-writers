@@ -5,6 +5,8 @@ import "client-only";
 import { useRouter } from "next/navigation";
 import { EyeIcon, EyeOffIcon, Loader2Icon } from "lucide-react";
 
+import { PERMISSIONS } from "@/shared/lib/permissions";
+import { usePermission } from "@/shared/providers/authorization-provider";
 import { Button } from "@/shared/ui/button";
 
 import type { SiteRegionSummary } from "../../lib/region-presentation";
@@ -16,6 +18,7 @@ export const SiteRegionPublishAction = ({
   region: SiteRegionSummary;
 }) => {
   const router = useRouter();
+  const canPublish = usePermission(PERMISSIONS.SITE_LAYOUT_PUBLISH);
   const refreshList = () => router.refresh();
 
   const { publish, unpublish, isPublishing } = useSiteRegionPublishing({
@@ -25,7 +28,7 @@ export const SiteRegionPublishAction = ({
 
   const { rootId, currentVersionId, status } = region;
 
-  if (!rootId || !currentVersionId || !status) {
+  if (!canPublish || !rootId || !currentVersionId || !status) {
     return null;
   }
 
