@@ -31,7 +31,7 @@ Gate Site region editing with a dedicated permission and ensure publish triggers
 
 ## Comments
 
-Implemented in commit `96dbff28`.
+Implemented in commit `884cac16`.
 
 - Added `SITE_LAYOUT_READ`, `SITE_LAYOUT_UPDATE` and `SITE_LAYOUT_PUBLISH` to `PERMISSIONS`; migration `20261105123000_add_site_layout_permissions` inserts the catalog rows and assigns all three to `ADMIN` and `EDITOR` idempotently.
 - `getProcedurePermission` now remaps `siteRegions.create` to `site_layout.update`, resolving the ticket 02 follow-up: the area has no `create` action, and creating a root on first editor open is part of the update surface. All other procedures keep resolving through the existing `siteRegions` → `site_layout` alias in `protectedProcedure`.
