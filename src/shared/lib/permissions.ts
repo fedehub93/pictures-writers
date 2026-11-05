@@ -106,6 +106,7 @@ const AREA_ALIASES: Record<string, string> = {
   singleSends: "single-sends",
   productCategories: "product-categories",
   scheduler: "posts",
+  siteRegions: "site_layout",
 };
 
 const READ_OPERATIONS = new Set([

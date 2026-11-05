@@ -59,6 +59,25 @@ describe("authorization policy", () => {
     expect(getProcedurePermissions("users.getMany")).toEqual(["users.read"]);
   });
 
+  it("maps siteRegions procedures to the site_layout permission area", () => {
+    expect(getProcedurePermissions("siteRegions.getByKey")).toEqual([
+      "site_layout.read",
+    ]);
+    expect(getProcedurePermissions("siteRegions.getCurrent")).toEqual([
+      "site_layout.read",
+    ]);
+    expect(getProcedurePermissions("siteRegions.update")).toEqual([
+      "site_layout.update",
+      "site_layout.manage",
+    ]);
+    expect(getProcedurePermissions("siteRegions.publish")).toEqual([
+      "site_layout.publish",
+    ]);
+    expect(getProcedurePermissions("siteRegions.unpublish")).toEqual([
+      "site_layout.publish",
+    ]);
+  });
+
   it("keeps read access exact while allowing manage as a mutation fallback", () => {
     expect(getPermissionAlternatives("users.read")).toEqual(["users.read"]);
     expect(getPermissionAlternatives("users.update")).toEqual([
