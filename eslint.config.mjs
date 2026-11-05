@@ -43,6 +43,24 @@ const eslintConfig = defineConfig([
   ]),
   {
     rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "MemberExpression[property.name='$queryRawUnsafe']",
+          message:
+            "Use the $queryRaw tagged template. See AGENTS.md > Database > Raw SQL.",
+        },
+        {
+          selector: "MemberExpression[property.name='$executeRawUnsafe']",
+          message:
+            "Use the $executeRaw tagged template. See AGENTS.md > Database > Raw SQL.",
+        },
+        {
+          selector: "MemberExpression[object.name='Prisma'][property.name='raw']",
+          message:
+            "Identifiers must come from a closed allow-list, never from request data. See AGENTS.md > Database > Raw SQL.",
+        },
+      ],
       "@typescript-eslint/no-namespace": [
         "error",
         {

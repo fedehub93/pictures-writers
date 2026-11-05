@@ -338,6 +338,19 @@ Operational docs:
 - Adapter: `@prisma/adapter-pg` (PostgreSQL)
 - Generator: `prisma-json-types-generator` for typed JSON fields
 
+### Raw SQL
+
+- Prefer the typed Prisma client. When raw SQL is unavoidable, use the tagged
+  templates (`db.$queryRaw\`...\`` / `db.$executeRaw\`...\``): interpolated
+  values become bound parameters.
+- Never put request data in an SQL identifier (table, column, `ORDER BY`,
+  direction). Identifiers must come from a closed allow-list — see the
+  exhaustive `switch` in `src/shared/lib/lock-root.ts`.
+- ESLint rejects `$queryRawUnsafe`, `$executeRawUnsafe` and `Prisma.raw`. For
+  the rare trusted exception (e.g. replaying a committed migration in a test),
+  use `// eslint-disable-next-line no-restricted-syntax` with a written
+  justification.
+
 ### Key models
 
 - `User`, `Session`, `Account` — Better Auth

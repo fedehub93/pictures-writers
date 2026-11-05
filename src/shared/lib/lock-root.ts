@@ -26,8 +26,24 @@ export async function acquireRootLock(
   table: RootLockTable,
   rootId: string,
 ): Promise<void> {
-  await tx.$queryRawUnsafe(
-    `SELECT id FROM "${table}" WHERE id = $1 FOR UPDATE`,
-    rootId,
-  );
+  // One static query per table: the identifier is never interpolated and the
+  // id stays a bound parameter. Add a case here when extending RootLockTable.
+  switch (table) {
+    case "PageRoot":
+      await tx.$queryRaw`SELECT id FROM "PageRoot" WHERE id = ${rootId} FOR UPDATE`;
+      return;
+    case "PostRoot":
+      await tx.$queryRaw`SELECT id FROM "PostRoot" WHERE id = ${rootId} FOR UPDATE`;
+      return;
+    case "ProductRoot":
+      await tx.$queryRaw`SELECT id FROM "ProductRoot" WHERE id = ${rootId} FOR UPDATE`;
+      return;
+    case "SiteRegion":
+      await tx.$queryRaw`SELECT id FROM "SiteRegion" WHERE id = ${rootId} FOR UPDATE`;
+      return;
+    default: {
+      const unexpectedTable: never = table;
+      throw new Error(`Unsupported root lock table: ${unexpectedTable}`);
+    }
+  }
 }
