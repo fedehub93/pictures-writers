@@ -1,117 +1,28 @@
 "use client";
+import "client-only";
 
-import { SearchIcon } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { useDebounceValue } from "usehooks-ts";
-import { BeatLoader } from "react-spinners";
-import { formatDistance } from "date-fns";
-import { it } from "date-fns/locale";
+import { useId } from "react";
 
-import { usePostsInfiniteQuery } from "@/hooks/use-posts-infinite-query";
+import { SearchBox } from "@/shared/components/search/search-box";
 
-import { ScrollArea } from "@/shared/ui/scroll-area";
-import { Button } from "@/shared/ui/button";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/shared/ui/input-group";
-
+/**
+ * Sidebar search widget.
+ *
+ * The search field, debounce and result list live in the shared `SearchBox`;
+ * the widget only supplies the sidebar-specific frame and heading.
+ */
 export const WidgetSearchBox = () => {
-  const [debouncedSearch, setDebouncedSearch] = useDebounceValue("", 500);
-
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
-    usePostsInfiniteQuery({ s: debouncedSearch, windowIsOpen: true });
+  const searchId = useId();
 
   return (
-    <div className="w-full bg-white px-6 py-8 shadow-md hidden md:block">
+    <div className="hidden w-full bg-background px-6 py-8 shadow-md md:block">
       <label
-        htmlFor="search"
-        className="mb-4 text-sm font-extrabold uppercase block"
+        htmlFor={searchId}
+        className="mb-4 block text-sm font-extrabold uppercase"
       >
         Cerca
       </label>
-      <div className="relative mb-4">
-        <InputGroup>
-          <InputGroupInput
-            placeholder="Search..."
-            onChange={(e) => {
-              setDebouncedSearch(e.target.value);
-            }}
-          />
-          <InputGroupAddon>
-            <SearchIcon />
-          </InputGroupAddon>
-        </InputGroup>
-      </div>
-      {debouncedSearch && (
-        <ScrollArea className=" max-h-100 overflow-auto">
-          {status === "pending" ? (
-            <div className="flex h-full flex-col flex-1 justify-center items-center py-8">
-              <BeatLoader />
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                Caricando articoli ...
-              </p>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center py-4 gap-y-4">
-              {data?.pages?.map((group, i) => (
-                <div
-                  key={i}
-                  className="flex flex-col items-center py-4 gap-y-4"
-                >
-                  {group.posts.map((item) => (
-                    <Link
-                      href={`/${item.slug}`}
-                      key={item.title}
-                      className="relative flex gap-x-4 gap-y-8 group"
-                    >
-                      <div className="relative w-14 h-14 aspect-square top-0 transition-all duration-300 self-start">
-                        <Image
-                          src={item.imageCover?.url ?? ""}
-                          alt={item.imageCover?.altText || ""}
-                          fill
-                          sizes="10vw"
-                          className="object-cover rounded-md"
-                        />
-                      </div>
-                      <div className="flex flex-col gap-y-2 justify-evenly">
-                        <p className="text-base font-medium leading-4">
-                          {item.title}
-                        </p>
-                        <div className="flex items-center justify-between">
-                          <p className="self-end text-xs text-muted-foreground">
-                            Pubblicato{" "}
-                            {item.publishedAt
-                              ? formatDistance(item.publishedAt, new Date(), {
-                                  addSuffix: true,
-                                  locale: it,
-                                })
-                              : "—"}
-                          </p>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              ))}
-              <Button
-                type="button"
-                onClick={() => fetchNextPage()}
-                disabled={!hasNextPage || isFetchingNextPage}
-                className="mt-4 mx-auto"
-              >
-                {isFetchingNextPage
-                  ? "Loading more..."
-                  : hasNextPage
-                    ? "Load More"
-                    : "Nothing more to load"}
-              </Button>
-            </div>
-          )}
-        </ScrollArea>
-      )}
+      <SearchBox id={searchId} variant="inline" placeholder="Search..." />
     </div>
   );
 };

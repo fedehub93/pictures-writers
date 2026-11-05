@@ -7,26 +7,37 @@ import type { Config } from "@puckeditor/core";
  * public render config and the backoffice editor config are derived from these
  * tuples, so a client bundle never pulls in the server-only renderers just to
  * learn which blocks a region allows.
+ *
+ * The shared blocks are split into segments so the Header can insert its own
+ * blocks between the brand and the content without duplicating the list.
  */
+const REGION_LAYOUT_COMPONENTS = ["Container", "Flex", "Grid"] as const;
+const REGION_BRAND_COMPONENTS = ["Brand"] as const;
+const REGION_CONTENT_COMPONENTS = ["Heading", "Text", "Link", "Image"] as const;
+
 const SHARED_REGION_COMPONENTS = [
-  "Container",
-  "Flex",
-  "Grid",
-  "Brand",
-  "Heading",
-  "Text",
-  "Link",
-  "Image",
+  ...REGION_LAYOUT_COMPONENTS,
+  ...REGION_BRAND_COMPONENTS,
+  ...REGION_CONTENT_COMPONENTS,
+] as const;
+
+/**
+ * Header-only blocks. `NavbarBlock` joins this list with its own ticket; the
+ * editor "Header" category reads this tuple so the two cannot drift.
+ */
+export const HEADER_ONLY_COMPONENTS = [
+  "AnnouncementBar",
+  "SearchBar",
 ] as const;
 
 /**
  * Blocks rendered (and offered in the editor) inside a Header region.
- *
- * `AnnouncementBar`, `NavbarBlock` and `SearchBar` join this list with their
- * own tickets.
  */
 export const HEADER_REGION_COMPONENTS = [
-  ...SHARED_REGION_COMPONENTS,
+  ...REGION_LAYOUT_COMPONENTS,
+  ...REGION_BRAND_COMPONENTS,
+  ...HEADER_ONLY_COMPONENTS,
+  ...REGION_CONTENT_COMPONENTS,
 ] as const;
 
 /**

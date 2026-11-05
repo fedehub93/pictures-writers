@@ -19,22 +19,38 @@ export type {
   SmartLinkType,
 } from "./types";
 
-export const LinkField = withAccordionField(
-  "Link",
-  <LinkIcon className="size-4 text-muted-foreground" />,
-  ({
-    onChange,
-    value,
-  }: {
-    onChange: (value: LinkProps) => void;
-    value: LinkProps | LegacyLinkProps | null | undefined;
-  }) => {
-    const state = normalizeLinkProps(value) ?? { type: "external", url: "" };
+export const createLinkField = ({
+  showLabel = true,
+}: {
+  showLabel?: boolean;
+} = {}): Field =>
+  withAccordionField(
+    "Link",
+    <LinkIcon className="size-4 text-muted-foreground" />,
+    ({
+      onChange,
+      value,
+    }: {
+      onChange: (value: LinkProps) => void;
+      value: LinkProps | LegacyLinkProps | null | undefined;
+    }) => {
+      const state = normalizeLinkProps(value) ?? {
+        type: "external",
+        url: "",
+      };
 
-    return <LinkView state={state} onUpdate={onChange} />;
-  },
-  true,
-);
+      return (
+        <LinkView state={state} onUpdate={onChange} showLabel={showLabel} />
+      );
+    },
+    true,
+  );
+
+/**
+ * Default single-link editor: target + visible label. Blocks that render their
+ * own copy use `createLinkField({ showLabel: false })`.
+ */
+export const LinkField: Field = createLinkField();
 
 /**
  * Editable list of SmartLinks, shared by the footer blocks that render a

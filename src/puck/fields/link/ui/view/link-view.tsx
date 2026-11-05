@@ -51,9 +51,19 @@ interface PickerOption {
 interface LinkViewProps {
   state: LinkProps;
   onUpdate: (values: LinkProps) => void;
+  /**
+   * Show the visible label control. Blocks that render their own copy (the
+   * AnnouncementBar) set this to false so the editor does not offer a label
+   * that never reaches the page.
+   */
+  showLabel?: boolean;
 }
 
-export const LinkView = ({ state, onUpdate }: LinkViewProps) => {
+export const LinkView = ({
+  state,
+  onUpdate,
+  showLabel = true,
+}: LinkViewProps) => {
   const trpc = useTRPC();
   const [search, setSearch] = useDebounceValue("", 300);
 
@@ -156,22 +166,24 @@ export const LinkView = ({ state, onUpdate }: LinkViewProps) => {
         </Select>
       </div>
 
-      <div className="flex flex-col gap-y-1">
-        <PropHeader
-          name="label"
-          label="Label"
-          isModified={state.label !== undefined}
-          onReset={() => onUpdate(withLinkLabel(state, undefined))}
-        />
-        <TextInput
-          name="label"
-          value={state.label}
-          onChange={(newVal) =>
-            onUpdate(withLinkLabel(state, newVal || undefined))
-          }
-          placeholder="Lascia vuoto per usare il titolo del contenuto"
-        />
-      </div>
+      {showLabel ? (
+        <div className="flex flex-col gap-y-1">
+          <PropHeader
+            name="label"
+            label="Label"
+            isModified={state.label !== undefined}
+            onReset={() => onUpdate(withLinkLabel(state, undefined))}
+          />
+          <TextInput
+            name="label"
+            value={state.label}
+            onChange={(newVal) =>
+              onUpdate(withLinkLabel(state, newVal || undefined))
+            }
+            placeholder="Lascia vuoto per usare il titolo del contenuto"
+          />
+        </div>
+      ) : null}
 
       {linkType === "external" ? (
         <>

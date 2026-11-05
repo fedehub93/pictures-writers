@@ -34,6 +34,8 @@ import { Copyright } from "./blocks/Copyright";
 import { CopyrightServer } from "./blocks/Copyright/server";
 import { Brand } from "./blocks/Brand";
 import { BrandServer } from "./blocks/Brand/server";
+import { AnnouncementBar } from "./blocks/AnnouncementBar";
+import { SearchBar } from "./blocks/SearchBar";
 
 export const rootRenderConfig: RootConfig<RootProps> = {
   fields: {
@@ -70,6 +72,8 @@ export const RENDER_COMPONENT_NAMES = [
   "Brand",
   "LinkList",
   "Copyright",
+  "AnnouncementBar",
+  "SearchBar",
 ] as const;
 
 export type RenderComponentName = (typeof RENDER_COMPONENT_NAMES)[number];
@@ -240,6 +244,8 @@ const regionOnlyRenderComponentConfigs: Config<any, RootProps>["components"] =
         />
       ),
     },
+    AnnouncementBar,
+    SearchBar,
   };
 
 /**

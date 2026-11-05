@@ -1,7 +1,6 @@
 import { ComponentConfig } from "@puckeditor/core";
 
-import { PALETTE_COLORS, THEME_COLORS } from "@/puck/constants";
-
+import { buildColorOptions } from "@/puck/constants";
 import type { AlignType } from "@/puck/fields/typography/types";
 
 import type { TextBlockProps } from "./types";
@@ -16,11 +15,7 @@ const ALIGN_OPTIONS: { label: string; value: AlignType }[] = [
   { label: "Justify", value: "justify" },
 ];
 
-const COLOR_OPTIONS = [
-  { label: "Default", value: "" },
-  ...THEME_COLORS.map(({ label, value }) => ({ label, value })),
-  ...PALETTE_COLORS.map((value) => ({ label: value, value })),
-];
+const COLOR_OPTIONS = buildColorOptions();
 
 export const Text: ComponentConfig<TextBlockProps> = {
   fields: {

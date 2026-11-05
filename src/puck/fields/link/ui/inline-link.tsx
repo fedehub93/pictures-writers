@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import type { Route } from "next";
 import Link from "next/link";
 
@@ -13,27 +13,31 @@ import {
  * Renders a single resolved link inline (no wrapper element).
  *
  * Broken or unresolved entity links render as plain text, matching the Link
- * block, so a footer column never shows a dead anchor.
+ * block, so a footer column never shows a dead anchor. When `children` is
+ * provided it replaces the link label, letting blocks such as AnnouncementBar
+ * reuse the anchor/plain-text behaviour for their own content.
  */
 export const InlineSmartLink = ({
   link,
   className,
   style,
+  children,
 }: {
   link?: LinkProps | LegacyLinkProps;
   className?: string;
   style?: CSSProperties;
+  children?: ReactNode;
 }) => {
   if (!link) return null;
 
   const href = getLinkHref(link);
-  const label = link.label;
+  const content = children ?? link.label ?? href;
 
-  if (!href && !label) return null;
+  if (!content) return null;
   if (!href) {
     return (
       <span className={className} style={style}>
-        {label}
+        {content}
       </span>
     );
   }
@@ -49,7 +53,7 @@ export const InlineSmartLink = ({
       target={openInNewTab ? "_blank" : undefined}
       rel={openInNewTab ? "noreferrer" : undefined}
     >
-      {label ?? href}
+      {content}
     </Link>
   );
 };

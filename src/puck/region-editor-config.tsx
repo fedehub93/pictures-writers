@@ -6,6 +6,7 @@ import { editorComponentConfigs } from "./custom-config";
 import { RootEditor } from "./root";
 import {
   FOOTER_REGION_COMPONENTS,
+  HEADER_ONLY_COMPONENTS,
   HEADER_REGION_COMPONENTS,
   pickComponentConfigs,
   type RegionComponent,
@@ -25,6 +26,11 @@ const CATEGORY_COMPONENTS: Array<{
     key: "region",
     title: "Site layout",
     components: ["Brand", "LinkList", "Copyright"],
+  },
+  {
+    key: "header",
+    title: "Header",
+    components: [...HEADER_ONLY_COMPONENTS],
   },
   {
     key: "basic",

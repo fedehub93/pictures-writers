@@ -20,6 +20,19 @@ describe("renderConfigForRegion", () => {
     expect(Object.keys(config.components)).toEqual([...FOOTER_RENDER_COMPONENTS]);
   });
 
+  it("keeps header-only blocks out of the footer and pages", () => {
+    const header = Object.keys(renderConfigForRegion("HEADER").components);
+    const footer = Object.keys(renderConfigForRegion("FOOTER").components);
+    const page = Object.keys(pageRenderConfig.components);
+
+    expect(header).toContain("AnnouncementBar");
+    expect(header).toContain("SearchBar");
+    expect(footer).not.toContain("AnnouncementBar");
+    expect(footer).not.toContain("SearchBar");
+    expect(page).not.toContain("AnnouncementBar");
+    expect(page).not.toContain("SearchBar");
+  });
+
   it("keeps footer-only blocks out of the header", () => {
     const header = Object.keys(renderConfigForRegion("HEADER").components);
 

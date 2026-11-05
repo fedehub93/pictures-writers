@@ -29,8 +29,23 @@ describe("editorConfigForRegion", () => {
 
     expect(header).not.toContain("LinkList");
     expect(header).not.toContain("Copyright");
+    expect(header).toContain("AnnouncementBar");
+    expect(header).toContain("SearchBar");
     expect(footer).toContain("LinkList");
     expect(footer).toContain("Copyright");
+    expect(footer).not.toContain("AnnouncementBar");
+    expect(footer).not.toContain("SearchBar");
+  });
+
+  it("groups the header-only blocks under the Header category", () => {
+    const header = editorConfigForRegion("HEADER");
+    const footer = editorConfigForRegion("FOOTER");
+
+    expect(header.categories?.header).toEqual({
+      title: "Header",
+      components: ["AnnouncementBar", "SearchBar"],
+    });
+    expect(footer.categories?.header).toBeUndefined();
   });
 
   it("returns stable, distinct configs per region", () => {
