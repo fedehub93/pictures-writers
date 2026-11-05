@@ -22,11 +22,13 @@ export const InlineSmartLink = ({
   className,
   style,
   children,
+  onClick,
 }: {
   link?: LinkProps | LegacyLinkProps;
   className?: string;
   style?: CSSProperties;
   children?: ReactNode;
+  onClick?: () => void;
 }) => {
   if (!link) return null;
 
@@ -36,7 +38,7 @@ export const InlineSmartLink = ({
   if (!content) return null;
   if (!href) {
     return (
-      <span className={className} style={style}>
+      <span className={className} style={style} onClick={onClick}>
         {content}
       </span>
     );
@@ -49,6 +51,7 @@ export const InlineSmartLink = ({
       href={href as Route}
       className={className}
       style={style}
+      onClick={onClick}
       prefetch={false}
       target={openInNewTab ? "_blank" : undefined}
       rel={openInNewTab ? "noreferrer" : undefined}

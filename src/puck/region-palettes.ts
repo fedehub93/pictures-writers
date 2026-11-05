@@ -22,12 +22,13 @@ const SHARED_REGION_COMPONENTS = [
 ] as const;
 
 /**
- * Header-only blocks. `NavbarBlock` joins this list with its own ticket; the
- * editor "Header" category reads this tuple so the two cannot drift.
+ * Header-only blocks. The editor "Header" category reads this tuple so the
+ * palette and the category cannot drift.
  */
 export const HEADER_ONLY_COMPONENTS = [
   "AnnouncementBar",
   "SearchBar",
+  "NavbarBlock",
 ] as const;
 
 /**

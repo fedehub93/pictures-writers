@@ -31,10 +31,12 @@ describe("editorConfigForRegion", () => {
     expect(header).not.toContain("Copyright");
     expect(header).toContain("AnnouncementBar");
     expect(header).toContain("SearchBar");
+    expect(header).toContain("NavbarBlock");
     expect(footer).toContain("LinkList");
     expect(footer).toContain("Copyright");
     expect(footer).not.toContain("AnnouncementBar");
     expect(footer).not.toContain("SearchBar");
+    expect(footer).not.toContain("NavbarBlock");
   });
 
   it("groups the header-only blocks under the Header category", () => {
@@ -43,7 +45,7 @@ describe("editorConfigForRegion", () => {
 
     expect(header.categories?.header).toEqual({
       title: "Header",
-      components: ["AnnouncementBar", "SearchBar"],
+      components: ["AnnouncementBar", "SearchBar", "NavbarBlock"],
     });
     expect(footer.categories?.header).toBeUndefined();
   });

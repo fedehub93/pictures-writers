@@ -36,6 +36,8 @@ import { Brand } from "./blocks/Brand";
 import { BrandServer } from "./blocks/Brand/server";
 import { AnnouncementBar } from "./blocks/AnnouncementBar";
 import { SearchBar } from "./blocks/SearchBar";
+import { NavbarBlock } from "./blocks/NavbarBlock";
+import { NavbarBlockServer } from "./blocks/NavbarBlock/server";
 
 export const rootRenderConfig: RootConfig<RootProps> = {
   fields: {
@@ -74,6 +76,7 @@ export const RENDER_COMPONENT_NAMES = [
   "Copyright",
   "AnnouncementBar",
   "SearchBar",
+  "NavbarBlock",
 ] as const;
 
 export type RenderComponentName = (typeof RENDER_COMPONENT_NAMES)[number];
@@ -246,6 +249,12 @@ const regionOnlyRenderComponentConfigs: Config<any, RootProps>["components"] =
     },
     AnnouncementBar,
     SearchBar,
+    NavbarBlock: {
+      ...NavbarBlock,
+      render: ({ items, layout }) => (
+        <NavbarBlockServer items={items} layout={layout} />
+      ),
+    },
   };
 
 /**

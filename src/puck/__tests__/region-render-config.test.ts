@@ -27,10 +27,13 @@ describe("renderConfigForRegion", () => {
 
     expect(header).toContain("AnnouncementBar");
     expect(header).toContain("SearchBar");
+    expect(header).toContain("NavbarBlock");
     expect(footer).not.toContain("AnnouncementBar");
     expect(footer).not.toContain("SearchBar");
+    expect(footer).not.toContain("NavbarBlock");
     expect(page).not.toContain("AnnouncementBar");
     expect(page).not.toContain("SearchBar");
+    expect(page).not.toContain("NavbarBlock");
   });
 
   it("keeps footer-only blocks out of the header", () => {
