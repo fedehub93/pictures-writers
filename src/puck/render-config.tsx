@@ -19,6 +19,7 @@ import { type RootProps } from "./root";
 import { RootBlockUi } from "./root/ui/root";
 
 import { HeadingBlockUi } from "./blocks/Heading/ui/heading";
+import { TextBlockUi } from "./blocks/Text/ui/text";
 
 import { ContainerBlockUi } from "./blocks/Container/ui/container-block-ui";
 import { FlexBlockUi } from "./blocks/Flex/ui/flex-block-ui";
@@ -57,6 +58,7 @@ export const RENDER_COMPONENT_NAMES = [
   "Separator",
   "Icon",
   "Heading",
+  "Text",
   "Link",
 ] as const;
 
@@ -172,6 +174,17 @@ export const renderComponentConfigs: Config<any, RootProps>["components"] = {
       };
 
       return <HeadingBlockUi text={text} styleVars={styleVars} />;
+    },
+  },
+  Text: {
+    fields: {
+      text: {
+        type: "textarea",
+      },
+    },
+
+    render: ({ text, align, color }) => {
+      return <TextBlockUi text={text} align={align} color={color} />;
     },
   },
   Link: {

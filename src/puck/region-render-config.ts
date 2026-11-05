@@ -11,14 +11,13 @@ import {
 
 /**
  * Blocks shared by both Site regions.
- *
- * `Text` joins this list with its own block ticket.
  */
 const SHARED_REGION_COMPONENTS = [
   "Container",
   "Flex",
   "Grid",
   "Heading",
+  "Text",
   "Link",
   "Image",
 ] as const satisfies readonly RenderComponentName[];

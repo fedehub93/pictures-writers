@@ -9,6 +9,7 @@ import {
   GripIcon,
   SquareIcon,
   HeadingIcon,
+  TextIcon,
   InfoIcon,
 } from "lucide-react";
 import { Drawer, Puck } from "@puckeditor/core";
@@ -22,6 +23,7 @@ import { Card } from "@/shared/ui/card";
 const atomicElements = [
   { name: "Container", icon: SquareIcon },
   { name: "Heading", icon: HeadingIcon },
+  { name: "Text", icon: TextIcon },
   { name: "Image", icon: ImageIcon },
   { name: "Icon", icon: SmileIcon },
   { name: "Link", icon: LinkIcon },

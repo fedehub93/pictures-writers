@@ -12,6 +12,7 @@ import { SeparatorBlock, type SeparatorBlockProps } from "./blocks/Separator";
 import { ImageBlock, type ImageBlockProps } from "./blocks/Image";
 import { FormBlock, type FormBlockProps } from "./blocks/Form";
 import { Heading, type HeadingProps } from "./blocks/Heading";
+import { Text, type TextBlockProps } from "./blocks/Text";
 import { LinkBlock, type LinkBlockProps } from "./blocks/Link";
 import { IconBlock, type IconBlockProps } from "./blocks/Icon";
 import { HeaderActions } from "./editor/ui/components/header-actions";
@@ -30,6 +31,7 @@ export type SavedComponents = {
     form: FormProps;
   };
   Heading: HeadingProps;
+  Text: TextBlockProps;
   Link: LinkBlockProps;
 };
 
@@ -42,6 +44,7 @@ export type HydratedComponents = {
   Image: ImageBlockProps;
   Form: FormBlockProps;
   Heading: HeadingProps;
+  Text: TextBlockProps;
   Link: LinkBlockProps;
 };
 
@@ -58,7 +61,7 @@ export const config: Config<HydratedComponents, RootProps> = {
     },
     typography: {
       title: "Typography",
-      components: ["Heading"],
+      components: ["Heading", "Text"],
     },
     actions: {
       title: "Actions",
@@ -73,6 +76,7 @@ export const config: Config<HydratedComponents, RootProps> = {
     Image: ImageBlock,
     Form: FormBlock,
     Heading,
+    Text,
     Link: LinkBlock,
   },
   root: RootEditor,

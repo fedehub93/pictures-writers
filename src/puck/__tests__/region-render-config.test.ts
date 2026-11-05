@@ -5,6 +5,7 @@ import {
   HEADER_RENDER_COMPONENTS,
   renderConfigForRegion,
 } from "../region-render-config";
+import { pageRenderConfig } from "../render-config";
 
 describe("renderConfigForRegion", () => {
   it("uses the header palette for the header region", () => {
@@ -26,6 +27,15 @@ describe("renderConfigForRegion", () => {
     expect(header).not.toContain("Separator");
   });
 
+  it("makes the Text block available in both regions", () => {
+    expect(Object.keys(renderConfigForRegion("HEADER").components)).toContain(
+      "Text",
+    );
+    expect(Object.keys(renderConfigForRegion("FOOTER").components)).toContain(
+      "Text",
+    );
+  });
+
   it("returns stable, distinct configs per region", () => {
     expect(renderConfigForRegion("HEADER")).toBe(
       renderConfigForRegion("HEADER"),
@@ -33,5 +43,9 @@ describe("renderConfigForRegion", () => {
     expect(renderConfigForRegion("HEADER")).not.toBe(
       renderConfigForRegion("FOOTER"),
     );
+  });
+
+  it("registers the Text block in the generic page palette", () => {
+    expect(Object.keys(pageRenderConfig.components)).toContain("Text");
   });
 });
