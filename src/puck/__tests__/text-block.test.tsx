@@ -2,7 +2,6 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
 import { config } from "../config";
-import { config as customConfig } from "../custom-config";
 import { TextBlockUi } from "../blocks/Text/ui/text";
 
 describe("Text block", () => {
@@ -28,8 +27,7 @@ describe("Text block", () => {
     expect(html).not.toContain("color:");
   });
 
-  it("is registered in both page editor configs", () => {
+  it("is registered in the page editor config", () => {
     expect(Object.keys(config.components)).toContain("Text");
-    expect(Object.keys(customConfig.components)).toContain("Text");
   });
 });

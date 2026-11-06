@@ -6,7 +6,7 @@ import { LoadingState } from "@/shared/components/loading-state";
 import { ErrorState } from "@/shared/components/error-state";
 import { useSidebar } from "@/shared/ui/sidebar";
 
-import { PuckEditor } from "@/puck/custom-config";
+import { PuckEditor } from "@/puck/editor-shell";
 
 import { useSuspensePage } from "../../hooks/use-pages";
 

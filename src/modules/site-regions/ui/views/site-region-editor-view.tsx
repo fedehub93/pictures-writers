@@ -6,7 +6,7 @@ import { useEffect } from "react";
 
 import { useSidebar } from "@/shared/ui/sidebar";
 
-import { PuckEditor } from "@/puck/custom-config";
+import { PuckEditor } from "@/puck/editor-shell";
 import { editorConfigForRegion } from "@/puck/region-editor-config";
 
 import { EMPTY_PUCK_DATA } from "../../constants";

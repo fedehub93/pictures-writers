@@ -1,6 +1,6 @@
 import * as z from "zod";
-import { HydratedComponents } from "@/puck/config";
-import { Data } from "@puckeditor/core";
+import type { HydratedComponents } from "@/puck/config";
+import type { Data } from "@puckeditor/core";
 
 export const pageInsertSchema = z.object({
   title: z.string().min(1, { error: "Title name is required" }),

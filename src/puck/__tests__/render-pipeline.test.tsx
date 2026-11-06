@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
-import { config as pageEditorConfig } from "../custom-config";
+import { config as pageEditorConfig } from "../config";
 import { editorConfigForRegion } from "../region-editor-config";
 import { renderConfigForRegion } from "../region-render-config";
 import { PuckRender, renderComponentConfigs } from "../render-config";

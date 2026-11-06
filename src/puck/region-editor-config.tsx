@@ -2,7 +2,7 @@ import type { Config } from "@puckeditor/core";
 
 import type { SiteRegionKey } from "@/generated/prisma";
 
-import { editorComponentConfigs } from "./custom-config";
+import { editorComponentConfigs } from "./config";
 import { RootEditor } from "./root";
 import {
   FOOTER_REGION_COMPONENTS,

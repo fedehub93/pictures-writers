@@ -1,5 +1,4 @@
-import { type Config, type Data, Puck } from "@puckeditor/core";
-import "@puckeditor/core/puck.css";
+import type { Config } from "@puckeditor/core";
 
 import { RootEditor, type RootProps } from "./root";
 
@@ -20,12 +19,9 @@ import { AnnouncementBar } from "./blocks/AnnouncementBar";
 import { SearchBar } from "./blocks/SearchBar";
 import { NavbarBlock } from "./blocks/NavbarBlock";
 
-import { viewports } from "./utils/viewports";
 import type { FormProps } from "./fields/form";
 
 import { pickComponentConfigs } from "./region-palettes";
-import { BREAKPOINTS } from "./utils/breakpoints";
-import { Editor, type EditorHeaderProps } from "./editor/ui/view/editor";
 
 export type SavedComponents = {
   Container: ContainerBlockProps;
@@ -58,9 +54,14 @@ export type HydratedComponents = {
 /**
  * Editor component configs shared by pages and Site regions.
  *
- * Keeping the map here (rather than exporting every block again) lets the
- * region editor build its restricted palettes from the same field definitions
- * the regular builder uses.
+ * This is the single component registry of the Puck layer. Keeping the map
+ * here (rather than exporting every block again) lets the region editor build
+ * its restricted palettes from the same field definitions the regular builder
+ * uses.
+ *
+ * The module deliberately contains no Puck editor component and no editor CSS:
+ * the editor shell lives in `editor-shell.tsx`, so modules that only need the
+ * registry or the document types do not pull in the editor runtime.
  */
 export const editorComponentConfigs: Config["components"] = {
   Container: ContainerBlock,
@@ -81,9 +82,12 @@ export const editorComponentConfigs: Config["components"] = {
   NavbarBlock,
 };
 
+export type PageEditorConfig = Config<HydratedComponents, RootProps>;
+
 /**
  * Page palette. `Text` is shared with Site regions; footer-only blocks stay out
- * of pages by simply not being listed here.
+ * of pages by simply not being listed here. The map is derived from the
+ * canonical registry above so a block definition only has to change once.
  */
 const PAGE_COMPONENT_NAMES = [
   "Container",
@@ -99,7 +103,7 @@ const PAGE_COMPONENT_NAMES = [
 ] as const;
 
 // Create Puck component config
-export const config: Config<HydratedComponents, RootProps> = {
+export const config: PageEditorConfig = {
   categories: {
     layout: {
       title: "Layout",
@@ -120,49 +124,6 @@ export const config: Config<HydratedComponents, RootProps> = {
   components: pickComponentConfigs(
     PAGE_COMPONENT_NAMES,
     editorComponentConfigs,
-  ) as Config<HydratedComponents, RootProps>["components"],
+  ) as PageEditorConfig["components"],
   root: RootEditor,
 };
-
-export type PuckEditorProps = {
-  initialData: {
-    puckData: Data;
-  };
-  /**
-   * Editor palette. Defaults to the page palette so existing callers keep
-   * editing pages unchanged.
-   */
-  config?: Config;
-  /**
-   * Optional header override for callers that do not edit a Page (the Site
-   * region editor provides its own title and save/publish actions).
-   */
-  header?: EditorHeaderProps;
-};
-
-// Render Puck editor
-export function PuckEditor({
-  initialData,
-  config: editorConfig = config,
-  header,
-}: PuckEditorProps) {
-  return (
-    <Puck
-      config={editorConfig}
-      data={initialData.puckData}
-      viewports={viewports}
-      ui={{
-        viewports: {
-          current: {
-            width: BREAKPOINTS.desktop.puckCanvasWidth,
-            height: "auto",
-          },
-          options: viewports,
-          controlsVisible: true,
-        },
-      }}
-    >
-      <Editor header={header} />
-    </Puck>
-  );
-}
