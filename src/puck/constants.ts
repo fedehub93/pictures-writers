@@ -27,21 +27,3 @@ export const PALETTE_COLORS = [
   "#000000", // Black
   "#ffffff", // White
 ];
-
-export type ColorOption = { label: string; value: string };
-
-/**
- * Build the option list shared by every "pick a color" field: the theme
- * tokens, optional block-specific tokens, then the fixed palette. An empty
- * value means "inherit", so callers can leave the color unset.
- */
-export function buildColorOptions(
-  extraColors: ColorOption[] = [],
-): ColorOption[] {
-  return [
-    { label: "Default", value: "" },
-    ...THEME_COLORS.map(({ label, value }) => ({ label, value })),
-    ...extraColors,
-    ...PALETTE_COLORS.map((value) => ({ label: value, value })),
-  ];
-}
