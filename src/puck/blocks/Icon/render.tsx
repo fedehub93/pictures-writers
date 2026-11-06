@@ -4,6 +4,8 @@ import {
   getDimensionVars,
   getTypographyVars,
 } from "@/puck/utils/get-style-vars";
+import { getLayoutVars } from "@/puck/fields/layout/get-layout-vars";
+import { getLayoutClassNames } from "@/puck/fields/layout/get-layout-classes";
 
 import type { IconBlockProps } from "./types";
 import { IconBlockUi } from "./ui/icon";
@@ -16,13 +18,24 @@ import { IconBlockUi } from "./ui/icon";
  */
 export const renderIconBlock: PuckComponent<IconBlockProps> = ({
   icon,
+  layout,
   dimension,
   typography,
+  puck,
 }) => {
   const styleVars = {
+    ...getLayoutVars(layout),
     ...getDimensionVars(dimension),
     ...getTypographyVars(typography),
   };
 
-  return <IconBlockUi icon={icon} styleVars={styleVars} />;
+  return (
+    <IconBlockUi
+      icon={icon}
+      styleVars={styleVars}
+      layoutClassName={getLayoutClassNames(layout, {
+        editing: puck?.isEditing,
+      })}
+    />
+  );
 };

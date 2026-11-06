@@ -1,6 +1,7 @@
 import { ComponentConfig, type PuckComponent } from "@puckeditor/core";
 
 import { DimensionField } from "@/puck/fields/dimension";
+import { DisplayOnlyLayoutField } from "@/puck/fields/layout";
 import { TypographyField } from "@/puck/fields/typography";
 import { readSiteRegionMetadata } from "@/puck/metadata";
 
@@ -28,12 +29,14 @@ const CopyrightEditorRender: PuckComponent<CopyrightBlockProps> = ({
 }) =>
   renderCopyrightBlock({
     ...props,
+    editing: puck.isEditing,
     metadata: readSiteRegionMetadata(puck.metadata),
   });
 
 export const Copyright: ComponentConfig<CopyrightBlockProps> = {
   fields: {
     content: CopyrightContentField,
+    layout: DisplayOnlyLayoutField,
     dimension: DimensionField,
     typography: TypographyField,
   },

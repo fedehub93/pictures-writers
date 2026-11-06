@@ -4,6 +4,8 @@ import {
   getDecorationVars,
   getDimensionVars,
 } from "@/puck/utils/get-style-vars";
+import { getLayoutVars } from "@/puck/fields/layout/get-layout-vars";
+import { getLayoutClassNames } from "@/puck/fields/layout/get-layout-classes";
 
 import type { ImageBlockProps } from "./types";
 import { ImageBlockUi } from "./ui/image";
@@ -16,13 +18,24 @@ import { ImageBlockUi } from "./ui/image";
  */
 export const renderImageBlock: PuckComponent<ImageBlockProps> = ({
   image,
+  layout,
   dimension,
   decoration,
+  puck,
 }) => {
   const styleVars = {
+    ...getLayoutVars(layout),
     ...getDimensionVars(dimension),
     ...getDecorationVars(decoration),
   };
 
-  return <ImageBlockUi image={image} styleVars={styleVars} />;
+  return (
+    <ImageBlockUi
+      image={image}
+      styleVars={styleVars}
+      layoutClassName={getLayoutClassNames(layout, {
+        editing: puck?.isEditing,
+      })}
+    />
+  );
 };

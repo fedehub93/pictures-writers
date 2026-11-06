@@ -1,5 +1,6 @@
 import type { DecorationProps } from "@/puck/fields/decoration";
 import type { DimensionProps } from "@/puck/fields/dimension";
+import type { LayoutProps } from "@/puck/fields/layout";
 import type { Responsive } from "@/puck/utils/responsive";
 
 /**
@@ -19,6 +20,18 @@ export const TOP_BAR_DEFAULT_DIMENSION: Responsive<DimensionProps> = {
     paddingRight: "1rem",
     paddingBottom: "0.5rem",
     paddingLeft: "1rem",
+  },
+};
+
+/**
+ * The strip is a flex row by default: the slot's blocks are laid out on one
+ * line and stay vertically centred. Keeping it as the block default means the
+ * shared Layout field starts from the real look instead of an inline box.
+ */
+export const TOP_BAR_DEFAULT_LAYOUT: Responsive<LayoutProps> = {
+  desktop: {
+    display: "flex",
+    alignItems: "center",
   },
 };
 

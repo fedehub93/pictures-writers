@@ -1,6 +1,7 @@
 import { ComponentConfig } from "@puckeditor/core";
 
 import { DimensionField } from "@/puck/fields/dimension";
+import { DisplayOnlyLayoutField } from "@/puck/fields/layout";
 import { TypographyField } from "@/puck/fields/typography";
 
 import { LINK_LIST_DEFAULT_CONTENT } from "./defaults";
@@ -13,6 +14,7 @@ export type { LinkListBlockProps };
 export const LinkList: ComponentConfig<LinkListBlockProps> = {
   fields: {
     content: LinkListContentField,
+    layout: DisplayOnlyLayoutField,
     dimension: DimensionField,
     typography: TypographyField,
   },

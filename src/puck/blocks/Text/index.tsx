@@ -2,6 +2,7 @@ import { ComponentConfig } from "@puckeditor/core";
 
 import { DimensionField } from "@/puck/fields/dimension";
 import { TypographyField } from "@/puck/fields/typography";
+import { DisplayOnlyLayoutField } from "@/puck/fields/layout";
 
 import type { TextBlockProps } from "./types";
 import { renderTextBlock } from "./render";
@@ -14,6 +15,7 @@ export const Text: ComponentConfig<TextBlockProps> = {
       type: "textarea",
       label: "Text",
     },
+    layout: DisplayOnlyLayoutField,
     dimension: DimensionField,
     typography: TypographyField,
   },

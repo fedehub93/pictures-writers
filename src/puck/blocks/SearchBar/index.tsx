@@ -2,6 +2,7 @@ import { ComponentConfig } from "@puckeditor/core";
 
 import { DecorationField } from "@/puck/fields/decoration";
 import { DimensionField } from "@/puck/fields/dimension";
+import { DisplayOnlyLayoutField } from "@/puck/fields/layout";
 
 import { SEARCH_BAR_DEFAULT_CONTENT } from "./defaults";
 import { SearchBarContentField } from "./field";
@@ -19,6 +20,7 @@ export type { SearchBarBlockProps };
 export const SearchBar: ComponentConfig<SearchBarBlockProps> = {
   fields: {
     content: SearchBarContentField,
+    layout: DisplayOnlyLayoutField,
     dimension: DimensionField,
     decoration: DecorationField,
   },

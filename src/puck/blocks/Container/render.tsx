@@ -6,6 +6,7 @@ import {
   getTypographyVars,
 } from "@/puck/utils/get-style-vars";
 import { getLayoutVars } from "@/puck/fields/layout/get-layout-vars";
+import { getLayoutClassNames } from "@/puck/fields/layout/get-layout-classes";
 
 import type { ContainerBlockProps } from "./types";
 import { ContainerBlockUi } from "./ui/container-block-ui";
@@ -22,6 +23,7 @@ export const renderContainerBlock: PuckComponent<ContainerBlockProps> = ({
   typography,
   decoration,
   items: Items,
+  puck,
 }) => {
   const styleVars = {
     ...getLayoutVars(layout),
@@ -30,5 +32,13 @@ export const renderContainerBlock: PuckComponent<ContainerBlockProps> = ({
     ...getDecorationVars(decoration),
   };
 
-  return <ContainerBlockUi Items={Items} styleVars={styleVars} />;
+  return (
+    <ContainerBlockUi
+      Items={Items}
+      styleVars={styleVars}
+      layoutClassName={getLayoutClassNames(layout, {
+        editing: puck?.isEditing,
+      })}
+    />
+  );
 };

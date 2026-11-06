@@ -4,7 +4,10 @@ import {
   getDecorationVars,
   getDimensionVars,
 } from "@/puck/utils/get-style-vars";
+import { getLayoutVars } from "@/puck/fields/layout/get-layout-vars";
+import { getLayoutClassNames } from "@/puck/fields/layout/get-layout-classes";
 import { SearchBox } from "@/shared/components/search/search-box";
+import { cn } from "@/shared/lib/utils";
 
 import type { SearchBarBlockProps } from "./types";
 
@@ -21,16 +24,25 @@ import type { SearchBarBlockProps } from "./types";
  */
 export const renderSearchBarBlock: PuckComponent<SearchBarBlockProps> = ({
   content,
+  layout,
   dimension,
   decoration,
+  puck,
 }) => {
   const styleVars = {
+    ...getLayoutVars(layout),
     ...getDimensionVars(dimension),
     ...getDecorationVars(decoration),
   };
 
   return (
-    <div className="puck-dim puck-deco" style={styleVars}>
+    <div
+      className={cn(
+        "puck-dim puck-deco",
+        getLayoutClassNames(layout, { editing: puck?.isEditing }),
+      )}
+      style={styleVars}
+    >
       <SearchBox
         placeholder={content?.placeholder}
         variant={content?.variant}

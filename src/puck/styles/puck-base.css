@@ -33,6 +33,20 @@
   grid-template-rows: var(--gtr-d);
 }
 
+/* --- 0b. DISPLAY (leaf blocks) ---
+   A leaf block only opts into the display rule when it carries an authored
+   display value. The class resets the variables locally so a parent's
+   `--disp-*` cannot leak into an unrelated block. */
+.puck-display {
+  --disp-d: initial;
+  --disp-t: initial;
+  --disp-m: initial;
+}
+
+.puck-display-d {
+  display: var(--disp-d);
+}
+
 /* --- 1. DIMENSION --- */
 .puck-dim {
   /* Reset locale: se la variabile non è definita inline sull'elemento, 
@@ -146,6 +160,10 @@
     column-gap: var(--cgap-t, var(--cgap-d));
     grid-template-columns: var(--gtc-t, var(--gtc-d));
     grid-template-rows: var(--gtr-t, var(--gtr-d));
+  }
+
+  .puck-display-t {
+    display: var(--disp-t);
   }
 
   .puck-dim {
@@ -265,6 +283,10 @@
     grid-template-rows: var(--gtr-m, var(--gtr-t, var(--gtr-d)));
   }
 
+  .puck-display-m {
+    display: var(--disp-m);
+  }
+
   .puck-dim {
     /* Reset variabili Mobile */
     --w-m: initial;
@@ -342,4 +364,81 @@
     border-bottom-left-radius: var(--rbl-m, var(--rbl-t, var(--rbl-d)));
     border-bottom-right-radius: var(--rbr-m, var(--rbr-t, var(--rbr-d)));
   }
+}
+
+/* --- 6. EDITOR-ONLY VISIBILITY PLACEHOLDER ---
+   A block hidden at the viewport selected in the toolbar stays in the canvas
+   as a dashed ghost. The classes are emitted only while editing, and the
+   viewport marker lives on the editor shell, so none of this can reach the
+   public render. Outline, opacity and an absolutely-positioned label keep the
+   decoration out of the layout measured for drag and drop. */
+/* The authored display rule would otherwise hide the block in the canvas (and
+   make it impossible to select). At the viewport being edited, the placeholder
+   takes over with a normal box; visible breakpoints keep their authored display
+   classes above. */
+[data-editor-viewport="desktop"] .puck-hidden-at-desktop.puck-hidden-placeholder,
+[data-editor-viewport="tablet"] .puck-hidden-at-tablet.puck-hidden-placeholder,
+[data-editor-viewport="mobile"] .puck-hidden-at-mobile.puck-hidden-placeholder {
+  display: block !important;
+}
+
+[data-editor-viewport="desktop"]
+  [data-puck-component]:has(> .puck-hidden-at-desktop.puck-hidden-placeholder),
+[data-editor-viewport="tablet"]
+  [data-puck-component]:has(> .puck-hidden-at-tablet.puck-hidden-placeholder),
+[data-editor-viewport="mobile"]
+  [data-puck-component]:has(> .puck-hidden-at-mobile.puck-hidden-placeholder) {
+  position: relative;
+  outline: 2px dashed var(--puck-color-selection-border, #94a3b8);
+  outline-offset: -2px;
+}
+
+[data-editor-viewport="desktop"]
+  [data-puck-component]:has(> .puck-hidden-at-desktop.puck-hidden-placeholder)
+  > *,
+[data-editor-viewport="tablet"]
+  [data-puck-component]:has(> .puck-hidden-at-tablet.puck-hidden-placeholder)
+  > *,
+[data-editor-viewport="mobile"]
+  [data-puck-component]:has(> .puck-hidden-at-mobile.puck-hidden-placeholder)
+  > * {
+  opacity: 0.45;
+}
+
+[data-editor-viewport="desktop"]
+  [data-puck-component]:has(> .puck-hidden-at-desktop.puck-hidden-placeholder) {
+  --puck-hidden-label: "Hidden on desktop";
+}
+
+[data-editor-viewport="tablet"]
+  [data-puck-component]:has(> .puck-hidden-at-tablet.puck-hidden-placeholder) {
+  --puck-hidden-label: "Hidden on tablet";
+}
+
+[data-editor-viewport="mobile"]
+  [data-puck-component]:has(> .puck-hidden-at-mobile.puck-hidden-placeholder) {
+  --puck-hidden-label: "Hidden on mobile";
+}
+
+[data-editor-viewport="desktop"]
+  [data-puck-component]:has(> .puck-hidden-at-desktop.puck-hidden-placeholder)::after,
+[data-editor-viewport="tablet"]
+  [data-puck-component]:has(> .puck-hidden-at-tablet.puck-hidden-placeholder)::after,
+[data-editor-viewport="mobile"]
+  [data-puck-component]:has(> .puck-hidden-at-mobile.puck-hidden-placeholder)::after {
+  content: var(--puck-hidden-label, "Hidden at this viewport");
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  transform: translateY(-100%);
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--puck-color-surface-inverse, #181818);
+  color: #fff;
+  font-family: var(--puck-font-family, inherit);
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: nowrap;
+  pointer-events: none;
 }

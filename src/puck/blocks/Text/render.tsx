@@ -4,6 +4,8 @@ import {
   getDimensionVars,
   getTypographyVars,
 } from "@/puck/utils/get-style-vars";
+import { getLayoutVars } from "@/puck/fields/layout/get-layout-vars";
+import { getLayoutClassNames } from "@/puck/fields/layout/get-layout-classes";
 
 import type { TextBlockProps } from "./types";
 import { TextBlockUi } from "./ui/text";
@@ -16,13 +18,24 @@ import { TextBlockUi } from "./ui/text";
  */
 export const renderTextBlock: PuckComponent<TextBlockProps> = ({
   text,
+  layout,
   dimension,
   typography,
+  puck,
 }) => {
   const styleVars = {
+    ...getLayoutVars(layout),
     ...getDimensionVars(dimension),
     ...getTypographyVars(typography),
   };
 
-  return <TextBlockUi text={text} styleVars={styleVars} />;
+  return (
+    <TextBlockUi
+      text={text}
+      styleVars={styleVars}
+      layoutClassName={getLayoutClassNames(layout, {
+        editing: puck?.isEditing,
+      })}
+    />
+  );
 };

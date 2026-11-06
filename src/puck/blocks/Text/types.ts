@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import type { Responsive } from "@/puck/utils/responsive";
 import type { DimensionProps } from "@/puck/fields/dimension";
+import type { LayoutProps } from "@/puck/fields/layout";
 import type { TypographyProps } from "@/puck/fields/typography";
 
 export type TextBlockProps = {
@@ -12,6 +13,7 @@ export type TextBlockProps = {
    * changing the block props or its render.
    */
   text?: ReactNode;
+  layout?: Responsive<LayoutProps>;
   dimension?: Responsive<DimensionProps>;
   typography?: Responsive<TypographyProps>;
 };

@@ -1,5 +1,6 @@
 import type { LinkListItem } from "@/puck/fields/link";
 import type { DimensionProps } from "@/puck/fields/dimension";
+import type { LayoutProps } from "@/puck/fields/layout";
 import type { TypographyProps } from "@/puck/fields/typography";
 import type { SiteRegionMetadata } from "@/puck/metadata";
 import type { Responsive } from "@/puck/utils/responsive";
@@ -16,6 +17,7 @@ export type CopyrightBlockContent = {
 
 export type CopyrightBlockProps = {
   content?: CopyrightBlockContent;
+  layout?: Responsive<LayoutProps>;
   dimension?: Responsive<DimensionProps>;
   typography?: Responsive<TypographyProps>;
 };
@@ -28,6 +30,8 @@ export type CopyrightBlockRenderProps = CopyrightBlockProps & {
   year?: number;
   /** Installation metadata supplied by the Site region editor canvas. */
   metadata?: SiteRegionMetadata;
+  /** True inside the editor canvas, where hidden blocks stay selectable. */
+  editing?: boolean;
 };
 
 export type CopyrightBlockUiProps = {
@@ -38,4 +42,6 @@ export type CopyrightBlockUiProps = {
   year?: number;
   /** Responsive style variables produced by the shared style utilities. */
   styleVars?: Record<string, string>;
+  /** Editor visibility classes, empty on the public render. */
+  layoutClassName?: string;
 };

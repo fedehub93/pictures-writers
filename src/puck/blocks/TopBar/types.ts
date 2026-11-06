@@ -1,7 +1,9 @@
-import type { Slot, SlotComponent } from "@puckeditor/core";
+import type { ReactNode } from "react";
+import type { Slot } from "@puckeditor/core";
 
 import type { DecorationProps } from "@/puck/fields/decoration";
 import type { DimensionProps } from "@/puck/fields/dimension";
+import type { LayoutProps } from "@/puck/fields/layout";
 import type { Responsive } from "@/puck/utils/responsive";
 
 export type TopBarSettings = {
@@ -13,6 +15,7 @@ export type TopBarBlockProps = {
   /** Arbitrary blocks placed inside the strip. */
   content: Slot;
   settings?: TopBarSettings;
+  layout?: Responsive<LayoutProps>;
   dimension?: Responsive<DimensionProps>;
   decoration?: Responsive<DecorationProps>;
 };
@@ -20,7 +23,12 @@ export type TopBarBlockProps = {
 export type TopBarBlockUiProps = {
   /** Puck block id, used as the localStorage key for dismissal. */
   id?: string;
-  Content: SlotComponent;
+  /**
+   * Slot content, rendered by the block render before crossing the client
+   * boundary. A Slot is a function, and React refuses to pass functions from
+   * server components to client components.
+   */
+  children: ReactNode;
   dismissible?: boolean;
   /**
    * True inside the Puck canvas: the bar must stay visible so the user can
@@ -29,4 +37,6 @@ export type TopBarBlockUiProps = {
   editMode?: boolean;
   /** Responsive style variables produced by the shared style utilities. */
   styleVars?: Record<string, string>;
+  /** Editor visibility classes, empty on the public render. */
+  layoutClassName?: string;
 };

@@ -1,5 +1,6 @@
 import type { LinkListItem } from "@/puck/fields/link";
 import type { DimensionProps } from "@/puck/fields/dimension";
+import type { LayoutProps } from "@/puck/fields/layout";
 import type { TypographyProps } from "@/puck/fields/typography";
 import type { Responsive } from "@/puck/utils/responsive";
 
@@ -13,6 +14,7 @@ export type LinkListBlockContent = {
 
 export type LinkListBlockProps = {
   content?: LinkListBlockContent;
+  layout?: Responsive<LayoutProps>;
   dimension?: Responsive<DimensionProps>;
   typography?: Responsive<TypographyProps>;
 };
@@ -24,4 +26,6 @@ export type LinkListBlockUiProps = {
   links?: LinkListItem[];
   /** Responsive style variables produced by the shared style utilities. */
   styleVars?: Record<string, string>;
+  /** Editor visibility classes, empty on the public render. */
+  layoutClassName?: string;
 };

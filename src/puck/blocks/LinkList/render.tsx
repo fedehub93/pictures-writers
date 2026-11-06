@@ -4,6 +4,8 @@ import {
   getDimensionVars,
   getTypographyVars,
 } from "@/puck/utils/get-style-vars";
+import { getLayoutVars } from "@/puck/fields/layout/get-layout-vars";
+import { getLayoutClassNames } from "@/puck/fields/layout/get-layout-classes";
 
 import type { LinkListBlockProps } from "./types";
 import { LinkListBlockUi } from "./ui/link-list";
@@ -16,10 +18,13 @@ import { LinkListBlockUi } from "./ui/link-list";
  */
 export const renderLinkListBlock: PuckComponent<LinkListBlockProps> = ({
   content,
+  layout,
   dimension,
   typography,
+  puck,
 }) => {
   const styleVars = {
+    ...getLayoutVars(layout),
     ...getDimensionVars(dimension),
     ...getTypographyVars(typography),
   };
@@ -29,6 +34,9 @@ export const renderLinkListBlock: PuckComponent<LinkListBlockProps> = ({
       title={content?.title}
       links={content?.links}
       styleVars={styleVars}
+      layoutClassName={getLayoutClassNames(layout, {
+        editing: puck?.isEditing,
+      })}
     />
   );
 };

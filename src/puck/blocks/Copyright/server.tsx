@@ -15,6 +15,7 @@ import { renderCopyrightBlock } from "./render";
  */
 export const CopyrightServer = async ({
   content,
+  layout,
   dimension,
   typography,
 }: CopyrightBlockProps) => {
@@ -22,6 +23,7 @@ export const CopyrightServer = async ({
 
   return renderCopyrightBlock({
     content,
+    layout,
     dimension,
     typography,
     siteName: settings.siteName ?? undefined,

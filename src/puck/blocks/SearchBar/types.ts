@@ -1,5 +1,6 @@
 import type { DecorationProps } from "@/puck/fields/decoration";
 import type { DimensionProps } from "@/puck/fields/dimension";
+import type { LayoutProps } from "@/puck/fields/layout";
 import type { Responsive } from "@/puck/utils/responsive";
 import type { SearchBoxVariant } from "@/shared/components/search/types";
 
@@ -13,6 +14,7 @@ export type SearchBarContent = {
 
 export type SearchBarBlockProps = {
   content?: SearchBarContent;
+  layout?: Responsive<LayoutProps>;
   dimension?: Responsive<DimensionProps>;
   decoration?: Responsive<DecorationProps>;
 };

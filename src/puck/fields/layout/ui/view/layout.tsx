@@ -29,6 +29,7 @@ interface LayoutViewProps {
   resetProp: (key: keyof LayoutProps) => void;
   onUpdateDisplay: (display: DisplayType) => void;
   onUpdate: (values: Partial<LayoutProps>) => void;
+  showContainerControls?: boolean;
 }
 
 export const LayoutView = ({
@@ -37,10 +38,13 @@ export const LayoutView = ({
   resetProp,
   onUpdateDisplay,
   onUpdate,
+  showContainerControls = true,
 }: LayoutViewProps) => {
   const currentDisplay = renderValues.display ?? "block";
-  const PropsComponent =
-    PropsComponents[currentDisplay as keyof typeof PropsComponents];
+  const PropsComponent = showContainerControls
+    ? PropsComponents[currentDisplay as keyof typeof PropsComponents]
+    : undefined;
+  const isHidden = renderValues.display === "none";
 
   return (
     <div className="flex flex-col space-y-2 p-1">
@@ -58,6 +62,21 @@ export const LayoutView = ({
           items={displayOptions}
         />
       </div>
+
+      {isHidden ? (
+        <div
+          role="status"
+          className="rounded-md border border-dashed border-muted-foreground/40 bg-muted/40 p-2 text-xs text-muted-foreground"
+        >
+          <p className="font-medium text-foreground">
+            Hidden at the current viewport
+          </p>
+          <p className="mt-1">
+            The public site removes this block; the canvas keeps a placeholder
+            so you can still select and edit it.
+          </p>
+        </div>
+      ) : null}
 
       <div>
         {PropsComponent && (

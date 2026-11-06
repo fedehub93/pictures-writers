@@ -6,6 +6,7 @@ import {
   getTypographyVars,
 } from "@/puck/utils/get-style-vars";
 import { getLayoutVars } from "@/puck/fields/layout/get-layout-vars";
+import { getLayoutClassNames } from "@/puck/fields/layout/get-layout-classes";
 
 import type { FlexBlockProps } from "./types";
 import { FlexBlockUi } from "./ui/flex-block-ui";
@@ -22,6 +23,7 @@ export const renderFlexBlock: PuckComponent<FlexBlockProps> = ({
   typography,
   decoration,
   items: Items,
+  puck,
 }) => {
   const styleVars = {
     ...getLayoutVars(layout),
@@ -30,5 +32,13 @@ export const renderFlexBlock: PuckComponent<FlexBlockProps> = ({
     ...getDecorationVars(decoration),
   };
 
-  return <FlexBlockUi Items={Items} styleVars={styleVars} />;
+  return (
+    <FlexBlockUi
+      Items={Items}
+      styleVars={styleVars}
+      layoutClassName={getLayoutClassNames(layout, {
+        editing: puck?.isEditing,
+      })}
+    />
+  );
 };

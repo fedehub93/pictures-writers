@@ -1,4 +1,5 @@
 import type { DimensionProps } from "@/puck/fields/dimension";
+import type { LayoutProps } from "@/puck/fields/layout";
 import type { TypographyProps } from "@/puck/fields/typography";
 import type { SiteRegionMetadata } from "@/puck/metadata";
 import type { Responsive } from "@/puck/utils/responsive";
@@ -17,6 +18,7 @@ export type BrandBlockContent = {
 
 export type BrandBlockProps = {
   content?: BrandBlockContent;
+  layout?: Responsive<LayoutProps>;
   dimension?: Responsive<DimensionProps>;
   typography?: Responsive<TypographyProps>;
 };
@@ -29,6 +31,8 @@ export type BrandBlockRenderProps = BrandBlockProps & {
   logoUrl?: string;
   /** Installation metadata supplied by the Site region editor canvas. */
   metadata?: SiteRegionMetadata;
+  /** True inside the editor canvas, where hidden blocks stay selectable. */
+  editing?: boolean;
 };
 
 export type BrandBlockUiProps = {
@@ -39,4 +43,6 @@ export type BrandBlockUiProps = {
   logoUrl?: string;
   /** Responsive style variables produced by the shared style utilities. */
   styleVars?: Record<string, string>;
+  /** Editor visibility classes, empty on the public render. */
+  layoutClassName?: string;
 };

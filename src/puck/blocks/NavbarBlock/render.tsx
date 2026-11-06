@@ -2,6 +2,8 @@ import {
   getDecorationVars,
   getDimensionVars,
 } from "@/puck/utils/get-style-vars";
+import { getLayoutVars } from "@/puck/fields/layout/get-layout-vars";
+import { getLayoutClassNames } from "@/puck/fields/layout/get-layout-classes";
 
 import type { NavbarBlockRenderProps } from "./types";
 import { NavbarBlockUi } from "./ui/navbar-block";
@@ -20,10 +22,13 @@ import { NavbarBlockUi } from "./ui/navbar-block";
  */
 export const renderNavbarBlock = ({
   content,
+  layout,
   dimension,
   decoration,
+  editing,
 }: NavbarBlockRenderProps) => {
   const styleVars = {
+    ...getLayoutVars(layout),
     ...getDimensionVars(dimension),
     ...getDecorationVars(decoration),
   };
@@ -33,6 +38,7 @@ export const renderNavbarBlock = ({
       items={content?.items}
       layout={content?.layout}
       styleVars={styleVars}
+      layoutClassName={getLayoutClassNames(layout, { editing })}
     />
   );
 };

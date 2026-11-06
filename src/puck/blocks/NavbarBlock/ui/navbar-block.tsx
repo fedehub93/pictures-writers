@@ -3,6 +3,8 @@ import "client-only";
 
 import { usePathname } from "next/navigation";
 
+import { cn } from "@/shared/lib/utils";
+
 import type { NavbarBlockUiProps } from "../types";
 import { NavbarDesktopMenu } from "./desktop-menu";
 import { NavbarMobileMenu } from "./mobile-menu";
@@ -18,13 +20,17 @@ export const NavbarBlockUi = ({
   items = [],
   layout = "compact",
   styleVars,
+  layoutClassName,
 }: NavbarBlockUiProps) => {
   const pathname = usePathname();
 
   if (items.length === 0) return null;
 
   return (
-    <div className="puck-dim puck-deco" style={styleVars}>
+    <div
+      className={cn("puck-dim puck-deco", layoutClassName)}
+      style={styleVars}
+    >
       <NavbarDesktopMenu items={items} layout={layout} pathname={pathname} />
       <NavbarMobileMenu items={items} pathname={pathname} />
     </div>

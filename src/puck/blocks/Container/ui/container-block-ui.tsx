@@ -1,15 +1,22 @@
 import { SlotComponent } from "@puckeditor/core";
 
+import { cn } from "@/shared/lib/utils";
+
 export const ContainerBlockUi = ({
   Items,
   styleVars,
+  layoutClassName,
 }: {
   Items: SlotComponent;
   styleVars: Record<string, string>;
+  layoutClassName?: string;
 }) => {
   return (
     <Items
-      className="puck-layout puck-dim puck-typo puck-deco"
+      className={cn(
+        "puck-layout puck-dim puck-typo puck-deco",
+        layoutClassName,
+      )}
       style={styleVars}
     />
   );

@@ -3,19 +3,28 @@
 import type { HydratedFormProps } from "@/puck/fields/form";
 import { FormRunner } from "@/modules/forms/builder/runner/form-runner";
 import { submitForm } from "@/actions/submit-form";
+import { cn } from "@/shared/lib/utils";
 
 import { getCaptchaToken } from "@/app/(home)/_components/utils/captcha";
 
 export const FormBlockUi = ({
   form,
   styleVars,
+  layoutClassName,
 }: {
   form?: HydratedFormProps;
   styleVars: Record<string, string>;
+  layoutClassName?: string;
 }) => {
   if (!form || !form.content)
     return (
-      <div className="flex items-center justify-center size-full">
+      <div
+        className={cn(
+          "flex items-center justify-center size-full",
+          layoutClassName,
+        )}
+        style={styleVars}
+      >
         Select a valid form!
       </div>
     );
@@ -40,7 +49,7 @@ export const FormBlockUi = ({
   };
 
   return (
-    <div className="puck-dim" style={styleVars}>
+    <div className={cn("puck-dim", layoutClassName)} style={styleVars}>
       <FormRunner
         id={form.id}
         onSubmitHandler={onSubmit}

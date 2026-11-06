@@ -1,18 +1,23 @@
 import { SlotComponent } from "@puckeditor/core";
 
+import { cn } from "@/shared/lib/utils";
+
 export const GridBlockUi = ({
   Items,
   styleVars,
+  layoutClassName,
 }: {
   Items: SlotComponent;
   styleVars: Record<string, string>;
+  layoutClassName?: string;
 }) => {
   return (
-    <div>
-      <Items
-        className="puck-layout puck-dim puck-typo puck-deco"
-        style={styleVars}
-      />
-    </div>
+    <Items
+      className={cn(
+        "puck-layout puck-dim puck-typo puck-deco",
+        layoutClassName,
+      )}
+      style={styleVars}
+    />
   );
 };

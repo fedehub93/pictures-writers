@@ -182,7 +182,7 @@ describe("NavbarBlock", () => {
     expect(NAVBAR_BLOCK_DEFAULT_CONTENT.layout).toBe("compact");
   });
 
-  it("exposes one Navigation content section, dimension, decoration and a compact default", () => {
+  it("exposes one Navigation content section, the shared style fields and a compact default", () => {
     expect(NavbarBlock.defaultProps).toEqual({
       content: NAVBAR_BLOCK_DEFAULT_CONTENT,
     });
@@ -192,10 +192,10 @@ describe("NavbarBlock", () => {
     const fields = (NavbarBlock.fields ?? {}) as Record<string, unknown>;
 
     expect(fields.content).toMatchObject({ type: "custom" });
+    expect(fields).toHaveProperty("layout");
     expect(fields).toHaveProperty("dimension");
     expect(fields).toHaveProperty("decoration");
     expect(fields).not.toHaveProperty("items");
-    expect(fields).not.toHaveProperty("layout");
     expect(fields).not.toHaveProperty("typography");
   });
 });

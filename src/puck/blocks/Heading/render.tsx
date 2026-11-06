@@ -4,6 +4,8 @@ import {
   getDimensionVars,
   getTypographyVars,
 } from "@/puck/utils/get-style-vars";
+import { getLayoutVars } from "@/puck/fields/layout/get-layout-vars";
+import { getLayoutClassNames } from "@/puck/fields/layout/get-layout-classes";
 
 import type { HeadingProps } from "./types";
 import { HeadingBlockUi } from "./ui/heading";
@@ -16,13 +18,24 @@ import { HeadingBlockUi } from "./ui/heading";
  */
 export const renderHeadingBlock: PuckComponent<HeadingProps> = ({
   text,
+  layout,
   dimension,
   typography,
+  puck,
 }) => {
   const styleVars = {
+    ...getLayoutVars(layout),
     ...getDimensionVars(dimension),
     ...getTypographyVars(typography),
   };
 
-  return <HeadingBlockUi text={text} styleVars={styleVars} />;
+  return (
+    <HeadingBlockUi
+      text={text}
+      styleVars={styleVars}
+      layoutClassName={getLayoutClassNames(layout, {
+        editing: puck?.isEditing,
+      })}
+    />
+  );
 };

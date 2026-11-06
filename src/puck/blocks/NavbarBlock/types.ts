@@ -1,5 +1,6 @@
 import type { DecorationProps } from "@/puck/fields/decoration";
 import type { DimensionProps } from "@/puck/fields/dimension";
+import type { LayoutProps } from "@/puck/fields/layout";
 import type {
   LegacyLinkProps,
   LinkProps,
@@ -125,6 +126,7 @@ export type NavbarBlockRenderContent = {
 
 export type NavbarBlockProps = {
   content?: NavbarBlockContent;
+  layout?: Responsive<LayoutProps>;
   dimension?: Responsive<DimensionProps>;
   decoration?: Responsive<DecorationProps>;
 };
@@ -132,8 +134,11 @@ export type NavbarBlockProps = {
 /** Inputs accepted by the pure render, before style variables are computed. */
 export type NavbarBlockRenderProps = {
   content?: NavbarBlockRenderContent;
+  layout?: Responsive<LayoutProps>;
   dimension?: Responsive<DimensionProps>;
   decoration?: Responsive<DecorationProps>;
+  /** True inside the editor canvas, where hidden blocks stay selectable. */
+  editing?: boolean;
 };
 
 export type NavbarBlockUiProps = {
@@ -141,4 +146,6 @@ export type NavbarBlockUiProps = {
   layout?: NavbarLayout;
   /** Responsive style variables produced by the shared style utilities. */
   styleVars?: Record<string, string>;
+  /** Editor visibility classes, empty on the public render. */
+  layoutClassName?: string;
 };

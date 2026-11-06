@@ -6,6 +6,7 @@ import {
   getTypographyVars,
 } from "@/puck/utils/get-style-vars";
 import { getLayoutVars } from "@/puck/fields/layout/get-layout-vars";
+import { getLayoutClassNames } from "@/puck/fields/layout/get-layout-classes";
 
 import type { GridBlockProps } from "./types";
 import { GridBlockUi } from "./ui/grid";
@@ -22,6 +23,7 @@ export const renderGridBlock: PuckComponent<GridBlockProps> = ({
   typography,
   decoration,
   items: Items,
+  puck,
 }) => {
   const styleVars = {
     ...getLayoutVars(layout),
@@ -30,5 +32,13 @@ export const renderGridBlock: PuckComponent<GridBlockProps> = ({
     ...getDecorationVars(decoration),
   };
 
-  return <GridBlockUi Items={Items} styleVars={styleVars} />;
+  return (
+    <GridBlockUi
+      Items={Items}
+      styleVars={styleVars}
+      layoutClassName={getLayoutClassNames(layout, {
+        editing: puck?.isEditing,
+      })}
+    />
+  );
 };

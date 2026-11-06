@@ -1,3 +1,5 @@
+import { cn } from "@/shared/lib/utils";
+
 import { BRAND_DEFAULT_CONTENT } from "../defaults";
 import type { BrandBlockUiProps } from "../types";
 
@@ -6,6 +8,7 @@ export const BrandBlockUi = ({
   siteName,
   logoUrl,
   styleVars,
+  layoutClassName,
 }: BrandBlockUiProps) => {
   const {
     showLogo = BRAND_DEFAULT_CONTENT.showLogo,
@@ -20,7 +23,10 @@ export const BrandBlockUi = ({
 
   return (
     <div
-      className="flex items-center gap-x-3 puck-dim puck-typo"
+      className={cn(
+        "flex items-center gap-x-3 puck-dim puck-typo",
+        layoutClassName,
+      )}
       style={styleVars}
     >
       {showLogo && src ? (

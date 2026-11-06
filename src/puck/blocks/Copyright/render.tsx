@@ -2,6 +2,8 @@ import {
   getDimensionVars,
   getTypographyVars,
 } from "@/puck/utils/get-style-vars";
+import { getLayoutVars } from "@/puck/fields/layout/get-layout-vars";
+import { getLayoutClassNames } from "@/puck/fields/layout/get-layout-classes";
 
 import { COPYRIGHT_DEFAULT_TYPOGRAPHY } from "./defaults";
 import type { CopyrightBlockRenderProps } from "./types";
@@ -24,13 +26,16 @@ import { CopyrightBlockUi } from "./ui/copyright";
  */
 export const renderCopyrightBlock = ({
   content,
+  layout,
   dimension,
   typography,
   siteName,
   year,
   metadata,
+  editing,
 }: CopyrightBlockRenderProps) => {
   const styleVars = {
+    ...getLayoutVars(layout),
     ...getDimensionVars(dimension),
     ...getTypographyVars(typography ?? COPYRIGHT_DEFAULT_TYPOGRAPHY),
   };
@@ -41,6 +46,7 @@ export const renderCopyrightBlock = ({
       siteName={siteName?.trim() || metadata?.siteName}
       year={year}
       styleVars={styleVars}
+      layoutClassName={getLayoutClassNames(layout, { editing })}
     />
   );
 };

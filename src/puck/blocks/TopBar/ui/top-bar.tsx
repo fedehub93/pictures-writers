@@ -30,10 +30,11 @@ import type { TopBarBlockUiProps } from "../types";
  */
 export const TopBarBlockUi = ({
   id,
-  Content,
+  children,
   dismissible = false,
   editMode = false,
   styleVars,
+  layoutClassName,
 }: TopBarBlockUiProps) => {
   const subscribe = useCallback(
     (listener: () => void) =>
@@ -52,12 +53,13 @@ export const TopBarBlockUi = ({
   return (
     <div
       className={cn(
-        "puck-top-bar puck-dim puck-deco relative flex w-full items-center",
+        "puck-layout puck-top-bar puck-dim puck-deco relative flex w-full items-center",
         !editMode && "puck-top-bar-public",
+        layoutClassName,
       )}
       style={styleVars}
     >
-      <Content className="puck-top-bar-slot min-w-0 w-full" />
+      {children}
       {dismissible && !editMode ? (
         <Button
           type="button"

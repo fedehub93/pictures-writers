@@ -4,6 +4,7 @@ import {
   type LegacyLinkProps,
   type LinkProps,
 } from "@/puck/fields/link/types";
+import { cn } from "@/shared/lib/utils";
 
 import type { LinkListBlockUiProps } from "../types";
 
@@ -15,6 +16,7 @@ export const LinkListBlockUi = ({
   title,
   links = [],
   styleVars,
+  layoutClassName,
 }: LinkListBlockUiProps) => {
   const visibleLinks = links
     .map((item) => item?.link)
@@ -24,7 +26,10 @@ export const LinkListBlockUi = ({
 
   return (
     <div
-      className="flex w-full flex-col gap-2 puck-dim puck-typo"
+      className={cn(
+        "flex w-full flex-col gap-2 puck-dim puck-typo",
+        layoutClassName,
+      )}
       style={styleVars}
     >
       {title?.trim() ? (

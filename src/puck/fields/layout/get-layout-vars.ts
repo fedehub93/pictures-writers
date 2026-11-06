@@ -61,3 +61,15 @@ export const getLayoutVars = (data?: Responsive<LayoutProps>) => {
 
   return vars;
 };
+
+/**
+ * Extract only the responsive display variables from a style-variable map.
+ *
+ * Blocks whose visible root is an inner element (Image, Separator) need the
+ * display variables on the outer wrapper, because that is the element the
+ * display class targets and the one a hidden block must remove from layout.
+ */
+export const pickDisplayVars = (vars: Record<string, string>) =>
+  Object.fromEntries(
+    Object.entries(vars).filter(([name]) => name.startsWith("--disp-")),
+  );
