@@ -7,6 +7,7 @@ export const BrandBlockUi = ({
   customLogoUrl,
   siteName,
   logoUrl,
+  styleVars,
 }: BrandBlockUiProps) => {
   const text = customText?.trim() || siteName?.trim();
   const src = customLogoUrl?.trim() || logoUrl?.trim();
@@ -14,7 +15,10 @@ export const BrandBlockUi = ({
   if (!(showLogo && src) && !(showSiteName && text)) return null;
 
   return (
-    <div className="flex items-center gap-x-3">
+    <div
+      className="flex items-center gap-x-3 puck-dim puck-typo"
+      style={styleVars}
+    >
       {showLogo && src ? (
         // The logo comes from Installation settings with unknown dimensions,
         // so next/image cannot infer width/height or a rendition ladder.
@@ -30,9 +34,7 @@ export const BrandBlockUi = ({
         />
       ) : null}
       {showSiteName && text ? (
-        <span className="text-lg font-semibold uppercase tracking-widest">
-          {text}
-        </span>
+        <span className="uppercase">{text}</span>
       ) : null}
     </div>
   );

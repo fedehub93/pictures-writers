@@ -1,5 +1,9 @@
 import { ComponentConfig } from "@puckeditor/core";
 
+import { DimensionField } from "@/puck/fields/dimension";
+import { TypographyField } from "@/puck/fields/typography";
+
+import { BRAND_DEFAULT_TYPOGRAPHY } from "./defaults";
 import type { BrandBlockProps } from "./types";
 import { renderBrandBlock } from "./render";
 
@@ -31,10 +35,13 @@ export const Brand: ComponentConfig<BrandBlockProps> = {
       type: "text",
       label: "Custom logo URL",
     },
+    dimension: DimensionField,
+    typography: TypographyField,
   },
   defaultProps: {
     showLogo: true,
     showSiteName: true,
+    typography: BRAND_DEFAULT_TYPOGRAPHY,
   },
   render: renderBrandBlock,
 };

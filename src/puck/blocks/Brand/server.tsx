@@ -18,6 +18,8 @@ export const BrandServer = async ({
   showSiteName,
   customText,
   customLogoUrl,
+  dimension,
+  typography,
 }: BrandBlockProps) => {
   const settings = await getSettings();
 
@@ -26,6 +28,8 @@ export const BrandServer = async ({
     showSiteName,
     customText,
     customLogoUrl,
+    dimension,
+    typography,
     siteName: settings.siteName ?? undefined,
     logoUrl: settings.logoUrl ?? undefined,
   });

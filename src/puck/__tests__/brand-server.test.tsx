@@ -31,5 +31,19 @@ describe("Brand server render", () => {
 
     expect(html).toContain("Acme Test Site");
     expect(html).toContain('src="/acme-logo.png"');
+    expect(html).toContain("--fs-d:1.125rem");
+  });
+
+  it("forwards typography and dimension to the public markup", async () => {
+    const element = await BrandServer({
+      typography: { desktop: { fontSize: "1.25rem" } },
+      dimension: { desktop: { marginTop: "8px" } },
+    });
+
+    const html = renderToStaticMarkup(element);
+
+    expect(html).toContain("puck-dim puck-typo");
+    expect(html).toContain("--fs-d:1.25rem");
+    expect(html).toContain("--mt-d:8px");
   });
 });
