@@ -1,5 +1,8 @@
 import { ComponentConfig } from "@puckeditor/core";
 
+import { DecorationField } from "@/puck/fields/decoration";
+import { DimensionField } from "@/puck/fields/dimension";
+
 import { MenuItemsField } from "./field";
 import type { NavbarBlockProps } from "./types";
 import { renderNavbarBlock } from "./render";
@@ -19,6 +22,8 @@ export const NavbarBlock: ComponentConfig<NavbarBlockProps> = {
       options: LAYOUT_OPTIONS,
     },
     items: MenuItemsField,
+    dimension: DimensionField,
+    decoration: DecorationField,
   },
   defaultProps: {
     layout: "mega",

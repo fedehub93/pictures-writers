@@ -13,8 +13,18 @@ import { renderNavbarBlock } from "./render";
  * tree. The editor config in `./index.tsx` stays database-free; both sides
  * share the same render function in `./render.tsx`.
  */
-export const NavbarBlockServer = async ({ items, layout }: NavbarBlockProps) => {
+export const NavbarBlockServer = async ({
+  items,
+  layout,
+  dimension,
+  decoration,
+}: NavbarBlockProps) => {
   const resolvedItems = await resolveMenuLinks(items);
 
-  return renderNavbarBlock({ items: resolvedItems, layout });
+  return renderNavbarBlock({
+    items: resolvedItems,
+    layout,
+    dimension,
+    decoration,
+  });
 };

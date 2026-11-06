@@ -1,5 +1,7 @@
 import { ComponentConfig } from "@puckeditor/core";
 
+import { DecorationField } from "@/puck/fields/decoration";
+import { DimensionField } from "@/puck/fields/dimension";
 import {
   SEARCH_BOX_DEFAULT_PLACEHOLDER,
   SEARCH_BOX_DEFAULT_VARIANT,
@@ -27,6 +29,8 @@ export const SearchBar: ComponentConfig<SearchBarBlockProps> = {
       label: "Variant",
       options: VARIANT_OPTIONS,
     },
+    dimension: DimensionField,
+    decoration: DecorationField,
   },
   defaultProps: {
     placeholder: SEARCH_BOX_DEFAULT_PLACEHOLDER,

@@ -17,6 +17,7 @@ import { NavbarMobileMenu } from "./mobile-menu";
 export const NavbarBlockUi = ({
   items = [],
   layout = "mega",
+  styleVars,
 }: NavbarBlockUiProps) => {
   const pathname = usePathname();
 
@@ -24,8 +25,10 @@ export const NavbarBlockUi = ({
 
   return (
     <div className="flex w-full items-center justify-end">
-      <NavbarDesktopMenu items={items} layout={layout} pathname={pathname} />
-      <NavbarMobileMenu items={items} pathname={pathname} />
+      <div className="puck-dim puck-deco" style={styleVars}>
+        <NavbarDesktopMenu items={items} layout={layout} pathname={pathname} />
+        <NavbarMobileMenu items={items} pathname={pathname} />
+      </div>
     </div>
   );
 };

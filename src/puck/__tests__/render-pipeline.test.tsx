@@ -142,7 +142,12 @@ const SHARED_CASES: SharedCase[] = [
   {
     name: "SearchBar",
     region: "HEADER",
-    props: { placeholder: "Search", variant: "inline" },
+    props: {
+      placeholder: "Search",
+      variant: "inline",
+      dimension: { desktop: { marginTop: "8px" } },
+      decoration: { desktop: { backgroundColor: "var(--accent)" } },
+    },
   },
 ];
 

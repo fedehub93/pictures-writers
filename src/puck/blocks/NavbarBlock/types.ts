@@ -1,7 +1,10 @@
+import type { DecorationProps } from "@/puck/fields/decoration";
+import type { DimensionProps } from "@/puck/fields/dimension";
 import type {
   LegacyLinkProps,
   LinkProps,
 } from "@/puck/fields/link/types";
+import type { Responsive } from "@/puck/utils/responsive";
 
 export type NavbarLayout = "mega" | "compact";
 
@@ -111,9 +114,21 @@ export type NavbarBlockProps = {
   items?: NavItem[];
   /** Desktop presentation. Mobile always uses the sheet/accordion layout. */
   layout?: NavbarLayout;
+  dimension?: Responsive<DimensionProps>;
+  decoration?: Responsive<DecorationProps>;
+};
+
+/** Inputs accepted by the pure render, before style variables are computed. */
+export type NavbarBlockRenderProps = {
+  items?: NavItemUi[];
+  layout?: NavbarLayout;
+  dimension?: Responsive<DimensionProps>;
+  decoration?: Responsive<DecorationProps>;
 };
 
 export type NavbarBlockUiProps = {
   items?: NavItemUi[];
   layout?: NavbarLayout;
+  /** Responsive style variables produced by the shared style utilities. */
+  styleVars?: Record<string, string>;
 };

@@ -1,8 +1,13 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/blog/",
+}));
 
 import { NavbarBlock } from "../blocks/NavbarBlock";
 import { isNavLinkActive } from "../blocks/NavbarBlock/lib/menu";
+import { renderNavbarBlock } from "../blocks/NavbarBlock/render";
 import type { NavItemUi } from "../blocks/NavbarBlock/types";
 import { NavbarCard } from "../blocks/NavbarBlock/ui/navbar-card";
 import { NavbarDesktopMenu } from "../blocks/NavbarBlock/ui/desktop-menu";
@@ -109,11 +114,58 @@ describe("NavbarBlock", () => {
     expect(html).toContain(">Workbook<");
   });
 
-  it("exposes a typed menu field and a mega menu default", () => {
+  it("applies dimension and decoration as responsive CSS custom properties", () => {
+    const html = renderToStaticMarkup(
+      renderNavbarBlock({
+        items: ITEMS,
+        layout: "compact",
+        dimension: {
+          desktop: { marginTop: "12px", paddingRight: "16px" },
+          tablet: { paddingBottom: "8px" },
+        },
+        decoration: {
+          desktop: {
+            backgroundColor: "var(--accent)",
+            borderWidth: "1px",
+            borderStyle: "solid",
+            borderColor: "var(--accent-foreground)",
+            borderTopRightRadius: "8px",
+            opacity: "0.9",
+          },
+        },
+      }),
+    );
+
+    expect(html).toContain("puck-dim puck-deco");
+    expect(html).toContain("--mt-d:12px");
+    expect(html).toContain("--pr-d:16px");
+    expect(html).toContain("--pb-t:8px");
+    expect(html).toContain("--bgc-d:var(--accent)");
+    expect(html).toContain("--bw-d:1px");
+    expect(html).toContain("--bs-d:solid");
+    expect(html).toContain("--bc-d:var(--accent-foreground)");
+    expect(html).toContain("--rtr-d:8px");
+    expect(html).toContain("--op-d:0.9");
+  });
+
+  it("keeps navigation spacing and surface opt-in when no values are configured", () => {
+    const html = renderToStaticMarkup(renderNavbarBlock({ items: ITEMS }));
+
+    expect(html).toContain("puck-dim puck-deco");
+    expect(html).not.toContain("--bgc-d");
+    expect(html).not.toContain("--mt-d");
+    expect(html).toContain('aria-label="Main navigation"');
+    expect(html).toContain('aria-label="Open menu"');
+  });
+
+  it("exposes a typed menu field, dimension, decoration and a mega menu default", () => {
     expect(NavbarBlock.defaultProps).toMatchObject({ layout: "mega" });
     expect(NavbarBlock.defaultProps?.items).toHaveLength(1);
     expect(NavbarBlock.fields?.items).toMatchObject({ type: "custom" });
     expect(NavbarBlock.fields?.layout).toMatchObject({ type: "radio" });
+    expect(NavbarBlock.fields).toHaveProperty("dimension");
+    expect(NavbarBlock.fields).toHaveProperty("decoration");
+    expect(NavbarBlock.fields).not.toHaveProperty("typography");
   });
 });
 

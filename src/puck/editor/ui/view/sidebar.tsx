@@ -1,22 +1,9 @@
 import {
-  ImageIcon,
-  SmileIcon,
-  LinkIcon,
-  FormIcon,
-  SeparatorHorizontalIcon,
   SearchIcon,
   ChevronDownIcon,
   GripIcon,
-  SquareIcon,
-  HeadingIcon,
-  TextIcon,
   InfoIcon,
-  TagIcon,
-  ListIcon,
-  CopyrightIcon,
-  LayoutGridIcon,
-  Rows3Icon,
-  type LucideIcon,
+  SquareIcon,
 } from "lucide-react";
 import { Config, createUsePuck, Drawer, Puck } from "@puckeditor/core";
 
@@ -26,27 +13,9 @@ import { Input } from "@/shared/ui/input";
 import { Badge } from "@/shared/ui/badge";
 import { Card } from "@/shared/ui/card";
 
+import { ELEMENT_ICONS, ELEMENT_LABELS } from "./element-meta";
+
 const usePuck = createUsePuck<Config>();
-
-const ELEMENT_ICONS: Record<string, LucideIcon> = {
-  Container: SquareIcon,
-  Flex: Rows3Icon,
-  Grid: LayoutGridIcon,
-  Heading: HeadingIcon,
-  Text: TextIcon,
-  Image: ImageIcon,
-  Icon: SmileIcon,
-  Link: LinkIcon,
-  Form: FormIcon,
-  Separator: SeparatorHorizontalIcon,
-  Brand: TagIcon,
-  LinkList: ListIcon,
-  Copyright: CopyrightIcon,
-};
-
-const ELEMENT_LABELS: Record<string, string> = {
-  LinkList: "Link list",
-};
 
 export const ElementsPanel = () => {
   const config = usePuck((state) => state.config);
