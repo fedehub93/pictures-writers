@@ -5,13 +5,17 @@ import {
   type LinkProps,
 } from "@/puck/fields/link/types";
 
-import type { LinkListBlockProps } from "../types";
+import type { LinkListBlockUiProps } from "../types";
 
 function hasContent(link: LinkProps | LegacyLinkProps): boolean {
   return Boolean(getLinkHref(link) || link.label?.trim());
 }
 
-export const LinkListBlockUi = ({ title, links = [] }: LinkListBlockProps) => {
+export const LinkListBlockUi = ({
+  title,
+  links = [],
+  styleVars,
+}: LinkListBlockUiProps) => {
   const visibleLinks = links
     .map((item) => item?.link)
     .filter((link): link is LinkProps | LegacyLinkProps =>
@@ -19,9 +23,12 @@ export const LinkListBlockUi = ({ title, links = [] }: LinkListBlockProps) => {
     );
 
   return (
-    <div className="flex w-full flex-col gap-2">
+    <div
+      className="flex w-full flex-col gap-2 puck-dim puck-typo"
+      style={styleVars}
+    >
       {title?.trim() ? (
-        <h2 className="text-base font-semibold">{title}</h2>
+        <h2 className="font-semibold">{title}</h2>
       ) : null}
       <ul className="flex flex-col gap-1">
         {visibleLinks.map((link, index) => (

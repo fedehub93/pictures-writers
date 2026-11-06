@@ -8,12 +8,16 @@ export const CopyrightBlockUi = ({
   showYear = true,
   extraText,
   links = [],
+  styleVars,
 }: CopyrightBlockUiProps) => {
   const name = siteName?.trim();
   const symbol = showYear ? `© ${year}` : "©";
 
   return (
-    <p className="flex flex-wrap items-baseline justify-center gap-x-2 gap-y-1 text-sm">
+    <p
+      className="flex flex-wrap items-baseline justify-center gap-x-2 gap-y-1 puck-dim puck-typo"
+      style={styleVars}
+    >
       <span>{name ? `${symbol} ${name}` : symbol}</span>
       {extraText?.trim() ? <span>{extraText.trim()}</span> : null}
       {links.map((item, index) =>

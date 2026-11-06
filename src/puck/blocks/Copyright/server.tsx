@@ -17,6 +17,8 @@ export const CopyrightServer = async ({
   showYear,
   extraText,
   links,
+  dimension,
+  typography,
 }: CopyrightBlockProps) => {
   const settings = await getSettings();
 
@@ -24,6 +26,8 @@ export const CopyrightServer = async ({
     showYear,
     extraText,
     links,
+    dimension,
+    typography,
     siteName: settings.siteName ?? undefined,
   });
 };

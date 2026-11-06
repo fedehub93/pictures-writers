@@ -32,5 +32,20 @@ describe("Copyright server render", () => {
     expect(html).toContain("©");
     expect(html).toContain(String(new Date().getFullYear()));
     expect(html).toContain("Acme Test Site");
+    expect(html).toContain("--fs-d:0.875rem");
+  });
+
+  it("forwards typography and dimension to the public markup", async () => {
+    const element = await CopyrightServer({
+      showYear: true,
+      typography: { desktop: { fontSize: "0.875rem" } },
+      dimension: { desktop: { marginTop: "8px" } },
+    });
+
+    const html = renderToStaticMarkup(element);
+
+    expect(html).toContain("puck-dim puck-typo");
+    expect(html).toContain("--fs-d:0.875rem");
+    expect(html).toContain("--mt-d:8px");
   });
 });
