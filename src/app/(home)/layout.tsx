@@ -21,7 +21,7 @@ import { resolveRegionPuckData } from "@/modules/site-regions/lib/default-region
 import { getCachedLiveRegionByKey } from "@/modules/site-regions/server/queries";
 
 import { PuckRender } from "@/puck/render-config";
-import { renderConfigForRegion } from "@/puck/region-render-config";
+import { renderConfigForRegion } from "@/puck/region/render-config";
 
 import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
 

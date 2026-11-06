@@ -4,7 +4,7 @@ import {
   FOOTER_RENDER_COMPONENTS,
   HEADER_RENDER_COMPONENTS,
   renderConfigForRegion,
-} from "../region-render-config";
+} from "../region/render-config";
 import { pageRenderConfig } from "../render-config";
 
 describe("renderConfigForRegion", () => {

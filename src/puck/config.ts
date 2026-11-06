@@ -21,7 +21,7 @@ import { NavbarBlock } from "./blocks/NavbarBlock";
 
 import type { FormProps } from "./fields/form";
 
-import { pickComponentConfigs } from "./region-palettes";
+import { pickComponentConfigs } from "./region/palettes";
 
 export type SavedComponents = {
   Container: ContainerBlockProps;

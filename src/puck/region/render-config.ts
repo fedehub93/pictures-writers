@@ -3,20 +3,21 @@ import type { Config } from "@puckeditor/core";
 import type { SiteRegionKey } from "@/generated/prisma";
 
 import {
-  FOOTER_REGION_COMPONENTS,
-  HEADER_REGION_COMPONENTS,
-  pickComponentConfigs,
-} from "./region-palettes";
-import {
   regionComponentConfigs,
   rootRenderConfig,
   type RenderComponentName,
-} from "./render-config";
+} from "../render-config";
+import {
+  FOOTER_REGION_COMPONENTS,
+  HEADER_REGION_COMPONENTS,
+  pickComponentConfigs,
+} from "./palettes";
 
 /**
- * Backwards-compatible names for the public render palettes. The canonical
- * tuples live in `region-palettes.ts` so the client-side editor can import them
- * without pulling in the server-only renderers.
+ * Public render palettes for each region. The `satisfies` keeps the canonical
+ * tuples in `./palettes.ts` in sync with the render registry at compile time,
+ * while the client-side editor imports the tuples directly and never pulls in
+ * the server-only renderers.
  */
 export const HEADER_RENDER_COMPONENTS =
   HEADER_REGION_COMPONENTS satisfies readonly RenderComponentName[];

@@ -75,7 +75,7 @@ export type RenderComponentName = (typeof RENDER_COMPONENT_NAMES)[number];
  * field descriptors Puck needs at render time (slots and rich text) are
  * declared here, so the public render path never imports editor field modules.
  * A region picks the subset it allows from this map (see
- * `region-render-config.ts`), so adding a block here never makes it available
+ * `region/render-config.ts`), so adding a block here never makes it available
  * in every palette by accident.
  */
 export const renderComponentConfigs: Config<any, RootProps>["components"] = {

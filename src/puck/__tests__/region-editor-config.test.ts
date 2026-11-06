@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { editorConfigForRegion } from "../region-editor-config";
+import { editorConfigForRegion } from "../region/editor-config";
 import {
   FOOTER_REGION_COMPONENTS,
   HEADER_REGION_COMPONENTS,
-} from "../region-palettes";
+} from "../region/palettes";
 
 describe("editorConfigForRegion", () => {
   it("uses the header palette for the header editor", () => {

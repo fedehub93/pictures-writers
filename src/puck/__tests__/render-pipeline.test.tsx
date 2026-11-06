@@ -4,8 +4,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
 import { config as pageEditorConfig } from "../config";
-import { editorConfigForRegion } from "../region-editor-config";
-import { renderConfigForRegion } from "../region-render-config";
+import { editorConfigForRegion } from "../region/editor-config";
+import { renderConfigForRegion } from "../region/render-config";
 import { PuckRender, renderComponentConfigs } from "../render-config";
 
 /**
@@ -103,8 +103,11 @@ const SHARED_CASES: SharedCase[] = [
     name: "Text",
     props: {
       text: "Hello\nWorld",
-      align: "center",
-      color: "var(--primary)",
+      dimension: { desktop: { marginTop: "12px" } },
+      typography: {
+        desktop: { fontSize: "18px", textAlign: "center", color: "var(--primary)" },
+        tablet: { fontSize: "16px" },
+      },
     },
   },
   {
