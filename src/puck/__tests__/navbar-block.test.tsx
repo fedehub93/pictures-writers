@@ -1,3 +1,5 @@
+import type { CustomField } from "@puckeditor/core";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
@@ -5,17 +7,51 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/blog/",
 }));
 
+/**
+ * The menu editor only needs the tRPC hook to build entity-picker query
+ * options; external links do not run a query, so a static fake is enough.
+ */
+vi.mock("@/trpc/client", () => {
+  const queryOptions = (input: unknown) => ({
+    queryKey: ["navbar-block-test", input],
+    queryFn: () => new Promise<never>(() => undefined),
+  });
+  const getMany = { getMany: { queryOptions } };
+
+  return {
+    useTRPC: () => ({
+      pages: getMany,
+      posts: getMany,
+      products: getMany,
+      categories: getMany,
+      productCategories: getMany,
+    }),
+  };
+});
+
 import { NavbarBlock } from "../blocks/NavbarBlock";
 import {
   NAVBAR_BLOCK_DEFAULT_CONTENT,
   NAVBAR_LAYOUT_ITEMS,
 } from "../blocks/NavbarBlock/defaults";
+import { NavbarContentField } from "../blocks/NavbarBlock/field";
 import { isNavLinkActive } from "../blocks/NavbarBlock/lib/menu";
 import { renderNavbarBlock } from "../blocks/NavbarBlock/render";
-import type { NavItemUi } from "../blocks/NavbarBlock/types";
+import type {
+  NavItem,
+  NavItemUi,
+  NavbarBlockContent,
+  NavbarColumnChildUi,
+} from "../blocks/NavbarBlock/types";
 import { NavbarCard } from "../blocks/NavbarBlock/ui/navbar-card";
-import { NavbarDesktopMenu } from "../blocks/NavbarBlock/ui/desktop-menu";
-import { NavLinkList } from "../blocks/NavbarBlock/ui/nav-link-list";
+import {
+  NavbarDesktopColumnPanel,
+  NavbarDesktopMenu,
+} from "../blocks/NavbarBlock/ui/desktop-menu";
+import {
+  NavbarMobileColumnList,
+  NavLinkList,
+} from "../blocks/NavbarBlock/ui/nav-link-list";
 import { NavbarMobileList } from "../blocks/NavbarBlock/ui/mobile-menu";
 
 const ITEMS: NavItemUi[] = [
@@ -42,6 +78,26 @@ const ITEMS: NavItemUi[] = [
     variant: "secondary",
   },
 ];
+
+const MEGA_COLUMN: NavItemUi = {
+  type: "column",
+  label: "Risorse",
+  items: [
+    {
+      label: "Formazione",
+      description: "Scuole e corsi di sceneggiatura.",
+      icon: { name: "school" },
+      link: { label: "Formazione", href: "/blog/scuole-di-sceneggiatura/" },
+    },
+    {
+      label: "Prossimamente",
+      icon: { name: "trophy" },
+      link: { type: "page", pageId: "draft" },
+    },
+  ],
+};
+
+const MEGA_COLUMN_CHILDREN = MEGA_COLUMN.items as NavbarColumnChildUi[];
 
 describe("NavbarBlock", () => {
   it("renders the desktop menu as a navigation menu", () => {
@@ -99,6 +155,90 @@ describe("NavbarBlock", () => {
     expect(html).toContain('href="/blog"');
     expect(html).toContain(">Blog</a>");
     expect(html).toContain(">Bozza</span>");
+  });
+
+  it("renders a mega panel column as a grid of cards as a grid of cards", () => {
+    const html = renderToStaticMarkup(
+      <NavbarDesktopColumnPanel
+        items={MEGA_COLUMN_CHILDREN}
+        layout="mega"
+        pathname="/blog/"
+      />,
+    );
+
+    expect(html).toContain("grid-cols-2");
+    expect(html).toContain("31.25rem");
+    expect(html).toContain("lg:w-[min(90vw,37.5rem)]");
+    expect(html).toContain(">Formazione<");
+    expect(html).toContain("Scuole e corsi di sceneggiatura.");
+    expect(html).toContain('href="/blog/scuole-di-sceneggiatura"');
+    expect(html).toContain("data-navbar-icon");
+  });
+
+  it("keeps a mega panel column compact, as a single-column list of links", () => {
+    const html = renderToStaticMarkup(
+      <NavbarDesktopColumnPanel
+        items={MEGA_COLUMN_CHILDREN}
+        layout="compact"
+        pathname="/blog/"
+      />,
+    );
+
+    expect(html).toContain("w-56");
+    expect(html).toContain("flex flex-col");
+    expect(html).not.toContain("37.5rem");
+    expect(html).not.toContain("grid-cols-2");
+    expect(html).not.toContain("data-navbar-icon");
+    expect(html).not.toContain("Scuole e corsi di sceneggiatura.");
+  });
+
+  it("keeps a legacy column without descriptions or icons unchanged", () => {
+    const legacy = [
+      { label: "Blog", link: { label: "Blog", href: "/blog/" } },
+      { label: "Ebooks", link: { label: "Ebooks", href: "/shop/ebooks/" } },
+    ];
+
+    const mega = renderToStaticMarkup(
+      <NavbarDesktopColumnPanel items={legacy} layout="mega" pathname="/blog/" />,
+    );
+    const compact = renderToStaticMarkup(
+      <NavbarDesktopColumnPanel
+        items={legacy}
+        layout="compact"
+        pathname="/blog/"
+      />,
+    );
+
+    expect(mega).toContain("w-[min(90vw,34rem)]");
+    expect(mega).toContain("grid grid-cols-2 gap-1");
+    expect(mega).not.toContain("data-navbar-icon");
+    expect(compact).toContain("w-56");
+    expect(compact).toContain("flex flex-col");
+  });
+
+  it("keeps every column item inside the desktop navigation menu", () => {
+    const html = renderToStaticMarkup(
+      <NavbarDesktopMenu
+        items={[MEGA_COLUMN]}
+        layout="mega"
+        pathname="/blog/"
+      />,
+    );
+
+    expect(html).toContain("Risorse");
+    expect(html).toContain("lucide-chevron-down");
+  });
+
+  it("renders mega panel children as mobile rows with icon, label and description", () => {
+    const html = renderToStaticMarkup(
+      <NavbarMobileColumnList links={MEGA_COLUMN_CHILDREN} pathname="/blog/" />,
+    );
+
+    expect(html).toContain("data-navbar-icon");
+    expect(html).toContain(">Formazione<");
+    expect(html).toContain("Scuole e corsi di sceneggiatura.");
+    expect(html).toContain('href="/blog/scuole-di-sceneggiatura"');
+    expect(html).toContain(">Prossimamente</span>");
   });
 
   it("renders a card with its image, description and link", () => {
@@ -197,6 +337,77 @@ describe("NavbarBlock", () => {
     expect(fields).toHaveProperty("decoration");
     expect(fields).not.toHaveProperty("items");
     expect(fields).not.toHaveProperty("typography");
+  });
+});
+
+function renderNavbarField(items: NavItem[]) {
+  const field = NavbarContentField as CustomField<NavbarBlockContent | undefined>;
+
+  return renderToStaticMarkup(
+    <QueryClientProvider client={new QueryClient()}>
+      {field.render({
+        field,
+        name: "content",
+        id: "content",
+        value: { layout: "mega", items },
+        onChange: () => undefined,
+      })}
+    </QueryClientProvider>,
+  );
+}
+
+describe("NavbarBlock editor field", () => {
+  it("offers no icon on top-level link and cta items", () => {
+    const html = renderNavbarField([
+      { type: "link", label: "Blog", link: { type: "external", url: "/blog/" } },
+      {
+        type: "cta",
+        label: "Contatti",
+        link: { type: "external", url: "/contatti/" },
+        variant: "primary",
+      },
+    ]);
+
+    expect(html).not.toContain(">Icon</span>");
+    expect(html).toContain("Destination");
+  });
+
+  it("offers the shared icon field on card items", () => {
+    const html = renderNavbarField([
+      {
+        type: "card",
+        label: "Workbook",
+        description: "Una guida pratica.",
+        icon: { name: "book-open" },
+        link: { type: "external", url: "/shop/workbook/" },
+      },
+    ]);
+
+    expect(html).toContain(">Icon</span>");
+    expect(html).toContain("book-open");
+  });
+
+  it("offers description and icon on column children", () => {
+    const html = renderNavbarField([
+      {
+        type: "column",
+        label: "Risorse",
+        items: [
+          {
+            label: "Blog",
+            description: "Articoli e approfondimenti.",
+            icon: { name: "newspaper" },
+            link: { type: "external", url: "/blog/" },
+          },
+        ],
+      },
+    ]);
+
+    expect(html).toContain(">Icon</span>");
+    expect(html).toContain("newspaper");
+    expect(html).toContain('id="navbar-column-0-description-0"');
+    expect(html).toContain("Short description shown next to the link");
+    expect(html).toContain("Articoli e approfondimenti.");
   });
 });
 

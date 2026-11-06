@@ -22,10 +22,14 @@ import {
   SheetTrigger,
 } from "@/shared/ui/sheet";
 
-import { getNavLabel, isNavLinkActive } from "../lib/menu";
+import {
+  getNavLabel,
+  hasMegaPanelContent,
+  isNavLinkActive,
+} from "../lib/menu";
 import type { NavItemUi } from "../types";
 import { NavbarCard } from "./navbar-card";
-import { NavLinkList } from "./nav-link-list";
+import { NavbarMobileColumnList, NavLinkList } from "./nav-link-list";
 
 const MOBILE_LINK_CLASSES =
   "block rounded-md px-3 py-2 text-base transition-colors hover:bg-accent hover:text-accent-foreground";
@@ -52,6 +56,9 @@ export const NavbarMobileList = ({
           const key = `${item.type}-${item.label}-${index}`;
 
           if (item.type === "column") {
+            const children = item.items ?? [];
+            const showsMegaPanelContent = children.some(hasMegaPanelContent);
+
             return (
               <li key={key}>
                 <Accordion type="single" collapsible>
@@ -60,12 +67,21 @@ export const NavbarMobileList = ({
                       {item.label}
                     </AccordionTrigger>
                     <AccordionContent className="pb-2">
-                      <NavLinkList
-                        links={item.items ?? []}
-                        pathname={pathname}
-                        onNavigate={onNavigate}
-                        className="pl-2"
-                      />
+                      {showsMegaPanelContent ? (
+                        <NavbarMobileColumnList
+                          links={children}
+                          pathname={pathname}
+                          onNavigate={onNavigate}
+                          className="pl-2"
+                        />
+                      ) : (
+                        <NavLinkList
+                          links={children}
+                          pathname={pathname}
+                          onNavigate={onNavigate}
+                          className="pl-2"
+                        />
+                      )}
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
@@ -80,6 +96,7 @@ export const NavbarMobileList = ({
                   label={item.label}
                   description={item.description}
                   imageUrl={item.imageUrl}
+                  icon={item.icon}
                   link={item.link}
                   pathname={pathname}
                   onNavigate={onNavigate}

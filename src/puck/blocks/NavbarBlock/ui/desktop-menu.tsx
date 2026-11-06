@@ -14,8 +14,16 @@ import {
   NavigationMenuTrigger,
 } from "@/shared/ui/navigation-menu";
 
-import { getNavLabel, isNavLinkActive } from "../lib/menu";
-import type { NavItemUi, NavbarLayout } from "../types";
+import {
+  getNavLabel,
+  hasMegaPanelContent,
+  isNavLinkActive,
+} from "../lib/menu";
+import type {
+  NavItemUi,
+  NavbarColumnChildUi,
+  NavbarLayout,
+} from "../types";
 import { NavbarCard } from "./navbar-card";
 import { NavLinkList } from "./nav-link-list";
 
@@ -27,6 +35,61 @@ const COLUMN_PANEL_CLASSES: Record<NavbarLayout, string> = {
 const COLUMN_LIST_CLASSES: Record<NavbarLayout, string> = {
   mega: "grid grid-cols-2 gap-1",
   compact: "flex flex-col",
+};
+
+/**
+ * Cards reuse the production mega panel: two columns, 125 Tailwind units
+ * (31.25rem) from the desktop breakpoint and 150 (37.5rem) from `lg`.
+ * The `min()` keeps the panel inside narrow desktop viewports.
+ */
+const MEGA_PANEL_CARDS_CLASSES =
+  "grid w-[min(90vw,31.25rem)] grid-cols-2 gap-3 p-4 lg:w-[min(90vw,37.5rem)]";
+
+/**
+ * Mega panel of a `column` item.
+ *
+ * A mega column whose children carry a description or an icon is promoted to
+ * the production grid of cards. Everything else — the compact layout and
+ * legacy columns — keeps the plain list of links it rendered before.
+ */
+export const NavbarDesktopColumnPanel = ({
+  items,
+  layout,
+  pathname,
+}: {
+  items: NavbarColumnChildUi[];
+  layout: NavbarLayout;
+  pathname?: string | null;
+}) => {
+  const showsMegaPanel = layout === "mega" && items.some(hasMegaPanelContent);
+
+  if (showsMegaPanel) {
+    return (
+      <ul className={MEGA_PANEL_CARDS_CLASSES}>
+        {items.map((child, childIndex) => (
+          <li key={`${child.label}-${childIndex}`} className="flex">
+            <NavbarCard
+              label={child.label}
+              description={child.description}
+              icon={child.icon}
+              link={child.link}
+              pathname={pathname}
+            />
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
+  return (
+    <div className={COLUMN_PANEL_CLASSES[layout]}>
+      <NavLinkList
+        links={items}
+        pathname={pathname}
+        className={COLUMN_LIST_CLASSES[layout]}
+      />
+    </div>
+  );
 };
 
 function DesktopItem({
@@ -78,13 +141,11 @@ function DesktopItem({
           {item.label}
         </NavigationMenuTrigger>
         <NavigationMenuContent>
-          <div className={COLUMN_PANEL_CLASSES[layout]}>
-            <NavLinkList
-              links={item.items ?? []}
-              pathname={pathname}
-              className={COLUMN_LIST_CLASSES[layout]}
-            />
-          </div>
+          <NavbarDesktopColumnPanel
+            items={item.items ?? []}
+            layout={layout}
+            pathname={pathname}
+          />
         </NavigationMenuContent>
       </>
     );
@@ -100,6 +161,7 @@ function DesktopItem({
           label={item.label}
           description={item.description}
           imageUrl={item.imageUrl}
+          icon={item.icon}
           link={item.link}
           pathname={pathname}
           className="m-1 w-[min(90vw,20rem)]"

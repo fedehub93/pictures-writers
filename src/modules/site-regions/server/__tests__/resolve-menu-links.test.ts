@@ -69,10 +69,13 @@ describe("resolveMenuLinks", () => {
         items: [
           {
             label: "Blog",
+            description: "Articoli e approfondimenti.",
+            icon: { name: "newspaper" },
             link: { type: "external", url: "/blog/", openInNewTab: true },
           },
           {
             label: "Prossimamente",
+            icon: { name: "trophy" },
             link: { type: "page", pageId: randomUUID() },
           },
         ],
@@ -82,6 +85,7 @@ describe("resolveMenuLinks", () => {
         label: "Workbook",
         description: "Una guida pratica.",
         imageUrl: "/cover.png",
+        icon: { name: "book-open" },
         link: { type: "page", pageId: page.root.id },
       },
       {
@@ -110,6 +114,8 @@ describe("resolveMenuLinks", () => {
       items: [
         {
           label: "Blog",
+          description: "Articoli e approfondimenti.",
+          icon: { name: "newspaper" },
           link: {
             label: "Blog",
             href: "/blog/",
@@ -118,6 +124,7 @@ describe("resolveMenuLinks", () => {
         },
         {
           label: "Prossimamente",
+          icon: { name: "trophy" },
           link: {
             label: "Prossimamente",
             href: undefined,
@@ -132,6 +139,7 @@ describe("resolveMenuLinks", () => {
       label: "Workbook",
       description: "Una guida pratica.",
       imageUrl: "/cover.png",
+      icon: { name: "book-open" },
       link: {
         label: "Workbook",
         href: `/${page.root.slug}/`,

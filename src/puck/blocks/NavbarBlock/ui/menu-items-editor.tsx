@@ -8,6 +8,8 @@ import {
   Trash2Icon,
 } from "lucide-react";
 
+import type { IconProps } from "@/puck/fields/icon";
+import { IconView } from "@/puck/fields/icon/ui/view/icon-view";
 import { LinkView } from "@/puck/fields/link/ui/view/link-view";
 import { normalizeLinkProps, type LinkProps } from "@/puck/fields/link/types";
 import { TextInput } from "@/puck/components/text-input";
@@ -23,7 +25,7 @@ import {
 import { Textarea } from "@/shared/ui/textarea";
 
 import {
-  createColumnLink,
+  createColumnChild,
   createNavItem,
   moveNavItem,
 } from "../lib/menu";
@@ -31,6 +33,7 @@ import {
   NAV_ITEM_TYPES,
   NAV_ITEM_TYPE_LABELS,
   type NavItem,
+  type NavbarColumnChild,
   type NavbarCtaVariant,
 } from "../types";
 
@@ -198,6 +201,10 @@ export const MenuItemsEditor = ({
                   placeholder="https://example.com/image.jpg"
                 />
               </div>
+              <MenuIconEditor
+                value={item.icon}
+                onChange={(icon) => update(index, { ...item, icon })}
+              />
             </>
           ) : null}
 
@@ -254,16 +261,36 @@ const MenuLinkEditor = ({
   </div>
 );
 
+/**
+ * Icon control shared by `card` items and `column` children.
+ *
+ * It reuses the same `IconView` as the standalone Icon field, so the picker and
+ * the stored `{ name }` shape stay identical. Top-level `link` and `cta` items
+ * deliberately have no icon.
+ */
+const MenuIconEditor = ({
+  value,
+  onChange,
+}: {
+  value?: IconProps;
+  onChange: (icon: IconProps) => void;
+}) => (
+  <div className="flex flex-col gap-1">
+    <span className="text-xs text-muted-foreground">Icon</span>
+    <IconView state={value} onUpdate={onChange} />
+  </div>
+);
+
 const ColumnItemsEditor = ({
   idPrefix,
   items = [],
   onChange,
 }: {
   idPrefix: string;
-  items?: { label: string; link: LinkProps }[];
-  onChange: (items: { label: string; link: LinkProps }[]) => void;
+  items?: NavbarColumnChild[];
+  onChange: (items: NavbarColumnChild[]) => void;
 }) => {
-  const update = (index: number, next: { label: string; link: LinkProps }) => {
+  const update = (index: number, next: NavbarColumnChild) => {
     onChange(
       items.map((item, itemIndex) => (itemIndex === index ? next : item)),
     );
@@ -300,6 +327,31 @@ const ColumnItemsEditor = ({
               <Trash2Icon />
             </Button>
           </div>
+          <div className="flex flex-col gap-1">
+            <Label
+              htmlFor={`${idPrefix}-description-${index}`}
+              className="text-xs text-muted-foreground"
+            >
+              Description
+            </Label>
+            <Textarea
+              id={`${idPrefix}-description-${index}`}
+              value={item.description ?? ""}
+              onChange={(event) =>
+                update(index, {
+                  ...item,
+                  description: event.target.value || undefined,
+                })
+              }
+              rows={2}
+              className="min-h-16 text-xs"
+              placeholder="Short description shown next to the link"
+            />
+          </div>
+          <MenuIconEditor
+            value={item.icon}
+            onChange={(icon) => update(index, { ...item, icon })}
+          />
           <MenuLinkEditor
             value={item.link}
             onChange={(link) => update(index, { ...item, link })}
@@ -310,7 +362,7 @@ const ColumnItemsEditor = ({
         type="button"
         variant="outline"
         size="xs"
-        onClick={() => onChange([...items, createColumnLink()])}
+        onClick={() => onChange([...items, createColumnChild()])}
       >
         <PlusIcon data-icon="inline-start" />
         Add link

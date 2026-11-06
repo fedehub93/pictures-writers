@@ -6,9 +6,11 @@ import {
 } from "@/puck/fields/link/types";
 import type {
   NavItemUi,
+  NavbarColumnChildUi,
   NavbarMenuLink,
   ResolvedNavItem,
   ResolvedNavLink,
+  ResolvedNavbarColumnChild,
 } from "@/puck/blocks/NavbarBlock/types";
 
 import { resolveSmartLink } from "./resolve-link";
@@ -56,6 +58,17 @@ async function resolveMenuLink(
   return { label: fallbackLabel, openInNewTab: undefined };
 }
 
+async function resolveColumnChild(
+  child: NavbarColumnChildUi,
+): Promise<ResolvedNavbarColumnChild> {
+  return {
+    label: child.label,
+    link: await resolveMenuLink(child.link, child.label),
+    description: child.description,
+    icon: child.icon,
+  };
+}
+
 async function resolveMenuItem(item: NavItemUi): Promise<ResolvedNavItem> {
   switch (item.type) {
     case "link":
@@ -70,10 +83,7 @@ async function resolveMenuItem(item: NavItemUi): Promise<ResolvedNavItem> {
         type: "column",
         label: item.label,
         items: await Promise.all(
-          (item.items ?? []).map(async (child) => ({
-            label: child.label,
-            link: await resolveMenuLink(child.link, child.label),
-          })),
+          (item.items ?? []).map(resolveColumnChild),
         ),
       };
 
@@ -83,6 +93,7 @@ async function resolveMenuItem(item: NavItemUi): Promise<ResolvedNavItem> {
         label: item.label,
         description: item.description,
         imageUrl: item.imageUrl,
+        icon: item.icon,
         link: await resolveMenuLink(item.link, item.label),
       };
 

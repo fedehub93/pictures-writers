@@ -1,5 +1,6 @@
 import type { DecorationProps } from "@/puck/fields/decoration";
 import type { DimensionProps } from "@/puck/fields/dimension";
+import type { IconProps } from "@/puck/fields/icon";
 import type { LayoutProps } from "@/puck/fields/layout";
 import type {
   LegacyLinkProps,
@@ -30,6 +31,36 @@ export const NAV_ITEM_TYPE_LABELS: Record<NavItemType, string> = {
 export type NavbarMenuLink = LinkProps | LegacyLinkProps;
 
 /**
+ * Stored child of a `column` item.
+ *
+ * The optional `description` and `icon` are what let the mega layout promote a
+ * column from a plain list of links to a grid of cards. Older documents only
+ * carry `label` and `link`, and must keep rendering exactly as before.
+ */
+export type NavbarColumnChild = {
+  label: string;
+  link: LinkProps;
+  description?: string;
+  icon?: IconProps;
+};
+
+/** Runtime shape of a column child after server-side resolution. */
+export type NavbarColumnChildUi = {
+  label: string;
+  link?: NavbarMenuLink;
+  description?: string;
+  icon?: IconProps;
+};
+
+/** Fully resolved column child: the link always carries a label. */
+export type ResolvedNavbarColumnChild = {
+  label: string;
+  link: ResolvedNavLink;
+  description?: string;
+  icon?: IconProps;
+};
+
+/**
  * Stored navbar tree.
  *
  * Items are deliberately a closed, typed union instead of Puck children: the
@@ -41,13 +72,14 @@ export type NavItem =
   | {
       type: "column";
       label: string;
-      items: { label: string; link: LinkProps }[];
+      items: NavbarColumnChild[];
     }
   | {
       type: "card";
       label: string;
       description?: string;
       imageUrl?: string;
+      icon?: IconProps;
       link: LinkProps;
     }
   | {
@@ -67,13 +99,14 @@ export type NavItemUi =
   | {
       type: "column";
       label: string;
-      items?: { label: string; link?: NavbarMenuLink }[];
+      items?: NavbarColumnChildUi[];
     }
   | {
       type: "card";
       label: string;
       description?: string;
       imageUrl?: string;
+      icon?: IconProps;
       link?: NavbarMenuLink;
     }
   | {
@@ -94,13 +127,14 @@ export type ResolvedNavItem =
   | {
       type: "column";
       label: string;
-      items: { label: string; link: ResolvedNavLink }[];
+      items: ResolvedNavbarColumnChild[];
     }
   | {
       type: "card";
       label: string;
       description?: string;
       imageUrl?: string;
+      icon?: IconProps;
       link: ResolvedNavLink;
     }
   | {

@@ -1,6 +1,10 @@
-import type { LinkProps } from "@/puck/fields/link/types";
-
-import type { NavItem, NavItemType, NavbarMenuLink } from "../types";
+import type {
+  NavItem,
+  NavItemType,
+  NavbarColumnChild,
+  NavbarColumnChildUi,
+  NavbarMenuLink,
+} from "../types";
 
 /**
  * Prefer the label the editor set on the item, then the link label the
@@ -39,8 +43,20 @@ export function createNavItem(type: NavItemType): NavItem {
   }
 }
 
-export function createColumnLink(): { label: string; link: LinkProps } {
+export function createColumnChild(): NavbarColumnChild {
   return { label: "", link: { type: "external", url: "" } };
+}
+
+/**
+ * Whether a column child carries the copy a mega panel card is made of.
+ *
+ * A column composed only of plain links keeps its legacy list rendering, so
+ * documents authored before `description` and `icon` existed do not change.
+ */
+export function hasMegaPanelContent(
+  child: Pick<NavbarColumnChildUi, "description" | "icon">,
+): boolean {
+  return Boolean(child.description?.trim() || child.icon?.name);
 }
 
 export function moveNavItem(

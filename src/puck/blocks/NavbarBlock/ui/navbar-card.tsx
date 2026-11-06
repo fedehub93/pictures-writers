@@ -1,22 +1,30 @@
 "use client";
 import "client-only";
 
+import type { IconProps } from "@/puck/fields/icon";
 import { InlineSmartLink } from "@/puck/fields/link/ui/inline-link";
 import { getLinkHref } from "@/puck/fields/link/types";
 import { cn } from "@/shared/lib/utils";
 
 import { getNavLabel, isNavLinkActive } from "../lib/menu";
 import type { NavbarMenuLink } from "../types";
+import { NavbarIcon } from "./navbar-icon";
 
 /**
- * Rich card used by the desktop mega menu and the mobile sheet. The whole card
- * is the link, so a broken/unresolved entity degrades to a non-clickable card
- * that still shows the configured copy.
+ * Rich card used by the desktop mega menu (both `card` items and detailed
+ * column children) and the mobile sheet. Sharing the presentation keeps a
+ * column child and a card from drifting apart.
+ *
+ * The whole card is the link, so a broken/unresolved entity degrades to a
+ * non-clickable card that still shows the configured copy. The icon is
+ * decorative and absolutely positioned, matching the production header where
+ * it sits at the bottom-right of the card.
  */
 export const NavbarCard = ({
   label,
   description,
   imageUrl,
+  icon,
   link,
   pathname,
   className,
@@ -25,6 +33,7 @@ export const NavbarCard = ({
   label: string;
   description?: string;
   imageUrl?: string;
+  icon?: IconProps;
   link?: NavbarMenuLink;
   pathname?: string | null;
   className?: string;
@@ -38,7 +47,7 @@ export const NavbarCard = ({
       link={link}
       onClick={onNavigate}
       className={cn(
-        "block overflow-hidden rounded-md border bg-background text-left transition-colors hover:bg-accent hover:text-accent-foreground",
+        "relative flex h-full w-full flex-col overflow-hidden rounded-md border bg-background text-left transition-colors hover:bg-accent hover:text-accent-foreground",
         active && "bg-accent text-accent-foreground",
         className,
       )}
@@ -54,7 +63,7 @@ export const NavbarCard = ({
           className="h-32 w-full object-cover"
         />
       ) : null}
-      <div className="flex flex-col gap-1 p-3">
+      <div className={cn("flex flex-col gap-1 p-3", icon?.name && "pr-12")}>
         <span className="text-sm font-semibold">{displayLabel}</span>
         {description?.trim() ? (
           <span className="text-sm leading-snug text-muted-foreground">
@@ -62,6 +71,7 @@ export const NavbarCard = ({
           </span>
         ) : null}
       </div>
+      <NavbarIcon icon={icon} className="absolute right-2 bottom-3 size-8" />
     </InlineSmartLink>
   );
 };
