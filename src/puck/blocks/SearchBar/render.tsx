@@ -20,8 +20,7 @@ import type { SearchBarBlockProps } from "./types";
  * the inline and the compact variant.
  */
 export const renderSearchBarBlock: PuckComponent<SearchBarBlockProps> = ({
-  placeholder,
-  variant,
+  content,
   dimension,
   decoration,
 }) => {
@@ -32,7 +31,10 @@ export const renderSearchBarBlock: PuckComponent<SearchBarBlockProps> = ({
 
   return (
     <div className="puck-dim puck-deco" style={styleVars}>
-      <SearchBox placeholder={placeholder} variant={variant} />
+      <SearchBox
+        placeholder={content?.placeholder}
+        variant={content?.variant}
+      />
     </div>
   );
 };

@@ -46,4 +46,15 @@ describe("Brand server render", () => {
     expect(html).toContain("--fs-d:1.25rem");
     expect(html).toContain("--mt-d:8px");
   });
+
+  it("reads the nested content object", async () => {
+    const element = await BrandServer({
+      content: { showLogo: false, showSiteName: true },
+    });
+
+    const html = renderToStaticMarkup(element);
+
+    expect(html).not.toContain("<img");
+    expect(html).toContain("Acme Test Site");
+  });
 });

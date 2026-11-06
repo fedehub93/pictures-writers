@@ -14,20 +14,14 @@ import { renderBrandBlock } from "./render";
  * sides share the same render function in `./render.tsx`.
  */
 export const BrandServer = async ({
-  showLogo,
-  showSiteName,
-  customText,
-  customLogoUrl,
+  content,
   dimension,
   typography,
 }: BrandBlockProps) => {
   const settings = await getSettings();
 
   return renderBrandBlock({
-    showLogo,
-    showSiteName,
-    customText,
-    customLogoUrl,
+    content,
     dimension,
     typography,
     siteName: settings.siteName ?? undefined,

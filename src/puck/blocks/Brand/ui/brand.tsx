@@ -1,14 +1,18 @@
+import { BRAND_DEFAULT_CONTENT } from "../defaults";
 import type { BrandBlockUiProps } from "../types";
 
 export const BrandBlockUi = ({
-  showLogo = true,
-  showSiteName = true,
-  customText,
-  customLogoUrl,
+  content,
   siteName,
   logoUrl,
   styleVars,
 }: BrandBlockUiProps) => {
+  const {
+    showLogo = BRAND_DEFAULT_CONTENT.showLogo,
+    showSiteName = BRAND_DEFAULT_CONTENT.showSiteName,
+    customText,
+    customLogoUrl,
+  } = content ?? {};
   const text = customText?.trim() || siteName?.trim();
   const src = customLogoUrl?.trim() || logoUrl?.trim();
 

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 
+import { getSettings } from "@/data/settings";
 import { requirePermission } from "@/shared/lib/auth-utils";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 
@@ -32,6 +33,8 @@ const SiteRegionEditorPage = async ({ params }: SiteRegionEditorPageProps) => {
     notFound();
   }
 
+  const settings = await getSettings();
+
   return (
     <SiteRegionEditorView
       region={{
@@ -43,6 +46,10 @@ const SiteRegionEditorPage = async ({ params }: SiteRegionEditorPageProps) => {
           status: region.currentVersion.status,
           puckData: region.currentVersion.puckData,
         },
+      }}
+      metadata={{
+        siteName: settings.siteName ?? undefined,
+        logoUrl: settings.logoUrl ?? undefined,
       }}
     />
   );

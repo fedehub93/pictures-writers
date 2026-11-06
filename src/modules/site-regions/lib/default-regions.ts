@@ -2,6 +2,8 @@ import type { Data } from "@puckeditor/core";
 
 import type { SiteRegionKey } from "@/generated/prisma";
 
+import { BRAND_DEFAULT_CONTENT } from "@/puck/blocks/Brand/defaults";
+
 /**
  * Generic fallbacks for a Site region that has never been published.
  *
@@ -18,8 +20,7 @@ const DEFAULT_REGION_PUCK_DATA: Record<SiteRegionKey, Data> = {
         type: "Brand",
         props: {
           id: "default-header-brand",
-          showLogo: true,
-          showSiteName: true,
+          content: BRAND_DEFAULT_CONTENT,
         },
       },
     ],

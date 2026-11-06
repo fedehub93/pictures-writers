@@ -16,8 +16,10 @@ describe("getDefaultRegionPuckData", () => {
     expect(data.root).toEqual({});
     expect(contentTypes(data)).toEqual(["Brand"]);
     expect(data.content[0]?.props).toMatchObject({
-      showLogo: true,
-      showSiteName: true,
+      content: {
+        showLogo: true,
+        showSiteName: true,
+      },
     });
   });
 

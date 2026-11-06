@@ -1,6 +1,21 @@
 import type { TypographyProps } from "@/puck/fields/typography";
 import type { Responsive } from "@/puck/utils/responsive";
 
+import type { BrandBlockContent } from "./types";
+
+/**
+ * Default content of a new Brand block.
+ *
+ * The renderers and the editor controls both read these values, so a new block
+ * and a document saved with the new content object agree on the initial look.
+ * Documents with the previous flat props are converted by the one-off
+ * migration utility; there is no runtime compatibility layer.
+ */
+export const BRAND_DEFAULT_CONTENT = {
+  showLogo: true,
+  showSiteName: true,
+} satisfies BrandBlockContent;
+
 /**
  * Default typography for the Brand site name.
  *

@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import { SearchBox } from "@/shared/components/search/search-box";
 
 import { SearchBar } from "../blocks/SearchBar";
+import { SEARCH_BAR_DEFAULT_CONTENT } from "../blocks/SearchBar/defaults";
 import { renderSearchBarBlock } from "../blocks/SearchBar/render";
 import type { SearchBarBlockProps } from "../blocks/SearchBar/types";
 import { config as pageEditorConfig } from "../config";
@@ -56,10 +57,18 @@ describe("SearchBar block", () => {
     expect(Object.keys(pageEditorConfig.components)).not.toContain("SearchBar");
   });
 
+  it("renders its content from the nested content object", () => {
+    const html = renderBlock({
+      content: { placeholder: "Find an article", variant: "inline" },
+    });
+
+    expect(html).toContain('placeholder="Find an article"');
+    expect(html).toContain('type="search"');
+  });
+
   it("applies dimension and decoration as responsive CSS custom properties", () => {
     const html = renderBlock({
-      placeholder: "Find an article",
-      variant: "inline",
+      content: { placeholder: "Find an article", variant: "inline" },
       dimension: {
         desktop: { marginTop: "12px", paddingLeft: "8px" },
         tablet: { paddingBottom: "4px" },
@@ -90,8 +99,7 @@ describe("SearchBar block", () => {
 
   it("applies the shared variables to the compact variant too", () => {
     const html = renderBlock({
-      placeholder: "Find an article",
-      variant: "compact",
+      content: { placeholder: "Find an article", variant: "compact" },
       dimension: { desktop: { marginTop: "8px" } },
       decoration: { desktop: { backgroundColor: "var(--accent)" } },
     });
@@ -104,7 +112,7 @@ describe("SearchBar block", () => {
   });
 
   it("keeps the spacing and surface opt-in when no values are configured", () => {
-    const html = renderBlock({ placeholder: "Find an article" });
+    const html = renderBlock({ content: { placeholder: "Find an article" } });
 
     expect(html).toContain("puck-dim puck-deco");
     expect(html).not.toContain("--bgc-d");
@@ -112,20 +120,20 @@ describe("SearchBar block", () => {
     expect(html).toContain('placeholder="Find an article"');
   });
 
-  it("exposes placeholder, variant, dimension and decoration in the editor", () => {
+  it("stores the nested content default", () => {
     expect(SearchBar.defaultProps).toEqual({
-      placeholder: "Search...",
-      variant: "inline",
+      content: SEARCH_BAR_DEFAULT_CONTENT,
     });
-    expect(SearchBar.fields?.variant).toMatchObject({
-      type: "radio",
-      options: [
-        { label: "Inline", value: "inline" },
-        { label: "Icon button (popover)", value: "compact" },
-      ],
-    });
-    expect(SearchBar.fields).toHaveProperty("dimension");
-    expect(SearchBar.fields).toHaveProperty("decoration");
-    expect(SearchBar.fields).not.toHaveProperty("typography");
+  });
+
+  it("exposes one Search content section and only the shared style fields", () => {
+    const fields = (SearchBar.fields ?? {}) as Record<string, unknown>;
+
+    expect(fields.content).toMatchObject({ type: "custom" });
+    expect(fields).toHaveProperty("dimension");
+    expect(fields).toHaveProperty("decoration");
+    expect(fields).not.toHaveProperty("placeholder");
+    expect(fields).not.toHaveProperty("variant");
+    expect(fields).not.toHaveProperty("typography");
   });
 });

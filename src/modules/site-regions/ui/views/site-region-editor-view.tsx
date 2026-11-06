@@ -7,6 +7,7 @@ import { useEffect } from "react";
 import { useSidebar } from "@/shared/ui/sidebar";
 
 import { PuckEditor } from "@/puck/editor-shell";
+import type { SiteRegionMetadata } from "@/puck/metadata";
 import { editorConfigForRegion } from "@/puck/region/editor-config";
 
 import { EMPTY_PUCK_DATA } from "../../constants";
@@ -16,8 +17,14 @@ import type { SiteRegionEditorData } from "../types";
 
 export const SiteRegionEditorView = ({
   region,
+  metadata,
 }: {
   region: SiteRegionEditorData;
+  /**
+   * Installation details the canvas previews through `puck.metadata`. Read on
+   * the server so no block has to fetch settings from the browser.
+   */
+  metadata: SiteRegionMetadata;
 }) => {
   const { setOpen } = useSidebar();
 
@@ -35,6 +42,7 @@ export const SiteRegionEditorView = ({
         puckData: region.version.puckData ?? EMPTY_PUCK_DATA,
       }}
       config={editorConfigForRegion(region.key)}
+      metadata={metadata}
       header={{
         title: SITE_REGION_LABELS[region.key],
         actions: <SiteRegionHeaderActions region={region} />,
