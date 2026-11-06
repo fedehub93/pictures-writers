@@ -51,15 +51,23 @@ interface LinkViewProps {
    * to false so the editor does not offer a label that never reaches the page.
    */
   showLabel?: boolean;
+  /**
+   * Prefix for the control ids. A list renders one editor per row, so the ids
+   * must stay unique inside the properties panel.
+   */
+  idPrefix?: string;
 }
 
 export const LinkView = ({
   state,
   onUpdate,
   showLabel = true,
+  idPrefix = "",
 }: LinkViewProps) => {
   const trpc = useTRPC();
   const [search, setSearch] = useDebounceValue("", 300);
+
+  const fieldId = (name: string) => `${idPrefix}${name}`;
 
   const linkType = getSmartLinkType(state);
 
@@ -141,13 +149,16 @@ export const LinkView = ({
     <div className="grid grid-cols-1 gap-y-4 p-1">
       <div className="flex flex-col gap-y-1">
         <PropHeader
-          name="type"
+          name={fieldId("type")}
           label="Link type"
           isModified={linkType !== "external"}
           onReset={() => onUpdate(withSmartLinkType(state, "external"))}
         />
         <Select value={linkType} onValueChange={handleTypeChange}>
-          <SelectTrigger id="type" className="w-full h-8 border-input text-xs">
+          <SelectTrigger
+            id={fieldId("type")}
+            className="w-full h-8 border-input text-xs"
+          >
             <SelectValue placeholder="Link type" />
           </SelectTrigger>
           <SelectContent>
@@ -163,13 +174,13 @@ export const LinkView = ({
       {showLabel ? (
         <div className="flex flex-col gap-y-1">
           <PropHeader
-            name="label"
+            name={fieldId("label")}
             label="Label"
             isModified={state.label !== undefined}
             onReset={() => onUpdate(withLinkLabel(state, undefined))}
           />
           <TextInput
-            name="label"
+            name={fieldId("label")}
             value={state.label}
             onChange={(newVal) =>
               onUpdate(withLinkLabel(state, newVal || undefined))
@@ -183,13 +194,13 @@ export const LinkView = ({
         <>
           <div className="flex flex-col gap-y-1">
             <PropHeader
-              name="url"
+              name={fieldId("url")}
               label="URL"
               isModified={state.type === "external" && state.url !== ""}
               onReset={() => onUpdate(withSmartLinkTarget(state, ""))}
             />
             <TextInput
-              name="url"
+              name={fieldId("url")}
               value={state.type === "external" ? state.url : ""}
               onChange={(newVal) => onUpdate(withSmartLinkTarget(state, newVal))}
               placeholder="https://google.com/"
@@ -198,7 +209,7 @@ export const LinkView = ({
 
           <div className="flex flex-col gap-y-1">
             <PropHeader
-              name="openInNewTab"
+              name={fieldId("openInNewTab")}
               label="Opening"
               isModified={
                 state.type === "external" && state.openInNewTab === true
@@ -209,7 +220,7 @@ export const LinkView = ({
               }
             />
             <SwitchInput
-              name="openInNewTab"
+              name={fieldId("openInNewTab")}
               label="Open in new tab"
               checked={state.type === "external" && state.openInNewTab === true}
               onChange={(checked) => {
@@ -222,7 +233,7 @@ export const LinkView = ({
       ) : (
         <div className="flex flex-col gap-y-1">
           <PropHeader
-            name="target"
+            name={fieldId("target")}
             label="Destination"
             isModified={Boolean(selectedId)}
             onReset={() => onUpdate(withSmartLinkTarget(state, ""))}

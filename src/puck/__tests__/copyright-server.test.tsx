@@ -25,7 +25,7 @@ describe("Copyright server render", () => {
   });
 
   it("reads the site name from Settings", async () => {
-    const element = await CopyrightServer({ showYear: true });
+    const element = await CopyrightServer({ content: { showYear: true } });
 
     const html = renderToStaticMarkup(element);
 
@@ -37,7 +37,7 @@ describe("Copyright server render", () => {
 
   it("forwards typography and dimension to the public markup", async () => {
     const element = await CopyrightServer({
-      showYear: true,
+      content: { showYear: true },
       typography: { desktop: { fontSize: "0.875rem" } },
       dimension: { desktop: { marginTop: "8px" } },
     });
@@ -47,5 +47,28 @@ describe("Copyright server render", () => {
     expect(html).toContain("puck-dim puck-typo");
     expect(html).toContain("--fs-d:0.875rem");
     expect(html).toContain("--mt-d:8px");
+  });
+
+  it("renders the authored extra text and links", async () => {
+    const element = await CopyrightServer({
+      content: {
+        showYear: true,
+        extraText: "All rights reserved.",
+        links: [
+          {
+            link: {
+              type: "external",
+              url: "https://example.com/",
+              label: "Terms",
+            },
+          },
+        ],
+      },
+    });
+
+    const html = renderToStaticMarkup(element);
+
+    expect(html).toContain("All rights reserved.");
+    expect(html).toContain(">Terms</a>");
   });
 });

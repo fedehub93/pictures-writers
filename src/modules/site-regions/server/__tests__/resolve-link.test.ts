@@ -419,7 +419,7 @@ describe("resolveSmartLinksInPuckData", () => {
     expect((data.content[0]!.props.link as LinkProps).type).toBe("external");
   });
 
-  it("resolves links stored in array props such as LinkList.links", async () => {
+  it("resolves links stored in nested array props such as LinkList.content.links", async () => {
     const { root } = await createPage("Pagina del footer");
 
     const data = {
@@ -429,17 +429,19 @@ describe("resolveSmartLinksInPuckData", () => {
           type: "LinkList",
           props: {
             id: "footer-links",
-            title: "Risorse",
-            links: [
-              {
-                link: {
-                  type: "external",
-                  url: "/blog/",
-                  label: "Blog",
-                } satisfies LinkProps,
-              },
-              { link: { type: "page", pageId: root.id } satisfies LinkProps },
-            ],
+            content: {
+              title: "Risorse",
+              links: [
+                {
+                  link: {
+                    type: "external",
+                    url: "/blog/",
+                    label: "Blog",
+                  } satisfies LinkProps,
+                },
+                { link: { type: "page", pageId: root.id } satisfies LinkProps },
+              ],
+            },
           },
         },
       ],
@@ -447,17 +449,17 @@ describe("resolveSmartLinksInPuckData", () => {
 
     const resolved = await resolveSmartLinksInPuckData(data);
 
-    expect(resolved.content[0]!.props.links[0]!.link).toEqual({
+    expect(resolved.content[0]!.props.content.links[0]!.link).toEqual({
       label: "Blog",
       href: "/blog/",
       openInNewTab: undefined,
     });
-    expect(resolved.content[0]!.props.links[1]!.link).toEqual({
+    expect(resolved.content[0]!.props.content.links[1]!.link).toEqual({
       label: "Pagina del footer",
       href: `/${root.slug}/`,
       openInNewTab: undefined,
     });
-    expect(data.content[0]!.props.links[0]!.link.type).toBe("external");
+    expect(data.content[0]!.props.content.links[0]!.link.type).toBe("external");
   });
 
   it("is used when a published page is fetched", async () => {

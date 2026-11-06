@@ -5,11 +5,7 @@ import { withAccordionField } from "@/puck/utils/with-accordion-field";
 
 import { LinkView } from "./ui/view/link-view";
 import { normalizeLinkProps } from "./types";
-import type {
-  LegacyLinkProps,
-  LinkListItem,
-  LinkProps,
-} from "./types";
+import type { LegacyLinkProps, LinkProps } from "./types";
 
 export type {
   LegacyLinkProps,
@@ -51,19 +47,3 @@ export const createLinkField = ({
  * own copy use `createLinkField({ showLabel: false })`.
  */
 export const LinkField: Field = createLinkField();
-
-/**
- * Editable list of SmartLinks, shared by the footer blocks that render a
- * column of links (LinkList, Copyright).
- */
-export const LinksField: Field<LinkListItem[] | undefined> = {
-  type: "array",
-  label: "Links",
-  arrayFields: {
-    link: LinkField,
-  },
-  defaultItemProps: {
-    link: { type: "external", url: "", label: "" },
-  },
-  getItemSummary: (item) => item.link?.label || "Link",
-};

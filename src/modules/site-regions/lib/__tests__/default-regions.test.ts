@@ -28,7 +28,13 @@ describe("getDefaultRegionPuckData", () => {
 
     expect(data.root).toEqual({});
     expect(contentTypes(data)).toEqual(["Copyright"]);
-    expect(data.content[0]?.props).toMatchObject({ showYear: true });
+    expect(data.content[0]?.props).toMatchObject({
+      content: {
+        showYear: true,
+        extraText: "",
+        links: [],
+      },
+    });
   });
 
   it("returns a fresh copy on every call", () => {

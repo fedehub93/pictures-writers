@@ -4,30 +4,32 @@ import {
 } from "@/puck/utils/get-style-vars";
 
 import { COPYRIGHT_DEFAULT_TYPOGRAPHY } from "./defaults";
-import type { CopyrightBlockUiProps } from "./types";
+import type { CopyrightBlockRenderProps } from "./types";
 import { CopyrightBlockUi } from "./ui/copyright";
 
 /**
  * Pure render shared by the editor canvas and the public server renderer.
  *
- * The editor path leaves `siteName` empty; the server renderer enriches the
- * props with Installation settings before calling this function. It imports
- * only the block UI and the shared style-variable utilities, so the editor
- * canvas stays database-free.
+ * The server renderer enriches the props with Installation settings; the editor
+ * canvas receives the same value through Puck metadata. Neither path reads the
+ * database here, so the block can be imported by the client-side region editor
+ * safely.
+ *
+ * Explicit props win over metadata: the public site keeps rendering from the
+ * server-provided values when both happen to be present.
  *
  * The typography fallback keeps previously saved documents at the small footer
  * type size: Puck merges `defaultProps` in the editor canvas only, not in the
  * public `<Render>`.
  */
 export const renderCopyrightBlock = ({
-  showYear,
-  extraText,
-  links,
+  content,
   dimension,
   typography,
   siteName,
   year,
-}: CopyrightBlockUiProps) => {
+  metadata,
+}: CopyrightBlockRenderProps) => {
   const styleVars = {
     ...getDimensionVars(dimension),
     ...getTypographyVars(typography ?? COPYRIGHT_DEFAULT_TYPOGRAPHY),
@@ -35,10 +37,8 @@ export const renderCopyrightBlock = ({
 
   return (
     <CopyrightBlockUi
-      showYear={showYear}
-      extraText={extraText}
-      links={links}
-      siteName={siteName}
+      content={content}
+      siteName={siteName?.trim() || metadata?.siteName}
       year={year}
       styleVars={styleVars}
     />

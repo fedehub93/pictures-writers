@@ -22,11 +22,13 @@ function render(props: LinkListBlockProps) {
 describe("LinkList block", () => {
   it("renders a titled list of resolved links", () => {
     const html = render({
-      title: "Risorse",
-      links: [
-        { link: { type: "external", url: "/blog/", label: "Blog" } },
-        { link: { type: "external", url: "/about/", label: "Chi siamo" } },
-      ],
+      content: {
+        title: "Risorse",
+        links: [
+          { link: { type: "external", url: "/blog/", label: "Blog" } },
+          { link: { type: "external", url: "/about/", label: "Chi siamo" } },
+        ],
+      },
     });
 
     expect(html).toContain("<ul");
@@ -39,8 +41,10 @@ describe("LinkList block", () => {
 
   it("renders unresolved entity links as plain text", () => {
     const html = render({
-      title: "Menu",
-      links: [{ link: { type: "page", pageId: "root-1", label: "About" } }],
+      content: {
+        title: "Menu",
+        links: [{ link: { type: "page", pageId: "root-1", label: "About" } }],
+      },
     });
 
     expect(html).not.toContain("<a");
@@ -49,8 +53,10 @@ describe("LinkList block", () => {
 
   it("renders resolved entity links stored in the legacy href shape", () => {
     const html = render({
-      title: "Menu",
-      links: [{ link: { label: "About", href: "/about/" } }],
+      content: {
+        title: "Menu",
+        links: [{ link: { label: "About", href: "/about/" } }],
+      },
     });
 
     expect(html).toContain('href="/about"');
@@ -59,17 +65,19 @@ describe("LinkList block", () => {
 
   it("opens resolved external links in a new tab when requested", () => {
     const html = render({
-      title: "Social",
-      links: [
-        {
-          link: {
-            type: "external",
-            url: "https://example.com/",
-            label: "Example",
-            openInNewTab: true,
+      content: {
+        title: "Social",
+        links: [
+          {
+            link: {
+              type: "external",
+              url: "https://example.com/",
+              label: "Example",
+              openInNewTab: true,
+            },
           },
-        },
-      ],
+        ],
+      },
     });
 
     expect(html).toContain('target="_blank"');
@@ -78,8 +86,10 @@ describe("LinkList block", () => {
 
   it("omits empty rows instead of rendering dead links", () => {
     const html = render({
-      title: "Empty",
-      links: [{ link: { type: "external", url: "" } }, {}],
+      content: {
+        title: "Empty",
+        links: [{ link: { type: "external", url: "" } }, {}],
+      },
     });
 
     expect(html).toContain("<ul");
@@ -88,15 +98,17 @@ describe("LinkList block", () => {
   });
 
   it("keeps the title semibold", () => {
-    const html = render({ title: "Risorse", links: [] });
+    const html = render({ content: { title: "Risorse", links: [] } });
 
     expect(html).toContain('<h2 class="font-semibold">Risorse</h2>');
   });
 
   it("renders typography and dimension as responsive CSS custom properties", () => {
     const html = render({
-      title: "Risorse",
-      links: [{ link: { type: "external", url: "/blog/", label: "Blog" } }],
+      content: {
+        title: "Risorse",
+        links: [{ link: { type: "external", url: "/blog/", label: "Blog" } }],
+      },
       typography: {
         desktop: { fontSize: "1rem", color: "var(--primary)" },
         tablet: { fontSize: "0.875rem" },
@@ -115,12 +127,14 @@ describe("LinkList block", () => {
     expect(html).toContain("--pb-t:8px");
   });
 
-  it("exposes title, links, dimension and typography fields", () => {
+  it("exposes one Link list content section and only the shared style fields", () => {
     const linkList = editorConfigForRegion("FOOTER").components.LinkList;
+    const fields = (linkList?.fields ?? {}) as Record<string, unknown>;
 
-    expect(linkList?.fields).toHaveProperty("title");
-    expect(linkList?.fields).toHaveProperty("links");
-    expect(linkList?.fields).toHaveProperty("dimension");
-    expect(linkList?.fields).toHaveProperty("typography");
+    expect(fields.content).toMatchObject({ type: "custom" });
+    expect(fields).toHaveProperty("dimension");
+    expect(fields).toHaveProperty("typography");
+    expect(fields).not.toHaveProperty("title");
+    expect(fields).not.toHaveProperty("links");
   });
 });

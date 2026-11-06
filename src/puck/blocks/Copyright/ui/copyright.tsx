@@ -1,15 +1,18 @@
 import { InlineSmartLink } from "@/puck/fields/link/ui/inline-link";
 
+import { COPYRIGHT_DEFAULT_CONTENT } from "../defaults";
 import type { CopyrightBlockUiProps } from "../types";
 
 export const CopyrightBlockUi = ({
+  content,
   siteName,
   year = new Date().getFullYear(),
-  showYear = true,
-  extraText,
-  links = [],
   styleVars,
 }: CopyrightBlockUiProps) => {
+  const showYear = content?.showYear ?? COPYRIGHT_DEFAULT_CONTENT.showYear;
+  const extraText = content?.extraText;
+  const links = content?.links ?? COPYRIGHT_DEFAULT_CONTENT.links;
+
   const name = siteName?.trim();
   const symbol = showYear ? `© ${year}` : "©";
 

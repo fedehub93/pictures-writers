@@ -3,6 +3,7 @@ import type { Data } from "@puckeditor/core";
 import type { SiteRegionKey } from "@/generated/prisma";
 
 import { BRAND_DEFAULT_CONTENT } from "@/puck/blocks/Brand/defaults";
+import { COPYRIGHT_DEFAULT_CONTENT } from "@/puck/blocks/Copyright/defaults";
 
 /**
  * Generic fallbacks for a Site region that has never been published.
@@ -32,7 +33,7 @@ const DEFAULT_REGION_PUCK_DATA: Record<SiteRegionKey, Data> = {
         type: "Copyright",
         props: {
           id: "default-footer-copyright",
-          showYear: true,
+          content: COPYRIGHT_DEFAULT_CONTENT,
         },
       },
     ],

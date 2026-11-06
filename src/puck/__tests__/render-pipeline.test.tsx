@@ -124,8 +124,10 @@ const SHARED_CASES: SharedCase[] = [
     name: "LinkList",
     region: "FOOTER",
     props: {
-      title: "Resources",
-      links: [{ link: { type: "external", url: "/blog/", label: "Blog" } }],
+      content: {
+        title: "Resources",
+        links: [{ link: { type: "external", url: "/blog/", label: "Blog" } }],
+      },
       dimension: { desktop: { marginTop: "12px" } },
       typography: { desktop: { fontSize: "0.875rem" } },
     },
@@ -241,16 +243,18 @@ describe("consolidated Puck render pipeline", () => {
                 type: "LinkList",
                 props: {
                   id: "footer-links",
-                  title: "Resources",
-                  links: [
-                    {
-                      link: {
-                        type: "external",
-                        url: "/blog/",
-                        label: "Blog",
+                  content: {
+                    title: "Resources",
+                    links: [
+                      {
+                        link: {
+                          type: "external",
+                          url: "/blog/",
+                          label: "Blog",
+                        },
                       },
-                    },
-                  ],
+                    ],
+                  },
                 },
               },
             ],

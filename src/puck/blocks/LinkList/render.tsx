@@ -15,8 +15,7 @@ import { LinkListBlockUi } from "./ui/link-list";
  * utilities so the public render path never pulls in editor field modules.
  */
 export const renderLinkListBlock: PuckComponent<LinkListBlockProps> = ({
-  title,
-  links,
+  content,
   dimension,
   typography,
 }) => {
@@ -26,6 +25,10 @@ export const renderLinkListBlock: PuckComponent<LinkListBlockProps> = ({
   };
 
   return (
-    <LinkListBlockUi title={title} links={links} styleVars={styleVars} />
+    <LinkListBlockUi
+      title={content?.title}
+      links={content?.links}
+      styleVars={styleVars}
+    />
   );
 };

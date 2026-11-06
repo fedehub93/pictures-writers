@@ -1,9 +1,10 @@
 import { ComponentConfig } from "@puckeditor/core";
 
 import { DimensionField } from "@/puck/fields/dimension";
-import { LinksField } from "@/puck/fields/link";
 import { TypographyField } from "@/puck/fields/typography";
 
+import { LINK_LIST_DEFAULT_CONTENT } from "./defaults";
+import { LinkListContentField } from "./field";
 import type { LinkListBlockProps } from "./types";
 import { renderLinkListBlock } from "./render";
 
@@ -11,17 +12,12 @@ export type { LinkListBlockProps };
 
 export const LinkList: ComponentConfig<LinkListBlockProps> = {
   fields: {
-    title: {
-      type: "text",
-      label: "Title",
-    },
-    links: LinksField,
+    content: LinkListContentField,
     dimension: DimensionField,
     typography: TypographyField,
   },
   defaultProps: {
-    title: "Links",
-    links: [],
+    content: LINK_LIST_DEFAULT_CONTENT,
   },
   render: renderLinkListBlock,
 };

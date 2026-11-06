@@ -14,18 +14,14 @@ import { renderCopyrightBlock } from "./render";
  * `./render.tsx`.
  */
 export const CopyrightServer = async ({
-  showYear,
-  extraText,
-  links,
+  content,
   dimension,
   typography,
 }: CopyrightBlockProps) => {
   const settings = await getSettings();
 
   return renderCopyrightBlock({
-    showYear,
-    extraText,
-    links,
+    content,
     dimension,
     typography,
     siteName: settings.siteName ?? undefined,
