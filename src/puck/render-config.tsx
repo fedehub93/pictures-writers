@@ -1,4 +1,3 @@
-import { Color, TextStyle } from "@tiptap/extension-text-style";
 import {
   type Config,
   type Data,
@@ -7,6 +6,8 @@ import {
   type RootConfig,
 } from "@puckeditor/core";
 import "@puckeditor/core/puck.css";
+
+import { richTextFieldConfig } from "./fields/rich-text/extensions";
 
 import type { RootProps } from "./root/types";
 import { renderRoot } from "./root/render";
@@ -117,13 +118,12 @@ export const renderComponentConfigs: Config<any, RootProps>["components"] = {
   },
   Heading: {
     // Rich text is resolved at render time from the field descriptor, so the
-    // public config keeps the same extensions without the editor menu module.
+    // public config shares the editor field's extensions and link settings
+    // without pulling in the editor menu module.
     fields: {
       text: {
         type: "richtext",
-        tiptap: {
-          extensions: [TextStyle, Color],
-        },
+        ...richTextFieldConfig,
       },
     },
     render: renderHeadingBlock,

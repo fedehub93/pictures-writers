@@ -1,12 +1,14 @@
 import { Field, RichTextMenu } from "@puckeditor/core";
-import { Color, TextStyle } from "@tiptap/extension-text-style";
 
+import { richTextFieldConfig } from "./extensions";
 import { ColorPickerPopover } from "./ui/components/color-picker-popover";
+import { LinkPickerPopover } from "./ui/components/link-picker-popover";
 
 export const RichTextField: Field = {
   label: "Text",
   type: "richtext",
   contentEditable: false,
+  ...richTextFieldConfig,
   renderMenu: ({ editor, children }) => {
     if (!editor) return null;
 
@@ -14,6 +16,7 @@ export const RichTextField: Field = {
       <RichTextMenu>
         {children}
         <RichTextMenu.Group>
+          <LinkPickerPopover editor={editor} />
           <ColorPickerPopover editor={editor} />
         </RichTextMenu.Group>
       </RichTextMenu>
@@ -26,12 +29,10 @@ export const RichTextField: Field = {
       <RichTextMenu>
         {children}
         <RichTextMenu.Group>
+          <LinkPickerPopover editor={editor} />
           <ColorPickerPopover editor={editor} />
         </RichTextMenu.Group>
       </RichTextMenu>
     );
-  },
-  tiptap: {
-    extensions: [TextStyle, Color],
   },
 };
