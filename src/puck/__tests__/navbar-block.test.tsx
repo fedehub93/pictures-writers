@@ -6,6 +6,10 @@ vi.mock("next/navigation", () => ({
 }));
 
 import { NavbarBlock } from "../blocks/NavbarBlock";
+import {
+  NAVBAR_BLOCK_DEFAULT_CONTENT,
+  NAVBAR_LAYOUT_ITEMS,
+} from "../blocks/NavbarBlock/defaults";
 import { isNavLinkActive } from "../blocks/NavbarBlock/lib/menu";
 import { renderNavbarBlock } from "../blocks/NavbarBlock/render";
 import type { NavItemUi } from "../blocks/NavbarBlock/types";
@@ -117,8 +121,7 @@ describe("NavbarBlock", () => {
   it("applies dimension and decoration as responsive CSS custom properties", () => {
     const html = renderToStaticMarkup(
       renderNavbarBlock({
-        items: ITEMS,
-        layout: "compact",
+        content: { items: ITEMS, layout: "compact" },
         dimension: {
           desktop: { marginTop: "12px", paddingRight: "16px" },
           tablet: { paddingBottom: "8px" },
@@ -149,7 +152,9 @@ describe("NavbarBlock", () => {
   });
 
   it("keeps navigation spacing and surface opt-in when no values are configured", () => {
-    const html = renderToStaticMarkup(renderNavbarBlock({ items: ITEMS }));
+    const html = renderToStaticMarkup(
+      renderNavbarBlock({ content: { items: ITEMS } }),
+    );
 
     expect(html).toContain("puck-dim puck-deco");
     expect(html).not.toContain("--bgc-d");
@@ -158,14 +163,29 @@ describe("NavbarBlock", () => {
     expect(html).toContain('aria-label="Open menu"');
   });
 
-  it("exposes a typed menu field, dimension, decoration and a mega menu default", () => {
-    expect(NavbarBlock.defaultProps).toMatchObject({ layout: "mega" });
-    expect(NavbarBlock.defaultProps?.items).toHaveLength(1);
-    expect(NavbarBlock.fields?.items).toMatchObject({ type: "custom" });
-    expect(NavbarBlock.fields?.layout).toMatchObject({ type: "radio" });
-    expect(NavbarBlock.fields).toHaveProperty("dimension");
-    expect(NavbarBlock.fields).toHaveProperty("decoration");
-    expect(NavbarBlock.fields).not.toHaveProperty("typography");
+  it("keeps the mega layout available while defaulting new navbars to compact", () => {
+    expect(NAVBAR_LAYOUT_ITEMS).toEqual([
+      { value: "mega", title: "Mega menu" },
+      { value: "compact", title: "Compact menu" },
+    ]);
+    expect(NAVBAR_BLOCK_DEFAULT_CONTENT.layout).toBe("compact");
+  });
+
+  it("exposes one Navigation content section, dimension, decoration and a compact default", () => {
+    expect(NavbarBlock.defaultProps).toEqual({
+      content: NAVBAR_BLOCK_DEFAULT_CONTENT,
+    });
+    expect(NavbarBlock.defaultProps?.content?.layout).toBe("compact");
+    expect(NavbarBlock.defaultProps?.content?.items).toHaveLength(1);
+
+    const fields = (NavbarBlock.fields ?? {}) as Record<string, unknown>;
+
+    expect(fields.content).toMatchObject({ type: "custom" });
+    expect(fields).toHaveProperty("dimension");
+    expect(fields).toHaveProperty("decoration");
+    expect(fields).not.toHaveProperty("items");
+    expect(fields).not.toHaveProperty("layout");
+    expect(fields).not.toHaveProperty("typography");
   });
 });
 

@@ -10,14 +10,16 @@ import { NavbarBlockServer } from "../blocks/NavbarBlock/server";
 describe("NavbarBlock server render", () => {
   it("resolves the menu links and forwards dimension and decoration", async () => {
     const element = await NavbarBlockServer({
-      items: [
-        {
-          type: "link",
-          label: "Blog",
-          link: { type: "external", url: "/blog/" },
-        },
-      ],
-      layout: "compact",
+      content: {
+        items: [
+          {
+            type: "link",
+            label: "Blog",
+            link: { type: "external", url: "/blog/" },
+          },
+        ],
+        layout: "compact",
+      },
       dimension: { desktop: { marginTop: "12px" } },
       decoration: { desktop: { backgroundColor: "var(--accent)" } },
     });

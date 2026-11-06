@@ -46,6 +46,7 @@ export const SiteRegionEditorView = ({
       header={{
         title: SITE_REGION_LABELS[region.key],
         actions: <SiteRegionHeaderActions region={region} />,
+        showPreview: true,
       }}
     />
   );

@@ -117,7 +117,7 @@ function DesktopItem({
  */
 export const NavbarDesktopMenu = ({
   items = [],
-  layout = "mega",
+  layout = "compact",
   pathname,
 }: {
   items?: NavItemUi[];

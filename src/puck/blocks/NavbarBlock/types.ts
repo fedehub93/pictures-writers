@@ -109,19 +109,29 @@ export type ResolvedNavItem =
       variant?: NavbarCtaVariant;
     };
 
-export type NavbarBlockProps = {
+/** Authored content of the NavbarBlock, grouped in one editor section. */
+export type NavbarBlockContent = {
   /** Ordered top-level menu items. */
   items?: NavItem[];
   /** Desktop presentation. Mobile always uses the sheet/accordion layout. */
   layout?: NavbarLayout;
+};
+
+/** Resolved content passed to the pure render. */
+export type NavbarBlockRenderContent = {
+  items?: NavItemUi[];
+  layout?: NavbarLayout;
+};
+
+export type NavbarBlockProps = {
+  content?: NavbarBlockContent;
   dimension?: Responsive<DimensionProps>;
   decoration?: Responsive<DecorationProps>;
 };
 
 /** Inputs accepted by the pure render, before style variables are computed. */
 export type NavbarBlockRenderProps = {
-  items?: NavItemUi[];
-  layout?: NavbarLayout;
+  content?: NavbarBlockRenderContent;
   dimension?: Responsive<DimensionProps>;
   decoration?: Responsive<DecorationProps>;
 };

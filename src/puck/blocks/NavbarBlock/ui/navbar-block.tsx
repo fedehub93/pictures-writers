@@ -16,7 +16,7 @@ import { NavbarMobileMenu } from "./mobile-menu";
  */
 export const NavbarBlockUi = ({
   items = [],
-  layout = "mega",
+  layout = "compact",
   styleVars,
 }: NavbarBlockUiProps) => {
   const pathname = usePathname();

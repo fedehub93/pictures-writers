@@ -21,6 +21,7 @@ import { Skeleton } from "@/shared/ui/skeleton";
 
 import { useEditorStore } from "../../store/use-editor-store";
 import { HeaderActions } from "../components/header-actions";
+import { PreviewToggle } from "../components/preview-toggle";
 import type { EditorHeaderProps } from "./editor";
 
 const usePuck = createUsePuck<Config>();
@@ -196,6 +197,13 @@ export const BuilderHeader = ({ header }: { header?: EditorHeaderProps }) => {
           </Button>
 
           <div className="h-4 w-px bg-border mx-1" />
+
+          {header?.showPreview && (
+            <>
+              <PreviewToggle />
+              <div className="h-4 w-px bg-border mx-1" />
+            </>
+          )}
 
           {header?.actions}
           {!header && !page && (

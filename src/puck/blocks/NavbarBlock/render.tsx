@@ -19,8 +19,7 @@ import { NavbarBlockUi } from "./ui/navbar-block";
  * emitted, so the navigation keeps its own spacing and surface.
  */
 export const renderNavbarBlock = ({
-  items,
-  layout,
+  content,
   dimension,
   decoration,
 }: NavbarBlockRenderProps) => {
@@ -31,8 +30,8 @@ export const renderNavbarBlock = ({
 
   return (
     <NavbarBlockUi
-      items={items}
-      layout={layout}
+      items={content?.items}
+      layout={content?.layout}
       styleVars={styleVars}
     />
   );

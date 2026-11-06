@@ -14,16 +14,14 @@ import { renderNavbarBlock } from "./render";
  * share the same render function in `./render.tsx`.
  */
 export const NavbarBlockServer = async ({
-  items,
-  layout,
+  content,
   dimension,
   decoration,
 }: NavbarBlockProps) => {
-  const resolvedItems = await resolveMenuLinks(items);
+  const resolvedItems = await resolveMenuLinks(content?.items);
 
   return renderNavbarBlock({
-    items: resolvedItems,
-    layout,
+    content: { ...content, items: resolvedItems },
     dimension,
     decoration,
   });

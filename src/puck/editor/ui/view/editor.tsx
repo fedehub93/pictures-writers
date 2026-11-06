@@ -8,6 +8,11 @@ import { ElementsPanel } from "./sidebar";
 export type EditorHeaderProps = {
   title: string;
   actions: ReactNode;
+  /**
+   * Show the interactive-preview toggle. Only the Site region editor opts in,
+   * so pages keep their current editing experience.
+   */
+  showPreview?: boolean;
 };
 
 export const Editor = ({ header }: { header?: EditorHeaderProps }) => {
