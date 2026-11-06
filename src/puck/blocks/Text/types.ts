@@ -1,15 +1,17 @@
 import type { ReactNode } from "react";
 
-import type { AlignType } from "@/puck/fields/typography/types";
+import type { Responsive } from "@/puck/utils/responsive";
+import type { DimensionProps } from "@/puck/fields/dimension";
+import type { TypographyProps } from "@/puck/fields/typography";
 
 export type TextBlockProps = {
   /**
-   * Inline text content.
+   * Plain multi-line text content.
    *
-   * A plain string today (textarea field). Typed as ReactNode so the field can
-   * move to rich text later without changing the block props or its render.
+   * Typed as ReactNode so the field can move to rich text later without
+   * changing the block props or its render.
    */
   text?: ReactNode;
-  align?: AlignType;
-  color?: string;
+  dimension?: Responsive<DimensionProps>;
+  typography?: Responsive<TypographyProps>;
 };

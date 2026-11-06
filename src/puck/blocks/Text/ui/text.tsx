@@ -1,14 +1,14 @@
-import type { TextBlockProps } from "../types";
+import type { ReactNode } from "react";
 
-export const TextBlockUi = ({ text, align, color }: TextBlockProps) => {
+export const TextBlockUi = ({
+  text,
+  styleVars,
+}: {
+  text?: ReactNode;
+  styleVars: Record<string, string>;
+}) => {
   return (
-    <p
-      style={{
-        textAlign: align,
-        color: color || undefined,
-        whiteSpace: "pre-line",
-      }}
-    >
+    <p className="puck-dim puck-typo whitespace-pre-line" style={styleVars}>
       {text}
     </p>
   );
