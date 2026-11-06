@@ -1,25 +1,19 @@
 import { ComponentConfig } from "@puckeditor/core";
 
-import { buildColorOptions } from "@/puck/constants";
+import { DecorationField } from "@/puck/fields/decoration";
+import { DimensionField } from "@/puck/fields/dimension";
+import { TypographyField } from "@/puck/fields/typography";
 import { createLinkField } from "@/puck/fields/link";
 
+import {
+  ANNOUNCEMENT_DEFAULT_DECORATION,
+  ANNOUNCEMENT_DEFAULT_DIMENSION,
+  ANNOUNCEMENT_DEFAULT_TYPOGRAPHY,
+} from "./defaults";
 import type { AnnouncementBarBlockProps } from "./types";
 import { renderAnnouncementBarBlock } from "./render";
 
 export type { AnnouncementBarBlockProps };
-
-/**
- * Extra theme tokens for the banner. `primary`/`primary-foreground` are the
- * default pair; the neutrals let a customer build a quieter banner without
- * opening the theme editor.
- */
-const COLOR_OPTIONS = buildColorOptions([
-  { label: "Primary foreground", value: "var(--primary-foreground)" },
-  { label: "Background", value: "var(--background)" },
-  { label: "Foreground", value: "var(--foreground)" },
-  { label: "Muted", value: "var(--muted)" },
-  { label: "Accent", value: "var(--accent)" },
-]);
 
 /**
  * The banner renders its own text, so the link editor hides the label control:
@@ -34,16 +28,9 @@ export const AnnouncementBar: ComponentConfig<AnnouncementBarBlockProps> = {
       label: "Text",
     },
     link: AnnouncementLinkField,
-    backgroundColor: {
-      type: "select",
-      label: "Background color",
-      options: COLOR_OPTIONS,
-    },
-    textColor: {
-      type: "select",
-      label: "Text color",
-      options: COLOR_OPTIONS,
-    },
+    dimension: DimensionField,
+    typography: TypographyField,
+    decoration: DecorationField,
     dismissible: {
       type: "radio",
       label: "Dismissible",
@@ -56,8 +43,9 @@ export const AnnouncementBar: ComponentConfig<AnnouncementBarBlockProps> = {
   defaultProps: {
     text: "Your announcement here.",
     link: { type: "external", url: "", label: "" },
-    backgroundColor: "var(--primary)",
-    textColor: "var(--primary-foreground)",
+    dimension: ANNOUNCEMENT_DEFAULT_DIMENSION,
+    typography: ANNOUNCEMENT_DEFAULT_TYPOGRAPHY,
+    decoration: ANNOUNCEMENT_DEFAULT_DECORATION,
     dismissible: false,
   },
   render: renderAnnouncementBarBlock,

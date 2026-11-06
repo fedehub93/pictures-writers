@@ -5,7 +5,6 @@ import { useCallback, useSyncExternalStore } from "react";
 import { XIcon } from "lucide-react";
 
 import { InlineSmartLink } from "@/puck/fields/link/ui/inline-link";
-import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 
 import {
@@ -30,10 +29,9 @@ export const AnnouncementBarBlockUi = ({
   id,
   text,
   link,
-  backgroundColor,
-  textColor,
   dismissible = false,
   editMode = false,
+  styleVars,
 }: AnnouncementBarBlockUiProps) => {
   const content = text?.trim() ?? "";
 
@@ -54,23 +52,12 @@ export const AnnouncementBarBlockUi = ({
   if (!content) return null;
   if (dismissible && !editMode && dismissed) return null;
 
-  const message = (
-    <span className="line-clamp-2 text-center text-xs leading-tight">
-      {content}
-    </span>
-  );
+  const message = <span className="line-clamp-2">{content}</span>;
 
   return (
     <div
-      style={{
-        backgroundColor: backgroundColor || undefined,
-        color: textColor || undefined,
-      }}
-      className={cn(
-        "relative flex min-h-8 w-full items-center justify-center px-10 py-1.5",
-        !backgroundColor && "bg-primary",
-        !textColor && "text-primary-foreground",
-      )}
+      style={styleVars}
+      className="puck-dim puck-typo puck-deco relative flex items-center justify-center"
     >
       {link ? (
         <InlineSmartLink
