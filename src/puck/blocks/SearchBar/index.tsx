@@ -1,6 +1,5 @@
 import { ComponentConfig } from "@puckeditor/core";
 
-import { SearchBox } from "@/shared/components/search/search-box";
 import {
   SEARCH_BOX_DEFAULT_PLACEHOLDER,
   SEARCH_BOX_DEFAULT_VARIANT,
@@ -8,6 +7,7 @@ import {
 } from "@/shared/components/search/types";
 
 import type { SearchBarBlockProps } from "./types";
+import { renderSearchBarBlock } from "./render";
 
 export type { SearchBarBlockProps };
 
@@ -32,7 +32,5 @@ export const SearchBar: ComponentConfig<SearchBarBlockProps> = {
     placeholder: SEARCH_BOX_DEFAULT_PLACEHOLDER,
     variant: SEARCH_BOX_DEFAULT_VARIANT,
   },
-  render: ({ placeholder, variant }) => (
-    <SearchBox placeholder={placeholder} variant={variant} />
-  ),
+  render: renderSearchBarBlock,
 };

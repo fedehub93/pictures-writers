@@ -1,23 +1,13 @@
-import { ReactNode } from "react";
-import { ComponentConfig } from "@puckeditor/core";
+import { type ComponentConfig } from "@puckeditor/core";
 
-import { Responsive } from "@/puck/utils/responsive";
+import { DimensionField } from "@/puck/fields/dimension";
+import { TypographyField } from "@/puck/fields/typography";
+import { IconField } from "@/puck/fields/icon";
 
-import { DimensionField, DimensionProps } from "@/puck/fields/dimension";
-import { TypographyField, TypographyProps } from "@/puck/fields/typography";
+import type { IconBlockProps } from "./types";
+import { renderIconBlock } from "./render";
 
-import {
-  getDimensionVars,
-  getTypographyVars,
-} from "@/puck/utils/get-style-vars";
-import { IconField, IconProps } from "@/puck/fields/icon";
-import { IconBlockUi } from "./ui/icon";
-
-export type IconBlockProps = {
-  icon?: IconProps;
-  dimension?: Responsive<DimensionProps>;
-  typography?: Responsive<TypographyProps>;
-};
+export type { IconBlockProps };
 
 export const IconBlock: ComponentConfig<IconBlockProps> = {
   fields: {
@@ -25,12 +15,5 @@ export const IconBlock: ComponentConfig<IconBlockProps> = {
     dimension: DimensionField,
     typography: TypographyField,
   },
-  render: ({ icon, dimension, typography }) => {
-    const styleVars = {
-      ...getDimensionVars(dimension),
-      ...getTypographyVars(typography),
-    };
-
-    return <IconBlockUi icon={icon} styleVars={styleVars} />;
-  },
+  render: renderIconBlock,
 };

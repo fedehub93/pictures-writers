@@ -1,18 +1,12 @@
-import { ComponentConfig } from "@puckeditor/core";
+import { type ComponentConfig } from "@puckeditor/core";
 
-import { Responsive } from "@/puck/utils/responsive";
+import { DimensionField } from "@/puck/fields/dimension";
+import { FormField } from "@/puck/fields/form";
 
-import { DimensionField, DimensionProps } from "@/puck/fields/dimension";
+import type { FormBlockProps } from "./types";
+import { renderFormBlock } from "./render";
 
-import { getDimensionVars } from "@/puck/utils/get-style-vars";
-import { FormField, type HydratedFormProps } from "@/puck/fields/form";
-
-import { FormBlockUi } from "./ui/form";
-
-export type FormBlockProps = {
-  form?: HydratedFormProps;
-  dimension?: Responsive<DimensionProps>;
-};
+export type { FormBlockProps };
 
 export const FormBlock: ComponentConfig<FormBlockProps> = {
   fields: {
@@ -26,11 +20,5 @@ export const FormBlock: ComponentConfig<FormBlockProps> = {
       gtmEventName: "",
     },
   },
-  render: ({ form, dimension }) => {
-    const styleVars = {
-      ...getDimensionVars(dimension),
-    };
-
-    return <FormBlockUi form={form} styleVars={styleVars} />;
-  },
+  render: renderFormBlock,
 };

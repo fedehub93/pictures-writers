@@ -4,7 +4,7 @@ import { buildColorOptions } from "@/puck/constants";
 import type { AlignType } from "@/puck/fields/typography/types";
 
 import type { TextBlockProps } from "./types";
-import { TextBlockUi } from "./ui/text";
+import { renderTextBlock } from "./render";
 
 export type { TextBlockProps };
 
@@ -38,7 +38,5 @@ export const Text: ComponentConfig<TextBlockProps> = {
     text: "Add your text here.",
     align: "left",
   },
-  render: ({ text, align, color }) => {
-    return <TextBlockUi text={text} align={align} color={color} />;
-  },
+  render: renderTextBlock,
 };

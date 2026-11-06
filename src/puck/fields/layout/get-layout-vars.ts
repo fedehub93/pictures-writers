@@ -1,6 +1,6 @@
 import { getSuffix } from "@/puck/utils/get-suffix";
-import { Responsive } from "@/puck/utils/responsive";
-import { Breakpoint } from "@/puck/utils/breakpoints";
+import type { Responsive } from "@/puck/utils/responsive";
+import type { Breakpoint } from "@/puck/utils/breakpoints";
 
 import type { LayoutProps } from "./index";
 

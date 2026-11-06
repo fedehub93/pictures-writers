@@ -1,25 +1,13 @@
-import { ReactNode } from "react";
-import { ComponentConfig } from "@puckeditor/core";
-
-import { cn } from "@/shared/lib/utils";
-
-import { Responsive } from "@/puck/utils/responsive";
+import { type ComponentConfig } from "@puckeditor/core";
 
 import { RichTextField } from "@/puck/fields/rich-text";
-import { DimensionField, DimensionProps } from "@/puck/fields/dimension";
-import { TypographyField, TypographyProps } from "@/puck/fields/typography";
+import { DimensionField } from "@/puck/fields/dimension";
+import { TypographyField } from "@/puck/fields/typography";
 
-import {
-  getDimensionVars,
-  getTypographyVars,
-} from "@/puck/utils/get-style-vars";
-import { HeadingBlockUi } from "./ui/heading";
+import type { HeadingProps } from "./types";
+import { renderHeadingBlock } from "./render";
 
-export type HeadingProps = {
-  text?: ReactNode;
-  dimension?: Responsive<DimensionProps>;
-  typography?: Responsive<TypographyProps>;
-};
+export type { HeadingProps };
 
 export const Heading: ComponentConfig<HeadingProps> = {
   fields: {
@@ -30,12 +18,5 @@ export const Heading: ComponentConfig<HeadingProps> = {
   defaultProps: {
     text: "Heading",
   },
-  render: ({ text, dimension, typography }) => {
-    const styleVars = {
-      ...getDimensionVars(dimension),
-      ...getTypographyVars(typography),
-    };
-
-    return <HeadingBlockUi text={text} styleVars={styleVars} />;
-  },
+  render: renderHeadingBlock,
 };

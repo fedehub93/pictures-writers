@@ -1,8 +1,8 @@
 "use client";
 
-import {
-  type LegacyLinkProps,
-  type LinkProps,
+import type {
+  LegacyLinkProps,
+  LinkProps,
 } from "@/puck/fields/link/types";
 import { InlineSmartLink } from "@/puck/fields/link/ui/inline-link";
 

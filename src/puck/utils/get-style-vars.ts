@@ -1,8 +1,8 @@
-import { Responsive } from "@/puck/utils/responsive";
-import { DimensionProps } from "@/puck/fields/dimension";
-import { TypographyProps } from "@/puck/fields/typography";
-import { DecorationProps } from "@/puck/fields/decoration";
-import { Breakpoint } from "@/puck/utils/breakpoints";
+import type { Responsive } from "@/puck/utils/responsive";
+import type { DimensionProps } from "@/puck/fields/dimension";
+import type { TypographyProps } from "@/puck/fields/typography";
+import type { DecorationProps } from "@/puck/fields/decoration";
+import type { Breakpoint } from "@/puck/utils/breakpoints";
 
 const BREAKPOINTS: Breakpoint[] = ["desktop", "tablet", "mobile"];
 

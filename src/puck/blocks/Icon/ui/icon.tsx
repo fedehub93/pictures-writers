@@ -1,6 +1,6 @@
 import { Icon } from "@/shared/ui/icon-picker";
 
-import { IconProps } from "@/puck/fields/icon";
+import type { IconProps } from "@/puck/fields/icon";
 
 export const IconBlockUi = ({
   icon,

@@ -1,15 +1,11 @@
-import { ComponentConfig } from "@puckeditor/core";
+import { type ComponentConfig } from "@puckeditor/core";
 
-import { Responsive } from "@/puck/utils/responsive";
+import { DimensionField } from "@/puck/fields/dimension";
 
-import { DimensionField, DimensionProps } from "@/puck/fields/dimension";
+import type { SeparatorBlockProps } from "./types";
+import { renderSeparatorBlock } from "./render";
 
-import { getDimensionVars } from "@/puck/utils/get-style-vars";
-import { Separator } from "@/shared/ui/separator";
-
-export type SeparatorBlockProps = {
-  dimension?: Responsive<DimensionProps>;
-};
+export type { SeparatorBlockProps };
 
 export const SeparatorBlock: ComponentConfig<SeparatorBlockProps> = {
   fields: {
@@ -23,11 +19,5 @@ export const SeparatorBlock: ComponentConfig<SeparatorBlockProps> = {
       },
     },
   },
-  render: ({ dimension }) => {
-    const styleVars = {
-      ...getDimensionVars(dimension),
-    };
-
-    return <Separator style={styleVars} className="puck-dim" />;
-  },
+  render: renderSeparatorBlock,
 };

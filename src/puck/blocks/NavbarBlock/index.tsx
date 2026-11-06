@@ -2,7 +2,7 @@ import { ComponentConfig } from "@puckeditor/core";
 
 import { MenuItemsField } from "./field";
 import type { NavbarBlockProps } from "./types";
-import { NavbarBlockUi } from "./ui/navbar-block";
+import { renderNavbarBlock } from "./render";
 
 export type { NavbarBlockProps };
 
@@ -30,7 +30,5 @@ export const NavbarBlock: ComponentConfig<NavbarBlockProps> = {
       },
     ],
   },
-  render: ({ items, layout }) => (
-    <NavbarBlockUi items={items} layout={layout} />
-  ),
+  render: renderNavbarBlock,
 };

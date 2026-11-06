@@ -2,54 +2,41 @@ import { Color, TextStyle } from "@tiptap/extension-text-style";
 import {
   type Config,
   type Data,
+  type PuckComponent,
   Render,
   type RootConfig,
 } from "@puckeditor/core";
 import "@puckeditor/core/puck.css";
 
-import {
-  getDecorationVars,
-  getDimensionVars,
-  getTypographyVars,
-} from "./utils/get-style-vars";
-import { getLayoutVars } from "./fields/layout/get-layout-vars";
+import type { RootProps } from "./root/types";
+import { renderRoot } from "./root/render";
 
-import { type RootProps } from "./root";
+import { renderContainerBlock } from "./blocks/Container/render";
+import { renderFlexBlock } from "./blocks/Flex/render";
+import { renderGridBlock } from "./blocks/Grid/render";
+import { renderImageBlock } from "./blocks/Image/render";
+import { renderFormBlock } from "./blocks/Form/render";
+import { renderSeparatorBlock } from "./blocks/Separator/render";
+import { renderIconBlock } from "./blocks/Icon/render";
+import { renderHeadingBlock } from "./blocks/Heading/render";
+import { renderTextBlock } from "./blocks/Text/render";
+import { renderLinkBlock } from "./blocks/Link/render";
 
-import { RootBlockUi } from "./root/ui/root";
-
-import { HeadingBlockUi } from "./blocks/Heading/ui/heading";
-import { TextBlockUi } from "./blocks/Text/ui/text";
-
-import { ContainerBlockUi } from "./blocks/Container/ui/container-block-ui";
-import { FlexBlockUi } from "./blocks/Flex/ui/flex-block-ui";
-import { GridBlockUi } from "./blocks/Grid/ui/grid";
-import { ImageBlockUi } from "./blocks/Image/ui/image";
-import { FormBlockUi } from "./blocks/Form/ui/form";
-import { SeparatorBlockUi } from "./blocks/Separator/ui/separator";
-import { IconBlockUi } from "./blocks/Icon/ui/icon";
-import { LinkBlockUi } from "./blocks/Link/ui/link";
-import { LinkList } from "./blocks/LinkList";
-import { Copyright } from "./blocks/Copyright";
-import { CopyrightServer } from "./blocks/Copyright/server";
-import { Brand } from "./blocks/Brand";
 import { BrandServer } from "./blocks/Brand/server";
-import { AnnouncementBar } from "./blocks/AnnouncementBar";
-import { SearchBar } from "./blocks/SearchBar";
-import { NavbarBlock } from "./blocks/NavbarBlock";
+import type { BrandBlockProps } from "./blocks/Brand/types";
+import { renderLinkListBlock } from "./blocks/LinkList/render";
+import { CopyrightServer } from "./blocks/Copyright/server";
+import type { CopyrightBlockProps } from "./blocks/Copyright/types";
+import { renderAnnouncementBarBlock } from "./blocks/AnnouncementBar/render";
+import { renderSearchBarBlock } from "./blocks/SearchBar/render";
 import { NavbarBlockServer } from "./blocks/NavbarBlock/server";
+import type { NavbarBlockProps } from "./blocks/NavbarBlock/types";
 
 export const rootRenderConfig: RootConfig<RootProps> = {
   fields: {
     title: { type: "text" },
   },
-  render: ({ children, dimension }) => {
-    const styleVars = {
-      ...getDimensionVars(dimension),
-    };
-
-    return <RootBlockUi styleVars={styleVars}>{children}</RootBlockUi>;
-  },
+  render: renderRoot,
 };
 
 /**
@@ -84,6 +71,9 @@ export type RenderComponentName = (typeof RENDER_COMPONENT_NAMES)[number];
 /**
  * Render functions for the blocks shared by pages and Site regions.
  *
+ * Every entry consumes the block's single pure render implementation. Only the
+ * field descriptors Puck needs at render time (slots and rich text) are
+ * declared here, so the public render path never imports editor field modules.
  * A region picks the subset it allows from this map (see
  * `region-render-config.ts`), so adding a block here never makes it available
  * in every palette by accident.
@@ -95,15 +85,7 @@ export const renderComponentConfigs: Config<any, RootProps>["components"] = {
         type: "slot",
       },
     },
-    render: ({ layout, dimension, typography, decoration, items: Items }) => {
-      const styleVars = {
-        ...getLayoutVars(layout),
-        ...getDimensionVars(dimension),
-        ...getTypographyVars(typography),
-        ...getDecorationVars(decoration),
-      };
-      return <ContainerBlockUi Items={Items} styleVars={styleVars} />;
-    },
+    render: renderContainerBlock,
   },
   Flex: {
     fields: {
@@ -111,15 +93,7 @@ export const renderComponentConfigs: Config<any, RootProps>["components"] = {
         type: "slot",
       },
     },
-    render: ({ layout, dimension, typography, decoration, items: Items }) => {
-      const styleVars = {
-        ...getLayoutVars(layout),
-        ...getDimensionVars(dimension),
-        ...getTypographyVars(typography),
-        ...getDecorationVars(decoration),
-      };
-      return <FlexBlockUi Items={Items} styleVars={styleVars} />;
-    },
+    render: renderFlexBlock,
   },
   Grid: {
     fields: {
@@ -127,54 +101,23 @@ export const renderComponentConfigs: Config<any, RootProps>["components"] = {
         type: "slot",
       },
     },
-    render: ({ layout, dimension, typography, decoration, items: Items }) => {
-      const styleVars = {
-        ...getLayoutVars(layout),
-        ...getDimensionVars(dimension),
-        ...getTypographyVars(typography),
-        ...getDecorationVars(decoration),
-      };
-      return <GridBlockUi Items={Items} styleVars={styleVars} />;
-    },
+    render: renderGridBlock,
   },
   Image: {
-    render: ({ image, dimension, decoration }) => {
-      const styleVars = {
-        ...getDimensionVars(dimension),
-        ...getDecorationVars(decoration),
-      };
-
-      return <ImageBlockUi image={image} styleVars={styleVars} />;
-    },
+    render: renderImageBlock,
   },
   Form: {
-    render: ({ form, dimension }) => {
-      const styleVars = {
-        ...getDimensionVars(dimension),
-      };
-      return <FormBlockUi form={form} styleVars={styleVars} />;
-    },
+    render: renderFormBlock,
   },
   Separator: {
-    render: ({ dimension }) => {
-      const styleVars = {
-        ...getDimensionVars(dimension),
-      };
-
-      return <SeparatorBlockUi styleVars={styleVars} />;
-    },
+    render: renderSeparatorBlock,
   },
   Icon: {
-    render: ({ icon, dimension, typography }) => {
-      const styleVars = {
-        ...getDimensionVars(dimension),
-        ...getTypographyVars(typography),
-      };
-
-      return <IconBlockUi icon={icon} styleVars={styleVars} />;
-    },
+    render: renderIconBlock,
   },
   Heading: {
+    // Rich text is resolved at render time from the field descriptor, so the
+    // public config keeps the same extensions without the editor menu module.
     fields: {
       text: {
         type: "richtext",
@@ -183,77 +126,55 @@ export const renderComponentConfigs: Config<any, RootProps>["components"] = {
         },
       },
     },
-
-    render: ({ text, dimension, typography }) => {
-      const styleVars = {
-        ...getDimensionVars(dimension),
-        ...getTypographyVars(typography),
-      };
-
-      return <HeadingBlockUi text={text} styleVars={styleVars} />;
-    },
+    render: renderHeadingBlock,
   },
   Text: {
-    fields: {
-      text: {
-        type: "textarea",
-      },
-    },
-
-    render: ({ text, align, color }) => {
-      return <TextBlockUi text={text} align={align} color={color} />;
-    },
+    render: renderTextBlock,
   },
   Link: {
-    render: ({ link, dimension, typography, decoration }) => {
-      const styleVars = {
-        ...getDimensionVars(dimension),
-        ...getTypographyVars(typography),
-        ...getDecorationVars(decoration),
-      };
-
-      return <LinkBlockUi link={link} styleVars={styleVars} />;
-    },
+    render: renderLinkBlock,
   },
 };
 
 /**
  * Render functions for blocks that only exist in a Site region palette.
  *
- * `Copyright` swaps the database-free editor render for a server renderer so
- * the public footer can read the site name from Settings.
+ * Brand, Copyright and NavbarBlock read Installation settings or resolve CMS
+ * links on the server, so their public entries go through a thin adapter
+ * around the server renderer. The editor canvas keeps using the shared pure
+ * render from each block, which stays database-free.
  */
+const BrandRender: PuckComponent<BrandBlockProps> = (props) => (
+  <BrandServer {...props} />
+);
+
+const CopyrightRender: PuckComponent<CopyrightBlockProps> = (props) => (
+  <CopyrightServer {...props} />
+);
+
+const NavbarBlockRender: PuckComponent<NavbarBlockProps> = (props) => (
+  <NavbarBlockServer {...props} />
+);
+
 const regionOnlyRenderComponentConfigs: Config<any, RootProps>["components"] =
   {
     Brand: {
-      ...Brand,
-      render: ({ showLogo, showSiteName, customText, customLogoUrl }) => (
-        <BrandServer
-          showLogo={showLogo}
-          showSiteName={showSiteName}
-          customText={customText}
-          customLogoUrl={customLogoUrl}
-        />
-      ),
+      render: BrandRender,
     },
-    LinkList,
+    LinkList: {
+      render: renderLinkListBlock,
+    },
     Copyright: {
-      ...Copyright,
-      render: ({ showYear, extraText, links }) => (
-        <CopyrightServer
-          showYear={showYear}
-          extraText={extraText}
-          links={links}
-        />
-      ),
+      render: CopyrightRender,
     },
-    AnnouncementBar,
-    SearchBar,
+    AnnouncementBar: {
+      render: renderAnnouncementBarBlock,
+    },
+    SearchBar: {
+      render: renderSearchBarBlock,
+    },
     NavbarBlock: {
-      ...NavbarBlock,
-      render: ({ items, layout }) => (
-        <NavbarBlockServer items={items} layout={layout} />
-      ),
+      render: NavbarBlockRender,
     },
   };
 

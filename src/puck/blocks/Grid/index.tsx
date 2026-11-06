@@ -1,34 +1,14 @@
-import { type Slot, type ComponentConfig } from "@puckeditor/core";
+import { type ComponentConfig } from "@puckeditor/core";
 
-import { Responsive } from "@/puck/utils/responsive";
+import { LayoutField } from "@/puck/fields/layout";
+import { DimensionField } from "@/puck/fields/dimension";
+import { TypographyField } from "@/puck/fields/typography";
+import { DecorationField } from "@/puck/fields/decoration";
 
-import { LayoutField, type LayoutProps } from "@/puck/fields/layout";
-import { DimensionField, type DimensionProps } from "@/puck/fields/dimension";
-import {
-  TypographyField,
-  type TypographyProps,
-} from "@/puck/fields/typography";
-import {
-  DecorationField,
-  type DecorationProps,
-} from "@/puck/fields/decoration";
+import type { GridBlockProps } from "./types";
+import { renderGridBlock } from "./render";
 
-import {
-  getDecorationVars,
-  getDimensionVars,
-  getTypographyVars,
-} from "@/puck/utils/get-style-vars";
-import { getLayoutVars } from "@/puck/fields/layout/get-layout-vars";
-
-import { GridBlockUi } from "./ui/grid";
-
-export type GridBlockProps = {
-  layout?: Responsive<LayoutProps>;
-  dimension?: Responsive<DimensionProps>;
-  typography?: Responsive<TypographyProps>;
-  decoration?: Responsive<DecorationProps>;
-  items: Slot;
-};
+export type { GridBlockProps };
 
 export const GridBlock: ComponentConfig<GridBlockProps> = {
   fields: {
@@ -48,19 +28,5 @@ export const GridBlock: ComponentConfig<GridBlockProps> = {
       },
     },
   },
-  render: ({ layout, dimension, typography, decoration, items: Items }) => {
-    const styleVars = {
-      ...getLayoutVars(layout),
-      ...getDimensionVars(dimension),
-      ...getTypographyVars(typography),
-      ...getDecorationVars(decoration),
-    };
-    return (
-      <GridBlockUi
-        Items={Items}
-        styleVars={styleVars}
-        className="[&>[data-puck-component^='Separator']]:self-stretch [&>[data-puck-component]]:flex-1"
-      />
-    );
-  },
+  render: renderGridBlock,
 };

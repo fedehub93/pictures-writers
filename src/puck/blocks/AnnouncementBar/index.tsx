@@ -4,7 +4,7 @@ import { buildColorOptions } from "@/puck/constants";
 import { createLinkField } from "@/puck/fields/link";
 
 import type { AnnouncementBarBlockProps } from "./types";
-import { AnnouncementBarBlockUi } from "./ui/announcement-bar";
+import { renderAnnouncementBarBlock } from "./render";
 
 export type { AnnouncementBarBlockProps };
 
@@ -60,15 +60,5 @@ export const AnnouncementBar: ComponentConfig<AnnouncementBarBlockProps> = {
     textColor: "var(--primary-foreground)",
     dismissible: false,
   },
-  render: ({ id, text, link, backgroundColor, textColor, dismissible, puck }) => (
-    <AnnouncementBarBlockUi
-      id={id}
-      text={text}
-      link={link}
-      backgroundColor={backgroundColor}
-      textColor={textColor}
-      dismissible={dismissible}
-      editMode={puck.isEditing}
-    />
-  ),
+  render: renderAnnouncementBarBlock,
 };

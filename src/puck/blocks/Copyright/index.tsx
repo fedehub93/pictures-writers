@@ -3,7 +3,7 @@ import { ComponentConfig } from "@puckeditor/core";
 import { LinksField } from "@/puck/fields/link";
 
 import type { CopyrightBlockProps } from "./types";
-import { CopyrightBlockUi } from "./ui/copyright";
+import { renderCopyrightBlock } from "./render";
 
 export type { CopyrightBlockProps };
 
@@ -28,11 +28,5 @@ export const Copyright: ComponentConfig<CopyrightBlockProps> = {
     extraText: "",
     links: [],
   },
-  render: ({ showYear, extraText, links }) => (
-    <CopyrightBlockUi
-      showYear={showYear}
-      extraText={extraText}
-      links={links}
-    />
-  ),
+  render: renderCopyrightBlock,
 };

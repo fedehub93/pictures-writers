@@ -1,7 +1,7 @@
 import { ComponentConfig } from "@puckeditor/core";
 
 import type { BrandBlockProps } from "./types";
-import { BrandBlockUi } from "./ui/brand";
+import { renderBrandBlock } from "./render";
 
 export type { BrandBlockProps };
 
@@ -36,12 +36,5 @@ export const Brand: ComponentConfig<BrandBlockProps> = {
     showLogo: true,
     showSiteName: true,
   },
-  render: ({ showLogo, showSiteName, customText, customLogoUrl }) => (
-    <BrandBlockUi
-      showLogo={showLogo}
-      showSiteName={showSiteName}
-      customText={customText}
-      customLogoUrl={customLogoUrl}
-    />
-  ),
+  render: renderBrandBlock,
 };

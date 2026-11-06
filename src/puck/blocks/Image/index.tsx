@@ -1,22 +1,13 @@
-import { ComponentConfig } from "@puckeditor/core";
+import { type ComponentConfig } from "@puckeditor/core";
 
-import { Responsive } from "@/puck/utils/responsive";
-import { ImageField, ImageProps } from "@/puck/fields/image";
-import { DimensionField, DimensionProps } from "@/puck/fields/dimension";
-import { DecorationField, DecorationProps } from "@/puck/fields/decoration";
+import { ImageField } from "@/puck/fields/image";
+import { DimensionField } from "@/puck/fields/dimension";
+import { DecorationField } from "@/puck/fields/decoration";
 
-import {
-  getDecorationVars,
-  getDimensionVars,
-} from "@/puck/utils/get-style-vars";
+import type { ImageBlockProps } from "./types";
+import { renderImageBlock } from "./render";
 
-import { ImageBlockUi } from "./ui/image";
-
-export type ImageBlockProps = {
-  image?: ImageProps;
-  dimension?: Responsive<DimensionProps>;
-  decoration?: Responsive<DecorationProps>;
-};
+export type { ImageBlockProps };
 
 export const ImageBlock: ComponentConfig<ImageBlockProps> = {
   fields: {
@@ -25,12 +16,5 @@ export const ImageBlock: ComponentConfig<ImageBlockProps> = {
     decoration: DecorationField,
   },
   defaultProps: {},
-  render: ({ image, dimension, decoration }) => {
-    const styleVars = {
-      ...getDimensionVars(dimension),
-      ...getDecorationVars(decoration),
-    };
-
-    return <ImageBlockUi image={image} styleVars={styleVars} />;
-  },
+  render: renderImageBlock,
 };

@@ -1,29 +1,14 @@
-import { ComponentConfig } from "@puckeditor/core";
+import { type ComponentConfig } from "@puckeditor/core";
 
-import { Responsive } from "@/puck/utils/responsive";
+import { DimensionField } from "@/puck/fields/dimension";
+import { DecorationField } from "@/puck/fields/decoration";
+import { TypographyField } from "@/puck/fields/typography";
+import { LinkField } from "@/puck/fields/link";
 
-import { DimensionField, type DimensionProps } from "@/puck/fields/dimension";
-import {
-  DecorationField,
-  type DecorationProps,
-} from "@/puck/fields/decoration";
+import type { LinkBlockProps } from "./types";
+import { renderLinkBlock } from "./render";
 
-import {
-  getDecorationVars,
-  getDimensionVars,
-  getTypographyVars,
-} from "@/puck/utils/get-style-vars";
-import { TypographyField, TypographyProps } from "@/puck/fields/typography";
-import { LinkField, LinkProps } from "@/puck/fields/link";
-
-import { LinkBlockUi } from "./ui/link";
-
-export type LinkBlockProps = {
-  link?: LinkProps;
-  dimension?: Responsive<DimensionProps>;
-  typography?: Responsive<TypographyProps>;
-  decoration?: Responsive<DecorationProps>;
-};
+export type { LinkBlockProps };
 
 export const LinkBlock: ComponentConfig<LinkBlockProps> = {
   fields: {
@@ -45,13 +30,5 @@ export const LinkBlock: ComponentConfig<LinkBlockProps> = {
       },
     },
   },
-  render: ({ link, dimension, typography, decoration }) => {
-    const styleVars = {
-      ...getDimensionVars(dimension),
-      ...getTypographyVars(typography),
-      ...getDecorationVars(decoration),
-    };
-
-    return <LinkBlockUi link={link} styleVars={styleVars} />;
-  },
+  render: renderLinkBlock,
 };
