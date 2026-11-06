@@ -59,11 +59,11 @@ export function hasMegaPanelContent(
   return Boolean(child.description?.trim() || child.icon?.name);
 }
 
-export function moveNavItem(
-  items: NavItem[],
+export function moveNavItem<T>(
+  items: T[],
   index: number,
   direction: -1 | 1,
-): NavItem[] {
+): T[] {
   const target = index + direction;
   if (target < 0 || target >= items.length) return items;
 

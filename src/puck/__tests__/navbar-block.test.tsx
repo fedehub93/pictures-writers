@@ -357,38 +357,9 @@ function renderNavbarField(items: NavItem[]) {
 }
 
 describe("NavbarBlock editor field", () => {
-  it("offers no icon on top-level link and cta items", () => {
+  it("renders the layout control and a summary instead of the item editor", () => {
     const html = renderNavbarField([
       { type: "link", label: "Blog", link: { type: "external", url: "/blog/" } },
-      {
-        type: "cta",
-        label: "Contatti",
-        link: { type: "external", url: "/contatti/" },
-        variant: "primary",
-      },
-    ]);
-
-    expect(html).not.toContain(">Icon</span>");
-    expect(html).toContain("Destination");
-  });
-
-  it("offers the shared icon field on card items", () => {
-    const html = renderNavbarField([
-      {
-        type: "card",
-        label: "Workbook",
-        description: "Una guida pratica.",
-        icon: { name: "book-open" },
-        link: { type: "external", url: "/shop/workbook/" },
-      },
-    ]);
-
-    expect(html).toContain(">Icon</span>");
-    expect(html).toContain("book-open");
-  });
-
-  it("offers description and icon on column children", () => {
-    const html = renderNavbarField([
       {
         type: "column",
         label: "Risorse",
@@ -403,11 +374,28 @@ describe("NavbarBlock editor field", () => {
       },
     ]);
 
-    expect(html).toContain(">Icon</span>");
-    expect(html).toContain("newspaper");
-    expect(html).toContain('id="navbar-column-0-description-0"');
-    expect(html).toContain("Short description shown next to the link");
-    expect(html).toContain("Articoli e approfondimenti.");
+    expect(html).toContain("Desktop layout");
+    expect(html).toContain("Mega menu");
+    expect(html).toContain("Compact menu");
+    expect(html).toContain("2 items");
+    expect(html).toContain("Edit items");
+
+    // The item editor only lives in the dialog, so none of its controls are
+    // rendered inside the 300px sidebar.
+    expect(html).not.toContain("Menu label");
+    expect(html).not.toContain("Add link");
+    expect(html).not.toContain("Add column");
+    expect(html).not.toContain("Destination");
+    expect(html).not.toContain(">Icon</span>");
+  });
+
+  it("uses the singular for a one-item menu", () => {
+    const html = renderNavbarField([
+      { type: "link", label: "Home", link: { type: "external", url: "/" } },
+    ]);
+
+    expect(html).toContain(">1 item<");
+    expect(html).not.toContain(">1 items<");
   });
 });
 
