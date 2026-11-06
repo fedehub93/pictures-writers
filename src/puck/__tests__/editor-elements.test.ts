@@ -8,14 +8,14 @@ import {
 
 describe("editor element metadata", () => {
   it("gives the header-only blocks dedicated icons", () => {
-    for (const name of ["AnnouncementBar", "SearchBar", "NavbarBlock"]) {
+    for (const name of ["TopBar", "SearchBar", "NavbarBlock"]) {
       expect(ELEMENT_ICONS[name], `${name} icon`).toBeDefined();
       expect(ELEMENT_ICONS[name], `${name} icon`).not.toBe(SquareIcon);
     }
   });
 
   it("gives the header-only blocks human labels", () => {
-    expect(ELEMENT_LABELS.AnnouncementBar).toBe("Announcement bar");
+    expect(ELEMENT_LABELS.TopBar).toBe("Top bar");
     expect(ELEMENT_LABELS.SearchBar).toBe("Search bar");
     expect(ELEMENT_LABELS.NavbarBlock).toBe("Navbar");
   });

@@ -25,13 +25,13 @@ describe("renderConfigForRegion", () => {
     const footer = Object.keys(renderConfigForRegion("FOOTER").components);
     const page = Object.keys(pageRenderConfig.components);
 
-    expect(header).toContain("AnnouncementBar");
+    expect(header).toContain("TopBar");
     expect(header).toContain("SearchBar");
     expect(header).toContain("NavbarBlock");
-    expect(footer).not.toContain("AnnouncementBar");
+    expect(footer).not.toContain("TopBar");
     expect(footer).not.toContain("SearchBar");
     expect(footer).not.toContain("NavbarBlock");
-    expect(page).not.toContain("AnnouncementBar");
+    expect(page).not.toContain("TopBar");
     expect(page).not.toContain("SearchBar");
     expect(page).not.toContain("NavbarBlock");
   });

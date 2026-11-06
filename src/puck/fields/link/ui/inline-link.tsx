@@ -14,8 +14,8 @@ import {
  *
  * Broken or unresolved entity links render as plain text, matching the Link
  * block, so a footer column never shows a dead anchor. When `children` is
- * provided it replaces the link label, letting blocks such as AnnouncementBar
- * reuse the anchor/plain-text behaviour for their own content.
+ * provided it replaces the link label, letting blocks that render their own
+ * copy reuse the anchor/plain-text behaviour.
  */
 export const InlineSmartLink = ({
   link,

@@ -16,7 +16,7 @@ const EXPECTED_CATEGORIES: Record<
     region: { title: "Site layout", components: ["Brand"] },
     header: {
       title: "Header",
-      components: ["AnnouncementBar", "SearchBar", "NavbarBlock"],
+      components: ["TopBar", "SearchBar", "NavbarBlock"],
     },
     basic: { title: "Basic", components: ["Link", "Image"] },
     typography: { title: "Typography", components: ["Heading", "Text"] },

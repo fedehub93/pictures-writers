@@ -1,6 +1,6 @@
 /**
  * Link targets understood by the Link block and the other Puck blocks that
- * reference CMS entities (LinkList, NavbarBlock, AnnouncementBar).
+ * reference CMS entities (LinkList, NavbarBlock).
  *
  * A `SmartLink` is stored as-is in the Puck document and resolved server-side
  * when the document is rendered, so moving or renaming an entity does not

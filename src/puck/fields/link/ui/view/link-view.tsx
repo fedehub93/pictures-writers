@@ -15,7 +15,7 @@ import {
 } from "@/shared/ui/select";
 
 import { PropHeader } from "@/puck/components/prop-header";
-import { SegmentedControl } from "@/puck/components/segmented-control";
+import { SwitchInput } from "@/puck/components/switch-input";
 import { TextInput } from "@/puck/components/text-input";
 
 import {
@@ -29,18 +29,13 @@ import {
 } from "../../types";
 
 const LINK_TYPE_OPTIONS: { value: SmartLinkType; label: string }[] = [
-  { value: "external", label: "URL esterno" },
-  { value: "page", label: "Pagina" },
-  { value: "post", label: "Articolo" },
-  { value: "product", label: "Prodotto" },
-  { value: "category", label: "Categoria blog" },
-  { value: "productCategory", label: "Categoria shop" },
+  { value: "external", label: "External URL" },
+  { value: "page", label: "Page" },
+  { value: "post", label: "Post" },
+  { value: "product", label: "Product" },
+  { value: "category", label: "Blog category" },
+  { value: "productCategory", label: "Shop category" },
 ];
-
-const NEW_TAB_OPTIONS = [
-  { title: "Stessa scheda", value: "same" },
-  { title: "Nuova scheda", value: "new" },
-] as const;
 
 interface PickerOption {
   id: string;
@@ -52,9 +47,8 @@ interface LinkViewProps {
   state: LinkProps;
   onUpdate: (values: LinkProps) => void;
   /**
-   * Show the visible label control. Blocks that render their own copy (the
-   * AnnouncementBar) set this to false so the editor does not offer a label
-   * that never reaches the page.
+   * Show the visible label control. Blocks that render their own copy set this
+   * to false so the editor does not offer a label that never reaches the page.
    */
   showLabel?: boolean;
 }
@@ -148,13 +142,13 @@ export const LinkView = ({
       <div className="flex flex-col gap-y-1">
         <PropHeader
           name="type"
-          label="Tipo di link"
+          label="Link type"
           isModified={linkType !== "external"}
           onReset={() => onUpdate(withSmartLinkType(state, "external"))}
         />
         <Select value={linkType} onValueChange={handleTypeChange}>
           <SelectTrigger id="type" className="w-full h-8 border-input text-xs">
-            <SelectValue placeholder="Tipo di link" />
+            <SelectValue placeholder="Link type" />
           </SelectTrigger>
           <SelectContent>
             {LINK_TYPE_OPTIONS.map((option) => (
@@ -180,7 +174,7 @@ export const LinkView = ({
             onChange={(newVal) =>
               onUpdate(withLinkLabel(state, newVal || undefined))
             }
-            placeholder="Lascia vuoto per usare il titolo del contenuto"
+            placeholder="Leave empty to use the content title"
           />
         </div>
       ) : null}
@@ -205,7 +199,7 @@ export const LinkView = ({
           <div className="flex flex-col gap-y-1">
             <PropHeader
               name="openInNewTab"
-              label="Apertura"
+              label="Opening"
               isModified={
                 state.type === "external" && state.openInNewTab === true
               }
@@ -214,21 +208,14 @@ export const LinkView = ({
                 onUpdate({ ...state, openInNewTab: undefined })
               }
             />
-            <SegmentedControl
+            <SwitchInput
               name="openInNewTab"
-              value={
-                state.type === "external" && state.openInNewTab
-                  ? "new"
-                  : "same"
-              }
-              onChange={(value) => {
+              label="Open in new tab"
+              checked={state.type === "external" && state.openInNewTab === true}
+              onChange={(checked) => {
                 if (state.type !== "external") return;
-                onUpdate({ ...state, openInNewTab: value === "new" });
+                onUpdate({ ...state, openInNewTab: checked });
               }}
-              items={NEW_TAB_OPTIONS.map((option) => ({
-                title: option.title,
-                value: option.value,
-              }))}
             />
           </div>
         </>
@@ -236,7 +223,7 @@ export const LinkView = ({
         <div className="flex flex-col gap-y-1">
           <PropHeader
             name="target"
-            label="Destinazione"
+            label="Destination"
             isModified={Boolean(selectedId)}
             onReset={() => onUpdate(withSmartLinkTarget(state, ""))}
           />
@@ -252,7 +239,7 @@ export const LinkView = ({
               onSelect={handleTargetChange}
               onSearch={setSearch}
               value={selectedId ?? ""}
-              placeholder="Seleziona un contenuto"
+              placeholder="Select content"
               className="w-full"
             />
           )}

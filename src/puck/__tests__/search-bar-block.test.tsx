@@ -51,7 +51,7 @@ describe("SearchBar block", () => {
 
   it("is not available in the page editor palette", () => {
     expect(Object.keys(pageEditorConfig.components)).not.toContain(
-      "AnnouncementBar",
+      "TopBar",
     );
     expect(Object.keys(pageEditorConfig.components)).not.toContain("SearchBar");
   });

@@ -27,7 +27,7 @@ import type { BrandBlockProps } from "./blocks/Brand/types";
 import { renderLinkListBlock } from "./blocks/LinkList/render";
 import { CopyrightServer } from "./blocks/Copyright/server";
 import type { CopyrightBlockProps } from "./blocks/Copyright/types";
-import { renderAnnouncementBarBlock } from "./blocks/AnnouncementBar/render";
+import { renderTopBarBlock } from "./blocks/TopBar/render";
 import { renderSearchBarBlock } from "./blocks/SearchBar/render";
 import { NavbarBlockServer } from "./blocks/NavbarBlock/server";
 import type { NavbarBlockProps } from "./blocks/NavbarBlock/types";
@@ -61,7 +61,7 @@ export const RENDER_COMPONENT_NAMES = [
   "Brand",
   "LinkList",
   "Copyright",
-  "AnnouncementBar",
+  "TopBar",
   "SearchBar",
   "NavbarBlock",
 ] as const;
@@ -167,8 +167,15 @@ const regionOnlyRenderComponentConfigs: Config<any, RootProps>["components"] =
     Copyright: {
       render: CopyrightRender,
     },
-    AnnouncementBar: {
-      render: renderAnnouncementBarBlock,
+    TopBar: {
+      // The slot field is declared so the public render resolves the nested
+      // content exactly like the editor canvas.
+      fields: {
+        content: {
+          type: "slot",
+        },
+      },
+      render: renderTopBarBlock,
     },
     SearchBar: {
       render: renderSearchBarBlock,

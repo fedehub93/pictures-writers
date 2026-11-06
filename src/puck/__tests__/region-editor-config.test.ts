@@ -29,12 +29,12 @@ describe("editorConfigForRegion", () => {
 
     expect(header).not.toContain("LinkList");
     expect(header).not.toContain("Copyright");
-    expect(header).toContain("AnnouncementBar");
+    expect(header).toContain("TopBar");
     expect(header).toContain("SearchBar");
     expect(header).toContain("NavbarBlock");
     expect(footer).toContain("LinkList");
     expect(footer).toContain("Copyright");
-    expect(footer).not.toContain("AnnouncementBar");
+    expect(footer).not.toContain("TopBar");
     expect(footer).not.toContain("SearchBar");
     expect(footer).not.toContain("NavbarBlock");
   });
@@ -45,7 +45,7 @@ describe("editorConfigForRegion", () => {
 
     expect(header.categories?.header).toEqual({
       title: "Header",
-      components: ["AnnouncementBar", "SearchBar", "NavbarBlock"],
+      components: ["TopBar", "SearchBar", "NavbarBlock"],
     });
     expect(footer.categories?.header).toBeUndefined();
   });

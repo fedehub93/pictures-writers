@@ -48,7 +48,7 @@ const SITE_REGION_PRESENTATION: Record<
 > = {
   HEADER: {
     description:
-      "The shared top area of every public page: brand, navigation and announcement bar.",
+      "The shared top area of every public page: brand, navigation and top bar.",
   },
   FOOTER: {
     description:

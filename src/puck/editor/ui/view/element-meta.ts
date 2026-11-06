@@ -13,7 +13,7 @@ import {
   CopyrightIcon,
   LayoutGridIcon,
   Rows3Icon,
-  MegaphoneIcon,
+  PanelTopIcon,
   MenuIcon,
   type LucideIcon,
 } from "lucide-react";
@@ -39,14 +39,14 @@ export const ELEMENT_ICONS: Record<string, LucideIcon> = {
   Brand: TagIcon,
   LinkList: ListIcon,
   Copyright: CopyrightIcon,
-  AnnouncementBar: MegaphoneIcon,
+  TopBar: PanelTopIcon,
   SearchBar: SearchIcon,
   NavbarBlock: MenuIcon,
 };
 
 export const ELEMENT_LABELS: Record<string, string> = {
   LinkList: "Link list",
-  AnnouncementBar: "Announcement bar",
+  TopBar: "Top bar",
   SearchBar: "Search bar",
   NavbarBlock: "Navbar",
 };

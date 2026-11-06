@@ -227,6 +227,14 @@
   }
 }
 
+/* --- 5. TOP BAR --- */
+/* An empty Top bar must leave no strip behind on the public site. The public
+   variant is the only one that opts into this rule, so an empty bar stays
+   selectable and droppable inside the editor canvas. */
+.puck-top-bar-public:has(> .puck-top-bar-slot:empty) {
+  display: none;
+}
+
 @media (max-width: 767px) {
   .puck-layout {
     /* Reset locale Mobile */

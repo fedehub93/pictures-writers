@@ -131,12 +131,13 @@ const SHARED_CASES: SharedCase[] = [
     },
   },
   {
-    name: "AnnouncementBar",
+    name: "TopBar",
     region: "HEADER",
     props: {
-      text: "Sale",
-      link: { type: "external", url: "/sale/", label: "Sale" },
-      dismissible: false,
+      content: SlotStub,
+      settings: { dismissible: false },
+      dimension: { desktop: { paddingTop: "8px" } },
+      decoration: { desktop: { backgroundColor: "var(--accent)" } },
     },
   },
   {
@@ -266,11 +267,16 @@ describe("consolidated Puck render pipeline", () => {
             root: { props: {} },
             content: [
               {
-                type: "AnnouncementBar",
+                type: "TopBar",
                 props: {
-                  id: "announcement",
-                  text: "Sale",
-                  dismissible: false,
+                  id: "top-bar",
+                  settings: { dismissible: false },
+                  content: [
+                    {
+                      type: "Text",
+                      props: { id: "top-bar-text", text: "Sale" },
+                    },
+                  ],
                 },
               },
             ],

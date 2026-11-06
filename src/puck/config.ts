@@ -15,7 +15,7 @@ import { IconBlock, type IconBlockProps } from "./blocks/Icon";
 import { Brand } from "./blocks/Brand";
 import { LinkList } from "./blocks/LinkList";
 import { Copyright } from "./blocks/Copyright";
-import { AnnouncementBar } from "./blocks/AnnouncementBar";
+import { TopBar } from "./blocks/TopBar";
 import { SearchBar } from "./blocks/SearchBar";
 import { NavbarBlock } from "./blocks/NavbarBlock";
 
@@ -77,7 +77,7 @@ export const editorComponentConfigs: Config["components"] = {
   Brand,
   LinkList,
   Copyright,
-  AnnouncementBar,
+  TopBar,
   SearchBar,
   NavbarBlock,
 };

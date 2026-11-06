@@ -44,7 +44,7 @@ export const REGION_CONTENT_COMPONENTS = [
 
 /** Blocks that only exist inside a Header region. */
 export const HEADER_ONLY_COMPONENTS = [
-  "AnnouncementBar",
+  "TopBar",
   "SearchBar",
   "NavbarBlock",
 ] as const;
