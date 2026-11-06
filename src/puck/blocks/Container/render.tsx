@@ -22,23 +22,13 @@ export const renderContainerBlock: PuckComponent<ContainerBlockProps> = ({
   typography,
   decoration,
   items: Items,
-  puck,
-}) => {  const styleVars = {
+}) => {
+  const styleVars = {
     ...getLayoutVars(layout),
     ...getDimensionVars(dimension),
     ...getTypographyVars(typography),
     ...getDecorationVars(decoration),
   };
 
-  return (
-    <ContainerBlockUi
-      Items={Items}
-      styleVars={styleVars}
-      className={
-        puck?.isEditing
-          ? "[&>[data-puck-component^='Separator']]:self-stretch [&>[data-puck-component]]:flex-1"
-          : undefined
-      }
-    />
-  );
+  return <ContainerBlockUi Items={Items} styleVars={styleVars} />;
 };

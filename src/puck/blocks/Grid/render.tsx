@@ -22,7 +22,6 @@ export const renderGridBlock: PuckComponent<GridBlockProps> = ({
   typography,
   decoration,
   items: Items,
-  puck,
 }) => {
   const styleVars = {
     ...getLayoutVars(layout),
@@ -31,15 +30,5 @@ export const renderGridBlock: PuckComponent<GridBlockProps> = ({
     ...getDecorationVars(decoration),
   };
 
-  return (
-    <GridBlockUi
-      Items={Items}
-      styleVars={styleVars}
-      className={
-        puck?.isEditing
-          ? "[&>[data-puck-component^='Separator']]:self-stretch [&>[data-puck-component]]:flex-1"
-          : undefined
-      }
-    />
-  );
+  return <GridBlockUi Items={Items} styleVars={styleVars} />;
 };

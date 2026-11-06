@@ -212,22 +212,28 @@ describe("consolidated Puck render pipeline", () => {
     },
   );
 
-  it("keeps editor-only layout classes out of the public Container markup", () => {
-    const container = SHARED_CASES.find((entry) => entry.name === "Container");
+  it("emits no editor-only layout classes for Container, Flex and Grid", () => {
+    const config = renderConfigForRegion("HEADER");
 
-    if (!container) throw new Error("Container case is missing");
+    for (const name of ["Container", "Flex", "Grid"] as const) {
+      const sharedCase = SHARED_CASES.find((entry) => entry.name === name);
 
-    const render = renderConfigForRegion("HEADER").components.Container
-      .render as unknown as (props: Record<string, unknown>) => React.ReactNode;
+      if (!sharedCase) throw new Error(`${name} case is missing`);
 
-    const editorHtml = renderThrough(render, container.props, {
-      ...PUCK,
-      isEditing: true,
-    });
-    const publicHtml = renderThrough(render, container.props);
+      const render = config.components[name].render as unknown as (
+        props: Record<string, unknown>,
+      ) => React.ReactNode;
 
-    expect(editorHtml).toContain("flex-1");
-    expect(publicHtml).not.toContain("flex-1");
+      const editorHtml = renderThrough(render, sharedCase.props, {
+        ...PUCK,
+        isEditing: true,
+      });
+      const publicHtml = renderThrough(render, sharedCase.props);
+
+      expect(editorHtml).not.toContain("flex-1");
+      expect(publicHtml).not.toContain("flex-1");
+      expect(editorHtml).toBe(publicHtml);
+    }
   });
 
   it("renders Site region blocks through the public Puck render config", () => {

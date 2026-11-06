@@ -24,11 +24,9 @@ export const NavbarBlockUi = ({
   if (items.length === 0) return null;
 
   return (
-    <div className="flex w-full items-center justify-end">
-      <div className="puck-dim puck-deco" style={styleVars}>
-        <NavbarDesktopMenu items={items} layout={layout} pathname={pathname} />
-        <NavbarMobileMenu items={items} pathname={pathname} />
-      </div>
+    <div className="puck-dim puck-deco" style={styleVars}>
+      <NavbarDesktopMenu items={items} layout={layout} pathname={pathname} />
+      <NavbarMobileMenu items={items} pathname={pathname} />
     </div>
   );
 };

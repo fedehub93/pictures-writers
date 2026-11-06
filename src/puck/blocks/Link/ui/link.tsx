@@ -14,12 +14,10 @@ export const LinkBlockUi = ({
   styleVars: Record<string, string>;
 }) => {
   return (
-    <div className="w-full">
-      <InlineSmartLink
-        link={link}
-        className="puck-dim puck-typo puck-deco inline-block"
-        style={styleVars}
-      />
-    </div>
+    <InlineSmartLink
+      link={link}
+      className="puck-dim puck-typo puck-deco inline-block"
+      style={styleVars}
+    />
   );
 };

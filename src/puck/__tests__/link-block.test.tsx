@@ -51,6 +51,20 @@ describe("Link block", () => {
     expect(html).toContain(">Removed page</span>");
   });
 
+  it("renders the anchor as its own root without a full-width wrapper", () => {
+    const link: LinkProps = {
+      type: "external",
+      url: "https://example.com/",
+      label: "Example",
+    };
+
+    const html = renderToStaticMarkup(<LinkBlockUi link={link} styleVars={{}} />);
+    const rootTag = html.slice(0, html.indexOf(">") + 1);
+
+    expect(rootTag.startsWith("<a ")).toBe(true);
+    expect(rootTag).not.toContain("w-full");
+  });
+
   it("keeps rendering legacy { label, href } documents", () => {
     const html = renderToStaticMarkup(
       <LinkBlockUi link={{ label: "Legacy", href: "/legacy/" }} styleVars={{}} />,

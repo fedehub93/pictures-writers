@@ -151,6 +151,17 @@ describe("NavbarBlock", () => {
     expect(html).toContain("--op-d:0.9");
   });
 
+  it("renders an intrinsic root that inherits alignment from its parent", () => {
+    const html = renderToStaticMarkup(
+      renderNavbarBlock({ content: { items: ITEMS } }),
+    );
+    const rootTag = html.slice(0, html.indexOf(">") + 1);
+
+    expect(rootTag).toContain("puck-dim puck-deco");
+    expect(rootTag).not.toContain("w-full");
+    expect(rootTag).not.toContain("justify-end");
+  });
+
   it("keeps navigation spacing and surface opt-in when no values are configured", () => {
     const html = renderToStaticMarkup(
       renderNavbarBlock({ content: { items: ITEMS } }),

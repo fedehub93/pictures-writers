@@ -22,7 +22,6 @@ export const renderFlexBlock: PuckComponent<FlexBlockProps> = ({
   typography,
   decoration,
   items: Items,
-  puck,
 }) => {
   const styleVars = {
     ...getLayoutVars(layout),
@@ -31,15 +30,5 @@ export const renderFlexBlock: PuckComponent<FlexBlockProps> = ({
     ...getDecorationVars(decoration),
   };
 
-  return (
-    <FlexBlockUi
-      Items={Items}
-      styleVars={styleVars}
-      className={
-        puck?.isEditing
-          ? "[&>[data-puck-component^='Separator']]:self-stretch [&>[data-puck-component]]:flex-1"
-          : undefined
-      }
-    />
-  );
+  return <FlexBlockUi Items={Items} styleVars={styleVars} />;
 };
