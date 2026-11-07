@@ -372,6 +372,73 @@ _Avoid_: Transaction, purchase.
 The manual transition, performed by an authorized backoffice user, that moves an Order from a pending state to a completed state and records the corresponding Payment as received. It is the canonical business moment that triggers downstream events such as post-purchase automations and analytics.
 _Avoid_: Closing the order, paid flag.
 
+## Site layout
+
+**Site region**:
+A shared area of the public site layout rendered on every page, such as the header or footer. A Site region belongs to one Installation, is versioned like a Page, and its published content is resolved at render time by the public layout.
+_Avoid_: global component, global section, widget when the dashboard widget is meant.
+
+**Header region**:
+The Site region rendered at the top of every public page. It may contain Puck blocks such as TopBar, Brand, NavbarBlock, and SearchBar.
+_Avoid_: navbar when the whole top region is meant.
+
+**Sticky header**:
+The Header region held at the top of the viewport while the page scrolls, instead of scrolling away with the content. It is a setting of the Header region, saved and published with it; the surface behind it comes from the blocks or containers the region is built with.
+_Avoid_: fixed header, pinned navbar when referring to the whole region.
+
+**Footer region**:
+The Site region rendered at the bottom of every public page.
+
+**Top bar**:
+A Puck block placed inside the Header region, typically a full-width strip above the main navbar. It is a generic container with a Puck slot for arbitrary content and an optional dismissal, not an announcement-specific block.
+_Avoid_: announcement bar, promo bar when referring to the CMS block.
+
+**Brand block**:
+A Puck block that renders the Installation logo and/or site name from Installation settings, with optional overrides for text and image.
+
+**NavbarBlock**:
+A Puck block that renders the site navigation. Its menu structure is stored as a typed JSON tree and rendered responsively; it does not use generic Puck children for menu items.
+_Avoid_: Nav, big menu when referring to the block.
+
+**Menu item**:
+One entry of a NavbarBlock menu, either a link, a column of links, a card, or a call to action. A column's links may each carry an icon and a description. Menu items are ordered and typed; they are never arbitrary blocks.
+_Avoid_: nav link, menu node, page.
+
+**Menu collapse point**:
+The Breakpoint at which a NavbarBlock replaces its inline menu with the hamburger. It is chosen per NavbarBlock and always names one of the shared Breakpoints, so it cannot introduce a width the rest of the layout does not know.
+_Avoid_: mobile menu breakpoint, hamburger size.
+
+**Mega panel**:
+The panel a menu item with children opens on desktop when the NavbarBlock uses the mega layout: a grid of cards, each with an optional icon, a title and a description. On mobile the same content is projected as a vertical accordion.
+_Avoid_: dropdown, submenu, flyout.
+
+**Link list**:
+A Puck block that renders a titled list of links, used primarily in the Footer region.
+
+**Breakpoint**:
+One of the three width ranges a responsive value is authored for: mobile, tablet, desktop. A Breakpoint names a range, not a device, and every responsive control in the CMS ranges over the same three.
+_Avoid_: device, screen size, media query.
+
+**Canvas**:
+The live preview inside the page or Site region editor, drawn at the selected Breakpoint. It shares the layout contract with the published page but is not the published page.
+_Avoid_: preview page, editor view.
+
+**Block layout**:
+The per-breakpoint arrangement a block applies to its children: display mode, flex direction and alignment, gaps, or grid columns. It only means something for blocks that contain other blocks.
+_Avoid_: style, size, spacing.
+
+**Responsive visibility**:
+The per-breakpoint display state of a block: whether it occupies space at that viewport. It is authored on the viewport selected in the editor and inherits from desktop to tablet to mobile.
+_Avoid_: mobile version, hide flag, hidden prop.
+
+**Hidden at the current viewport**:
+A block whose responsive visibility hides it at the viewport being edited. The editor canvas still draws it as a placeholder so it stays selectable; the public site renders it without occupying space.
+_Avoid_: invisible block, disabled block, removed block.
+
+**Site layout permission**:
+The backoffice permission area that governs editing and publishing Site regions, distinct from the pages permission.
+_Avoid_: global settings, appearance when the permission is meant.
+
 ## FAQ
 
 **Faq**:
