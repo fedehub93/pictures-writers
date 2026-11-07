@@ -28,13 +28,18 @@ export const SiteRegionEditorView = ({
 }) => {
   const { setOpen } = useSidebar();
 
+  // Collapse the admin sidebar once, so the editor gets the whole viewport.
+  // Intentionally mount-only: `setOpen` changes identity every time the
+  // sidebar state changes, so depending on it would re-run the timer on each
+  // toggle and close the sidebar right after the user opens it.
   useEffect(() => {
     const timeout = setTimeout(() => {
       setOpen(false);
     }, 50);
 
     return () => clearTimeout(timeout);
-  }, [setOpen]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only: see comment above
+  }, []);
 
   return (
     <PuckEditor

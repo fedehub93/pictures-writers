@@ -66,7 +66,6 @@ export const SiteRegionHeaderActions = ({
           },
         }));
         await invalidateRegionQueries();
-        toast.success("Layout saved.");
       },
       onError: (error) => {
         toast.error(error.message || "Could not save the layout.");
@@ -94,28 +93,57 @@ export const SiteRegionHeaderActions = ({
   const isSaving = updateRegion.isPending;
   const isBusy = isSaving || isPublishing;
 
-  const onSave = () => {
-    updateRegion.mutate({
-      id: editorState.version.id,
-      rootId: editorState.rootId,
-      puckData: appState.data,
-    });
+  const onSave = async () => {
+    try {
+      await updateRegion.mutateAsync({
+        id: editorState.version.id,
+        rootId: editorState.rootId,
+        puckData: appState.data,
+      });
+      toast.success("Layout saved.");
+    } catch {
+      // The mutation surfaces its own error toast.
+    }
   };
 
-  const onTogglePublish = () => {
+  const onTogglePublish = async () => {
     if (isPublished) {
       unpublish.mutate({ key: editorState.key });
       return;
     }
 
-    publish.mutate({
-      id: editorState.version.id,
-      rootId: editorState.rootId,
-    });
+    // Publishing without saving used to publish the previous persisted
+    // version, so canvas edits silently stayed offline. Save first, then
+    // publish the row the save returned (it forks when the current version is
+    // live, and stays the same row otherwise). The save toast is skipped so
+    // the editor shows a single "published" confirmation.
+    try {
+      const saved = await updateRegion.mutateAsync({
+        id: editorState.version.id,
+        rootId: editorState.rootId,
+        puckData: appState.data,
+      });
+      await publish.mutateAsync({
+        id: saved.id,
+        rootId: saved.rootId,
+      });
+    } catch {
+      // Both mutations surface their own error toast.
+    }
   };
 
   return (
     <div className="flex items-center gap-2">
+      {!isPublished && (
+        <Badge
+          variant="outline"
+          className="border-amber-300 bg-amber-50 text-amber-800"
+          title="This draft is not on the live site yet. Publish saves it and makes it live."
+        >
+          Not live
+        </Badge>
+      )}
+
       <Badge variant={getSiteRegionStatusVariant(editorState.version.status)}>
         v{editorState.version.version} ·{" "}
         {getSiteRegionStatusLabel(editorState.version.status)}
