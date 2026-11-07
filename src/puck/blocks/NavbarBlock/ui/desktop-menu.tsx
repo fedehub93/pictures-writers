@@ -21,6 +21,7 @@ import {
 } from "../lib/menu";
 import type {
   NavItemUi,
+  NavbarCollapse,
   NavbarColumnChildUi,
   NavbarLayout,
 } from "../types";
@@ -35,6 +36,16 @@ const COLUMN_PANEL_CLASSES: Record<NavbarLayout, string> = {
 const COLUMN_LIST_CLASSES: Record<NavbarLayout, string> = {
   mega: "grid grid-cols-2 gap-1",
   compact: "flex flex-col",
+};
+
+/**
+ * The desktop menu exists only from the bucket chosen in the Navigation
+ * section upwards. The two literals stay in source so Tailwind emits both.
+ * `md` is 768px and `lg` is 1024px, matching the ladder in `breakpoints.ts`.
+ */
+const DESKTOP_MENU_VISIBILITY: Record<NavbarCollapse, string> = {
+  mobile: "hidden md:flex",
+  tablet: "hidden lg:flex",
 };
 
 /**
@@ -181,16 +192,18 @@ function DesktopItem({
 export const NavbarDesktopMenu = ({
   items = [],
   layout = "compact",
+  collapseAt = "tablet",
   pathname,
 }: {
   items?: NavItemUi[];
   layout?: NavbarLayout;
+  collapseAt?: NavbarCollapse;
   pathname?: string | null;
 }) => {
   if (items.length === 0) return null;
 
   return (
-    <div className="hidden md:flex">
+    <div className={DESKTOP_MENU_VISIBILITY[collapseAt]}>
       <NavigationMenu className="max-w-none" aria-label="Main navigation">
         <NavigationMenuList className="puck-nav-row space-x-0">
           {items.map((item, index) => (

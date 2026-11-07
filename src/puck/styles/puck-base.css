@@ -186,7 +186,7 @@
 
 /* --- RESPONSIVE LOGIC (Desktop-First) --- */
 
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
   .puck-layout {
     /* Reset locale Tablet */
     --disp-t: initial;
@@ -452,65 +452,31 @@
 
 /* --- 6. EDITOR-ONLY VISIBILITY PLACEHOLDER ---
    A block hidden at the viewport selected in the toolbar stays in the canvas
-   as a dashed ghost. The classes are emitted only while editing, and the
-   viewport marker lives on the editor shell, so none of this can reach the
-   public render. Outline, opacity and an absolutely-positioned label keep the
-   decoration out of the layout measured for drag and drop. */
-/* The authored display rule would otherwise hide the block in the canvas (and
-   make it impossible to select). At the viewport being edited, the placeholder
-   takes over with a normal box; visible breakpoints keep their authored display
-   classes above. */
-[data-editor-viewport="desktop"] .puck-hidden-at-desktop.puck-hidden-placeholder,
-[data-editor-viewport="tablet"] .puck-hidden-at-tablet.puck-hidden-placeholder,
-[data-editor-viewport="mobile"] .puck-hidden-at-mobile.puck-hidden-placeholder {
-  display: block !important;
-}
+   as a dashed ghost, so it remains selectable and editable. The classes are
+   emitted only while editing, so none of this can reach the public render.
 
-[data-editor-viewport="desktop"]
-  [data-puck-component]:has(> .puck-hidden-at-desktop.puck-hidden-placeholder),
-[data-editor-viewport="tablet"]
-  [data-puck-component]:has(> .puck-hidden-at-tablet.puck-hidden-placeholder),
-[data-editor-viewport="mobile"]
-  [data-puck-component]:has(> .puck-hidden-at-mobile.puck-hidden-placeholder) {
+   The canvas is an iframe whose width is exactly the selected bucket, so the
+   media queries below already identify the viewport being edited. That is why
+   the ghost no longer needs a marker on the editor shell: an attribute on an
+   ancestor outside the iframe cannot reach the canvas, while the width can.
+
+   The shared rules read three custom properties. Each media query sets them
+   only for the breakpoint it owns, so the ghost appears at exactly one canvas
+   width. With the properties unset the outline is 0px, opacity stays 1 and
+   `content: none` draws no label. */
+[data-puck-component]:has(> .puck-hidden-placeholder) {
   position: relative;
-  outline: 2px dashed var(--puck-color-selection-border, #94a3b8);
+  outline: var(--puck-ghost-outline, 0) dashed
+    var(--puck-color-selection-border, #94a3b8);
   outline-offset: -2px;
 }
 
-[data-editor-viewport="desktop"]
-  [data-puck-component]:has(> .puck-hidden-at-desktop.puck-hidden-placeholder)
-  > *,
-[data-editor-viewport="tablet"]
-  [data-puck-component]:has(> .puck-hidden-at-tablet.puck-hidden-placeholder)
-  > *,
-[data-editor-viewport="mobile"]
-  [data-puck-component]:has(> .puck-hidden-at-mobile.puck-hidden-placeholder)
-  > * {
-  opacity: 0.45;
+[data-puck-component]:has(> .puck-hidden-placeholder) > * {
+  opacity: var(--puck-ghost-opacity, 1);
 }
 
-[data-editor-viewport="desktop"]
-  [data-puck-component]:has(> .puck-hidden-at-desktop.puck-hidden-placeholder) {
-  --puck-hidden-label: "Hidden on desktop";
-}
-
-[data-editor-viewport="tablet"]
-  [data-puck-component]:has(> .puck-hidden-at-tablet.puck-hidden-placeholder) {
-  --puck-hidden-label: "Hidden on tablet";
-}
-
-[data-editor-viewport="mobile"]
-  [data-puck-component]:has(> .puck-hidden-at-mobile.puck-hidden-placeholder) {
-  --puck-hidden-label: "Hidden on mobile";
-}
-
-[data-editor-viewport="desktop"]
-  [data-puck-component]:has(> .puck-hidden-at-desktop.puck-hidden-placeholder)::after,
-[data-editor-viewport="tablet"]
-  [data-puck-component]:has(> .puck-hidden-at-tablet.puck-hidden-placeholder)::after,
-[data-editor-viewport="mobile"]
-  [data-puck-component]:has(> .puck-hidden-at-mobile.puck-hidden-placeholder)::after {
-  content: var(--puck-hidden-label, "Hidden at this viewport");
+[data-puck-component]:has(> .puck-hidden-placeholder)::after {
+  content: var(--puck-hidden-label, none);
   position: absolute;
   top: 0;
   left: 0;
@@ -525,4 +491,43 @@
   line-height: 1.5;
   white-space: nowrap;
   pointer-events: none;
+}
+
+/* The authored `display: none` would otherwise make the block impossible to
+   select at the viewport being edited. The ghost restores a normal box only
+   for the matching bucket; every other width keeps the authored display. */
+@media (min-width: 1024px) {
+  .puck-hidden-at-desktop.puck-hidden-placeholder {
+    display: block !important;
+  }
+
+  [data-puck-component]:has(> .puck-hidden-at-desktop.puck-hidden-placeholder) {
+    --puck-ghost-outline: 2px;
+    --puck-ghost-opacity: 0.45;
+    --puck-hidden-label: "Hidden on desktop";
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .puck-hidden-at-tablet.puck-hidden-placeholder {
+    display: block !important;
+  }
+
+  [data-puck-component]:has(> .puck-hidden-at-tablet.puck-hidden-placeholder) {
+    --puck-ghost-outline: 2px;
+    --puck-ghost-opacity: 0.45;
+    --puck-hidden-label: "Hidden on tablet";
+  }
+}
+
+@media (max-width: 767px) {
+  .puck-hidden-at-mobile.puck-hidden-placeholder {
+    display: block !important;
+  }
+
+  [data-puck-component]:has(> .puck-hidden-at-mobile.puck-hidden-placeholder) {
+    --puck-ghost-outline: 2px;
+    --puck-ghost-opacity: 0.45;
+    --puck-hidden-label: "Hidden on mobile";
+  }
 }

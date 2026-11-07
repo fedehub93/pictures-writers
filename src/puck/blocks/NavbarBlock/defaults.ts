@@ -1,9 +1,27 @@
-import type { NavbarBlockContent, NavbarLayout } from "./types";
+import type {
+  NavbarBlockContent,
+  NavbarCollapse,
+  NavbarLayout,
+} from "./types";
 
 /** Layout choices offered by the Navigation section. */
 export const NAVBAR_LAYOUT_ITEMS: { value: NavbarLayout; title: string }[] = [
   { value: "mega", title: "Mega menu" },
   { value: "compact", title: "Compact menu" },
+];
+
+/**
+ * Collapse choices offered by the Navigation section.
+ *
+ * Both values come from the shared responsive ladder: "tablet" collapses at
+ * 1023px (the tablet bucket), "mobile" at 767px.
+ */
+export const NAVBAR_COLLAPSE_ITEMS: {
+  value: NavbarCollapse;
+  title: string;
+}[] = [
+  { value: "mobile", title: "Mobile" },
+  { value: "tablet", title: "Tablet" },
 ];
 
 /**
@@ -18,6 +36,7 @@ export const NAVBAR_LAYOUT_ITEMS: { value: NavbarLayout; title: string }[] = [
  */
 export const NAVBAR_BLOCK_DEFAULT_CONTENT = {
   layout: "compact",
+  collapseAt: "tablet",
   items: [
     {
       type: "link",

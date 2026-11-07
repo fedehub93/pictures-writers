@@ -27,9 +27,18 @@ import {
   hasMegaPanelContent,
   isNavLinkActive,
 } from "../lib/menu";
-import type { NavItemUi } from "../types";
+import type { NavItemUi, NavbarCollapse } from "../types";
 import { NavbarCard } from "./navbar-card";
 import { NavbarMobileColumnList, NavLinkList } from "./nav-link-list";
+
+/**
+ * The hamburger exists only below the bucket chosen in the Navigation section.
+ * The two literals stay in source so Tailwind emits both.
+ */
+const MOBILE_TRIGGER_VISIBILITY: Record<NavbarCollapse, string> = {
+  mobile: "shrink-0 md:hidden",
+  tablet: "shrink-0 lg:hidden",
+};
 
 const MOBILE_LINK_CLASSES =
   "puck-nav-label block rounded-md px-3 py-2 transition-colors hover:bg-accent hover:text-accent-foreground";
@@ -151,10 +160,12 @@ export const NavbarMobileList = ({
 
 export const NavbarMobileMenu = ({
   items = [],
+  collapseAt = "tablet",
   pathname,
   appearanceVars,
 }: {
   items?: NavItemUi[];
+  collapseAt?: NavbarCollapse;
   pathname?: string | null;
   /** Navigation style variables, repeated here because the sheet is portaled. */
   appearanceVars?: Record<string, string>;
@@ -169,7 +180,7 @@ export const NavbarMobileMenu = ({
         <Button
           variant="ghost"
           size="icon"
-          className="shrink-0 md:hidden"
+          className={MOBILE_TRIGGER_VISIBILITY[collapseAt]}
           aria-label="Open menu"
         >
           <MenuIcon />

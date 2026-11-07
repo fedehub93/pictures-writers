@@ -19,6 +19,7 @@ import { NavbarMobileMenu } from "./mobile-menu";
 export const NavbarBlockUi = ({
   items = [],
   layout = "compact",
+  collapseAt = "tablet",
   styleVars,
   appearanceVars,
   layoutClassName,
@@ -32,9 +33,15 @@ export const NavbarBlockUi = ({
       className={cn("puck-dim puck-deco puck-nav", layoutClassName)}
       style={styleVars}
     >
-      <NavbarDesktopMenu items={items} layout={layout} pathname={pathname} />
+      <NavbarDesktopMenu
+        items={items}
+        layout={layout}
+        collapseAt={collapseAt}
+        pathname={pathname}
+      />
       <NavbarMobileMenu
         items={items}
+        collapseAt={collapseAt}
         pathname={pathname}
         appearanceVars={appearanceVars}
       />

@@ -15,6 +15,9 @@ import { ImageBlockUi } from "./ui/image";
  *
  * It deliberately imports only the block UI and the shared style-variable
  * utilities so the public render path never pulls in editor field modules.
+ *
+ * Dimension and decoration are computed separately: Dimension describes the
+ * block box, decoration styles the picture that fills it.
  */
 export const renderImageBlock: PuckComponent<ImageBlockProps> = ({
   image,
@@ -23,16 +26,12 @@ export const renderImageBlock: PuckComponent<ImageBlockProps> = ({
   decoration,
   puck,
 }) => {
-  const styleVars = {
-    ...getLayoutVars(layout),
-    ...getDimensionVars(dimension),
-    ...getDecorationVars(decoration),
-  };
-
   return (
     <ImageBlockUi
       image={image}
-      styleVars={styleVars}
+      layoutVars={getLayoutVars(layout)}
+      dimensionVars={getDimensionVars(dimension)}
+      decorationVars={getDecorationVars(decoration)}
       layoutClassName={getLayoutClassNames(layout, {
         editing: puck?.isEditing,
       })}

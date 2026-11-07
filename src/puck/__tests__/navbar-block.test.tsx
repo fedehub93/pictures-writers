@@ -53,7 +53,10 @@ import {
   NavbarMobileColumnList,
   NavLinkList,
 } from "../blocks/NavbarBlock/ui/nav-link-list";
-import { NavbarMobileList } from "../blocks/NavbarBlock/ui/mobile-menu";
+import {
+  NavbarMobileList,
+  NavbarMobileMenu,
+} from "../blocks/NavbarBlock/ui/mobile-menu";
 
 const ITEMS: NavItemUi[] = [
   { type: "link", label: "Home", link: { label: "Home", href: "/" } },
@@ -108,13 +111,37 @@ describe("NavbarBlock", () => {
 
     expect(html).toContain('aria-label="Main navigation"');
     expect(html).toContain("hidden");
-    expect(html).toContain("md:flex");
+    expect(html).toContain("lg:flex");
     expect(html).toContain("puck-nav-label");
     expect(html).toContain('href="/"');
     expect(html).toContain(">Home<");
     expect(html).toContain("Risorse");
     expect(html).toContain("Workbook");
     expect(html).toContain(">Contatti<");
+  });
+
+  it("collapses the menu at the viewport chosen in the Navigation field", () => {
+    const tablet = renderToStaticMarkup(
+      <NavbarDesktopMenu items={ITEMS} collapseAt="tablet" pathname="/" />,
+    );
+    const mobile = renderToStaticMarkup(
+      <NavbarDesktopMenu items={ITEMS} collapseAt="mobile" pathname="/" />,
+    );
+
+    expect(tablet).toContain("hidden lg:flex");
+    expect(mobile).toContain("hidden md:flex");
+  });
+
+  it("keeps the hamburger only below the chosen collapse viewport", () => {
+    const tablet = renderToStaticMarkup(
+      <NavbarMobileMenu items={ITEMS} collapseAt="tablet" pathname="/" />,
+    );
+    const mobile = renderToStaticMarkup(
+      <NavbarMobileMenu items={ITEMS} collapseAt="mobile" pathname="/" />,
+    );
+
+    expect(tablet).toContain("lg:hidden");
+    expect(mobile).toContain("md:hidden");
   });
 
   it("marks the direct link matching the current path", () => {

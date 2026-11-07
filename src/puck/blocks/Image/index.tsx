@@ -17,6 +17,11 @@ export const ImageBlock: ComponentConfig<ImageBlockProps> = {
     dimension: DimensionField,
     decoration: DecorationField,
   },
-  defaultProps: {},
+  // A freshly dropped image fills its container, like the old implicit
+  // `w-full`. It is an authored value, so the public render (which does not
+  // merge defaultProps) receives it too.
+  defaultProps: {
+    dimension: { desktop: { width: "100%" } },
+  },
   render: renderImageBlock,
 };

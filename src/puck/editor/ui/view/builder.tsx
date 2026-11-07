@@ -51,12 +51,17 @@ export const PuckBuilder = () => {
         ref={wrapperRef}
         className="size-full flex justify-center overflow-auto p-4 bg-secondary"
       >
+        {/*
+          A ring, not a border: a 1px border would make the iframe 2px narrower
+          than the selected viewport and push the tablet canvas below Tailwind's
+          768 breakpoint.
+        */}
         <div
           style={{
             width: width,
             transform: `scale(${scale})`,
           }}
-          className="transition-all duration-300 box-border border bg-background"
+          className="transition-all duration-300 bg-background ring-1 ring-border"
         >
           <Puck.Preview />
         </div>

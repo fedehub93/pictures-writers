@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Figtree, Inter } from "next/font/google";
 import HolyLoader from "holy-loader";
 import { NuqsAdapter } from "nuqs/adapters/next";
 import { TRPCReactProvider } from "@/trpc/client";
@@ -9,6 +9,7 @@ import "@/puck/styles/puck-base.css";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
+import { cn } from "@/shared/lib/utils";
 import { Toaster } from "@/shared/ui/sonner";
 import { SidebarInset, SidebarProvider } from "@/shared/ui/sidebar";
 
@@ -29,6 +30,13 @@ import { Header } from "./_components/header";
 
 const inter = Inter({ subsets: ["latin"] });
 
+/**
+ * The public site renders with Figtree. The canvas is an iframe that mirrors
+ * the admin styles, so exposing the same family as a variable lets the preview
+ * root opt into it without changing the admin chrome.
+ */
+const figtree = Figtree({ subsets: ["latin"], variable: "--font-canvas" });
+
 export async function generateMetadata(): Promise<Metadata | null> {
   const settings = await getSettings();
 
@@ -46,7 +54,7 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <HolyLoader color="var(--primary)" />
-      <body className={inter.className}>
+      <body className={cn(inter.className, figtree.variable)}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

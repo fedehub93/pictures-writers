@@ -12,8 +12,16 @@ import type { ContentFieldRenderProps } from "@/puck/utils/with-content-field";
 import { withContentField } from "@/puck/utils/with-content-field";
 import { Button } from "@/shared/ui/button";
 
-import { NAVBAR_BLOCK_DEFAULT_CONTENT, NAVBAR_LAYOUT_ITEMS } from "./defaults";
-import type { NavbarBlockContent, NavbarLayout } from "./types";
+import {
+  NAVBAR_BLOCK_DEFAULT_CONTENT,
+  NAVBAR_COLLAPSE_ITEMS,
+  NAVBAR_LAYOUT_ITEMS,
+} from "./defaults";
+import type {
+  NavbarBlockContent,
+  NavbarCollapse,
+  NavbarLayout,
+} from "./types";
 import { MenuItemsDialog } from "./ui/menu-items-dialog";
 
 /**
@@ -59,6 +67,28 @@ const NavbarNavigationSection = ({
           onChange={(next) => update("layout", next)}
           items={NAVBAR_LAYOUT_ITEMS}
         />
+      </div>
+
+      <div className="flex flex-col gap-y-1">
+        <PropHeader
+          name="collapseAt"
+          label="Collapse menu at"
+          isModified={
+            value.collapseAt !== undefined &&
+            value.collapseAt !== NAVBAR_BLOCK_DEFAULT_CONTENT.collapseAt
+          }
+          onReset={() => reset("collapseAt")}
+        />
+        <SegmentedControl<NavbarCollapse>
+          name="collapseAt"
+          value={value.collapseAt ?? NAVBAR_BLOCK_DEFAULT_CONTENT.collapseAt}
+          onChange={(next) => update("collapseAt", next)}
+          items={NAVBAR_COLLAPSE_ITEMS}
+        />
+        <span className="text-xs text-muted-foreground">
+          Tablet keeps the inline menu until 1024px, then shows the hamburger.
+          Mobile collapses below 768px.
+        </span>
       </div>
 
       <div className="flex flex-col gap-y-1">

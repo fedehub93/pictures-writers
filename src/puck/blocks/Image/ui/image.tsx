@@ -5,13 +5,26 @@ import { pickDisplayVars } from "@/puck/fields/layout/get-layout-vars";
 const PLACEHOLDER_IMAGE =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23f3f4f6' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' font-family='system-ui' font-size='16' fill='%239ca3af' text-anchor='middle' dominant-baseline='middle'%3ENo image selected%3C/text%3E%3C/svg%3E";
 
+/**
+ * Image block UI.
+ *
+ * `Dimension` describes the box of the block and `Decoration` styles the
+ * picture inside it. The box used to be hard-coded to `w-full` and only the
+ * `<img>` carried the authored width: on the public page that made an inline
+ * image claim a whole flex row and squeeze its siblings, while the editor
+ * canvas hid the problem behind Puck's per-block wrapper.
+ */
 export const ImageBlockUi = ({
   image,
-  styleVars,
+  layoutVars,
+  dimensionVars,
+  decorationVars,
   layoutClassName,
 }: {
   image?: ImageProps;
-  styleVars: Record<string, string>;
+  layoutVars: Record<string, string>;
+  dimensionVars: Record<string, string>;
+  decorationVars: Record<string, string>;
   layoutClassName?: string;
 }) => {
   const imgData = {
@@ -27,16 +40,19 @@ export const ImageBlockUi = ({
       src={imgData.src}
       alt={imgData.alt}
       loading={imgData.loading as "lazy" | "eager"}
-      className={cn("puck-dim puck-deco")}
+      className="puck-deco block h-full w-full"
       style={{
         objectFit: imgData.objectFit as any,
-        ...styleVars,
+        ...decorationVars,
       }}
     />
   );
 
-  const rootClassName = cn("w-full", layoutClassName);
-  const displayStyleVars = pickDisplayVars(styleVars);
+  const rootClassName = cn("puck-dim", layoutClassName);
+  const rootStyle = {
+    ...pickDisplayVars(layoutVars),
+    ...dimensionVars,
+  };
 
   return (
     <>
@@ -44,12 +60,12 @@ export const ImageBlockUi = ({
         <a
           href={imgData.href}
           className={cn("block", rootClassName)}
-          style={displayStyleVars}
+          style={rootStyle}
         >
           {ImageContent}
         </a>
       ) : (
-        <div className={rootClassName} style={displayStyleVars}>
+        <div className={rootClassName} style={rootStyle}>
           {ImageContent}
         </div>
       )}

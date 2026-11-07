@@ -42,6 +42,7 @@ export const renderNavbarBlock = ({
     <NavbarBlockUi
       items={content?.items}
       layout={content?.layout}
+      collapseAt={content?.collapseAt}
       styleVars={styleVars}
       appearanceVars={appearanceVars}
       layoutClassName={getLayoutClassNames(layout, { editing })}

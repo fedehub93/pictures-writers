@@ -10,6 +10,15 @@ import type { Responsive } from "@/puck/utils/responsive";
 
 export type NavbarLayout = "mega" | "compact";
 
+/**
+ * Viewport at which the desktop navigation is replaced by the hamburger.
+ *
+ * It is expressed with the same bucket names as the shared responsive ladder,
+ * so a block hidden "on tablet" and a navbar collapsing "at tablet" switch at
+ * the same width.
+ */
+export type NavbarCollapse = "mobile" | "tablet";
+
 export type NavbarCtaVariant = "primary" | "secondary";
 
 export const NAV_ITEM_TYPES = ["link", "column", "card", "cta"] as const;
@@ -164,12 +173,15 @@ export type NavbarBlockContent = {
   items?: NavItem[];
   /** Desktop presentation. Mobile always uses the sheet/accordion layout. */
   layout?: NavbarLayout;
+  /** Viewport at which the desktop menu becomes the hamburger. */
+  collapseAt?: NavbarCollapse;
 };
 
 /** Resolved content passed to the pure render. */
 export type NavbarBlockRenderContent = {
   items?: NavItemUi[];
   layout?: NavbarLayout;
+  collapseAt?: NavbarCollapse;
 };
 
 export type NavbarBlockProps = {
@@ -194,6 +206,7 @@ export type NavbarBlockRenderProps = {
 export type NavbarBlockUiProps = {
   items?: NavItemUi[];
   layout?: NavbarLayout;
+  collapseAt?: NavbarCollapse;
   /** Responsive style variables produced by the shared style utilities. */
   styleVars?: Record<string, string>;
   /** Navigation style variables, repeated on the portaled sheet. */
