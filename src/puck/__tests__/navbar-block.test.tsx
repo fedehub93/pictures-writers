@@ -103,6 +103,15 @@ const MEGA_COLUMN: NavItemUi = {
 
 const MEGA_COLUMN_CHILDREN = MEGA_COLUMN.items as NavbarColumnChildUi[];
 
+const PLAIN_ITEMS: NavItemUi[] = [
+  { type: "link", label: "Home", link: { label: "Home", href: "/" } },
+  {
+    type: "column",
+    label: "Risorse",
+    items: [{ label: "Blog", link: { label: "Blog", href: "/blog/" } }],
+  },
+];
+
 describe("NavbarBlock", () => {
   it("renders the desktop menu as a navigation menu", () => {
     const html = renderToStaticMarkup(
@@ -118,6 +127,32 @@ describe("NavbarBlock", () => {
     expect(html).toContain("Risorse");
     expect(html).toContain("Workbook");
     expect(html).toContain(">Contatti<");
+  });
+
+  it("renders top-level and dropdown entries without a surface", () => {
+    const html = renderToStaticMarkup(
+      <NavbarDesktopMenu items={PLAIN_ITEMS} pathname="/" />,
+    );
+
+    expect(html).toContain("bg-transparent");
+    expect(html).toContain("rounded-md");
+    expect(html).toContain("hover:text-primary");
+    expect(html).toContain("data-[state=open]:bg-transparent");
+    expect(html).toContain("focus-visible:ring-2");
+    expect(html).not.toContain("hover:bg-accent");
+    expect(html).not.toContain("bg-accent");
+  });
+
+  it("marks the active top-level entry with primary text only", () => {
+    const html = renderToStaticMarkup(
+      <NavbarDesktopMenu
+        items={[{ type: "link", label: "Home", link: { label: "Home", href: "/" } }]}
+        pathname="/"
+      />,
+    );
+
+    expect(html).toContain("text-primary");
+    expect(html).not.toContain("bg-accent");
   });
 
   it("collapses the menu at the viewport chosen in the Navigation field", () => {
@@ -171,6 +206,47 @@ describe("NavbarBlock", () => {
     expect(html).toContain("Una guida pratica alla sceneggiatura.");
   });
 
+  it("renders mobile rows and accordion triggers without a surface", () => {
+    const html = renderToStaticMarkup(
+      <NavbarMobileList items={PLAIN_ITEMS} pathname="/blog/" />,
+    );
+
+    expect(html).toContain("hover:text-primary");
+    expect(html).toContain("hover:no-underline");
+    expect(html).toContain("text-primary");
+    expect(html).toContain("focus-visible:ring-2");
+    expect(html).not.toContain("hover:bg-accent");
+    expect(html).not.toContain("bg-accent");
+  });
+
+  it("keeps the CTA filled and the mega cards surfaced", () => {
+    const cta = renderToStaticMarkup(
+      <NavbarMobileList
+        items={[
+          {
+            type: "cta",
+            label: "Contatti",
+            link: { label: "Contatti", href: "/contatti/" },
+            variant: "secondary",
+          },
+        ]}
+        pathname="/"
+      />,
+    );
+    const cards = renderToStaticMarkup(
+      <NavbarDesktopColumnPanel
+        items={MEGA_COLUMN_CHILDREN}
+        layout="mega"
+        pathname="/"
+      />,
+    );
+
+    expect(cta).toContain("bg-secondary");
+    expect(cards).toContain("border");
+    expect(cards).toContain("bg-background");
+    expect(cards).toContain("hover:bg-accent");
+  });
+
   it("renders a column as a list of resolved links", () => {
     const html = renderToStaticMarkup(
       <NavLinkList
@@ -185,6 +261,11 @@ describe("NavbarBlock", () => {
     expect(html).toContain('href="/blog"');
     expect(html).toContain(">Blog</a>");
     expect(html).toContain(">Bozza</span>");
+    expect(html).toContain("hover:text-primary");
+    expect(html).toContain("text-primary");
+    expect(html).toContain("focus-visible:ring-2");
+    expect(html).not.toContain("hover:bg-accent");
+    expect(html).not.toContain("bg-accent");
   });
 
   it("renders a mega panel column as a grid of cards as a grid of cards", () => {

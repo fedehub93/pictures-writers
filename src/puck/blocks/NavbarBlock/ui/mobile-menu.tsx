@@ -24,12 +24,17 @@ import {
 
 import {
   getNavLabel,
+  hasActiveNavChild,
   hasMegaPanelContent,
   isNavLinkActive,
 } from "../lib/menu";
 import type { NavItemUi, NavbarCollapse } from "../types";
 import { NavbarCard } from "./navbar-card";
-import { NavbarMobileColumnList, NavLinkList } from "./nav-link-list";
+import {
+  NAV_LINK_PLAIN_CLASSES,
+  NavbarMobileColumnList,
+  NavLinkList,
+} from "./nav-link-list";
 
 /**
  * The hamburger exists only below the bucket chosen in the Navigation section.
@@ -40,8 +45,7 @@ const MOBILE_TRIGGER_VISIBILITY: Record<NavbarCollapse, string> = {
   tablet: "shrink-0 lg:hidden",
 };
 
-const MOBILE_LINK_CLASSES =
-  "puck-nav-label block rounded-md px-3 py-2 transition-colors hover:bg-accent hover:text-accent-foreground";
+const MOBILE_LINK_CLASSES = cn(NAV_LINK_PLAIN_CLASSES, "block");
 
 /**
  * Sheet content: plain links and CTAs are rows, columns become accordions and
@@ -67,12 +71,19 @@ export const NavbarMobileList = ({
           if (item.type === "column") {
             const children = item.items ?? [];
             const showsMegaPanelContent = children.some(hasMegaPanelContent);
+            const active = hasActiveNavChild(pathname, children);
 
             return (
               <li key={key}>
                 <Accordion type="single" collapsible>
                   <AccordionItem value={key} className="border-0">
-                    <AccordionTrigger className="puck-nav-label px-3 py-2 hover:no-underline">
+                    <AccordionTrigger
+                      className={cn(
+                        NAV_LINK_PLAIN_CLASSES,
+                        "hover:no-underline",
+                        active && "text-primary",
+                      )}
+                    >
                       {item.label}
                     </AccordionTrigger>
                     <AccordionContent className="pb-2">
@@ -145,7 +156,7 @@ export const NavbarMobileList = ({
                 onClick={onNavigate}
                 className={cn(
                   MOBILE_LINK_CLASSES,
-                  active && "bg-accent text-accent-foreground",
+                  active && "text-primary",
                 )}
               >
                 {getNavLabel(item.label, item.link)}

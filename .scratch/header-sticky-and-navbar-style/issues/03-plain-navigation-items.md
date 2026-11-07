@@ -1,5 +1,5 @@
 ---
-Status: ready-for-agent
+Status: done
 Type: task
 Blocked by: 02
 ---
@@ -12,15 +12,31 @@ Match the retired hardcoded navbar's look: navigation entries have no surface of
 
 ## Acceptance criteria
 
-- [ ] Top-level links and column/card triggers have a transparent background, keep `rounded-md`, and on hover change only the text colour to primary. The open state (`data-[state=open]`) does not paint a background.
-- [ ] The active entry is marked with primary text, not with a filled background.
-- [ ] Dropdown and column links (`NavLinkList`) lose their hover background and their active background; hover is primary text, active is primary text.
-- [ ] Mobile rows and mobile accordion triggers follow the same rules (no hover background, primary text on hover/active, no underline on the trigger).
-- [ ] The CTA keeps its filled button and the mega cards keep their border/surface and hover background.
-- [ ] The keyboard focus ring (`focus-visible`) is preserved on every interactive entry.
-- [ ] Other `NavigationMenu` consumers keep their current surface look; only the NavbarBlock opts into the plain variant.
-- [ ] Tests assert the plain classes on the top-level, dropdown and mobile projections, and no longer assert `hover:bg-accent` on those links.
-- [ ] `npx tsc --noEmit`, targeted ESLint, `npm run test:run` and `npm run build` pass.
+- [x] Top-level links and column/card triggers have a transparent background, keep `rounded-md`, and on hover change only the text colour to primary. The open state (`data-[state=open]`) does not paint a background.
+- [x] The active entry is marked with primary text, not with a filled background.
+- [x] Dropdown and column links (`NavLinkList`) lose their hover background and their active background; hover is primary text, active is primary text.
+- [x] Mobile rows and mobile accordion triggers follow the same rules (no hover background, primary text on hover/active, no underline on the trigger).
+- [x] The CTA keeps its filled button and the mega cards keep their border/surface and hover background.
+- [x] The keyboard focus ring (`focus-visible`) is preserved on every interactive entry.
+- [x] Other `NavigationMenu` consumers keep their current surface look; only the NavbarBlock opts into the plain variant.
+- [x] Tests assert the plain classes on the top-level, dropdown and mobile projections, and no longer assert `hover:bg-accent` on those links.
+- [x] `npx tsc --noEmit`, targeted ESLint, `npm run test:run` and `npm run build` pass.
+
+## Implementation notes
+
+- **Shared primitive.** `navigationMenuTriggerStyle` is now `cva(base, { variants: { look } })` with `surface` as the default and `plain` carrying its complete background/hover/focus set (`bg-transparent`, `hover:text-primary`, `data-[state=open]:bg-transparent`, `focus-visible:ring-2`). `NavigationMenuTrigger` accepts the matching `look` prop. The surface variant is byte-for-byte the previous look, so the retired `Nav` and any other consumer are unchanged.
+- **Plain entries.** `NavbarDesktopMenu` calls `navigationMenuTriggerStyle({ look: "plain" })` for links and `look="plain"` for column/card triggers. `NavLinkList` and `NavbarMobileColumnList` share `NAV_LINK_PLAIN_CLASSES` (`nav-link-list.tsx`) with the mobile sheet rows: no hover/active background, primary text on hover/active, and a visible focus ring.
+- **Active triggers.** `hasActiveNavChild` (`lib/menu.ts`) marks a column trigger primary when one of its children is the current page, matching the retired navbar. Card triggers use their own link.
+- **Untouched.** The CTA still uses `buttonVariants`; mega `NavbarCard`s keep `bg-background`, border and `hover:bg-accent`.
+- **Tests.** `src/shared/ui/__tests__/navigation-menu.test.tsx` covers the surface default and the plain variant; `src/puck/__tests__/navbar-block.test.tsx` covers the top-level, dropdown, mobile and CTA/card projections and asserts the absence of `hover:bg-accent`/`bg-accent` on plain entries.
+
+## Verification
+
+- `npx tsc --noEmit` — clean.
+- Targeted ESLint on the changed files — clean. Full `npm run lint` still reports the repo's pre-existing errors elsewhere.
+- `npm run test:run` — 234 files, 1936 tests passed.
+- `npm run build` — passed (Next.js 16.3.4, 364 static pages).
+
 
 ## Hints
 

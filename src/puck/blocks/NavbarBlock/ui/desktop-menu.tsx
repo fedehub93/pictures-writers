@@ -16,6 +16,7 @@ import {
 
 import {
   getNavLabel,
+  hasActiveNavChild,
   hasMegaPanelContent,
   isNavLinkActive,
 } from "../lib/menu";
@@ -119,9 +120,9 @@ function DesktopItem({
       <InlineSmartLink
         link={item.link}
         className={cn(
-          navigationMenuTriggerStyle(),
+          navigationMenuTriggerStyle({ look: "plain" }),
           "puck-nav-label",
-          active && "bg-accent/50 text-primary",
+          active && "text-primary",
         )}
       >
         {getNavLabel(item.label, item.link)}
@@ -147,9 +148,14 @@ function DesktopItem({
   }
 
   if (item.type === "column") {
+    const active = hasActiveNavChild(pathname, item.items);
+
     return (
       <>
-        <NavigationMenuTrigger className="puck-nav-label bg-transparent">
+        <NavigationMenuTrigger
+          look="plain"
+          className={cn("puck-nav-label", active && "text-primary")}
+        >
           {item.label}
         </NavigationMenuTrigger>
         <NavigationMenuContent>
@@ -163,9 +169,14 @@ function DesktopItem({
     );
   }
 
+  const active = isNavLinkActive(pathname, getLinkHref(item.link));
+
   return (
     <>
-      <NavigationMenuTrigger className="puck-nav-label bg-transparent">
+      <NavigationMenuTrigger
+        look="plain"
+        className={cn("puck-nav-label", active && "text-primary")}
+      >
         {item.label}
       </NavigationMenuTrigger>
       <NavigationMenuContent>

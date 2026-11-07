@@ -14,6 +14,15 @@ export type NavLinkEntry = {
   link?: NavbarMenuLink;
 };
 
+/**
+ * Plain entry shared by dropdown/column links and the mobile sheet rows.
+ *
+ * A navigation entry has no surface of its own: hover and the active page only
+ * recolour the text, and the keyboard focus ring stays visible.
+ */
+export const NAV_LINK_PLAIN_CLASSES =
+  "puck-nav-label rounded-md px-3 py-2 transition-colors hover:text-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring";
+
 export const NavLinkList = ({
   links,
   pathname,
@@ -39,8 +48,9 @@ export const NavLinkList = ({
               link={entry.link}
               onClick={onNavigate}
               className={cn(
-                "puck-nav-label block rounded-md px-3 py-2 transition-colors hover:bg-accent hover:text-accent-foreground",
-                active && "bg-accent text-accent-foreground",
+                NAV_LINK_PLAIN_CLASSES,
+                "block",
+                active && "text-primary",
               )}
             >
               {label}
@@ -85,8 +95,9 @@ export const NavbarMobileColumnList = ({
               link={entry.link}
               onClick={onNavigate}
               className={cn(
-                "flex items-start gap-3 rounded-md px-3 py-2 transition-colors hover:bg-accent hover:text-accent-foreground",
-                active && "bg-accent text-accent-foreground",
+                NAV_LINK_PLAIN_CLASSES,
+                "flex items-start gap-3",
+                active && "text-primary",
               )}
             >
               <NavbarIcon icon={entry.icon} className="mt-0.5 size-5 shrink-0" />

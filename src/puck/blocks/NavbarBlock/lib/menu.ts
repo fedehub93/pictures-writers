@@ -1,3 +1,5 @@
+import { getLinkHref } from "@/puck/fields/link/types";
+
 import type {
   NavItem,
   NavItemType,
@@ -106,5 +108,21 @@ export function isNavLinkActive(
   return (
     normalizedPathname === normalizedHref ||
     normalizedPathname.startsWith(`${normalizedHref}/`)
+  );
+}
+
+/**
+ * Whether any child of a navigation column points at the current page.
+ *
+ * The parent trigger has no href of its own, so it is marked active through
+ * its children, matching how the retired hardcoded navbar highlighted a
+ * section while visiting one of its pages.
+ */
+export function hasActiveNavChild(
+  pathname: string | null | undefined,
+  children: NavbarColumnChildUi[] | undefined,
+): boolean {
+  return (children ?? []).some((child) =>
+    isNavLinkActive(pathname, getLinkHref(child.link)),
   );
 }
