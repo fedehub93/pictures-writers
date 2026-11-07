@@ -4,6 +4,7 @@ import type { SiteRegionKey } from "@/generated/prisma";
 
 import { editorComponentConfigs } from "../config";
 import { RootEditor } from "../root";
+import { HeaderRootEditor } from "../root/header";
 import {
   FOOTER_REGION_COMPONENTS,
   HEADER_REGION_COMPONENTS,
@@ -31,17 +32,20 @@ function buildCategories(componentNames: readonly RegionComponent[]) {
   return categories as Config["categories"];
 }
 
-function buildEditorConfig(names: readonly RegionComponent[]): Config {
+function buildEditorConfig(
+  names: readonly RegionComponent[],
+  root: Config["root"],
+): Config {
   return {
     categories: buildCategories(names),
     components: pickComponentConfigs(names, editorComponentConfigs),
-    root: RootEditor,
+    root,
   };
 }
 
 const REGION_EDITOR_CONFIGS: Record<SiteRegionKey, Config> = {
-  HEADER: buildEditorConfig(HEADER_REGION_COMPONENTS),
-  FOOTER: buildEditorConfig(FOOTER_REGION_COMPONENTS),
+  HEADER: buildEditorConfig(HEADER_REGION_COMPONENTS, HeaderRootEditor),
+  FOOTER: buildEditorConfig(FOOTER_REGION_COMPONENTS, RootEditor),
 };
 
 /**

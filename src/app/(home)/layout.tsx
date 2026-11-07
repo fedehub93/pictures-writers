@@ -18,6 +18,7 @@ import { resolveIntegrationPublicConfig } from "@/modules/integrations/lib/publi
 import { withIntegrationResolutionCache } from "@/modules/integrations/lib/resolution-cache";
 
 import { resolveRegionPuckData } from "@/modules/site-regions/lib/default-regions";
+import { getHeaderClassName } from "@/modules/site-regions/lib/header-sticky";
 import { getCachedLiveRegionByKey } from "@/modules/site-regions/server/queries";
 
 import { PuckRender } from "@/puck/render-config";
@@ -104,11 +105,14 @@ export default async function RootLayout({
         />
         <ToastProvider />
         <QueryProvider>
-          <div className={cn(`h-full`, figtree.className)}>
-            {/* Site regions flow with the page, so `main` needs no fixed
-                navbar offset. A future fixed header block is responsible for
-                reserving its own space. */}
-            <header>
+          {/* Keep the wrapper at least viewport-high but let it grow with the
+              page: a fixed height would clamp `position: sticky` to one
+              viewport and the header would stop sticking on long pages. */}
+          <div className={cn(`min-h-full`, figtree.className)}>
+            {/* Sticky uses `position: sticky`, so the header stays in normal
+                flow and `main` never needs a reserved offset. The switch only
+                adds positioning; the surface comes from the region blocks. */}
+            <header className={getHeaderClassName(headerPuckData)}>
               <PuckRender
                 config={renderConfigForRegion("HEADER")}
                 initialData={headerPuckData}
