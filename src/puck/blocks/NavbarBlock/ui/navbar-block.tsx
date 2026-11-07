@@ -20,6 +20,7 @@ export const NavbarBlockUi = ({
   items = [],
   layout = "compact",
   styleVars,
+  appearanceVars,
   layoutClassName,
 }: NavbarBlockUiProps) => {
   const pathname = usePathname();
@@ -28,11 +29,15 @@ export const NavbarBlockUi = ({
 
   return (
     <div
-      className={cn("puck-dim puck-deco", layoutClassName)}
+      className={cn("puck-dim puck-deco puck-nav", layoutClassName)}
       style={styleVars}
     >
       <NavbarDesktopMenu items={items} layout={layout} pathname={pathname} />
-      <NavbarMobileMenu items={items} pathname={pathname} />
+      <NavbarMobileMenu
+        items={items}
+        pathname={pathname}
+        appearanceVars={appearanceVars}
+      />
     </div>
   );
 };

@@ -144,6 +144,20 @@ export type ResolvedNavItem =
       variant?: NavbarCtaVariant;
     };
 
+/**
+ * Authored navigation style, per breakpoint.
+ *
+ * Both values are raw CSS values (the shared `ValueUnitInput` writes things
+ * like `0.875rem` or `12px`). Empty is meaningful: it keeps the stylesheet
+ * defaults, so a document authored before this field renders unchanged.
+ */
+export type NavbarAppearanceProps = {
+  /** Size of every link label, not of card copy or the CTA. */
+  fontSize?: string;
+  /** Gap between the desktop top-level entries and the mobile sheet rows. */
+  itemSpacing?: string;
+};
+
 /** Authored content of the NavbarBlock, grouped in one editor section. */
 export type NavbarBlockContent = {
   /** Ordered top-level menu items. */
@@ -160,6 +174,7 @@ export type NavbarBlockRenderContent = {
 
 export type NavbarBlockProps = {
   content?: NavbarBlockContent;
+  appearance?: Responsive<NavbarAppearanceProps>;
   layout?: Responsive<LayoutProps>;
   dimension?: Responsive<DimensionProps>;
   decoration?: Responsive<DecorationProps>;
@@ -168,6 +183,7 @@ export type NavbarBlockProps = {
 /** Inputs accepted by the pure render, before style variables are computed. */
 export type NavbarBlockRenderProps = {
   content?: NavbarBlockRenderContent;
+  appearance?: Responsive<NavbarAppearanceProps>;
   layout?: Responsive<LayoutProps>;
   dimension?: Responsive<DimensionProps>;
   decoration?: Responsive<DecorationProps>;
@@ -180,6 +196,8 @@ export type NavbarBlockUiProps = {
   layout?: NavbarLayout;
   /** Responsive style variables produced by the shared style utilities. */
   styleVars?: Record<string, string>;
+  /** Navigation style variables, repeated on the portaled sheet. */
+  appearanceVars?: Record<string, string>;
   /** Editor visibility classes, empty on the public render. */
   layoutClassName?: string;
 };

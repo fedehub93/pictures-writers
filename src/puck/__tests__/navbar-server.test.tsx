@@ -22,6 +22,7 @@ describe("NavbarBlock server render", () => {
       },
       dimension: { desktop: { marginTop: "12px" } },
       decoration: { desktop: { backgroundColor: "var(--accent)" } },
+      appearance: { desktop: { fontSize: "1.25rem" } },
     });
 
     const html = renderToStaticMarkup(element);
@@ -30,5 +31,7 @@ describe("NavbarBlock server render", () => {
     expect(html).toContain("puck-dim puck-deco");
     expect(html).toContain("--mt-d:12px");
     expect(html).toContain("--bgc-d:var(--accent)");
+    expect(html).toContain("--nav-fs-d:1.25rem");
+    expect(html).toContain("--nav-fs-m:1.25rem");
   });
 });

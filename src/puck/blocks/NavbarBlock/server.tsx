@@ -15,6 +15,7 @@ import { renderNavbarBlock } from "./render";
  */
 export const NavbarBlockServer = async ({
   content,
+  appearance,
   layout,
   dimension,
   decoration,
@@ -23,6 +24,7 @@ export const NavbarBlockServer = async ({
 
   return renderNavbarBlock({
     content: { ...content, items: resolvedItems },
+    appearance,
     layout,
     dimension,
     decoration,

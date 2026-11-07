@@ -107,6 +107,60 @@
   color: var(--tc-d);
 }
 
+/* --- 3. NAVIGATION ---
+   Dedicated variables for the NavbarBlock. They are kept apart from `--fs-*`
+   and `--rgap-*` because `.puck-typo` / `.puck-layout` reset those on their own
+   wrappers. `--nav-fs-*` drives every link label; card typography and the CTA
+   keep their own sizes. `--nav-gap-*` drives the desktop top-level row and the
+   mobile sheet rows.
+
+   The defaults below are today's look: 14px inline labels with an 8px gap,
+   16px sheet labels with a 4px gap. Empty authored values emit no variable, so
+   a document created before the style field renders unchanged. */
+.puck-nav {
+  --nav-fs-d: initial;
+  --nav-fs-t: initial;
+  --nav-fs-m: initial;
+  --nav-gap-d: initial;
+  --nav-gap-t: initial;
+  --nav-gap-m: initial;
+
+  font-size: var(--nav-fs-d, 14px);
+}
+
+/* Link labels carry their own rule instead of relying on inheritance: the
+   shared `AccordionContent` hard-codes `text-sm`, which would otherwise pin
+   the nested mobile column links to 14px. A direct declaration wins over that
+   inherited size. */
+.puck-nav .puck-nav-label {
+  font-size: var(--nav-fs-d, 14px);
+}
+
+.puck-nav .puck-nav-row {
+  gap: var(--nav-gap-d, 8px);
+}
+
+/* The sheet is portaled to <body>, outside `.puck-nav`. The block repeats the
+   variables on `SheetContent`, and the sheet always uses the mobile value. */
+.puck-nav-sheet {
+  --nav-fs-d: initial;
+  --nav-fs-t: initial;
+  --nav-fs-m: initial;
+  --nav-gap-d: initial;
+  --nav-gap-t: initial;
+  --nav-gap-m: initial;
+
+  font-size: var(--nav-fs-m, var(--nav-fs-t, var(--nav-fs-d, 16px)));
+}
+
+.puck-nav-sheet .puck-nav-label {
+  font-size: var(--nav-fs-m, var(--nav-fs-t, var(--nav-fs-d, 16px)));
+}
+
+.puck-nav-sheet .puck-nav-sheet-list {
+  gap: var(--nav-gap-m, var(--nav-gap-t, var(--nav-gap-d, 4px)));
+}
+
 /* --- 4. DECORATION --- */
 .puck-deco {
   --op-d: initial;
@@ -220,6 +274,21 @@
     letter-spacing: var(--ls-t, var(--ls-d));
     text-align: var(--ta-t, var(--ta-d));
     color: var(--tc-t, var(--tc-d));
+  }
+
+  .puck-nav {
+    --nav-fs-t: initial;
+    --nav-gap-t: initial;
+
+    font-size: var(--nav-fs-t, var(--nav-fs-d, 14px));
+  }
+
+  .puck-nav .puck-nav-label {
+    font-size: var(--nav-fs-t, var(--nav-fs-d, 14px));
+  }
+
+  .puck-nav .puck-nav-row {
+    gap: var(--nav-gap-t, var(--nav-gap-d, 8px));
   }
 
   .puck-deco {
@@ -341,6 +410,21 @@
     letter-spacing: var(--ls-m, var(--ls-t, var(--ls-d)));
     text-align: var(--ta-m, var(--ta-t, var(--ta-d)));
     color: var(--tc-m, var(--tc-t, var(--tc-d)));
+  }
+
+  .puck-nav {
+    --nav-fs-m: initial;
+    --nav-gap-m: initial;
+
+    font-size: var(--nav-fs-m, var(--nav-fs-t, var(--nav-fs-d, 14px)));
+  }
+
+  .puck-nav .puck-nav-label {
+    font-size: var(--nav-fs-m, var(--nav-fs-t, var(--nav-fs-d, 14px)));
+  }
+
+  .puck-nav .puck-nav-row {
+    gap: var(--nav-gap-m, var(--nav-gap-t, var(--nav-gap-d, 8px)));
   }
 
   .puck-deco {

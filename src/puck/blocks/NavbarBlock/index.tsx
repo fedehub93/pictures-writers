@@ -6,6 +6,7 @@ import { DisplayOnlyLayoutField } from "@/puck/fields/layout";
 
 import { NAVBAR_BLOCK_DEFAULT_CONTENT } from "./defaults";
 import { NavbarContentField } from "./field";
+import { NavbarStyleField } from "./style-field";
 import type { NavbarBlockProps } from "./types";
 import { renderNavbarBlock } from "./render";
 
@@ -23,6 +24,7 @@ const NavbarBlockEditorRender: PuckComponent<NavbarBlockProps> = ({
 export const NavbarBlock: ComponentConfig<NavbarBlockProps> = {
   fields: {
     content: NavbarContentField,
+    appearance: NavbarStyleField,
     layout: DisplayOnlyLayoutField,
     dimension: DimensionField,
     decoration: DecorationField,

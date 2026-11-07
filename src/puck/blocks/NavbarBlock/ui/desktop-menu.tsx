@@ -109,6 +109,7 @@ function DesktopItem({
         link={item.link}
         className={cn(
           navigationMenuTriggerStyle(),
+          "puck-nav-label",
           active && "bg-accent/50 text-primary",
         )}
       >
@@ -137,7 +138,7 @@ function DesktopItem({
   if (item.type === "column") {
     return (
       <>
-        <NavigationMenuTrigger className="bg-transparent">
+        <NavigationMenuTrigger className="puck-nav-label bg-transparent">
           {item.label}
         </NavigationMenuTrigger>
         <NavigationMenuContent>
@@ -153,7 +154,7 @@ function DesktopItem({
 
   return (
     <>
-      <NavigationMenuTrigger className="bg-transparent">
+      <NavigationMenuTrigger className="puck-nav-label bg-transparent">
         {item.label}
       </NavigationMenuTrigger>
       <NavigationMenuContent>
@@ -191,7 +192,7 @@ export const NavbarDesktopMenu = ({
   return (
     <div className="hidden md:flex">
       <NavigationMenu className="max-w-none" aria-label="Main navigation">
-        <NavigationMenuList className="gap-1">
+        <NavigationMenuList className="puck-nav-row space-x-0">
           {items.map((item, index) => (
             <NavigationMenuItem key={`${item.type}-${item.label}-${index}`}>
               <DesktopItem item={item} layout={layout} pathname={pathname} />

@@ -39,7 +39,7 @@ export const NavLinkList = ({
               link={entry.link}
               onClick={onNavigate}
               className={cn(
-                "block rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
+                "puck-nav-label block rounded-md px-3 py-2 transition-colors hover:bg-accent hover:text-accent-foreground",
                 active && "bg-accent text-accent-foreground",
               )}
             >
@@ -91,7 +91,7 @@ export const NavbarMobileColumnList = ({
             >
               <NavbarIcon icon={entry.icon} className="mt-0.5 size-5 shrink-0" />
               <span className="flex flex-col gap-0.5">
-                <span className="text-sm font-medium">{label}</span>
+                <span className="puck-nav-label font-medium">{label}</span>
                 {entry.description?.trim() ? (
                   <span className="text-xs leading-snug text-muted-foreground">
                     {entry.description}

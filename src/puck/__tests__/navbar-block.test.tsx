@@ -37,6 +37,7 @@ import {
 import { NavbarContentField } from "../blocks/NavbarBlock/field";
 import { isNavLinkActive } from "../blocks/NavbarBlock/lib/menu";
 import { renderNavbarBlock } from "../blocks/NavbarBlock/render";
+import { NavbarStyleField } from "../blocks/NavbarBlock/style-field";
 import type {
   NavItem,
   NavItemUi,
@@ -108,6 +109,7 @@ describe("NavbarBlock", () => {
     expect(html).toContain('aria-label="Main navigation"');
     expect(html).toContain("hidden");
     expect(html).toContain("md:flex");
+    expect(html).toContain("puck-nav-label");
     expect(html).toContain('href="/"');
     expect(html).toContain(">Home<");
     expect(html).toContain("Risorse");
@@ -134,6 +136,7 @@ describe("NavbarBlock", () => {
     );
 
     expect(html).toContain('aria-label="Mobile navigation"');
+    expect(html).toContain("puck-nav-label");
     expect(html).toContain(">Home<");
     expect(html).toContain(">Risorse<");
     expect(html).toContain(">Workbook<");
@@ -310,8 +313,44 @@ describe("NavbarBlock", () => {
     expect(html).toContain("puck-dim puck-deco");
     expect(html).not.toContain("--bgc-d");
     expect(html).not.toContain("--mt-d");
+    expect(html).not.toContain("--nav-fs");
+    expect(html).not.toContain("--nav-gap");
+    expect(html).toContain("puck-nav-row");
     expect(html).toContain('aria-label="Main navigation"');
     expect(html).toContain('aria-label="Open menu"');
+  });
+
+  it("emits the navigation style variables with the desktop → mobile cascade", () => {
+    const html = renderToStaticMarkup(
+      renderNavbarBlock({
+        content: { items: ITEMS },
+        appearance: {
+          desktop: { fontSize: "18px", itemSpacing: "12px" },
+          mobile: { fontSize: "20px" },
+        },
+      }),
+    );
+
+    expect(html).toContain("--nav-fs-d:18px");
+    expect(html).toContain("--nav-fs-t:18px");
+    expect(html).toContain("--nav-fs-m:20px");
+    expect(html).toContain("--nav-gap-d:12px");
+    expect(html).toContain("--nav-gap-t:12px");
+    expect(html).toContain("--nav-gap-m:12px");
+  });
+
+  it("only emits the values authored at or above a breakpoint", () => {
+    const html = renderToStaticMarkup(
+      renderNavbarBlock({
+        content: { items: ITEMS },
+        appearance: { tablet: { fontSize: "1rem" } },
+      }),
+    );
+
+    expect(html).not.toContain("--nav-fs-d");
+    expect(html).toContain("--nav-fs-t:1rem");
+    expect(html).toContain("--nav-fs-m:1rem");
+    expect(html).not.toContain("--nav-gap");
   });
 
   it("keeps the mega layout available while defaulting new navbars to compact", () => {
@@ -332,6 +371,8 @@ describe("NavbarBlock", () => {
     const fields = (NavbarBlock.fields ?? {}) as Record<string, unknown>;
 
     expect(fields.content).toMatchObject({ type: "custom" });
+    expect(fields).toHaveProperty("appearance");
+    expect(fields.appearance).toBe(NavbarStyleField);
     expect(fields).toHaveProperty("layout");
     expect(fields).toHaveProperty("dimension");
     expect(fields).toHaveProperty("decoration");
