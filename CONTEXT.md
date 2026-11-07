@@ -1,6 +1,6 @@
-# Pictures Writers
+# Spindle CMS
 
-Glossary for the blog post editing context, including editorial content and desktop navigation.
+Glossary for the CMS product: editorial content, catalog and commerce, email, automations, and the deployments it runs in. Pictures Writers is one Installation of it.
 
 ## Post editing
 
@@ -550,3 +550,33 @@ _Avoid_: Dashboard config, dashboard settings, default layout; ordered list when
 **Site widget**:
 A configurable block rendered on the public site (hero, popup, post sidebar or bottom), managed under the public Widgets area. Distinct from the Dashboard widget.
 _Avoid_: Widget when the dashboard is in scope.
+
+## Product and tenancy
+
+**Installation**:
+One running copy of the CMS — its own application container, its own PostgreSQL database, its own domain and its own Installation settings — serving exactly one Tenant. Installations share the application image and nothing else: no database, no media, no credentials.
+_Avoid_: Instance, site, deployment, environment.
+
+**Tenant**:
+The owner of one Installation, recorded only in the Control plane. A Tenant has no representation inside the Installation: the CMS never knows that other Installations exist.
+_Avoid_: Customer, account, workspace, organization.
+
+**Control plane**:
+The separate service that provisions, deploys and observes Installations and is the sole holder of the Tenant registry. It runs no editorial, commerce or email code, and no Installation depends on it to answer a request.
+_Avoid_: Admin, dashboard, orchestrator (that is Coolify), platform.
+
+**Host**:
+The Docker machine an Installation runs on.
+_Avoid_: Server, node, VPS.
+
+**Fleet**:
+All the Installations one Control plane manages, across one or more Hosts.
+_Avoid_: Cluster, pool, network.
+
+**Installation settings**:
+The single-row configuration an Installation owns and its backoffice edits — site name, canonical URL, timezone, locale, media quota. It belongs to that Installation alone and is never supplied through environment variables.
+_Avoid_: Site config, global settings, tenant settings.
+
+**Bootstrap**:
+The one-time step in which an Installation creates its first backoffice user and records its canonical URL, authenticated by a secret only the Control plane holds. The secret is spent once it succeeds. It is the counterpart of WordPress's `wp core install`, and distinct from the setup that follows the first login.
+_Avoid_: Seed, installer, first run; setup wizard when the post-login onboarding is meant.
