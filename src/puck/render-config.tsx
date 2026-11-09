@@ -33,10 +33,11 @@ import { renderSearchBarBlock } from "./blocks/SearchBar/render";
 import { NavbarBlockServer } from "./blocks/NavbarBlock/server";
 import type { NavbarBlockProps } from "./blocks/NavbarBlock/types";
 
+/**
+ * Public render root. It declares no fields: the render path only needs the
+ * render function, while the editor root fields live in `RootEditor`.
+ */
 export const rootRenderConfig: RootConfig<RootProps> = {
-  fields: {
-    title: { type: "text" },
-  },
   render: renderRoot,
 };
 

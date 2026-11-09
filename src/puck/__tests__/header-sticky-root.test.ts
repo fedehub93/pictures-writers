@@ -22,7 +22,7 @@ describe("Header sticky root field", () => {
   it("keeps the shared root fields on the Header root", () => {
     const fields = readRootFields(HeaderRootEditor);
 
-    expect(fields).toHaveProperty("title");
+    expect(fields).not.toHaveProperty("title");
     expect(fields).toHaveProperty("dimension");
   });
 

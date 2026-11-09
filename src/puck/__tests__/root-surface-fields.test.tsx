@@ -141,6 +141,15 @@ describe("root surface fields", () => {
     expect(fields).toHaveProperty("decoration");
   });
 
+  it("does not expose the inert title on any root", () => {
+    expect(rootFields(RootEditor)).not.toHaveProperty("title");
+    expect(rootFields(HeaderRootEditor)).not.toHaveProperty("title");
+    expect(rootFields(pageEditorConfig.root)).not.toHaveProperty("title");
+    expect(rootFields(editorConfigForRegion("FOOTER").root)).not.toHaveProperty(
+      "title",
+    );
+  });
+
   it("wires the no-hidden variant on every root", () => {
     expect(rootFields(RootEditor).layout).toBe(RootLayoutField);
     expect(rootFields(HeaderRootEditor).layout).toBe(RootLayoutField);

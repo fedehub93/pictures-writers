@@ -11,7 +11,6 @@ export type { RootProps };
 
 export const RootEditor: RootConfig<RootProps> = {
   fields: {
-    title: { type: "text", label: "Title" },
     layout: RootLayoutField,
     dimension: DimensionField,
     decoration: DecorationField,

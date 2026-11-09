@@ -7,7 +7,6 @@ import type { DecorationProps } from "@/puck/fields/decoration";
 
 export type RootProps = {
   children: ReactNode;
-  title?: string;
   dimension?: Responsive<DimensionProps>;
   layout?: Responsive<LayoutProps>;
   decoration?: Responsive<DecorationProps>;

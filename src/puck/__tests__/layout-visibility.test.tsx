@@ -150,6 +150,7 @@ describe("Layout field availability", () => {
   it("exposes the surface fields on the Root", () => {
     const fields = (RootEditor.fields ?? {}) as Record<string, unknown>;
 
+    expect(fields).not.toHaveProperty("title");
     expect(fields).toHaveProperty("layout");
     expect(fields).toHaveProperty("dimension");
     expect(fields).toHaveProperty("decoration");
