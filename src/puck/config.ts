@@ -21,7 +21,13 @@ import { NavbarBlock } from "./blocks/NavbarBlock";
 
 import type { FormProps } from "./fields/form";
 
-import { pickComponentConfigs } from "./region/palettes";
+import { HeaderRootEditor } from "./root/header";
+import { createPageEditorRoot } from "./root/page-editor";
+import {
+  FOOTER_REGION_COMPONENTS,
+  HEADER_REGION_COMPONENTS,
+  pickComponentConfigs,
+} from "./region/palettes";
 
 export type SavedComponents = {
   Container: ContainerBlockProps;
@@ -102,6 +108,30 @@ const PAGE_COMPONENT_NAMES = [
   "Link",
 ] as const;
 
+/**
+ * Read-only palettes used by the page editor to draw the Site layout preview.
+ *
+ * They are built here, from the canonical registry, instead of importing
+ * `region/editor-config.tsx`: that module already imports this one, so using
+ * them here would create an import cycle. The roots match the region editors
+ * so the Site layout preview renders the same tree the author sees there.
+ */
+const siteLayoutHeaderConfig: Config = {
+  components: pickComponentConfigs(
+    HEADER_REGION_COMPONENTS,
+    editorComponentConfigs,
+  ),
+  root: HeaderRootEditor,
+};
+
+const siteLayoutFooterConfig: Config = {
+  components: pickComponentConfigs(
+    FOOTER_REGION_COMPONENTS,
+    editorComponentConfigs,
+  ),
+  root: RootEditor,
+};
+
 // Create Puck component config
 export const config: PageEditorConfig = {
   categories: {
@@ -125,5 +155,8 @@ export const config: PageEditorConfig = {
     PAGE_COMPONENT_NAMES,
     editorComponentConfigs,
   ) as PageEditorConfig["components"],
-  root: RootEditor,
+  root: createPageEditorRoot({
+    header: siteLayoutHeaderConfig,
+    footer: siteLayoutFooterConfig,
+  }),
 };

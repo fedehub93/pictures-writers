@@ -34,7 +34,8 @@ describe("Header sticky root field", () => {
   });
 
   it("does not expose the switch on the page root", () => {
-    expect(pageEditorConfig.root).toBe(RootEditor);
+    expect(pageEditorConfig.root).not.toBe(RootEditor);
+    expect(pageEditorConfig.root).not.toBe(HeaderRootEditor);
     expect(readRootFields(pageEditorConfig.root)).not.toHaveProperty("sticky");
   });
 });

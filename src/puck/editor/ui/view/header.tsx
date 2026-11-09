@@ -6,6 +6,7 @@ import {
   ZoomOutIcon,
   ZoomInIcon,
   ChevronDownIcon,
+  PanelTopIcon,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
@@ -33,7 +34,14 @@ export const BuilderHeader = ({ header }: { header?: EditorHeaderProps }) => {
   const history = usePuck((s) => s.history);
   const dispatch = usePuck((s) => s.dispatch);
 
-  const { scale, setScale, isAutoZoom, setIsAutoZoom } = useEditorStore();
+  const {
+    scale,
+    setScale,
+    isAutoZoom,
+    setIsAutoZoom,
+    showSiteLayout,
+    setShowSiteLayout,
+  } = useEditorStore();
 
   // A caller that supplies its own header (the Site region editor) is not
   // editing a Page, so skip the page query entirely.
@@ -140,6 +148,30 @@ export const BuilderHeader = ({ header }: { header?: EditorHeaderProps }) => {
           </div>
 
           <div className="w-px h-4 bg-border mx-2" />
+
+          {/* Site layout preview: page editor only, region editors keep their
+              own header and canvas without the regions. */}
+          {!header && (
+            <>
+              <Button
+                type="button"
+                variant={showSiteLayout ? "secondary" : "ghost"}
+                size="icon"
+                aria-pressed={showSiteLayout}
+                title={
+                  showSiteLayout
+                    ? "Hide the site header and footer"
+                    : "Show the site header and footer"
+                }
+                onClick={() => setShowSiteLayout(!showSiteLayout)}
+                className="size-8 rounded-md text-slate-700 hover:bg-muted"
+              >
+                <PanelTopIcon className="size-4" />
+              </Button>
+
+              <div className="w-px h-4 bg-border mx-2" />
+            </>
+          )}
 
           {/* Zoom */}
           <div className="flex items-center gap-1">

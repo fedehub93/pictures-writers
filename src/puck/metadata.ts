@@ -1,4 +1,10 @@
-import type { Metadata } from "@puckeditor/core";
+import type { Data, Metadata } from "@puckeditor/core";
+
+import {
+  isSiteLayoutPreviewState,
+  type SiteLayoutPreview,
+  type SiteLayoutPreviewRegion,
+} from "@/modules/site-regions/lib/site-layout-preview";
 
 /**
  * Installation details the Site region editor passes into the Puck canvas.
@@ -29,6 +35,38 @@ export function readSiteRegionMetadata(
     siteName: readString(metadata?.siteName),
     logoUrl: readString(metadata?.logoUrl),
   };
+}
+
+/**
+ * Read the Site layout preview injected by the page editor.
+ *
+ * Metadata is an untyped bag, so both regions are validated before the canvas
+ * trusts them. A malformed payload simply renders no Site layout preview.
+ */
+export function readSiteLayoutPreview(
+  metadata: Metadata | undefined,
+): SiteLayoutPreview | undefined {
+  const value = metadata?.siteLayout;
+
+  if (!value || typeof value !== "object") return undefined;
+
+  const header = readPreviewRegion((value as { header?: unknown }).header);
+  const footer = readPreviewRegion((value as { footer?: unknown }).footer);
+
+  if (!header || !footer) return undefined;
+
+  return { header, footer };
+}
+
+function readPreviewRegion(value: unknown): SiteLayoutPreviewRegion | undefined {
+  if (!value || typeof value !== "object") return undefined;
+
+  const { data, state } = value as { data?: unknown; state?: unknown };
+
+  if (!data || typeof data !== "object") return undefined;
+  if (!isSiteLayoutPreviewState(state)) return undefined;
+
+  return { data: data as Data, state };
 }
 
 function readString(value: unknown) {
