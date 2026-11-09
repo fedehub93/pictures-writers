@@ -20,14 +20,23 @@ import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Skeleton } from "@/shared/ui/skeleton";
 
+import type { SiteLayoutPreview } from "@/modules/site-regions/lib/site-layout-preview";
+
 import { useEditorStore } from "../../store/use-editor-store";
 import { HeaderActions } from "../components/header-actions";
 import { PreviewToggle } from "../components/preview-toggle";
+import { SiteLayoutStatusChips } from "../components/site-layout-status-chips";
 import type { EditorHeaderProps } from "./editor";
 
 const usePuck = createUsePuck<Config>();
 
-export const BuilderHeader = ({ header }: { header?: EditorHeaderProps }) => {
+export const BuilderHeader = ({
+  header,
+  siteLayout,
+}: {
+  header?: EditorHeaderProps;
+  siteLayout?: SiteLayoutPreview;
+}) => {
   const trpc = useTRPC();
   const { rootId } = useParams<{ rootId?: string }>();
   const { viewports } = usePuck((s) => s.appState.ui);
@@ -110,6 +119,11 @@ export const BuilderHeader = ({ header }: { header?: EditorHeaderProps }) => {
           <h1 className="text-sm font-medium text-foreground hidden md:block">
             {header?.title ?? page?.title}
           </h1>
+
+          <SiteLayoutStatusChips
+            showSiteLayout={showSiteLayout}
+            siteLayout={siteLayout}
+          />
         </div>
 
         <div className="absolute left-1/2 -translate-x-1/2 flex items-center">

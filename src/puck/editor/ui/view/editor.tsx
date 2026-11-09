@@ -3,6 +3,8 @@ import "client-only";
 import type { ReactNode } from "react";
 import { Puck } from "@puckeditor/core";
 
+import type { SiteLayoutPreview } from "@/modules/site-regions/lib/site-layout-preview";
+
 import { PuckBuilder } from "./builder";
 import { BuilderHeader } from "./header";
 import { ElementsPanel } from "./sidebar";
@@ -17,10 +19,17 @@ export type EditorHeaderProps = {
   showPreview?: boolean;
 };
 
-export const Editor = ({ header }: { header?: EditorHeaderProps }) => {
+export const Editor = ({
+  header,
+  siteLayout,
+}: {
+  header?: EditorHeaderProps;
+  /** Header and Footer documents shown around the Page, when previewed. */
+  siteLayout?: SiteLayoutPreview;
+}) => {
   return (
     <div className="flex flex-col h-[calc(100vh-3.75rem)] overflow-hidden">
-      <BuilderHeader header={header} />
+      <BuilderHeader header={header} siteLayout={siteLayout} />
       <div className="grid grid-cols-[300px_1fr_300px] flex-1 overflow-hidden">
         <div className="h-full border-r overflow-hidden">
           <ElementsPanel />

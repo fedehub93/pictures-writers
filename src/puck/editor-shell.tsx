@@ -70,7 +70,7 @@ export function PuckEditor({
         },
       }}
     >
-      <Editor header={header} />
+      <Editor header={header} siteLayout={siteLayout} />
     </Puck>
   );
 }
