@@ -3,9 +3,11 @@
 # Kept in a separate compose file so the test database (`docker-compose.yml`)
 # and its reset script never touch development data. Run it through the
 # `dev:db:*` npm scripts, which pin a separate Compose project name.
+#
+# PostgreSQL 18 matches production, so a production dump can be restored here.
 services:
   db:
-    image: postgres:16
+    image: postgres:18
     container_name: pictures-writers-dev-db
     restart: unless-stopped
     environment:
@@ -15,7 +17,7 @@ services:
     ports:
       - "5434:5432"
     volumes:
-      - pictures-writers-dev-db:/var/lib/postgresql/data
+      - pictures-writers-dev-db:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d pictures_writers_dev"]
       interval: 5s
