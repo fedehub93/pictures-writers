@@ -45,10 +45,15 @@ interface LayoutFieldOptions {
    * settings could not have an effect on them.
    */
   showContainerControls?: boolean;
+  /**
+   * When false, the display control omits `none`. The root variant uses it.
+   */
+  allowHidden?: boolean;
 }
 
 const createLayoutField = ({
   showContainerControls = true,
+  allowHidden = true,
 }: LayoutFieldOptions = {}) =>
   withAccordionField(
     "Layout",
@@ -108,6 +113,7 @@ const createLayoutField = ({
           onUpdateDisplay={updateDisplay}
           onUpdate={update}
           showContainerControls={showContainerControls}
+          allowHidden={allowHidden}
         />
       );
     },
@@ -126,4 +132,13 @@ export const LayoutField = createLayoutField();
  */
 export const DisplayOnlyLayoutField = createLayoutField({
   showContainerControls: false,
+});
+
+/**
+ * Layout field for the document root (Page, Header and Footer): flex and grid
+ * controls like a Container, but no `None` option because the root is never
+ * hidden.
+ */
+export const RootLayoutField = createLayoutField({
+  allowHidden: false,
 });

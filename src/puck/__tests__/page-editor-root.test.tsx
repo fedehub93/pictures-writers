@@ -116,7 +116,7 @@ describe("page editor root Site layout preview", () => {
   it("keeps the page content in the existing root wrapper", () => {
     const html = renderUi({ showSiteLayout: false });
 
-    expect(html).toContain('class="puck-dim"');
+    expect(html).toContain('class="puck-dim puck-layout"');
   });
 
   it("adds no Puck component wrapper around the Site layout preview", () => {

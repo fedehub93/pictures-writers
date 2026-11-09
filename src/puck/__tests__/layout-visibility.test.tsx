@@ -147,10 +147,11 @@ describe("Layout field availability", () => {
     }
   });
 
-  it("is not exposed on the Root, which keeps Dimension only", () => {
+  it("exposes the surface fields on the Root", () => {
     const fields = (RootEditor.fields ?? {}) as Record<string, unknown>;
 
-    expect(fields).not.toHaveProperty("layout");
+    expect(fields).toHaveProperty("layout");
     expect(fields).toHaveProperty("dimension");
+    expect(fields).toHaveProperty("decoration");
   });
 });
