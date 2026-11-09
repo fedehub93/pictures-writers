@@ -94,6 +94,25 @@ The Prisma schema is at `prisma/schema.prisma`. The generated client outputs to 
 
 ## Development Workflow
 
+### Local development database
+
+Never point local development at production: the dev automation pump runs real cron triggers every 15 seconds. Use the dedicated PostgreSQL 16 container instead. It listens on `localhost:5434`, while the test database uses `5433`.
+
+```bash
+npm run dev:db:up      # start postgres:16 on localhost:5434
+npx prisma migrate deploy
+npm run dev:db:down    # stop the container (keeps the volume)
+npm run dev:db:reset   # recreate it from scratch (drops the volume)
+```
+
+`.env` should contain:
+
+```
+DATABASE_URL=postgresql://postgres:postgres@localhost:5434/pictures_writers_dev
+```
+
+`docker-compose.dev.yml` is separate from `docker-compose.yml`, and the scripts pin their own Compose project name, so resetting the test database never drops development data.
+
 ### Start the development server
 
 ```bash
