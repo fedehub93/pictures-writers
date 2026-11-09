@@ -380,7 +380,7 @@ describe("NavbarBlock", () => {
         decoration: {
           desktop: {
             backgroundColor: "var(--accent)",
-            borderWidth: "1px",
+            borderLeftWidth: "1px",
             borderStyle: "solid",
             borderColor: "var(--accent-foreground)",
             borderTopRightRadius: "8px",
@@ -395,7 +395,7 @@ describe("NavbarBlock", () => {
     expect(html).toContain("--pr-d:16px");
     expect(html).toContain("--pb-t:8px");
     expect(html).toContain("--bgc-d:var(--accent)");
-    expect(html).toContain("--bw-d:1px");
+    expect(html).toContain("--blw-d:1px");
     expect(html).toContain("--bs-d:solid");
     expect(html).toContain("--bc-d:var(--accent-foreground)");
     expect(html).toContain("--rtr-d:8px");

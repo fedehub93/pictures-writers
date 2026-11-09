@@ -165,7 +165,10 @@
 .puck-deco {
   --op-d: initial;
   --bgc-d: initial;
-  --bw-d: initial;
+  --btw-d: initial;
+  --brw-d: initial;
+  --bbw-d: initial;
+  --blw-d: initial;
   --bs-d: initial;
   --bc-d: initial;
   --rtl-d: initial;
@@ -175,7 +178,10 @@
 
   opacity: var(--op-d);
   background-color: var(--bgc-d) !important;
-  border-width: var(--bw-d);
+  border-top-width: var(--btw-d, 0);
+  border-right-width: var(--brw-d, 0);
+  border-bottom-width: var(--bbw-d, 0);
+  border-left-width: var(--blw-d, 0);
   border-style: var(--bs-d);
   border-color: var(--bc-d);
   border-top-left-radius: var(--rtl-d);
@@ -294,7 +300,10 @@
   .puck-deco {
     --op-t: initial;
     --bgc-t: initial;
-    --bw-t: initial;
+    --btw-t: initial;
+    --brw-t: initial;
+    --bbw-t: initial;
+    --blw-t: initial;
     --bs-t: initial;
     --bc-t: initial;
     --rtl-t: initial;
@@ -304,7 +313,10 @@
 
     opacity: var(--op-t, var(--op-d));
     background-color: var(--bgc-t, var(--bgc-d));
-    border-width: var(--bw-t, var(--bw-d));
+    border-top-width: var(--btw-t, var(--btw-d, 0));
+    border-right-width: var(--brw-t, var(--brw-d, 0));
+    border-bottom-width: var(--bbw-t, var(--bbw-d, 0));
+    border-left-width: var(--blw-t, var(--blw-d, 0));
     border-style: var(--bs-t, var(--bs-d));
     border-color: var(--bc-t, var(--bc-d));
     border-top-left-radius: var(--rtl-t, var(--rtl-d));
@@ -430,7 +442,10 @@
   .puck-deco {
     --op-m: initial;
     --bgc-m: initial;
-    --bw-m: initial;
+    --btw-m: initial;
+    --brw-m: initial;
+    --bbw-m: initial;
+    --blw-m: initial;
     --bs-m: initial;
     --bc-m: initial;
     --rtl-m: initial;
@@ -440,7 +455,10 @@
 
     opacity: var(--op-m, var(--op-t, var(--op-d)));
     background-color: var(--bgc-m, var(--bgc-t, var(--bgc-d)));
-    border-width: var(--bw-m, var(--bw-t, var(--bw-d)));
+    border-top-width: var(--btw-m, var(--btw-t, var(--btw-d, 0)));
+    border-right-width: var(--brw-m, var(--brw-t, var(--brw-d, 0)));
+    border-bottom-width: var(--bbw-m, var(--bbw-t, var(--bbw-d, 0)));
+    border-left-width: var(--blw-m, var(--blw-t, var(--blw-d, 0)));
     border-style: var(--bs-m, var(--bs-t, var(--bs-d)));
     border-color: var(--bc-m, var(--bc-t, var(--bc-d)));
     border-top-left-radius: var(--rtl-m, var(--rtl-t, var(--rtl-d)));

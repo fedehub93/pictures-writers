@@ -76,7 +76,7 @@ describe("SearchBar block", () => {
       decoration: {
         desktop: {
           backgroundColor: "var(--accent)",
-          borderWidth: "1px",
+          borderBottomWidth: "1px",
           borderStyle: "solid",
           borderColor: "var(--accent-foreground)",
           borderTopLeftRadius: "6px",
@@ -90,7 +90,7 @@ describe("SearchBar block", () => {
     expect(html).toContain("--pl-d:8px");
     expect(html).toContain("--pb-t:4px");
     expect(html).toContain("--bgc-d:var(--accent)");
-    expect(html).toContain("--bw-d:1px");
+    expect(html).toContain("--bbw-d:1px");
     expect(html).toContain("--bs-d:solid");
     expect(html).toContain("--bc-d:var(--accent-foreground)");
     expect(html).toContain("--rtl-d:6px");

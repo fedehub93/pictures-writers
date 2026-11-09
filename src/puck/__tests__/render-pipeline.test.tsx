@@ -59,7 +59,7 @@ const SHARED_CASES: SharedCase[] = [
       layout: { desktop: { display: "flex" } },
       dimension: { desktop: { paddingLeft: "8px" } },
       typography: { desktop: { fontSize: "15px" } },
-      decoration: { desktop: { borderWidth: "1px" } },
+      decoration: { desktop: { borderRightWidth: "1px" } },
     },
   },
   {

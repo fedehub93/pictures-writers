@@ -82,7 +82,10 @@ export const getDecorationVars = (data?: Responsive<DecorationProps>) => {
 
     if (p.opacity) vars[`--op-${s}`] = p.opacity;
     if (p.backgroundColor) vars[`--bgc-${s}`] = p.backgroundColor;
-    if (p.borderWidth) vars[`--bw-${s}`] = p.borderWidth;
+    if (p.borderTopWidth) vars[`--btw-${s}`] = p.borderTopWidth;
+    if (p.borderRightWidth) vars[`--brw-${s}`] = p.borderRightWidth;
+    if (p.borderBottomWidth) vars[`--bbw-${s}`] = p.borderBottomWidth;
+    if (p.borderLeftWidth) vars[`--blw-${s}`] = p.borderLeftWidth;
     if (p.borderStyle) vars[`--bs-${s}`] = p.borderStyle;
     if (p.borderColor) vars[`--bc-${s}`] = p.borderColor;
     if (p.borderTopLeftRadius) vars[`--rtl-${s}`] = p.borderTopLeftRadius;

@@ -13,7 +13,10 @@ import { DecorationView } from "./ui/view/decoration-view";
 export interface DecorationProps {
   opacity?: string;
   backgroundColor?: string;
-  borderWidth?: string;
+  borderTopWidth?: string;
+  borderRightWidth?: string;
+  borderBottomWidth?: string;
+  borderLeftWidth?: string;
   borderStyle?: string;
   borderColor?: string;
   borderTopLeftRadius?: string;

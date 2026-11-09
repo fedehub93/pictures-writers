@@ -77,7 +77,7 @@ describe("TopBar block", () => {
       decoration: {
         desktop: {
           backgroundColor: "var(--accent)",
-          borderWidth: "1px",
+          borderTopWidth: "1px",
           borderStyle: "solid",
           borderColor: "var(--accent-foreground)",
           borderTopLeftRadius: "4px",
@@ -91,7 +91,7 @@ describe("TopBar block", () => {
     expect(html).toContain("--pl-d:16px");
     expect(html).toContain("--pb-t:4px");
     expect(html).toContain("--bgc-d:var(--accent)");
-    expect(html).toContain("--bw-d:1px");
+    expect(html).toContain("--btw-d:1px");
     expect(html).toContain("--bs-d:solid");
     expect(html).toContain("--bc-d:var(--accent-foreground)");
     expect(html).toContain("--rtl-d:4px");
