@@ -1,5 +1,5 @@
 ---
-Status: ready-for-agent
+Status: ready-for-human
 Type: task
 ---
 
@@ -11,16 +11,16 @@ Make the Editor root reachable from the editor chrome — a pinned document row 
 
 ## Acceptance criteria
 
-- [ ] The Outline tab shows a pinned row above `<Puck.Outline />`, always visible even when the document has no blocks, labelled with the document name ("Page", "Header", "Footer") and marked current while the root is active.
-- [ ] Clicking that row deselects the current block and the properties panel shows the root fields; clicking it while already active is a no-op.
-- [ ] Above `<Puck.Fields />` the panel shows `${rootLabel} settings` as a heading while the root is active, and `Page › Heading` while a block is selected, where the document part is a button that performs the same deselect.
-- [ ] The selected block label comes from the block config's `label`; a block without one falls back to its component key.
-- [ ] The deselect is Puck's own `setUi: { itemSelector: null }` with `recordHistory: false`; no new selection state is introduced and undo/redo history is not polluted by a deselection.
-- [ ] The label comes from a `rootLabel` prop on `PuckEditor` (default `"Page"`), forwarded to the sidebar and the panel header; the region editors pass `SITE_REGION_LABELS[region.key]`.
+- [x] The Outline tab shows a pinned row above `<Puck.Outline />`, always visible even when the document has no blocks, labelled with the document name ("Page", "Header", "Footer") and marked current while the root is active.
+- [x] Clicking that row deselects the current block and the properties panel shows the root fields; clicking it while already active is a no-op.
+- [x] Above `<Puck.Fields />` the panel shows `${rootLabel} settings` as a heading while the root is active, and `Page › Heading` while a block is selected, where the document part is a button that performs the same deselect.
+- [x] The selected block label comes from the block config's `label`; a block without one falls back to its component key.
+- [x] The deselect is Puck's own `setUi: { itemSelector: null }` with `recordHistory: false`; no new selection state is introduced and undo/redo history is not polluted by a deselection.
+- [x] The label comes from a `rootLabel` prop on `PuckEditor` (default `"Page"`), forwarded to the sidebar and the panel header; the region editors pass `SITE_REGION_LABELS[region.key]`.
 - [ ] Both affordances work in all three editors (Page, Header, Footer) and in interactive preview mode, where they stay visible and active.
 - [ ] Entering interactive preview, selecting a block, saving, publishing and the existing viewport/zoom controls behave exactly as before.
-- [ ] No canvas overlay, ring or action bar is added for the root.
-- [ ] Tests: the pure helpers and the presentational component are covered; `npx tsc --noEmit`, targeted ESLint, `npm run test:run` and `npm run build` pass.
+- [x] No canvas overlay, ring or action bar is added for the root.
+- [x] Tests: the pure helpers and the presentational component are covered; `npx tsc --noEmit`, targeted ESLint, `npm run test:run` and `npm run build` pass.
 - [ ] Manual check: on an empty page, with a block selected in a nested Container, and in a Header/Footer editor, the root fields are reachable in one click from both entry points.
 
 ## Implementation notes
@@ -50,3 +50,10 @@ Make the Editor root reachable from the editor chrome — a pinned document row 
 - The Esc shortcut, the full ancestor chain in the breadcrumb, a root row inside Puck's outline tree, and any canvas highlight for the root.
 - Any change to the root fields, the saved document shape, the public render, or the palettes.
 - The 0.24 upgrade itself (ticket 01).
+
+## Comments
+
+- 2026-11-10 — Implemented in `feat(puck): add editor root entry points`. Helpers live in `src/puck/editor/lib/editor-root-entry.ts`, the presentational `EditorRootEntry` (`row` / `header`) in `src/puck/editor/ui/components/editor-root-entry.tsx`, and the shared Puck wiring in `use-editor-root-entry.ts` (used by both `ElementsPanel` and `Editor` so the selectors, label fallback and deselect action cannot drift). The hook dispatches `{ type: "setUi", ui: { itemSelector: null }, recordHistory: false }` and returns early while the root is already active. `PuckEditor` gained optional `rootLabel` (default `"Page"`); the region editor passes `SITE_REGION_LABELS[region.key]`. The panel header sits outside the fields scrolling area, and the outline row is pinned outside Puck's own scrolling tree.
+- 2026-11-10 — Verification: `npx tsc --noEmit` clean; targeted ESLint on all touched files clean; `npm run test:run` 243 files / 1993 tests pass (10 new in `src/puck/__tests__/editor-root-entry.test.tsx`); `npm run build` succeeds. Repo-wide `npm run lint` still reports the same 40 pre-existing errors recorded in ticket 01, none in a file this change touches.
+- 2026-11-10 — Code review (Standards + Spec) run over the diff. Applied: added the `"use client"` / `client-only` boundary to the new hook, dropped the unused `rootLabel` pass-through from the hook, and removed the dead many-segment generality from the panel breadcrumb render. Kept deliberately: the `rootLabel` prop name (the ticket mandates it and CONTEXT.md defines "Editor root" as the domain term), the single `variant`-driven presentational component, and the Puck-wrapping helper one-liners, all of which the ticket asks for explicitly. Left open: the hook's no-op guard / deselect payload are wiring, not covered by a dedicated test (the ticket scopes tests to the pure helpers and the component), and the intermediate state where `itemSelector` is set but `selectedItem` is null renders the bare document button rather than the settings heading.
+- Status moved to `ready-for-human` for the browser smoke test (empty page, block nested in a Container, Site layout preview on/off, Header and Footer editors, interactive preview). The three remaining boxes are that smoke test and the "behaves exactly as before" checks.
