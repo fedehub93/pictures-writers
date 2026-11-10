@@ -16,7 +16,7 @@ Iubenda — the site's consent management provider — is configured today as ar
 
 Make Iubenda a first-class provider inside the Integrations module and generalize `Integration` so a provider may have non-secret configuration and no secrets at all.
 
-An admin opens Integrations, enters the Iubenda identifiers, validates and enables the provider. The public site then renders the CMP configuration and its scripts in the document head, before GTM. Iubenda manages Google Consent Mode through its GTM template while it is enabled; the hand-written consent defaults are removed. When the integration is absent, disabled, or incomplete, nothing is emitted and the public site keeps working.
+An admin opens Integrations, enters the Iubenda identifiers, validates and enables the provider. The public site then renders the CMP configuration and its scripts at the top of the document body, before GTM. Iubenda manages Google Consent Mode through its GTM template while it is enabled; the hand-written consent defaults are removed. When the integration is absent, disabled, or incomplete, nothing is emitted and the public site keeps working.
 
 The generic custom-scripts list remains as an escape hatch for one-off snippets, but it loses every Iubenda-specific rule.
 
@@ -36,7 +36,7 @@ The generic custom-scripts list remains as an escape hatch for one-off snippets,
 12. As an admin, I want every Iubenda configuration change to be audited, so that I can see who changed the consent setup and when.
 13. As an admin, I want a change to the Iubenda integration to reach the public site immediately, so that enabling or disabling it does not wait for cache expiry.
 14. As an admin, I want Resend to keep working exactly as before, so that generalizing integrations does not regress email.
-15. As a visitor, I want the consent banner to appear in the document head before GTM, so that no analytics or advertising tag runs before I choose.
+15. As a visitor, I want the consent banner to load with the initial document, before GTM, so that no analytics or advertising tag runs before I choose.
 16. As a visitor, I want the banner to reflect my choices on every page, so that consent is consistent across navigation.
 17. As a visitor, I want the public site to keep working when the CMP is not configured, so that a missing integration never takes the site down.
 18. As a developer, I want the public read of a provider's configuration to return nothing instead of throwing, so that public rendering can degrade gracefully.
@@ -96,9 +96,9 @@ Non-secret configuration:
 
 Iubenda has no secrets and no connection test. It declares that it affects the public site.
 
-The Iubenda GTM template must be active in the container with a Consent Initialization trigger. It sets the denied defaults before any GA4 tag and applies the consent updates emitted by the CMP. Without the template the CMP has no bridge to GTM: the denied defaults are not established and the updates are not applied. The CMP is still embedded in the document head; the template only applies its Consent Mode signals.
+The Iubenda GTM template must be active in the container with a Consent Initialization trigger. It sets the denied defaults before any GA4 tag and applies the consent updates emitted by the CMP. Without the template the CMP has no bridge to GTM: the denied defaults are not established and the updates are not applied. The CMP is still embedded in the document body (at the top of `<body>`, outside the React-hydrated head); the template only applies its Consent Mode signals.
 
-When present, enabled, and complete, the public root layout emits, in `<head>` and in this order:
+When present, enabled, and complete, the public root layout emits, at the top of `<body>` and in this order:
 
 1. the inline `_iub.csConfiguration` block;
 2. the loader for the chosen mode (`autoblocking` or `sync`);
@@ -122,7 +122,7 @@ GTM remains `afterInteractive` and is rendered after the CMP block. Page view tr
 
 ### 5. Ordering is a tested contract
 
-The CMP block precedes GTM in the rendered head, and the runtime script is asynchronous. This is asserted by a rendering test rather than left to convention or comments.
+The CMP block precedes GTM at the top of the rendered body, and the runtime script is asynchronous. The script sequence is asserted by a rendering test; a source-level placement test asserts that the block stays outside the React-hydrated head. Neither is left to convention or comments.
 
 ### 6. The generic custom-scripts list
 
@@ -176,7 +176,7 @@ Automated tests cannot prove that Iubenda actually works. A manual smoke in prev
 - TCF and GPP scripts, and per-purpose consent configuration.
 - The unified Iubenda widget embed (`embeds.iubenda.com/widgets/...`).
 - Privacy policy links and widgets.
-- Embedding Iubenda through the GTM community template instead of the document head.
+- Embedding Iubenda through the GTM community template instead of the document markup.
 - GTM, Stripe, UploadThing, reCAPTCHA, or any provider other than Iubenda.
 - Automatic parsing or migration of the existing script rows.
 - Secret rotation and re-encryption.

@@ -80,14 +80,18 @@ export default async function RootLayout({
     .map((s) => s.url);
   return (
     <html lang="it" suppressHydrationWarning>
-      <head>
+      {/* Keep the React-rendered head free of children. Iubenda's runtime
+          inserts its core script before the first <script> in the document;
+          React 19 hydrates a JSX <head> positionally and that insertion would
+          shift the first managed node, failing hydration. The CMP block lives
+          at the top of <body> instead (ADR 0031). */}
+      <head />
+      <HolyLoader color="var(--primary)" />
+      <body className={figtree.className}>
         <PublicHeadScripts
           iubendaConfig={iubendaConfig}
           gtmId={gtmConfig?.containerId}
         />
-      </head>
-      <HolyLoader color="var(--primary)" />
-      <body className={figtree.className}>
         <Suspense fallback={null}>
           <PageViewTracker />
         </Suspense>

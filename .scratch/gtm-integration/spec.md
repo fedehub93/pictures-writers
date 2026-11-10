@@ -16,7 +16,7 @@ Google Tag Manager is the last external provider configured through the environm
 
 Make GTM a first-class provider inside the Integrations module, using the descriptor mechanism already proven by Iubenda.
 
-An admin opens Integrations, enters the container id, and enables GTM. The public site emits the container in the document head, after the CMP block. When the integration is absent, disabled, or incomplete, nothing is emitted and the public site keeps working. Both GTM-related environment variables are removed, with no runtime fallback: the Integrations row is the only source.
+An admin opens Integrations, enters the container id, and enables GTM. The public site emits the container after the CMP block. When the integration is absent, disabled, or incomplete, nothing is emitted and the public site keeps working. Both GTM-related environment variables are removed, with no runtime fallback: the Integrations row is the only source.
 
 The generic contracts do not change. `IntegrationProviderDescriptor` already models a provider with non-secret configuration, no secrets, no connection test, and public-site impact. This work adds one descriptor, one form, two map entries, and the already-declared-but-unread `affectsPublicSite` behaviour.
 
@@ -38,7 +38,7 @@ The generic contracts do not change. `IntegrationProviderDescriptor` already mod
 14. As a developer, I want the container id resolved through the fail-open public-config read, so that a broken row degrades to "no GTM" instead of an error page.
 15. As a developer, I want the enabled state to be the only gate, so that what the backoffice says and what the page emits cannot disagree.
 16. As a developer, I want `affectsPublicSite` to actually drive revalidation, so that saving Resend stops invalidating the public layout while saving GTM keeps doing it.
-17. As a developer, I want the head-rendering contract to stay untouched, so that ADR 0028's timing decision is not silently renegotiated.
+17. As a developer, I want the script-ordering contract to stay untouched, so that ADR 0028's timing decision is not silently renegotiated.
 18. As an operator, I want a documented cutover order, so that the public site never loses analytics without anyone noticing.
 19. As an operator, I want the Integrations page to be the rollback surface, so that reverting is a toggle rather than a redeploy.
 20. As an operator of a second Installation, I want the container to come from my database, so that the shared image can serve different sites.

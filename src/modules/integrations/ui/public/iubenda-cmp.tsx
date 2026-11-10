@@ -25,6 +25,11 @@ function loaderUrl(config: IubendaConfig): string {
  * document order is explicit: configuration, loader, runtime. The runtime is
  * asynchronous; the loader is intentionally not, because autoblocking must
  * block the DOM before other third parties load.
+ *
+ * Mount it at the top of `<body>`, never inside a React-rendered `<head>`:
+ * `iubenda_cs.js` prepends its core script to the first `<script>` in the
+ * document, which React 19's positional head hydration would read as a
+ * mismatch (ADR 0031).
  */
 export const IubendaCmp = ({ config }: { config: IubendaConfig | null }) => {
   if (!config) return null;
