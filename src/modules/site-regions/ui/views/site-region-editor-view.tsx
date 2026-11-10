@@ -48,6 +48,7 @@ export const SiteRegionEditorView = ({
       }}
       config={editorConfigForRegion(region.key)}
       metadata={metadata}
+      rootLabel={SITE_REGION_LABELS[region.key]}
       header={{
         title: SITE_REGION_LABELS[region.key],
         actions: <SiteRegionHeaderActions region={region} />,

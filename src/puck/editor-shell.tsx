@@ -39,6 +39,11 @@ export type PuckEditorProps = {
    * Region editors do not pass it, so their canvases stay unchanged.
    */
   siteLayout?: SiteLayoutPreview;
+  /**
+   * Name of the document being edited, shown by the root entry points in the
+   * Outline and above the properties panel. Page editors keep the default.
+   */
+  rootLabel?: string;
 };
 
 // Render Puck editor
@@ -48,6 +53,7 @@ export function PuckEditor({
   header,
   metadata,
   siteLayout,
+  rootLabel = "Page",
 }: PuckEditorProps) {
   // `siteLayout` travels through Puck metadata: the page editor root is the
   // only root that reads it, and blocks keep receiving the existing values.
@@ -70,7 +76,7 @@ export function PuckEditor({
         },
       }}
     >
-      <Editor header={header} siteLayout={siteLayout} />
+      <Editor header={header} siteLayout={siteLayout} rootLabel={rootLabel} />
     </Puck>
   );
 }
