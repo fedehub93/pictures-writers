@@ -14,14 +14,11 @@ import { Badge } from "@/shared/ui/badge";
 import { Card } from "@/shared/ui/card";
 
 import { ELEMENT_ICONS, ELEMENT_LABELS } from "./element-meta";
-import { EditorRootEntry } from "../components/editor-root-entry";
-import { useEditorRootEntry } from "../components/use-editor-root-entry";
 
 const usePuck = createUsePuck<Config>();
 
-export const ElementsPanel = ({ rootLabel }: { rootLabel: string }) => {
+export const ElementsPanel = () => {
   const config = usePuck((state) => state.config);
-  const rootEntry = useEditorRootEntry();
   const elements = Object.keys(config.components).map((name) => ({
     name,
     label: ELEMENT_LABELS[name] ?? name,
@@ -116,17 +113,7 @@ export const ElementsPanel = ({ rootLabel }: { rootLabel: string }) => {
             </div>
           </ScrollArea>
         </TabsContent>
-        <TabsContent
-          value="outline"
-          className="flex-1 m-0 overflow-hidden outline-none data-[state=active]:flex flex-col"
-        >
-          <div className="shrink-0 p-1">
-            <EditorRootEntry
-              variant="row"
-              rootLabel={rootLabel}
-              {...rootEntry}
-            />
-          </div>
+        <TabsContent value="outline">
           <Puck.Outline />
         </TabsContent>
       </Tabs>

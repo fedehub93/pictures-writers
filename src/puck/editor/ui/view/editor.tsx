@@ -39,7 +39,7 @@ export const Editor = ({
       <BuilderHeader header={header} siteLayout={siteLayout} />
       <div className="grid grid-cols-[300px_1fr_300px] flex-1 overflow-hidden">
         <div className="h-full border-r overflow-hidden">
-          <ElementsPanel rootLabel={rootLabel} />
+          <ElementsPanel />
         </div>
 
         <div className="flex justify-center min-w-0 relative">
@@ -47,11 +47,7 @@ export const Editor = ({
         </div>
 
         <div className="flex h-full flex-col border-l">
-          <EditorRootEntry
-            variant="header"
-            rootLabel={rootLabel}
-            {...rootEntry}
-          />
+          <EditorRootEntry rootLabel={rootLabel} {...rootEntry} />
           <div className="flex-1 overflow-y-auto">
             <Puck.Fields />
           </div>

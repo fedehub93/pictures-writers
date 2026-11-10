@@ -86,50 +86,12 @@ describe("editor root entry helpers", () => {
   });
 });
 
-describe("EditorRootEntry row", () => {
-  it("shows the document and marks itself current while the root is active", async () => {
-    const view = await renderEntry({
-      rootLabel: "Header",
-      isActive: true,
-      onSelectRoot: vi.fn(),
-      variant: "row",
-    });
-
-    const button = view.querySelector("button");
-
-    expect(button).not.toBeNull();
-    expect(button!.textContent).toContain("Header");
-    expect(button!.getAttribute("aria-current")).toBe("true");
-  });
-
-  it("drops aria-current and asks Puck for the root on click", async () => {
-    const onSelectRoot = vi.fn();
-    const view = await renderEntry({
-      rootLabel: "Footer",
-      selectedLabel: "Heading",
-      isActive: false,
-      onSelectRoot,
-      variant: "row",
-    });
-
-    const button = view.querySelector("button");
-
-    expect(button!.getAttribute("aria-current")).toBeNull();
-    expect(button!.textContent).toContain("Footer");
-
-    await click(button!);
-
-    expect(onSelectRoot).toHaveBeenCalledTimes(1);
-  });
-});
-
-describe("EditorRootEntry header", () => {
+describe("EditorRootEntry", () => {
   it("shows the settings heading while the root is active", async () => {
     const view = await renderEntry({
       rootLabel: "Page",
       isActive: true,
       onSelectRoot: vi.fn(),
-      variant: "header",
     });
 
     expect(view.querySelector("h2")?.textContent).toBe("Page settings");
@@ -143,7 +105,6 @@ describe("EditorRootEntry header", () => {
       selectedLabel: "Heading",
       isActive: false,
       onSelectRoot,
-      variant: "header",
     });
 
     const button = view.querySelector("button");
@@ -160,13 +121,12 @@ describe("EditorRootEntry header", () => {
 
   it("keeps the document entry when no block label is available", async () => {
     const view = await renderEntry({
-      rootLabel: "Page",
+      rootLabel: "Footer",
       isActive: false,
       onSelectRoot: vi.fn(),
-      variant: "header",
     });
 
-    expect(view.querySelector("button")!.textContent).toBe("Page");
+    expect(view.querySelector("button")!.textContent).toBe("Footer");
     expect(view.querySelector('[aria-current="true"]')).toBeNull();
   });
 });

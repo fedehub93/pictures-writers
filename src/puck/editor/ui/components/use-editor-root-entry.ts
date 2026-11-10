@@ -12,8 +12,8 @@ import {
 const usePuck = createUsePuck<Config>();
 
 /**
- * Puck selection state shared by the Outline row and the properties-panel
- * header, plus the deselect action that makes the Editor root current.
+ * Puck selection state for the properties-panel header, plus the deselect
+ * action that makes the Editor root current.
  *
  * The deselect reuses Puck's own `setUi` action so no second source of truth is
  * introduced and the undo/redo history is left untouched.

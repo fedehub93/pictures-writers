@@ -2,10 +2,6 @@
 
 import "client-only";
 
-import { FileTextIcon } from "lucide-react";
-
-import { cn } from "@/shared/lib/utils";
-
 import {
   editorRootSettingsLabel,
   getEditorRootBreadcrumb,
@@ -16,16 +12,7 @@ export type EditorRootEntryProps = {
   selectedLabel?: string | null;
   isActive: boolean;
   onSelectRoot: () => void;
-  /**
-   * `row` is the pinned line above the Outline tree; `header` is the fixed
-   * heading above the properties panel.
-   */
-  variant: "row" | "header";
 };
-
-const DOCUMENT_ICON = (
-  <FileTextIcon aria-hidden className="size-3.5 shrink-0" />
-);
 
 const BREADCRUMB_SEPARATOR = (
   <span aria-hidden className="text-muted-foreground">
@@ -34,34 +21,16 @@ const BREADCRUMB_SEPARATOR = (
 );
 
 /**
- * Entry point to the Editor root, rendered both in the Outline tab and above the
- * properties panel. Purely presentational: the caller owns the Puck selection.
+ * Entry point to the Editor root above the properties panel: the settings
+ * heading while the root is active, otherwise the document › block breadcrumb.
+ * Purely presentational: the caller owns the Puck selection.
  */
 export const EditorRootEntry = ({
   rootLabel,
   selectedLabel = null,
   isActive,
   onSelectRoot,
-  variant,
 }: EditorRootEntryProps) => {
-  if (variant === "row") {
-    return (
-      <button
-        type="button"
-        aria-current={isActive ? "true" : undefined}
-        onClick={onSelectRoot}
-        className={cn(
-          "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors",
-          "hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-          isActive ? "bg-muted font-medium" : "text-foreground/80",
-        )}
-      >
-        {DOCUMENT_ICON}
-        <span className="truncate">{rootLabel}</span>
-      </button>
-    );
-  }
-
   if (isActive) {
     return (
       <div className="flex h-10 shrink-0 items-center border-b px-4">
