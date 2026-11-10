@@ -7,8 +7,11 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: pictures_writers_test
+    # Loopback and IPv4 only, for the same reason as the development database
+    # (see docker-compose.dev.yml): an [::]:5433 listener can black-hole
+    # connections that Node opens against `localhost`.
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
     volumes:
       - pictures-writers-test-db:/var/lib/postgresql/data
     healthcheck:

@@ -98,6 +98,10 @@ The Prisma schema is at `prisma/schema.prisma`. The generated client outputs to 
 
 Never point local development at production: the dev automation pump runs real cron triggers every 15 seconds. Use the dedicated PostgreSQL 18 container instead (same major as production, so a production dump can be restored locally). It listens on `localhost:5434`, while the test database uses `5433`.
 
+Both compose files publish these ports on `127.0.0.1` only. Do not widen it back to a bare `5434:5432`: that also opens an IPv6 listener, and Docker Desktop on Windows accepts IPv6 connections it never forwards, so clients that resolve `localhost` to `::1` hang instead of failing. `db.ts` sets a connect timeout for the same reason — a wedged connection must surface as an error, not as a `next build` that never finishes.
+
+**Ask before touching the development database.** Do not run `npm run dev:db:reset`, `docker compose down -v`, `prisma migrate reset`, `db push --force-reset`, or any `DROP`/`TRUNCATE`/`DELETE` against `pictures_writers_dev` without explicit confirmation from the user first: those commands discard data that is not reproducible from the repo. Prefer `dev:db:down` + `dev:db:up` to recreate a container (the volume survives), and ask before restoring a dump over the database as well.
+
 ```bash
 npm run dev:db:up      # start postgres:18 on localhost:5434
 npx prisma migrate deploy
