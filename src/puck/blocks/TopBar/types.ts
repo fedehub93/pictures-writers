@@ -4,6 +4,7 @@ import type { Slot } from "@puckeditor/core";
 import type { DecorationProps } from "@/puck/fields/decoration";
 import type { DimensionProps } from "@/puck/fields/dimension";
 import type { LayoutProps } from "@/puck/fields/layout";
+import type { BlockDragRef } from "@/puck/types";
 import type { Responsive } from "@/puck/utils/responsive";
 
 export type TopBarSettings = {
@@ -42,4 +43,13 @@ export type TopBarBlockUiProps = {
   styleVars?: Record<string, string>;
   /** Authored display classes and editor visibility markers for the root. */
   layoutClassName?: string;
+  /**
+   * The strip root is the block root: it is what Puck selects and outlines, and
+   * what the parent lays out. The slot inside it only arranges the content, so
+   * the ref must not go there.
+   *
+   * `inline` is Puck's only supported way to skip its per-block wrapper `div`.
+   * See {@link BlockDragRef} for the behaviour an upgrade has to preserve.
+   */
+  dragRef?: BlockDragRef;
 };

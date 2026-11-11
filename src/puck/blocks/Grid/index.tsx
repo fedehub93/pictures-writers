@@ -13,6 +13,10 @@ import { renderGridBlock } from "./render";
 export type { GridBlockProps };
 
 export const GridBlock: ComponentConfig<GridBlockProps> = {
+  // Puck's `inline` branch is the only supported way to skip the per-block
+  // wrapper `div`; the render attaches `puck.dragRef` to the slot root. See
+  // `SlotSurface` for the contract.
+  inline: true,
   fields: {
     layout: LayoutField,
     dimension: DimensionField,

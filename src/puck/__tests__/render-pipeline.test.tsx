@@ -201,6 +201,10 @@ describe("consolidated Puck render pipeline", () => {
    * exactly what the editor emits once Puck's default props are in play. The
    * editor side applies the shared defaults by hand because this seam calls the
    * render function directly instead of mounting the canvas.
+   *
+   * The editor render receives a drag ref on purpose: the two paths must stay
+   * identical once Puck hands the ref over, so the editor version of the props
+   * is what this parity test compares.
    */
   const assertParity = ({
     name,
@@ -222,7 +226,12 @@ describe("consolidated Puck render pipeline", () => {
     }
 
     const defaults = BLOCK_DEFAULT_PROPS[name];
-    const editorHtml = renderThrough(editorRender, props, PUCK, defaults);
+    const editorHtml = renderThrough(
+      editorRender,
+      props,
+      { ...PUCK, dragRef: () => undefined },
+      defaults,
+    );
     const publicHtml = renderThrough(publicRender, props);
 
     if (nonEmpty) {

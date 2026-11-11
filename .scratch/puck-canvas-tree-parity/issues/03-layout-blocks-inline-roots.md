@@ -1,5 +1,5 @@
 ---
-Status: ready-for-agent
+Status: ready-for-human
 Type: task
 Blocked by: 01-width-intent-in-dimension-field, 02-root-zone-carries-root-layout
 ---
@@ -22,19 +22,30 @@ promoted to real documentation of why the flag is there.
 
 ## Acceptance criteria
 
-- [ ] A Container, Flex, Grid and Top bar in the canvas have no wrapper element:
-      the node carrying `data-puck-component` is also the node carrying
-      `puck-layout`/`puck-dim` and the block's style variables.
+- [x] A Container, Flex, Grid and Top bar in the canvas have no wrapper element:
+      for the container blocks the node carrying `data-puck-component` is also
+      the slot carrying `puck-layout`/`puck-dim` and the block's style
+      variables; for the Top bar it is the strip root carrying
+      `puck-layout-item`/`puck-dim` and the root style variables (the container
+      layout surface already moved to the slot in the previous ticket).
 - [ ] Selecting one of them outlines the block's own box exactly (the overlay
       rect equals the block's `getBoundingClientRect`), not an inflated wrapper.
+      *(canvas check still open)*
 - [ ] Hover, drag out of a nested Container, reorder inside a slot, and
-      insertion from the drawer all still work, verified by hand.
+      insertion from the drawer all still work, verified by hand. *(canvas check
+      still open)*
 - [ ] An empty Container/Flex/Grid keeps a working drop target and a working
-      selection in the canvas.
-- [ ] The registry invariant test asserts `inline: true` on every entry of
+      selection in the canvas. *(root and ref covered by the DOM test; the drop
+      target and the selection are canvas checks, still open)*
+- [x] The registry invariant test asserts `inline: true` on every entry of
       `editorComponentConfigs`, so a future block cannot quietly reintroduce the
-      wrapper.
-- [ ] `npx tsc --noEmit`, `npm run lint` and `npm run test:run` pass.
+      wrapper. Until ticket 04 migrates the leaves, the test accounts for the
+      remaining wrapped blocks through an explicit punch list instead.
+- [ ] `npx tsc --noEmit`, `npm run lint` and `npm run test:run` pass. `tsc` and
+      `test:run` pass; repo-wide `lint` still exits 1 on the 40 pre-existing
+      errors recorded in `.scratch/editor-root-entry/issues/01-upgrade-puck-024.md`,
+      none in a file this ticket touches (`npx eslint src/puck` reports 0
+      errors).
 
 ## Reference implementation
 
@@ -96,3 +107,55 @@ goes on the element that already carries `puck-dim`, with no cast needed.
   difference.
 - Interactive verification cannot be automated in this repo; the manual
   checklist in the spec is part of the acceptance.
+
+## Comments
+
+- 2026-11-11 — Implemented. `Container`, `Flex` and `Grid` declare
+  `inline: true` and render `src/puck/components/slot-surface.tsx`, a new shared
+  component that replaces the three byte-identical `*-block-ui.tsx` files: the
+  slot element carries the root classes, the style variables and Puck's
+  `dragRef` in a single expression. `TopBar` declares `inline: true` and forwards
+  `puck.dragRef` through `TopBarBlockUi` to the strip root.
+- The Top bar's root is the strip `<div>`, not its slot: the previous ticket
+  moved the container layout surface to the slot, so the element that carries
+  `puck-dim` and the root style variables is the strip. The ref therefore goes
+  on the strip, exactly as ticket 04's note requires ("do not attach the ref to
+  a wrapper the block renders for its own layout — the Top bar slot"). Outlining
+  the strip is also what the author expects: that is the box the parent lays out.
+- The narrow cast the reference implementation expected is not needed on
+  `@puckeditor/core` 0.24: `DropZoneSharedProps` already types `ref?: Ref<any>`,
+  and React 19 passes `ref` to the slot function as a normal prop. The DOM test
+  pins where the block puts the ref; that Puck's slot forwards it to its element
+  is Puck's contract, verified in the canvas by the manual checks below. The
+  shared ref type lives in `src/puck/types.ts` (`BlockDragRef`).
+- No `// SPIKE:` markers were left in `HEAD` to promote; the comment on each
+  config and the `SlotSurface` doc block are the documentation this ticket asked
+  for, including the rich-text caveat an upgrade has to be checked against.
+- `src/puck/__tests__/inline-roots.test.tsx` mounts each of the four blocks
+  through its editor config with a spy `dragRef` and asserts that the callback
+  receives the host's only child, and that this element carries the root classes
+  (`puck-layout …` for the container blocks, `puck-layout-item puck-top-bar …`
+  for the bar). It also pins the empty Container/Flex/Grid case. A DOM render is
+  required because refs are only invoked on the client.
+- The registry invariant is an accounting test: every entry of
+  `editorComponentConfigs` is either `inline: true` or on an explicit
+  `WRAPPER_REMOVAL_PENDING` punch list. A new block that forgets `inline` lands
+  in neither and fails; ticket 04 empties the list, at which point the test
+  asserts `inline` on every entry with no allow-list.
+- The consolidated render-pipeline test now passes a `dragRef` to the editor
+  render as well, so parity also covers the version of the props the canvas
+  receives. Where the ref lands is asserted by the DOM test, because the wrapper
+  itself is created by Puck's canvas item and never appears in this markup.
+- Verification: `npx tsc --noEmit` clean; `npx eslint src/puck` 0 errors;
+  `npm run test:run` 247 files / 2042 tests pass. `npm run lint` still exits 1 on
+  the 40 pre-existing errors recorded in the sibling ticket, none in a file this
+  ticket touches.
+- Open: selection-overlay rect, hover/drag/reorder/insert and the empty-slot
+  drop target are canvas checks. They cannot be observed by a unit test in this
+  repo. Status moved to `ready-for-human`; it becomes `done` once confirmed.
+- Known follow-up, by design: the hidden-block ghost in `puck-base.css` keys off
+  `[data-puck-component]:has(> .puck-hidden-placeholder)`. For the four blocks
+  made inline here the placeholder class now sits on the same element as
+  `data-puck-component`, so that selector stops matching. Ticket 06 rewrites it
+  for the new tree; the blocks stay hidden and rendered, only the dashed ghost
+  is missing until then.

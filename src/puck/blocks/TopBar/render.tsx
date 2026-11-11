@@ -99,6 +99,7 @@ export const renderTopBarBlock: PuckComponent<TopBarBlockProps> = ({
       dismissible={settings?.dismissible}
       styleVars={rootStyleVars}
       editMode={editing}
+      dragRef={puck?.dragRef}
       layoutClassName={getLayoutClassNames(effectiveLayout, {
         editing,
       })}

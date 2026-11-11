@@ -13,6 +13,10 @@ import { renderContainerBlock } from "./render";
 export type { ContainerBlockProps };
 
 export const ContainerBlock: ComponentConfig<ContainerBlockProps> = {
+  // Puck's `inline` branch is the only supported way to skip the per-block
+  // wrapper `div`; the render attaches `puck.dragRef` to the slot root. See
+  // `SlotSurface` for the contract.
+  inline: true,
   fields: {
     layout: LayoutField,
     dimension: DimensionField,

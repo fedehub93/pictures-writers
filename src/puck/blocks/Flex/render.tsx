@@ -7,14 +7,14 @@ import {
 } from "@/puck/utils/get-style-vars";
 import { getLayoutVars } from "@/puck/fields/layout/get-layout-vars";
 import { getLayoutClassNames } from "@/puck/fields/layout/get-layout-classes";
+import { SlotSurface } from "@/puck/components/slot-surface";
 
 import type { FlexBlockProps } from "./types";
-import { FlexBlockUi } from "./ui/flex-block-ui";
 
 /**
  * Pure render shared by the editor canvas and the public page.
  *
- * It deliberately imports only the block UI and the shared style-variable
+ * It deliberately imports only the shared slot surface and the style-variable
  * utilities so the public render path never pulls in editor field modules.
  */
 export const renderFlexBlock: PuckComponent<FlexBlockProps> = ({
@@ -33,12 +33,13 @@ export const renderFlexBlock: PuckComponent<FlexBlockProps> = ({
   };
 
   return (
-    <FlexBlockUi
+    <SlotSurface
       Items={Items}
       styleVars={styleVars}
       layoutClassName={getLayoutClassNames(layout, {
         editing: puck?.isEditing,
       })}
+      dragRef={puck?.dragRef}
     />
   );
 };

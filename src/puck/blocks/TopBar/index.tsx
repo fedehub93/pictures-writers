@@ -20,6 +20,10 @@ export type { TopBarBlockProps };
  * Layout, Dimension and Decoration fields style the strip.
  */
 export const TopBar: ComponentConfig<TopBarBlockProps> = {
+  // Puck's `inline` branch is the only supported way to skip the per-block
+  // wrapper `div`; the render attaches `puck.dragRef` to the strip root, which
+  // is the block root. See `TopBarBlockUiProps.dragRef` for why not the slot.
+  inline: true,
   fields: {
     content: {
       type: "slot",

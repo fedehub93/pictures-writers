@@ -40,6 +40,7 @@ export const TopBarBlockUi = ({
   editMode = false,
   styleVars,
   layoutClassName,
+  dragRef,
 }: TopBarBlockUiProps) => {
   const subscribe = useCallback(
     (listener: () => void) =>
@@ -57,6 +58,7 @@ export const TopBarBlockUi = ({
 
   return (
     <div
+      ref={dragRef}
       className={cn(
         "puck-layout-item puck-top-bar puck-dim puck-deco relative w-full",
         !editMode && "puck-top-bar-public",
