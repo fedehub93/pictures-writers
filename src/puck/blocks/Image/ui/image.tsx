@@ -52,7 +52,7 @@ export const ImageBlockUi = ({
     />
   );
 
-  const rootClassName = cn("puck-dim", layoutClassName);
+  const rootClassName = cn("puck-dim puck-block-root", layoutClassName);
   const rootStyle = {
     ...pickDisplayVars(layoutVars),
     ...dimensionVars,

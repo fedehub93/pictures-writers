@@ -60,7 +60,7 @@ export const TopBarBlockUi = ({
     <div
       ref={dragRef}
       className={cn(
-        "puck-layout-item puck-top-bar puck-dim puck-deco relative w-full",
+        "puck-layout-item puck-top-bar puck-dim puck-deco relative w-full puck-block-root",
         !editMode && "puck-top-bar-public",
         layoutClassName,
       )}

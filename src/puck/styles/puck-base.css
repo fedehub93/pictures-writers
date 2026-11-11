@@ -109,6 +109,23 @@
   grid-template-rows: var(--gtr-d);
 }
 
+/* --- 0d. BLOCK ROOT (containing block) ---
+   A block root is the element the parent lays out and the editor selects. Puck
+   sets `position: relative` imperatively on the node it owns while editing, but
+   the published page had no equivalent: an absolutely positioned descendant
+   resolved against two different boxes. With 40px of padding on the block, a
+   child pinned to `top: 0` landed at dx 0 on the page and dx 40 in the canvas.
+
+   Declaring the same position on the root in both paths removes the
+   difference without changing layout: `position: relative` with no offsets
+   neither moves the box nor creates a stacking context (there is no `z-index`
+   here, and none is added). The class is separate from `.puck-dim` because the
+   empty Form placeholder is a block root that deliberately keeps its own
+   `size-full` box instead of the dimension contract. */
+.puck-block-root {
+  position: relative;
+}
+
 /* --- 1. DIMENSION --- */
 .puck-dim {
   /* Reset locale: se la variabile non è definita inline sull'elemento, 

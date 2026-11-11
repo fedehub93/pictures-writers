@@ -1,7 +1,8 @@
-import type { PuckContext } from "@puckeditor/core";
+// @vitest-environment happy-dom
+import type { PuckContext, SlotComponent } from "@puckeditor/core";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { config as pageEditorConfig } from "../config";
 import { editorConfigForRegion } from "../region/editor-config";
@@ -9,6 +10,8 @@ import { renderConfigForRegion } from "../region/render-config";
 import { PuckRender, renderComponentConfigs } from "../render-config";
 import { BLOCK_DEFAULT_PROPS } from "../blocks/defaults";
 import { mergePropsWithDefaults } from "../lib/merge-props";
+
+import { installPuckBaseStyles } from "./helpers/puck-base-css";
 
 /**
  * Guards the consolidated render pipeline: for every block that is safe to
@@ -27,6 +30,51 @@ const PUCK: PuckContext = {
   dragRef: null,
 };
 
+/**
+ * The containing-block rule lives in `puck-base.css`, so the computed-style
+ * assertion below needs the real stylesheet in the document. `happy-dom`
+ * applies document stylesheets on `getComputedStyle`, which is how the canvas
+ * and the published page are compared on the rule itself instead of on the
+ * class string that carries it.
+ */
+let removeStyles: (() => void) | null = null;
+let styleHost: HTMLDivElement | null = null;
+
+beforeAll(() => {
+  removeStyles = installPuckBaseStyles();
+  styleHost = document.createElement("div");
+  document.body.appendChild(styleHost);
+});
+
+afterAll(() => {
+  removeStyles?.();
+  styleHost?.remove();
+});
+
+function renderIntoDom(markup: string) {
+  if (!styleHost) throw new Error("style host is not installed");
+
+  styleHost.innerHTML = markup;
+
+  const root = styleHost.firstElementChild as HTMLElement | null;
+
+  if (!root) throw new Error("markup has no block root");
+
+  return { root, position: window.getComputedStyle(root).position };
+}
+
+/** The box an absolutely positioned element would resolve offsets against. */
+function positionedAncestor(element: Element) {
+  let current = element.parentElement;
+
+  while (current) {
+    if (window.getComputedStyle(current).position !== "static") return current;
+    current = current.parentElement;
+  }
+
+  return null;
+}
+
 const SlotStub = ({
   className,
   style,
@@ -34,6 +82,17 @@ const SlotStub = ({
   className?: string;
   style?: React.CSSProperties;
 }) => <div data-slot="stub" className={className} style={style} />;
+
+/**
+ * A slot whose content is not part of the block contract: it only carries an
+ * absolutely positioned child, so the test can observe which box becomes its
+ * containing block.
+ */
+const AbsoluteChildSlot: SlotComponent = (props) => (
+  <div className={props?.className} style={props?.style}>
+    <span data-abs-child style={{ position: "absolute", top: 0, left: 0 }} />
+  </div>
+);
 
 type SharedCase = {
   name: string;
@@ -195,44 +254,57 @@ function componentsFor(region?: SharedCase["region"]) {
   };
 }
 
-describe("consolidated Puck render pipeline", () => {
-  /**
-   * Both case lists go through the same assertion: the public render must emit
-   * exactly what the editor emits once Puck's default props are in play. The
-   * editor side applies the shared defaults by hand because this seam calls the
-   * render function directly instead of mounting the canvas.
-   *
-   * The editor render receives a drag ref on purpose: the two paths must stay
-   * identical once Puck hands the ref over, so the editor version of the props
-   * is what this parity test compares.
-   */
-  const assertParity = ({
-    name,
-    props,
-    region,
-    nonEmpty = true,
-  }: SharedCase) => {
-    const components = componentsFor(region);
+/**
+ * Render one case through both configs.
+ *
+ * The editor render applies the shared defaults by hand because this seam calls
+ * the render function directly instead of mounting the canvas. It receives a
+ * drag ref on purpose: the two paths must stay identical once Puck hands the
+ * ref over, so the editor version of the props is what this parity test
+ * compares.
+ */
+function renderCase({ name, props, region }: SharedCase) {
+  const components = componentsFor(region);
 
-    const editorRender = (
-      components.editor as unknown as Record<string, RenderEntry>
-    )[name]?.render;
-    const publicRender = (
-      components.public as unknown as Record<string, RenderEntry>
-    )[name]?.render;
+  const editorRender = (
+    components.editor as unknown as Record<string, RenderEntry>
+  )[name]?.render;
+  const publicRender = (
+    components.public as unknown as Record<string, RenderEntry>
+  )[name]?.render;
 
-    if (!editorRender || !publicRender) {
-      throw new Error(`${name} is missing from one of the render configs`);
-    }
+  if (!editorRender || !publicRender) {
+    throw new Error(`${name} is missing from one of the render configs`);
+  }
 
-    const defaults = BLOCK_DEFAULT_PROPS[name];
-    const editorHtml = renderThrough(
+  const defaults = BLOCK_DEFAULT_PROPS[name];
+
+  return {
+    editorHtml: renderThrough(
       editorRender,
       props,
       { ...PUCK, dragRef: () => undefined },
       defaults,
-    );
-    const publicHtml = renderThrough(publicRender, props);
+    ),
+    publicHtml: renderThrough(publicRender, props),
+  };
+}
+
+/**
+ * The two render paths of a case, named so a failing assertion says which one
+ * disagreed.
+ */
+function pathsOf({ editorHtml, publicHtml }: ReturnType<typeof renderCase>) {
+  return [
+    ["canvas", editorHtml],
+    ["page", publicHtml],
+  ] as const;
+}
+
+describe("consolidated Puck render pipeline", () => {
+  const assertParity = (testCase: SharedCase) => {
+    const { nonEmpty = true } = testCase;
+    const { editorHtml, publicHtml } = renderCase(testCase);
 
     if (nonEmpty) {
       expect(editorHtml).not.toBe("");
@@ -308,6 +380,53 @@ describe("consolidated Puck render pipeline", () => {
     "$name renders identical markup from default props in editor and public configs",
     assertParity,
   );
+
+  /**
+   * The block root is the containing block for absolutely positioned
+   * descendants. Puck sets `position: relative` on that node while editing, so
+   * the published page needs the declaration too; otherwise the same child
+   * resolves against a different box in each path.
+   *
+   * Icon is skipped: its `DynamicIcon` has no static markup, so the computed
+   * style is asserted by the DOM test in `inline-roots.test.tsx` instead.
+   */
+  const MARKUP_CASES = SHARED_CASES.filter((entry) => entry.nonEmpty !== false);
+
+  it.each(MARKUP_CASES)(
+    "$name block root is position: relative in the canvas and on the page",
+    (testCase) => {
+      for (const [path, markup] of pathsOf(renderCase(testCase))) {
+        const { root, position } = renderIntoDom(markup);
+
+        expect(root.classList.contains("puck-block-root")).toBe(true);
+        expect(
+          position,
+          `${testCase.name} root on the ${path} must be the containing block`,
+        ).toBe("relative");
+      }
+    },
+  );
+
+  it("resolves an absolutely positioned descendant against the block root in both paths", () => {
+    const rendered = renderCase({
+      name: "Container",
+      props: {
+        items: AbsoluteChildSlot,
+        dimension: { desktop: { paddingTop: "40px" } },
+      },
+    });
+
+    for (const [path, markup] of pathsOf(rendered)) {
+      const { root } = renderIntoDom(markup);
+      const child = root.querySelector("[data-abs-child]");
+
+      expect(child, `no absolute child on the ${path}`).not.toBeNull();
+      expect(
+        positionedAncestor(child!),
+        `absolute child on the ${path} resolved against a different box`,
+      ).toBe(root);
+    }
+  });
 
   it("assigns the shared defaults entry to every editor component", () => {
     const editorConfigs = [

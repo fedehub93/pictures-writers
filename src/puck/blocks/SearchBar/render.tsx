@@ -42,7 +42,7 @@ export const renderSearchBarBlock: PuckComponent<SearchBarBlockProps> = ({
     <div
       ref={puck?.dragRef}
       className={cn(
-        "puck-dim puck-deco",
+        "puck-dim puck-deco puck-block-root",
         getLayoutClassNames(layout, { editing: puck?.isEditing }),
       )}
       style={styleVars}

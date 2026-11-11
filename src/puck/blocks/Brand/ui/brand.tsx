@@ -28,7 +28,7 @@ export const BrandBlockUi = ({
     <div
       ref={dragRef}
       className={cn(
-        "flex items-center gap-x-3 puck-dim puck-typo",
+        "flex items-center gap-x-3 puck-dim puck-typo puck-block-root",
         layoutClassName,
       )}
       style={styleVars}

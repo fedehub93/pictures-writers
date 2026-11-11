@@ -37,7 +37,7 @@ export const SlotSurface = ({
   <Items
     ref={dragRef}
     className={cn(
-      "puck-layout puck-dim puck-typo puck-deco",
+      "puck-layout puck-dim puck-typo puck-deco puck-block-root",
       layoutClassName,
     )}
     style={styleVars}

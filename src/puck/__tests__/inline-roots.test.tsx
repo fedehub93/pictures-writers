@@ -3,7 +3,7 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { PuckContext, SlotComponent } from "@puckeditor/core";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
 /**
  * NavbarBlock reads the pathname and the Form block's runner needs the router;
@@ -18,6 +18,8 @@ import { BLOCK_DEFAULT_PROPS } from "../blocks/defaults";
 import { editorComponentConfigs, config as pageEditorConfig } from "../config";
 import { editorConfigForRegion } from "../region/editor-config";
 import { mergePropsWithDefaults } from "../lib/merge-props";
+
+import { installPuckBaseStyles } from "./helpers/puck-base-css";
 
 /**
  * Every block is declared `inline`, so Puck renders it without its per-block
@@ -195,6 +197,22 @@ let root: ReturnType<typeof createRoot> | null = null;
 let container: HTMLDivElement | null = null;
 let queryClient: QueryClient | null = null;
 
+/**
+ * The block root is also a containing block, and that rule lives in
+ * `puck-base.css`. Installing the real stylesheet lets these tests assert the
+ * computed position on every root, including Icon, whose lazy glyph has no
+ * static markup for the render-pipeline test to inspect.
+ */
+let removeStyles: (() => void) | null = null;
+
+beforeAll(() => {
+  removeStyles = installPuckBaseStyles();
+});
+
+afterAll(() => {
+  removeStyles?.();
+});
+
 function cleanup() {
   act(() => {
     root?.unmount();
@@ -326,6 +344,18 @@ describe("inline block roots", () => {
           `${testCase.name} root should carry ${className}`,
         ).toBe(true);
       }
+
+      // The root is the containing block for absolutely positioned
+      // descendants in both paths, so the class has to be here and the
+      // stylesheet has to make it relative.
+      expect(
+        rootElement!.classList.contains("puck-block-root"),
+        `${testCase.name} root should carry puck-block-root`,
+      ).toBe(true);
+      expect(
+        window.getComputedStyle(rootElement!).position,
+        `${testCase.name} root should be the containing block`,
+      ).toBe("relative");
     },
   );
 
@@ -403,6 +433,8 @@ describe("inline block roots", () => {
     const rootElement = host.firstElementChild as HTMLElement;
 
     expect(rootElement.textContent).toBe("Select a valid form!");
+    expect(rootElement.classList.contains("puck-block-root")).toBe(true);
+    expect(window.getComputedStyle(rootElement).position).toBe("relative");
     expect(dragRef.mock.calls.at(-1)?.[0]).toBe(rootElement);
   });
 });

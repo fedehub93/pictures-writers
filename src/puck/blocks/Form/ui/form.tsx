@@ -30,7 +30,7 @@ export const FormBlockUi = ({
       <div
         ref={dragRef}
         className={cn(
-          "flex items-center justify-center size-full",
+          "flex items-center justify-center size-full puck-block-root",
           layoutClassName,
         )}
         style={styleVars}
@@ -61,7 +61,7 @@ export const FormBlockUi = ({
   return (
     <div
       ref={dragRef}
-      className={cn("puck-dim", layoutClassName)}
+      className={cn("puck-dim puck-block-root", layoutClassName)}
       style={styleVars}
     >
       <FormRunner

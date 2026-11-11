@@ -19,7 +19,7 @@ export const SeparatorBlockUi = ({
     // width through `min-width`.
     <div
       ref={dragRef}
-      className={cn("puck-dim", layoutClassName)}
+      className={cn("puck-dim puck-block-root", layoutClassName)}
       style={styleVars}
     >
       {/* `height: 100%` follows the authored height; the 1px minimum is what the

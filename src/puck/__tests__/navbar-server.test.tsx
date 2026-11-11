@@ -29,6 +29,7 @@ describe("NavbarBlock server render", () => {
 
     expect(html).toContain('href="/blog"');
     expect(html).toContain("puck-dim puck-deco");
+    expect(html).toContain("puck-block-root");
     expect(html).toContain("--mt-d:12px");
     expect(html).toContain("--bgc-d:var(--accent)");
     expect(html).toContain("--nav-fs-d:1.25rem");

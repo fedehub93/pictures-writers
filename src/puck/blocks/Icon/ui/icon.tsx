@@ -16,7 +16,7 @@ export const IconBlockUi = ({
   /** Editor-only: Puck's selection ref, attached to the block root. */
   dragRef?: BlockDragRef;
 }) => {
-  const className = cn("puck-dim puck-typo", layoutClassName);
+  const className = cn("puck-dim puck-typo puck-block-root", layoutClassName);
 
   // The icon *is* the block: the ref goes on the rendered `<svg>`, which is the
   // box the parent lays out, not on a wrapper around it.

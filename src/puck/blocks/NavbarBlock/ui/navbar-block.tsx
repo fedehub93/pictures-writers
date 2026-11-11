@@ -34,7 +34,7 @@ export const NavbarBlockUi = ({
     // sheet handle live inside it, not around it.
     <div
       ref={dragRef}
-      className={cn("puck-dim puck-deco puck-nav", layoutClassName)}
+      className={cn("puck-dim puck-deco puck-nav puck-block-root", layoutClassName)}
       style={styleVars}
     >
       <NavbarDesktopMenu

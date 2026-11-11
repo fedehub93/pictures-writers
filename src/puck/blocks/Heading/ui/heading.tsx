@@ -20,7 +20,7 @@ export const HeadingBlockUi = ({
     // this element instead of a wrapper inserted around it.
     <div
       ref={dragRef}
-      className={cn("block puck-dim puck-typo", layoutClassName)}
+      className={cn("block puck-dim puck-typo puck-block-root", layoutClassName)}
       style={styleVars}
     >
       {text}

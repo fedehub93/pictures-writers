@@ -20,7 +20,10 @@ export const TextBlockUi = ({
     // its parent, so this is the element the editor selects and outlines.
     <p
       ref={dragRef}
-      className={cn("puck-dim puck-typo whitespace-pre-line", layoutClassName)}
+      className={cn(
+        "puck-dim puck-typo whitespace-pre-line puck-block-root",
+        layoutClassName,
+      )}
       style={styleVars}
     >
       {text}

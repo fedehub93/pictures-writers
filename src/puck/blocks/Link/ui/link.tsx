@@ -27,7 +27,7 @@ export const LinkBlockUi = ({
       link={link}
       dragRef={dragRef}
       className={cn(
-        "puck-dim puck-typo puck-deco inline-block",
+        "puck-dim puck-typo puck-deco inline-block puck-block-root",
         layoutClassName,
       )}
       style={styleVars}

@@ -43,6 +43,7 @@ describe("Brand server render", () => {
     const html = renderToStaticMarkup(element);
 
     expect(html).toContain("puck-dim puck-typo");
+    expect(html).toContain("puck-block-root");
     expect(html).toContain("--fs-d:1.25rem");
     expect(html).toContain("--mt-d:8px");
   });

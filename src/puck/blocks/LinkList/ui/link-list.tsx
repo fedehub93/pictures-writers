@@ -31,7 +31,7 @@ export const LinkListBlockUi = ({
     <div
       ref={dragRef}
       className={cn(
-        "flex w-full flex-col gap-2 puck-dim puck-typo",
+        "flex w-full flex-col gap-2 puck-dim puck-typo puck-block-root",
         layoutClassName,
       )}
       style={styleVars}

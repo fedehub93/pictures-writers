@@ -25,7 +25,7 @@ export const CopyrightBlockUi = ({
     <p
       ref={dragRef}
       className={cn(
-        "flex flex-wrap items-baseline justify-center gap-x-2 gap-y-1 puck-dim puck-typo",
+        "flex flex-wrap items-baseline justify-center gap-x-2 gap-y-1 puck-dim puck-typo puck-block-root",
         layoutClassName,
       )}
       style={styleVars}
