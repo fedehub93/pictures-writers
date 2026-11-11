@@ -1,5 +1,5 @@
 ---
-Status: ready-for-agent
+Status: ready-for-human
 Type: task
 ---
 
@@ -24,19 +24,19 @@ rule only has to read them.
 - [ ] In the canvas, a root whose layout is `display: flex; flex-direction:
       column` produces the same top-level arrangement as the published page:
       `justify-content`, `align-items`, `gap` and `grid-template-*` authored on
-      the root all reach the top-level blocks.
-- [ ] `align-self` is **not** applied to the zone: it still describes the root as
+      the root all reach the top-level blocks. *(browser check still open)*
+- [x] `align-self` is **not** applied to the zone: it still describes the root as
       a child of its own parent.
-- [ ] A root with no authored layout keeps the current look (`display: block`,
+- [x] A root with no authored layout keeps the current look (`display: block`,
       full width) in both paths.
-- [ ] The tablet and mobile overrides follow the same cascade as `.puck-layout`
+- [x] The tablet and mobile overrides follow the same cascade as `.puck-layout`
       (`--*-t, --*-d`, `--*-m, --*-t, --*-d`).
-- [ ] The rule cannot reach the published page: it targets an attribute that only
+- [x] The rule cannot reach the published page: it targets an attribute that only
       exists in the canvas.
-- [ ] A tripwire test asserts the selector is present in `puck-base.css`, so a
+- [x] A tripwire test asserts the selector is present in `puck-base.css`, so a
       Puck upgrade that renames the root zone fails loudly.
 - [ ] Manual: a top-level Container with max width and auto margins measures the
-      same in the canvas and on the page.
+      same in the canvas and on the page. *(browser check still open)*
 
 ## Reference implementation
 
@@ -99,3 +99,37 @@ grid-template-rows: var(--gtr-t, var(--gtr-d));
   (`dist/index.js:1446`).
 - Do not try `display: contents` on the zone: the root drop target would lose its
   box and dropping at the root would stop working.
+
+## Comments
+
+- 2026-11-11 — Implemented in `src/puck/styles/puck-base.css` (new section 0c,
+  plus one block inside each of the tablet and mobile media queries) and
+  `src/puck/__tests__/root-zone-layout.test.ts`.
+- The rule copies the container half of `.puck-layout` verbatim, including the
+  absence of a fallback on the desktop `display`. A fallback would only make the
+  zone diverge from the root in the case where the root stops emitting its
+  variables, which is the one case parity cannot paper over.
+- The tripwire derives the selector from the installed package instead of
+  restating the literal: it reads `rootAreaId` and `rootZone` from
+  `@puckeditor/core/dist` and asserts `puck-base.css` carries
+  `[data-puck-dropzone="<area>:<zone>"]`. Renaming the zone upstream now fails
+  the test with a message that names the file and the selector. Verified by
+  temporarily renaming the selector: all four tests fail.
+- The same test compares every zone declaration block against the matching
+  `.puck-layout` block at the same media query, so a property added to the
+  layout contract cannot be forgotten on the zone, a reordering of the three
+  queries is caught, and `align-self` is pinned as the single allowed
+  difference.
+- "No authored layout keeps `display: block`" holds because `renderRoot` always
+  emits inline `--disp-d: block` (`src/puck/root/render.tsx`), in both paths;
+  the zone inherits it. That is pinned by `root-surface-fields.test.tsx`.
+- Verification: `npx tsc --noEmit` clean; `npx eslint src/puck` 0 errors;
+  `npm run test:run` 246 files / 2035 tests pass. `npm run lint` still exits 1 on
+  the 40 pre-existing errors recorded in the sibling ticket, none in a file this
+  ticket touches.
+- Open: the two browser checks above (flex-column root arrangement and the
+  max-width Container measurement). Expected: the Header bar Container (max
+  width 72rem, auto margins, no authored width) measures the same in the canvas
+  and on the published page, with `space-between` distributing its children in
+  both. Status moved to `ready-for-human` for those; it becomes `done` once they
+  are confirmed.
