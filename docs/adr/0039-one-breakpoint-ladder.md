@@ -34,5 +34,5 @@ authoring behaviour honest without restyling existing pages.
 - A block hidden at tablet and a navbar collapsing at tablet now switch at the same width.
 - Choosing "mobile" on a navbar deliberately reintroduces the 768–1023 band where the menu is inline; the panel states the two widths.
 - The canvas gains Figtree, so its text metrics match the published page; the admin bundle carries one extra font.
-- The canvas still wraps each block in Puck's own wrapper. A block that relies on being a direct flex child cannot be simulated, so blocks must stay intrinsic and express their width through `Dimension`.
+- The canvas still wraps each block in Puck's own wrapper. A block that relies on being a direct flex child cannot be simulated, so blocks must stay intrinsic and express their width through `Dimension`. **Revised 2026-11-11:** the wrapper is gone; every block is `inline` and carries the drag ref on its own root, so the canvas draws the same tree as the page (ADR-0040). The breakpoint ladder itself is unchanged.
 - Terminology: `CONTEXT.md` → "Breakpoint", "Canvas", "Menu collapse point".

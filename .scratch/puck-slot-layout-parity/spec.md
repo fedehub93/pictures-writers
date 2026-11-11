@@ -192,6 +192,11 @@ One layout contract, shared by the canvas and the public page.
   field → variable → class pipeline, including the Top bar layout field).
 - ADR-0039 was revised rather than superseded: only its Image paragraph changed,
   and the rest of the breakpoint ladder decision still stands.
+- This chapter stopped at the slot. `.scratch/puck-canvas-tree-parity/` removes
+  the editor-only elements around it — Puck's per-block wrapper and the
+  root-zone difference — so the block root (for a container, the slot element
+  this spec aligned) is the element the editor selects and the page publishes.
+  The decision is ADR-0040; read the two specs as one story.
 
 ## Tickets
 

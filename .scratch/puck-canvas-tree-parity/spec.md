@@ -164,7 +164,7 @@ a flex item in the canvas, so it behaves the same in both paths.
   loudly instead of silently restoring the divergence.
 - **Manual acceptance.** Drag out of and into a nested Container, reorder inside
   a slot, insert from the drawer, open the rich-text toolbar in a Heading, and
-  select a block hidden at the current breakpoint. These are interaction
+  select a block hidden at the current viewport. These are interaction
   behaviours that no unit test in this repo can observe.
 
 ## Out of Scope
@@ -185,21 +185,35 @@ a flex item in the canvas, so it behaves the same in both paths.
 - The diagnostic that established the numbers: the published header measured at
   a 1900px viewport, the same document measured inside the editor iframe, and a
   DOM harness comparing both shapes with and without a wrapper element.
-- `CONTEXT.md` needs *Slot wrapper parity* rewritten (the discrepancy it
-  documents is being removed) and a term for the editor-only elements that
-  remain (`Root zone`, and the fact that the block root is the selection node).
+- `CONTEXT.md` rewrites *Slot wrapper parity* as *Block root* and adds *Root
+  zone*, because the discrepancy it documented is gone and the block root is now
+  the selection node.
+- The decision is recorded in
+  `docs/adr/0040-one-element-tree-in-canvas-and-page.md`.
+- The spike route was never committed: `src/app/(spike)/` existed only in the
+  working tree during the diagnosis, so the cleanup was a no-op and no `SPIKE`
+  marker or comment is left in `HEAD`.
 
 ## Tickets
 
-| # | Ticket | Depends on |
-| - | ------ | ---------- |
-| 01 | Width intent in the Dimension field | — |
-| 02 | Root zone carries the root layout contract | — |
-| 03 | Layout blocks render without the editor wrapper | 01, 02 |
-| 04 | Every remaining block attaches the drag ref to its root | 03 |
-| 05 | Block roots declare their own containing block | 03 |
-| 06 | Hidden-block ghost without the wrapper | 04 |
-| 07 | Docs, ADR and spike cleanup | 01–06 |
+| # | Ticket | Status | Depends on |
+| - | ------ | ------ | ---------- |
+| 01 | Width intent in the Dimension field | done | — |
+| 02 | Root zone carries the root layout contract | done | — |
+| 03 | Layout blocks render without the editor wrapper | done | 01, 02 |
+| 04 | Every remaining block attaches the drag ref to its root | done | 03 |
+| 05 | Block roots declare their own containing block | done | 03 |
+| 06 | Hidden-block ghost without the wrapper | done | 04 |
+| 07 | Docs, ADR and spike cleanup | done | 01–06 |
+
+No follow-up tickets were opened during implementation. Two limitations were
+confirmed and accepted rather than ticketed: a block that renders `null`
+(`Brand` without name or logo, `NavbarBlock` without items, `Link` without a
+link or label) has no root to attach the ref to, and `Icon` has no box until its
+glyph chunk resolves; neither was pointer-selectable before the wrapper was
+removed. The repo-wide `npm run lint` still exits 1 on the 40 pre-existing errors
+recorded in `.scratch/editor-root-entry/issues/01-upgrade-puck-024.md`; every
+file this effort touched lints clean.
 
 ## Verification
 
@@ -213,7 +227,7 @@ desktop, tablet and mobile:
 - A `width: 100%` child of a flex row fills the row in both.
 - A `height: 50%` child of a block with an explicit height measures the same in
   both.
-- A block hidden at the current breakpoint is still selectable as a ghost.
+- A block hidden at the current viewport is still selectable as a ghost.
 - Selection outlines the block exactly; hover, drag, drop, reorder and drawer
   insertion work on every block, including nested Containers.
 - The rich-text toolbar inside Heading and Text behaves as before.
