@@ -113,6 +113,12 @@ export function ValueUnitInput({
               {presets.map((preset) => {
                 const isSelected =
                   preset.value === textInput && preset.unit === selectedUnit;
+                // A keyword preset (`auto`, `fit-content`) has no unit to show,
+                // and an empty value has nothing to preview at all.
+                const presetPreview =
+                  preset.unit === "-"
+                    ? preset.value
+                    : `${preset.value}${preset.unit}`;
 
                 return (
                   <Button
@@ -148,8 +154,7 @@ export function ValueUnitInput({
                         isSelected && "text-primary",
                       )}
                     >
-                      {preset.value}
-                      {preset.unit}
+                      {presetPreview}
                     </div>
                   </Button>
                 );

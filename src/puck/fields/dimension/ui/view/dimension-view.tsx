@@ -2,6 +2,7 @@ import type { FieldDef } from "@/puck/types";
 
 import { PropHeader } from "@/puck/components/prop-header";
 import { ValueUnitInput } from "@/puck/components/value-unit-input";
+import type { ValueUnitPreset } from "@/puck/components/value-unit-input/types";
 
 import {
   Select,
@@ -13,9 +14,25 @@ import {
 import { Input } from "@/shared/ui/input";
 
 import type { DimensionProps } from "../../index";
-import { WidthControl } from "./width-control";
+import { WIDTH_PRESETS } from "../../presets";
 
-const sizeFields: FieldDef<DimensionProps>[] = [
+/** A field row that can also feed the value/unit input's own options. */
+type LayoutField = FieldDef<DimensionProps> & {
+  presets?: ValueUnitPreset[];
+  allowedKeywords?: string[];
+};
+
+const layoutFields: LayoutField[] = [
+  {
+    key: "width",
+    label: "Width",
+    type: "unit",
+    placeholder: "auto",
+    // Width names the states the style layer can imply, so the author can pick
+    // *Fill* and *Fit content* without knowing CSS.
+    presets: WIDTH_PRESETS,
+    allowedKeywords: ["auto", "fit-content"],
+  },
   { key: "height", label: "Height", type: "unit", placeholder: "auto" },
   { key: "maxWidth", label: "Max width", type: "unit", placeholder: "auto" },
   { key: "minHeight", label: "Min height", type: "unit", placeholder: "auto" },
@@ -70,18 +87,7 @@ export const DimensionView = ({
     <div className="flex flex-col gap-y-2 p-1">
       {/* --- LAYOUT --- */}
       <div className="grid grid-cols-2 gap-x-4 gap-y-4 p-1">
-        {/* Width carries the explicit Auto / Fill / Fit content states, so it
-            spans the grid instead of sharing a cell with Height. */}
-        <div className="col-span-2">
-          <WidthControl
-            value={renderValues.width}
-            isModified={currentValues.width !== undefined}
-            onReset={() => resetProp("width")}
-            onChange={(width) => onUpdate({ width })}
-          />
-        </div>
-
-        {sizeFields.map((field) => {
+        {layoutFields.map((field) => {
           const isModified = currentValues[field.key] !== undefined;
           const displayValue = renderValues[field.key] ?? "";
           return (
@@ -99,6 +105,8 @@ export const DimensionView = ({
                   onUpdate({ [field.key]: newVal || undefined })
                 }
                 placeholder={field.placeholder}
+                presets={field.presets}
+                allowedKeywords={field.allowedKeywords}
               />
             </div>
           );

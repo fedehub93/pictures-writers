@@ -7,9 +7,9 @@ import type { DimensionProps } from "../fields/dimension";
 import { DimensionView } from "../fields/dimension/ui/view/dimension-view";
 
 /**
- * The Width control has to say what it means. `auto` stays the default, but
- * *Fill* and *Fit content* are explicit choices shown next to the numeric input
- * so the active state is readable without hovering anything.
+ * The Width field says what it means without taking a row of its own: the
+ * states the style layer can imply are presets of the existing value/unit
+ * input, the way Font Size already works.
  */
 let root: ReturnType<typeof createRoot> | null = null;
 let container: HTMLDivElement | null = null;
@@ -47,15 +47,26 @@ function renderView(overrides: {
       />,
     );
   });
-
-  return container;
 }
 
-function button(label: string) {
-  const match = [...container!.querySelectorAll("button")].find(
-    (el) => el.textContent?.trim() === label,
+function widthInput() {
+  return container!.querySelector<HTMLInputElement>('input[name="width"]')!;
+}
+
+/** Focusing the field opens its preset menu, exactly like Font Size. */
+function openPresets() {
+  act(() => {
+    widthInput().focus();
+  });
+}
+
+function preset(label: string) {
+  // The preset rows are the only buttons whose bold label is the preset name;
+  // selecting by DOM order would also match the Aspect Ratio trigger.
+  const match = [...document.querySelectorAll("button")].find(
+    (el) => el.querySelector("span.font-semibold")?.textContent?.trim() === label,
   );
-  if (!match) throw new Error(`No button labelled "${label}"`);
+  if (!match) throw new Error(`No preset labelled "${label}"`);
   return match;
 }
 
@@ -63,10 +74,6 @@ function click(el: HTMLElement) {
   act(() => {
     el.dispatchEvent(new MouseEvent("click", { bubbles: true }));
   });
-}
-
-function widthInput() {
-  return container!.querySelector<HTMLInputElement>('input[name="width"]')!;
 }
 
 /** React tracks its own value, so the input has to be typed through the setter. */
@@ -90,39 +97,32 @@ function pressEnter(input: HTMLInputElement) {
   });
 }
 
-describe("Dimension Width control", () => {
-  it("offers Auto, Fill and Fit content next to the numeric input", () => {
+describe("Dimension Width field", () => {
+  it("offers Auto, Fill and Fit content as presets of the width input", () => {
     renderView({});
+    openPresets();
 
-    expect(button("Auto")).not.toBeNull();
-    expect(button("Fill")).not.toBeNull();
-    expect(button("Fit content")).not.toBeNull();
-    expect(widthInput()).not.toBeNull();
+    expect(preset("Auto").textContent).toContain("no width");
+    expect(preset("Fill").textContent).toContain("full width");
+    expect(preset("Fit content").textContent).toContain("natural size");
   });
 
-  it("shows Auto as the active state when no width is authored", () => {
-    renderView({});
-
-    expect(button("Auto").getAttribute("data-state")).toBe("on");
-    expect(button("Fill").getAttribute("data-state")).toBe("off");
-    expect(button("Fit content").getAttribute("data-state")).toBe("off");
-    expect(widthInput().value).toBe("");
-  });
-
-  it("writes 100% when Fill is picked", () => {
+  it("stores 100% when Fill is picked", () => {
     const updates: Partial<DimensionProps>[] = [];
     renderView({ onUpdate: (values) => updates.push(values) });
 
-    click(button("Fill"));
+    openPresets();
+    click(preset("Fill"));
 
     expect(updates.at(-1)).toEqual({ width: "100%" });
   });
 
-  it("writes fit-content when Fit content is picked", () => {
+  it("stores fit-content when Fit content is picked", () => {
     const updates: Partial<DimensionProps>[] = [];
     renderView({ onUpdate: (values) => updates.push(values) });
 
-    click(button("Fit content"));
+    openPresets();
+    click(preset("Fit content"));
 
     expect(updates.at(-1)).toEqual({ width: "fit-content" });
   });
@@ -134,9 +134,29 @@ describe("Dimension Width control", () => {
       onUpdate: (values) => updates.push(values),
     });
 
-    click(button("Auto"));
+    openPresets();
+    click(preset("Auto"));
 
     expect(updates.at(-1)).toEqual({ width: undefined });
+  });
+
+  it("shows the stored state in the closed field", () => {
+    const cases = [
+      { width: "100%", input: "100" },
+      { width: "fit-content", input: "fit-content" },
+    ];
+
+    for (const { width, input } of cases) {
+      renderView({ renderValues: { width } });
+
+      expect(widthInput().value, width).toBe(input);
+    }
+  });
+
+  it("keeps a custom width visible", () => {
+    renderView({ renderValues: { width: "12rem" } });
+
+    expect(widthInput().value).toBe("12");
   });
 
   it("stores a typed number with the default unit", () => {
@@ -147,33 +167,5 @@ describe("Dimension Width control", () => {
     pressEnter(widthInput());
 
     expect(updates.at(-1)).toEqual({ width: "24px" });
-  });
-
-  it("shows the stored value as the active state", () => {
-    const cases = [
-      { width: "100%", active: "Fill", input: "100" },
-      { width: "fit-content", active: "Fit content", input: "fit-content" },
-    ];
-
-    for (const { width, active, input } of cases) {
-      renderView({ renderValues: { width } });
-
-      for (const label of ["Auto", "Fill", "Fit content"]) {
-        expect(
-          button(label).getAttribute("data-state"),
-          `${width} → ${label}`,
-        ).toBe(label === active ? "on" : "off");
-      }
-      expect(widthInput().value, width).toBe(input);
-    }
-  });
-
-  it("leaves every state inactive when the width is a custom value", () => {
-    renderView({ renderValues: { width: "12rem" } });
-
-    for (const label of ["Auto", "Fill", "Fit content"]) {
-      expect(button(label).getAttribute("data-state"), label).toBe("off");
-    }
-    expect(widthInput().value).toBe("12");
   });
 });

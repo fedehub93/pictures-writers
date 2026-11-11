@@ -58,10 +58,12 @@ Two changes in the shared style layer:
 ## Comments
 
 Implemented in `src/puck/utils/get-style-vars.ts`,
-`src/puck/fields/dimension/ui/view/width-control.tsx` (+ `SegmentedControl`
-gained an optional short label and a `className`) and the two new test files
-`src/puck/__tests__/dimension-width-vars.test.ts` and
-`src/puck/__tests__/dimension-width-control.test.tsx`.
+`src/puck/fields/dimension/presets.ts` (the width states as value/unit presets,
+the Font Size pattern), `src/puck/fields/dimension/ui/view/dimension-view.tsx`
+and the two new test files `src/puck/__tests__/dimension-width-vars.test.ts` and
+`src/puck/__tests__/dimension-width-field.test.tsx`. No new control: the Width
+field keeps its cell in the 2x2 grid and the states open in the existing preset
+menu, so the panel layout is untouched.
 
 Two details settled during implementation:
 
@@ -74,4 +76,6 @@ Two details settled during implementation:
   one of them produces a fill.
 
 `fit-content` is passed to the value/unit input as an allowed keyword, so it
-survives a re-commit instead of becoming an opaque `f(x)` value.
+survives a re-commit instead of becoming an opaque `f(x)` value. The preset
+preview in the shared input now hides the `-` unit, because a keyword has no
+unit to show.
