@@ -1,5 +1,5 @@
 ---
-Status: ready-for-human
+Status: done
 Type: task
 Blocked by: none
 ---
@@ -14,14 +14,14 @@ resolves to for this block instead of claiming there is none.
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-human
+**Status:** done
 
 ## Acceptance criteria
 
-- [ ] A Link with no authored width inside a flex column that authors no
+- [x] A Link with no authored width inside a flex column that authors no
       `align-items` measures its label width in the canvas and on the published
       page, and the two measurements match.
-- [ ] The same document published before the change renders with the new width
+- [x] The same document published before the change renders with the new width
       without being migrated: its stored props are untouched.
 - [x] An authored width wins over the block default at the breakpoint that
       authors it, including a number with unit, a percentage, `fit-content`, and
@@ -96,3 +96,8 @@ resolves to for this block instead of claiming there is none.
   re-rendering with the new width. `fit-content` resolution is a browser
   behaviour, so no unit test asserts it. The status stays `ready-for-human` for
   that check only; everything else is closed.
+- 2026-11-11 — Manual acceptance done by the maintainer in the canvas and on the
+  published page: the Link inside the flex column with no authored `align-items`
+  measures its label width in both, and the two measurements match; a document
+  published before the change renders with the new width with its stored props
+  untouched. Ticket closed; all acceptance criteria are ticked.
