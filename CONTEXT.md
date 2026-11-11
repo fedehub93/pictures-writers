@@ -389,6 +389,10 @@ _Avoid_: fixed header, pinned navbar when referring to the whole region.
 **Footer region**:
 The Site region rendered at the bottom of every public page.
 
+**Site layout preview**:
+The Header and Footer regions drawn around the Page being edited in the page editor canvas, so the author sees the whole page. It is read-only, is not part of the Page document, and shows the layout as visitors would get it once the regions are published.
+_Avoid_: page preview, full-page preview, chrome.
+
 **Top bar**:
 A Puck block placed inside the Header region, typically a full-width strip above the main navbar. It is a generic container with a Puck slot for arbitrary content and an optional dismissal, not an announcement-specific block.
 _Avoid_: announcement bar, promo bar when referring to the CMS block.
@@ -423,6 +427,10 @@ _Avoid_: device, screen size, media query.
 The live preview inside the page or Site region editor, drawn at the selected Breakpoint. It shares the layout contract with the published page but is not the published page.
 _Avoid_: preview page, editor view.
 
+**Editor root**:
+The document-wide settings of a single Puck document — what an editor sets when no block is selected. It belongs to one version of a Page or Site region and is distinct from a Root, which is the item's stable content identity.
+_Avoid_: root when the content identity is meant; page props.
+
 **Block layout**:
 The per-breakpoint arrangement a block applies to its children: display mode, flex direction and alignment, gaps, or grid columns. It only means something for blocks that contain other blocks.
 _Avoid_: style, size, spacing.
@@ -438,6 +446,20 @@ _Avoid_: invisible block, disabled block, removed block.
 **Site layout permission**:
 The backoffice permission area that governs editing and publishing Site regions, distinct from the pages permission.
 _Avoid_: global settings, appearance when the permission is meant.
+
+## Puck editor fidelity
+
+**Live source of truth**:
+The public Puck `<Render>` output is the canonical rendering; the editor canvas approximates it as closely as possible without breaking drag-and-drop or selection. Discrepancies that cannot be eliminated are documented, not hidden.
+_Avoid_: treating the editor canvas as a pixel-perfect preview.
+
+**Slot wrapper parity**:
+Puck wraps slot content in a `DropZone` while editing and in a `<div>` (or `Fragment` when `as` is used) on the public site. The two wrappers measure differently, so flex/grid properties meant for the children of a slot must be applied to the Slot component's `className`, not only to the block that owns the slot.
+_Avoid_: expecting `align-items` or `gap` on a flex container to reach slot children without passing them through the slot's `className`.
+
+**Public defaultProps**:
+Puck merges `defaultProps` into a block's props in the editor canvas only. The public render path applies the same defaults through a shared helper so a freshly dropped block looks identical in both environments.
+_Avoid_: relying on Puck to apply defaults on the public site; relying on saved documents to store defaults.
 
 ## FAQ
 
