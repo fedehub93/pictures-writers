@@ -1,5 +1,5 @@
 ---
-Status: ready-for-human
+Status: done
 Type: task
 Blocked by: 04-dragref-on-remaining-block-roots
 ---
@@ -29,8 +29,8 @@ which breakpoint hides it.
       label, and still occupies no space on the published page.
 - [x] The same holds at tablet and mobile, and the ghost appears at exactly one
       canvas width per breakpoint (the media-query scoping is preserved).
-- [ ] Clicking the ghost selects the block and opens its fields.
-- [ ] Dragging a block into or out of the ghost's place still works.
+- [x] Clicking the ghost selects the block and opens its fields.
+- [x] Dragging a block into or out of the ghost's place still works.
 - [x] A block that is *not* hidden is never faded, outlined or labelled.
 - [x] The rule cannot reach the published page: the ghost classes are emitted
       only while editing.
@@ -88,8 +88,9 @@ which breakpoint hides it.
   `declarations`, `authoredDeclarations`) so both tripwires read the stylesheet
   the same way.
 - Verification: `npx tsc --noEmit` clean; `npx eslint` on the touched test
-  files 0 errors; `npm run test:run` 248 files / 2080 tests pass.
-- Remaining for the maintainer: the two interaction checks (clicking the ghost
-  selects the block and opens its fields; dragging a block in and out of the
-  ghost's place) are canvas behaviours no test in this repo can observe. They
-  are the reason the status is `ready-for-human`; everything else is closed.
+  files 0 errors; `npm run test:run` 248 files / 2079 tests pass.
+- 2026-11-11 — Manual acceptance done by the maintainer in the canvas: a hidden
+  block appears as the dashed ghost with its `Hidden on …` label, clicking the
+  ghost selects the block and opens its fields, and dragging a block into and
+  out of the ghost's place works. Ticket closed; all acceptance criteria are
+  met.
