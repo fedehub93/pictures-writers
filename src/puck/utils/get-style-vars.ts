@@ -9,6 +9,21 @@ const BREAKPOINTS: Breakpoint[] = ["desktop", "tablet", "mobile"];
 // Suffix interni per le variabili CSS: desktop -> d, tablet -> t, mobile -> m
 const getSuffix = (bp: Breakpoint) => bp.charAt(0);
 
+/** The width a *Fill* box resolves to; the implied fill below emits the same. */
+export const FILL_WIDTH = "100%";
+
+/**
+ * The width a breakpoint actually authors, or `undefined` when it decides
+ * nothing. An empty value and the explicit `auto` keyword mean the same thing
+ * — "the browser decides" — so a document that stored `auto` behaves exactly
+ * like one that stored nothing.
+ */
+export const normalizeAuthoredWidth = (width?: string) => {
+  const value = width?.trim();
+
+  return value && value.toLowerCase() !== "auto" ? value : undefined;
+};
+
 /**
  * UTILITY: DIMENSION
  */
@@ -16,12 +31,28 @@ export const getDimensionVars = (data?: Responsive<DimensionProps>) => {
   if (!data) return {};
   const vars: Record<string, string> = {};
 
+  // The widths cascade desktop -> mobile, so the implied fill below has to know
+  // whether a wider breakpoint already authored one.
+  let inheritedWidth: string | undefined;
+
   for (const bp of BREAKPOINTS) {
     const p = data[bp];
     if (!p) continue;
     const s = getSuffix(bp);
 
-    if (p.width) vars[`--w-${s}`] = p.width;
+    // A box that caps its own width is a content area, not a shrink-to-fit
+    // label: with no width at all it collapses inside a flex parent instead of
+    // filling the space its `max-width` caps. Both render paths call this same
+    // function, so the rule cannot diverge between the canvas and the page.
+    // An authored width — `fit-content` included, and one inherited from a
+    // wider breakpoint — always wins over the implied fill.
+    const width = normalizeAuthoredWidth(p.width);
+    if (width) {
+      vars[`--w-${s}`] = width;
+      inheritedWidth = width;
+    } else if (!inheritedWidth && p.maxWidth) {
+      vars[`--w-${s}`] = FILL_WIDTH;
+    }
     if (p.height) vars[`--h-${s}`] = p.height;
     if (p.maxWidth) vars[`--mw-${s}`] = p.maxWidth;
     if (p.minHeight) vars[`--mh-${s}`] = p.minHeight;

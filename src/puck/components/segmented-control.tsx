@@ -7,9 +7,17 @@ import { ComponentType } from "react";
 
 interface SegmentedControlProps<T extends string> {
   name: string;
-  value: T;
+  /** `""` leaves every item unpressed, for a value outside the item set. */
+  value: T | "";
   onChange: (val: T) => void;
-  items: { value: T; icon?: ComponentType<LucideProps>; title: string }[];
+  items: {
+    value: T;
+    icon?: ComponentType<LucideProps>;
+    title: string;
+    /** Short visible text; `title` stays the full label and tooltip. */
+    label?: string;
+  }[];
+  className?: string;
 }
 
 export function SegmentedControl<T extends string>({
@@ -17,6 +25,7 @@ export function SegmentedControl<T extends string>({
   value,
   onChange,
   items,
+  className,
 }: SegmentedControlProps<T>) {
   return (
     <ToggleGroup
@@ -26,7 +35,10 @@ export function SegmentedControl<T extends string>({
       onValueChange={(val) => {
         if (val) onChange(val as T);
       }}
-      className="flex items-center justify-start bg-background rounded-md h-8 w-full min-w-0 gap-0 border border-input"
+      className={cn(
+        "flex items-center justify-start bg-background rounded-md h-8 w-full min-w-0 gap-0 border border-input",
+        className,
+      )}
     >
       {items.map((item) => (
         <ToggleGroupItem
@@ -44,7 +56,7 @@ export function SegmentedControl<T extends string>({
             <item.icon className="size-4 shrink-0" strokeWidth={2.5} />
           )}
           {!item.icon && (
-            <span className="min-w-0 truncate">{item.title}</span>
+            <span className="min-w-0 truncate">{item.label ?? item.title}</span>
           )}
         </ToggleGroupItem>
       ))}

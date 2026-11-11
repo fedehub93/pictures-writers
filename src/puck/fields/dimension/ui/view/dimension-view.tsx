@@ -13,9 +13,9 @@ import {
 import { Input } from "@/shared/ui/input";
 
 import type { DimensionProps } from "../../index";
+import { WidthControl } from "./width-control";
 
-const layoutFields: FieldDef<DimensionProps>[] = [
-  { key: "width", label: "Width", type: "unit", placeholder: "auto" },
+const sizeFields: FieldDef<DimensionProps>[] = [
   { key: "height", label: "Height", type: "unit", placeholder: "auto" },
   { key: "maxWidth", label: "Max width", type: "unit", placeholder: "auto" },
   { key: "minHeight", label: "Min height", type: "unit", placeholder: "auto" },
@@ -70,7 +70,18 @@ export const DimensionView = ({
     <div className="flex flex-col gap-y-2 p-1">
       {/* --- LAYOUT --- */}
       <div className="grid grid-cols-2 gap-x-4 gap-y-4 p-1">
-        {layoutFields.map((field) => {
+        {/* Width carries the explicit Auto / Fill / Fit content states, so it
+            spans the grid instead of sharing a cell with Height. */}
+        <div className="col-span-2">
+          <WidthControl
+            value={renderValues.width}
+            isModified={currentValues.width !== undefined}
+            onReset={() => resetProp("width")}
+            onChange={(width) => onUpdate({ width })}
+          />
+        </div>
+
+        {sizeFields.map((field) => {
           const isModified = currentValues[field.key] !== undefined;
           const displayValue = renderValues[field.key] ?? "";
           return (
