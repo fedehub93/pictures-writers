@@ -37,18 +37,27 @@ export const Editor = ({
   return (
     <div className="flex flex-col h-[calc(100vh-3.75rem)] overflow-hidden">
       <BuilderHeader header={header} siteLayout={siteLayout} />
-      <div className="grid grid-cols-[300px_1fr_300px] flex-1 overflow-hidden">
+      {/*
+        `grid-rows-1` is load-bearing: the implicit row would be `auto`, and an
+        auto track grows to the tallest non-scrolling child. The properties
+        panel, once it stopped being a scroll container itself, would then
+        stretch all three columns to its content height, leaving its own
+        `overflow-y-auto` nothing to scroll and making `overflow-hidden` below
+        clip the fields.
+      */}
+      <div className="grid grid-cols-[300px_1fr_300px] grid-rows-1 flex-1 overflow-hidden">
         <div className="h-full border-r overflow-hidden">
           <ElementsPanel />
         </div>
 
-        <div className="flex justify-center min-w-0 relative">
+        <div className="relative flex min-w-0 justify-center overflow-hidden">
           <PuckBuilder />
         </div>
 
         <div className="flex h-full flex-col border-l">
           <EditorRootEntry rootLabel={rootLabel} {...rootEntry} />
-          <div className="flex-1 overflow-y-auto">
+          {/* The panel header stays pinned: the field list is the only scroller. */}
+          <div className="min-h-0 flex-1 overflow-y-auto">
             <Puck.Fields />
           </div>
         </div>
