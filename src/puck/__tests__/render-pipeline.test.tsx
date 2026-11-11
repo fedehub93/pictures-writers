@@ -27,9 +27,13 @@ const PUCK: PuckContext = {
   dragRef: null,
 };
 
-const SlotStub = ({ className }: { className?: string }) => (
-  <div data-slot="stub" className={className} />
-);
+const SlotStub = ({
+  className,
+  style,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+}) => <div data-slot="stub" className={className} style={style} />;
 
 type SharedCase = {
   name: string;
@@ -295,6 +299,46 @@ describe("consolidated Puck render pipeline", () => {
     "$name renders identical markup from default props in editor and public configs",
     assertParity,
   );
+
+  it("assigns the shared defaults entry to every editor component", () => {
+    const editorConfigs = [
+      pageEditorConfig,
+      editorConfigForRegion("HEADER"),
+      editorConfigForRegion("FOOTER"),
+    ];
+
+    type EditorComponent = { defaultProps?: object };
+    const editorComponents = new Map<string, EditorComponent>();
+
+    for (const config of editorConfigs) {
+      for (const [name, component] of Object.entries(config.components)) {
+        editorComponents.set(name, component as unknown as EditorComponent);
+      }
+    }
+
+    for (const [name, defaults] of Object.entries(BLOCK_DEFAULT_PROPS)) {
+      expect(
+        editorComponents.get(name),
+        `${name} is missing from the editor configs`,
+      ).toBeDefined();
+      // Identity, not deep equality: a component that restates the literal
+      // would build a second object and silently diverge from the public
+      // render defaults.
+      expect(
+        editorComponents.get(name)?.defaultProps,
+        `${name} does not use the shared defaults entry`,
+      ).toBe(defaults);
+    }
+
+    for (const [name, component] of editorComponents) {
+      if (name in BLOCK_DEFAULT_PROPS) continue;
+
+      expect(
+        component?.defaultProps,
+        `${name} keeps a private default outside BLOCK_DEFAULT_PROPS`,
+      ).toBeUndefined();
+    }
+  });
 
   it("emits no editor-only layout classes for Container, Flex and Grid", () => {
     const config = renderConfigForRegion("HEADER");

@@ -35,8 +35,11 @@ export type TopBarBlockUiProps = {
    * edit it even after dismissing it on the public site in the same browser.
    */
   editMode?: boolean;
-  /** Responsive style variables produced by the shared style utilities. */
+  /**
+   * Root-level responsive style variables: display, `align-self`, dimension and
+   * decoration. The container layout variables live on the slot wrapper.
+   */
   styleVars?: Record<string, string>;
-  /** Editor visibility classes, empty on the public render. */
+  /** Authored display classes and editor visibility markers for the root. */
   layoutClassName?: string;
 };

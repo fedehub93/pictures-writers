@@ -33,6 +33,37 @@
   grid-template-rows: var(--gtr-d);
 }
 
+/* --- 0a. ITEM LAYOUT ---
+   A block whose layout surface is an inner element (the Top bar slot) still
+   needs the item-level half of the layout contract on its root: `display`
+   hides the whole block and `align-self` describes it as a child of its
+   parent. The reset and the desktop-first cascade mirror `.puck-layout`. */
+.puck-layout-item {
+  --disp-d: initial;
+  --disp-t: initial;
+  --disp-m: initial;
+  --as-d: initial;
+  --as-t: initial;
+  --as-m: initial;
+
+  display: var(--disp-d);
+  align-self: var(--as-d);
+}
+
+@media (max-width: 1023px) {
+  .puck-layout-item {
+    display: var(--disp-t, var(--disp-d));
+    align-self: var(--as-t, var(--as-d));
+  }
+}
+
+@media (max-width: 767px) {
+  .puck-layout-item {
+    display: var(--disp-m, var(--disp-t, var(--disp-d)));
+    align-self: var(--as-m, var(--as-t, var(--as-d)));
+  }
+}
+
 /* --- 0b. DISPLAY (leaf blocks) ---
    A leaf block only opts into the display rule when it carries an authored
    display value. The class resets the variables locally so a parent's

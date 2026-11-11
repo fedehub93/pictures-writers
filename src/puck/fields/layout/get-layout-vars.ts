@@ -62,6 +62,14 @@ export const getLayoutVars = (data?: Responsive<LayoutProps>) => {
   return vars;
 };
 
+const filterVars = (
+  vars: Record<string, string>,
+  predicate: (name: string, value: string) => boolean,
+) =>
+  Object.fromEntries(
+    Object.entries(vars).filter(([name, value]) => predicate(name, value)),
+  );
+
 /**
  * Extract only the responsive display variables from a style-variable map.
  *
@@ -70,6 +78,38 @@ export const getLayoutVars = (data?: Responsive<LayoutProps>) => {
  * display class targets and the one a hidden block must remove from layout.
  */
 export const pickDisplayVars = (vars: Record<string, string>) =>
-  Object.fromEntries(
-    Object.entries(vars).filter(([name]) => name.startsWith("--disp-")),
+  filterVars(vars, (name) => name.startsWith("--disp-"));
+
+/**
+ * Partition a style-variable map into the three surfaces a layout can touch.
+ *
+ * - `displayVars` hides or reveals the block; a block whose layout surface
+ *   moved to an inner element needs it on both boxes.
+ * - `itemVars` (`align-self`) describes the block as a child of its parent, so
+ *   it stays on the root.
+ * - `containerVars` arranges the block's children (direction, wrap, justify,
+ *   align, content, items, gaps and grid tracks) on the layout surface.
+ */
+export const partitionLayoutVars = (vars: Record<string, string>) => ({
+  displayVars: filterVars(vars, (name) => name.startsWith("--disp-")),
+  itemVars: filterVars(vars, (name) => name.startsWith("--as-")),
+  containerVars: filterVars(
+    vars,
+    (name) => !name.startsWith("--disp-") && !name.startsWith("--as-"),
+  ),
+});
+
+/**
+ * Drop `display: none` from a responsive variable map.
+ *
+ * The editor canvas forces a block hidden at the selected viewport back into
+ * the flow so it stays selectable. When the layout surface is an inner element,
+ * a local `none` would keep its content invisible even though the block root is
+ * a visible placeholder, so the canvas omits the hidden value and lets the
+ * cascade resolve the nearest visible breakpoint instead.
+ */
+export const omitHiddenDisplayVars = (vars: Record<string, string>) =>
+  filterVars(
+    vars,
+    (name, value) => !(name.startsWith("--disp-") && value === "none"),
   );
