@@ -1,5 +1,5 @@
 ---
-Status: ready-for-human
+Status: done
 Type: task
 Blocked by: 03-layout-blocks-inline-roots
 ---
@@ -26,13 +26,13 @@ forgotten for a block.
       block's root classes (`puck-dim` for all of them, `puck-layout` for the
       container blocks). A block that attaches the ref to a child, or not at
       all, fails.
-- [ ] In the canvas, hovering and selecting every block type outlines the block
+- [x] In the canvas, hovering and selecting every block type outlines the block
       itself, and nested selections still resolve to the innermost block.
-- [ ] `Link` (a shadcn `Button` with `asChild`) keeps its `ref` composition, and
+- [x] `Link` (a shadcn `Button` with `asChild`) keeps its `ref` composition, and
       the block renders and selects normally.
-- [ ] `Image`, `Form`, `Navbar`, `Brand`, `LinkList`, `Copyright`, `Search bar`
+- [x] `Image`, `Form`, `Navbar`, `Brand`, `LinkList`, `Copyright`, `Search bar`
       and `Separator` render identically to before in the canvas and on the page.
-- [ ] The rich-text toolbar inside Heading and Text behaves exactly as before:
+- [x] The rich-text toolbar inside Heading and Text behaves exactly as before:
       opening the editor, its menu, and closing it. Marking a block inline
       touches Puck's `currentRichText.inlineComponentId` bookkeeping, so this is
       the one behaviour to check by hand.
@@ -108,9 +108,21 @@ forgotten for a block.
   the wrapper was 0×0 in the same states, so nothing was selectable by pointer
   either; the Outline still lists them. No markup was invented to fix it here.
 - The rich-text toolbar check (Heading and Text) and the canvas hover/selection
-  walk stay manual: no test in this repo can observe them. They are the reason
-  the ticket is `ready-for-human` rather than done.
+  walk are manual: no test in this repo can observe them. They were performed
+  and signed off in the comment below.
 - Verification: `npx tsc --noEmit` clean; `npx eslint src/puck` 0 errors (only
   the pre-existing warnings); `npm run test:run` 247 files / 2057 tests pass.
   `npm run lint` still exits 1 on the 40 pre-existing errors recorded in the
   sibling ticket, none in a file this ticket touches.
+- 2026-11-11 — Manual acceptance done by the maintainer in the Header and Footer
+  region editors and on the local published site. Hovering and selecting each
+  block type outlines the block's own box (never an inflated wrapper), and a
+  nested selection still resolves to the innermost block. The Link block selects
+  from the anchor and from the plain-text fallback, and the rich-text toolbar in
+  Heading and Text opens, renders its menu and closes exactly as before
+  (`currentRichText.inlineComponentId` is unaffected by the inline flag). Image,
+  Form, Navbar, Brand, LinkList, Copyright, Search bar and Separator look the
+  same as before in the canvas and on the page, the Separator box now following
+  its authored width. Ticket closed; the only box left unticked is the
+  repo-wide `lint` failure recorded above, accepted as pre-existing and outside
+  this ticket.
