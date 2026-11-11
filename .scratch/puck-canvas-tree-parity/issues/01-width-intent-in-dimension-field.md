@@ -1,5 +1,5 @@
 ---
-Status: ready-for-human
+Status: done
 Type: task
 ---
 
@@ -25,11 +25,11 @@ Two changes in the shared style layer:
 
 ## Acceptance criteria
 
-- [ ] A Container with `max-width: 72rem`, `margin: 0 auto` and no authored
+- [x] A Container with `max-width: 72rem`, `margin: 0 auto` and no authored
       width measures 1152px in the canvas and on the published page at a
-      viewport wider than 72rem. *(browser check still open)*
-- [ ] The same box at a viewport narrower than 72rem fills the viewport in both
-      paths. *(browser check still open)*
+      viewport wider than 72rem.
+- [x] The same box at a viewport narrower than 72rem fills the viewport in both
+      paths.
 - [x] An authored `width` (rem, px or `%`) still wins over the implied fill at
       every breakpoint, and a `width` authored on one breakpoint still cascades
       the way the other dimension values do.
@@ -94,9 +94,10 @@ Two changes in the shared style layer:
   `npm run test:run` 245 files / 2031 tests pass. `npm run lint` still exits 1 on
   the 40 pre-existing errors recorded in the sibling ticket, none in a file this
   ticket touches.
-- Open: the two viewport measurements and the Header region look are browser
-  checks. Expected: the bar Container (max width 72rem, auto margins, no authored
-  width) measures 1152px above 72rem and fills below it, in the canvas and on the
-  published page, with `space-between` distributing its children at desktop and
-  tablet. Status moved to `ready-for-human` for those; it becomes `done` once
-  they are confirmed.
+- 2026-11-11 — Browser check done by the maintainer: the bar Container (max width
+  72rem, auto margins, no authored width) measures 1152px above 72rem and fills
+  below it, in the canvas and on the published page, with `space-between`
+  distributing its children at desktop and tablet. The preset menu no longer
+  scrolls horizontally and the width states behave as described. Ticket closed;
+  the only box left unticked is the repo-wide `lint` failure recorded above,
+  accepted as pre-existing and outside this ticket.
