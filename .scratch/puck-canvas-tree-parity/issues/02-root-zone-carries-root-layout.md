@@ -1,5 +1,5 @@
 ---
-Status: ready-for-human
+Status: done
 Type: task
 ---
 
@@ -21,10 +21,10 @@ rule only has to read them.
 
 ## Acceptance criteria
 
-- [ ] In the canvas, a root whose layout is `display: flex; flex-direction:
+- [x] In the canvas, a root whose layout is `display: flex; flex-direction:
       column` produces the same top-level arrangement as the published page:
       `justify-content`, `align-items`, `gap` and `grid-template-*` authored on
-      the root all reach the top-level blocks. *(browser check still open)*
+      the root all reach the top-level blocks.
 - [x] `align-self` is **not** applied to the zone: it still describes the root as
       a child of its own parent.
 - [x] A root with no authored layout keeps the current look (`display: block`,
@@ -35,8 +35,9 @@ rule only has to read them.
       exists in the canvas.
 - [x] A tripwire test asserts the selector is present in `puck-base.css`, so a
       Puck upgrade that renames the root zone fails loudly.
-- [ ] Manual: a top-level Container with max width and auto margins measures the
-      same in the canvas and on the page. *(browser check still open)*
+- [x] Manual: a top-level Container with max width and auto margins measures the
+      same in the canvas and on the page (1152px in both at a 1280px viewport;
+      the 64px vs 56.5px side margins are half the 15px page scrollbar).
 
 ## Reference implementation
 
@@ -127,9 +128,14 @@ grid-template-rows: var(--gtr-t, var(--gtr-d));
   `npm run test:run` 246 files / 2035 tests pass. `npm run lint` still exits 1 on
   the 40 pre-existing errors recorded in the sibling ticket, none in a file this
   ticket touches.
-- Open: the two browser checks above (flex-column root arrangement and the
-  max-width Container measurement). Expected: the Header bar Container (max
-  width 72rem, auto margins, no authored width) measures the same in the canvas
-  and on the published page, with `space-between` distributing its children in
-  both. Status moved to `ready-for-human` for those; it becomes `done` once they
-  are confirmed.
+- 2026-11-11 — Browser checks done by the maintainer. Check A: a flex-column
+  root with centered align-items and a gap distributes the top-level blocks the
+  same way in the canvas and on the published page, and the zone's computed
+  `align-self` stays `auto`. Check B: the bar Container (max width 72rem, auto
+  margins, no authored width) measures 1152px in both surfaces at a 1280px
+  viewport. The side margins read 64px in the canvas and 56.5px on the page;
+  that 7.5px per side is half the 15px page scrollbar (`1280 − 15 = 1265`
+  parent), not a layout difference. The width matches because ticket 01's
+  implied fill already removed the shrink-to-fit case, so this ticket's
+  criterion holds for the width; the remaining wrapper effects (`fit-content`,
+  `align-self` on a block) belong to ticket 03. Ticket closed.
