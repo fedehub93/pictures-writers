@@ -5,6 +5,12 @@ import { describe, expect, it } from "vitest";
 
 import { BREAKPOINTS } from "../utils/breakpoints";
 
+import {
+  authoredDeclarations,
+  declarations,
+  readPuckBaseRules,
+} from "./helpers/css-rules";
+
 /**
  * Tripwire for Puck's root zone.
  *
@@ -16,11 +22,6 @@ import { BREAKPOINTS } from "../utils/breakpoints";
  * instead of being restated here, so a Puck upgrade that renames the zone fails
  * loudly instead of silently disabling the rule.
  */
-const stylesheet = readFileSync(
-  new URL("../styles/puck-base.css", import.meta.url),
-  "utf8",
-);
-
 const LAYOUT_SELECTOR = ".puck-layout";
 
 const ROOT_ZONE_SELECTOR = `[data-puck-dropzone="${puckRootDroppableId()}"]`;
@@ -44,8 +45,6 @@ const CONTAINER_PROPERTIES = [
   ["grid-template-rows", "gtr"],
 ] as const;
 
-type Rule = { selector: string; body: string; media: string | null };
-
 function puckRootDroppableId() {
   const require = createRequire(import.meta.url);
   const bundle = readFileSync(require.resolve("@puckeditor/core"), "utf8");
@@ -63,73 +62,7 @@ function puckRootDroppableId() {
   return `${area}:${zone}`;
 }
 
-function findClosingBrace(source: string, openIndex: number) {
-  let depth = 0;
-
-  for (let index = openIndex; index < source.length; index += 1) {
-    if (source[index] === "{") depth += 1;
-    if (source[index] === "}" && --depth === 0) return index;
-  }
-
-  throw new Error(`Unbalanced braces in puck-base.css at index ${openIndex}`);
-}
-
-/** Flattens the stylesheet into rules, remembering the media query each sits in. */
-function parseRules(source: string, media: string | null = null): Rule[] {
-  const rules: Rule[] = [];
-  let prelude = "";
-  let index = 0;
-
-  while (index < source.length) {
-    if (source[index] !== "{") {
-      prelude += source[index];
-      index += 1;
-      continue;
-    }
-
-    const close = findClosingBrace(source, index);
-    const body = source.slice(index + 1, close);
-    const selector = prelude.trim();
-
-    if (selector.startsWith("@media")) {
-      rules.push(...parseRules(body, selector));
-    } else if (selector) {
-      rules.push({ selector, body, media });
-    }
-
-    prelude = "";
-    index = close + 1;
-  }
-
-  return rules;
-}
-
-function declarations(rule: Rule) {
-  return new Map(
-    rule.body
-      .split(";")
-      .map((entry) => entry.trim())
-      .filter(Boolean)
-      .map((entry) => {
-        const separator = entry.indexOf(":");
-        return [
-          entry.slice(0, separator).trim(),
-          entry.slice(separator + 1).trim(),
-        ] as const;
-      }),
-  );
-}
-
-/** Drops the local variable resets, which only the layout element declares. */
-function authoredDeclarations(rule: Rule) {
-  return new Map(
-    [...declarations(rule)].filter(
-      ([property]) => !property.startsWith("--"),
-    ),
-  );
-}
-
-const rules = parseRules(stylesheet.replace(/\/\*[\s\S]*?\*\//g, ""));
+const rules = readPuckBaseRules();
 
 const layoutRules = rules.filter((rule) => rule.selector === LAYOUT_SELECTOR);
 

@@ -579,30 +579,52 @@
 
 /* --- 6. EDITOR-ONLY VISIBILITY PLACEHOLDER ---
    A block hidden at the viewport selected in the toolbar stays in the canvas
-   as a dashed ghost, so it remains selectable and editable. The classes are
-   emitted only while editing, so none of this can reach the public render.
+   as a dashed ghost, so it remains selectable and editable.
+
+   The placeholder class rides on the block's own root. Every block is inline
+   and attaches Puck's drag ref to that element, so the node carrying
+   `puck-hidden-placeholder` is the node Puck owns (`data-puck-component`):
+   there is no wrapper between the two any more, and the selectors below match
+   the class on the block itself instead of reaching through a parent.
+
+   The editor-only guarantee is the class emission, not the selector: only
+   `getLayoutClassNames(…, { editing: true })` emits these classes and the
+   published render has no equivalent. Keeping the rules class-based also
+   keeps them independent of Puck's canvas attributes, so an upgrade that stops
+   tagging the node cannot leave a hidden block at its authored
+   `display: none`, invisible and unselectable rather than merely un-ghosted.
 
    The canvas is an iframe whose width is exactly the selected bucket, so the
    media queries below already identify the viewport being edited. That is why
    the ghost no longer needs a marker on the editor shell: an attribute on an
    ancestor outside the iframe cannot reach the canvas, while the width can.
 
-   The shared rules read three custom properties. Each media query sets them
-   only for the breakpoint it owns, so the ghost appears at exactly one canvas
-   width. With the properties unset the outline is 0px, opacity stays 1 and
-   `content: none` draws no label. */
-[data-puck-component]:has(> .puck-hidden-placeholder) {
+   The ghost properties are reset locally, the way `.puck-display` resets the
+   display ladder: a hidden parent is a ghost too, and without the reset its
+   outline and label are inherited by a nested block hidden at a different
+   breakpoint.
+
+   With a single element the fade cannot sit on the content while the outline
+   and the label stay solid: `opacity` on the root fades the box, the outline
+   and the label together. That is the simpler option and reads correctly — a
+   ghost that is uniformly faint. It is declared inside the media queries, not
+   on the base rule, so an authored opacity keeps applying at every other
+   width.
+
+   Each media query sets the ghost properties only for the breakpoint it owns,
+   so the ghost appears at exactly one canvas width. With the properties unset
+   the outline is 0px and `content: none` draws no label. */
+.puck-hidden-placeholder {
+  --puck-ghost-outline: initial;
+  --puck-hidden-label: initial;
+
   position: relative;
   outline: var(--puck-ghost-outline, 0) dashed
     var(--puck-color-selection-border, #94a3b8);
   outline-offset: -2px;
 }
 
-[data-puck-component]:has(> .puck-hidden-placeholder) > * {
-  opacity: var(--puck-ghost-opacity, 1);
-}
-
-[data-puck-component]:has(> .puck-hidden-placeholder)::after {
+.puck-hidden-placeholder::after {
   content: var(--puck-hidden-label, none);
   position: absolute;
   top: 0;
@@ -626,35 +648,26 @@
 @media (min-width: 1024px) {
   .puck-hidden-at-desktop.puck-hidden-placeholder {
     display: block !important;
-  }
-
-  [data-puck-component]:has(> .puck-hidden-at-desktop.puck-hidden-placeholder) {
     --puck-ghost-outline: 2px;
-    --puck-ghost-opacity: 0.45;
     --puck-hidden-label: "Hidden on desktop";
+    opacity: 0.45;
   }
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
   .puck-hidden-at-tablet.puck-hidden-placeholder {
     display: block !important;
-  }
-
-  [data-puck-component]:has(> .puck-hidden-at-tablet.puck-hidden-placeholder) {
     --puck-ghost-outline: 2px;
-    --puck-ghost-opacity: 0.45;
     --puck-hidden-label: "Hidden on tablet";
+    opacity: 0.45;
   }
 }
 
 @media (max-width: 767px) {
   .puck-hidden-at-mobile.puck-hidden-placeholder {
     display: block !important;
-  }
-
-  [data-puck-component]:has(> .puck-hidden-at-mobile.puck-hidden-placeholder) {
     --puck-ghost-outline: 2px;
-    --puck-ghost-opacity: 0.45;
     --puck-hidden-label: "Hidden on mobile";
+    opacity: 0.45;
   }
 }
