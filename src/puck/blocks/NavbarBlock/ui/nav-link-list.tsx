@@ -27,11 +27,13 @@ export const NavLinkList = ({
   links,
   pathname,
   onNavigate,
+  editing,
   className,
 }: {
   links: NavLinkEntry[];
   pathname?: string | null;
   onNavigate?: () => void;
+  editing?: boolean;
   className?: string;
 }) => {
   if (links.length === 0) return null;
@@ -47,6 +49,7 @@ export const NavLinkList = ({
             <InlineSmartLink
               link={entry.link}
               onClick={onNavigate}
+              editing={editing}
               className={cn(
                 NAV_LINK_PLAIN_CLASSES,
                 "block",
@@ -74,11 +77,13 @@ export const NavbarMobileColumnList = ({
   links,
   pathname,
   onNavigate,
+  editing,
   className,
 }: {
   links: NavbarColumnChildUi[];
   pathname?: string | null;
   onNavigate?: () => void;
+  editing?: boolean;
   className?: string;
 }) => {
   if (links.length === 0) return null;
@@ -94,6 +99,7 @@ export const NavbarMobileColumnList = ({
             <InlineSmartLink
               link={entry.link}
               onClick={onNavigate}
+              editing={editing}
               className={cn(
                 NAV_LINK_PLAIN_CLASSES,
                 "flex items-start gap-3",

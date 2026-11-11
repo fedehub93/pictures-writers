@@ -23,6 +23,7 @@ export const NavbarBlockUi = ({
   styleVars,
   appearanceVars,
   layoutClassName,
+  editing,
   dragRef,
 }: NavbarBlockUiProps) => {
   const pathname = usePathname();
@@ -42,12 +43,14 @@ export const NavbarBlockUi = ({
         layout={layout}
         collapseAt={collapseAt}
         pathname={pathname}
+        editing={editing}
       />
       <NavbarMobileMenu
         items={items}
         collapseAt={collapseAt}
         pathname={pathname}
         appearanceVars={appearanceVars}
+        editing={editing}
       />
     </div>
   );

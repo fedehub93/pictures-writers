@@ -55,10 +55,12 @@ export const NavbarMobileList = ({
   items = [],
   pathname,
   onNavigate,
+  editing,
 }: {
   items?: NavItemUi[];
   pathname?: string | null;
   onNavigate?: () => void;
+  editing?: boolean;
 }) => {
   if (items.length === 0) return null;
 
@@ -92,6 +94,7 @@ export const NavbarMobileList = ({
                           links={children}
                           pathname={pathname}
                           onNavigate={onNavigate}
+                          editing={editing}
                           className="pl-2"
                         />
                       ) : (
@@ -99,6 +102,7 @@ export const NavbarMobileList = ({
                           links={children}
                           pathname={pathname}
                           onNavigate={onNavigate}
+                          editing={editing}
                           className="pl-2"
                         />
                       )}
@@ -120,6 +124,7 @@ export const NavbarMobileList = ({
                   link={item.link}
                   pathname={pathname}
                   onNavigate={onNavigate}
+                  editing={editing}
                   className="mt-1"
                 />
               </li>
@@ -132,6 +137,7 @@ export const NavbarMobileList = ({
                 <InlineSmartLink
                   link={item.link}
                   onClick={onNavigate}
+                  editing={editing}
                   className={cn(
                     buttonVariants({
                       variant:
@@ -154,6 +160,7 @@ export const NavbarMobileList = ({
               <InlineSmartLink
                 link={item.link}
                 onClick={onNavigate}
+                editing={editing}
                 className={cn(
                   MOBILE_LINK_CLASSES,
                   active && "text-primary",
@@ -174,12 +181,14 @@ export const NavbarMobileMenu = ({
   collapseAt = "tablet",
   pathname,
   appearanceVars,
+  editing,
 }: {
   items?: NavItemUi[];
   collapseAt?: NavbarCollapse;
   pathname?: string | null;
   /** Navigation style variables, repeated here because the sheet is portaled. */
   appearanceVars?: Record<string, string>;
+  editing?: boolean;
 }) => {
   const [open, setOpen] = useState(false);
 
@@ -209,6 +218,7 @@ export const NavbarMobileMenu = ({
           items={items}
           pathname={pathname}
           onNavigate={() => setOpen(false)}
+          editing={editing}
         />
       </SheetContent>
     </Sheet>

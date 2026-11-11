@@ -424,7 +424,7 @@ One of the three width ranges a responsive value is authored for: mobile, tablet
 _Avoid_: device, screen size, media query.
 
 **Canvas**:
-The live preview inside the page or Site region editor, drawn at the selected Breakpoint. It shares the layout contract with the published page but is not the published page.
+The live preview inside the page or Site region editor, drawn at the selected Breakpoint. It shares the layout contract with the published page but is not the published page: the content it draws is inert, so clicking a link selects its block instead of navigating or opening a tab, while the published page and the interactive preview keep links live.
 _Avoid_: preview page, editor view.
 
 **Editor root**:

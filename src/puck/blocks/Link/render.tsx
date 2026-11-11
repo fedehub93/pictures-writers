@@ -40,6 +40,7 @@ export const renderLinkBlock: PuckComponent<LinkBlockProps> = ({
       layoutClassName={getLayoutClassNames(layout, {
         editing: puck?.isEditing,
       })}
+      editing={puck?.isEditing}
       dragRef={puck?.dragRef}
     />
   );

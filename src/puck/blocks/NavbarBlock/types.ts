@@ -216,6 +216,8 @@ export type NavbarBlockUiProps = {
   appearanceVars?: Record<string, string>;
   /** Editor visibility classes, empty on the public render. */
   layoutClassName?: string;
+  /** Editor-only: every menu entry keeps its anchor but cancels navigation. */
+  editing?: boolean;
   /** Editor-only: Puck's selection ref, attached to the block root. */
   dragRef?: BlockDragRef;
 };

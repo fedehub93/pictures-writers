@@ -47,6 +47,7 @@ export const renderNavbarBlock = ({
       styleVars={styleVars}
       appearanceVars={appearanceVars}
       layoutClassName={getLayoutClassNames(layout, { editing })}
+      editing={editing}
       dragRef={dragRef}
     />
   );

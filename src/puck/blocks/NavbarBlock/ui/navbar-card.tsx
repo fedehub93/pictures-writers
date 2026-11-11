@@ -29,6 +29,7 @@ export const NavbarCard = ({
   pathname,
   className,
   onNavigate,
+  editing,
 }: {
   label: string;
   description?: string;
@@ -38,6 +39,7 @@ export const NavbarCard = ({
   pathname?: string | null;
   className?: string;
   onNavigate?: () => void;
+  editing?: boolean;
 }) => {
   const active = isNavLinkActive(pathname, getLinkHref(link));
   const displayLabel = getNavLabel(label, link);
@@ -46,6 +48,7 @@ export const NavbarCard = ({
     <InlineSmartLink
       link={link}
       onClick={onNavigate}
+      editing={editing}
       className={cn(
         "relative flex h-full w-full flex-col overflow-hidden rounded-md border bg-background text-left transition-colors hover:bg-accent hover:text-accent-foreground",
         active && "bg-accent text-accent-foreground",

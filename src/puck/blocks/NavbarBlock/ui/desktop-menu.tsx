@@ -68,10 +68,12 @@ export const NavbarDesktopColumnPanel = ({
   items,
   layout,
   pathname,
+  editing,
 }: {
   items: NavbarColumnChildUi[];
   layout: NavbarLayout;
   pathname?: string | null;
+  editing?: boolean;
 }) => {
   const showsMegaPanel = layout === "mega" && items.some(hasMegaPanelContent);
 
@@ -86,6 +88,7 @@ export const NavbarDesktopColumnPanel = ({
               icon={child.icon}
               link={child.link}
               pathname={pathname}
+              editing={editing}
             />
           </li>
         ))}
@@ -98,6 +101,7 @@ export const NavbarDesktopColumnPanel = ({
       <NavLinkList
         links={items}
         pathname={pathname}
+        editing={editing}
         className={COLUMN_LIST_CLASSES[layout]}
       />
     </div>
@@ -108,10 +112,12 @@ function DesktopItem({
   item,
   layout,
   pathname,
+  editing,
 }: {
   item: NavItemUi;
   layout: NavbarLayout;
   pathname?: string | null;
+  editing?: boolean;
 }) {
   if (item.type === "link") {
     const active = isNavLinkActive(pathname, getLinkHref(item.link));
@@ -119,6 +125,7 @@ function DesktopItem({
     return (
       <InlineSmartLink
         link={item.link}
+        editing={editing}
         className={cn(
           navigationMenuTriggerStyle({ look: "plain" }),
           "puck-nav-label",
@@ -134,6 +141,7 @@ function DesktopItem({
     return (
       <InlineSmartLink
         link={item.link}
+        editing={editing}
         className={cn(
           buttonVariants({
             variant: item.variant === "secondary" ? "secondary" : "default",
@@ -163,6 +171,7 @@ function DesktopItem({
             items={item.items ?? []}
             layout={layout}
             pathname={pathname}
+            editing={editing}
           />
         </NavigationMenuContent>
       </>
@@ -187,6 +196,7 @@ function DesktopItem({
           icon={item.icon}
           link={item.link}
           pathname={pathname}
+          editing={editing}
           className="m-1 w-[min(90vw,20rem)]"
         />
       </NavigationMenuContent>
@@ -205,11 +215,13 @@ export const NavbarDesktopMenu = ({
   layout = "compact",
   collapseAt = "tablet",
   pathname,
+  editing,
 }: {
   items?: NavItemUi[];
   layout?: NavbarLayout;
   collapseAt?: NavbarCollapse;
   pathname?: string | null;
+  editing?: boolean;
 }) => {
   if (items.length === 0) return null;
 
@@ -219,7 +231,12 @@ export const NavbarDesktopMenu = ({
         <NavigationMenuList className="puck-nav-row space-x-0">
           {items.map((item, index) => (
             <NavigationMenuItem key={`${item.type}-${item.label}-${index}`}>
-              <DesktopItem item={item} layout={layout} pathname={pathname} />
+              <DesktopItem
+                item={item}
+                layout={layout}
+                pathname={pathname}
+                editing={editing}
+              />
             </NavigationMenuItem>
           ))}
         </NavigationMenuList>
