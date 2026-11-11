@@ -1,5 +1,5 @@
 ---
-Status: ready-for-human
+Status: done
 Type: task
 Blocked by: 01-width-intent-in-dimension-field, 02-root-zone-carries-root-layout
 ---
@@ -28,15 +28,12 @@ promoted to real documentation of why the flag is there.
       variables; for the Top bar it is the strip root carrying
       `puck-layout-item`/`puck-dim` and the root style variables (the container
       layout surface already moved to the slot in the previous ticket).
-- [ ] Selecting one of them outlines the block's own box exactly (the overlay
+- [x] Selecting one of them outlines the block's own box exactly (the overlay
       rect equals the block's `getBoundingClientRect`), not an inflated wrapper.
-      *(canvas check still open)*
-- [ ] Hover, drag out of a nested Container, reorder inside a slot, and
-      insertion from the drawer all still work, verified by hand. *(canvas check
-      still open)*
-- [ ] An empty Container/Flex/Grid keeps a working drop target and a working
-      selection in the canvas. *(root and ref covered by the DOM test; the drop
-      target and the selection are canvas checks, still open)*
+- [x] Hover, drag out of a nested Container, reorder inside a slot, and
+      insertion from the drawer all still work, verified by hand.
+- [x] An empty Container/Flex/Grid keeps a working drop target and a working
+      selection in the canvas.
 - [x] The registry invariant test asserts `inline: true` on every entry of
       `editorComponentConfigs`, so a future block cannot quietly reintroduce the
       wrapper. Until ticket 04 migrates the leaves, the test accounts for the
@@ -150,9 +147,22 @@ goes on the element that already carries `puck-dim`, with no cast needed.
   `npm run test:run` 247 files / 2042 tests pass. `npm run lint` still exits 1 on
   the 40 pre-existing errors recorded in the sibling ticket, none in a file this
   ticket touches.
-- Open: selection-overlay rect, hover/drag/reorder/insert and the empty-slot
-  drop target are canvas checks. They cannot be observed by a unit test in this
-  repo. Status moved to `ready-for-human`; it becomes `done` once confirmed.
+- 2026-11-11 — Canvas checks done by the maintainer in the Header region editor
+  (the only palette that offers all four blocks). All four give the same shape:
+  the node Puck selects is the node carrying `puck-layout`/`puck-layout-item`,
+  `puck-dim` and the block style variables, its parent is a drop zone (never a
+  wrapper), and the selection overlay rect equals the block rect. A Container
+  authored with `max-width` and auto margins measures its own centred box, not
+  the full canvas. Hover narrows to the child, a nested Container keeps working when
+  dragged in and out, reorder inside a slot shows the insertion line, insertion
+  from the drawer works both at the root and into an empty slot, and an empty
+  Container/Flex/Grid keeps its drop target and its selection. The Top bar is
+  selectable from the strip background and reorders at the root. Ticket closed;
+  the only box left unticked is the repo-wide `lint` failure recorded above,
+  accepted as pre-existing and outside this ticket.
+- The parent spec's Verification repeats the interaction checks at desktop,
+  tablet and mobile; those are part of the spec's final gate, not of this
+  ticket's acceptance, and are best re-run once tickets 04–06 have landed.
 - Known follow-up, by design: the hidden-block ghost in `puck-base.css` keys off
   `[data-puck-component]:has(> .puck-hidden-placeholder)`. For the four blocks
   made inline here the placeholder class now sits on the same element as
