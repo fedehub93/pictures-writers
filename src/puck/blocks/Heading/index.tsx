@@ -13,6 +13,9 @@ import { renderHeadingBlock } from "./render";
 export type { HeadingProps };
 
 export const Heading: ComponentConfig<HeadingProps> = {
+  // The block root is the element the render attaches `puck.dragRef` to;
+  // `inline` is Puck's only supported way to skip its wrapper `div`.
+  inline: true,
   fields: {
     text: RichTextField,
     layout: DisplayOnlyLayoutField,

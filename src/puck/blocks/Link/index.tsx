@@ -14,6 +14,9 @@ import { renderLinkBlock } from "./render";
 export type { LinkBlockProps };
 
 export const LinkBlock: ComponentConfig<LinkBlockProps> = {
+  // The rendered anchor is the block root; the render hands `puck.dragRef` to
+  // it and `inline` is Puck's only supported way to skip its wrapper `div`.
+  inline: true,
   fields: {
     link: LinkField,
     layout: DisplayOnlyLayoutField,

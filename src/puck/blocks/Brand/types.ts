@@ -2,6 +2,7 @@ import type { DimensionProps } from "@/puck/fields/dimension";
 import type { LayoutProps } from "@/puck/fields/layout";
 import type { TypographyProps } from "@/puck/fields/typography";
 import type { SiteRegionMetadata } from "@/puck/metadata";
+import type { BlockDragRef } from "@/puck/types";
 import type { Responsive } from "@/puck/utils/responsive";
 
 /** Authored content of the Brand block, grouped in one editor section. */
@@ -33,6 +34,8 @@ export type BrandBlockRenderProps = BrandBlockProps & {
   metadata?: SiteRegionMetadata;
   /** True inside the editor canvas, where hidden blocks stay selectable. */
   editing?: boolean;
+  /** Editor-only: Puck's selection ref, attached to the block root. */
+  dragRef?: BlockDragRef;
 };
 
 export type BrandBlockUiProps = {
@@ -45,4 +48,6 @@ export type BrandBlockUiProps = {
   styleVars?: Record<string, string>;
   /** Editor visibility classes, empty on the public render. */
   layoutClassName?: string;
+  /** Editor-only: Puck's selection ref, attached to the block root. */
+  dragRef?: BlockDragRef;
 };

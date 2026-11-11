@@ -33,6 +33,7 @@ export const renderBrandBlock = ({
   logoUrl,
   metadata,
   editing,
+  dragRef,
 }: BrandBlockRenderProps) => {
   const styleVars = {
     ...getLayoutVars(layout),
@@ -47,6 +48,7 @@ export const renderBrandBlock = ({
       logoUrl={logoUrl?.trim() || metadata?.logoUrl}
       styleVars={styleVars}
       layoutClassName={getLayoutClassNames(layout, { editing })}
+      dragRef={dragRef}
     />
   );
 };

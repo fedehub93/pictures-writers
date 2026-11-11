@@ -9,6 +9,7 @@ export const BrandBlockUi = ({
   logoUrl,
   styleVars,
   layoutClassName,
+  dragRef,
 }: BrandBlockUiProps) => {
   const {
     showLogo = BRAND_DEFAULT_CONTENT.showLogo,
@@ -22,7 +23,10 @@ export const BrandBlockUi = ({
   if (!(showLogo && src) && !(showSiteName && text)) return null;
 
   return (
+    // The row that lays out the logo and the site name is the block root, so
+    // it is what the editor selects and outlines.
     <div
+      ref={dragRef}
       className={cn(
         "flex items-center gap-x-3 puck-dim puck-typo",
         layoutClassName,

@@ -29,6 +29,7 @@ export const renderSeparatorBlock: PuckComponent<SeparatorBlockProps> = ({
       layoutClassName={getLayoutClassNames(layout, {
         editing: puck?.isEditing,
       })}
+      dragRef={puck?.dragRef}
     />
   );
 };

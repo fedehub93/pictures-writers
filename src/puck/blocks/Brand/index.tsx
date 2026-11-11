@@ -28,10 +28,16 @@ const BrandEditorRender: PuckComponent<BrandBlockProps> = ({
   renderBrandBlock({
     ...props,
     editing: puck.isEditing,
+    // The block declares `inline`, so Puck hands it the selection ref instead
+    // of wrapping it; the UI attaches it to the block root.
+    dragRef: puck.dragRef,
     metadata: readSiteRegionMetadata(puck.metadata),
   });
 
 export const Brand: ComponentConfig<BrandBlockProps> = {
+  // The row rendered by `BrandBlockUi` is the block root and receives
+  // `puck.dragRef`; `inline` is Puck's only supported way to skip its wrapper.
+  inline: true,
   fields: {
     content: BrandContentField,
     layout: DisplayOnlyLayoutField,

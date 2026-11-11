@@ -10,6 +10,7 @@ export const CopyrightBlockUi = ({
   year = new Date().getFullYear(),
   styleVars,
   layoutClassName,
+  dragRef,
 }: CopyrightBlockUiProps) => {
   const showYear = content?.showYear ?? COPYRIGHT_DEFAULT_CONTENT.showYear;
   const extraText = content?.extraText;
@@ -19,7 +20,10 @@ export const CopyrightBlockUi = ({
   const symbol = showYear ? `© ${year}` : "©";
 
   return (
+    // The line is the block root: it owns the layout classes and the style
+    // variables, so the editor's selection ref belongs here.
     <p
+      ref={dragRef}
       className={cn(
         "flex flex-wrap items-baseline justify-center gap-x-2 gap-y-1 puck-dim puck-typo",
         layoutClassName,

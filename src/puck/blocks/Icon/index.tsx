@@ -11,6 +11,10 @@ import { renderIconBlock } from "./render";
 export type { IconBlockProps };
 
 export const IconBlock: ComponentConfig<IconBlockProps> = {
+  // The rendered `<svg>` is the block root; the render attaches
+  // `puck.dragRef` to it and `inline` is Puck's only supported way to skip its
+  // wrapper `div`.
+  inline: true,
   fields: {
     icon: IconField,
     layout: DisplayOnlyLayoutField,

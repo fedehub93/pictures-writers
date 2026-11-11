@@ -17,6 +17,10 @@ export type { ImageBlockProps };
  * once the default is applied on the public render.
  */
 export const ImageBlock: ComponentConfig<ImageBlockProps> = {
+  // The box that carries the authored dimension (the `<a>` or the `<div>`) is
+  // the block root; the render attaches `puck.dragRef` to it and `inline` is
+  // Puck's only supported way to skip its wrapper `div`.
+  inline: true,
   fields: {
     image: ImageField,
     layout: DisplayOnlyLayoutField,

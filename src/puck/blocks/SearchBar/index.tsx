@@ -19,6 +19,10 @@ export type { SearchBarBlockProps };
  * Dimension and Decoration fields style the wrapper around the control.
  */
 export const SearchBar: ComponentConfig<SearchBarBlockProps> = {
+  // The wrapper rendered by `renderSearchBarBlock` is the block root and
+  // receives `puck.dragRef`; `inline` is Puck's only supported way to skip its
+  // wrapper `div`.
+  inline: true,
   fields: {
     content: SearchBarContentField,
     layout: DisplayOnlyLayoutField,

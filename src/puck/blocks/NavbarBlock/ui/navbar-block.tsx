@@ -23,13 +23,17 @@ export const NavbarBlockUi = ({
   styleVars,
   appearanceVars,
   layoutClassName,
+  dragRef,
 }: NavbarBlockUiProps) => {
   const pathname = usePathname();
 
   if (items.length === 0) return null;
 
   return (
+    // The navigation root is the block root: the desktop menu and the mobile
+    // sheet handle live inside it, not around it.
     <div
+      ref={dragRef}
       className={cn("puck-dim puck-deco puck-nav", layoutClassName)}
       style={styleVars}
     >

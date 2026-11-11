@@ -13,6 +13,9 @@ import { renderLinkListBlock } from "./render";
 export type { LinkListBlockProps };
 
 export const LinkList: ComponentConfig<LinkListBlockProps> = {
+  // The column rendered by `LinkListBlockUi` is the block root and receives
+  // `puck.dragRef`; `inline` is Puck's only supported way to skip its wrapper.
+  inline: true,
   fields: {
     content: LinkListContentField,
     layout: DisplayOnlyLayoutField,

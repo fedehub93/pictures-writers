@@ -36,7 +36,11 @@ export const renderSearchBarBlock: PuckComponent<SearchBarBlockProps> = ({
   };
 
   return (
+    // The wrapper is the block root: it carries the authored surface and the
+    // layout classes, so the editor selects this element rather than a wrapper
+    // inserted around it.
     <div
+      ref={puck?.dragRef}
       className={cn(
         "puck-dim puck-deco",
         getLayoutClassNames(layout, { editing: puck?.isEditing }),

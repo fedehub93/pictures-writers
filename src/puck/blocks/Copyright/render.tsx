@@ -33,6 +33,7 @@ export const renderCopyrightBlock = ({
   year,
   metadata,
   editing,
+  dragRef,
 }: CopyrightBlockRenderProps) => {
   const styleVars = {
     ...getLayoutVars(layout),
@@ -47,6 +48,7 @@ export const renderCopyrightBlock = ({
       year={year}
       styleVars={styleVars}
       layoutClassName={getLayoutClassNames(layout, { editing })}
+      dragRef={dragRef}
     />
   );
 };

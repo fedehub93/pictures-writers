@@ -12,6 +12,9 @@ import { renderTextBlock } from "./render";
 export type { TextBlockProps };
 
 export const Text: ComponentConfig<TextBlockProps> = {
+  // The paragraph is the block root; the render attaches `puck.dragRef` to it
+  // and `inline` is Puck's only supported way to skip its wrapper `div`.
+  inline: true,
   fields: {
     text: {
       type: "textarea",

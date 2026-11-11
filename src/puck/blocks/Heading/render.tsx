@@ -36,6 +36,7 @@ export const renderHeadingBlock: PuckComponent<HeadingProps> = ({
       layoutClassName={getLayoutClassNames(layout, {
         editing: puck?.isEditing,
       })}
+      dragRef={puck?.dragRef}
     />
   );
 };

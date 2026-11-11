@@ -1,6 +1,7 @@
 import { cn } from "@/shared/lib/utils";
 import type { ImageProps } from "@/puck/fields/image";
 import { pickDisplayVars } from "@/puck/fields/layout/get-layout-vars";
+import type { BlockDragRef } from "@/puck/types";
 
 const PLACEHOLDER_IMAGE =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23f3f4f6' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' font-family='system-ui' font-size='16' fill='%239ca3af' text-anchor='middle' dominant-baseline='middle'%3ENo image selected%3C/text%3E%3C/svg%3E";
@@ -20,12 +21,15 @@ export const ImageBlockUi = ({
   dimensionVars,
   decorationVars,
   layoutClassName,
+  dragRef,
 }: {
   image?: ImageProps;
   layoutVars: Record<string, string>;
   dimensionVars: Record<string, string>;
   decorationVars: Record<string, string>;
   layoutClassName?: string;
+  /** Editor-only: Puck's selection ref, attached to the block root. */
+  dragRef?: BlockDragRef;
 }) => {
   const imgData = {
     src: image?.src || PLACEHOLDER_IMAGE,
@@ -57,7 +61,10 @@ export const ImageBlockUi = ({
   return (
     <>
       {imgData.href ? (
+        // The anchor is the block root, so it is what the editor selects; the
+        // ref must not move to the `<img>` inside it.
         <a
+          ref={dragRef}
           href={imgData.href}
           className={cn("block", rootClassName)}
           style={rootStyle}
@@ -65,7 +72,7 @@ export const ImageBlockUi = ({
           {ImageContent}
         </a>
       ) : (
-        <div className={rootClassName} style={rootStyle}>
+        <div ref={dragRef} className={rootClassName} style={rootStyle}>
           {ImageContent}
         </div>
       )}

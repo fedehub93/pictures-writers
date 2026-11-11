@@ -20,9 +20,15 @@ const NavbarBlockEditorRender: PuckComponent<NavbarBlockProps> = ({
   renderNavbarBlock({
     ...props,
     editing: puck.isEditing,
+    // The block declares `inline`, so Puck hands it the selection ref instead
+    // of wrapping it; the UI attaches it to the block root.
+    dragRef: puck.dragRef,
   });
 
 export const NavbarBlock: ComponentConfig<NavbarBlockProps> = {
+  // The navigation root is the block root and receives `puck.dragRef`;
+  // `inline` is Puck's only supported way to skip its wrapper `div`.
+  inline: true,
   fields: {
     content: NavbarContentField,
     appearance: NavbarStyleField,

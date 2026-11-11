@@ -31,6 +31,7 @@ export const renderFormBlock: PuckComponent<FormBlockProps> = ({
       layoutClassName={getLayoutClassNames(layout, {
         editing: puck?.isEditing,
       })}
+      dragRef={puck?.dragRef}
     />
   );
 };

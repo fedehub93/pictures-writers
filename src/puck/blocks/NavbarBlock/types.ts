@@ -6,6 +6,7 @@ import type {
   LegacyLinkProps,
   LinkProps,
 } from "@/puck/fields/link/types";
+import type { BlockDragRef } from "@/puck/types";
 import type { Responsive } from "@/puck/utils/responsive";
 
 export type NavbarLayout = "mega" | "compact";
@@ -201,6 +202,8 @@ export type NavbarBlockRenderProps = {
   decoration?: Responsive<DecorationProps>;
   /** True inside the editor canvas, where hidden blocks stay selectable. */
   editing?: boolean;
+  /** Editor-only: Puck's selection ref, attached to the block root. */
+  dragRef?: BlockDragRef;
 };
 
 export type NavbarBlockUiProps = {
@@ -213,4 +216,6 @@ export type NavbarBlockUiProps = {
   appearanceVars?: Record<string, string>;
   /** Editor visibility classes, empty on the public render. */
   layoutClassName?: string;
+  /** Editor-only: Puck's selection ref, attached to the block root. */
+  dragRef?: BlockDragRef;
 };

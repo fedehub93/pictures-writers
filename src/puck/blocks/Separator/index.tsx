@@ -11,6 +11,10 @@ import { renderSeparatorBlock } from "./render";
 export type { SeparatorBlockProps };
 
 export const SeparatorBlock: ComponentConfig<SeparatorBlockProps> = {
+  // The box that carries the authored dimension is the block root; the render
+  // attaches `puck.dragRef` to it and `inline` is Puck's only supported way to
+  // skip its wrapper `div`.
+  inline: true,
   fields: {
     layout: DisplayOnlyLayoutField,
     dimension: DimensionField,

@@ -73,9 +73,11 @@ const filterVars = (
 /**
  * Extract only the responsive display variables from a style-variable map.
  *
- * Blocks whose visible root is an inner element (Image, Separator) need the
- * display variables on the outer wrapper, because that is the element the
- * display class targets and the one a hidden block must remove from layout.
+ * The leaf blocks author display only (`DisplayOnlyLayoutField`), but
+ * `getLayoutVars` reads whatever a document stores, which may carry other
+ * layout properties from an older or hand-edited document. Keeping just the
+ * display half stops a stray `flex` or `gap` from landing on a box that does
+ * not arrange children.
  */
 export const pickDisplayVars = (vars: Record<string, string>) =>
   filterVars(vars, (name) => name.startsWith("--disp-"));

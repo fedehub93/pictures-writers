@@ -36,6 +36,7 @@ export const renderTextBlock: PuckComponent<TextBlockProps> = ({
       layoutClassName={getLayoutClassNames(layout, {
         editing: puck?.isEditing,
       })}
+      dragRef={puck?.dragRef}
     />
   );
 };

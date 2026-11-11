@@ -17,6 +17,7 @@ export const LinkListBlockUi = ({
   links = [],
   styleVars,
   layoutClassName,
+  dragRef,
 }: LinkListBlockUiProps) => {
   const visibleLinks = links
     .map((item) => item?.link)
@@ -25,7 +26,10 @@ export const LinkListBlockUi = ({
     );
 
   return (
+    // The column is the block root: it owns the layout classes and the style
+    // variables, so the editor's selection ref belongs here.
     <div
+      ref={dragRef}
       className={cn(
         "flex w-full flex-col gap-2 puck-dim puck-typo",
         layoutClassName,

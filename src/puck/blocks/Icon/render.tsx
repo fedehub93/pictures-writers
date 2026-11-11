@@ -36,6 +36,7 @@ export const renderIconBlock: PuckComponent<IconBlockProps> = ({
       layoutClassName={getLayoutClassNames(layout, {
         editing: puck?.isEditing,
       })}
+      dragRef={puck?.dragRef}
     />
   );
 };
