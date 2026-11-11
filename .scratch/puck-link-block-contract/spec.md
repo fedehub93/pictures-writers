@@ -228,5 +228,5 @@ JavaScript for those blocks.
 | # | Ticket | Status | Blocked by |
 | - | ------ | ------ | ---------- |
 | 01 | Link base width | done | — |
-| 02 | Links inert in the canvas | ready-for-agent | — |
+| 02 | Links inert in the canvas | ready-for-human | — |
 | 03 | Footer links inert without client cost | needs-triage | 02 |
