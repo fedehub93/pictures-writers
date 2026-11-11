@@ -89,3 +89,4 @@ A good test asserts what an editor can observe: which label appears, which affor
 | - | ------ | ---------- |
 | 01 | Upgrade `@puckeditor/core` to 0.24 | — |
 | 02 | Editor root entry points | 01 |
+| 03 | Properties panel scroll containment (`860bcad8` regression) | 02 |
