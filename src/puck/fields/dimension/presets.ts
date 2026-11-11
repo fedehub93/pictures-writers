@@ -10,14 +10,23 @@ import type { ValueUnitPreset } from "@/puck/components/value-unit-input/types";
  *
  * "Nothing" has a meaning in a responsive ladder: the breakpoint inherits the
  * width authored above it. That is why Auto says what it inherits instead of
- * implying it is a reset for the whole document.
+ * implying it is a reset for the whole document. When nothing is inherited, it
+ * names the block base width, so the panel does not claim there is none while
+ * the box resolves to one.
  */
-export const getWidthPresets = (inheritedWidth?: string): ValueUnitPreset[] => [
+export const getWidthPresets = (
+  inheritedWidth?: string,
+  baseWidth?: string,
+): ValueUnitPreset[] => [
   {
     label: "Auto",
     value: "",
     unit: "-",
-    description: inheritedWidth ? `inherits ${inheritedWidth}` : "no width",
+    description: inheritedWidth
+      ? `inherits ${inheritedWidth}`
+      : baseWidth
+        ? `block default (${baseWidth})`
+        : "no width",
   },
   {
     label: "Fill",

@@ -101,3 +101,85 @@ describe("getDimensionVars width intent", () => {
     expect(getDimensionVars({ desktop: {} })).toEqual({});
   });
 });
+
+/**
+ * Block base width.
+ *
+ * A Link's root is the anchor, so `width: auto` stretches once it is a flex or
+ * grid item. The block declares a natural width instead of changing stored
+ * documents: the base is emitted on the desktop rung so the ladder inherits it,
+ * and an authored width always outranks it.
+ */
+describe("getDimensionVars block base width", () => {
+  // Deliberately different from the authored values below, so "authored wins"
+  // cannot pass by coincidence. The formatter must pass any value through.
+  const base = { baseWidth: "10rem" };
+
+  it("emits the base width on the desktop rung when nothing is authored", () => {
+    expect(getDimensionVars(undefined, base)).toEqual({ "--w-d": "10rem" });
+    expect(getDimensionVars({ desktop: {} }, base)).toEqual({ "--w-d": "10rem" });
+  });
+
+  it("passes the declared value through unchanged", () => {
+    expect(getDimensionVars(undefined, { baseWidth: "fit-content" })).toEqual({
+      "--w-d": "fit-content",
+    });
+  });
+
+  it("hugs the cap instead of filling when the block authors only a max width", () => {
+    const vars = getDimensionVars({ desktop: { maxWidth: "30rem" } }, base);
+
+    // A natural width needs no implied fill: without it the box would stop
+    // hugging the cap and turn into a full-width bar.
+    expect(vars).toEqual({ "--w-d": "10rem", "--mw-d": "30rem" });
+  });
+
+  it.each(["12rem", "50%", "fit-content"])(
+    "lets an authored %s win over the block base at the same breakpoint",
+    (width) => {
+      const vars = getDimensionVars({ desktop: { width } }, base);
+
+      expect(vars).toEqual({ "--w-d": width });
+    },
+  );
+
+  it("lets an authored width win below the breakpoint that carries the base", () => {
+    const vars = getDimensionVars({ tablet: { width: "20rem" } }, base);
+
+    // Tablet overrides the inherited desktop base; mobile falls back to the
+    // tablet value and then to desktop, exactly like any other responsive prop.
+    expect(vars).toEqual({ "--w-d": "10rem", "--w-t": "20rem" });
+  });
+
+  it("lets an explicit auto cancel the block base at a wider breakpoint", () => {
+    const vars = getDimensionVars({ desktop: { width: "auto" } }, base);
+
+    expect(vars).toEqual({ "--w-d": "auto" });
+  });
+
+  it("lets an explicit auto below the base breakpoint override it", () => {
+    const vars = getDimensionVars({ tablet: { width: "auto" } }, base);
+
+    expect(vars["--w-d"]).toBe("10rem");
+    expect(vars["--w-t"]).toBe("auto");
+  });
+
+  it("emits exactly today's variables for a block without a base width", () => {
+    const cases = [
+      { desktop: { maxWidth: "72rem" } },
+      { desktop: { height: "10rem" } },
+      { desktop: { width: "50%" }, tablet: { maxWidth: "40rem" } },
+    ];
+
+    for (const data of cases) {
+      expect(getDimensionVars(data, { baseWidth: undefined })).toEqual(
+        getDimensionVars(data),
+      );
+    }
+
+    expect(getDimensionVars({ desktop: { maxWidth: "72rem" } })).toEqual({
+      "--mw-d": "72rem",
+      "--w-d": "100%",
+    });
+  });
+});

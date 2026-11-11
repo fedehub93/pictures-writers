@@ -1,5 +1,6 @@
 import { RulerDimensionLineIcon } from "lucide-react";
 import { createUsePuck } from "@puckeditor/core";
+import type { Field } from "@puckeditor/core";
 
 import { withAccordionField } from "@/puck/utils/with-accordion-field";
 
@@ -38,54 +39,75 @@ const defaultDimension: Record<Breakpoint, DimensionProps> = {
 
 const usePuck = createUsePuck();
 
-export const DimensionField = withAccordionField(
-  "Dimension",
-  <RulerDimensionLineIcon className="size-4 text-muted-foreground" />,
-  ({
-    onChange,
-    value,
-  }: {
-    onChange: (value: Responsive<DimensionProps>) => void;
-    value?: Responsive<DimensionProps>;
-  }) => {
-    const currentViewport = usePuck((s) => s.appState.ui.viewports.current);
-    const viewportKey = getViewportKey(currentViewport.width);
+interface DimensionFieldOptions {
+  /**
+   * The width the block resolves to when no width is authored: its natural
+   * size. Blocks that are content-sized by nature declare it here, and their
+   * render passes the same constant to `getDimensionVars`, so the panel and the
+   * box read one value.
+   */
+  baseWidth?: string;
+}
 
-    const state = value ?? {};
-    const currentValues: Partial<DimensionProps> = state[viewportKey] ?? {};
-    const renderValues = cascadeViewportValues(
-      viewportKey,
-      state,
-      defaultDimension,
-    );
+export const createDimensionField = ({
+  baseWidth,
+}: DimensionFieldOptions = {}): Field =>
+  withAccordionField(
+    "Dimension",
+    <RulerDimensionLineIcon className="size-4 text-muted-foreground" />,
+    ({
+      onChange,
+      value,
+    }: {
+      onChange: (value: Responsive<DimensionProps>) => void;
+      value?: Responsive<DimensionProps>;
+    }) => {
+      const currentViewport = usePuck((s) => s.appState.ui.viewports.current);
+      const viewportKey = getViewportKey(currentViewport.width);
 
-    const update = (updates: Partial<DimensionProps>) => {
-      onChange({
-        ...state,
-        [viewportKey]: {
-          ...currentValues,
-          ...updates,
-        },
-      });
-    };
+      const state = value ?? {};
+      const currentValues: Partial<DimensionProps> = state[viewportKey] ?? {};
+      const renderValues = cascadeViewportValues(
+        viewportKey,
+        state,
+        defaultDimension,
+      );
 
-    const resetProp = (key: keyof DimensionProps) => {
-      const newViewportState = { ...currentValues };
-      delete newViewportState[key];
+      const update = (updates: Partial<DimensionProps>) => {
+        onChange({
+          ...state,
+          [viewportKey]: {
+            ...currentValues,
+            ...updates,
+          },
+        });
+      };
 
-      onChange({
-        ...state,
-        [viewportKey]: newViewportState,
-      });
-    };
+      const resetProp = (key: keyof DimensionProps) => {
+        const newViewportState = { ...currentValues };
+        delete newViewportState[key];
 
-    return (
-      <DimensionView
-        currentValues={currentValues}
-        renderValues={renderValues}
-        resetProp={resetProp}
-        onUpdate={update}
-      />
-    );
-  },
-);
+        onChange({
+          ...state,
+          [viewportKey]: newViewportState,
+        });
+      };
+
+      return (
+        <DimensionView
+          currentValues={currentValues}
+          renderValues={renderValues}
+          resetProp={resetProp}
+          onUpdate={update}
+          baseWidth={baseWidth}
+        />
+      );
+    },
+  );
+
+/**
+ * Default dimension editor: width, height, max width, min height, aspect ratio
+ * and the box model. Blocks with a natural width use
+ * `createDimensionField({ baseWidth })`.
+ */
+export const DimensionField: Field = createDimensionField();

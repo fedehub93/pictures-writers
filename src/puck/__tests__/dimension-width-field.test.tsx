@@ -30,6 +30,7 @@ function renderView(overrides: {
   currentValues?: Partial<DimensionProps>;
   renderValues?: DimensionProps;
   onUpdate?: (values: Partial<DimensionProps>) => void;
+  baseWidth?: string;
 }) {
   cleanup();
 
@@ -44,6 +45,7 @@ function renderView(overrides: {
         renderValues={overrides.renderValues ?? {}}
         resetProp={() => undefined}
         onUpdate={overrides.onUpdate ?? (() => undefined)}
+        baseWidth={overrides.baseWidth}
       />,
     );
   });
@@ -115,6 +117,24 @@ describe("Dimension Width field", () => {
     expect(preset("Auto").textContent).toContain("inherits fit-content");
   });
 
+  it("names the block base width when nothing is inherited", () => {
+    // The box resolves to a natural width, so Auto must not claim there is none.
+    renderView({ baseWidth: "fit-content" });
+    openPresets();
+
+    expect(preset("Auto").textContent).toContain(
+      "block default (fit-content)",
+    );
+    expect(preset("Auto").textContent).not.toContain("no width");
+  });
+
+  it("reports the inherited width over the block base width", () => {
+    renderView({ baseWidth: "fit-content", renderValues: { width: "50%" } });
+    openPresets();
+
+    expect(preset("Auto").textContent).toContain("inherits 50%");
+  });
+
   it("does not claim an inheritance when this breakpoint owns the width", () => {
     renderView({
       currentValues: { width: "fit-content" },
@@ -145,9 +165,10 @@ describe("Dimension Width field", () => {
     expect(updates.at(-1)).toEqual({ width: "fit-content" });
   });
 
-  it("clears back to unset when Auto is picked", () => {
+  it("clears back to the block default when Auto is picked", () => {
     const updates: Partial<DimensionProps>[] = [];
     renderView({
+      baseWidth: "fit-content",
       renderValues: { width: "100%" },
       onUpdate: (values) => updates.push(values),
     });

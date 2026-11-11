@@ -381,6 +381,26 @@ describe("consolidated Puck render pipeline", () => {
     assertParity,
   );
 
+  it("renders a Link that caps its natural width identically in both configs", () => {
+    // The Link's block base width must not be replaced by the implied fill in
+    // either path: the canvas and the page read the same width function.
+    const { editorHtml, publicHtml } = renderCase({
+      name: "Link",
+      props: {
+        link: {
+          type: "external",
+          url: "https://example.com/",
+          label: "Example",
+        },
+        dimension: { desktop: { maxWidth: "30rem" } },
+      },
+    });
+
+    expect(editorHtml).toContain("--w-d:fit-content");
+    expect(editorHtml).not.toContain("--w-d:100%");
+    expect(publicHtml).toBe(editorHtml);
+  });
+
   /**
    * The block root is the containing block for absolutely positioned
    * descendants. Puck sets `position: relative` on that node while editing, so

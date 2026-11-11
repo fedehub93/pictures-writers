@@ -1,6 +1,6 @@
 import { type ComponentConfig } from "@puckeditor/core";
 
-import { DimensionField } from "@/puck/fields/dimension";
+import { createDimensionField } from "@/puck/fields/dimension";
 import { DecorationField } from "@/puck/fields/decoration";
 import { TypographyField } from "@/puck/fields/typography";
 import { DisplayOnlyLayoutField } from "@/puck/fields/layout";
@@ -10,6 +10,7 @@ import { LINK_DEFAULT_PROPS } from "../defaults";
 
 import type { LinkBlockProps } from "./types";
 import { renderLinkBlock } from "./render";
+import { LINK_BASE_WIDTH } from "./constants";
 
 export type { LinkBlockProps };
 
@@ -20,7 +21,7 @@ export const LinkBlock: ComponentConfig<LinkBlockProps> = {
   fields: {
     link: LinkField,
     layout: DisplayOnlyLayoutField,
-    dimension: DimensionField,
+    dimension: createDimensionField({ baseWidth: LINK_BASE_WIDTH }),
     typography: TypographyField,
     decoration: DecorationField,
   },

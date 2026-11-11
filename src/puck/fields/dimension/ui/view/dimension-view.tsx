@@ -22,7 +22,10 @@ type LayoutField = FieldDef<DimensionProps> & {
   allowedKeywords?: string[];
 };
 
-const getLayoutFields = (inheritedWidth?: string): LayoutField[] => [
+const getLayoutFields = (
+  inheritedWidth?: string,
+  baseWidth?: string,
+): LayoutField[] => [
   {
     key: "width",
     label: "Width",
@@ -30,7 +33,7 @@ const getLayoutFields = (inheritedWidth?: string): LayoutField[] => [
     placeholder: "auto",
     // Width names the states the style layer can imply, so the author can pick
     // *Fill* and *Fit content* without knowing CSS.
-    presets: getWidthPresets(inheritedWidth),
+    presets: getWidthPresets(inheritedWidth, baseWidth),
     allowedKeywords: ["auto", "fit-content"],
   },
   { key: "height", label: "Height", type: "unit", placeholder: "auto" },
@@ -66,6 +69,8 @@ interface DimensionViewProps {
   renderValues: DimensionProps;
   resetProp: (key: keyof DimensionProps) => void;
   onUpdate: (values: Partial<DimensionProps>) => void;
+  /** The width the block resolves to when nothing is authored. */
+  baseWidth?: string;
 }
 
 export const DimensionView = ({
@@ -73,6 +78,7 @@ export const DimensionView = ({
   renderValues,
   resetProp,
   onUpdate,
+  baseWidth,
 }: DimensionViewProps) => {
   const isAspectRatioModified = currentValues.aspectRatio !== undefined;
   const currentRatioValue = renderValues.aspectRatio;
@@ -83,14 +89,15 @@ export const DimensionView = ({
 
   const selectValue = isCustomRatio ? "custom" : currentRatioValue || "auto";
 
-  // An empty width at this breakpoint means "inherit": say what it inherits, so
-  // Auto does not read as a reset for the whole ladder.
+  // An empty width at this breakpoint means "inherit": say what it inherits or,
+  // when nothing is inherited, what the block falls back to, so Auto does not
+  // read as a reset for the whole ladder.
   const ownWidth = currentValues.width?.trim();
   const inheritedWidth = ownWidth
     ? undefined
     : renderValues.width?.trim() || undefined;
 
-  const layoutFields = getLayoutFields(inheritedWidth);
+  const layoutFields = getLayoutFields(inheritedWidth, baseWidth);
 
   return (
     <div className="flex flex-col gap-y-2 p-1">

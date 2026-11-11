@@ -10,6 +10,7 @@ import { getLayoutClassNames } from "@/puck/fields/layout/get-layout-classes";
 
 import type { LinkBlockProps } from "./types";
 import { LinkBlockUi } from "./ui/link";
+import { LINK_BASE_WIDTH } from "./constants";
 
 /**
  * Pure render shared by the editor canvas and the public page.
@@ -27,7 +28,7 @@ export const renderLinkBlock: PuckComponent<LinkBlockProps> = ({
 }) => {
   const styleVars = {
     ...getLayoutVars(layout),
-    ...getDimensionVars(dimension),
+    ...getDimensionVars(dimension, { baseWidth: LINK_BASE_WIDTH }),
     ...getTypographyVars(typography),
     ...getDecorationVars(decoration),
   };

@@ -457,6 +457,10 @@ _Avoid_: treating the editor canvas as a pixel-perfect preview.
 The outermost element a Puck block renders. It carries the block's dimension, layout, typography and decoration variables and the containing block for positioned descendants, in the canvas and on the published page alike; a block that renders nothing (no link, no items) has no root at all. In the canvas it is also the element the editor selects, hovers, drags and outlines: every block declares `inline: true` and attaches Puck's `dragRef` to this element, so nothing sits between a block and its parent. For Container, Flex and Grid the root is the slot element; a slot-owning block with a box of its own, such as the Top bar, keeps that box as the root.
 _Avoid_: block wrapper, component wrapper, editor wrapper (there is none); expecting the selection outline on a child of the block.
 
+**Block base width**:
+The width a block resolves to when no width is authored at any breakpoint: the natural size it declares because its root is a text-level box (a Link is `fit-content`). It is emitted on the desktop rung so the responsive ladder inherits it, it outranks the implied fill a content area gets from a max width, and any authored width — own or inherited, the explicit `auto` included — outranks it. It is a block constant, not a stored document value, so it needs no migration; the Width control's *Auto* row names it as `block default (<value>)`.
+_Avoid_: document width, stored default, fallback width; treating it as a prop of the document.
+
 **Root zone**:
 The editor-only element Puck renders the document's root content into (`[data-puck-dropzone="root:default-zone"]`). It has no counterpart on the published page, where the top-level blocks are children of the root; it declares the container half of the root's Layout contract so the top level is arranged the same way in both paths. It is canvas chrome, never part of the document.
 _Avoid_: root wrapper, root div, canvas root; treating it as a layout surface that must be mirrored on the published page.

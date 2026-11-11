@@ -12,19 +12,47 @@ const getSuffix = (bp: Breakpoint) => bp.charAt(0);
 /** The width a *Fill* box resolves to; the implied fill below emits the same. */
 const FILL_WIDTH = "100%";
 
+export interface DimensionVarOptions {
+  /**
+   * The width the block resolves to when no width is authored: its natural
+   * size. It is a block constant, not a document value, so it needs no
+   * migration.
+   */
+  baseWidth?: string;
+}
+
 /**
  * UTILITY: DIMENSION
+ *
+ * Width precedence, highest first: an authored width at the breakpoint (own or
+ * inherited from a wider one, the explicit `auto` included) → the block base
+ * width → the implied fill a content-area block gets when it authors only a
+ * max width. A block with a base width has a natural size, so it never needs
+ * the fill to stop it collapsing.
  */
-export const getDimensionVars = (data?: Responsive<DimensionProps>) => {
-  if (!data) return {};
+export const getDimensionVars = (
+  data?: Responsive<DimensionProps>,
+  { baseWidth }: DimensionVarOptions = {},
+) => {
+  const base = baseWidth?.trim();
+
+  if (!data && !base) return {};
   const vars: Record<string, string> = {};
 
-  // The widths cascade desktop -> mobile, so the implied fill below has to know
-  // whether a wider breakpoint already authored one.
+  // The widths cascade desktop -> mobile, so the rules below have to know
+  // whether a wider breakpoint already resolved one. The base width counts as
+  // resolved from the rung it is emitted on, which is the widest one: every
+  // narrower breakpoint inherits it through the ladder, and an authored width
+  // below overwrites it.
   let inheritedWidth: string | undefined;
 
+  if (base) {
+    vars["--w-d"] = base;
+    inheritedWidth = base;
+  }
+
   for (const bp of BREAKPOINTS) {
-    const p = data[bp];
+    const p = data?.[bp];
     if (!p) continue;
     const s = getSuffix(bp);
 
