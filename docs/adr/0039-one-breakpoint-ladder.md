@@ -1,6 +1,6 @@
 # One breakpoint ladder for authoring, CSS and the navbar
 
-**Status**: accepted
+**Status**: accepted (revised - the Image default is a natural size; see the revision note below)
 
 The header exposed three different responsive scales. Responsive visibility hid a block with `max-width: 1024px` (tablet) and `767px` (mobile). The NavbarBlock collapsed to its hamburger with Tailwind's `md`, which is 768px. The editor's viewport selector bucketed widths by canvas size, and the tablet canvas was really 766px because a 1px border sat outside its 768px box. The visible symptom: hiding the call to action "on tablet" removed it from 1024px down, while the inline menu stayed until 767px, so between 768 and 1023 the header was missing a control without having collapsed. The canvas compounded it: at the "Tablet" setting it rendered mobile CSS, because 766 is below 768.
 
@@ -11,6 +11,14 @@ The NavbarBlock does not get a global rule. It carries a per-instance menu colla
 Two implementation details follow from the canvas being an iframe. Media queries inside the iframe evaluate against the canvas width, so the hidden-block placeholder can be scoped by the same media queries; an attribute on the editor shell outside the iframe cannot reach the canvas and was silently dead. And because the iframe mirrors the admin styles, the preview root overrides the three tokens that change measurements — spacing, radius and typeface — so the canvas measures like the public site while the admin chrome keeps its own compact scale.
 
 `Dimension` on the Image block now describes the block box, and the picture fills that box. Previously the box was hard-coded to `w-full` and only the picture carried the authored width: on the public page an inline image claimed a whole flex row and squeezed the text next to it, while the canvas hid the effect behind Puck's per-block wrapper. Every stored image already declares a width, so the change is confined to layouts where the image is a flex child; new images default to `100%` so a freshly dropped picture still fills its container.
+
+**Revision (2026-11-11).** A freshly dropped image now keeps its natural size;
+`100%` stays one authored Dimension value away. The old default preserved the
+full-width box that used to be hard-coded. Default props now also reach the
+public render (see `.scratch/puck-slot-layout-parity/`), so keeping `100%` would
+apply it to every stored document that never declared a width and stretch the
+images placed in a flex row on the published page too. Natural size keeps the
+authoring behaviour honest without restyling existing pages.
 
 ## Considered options
 

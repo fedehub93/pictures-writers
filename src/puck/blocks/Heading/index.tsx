@@ -5,6 +5,8 @@ import { DimensionField } from "@/puck/fields/dimension";
 import { TypographyField } from "@/puck/fields/typography";
 import { DisplayOnlyLayoutField } from "@/puck/fields/layout";
 
+import { HEADING_DEFAULT_PROPS } from "../defaults";
+
 import type { HeadingProps } from "./types";
 import { renderHeadingBlock } from "./render";
 
@@ -17,8 +19,6 @@ export const Heading: ComponentConfig<HeadingProps> = {
     dimension: DimensionField,
     typography: TypographyField,
   },
-  defaultProps: {
-    text: "Heading",
-  },
+  defaultProps: HEADING_DEFAULT_PROPS,
   render: renderHeadingBlock,
 };

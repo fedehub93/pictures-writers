@@ -4,7 +4,8 @@ import { DecorationField } from "@/puck/fields/decoration";
 import { DimensionField } from "@/puck/fields/dimension";
 import { DisplayOnlyLayoutField } from "@/puck/fields/layout";
 
-import { SEARCH_BAR_DEFAULT_CONTENT } from "./defaults";
+import { SEARCH_BAR_DEFAULT_PROPS } from "../defaults";
+
 import { SearchBarContentField } from "./field";
 import type { SearchBarBlockProps } from "./types";
 import { renderSearchBarBlock } from "./render";
@@ -24,8 +25,6 @@ export const SearchBar: ComponentConfig<SearchBarBlockProps> = {
     dimension: DimensionField,
     decoration: DecorationField,
   },
-  defaultProps: {
-    content: SEARCH_BAR_DEFAULT_CONTENT,
-  },
+  defaultProps: SEARCH_BAR_DEFAULT_PROPS,
   render: renderSearchBarBlock,
 };

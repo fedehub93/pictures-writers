@@ -6,6 +6,8 @@ import { TypographyField } from "@/puck/fields/typography";
 import { DisplayOnlyLayoutField } from "@/puck/fields/layout";
 import { LinkField } from "@/puck/fields/link";
 
+import { LINK_DEFAULT_PROPS } from "../defaults";
+
 import type { LinkBlockProps } from "./types";
 import { renderLinkBlock } from "./render";
 
@@ -19,18 +21,6 @@ export const LinkBlock: ComponentConfig<LinkBlockProps> = {
     typography: TypographyField,
     decoration: DecorationField,
   },
-  defaultProps: {
-    link: {
-      type: "external",
-      url: "",
-      label: "Inserisci il tuo link",
-    },
-    typography: {
-      desktop: {
-        fontWeight: "700",
-        color: "var(--primary)",
-      },
-    },
-  },
+  defaultProps: LINK_DEFAULT_PROPS,
   render: renderLinkBlock,
 };

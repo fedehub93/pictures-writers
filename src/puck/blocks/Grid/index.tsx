@@ -5,6 +5,8 @@ import { DimensionField } from "@/puck/fields/dimension";
 import { TypographyField } from "@/puck/fields/typography";
 import { DecorationField } from "@/puck/fields/decoration";
 
+import { GRID_DEFAULT_PROPS } from "../defaults";
+
 import type { GridBlockProps } from "./types";
 import { renderGridBlock } from "./render";
 
@@ -20,13 +22,6 @@ export const GridBlock: ComponentConfig<GridBlockProps> = {
       type: "slot",
     },
   },
-  defaultProps: {
-    items: [],
-    layout: {
-      desktop: {
-        display: "grid",
-      },
-    },
-  },
+  defaultProps: GRID_DEFAULT_PROPS,
   render: renderGridBlock,
 };

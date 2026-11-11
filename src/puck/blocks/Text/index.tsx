@@ -4,6 +4,8 @@ import { DimensionField } from "@/puck/fields/dimension";
 import { TypographyField } from "@/puck/fields/typography";
 import { DisplayOnlyLayoutField } from "@/puck/fields/layout";
 
+import { TEXT_DEFAULT_PROPS } from "../defaults";
+
 import type { TextBlockProps } from "./types";
 import { renderTextBlock } from "./render";
 
@@ -19,8 +21,6 @@ export const Text: ComponentConfig<TextBlockProps> = {
     dimension: DimensionField,
     typography: TypographyField,
   },
-  defaultProps: {
-    text: "Add your text here.",
-  },
+  defaultProps: TEXT_DEFAULT_PROPS,
   render: renderTextBlock,
 };

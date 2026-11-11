@@ -3,6 +3,8 @@ import { type ComponentConfig } from "@puckeditor/core";
 import { DimensionField } from "@/puck/fields/dimension";
 import { DisplayOnlyLayoutField } from "@/puck/fields/layout";
 
+import { SEPARATOR_DEFAULT_PROPS } from "../defaults";
+
 import type { SeparatorBlockProps } from "./types";
 import { renderSeparatorBlock } from "./render";
 
@@ -13,13 +15,6 @@ export const SeparatorBlock: ComponentConfig<SeparatorBlockProps> = {
     layout: DisplayOnlyLayoutField,
     dimension: DimensionField,
   },
-  defaultProps: {
-    dimension: {
-      desktop: {
-        width: "100%",
-        height: "2px",
-      },
-    },
-  },
+  defaultProps: SEPARATOR_DEFAULT_PROPS,
   render: renderSeparatorBlock,
 };

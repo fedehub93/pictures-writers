@@ -10,18 +10,18 @@ import { renderImageBlock } from "./render";
 
 export type { ImageBlockProps };
 
+/**
+ * No `defaultProps`: a freshly dropped image keeps its natural size (ADR-0039,
+ * revision). Filling the box stays one authored Dimension value away, and a
+ * default width would also reach every stored document that never declared one
+ * once the default is applied on the public render.
+ */
 export const ImageBlock: ComponentConfig<ImageBlockProps> = {
   fields: {
     image: ImageField,
     layout: DisplayOnlyLayoutField,
     dimension: DimensionField,
     decoration: DecorationField,
-  },
-  // A freshly dropped image fills its container, like the old implicit
-  // `w-full`. It is an authored value, so the public render (which does not
-  // merge defaultProps) receives it too.
-  defaultProps: {
-    dimension: { desktop: { width: "100%" } },
   },
   render: renderImageBlock,
 };

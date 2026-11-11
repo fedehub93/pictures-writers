@@ -4,6 +4,8 @@ import { DimensionField } from "@/puck/fields/dimension";
 import { DisplayOnlyLayoutField } from "@/puck/fields/layout";
 import { FormField } from "@/puck/fields/form";
 
+import { FORM_DEFAULT_PROPS } from "../defaults";
+
 import type { FormBlockProps } from "./types";
 import { renderFormBlock } from "./render";
 
@@ -15,12 +17,6 @@ export const FormBlock: ComponentConfig<FormBlockProps> = {
     layout: DisplayOnlyLayoutField,
     dimension: DimensionField,
   },
-  defaultProps: {
-    form: {
-      id: "",
-      content: null,
-      gtmEventName: "",
-    },
-  },
+  defaultProps: FORM_DEFAULT_PROPS,
   render: renderFormBlock,
 };

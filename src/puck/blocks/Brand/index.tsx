@@ -5,7 +5,8 @@ import { DisplayOnlyLayoutField } from "@/puck/fields/layout";
 import { TypographyField } from "@/puck/fields/typography";
 import { readSiteRegionMetadata } from "@/puck/metadata";
 
-import { BRAND_DEFAULT_CONTENT, BRAND_DEFAULT_TYPOGRAPHY } from "./defaults";
+import { BRAND_DEFAULT_PROPS } from "../defaults";
+
 import { BrandContentField } from "./field";
 import type { BrandBlockProps } from "./types";
 import { renderBrandBlock } from "./render";
@@ -37,9 +38,6 @@ export const Brand: ComponentConfig<BrandBlockProps> = {
     dimension: DimensionField,
     typography: TypographyField,
   },
-  defaultProps: {
-    content: BRAND_DEFAULT_CONTENT,
-    typography: BRAND_DEFAULT_TYPOGRAPHY,
-  },
+  defaultProps: BRAND_DEFAULT_PROPS,
   render: BrandEditorRender,
 };

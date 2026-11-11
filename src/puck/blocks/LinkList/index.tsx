@@ -4,7 +4,8 @@ import { DimensionField } from "@/puck/fields/dimension";
 import { DisplayOnlyLayoutField } from "@/puck/fields/layout";
 import { TypographyField } from "@/puck/fields/typography";
 
-import { LINK_LIST_DEFAULT_CONTENT } from "./defaults";
+import { LINK_LIST_DEFAULT_PROPS } from "../defaults";
+
 import { LinkListContentField } from "./field";
 import type { LinkListBlockProps } from "./types";
 import { renderLinkListBlock } from "./render";
@@ -18,8 +19,6 @@ export const LinkList: ComponentConfig<LinkListBlockProps> = {
     dimension: DimensionField,
     typography: TypographyField,
   },
-  defaultProps: {
-    content: LINK_LIST_DEFAULT_CONTENT,
-  },
+  defaultProps: LINK_LIST_DEFAULT_PROPS,
   render: renderLinkListBlock,
 };

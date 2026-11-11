@@ -56,6 +56,7 @@ export const PageRootContent = ({
 
   const styleVars = {
     "--disp-d": "block",
+    "--w-d": "100%",
     ...getLayoutVars(layout),
     ...getDimensionVars(dimension),
     ...decorationVars,

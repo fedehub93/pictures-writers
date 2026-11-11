@@ -7,6 +7,8 @@ import { config as pageEditorConfig } from "../config";
 import { editorConfigForRegion } from "../region/editor-config";
 import { renderConfigForRegion } from "../region/render-config";
 import { PuckRender, renderComponentConfigs } from "../render-config";
+import { BLOCK_DEFAULT_PROPS } from "../blocks/defaults";
+import { mergePropsWithDefaults } from "../lib/merge-props";
 
 /**
  * Guards the consolidated render pipeline: for every block that is safe to
@@ -157,12 +159,16 @@ function renderThrough(
   render: (props: Record<string, unknown>) => React.ReactNode,
   props: Record<string, unknown>,
   puck: PuckContext = PUCK,
+  defaults?: object,
 ) {
   const client = new QueryClient();
+  const resolvedProps = defaults
+    ? mergePropsWithDefaults(defaults, props)
+    : props;
 
   return renderToStaticMarkup(
     <QueryClientProvider client={client}>
-      {render({ ...props, id: "pipeline-test", puck })}
+      {render({ ...resolvedProps, id: "pipeline-test", puck })}
     </QueryClientProvider>,
   );
 }
@@ -186,30 +192,108 @@ function componentsFor(region?: SharedCase["region"]) {
 }
 
 describe("consolidated Puck render pipeline", () => {
+  /**
+   * Both case lists go through the same assertion: the public render must emit
+   * exactly what the editor emits once Puck's default props are in play. The
+   * editor side applies the shared defaults by hand because this seam calls the
+   * render function directly instead of mounting the canvas.
+   */
+  const assertParity = ({
+    name,
+    props,
+    region,
+    nonEmpty = true,
+  }: SharedCase) => {
+    const components = componentsFor(region);
+
+    const editorRender = (
+      components.editor as unknown as Record<string, RenderEntry>
+    )[name]?.render;
+    const publicRender = (
+      components.public as unknown as Record<string, RenderEntry>
+    )[name]?.render;
+
+    if (!editorRender || !publicRender) {
+      throw new Error(`${name} is missing from one of the render configs`);
+    }
+
+    const defaults = BLOCK_DEFAULT_PROPS[name];
+    const editorHtml = renderThrough(editorRender, props, PUCK, defaults);
+    const publicHtml = renderThrough(publicRender, props);
+
+    if (nonEmpty) {
+      expect(editorHtml).not.toBe("");
+    }
+    expect(publicHtml).toBe(editorHtml);
+  };
+
   it.each(SHARED_CASES)(
     "$name renders identical markup in the editor and public configs",
-    ({ name, props, region, nonEmpty = true }) => {
-      const components = componentsFor(region);
+    assertParity,
+  );
 
-      const editorRender = (
-        components.editor as unknown as Record<string, RenderEntry>
-      )[name]?.render;
-      const publicRender = (
-        components.public as unknown as Record<string, RenderEntry>
-      )[name]?.render;
-
-      if (!editorRender || !publicRender) {
-        throw new Error(`${name} is missing from one of the render configs`);
-      }
-
-      const editorHtml = renderThrough(editorRender, props);
-      const publicHtml = renderThrough(publicRender, props);
-
-      if (nonEmpty) {
-        expect(editorHtml).not.toBe("");
-      }
-      expect(publicHtml).toBe(editorHtml);
+  const MINIMAL_CASES: SharedCase[] = [
+    {
+      name: "Container",
+      props: { items: SlotStub },
     },
+    {
+      name: "Flex",
+      props: { items: SlotStub },
+    },
+    {
+      name: "Grid",
+      props: { items: SlotStub },
+    },
+    {
+      name: "Image",
+      props: {},
+    },
+    {
+      name: "Form",
+      props: {},
+    },
+    {
+      name: "Separator",
+      props: {},
+    },
+    {
+      name: "Icon",
+      nonEmpty: false,
+      props: {},
+    },
+    {
+      name: "Heading",
+      props: {},
+    },
+    {
+      name: "Text",
+      props: {},
+    },
+    {
+      name: "Link",
+      props: {},
+    },
+    {
+      name: "LinkList",
+      region: "FOOTER",
+      props: {},
+    },
+    {
+      name: "TopBar",
+      region: "HEADER",
+      props: { content: SlotStub },
+    },
+    {
+      name: "SearchBar",
+      region: "HEADER",
+      props: {},
+    },
+  ];
+
+  it.each(MINIMAL_CASES)(
+    "$name renders identical markup from default props in editor and public configs",
+    assertParity,
   );
 
   it("emits no editor-only layout classes for Container, Flex and Grid", () => {

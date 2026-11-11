@@ -5,10 +5,8 @@ import { DisplayOnlyLayoutField } from "@/puck/fields/layout";
 import { TypographyField } from "@/puck/fields/typography";
 import { readSiteRegionMetadata } from "@/puck/metadata";
 
-import {
-  COPYRIGHT_DEFAULT_CONTENT,
-  COPYRIGHT_DEFAULT_TYPOGRAPHY,
-} from "./defaults";
+import { COPYRIGHT_DEFAULT_PROPS } from "../defaults";
+
 import { CopyrightContentField } from "./field";
 import type { CopyrightBlockProps } from "./types";
 import { renderCopyrightBlock } from "./render";
@@ -40,9 +38,6 @@ export const Copyright: ComponentConfig<CopyrightBlockProps> = {
     dimension: DimensionField,
     typography: TypographyField,
   },
-  defaultProps: {
-    content: COPYRIGHT_DEFAULT_CONTENT,
-    typography: COPYRIGHT_DEFAULT_TYPOGRAPHY,
-  },
+  defaultProps: COPYRIGHT_DEFAULT_PROPS,
   render: CopyrightEditorRender,
 };

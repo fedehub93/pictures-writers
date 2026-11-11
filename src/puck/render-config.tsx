@@ -9,6 +9,24 @@ import "@puckeditor/core/puck.css";
 
 import { richTextFieldConfig } from "./fields/rich-text/extensions";
 
+import { mergePropsWithDefaults } from "./lib/merge-props";
+import {
+  BRAND_DEFAULT_PROPS,
+  CONTAINER_DEFAULT_PROPS,
+  COPYRIGHT_DEFAULT_PROPS,
+  FLEX_DEFAULT_PROPS,
+  FORM_DEFAULT_PROPS,
+  GRID_DEFAULT_PROPS,
+  HEADING_DEFAULT_PROPS,
+  LINK_DEFAULT_PROPS,
+  LINK_LIST_DEFAULT_PROPS,
+  NAVBAR_BLOCK_DEFAULT_PROPS,
+  SEARCH_BAR_DEFAULT_PROPS,
+  SEPARATOR_DEFAULT_PROPS,
+  TEXT_DEFAULT_PROPS,
+  TOP_BAR_DEFAULT_PROPS,
+} from "./blocks/defaults";
+
 import type { RootProps } from "./root/types";
 import { renderRoot } from "./root/render";
 
@@ -32,6 +50,23 @@ import { renderTopBarBlock } from "./blocks/TopBar/render";
 import { renderSearchBarBlock } from "./blocks/SearchBar/render";
 import { NavbarBlockServer } from "./blocks/NavbarBlock/server";
 import type { NavbarBlockProps } from "./blocks/NavbarBlock/types";
+
+/**
+ * Apply a block's default props to the public render.
+ *
+ * Puck merges defaultProps in the editor canvas only; the public `<Render>`
+ * receives the saved props as-is. This wrapper restores parity so a block
+ * dropped from the palette looks the same in both environments. The defaults
+ * are passed as the object rather than looked up by name, so a block cannot
+ * silently lose them to a typo.
+ */
+const withPublicDefaults = <P extends object>(
+  defaults: object,
+  render: PuckComponent<P>,
+): PuckComponent<P> =>
+  function PublicRenderWithDefaults(props) {
+    return render(mergePropsWithDefaults(defaults, props));
+  };
 
 /**
  * Public render root. It declares no fields: the render path only needs the
@@ -87,7 +122,7 @@ export const renderComponentConfigs: Config<any, RootProps>["components"] = {
         type: "slot",
       },
     },
-    render: renderContainerBlock,
+    render: withPublicDefaults(CONTAINER_DEFAULT_PROPS, renderContainerBlock),
   },
   Flex: {
     fields: {
@@ -95,7 +130,7 @@ export const renderComponentConfigs: Config<any, RootProps>["components"] = {
         type: "slot",
       },
     },
-    render: renderFlexBlock,
+    render: withPublicDefaults(FLEX_DEFAULT_PROPS, renderFlexBlock),
   },
   Grid: {
     fields: {
@@ -103,18 +138,20 @@ export const renderComponentConfigs: Config<any, RootProps>["components"] = {
         type: "slot",
       },
     },
-    render: renderGridBlock,
+    render: withPublicDefaults(GRID_DEFAULT_PROPS, renderGridBlock),
   },
   Image: {
+    // No default props: the Image block has none (ADR-0039, revision).
     render: renderImageBlock,
   },
   Form: {
-    render: renderFormBlock,
+    render: withPublicDefaults(FORM_DEFAULT_PROPS, renderFormBlock),
   },
   Separator: {
-    render: renderSeparatorBlock,
+    render: withPublicDefaults(SEPARATOR_DEFAULT_PROPS, renderSeparatorBlock),
   },
   Icon: {
+    // No default props: the Icon block has none.
     render: renderIconBlock,
   },
   Heading: {
@@ -127,13 +164,13 @@ export const renderComponentConfigs: Config<any, RootProps>["components"] = {
         ...richTextFieldConfig,
       },
     },
-    render: renderHeadingBlock,
+    render: withPublicDefaults(HEADING_DEFAULT_PROPS, renderHeadingBlock),
   },
   Text: {
-    render: renderTextBlock,
+    render: withPublicDefaults(TEXT_DEFAULT_PROPS, renderTextBlock),
   },
   Link: {
-    render: renderLinkBlock,
+    render: withPublicDefaults(LINK_DEFAULT_PROPS, renderLinkBlock),
   },
 };
 
@@ -160,13 +197,13 @@ const NavbarBlockRender: PuckComponent<NavbarBlockProps> = (props) => (
 const regionOnlyRenderComponentConfigs: Config<any, RootProps>["components"] =
   {
     Brand: {
-      render: BrandRender,
+      render: withPublicDefaults(BRAND_DEFAULT_PROPS, BrandRender),
     },
     LinkList: {
-      render: renderLinkListBlock,
+      render: withPublicDefaults(LINK_LIST_DEFAULT_PROPS, renderLinkListBlock),
     },
     Copyright: {
-      render: CopyrightRender,
+      render: withPublicDefaults(COPYRIGHT_DEFAULT_PROPS, CopyrightRender),
     },
     TopBar: {
       // The slot field is declared so the public render resolves the nested
@@ -176,13 +213,13 @@ const regionOnlyRenderComponentConfigs: Config<any, RootProps>["components"] =
           type: "slot",
         },
       },
-      render: renderTopBarBlock,
+      render: withPublicDefaults(TOP_BAR_DEFAULT_PROPS, renderTopBarBlock),
     },
     SearchBar: {
-      render: renderSearchBarBlock,
+      render: withPublicDefaults(SEARCH_BAR_DEFAULT_PROPS, renderSearchBarBlock),
     },
     NavbarBlock: {
-      render: NavbarBlockRender,
+      render: withPublicDefaults(NAVBAR_BLOCK_DEFAULT_PROPS, NavbarBlockRender),
     },
   };
 

@@ -5,6 +5,8 @@ import { DimensionField } from "@/puck/fields/dimension";
 import { TypographyField } from "@/puck/fields/typography";
 import { DecorationField } from "@/puck/fields/decoration";
 
+import { FLEX_DEFAULT_PROPS } from "../defaults";
+
 import type { FlexBlockProps } from "./types";
 import { renderFlexBlock } from "./render";
 
@@ -20,13 +22,6 @@ export const FlexBlock: ComponentConfig<FlexBlockProps> = {
       type: "slot",
     },
   },
-  defaultProps: {
-    items: [],
-    layout: {
-      desktop: {
-        display: "flex",
-      },
-    },
-  },
+  defaultProps: FLEX_DEFAULT_PROPS,
   render: renderFlexBlock,
 };
