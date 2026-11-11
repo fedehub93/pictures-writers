@@ -71,9 +71,16 @@ Two details settled during implementation:
   width authored on a wider breakpoint still wins at a narrower one that only
   adds a max width. Emitting `100%` per breakpoint from `data[bp]` alone would
   have silently promoted a desktop `50%` box to full width on tablet.
-- A stored `auto` keyword is normalized to "no authored width" in the same
-  helper, so the keyword and the empty value cannot behave differently now that
-  one of them produces a fill.
+- An empty value stays "nothing decided here" — the breakpoint inherits the
+  width authored above it — while a stored `auto` stays the explicit CSS
+  keyword: it is authored, so it cancels an inherited width. Because "Auto" in
+  the menu writes nothing, its description names what it inherits
+  (`Auto (inherits fit-content)`) instead of reading as a reset for the whole
+  ladder.
+
+The preset popover is now wide enough for a label, a description and a keyword
+preview on one line (`w-64`), with the description truncating before the value
+does; the old `w-52` produced a horizontal scrollbar.
 
 `fit-content` is passed to the value/unit input as an allowed keyword, so it
 survives a re-commit instead of becoming an opaque `f(x)` value. The preset

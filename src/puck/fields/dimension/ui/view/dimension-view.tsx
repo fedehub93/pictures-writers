@@ -14,7 +14,7 @@ import {
 import { Input } from "@/shared/ui/input";
 
 import type { DimensionProps } from "../../index";
-import { WIDTH_PRESETS } from "../../presets";
+import { getWidthPresets } from "../../presets";
 
 /** A field row that can also feed the value/unit input's own options. */
 type LayoutField = FieldDef<DimensionProps> & {
@@ -22,7 +22,7 @@ type LayoutField = FieldDef<DimensionProps> & {
   allowedKeywords?: string[];
 };
 
-const layoutFields: LayoutField[] = [
+const getLayoutFields = (inheritedWidth?: string): LayoutField[] => [
   {
     key: "width",
     label: "Width",
@@ -30,7 +30,7 @@ const layoutFields: LayoutField[] = [
     placeholder: "auto",
     // Width names the states the style layer can imply, so the author can pick
     // *Fill* and *Fit content* without knowing CSS.
-    presets: WIDTH_PRESETS,
+    presets: getWidthPresets(inheritedWidth),
     allowedKeywords: ["auto", "fit-content"],
   },
   { key: "height", label: "Height", type: "unit", placeholder: "auto" },
@@ -82,6 +82,15 @@ export const DimensionView = ({
     !aspectRatioOptions.some((opt) => opt.value === currentRatioValue);
 
   const selectValue = isCustomRatio ? "custom" : currentRatioValue || "auto";
+
+  // An empty width at this breakpoint means "inherit": say what it inherits, so
+  // Auto does not read as a reset for the whole ladder.
+  const ownWidth = currentValues.width?.trim();
+  const inheritedWidth = ownWidth
+    ? undefined
+    : renderValues.width?.trim() || undefined;
+
+  const layoutFields = getLayoutFields(inheritedWidth);
 
   return (
     <div className="flex flex-col gap-y-2 p-1">

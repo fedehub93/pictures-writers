@@ -49,12 +49,15 @@ describe("getDimensionVars width intent", () => {
     expect(vars["--w-d"]).toBe("fit-content");
   });
 
-  it("treats a stored auto keyword like an unset width", () => {
+  it("lets an explicit auto keyword cancel an inherited width", () => {
     const vars = getDimensionVars({
-      desktop: { width: " auto ", maxWidth: "72rem" },
+      desktop: { maxWidth: "72rem" },
+      tablet: { width: "auto" },
     });
 
-    expect(vars).toEqual({ "--mw-d": "72rem", "--w-d": "100%" });
+    expect(vars["--w-d"]).toBe("100%");
+    expect(vars["--w-t"]).toBe("auto");
+    expect(vars["--mw-d"]).toBe("72rem");
   });
 
   it("emits the implied fill only at the breakpoint that authors the max-width", () => {

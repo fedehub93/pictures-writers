@@ -10,19 +10,7 @@ const BREAKPOINTS: Breakpoint[] = ["desktop", "tablet", "mobile"];
 const getSuffix = (bp: Breakpoint) => bp.charAt(0);
 
 /** The width a *Fill* box resolves to; the implied fill below emits the same. */
-export const FILL_WIDTH = "100%";
-
-/**
- * The width a breakpoint actually authors, or `undefined` when it decides
- * nothing. An empty value and the explicit `auto` keyword mean the same thing
- * — "the browser decides" — so a document that stored `auto` behaves exactly
- * like one that stored nothing.
- */
-export const normalizeAuthoredWidth = (width?: string) => {
-  const value = width?.trim();
-
-  return value && value.toLowerCase() !== "auto" ? value : undefined;
-};
+const FILL_WIDTH = "100%";
 
 /**
  * UTILITY: DIMENSION
@@ -46,7 +34,11 @@ export const getDimensionVars = (data?: Responsive<DimensionProps>) => {
     // function, so the rule cannot diverge between the canvas and the page.
     // An authored width — `fit-content` included, and one inherited from a
     // wider breakpoint — always wins over the implied fill.
-    const width = normalizeAuthoredWidth(p.width);
+    //
+    // An empty value means "nothing decided here", so the breakpoint inherits.
+    // A stored `auto` is the explicit CSS keyword: it is authored, and it
+    // cancels an inherited width instead of inheriting it.
+    const width = p.width?.trim();
     if (width) {
       vars[`--w-${s}`] = width;
       inheritedWidth = width;

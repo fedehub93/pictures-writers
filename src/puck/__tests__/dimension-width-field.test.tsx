@@ -107,6 +107,24 @@ describe("Dimension Width field", () => {
     expect(preset("Fit content").textContent).toContain("natural size");
   });
 
+  it("says what Auto inherits when a wider breakpoint set the width", () => {
+    // Empty at this breakpoint means "inherit", not "reset the document".
+    renderView({ renderValues: { width: "fit-content" } });
+    openPresets();
+
+    expect(preset("Auto").textContent).toContain("inherits fit-content");
+  });
+
+  it("does not claim an inheritance when this breakpoint owns the width", () => {
+    renderView({
+      currentValues: { width: "fit-content" },
+      renderValues: { width: "fit-content" },
+    });
+    openPresets();
+
+    expect(preset("Auto").textContent).toContain("no width");
+  });
+
   it("stores 100% when Fill is picked", () => {
     const updates: Partial<DimensionProps>[] = [];
     renderView({ onUpdate: (values) => updates.push(values) });
@@ -167,5 +185,18 @@ describe("Dimension Width field", () => {
     pressEnter(widthInput());
 
     expect(updates.at(-1)).toEqual({ width: "24px" });
+  });
+
+  it("stores an explicit auto keyword typed by hand, which cancels an inherited width", () => {
+    const updates: Partial<DimensionProps>[] = [];
+    renderView({
+      renderValues: { width: "fit-content" },
+      onUpdate: (values) => updates.push(values),
+    });
+
+    type(widthInput(), "auto");
+    pressEnter(widthInput());
+
+    expect(updates.at(-1)).toEqual({ width: "auto" });
   });
 });

@@ -7,14 +7,17 @@ import type { ValueUnitPreset } from "@/puck/components/value-unit-input/types";
  * is involved. *Fill* stores the same `100%` that `getDimensionVars` implies
  * when a breakpoint authors only a max width, *Fit content* stores
  * `fit-content`, and *Auto* stores nothing — the same as clearing the field.
- * The empty value is therefore still the default, it simply has a name now.
+ *
+ * "Nothing" has a meaning in a responsive ladder: the breakpoint inherits the
+ * width authored above it. That is why Auto says what it inherits instead of
+ * implying it is a reset for the whole document.
  */
-export const WIDTH_PRESETS: ValueUnitPreset[] = [
+export const getWidthPresets = (inheritedWidth?: string): ValueUnitPreset[] => [
   {
     label: "Auto",
     value: "",
     unit: "-",
-    description: "no width",
+    description: inheritedWidth ? `inherits ${inheritedWidth}` : "no width",
   },
   {
     label: "Fill",
