@@ -1,7 +1,7 @@
 // store/designer-provider.tsx
 "use client";
 
-import { createContext, useRef, useContext, type ReactNode } from "react";
+import { createContext, useContext, useState, type ReactNode } from "react";
 import { useStore } from "zustand";
 
 import { createDesignerStore, type DesignerStore } from "./use-designer-store";
@@ -20,16 +20,14 @@ export const DesignerProvider = ({
   children,
   initialContent,
 }: DesignerProviderProps) => {
-  // 2. Usiamo useRef per creare l'istanza dello store UNA SOLA VOLTA per ogni montaggio
-  // E gli passiamo i dati del database istantaneamente!
-  const storeRef = useRef<ReturnType<typeof createDesignerStore>>(null);
-
-  if (!storeRef.current) {
-    storeRef.current = createDesignerStore(initialContent);
-  }
+  // Creiamo l'istanza dello store UNA SOLA VOLTA per ogni montaggio. Un
+  // initializer pigro di useState è il modo supportato per creare un valore
+  // stabile: leggere un ref durante il render non è permesso.
+  // Gli passiamo i dati del database istantaneamente.
+  const [store] = useState(() => createDesignerStore(initialContent));
 
   return (
-    <DesignerContext.Provider value={storeRef.current}>
+    <DesignerContext.Provider value={store}>
       {children}
     </DesignerContext.Provider>
   );

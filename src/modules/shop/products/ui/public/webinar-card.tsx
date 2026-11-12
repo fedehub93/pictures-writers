@@ -59,8 +59,8 @@ export const WebinarCard = async ({
           className="group-hover:scale-105 transition-all duration-700 "
         >
           <Image
-            src={imageCover?.url!}
-            alt={imageCover?.altText!}
+            src={imageCover?.url ?? ""}
+            alt={imageCover?.altText ?? ""}
             className="shadow-md group-hover:shadow-xl transition-all duration-700"
             width={1280}
             height={720}

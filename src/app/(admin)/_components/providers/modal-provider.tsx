@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useHydrated } from "@/shared/hooks/use-hydrated";
 import { CreateMediaModal } from "../modals/create-media-modal";
 import { SelectAssetModal } from "../modals/select-asset-modal";
 import { SelectUrlModal } from "../modals/select-url-modal";
@@ -16,13 +16,9 @@ import { CreateAdBlockModal } from "../modals/create-adblock-modal";
 import { CreateAdItemModal } from "../modals/create-aditem-modal";
 
 export const ModalProvider = () => {
-  const [isMounted, setIsMounted] = useState(false);
+  const isHydrated = useHydrated();
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) {
+  if (!isHydrated) {
     return null;
   }
 

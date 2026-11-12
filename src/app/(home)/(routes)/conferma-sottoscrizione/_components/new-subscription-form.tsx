@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
@@ -9,33 +9,29 @@ import { CONTACT_EMAIL } from "@/constants";
 import { newSubscription } from "@/actions/new-subscription";
 
 export const NewSubscriptionForm = () => {
-  const [error, setError] = useState<string | undefined>();
-  const [success, setSuccess] = useState<string | undefined>();
+  const [result, setResult] = useState<{ error?: string } | null>(null);
+  const startedRef = useRef<string | null>(null);
   const searchParams = useSearchParams();
 
   const token = searchParams.get("token");
 
-  const onSubmit = useCallback(() => {
-    if (success || error) return;
-
-    if (!token) {
-      setError("Missing token!");
-      return;
-    }
+  useEffect(() => {
+    // Run each token's one-shot confirmation once even under StrictMode's
+    // double effect invocation; the result is applied from the promise
+    // callback so the effect itself never sets state synchronously.
+    if (!token || startedRef.current === token) return;
+    startedRef.current = token;
 
     newSubscription(token)
       .then((data) => {
-        setSuccess(data.success);
-        setError(data.error);
+        setResult({ error: data.error });
       })
       .catch(() => {
-        setError("Something went wrong!");
+        setResult({ error: "Something went wrong!" });
       });
-  }, [token, success, error]);
+  }, [token]);
 
-  useEffect(() => {
-    onSubmit();
-  }, [onSubmit]);
+  const error = token ? result?.error : "Missing token!";
 
   return (
     <section className="w-full items-center">

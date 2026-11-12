@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import * as z from "zod";
 
 import { useCategoriesQuery } from "@/modules/blog/categories/hooks/use-categories";
@@ -67,9 +66,6 @@ export const SpecificCategoryForm = ({
   isSubmitting,
   isDisabled,
 }: SpecificCategoryFormProps) => {
-  const [isDisabledSpecificCategory, setIsDisabledSpecificCategory] =
-    useState(false);
-
   const { data: categories, isLoading, isError } = useCategoriesQuery();
 
   const { field: fieldCategoryFilter } = useController({
@@ -80,6 +76,9 @@ export const SpecificCategoryForm = ({
     control,
     name: "metadata.categories",
   });
+
+  const isDisabledSpecificCategory =
+    fieldCategoryFilter.value !== WidgetPostCategoryFilter.SPECIFIC;
 
   if (!fieldCategories.value) {
     fieldCategories.onChange([]);
@@ -98,12 +97,6 @@ export const SpecificCategoryForm = ({
     }
     fieldCategories.onChange(newCategories);
   };
-
-  useEffect(() => {
-    setIsDisabledSpecificCategory(
-      fieldCategoryFilter.value !== WidgetPostCategoryFilter.SPECIFIC,
-    );
-  }, [fieldCategoryFilter.value]);
 
   if (isLoading) {
     return <div>Loading...</div>;

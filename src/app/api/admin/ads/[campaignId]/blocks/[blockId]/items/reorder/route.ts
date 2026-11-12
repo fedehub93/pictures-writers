@@ -13,7 +13,7 @@ export async function PUT(req: Request) {
 
     const { blockId, items } = await req.json();
 
-    for (let item of items) {
+    for (const item of items) {
       await db.adItem.update({
         where: {
           adBlockId: blockId,

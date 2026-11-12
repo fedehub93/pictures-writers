@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useController, useForm } from "react-hook-form";
 import { EditorRef, EmailEditorProps } from "react-email-editor";
 import dynamic from "next/dynamic";
-import { useRef } from "react";
+import { useState } from "react";
 import {
   SendIcon,
   Trash2Icon,
@@ -62,7 +62,7 @@ export const WriteForm = ({ singleSend }: WriteFormProps) => {
   const trpc = useTRPC();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const emailEditorRef = useRef<EditorRef>(null);
+  const [emailEditor, setEmailEditor] = useState<EditorRef["editor"]>(null);
 
   const { data: audiences, isLoading, isError } = useSuspenseAudiences();
 
@@ -135,9 +135,9 @@ export const WriteForm = ({ singleSend }: WriteFormProps) => {
   };
 
   const onSubmit = (values: SingleSendUpdateValues) => {
-    if (!emailEditorRef?.current?.editor) return;
+    if (!emailEditor) return;
 
-    emailEditorRef.current.editor.exportHtml(async (data) => {
+    emailEditor.exportHtml(async (data) => {
       const { design, html } = data;
       form.setValue("designData", design);
       form.setValue("bodyHtml", html);
@@ -191,9 +191,9 @@ export const WriteForm = ({ singleSend }: WriteFormProps) => {
   const scheduleIsPending = cancelSchedule.isPending;
 
   const onSend = () => {
-    if (!emailEditorRef?.current?.editor) return;
+    if (!emailEditor) return;
 
-    emailEditorRef.current.editor.exportHtml(async (data) => {
+    emailEditor.exportHtml(async (data) => {
       const { design, html } = data;
       form.setValue("designData", design);
       form.setValue("bodyHtml", html);
@@ -216,13 +216,9 @@ export const WriteForm = ({ singleSend }: WriteFormProps) => {
     field.onChange(newAudiences);
   };
 
-  const onLoad: EmailEditorProps["onLoad"] = (editor) => {};
-
   const onReady: EmailEditorProps["onReady"] = (editor) => {
-    // @ts-ignore
-    emailEditorRef.current = { editor };
-    if (!emailEditorRef?.current?.editor) return;
-    emailEditorRef.current.editor.loadDesign(form.getValues("designData"));
+    setEmailEditor(editor);
+    editor.loadDesign(form.getValues("designData"));
   };
 
   if (isError) return <div>Error...</div>;
@@ -357,7 +353,7 @@ export const WriteForm = ({ singleSend }: WriteFormProps) => {
             />
           </div>
           <div className="h-full border rounded overflow-hidden">
-            <EmailEditor onReady={onReady} onLoad={onLoad} minHeight="100%" />
+            <EmailEditor onReady={onReady} minHeight="100%" />
           </div>
         </form>
       </Form>

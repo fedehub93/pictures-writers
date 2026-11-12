@@ -48,8 +48,8 @@ export const ProductsList = ({ categorySlug, products }: ProductsListProps) => {
               categorySlug={categorySlug}
               slug={p.slug}
               imageCover={p.imageCover}
-              authorFirstName={p.metadata.author?.firstName!}
-              authorLastName={p.metadata.author?.lastName!}
+              authorFirstName={p.metadata.author?.firstName ?? ""}
+              authorLastName={p.metadata.author?.lastName ?? ""}
               price={p.price!}
               discountedPrice={p.discountedPrice!}
             />
@@ -84,8 +84,8 @@ export const ProductsList = ({ categorySlug, products }: ProductsListProps) => {
                 className="group-hover:scale-105 transition-all duration-700 h-full"
               >
                 <Image
-                  src={p.imageCover?.url!}
-                  alt={p.imageCover?.altText!}
+                  src={p.imageCover?.url ?? ""}
+                  alt={p.imageCover?.altText ?? ""}
                   className="shadow-md group-hover:shadow-xl transition-all duration-700 w-full h-full object-cover"
                   width={150}
                   height={150}

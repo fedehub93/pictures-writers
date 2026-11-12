@@ -2,8 +2,6 @@ import { Node as TiptapNode, mergeAttributes } from "@tiptap/core";
 import { ReactNodeViewRenderer } from "@tiptap/react";
 import { TableContentBlock } from "./ui/table-content-node";
 
-export interface TableContentAttrs {}
-
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
     tableContent: {

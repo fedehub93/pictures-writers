@@ -2,7 +2,6 @@
 
 import * as z from "zod";
 
-import { useEffect, useState } from "react";
 import { Control, useController } from "react-hook-form";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
@@ -23,15 +22,12 @@ export const WidgetPostForm = ({
   control,
   isSubmitting,
 }: WidgetPostFormProps) => {
-  const [isDisabledSpecificPost, setIsDisabledSpecificPost] = useState(false);
   const { field: fieldType } = useController({
     control,
     name: "metadata.postType",
   });
 
-  useEffect(() => {
-    setIsDisabledSpecificPost(fieldType.value !== WidgetPostType.SPECIFIC);
-  }, [fieldType.value]);
+  const isDisabledSpecificPost = fieldType.value !== WidgetPostType.SPECIFIC;
 
   return (
     <Card className="mt-6">

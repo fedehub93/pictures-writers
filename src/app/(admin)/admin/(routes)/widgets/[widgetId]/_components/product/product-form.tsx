@@ -2,7 +2,7 @@
 
 import * as z from "zod";
 
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent } from "react";
 import { Control, useController } from "react-hook-form";
 
 import {
@@ -29,8 +29,6 @@ export const WidgetProductForm = ({
   control,
   isSubmitting,
 }: WidgetProductFormProps) => {
-  const [isDisabledSpecificProduct, setIsDisabledSpecificProduct] =
-    useState(false);
   const { field: fieldType } = useController({
     control,
     name: "metadata.productType",
@@ -44,11 +42,8 @@ export const WidgetProductForm = ({
     fieldLimit.onChange(Number.parseInt(e.target.value));
   };
 
-  useEffect(() => {
-    setIsDisabledSpecificProduct(
-      fieldType.value !== WidgetProductType.SPECIFIC
-    );
-  }, [fieldType.value]);
+  const isDisabledSpecificProduct =
+    fieldType.value !== WidgetProductType.SPECIFIC;
 
   return (
     <Card className="mt-6">

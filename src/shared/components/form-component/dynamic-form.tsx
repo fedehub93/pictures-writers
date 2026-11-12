@@ -47,17 +47,27 @@ export default function DynamicForm({
   const [isPending, startTransition] = useTransition();
   const [isRecaptchaLoading, setIsRecaptchaLoading] = useState(false);
 
-  let jsonFields;
-  try {
-    jsonFields = JSON.parse(formDef.fields as string);
-  } catch (error) {
-    console.error("Invalid form fields JSON:", error);
-    return <div className="text-destructive">Invalid form configuration</div>;
-  }
+  // Parse before the hooks so every hook runs in the same order on every
+  // render; the error return happens after all hooks have been called.
+  const jsonFields = useMemo(() => {
+    try {
+      return JSON.parse(formDef.fields as string) as Array<{
+        type: string;
+        name: string;
+        label: string;
+        placeholder?: string;
+        required?: boolean;
+      }>;
+    } catch (error) {
+      console.error("Invalid form fields JSON:", error);
+      return null;
+    }
+  }, [formDef.fields]);
+
   const schema = useMemo(() => {
     const shape: Record<string, z.ZodMiniType> = {};
 
-    for (const field of jsonFields) {
+    for (const field of jsonFields ?? []) {
       let validator: z.ZodMiniType = z.string();
 
       switch (field.type) {
@@ -97,7 +107,7 @@ export default function DynamicForm({
   // 👇 Crea defaultValues dinamicamente
   const defaultValues = useMemo(() => {
     const values: Record<string, any> = {};
-    for (const field of jsonFields) {
+    for (const field of jsonFields ?? []) {
       switch (field.type) {
         case "file":
           values[field.name] = []; // array vuoto
@@ -171,6 +181,10 @@ export default function DynamicForm({
     }
   };
 
+  if (!jsonFields) {
+    return <div className="text-destructive">Invalid form configuration</div>;
+  }
+
   return (
     <div className="flex-1 flex flex-col gap-y-4">
       {title && <div className="text-2xl font-semibold">{title}</div>}
@@ -179,7 +193,7 @@ export default function DynamicForm({
           onSubmit={form.handleSubmit(onSubmit)}
           className="bg-card rounded-lg flex flex-col space-y-4"
         >
-          {jsonFields.map((field: any) => {
+          {jsonFields.map((field) => {
             switch (field.type) {
               case "text":
                 return (

@@ -24,7 +24,7 @@ export const LinkRenderer = ({ mark, children }: LinkProps) => {
     rel = "noopener noreferrer nofollow";
   }
 
-  let target = isExternalLink ? "_blank" : undefined;
+  const target = isExternalLink ? "_blank" : undefined;
 
   return (
     <NextLink href={mark.attrs.href} rel={rel} target={target} className="underline text-primary">

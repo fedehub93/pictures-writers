@@ -206,6 +206,7 @@ Before committing, always run:
 
 ```bash
 npm run lint
+npm run typecheck
 ```
 
 ---
@@ -438,7 +439,7 @@ Some features use Next.js App Router API routes directly under `src/app/api/`, i
 
 ## Pull Request Guidelines
 
-- Run `npm run lint` before committing
+- Run `npm run lint` and `npm run typecheck` before committing
 - Ensure `npm run build` passes
 - For DB schema changes, include migration files (`npx prisma migrate dev`)
 - Update Prisma client if schema changed (`npx prisma generate`)
