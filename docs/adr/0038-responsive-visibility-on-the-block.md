@@ -25,4 +25,4 @@ In the canvas a block hidden at the current breakpoint is still drawn, as an edi
 - The same variables drive the canvas and the public site; the editor placeholder is chrome and must never leak into the public output.
 - Hidden content still ships to every visitor and is still in the document. This is a layout affordance, not content targeting or access control.
 - Visibility belongs to blocks, so a future region key or page block inherits the behaviour without new wiring.
-- Terminology: `CONTEXT.md` → "Block layout", "Responsive visibility", "Hidden at the current viewport".
+- Terminology: `GLOSSARY.md` → "Block layout", "Responsive visibility", "Hidden at the current viewport".

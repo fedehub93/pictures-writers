@@ -24,4 +24,4 @@ A region renders in the layout of every page, so publishing or unpublishing call
 - The editor uses a per-region Puck palette, so header-only blocks such as `NavbarBlock` cannot be dropped into the footer and vice versa.
 - The admin screen lists one entry per region key, including keys whose root has not been created yet, with the current and live status. Version history is kept per root and exposed by `getVersions`; it has no dedicated screen in this iteration.
 - The static `Navbar` and `Footer` components remain in source but are no longer imported by the public layout. Removing them is a later cut-over after Pictures Writers has recreated its layout with Site regions; it is not part of this decision.
-- The canonical terminology and boundaries are recorded in `CONTEXT.md` "Site layout"; the full feature scope is in `.scratch/site-regions/spec.md`.
+- The canonical terminology and boundaries are recorded in `GLOSSARY.md` "Site layout"; the full feature scope is in `.scratch/site-regions/spec.md`.

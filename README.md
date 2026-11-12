@@ -57,4 +57,4 @@ Production runs on a self-hosted Hetzner VPS (ARM64) managed with Coolify. The N
 - Environment variable reference: `docs/self-hosting/appendice-a-variabili-ambiente.md`
 - Hosting decision: `docs/adr/0032-self-hosted-hetzner-coolify.md`
 
-Agent instructions and project conventions are in `AGENTS.md`; the domain glossary is in `CONTEXT.md`.
+Agent instructions and project conventions are in `AGENTS.md`; the domain glossary is in `GLOSSARY.md`.
