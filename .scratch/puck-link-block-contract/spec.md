@@ -136,9 +136,13 @@ JavaScript for those blocks.
 **Editing behaviour.**
 
 - The anchor stays the anchor; while editing it cancels the default action of the
-  primary and auxiliary click. `next/link` calls the `onClick` it receives before
-  deciding whether to navigate, and bails on `defaultPrevented`; React's synthetic
-  click also covers Enter on a focused anchor.
+  primary and auxiliary click in the **capture** phase. The canvas attaches its
+  own native `click` listener to the block root and stops propagation there, so
+  a bubble-phase handler on the React root container never runs for a block
+  whose root is the anchor; capture runs first and still lets `next/link` see
+  `defaultPrevented`. React's synthetic click also covers Enter on a focused
+  anchor. This is only observable in a browser or in a test that reproduces the
+  editor's `stopPropagation`.
 - **Rejected: rendering a span while editing.** Airtight, but it changes the tag
   in the canvas and would require an explicit exception to the render-pipeline
   test, which asserts the canvas and the page produce identical markup.

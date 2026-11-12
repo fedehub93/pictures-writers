@@ -106,3 +106,24 @@ including links that open in a new tab, and the published markup is unchanged.
   press), the interactive preview navigating again, and a `_blank` link keeping
   its tab on the published page. `next/link`'s `defaultPrevented` bail is pinned
   by the stub's comment, not by Next's own code.
+- 2026-11-12 — The browser run proved the first implementation ineffective on the
+  Link block, and the cause is the canvas: Puck attaches a native `click`
+  listener to the block root and calls `stopPropagation()` there
+  (`DraggableComponent` in `@puckeditor/core`). React delegates to the root
+  container, so for a block whose root *is* the anchor — the Link — a bubble
+  handler never runs and the browser default navigates. The cancellation moved
+  to the capture phase (`onClickCapture` / `onAuxClickCapture`), which React
+  dispatches before the event reaches the block root; `onClick` stays a bubble
+  handler and is still not run while editing. The mounted-DOM suite now
+  reproduces the editor's listener — a `stopPropagation` click listener on the
+  block root — for both the Link and the NavbarBlock, and those two cases failed
+  against the previous implementation while the rest of the suite was green.
+- 2026-11-12 — Consequence worth knowing for the next reader: in edit mode Puck
+  also applies `[data-puck-component] * { pointer-events: none }`, so only a
+  block whose root is the anchor is hit-testable at all. That is why the Link was
+  the visible defect; navbar entries inside the block root, and rich-text links
+  inside a Heading, cannot receive the click in the canvas (the mobile sheet is
+  the exception, because it is portaled outside that root). The rich-text link
+  mark therefore is not a precedent for the canvas, only for the properties
+  panel: `openOnClick: false` never applies to the canvas render, which is plain
+  HTML. That correction is recorded in the spec's editing-behaviour decision.
