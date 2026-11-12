@@ -109,6 +109,8 @@ npm run dev:db:down    # stop the container (keeps the volume)
 npm run dev:db:reset   # recreate it from scratch (drops the volume)
 ```
 
+To run SQL, pipe it in rather than quoting it into a `-c` argument: `Get-Content q.sql | npm run -s dev:db:psql` on PowerShell, `npm run -s dev:db:psql < q.sql` on bash.
+
 `.env` should contain:
 
 ```
@@ -128,6 +130,8 @@ This uses Turbopack by default. To use Webpack instead:
 ```bash
 npm run dev -- --webpack
 ```
+
+The dev server writes its log to `.next/dev/logs/next-development.log`; that is where a failed compile or a crashed request shows up.
 
 ### Build for production
 
@@ -427,6 +431,8 @@ Some features use Next.js App Router API routes directly under `src/app/api/`, i
 6. **Two auth files**: There are two auth configurations — `src/lib/auth.ts` (used by API routes) and `src/shared/lib/auth.ts` (used by tRPC). Keep them in sync.
 
 7. **Puck styles**: Puck base styles are imported in admin and home layouts. Custom blocks live in `src/puck/blocks/`.
+
+8. **Puck canvas**: the canvas is an iframe and is not the page — block roots, selection clicks and markup parity differ. Read `docs/puck-canvas.md` before changing a block's interaction.
 
 ---
 
