@@ -5,7 +5,7 @@ import StarterKit from "@tiptap/starter-kit";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { renderComponentConfigs } from "../render-config";
-import { RichTextField } from "../fields/rich-text";
+import { richTextFields } from "../fields/rich-text";
 import {
   RICH_TEXT_LINK_PROTOCOLS,
   RichTextLinkMark,
@@ -17,7 +17,7 @@ type RichTextFieldShape = {
   tiptap?: { extensions?: Extensions };
 };
 
-const editorField = RichTextField as RichTextFieldShape;
+const editorField = richTextFields.heading as RichTextFieldShape;
 const headingField = renderComponentConfigs.Heading?.fields?.text as
   | RichTextFieldShape
   | undefined;

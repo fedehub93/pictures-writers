@@ -1,6 +1,6 @@
 import { type ComponentConfig } from "@puckeditor/core";
 
-import { RichTextField } from "@/puck/fields/rich-text";
+import { richTextFields } from "@/puck/fields/rich-text";
 import { DimensionField } from "@/puck/fields/dimension";
 import { TypographyField } from "@/puck/fields/typography";
 import { DisplayOnlyLayoutField } from "@/puck/fields/layout";
@@ -17,7 +17,7 @@ export const Heading: ComponentConfig<HeadingProps> = {
   // `inline` is Puck's only supported way to skip its wrapper `div`.
   inline: true,
   fields: {
-    text: RichTextField,
+    text: richTextFields.heading,
     layout: DisplayOnlyLayoutField,
     dimension: DimensionField,
     typography: TypographyField,
