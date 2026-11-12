@@ -18,9 +18,14 @@ a document value, it would have to be authored link by link.
 
 Separately, a Link with a resolved URL is a live anchor in the canvas. Clicking
 it navigates away from the document being edited: the selection, the properties
-panel and any unsaved change are lost. The NavbarBlock has the same defect. The
-rich-text link mark already avoids it (`openOnClick: false`), so two surfaces of
-the same editor disagree about what a link is while editing.
+panel and any unsaved change are lost. The NavbarBlock has the same defect. An
+Image block with a destination is the third and most visible case: it renders
+its anchor as the block root, so clicking the logo in the header leaves the
+editor for the site it points at. The rich-text link mark avoids the problem
+only in the properties panel (`openOnClick: false`): the canvas renders plain
+HTML, and the editor's `pointer-events: none` rule on a block's descendants keeps
+a nested link from being the click target, so the mark is not a precedent for
+the canvas. The defect is confined to the blocks whose root is the anchor.
 
 ## Solution
 
@@ -29,10 +34,10 @@ without a stored document changing. A block that knows its natural width says
 so, and the Width field names it instead of leaving *Auto* ambiguous. *Fill*
 stays the deliberate choice for a full-width button.
 
-While editing, clicking a Link — or a navbar entry — selects the block instead
-of navigating. Puck's interactive preview and the published page keep the link
-live, and the published markup stays exactly what it is today: the inert
-behaviour exists only where the canvas renders.
+While editing, clicking a Link, a Menu item, or an Image with a destination
+selects the block instead of navigating. Puck's interactive preview and the
+published page keep the link live, and the published markup stays exactly what it
+is today: the inert behaviour exists only where the canvas renders.
 
 The footer blocks (Link list, Copyright) get the same behaviour later, through
 an editor-only render variant, so the published footer keeps shipping no
@@ -99,6 +104,9 @@ JavaScript for those blocks.
 26. As a maintainer, I want the footer blocks to adopt the same behaviour later
     without shipping client JavaScript, so that the published page never pays for
     an editor concern.
+27. As a backoffice editor, I want clicking an Image with a destination in the
+    canvas to select the block instead of leaving the editor, so that the logo I
+    placed in the header is not a trap.
 
 ## Implementation Decisions
 
@@ -136,13 +144,14 @@ JavaScript for those blocks.
 **Editing behaviour.**
 
 - The anchor stays the anchor; while editing it cancels the default action of the
-  primary and auxiliary click in the **capture** phase. The canvas attaches its
-  own native `click` listener to the block root and stops propagation there, so
-  a bubble-phase handler on the React root container never runs for a block
-  whose root is the anchor; capture runs first and still lets `next/link` see
-  `defaultPrevented`. React's synthetic click also covers Enter on a focused
-  anchor. This is only observable in a browser or in a test that reproduces the
-  editor's `stopPropagation`.
+  primary and auxiliary click in the **capture** phase. The canvas renders into
+  an iframe and React delegates its handlers to the portal container inside that
+  document; Puck additionally attaches its own native `click` listener to the
+  block root and stops propagation there, so a bubble-phase handler never runs
+  for a block whose root is the anchor. Capture runs first and still lets
+  `next/link` see `defaultPrevented`. React's synthetic click also covers Enter
+  on a focused anchor. This is only observable in a browser or in a test that
+  reproduces the editor's `stopPropagation`.
 - **Rejected: rendering a span while editing.** Airtight, but it changes the tag
   in the canvas and would require an explicit exception to the render-pipeline
   test, which asserts the canvas and the page produce identical markup.
@@ -152,11 +161,19 @@ JavaScript for those blocks.
 - The discriminator is Puck's `isEditing`. The interactive preview renders the
   document through the public `<Render>`, which passes `isEditing: false`, so
   links stay live there by construction rather than by a second flag.
-- Scope now: the Link block and the NavbarBlock. Both are already client
-  components, so the inert handler adds no new client boundary. The Link list and
-  Copyright blocks are server-rendered; making their shared UI client would ship
-  the footer's JavaScript to every visitor, so they are deferred to a ticket that
+- Scope now: the Link block, the NavbarBlock and the Image block. None of them
+  needs a new client boundary: the first two are client components, and the
+  Image render already runs in the editor graph while its pure UI stays
+  server-safe for the published page. The Image is included because a linked
+  image renders its anchor as the block root — the same shape as the Link, and
+  the block that navigated in the manual test. The Link list and Copyright
+  blocks are server-rendered; making their shared UI client would ship the
+  footer's JavaScript to every visitor, so they are deferred to a ticket that
   keeps the public render on the server and gives the editor its own variant.
+- The closure of the rule: the blocks whose root is an anchor are the Link and a
+  linked Image. Every other block that renders links nests them under a block
+  root, where the editor's `pointer-events: none` rule already prevents the
+  anchor from being the click target.
 - No behaviour is keyed off a Puck attribute, so a future upgrade that changes
   its DOM cannot silently re-enable or break navigation.
 
@@ -193,7 +210,9 @@ JavaScript for those blocks.
   click is cancelled, not that Next navigates — and the stub records the
   dependency on `defaultPrevented` in a comment. Cases: editing cancels the
   click and the auxiliary click; not editing leaves them alone; the navbar
-  projection receives the same flag.
+  projection receives the same flag; a linked Image cancels the click even when
+  the editor's own `stopPropagation` listener sits on its root, and a published
+  image keeps navigating.
 - **Not tested by unit tests:** that a browser paints `fit-content` as the
   label's width, that selection still works after the handler, and that the
   interactive preview navigates. Those are interactive checks in the canvas.
@@ -220,6 +239,11 @@ JavaScript for those blocks.
   `align-items` only at tablet, and the header's "Feedback Gratuito" CTA inside a
   flex row. The first fills at desktop and shrinks at tablet; the second is
   already intrinsic.
+- The Header document also stores its logo as an Image block whose destination is
+  an absolute URL. That is the block that navigated in the manual test; the Link
+  next to it selects a page and therefore renders as plain text in the editor,
+  because entity links are resolved on the server only. The Image block closes
+  the rule: it and the Link are the only blocks whose root is an anchor.
 - An implementation was started and reverted before this spec was written; the
   working tree was clean at that point, and this effort starts from tickets.
 - Builds on `puck-canvas-tree-parity` (the block root, the root zone, the width
@@ -232,5 +256,5 @@ JavaScript for those blocks.
 | # | Ticket | Status | Blocked by |
 | - | ------ | ------ | ---------- |
 | 01 | Link base width | done | — |
-| 02 | Links inert in the canvas | ready-for-human | — |
+| 02 | Links inert in the canvas | done | — |
 | 03 | Footer links inert without client cost | needs-triage | 02 |

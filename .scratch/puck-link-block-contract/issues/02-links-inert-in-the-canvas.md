@@ -1,5 +1,5 @@
 ---
-Status: ready-for-human
+Status: done
 Type: task
 Blocked by: none
 ---
@@ -7,25 +7,29 @@ Blocked by: none
 # 02: Links inert in the canvas
 
 **What to build:** While editing, clicking a Link block — or any entry of a
-NavbarBlock — selects the block instead of navigating. A middle click,
-Cmd/Ctrl+click and Enter on a focused link do nothing in the canvas. Puck's
-interactive preview and the published page keep navigating exactly as today,
-including links that open in a new tab, and the published markup is unchanged.
+NavbarBlock — selects the block instead of navigating. The same holds for an
+Image block that carries a destination, whose anchor is its block root. A middle
+click, Cmd/Ctrl+click and Enter on a focused link do nothing in the canvas.
+Puck's interactive preview and the published page keep navigating exactly as
+today, including links that open in a new tab, and the published markup is
+unchanged.
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-human
+**Status:** done
 
 ## Acceptance criteria
 
-- [ ] Clicking a Link with a resolved URL in the canvas does not navigate; the
+- [x] Clicking a Link with a resolved URL in the canvas does not navigate; the
       block gets selected and the properties panel opens.
-- [ ] The same holds for every NavbarBlock entry: top-level link, call to action,
+- [x] The same holds for every NavbarBlock entry: top-level link, call to action,
       mega-panel card, column child, and the mobile sheet rows and accordion
       children.
+- [x] Clicking an Image block with a destination does not navigate; the block
+      gets selected and the properties panel opens.
 - [x] A middle click and a Cmd/Ctrl+click do not open a tab in the canvas.
-- [ ] Pressing Enter on a focused link in the canvas does not navigate.
-- [ ] The interactive preview navigates, and the published page navigates with the
+- [x] Pressing Enter on a focused link in the canvas does not navigate.
+- [x] The interactive preview navigates, and the published page navigates with the
       same `target` and `rel` it renders today.
 - [x] The published render carries no click behaviour: the render-pipeline parity
       test still compares identical canvas and public markup, and the canvas
@@ -50,13 +54,20 @@ including links that open in a new tab, and the published markup is unchanged.
 - The discriminator is Puck's `isEditing`. Interactive preview renders the
   document through the public `<Render>`, which passes `isEditing: false`, so
   links stay live there without a second flag.
-- Scope stops at the Link block and the NavbarBlock because both are already
-  client components: no new client boundary is added anywhere. The footer blocks
-  are ticket 03.
+- The anchor-as-block-root set is small and closed: the Link block and an Image
+  with a destination. Everything else that renders links is nested inside a
+  block root, where the editor's `pointer-events: none` rule already makes the
+  anchor unreachable.
+- Scope stops at the Link block, the NavbarBlock and the Image block because
+  none of them needs a new client boundary: the first two are client components
+  and the Image render already runs in the editor graph. The footer blocks are
+  ticket 03.
 - The site layout preview needs nothing: it is already inert through
   `pointer-events-none`.
-- The rich-text link mark is the precedent (`openOnClick: false`); this ticket
-  brings the block links in line with it.
+- The rich-text link mark (`openOnClick: false`) is a precedent for the
+  properties panel only: the canvas renders plain HTML, and a link nested inside
+  a block root is not clickable there at all. The handler belongs to the blocks
+  whose root is the anchor.
 
 ## Comments
 
@@ -127,3 +138,30 @@ including links that open in a new tab, and the published markup is unchanged.
   mark therefore is not a precedent for the canvas, only for the properties
   panel: `openOnClick: false` never applies to the canvas render, which is plain
   HTML. That correction is recorded in the spec's editing-behaviour decision.
+- 2026-11-12 — The cause of the manual re-check is now known, and it was not the
+  Link. Header version 22 stores its logo as an Image block whose
+  `image.href = "https://pictureswriters.com/"`; the Image render makes that
+  anchor the block root, so it was the block that navigated. The Link next to it
+  selects a page, and entity links only resolve server-side, so in the editor it
+  renders as plain text and never had an anchor at all. The capture handler was
+  re-verified in a real Chrome against the HEADER palette: the Link cancels the
+  click, the auxiliary click and Enter, and the Image anchor was the only one
+  reporting `defaultPrevented: false`. The canvas is an iframe (`about:srcdoc`),
+  which also explains why a relative link looked harmless there while the logo's
+  absolute URL left the frame: the base URL of a `srcdoc` document is the
+  embedding page, but an absolute URL still navigates.
+- 2026-11-12 — Fix: `src/puck/utils/inert-anchor.ts` now owns the cancellation as
+  `getInertAnchorProps`, used by `InlineSmartLink` and by `ImageBlockUi`
+  (`renderImageBlock` passes `puck.isEditing`). It stays the capture-phase
+  handler the previous comment describes. No markup, client boundary, stored
+  document or schema changed. The mounted-DOM suite gains the Image cases: the
+  click and the auxiliary click, the editor's `stopPropagation` listener, the
+  published path, an unlinked image staying a `div`, and editing/published
+  markup parity.
+- 2026-11-12 — Manual verification passed (maintainer): the header logo (an
+  Image with an absolute destination), a Link with an external URL, the navbar
+  entries, Enter on a focused link, and the interactive preview all behave as
+  specified; the canvas selects the block and keeps the properties panel open.
+  Ticket closed. Verification on the final tree: `npx tsc --noEmit` clean,
+  eslint on the touched files 0 errors (the two warnings in `image.tsx` are
+  pre-existing), `npm run test:run` 249 files / 2116 tests pass.
