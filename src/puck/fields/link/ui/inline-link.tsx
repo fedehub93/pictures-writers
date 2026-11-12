@@ -3,6 +3,7 @@ import type { Route } from "next";
 import Link from "next/link";
 
 import type { BlockDragRef } from "@/puck/types";
+import { getInertAnchorProps } from "@/puck/utils/inert-anchor";
 
 import {
   getLinkHref,
@@ -70,37 +71,15 @@ export const InlineSmartLink = ({
   const openInNewTab = getLinkOpenInNewTab(link);
 
   /**
-   * The canvas cancels the default action in the **capture** phase, and that
-   * phase is not an implementation detail.
-   *
-   * The editor attaches a native `click` listener to the block root and calls
-   * `stopPropagation()` there (`DraggableComponent` in `@puckeditor/core`), so
-   * the event never bubbles to the React root container where a normal
-   * `onClick` runs: a bubble handler is unreachable in the canvas and the
-   * browser navigates. Capture runs on the way down, before that listener, so
-   * `preventDefault` still reaches the browser and `next/link` reads the same
-   * `defaultPrevented` and bails before it touches the router. The middle click
-   * is handled the same way through `onAuxClickCapture`.
-   *
-   * React's synthetic click is also what a focused anchor receives when the
-   * reader presses Enter, so the keyboard path is covered by the same handler.
+   * The canvas cancels the default action in the capture phase instead of
+   * swapping the element: see `getInertAnchorProps` for why capture is not
+   * an implementation detail.
    *
    * `onClick` is the consumer's navigation feedback (the mobile sheet closes
    * itself through it), so the canvas does not run it either: the editor owns
    * the click, and closing the menu would hide what is being edited.
    */
-  const handleClickCapture = editing
-    ? (event: MouseEvent<HTMLElement>) => {
-        event.preventDefault();
-      }
-    : undefined;
-
-  const handleAuxClickCapture = editing
-    ? (event: MouseEvent<HTMLElement>) => {
-        // A middle click activates the link through `auxclick`, not `click`.
-        if (event.button === 1) event.preventDefault();
-      }
-    : undefined;
+  const inertAnchorHandlers = getInertAnchorProps(editing);
 
   return (
     <Link
@@ -108,8 +87,7 @@ export const InlineSmartLink = ({
       className={className}
       style={style}
       onClick={editing ? undefined : onClick}
-      onClickCapture={handleClickCapture}
-      onAuxClickCapture={handleAuxClickCapture}
+      {...inertAnchorHandlers}
       prefetch={false}
       target={openInNewTab ? "_blank" : undefined}
       rel={openInNewTab ? "noreferrer" : undefined}

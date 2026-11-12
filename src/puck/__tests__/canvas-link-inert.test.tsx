@@ -104,6 +104,11 @@ function linkRender() {
     .render as unknown as RenderEntry;
 }
 
+function imageRender() {
+  return editorConfigForRegion("HEADER").components.Image
+    .render as unknown as RenderEntry;
+}
+
 function navbarRender() {
   return editorConfigForRegion("HEADER").components.NavbarBlock
     .render as unknown as RenderEntry;
@@ -218,6 +223,20 @@ function mountNavbar(editing: boolean) {
   );
 }
 
+/**
+ * An Image block renders its anchor as the block root when it has a target, so
+ * it is the other block that can navigate out of the canvas.
+ */
+function mountImage(editing: boolean, href = "https://example.com/") {
+  return mount(
+    imageRender()({
+      id: "canvas-image",
+      image: { src: "/logo.webp", alt: "Logo", href },
+      puck: { ...PUCK, isEditing: editing, dragRef: () => undefined },
+    }),
+  );
+}
+
 async function openMobileSheet() {
   const trigger = container?.querySelector<HTMLButtonElement>(
     'button[aria-label="Open menu"]',
@@ -293,6 +312,63 @@ describe("Link block in the canvas", () => {
     expect(host.querySelector("a")).toBeNull();
     expect(text.tagName).toBe("SPAN");
     expect(text.textContent).toBe("Removed page");
+  });
+});
+
+describe("Image block in the canvas", () => {
+  it("keeps the anchor as the block root but cancels its click", async () => {
+    const host = await mountImage(true);
+    const anchor = host.querySelector("a");
+
+    // The markup is the published one: same tag, same target.
+    expect(anchor).not.toBeNull();
+    expect(anchor!.getAttribute("href")).toBe("https://example.com/");
+
+    expect(click(anchor!).defaultPrevented).toBe(true);
+    expect(click(anchor!, { ctrlKey: true }).defaultPrevented).toBe(true);
+    expect(middleClick(anchor!).defaultPrevented).toBe(true);
+  });
+
+  it("cancels the click although Puck stops it at the block root", async () => {
+    const host = await mountImage(true);
+    const anchor = host.querySelector("a")!;
+
+    // The linked image's block root *is* the anchor, exactly like the Link.
+    mimicPuckSelection(anchor);
+
+    expect(click(anchor).defaultPrevented).toBe(true);
+  });
+
+  it("leaves the published image link navigating", async () => {
+    const host = await mountImage(false);
+    const anchor = host.querySelector("a")!;
+
+    expect(click(anchor).defaultPrevented).toBe(false);
+    expect(middleClick(anchor).defaultPrevented).toBe(false);
+  });
+
+  it("still renders an image without a target as a div", async () => {
+    const host = await mountImage(true, "");
+
+    expect(host.querySelector("a")).toBeNull();
+    expect((host.firstElementChild as HTMLElement).tagName).toBe("DIV");
+  });
+
+  it("emits the same markup editing and published", () => {
+    const props = {
+      id: "canvas-image",
+      image: { src: "/logo.webp", alt: "Logo", href: "/blog/" },
+      puck: { ...PUCK, dragRef: () => undefined },
+    };
+
+    const editing = renderToStaticMarkup(
+      imageRender()({ ...props, puck: { ...props.puck, isEditing: true } }),
+    );
+    const published = renderToStaticMarkup(
+      imageRender()({ ...props, puck: { ...props.puck, isEditing: false } }),
+    );
+
+    expect(editing).toBe(published);
   });
 });
 

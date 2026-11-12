@@ -2,6 +2,7 @@ import { cn } from "@/shared/lib/utils";
 import type { ImageProps } from "@/puck/fields/image";
 import { pickDisplayVars } from "@/puck/fields/layout/get-layout-vars";
 import type { BlockDragRef } from "@/puck/types";
+import { getInertAnchorProps } from "@/puck/utils/inert-anchor";
 
 const PLACEHOLDER_IMAGE =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23f3f4f6' width='400' height='300'/%3E%3Ctext x='50%25' y='50%25' font-family='system-ui' font-size='16' fill='%239ca3af' text-anchor='middle' dominant-baseline='middle'%3ENo image selected%3C/text%3E%3C/svg%3E";
@@ -21,6 +22,7 @@ export const ImageBlockUi = ({
   dimensionVars,
   decorationVars,
   layoutClassName,
+  editing,
   dragRef,
 }: {
   image?: ImageProps;
@@ -28,6 +30,8 @@ export const ImageBlockUi = ({
   dimensionVars: Record<string, string>;
   decorationVars: Record<string, string>;
   layoutClassName?: string;
+  /** Editor-only: the canvas keeps the anchor but cancels its navigation. */
+  editing?: boolean;
   /** Editor-only: Puck's selection ref, attached to the block root. */
   dragRef?: BlockDragRef;
 }) => {
@@ -57,6 +61,9 @@ export const ImageBlockUi = ({
     ...pickDisplayVars(layoutVars),
     ...dimensionVars,
   };
+  // A linked image renders as an anchor block root, so the canvas has to cancel
+  // its navigation exactly like a Link block.
+  const inertAnchorHandlers = getInertAnchorProps(editing);
 
   return (
     <>
@@ -68,6 +75,7 @@ export const ImageBlockUi = ({
           href={imgData.href}
           className={cn("block", rootClassName)}
           style={rootStyle}
+          {...inertAnchorHandlers}
         >
           {ImageContent}
         </a>
