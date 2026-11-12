@@ -2,6 +2,9 @@
 
 Issues and specs for this repo live as markdown files in `.scratch/`.
 
+`.scratch` is dot-prefixed, so `glob` only sees it with `hidden: true`; a directory listing
+(`ls`, `Get-ChildItem`) sees it either way. A plain `glob .scratch/**` reports no files.
+
 ## Conventions
 
 - One feature per directory: `.scratch/<feature-slug>/`
