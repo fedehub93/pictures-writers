@@ -1,3 +1,5 @@
+import "client-only";
+
 import { type RichtextField, RichTextMenu } from "@puckeditor/core";
 import type { Editor } from "@tiptap/core";
 

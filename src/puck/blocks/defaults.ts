@@ -73,7 +73,7 @@ export const GRID_DEFAULT_PROPS: GridBlockProps = {
 };
 
 export const HEADING_DEFAULT_PROPS: HeadingProps = {
-  text: "Heading",
+  text: "<p>Heading</p>",
   level: HEADING_DEFAULT_LEVEL,
 };
 

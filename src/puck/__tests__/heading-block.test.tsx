@@ -86,8 +86,11 @@ describe("Heading block", () => {
   it("leaves the default render otherwise unchanged", () => {
     const html = renderHeading(HEADING_DEFAULT_PROPS);
 
+    // The render function is called directly, without Puck's rich text
+    // transform, so the stored HTML reaches it as a string and is escaped.
+    // Both real paths resolve the default through the shared descriptor.
     expect(html).toBe(
-      `<${HEADING_DEFAULT_LEVEL} class="block puck-dim puck-typo puck-block-root puck-rich-text">Heading</${HEADING_DEFAULT_LEVEL}>`,
+      `<${HEADING_DEFAULT_LEVEL} class="block puck-dim puck-typo puck-block-root puck-rich-text">&lt;p&gt;Heading&lt;/p&gt;</${HEADING_DEFAULT_LEVEL}>`,
     );
   });
 

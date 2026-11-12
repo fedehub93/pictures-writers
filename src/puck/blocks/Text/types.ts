@@ -10,7 +10,7 @@ export type TextBlockProps = {
    * Authored rich text HTML.
    *
    * The field is a `richtext` descriptor shared with the public render config:
-   * the canvas mounts Puck's inline editor in place of the value, and the
+   * the canvas mounts Puck's editor in place of the value, and the
    * published page resolves the same stored HTML with the same schema.
    */
   text?: ReactNode;

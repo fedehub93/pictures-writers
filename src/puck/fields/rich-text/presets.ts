@@ -27,6 +27,24 @@ export const RICH_TEXT_PLACEHOLDERS = {
 } as const;
 
 /**
+ * The nodes and marks both text blocks turn off.
+ *
+ * Turning them off disables their keyboard shortcuts too, so the schema — not
+ * just the toolbar — is the boundary. `link` stays false because the shared
+ * mark in `extensions.ts` is the only link mark: a descriptor cannot re-enable
+ * Puck's built-in one and put two link marks in the same schema.
+ */
+const DISABLED_TEXT_OPTIONS = {
+  blockquote: false,
+  code: false,
+  codeBlock: false,
+  strike: false,
+  horizontalRule: false,
+  textAlign: false,
+  link: false,
+} as const;
+
+/**
  * Per-block descriptors, shared by the editor field and the render config.
  *
  * The two consumers resolve the same stored HTML with the same schema, so
@@ -38,21 +56,13 @@ export const richTextDescriptors = {
     ...richTextFieldConfig,
     options: {
       ...richTextFieldConfig.options,
-      // A Heading block is one heading: nested headings, lists, quotes, code
-      // and alignment would put block structure inside an <hN>. Paragraphs
-      // stay, because Puck's editor always wraps content in them.
+      ...DISABLED_TEXT_OPTIONS,
+      // A Heading block is one heading: nested headings and lists would put
+      // block structure inside an <hN>. Paragraphs stay, because Puck's editor
+      // always wraps content in them.
       heading: false,
       bulletList: false,
       orderedList: false,
-      blockquote: false,
-      code: false,
-      codeBlock: false,
-      strike: false,
-      horizontalRule: false,
-      textAlign: false,
-      // The shared mark is the only link mark: a descriptor cannot re-enable
-      // Puck's built-in one and put two link marks in the same schema.
-      link: false,
     },
     tiptap: {
       ...richTextFieldConfig.tiptap,
@@ -64,16 +74,9 @@ export const richTextDescriptors = {
     ...richTextFieldConfig,
     options: {
       ...richTextFieldConfig.options,
+      ...DISABLED_TEXT_OPTIONS,
       // A Text block carries whole passages: headings and lists are content,
-      // while quotes, code, strike, rules and alignment are out of scope for
-      // the block. Turning them off disables their keyboard shortcuts too.
-      blockquote: false,
-      code: false,
-      codeBlock: false,
-      strike: false,
-      horizontalRule: false,
-      textAlign: false,
-      link: false,
+      // while the shared list above is out of scope for the block.
     },
     tiptap: {
       ...richTextFieldConfig.tiptap,

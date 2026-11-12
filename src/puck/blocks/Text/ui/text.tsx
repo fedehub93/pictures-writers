@@ -16,7 +16,7 @@ export const TextBlockUi = ({
   dragRef?: BlockDragRef;
 }) => {
   return (
-    // A `div`, not a `p`: Puck's inline editor is itself a block-level `div`
+    // A `div`, not a `p`: Puck's editor is itself a block-level `div`
     // and the authored content is a sequence of paragraphs, so a paragraph
     // root could not contain it. The rich text container supplies the
     // authored content's rhythm; the block's own typography is inherited.
