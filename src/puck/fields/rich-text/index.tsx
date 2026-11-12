@@ -24,21 +24,58 @@ export const getRichTextMenuPortalContainer = (
 ): HTMLElement | null => editor?.view.dom.ownerDocument.body ?? null;
 
 /**
+ * Link and colour controls, the project's additions to Puck's default menu.
+ *
+ * They live in a group of their own so a preset can place them after whatever
+ * else it adds. The panel container is the editor's document, which is the
+ * canvas iframe while editing there and the editor window in the sidebar.
+ */
+const LinkAndColorControls = ({ editor }: { editor: Editor }) => {
+  const container = getRichTextMenuPortalContainer(editor);
+
+  return (
+    <RichTextMenu.Group>
+      <LinkPickerPopover editor={editor} container={container} />
+      <ColorPickerPopover editor={editor} container={container} />
+    </RichTextMenu.Group>
+  );
+};
+
+/**
  * Default menu for both surfaces: Puck supplies bold, italic and underline as
  * `children`, and the project adds the link and colour controls.
  */
 const RichTextMenuWithLinks = ({ editor, children }: RichTextMenuProps) => {
   if (!editor) return null;
 
-  const container = getRichTextMenuPortalContainer(editor);
-
   return (
     <RichTextMenu>
       {children}
+      <LinkAndColorControls editor={editor} />
+    </RichTextMenu>
+  );
+};
+
+/**
+ * Inline menu for the Text block.
+ *
+ * Puck's inline `children` only carry bold, italic and underline; the heading
+ * and list selects exist in the sidebar menu only. A Text block authors whole
+ * passages on the canvas, so its toolbar offers those two controls explicitly:
+ * the selected paragraph becomes a heading or a list, and the selects turn it
+ * back into a paragraph.
+ */
+const TextRichTextInlineMenu = ({ editor, children }: RichTextMenuProps) => {
+  if (!editor) return null;
+
+  return (
+    <RichTextMenu>
       <RichTextMenu.Group>
-        <LinkPickerPopover editor={editor} container={container} />
-        <ColorPickerPopover editor={editor} container={container} />
+        <RichTextMenu.HeadingSelect />
+        <RichTextMenu.ListSelect />
       </RichTextMenu.Group>
+      {children}
+      <LinkAndColorControls editor={editor} />
     </RichTextMenu>
   );
 };
@@ -73,4 +110,7 @@ export const createRichTextField = (
 /** Descriptors the text blocks mount, one per editing surface. */
 export const richTextFields = {
   heading: createRichTextField(richTextDescriptors.heading),
+  text: createRichTextField(richTextDescriptors.text, {
+    renderInlineMenu: TextRichTextInlineMenu,
+  }),
 };

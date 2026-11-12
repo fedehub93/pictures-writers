@@ -7,11 +7,14 @@ import { richTextDescriptors } from "../fields/rich-text/presets";
 import { renderComponentConfigs } from "../render-config";
 
 const headingField = richTextFields.heading;
+const textField = richTextFields.text;
 
 describe("shared rich text field", () => {
   it("declares inline editing explicitly instead of relying on Puck's default", () => {
-    expect(headingField.type).toBe("richtext");
-    expect(headingField.contentEditable).toBe(true);
+    for (const field of [headingField, textField]) {
+      expect(field.type).toBe("richtext");
+      expect(field.contentEditable).toBe(true);
+    }
   });
 
   it("disables the extensions a Heading must not contain", () => {
@@ -32,25 +35,57 @@ describe("shared rich text field", () => {
     expect(headingField.options?.paragraph).toBeUndefined();
   });
 
-  it("defines both the inline menu and the sidebar menu", () => {
-    expect(headingField.renderInlineMenu).toBeTypeOf("function");
-    expect(headingField.renderMenu).toBeTypeOf("function");
+  it("keeps headings and lists for Text and disables the rest", () => {
+    expect(textField.options).toMatchObject({
+      link: false,
+      blockquote: false,
+      code: false,
+      codeBlock: false,
+      strike: false,
+      horizontalRule: false,
+      textAlign: false,
+    });
+    // Heading and list nodes are the block's content: they stay enabled and
+    // their controls appear in the inline toolbar.
+    expect(textField.options?.heading).toBeUndefined();
+    expect(textField.options?.bulletList).toBeUndefined();
+    expect(textField.options?.orderedList).toBeUndefined();
+    expect(textField.options?.paragraph).toBeUndefined();
   });
 
-  it("is the descriptor the Heading block mounts", () => {
+  it("defines both the inline menu and the sidebar menu", () => {
+    for (const field of [headingField, textField]) {
+      expect(field.renderInlineMenu).toBeTypeOf("function");
+      expect(field.renderMenu).toBeTypeOf("function");
+    }
+  });
+
+  it("gives Text its own inline toolbar, so Heading keeps the reduced one", () => {
+    expect(textField.renderInlineMenu).not.toBe(headingField.renderInlineMenu);
+  });
+
+  it("is the descriptor each text block mounts", () => {
     expect(config.components.Heading.fields?.text).toBe(headingField);
+    expect(config.components.Text.fields?.text).toBe(textField);
   });
 
   it("shares the schema with the public render config, without inline editing", () => {
-    const publicField = renderComponentConfigs.Heading?.fields
+    const headingPublic = renderComponentConfigs.Heading?.fields
       ?.text as RichtextField;
-    const descriptor = richTextDescriptors.heading;
+    const textPublic = renderComponentConfigs.Text?.fields
+      ?.text as RichtextField;
 
     // Identity, not equality: the editor field is built from the same schema
     // object the public render config reads, so the two cannot drift.
-    expect(publicField).toBe(descriptor);
-    expect(headingField.options).toBe(descriptor.options);
-    expect(headingField.tiptap).toBe(descriptor.tiptap);
-    expect(publicField.contentEditable).toBeUndefined();
+    expect(headingPublic).toBe(richTextDescriptors.heading);
+    expect(headingField.options).toBe(richTextDescriptors.heading.options);
+    expect(headingField.tiptap).toBe(richTextDescriptors.heading.tiptap);
+
+    expect(textPublic).toBe(richTextDescriptors.text);
+    expect(textField.options).toBe(richTextDescriptors.text.options);
+    expect(textField.tiptap).toBe(richTextDescriptors.text.tiptap);
+
+    expect(headingPublic.contentEditable).toBeUndefined();
+    expect(textPublic.contentEditable).toBeUndefined();
   });
 });

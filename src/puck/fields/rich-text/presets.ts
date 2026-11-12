@@ -43,4 +43,21 @@ export const richTextDescriptors = {
       link: false,
     },
   },
+  text: {
+    type: "richtext",
+    ...richTextFieldConfig,
+    options: {
+      ...richTextFieldConfig.options,
+      // A Text block carries whole passages: headings and lists are content,
+      // while quotes, code, strike, rules and alignment are out of scope for
+      // the block. Turning them off disables their keyboard shortcuts too.
+      blockquote: false,
+      code: false,
+      codeBlock: false,
+      strike: false,
+      horizontalRule: false,
+      textAlign: false,
+      link: false,
+    },
+  },
 } satisfies Record<string, RichTextFieldDescriptor>;

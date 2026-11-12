@@ -16,17 +16,19 @@ export const TextBlockUi = ({
   dragRef?: BlockDragRef;
 }) => {
   return (
-    // The paragraph is the block: no editor-only wrapper sits between it and
-    // its parent, so this is the element the editor selects and outlines.
-    <p
+    // A `div`, not a `p`: Puck's inline editor is itself a block-level `div`
+    // and the authored content is a sequence of paragraphs, so a paragraph
+    // root could not contain it. The rich text container supplies the
+    // authored content's rhythm; the block's own typography is inherited.
+    <div
       ref={dragRef}
       className={cn(
-        "puck-dim puck-typo whitespace-pre-line puck-block-root",
+        "block puck-dim puck-typo puck-block-root puck-rich-text",
         layoutClassName,
       )}
       style={styleVars}
     >
       {text}
-    </p>
+    </div>
   );
 };

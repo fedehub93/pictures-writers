@@ -7,10 +7,11 @@ import type { TypographyProps } from "@/puck/fields/typography";
 
 export type TextBlockProps = {
   /**
-   * Plain multi-line text content.
+   * Authored rich text HTML.
    *
-   * Typed as ReactNode so the field can move to rich text later without
-   * changing the block props or its render.
+   * The field is a `richtext` descriptor shared with the public render config:
+   * the canvas mounts Puck's inline editor in place of the value, and the
+   * published page resolves the same stored HTML with the same schema.
    */
   text?: ReactNode;
   layout?: Responsive<LayoutProps>;

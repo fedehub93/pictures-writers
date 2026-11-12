@@ -101,7 +101,7 @@ export const SEPARATOR_DEFAULT_PROPS: SeparatorBlockProps = {
 };
 
 export const TEXT_DEFAULT_PROPS: TextBlockProps = {
-  text: "Add your text here.",
+  text: "<p>Add your text here.</p>",
 };
 
 export const FORM_DEFAULT_PROPS: FormBlockProps = {

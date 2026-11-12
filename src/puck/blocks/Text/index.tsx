@@ -1,5 +1,6 @@
 import { ComponentConfig } from "@puckeditor/core";
 
+import { richTextFields } from "@/puck/fields/rich-text";
 import { DimensionField } from "@/puck/fields/dimension";
 import { TypographyField } from "@/puck/fields/typography";
 import { DisplayOnlyLayoutField } from "@/puck/fields/layout";
@@ -12,14 +13,11 @@ import { renderTextBlock } from "./render";
 export type { TextBlockProps };
 
 export const Text: ComponentConfig<TextBlockProps> = {
-  // The paragraph is the block root; the render attaches `puck.dragRef` to it
-  // and `inline` is Puck's only supported way to skip its wrapper `div`.
+  // The div is the block root; the render attaches `puck.dragRef` to it and
+  // `inline` is Puck's only supported way to skip its wrapper `div`.
   inline: true,
   fields: {
-    text: {
-      type: "textarea",
-      label: "Text",
-    },
+    text: richTextFields.text,
     layout: DisplayOnlyLayoutField,
     dimension: DimensionField,
     typography: TypographyField,

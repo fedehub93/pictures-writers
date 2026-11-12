@@ -164,6 +164,11 @@ export const renderComponentConfigs: Config<any, RootProps>["components"] = {
     render: withPublicDefaults(HEADING_DEFAULT_PROPS, renderHeadingBlock),
   },
   Text: {
+    // Same reason as Heading: the public render resolves the stored HTML with
+    // the descriptor's schema, so the editor and the page cannot diverge.
+    fields: {
+      text: richTextDescriptors.text,
+    },
     render: withPublicDefaults(TEXT_DEFAULT_PROPS, renderTextBlock),
   },
   Link: {
