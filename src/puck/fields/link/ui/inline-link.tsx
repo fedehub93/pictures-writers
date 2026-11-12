@@ -70,12 +70,18 @@ export const InlineSmartLink = ({
   const openInNewTab = getLinkOpenInNewTab(link);
 
   /**
-   * The canvas cancels the default action instead of swapping the element.
+   * The canvas cancels the default action in the **capture** phase, and that
+   * phase is not an implementation detail.
    *
-   * `next/link` runs the `onClick` it receives before it decides anything and
-   * returns as soon as the event is default-prevented, so client-side
-   * navigation never starts. The same call cancels the browser defaults behind
-   * a Cmd/Ctrl+click and, through `onAuxClick`, the new tab of a middle click.
+   * The editor attaches a native `click` listener to the block root and calls
+   * `stopPropagation()` there (`DraggableComponent` in `@puckeditor/core`), so
+   * the event never bubbles to the React root container where a normal
+   * `onClick` runs: a bubble handler is unreachable in the canvas and the
+   * browser navigates. Capture runs on the way down, before that listener, so
+   * `preventDefault` still reaches the browser and `next/link` reads the same
+   * `defaultPrevented` and bails before it touches the router. The middle click
+   * is handled the same way through `onAuxClickCapture`.
+   *
    * React's synthetic click is also what a focused anchor receives when the
    * reader presses Enter, so the keyboard path is covered by the same handler.
    *
@@ -83,13 +89,13 @@ export const InlineSmartLink = ({
    * itself through it), so the canvas does not run it either: the editor owns
    * the click, and closing the menu would hide what is being edited.
    */
-  const handleClick = editing
+  const handleClickCapture = editing
     ? (event: MouseEvent<HTMLElement>) => {
         event.preventDefault();
       }
-    : onClick;
+    : undefined;
 
-  const handleAuxClick = editing
+  const handleAuxClickCapture = editing
     ? (event: MouseEvent<HTMLElement>) => {
         // A middle click activates the link through `auxclick`, not `click`.
         if (event.button === 1) event.preventDefault();
@@ -101,8 +107,9 @@ export const InlineSmartLink = ({
       href={href as Route}
       className={className}
       style={style}
-      onClick={handleClick}
-      onAuxClick={handleAuxClick}
+      onClick={editing ? undefined : onClick}
+      onClickCapture={handleClickCapture}
+      onAuxClickCapture={handleAuxClickCapture}
       prefetch={false}
       target={openInNewTab ? "_blank" : undefined}
       rel={openInNewTab ? "noreferrer" : undefined}

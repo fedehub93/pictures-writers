@@ -135,6 +135,19 @@ async function mount(node: React.ReactNode) {
 }
 
 /**
+ * Puck's canvas attaches a native `click` listener to the block root and calls
+ * `stopPropagation()` there (see `DraggableComponent` in `@puckeditor/core`),
+ * so the click never bubbles to the React root container where a normal
+ * `onClick` would run. This helper reproduces that listener on the element the
+ * block hands to Puck's `dragRef`, which is what the editor does on mount.
+ */
+function mimicPuckSelection(blockRoot: Element) {
+  blockRoot.addEventListener("click", (event) => {
+    event.stopPropagation();
+  });
+}
+
+/**
  * Dispatch a click the way a browser does and report whether the default was
  * cancelled. Cancelling it is what stops the navigation: the browser would
  * follow the anchor, and `next/link` bails before it touches the router.
@@ -262,6 +275,17 @@ describe("Link block in the canvas", () => {
     expect(middleClick(host.querySelector("a")!).defaultPrevented).toBe(true);
   });
 
+  it("cancels the click although Puck stops it at the block root", async () => {
+    const host = await mountLink(PUCK);
+    const anchor = host.querySelector("a")!;
+
+    // The Link's block root *is* the anchor, so this is exactly where the
+    // editor's own click listener sits in the real canvas.
+    mimicPuckSelection(anchor);
+
+    expect(click(anchor).defaultPrevented).toBe(true);
+  });
+
   it("still renders a broken link as selectable plain text", async () => {
     const host = await mountLink(PUCK, { label: "Removed page" });
     const text = host.firstElementChild as HTMLElement;
@@ -325,6 +349,19 @@ describe("NavbarBlock in the canvas", () => {
         `the ${name} navigated in the canvas`,
       ).toBe(true);
     }
+  });
+
+  it("cancels a navbar entry although Puck stops the click at the navbar root", async () => {
+    const host = await mountNavbar(true);
+
+    // The navigation root is the block root for every entry, so the editor's
+    // listener sits between the anchor and the React root container.
+    mimicPuckSelection(host.firstElementChild!);
+
+    const anchor = anchorByText(host, "Blog");
+
+    expect(anchor, "no desktop anchor for Blog").toBeDefined();
+    expect(click(anchor!).defaultPrevented).toBe(true);
   });
 
   it("cancels the mobile sheet rows and the CTA", async () => {
