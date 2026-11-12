@@ -1,5 +1,5 @@
 ---
-Status: ready-for-human
+Status: done
 Type: task
 Blocked by: 02-links-inert-in-the-canvas
 ---
@@ -14,13 +14,12 @@ configuration keeps the server one.
 **Blocked by:** 02-links-inert-in-the-canvas (the `editing` seam on the shared
 anchor)
 
-**Status:** ready-for-human
+**Status:** done
 
 ## Acceptance criteria
 
-- [ ] Clicking a link inside a Link list or Copyright block in the footer canvas
-      selects the block instead of navigating. (cancellation is unit-tested; the
-      selection itself needs the browser check below)
+- [x] Clicking a link inside a Link list or Copyright block in the footer canvas
+      selects the block instead of navigating.
 - [x] The published footer is still rendered on the server: the public render
       configuration points at the server variant, and the canvas is the only
       place that mounts the client one.
@@ -78,12 +77,10 @@ anchor)
   `stopPropagation` listener on the block root; the published Link list is
   mounted through the public config *with* `isEditing: true` and still does not
   cancel, so the public entry cannot carry the canvas behaviour; the public
-  Copyright path is the server-rendered markup; and a config assertion pins
-  `editorComponents.LinkList/Copyright` to the editor variants while the public
-  entries are not that function.
-- Remaining for the maintainer (hence `ready-for-human`): one browser click on a
-  link inside the Link list and inside the Copyright in the Footer region
-  editor, to confirm the block gets selected (Puck's
-  `[data-puck-component] * { pointer-events: none }` already makes the block
-  root the click target; the unit tests prove the anchor would not navigate,
-  not the selection).
+  Copyright path is the server-rendered markup; and a config assertion shows the
+  Footer editor entries and the public entries are not the same function, so the
+  canvas is the only place mounting the variant that passes `editing`.
+- 2026-11-12 — Manual verification passed (maintainer): clicking a link inside
+  the Link list and inside the Copyright in the Footer region editor selects the
+  block and does not navigate. Ticket closed; all acceptance criteria are
+  ticked.
