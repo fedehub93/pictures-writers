@@ -8,16 +8,14 @@ import {
   richTextDescriptors,
 } from "./presets";
 
-type RichTextMenuRenderer = NonNullable<RichtextField["renderMenu"]>;
+type RichTextMenuRenderer = NonNullable<RichtextField["renderInlineMenu"]>;
 type RichTextMenuProps = Parameters<RichTextMenuRenderer>[0];
 
 /**
  * The body of the document the editor is rendered in.
  *
  * Puck portals the inline toolbar and editor into the canvas iframe, so the
- * link and colour panels have to portal into that same body. In the sidebar
- * the editor lives in the editor window and the panel lands in its body, which
- * is Radix's default anyway.
+ * link and colour panels have to portal into that same body.
  */
 export const getRichTextMenuPortalContainer = (
   editor: Editor | null,
@@ -28,7 +26,7 @@ export const getRichTextMenuPortalContainer = (
  *
  * They live in a group of their own so a preset can place them after whatever
  * else it adds. The panel container is the editor's document, which is the
- * canvas iframe while editing there and the editor window in the sidebar.
+ * canvas iframe.
  */
 const LinkAndColorControls = ({ editor }: { editor: Editor }) => {
   const container = getRichTextMenuPortalContainer(editor);
@@ -42,10 +40,10 @@ const LinkAndColorControls = ({ editor }: { editor: Editor }) => {
 };
 
 /**
- * Default menu for both surfaces: Puck supplies bold, italic and underline as
- * `children`, and the project adds the link and colour controls.
+ * Default inline menu for both blocks: Puck supplies bold, italic and
+ * underline as `children`, and the project adds the link and colour controls.
  */
-const RichTextMenuWithLinks = ({ editor, children }: RichTextMenuProps) => {
+const InlineMenuWithLinks = ({ editor, children }: RichTextMenuProps) => {
   if (!editor) return null;
 
   return (
@@ -59,13 +57,12 @@ const RichTextMenuWithLinks = ({ editor, children }: RichTextMenuProps) => {
 /**
  * Inline menu for the Text block.
  *
- * Puck's inline `children` only carry bold, italic and underline; the heading
- * and list selects exist in the sidebar menu only. A Text block authors whole
- * passages on the canvas, so its toolbar offers those two controls explicitly:
- * the selected paragraph becomes a heading or a list, and the selects turn it
- * back into a paragraph.
+ * Puck's inline `children` only carry bold, italic and underline, not the
+ * heading or list selects. A Text block authors whole passages on the canvas,
+ * so its toolbar offers those two controls explicitly: the selected paragraph
+ * becomes a heading or a list, and the selects turn it back into a paragraph.
  */
-const TextRichTextInlineMenu = ({ editor, children }: RichTextMenuProps) => {
+const TextInlineMenu = ({ editor, children }: RichTextMenuProps) => {
   if (!editor) return null;
 
   return (
@@ -80,37 +77,34 @@ const TextRichTextInlineMenu = ({ editor, children }: RichTextMenuProps) => {
   );
 };
 
-type RichTextMenus = {
-  renderMenu?: RichTextMenuRenderer;
-  renderInlineMenu?: RichTextMenuRenderer;
-};
-
 /**
  * Build the editor field for one block from its shared descriptor.
  *
  * `options` and `tiptap` come from `presets.ts`, the module the public render
  * config also imports, so the canvas and the page cannot resolve the same
  * stored HTML with different schemas. Only the editor-only members are added
- * here: the inline-editing flag and the two menus.
+ * here: the inline-editing flag, the sidebar visibility flag and the inline
+ * menu.
  */
 export const createRichTextField = (
   descriptor: RichTextFieldDescriptor,
-  menus: RichTextMenus = {},
+  renderInlineMenu: RichTextMenuRenderer = InlineMenuWithLinks,
 ): RichtextField => ({
   label: "Text",
-  // Puck 0.24 defaults this to true, while the published docs still say
-  // false. Pin it explicitly so an upgrade cannot silently stop the canvas
-  // from mounting the inline editor.
-  contentEditable: true,
   ...descriptor,
-  renderMenu: menus.renderMenu ?? RichTextMenuWithLinks,
-  renderInlineMenu: menus.renderInlineMenu ?? RichTextMenuWithLinks,
+  // Puck 0.24 defaults this to true, while the published docs still say
+  // false. Pin it explicitly, after the descriptor, so an upgrade or a wider
+  // descriptor type cannot silently stop the canvas from mounting the editor.
+  contentEditable: true,
+  // The text is authored and formatted on the canvas only. `visible` is
+  // honoured when Puck draws the sidebar; the canvas transform reads the raw
+  // descriptor, so the field stays editable on the block.
+  visible: false,
+  renderInlineMenu,
 });
 
-/** Descriptors the text blocks mount, one per editing surface. */
+/** Fields the text blocks mount, with the editor-only behaviour each needs. */
 export const richTextFields = {
   heading: createRichTextField(richTextDescriptors.heading),
-  text: createRichTextField(richTextDescriptors.text, {
-    renderInlineMenu: TextRichTextInlineMenu,
-  }),
+  text: createRichTextField(richTextDescriptors.text, TextInlineMenu),
 };

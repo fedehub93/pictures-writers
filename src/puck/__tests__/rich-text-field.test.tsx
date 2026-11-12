@@ -53,10 +53,19 @@ describe("shared rich text field", () => {
     expect(textField.options?.paragraph).toBeUndefined();
   });
 
-  it("defines both the inline menu and the sidebar menu", () => {
+  it("hides the content field from the sidebar without removing it from the schema", () => {
+    for (const field of [headingField, textField]) {
+      expect(field.visible).toBe(false);
+      // The canvas transform reads the raw descriptor, so the field must stay
+      // declared even though the sidebar no longer draws it.
+      expect(field.type).toBe("richtext");
+    }
+  });
+
+  it("defines only the inline menu, because the field is not drawn in the sidebar", () => {
     for (const field of [headingField, textField]) {
       expect(field.renderInlineMenu).toBeTypeOf("function");
-      expect(field.renderMenu).toBeTypeOf("function");
+      expect(field.renderMenu).toBeUndefined();
     }
   });
 
@@ -87,5 +96,9 @@ describe("shared rich text field", () => {
 
     expect(headingPublic.contentEditable).toBeUndefined();
     expect(textPublic.contentEditable).toBeUndefined();
+    // Hiding is an editor concern: the render path still gets the descriptor
+    // exactly as the schema defines it.
+    expect(headingPublic.visible).toBeUndefined();
+    expect(textPublic.visible).toBeUndefined();
   });
 });
