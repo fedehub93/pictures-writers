@@ -272,6 +272,32 @@
   font-size: 0.875em;
 }
 
+/* --- 2b. EMPTY BLOCK PLACEHOLDER ---
+   Tiptap's Placeholder extension tags the empty text block at the caret with
+   `is-empty` and carries the block's hint in `data-placeholder`. The hint is a
+   decoration of the editor, never part of the document, so the published page
+   has neither the class nor the attribute. It floats out of flow and takes no
+   height: a cleared block still collapses, and the hint sits where the caret
+   is. */
+.puck-rich-text .is-empty[data-placeholder]::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* Puck's own stylesheet gives an empty paragraph a non-breaking space so the
+   caret has a line to sit on in the editor. The published page has no caret,
+   and a cleared block must not reserve a blank line. The rule is scoped to a
+   paragraph that is the only child - the cleared block - so an authored blank
+   line between two paragraphs keeps its height. In the canvas the paragraph at
+   the caret carries `data-placeholder` and keeps the hint above, and an empty
+   ProseMirror block holds a `<br>` so it is not `:empty` at all. */
+.puck-rich-text .rich-text p:empty:only-child:not([data-placeholder])::before {
+  content: none;
+}
+
 /* --- 3. NAVIGATION ---
    Dedicated variables for the NavbarBlock. They are kept apart from `--fs-*`
    and `--rgap-*` because `.puck-typo` / `.puck-layout` reset those on their own

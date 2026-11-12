@@ -91,6 +91,12 @@ describe("Heading block", () => {
     );
   });
 
+  it("renders the empty container so the block keeps a root to select", () => {
+    expect(renderHeading({})).toBe(
+      `<${HEADING_DEFAULT_LEVEL} class="block puck-dim puck-typo puck-block-root puck-rich-text"></${HEADING_DEFAULT_LEVEL}>`,
+    );
+  });
+
   it("attaches Puck's drag ref to the heading element", () => {
     const dragRef = vi.fn();
 

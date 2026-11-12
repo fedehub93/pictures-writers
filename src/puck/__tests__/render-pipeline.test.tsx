@@ -381,6 +381,20 @@ describe("consolidated Puck render pipeline", () => {
     assertParity,
   );
 
+  it.each([
+    { name: "Heading", props: { text: "" } },
+    { name: "Text", props: { text: "" } },
+  ] satisfies SharedCase[])(
+    "$name renders the same empty container in both configs",
+    (testCase) => {
+      const { editorHtml, publicHtml } = renderCase(testCase);
+
+      expect(editorHtml).toBe(publicHtml);
+      expect(editorHtml).toContain("puck-rich-text");
+      expect(editorHtml).not.toContain("data-placeholder");
+    },
+  );
+
   it("renders a Link that caps its natural width identically in both configs", () => {
     // The Link's block base width must not be replaced by the implied fill in
     // either path: the canvas and the page read the same width function.

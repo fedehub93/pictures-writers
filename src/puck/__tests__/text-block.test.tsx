@@ -9,7 +9,10 @@ import { config } from "../config";
 import { renderTextBlock } from "../blocks/Text/render";
 import type { TextBlockProps } from "../blocks/Text/types";
 import { richTextFields } from "../fields/rich-text";
-import { richTextDescriptors } from "../fields/rich-text/presets";
+import {
+  RICH_TEXT_PLACEHOLDERS,
+  richTextDescriptors,
+} from "../fields/rich-text/presets";
 import { pageRenderConfig } from "../render-config";
 
 import { declarations, readPuckBaseRules } from "./helpers/css-rules";
@@ -40,7 +43,7 @@ afterEach(() => {
  * becomes a paragraph instead of raw text. happy-dom gives the client render
  * the DOM Tiptap needs; the editor canvas path is Puck's own component.
  */
-async function renderPublicText(text: string) {
+async function renderPublicContainer(text: string) {
   host = document.createElement("div");
   document.body.append(host);
   root = createRoot(host);
@@ -62,6 +65,11 @@ async function renderPublicText(text: string) {
 
   if (!container) throw new Error("public render has no rich text container");
 
+  return container;
+}
+
+async function renderPublicText(text: string) {
+  const container = await renderPublicContainer(text);
   const richText = container.querySelector(".rich-text");
 
   if (!richText) throw new Error("public render resolved no rich text value");
@@ -138,6 +146,27 @@ describe("Text block", () => {
 
   it("publishes a plain value as a paragraph", async () => {
     expect(await renderPublicText("Hello")).toBe("<p>Hello</p>");
+  });
+
+  it("publishes an empty block without the canvas hint", async () => {
+    // Puck skips the rich text wrapper for a falsy value, so an entirely empty
+    // block publishes the container and nothing inside it.
+    const container = await renderPublicContainer("");
+
+    expect(container.innerHTML).toBe("");
+    expect(container.innerHTML).not.toContain(RICH_TEXT_PLACEHOLDERS.text);
+    expect(container.innerHTML).not.toContain("data-placeholder");
+  });
+
+  it("publishes an empty paragraph without the canvas hint", async () => {
+    // The canvas keeps the caret's empty text block as an element; the
+    // placeholder is a decoration on it, so the serialized page has neither
+    // the hint nor its attributes.
+    const innerHtml = await renderPublicText("<p></p>");
+
+    expect(innerHtml).toBe("<p></p>");
+    expect(innerHtml).not.toContain(RICH_TEXT_PLACEHOLDERS.text);
+    expect(innerHtml).not.toContain("data-placeholder");
   });
 
   it("publishes stored formatting: bold and links survive", async () => {

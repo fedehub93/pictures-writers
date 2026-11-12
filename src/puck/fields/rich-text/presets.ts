@@ -1,6 +1,6 @@
 import type { RichtextField } from "@puckeditor/core";
 
-import { richTextFieldConfig } from "./extensions";
+import { createRichTextExtensions, richTextFieldConfig } from "./extensions";
 
 /**
  * The parts of a rich text field both render paths need.
@@ -13,6 +13,18 @@ export type RichTextFieldDescriptor = Pick<
   RichtextField,
   "type" | "options" | "tiptap"
 >;
+
+/**
+ * The hint the canvas shows on an empty block, one per block kind.
+ *
+ * It is editor text, not content: the placeholder never enters the stored
+ * document and the published page never shows it. The two strings differ so a
+ * cleared block says what it is.
+ */
+export const RICH_TEXT_PLACEHOLDERS = {
+  heading: "Add a heading",
+  text: "Start writing",
+} as const;
 
 /**
  * Per-block descriptors, shared by the editor field and the render config.
@@ -42,6 +54,10 @@ export const richTextDescriptors = {
       // Puck's built-in one and put two link marks in the same schema.
       link: false,
     },
+    tiptap: {
+      ...richTextFieldConfig.tiptap,
+      extensions: createRichTextExtensions(RICH_TEXT_PLACEHOLDERS.heading),
+    },
   },
   text: {
     type: "richtext",
@@ -58,6 +74,10 @@ export const richTextDescriptors = {
       horizontalRule: false,
       textAlign: false,
       link: false,
+    },
+    tiptap: {
+      ...richTextFieldConfig.tiptap,
+      extensions: createRichTextExtensions(RICH_TEXT_PLACEHOLDERS.text),
     },
   },
 } satisfies Record<string, RichTextFieldDescriptor>;
