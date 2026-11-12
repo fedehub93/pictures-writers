@@ -449,7 +449,7 @@ Use the default triage labels: `needs-triage`, `needs-info`, `ready-for-agent`, 
 
 ### Domain docs
 
-Single-context repo: root `GLOSSARY.md` plus `docs/adr/`. See `docs/agents/domain.md`.
+Single-context repo: root `GLOSSARY.md` plus `docs/adr/`. Read only the glossary sections for the terms in play, and start ADRs from the index in `docs/adr/README.md`. See `docs/agents/domain.md`.
 
 ### Marketing & SEO docs
 

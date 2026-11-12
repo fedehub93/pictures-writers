@@ -2,6 +2,31 @@
 
 Glossary for the CMS product: editorial content, catalog and commerce, email, automations, and the deployments it runs in. Pictures Writers is one Installation of it.
 
+## Contents
+
+Read the sections for the terms in play; the whole file is not a prerequisite.
+
+- [Post editing](#post-editing)
+- [Publishing state](#publishing-state)
+- [Content versioning](#content-versioning)
+- [Public rendering](#public-rendering)
+- [Media](#media)
+- [Forms](#forms)
+- [Contacts and subscriptions](#contacts-and-subscriptions)
+- [Email templates](#email-templates)
+- [Outgoing email](#outgoing-email)
+- [Email accounts and conversations](#email-accounts-and-conversations)
+- [Backoffice users and authorization](#backoffice-users-and-authorization)
+- [Catalog](#catalog)
+- [Commerce](#commerce)
+- [Site layout](#site-layout)
+- [Puck editor fidelity](#puck-editor-fidelity)
+- [FAQ](#faq)
+- [Automation engine](#automation-engine)
+- [External integrations](#external-integrations)
+- [Admin dashboard](#admin-dashboard)
+- [Product and tenancy](#product-and-tenancy)
+
 ## Post editing
 
 **Post**:
