@@ -1,6 +1,12 @@
 {
   "version": 2,
   "skills": {
+    "puck": {
+      "source": "puckeditor/skills",
+      "sourceType": "github",
+      "skillPath": "skills/puck/SKILL.md",
+      "computedHash": "df0acd40a7829be1a026ba95aa71e7c562f43ff34901f46348cb321c8b44fc49"
+    },
     "resend": {
       "source": "resend/resend-skills",
       "sourceType": "github",
