@@ -21,6 +21,8 @@ vi.mock("next/link", () => ({
 }));
 
 import { BLOCK_DEFAULT_PROPS } from "../blocks/defaults";
+import { renderCopyrightBlock } from "../blocks/Copyright/render";
+import { renderLinkListBlock } from "../blocks/LinkList/render";
 import { renderNavbarBlock } from "../blocks/NavbarBlock/render";
 import type {
   NavItemUi,
@@ -29,6 +31,7 @@ import type {
 } from "../blocks/NavbarBlock/types";
 import type { LegacyLinkProps, LinkProps } from "../fields/link/types";
 import { editorConfigForRegion } from "../region/editor-config";
+import { renderConfigForRegion } from "../region/render-config";
 import { mergePropsWithDefaults } from "../lib/merge-props";
 
 /**
@@ -111,6 +114,21 @@ function imageRender() {
 
 function navbarRender() {
   return editorConfigForRegion("HEADER").components.NavbarBlock
+    .render as unknown as RenderEntry;
+}
+
+function editorLinkListRender() {
+  return editorConfigForRegion("FOOTER").components.LinkList
+    .render as unknown as RenderEntry;
+}
+
+function editorCopyrightRender() {
+  return editorConfigForRegion("FOOTER").components.Copyright
+    .render as unknown as RenderEntry;
+}
+
+function publishedLinkListRender() {
+  return renderConfigForRegion("FOOTER").components.LinkList
     .render as unknown as RenderEntry;
 }
 
@@ -235,6 +253,86 @@ function mountImage(editing: boolean, href = "https://example.com/") {
       puck: { ...PUCK, isEditing: editing, dragRef: () => undefined },
     }),
   );
+}
+
+const FOOTER_LINKS = {
+  content: {
+    title: "Risorse",
+    links: [
+      {
+        link: { type: "external" as const, url: "/blog/", label: "Blog" },
+      },
+      {
+        link: {
+          type: "external" as const,
+          url: "https://example.com/",
+          label: "Example",
+        },
+      },
+    ],
+  },
+};
+
+/**
+ * The footer blocks are server-rendered on the published page, so their editor
+ * config mounts a separate render variant. This is that entry, through the same
+ * config Puck uses for the Footer region.
+ */
+function mountFooterLinkList(editing: boolean) {
+  return mount(
+    editorLinkListRender()({
+      ...mergePropsWithDefaults(BLOCK_DEFAULT_PROPS.LinkList, {
+        id: "canvas-link-list",
+        ...FOOTER_LINKS,
+      }),
+      puck: { ...PUCK, isEditing: editing, dragRef: () => undefined },
+    }),
+  );
+}
+
+const FOOTER_COPYRIGHT = {
+  content: {
+    showYear: true,
+    links: [
+      { link: { type: "external" as const, url: "/privacy/", label: "Privacy" } },
+    ],
+  },
+};
+
+function mountFooterCopyright(editing: boolean) {
+  return mount(
+    editorCopyrightRender()({
+      ...mergePropsWithDefaults(BLOCK_DEFAULT_PROPS.Copyright, {
+        id: "canvas-copyright",
+        ...FOOTER_COPYRIGHT,
+      }),
+      puck: { ...PUCK, isEditing: editing, dragRef: () => undefined },
+    }),
+  );
+}
+
+/**
+ * The public entry is handed `isEditing: true` on purpose: the published
+ * footer must not carry the canvas behaviour even when the editor's context
+ * reaches it, because it is not the client variant.
+ */
+function mountPublishedLinkList() {
+  return mount(
+    publishedLinkListRender()({
+      ...FOOTER_LINKS,
+      id: "published-link-list",
+      puck: { ...PUCK, isEditing: true },
+    }),
+  );
+}
+
+/** The element the server renderer produces, mounted without React handlers. */
+function mountStaticMarkup(markup: string) {
+  container = document.createElement("div");
+  document.body.appendChild(container);
+  container.innerHTML = markup;
+
+  return container;
 }
 
 async function openMobileSheet() {
@@ -380,6 +478,123 @@ describe("Link block on the published path", () => {
     expect(click(anchor).defaultPrevented).toBe(false);
     expect(click(anchor, { ctrlKey: true }).defaultPrevented).toBe(false);
     expect(middleClick(anchor).defaultPrevented).toBe(false);
+  });
+});
+
+describe("Link list block in the canvas", () => {
+  it("cancels a footer link click instead of navigating", async () => {
+    const host = await mountFooterLinkList(true);
+    const anchor = anchorByText(host, "Blog");
+
+    expect(anchor, "the footer link did not render").toBeDefined();
+    expect(click(anchor!).defaultPrevented).toBe(true);
+  });
+
+  it("cancels the click although Puck stops it at the Link list root", async () => {
+    const host = await mountFooterLinkList(true);
+
+    // The anchors are children of the block root, which is where Puck attaches
+    // its own click listener.
+    mimicPuckSelection(host.firstElementChild!);
+
+    const anchor = anchorByText(host, "Blog");
+
+    expect(anchor, "the footer link did not render").toBeDefined();
+    expect(click(anchor!).defaultPrevented).toBe(true);
+  });
+});
+
+describe("Copyright block in the canvas", () => {
+  it("cancels a copyright link click instead of navigating", async () => {
+    const host = await mountFooterCopyright(true);
+    const anchor = anchorByText(host, "Privacy");
+
+    expect(anchor, "the copyright link did not render").toBeDefined();
+    expect(click(anchor!).defaultPrevented).toBe(true);
+  });
+
+  it("cancels the click although Puck stops it at the Copyright root", async () => {
+    const host = await mountFooterCopyright(true);
+
+    // The links are children of the line that is the block root.
+    mimicPuckSelection(host.firstElementChild!);
+
+    const anchor = anchorByText(host, "Privacy");
+
+    expect(anchor, "the copyright link did not render").toBeDefined();
+    expect(click(anchor!).defaultPrevented).toBe(true);
+  });
+});
+
+/**
+ * As for the Link block: `editing` changes behaviour, never markup. An authored
+ * `display: none` is the separate, pre-existing exception handled by the layout
+ * classes (the editor keeps a hidden block selectable), so these cases author
+ * no layout.
+ */
+describe("Footer block render parity", () => {
+  it("emits byte-identical Link list markup editing and published", () => {
+    const editing = renderToStaticMarkup(
+      renderLinkListBlock({ ...FOOTER_LINKS, editing: true }),
+    );
+    const published = renderToStaticMarkup(
+      renderLinkListBlock(FOOTER_LINKS),
+    );
+
+    expect(editing).toBe(published);
+  });
+
+  it("emits byte-identical Copyright markup editing and server-rendered", () => {
+    const props = {
+      content: FOOTER_COPYRIGHT.content,
+      siteName: "Acme",
+      year: 2026,
+    };
+
+    const editing = renderToStaticMarkup(
+      renderCopyrightBlock({ ...props, editing: true }),
+    );
+    const published = renderToStaticMarkup(renderCopyrightBlock(props));
+
+    expect(editing).toBe(published);
+  });
+});
+
+describe("Footer blocks on the published path", () => {
+  it("leaves a published Link list navigating", async () => {
+    const host = await mountPublishedLinkList();
+    const anchor = anchorByText(host, "Blog");
+
+    expect(anchor, "the published footer link did not render").toBeDefined();
+    expect(click(anchor!).defaultPrevented).toBe(false);
+  });
+
+  it("leaves a server-rendered Copyright navigating", () => {
+    const host = mountStaticMarkup(
+      renderToStaticMarkup(
+        renderCopyrightBlock({
+          content: FOOTER_COPYRIGHT.content,
+          siteName: "Acme",
+          year: 2026,
+        }),
+      ),
+    );
+    const anchor = anchorByText(host, "Privacy");
+
+    expect(anchor, "the server copyright link did not render").toBeDefined();
+    expect(click(anchor!).defaultPrevented).toBe(false);
+  });
+
+  it("does not share the editor variant with the public config", () => {
+    const footerEditor = editorConfigForRegion("FOOTER").components;
+    const footerPublic = renderConfigForRegion("FOOTER").components;
+
+    // The canvas entry and the published entry are never the same function:
+    // the editor variant is the only one that passes `editing`.
+    expect(footerEditor.LinkList?.render).not.toBe(footerPublic.LinkList?.render);
+    expect(footerEditor.Copyright?.render).not.toBe(
+      footerPublic.Copyright?.render,
+    );
   });
 });
 

@@ -10,6 +10,7 @@ export const CopyrightBlockUi = ({
   year = new Date().getFullYear(),
   styleVars,
   layoutClassName,
+  editing,
   dragRef,
 }: CopyrightBlockUiProps) => {
   const showYear = content?.showYear ?? COPYRIGHT_DEFAULT_CONTENT.showYear;
@@ -34,7 +35,7 @@ export const CopyrightBlockUi = ({
       {extraText?.trim() ? <span>{extraText.trim()}</span> : null}
       {links.map((item, index) =>
         item?.link ? (
-          <InlineSmartLink key={index} link={item.link} />
+          <InlineSmartLink key={index} link={item.link} editing={editing} />
         ) : null,
       )}
     </p>

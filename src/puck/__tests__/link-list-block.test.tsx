@@ -1,4 +1,3 @@
-import type { PuckContext } from "@puckeditor/core";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
@@ -6,17 +5,8 @@ import type { LinkListBlockProps } from "../blocks/LinkList/types";
 import { renderLinkListBlock } from "../blocks/LinkList/render";
 import { editorConfigForRegion } from "../region/editor-config";
 
-const PUCK: PuckContext = {
-  renderDropZone: () => null,
-  metadata: {},
-  isEditing: false,
-  dragRef: null,
-};
-
 function render(props: LinkListBlockProps) {
-  return renderToStaticMarkup(
-    renderLinkListBlock({ id: "link-list", puck: PUCK, ...props }),
-  );
+  return renderToStaticMarkup(renderLinkListBlock(props));
 }
 
 describe("LinkList block", () => {

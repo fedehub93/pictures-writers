@@ -1,5 +1,3 @@
-import type { PuckComponent } from "@puckeditor/core";
-
 import {
   getDimensionVars,
   getTypographyVars,
@@ -7,7 +5,7 @@ import {
 import { getLayoutVars } from "@/puck/fields/layout/get-layout-vars";
 import { getLayoutClassNames } from "@/puck/fields/layout/get-layout-classes";
 
-import type { LinkListBlockProps } from "./types";
+import type { LinkListBlockRenderProps } from "./types";
 import { LinkListBlockUi } from "./ui/link-list";
 
 /**
@@ -15,14 +13,18 @@ import { LinkListBlockUi } from "./ui/link-list";
  *
  * It deliberately imports only the block UI and the shared style-variable
  * utilities so the public render path never pulls in editor field modules.
+ *
+ * `editing` is passed by the editor-only entry in `./index.tsx`; the public
+ * render config omits it, so the published footer ships no click behaviour.
  */
-export const renderLinkListBlock: PuckComponent<LinkListBlockProps> = ({
+export const renderLinkListBlock = ({
   content,
   layout,
   dimension,
   typography,
-  puck,
-}) => {
+  editing,
+  dragRef,
+}: LinkListBlockRenderProps) => {
   const styleVars = {
     ...getLayoutVars(layout),
     ...getDimensionVars(dimension),
@@ -34,10 +36,9 @@ export const renderLinkListBlock: PuckComponent<LinkListBlockProps> = ({
       title={content?.title}
       links={content?.links}
       styleVars={styleVars}
-      layoutClassName={getLayoutClassNames(layout, {
-        editing: puck?.isEditing,
-      })}
-      dragRef={puck?.dragRef}
+      layoutClassName={getLayoutClassNames(layout, { editing })}
+      editing={editing}
+      dragRef={dragRef}
     />
   );
 };

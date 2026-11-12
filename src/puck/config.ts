@@ -68,6 +68,17 @@ export type HydratedComponents = {
  * The module deliberately contains no Puck editor component and no editor CSS:
  * the editor shell lives in `editor-shell.tsx`, so modules that only need the
  * registry or the document types do not pull in the editor runtime.
+ *
+ * A block whose published render has to stay on the server (Link list,
+ * Copyright) still appears here like every other block, but declares its own
+ * editor render in its `index.tsx`: the same pure render, called with
+ * `editing: puck.isEditing`. The public entry in `render-config.tsx` keeps the
+ * server-safe render, so the editor-only behaviour lives in the client graph
+ * and the published page ships no JavaScript for the block. The shared block UI
+ * stays free of `"use client"`; the same module is compiled into both graphs
+ * and both paths emit the same markup. A new editor-only behaviour on a
+ * server-rendered block follows this shape — do not add a third render entry
+ * and do not wrap the shared UI in a client boundary.
  */
 export const editorComponentConfigs: Config["components"] = {
   Container: ContainerBlock,

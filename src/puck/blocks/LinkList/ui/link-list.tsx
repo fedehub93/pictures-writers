@@ -17,6 +17,7 @@ export const LinkListBlockUi = ({
   links = [],
   styleVars,
   layoutClassName,
+  editing,
   dragRef,
 }: LinkListBlockUiProps) => {
   const visibleLinks = links
@@ -42,7 +43,7 @@ export const LinkListBlockUi = ({
       <ul className="flex flex-col gap-1">
         {visibleLinks.map((link, index) => (
           <li key={index}>
-            <InlineSmartLink link={link} />
+            <InlineSmartLink link={link} editing={editing} />
           </li>
         ))}
       </ul>

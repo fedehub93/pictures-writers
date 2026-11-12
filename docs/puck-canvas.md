@@ -33,7 +33,10 @@ runs before that listener and still reaches the browser; `next/link` bails on
 
 `getInertAnchorProps(editing)` is the shared implementation. Every block whose root can be an
 anchor spreads it: `InlineSmartLink` for the Link block and the NavbarBlock entries,
-`ImageBlockUi` for a linked image.
+`ImageBlockUi` for a linked image. The Footer's server-rendered blocks (Link list, Copyright)
+reach the same handler through an editor-only render: their `index.tsx` passes
+`puck.isEditing`, while the public entry keeps calling the shared server-safe render (Copyright
+through its server renderer), so the published footer still ships no JavaScript for them.
 
 ## Canvas and page emit the same markup
 

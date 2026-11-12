@@ -20,6 +20,11 @@ export type { CopyrightBlockProps };
  * the footer line previews the real site name while designing. Reading it from
  * `puck.metadata` keeps the editor path free of database imports and browser
  * fetches; the public renderer keeps using the server values.
+ *
+ * This is the block's only editor-only entry, and the only caller that passes
+ * `editing: puck.isEditing` to the shared render. The public entry in
+ * `render-config.tsx` keeps `CopyrightServer`, so the published footer ships no
+ * client JavaScript for the block. See the registry comment in `config.ts`.
  */
 const CopyrightEditorRender: PuckComponent<CopyrightBlockProps> = ({
   puck,

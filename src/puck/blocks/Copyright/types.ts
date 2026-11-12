@@ -31,7 +31,10 @@ export type CopyrightBlockRenderProps = CopyrightBlockProps & {
   year?: number;
   /** Installation metadata supplied by the Site region editor canvas. */
   metadata?: SiteRegionMetadata;
-  /** True inside the editor canvas, where hidden blocks stay selectable. */
+  /**
+   * Editor-only: keep hidden blocks selectable and cancel link navigation, so
+   * the canvas keeps the click.
+   */
   editing?: boolean;
   /** Editor-only: Puck's selection ref, attached to the block root. */
   dragRef?: BlockDragRef;
@@ -47,6 +50,8 @@ export type CopyrightBlockUiProps = {
   styleVars?: Record<string, string>;
   /** Editor visibility classes, empty on the public render. */
   layoutClassName?: string;
+  /** Editor-only: cancel link navigation so the canvas keeps the click. */
+  editing?: boolean;
   /** Editor-only: Puck's selection ref, attached to the block root. */
   dragRef?: BlockDragRef;
 };

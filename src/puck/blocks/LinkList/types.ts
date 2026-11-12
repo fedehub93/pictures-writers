@@ -20,6 +20,17 @@ export type LinkListBlockProps = {
   typography?: Responsive<TypographyProps>;
 };
 
+/** Inputs accepted by the pure render, before style variables are computed. */
+export type LinkListBlockRenderProps = LinkListBlockProps & {
+  /**
+   * Editor-only: keep hidden blocks selectable and cancel link navigation, so
+   * the canvas keeps the click.
+   */
+  editing?: boolean;
+  /** Editor-only: Puck's selection ref, attached to the block root. */
+  dragRef?: BlockDragRef;
+};
+
 export type LinkListBlockUiProps = {
   /** Optional heading shown above the list. */
   title?: string;
@@ -29,6 +40,8 @@ export type LinkListBlockUiProps = {
   styleVars?: Record<string, string>;
   /** Editor visibility classes, empty on the public render. */
   layoutClassName?: string;
+  /** Editor-only: cancel link navigation so the canvas keeps the click. */
+  editing?: boolean;
   /** Editor-only: Puck's selection ref, attached to the block root. */
   dragRef?: BlockDragRef;
 };
