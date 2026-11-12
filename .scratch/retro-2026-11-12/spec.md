@@ -30,7 +30,7 @@ rifatte.
 
 ## Tickets
 
-- `issues/01-lint-and-typecheck-guardrail.md` — portare lint e typecheck in CI. `ready-for-agent`.
+- `issues/01-lint-and-typecheck-guardrail.md` — portare lint e typecheck in CI. `done`.
 - `issues/02-slim-agents-md.md` — dimagrire `AGENTS.md`. `ready-for-human`: è la Fase 2 della
   riorganizzazione dei documenti, e le decisioni su cosa tenere sono del maintainer.
 

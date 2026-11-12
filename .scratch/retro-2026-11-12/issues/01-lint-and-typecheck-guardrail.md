@@ -1,5 +1,5 @@
 ---
-Status: ready-for-agent
+Status: done
 Type: task
 Blocked by: none
 ---
@@ -12,7 +12,7 @@ hook dopo un early return, un errore di tipo — fallisce prima del merge invece
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done
 
 ## Perché
 
@@ -29,19 +29,19 @@ con `npx eslint <file toccati>`: il gate documentato non esiste.
 
 ## Acceptance criteria
 
-- [ ] `npm run typecheck` (`tsc --noEmit`) esiste in `package.json` ed esce con 0.
-- [ ] `npm run lint` esce con 0. I 244 warning possono restare.
-- [ ] I tre difetti veri sono corretti, non silenziati:
+- [x] `npm run typecheck` (`tsc --noEmit`) esiste in `package.json` ed esce con 0.
+- [x] `npm run lint` esce con 0. I 244 warning possono restare.
+- [x] I tre difetti veri sono corretti, non silenziati:
       `src/shared/components/form-component/dynamic-form.tsx` chiama `useMemo`/`useForm` dopo un
       early return (`rules-of-hooks`); `src/modules/forms/builder/store/designer-provider.tsx` e
       `src/modules/mails/single-sends/ui/components/write-form.tsx` leggono ref durante il
       render.
-- [ ] La CI esegue lint e typecheck su push a `main` e su pull request. Il job non ha bisogno del
+- [x] La CI esegue lint e typecheck su push a `main` e su pull request. Il job non ha bisogno del
       database: `eslint` e `tsc` non lo toccano, ma `prisma generate` gira in `postinstall` e
       legge `DATABASE_URL`, quindi il job riusa la variabile fittizia già presente in
       `test.yml`.
-- [ ] La riga di `AGENTS.md` sul lint torna vera, oppure nomina il comando esatto.
-- [ ] (proposto) Una regola ESLint impedisce che un blocco futuro reintroduca il difetto del
+- [x] La riga di `AGENTS.md` sul lint torna vera, oppure nomina il comando esatto.
+- [x] (proposto) Una regola ESLint impedisce che un blocco futuro reintroduca il difetto del
       canvas: `href` dentro `src/puck/blocks/**` solo in `Image/ui/image.tsx`, che fa lo spread
       di `getInertAnchorProps`. Vedi la nota sotto.
 
@@ -99,3 +99,25 @@ Rigenerabile con `npm run lint`. Nessuno è in `src/puck`: sono tutti precedenti
 - 2026-11-12 — Ticket scritto dal retro. Evidenza: due sessioni sul ticket
   `puck-link-block-contract/02` (566k e 185k token in input), il primo tentativo `fe11f23a`
   superò test e review con i link ancora attivi.
+- 2026-11-12 — Implementato in `f303e970`. `npm run lint` esce 0 (243 warning, 0 errori),
+  `npm run typecheck` esce 0, `npm run test:run` passa (249 file / 2116 test).
+  - CI: nuovo job `static-analysis` in `.github/workflows/test.yml` su push a `main` e su pull
+    request, con la stessa `DATABASE_URL` fittizia di `test.yml` e senza servizio Postgres.
+  - I tre difetti veri sono corretti nel codice: il parsing JSON di `dynamic-form` vive in un
+    `useMemo` e il return d'errore è dopo tutti gli hook; `designer-provider` crea lo store con
+    l'initializer pigro di `useState`; `write-form` tiene l'editor in stato invece che in un ref
+    (rimossi il `@ts-ignore` e l'`onLoad` vuoto).
+  - Gli errori meccanici restanti sono corretti nel codice (stati derivati, `prefer-const`,
+    entity JSX, non-null dopo optional chain, interfaccia vuota, `Math.random` nel render).
+    `carousel`, `product-reviews` e `use-mobile` leggono lo stato esterno con
+    `useSyncExternalStore`; i tre mount guard usano il nuovo `useHydrated()`.
+  - `use-post-outline` è l'unica eccezione: `set-state-in-effect` è declassato a warning solo
+    per quel file, perché rispecchia lo stato mutabile di Tiptap e non è convertibile a snapshot
+    senza riscrivere l'outline. La motivazione è nel commento accanto alla regola.
+  - La regola `href` è attiva per `src/puck/blocks/**/*.tsx` con eccezione
+    `Image/ui/image.tsx`; i tre selettori SQL sono estratti in una costante condivisa, così
+    restano attivi anche nei blocchi Puck.
+  - Code review (standards + spec, in parallelo): un solo problema bloccante, l'override scoped
+    di `no-restricted-syntax` che cancellava le guardie SQL nei blocchi, corretto prima del
+    commit; gli altri rilievi erano giudizi (duplicazione tra le due form di conferma e tra i
+    due mirror Embla) lasciati com'erano.
