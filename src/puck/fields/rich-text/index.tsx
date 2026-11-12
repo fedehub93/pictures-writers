@@ -1,4 +1,5 @@
 import { type RichtextField, RichTextMenu } from "@puckeditor/core";
+import type { Editor } from "@tiptap/core";
 
 import { richTextFieldConfig } from "./extensions";
 import { ColorPickerPopover } from "./ui/components/color-picker-popover";
@@ -8,18 +9,32 @@ type RichTextMenuRenderer = NonNullable<RichtextField["renderMenu"]>;
 type RichTextMenuProps = Parameters<RichTextMenuRenderer>[0];
 
 /**
+ * The body of the document the editor is rendered in.
+ *
+ * Puck portals the inline toolbar and editor into the canvas iframe, so the
+ * link and colour panels have to portal into that same body. In the sidebar
+ * the editor lives in the editor window and the panel lands in its body, which
+ * is Radix's default anyway.
+ */
+export const getRichTextMenuPortalContainer = (
+  editor: Editor | null,
+): HTMLElement | null => editor?.view.dom.ownerDocument.body ?? null;
+
+/**
  * Default menu for both surfaces: Puck supplies bold, italic and underline as
  * `children`, and the project adds the link and colour controls.
  */
 const RichTextMenuWithLinks = ({ editor, children }: RichTextMenuProps) => {
   if (!editor) return null;
 
+  const container = getRichTextMenuPortalContainer(editor);
+
   return (
     <RichTextMenu>
       {children}
       <RichTextMenu.Group>
-        <LinkPickerPopover editor={editor} />
-        <ColorPickerPopover editor={editor} />
+        <LinkPickerPopover editor={editor} container={container} />
+        <ColorPickerPopover editor={editor} container={container} />
       </RichTextMenu.Group>
     </RichTextMenu>
   );

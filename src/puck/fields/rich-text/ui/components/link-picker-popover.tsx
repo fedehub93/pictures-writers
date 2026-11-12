@@ -23,6 +23,12 @@ import { isSafeRichTextHref } from "../../link";
 
 type LinkPickerPopoverProps = {
   editor: Editor;
+  /**
+   * Portal host for the panel. The menu passes the body of the document that
+   * owns it, so the panel opens inside Puck's canvas iframe instead of the
+   * editor window.
+   */
+  container: HTMLElement | null;
 };
 
 type LinkAttributes = {
@@ -40,7 +46,10 @@ const readLinkAttributes = (editor: Editor): LinkAttributes =>
  * tab. `target` and `rel` are only written when the author enables "Open in
  * new tab"; the mark itself never guesses them.
  */
-export const LinkPickerPopover = ({ editor }: LinkPickerPopoverProps) => {
+export const LinkPickerPopover = ({
+  editor,
+  container,
+}: LinkPickerPopoverProps) => {
   const [open, setOpen] = useState(false);
   const [href, setHref] = useState("");
   const [openInNewTab, setOpenInNewTab] = useState(false);
@@ -125,7 +134,15 @@ export const LinkPickerPopover = ({ editor }: LinkPickerPopoverProps) => {
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent align="start" className="w-80 space-y-3 p-3">
+      <PopoverContent
+        align="start"
+        className="flex w-80 flex-col gap-3 p-3"
+        container={container}
+        // Puck's editor keeps the inline toolbar mounted while focus moves
+        // between elements marked as part of the rich text menu. The panel is
+        // portaled outside the toolbar, so it has to carry the marker itself.
+        data-puck-rte-menu
+      >
         <Input
           autoFocus
           value={href}

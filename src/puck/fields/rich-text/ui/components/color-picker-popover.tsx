@@ -1,3 +1,7 @@
+"use client";
+
+import "client-only";
+
 import { useEffect, useState } from "react";
 import type { Editor } from "@tiptap/core";
 import { PaletteIcon } from "lucide-react";
@@ -9,8 +13,21 @@ import { Button } from "@/shared/ui/button";
 
 import { PALETTE_COLORS, THEME_COLORS } from "@/puck/constants";
 
+type ColorPickerPopoverProps = {
+  editor: Editor;
+  /**
+   * Portal host for the panel. The menu passes the body of the document that
+   * owns it, so the panel opens inside Puck's canvas iframe instead of the
+   * editor window.
+   */
+  container: HTMLElement | null;
+};
+
 // 1. Creiamo un componente riutilizzabile per il Popover
-export const ColorPickerPopover = ({ editor }: { editor: Editor }) => {
+export const ColorPickerPopover = ({
+  editor,
+  container,
+}: ColorPickerPopoverProps) => {
   // 1. Trasforma currentColor in uno stato React
   const [currentColor, setCurrentColor] = useState(
     editor.getAttributes("textStyle").color,
@@ -49,6 +66,8 @@ export const ColorPickerPopover = ({ editor }: { editor: Editor }) => {
       <PopoverTrigger asChild>
         <Button
           type="button"
+          aria-label="Text color"
+          title="Text color"
           className="flex items-center justify-center h-7 hover:bg-(--puck-color-grey-10) p-0 rounded transition-colors hover:text-(--puck-color-azure-04)"
           variant="ghost"
         >
@@ -59,6 +78,10 @@ export const ColorPickerPopover = ({ editor }: { editor: Editor }) => {
       <PopoverContent
         onOpenAutoFocus={(event) => event.preventDefault()}
         className="w-56 p-3 space-y-4"
+        container={container}
+        // Vedi LinkPickerPopover: il pannello è portato fuori dalla toolbar,
+        // quindi deve portare lui il marcatore che Puck usa per il blur.
+        data-puck-rte-menu
       >
         {/* RIGA 1: Colori del Tema */}
         <div className="space-y-1.5">
@@ -68,6 +91,9 @@ export const ColorPickerPopover = ({ editor }: { editor: Editor }) => {
               <Button
                 key={color.value}
                 type="button"
+                aria-label={color.label}
+                title={color.label}
+                aria-pressed={currentColor === color.value}
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => handleSetColor(color.value)}
                 className={cn(
@@ -89,6 +115,9 @@ export const ColorPickerPopover = ({ editor }: { editor: Editor }) => {
               <Button
                 key={color}
                 type="button"
+                aria-label={color}
+                title={color}
+                aria-pressed={currentColor === color}
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => handleSetColor(color)}
                 className={cn(
@@ -106,6 +135,7 @@ export const ColorPickerPopover = ({ editor }: { editor: Editor }) => {
             >
               <input
                 type="color"
+                aria-label="Custom color"
                 value={currentColor?.startsWith("#") ? currentColor : "#000000"}
                 onChange={(e) => handleSetColor(e.target.value)}
                 className="absolute -top-2 -left-2 size-10 cursor-pointer"
