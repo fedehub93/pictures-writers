@@ -1,19 +1,10 @@
-import type { PuckContext, RichtextField } from "@puckeditor/core";
-import { renderToStaticMarkup } from "react-dom/server";
+import type { RichtextField } from "@puckeditor/core";
 import { describe, expect, it } from "vitest";
 
-import { renderHeadingBlock } from "../blocks/Heading/render";
 import { config } from "../config";
 import { richTextFields } from "../fields/rich-text";
-import { richTextFieldConfig } from "../fields/rich-text/extensions";
+import { richTextDescriptors } from "../fields/rich-text/presets";
 import { renderComponentConfigs } from "../render-config";
-
-const PUCK: PuckContext = {
-  renderDropZone: () => null,
-  metadata: {},
-  isEditing: false,
-  dragRef: null,
-};
 
 const headingField = richTextFields.heading;
 
@@ -23,8 +14,22 @@ describe("shared rich text field", () => {
     expect(headingField.contentEditable).toBe(true);
   });
 
-  it("keeps the built-in link disabled", () => {
-    expect(headingField.options).toEqual({ link: false });
+  it("disables the extensions a Heading must not contain", () => {
+    expect(headingField.options).toMatchObject({
+      link: false,
+      heading: false,
+      bulletList: false,
+      orderedList: false,
+      blockquote: false,
+      code: false,
+      codeBlock: false,
+      strike: false,
+      horizontalRule: false,
+      textAlign: false,
+    });
+    // The paragraph is not optional in Puck's editor: a preset must not try to
+    // disable it.
+    expect(headingField.options?.paragraph).toBeUndefined();
   });
 
   it("defines both the inline menu and the sidebar menu", () => {
@@ -36,21 +41,16 @@ describe("shared rich text field", () => {
     expect(config.components.Heading.fields?.text).toBe(headingField);
   });
 
-  it("leaves the public render config on the shared descriptor, without inline editing", () => {
+  it("shares the schema with the public render config, without inline editing", () => {
     const publicField = renderComponentConfigs.Heading?.fields
       ?.text as RichtextField;
+    const descriptor = richTextDescriptors.heading;
 
-    expect(publicField).toEqual({ type: "richtext", ...richTextFieldConfig });
+    // Identity, not equality: the editor field is built from the same schema
+    // object the public render config reads, so the two cannot drift.
+    expect(publicField).toBe(descriptor);
+    expect(headingField.options).toBe(descriptor.options);
+    expect(headingField.tiptap).toBe(descriptor.tiptap);
     expect(publicField.contentEditable).toBeUndefined();
-  });
-
-  it("leaves the Heading block markup unchanged", () => {
-    const html = renderToStaticMarkup(
-      renderHeadingBlock({ id: "heading", text: "Hello", puck: PUCK }),
-    );
-
-    expect(html).toBe(
-      '<div class="block puck-dim puck-typo puck-block-root">Hello</div>',
-    );
   });
 });

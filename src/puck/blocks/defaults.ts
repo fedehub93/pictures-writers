@@ -21,6 +21,7 @@ import {
   COPYRIGHT_DEFAULT_CONTENT,
   COPYRIGHT_DEFAULT_TYPOGRAPHY,
 } from "./Copyright/defaults";
+import { HEADING_DEFAULT_LEVEL } from "./Heading/level";
 import { LINK_LIST_DEFAULT_CONTENT } from "./LinkList/defaults";
 import { NAVBAR_BLOCK_DEFAULT_CONTENT } from "./NavbarBlock/defaults";
 import { SEARCH_BAR_DEFAULT_CONTENT } from "./SearchBar/defaults";
@@ -73,6 +74,7 @@ export const GRID_DEFAULT_PROPS: GridBlockProps = {
 
 export const HEADING_DEFAULT_PROPS: HeadingProps = {
   text: "Heading",
+  level: HEADING_DEFAULT_LEVEL,
 };
 
 export const LINK_DEFAULT_PROPS: LinkBlockProps = {

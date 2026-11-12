@@ -186,6 +186,28 @@
   color: var(--tc-d);
 }
 
+/* --- 2a. RICH TEXT CONTAINER ---
+   The element that holds a block's authored rich text, shared by the Heading
+   and Text roots. Tailwind's preflight zeroes paragraph margins, so the rhythm
+   has to be restored here; sizes are in `em` to follow the block's typography
+   rather than pin a pixel value. The first and last child carry no outer
+   margin, so a container never adds space at its own edges. */
+.puck-rich-text p + p {
+  margin-top: 1em;
+}
+
+/* Not a direct-child selector: Puck's editor wrapper sits between the block
+   root and the authored paragraphs, in both the canvas and the published
+   render. The descendant form reaches the first and last content element
+   through that wrapper. */
+.puck-rich-text :first-child {
+  margin-top: 0;
+}
+
+.puck-rich-text :last-child {
+  margin-bottom: 0;
+}
+
 /* --- 3. NAVIGATION ---
    Dedicated variables for the NavbarBlock. They are kept apart from `--fs-*`
    and `--rgap-*` because `.puck-typo` / `.puck-layout` reset those on their own

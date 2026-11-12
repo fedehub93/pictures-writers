@@ -18,6 +18,7 @@ import { HeadingBlockUi } from "./ui/heading";
  */
 export const renderHeadingBlock: PuckComponent<HeadingProps> = ({
   text,
+  level,
   layout,
   dimension,
   typography,
@@ -32,6 +33,7 @@ export const renderHeadingBlock: PuckComponent<HeadingProps> = ({
   return (
     <HeadingBlockUi
       text={text}
+      level={level}
       styleVars={styleVars}
       layoutClassName={getLayoutClassNames(layout, {
         editing: puck?.isEditing,

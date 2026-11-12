@@ -1,9 +1,12 @@
 import { type RichtextField, RichTextMenu } from "@puckeditor/core";
 import type { Editor } from "@tiptap/core";
 
-import { richTextFieldConfig } from "./extensions";
 import { ColorPickerPopover } from "./ui/components/color-picker-popover";
 import { LinkPickerPopover } from "./ui/components/link-picker-popover";
+import {
+  type RichTextFieldDescriptor,
+  richTextDescriptors,
+} from "./presets";
 
 type RichTextMenuRenderer = NonNullable<RichtextField["renderMenu"]>;
 type RichTextMenuProps = Parameters<RichTextMenuRenderer>[0];
@@ -40,43 +43,34 @@ const RichTextMenuWithLinks = ({ editor, children }: RichTextMenuProps) => {
   );
 };
 
-type RichTextPreset = {
-  options?: RichtextField["options"];
+type RichTextMenus = {
   renderMenu?: RichTextMenuRenderer;
   renderInlineMenu?: RichTextMenuRenderer;
 };
 
 /**
- * Build a rich text field descriptor for one block.
+ * Build the editor field for one block from its shared descriptor.
  *
- * The presets differ in `options` and menus, while the extensions, the link
- * mark and the inline-editing behaviour stay in this module. The public render
- * config keeps reading `richTextFieldConfig` directly, so it resolves values
- * with the same extensions without pulling in the editor menu or the inline
- * editor.
+ * `options` and `tiptap` come from `presets.ts`, the module the public render
+ * config also imports, so the canvas and the page cannot resolve the same
+ * stored HTML with different schemas. Only the editor-only members are added
+ * here: the inline-editing flag and the two menus.
  */
 export const createRichTextField = (
-  preset: RichTextPreset = {},
+  descriptor: RichTextFieldDescriptor,
+  menus: RichTextMenus = {},
 ): RichtextField => ({
   label: "Text",
-  type: "richtext",
   // Puck 0.24 defaults this to true, while the published docs still say
   // false. Pin it explicitly so an upgrade cannot silently stop the canvas
   // from mounting the inline editor.
   contentEditable: true,
-  ...richTextFieldConfig,
-  options: {
-    ...richTextFieldConfig.options,
-    ...preset.options,
-    // The shared mark is the only link mark: a preset cannot re-enable Puck's
-    // built-in one and put two link marks in the same schema.
-    link: false,
-  },
-  renderMenu: preset.renderMenu ?? RichTextMenuWithLinks,
-  renderInlineMenu: preset.renderInlineMenu ?? RichTextMenuWithLinks,
+  ...descriptor,
+  renderMenu: menus.renderMenu ?? RichTextMenuWithLinks,
+  renderInlineMenu: menus.renderInlineMenu ?? RichTextMenuWithLinks,
 });
 
 /** Descriptors the text blocks mount, one per editing surface. */
 export const richTextFields = {
-  heading: createRichTextField(),
+  heading: createRichTextField(richTextDescriptors.heading),
 };

@@ -7,7 +7,7 @@ import {
 } from "@puckeditor/core";
 import "@puckeditor/core/puck.css";
 
-import { richTextFieldConfig } from "./fields/rich-text/extensions";
+import { richTextDescriptors } from "./fields/rich-text/presets";
 
 import { mergePropsWithDefaults } from "./lib/merge-props";
 import {
@@ -156,13 +156,10 @@ export const renderComponentConfigs: Config<any, RootProps>["components"] = {
   },
   Heading: {
     // Rich text is resolved at render time from the field descriptor, so the
-    // public config shares the editor field's extensions and link settings
-    // without pulling in the editor menu module.
+    // public config shares the editor field's schema without pulling in the
+    // editor menu module.
     fields: {
-      text: {
-        type: "richtext",
-        ...richTextFieldConfig,
-      },
+      text: richTextDescriptors.heading,
     },
     render: withPublicDefaults(HEADING_DEFAULT_PROPS, renderHeadingBlock),
   },
