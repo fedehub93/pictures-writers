@@ -257,4 +257,4 @@ JavaScript for those blocks.
 | - | ------ | ------ | ---------- |
 | 01 | Link base width | done | — |
 | 02 | Links inert in the canvas | done | — |
-| 03 | Footer links inert without client cost | needs-triage | 02 |
+| 03 | Footer links inert without client cost | ready-for-human | 02 |
