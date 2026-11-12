@@ -45,6 +45,49 @@ editor config and the render config on the same tree; `canvas-link-inert.test.ts
 canvas against the published and server-rendered output for the blocks that carry editor state.
 The published page has no editor attributes and no wrapper.
 
+## Inline text editing
+
+`Heading` and `Text` write their text on the block itself, not in the sidebar. Both mount the
+shared `richtext` field from `src/puck/fields/rich-text/` with `contentEditable: true` and
+`visible: false`: Puck draws no control for the field, so typography, dimension, layout and (on
+`Heading`) the level stay in the sidebar and the text does not. The field is still declared in
+the descriptor — the canvas transform reads the raw field, only the sidebar honours `visible`.
+Re-showing the sidebar field is the way back from a canvas regression; `createRichTextField` is
+the one place that decides both flags.
+
+The editor is Puck's, not ours. A click in the text puts the caret inside and Puck sets
+`currentRichText`, which mounts `renderInlineMenu` in the block's **action bar**, anchored to the
+block's top-right, for as long as the field has focus. There is no menu anchored to the
+selection — a word-level bubble is the evolution ADR-0041 records, not this implementation.
+`Heading`'s toolbar is bold, italic, underline plus link and colour; `Text` adds
+`HeadingSelect` and `ListSelect`. Each block's allowed extensions live in `presets.ts` and are
+imported by the public render config too, so a keyboard shortcut cannot produce markup the
+published page resolves differently.
+
+The editor is a descendant of the block root, never the root:
+
+- `Text`'s root is a `<div>`. A `<p>` cannot contain Puck's block-level editor wrapper or the
+  authored paragraphs.
+- `Heading`'s root is the real `<hN>`, and in the canvas Puck's wrapper
+  (`<div data-puck-overlay-portal>` around its editor container and a `.rich-text` box) lands
+  inside it with a `<p>` around the text. That is outside a heading's content model, but
+  browsers do not repair it, SSR keeps the element intact and crawlers read the heading text.
+  It is the price of a real heading with inline editing; ADR-0041 records the trade-off.
+
+The toolbar is part of the action bar, which Puck portals into the canvas iframe. The link and
+colour panels must portal there too: `getRichTextMenuPortalContainer(editor)` returns the body
+of the editor's document, and both panels carry `data-puck-rte-menu`, the marker Puck checks on
+blur to keep the toolbar mounted while focus moves into a panel. A panel portalled into the
+parent document opens at the wrong coordinates, outside the frame. Puck's own `HeadingSelect`
+and `ListSelect` menus are the exception: they portal into the editor window, but they are
+anchored to the action bar and therefore still land above it, so they do not need a container.
+
+`.puck-rich-text` on both roots supplies the authored rhythm in `puck-base.css`: paragraph gaps,
+list markers and indent, and the `em` heading scale that follows the block's font. An empty
+block renders its container in both paths — the root must stay selectable — but only the canvas
+shows the hint, because `@tiptap/extension-placeholder` draws it as an editor decoration and
+never writes it to the document. On the page the empty container has zero height.
+
 ## Verify in a browser
 
 A happy-dom test that does not reproduce Puck's listener passes on broken code — the first
@@ -57,7 +100,36 @@ node scripts/browser-probe.mjs --url <builder> --frame preview-frame --target a 
 ```
 
 `docs/agents/browser-probe.md` covers the flags and the report; `--frame` is how the probe
-reaches into `#preview-frame`.
+reaches into `#preview-frame`. The inline editing flow needs several actions in one run (click, type,
+select, toolbar, save), so a multi-step flow imports `runProbe` or drives CDP directly; the
+probe's single-action run is enough for the link and colour panels.
+
+### Upgrade checklist
+
+Use this after every Puck upgrade. It is the interactive half of the contract that the tests can
+only pin structurally; a failed step means the upgrade is not acceptable yet. Open a page with a
+`Heading` and a `Text` block in the builder:
+
+- [ ] Click the Heading: the caret lands inside the `<hN>`, the block is selected and the block
+      toolbar appears at its top-right. There is no separate selection bubble.
+- [ ] The sidebar shows `Level`, `Layout`, `Dimension` and `Typography` for the Heading, and
+      `Layout`, `Dimension`, `Typography` for the Text — no text field.
+- [ ] Bold, italic and underline apply from the toolbar and survive a click outside the text.
+- [ ] The link panel opens inside `#preview-frame`, applies an href, removes it, opens the href
+      in a new tab, and writes `target="_blank"` plus `rel="noopener noreferrer"` only when
+      "Open in new tab" is checked.
+- [ ] The colour panel opens inside `#preview-frame`; a theme colour, a palette colour and a
+      custom colour apply to the selection, and "Remove colour" clears it.
+- [ ] On the Text block, `HeadingSelect` turns a paragraph into H1–H6 and back; `ListSelect`
+      produces a bulleted and a numbered list and turns it back into a paragraph.
+- [ ] `Ctrl+B`/`Ctrl+I`/`Ctrl+U` format the selection, while the shortcuts for strike, code,
+      blockquote and alignment do nothing (the options are off, not just the buttons).
+- [ ] Clearing a block shows "Add a heading" or "Start writing" at the caret; Save, reload, and
+      the block is still empty with its hint, and the stored document has no hint.
+- [ ] Publish and open the page: bold, links, lists, extra paragraphs and the `hN` tag are all
+      present, the heading scale follows the block's authored font size, and there is no editor
+      wrapper, `data-puck-overlay-portal`, `contenteditable` or placeholder.
+- [ ] A cleared block publishes nothing visible: zero height, no hint, no reserved line.
 
 When the docs do not answer an internals question, read Puck's source at the installed version
 rather than the bundled chunk:

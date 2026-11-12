@@ -494,6 +494,22 @@ _Avoid_: root wrapper, root div, canvas root; treating it as a layout surface th
 Puck merges `defaultProps` into a block's props in the editor canvas only. The public render path applies the same defaults through a shared helper so a freshly dropped block looks identical in both environments.
 _Avoid_: relying on Puck to apply defaults on the public site; relying on saved documents to store defaults.
 
+**Inline text editing**:
+The authoring surface where a block's text is written and formatted on the block itself in the canvas, through the editor Puck renders in place of the prop value. It is the only surface for a Content field.
+_Avoid_: inline editor, WYSIWYG, in-canvas rich text; the canvas is not a preview of the page.
+
+**Content field**:
+The single prop of a text block that holds its authored text as rich text HTML. It has no sidebar control by design, so the canvas is where its value is read and written.
+_Avoid_: text field, body, description, rich text field when the storage format is not the point.
+
+**Block toolbar**:
+The bar Puck anchors to the selected block in the canvas: it hosts the block's actions and, while a text block has the focus, the formatting controls of its Content field.
+_Avoid_: bubble menu, floating menu, selection toolbar (those name a menu anchored to the selection instead of the block).
+
+**Heading level**:
+The `h1`–`h6` element a Heading block emits, authored as a block property in the sidebar and independent of the text it contains. A Text block has no Heading level of its own: the levels it may contain are inline content.
+_Avoid_: heading tag, title level, H-select.
+
 ## FAQ
 
 **Faq**:
