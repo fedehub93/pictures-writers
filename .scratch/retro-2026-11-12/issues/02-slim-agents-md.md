@@ -1,5 +1,5 @@
 ---
-Status: ready-for-human
+Status: done
 Type: task
 Blocked by: none
 ---
@@ -13,8 +13,7 @@ comportamento.
 
 **Blocked by:** None.
 
-**Status:** ready-for-human — è la Fase 2 della riorganizzazione dei documenti, e le decisioni su
-cosa tenere sono del maintainer.
+**Status:** done — 135 righe / 9,7 KB.
 
 ## Perché
 
@@ -26,21 +25,21 @@ si trova altrove.
 
 ## Acceptance criteria
 
-- [ ] Nessun comando che `package.json` già definisce, tranne dove la spiegazione è il punto
+- [x] Nessun comando che `package.json` già definisce, tranne dove la spiegazione è il punto
       (perché le migrazioni stanno nel build command, perché `dev:db:*` pinna il progetto
       Compose).
-- [ ] Le variabili d'ambiente diventano un puntatore all'appendice, non una lista.
-- [ ] **Key Technologies** sparisce: è `package.json`.
-- [ ] L'istruzione sul lint compare una volta sola (oggi è in Testing Instructions e in Pull
+- [x] Le variabili d'ambiente diventano un puntatore all'appendice, non una lista.
+- [x] **Key Technologies** sparisce: è `package.json`.
+- [x] L'istruzione sul lint compare una volta sola (oggi è in Testing Instructions e in Pull
       Request Guidelines).
-- [ ] Restano, perché nessun config li esprime: l'avviso di non puntare il dev locale alla
+- [x] Restano, perché nessun config li esprime: l'avviso di non puntare il dev locale alla
       produzione (il pump ogni 15 secondi), la tabella Coolify, la regola "migrazioni nel build
       command, non nel pre-deployment", la nota ISR single-instance / `revalidatePath`, i due
       file di auth da tenere allineati, la regola sugli identificatori SQL da allow-list, tutti i
       Common Gotchas (incluso il #8 su `docs/puck-canvas.md`).
-- [ ] **File organization patterns** resta ma si accorcia: spiega una convenzione (`server/`,
+- [x] **File organization patterns** resta ma si accorcia: spiega una convenzione (`server/`,
       `ui/`, `hooks/`, `lib/`, `store/` dentro un modulo), non solo un albero di cartelle.
-- [ ] Ogni riga che resta nomina un file da leggere o enuncia una regola che nessun config può
+- [x] Ogni riga che resta nomina un file da leggere o enuncia una regola che nessun config può
       esprimere.
 
 ## Cosa è cache, con l'evidenza
@@ -71,3 +70,21 @@ si trova altrove.
 - 2026-11-12 — Ticket scritto dal retro, su richiesta del maintainer (Fase 2 già pianificata).
   Evidenza: 319 righe, 19,5 KB, caricate a ogni turno; il retro ha trovato la duplicazione del
   comando lint e una riga che non può essere seguita.
+- 2026-11-12 — Implementato. `AGENTS.md` passa da 465 righe / 19,1 KB a 135 righe / 9,7 KB
+  (la versione al momento del ticket era già cresciuta rispetto alle 319 righe citate).
+  - Rimossi: Setup Commands, Key Technologies, Key models, Build output, Important build config,
+    Setup Prisma, l'elenco delle API route, le PR Guidelines (lint/build/migrazioni conservati
+    dove servono).
+  - Conservati e spostati: i comandi ora vivono solo in `package.json`; le variabili in un
+    puntatore all'appendice; i due database locali, il pump, il vincolo `127.0.0.1`/IPv6, il
+    pinning Compose, il log del dev server e i tre `test-db`/`global-setup` restano nel
+    Development Workflow. La sezione `Database > Raw SQL` conserva il titolo perché i messaggi
+    di `eslint.config.mjs` la citano per nome.
+  - Tabella Coolify e regole di deploy restano, con il divieto esplicito di usare la
+    "Pre-deployment command". Tutti gli 8 Common Gotchas restano, #3 chiarito sul conflitto
+    `trailingSlash` vs `NEXT_PUBLIC_APP_URL` senza slash finale.
+  - Code review (standards + spec, in parallelo): corretto il riferimento rotto `Database > Raw
+    SQL`, reso esplicito il divieto sul pre-deployment, tolti i duplicati (appendice,
+    troubleshooting, "Vercel/Neon"), aggiunta la nota che la CI non esegue `next build`.
+  - Verifica: `npm run lint` esce 0 (243 warning, 0 errori); il markdown non è coperto da lint,
+    quindi il resto è rilettura riga per riga contro gli acceptance criteria.
