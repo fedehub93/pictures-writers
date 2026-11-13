@@ -5,7 +5,11 @@
  *
  *   npm run agent:seed                                       # reset the probe page
  *   node --env-file=.env.agent scripts/builder-probe.mjs --steps steps.json
+ *   node --env-file=.env.agent scripts/builder-probe.mjs --steps steps.json --server
  *   node --env-file=.env.agent scripts/builder-probe.mjs --login-only
+ *
+ * `--server` starts `scripts/dev-agent.mjs` when nothing answers on the app URL, waits for it,
+ * and stops it when the run ends, so a session does not have to babysit `next dev`.
  *
  * `npm run agent:probe -- --flag` is not the documented form: npm 12 on this machine
  * swallows the flags after `--`, so the command needs node directly to load `.env.agent`.
@@ -30,10 +34,15 @@
  * See docs/agents/browser-probe.md.
  */
 
+import { spawn } from "node:child_process";
 import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 
 import { withSession } from "./browser-probe.mjs";
+
+const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 const AGENT_DATABASE = "pictures_writers_agent";
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]", "::1"]);
@@ -321,6 +330,57 @@ async function waitForCanvas(session, frame, timeout) {
   throw new Error(`canvas #${frame} did not render within ${timeout}ms`);
 }
 
+/** True once the app answers anything below a server error. */
+async function isUp(url) {
+  try {
+    const response = await fetch(url, { method: "GET" });
+    return response.status < 500;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Start `dev:agent` when `--server` asks for it and nothing answers yet.
+ *
+ * The probe cannot shell out to `next dev` itself: the three environmental overrides live in
+ * `scripts/dev-agent.mjs` and its guard refuses any database but the agent one. Returns the
+ * child to stop afterwards, or null when the server was already running.
+ */
+async function ensureServer(baseUrl, enabled) {
+  if (!enabled || (await isUp(baseUrl))) return null;
+
+  const child = spawn(process.execPath, [join(repoRoot, "scripts", "dev-agent.mjs")], {
+    cwd: repoRoot,
+    stdio: "ignore",
+  });
+
+  const deadline = Date.now() + 120_000;
+
+  while (Date.now() < deadline) {
+    if (await isUp(baseUrl)) return child;
+
+    if (child.exitCode !== null) {
+      throw new Error(`dev:agent exited (${child.exitCode}) before the server answered`);
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 1_000));
+  }
+
+  stopServer(child);
+  throw new Error("dev:agent did not answer within 120s");
+}
+
+function stopServer(child) {
+  if (!child || child.exitCode !== null) return;
+
+  if (process.platform === "win32") {
+    spawn("taskkill", ["/pid", String(child.pid), "/T", "/F"], { stdio: "ignore" });
+  } else {
+    child.kill("SIGKILL");
+  }
+}
+
 async function main() {
   const { values } = parseArgs({
     options: {
@@ -328,6 +388,7 @@ async function main() {
       url: { type: "string" },
       frame: { type: "string", default: DEFAULT_FRAME },
       "login-only": { type: "boolean", default: false },
+      server: { type: "boolean", default: false },
       timeout: { type: "string", default: String(DEFAULT_TIMEOUT_MS) },
     },
     strict: true,
@@ -349,47 +410,62 @@ async function main() {
     throw new Error("--steps <file.json> is required (or --login-only)");
   }
 
-  const cookie = await login(environment);
+  const steps = values["login-only"]
+    ? null
+    : JSON.parse(readFileSync(values.steps, "utf8"));
 
-  if (values["login-only"]) {
-    console.log(
-      JSON.stringify(
-        { login: { email: environment.email, url: environment.baseUrl }, cookieName: cookie.split("=")[0] },
-        null,
-        2,
-      ),
-    );
-    return;
-  }
-
-  const steps = JSON.parse(readFileSync(values.steps, "utf8"));
-
-  if (!Array.isArray(steps)) {
+  if (steps && !Array.isArray(steps)) {
     throw new Error(`${values.steps} must contain a JSON array of steps`);
   }
 
-  const report = await withSession(
-    { url, cookies: [cookie], timeout: Number(values.timeout) },
-    async (session) => {
-      if (frame) await waitForCanvas(session, frame, Number(values.timeout));
+  const server = await ensureServer(environment.baseUrl, values.server);
 
-      return {
-        url,
-        frame,
-        login: { email: environment.email },
-        steps: await runSteps(session, steps, frame),
-        errors: session.events
-          .filter((event) => event.method === "Runtime.exceptionThrown")
-          .map(
-            (event) =>
-              event.params.exceptionDetails.exception?.description ??
-              event.params.exceptionDetails.text,
-          ),
-      };
-    },
-  );
+  try {
+    const cookie = await login(environment);
 
-  console.log(JSON.stringify(report, null, 2));
+    if (values["login-only"]) {
+      console.log(
+        JSON.stringify(
+          {
+            login: { email: environment.email, url: environment.baseUrl },
+            cookieName: cookie.split("=")[0],
+            server: server ? "started" : "already running",
+          },
+          null,
+          2,
+        ),
+      );
+      return;
+    }
+
+    const report = await withSession(
+      { url, cookies: [cookie], timeout: Number(values.timeout) },
+      async (session) => {
+        if (frame) await waitForCanvas(session, frame, Number(values.timeout));
+
+        return {
+          url,
+          frame,
+          login: { email: environment.email },
+          server: server ? "started" : "already running",
+          steps: await runSteps(session, steps, frame),
+          errors: session.events
+            .filter((event) => event.method === "Runtime.exceptionThrown")
+            .map(
+              (event) =>
+                event.params.exceptionDetails.exception?.description ??
+                event.params.exceptionDetails.text,
+            ),
+        };
+      },
+    );
+
+    console.log(JSON.stringify(report, null, 2));
+  } finally {
+    // The server started here belongs to this run: leaving it up would keep the port busy
+    // and hide the next run's guard.
+    stopServer(server);
+  }
 }
 
 main().catch((error) => {

@@ -99,7 +99,7 @@ in one browser, which a single `runProbe` call cannot do; this reuses the same C
 [
   { "action": "focus" },
   { "action": "press", "key": "a", "modifiers": ["ctrl"] },
-  { "action": "click", "target": "button[title=\"Bold\"]" },
+  { "action": "press", "key": "b", "modifiers": ["ctrl"] },
   { "action": "read", "target": ".ProseMirror" }
 ]
 ```
@@ -107,10 +107,13 @@ in one browser, which a single `runProbe` call cannot do; this reuses the same C
 ```bash
 npm run agent:seed
 node --env-file=.env.agent scripts/builder-probe.mjs --steps steps.json
+node --env-file=.env.agent scripts/builder-probe.mjs --steps steps.json --server
 ```
 
-`npm run agent:probe -- --steps …` does not work here: npm 12 swallows the flags after `--`, so
-the command passes through node directly to load `.env.agent`.
+`--server` starts `scripts/dev-agent.mjs` when nothing answers, waits for the app, and stops it
+when the run ends: a session should not have to start, poll and kill `next dev` by hand.
+`npm run agent:probe -- --steps …` does not work: npm 12 swallows the flags after `--`, so the
+command goes through node to load `.env.agent`.
 
 The report is JSON on stdout: one entry per step, plus `errors` (page exceptions). A failed step
 exits `1` with `step N (action): …`.
@@ -136,6 +139,11 @@ Notes that save a run:
   that took. `attempts: 2` is a fact worth recording, not noise.
 - The toolbar sits in the block action bar with `title="Bold"`, `title="Italic"`,
   `title="Underline"`; `Add link` and `Text color` are the labelled buttons.
+- **Format with shortcuts, assert the toolbar.** `press` with `ctrl` applies bold, italic and
+  underline every time (3/3 runs); clicking the toolbar button is racy, because the mousedown
+  moves focus out of the iframe and Tiptap sometimes restores the selection after the command has
+  run, so the mark silently does not apply. Use the shortcut for the effect, and `exists` on
+  `button[title="Bold"]` to prove the button is there. The button itself is a manual check.
 - `read` on `.ProseMirror` returns the editor's HTML — what Save persists.
 - Seeding is the reset: `npm run agent:seed` rewrites the probe page from its fixture, so a run
   that typed into the canvas starts from a known state next time.
