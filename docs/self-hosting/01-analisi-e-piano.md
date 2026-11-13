@@ -83,7 +83,7 @@ Questo documento fotografa **tutto ciò che Pictures Writers usava prima della m
 | `/api/media/*`, `/api/admin/*`, `/api/settings/*`, `/api/users/*`, `/api/posts`, `/api/products/*`, `/api/invitations/*`, `/api/newsletter/*` | * | sessione/admin | admin e sito |
 | `/api/database/backup/` | GET | **nessuna** | ⚠️ vedi sicurezza |
 
-> ⚠️ **Problema di sicurezza preesistente:** `src/app/api/database/backup/route.ts` è un endpoint **pubblico** che esporta in JSON diverse tabelle (incluse `User` e contatti email). Su Vercel è già raggiungibile. Inoltre, essendo un `GET` senza `dynamic`, Next potrebbe **prerenderizzarlo** durante il build e servirne una fotografia statica. Va rimosso, protetto con `authAdmin()` o marcato `force-dynamic` **prima** del deploy. Non è un problema causato dalla VPS, ma un'occasione per sistemarlo. Vedi §9.
+> ⚠️ **Problema di sicurezza preesistente:** l'endpoint `/api/database/backup/` era **pubblico** ed esportava in JSON diverse tabelle (incluse `User` e contatti email). ✅ Risolto: la route è stata rimossa in `a200ba67`. Su Vercel è già raggiungibile. Inoltre, essendo un `GET` senza `dynamic`, Next potrebbe **prerenderizzarlo** durante il build e servirne una fotografia statica. Va rimosso, protetto con `authAdmin()` o marcato `force-dynamic` **prima** del deploy. Non è un problema causato dalla VPS, ma un'occasione per sistemarlo. Vedi §9.
 
 ---
 
@@ -123,7 +123,7 @@ Conseguenza: **il container di build deve raggiungere PostgreSQL**. Non è un de
 - Nessun filesystem persistente usato per gli upload (tutto su UploadThing).
 - `@vercel/speed-insights` era installato ma commentato; è stato rimosso con la migrazione.
 - `maxDuration` è dichiarato in due route ma su self-hosting viene ignorato (nessun limite serverless: i job possono durare di più).
-- `src/lib/vercel.ts` conteneva `triggerWebhookBuild`, mai chiamato; il file è stato rimosso. Il pulsante admin "Build website" usa `revalidateContent("all")`. Il campo `Settings.deployWebhookUrl` resta vestigiale: puoi lasciarlo o svuotarlo, non influenza il deploy.
+- Il vecchio modulo Vercel che esponeva `triggerWebhookBuild` non aveva chiamanti; è stato rimosso. Il pulsante admin "Build website" usa `revalidateContent("all")`. Il campo `Settings.deployWebhookUrl` resta vestigiale: puoi lasciarlo o svuotarlo, non influenza il deploy.
 - Non ci sono Vercel Cron né `vercel.json`.
 
 ---

@@ -275,7 +275,7 @@ Questa applicazione usa:
 - `sharp` (binario nativo) → verifica che `@img/sharp-linux-arm64` sia incluso nel trace;
 - `handlebars` con alias a `handlebars/dist/handlebars.js` → verifica che sia incluso;
 - Prisma 7 con `query_compiler_fast_bg.wasm` in `generated/prisma` → deve essere nel trace;
-- `public/` letto a runtime da `src/lib/image.ts` → copiato manualmente;
+- i media a runtime (driver `local`: root `.media-storage` di default) → monta il volume, non stanno in `public/`;
 - `next.config.mjs` con `outputFileTracingIncludes` che punta a `./node_modules/.prisma/client/**/*` (path non usato da Prisma 7 con output custom).
 
 Se ottieni errori a runtime (`Cannot find module`, WASM mancante, template email vuoti), aggiungi:
