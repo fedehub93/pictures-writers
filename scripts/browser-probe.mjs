@@ -365,21 +365,16 @@ async function pressKey(send, key) {
 }
 
 /**
- * Run one probe and return its report. The browser is always closed before returning.
+ * Open the browser, install the cookies, navigate, and hand `run` a session bound to the
+ * page. The browser is always closed afterwards, even when `run` throws.
+ *
+ * `runProbe` below is the one-action caller; a flow that needs several actions (click the
+ * canvas, type, read the editor) imports this and keeps one browser for all of them.
  */
-export async function runProbe({
-  url,
-  selector = "a",
-  text,
-  frame,
-  button = "left",
-  modifiers = [],
-  key,
-  cookies = [],
-  port = DEFAULT_PORT,
-  timeout = DEFAULT_TIMEOUT_MS,
-  settle = DEFAULT_SETTLE_MS,
-}) {
+export async function withSession(
+  { url, cookies = [], port = DEFAULT_PORT, timeout = DEFAULT_TIMEOUT_MS },
+  run,
+) {
   const { chrome, profile, port: debugPort } = await launch(port);
   let socket;
 
@@ -403,43 +398,86 @@ export async function runProbe({
       });
     }
 
-    const tabsBefore = (await send("Target.getTargets")).targetInfos.map(
+    const targetsBefore = (await send("Target.getTargets")).targetInfos.map(
       (target) => target.targetId,
     );
 
     await send("Page.navigate", { url });
 
-    const deadline = Date.now() + timeout;
-    let target = { found: false, reason: "not-started" };
+    const session = {
+      send,
+      events,
+      targetsBefore,
+      evaluate: (expression) => evaluate(send, expression),
+      findTarget: (options) => findTarget(send, options),
+      /** Poll until the selector matches, or throw with the last thing it saw. */
+      waitFor: async (options) => {
+        const deadline = Date.now() + timeout;
+        let target = { found: false, reason: "not-started" };
 
-    while (Date.now() < deadline) {
-      target = await findTarget(send, { selector, text, frame });
+        while (Date.now() < deadline) {
+          target = await findTarget(send, options);
 
-      if (target.found) break;
+          if (target.found) return target;
 
-      await sleep(300);
+          await sleep(300);
+        }
+
+        throw new Error(
+          `Target not found: ${options.selector}${options.text ? ` with text "${options.text}"` : ""} (${JSON.stringify(target)})`,
+        );
+      },
+      instrument: (options) => instrument(send, options),
+      clickAt: (options) => clickAt(send, options),
+      pressKey: (key) => pressKey(send, key),
+      readState: (frame) => readState(send, frame),
+      wait: (ms) => sleep(ms),
+    };
+
+    return await run(session);
+  } finally {
+    try {
+      socket?.close();
+    } catch {
+      // The socket may already be gone after a navigation.
     }
 
-    if (!target.found) {
-      throw new Error(
-        `Target not found: ${selector}${text ? ` with text "${text}"` : ""} (${JSON.stringify(target)})`,
-      );
-    }
+    await stop(chrome, profile);
+  }
+}
 
-    const before = await readState(send, frame);
+/**
+ * Run one probe and return its report. The browser is always closed before returning.
+ */
+export async function runProbe({
+  url,
+  selector = "a",
+  text,
+  frame,
+  button = "left",
+  modifiers = [],
+  key,
+  cookies = [],
+  port = DEFAULT_PORT,
+  timeout = DEFAULT_TIMEOUT_MS,
+  settle = DEFAULT_SETTLE_MS,
+}) {
+  return withSession({ url, cookies, port, timeout }, async (session) => {
+    const target = await session.waitFor({ selector, text, frame });
+    const before = await session.readState(frame);
 
-    await instrument(send, { selector, text, frame, focus: Boolean(key) });
+    await session.instrument({ selector, text, frame, focus: Boolean(key) });
 
     if (key) {
-      await pressKey(send, key);
+      await session.pressKey(key);
     } else {
-      await clickAt(send, { x: target.x, y: target.y, button, modifiers });
+      await session.clickAt({ x: target.x, y: target.y, button, modifiers });
     }
 
-    await sleep(settle);
+    await session.wait(settle);
 
-    const after = await readState(send, frame);
-    const tabsAfter = (await send("Target.getTargets")).targetInfos;
+    const after = await session.readState(frame);
+    const tabsAfter = (await session.send("Target.getTargets")).targetInfos;
 
     return {
       url,
@@ -460,12 +498,12 @@ export async function runProbe({
         top: after.top !== before.top,
         frame: frame ? after.frame !== before.frame : null,
         newTabs: tabsAfter
-          .filter((tab) => !tabsBefore.includes(tab.targetId))
+          .filter((tab) => !session.targetsBefore.includes(tab.targetId))
           .filter((tab) => tab.type === "page")
           .map((tab) => tab.url),
       },
       location: { before, after },
-      errors: events
+      errors: session.events
         .filter((event) => event.method === "Runtime.exceptionThrown")
         .map(
           (event) =>
@@ -473,15 +511,7 @@ export async function runProbe({
             event.params.exceptionDetails.text,
         ),
     };
-  } finally {
-    try {
-      socket?.close();
-    } catch {
-      // The socket may already be gone after a navigation.
-    }
-
-    await stop(chrome, profile);
-  }
+  });
 }
 
 function parseModifier(name) {

@@ -67,5 +67,78 @@ Exit code is `0` when the target was found and the action ran, `1` otherwise.
 - The probe dispatches real input events at the element's coordinates instead of calling
   `element.click()`, because a middle click only produces an `auxclick` through real input. The
   coordinates are mapped through the canvas iframe's CSS transform.
-- `runProbe` is exported: import it for a flow that needs more than one action.
+- `runProbe` is exported: import it for a flow that needs more than one action, or import
+  `withSession` to keep one browser across several actions.
 - The canvas itself is described in `docs/puck-canvas.md`.
+
+## The agent environment
+
+Agent sessions do not run against `pictures_writers_dev`. That database can be a restored
+production dump — real users, real content, real session tokens — and a probe that writes
+there would put synthetic pages next to real data.
+
+```bash
+npm run agent:env     # once: creates .env.agent (agent database URL, agent-only secrets)
+npm run agent:seed    # creates the probe user and resets the probe page; also the reset
+npm run dev:agent     # next dev against .env.agent
+```
+
+`dev:agent` refuses to start unless `.env.agent` points at `pictures_writers_agent` on
+localhost, and `builder-probe` repeats that check before signing in. The probe logs in through
+`/api/auth/sign-in/email` as `PROBE_ADMIN_EMAIL`: it never reads `BETTER_AUTH_SECRET` and never
+touches the development database.
+
+## Driving the builder
+
+`scripts/builder-probe.mjs` logs in as the probe user, opens the builder, waits for the canvas
+iframe to render, then runs a JSON list of steps. Typing into the canvas needs several actions
+in one browser, which a single `runProbe` call cannot do; this reuses the same CDP layer through
+`withSession`.
+
+```json
+[
+  { "action": "focus" },
+  { "action": "press", "key": "a", "modifiers": ["ctrl"] },
+  { "action": "click", "target": "button[title=\"Bold\"]" },
+  { "action": "read", "target": ".ProseMirror" }
+]
+```
+
+```bash
+npm run agent:seed
+node --env-file=.env.agent scripts/builder-probe.mjs --steps steps.json
+```
+
+`npm run agent:probe -- --steps …` does not work here: npm 12 swallows the flags after `--`, so
+the command passes through node directly to load `.env.agent`.
+
+The report is JSON on stdout: one entry per step, plus `errors` (page exceptions). A failed step
+exits `1` with `step N (action): …`.
+
+| Action | Fields | Reports |
+| --- | --- | --- |
+| `click` | `target`, optional `text`, `button`, `modifiers` | the matched tag and text |
+| `focus` | optional `target` (default `.ProseMirror`), `attempts` | `{ attempts, focused, tag }` |
+| `type` | `text` | — (types at the caret, via `Input.insertText`) |
+| `press` | `key`, optional `modifiers` | — (letters, digits, `Enter`, `Tab`, `Space`, arrows, `Escape`, `Backspace`) |
+| `read` | `target` | `{ tag, text, html }` |
+| `exists` | `target` | `found` |
+| `wait` | `ms` | — |
+| `evaluate` | `expression` | the expression's value, in the top document |
+
+Notes that save a run:
+
+- `target` resolves inside `--frame` (default `preview-frame`), so `h2` is the block's heading
+  and not the admin chrome.
+- `focus` is what puts the caret in the inline editor. A click on the block selects it and the
+  editor takes the caret, but an automation click can land before Tiptap is ready to accept one;
+  `focus` clicks until `document.activeElement` is contenteditable and reports how many attempts
+  that took. `attempts: 2` is a fact worth recording, not noise.
+- The toolbar sits in the block action bar with `title="Bold"`, `title="Italic"`,
+  `title="Underline"`; `Add link` and `Text color` are the labelled buttons.
+- `read` on `.ProseMirror` returns the editor's HTML — what Save persists.
+- Seeding is the reset: `npm run agent:seed` rewrites the probe page from its fixture, so a run
+  that typed into the canvas starts from a known state next time.
+- `--login-only` prints the cookie name the sign-in produced and nothing else, which is what
+  separates "the server is down" from a 403 (`Missing or null Origin`) or a 400
+  (`Invalid email`).
