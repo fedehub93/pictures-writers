@@ -13,6 +13,7 @@ import "@puckeditor/core/puck.css";
 import type { SiteLayoutPreview } from "@/modules/site-regions/lib/site-layout-preview";
 
 import { config as pageConfig } from "./config";
+import { editorDndConfig } from "./editor/text-edit-mode/editor-dnd";
 import { textEditOverrides } from "./editor/text-edit-mode/text-edit-action-bar";
 import { gateEditorConfig } from "./editor/text-edit-mode/text-edit-gate";
 import { BREAKPOINTS } from "./utils/breakpoints";
@@ -77,6 +78,9 @@ export function PuckEditor({
       // `overrides` is the editor's own surface for the same reason: it is what
       // draws the text action in the action bar, and no render path sees it.
       overrides={textEditOverrides}
+      // The grip is what moves a block while its caret is live; see the
+      // module for why that is not Puck's default.
+      dnd={editorDndConfig}
       viewports={viewports}
       ui={{
         viewports: {

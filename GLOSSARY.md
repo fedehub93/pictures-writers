@@ -495,15 +495,23 @@ Puck merges `defaultProps` into a block's props in the editor canvas only. The p
 _Avoid_: relying on Puck to apply defaults on the public site; relying on saved documents to store defaults.
 
 **Inline text editing**:
-The authoring surface where a block's text is written and formatted on the block itself in the canvas, through the editor Puck renders in place of the prop value. It is the only surface for a Content field.
+The authoring surface where a block's text is written and formatted on the block itself in the canvas, through the editor Puck renders in place of the prop value. It is the only surface for a Content field. It is entered one block at a time through Text editing mode; a text block that is not in it is a Locked text block.
 _Avoid_: inline editor, WYSIWYG, in-canvas rich text; the canvas is not a preview of the page.
+
+**Text editing mode**:
+The state of a single text block in which its Content field is live: a click in the text places the caret and the text can be written and formatted on the canvas. It is entered deliberately — never by landing on the block — and while it lasts the block keeps its selection and its Block toolbar, whose formatting controls are shown whenever the editor holds the focus. It is left with `Esc`, **Done**, a click on another block or a press on the page background.
+_Avoid_: edit mode, inline mode, WYSIWYG mode; "armed" is the internal name for the same state, not the name of the concept.
+
+**Locked text block**:
+A text block in its default state: its Content field does not take the pointer, so a click selects the block without placing a caret and a long press with movement drags it, and writing means entering Text editing mode first. The block is still editable, only not yet in the mode.
+_Avoid_: read-only block (Puck's read-only is a different state), disabled block, preview block.
 
 **Content field**:
 The single prop of a text block that holds its authored text as rich text HTML. It has no sidebar control by design, so the canvas is where its value is read and written.
 _Avoid_: text field, body, description, rich text field when the storage format is not the point.
 
 **Block toolbar**:
-The bar Puck anchors to the selected block in the canvas: it hosts the block's actions and, while a text block has the focus, the formatting controls of its Content field.
+The bar Puck anchors to the selected block in the canvas: it hosts the block's actions and, while a text block is in Text editing mode, the formatting controls of its Content field.
 _Avoid_: bubble menu, floating menu, selection toolbar (those name a menu anchored to the selection instead of the block).
 
 **Heading level**:

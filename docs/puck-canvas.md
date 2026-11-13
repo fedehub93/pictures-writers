@@ -8,6 +8,8 @@ other.
 Read these in order:
 
 - `docs/adr/0040-one-element-tree-in-canvas-and-page.md` — why the two paths draw the same tree.
+- `docs/adr/0042-text-editing-mode-and-the-canvas-lock.md` — why a text block is locked, and the
+  Puck rule the gate compensates for.
 - `src/puck/types.ts` (`BlockDragRef`) — where a block's root is.
 - `src/puck/utils/inert-anchor.ts` — the click contract, in full.
 - `.agents/skills/puck` — Puck's own API. Start from `https://puckeditor.com/llms.txt`, then
@@ -43,7 +45,9 @@ through its server renderer), so the published footer still ships no JavaScript 
 `puck.isEditing` may change behaviour, never markup. `render-pipeline.test.tsx` compares the
 editor config and the render config on the same tree; `canvas-link-inert.test.tsx` compares the
 canvas against the published and server-rendered output for the blocks that carry editor state.
-The published page has no editor attributes and no wrapper.
+The published page has no editor attributes and no wrapper. `data-text-editing` is the same kind of
+attribute: it names the one block in text editing mode and is written only in the canvas, so at
+rest a text block's markup is the page's.
 
 ## Inline text editing
 
@@ -55,7 +59,28 @@ the descriptor — the canvas transform reads the raw field, only the sidebar ho
 Re-showing the sidebar field is the way back from a canvas regression; `createRichTextField` is
 the one place that decides both flags.
 
-The editor is Puck's, not ours. A click in the text puts the caret inside and Puck sets
+A text block has two states, because the editor Puck mounts permanently would otherwise swallow
+every press (ADR-0042):
+
+- **Locked text block** (default): the editor's descendants are out of hit-testing, so a click
+  selects the block, a long press with movement drags it like any other block, and no caret enters
+  the text. `Enter` does nothing until the block is selected; on a selected block it opens the
+  mode.
+- **Text editing mode**: the caret is live where you clicked and the editor is normally editable.
+  Enter it with a double click on the text, `Enter` on the selected block, or the action bar's
+  **Edit text** button; leave it with `Esc`, **Done**, a click on another block or a press on the
+  page background. One block at a time is in the mode, and neither a new session nor the
+  interactive preview inherits it. The button is the entry that always works on touch, where a
+  double tap belongs to the browser's zoom.
+
+The lock is a stylesheet rule keyed to an editor attribute, not markup. `puck-base.css` §7 removes
+the pointer from `[data-puck-overlay-portal]` **and every descendant** of a text block, because
+Puck forces `pointer-events: auto !important` on both; the armed rule gives it back when the block
+root carries `data-text-editing`. The attribute is written imperatively from the editor store, only
+in the canvas, and only while that block is armed — so arming does not re-render the block, and at
+rest the canvas emits the same markup as the page.
+
+Inside the mode the editor is Puck's, not ours. It holds the caret and Puck sets
 `currentRichText`, which mounts `renderInlineMenu` in the block's **action bar**, anchored to the
 block's top-right, for as long as the field has focus. There is no menu anchored to the
 selection — a word-level bubble is the evolution ADR-0041 records, not this implementation.
@@ -63,6 +88,16 @@ selection — a word-level bubble is the evolution ADR-0041 records, not this im
 `HeadingSelect` and `ListSelect`. Each block's allowed extensions live in `presets.ts` and are
 imported by the public render config too, so a keyboard shortcut cannot produce markup the
 published page resolves differently.
+
+Leaving the mode hands the editor back to Puck: the block root takes the focus (Puck clears the
+toolbar only on a blur that names a `relatedTarget`) and the DOM selection is collapsed. The block
+stays selected, so a second `Esc` — or a click elsewhere — deselects it. The action bar override
+also hides the formatting toolbar whenever the block is not armed, because Puck's richtext state
+outlives the block and undo/redo would otherwise bring a toolbar back on a locked block. While the
+caret is live, the action bar's drag handle is the way to move the block: dnd-kit refuses presses
+inside `[contenteditable]`, so the grip (`dnd.enableDragHandle`) is the only drag in that state. The
+drag moves the focus out of the iframe editor, so the block stays in the mode but the caret and
+toolbar come back with the next click in the text.
 
 The editor is a descendant of the block root, never the root:
 
@@ -110,8 +145,17 @@ Use this after every Puck upgrade. It is the interactive half of the contract th
 only pin structurally; a failed step means the upgrade is not acceptable yet. Open a page with a
 `Heading` and a `Text` block in the builder:
 
-- [ ] Click the Heading: the caret lands inside the `<hN>`, the block is selected and the block
-      toolbar appears at its top-right. There is no separate selection bubble.
+- [ ] Click the Heading: the block is selected, no caret enters the text, the block action bar
+      appears at its top-right with **Edit text**, and there is no separate selection bubble.
+- [ ] Press on the text, hold about 250 ms and move 20 px: the block reorders like any other
+      block, with a drop indicator as it travels (the text is the drag handle, not a dead zone).
+- [ ] Double click a word: the caret lands inside that word, the formatting toolbar appears in the
+      action bar and the button says **Done**. `Enter` on the selected block opens the same state,
+      and with the caret live the action bar's grip drags the block — the drag takes the focus, so a
+      click in the text brings the caret and toolbar back.
+- [ ] `Esc` leaves the mode: toolbar unmounted, block still selected, focus on the block root,
+      selection collapsed; a second `Esc` deselects. A click on another block or on the page
+      background also leaves the mode, and only one block is ever in it.
 - [ ] The sidebar shows `Level`, `Layout`, `Dimension` and `Typography` for the Heading, and
       `Layout`, `Dimension`, `Typography` for the Text — no text field.
 - [ ] Bold, italic and underline apply from the toolbar and survive a click outside the text.

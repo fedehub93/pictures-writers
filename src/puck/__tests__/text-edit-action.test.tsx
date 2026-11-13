@@ -9,6 +9,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { config as pageEditorConfig } from "../config";
 import { contentFieldPath } from "../editor/text-edit-mode/content-field";
+import { editorDndConfig } from "../editor/text-edit-mode/editor-dnd";
 import { useEditorStore } from "../editor/store/use-editor-store";
 import {
   ActionBarWithTextEdit,
@@ -476,5 +477,20 @@ describe("editor wiring", () => {
 
     expect(shell).toContain("overrides={textEditOverrides}");
     expect(textEditOverrides.actionBar).toBeTypeOf("function");
+  });
+
+  it("enables the drag handle the armed block needs", () => {
+    // A caret inside the editor makes dnd-kit refuse the press, so the action
+    // bar's grip is the only way to move the block in text editing mode.
+    expect(editorDndConfig.enableDragHandle).toBe(true);
+
+    // And the shell has to hand it to `<Puck>`: a config nobody passes the
+    // handle is a config that does nothing, with no other symptom.
+    const shell = readFileSync(
+      resolve(process.cwd(), "src/puck/editor-shell.tsx"),
+      "utf8",
+    );
+
+    expect(shell).toContain("dnd={editorDndConfig}");
   });
 });

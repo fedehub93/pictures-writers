@@ -59,6 +59,15 @@ export function hasInlineRichTextField(config: ComponentConfig<any>): boolean {
  * and the same stylesheet gives the editor its pointer back, with no re-render
  * of the block.
  *
+ * The Puck rule this compensates for: the editor is Puck's own, mounted always,
+ * and its overlay portal declares `pointer-events: auto !important` on itself
+ * **and every descendant** (`packages/core/lib/overlay-portal/styles.css`). A
+ * lock that named only `[contenteditable]` would therefore lock nothing; the
+ * stylesheet rule names the descendants, which is also what makes the text the
+ * block's drag handle. An upgrade that changes that portal rule, or that stops
+ * the editor filling the block root, is the moment this interaction needs
+ * re-measuring — see ADR-0042 and the upgrade checklist in `docs/puck-canvas.md`.
+ *
  * The gestures that leave the mode are native listeners too: `Esc` and `Enter`
  * are free keys in Puck (it has no handler for either), and a press on the page
  * background is not a selection change in the canvas iframe.

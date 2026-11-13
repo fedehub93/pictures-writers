@@ -1,6 +1,6 @@
 # Inline text editing in the Puck text blocks
 
-**Status**: accepted
+**Status**: accepted (revised - drag and the caret corrected by [0042](./0042-text-editing-mode-and-the-canvas-lock.md))
 
 The text of a block used to be authored in the sidebar: `Text` was a plain `textarea` rendered
 with `whitespace-pre-line`, and `Heading` was already a rich text field but with
@@ -90,8 +90,11 @@ this decision does not reproduce.
 - **Reaching the value has a single path.** Without a sidebar field, the link and colour controls
   exist only in the block toolbar, so a regression there removes a capability rather than an
   alternative. The field's `visible` flag is the documented way back.
-- `inline: true`, the `dragRef` on the block root, and the style-variable pipeline are untouched:
-  the editor is a descendant of the root, so selection, drag and the overlay keep working on the
-  root element. ADR-0040 is referenced, not superseded.
+- `inline: true`, the `dragRef` on the block root, and the style-variable pipeline are untouched,
+  and selection and the overlay still resolve to the root. Drag did not: this ADR assumed a
+  descendant editor left it alone, but a press inside `[contenteditable]` is refused by dnd-kit, so
+  a text block could not be dragged at all until a lock and an explicit text editing mode were
+  added. ADR-0042 records the measurement and the correction; this ADR is not rewritten around it.
+  ADR-0040 is referenced, not superseded.
 - Terminology: `GLOSSARY.md` → "Inline text editing", "Content field", "Block toolbar", "Heading
   level", alongside "Block root" and "Live source of truth".
