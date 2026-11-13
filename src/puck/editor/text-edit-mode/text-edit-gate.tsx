@@ -11,7 +11,17 @@ import type {
   PuckContext,
 } from "@puckeditor/core";
 
-import { useEditorStore } from "../store/use-editor-store";
+import { useEditorStore } from "@/puck/editor/store/use-editor-store";
+
+import { useTextEditSelection } from "./selection-bridge";
+import {
+  CONTENT_EDITABLE_SELECTOR,
+  EDITOR_CHROME_SELECTOR,
+  keepsOwnEnterKey,
+  placeCaretAtEnd,
+  placeCaretAtPoint,
+  releaseEditor,
+} from "./text-editor-dom";
 
 /**
  * Marks the block root while its inline editor is armed.
@@ -23,9 +33,6 @@ import { useEditorStore } from "../store/use-editor-store";
  * it and the canvas markup at rest stays identical to the page's.
  */
 export const TEXT_EDIT_MODE_ATTRIBUTE = "data-text-editing";
-
-/** The element that accepts the caret inside a text block. */
-const CONTENT_EDITABLE_SELECTOR = '[contenteditable="true"]';
 
 /**
  * Does this block author its text on the canvas?
@@ -50,43 +57,6 @@ export function hasInlineRichTextField(config: ComponentConfig<any>): boolean {
 }
 
 /**
- * Put the caret where the gesture landed, then focus the editor.
- *
- * The point is resolved before the focus on purpose: `caretRangeFromPoint`
- * measures the point against the rendered text, and the focus preserves the
- * range it finds. A point that does not resolve inside the editor — the block's
- * padding, an empty block — falls back to the end of the text, so the mode
- * always opens with a live caret.
- */
-function focusEditorAtPoint(editor: HTMLElement, x: number, y: number) {
-  const doc = editor.ownerDocument;
-  const selection = doc.getSelection();
-
-  if (!selection) {
-    editor.focus();
-    return;
-  }
-
-  const range =
-    typeof doc.caretRangeFromPoint === "function"
-      ? doc.caretRangeFromPoint(x, y)
-      : null;
-
-  if (range && editor.contains(range.startContainer)) {
-    selection.removeAllRanges();
-    selection.addRange(range);
-  } else {
-    const end = doc.createRange();
-    end.selectNodeContents(editor);
-    end.collapse(false);
-    selection.removeAllRanges();
-    selection.addRange(end);
-  }
-
-  editor.focus();
-}
-
-/**
  * Lock a text block until it is deliberately opened.
  *
  * Applied to the editor configs only. The shared render and the public config
@@ -99,6 +69,10 @@ function focusEditorAtPoint(editor: HTMLElement, x: number, y: number) {
  * naming it in the editor store; the store's subscription flips the attribute
  * and the same stylesheet gives the editor its pointer back, with no re-render
  * of the block.
+ *
+ * The gestures that leave the mode are native listeners too: `Esc` and `Enter`
+ * are free keys in Puck (it has no handler for either), and a press on the page
+ * background is not a selection change in the canvas iframe.
  */
 export function withTextEditGate(
   config: ComponentConfig<any>,
@@ -142,6 +116,7 @@ function TextEditGate({
 }) {
   const id = blockProps.id;
   const dragRef = blockProps.puck.dragRef;
+  const selection = useTextEditSelection();
 
   const rootNodeRef = useRef<HTMLElement | null>(null);
   const dragRefRef = useRef(dragRef);
@@ -174,6 +149,9 @@ function TextEditGate({
   useEffect(() => {
     if (!root) return;
 
+    const getEditingBlockId = () =>
+      useEditorStore.getState().editingTextBlockId;
+
     const syncAttribute = (editingTextBlockId: string | null) => {
       if (editingTextBlockId === id) {
         root.setAttribute(TEXT_EDIT_MODE_ATTRIBUTE, "");
@@ -184,22 +162,31 @@ function TextEditGate({
 
     // A block mounted while another one is armed must be locked, and one
     // remounted by React must restore its own state from the store.
-    syncAttribute(useEditorStore.getState().editingTextBlockId);
+    syncAttribute(getEditingBlockId());
 
     // Subscribing instead of selecting a value keeps arming out of React's
     // render path: one block at a time, no re-render, no remount. A second
     // block arming removes the attribute from this one. The id is the only
     // state that matters here, so zoom and layout changes do not touch the DOM.
     const unsubscribe = useEditorStore.subscribe((state, previous) => {
-      if (state.editingTextBlockId !== previous.editingTextBlockId) {
-        syncAttribute(state.editingTextBlockId);
+      if (state.editingTextBlockId === previous.editingTextBlockId) return;
+
+      syncAttribute(state.editingTextBlockId);
+
+      // Exiting is not just dropping the attribute: Puck keeps the toolbar
+      // mounted while the editor is blurred without a related target.
+      if (
+        previous.editingTextBlockId === id &&
+        state.editingTextBlockId !== id
+      ) {
+        releaseEditor(root);
       }
     });
 
     const onDoubleClick = (event: MouseEvent) => {
       // Already armed: the double click belongs to the editor (it is how a
       // word is selected inside the text), not to the mode.
-      if (useEditorStore.getState().editingTextBlockId === id) return;
+      if (getEditingBlockId() === id) return;
 
       useEditorStore.getState().enterTextEditMode(id);
 
@@ -207,17 +194,106 @@ function TextEditGate({
         CONTENT_EDITABLE_SELECTOR,
       );
 
-      if (editor) focusEditorAtPoint(editor, event.clientX, event.clientY);
+      if (editor) placeCaretAtPoint(editor, event.clientX, event.clientY);
+    };
+
+    /**
+     * A press on another block, on the page background or on another text
+     * block ends the mode. Selection changes reach us through the bridge; the
+     * canvas background does not change the selection in the iframe, so the
+     * press is observed directly. The action bar and the formatting panels are
+     * exempt: they belong to the armed block, which is the selected one.
+     */
+    const onPointerDown = (event: Event) => {
+      if (getEditingBlockId() !== id) return;
+
+      const target = event.target as Element | null;
+
+      if (!target || typeof target.closest !== "function") return;
+      if (root.contains(target)) return;
+      if (target.closest(EDITOR_CHROME_SELECTOR)) return;
+
+      useEditorStore.getState().exitTextEditMode();
+    };
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      const { editingTextBlockId, enterTextEditMode, exitTextEditMode } =
+        useEditorStore.getState();
+
+      if (event.key === "Escape") {
+        // Puck has no Escape handler, so both steps are ours: the first
+        // leaves the mode and keeps the block selected, the second deselects.
+        if (editingTextBlockId === id) {
+          exitTextEditMode();
+          return;
+        }
+
+        if (editingTextBlockId !== null) return;
+
+        if (selection?.getSelectedBlockId() === id) selection.deselect();
+
+        return;
+      }
+
+      if (event.key !== "Enter") return;
+
+      // Opening the mode is for a selected but locked block. With the caret
+      // in the text the key belongs to the editor, and a modified or handled
+      // Enter belongs to whatever produced it.
+      if (event.defaultPrevented) return;
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) {
+        return;
+      }
+
+      if (editingTextBlockId !== null) return;
+      if (keepsOwnEnterKey(event.target)) return;
+      if (selection?.getSelectedBlockId() !== id) return;
+
+      const editor = root.querySelector<HTMLElement>(
+        CONTENT_EDITABLE_SELECTOR,
+      );
+
+      enterTextEditMode(id);
+
+      if (editor) placeCaretAtEnd(editor);
+
+      event.preventDefault();
     };
 
     root.addEventListener("dblclick", onDoubleClick);
 
+    const doc = root.ownerDocument;
+    doc.addEventListener("pointerdown", onPointerDown);
+
+    // The canvas is an iframe, and keyboard events do not cross it: the same
+    // handler goes on the host document so `Esc` also ends the mode after the
+    // author has moved to the properties panel or the header. `Enter` is
+    // guarded from every control that owns its own Enter key.
+    const keyDocs = doc === document ? [doc] : [doc, document];
+
+    keyDocs.forEach((target) => target.addEventListener("keydown", onKeyDown));
+
+    // The block learns that the selection moved away without re-rendering.
+    const unsubscribeSelection = selection?.subscribe(() => {
+      if (
+        useEditorStore.getState().editingTextBlockId === id &&
+        selection.getSelectedBlockId() !== id
+      ) {
+        useEditorStore.getState().exitTextEditMode();
+      }
+    });
+
     return () => {
       root.removeEventListener("dblclick", onDoubleClick);
+      doc.removeEventListener("pointerdown", onPointerDown);
+      keyDocs.forEach((target) =>
+        target.removeEventListener("keydown", onKeyDown),
+      );
+      unsubscribeSelection?.();
       unsubscribe();
       root.removeAttribute(TEXT_EDIT_MODE_ATTRIBUTE);
     };
-  }, [root, id]);
+  }, [root, id, selection]);
 
   return (
     <Render
@@ -256,4 +332,3 @@ export function gateTextBlocks(
 export function gateEditorConfig(config: Config): Config {
   return { ...config, components: gateTextBlocks(config.components) };
 }
-

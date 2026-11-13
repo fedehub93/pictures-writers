@@ -8,6 +8,7 @@ import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 
 import { getPreviewToggleState } from "../../lib/preview-mode";
+import { useEditorStore } from "../../store/use-editor-store";
 
 const usePuck = createUsePuck<Config>();
 
@@ -21,6 +22,7 @@ const usePuck = createUsePuck<Config>();
 export const PreviewToggle = () => {
   const previewMode = usePuck((state) => state.appState.ui.previewMode);
   const dispatch = usePuck((state) => state.dispatch);
+  const exitTextEditMode = useEditorStore((state) => state.exitTextEditMode);
   const state = getPreviewToggleState(previewMode);
 
   return (
@@ -33,9 +35,15 @@ export const PreviewToggle = () => {
       )}
       aria-pressed={state.active}
       title={state.title}
-      onClick={() =>
-        dispatch({ type: "setUi", ui: { previewMode: state.nextMode } })
-      }
+      onClick={() => {
+        // The interactive page replaces the canvas, and Puck keeps the inline
+        // editor's formatting toolbar mounted through the swap: end the mode
+        // here, while the block and its editor still exist, so the toolbar is
+        // handed back instead of re-mounting on the way into edit mode.
+        exitTextEditMode();
+
+        dispatch({ type: "setUi", ui: { previewMode: state.nextMode } });
+      }}
     >
       {state.active ? (
         <EyeOffIcon className="size-4" />
