@@ -17,6 +17,8 @@
  * Steps are an array of objects, run in order:
  *
  *   { "action": "click", "target": "h2", "text": "Probe heading" }
+ *   { "action": "doubleClick", "target": "h2", "text": "Probe heading" }
+ *   { "action": "drag", "target": "h2", "dx": 0, "dy": 400 }
  *   { "action": "type", "text": "Hello" }
  *   { "action": "read", "target": ".ProseMirror" }
  *   { "action": "exists", "target": "[data-puck-rte]" }
@@ -40,7 +42,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 
-import { withSession } from "./browser-probe.mjs";
+import { modifierMask, withSession } from "./browser-probe.mjs";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -49,9 +51,6 @@ const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]", "::1"]);
 const DEFAULT_FRAME = "preview-frame";
 const DEFAULT_TIMEOUT_MS = 30_000;
 const DEFAULT_SETTLE_MS = 500;
-
-/** CDP modifier bitmask, for `press`. */
-const MODIFIER_BITS = { alt: 1, ctrl: 2, meta: 4, shift: 8 };
 
 const NAMED_KEYS = {
   Enter: 13,
@@ -173,6 +172,46 @@ async function readElement(session, { target, frame }) {
 }
 
 /**
+ * What a press at this canvas point would land on.
+ *
+ * A drag that does nothing is almost always a press that missed the block root: dnd-kit
+ * refuses targets inside `[contenteditable]`, so a press on the inline editor selects
+ * and places the caret but never starts a drag. Reporting the hit target turns that
+ * silent failure into a fact.
+ */
+async function describePoint(session, { x, y }, frame) {
+  return session.evaluate(`(() => {
+    const root = ${rootExpression(frame)};
+    if (!root) return { found: false, reason: "frame-missing" };
+    const element = root.elementFromPoint(${x}, ${y});
+    if (!element) return { found: false, reason: "no-element" };
+    return {
+      found: true,
+      tag: element.tagName.toLowerCase(),
+      insideEditor: Boolean(element.closest(".ProseMirror")),
+      insideOverlayPortal: Boolean(element.closest("[data-puck-overlay-portal]")),
+    };
+  })()`);
+}
+
+/** Where a double click left the caret, the second half of what the gesture must prove. */
+async function readCaret(session, frame) {
+  return session.evaluate(`(() => {
+    const root = ${rootExpression(frame)};
+    const active = root?.activeElement ?? null;
+    const selection = root?.getSelection?.() ?? null;
+    const anchored = selection?.anchorNode ?? null;
+    return {
+      activeTag: active?.tagName?.toLowerCase() ?? null,
+      contenteditable: active?.getAttribute?.("contenteditable") ?? null,
+      collapsed: selection ? selection.isCollapsed : null,
+      anchorOffset: selection ? selection.anchorOffset : null,
+      selectionInsideActive: Boolean(active && anchored && active.contains(anchored)),
+    };
+  })()`);
+}
+
+/**
  * Put the caret in the inline editor.
  *
  * A click on a block selects it and the editor takes the caret, but automation clicks can
@@ -231,6 +270,65 @@ async function runSteps(session, steps, frame) {
           });
           break;
         }
+        case "doubleClick": {
+          if (!step.target) throw new Error("doubleClick needs a target");
+          const target = await session.waitFor({ selector: step.target, text: step.text, frame });
+          const recorded = await session.instrument({
+            selector: step.target,
+            text: step.text,
+            frame,
+            events: ["dblclick"],
+          });
+
+          if (!recorded) throw new Error("the dblclick recorder did not attach");
+
+          await session.doubleClickAt({
+            x: target.x,
+            y: target.y,
+            button: step.button ?? "left",
+            modifiers: step.modifiers ?? [],
+          });
+          await session.wait(settle);
+
+          const state = await session.readState(frame);
+
+          results.push({
+            index,
+            action: "doubleClick",
+            target: { selector: step.target, text: step.text ?? null, tag: target.tag },
+            event: state.event,
+            caret: await readCaret(session, frame),
+          });
+          break;
+        }
+        case "drag": {
+          const from = await session.canvasPoint({ ...step, frame });
+          const hit = await describePoint(session, from, frame);
+          const result = await session.dragBy({
+            x: from.x,
+            y: from.y,
+            frame,
+            dx: step.dx ?? 0,
+            dy: step.dy ?? 0,
+          });
+          await session.wait(settle);
+
+          results.push({
+            index,
+            action: "drag",
+            from: {
+              selector: step.target ?? null,
+              text: step.text ?? null,
+              canvas: { x: from.x, y: from.y },
+              screen: from.screen,
+              hit,
+            },
+            to: { x: from.x + result.distance.dx, y: from.y + result.distance.dy },
+            distance: result.distance,
+            scale: result.scale,
+          });
+          break;
+        }
         case "type": {
           if (typeof step.text !== "string") throw new Error("type needs text");
           await session.send("Input.insertText", { text: step.text });
@@ -267,14 +365,7 @@ async function runSteps(session, steps, frame) {
         case "press": {
           if (typeof step.key !== "string") throw new Error("press needs a key");
           const modifiers = step.modifiers ?? [];
-
-          for (const name of modifiers) {
-            if (!(name in MODIFIER_BITS)) {
-              throw new Error(`Unknown modifier "${name}". Known: ${Object.keys(MODIFIER_BITS).join(", ")}.`);
-            }
-          }
-
-          const mask = modifiers.reduce((total, name) => total | MODIFIER_BITS[name], 0);
+          const mask = modifierMask(modifiers);
           const info = keyInfo(step.key);
 
           for (const type of ["keyDown", "keyUp"]) {

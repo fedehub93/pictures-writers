@@ -11,6 +11,10 @@
  *   node scripts/browser-probe.mjs --url <builder> --frame preview-frame --target a --text Blog
  *   node scripts/browser-probe.mjs --url <url> --target a --text Blog --button middle
  *
+ * The CLI runs one click or one key press. A drag or a double click needs several events
+ * on one page, so they live on the session that `withSession` hands to a multi-step flow:
+ * `dragBy` takes canvas pixels, `doubleClickAt` produces a real `dblclick`.
+ *
  * See docs/agents/browser-probe.md.
  */
 
@@ -25,6 +29,14 @@ const DEFAULT_PORT = 0;
 const DEFAULT_TIMEOUT_MS = 30_000;
 const DEFAULT_SETTLE_MS = 1_500;
 const SEND_TIMEOUT_MS = 30_000;
+
+/** Gap between the two clicks of a double click, well inside the browser's interval. */
+const DOUBLE_CLICK_GAP_MS = 30;
+
+/** Press → move → release defaults: the hold outlasts dnd-kit's `Delay(200)`. */
+const DRAG_HOLD_MS = 250;
+const DRAG_STEPS = 6;
+const DRAG_STEP_MS = 40;
 
 const CHROME_PATHS = [
   process.env.CHROME_PATH,
@@ -265,11 +277,30 @@ async function findTarget(send, options) {
   return evaluate(send, expression);
 }
 
+/** Poll until the selector matches, or throw with the last thing it saw. */
+async function waitForTarget(send, options, timeout) {
+  const deadline = Date.now() + timeout;
+  let target = { found: false, reason: "not-started" };
+
+  while (Date.now() < deadline) {
+    target = await findTarget(send, options);
+
+    if (target.found) return target;
+
+    await sleep(300);
+  }
+
+  throw new Error(
+    `Target not found: ${options.selector}${options.text ? ` with text "${options.text}"` : ""} (${JSON.stringify(target)})`,
+  );
+}
+
 /**
- * Record the event the element acts on. `defaultPrevented` is read after the action, so
- * every handler that ran — capture, the block root's own listener, bubble — has had its say.
+ * Record the last event of the given types the element acts on. `defaultPrevented` is read
+ * after the action, so every handler that ran — capture, the block root's own listener,
+ * bubble — has had its say.
  */
-async function instrument(send, { selector, text, frame, focus }) {
+async function instrument(send, { selector, text, frame, focus, events = ["click", "auxclick"] }) {
   const expression = `(() => {
     const root = ${rootExpression(frame)};
     if (!root) return false;
@@ -285,8 +316,9 @@ async function instrument(send, { selector, text, frame, focus }) {
     const record = (event) => {
       scope.__probe.event = event;
     };
-    element.addEventListener("click", record, true);
-    element.addEventListener("auxclick", record, true);
+    for (const type of ${JSON.stringify(events)}) {
+      element.addEventListener(type, record, true);
+    }
     ${focus ? "element.focus();" : ""}
     return true;
   })()`;
@@ -303,7 +335,15 @@ async function readState(send, frame) {
       top: location.href,
       frame: root?.location?.href ?? null,
       event: event
-        ? { type: event.type, prevented: event.defaultPrevented, button: event.button }
+        ? {
+            type: event.type,
+            prevented: event.defaultPrevented,
+            button: event.button,
+            detail: event.detail,
+            target: event.target?.tagName?.toLowerCase() ?? null,
+            connected: Boolean(event.target?.isConnected),
+            inContenteditable: Boolean(event.target?.closest?.("[contenteditable]")),
+          }
         : null,
     };
   })()`;
@@ -311,39 +351,198 @@ async function readState(send, frame) {
   return evaluate(send, expression);
 }
 
-function modifierMask(modifiers) {
+/** CDP modifier bitmask, rejecting a name CDP would silently ignore. */
+export function modifierMask(modifiers) {
+  for (const name of modifiers) {
+    if (!(name in MODIFIER_BITS)) {
+      throw new Error(
+        `Unknown modifier "${name}". Known: ${Object.keys(MODIFIER_BITS).join(", ")}`,
+      );
+    }
+  }
+
   return modifiers.reduce((mask, name) => mask | MODIFIER_BITS[name], 0);
 }
 
-async function clickAt(send, { x, y, button, modifiers }) {
-  const mask = modifierMask(modifiers);
-
-  // `element.click()` would not produce an `auxclick`, so the probe sends real input
-  // events at the element's coordinates instead.
+async function moveMouse(send, { x, y, button = "left", buttons = 0, modifiers = [] }) {
   await send("Input.dispatchMouseEvent", {
     type: "mouseMoved",
     x,
     y,
-    modifiers: mask,
+    button: buttons ? button : "none",
+    buttons,
+    modifiers: modifierMask(modifiers),
   });
+}
+
+async function pressMouse(send, { x, y, button = "left", clickCount = 1, modifiers = [] }) {
   await send("Input.dispatchMouseEvent", {
     type: "mousePressed",
     x,
     y,
     button,
     buttons: BUTTON_BITS[button],
-    modifiers: mask,
-    clickCount: 1,
+    modifiers: modifierMask(modifiers),
+    clickCount,
   });
+}
+
+async function releaseMouse(send, { x, y, button = "left", clickCount = 1, modifiers = [] }) {
   await send("Input.dispatchMouseEvent", {
     type: "mouseReleased",
     x,
     y,
     button,
     buttons: 0,
-    modifiers: mask,
-    clickCount: 1,
+    modifiers: modifierMask(modifiers),
+    clickCount,
   });
+}
+
+async function clickAt(send, { x, y, button = "left", modifiers = [] }) {
+  // `element.click()` would not produce an `auxclick`, so the probe sends real input
+  // events at the element's coordinates instead.
+  await moveMouse(send, { x, y, modifiers });
+  await pressMouse(send, { x, y, button, modifiers });
+  await releaseMouse(send, { x, y, button, modifiers });
+}
+
+/**
+ * Two press/release pairs at the same point, with `clickCount` 1 and then 2.
+ *
+ * The browser synthesises `dblclick` itself when the second press lands on the same
+ * element within the double-click interval: a single `element.click()` twice, or two
+ * presses that both report `clickCount: 1`, never produce one.
+ */
+async function doubleClickAt(send, { x, y, button = "left", modifiers = [] }) {
+  await moveMouse(send, { x, y, modifiers });
+
+  for (const clickCount of [1, 2]) {
+    await pressMouse(send, { x, y, button, clickCount, modifiers });
+    await releaseMouse(send, { x, y, button, clickCount, modifiers });
+
+    if (clickCount === 1) await sleep(DOUBLE_CLICK_GAP_MS);
+  }
+}
+
+/**
+ * Press, hold, move with the button down, release.
+ *
+ * The hold matters: Puck configures dnd-kit's `PointerSensor` with
+ * `Delay(200) + Distance(5)`, so a press that moves straight away is a click with a
+ * wobble, not a drag. Coordinates and distances are screen pixels here; `dragInCanvas`
+ * is the caller-facing form, which takes canvas pixels.
+ */
+async function dragPointer(send, { start, dx, dy, button = "left", modifiers = [] }) {
+  await moveMouse(send, { x: start.x, y: start.y, modifiers });
+  await pressMouse(send, { x: start.x, y: start.y, button, modifiers });
+  await sleep(DRAG_HOLD_MS);
+
+  for (let step = 1; step <= DRAG_STEPS; step += 1) {
+    await moveMouse(send, {
+      x: start.x + (dx * step) / DRAG_STEPS,
+      y: start.y + (dy * step) / DRAG_STEPS,
+      button,
+      buttons: BUTTON_BITS[button],
+      modifiers,
+    });
+    await sleep(DRAG_STEP_MS);
+  }
+
+  const end = { x: start.x + dx, y: start.y + dy };
+  await releaseMouse(send, { x: end.x, y: end.y, button, modifiers });
+
+  return { start, end };
+}
+
+/**
+ * Where the canvas iframe sits on the screen and how far its CSS pixels are scaled.
+ *
+ * The builder fits the canvas to the preview pane, so a distance measured inside the
+ * frame is smaller on screen. `scale` is the factor between the two.
+ */
+async function frameTransform(send, frame) {
+  if (!frame) return { found: true, left: 0, top: 0, scale: 1 };
+
+  return evaluate(
+    send,
+    `(() => {
+      const host = document.getElementById(${JSON.stringify(frame)});
+      if (!host) return { found: false, left: 0, top: 0, scale: 1 };
+      const rect = host.getBoundingClientRect();
+      return {
+        found: true,
+        left: rect.left,
+        top: rect.top,
+        scale: host.clientWidth ? rect.width / host.clientWidth : 1,
+      };
+    })()`,
+  );
+}
+
+/**
+ * A point inside the canvas in both coordinate systems: canvas pixels, which is what the
+ * iframe's own rulers use, and screen pixels, which is what input events need.
+ *
+ * `target` resolves to the element's centre through `waitFor`; otherwise `x` and `y` are
+ * already canvas pixels. `scale` is the builder's zoom, which maps one to the other.
+ */
+async function canvasPoint(send, { target, text, x, y, frame }, waitFor) {
+  const transform = await frameTransform(send, frame);
+
+  if (!transform.found) {
+    throw new Error(`frame #${frame} is not in the document`);
+  }
+
+  if (target) {
+    const found = await waitFor({ selector: target, text, frame });
+
+    return {
+      x: (found.x - transform.left) / transform.scale,
+      y: (found.y - transform.top) / transform.scale,
+      screen: { x: found.x, y: found.y },
+      scale: transform.scale,
+    };
+  }
+
+  if (!Number.isFinite(x) || !Number.isFinite(y)) {
+    throw new Error("a canvas point needs a target, or x and y");
+  }
+
+  return {
+    x,
+    y,
+    screen: {
+      x: transform.left + x * transform.scale,
+      y: transform.top + y * transform.scale,
+    },
+    scale: transform.scale,
+  };
+}
+
+/**
+ * Drag from an element or from a point inside the frame by a canvas-pixel offset.
+ *
+ * `dx` and `dy` are canvas pixels, not screen pixels: at 50% zoom a 100px canvas move
+ * is a 50px pointer move, and a caller that forgot the zoom would drag half as far as
+ * it asked. The returned `scale` records the conversion, so a run can be checked
+ * instead of trusted.
+ */
+async function dragInCanvas(send, options, waitFor) {
+  const { dx = 0, dy = 0 } = options;
+  const from = await canvasPoint(send, options, waitFor);
+
+  if (!Number.isFinite(dx) || !Number.isFinite(dy) || (dx === 0 && dy === 0)) {
+    throw new Error("drag needs a distance: dx and/or dy in canvas pixels");
+  }
+
+  const result = await dragPointer(send, {
+    start: from.screen,
+    dx: dx * from.scale,
+    dy: dy * from.scale,
+  });
+
+  return { ...result, scale: from.scale, distance: { dx, dy } };
 }
 
 async function pressKey(send, key) {
@@ -404,31 +603,20 @@ export async function withSession(
 
     await send("Page.navigate", { url });
 
+    const waitFor = (options) => waitForTarget(send, options, timeout);
+
     const session = {
       send,
       events,
       targetsBefore,
       evaluate: (expression) => evaluate(send, expression),
       findTarget: (options) => findTarget(send, options),
-      /** Poll until the selector matches, or throw with the last thing it saw. */
-      waitFor: async (options) => {
-        const deadline = Date.now() + timeout;
-        let target = { found: false, reason: "not-started" };
-
-        while (Date.now() < deadline) {
-          target = await findTarget(send, options);
-
-          if (target.found) return target;
-
-          await sleep(300);
-        }
-
-        throw new Error(
-          `Target not found: ${options.selector}${options.text ? ` with text "${options.text}"` : ""} (${JSON.stringify(target)})`,
-        );
-      },
+      waitFor,
       instrument: (options) => instrument(send, options),
       clickAt: (options) => clickAt(send, options),
+      doubleClickAt: (options) => doubleClickAt(send, options),
+      canvasPoint: (options) => canvasPoint(send, options, waitFor),
+      dragBy: (options) => dragInCanvas(send, options, waitFor),
       pressKey: (key) => pressKey(send, key),
       readState: (frame) => readState(send, frame),
       wait: (ms) => sleep(ms),
@@ -515,12 +703,7 @@ export async function runProbe({
 }
 
 function parseModifier(name) {
-  if (!(name in MODIFIER_BITS)) {
-    throw new Error(
-      `Unknown modifier "${name}". Known: ${Object.keys(MODIFIER_BITS).join(", ")}`,
-    );
-  }
-
+  modifierMask([name]);
   return name;
 }
 

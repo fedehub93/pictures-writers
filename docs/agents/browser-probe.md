@@ -2,7 +2,8 @@
 
 `scripts/browser-probe.mjs` opens a URL in headless Chrome, performs one click or key press, and
 prints what the browser actually did. Reach for it when the behaviour depends on the browser:
-navigation, default actions, middle and modifier clicks, the Puck canvas iframe.
+navigation, default actions, middle and modifier clicks, the Puck canvas iframe. Its session also
+drives drags and double clicks, which a single-action CLI run cannot express.
 
 Unit tests run in happy-dom, which has no navigation and no Puck listener, so a passing test can
 sit on top of a broken interaction. The probe is the check that settles it.
@@ -68,7 +69,8 @@ Exit code is `0` when the target was found and the action ran, `1` otherwise.
   `element.click()`, because a middle click only produces an `auxclick` through real input. The
   coordinates are mapped through the canvas iframe's CSS transform.
 - `runProbe` is exported: import it for a flow that needs more than one action, or import
-  `withSession` to keep one browser across several actions.
+  `withSession` to keep one browser across several actions. The session also exposes
+  `doubleClickAt`, and `canvasPoint`/`dragBy`, which take canvas pixels and convert them.
 - The canvas itself is described in `docs/puck-canvas.md`.
 
 ## The agent environment
@@ -121,6 +123,8 @@ exits `1` with `step N (action): …`.
 | Action | Fields | Reports |
 | --- | --- | --- |
 | `click` | `target`, optional `text`, `button`, `modifiers` | the matched tag and text |
+| `doubleClick` | `target`, optional `text`, `button`, `modifiers` | the matched tag, the `dblclick` that fired, and where the caret landed |
+| `drag` | `target` (or `x`/`y` canvas coordinates), optional `text`, `dx`, `dy` | `from` (canvas point, screen point, element under it), `to` (canvas), `distance`, `scale` |
 | `focus` | optional `target` (default `.ProseMirror`), `attempts` | `{ attempts, focused, tag }` |
 | `type` | `text` | — (types at the caret, via `Input.insertText`) |
 | `press` | `key`, optional `modifiers` | — (letters, digits, `Enter`, `Tab`, `Space`, arrows, `Escape`, `Backspace`) |
@@ -150,3 +154,38 @@ Notes that save a run:
 - `--login-only` prints the cookie name the sign-in produced and nothing else, which is what
   separates "the server is down" from a 403 (`Missing or null Origin`) or a 400
   (`Invalid email`).
+
+### Dragging and double-clicking
+
+These two gestures answer questions happy-dom cannot: whether a press starts a drag, and whether
+a double click reaches the block at all. They stay a tool a human or an agent launches and reads,
+not a test in CI. Both are steps of `builder-probe` because both need several events on one page.
+
+```json
+[
+  { "action": "drag", "target": "h2", "dx": 0, "dy": 400 },
+  {
+    "action": "evaluate",
+    "expression": "Array.from(document.getElementById('preview-frame').contentDocument.querySelectorAll('[data-puck-component]')).map((el) => el.textContent.trim())"
+  },
+  { "action": "doubleClick", "target": "h2" }
+]
+```
+
+- **`drag`** presses the element's centre (or the `x`/`y` point inside the frame), holds for
+  250 ms, moves in six steps with the button down, then releases. The hold is what makes it a
+  drag: Puck activates dnd-kit's `PointerSensor` with `Delay(200) + Distance(5)`, so a press
+  that moves straight away is a click with a wobble. `dx` and `dy` are **canvas pixels**, not
+  screen pixels: the builder scales the iframe to fit the preview pane, and the step multiplies
+  them by that scale (reported as `scale`) before sending pointer events. `from.hit` names what
+  the press landed on — a press inside `.ProseMirror` never drags, because dnd-kit refuses
+  targets inside `[contenteditable]`, and that is the fact a failed drag otherwise hides.
+- **`doubleClick`** sends two press/release pairs at the same point, with `clickCount` 1 and
+  then 2. That is what makes the browser synthesise a real `dblclick` with `detail: 2`; two
+  `click` steps never do. The step reports `event` (`detail`, `target`, `connected`, `prevented`,
+  `inContenteditable`) and `caret` (`activeTag`, `contenteditable`, `anchorOffset`,
+  `selectionInsideActive`), so "the double click reaches the block and the caret is in the text"
+  is a single line of JSON. On a cold dev server the inline editor's lazy chunk can mount under
+  the gesture: the event still fires but `connected` is `false` and the caret stays on `body` —
+  the DOM the press landed on was replaced. A `wait` step before the double click is the remedy,
+  the same reason `focus` retries.
