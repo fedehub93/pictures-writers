@@ -71,6 +71,40 @@ export function placeCaretAtEnd(editor: HTMLElement) {
 }
 
 /**
+ * Put the caret at the end of a block's text.
+ *
+ * The single place that opens the mode without a point to read: `Enter` on the
+ * selected block and the action bar's button both land here, so they open on
+ * the same caret.
+ */
+export function focusTextEditor(root: HTMLElement) {
+  const editor = root.querySelector<HTMLElement>(CONTENT_EDITABLE_SELECTOR);
+
+  if (editor) placeCaretAtEnd(editor);
+}
+
+/**
+ * Find a block's root in a document.
+ *
+ * The canvas tags the node it selects, measures and drags with the block's id,
+ * and the action bar is portalled into that same document: this is how a
+ * control in the chrome reaches the block it belongs to. The attribute is read
+ * by value rather than by selector, so an id can never leak into the query.
+ */
+export function findBlockRoot(
+  doc: Document,
+  blockId: string,
+): HTMLElement | null {
+  const roots = doc.querySelectorAll<HTMLElement>("[data-puck-component]");
+
+  for (const root of roots) {
+    if (root.getAttribute("data-puck-component") === blockId) return root;
+  }
+
+  return null;
+}
+
+/**
  * Collapse a selection that is inside the editor.
  *
  * Leaving the mode hides the toolbar, and a highlighted word with no toolbar

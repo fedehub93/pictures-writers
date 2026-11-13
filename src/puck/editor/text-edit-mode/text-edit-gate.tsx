@@ -13,12 +13,13 @@ import type {
 
 import { useEditorStore } from "@/puck/editor/store/use-editor-store";
 
+import { contentFieldPath } from "./content-field";
 import { useTextEditSelection } from "./selection-bridge";
 import {
   CONTENT_EDITABLE_SELECTOR,
   EDITOR_CHROME_SELECTOR,
+  focusTextEditor,
   keepsOwnEnterKey,
-  placeCaretAtEnd,
   placeCaretAtPoint,
   releaseEditor,
 } from "./text-editor-dom";
@@ -37,23 +38,11 @@ export const TEXT_EDIT_MODE_ATTRIBUTE = "data-text-editing";
 /**
  * Does this block author its text on the canvas?
  *
- * The test is the field descriptor, not a list of block names: every block
- * that mounts an inline rich text field gets the gate, so a future text block
- * inherits the behaviour without being registered here.
+ * The descriptor rule lives in `content-field.ts`, which the action bar reads
+ * too: the gate and the button must not disagree about what a text block is.
  */
 export function hasInlineRichTextField(config: ComponentConfig<any>): boolean {
-  return Object.values(config.fields ?? {}).some((field) => {
-    const candidate = field as {
-      type?: string;
-      contentEditable?: boolean;
-    } | null;
-
-    // `contentEditable: false` is Puck's non-editable richtext (it renders a
-    // static tree instead of the editor), so there is no mode to open.
-    return (
-      candidate?.type === "richtext" && candidate.contentEditable !== false
-    );
-  });
+  return contentFieldPath(config) !== null;
 }
 
 /**
@@ -249,13 +238,8 @@ function TextEditGate({
       if (keepsOwnEnterKey(event.target)) return;
       if (selection?.getSelectedBlockId() !== id) return;
 
-      const editor = root.querySelector<HTMLElement>(
-        CONTENT_EDITABLE_SELECTOR,
-      );
-
       enterTextEditMode(id);
-
-      if (editor) placeCaretAtEnd(editor);
+      focusTextEditor(root);
 
       event.preventDefault();
     };

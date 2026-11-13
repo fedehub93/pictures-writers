@@ -819,3 +819,32 @@
 [data-puck-component][data-text-editing] [data-puck-overlay-portal] * {
   pointer-events: auto !important;
 }
+
+/* --- 8. TEXT EDIT ACTION (canvas only) ---
+   The action bar's Edit text / Done button is the only action that carries a
+   word instead of an icon, so it needs the label's size to keep the bar's
+   height; everything else about it is Puck's own `ActionBar.Action`. The
+   attribute is written by the editor override and exists nowhere else, so the
+   rule is inert bytes in the published bundle. */
+[data-text-edit-action] {
+  font-family: inherit;
+  font-size: var(--puck-actionbar-font-size, var(--puck-font-size-xxxs, 11px));
+  font-weight: var(--puck-font-weight-medium, 500);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Puck mounts the inline formatting toolbar while its richtext state names the
+   block, and that state outlives the block: undo followed by redo brings a text
+   block back with the toolbar on it while the block is locked. The bar scopes
+   the toolbar to the mode with an attribute on a wrapper, and the wrapper is
+   `display: contents` so Puck's actions stay the group's own flex children.
+   `data-puck-rte-menu` is the toolbar root's own marker, the one Puck reads on
+   blur to keep it mounted while a panel takes the focus. */
+.puck-text-edit-actions {
+  display: contents;
+}
+
+.puck-text-edit-actions:not([data-text-edit-armed]) [data-puck-rte-menu] {
+  display: none;
+}
