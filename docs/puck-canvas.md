@@ -132,10 +132,11 @@ only pin structurally; a failed step means the upgrade is not acceptable yet. Op
 - [ ] A cleared block publishes nothing visible: zero height, no hint, no reserved line.
 
 When the docs do not answer an internals question, read Puck's source at the installed version
-rather than the bundled chunk:
+rather than the bundled chunk. The clone lives at `.reference/puck` (v0.24.0, gitignored): grep it
+there. `node_modules/@puckeditor/core/dist` is build output — read it only to confirm what the
+installed bundle contains.
 
 ```
+# once, if the clone is missing
 git clone --depth 1 --branch v0.24.0 https://github.com/measuredco/puck .reference/puck
 ```
-
-`.reference/` is gitignored; `dist/index.js` is a single minified chunk.
