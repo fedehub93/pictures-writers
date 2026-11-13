@@ -1,0 +1,1369 @@
+{
+  "url": "http://localhost:3010/admin/pages/0a6ab578-81c9-4bfa-8a63-c575b8da3c4f/builder/",
+  "answers": [
+    {
+      "question": 1,
+      "css": "[data-puck-component] [data-puck-overlay-portal] [contenteditable=\"true\"] { pointer-events: none !important }",
+      "strictCss": "[data-puck-component] [data-puck-overlay-portal], [data-puck-component] [data-puck-overlay-portal] * { pointer-events: none !important }",
+      "lockTextPress": {
+        "label": "q1-lock-text",
+        "point": {
+          "x": 800,
+          "y": 259.2622435831999
+        },
+        "scale": 0.7579103071092945,
+        "hit": {
+          "tag": "p",
+          "className": "",
+          "insideEditor": true,
+          "insideOverlayPortal": true,
+          "isBlockRoot": false,
+          "matchesInteractiveSelector": true,
+          "editorPointerEvents": "none",
+          "editorChildPointerEvents": "auto"
+        },
+        "during": {
+          "entryDragging": false,
+          "dndDragging": 0,
+          "dndPlaceholders": 0,
+          "linePlaceholders": 0,
+          "dropzonesEnabled": 1,
+          "overlays": 0
+        },
+        "after": {
+          "order": [
+            "Probe heading",
+            "Probe paragraph"
+          ],
+          "beforeOrder": [
+            "Probe heading",
+            "Probe paragraph"
+          ],
+          "entryDragging": false,
+          "activeElement": {
+            "tag": "div",
+            "className": "tiptap ProseMirror ProseMirror-focused",
+            "contenteditable": "true",
+            "insideEditor": true
+          }
+        },
+        "screenshots": {
+          "shotBefore": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q1-lock-text-before.png",
+          "shotDuring": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q1-lock-text-during.png",
+          "shotAfter": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q1-lock-text-after.png"
+        }
+      },
+      "unlockedTextPress": {
+        "label": "q1-unlocked-text",
+        "point": {
+          "x": 800,
+          "y": 259.2622435831999
+        },
+        "scale": 0.7579103071092945,
+        "hit": {
+          "tag": "p",
+          "className": "",
+          "insideEditor": true,
+          "insideOverlayPortal": true,
+          "isBlockRoot": false,
+          "matchesInteractiveSelector": true,
+          "editorPointerEvents": "auto",
+          "editorChildPointerEvents": "auto"
+        },
+        "during": {
+          "entryDragging": false,
+          "dndDragging": 0,
+          "dndPlaceholders": 0,
+          "linePlaceholders": 0,
+          "dropzonesEnabled": 1,
+          "overlays": 0
+        },
+        "after": {
+          "order": [
+            "Probe heading",
+            "Probe paragraph"
+          ],
+          "beforeOrder": [
+            "Probe heading",
+            "Probe paragraph"
+          ],
+          "entryDragging": false,
+          "activeElement": {
+            "tag": "div",
+            "className": "tiptap ProseMirror ProseMirror-focused",
+            "contenteditable": "true",
+            "insideEditor": true
+          }
+        },
+        "screenshots": {
+          "shotBefore": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q1-unlocked-text-before.png",
+          "shotDuring": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q1-unlocked-text-during.png",
+          "shotAfter": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q1-unlocked-text-after.png"
+        }
+      },
+      "strictLockPress": {
+        "label": "q1-strict-lock",
+        "point": {
+          "x": 800,
+          "y": 259.2622435831999
+        },
+        "scale": 0.7579103071092945,
+        "hit": {
+          "tag": "h2",
+          "className": "block puck-dim puck-typo puck-block-root puck-rich-text",
+          "insideEditor": false,
+          "insideOverlayPortal": false,
+          "isBlockRoot": true,
+          "matchesInteractiveSelector": false,
+          "editorPointerEvents": "none",
+          "editorChildPointerEvents": "none"
+        },
+        "during": {
+          "entryDragging": true,
+          "dndDragging": 1,
+          "dndPlaceholders": 1,
+          "linePlaceholders": 0,
+          "dropzonesEnabled": 1,
+          "overlays": 0
+        },
+        "after": {
+          "order": [
+            "Probe paragraph",
+            "Probe heading"
+          ],
+          "beforeOrder": [
+            "Probe heading",
+            "Probe paragraph"
+          ],
+          "entryDragging": false,
+          "activeElement": {
+            "tag": "body",
+            "className": "inter_5972bc34-module__OU16Qa__className figtree_a3093eac-mo",
+            "contenteditable": null,
+            "insideEditor": false
+          }
+        },
+        "screenshots": {
+          "shotBefore": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q1-strict-lock-before.png",
+          "shotDuring": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q1-strict-lock-during.png",
+          "shotAfter": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q1-strict-lock-after.png"
+        }
+      },
+      "rootPress": {
+        "label": "q1-root-padding",
+        "point": {
+          "x": 438.09782835531183,
+          "y": 256.2306023547627
+        },
+        "scale": 0.7579103071092945,
+        "hit": {
+          "tag": "h2",
+          "className": "block puck-dim puck-typo puck-block-root puck-rich-text",
+          "insideEditor": false,
+          "insideOverlayPortal": false,
+          "isBlockRoot": true,
+          "matchesInteractiveSelector": false,
+          "editorPointerEvents": "auto",
+          "editorChildPointerEvents": "auto"
+        },
+        "during": {
+          "entryDragging": true,
+          "dndDragging": 1,
+          "dndPlaceholders": 1,
+          "linePlaceholders": 0,
+          "dropzonesEnabled": 1,
+          "overlays": 0
+        },
+        "after": {
+          "order": [
+            "Probe paragraph",
+            "Probe heading"
+          ],
+          "beforeOrder": [
+            "Probe heading",
+            "Probe paragraph"
+          ],
+          "entryDragging": false,
+          "activeElement": {
+            "tag": "body",
+            "className": "inter_5972bc34-module__OU16Qa__className figtree_a3093eac-mo",
+            "contenteditable": null,
+            "insideEditor": false
+          }
+        },
+        "screenshots": {
+          "shotBefore": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q1-root-padding-before.png",
+          "shotDuring": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q1-root-padding-during.png",
+          "shotAfter": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q1-root-padding-after.png"
+        }
+      },
+      "withoutContentEditable": {
+        "label": "q1-no-contenteditable",
+        "point": {
+          "x": 800,
+          "y": 259.2622435831999
+        },
+        "scale": 0.7579103071092945,
+        "hit": {
+          "tag": "p",
+          "className": "",
+          "insideEditor": true,
+          "insideOverlayPortal": true,
+          "isBlockRoot": false,
+          "matchesInteractiveSelector": false,
+          "editorPointerEvents": "auto",
+          "editorChildPointerEvents": "auto"
+        },
+        "during": {
+          "entryDragging": true,
+          "dndDragging": 1,
+          "dndPlaceholders": 1,
+          "linePlaceholders": 0,
+          "dropzonesEnabled": 1,
+          "overlays": 0
+        },
+        "after": {
+          "order": [
+            "Probe paragraph",
+            "Probe heading"
+          ],
+          "beforeOrder": [
+            "Probe heading",
+            "Probe paragraph"
+          ],
+          "entryDragging": false,
+          "activeElement": {
+            "tag": "body",
+            "className": "inter_5972bc34-module__OU16Qa__className figtree_a3093eac-mo",
+            "contenteditable": null,
+            "insideEditor": false
+          }
+        },
+        "screenshots": {
+          "shotBefore": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q1-no-contenteditable-before.png",
+          "shotDuring": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q1-no-contenteditable-during.png",
+          "shotAfter": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q1-no-contenteditable-after.png"
+        }
+      },
+      "plainClickHeadingLocked": {
+        "overlays": [
+          {
+            "className": "_DraggableComponent_ckmoo_1 _DraggableComponent--isSelected_ckmoo_85 notranslate",
+            "isSelected": true,
+            "label": "Heading",
+            "bold": true,
+            "italic": true,
+            "menus": [
+              "Bold",
+              "Italic",
+              "Underline",
+              "Add link",
+              "Text color",
+              "Duplicate",
+              "Delete"
+            ]
+          }
+        ],
+        "activeElement": {
+          "tag": "div",
+          "className": "tiptap ProseMirror ProseMirror-focused",
+          "contenteditable": "true",
+          "insideEditor": true
+        },
+        "selection": {
+          "rangeCount": 1,
+          "collapsed": true,
+          "anchor": {
+            "name": "#text",
+            "text": "Probe heading"
+          },
+          "anchorOffset": 13,
+          "insideEditor": true
+        },
+        "sidebarLevel": true,
+        "afterPointerLeave": {
+          "overlays": [
+            {
+              "className": "_DraggableComponent_ckmoo_1 _DraggableComponent--isSelected_ckmoo_85 notranslate",
+              "isSelected": true,
+              "label": "Heading",
+              "bold": true,
+              "italic": true,
+              "menus": [
+                "Bold",
+                "Italic",
+                "Underline",
+                "Add link",
+                "Text color",
+                "Duplicate",
+                "Delete"
+              ]
+            }
+          ],
+          "sidebarLevel": true
+        }
+      },
+      "plainClickTextLocked": {
+        "overlays": [
+          {
+            "className": "_DraggableComponent_ckmoo_1 _DraggableComponent--isSelected_ckmoo_85 notranslate",
+            "isSelected": true,
+            "label": "Text",
+            "bold": true,
+            "italic": true,
+            "menus": [
+              "Bold",
+              "Italic",
+              "Underline",
+              "Add link",
+              "Text color",
+              "Duplicate",
+              "Delete"
+            ]
+          }
+        ],
+        "activeElement": {
+          "tag": "div",
+          "className": "tiptap ProseMirror ProseMirror-focused",
+          "contenteditable": "true",
+          "insideEditor": false
+        },
+        "selection": {
+          "rangeCount": 1,
+          "collapsed": true,
+          "anchor": {
+            "name": "#text",
+            "text": "Probe paragraph"
+          },
+          "anchorOffset": 15,
+          "insideEditor": false
+        },
+        "order": [
+          "Probe heading",
+          "Probe paragraph"
+        ]
+      },
+      "screenshots": {
+        "shotClick": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q1-heading-after-click.png",
+        "shotTextClick": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q1-text-after-click.png"
+      }
+    },
+    {
+      "question": 2,
+      "css": "[data-puck-component] [data-puck-overlay-portal] [contenteditable=\"true\"] { pointer-events: none !important }",
+      "point": {
+        "x": 800,
+        "y": 259.2622435831999
+      },
+      "reactContainer": null,
+      "reactPropsOnRoot": "__reactProps$vwiak55",
+      "reactFiberOnRoot": "__reactFiber$vwiak55",
+      "reactListening": {
+        "document": 0,
+        "body": 0,
+        "html": 0,
+        "entry": 0,
+        "topDocument": 0
+      },
+      "events": [
+        {
+          "where": "document-capture:mousedown",
+          "type": "mousedown",
+          "detail": 1,
+          "target": {
+            "tag": "p",
+            "className": "",
+            "component": "probe-heading",
+            "inOverlayPortal": true,
+            "inEditor": true
+          },
+          "cancelBubble": false,
+          "defaultPrevented": false
+        },
+        {
+          "where": "document-bubble:mousedown",
+          "type": "mousedown",
+          "detail": 1,
+          "target": {
+            "tag": "p",
+            "className": "",
+            "component": "probe-heading",
+            "inOverlayPortal": true,
+            "inEditor": true
+          },
+          "cancelBubble": false,
+          "defaultPrevented": false
+        },
+        {
+          "where": "document-capture:mouseup",
+          "type": "mouseup",
+          "detail": 1,
+          "target": {
+            "tag": "p",
+            "className": "",
+            "component": "probe-heading",
+            "inOverlayPortal": true,
+            "inEditor": true
+          },
+          "cancelBubble": false,
+          "defaultPrevented": false
+        },
+        {
+          "where": "document-bubble:mouseup",
+          "type": "mouseup",
+          "detail": 1,
+          "target": {
+            "tag": "p",
+            "className": "",
+            "component": "probe-heading",
+            "inOverlayPortal": true,
+            "inEditor": true
+          },
+          "cancelBubble": false,
+          "defaultPrevented": false
+        },
+        {
+          "where": "document-capture:click",
+          "type": "click",
+          "detail": 1,
+          "target": {
+            "tag": "p",
+            "className": "",
+            "component": "probe-heading",
+            "inOverlayPortal": true,
+            "inEditor": true
+          },
+          "cancelBubble": false,
+          "defaultPrevented": false
+        },
+        {
+          "where": "document-capture:mousedown",
+          "type": "mousedown",
+          "detail": 2,
+          "target": {
+            "tag": "p",
+            "className": "",
+            "component": "probe-heading",
+            "inOverlayPortal": true,
+            "inEditor": true
+          },
+          "cancelBubble": false,
+          "defaultPrevented": false
+        },
+        {
+          "where": "document-bubble:mousedown",
+          "type": "mousedown",
+          "detail": 2,
+          "target": {
+            "tag": "p",
+            "className": "",
+            "component": "probe-heading",
+            "inOverlayPortal": true,
+            "inEditor": true
+          },
+          "cancelBubble": false,
+          "defaultPrevented": false
+        },
+        {
+          "where": "document-capture:mouseup",
+          "type": "mouseup",
+          "detail": 2,
+          "target": {
+            "tag": "p",
+            "className": "",
+            "component": "probe-heading",
+            "inOverlayPortal": true,
+            "inEditor": true
+          },
+          "cancelBubble": false,
+          "defaultPrevented": false
+        },
+        {
+          "where": "document-bubble:mouseup",
+          "type": "mouseup",
+          "detail": 2,
+          "target": {
+            "tag": "p",
+            "className": "",
+            "component": "probe-heading",
+            "inOverlayPortal": true,
+            "inEditor": true
+          },
+          "cancelBubble": false,
+          "defaultPrevented": false
+        },
+        {
+          "where": "document-capture:click",
+          "type": "click",
+          "detail": 2,
+          "target": {
+            "tag": "p",
+            "className": "",
+            "component": "probe-heading",
+            "inOverlayPortal": true,
+            "inEditor": true
+          },
+          "cancelBubble": false,
+          "defaultPrevented": false
+        },
+        {
+          "where": "document-capture:dblclick",
+          "type": "dblclick",
+          "detail": 2,
+          "target": {
+            "tag": "p",
+            "className": "",
+            "component": "probe-heading",
+            "inOverlayPortal": true,
+            "inEditor": true
+          },
+          "cancelBubble": false,
+          "defaultPrevented": false
+        },
+        {
+          "where": "document-bubble:dblclick",
+          "type": "dblclick",
+          "detail": 2,
+          "target": {
+            "tag": "p",
+            "className": "",
+            "component": "probe-heading",
+            "inOverlayPortal": true,
+            "inEditor": true
+          },
+          "cancelBubble": false,
+          "defaultPrevented": false
+        },
+        {
+          "where": "window-bubble:dblclick",
+          "type": "dblclick",
+          "detail": 2,
+          "target": {
+            "tag": "p",
+            "className": "",
+            "component": "probe-heading",
+            "inOverlayPortal": true,
+            "inEditor": true
+          },
+          "cancelBubble": false,
+          "defaultPrevented": false
+        }
+      ],
+      "topDocumentEvents": [],
+      "reactClickInIframe": {
+        "found": true,
+        "before": [
+          "Probe heading",
+          "Probe paragraph"
+        ],
+        "after": [
+          "Probe heading",
+          "Probe heading",
+          "Probe paragraph"
+        ],
+        "changed": true
+      },
+      "state": {
+        "activeElement": {
+          "tag": "div",
+          "className": "tiptap ProseMirror ProseMirror-focused",
+          "contenteditable": "true",
+          "insideEditor": true
+        },
+        "selection": {
+          "rangeCount": 1,
+          "collapsed": true,
+          "anchor": {
+            "name": "#text",
+            "text": "Probe heading"
+          },
+          "anchorOffset": 13,
+          "insideEditor": true
+        },
+        "overlays": 1,
+        "order": [
+          "Probe heading",
+          "Probe paragraph"
+        ]
+      },
+      "screenshots": {
+        "shot": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q2-after-dblclick.png"
+      }
+    },
+    {
+      "question": 3,
+      "css": [
+        "[data-puck-component] [data-puck-overlay-portal] [contenteditable=\"true\"] { pointer-events: none !important }",
+        "[data-puck-component][data-text-editing] [contenteditable=\"true\"] { pointer-events: auto !important }"
+      ],
+      "beforeArm": {
+        "pointerEvents": "none",
+        "lockedHit": {
+          "tag": "p",
+          "inEditor": true,
+          "pointerEvents": "none"
+        },
+        "activeElement": {
+          "tag": "body",
+          "className": "inter_5972bc34-module__OU16Qa__className figtree_a3093eac-mo",
+          "contenteditable": null,
+          "insideEditor": false
+        },
+        "selection": {
+          "rangeCount": 0,
+          "collapsed": true,
+          "anchor": null,
+          "anchorOffset": 0,
+          "insideEditor": false
+        }
+      },
+      "armed": {
+        "rootTag": "h2",
+        "attr": "",
+        "hitTag": "p",
+        "hitClass": "",
+        "hitInEditor": true,
+        "pointerEvents": "auto",
+        "childPointerEvents": "auto"
+      },
+      "clickPoint": {
+        "x": 447.9506623477327,
+        "y": 258.88328842964523
+      },
+      "after": {
+        "activeElement": {
+          "tag": "div",
+          "className": "tiptap ProseMirror ProseMirror-focused",
+          "contenteditable": "true",
+          "insideEditor": true
+        },
+        "selection": {
+          "rangeCount": 1,
+          "collapsed": true,
+          "anchor": {
+            "name": "#text",
+            "text": "Probe heading"
+          },
+          "anchorOffset": 3,
+          "insideEditor": true
+        },
+        "menuBold": [
+          true
+        ],
+        "overlays": [
+          {
+            "className": "_DraggableComponent_ckmoo_1 _DraggableComponent--isSelected_ckmoo_85 notranslate",
+            "isSelected": true,
+            "label": "Heading",
+            "bold": true,
+            "italic": true,
+            "menus": [
+              "Bold",
+              "Italic",
+              "Underline",
+              "Add link",
+              "Text color",
+              "Duplicate",
+              "Delete"
+            ]
+          }
+        ],
+        "componentOrder": [
+          "Probe heading",
+          "Probe paragraph"
+        ]
+      },
+      "screenshots": {
+        "shot": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q3-armed-click.png"
+      }
+    },
+    {
+      "question": 4,
+      "css": [
+        "[data-puck-component] [data-puck-overlay-portal], [data-puck-component] [data-puck-overlay-portal] * { pointer-events: none !important }",
+        "[data-puck-component][data-text-editing] [contenteditable=\"true\"] { pointer-events: auto !important }"
+      ],
+      "selectedNoCaret": {
+        "activeElement": {
+          "tag": "h2",
+          "className": "block puck-dim puck-typo puck-block-root puck-rich-text",
+          "contenteditable": null,
+          "insideEditor": false
+        },
+        "overlays": [
+          {
+            "isSelected": true,
+            "bold": false,
+            "menus": [
+              "Duplicate",
+              "Delete"
+            ]
+          }
+        ],
+        "selection": {
+          "rangeCount": 0,
+          "collapsed": true,
+          "anchor": null,
+          "anchorOffset": 0,
+          "insideEditor": false
+        }
+      },
+      "focusResult": {
+        "activeIsEditor": true,
+        "activeTag": "div",
+        "contenteditable": "true",
+        "pointerEvents": "auto"
+      },
+      "afterProgrammatic": {
+        "activeElement": {
+          "tag": "div",
+          "className": "tiptap ProseMirror ProseMirror-focused",
+          "contenteditable": "true",
+          "insideEditor": true
+        },
+        "overlays": [
+          {
+            "isSelected": true,
+            "bold": true,
+            "menus": [
+              "Bold",
+              "Italic",
+              "Underline",
+              "Add link",
+              "Text color",
+              "Duplicate",
+              "Delete"
+            ]
+          }
+        ],
+        "selection": {
+          "rangeCount": 1,
+          "collapsed": true,
+          "anchor": {
+            "name": "#text",
+            "text": "Probe heading"
+          },
+          "anchorOffset": 0,
+          "insideEditor": true
+        },
+        "activeAfter": {
+          "activeIsEditor": true,
+          "iframeActive": true,
+          "topActive": "iframe"
+        }
+      },
+      "screenshots": {
+        "shot": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q4-programmatic-focus.png"
+      }
+    },
+    {
+      "question": 5,
+      "word": {
+        "found": true,
+        "node": "#text",
+        "text": "Probe heading",
+        "index": 6,
+        "charWidth": 8.178571428571429,
+        "local": {
+          "x": 74.5625,
+          "y": 39.5
+        },
+        "top": {
+          "x": 488.54623317227424,
+          "y": 258.88328842964523
+        }
+      },
+      "probes": {
+        "point": {
+          "x": 74.5625,
+          "y": 39.5
+        },
+        "caretRangeFromPoint": {
+          "startContainer": "#text",
+          "text": "Probe heading",
+          "startOffset": 9,
+          "rect": {
+            "left": 71.765625,
+            "top": 30,
+            "width": 0,
+            "height": 19
+          },
+          "insideEditor": true
+        },
+        "caretPositionFromPoint": {
+          "nodeName": "#text",
+          "offset": 9,
+          "insideEditor": true
+        }
+      },
+      "expected": {
+        "text": "Probe heading",
+        "offset": 9
+      },
+      "applied": {
+        "applied": true,
+        "activeIsEditor": true,
+        "selection": {
+          "collapsed": true,
+          "anchorOffset": 9,
+          "anchorText": "Probe heading",
+          "insideEditor": true,
+          "rect": {
+            "left": 72,
+            "top": 30,
+            "width": 0,
+            "height": 19
+          }
+        }
+      },
+      "afterFocus": {
+        "activeElement": {
+          "tag": "div",
+          "className": "tiptap ProseMirror ProseMirror-focused",
+          "contenteditable": "true",
+          "insideEditor": true
+        },
+        "selection": {
+          "rangeCount": 1,
+          "collapsed": true,
+          "anchor": {
+            "name": "#text",
+            "text": "Probe heading"
+          },
+          "anchorOffset": 9,
+          "insideEditor": true
+        }
+      },
+      "screenshots": {
+        "shot": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q5-caret.png"
+      }
+    },
+    {
+      "question": 6,
+      "strictLock": {
+        "label": "q6-strict-lock",
+        "before": {
+          "order": [
+            "Probe heading",
+            "Probe paragraph"
+          ],
+          "overlays": [
+            {
+              "isSelected": true,
+              "bold": false
+            }
+          ],
+          "activeElement": {
+            "tag": "h2",
+            "className": "block puck-dim puck-typo puck-block-root puck-rich-text",
+            "contenteditable": null,
+            "insideEditor": false
+          },
+          "rootAttributes": {
+            "tabindex": "0",
+            "role": "button",
+            "draggable": null,
+            "ariaDescribedBy": "dnd-kit-description-1"
+          },
+          "drawer": 41,
+          "dialog": 0,
+          "buttons": [
+            "Toggle Sidebar",
+            "Toggle theme",
+            "pr",
+            "76% (Auto)",
+            "Save",
+            "Publish",
+            "Widgets",
+            "Outline",
+            "Globals",
+            "Page",
+            "Layout",
+            "Dimension",
+            "Typography"
+          ],
+          "sidebarLevel": true,
+          "html": "<div data-puck-overlay-portal=\"true\"><div class=\"_RichTextEditor_5wzos_1 undefined\"><div class=\"rich-text\"><div contenteditable=\"true\" role=\"textbox\" translate=\"no\" class=\"tiptap ProseMirror\" tabindex=\"0\"><p>Probe heading</p></div></div></div></div>"
+        },
+        "after": {
+          "order": [
+            "Probe heading",
+            "Probe paragraph"
+          ],
+          "overlays": [
+            {
+              "isSelected": true,
+              "bold": false
+            }
+          ],
+          "activeElement": {
+            "tag": "h2",
+            "className": "block puck-dim puck-typo puck-block-root puck-rich-text",
+            "contenteditable": null,
+            "insideEditor": false
+          },
+          "entryDragging": false,
+          "dndDragging": 0,
+          "selection": {
+            "rangeCount": 0,
+            "collapsed": true,
+            "anchor": null,
+            "anchorOffset": 0,
+            "insideEditor": false
+          },
+          "drawer": 41,
+          "dialog": 0,
+          "buttons": [
+            "Toggle Sidebar",
+            "Toggle theme",
+            "pr",
+            "76% (Auto)",
+            "Save",
+            "Publish",
+            "Widgets",
+            "Outline",
+            "Globals",
+            "Page",
+            "Layout",
+            "Dimension",
+            "Typography"
+          ],
+          "sidebarLevel": true,
+          "html": "<div data-puck-overlay-portal=\"true\"><div class=\"_RichTextEditor_5wzos_1 undefined\"><div class=\"rich-text\"><div contenteditable=\"true\" role=\"textbox\" translate=\"no\" class=\"tiptap ProseMirror\" tabindex=\"0\"><p>Probe heading</p></div></div></div></div>"
+        },
+        "changed": false,
+        "screenshots": {
+          "shotBefore": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q6-strict-lock-before.png",
+          "shotAfter": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q6-strict-lock-after.png"
+        }
+      },
+      "defaultCss": {
+        "label": "q6-default",
+        "before": {
+          "order": [
+            "Probe heading",
+            "Probe paragraph"
+          ],
+          "overlays": [
+            {
+              "isSelected": true,
+              "bold": true
+            }
+          ],
+          "activeElement": {
+            "tag": "div",
+            "className": "tiptap ProseMirror ProseMirror-focused",
+            "contenteditable": "true",
+            "insideEditor": true
+          },
+          "rootAttributes": {
+            "tabindex": "0",
+            "role": "button",
+            "draggable": null,
+            "ariaDescribedBy": "dnd-kit-description-1"
+          },
+          "drawer": 41,
+          "dialog": 0,
+          "buttons": [
+            "Toggle Sidebar",
+            "Toggle theme",
+            "pr",
+            "76% (Auto)",
+            "Save",
+            "Publish",
+            "Widgets",
+            "Outline",
+            "Globals",
+            "Page",
+            "Layout",
+            "Dimension",
+            "Typography"
+          ],
+          "sidebarLevel": true,
+          "html": "<div data-puck-overlay-portal=\"true\"><div class=\"_RichTextEditor_5wzos_1 undefined _RichTextEditor--isActive_5wzos_159\"><div class=\"rich-text\"><div contenteditable=\"true\" role=\"textbox\" translate=\"no\" class=\"tiptap ProseMirror ProseMirror-focused\" tabindex=\"0\"><p>Probe heading</p></div></div></div></div>"
+        },
+        "after": {
+          "order": [
+            "Probe heading",
+            "Probe paragraph"
+          ],
+          "overlays": [
+            {
+              "isSelected": true,
+              "bold": true
+            }
+          ],
+          "activeElement": {
+            "tag": "div",
+            "className": "tiptap ProseMirror ProseMirror-focused",
+            "contenteditable": "true",
+            "insideEditor": true
+          },
+          "entryDragging": false,
+          "dndDragging": 0,
+          "selection": {
+            "rangeCount": 1,
+            "collapsed": true,
+            "anchor": {
+              "name": "P",
+              "text": ""
+            },
+            "anchorOffset": 0,
+            "insideEditor": true
+          },
+          "drawer": 41,
+          "dialog": 0,
+          "buttons": [
+            "Toggle Sidebar",
+            "Toggle theme",
+            "pr",
+            "76% (Auto)",
+            "Save",
+            "Publish",
+            "Widgets",
+            "Outline",
+            "Globals",
+            "Page",
+            "Layout",
+            "Dimension",
+            "Typography"
+          ],
+          "sidebarLevel": true,
+          "html": "<div data-puck-overlay-portal=\"true\"><div class=\"_RichTextEditor_5wzos_1 undefined _RichTextEditor--isActive_5wzos_159\"><div class=\"rich-text\"><div contenteditable=\"true\" role=\"textbox\" translate=\"no\" class=\"tiptap ProseMirror ProseMirror-focused\" tabindex=\"0\"><p>Probe heading</p><p data-placeholder=\"Add a heading\" class=\"is-empty\"><br class=\"ProseMirror-trailingBreak\"></p></div></div></div></div>"
+        },
+        "changed": true,
+        "screenshots": {
+          "shotBefore": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q6-default-before.png",
+          "shotAfter": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q6-default-after.png"
+        }
+      }
+    },
+    {
+      "question": 7,
+      "A_defaultCss": {
+        "before": {
+          "order": [
+            "Probe heading",
+            "Probe paragraph"
+          ],
+          "overlays": [
+            {
+              "isSelected": true,
+              "bold": true,
+              "menus": [
+                "Bold",
+                "Italic",
+                "Underline",
+                "Add link",
+                "Text color",
+                "Duplicate",
+                "Delete"
+              ]
+            }
+          ],
+          "activeElement": {
+            "tag": "div",
+            "className": "tiptap ProseMirror ProseMirror-focused",
+            "contenteditable": "true",
+            "insideEditor": true
+          },
+          "selection": {
+            "rangeCount": 1,
+            "collapsed": true,
+            "anchor": {
+              "name": "#text",
+              "text": "Probe heading"
+            },
+            "anchorOffset": 13,
+            "insideEditor": true
+          },
+          "sidebarLevel": true,
+          "drawer": 41,
+          "dialog": 0
+        },
+        "after": {
+          "order": [
+            "Probe heading",
+            "Probe paragraph"
+          ],
+          "overlays": [
+            {
+              "isSelected": true,
+              "bold": true,
+              "menus": [
+                "Bold",
+                "Italic",
+                "Underline",
+                "Add link",
+                "Text color",
+                "Duplicate",
+                "Delete"
+              ]
+            }
+          ],
+          "activeElement": {
+            "tag": "div",
+            "className": "tiptap ProseMirror ProseMirror-focused",
+            "contenteditable": "true",
+            "insideEditor": true
+          },
+          "selection": {
+            "rangeCount": 1,
+            "collapsed": true,
+            "anchor": {
+              "name": "#text",
+              "text": "Probe heading"
+            },
+            "anchorOffset": 13,
+            "insideEditor": true
+          },
+          "sidebarLevel": true,
+          "drawer": 41,
+          "dialog": 0
+        },
+        "stillSelected": true,
+        "selectedBefore": true,
+        "events": [
+          {
+            "where": "document-capture",
+            "key": "Escape",
+            "code": "Escape",
+            "target": {
+              "tag": "div",
+              "className": "tiptap ProseMirror ProseMirror-focused",
+              "component": "h2"
+            },
+            "cancelBubble": false,
+            "defaultPrevented": false
+          },
+          {
+            "where": "component-root-bubble",
+            "key": "Escape",
+            "code": "Escape",
+            "target": {
+              "tag": "div",
+              "className": "tiptap ProseMirror ProseMirror-focused",
+              "component": "h2"
+            },
+            "cancelBubble": false,
+            "defaultPrevented": true
+          },
+          {
+            "where": "document-bubble",
+            "key": "Escape",
+            "code": "Escape",
+            "target": {
+              "tag": "div",
+              "className": "tiptap ProseMirror ProseMirror-focused",
+              "component": "h2"
+            },
+            "cancelBubble": false,
+            "defaultPrevented": true
+          }
+        ]
+      },
+      "B_strictLock": {
+        "before": {
+          "order": [
+            "Probe heading",
+            "Probe paragraph"
+          ],
+          "overlays": [
+            {
+              "isSelected": true,
+              "bold": false,
+              "menus": [
+                "Duplicate",
+                "Delete"
+              ]
+            }
+          ],
+          "activeElement": {
+            "tag": "h2",
+            "className": "block puck-dim puck-typo puck-block-root puck-rich-text",
+            "contenteditable": null,
+            "insideEditor": false
+          },
+          "selection": {
+            "rangeCount": 0,
+            "collapsed": true,
+            "anchor": null,
+            "anchorOffset": 0,
+            "insideEditor": false
+          },
+          "sidebarLevel": true,
+          "drawer": 41,
+          "dialog": 0
+        },
+        "after": {
+          "order": [
+            "Probe heading",
+            "Probe paragraph"
+          ],
+          "overlays": [
+            {
+              "isSelected": true,
+              "bold": false,
+              "menus": [
+                "Duplicate",
+                "Delete"
+              ]
+            }
+          ],
+          "activeElement": {
+            "tag": "h2",
+            "className": "block puck-dim puck-typo puck-block-root puck-rich-text",
+            "contenteditable": null,
+            "insideEditor": false
+          },
+          "selection": {
+            "rangeCount": 0,
+            "collapsed": true,
+            "anchor": null,
+            "anchorOffset": 0,
+            "insideEditor": false
+          },
+          "sidebarLevel": true,
+          "drawer": 41,
+          "dialog": 0
+        },
+        "stillSelected": true,
+        "selectedBefore": true,
+        "events": [
+          {
+            "where": "document-capture",
+            "key": "Escape",
+            "code": "Escape",
+            "target": {
+              "tag": "h2",
+              "className": "block puck-dim puck-typo puck-block-root puck-rich-text",
+              "component": "h2"
+            },
+            "cancelBubble": false,
+            "defaultPrevented": false
+          },
+          {
+            "where": "component-root-bubble",
+            "key": "Escape",
+            "code": "Escape",
+            "target": {
+              "tag": "h2",
+              "className": "block puck-dim puck-typo puck-block-root puck-rich-text",
+              "component": "h2"
+            },
+            "cancelBubble": false,
+            "defaultPrevented": false
+          },
+          {
+            "where": "document-bubble",
+            "key": "Escape",
+            "code": "Escape",
+            "target": {
+              "tag": "h2",
+              "className": "block puck-dim puck-typo puck-block-root puck-rich-text",
+              "component": "h2"
+            },
+            "cancelBubble": false,
+            "defaultPrevented": false
+          }
+        ]
+      },
+      "C_strictLockCaptureStop": {
+        "before": {
+          "order": [
+            "Probe heading",
+            "Probe paragraph"
+          ],
+          "overlays": [
+            {
+              "isSelected": true,
+              "bold": false,
+              "menus": [
+                "Duplicate",
+                "Delete"
+              ]
+            }
+          ],
+          "activeElement": {
+            "tag": "h2",
+            "className": "block puck-dim puck-typo puck-block-root puck-rich-text",
+            "contenteditable": null,
+            "insideEditor": false
+          },
+          "selection": {
+            "rangeCount": 0,
+            "collapsed": true,
+            "anchor": null,
+            "anchorOffset": 0,
+            "insideEditor": false
+          },
+          "sidebarLevel": true,
+          "drawer": 41,
+          "dialog": 0
+        },
+        "after": {
+          "order": [
+            "Probe heading",
+            "Probe paragraph"
+          ],
+          "overlays": [
+            {
+              "isSelected": true,
+              "bold": false,
+              "menus": [
+                "Duplicate",
+                "Delete"
+              ]
+            }
+          ],
+          "activeElement": {
+            "tag": "h2",
+            "className": "block puck-dim puck-typo puck-block-root puck-rich-text",
+            "contenteditable": null,
+            "insideEditor": false
+          },
+          "selection": {
+            "rangeCount": 0,
+            "collapsed": true,
+            "anchor": null,
+            "anchorOffset": 0,
+            "insideEditor": false
+          },
+          "sidebarLevel": true,
+          "drawer": 41,
+          "dialog": 0
+        },
+        "stillSelected": true,
+        "selectedBefore": true,
+        "events": [
+          {
+            "where": "document-capture",
+            "key": "Escape",
+            "code": "Escape",
+            "target": {
+              "tag": "h2",
+              "className": "block puck-dim puck-typo puck-block-root puck-rich-text",
+              "component": "h2"
+            },
+            "cancelBubble": false,
+            "defaultPrevented": false
+          },
+          {
+            "where": "spike-preempt",
+            "key": "Escape",
+            "code": "Escape",
+            "cancelBubble": false
+          }
+        ]
+      },
+      "screenshots": {
+        "shotDefault": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q7-default-before-esc.png",
+        "shotDefaultAfter": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q7-default-after-esc.png",
+        "shotLocked": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q7-locked-before-esc.png",
+        "shotLockedAfter": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q7-locked-after-esc.png",
+        "shotPreempt": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q7-preempt-before-esc.png",
+        "shotPreemptAfter": "C:\\P\\pictures-writers\\.scratch\\puck-text-edit-mode\\spike\\screens\\q7-preempt-after-esc.png"
+      }
+    }
+  ]
+}

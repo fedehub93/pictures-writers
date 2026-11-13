@@ -134,7 +134,7 @@ no highlighted word is left without a toolbar.
   the upgrade checklist now has a drag step and a mode step, the two steps that were missing when
   the defect shipped.
 - **Evidence.** The spike is `.scratch/puck-text-edit-mode/spike/FINDINGS.md` (seven measured
-  questions, screenshots and raw JSON), and it is what changed two premises of the design: the
-  first lock was a no-op, and `Esc` did not exist in Puck.
+  questions, with the driver and the raw JSON beside it), and it is what changed two premises of
+  the design: the first lock was a no-op, and `Esc` did not exist in Puck.
 - Terminology: `GLOSSARY.md` → "Text editing mode", "Locked text block", "Inline text editing",
   "Content field", "Block toolbar".
