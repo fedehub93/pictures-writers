@@ -67,7 +67,10 @@ export type HydratedComponents = {
  *
  * The module deliberately contains no Puck editor component and no editor CSS:
  * the editor shell lives in `editor-shell.tsx`, so modules that only need the
- * registry or the document types do not pull in the editor runtime.
+ * registry or the document types do not pull in the editor runtime. Editor-only
+ * behaviour is applied by the shell, not registered here: the text editing gate
+ * (`editor/text-edit-mode/`) wraps the text blocks when `PuckEditor` builds the
+ * editor config, and the public render config keeps each block's pure render.
  *
  * A block whose published render has to stay on the server (Link list,
  * Copyright) still appears here like every other block, but declares its own

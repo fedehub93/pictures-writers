@@ -1,5 +1,7 @@
 import "client-only";
 
+import { useMemo } from "react";
+
 import {
   Puck,
   type Config,
@@ -11,6 +13,7 @@ import "@puckeditor/core/puck.css";
 import type { SiteLayoutPreview } from "@/modules/site-regions/lib/site-layout-preview";
 
 import { config as pageConfig } from "./config";
+import { gateEditorConfig } from "./editor/text-edit-mode/text-edit-gate";
 import { BREAKPOINTS } from "./utils/breakpoints";
 import { viewports } from "./utils/viewports";
 import { Editor, type EditorHeaderProps } from "./editor/ui/view/editor";
@@ -59,9 +62,15 @@ export function PuckEditor({
   // only root that reads it, and blocks keep receiving the existing values.
   const editorMetadata = siteLayout ? { ...metadata, siteLayout } : metadata;
 
+  // The editor is where editor-only behaviour is added, so the shared registry
+  // and the public render config stay free of it. Memoised on the input config
+  // because both callers pass module-level constants: the gated config keeps
+  // one identity across renders instead of a new map on every render.
+  const editorConfig = useMemo(() => gateEditorConfig(config), [config]);
+
   return (
     <Puck
-      config={config}
+      config={editorConfig}
       data={initialData.puckData}
       metadata={editorMetadata}
       viewports={viewports}

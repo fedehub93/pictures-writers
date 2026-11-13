@@ -783,3 +783,39 @@
     opacity: 0.45;
   }
 }
+
+/* --- 7. TEXT EDIT MODE (canvas only) ---
+   A text block mounts Puck's inline editor on the canvas, and Puck mounts it
+   always: the editor's overlay portal covers the whole block root, so the text
+   takes the pointer, the caret enters on the first click, and a press can never
+   reach the block to drag it (dnd-kit refuses a target inside
+   `[contenteditable]`).
+
+   The lock covers the portal *and its descendants*, which is the part that
+   matters: Puck forces `pointer-events: auto !important` on the portal and on
+   every descendant, so a rule that names only the editor leaves the paragraphs
+   hit-testable and locks nothing. Covering the descendants makes the block root
+   the press target — the text becomes a handle for the block — which is the
+   intended behaviour, not a side effect.
+
+   The armed rule is the same mechanism in reverse: `data-text-editing` exists
+   on the block root only while the editor store names that block, and it gives
+   the portal its pointer back. Both rules carry `!important` and outrank Puck's
+   base `[data-puck-overlay-portal]` rule by specificity, so the stylesheet
+   order cannot leave a locked block editable. (Puck's rule for an in-progress
+   drag ties with the armed rule at (0,3,0); source order decides there, and
+   during a drag the portal's pointer-events no longer matter.)
+
+   Neither rule matches the published page: `data-puck-component` is written by
+   Puck's canvas only. This file is shared with the public layouts, so the two
+   declarations are in the public bundle, but they are inert bytes — no
+   attribute, no markup and no JavaScript change on the page. */
+[data-puck-component] [data-puck-overlay-portal],
+[data-puck-component] [data-puck-overlay-portal] * {
+  pointer-events: none !important;
+}
+
+[data-puck-component][data-text-editing] [data-puck-overlay-portal],
+[data-puck-component][data-text-editing] [data-puck-overlay-portal] * {
+  pointer-events: auto !important;
+}
