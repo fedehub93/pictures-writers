@@ -34,6 +34,20 @@ Read the file at the referenced path. The user will normally pass the path or th
 4. Commit the ticket file on its own, as `docs(<area>): close the <ticket> ticket`. The code keeps
    its own `feat(...)` commit; the ticket never rides along with it.
 
+## When the feature closes
+
+Closing the last ticket is not closing the feature. The branch is done when:
+
+- The spec and every file the docs cite as evidence are in `HEAD`. An ADR that names a spike
+  report points at a committed report, not at the author's disk. `npm run check:doc-citations`
+  (also a CI step) fails on a doc that cites a path the repo does not have; a doc that names a
+  deliberately absent path — removed, or proposed — is listed in `scripts/doc-citations-ignore.txt`
+  with its reason.
+- Working material that was never evidence is gone: screenshots, run logs, duplicated JSON,
+  throwaway drivers no doc cites.
+- `git status` is empty. A session that has to leave a file behind says which file and who owns it,
+  so the next session does not have to guess whether it is theirs to commit.
+
 ## Wayfinding operations
 
 Used by `/wayfinder`. The **map** is a file with one **child** file per ticket.
