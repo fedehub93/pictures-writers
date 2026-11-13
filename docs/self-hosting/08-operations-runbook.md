@@ -186,6 +186,34 @@ Non esiste più un fallback DNS verso Vercel/Neon: la produzione è la VPS. Il r
 
 Se ti serve un RPO più basso, aggiungi WAL archiving/PITR (pgBackRest/WAL-G) e testalo. Non improvvisare in emergenza.
 
+### 4.5 Restore di un dump in sviluppo
+
+Il dump di produzione contiene utenti veri, contenuti veri e **token di sessione in chiaro**: la
+colonna `token` di `Session` non è un hash. Se il `.env` di sviluppo condivide
+`BETTER_AUTH_SECRET` con la produzione, quel token vale anche là, e il dominio di produzione è
+scritto in questo stesso repo. Quindi, subito dopo un restore e prima di aprire qualunque
+sessione:
+
+1. Svuota le righe che sono credenziali:
+
+   ```bash
+   Get-Content scripts/sanitize-dev-dump.sql | npm run -s dev:db:psql
+   ```
+
+   Rimuove `Session`, `Verification`, `Credential` e `Integration`; utenti, account e contenuti
+   restano, quindi il sito locale si vede e il login funziona.
+
+2. Non copiare **nessuna** variabile di produzione nel `.env` di sviluppo. In particolare
+   `BETTER_AUTH_SECRET`, `SECRETS_ENCRYPTION_KEY`, `AUTOMATION_CREDENTIALS_KEY`,
+   `SCHEDULED_PUBLICATION_SECRET` e le chiavi di Resend, SendGrid e UploadThing. Le chiavi di
+   terze parti vivono solo in Coolify; in sviluppo si usano chiavi separate o vuote.
+
+3. Con chiavi di cifratura diverse, le righe con `secretEncrypted` sono illeggibili in locale: è
+   il comportamento voluto, e il passo 1 le elimina comunque.
+
+Un agente non lavora su questo database: `npm run dev:agent` usa `pictures_writers_agent`, come
+spiegano `AGENTS.md` e `docs/agents/browser-probe.md`.
+
 ---
 
 ## 4bis. Media: consegna, backfill metadati e rendition
