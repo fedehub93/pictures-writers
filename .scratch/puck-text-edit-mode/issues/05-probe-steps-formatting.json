@@ -1,0 +1,28 @@
+[
+  { "action": "wait", "ms": 2500 },
+  { "action": "click", "target": "h2", "text": "Probe heading" },
+  { "action": "doubleClick", "target": "h2", "text": "Probe heading" },
+  { "action": "press", "key": "a", "modifiers": ["ctrl"] },
+  { "action": "press", "key": "b", "modifiers": ["ctrl"] },
+  { "action": "press", "key": "i", "modifiers": ["ctrl"] },
+  { "action": "press", "key": "u", "modifiers": ["ctrl"] },
+  { "action": "read", "target": "[data-text-editing] .ProseMirror" },
+  { "action": "click", "target": "button[aria-label=\"Add link\"]" },
+  { "action": "exists", "target": "input[aria-label=\"Link URL\"]" },
+  {
+    "action": "evaluate",
+    "expression": "(() => { const f = document.getElementById('preview-frame').contentDocument; const input = f.querySelector('input[aria-label=\"Link URL\"]'); return { phase: 'link-panel', inFrame: !!input, parentIsFrameBody: input ? input.ownerDocument === f : null, armed: Array.from(f.querySelectorAll('[data-text-editing]')).length }; })()"
+  },
+  { "action": "click", "target": "button[aria-label=\"Add link\"]" },
+  { "action": "click", "target": "button[aria-label=\"Text color\"]" },
+  { "action": "exists", "target": "[title=\"Custom color\"]" },
+  {
+    "action": "evaluate",
+    "expression": "(() => { const f = document.getElementById('preview-frame').contentDocument; const custom = f.querySelector('[title=\"Custom color\"]'); return { phase: 'color-panel', inFrame: !!custom, armed: Array.from(f.querySelectorAll('[data-text-editing]')).length }; })()"
+  },
+  { "action": "press", "key": "Escape" },
+  {
+    "action": "evaluate",
+    "expression": "(() => { const f = document.getElementById('preview-frame').contentDocument; const menu = f.querySelector('[data-puck-rte-menu]'); return { phase: 'escape-with-panel', armed: Array.from(f.querySelectorAll('[data-text-editing]')).length, toolbar: menu ? f.defaultView.getComputedStyle(menu).display !== 'none' : false, current: document.querySelector('[aria-current=\"true\"]')?.textContent?.trim() ?? null }; })()"
+  }
+]

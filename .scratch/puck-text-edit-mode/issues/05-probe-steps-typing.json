@@ -1,0 +1,9 @@
+[
+  { "action": "wait", "ms": 2500 },
+  { "action": "click", "target": "h2", "text": "Probe heading" },
+  { "action": "click", "target": "[data-puck-overlay][class*=\"isSelected\"] [data-text-edit-action]" },
+  { "action": "type", "text": " plus" },
+  { "action": "read", "target": "[data-text-editing] .ProseMirror" },
+  { "action": "press", "key": "Escape" },
+  { "action": "read", "target": "h2" }
+]
