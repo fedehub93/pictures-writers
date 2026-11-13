@@ -1,0 +1,11 @@
+# Citations `scripts/check-doc-citations.mjs` accepts even though the path is not in the repo.
+#
+# One line per pair: `<doc>: <cited path>   # why`. A reason is required — this file is data about
+# a deliberate absence, not a place to park a stale path. A moved file gets the path fixed; a file
+# the doc cites as evidence gets committed. Reserve an entry for docs that name a path they are
+# talking about rather than pointing at: something removed, or something proposed but not built.
+#
+# A pair is exact: another doc citing the same absent path still fails.
+
+# Proposal: the recommendation names the file it would add; nothing has been built yet.
+docs/marketing/seo/ai-seo.md: src/proxy.ts

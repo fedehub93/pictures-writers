@@ -14,6 +14,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "check:doc-citations": "node scripts/check-doc-citations.mjs",
     "test": "vitest",
     "test:run": "vitest run",
     "test:db:up": "docker compose up -d db",

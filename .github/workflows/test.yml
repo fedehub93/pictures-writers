@@ -81,3 +81,8 @@ jobs:
 
       - name: Typecheck
         run: npm run typecheck
+
+      # A doc that names a file is a promise the reader cannot check by reading. The check reads
+      # `git ls-files`, so a path that exists only on a contributor's disk fails like a missing one.
+      - name: Doc citations
+        run: npm run check:doc-citations
