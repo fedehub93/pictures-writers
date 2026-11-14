@@ -125,6 +125,18 @@ export function getLinkHref(
   return href ? href : undefined;
 }
 
+/**
+ * The visible text of a link when the consumer supplies no children.
+ *
+ * Inline anchors and blocks that only add decoration around the label share
+ * this one fallback, so the text cannot change in one place and not the other.
+ */
+export function getLinkText(
+  link: LinkProps | LegacyLinkProps | undefined,
+): string | undefined {
+  return link?.label ?? getLinkHref(link);
+}
+
 export function getLinkOpenInNewTab(
   link: LinkProps | LegacyLinkProps | undefined,
 ): boolean {

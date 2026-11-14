@@ -1,3 +1,5 @@
+import type { ButtonIconPosition } from "./types";
+
 /**
  * The width a Button resolves to when no width is authored.
  *
@@ -11,3 +13,14 @@
  * stored document changes and there is no migration.
  */
 export const BUTTON_BASE_WIDTH = "fit-content";
+
+/** Where an unauthored Button puts its icon: before the text. */
+export const BUTTON_ICON_DEFAULT_POSITION: ButtonIconPosition = "before";
+
+/**
+ * The gap between icon and text when none is authored.
+ *
+ * Half an em follows the button's own type scale: the icon is one em wide, so
+ * the pair keeps its rhythm when Typography changes per breakpoint.
+ */
+export const BUTTON_ICON_DEFAULT_SPACING = "0.5em";

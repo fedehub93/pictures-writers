@@ -78,10 +78,12 @@ export const HEADING_DEFAULT_PROPS: HeadingProps = {
 };
 
 export const BUTTON_DEFAULT_PROPS: ButtonProps = {
-  link: {
-    type: "external",
-    url: "",
-    label: "Inserisci il tuo link",
+  button: {
+    link: {
+      type: "external",
+      url: "",
+      label: "Inserisci il tuo link",
+    },
   },
   typography: {
     desktop: {

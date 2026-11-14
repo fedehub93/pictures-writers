@@ -1,21 +1,29 @@
 "use client";
 
-import type {
-  LegacyLinkProps,
-  LinkProps,
+import { Icon } from "@/shared/ui/icon-picker";
+import type { BlockDragRef } from "@/puck/types";
+import {
+  getLinkText,
+  type LegacyLinkProps,
+  type LinkProps,
 } from "@/puck/fields/link/types";
 import { InlineSmartLink } from "@/puck/fields/link/ui/inline-link";
-import type { BlockDragRef } from "@/puck/types";
 import { cn } from "@/shared/lib/utils";
 
+import type { ButtonContentProps } from "../types";
+import {
+  BUTTON_ICON_DEFAULT_POSITION,
+  BUTTON_ICON_DEFAULT_SPACING,
+} from "../constants";
+
 export const ButtonBlockUi = ({
-  link,
+  button,
   styleVars,
   layoutClassName,
   editing,
   dragRef,
 }: {
-  link?: LinkProps | LegacyLinkProps;
+  button?: ButtonContentProps;
   styleVars: Record<string, string>;
   layoutClassName?: string;
   /** Editor-only: the canvas keeps the anchor but cancels its navigation. */
@@ -23,6 +31,43 @@ export const ButtonBlockUi = ({
   /** Editor-only: Puck's selection ref, attached to the block root. */
   dragRef?: BlockDragRef;
 }) => {
+  const link: LinkProps | LegacyLinkProps | undefined = button?.link;
+  const iconName = button?.icon?.name;
+  const hasIcon = Boolean(iconName);
+  const iconPosition =
+    button?.iconPosition ?? BUTTON_ICON_DEFAULT_POSITION;
+  const iconSpacing = button?.iconSpacing ?? BUTTON_ICON_DEFAULT_SPACING;
+
+  const text = getLinkText(link);
+
+  /**
+   * The icon is decoration: it is one em wide so it follows the block's own
+   * Typography, and it is hidden from assistive technology so a screen reader
+   * reads the button text once.
+   */
+  const icon = hasIcon ? (
+    <Icon
+      name={iconName!}
+      aria-hidden="true"
+      focusable="false"
+      className="size-[1em] shrink-0"
+    />
+  ) : null;
+
+  /**
+   * Only an icon changes the anchor's layout. Without one the anchor keeps the
+   * `inline-block` it has always had, so an existing Button renders the same
+   * markup. With one it becomes an inline flex row, which the gap separates.
+   */
+  const iconContent =
+    hasIcon && text ? (
+      <>
+        {iconPosition === "before" ? icon : null}
+        {text}
+        {iconPosition === "after" ? icon : null}
+      </>
+    ) : undefined;
+
   return (
     // The anchor (or the plain-text span) is the block: the ref has to reach it,
     // since there is no wrapper element around the link.
@@ -31,10 +76,14 @@ export const ButtonBlockUi = ({
       editing={editing}
       dragRef={dragRef}
       className={cn(
-        "puck-dim puck-typo puck-deco inline-block puck-block-root",
+        "puck-dim puck-typo puck-deco",
+        hasIcon ? "inline-flex items-center" : "inline-block",
+        "puck-block-root",
         layoutClassName,
       )}
-      style={styleVars}
-    />
+      style={hasIcon ? { ...styleVars, gap: iconSpacing } : styleVars}
+    >
+      {iconContent}
+    </InlineSmartLink>
   );
 };

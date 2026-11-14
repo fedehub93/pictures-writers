@@ -354,7 +354,7 @@ describe("resolveSmartLinksInPuckData", () => {
       content: [
         {
           type: "Button",
-          props: { id: "link-1", link: external },
+          props: { id: "link-1", button: { link: external } },
         },
         {
           type: "Container",
@@ -363,26 +363,29 @@ describe("resolveSmartLinksInPuckData", () => {
             items: [
               {
                 type: "Button",
-                props: { id: "link-2", link: pageLink },
+                props: { id: "link-2", button: { link: pageLink } },
               },
             ],
           },
         },
         {
           type: "Button",
-          props: { id: "link-3", link: brokenLink },
+          props: { id: "link-3", button: { link: brokenLink } },
         },
         {
           // A pre-SmartLink document keeps rendering unchanged.
           type: "Button",
-          props: { id: "link-4", link: { label: "Legacy", href: "/legacy/" } },
+          props: {
+            id: "link-4",
+            button: { link: { label: "Legacy", href: "/legacy/" } },
+          },
         },
       ],
       zones: {
         "container-1:slot": [
           {
             type: "Button",
-            props: { id: "link-5", link: pageLink },
+            props: { id: "link-5", button: { link: pageLink } },
           },
         ],
       },
@@ -390,33 +393,35 @@ describe("resolveSmartLinksInPuckData", () => {
 
     const resolved = await resolveSmartLinksInPuckData(data);
 
-    expect(resolved.content[0]!.props.link).toEqual({
+    expect(resolved.content[0]!.props.button!.link).toEqual({
       label: "Example",
       href: "https://example.com/",
       openInNewTab: undefined,
     });
-    expect(resolved.content[1]!.props.items![0]!.props.link).toEqual({
+    expect(resolved.content[1]!.props.items![0]!.props.button!.link).toEqual({
       label: "Pagina linkata",
       href: `/${root.slug}/`,
       openInNewTab: undefined,
     });
-    expect(resolved.content[2]!.props.link).toEqual({
+    expect(resolved.content[2]!.props.button!.link).toEqual({
       label: "Rimosso",
       href: undefined,
       openInNewTab: undefined,
     });
-    expect(resolved.content[3]!.props.link).toEqual({
+    expect(resolved.content[3]!.props.button!.link).toEqual({
       label: "Legacy",
       href: "/legacy/",
     });
-    expect(resolved.zones["container-1:slot"]![0]!.props.link).toEqual({
+    expect(resolved.zones["container-1:slot"]![0]!.props.button!.link).toEqual({
       label: "Pagina linkata",
       href: `/${root.slug}/`,
       openInNewTab: undefined,
     });
 
     // The stored/editor document is left untouched.
-    expect((data.content[0]!.props.link as LinkProps).type).toBe("external");
+    expect((data.content[0]!.props.button!.link as LinkProps).type).toBe(
+      "external",
+    );
   });
 
   it("resolves links stored in nested array props such as LinkList.content.links", async () => {
@@ -476,7 +481,7 @@ describe("resolveSmartLinksInPuckData", () => {
               type: "Button",
               props: {
                 id: "page-link",
-                link: { type: "page", pageId: target.root.id },
+                button: { link: { type: "page", pageId: target.root.id } },
               },
             },
           ],
@@ -486,10 +491,12 @@ describe("resolveSmartLinksInPuckData", () => {
 
     const page = await getPublishedPageBySlug(source.slug);
     const document = page!.puckData as unknown as {
-      content: Array<{ props: { link: { label: string; href: string } } }>;
+      content: Array<{
+        props: { button: { link: { label: string; href: string } } };
+      }>;
     };
 
-    expect(document.content[0]!.props.link).toEqual({
+    expect(document.content[0]!.props.button!.link).toEqual({
       label: "Pagina target",
       href: `/${target.root.slug}/`,
       openInNewTab: undefined,
@@ -513,7 +520,7 @@ describe("resolveSmartLinksInPuckData", () => {
                   type: "Button",
                   props: {
                     id: "header-link",
-                    link: { type: "page", pageId: root.id },
+                    button: { link: { type: "page", pageId: root.id } },
                   },
                 },
               ],
@@ -531,10 +538,12 @@ describe("resolveSmartLinksInPuckData", () => {
 
     const live = await getLiveRegionByKey("HEADER");
     const document = live!.puckData as unknown as {
-      content: Array<{ props: { link: { label: string; href: string } } }>;
+      content: Array<{
+        props: { button: { link: { label: string; href: string } } };
+      }>;
     };
 
-    expect(document.content[0]!.props.link).toEqual({
+    expect(document.content[0]!.props.button!.link).toEqual({
       label: "Pagina del footer",
       href: `/${root.slug}/`,
       openInNewTab: undefined,

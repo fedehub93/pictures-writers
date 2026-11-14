@@ -52,6 +52,12 @@ interface LinkViewProps {
    */
   showLabel?: boolean;
   /**
+   * A label equal to this value is treated as unauthored, so selecting an
+   * entity still auto-fills the label from its title. Blocks whose default
+   * props carry a placeholder label set it here.
+   */
+  defaultLabel?: string;
+  /**
    * Prefix for the control ids. A list renders one editor per row, so the ids
    * must stay unique inside the properties panel.
    */
@@ -62,6 +68,7 @@ export const LinkView = ({
   state,
   onUpdate,
   showLabel = true,
+  defaultLabel,
   idPrefix = "",
 }: LinkViewProps) => {
   const trpc = useTRPC();
@@ -135,9 +142,12 @@ export const LinkView = ({
 
     // The label is auto-filled from the entity title, but a label the editor
     // typed must survive a target change. "Unchanged since it was auto-filled"
-    // is detected by comparing it with the previous entity title.
+    // is detected by comparing it with the previous entity title; a block
+    // default label is not text the author typed either.
     const hasCustomLabel =
-      Boolean(state.label?.trim()) && state.label !== previousOption?.title;
+      Boolean(state.label?.trim()) &&
+      state.label !== defaultLabel &&
+      state.label !== previousOption?.title;
     const next = withSmartLinkTarget(state, value);
 
     onUpdate(

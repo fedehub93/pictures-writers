@@ -8,6 +8,7 @@ import { getInertAnchorProps } from "@/puck/utils/inert-anchor";
 import {
   getLinkHref,
   getLinkOpenInNewTab,
+  getLinkText,
   type LegacyLinkProps,
   type LinkProps,
 } from "../types";
@@ -52,7 +53,7 @@ export const InlineSmartLink = ({
   if (!link) return null;
 
   const href = getLinkHref(link);
-  const content = children ?? link.label ?? href;
+  const content = children ?? getLinkText(link);
 
   if (!content) return null;
   if (!href) {

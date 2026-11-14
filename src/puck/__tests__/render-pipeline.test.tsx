@@ -178,10 +178,12 @@ const SHARED_CASES: SharedCase[] = [
   {
     name: "Button",
     props: {
-      link: {
-        type: "external",
-        url: "https://example.com/",
-        label: "Example",
+      button: {
+        link: {
+          type: "external",
+          url: "https://example.com/",
+          label: "Example",
+        },
       },
     },
   },
@@ -401,10 +403,12 @@ describe("consolidated Puck render pipeline", () => {
     const { editorHtml, publicHtml } = renderCase({
       name: "Button",
       props: {
-        link: {
-          type: "external",
-          url: "https://example.com/",
-          label: "Example",
+        button: {
+          link: {
+            type: "external",
+            url: "https://example.com/",
+            label: "Example",
+          },
         },
         dimension: { desktop: { maxWidth: "30rem" } },
       },

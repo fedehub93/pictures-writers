@@ -222,7 +222,7 @@ function mountButton(
     buttonRender()({
       ...mergePropsWithDefaults(BLOCK_DEFAULT_PROPS.Button, {
         id: "canvas-button",
-        link,
+        button: { link },
       }),
       puck,
     }),

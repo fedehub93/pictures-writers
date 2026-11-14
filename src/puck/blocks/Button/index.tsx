@@ -4,9 +4,9 @@ import { createDimensionField } from "@/puck/fields/dimension";
 import { DecorationField } from "@/puck/fields/decoration";
 import { TypographyField } from "@/puck/fields/typography";
 import { DisplayOnlyLayoutField } from "@/puck/fields/layout";
-import { LinkField } from "@/puck/fields/link";
 
 import { BUTTON_DEFAULT_PROPS } from "../defaults";
+import { ButtonContentField } from "./field";
 
 import type { ButtonProps } from "./types";
 import { renderButtonBlock } from "./render";
@@ -19,7 +19,7 @@ export const ButtonBlock: ComponentConfig<ButtonProps> = {
   // it and `inline` is Puck's only supported way to skip its wrapper `div`.
   inline: true,
   fields: {
-    link: LinkField,
+    button: ButtonContentField,
     layout: DisplayOnlyLayoutField,
     dimension: createDimensionField({ baseWidth: BUTTON_BASE_WIDTH }),
     typography: TypographyField,

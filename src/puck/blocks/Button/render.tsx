@@ -19,7 +19,7 @@ import { BUTTON_BASE_WIDTH } from "./constants";
  * utilities so the public render path never pulls in editor field modules.
  */
 export const renderButtonBlock: PuckComponent<ButtonProps> = ({
-  link,
+  button,
   layout,
   dimension,
   typography,
@@ -35,7 +35,7 @@ export const renderButtonBlock: PuckComponent<ButtonProps> = ({
 
   return (
     <ButtonBlockUi
-      link={link}
+      button={button}
       styleVars={styleVars}
       layoutClassName={getLayoutClassNames(layout, {
         editing: puck?.isEditing,

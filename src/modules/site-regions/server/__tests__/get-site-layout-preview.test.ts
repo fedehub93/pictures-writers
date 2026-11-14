@@ -139,10 +139,12 @@ describe("getSiteLayoutPreview", () => {
           type: "Button",
           props: {
             id: `link-${randomUUID()}`,
-            link: {
-              type: "external",
-              url: "https://example.com/",
-              label: "Example",
+            button: {
+              link: {
+                type: "external",
+                url: "https://example.com/",
+                label: "Example",
+              },
             },
           },
         },
@@ -161,12 +163,15 @@ describe("getSiteLayoutPreview", () => {
 
     const content = preview.header.data.content as unknown as Array<{
       type: string;
-      props: { form?: { id: string; content?: unknown }; link?: unknown };
+      props: {
+        form?: { id: string; content?: unknown };
+        button?: { link?: unknown };
+      };
     }>;
 
     expect(content[0]?.props.form?.id).toBe(form.id);
     expect(content[0]?.props.form?.content).toEqual({ fields: [] });
-    expect(content[1]?.props.link).toMatchObject({
+    expect(content[1]?.props.button?.link).toMatchObject({
       href: "https://example.com/",
       label: "Example",
     });
@@ -176,9 +181,11 @@ describe("getSiteLayoutPreview", () => {
       where: { id: forked.id },
     });
     const storedContent = stored.puckData as unknown as {
-      content: Array<{ props: { link?: { type?: string } } }>;
+      content: Array<{ props: { button?: { link?: { type?: string } } } }>;
     };
-    expect(storedContent.content[1]?.props.link?.type).toBe("external");
+    expect(storedContent.content[1]?.props.button?.link?.type).toBe(
+      "external",
+    );
   });
 
   it("never returns a draft to a user without site_layout.read", async () => {
