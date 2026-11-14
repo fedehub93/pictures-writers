@@ -102,8 +102,8 @@ const NAV_CONTENT: NavbarBlockRenderContent = {
 
 type RenderEntry = (props: Record<string, unknown>) => React.ReactNode;
 
-function linkRender() {
-  return editorConfigForRegion("HEADER").components.Link
+function buttonRender() {
+  return editorConfigForRegion("HEADER").components.Button
     .render as unknown as RenderEntry;
 }
 
@@ -214,14 +214,14 @@ function anchorByHref(scope: ParentNode, href: string) {
   return scope.querySelector<HTMLAnchorElement>(`a[href="${href}"]`);
 }
 
-function mountLink(
+function mountButton(
   puck: PuckContext,
   link: LinkProps | LegacyLinkProps = LINK,
 ) {
   return mount(
-    linkRender()({
-      ...mergePropsWithDefaults(BLOCK_DEFAULT_PROPS.Link, {
-        id: "canvas-link",
+    buttonRender()({
+      ...mergePropsWithDefaults(BLOCK_DEFAULT_PROPS.Button, {
+        id: "canvas-button",
         link,
       }),
       puck,
@@ -355,9 +355,9 @@ async function openMobileSheet() {
   return sheet!;
 }
 
-describe("Link block in the canvas", () => {
+describe("Button block in the canvas", () => {
   it("keeps the anchor, its target and its rel while editing", async () => {
-    const host = await mountLink(PUCK, { ...LINK, openInNewTab: true });
+    const host = await mountButton(PUCK, { ...LINK, openInNewTab: true });
     const anchor = host.querySelector("a");
 
     expect(anchor).not.toBeNull();
@@ -367,7 +367,7 @@ describe("Link block in the canvas", () => {
   });
 
   it("cancels the click so the anchor never follows it", async () => {
-    const host = await mountLink(PUCK);
+    const host = await mountButton(PUCK);
     const anchor = host.querySelector("a")!;
 
     expect(click(anchor).defaultPrevented).toBe(true);
@@ -379,7 +379,7 @@ describe("Link block in the canvas", () => {
   });
 
   it("cancels a Cmd/Ctrl+click so no tab opens behind the editor", async () => {
-    const host = await mountLink(PUCK, { ...LINK, openInNewTab: true });
+    const host = await mountButton(PUCK, { ...LINK, openInNewTab: true });
     const anchor = host.querySelector("a")!;
 
     expect(click(anchor, { ctrlKey: true }).defaultPrevented).toBe(true);
@@ -387,16 +387,16 @@ describe("Link block in the canvas", () => {
   });
 
   it("cancels a middle click so no tab opens behind the editor", async () => {
-    const host = await mountLink(PUCK);
+    const host = await mountButton(PUCK);
 
     expect(middleClick(host.querySelector("a")!).defaultPrevented).toBe(true);
   });
 
   it("cancels the click although Puck stops it at the block root", async () => {
-    const host = await mountLink(PUCK);
+    const host = await mountButton(PUCK);
     const anchor = host.querySelector("a")!;
 
-    // The Link's block root *is* the anchor, so this is exactly where the
+    // The Button's block root *is* the anchor, so this is exactly where the
     // editor's own click listener sits in the real canvas.
     mimicPuckSelection(anchor);
 
@@ -404,7 +404,7 @@ describe("Link block in the canvas", () => {
   });
 
   it("still renders a broken link as selectable plain text", async () => {
-    const host = await mountLink(PUCK, { label: "Removed page" });
+    const host = await mountButton(PUCK, { label: "Removed page" });
     const text = host.firstElementChild as HTMLElement;
 
     expect(host.querySelector("a")).toBeNull();
@@ -431,7 +431,7 @@ describe("Image block in the canvas", () => {
     const host = await mountImage(true);
     const anchor = host.querySelector("a")!;
 
-    // The linked image's block root *is* the anchor, exactly like the Link.
+    // The linked image's block root *is* the anchor, exactly like the Button.
     mimicPuckSelection(anchor);
 
     expect(click(anchor).defaultPrevented).toBe(true);
@@ -470,9 +470,9 @@ describe("Image block in the canvas", () => {
   });
 });
 
-describe("Link block on the published path", () => {
+describe("Button block on the published path", () => {
   it("leaves the click and the middle click to the browser", async () => {
-    const host = await mountLink({ ...PUCK, isEditing: false });
+    const host = await mountButton({ ...PUCK, isEditing: false });
     const anchor = host.querySelector("a")!;
 
     expect(click(anchor).defaultPrevented).toBe(false);
@@ -527,7 +527,7 @@ describe("Copyright block in the canvas", () => {
 });
 
 /**
- * As for the Link block: `editing` changes behaviour, never markup. An authored
+ * As for the Button block: `editing` changes behaviour, never markup. An authored
  * `display: none` is the separate, pre-existing exception handled by the layout
  * classes (the editor keeps a hidden block selectable), so these cases author
  * no layout.

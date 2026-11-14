@@ -1,5 +1,5 @@
 /**
- * Link targets understood by the Link block and the other Puck blocks that
+ * Link targets understood by the Button block and the other Puck blocks that
  * reference CMS entities (LinkList, NavbarBlock).
  *
  * A `SmartLink` is stored as-is in the Puck document and resolved server-side
@@ -26,7 +26,7 @@ export type SmartLink =
   | { type: "productCategory"; productCategoryId: string };
 
 /**
- * The Link block stores the target together with its visible label.
+ * A link target stored on a block, together with its visible label.
  */
 export type LinkProps = SmartLink & { label?: string };
 
@@ -39,7 +39,7 @@ export type LinkProps = SmartLink & { label?: string };
 export type LinkListItem = { link?: LinkProps | LegacyLinkProps };
 
 /**
- * Shape written by Link blocks before the SmartLink model existed.
+ * Shape written by the old Link block before the SmartLink model existed.
  *
  * It is still accepted at runtime so published documents do not break.
  */

@@ -10,7 +10,7 @@ import { ImageBlock, type ImageBlockProps } from "./blocks/Image";
 import { FormBlock, type FormBlockProps } from "./blocks/Form";
 import { Heading, type HeadingProps } from "./blocks/Heading";
 import { Text, type TextBlockProps } from "./blocks/Text";
-import { LinkBlock, type LinkBlockProps } from "./blocks/Link";
+import { ButtonBlock, type ButtonProps } from "./blocks/Button";
 import { IconBlock, type IconBlockProps } from "./blocks/Icon";
 import { Brand } from "./blocks/Brand";
 import { LinkList } from "./blocks/LinkList";
@@ -41,7 +41,7 @@ export type SavedComponents = {
   };
   Heading: HeadingProps;
   Text: TextBlockProps;
-  Link: LinkBlockProps;
+  Button: ButtonProps;
 };
 
 export type HydratedComponents = {
@@ -54,7 +54,7 @@ export type HydratedComponents = {
   Form: FormBlockProps;
   Heading: HeadingProps;
   Text: TextBlockProps;
-  Link: LinkBlockProps;
+  Button: ButtonProps;
 };
 
 /**
@@ -93,7 +93,7 @@ export const editorComponentConfigs: Config["components"] = {
   Form: FormBlock,
   Heading,
   Text,
-  Link: LinkBlock,
+  Button: ButtonBlock,
   Brand,
   LinkList,
   Copyright,
@@ -119,7 +119,7 @@ const PAGE_COMPONENT_NAMES = [
   "Form",
   "Heading",
   "Text",
-  "Link",
+  "Button",
 ] as const;
 
 /**
@@ -155,7 +155,7 @@ export const config: PageEditorConfig = {
     },
     basic: {
       title: "Basic",
-      components: ["Link", "Icon", "Image", "Form", "Separator"],
+      components: ["Icon", "Image", "Form", "Separator"],
     },
     typography: {
       title: "Typography",
@@ -163,6 +163,7 @@ export const config: PageEditorConfig = {
     },
     actions: {
       title: "Actions",
+      components: ["Button"],
     },
   },
   components: pickComponentConfigs(

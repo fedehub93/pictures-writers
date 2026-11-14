@@ -1,8 +1,8 @@
+import type { ButtonProps } from "./Button/types";
 import type { ContainerBlockProps } from "./Container/types";
 import type { FlexBlockProps } from "./Flex/types";
 import type { GridBlockProps } from "./Grid/types";
 import type { HeadingProps } from "./Heading/types";
-import type { LinkBlockProps } from "./Link/types";
 import type { SeparatorBlockProps } from "./Separator/types";
 import type { TextBlockProps } from "./Text/types";
 import type { FormBlockProps } from "./Form/types";
@@ -77,7 +77,7 @@ export const HEADING_DEFAULT_PROPS: HeadingProps = {
   level: HEADING_DEFAULT_LEVEL,
 };
 
-export const LINK_DEFAULT_PROPS: LinkBlockProps = {
+export const BUTTON_DEFAULT_PROPS: ButtonProps = {
   link: {
     type: "external",
     url: "",
@@ -155,7 +155,7 @@ export const BLOCK_DEFAULT_PROPS: Record<string, object> = {
   Flex: FLEX_DEFAULT_PROPS,
   Grid: GRID_DEFAULT_PROPS,
   Heading: HEADING_DEFAULT_PROPS,
-  Link: LINK_DEFAULT_PROPS,
+  Button: BUTTON_DEFAULT_PROPS,
   Separator: SEPARATOR_DEFAULT_PROPS,
   Text: TEXT_DEFAULT_PROPS,
   Form: FORM_DEFAULT_PROPS,

@@ -18,7 +18,7 @@ const EXPECTED_CATEGORIES: Record<
       title: "Header",
       components: ["TopBar", "SearchBar", "NavbarBlock"],
     },
-    basic: { title: "Basic", components: ["Link", "Image"] },
+    basic: { title: "Basic", components: ["Button", "Image"] },
     typography: { title: "Typography", components: ["Heading", "Text"] },
   },
   FOOTER: {
@@ -29,7 +29,7 @@ const EXPECTED_CATEGORIES: Record<
     },
     basic: {
       title: "Basic",
-      components: ["Link", "Image", "Form", "Separator"],
+      components: ["Button", "Image", "Form", "Separator"],
     },
     typography: { title: "Typography", components: ["Heading", "Text"] },
   },

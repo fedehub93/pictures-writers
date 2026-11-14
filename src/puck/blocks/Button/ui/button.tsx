@@ -8,7 +8,7 @@ import { InlineSmartLink } from "@/puck/fields/link/ui/inline-link";
 import type { BlockDragRef } from "@/puck/types";
 import { cn } from "@/shared/lib/utils";
 
-export const LinkBlockUi = ({
+export const ButtonBlockUi = ({
   link,
   styleVars,
   layoutClassName,

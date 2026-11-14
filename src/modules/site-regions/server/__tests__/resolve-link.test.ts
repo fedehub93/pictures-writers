@@ -353,7 +353,7 @@ describe("resolveSmartLinksInPuckData", () => {
       root: {},
       content: [
         {
-          type: "Link",
+          type: "Button",
           props: { id: "link-1", link: external },
         },
         {
@@ -362,26 +362,26 @@ describe("resolveSmartLinksInPuckData", () => {
             id: "container-1",
             items: [
               {
-                type: "Link",
+                type: "Button",
                 props: { id: "link-2", link: pageLink },
               },
             ],
           },
         },
         {
-          type: "Link",
+          type: "Button",
           props: { id: "link-3", link: brokenLink },
         },
         {
           // A pre-SmartLink document keeps rendering unchanged.
-          type: "Link",
+          type: "Button",
           props: { id: "link-4", link: { label: "Legacy", href: "/legacy/" } },
         },
       ],
       zones: {
         "container-1:slot": [
           {
-            type: "Link",
+            type: "Button",
             props: { id: "link-5", link: pageLink },
           },
         ],
@@ -473,7 +473,7 @@ describe("resolveSmartLinksInPuckData", () => {
           root: {},
           content: [
             {
-              type: "Link",
+              type: "Button",
               props: {
                 id: "page-link",
                 link: { type: "page", pageId: target.root.id },
@@ -510,7 +510,7 @@ describe("resolveSmartLinksInPuckData", () => {
               root: {},
               content: [
                 {
-                  type: "Link",
+                  type: "Button",
                   props: {
                     id: "header-link",
                     link: { type: "page", pageId: root.id },

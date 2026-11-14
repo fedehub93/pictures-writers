@@ -4,8 +4,8 @@ import { describe, expect, it } from "vitest";
 
 import type { LinkProps } from "../fields/link/types";
 
-import { renderLinkBlock } from "../blocks/Link/render";
-import { LinkBlockUi } from "../blocks/Link/ui/link";
+import { renderButtonBlock } from "../blocks/Button/render";
+import { ButtonBlockUi } from "../blocks/Button/ui/button";
 
 const PUCK: PuckContext = {
   renderDropZone: () => null,
@@ -14,7 +14,7 @@ const PUCK: PuckContext = {
   dragRef: null,
 };
 
-describe("Link block", () => {
+describe("Button block", () => {
   it("renders an external smart link as an anchor", () => {
     const link: LinkProps = {
       type: "external",
@@ -22,7 +22,7 @@ describe("Link block", () => {
       label: "Example",
     };
 
-    const html = renderToStaticMarkup(<LinkBlockUi link={link} styleVars={{}} />);
+    const html = renderToStaticMarkup(<ButtonBlockUi link={link} styleVars={{}} />);
 
     expect(html).toContain('href="https://example.com/"');
     expect(html).toContain(">Example</a>");
@@ -36,7 +36,7 @@ describe("Link block", () => {
       openInNewTab: true,
     };
 
-    const html = renderToStaticMarkup(<LinkBlockUi link={link} styleVars={{}} />);
+    const html = renderToStaticMarkup(<ButtonBlockUi link={link} styleVars={{}} />);
 
     expect(html).toContain('target="_blank"');
     expect(html).toContain('rel="noreferrer"');
@@ -45,7 +45,7 @@ describe("Link block", () => {
   it("renders an unresolved entity link as plain text", () => {
     const link: LinkProps = { type: "page", pageId: "root-1", label: "About" };
 
-    const html = renderToStaticMarkup(<LinkBlockUi link={link} styleVars={{}} />);
+    const html = renderToStaticMarkup(<ButtonBlockUi link={link} styleVars={{}} />);
 
     expect(html).not.toContain("<a");
     expect(html).toContain(">About</span>");
@@ -53,7 +53,7 @@ describe("Link block", () => {
 
   it("renders a broken resolved link as plain text", () => {
     const html = renderToStaticMarkup(
-      <LinkBlockUi link={{ label: "Removed page" }} styleVars={{}} />,
+      <ButtonBlockUi link={{ label: "Removed page" }} styleVars={{}} />,
     );
 
     expect(html).not.toContain("<a");
@@ -67,7 +67,7 @@ describe("Link block", () => {
       label: "Example",
     };
 
-    const html = renderToStaticMarkup(<LinkBlockUi link={link} styleVars={{}} />);
+    const html = renderToStaticMarkup(<ButtonBlockUi link={link} styleVars={{}} />);
     const rootTag = html.slice(0, html.indexOf(">") + 1);
 
     expect(rootTag.startsWith("<a ")).toBe(true);
@@ -76,7 +76,7 @@ describe("Link block", () => {
 
   it("keeps rendering legacy { label, href } documents", () => {
     const html = renderToStaticMarkup(
-      <LinkBlockUi link={{ label: "Legacy", href: "/legacy/" }} styleVars={{}} />,
+      <ButtonBlockUi link={{ label: "Legacy", href: "/legacy/" }} styleVars={{}} />,
     );
 
     expect(html).toContain('href="/legacy"');
@@ -85,11 +85,11 @@ describe("Link block", () => {
 });
 
 /**
- * A Link root is the anchor, so it is the flex or grid item its parent lays
+ * A Button root is the anchor, so it is the flex or grid item its parent lays
  * out. A block base width keeps `auto` from stretching, and an authored width
  * still outranks it. Neither case is a stored document value.
  */
-describe("Link block base width", () => {
+describe("Button block base width", () => {
   const link: LinkProps = {
     type: "external",
     url: "https://example.com/",
@@ -103,7 +103,7 @@ describe("Link block base width", () => {
 
   it("emits the natural width on an unauthored dimension", () => {
     const html = renderToStaticMarkup(
-      renderLinkBlock({ id: "link", link, puck: PUCK }),
+      renderButtonBlock({ id: "button", link, puck: PUCK }),
     );
 
     expect(rootTag(html)).toContain("--w-d:fit-content");
@@ -111,8 +111,8 @@ describe("Link block base width", () => {
 
   it("lets an authored width win over the base width", () => {
     const html = renderToStaticMarkup(
-      renderLinkBlock({
-        id: "link",
+      renderButtonBlock({
+        id: "button",
         link,
         dimension: { desktop: { width: "50%" } },
         puck: PUCK,
@@ -125,8 +125,8 @@ describe("Link block base width", () => {
 
   it("hugs a max width instead of filling the container", () => {
     const html = renderToStaticMarkup(
-      renderLinkBlock({
-        id: "link",
+      renderButtonBlock({
+        id: "button",
         link,
         dimension: { desktop: { maxWidth: "30rem" } },
         puck: PUCK,
@@ -139,12 +139,12 @@ describe("Link block base width", () => {
   });
 
   it("still applies the base width when the document authored other dimension values", () => {
-    // Nearly every existing Link authored padding or margins. A document
+    // Nearly every existing Button authored padding or margins. A document
     // default would have been dropped by Puck's shallow merge for exactly these
     // documents; the block base width is read independently of the object.
     const html = renderToStaticMarkup(
-      renderLinkBlock({
-        id: "link",
+      renderButtonBlock({
+        id: "button",
         link,
         dimension: { desktop: { paddingTop: "12px" } },
         puck: PUCK,
@@ -157,15 +157,15 @@ describe("Link block base width", () => {
 
   it("renders the same markup while editing as on the published page", () => {
     const props = {
-      id: "link",
+      id: "button",
       link,
       dimension: { desktop: { maxWidth: "30rem" } },
       puck: PUCK,
     };
 
-    const published = renderToStaticMarkup(renderLinkBlock(props));
+    const published = renderToStaticMarkup(renderButtonBlock(props));
     const editing = renderToStaticMarkup(
-      renderLinkBlock({ ...props, puck: { ...PUCK, isEditing: true } }),
+      renderButtonBlock({ ...props, puck: { ...PUCK, isEditing: true } }),
     );
 
     expect(editing).toBe(published);

@@ -62,7 +62,7 @@ export const ImageBlockUi = ({
     ...dimensionVars,
   };
   // A linked image renders as an anchor block root, so the canvas has to cancel
-  // its navigation exactly like a Link block.
+  // its navigation exactly like a Button block.
   const inertAnchorHandlers = getInertAnchorProps(editing);
 
   return (

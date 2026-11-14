@@ -34,7 +34,7 @@ runs before that listener and still reaches the browser; `next/link` bails on
 `defaultPrevented`.
 
 `getInertAnchorProps(editing)` is the shared implementation. Every block whose root can be an
-anchor spreads it: `InlineSmartLink` for the Link block and the NavbarBlock entries,
+anchor spreads it: `InlineSmartLink` for the Button block and the NavbarBlock entries,
 `ImageBlockUi` for a linked image. The Footer's server-rendered blocks (Link list, Copyright)
 reach the same handler through an editor-only render: their `index.tsx` passes
 `puck.isEditing`, while the public entry keeps calling the shared server-safe render (Copyright

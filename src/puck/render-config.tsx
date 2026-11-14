@@ -12,13 +12,13 @@ import { richTextDescriptors } from "./fields/rich-text/presets";
 import { mergePropsWithDefaults } from "./lib/merge-props";
 import {
   BRAND_DEFAULT_PROPS,
+  BUTTON_DEFAULT_PROPS,
   CONTAINER_DEFAULT_PROPS,
   COPYRIGHT_DEFAULT_PROPS,
   FLEX_DEFAULT_PROPS,
   FORM_DEFAULT_PROPS,
   GRID_DEFAULT_PROPS,
   HEADING_DEFAULT_PROPS,
-  LINK_DEFAULT_PROPS,
   LINK_LIST_DEFAULT_PROPS,
   NAVBAR_BLOCK_DEFAULT_PROPS,
   SEARCH_BAR_DEFAULT_PROPS,
@@ -39,7 +39,7 @@ import { renderSeparatorBlock } from "./blocks/Separator/render";
 import { renderIconBlock } from "./blocks/Icon/render";
 import { renderHeadingBlock } from "./blocks/Heading/render";
 import { renderTextBlock } from "./blocks/Text/render";
-import { renderLinkBlock } from "./blocks/Link/render";
+import { renderButtonBlock } from "./blocks/Button/render";
 
 import { BrandServer } from "./blocks/Brand/server";
 import type { BrandBlockProps } from "./blocks/Brand/types";
@@ -94,7 +94,7 @@ export const RENDER_COMPONENT_NAMES = [
   "Icon",
   "Heading",
   "Text",
-  "Link",
+  "Button",
   "Brand",
   "LinkList",
   "Copyright",
@@ -171,8 +171,8 @@ export const renderComponentConfigs: Config<any, RootProps>["components"] = {
     },
     render: withPublicDefaults(TEXT_DEFAULT_PROPS, renderTextBlock),
   },
-  Link: {
-    render: withPublicDefaults(LINK_DEFAULT_PROPS, renderLinkBlock),
+  Button: {
+    render: withPublicDefaults(BUTTON_DEFAULT_PROPS, renderButtonBlock),
   },
 };
 

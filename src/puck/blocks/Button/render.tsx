@@ -8,9 +8,9 @@ import {
 import { getLayoutVars } from "@/puck/fields/layout/get-layout-vars";
 import { getLayoutClassNames } from "@/puck/fields/layout/get-layout-classes";
 
-import type { LinkBlockProps } from "./types";
-import { LinkBlockUi } from "./ui/link";
-import { LINK_BASE_WIDTH } from "./constants";
+import type { ButtonProps } from "./types";
+import { ButtonBlockUi } from "./ui/button";
+import { BUTTON_BASE_WIDTH } from "./constants";
 
 /**
  * Pure render shared by the editor canvas and the public page.
@@ -18,7 +18,7 @@ import { LINK_BASE_WIDTH } from "./constants";
  * It deliberately imports only the block UI and the shared style-variable
  * utilities so the public render path never pulls in editor field modules.
  */
-export const renderLinkBlock: PuckComponent<LinkBlockProps> = ({
+export const renderButtonBlock: PuckComponent<ButtonProps> = ({
   link,
   layout,
   dimension,
@@ -28,13 +28,13 @@ export const renderLinkBlock: PuckComponent<LinkBlockProps> = ({
 }) => {
   const styleVars = {
     ...getLayoutVars(layout),
-    ...getDimensionVars(dimension, { baseWidth: LINK_BASE_WIDTH }),
+    ...getDimensionVars(dimension, { baseWidth: BUTTON_BASE_WIDTH }),
     ...getTypographyVars(typography),
     ...getDecorationVars(decoration),
   };
 
   return (
-    <LinkBlockUi
+    <ButtonBlockUi
       link={link}
       styleVars={styleVars}
       layoutClassName={getLayoutClassNames(layout, {

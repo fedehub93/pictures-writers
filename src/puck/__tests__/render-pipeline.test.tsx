@@ -176,7 +176,7 @@ const SHARED_CASES: SharedCase[] = [
     },
   },
   {
-    name: "Link",
+    name: "Button",
     props: {
       link: {
         type: "external",
@@ -356,7 +356,7 @@ describe("consolidated Puck render pipeline", () => {
       props: {},
     },
     {
-      name: "Link",
+      name: "Button",
       props: {},
     },
     {
@@ -395,11 +395,11 @@ describe("consolidated Puck render pipeline", () => {
     },
   );
 
-  it("renders a Link that caps its natural width identically in both configs", () => {
-    // The Link's block base width must not be replaced by the implied fill in
+  it("renders a Button that caps its natural width identically in both configs", () => {
+    // The Button's block base width must not be replaced by the implied fill in
     // either path: the canvas and the page read the same width function.
     const { editorHtml, publicHtml } = renderCase({
-      name: "Link",
+      name: "Button",
       props: {
         link: {
           type: "external",

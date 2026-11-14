@@ -136,7 +136,7 @@ describe("getSiteLayoutPreview", () => {
           },
         },
         {
-          type: "Link",
+          type: "Button",
           props: {
             id: `link-${randomUUID()}`,
             link: {

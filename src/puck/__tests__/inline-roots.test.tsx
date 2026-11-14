@@ -127,7 +127,7 @@ const INLINE_CASES: InlineCase[] = [
     rootClasses: ["puck-dim", "puck-typo"],
   },
   {
-    name: "Link",
+    name: "Button",
     props: {
       link: { type: "external", url: "https://example.com/", label: "Example" },
     },
@@ -393,9 +393,9 @@ describe("inline block roots", () => {
     }
   });
 
-  it("keeps the Link fallback root ref'ed when the target is unresolved", async () => {
+  it("keeps the Button fallback root ref'ed when the target is unresolved", async () => {
     const { host, dragRef } = await renderCase({
-      name: "Link",
+      name: "Button",
       // No href: the block renders plain text instead of an anchor.
       props: { link: { label: "Removed page" } },
       rootClasses: ["puck-dim"],

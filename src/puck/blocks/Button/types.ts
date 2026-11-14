@@ -5,7 +5,7 @@ import type { DecorationProps } from "@/puck/fields/decoration";
 import type { LayoutProps } from "@/puck/fields/layout";
 import type { LinkProps } from "@/puck/fields/link";
 
-export type LinkBlockProps = {
+export type ButtonProps = {
   link?: LinkProps;
   layout?: Responsive<LayoutProps>;
   dimension?: Responsive<DimensionProps>;

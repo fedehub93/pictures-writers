@@ -1,7 +1,7 @@
 import {
   ImageIcon,
   SmileIcon,
-  LinkIcon,
+  MousePointerClickIcon,
   FormIcon,
   SeparatorHorizontalIcon,
   SearchIcon,
@@ -33,7 +33,7 @@ export const ELEMENT_ICONS: Record<string, LucideIcon> = {
   Text: TextIcon,
   Image: ImageIcon,
   Icon: SmileIcon,
-  Link: LinkIcon,
+  Button: MousePointerClickIcon,
   Form: FormIcon,
   Separator: SeparatorHorizontalIcon,
   Brand: TagIcon,

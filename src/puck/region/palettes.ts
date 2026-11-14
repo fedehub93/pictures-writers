@@ -28,8 +28,8 @@ export const REGION_BRAND_COMPONENTS = ["Brand"] as const;
 /** Text blocks available in every Site region. */
 const REGION_TYPOGRAPHY_COMPONENTS = ["Heading", "Text"] as const;
 
-/** Link and media blocks available in every Site region. */
-const REGION_MEDIA_COMPONENTS = ["Link", "Image"] as const;
+/** Blocks in the region Basic category: the Button and media. */
+const REGION_BASIC_COMPONENTS = ["Button", "Image"] as const;
 
 /**
  * Content blocks shared by the Header and the Footer.
@@ -39,7 +39,7 @@ const REGION_MEDIA_COMPONENTS = ["Link", "Image"] as const;
  */
 export const REGION_CONTENT_COMPONENTS = [
   ...REGION_TYPOGRAPHY_COMPONENTS,
-  ...REGION_MEDIA_COMPONENTS,
+  ...REGION_BASIC_COMPONENTS,
 ] as const;
 
 /** Blocks that only exist inside a Header region. */
@@ -120,7 +120,7 @@ export const REGION_CATEGORY_DEFINITIONS = [
   {
     key: "basic",
     title: "Basic",
-    components: [...REGION_MEDIA_COMPONENTS, ...FOOTER_PAGE_COMPONENTS],
+    components: [...REGION_BASIC_COMPONENTS, ...FOOTER_PAGE_COMPONENTS],
   },
   {
     key: "typography",
