@@ -45,11 +45,21 @@ vi.mock("@/puck/fields/icon/ui/view/icon-view", () => ({
 }));
 
 import { ButtonContentField } from "../blocks/Button/field";
-import type { ButtonContentProps } from "../blocks/Button/types";
+import type {
+  ButtonContentProps,
+  ButtonVariant,
+} from "../blocks/Button/types";
 
 const field = ButtonContentField as CustomField<
   ButtonContentProps | undefined
 >;
+
+const VARIANT_TITLES: Record<ButtonVariant, string> = {
+  primary: "Primary",
+  secondary: "Secondary",
+  outline: "Outline",
+  ghost: "Ghost",
+};
 
 function renderStatic(value?: ButtonContentProps) {
   return renderToStaticMarkup(
@@ -73,6 +83,7 @@ describe("Button content section", () => {
     });
 
     const controls = [
+      'id="variant"',
       'id="text"',
       'id="button-link-type"',
       ">Icon<",
@@ -84,6 +95,18 @@ describe("Button content section", () => {
     expect([...controls].sort((a, b) => a - b)).toEqual(controls);
     expect(html).toContain("Icon position");
     expect(html).toContain("Icon spacing");
+  });
+
+  it("offers no empty variant and no size option", () => {
+    const html = renderStatic();
+
+    for (const title of Object.values(VARIANT_TITLES)) {
+      expect(html).toContain(`>${title}<`);
+    }
+
+    expect(html).not.toContain(">Default<");
+    expect(html).not.toContain(">None<");
+    expect(html).not.toContain(">Size<");
   });
 
   it("does not render the link editor's own label control", () => {
@@ -189,6 +212,40 @@ afterEach(() => {
   document.body.innerHTML = "";
   root = null;
   container = null;
+});
+
+describe("Button variant control", () => {
+  it("always shows a variant and stores a pick without discarding authored props", () => {
+    const onValueChange = vi.fn();
+    mount(
+      {
+        link: { type: "external", url: "https://example.com/", label: "Start" },
+        icon: { name: "play" },
+        iconPosition: "after",
+      },
+      onValueChange,
+    );
+
+    const group = container!.querySelector("#variant");
+    expect(group).not.toBeNull();
+    expect(group!.querySelector('[data-state="on"]')?.textContent).toBe(
+      VARIANT_TITLES.primary,
+    );
+
+    click(findButton(VARIANT_TITLES.secondary, group!));
+
+    const stored = onValueChange.mock.calls.at(-1)?.[0] as ButtonContentProps;
+    expect(stored).toMatchObject({
+      variant: "secondary",
+      link: {
+        type: "external",
+        url: "https://example.com/",
+        label: "Start",
+      },
+      icon: { name: "play" },
+      iconPosition: "after",
+    });
+  });
 });
 
 describe("Button text and target", () => {

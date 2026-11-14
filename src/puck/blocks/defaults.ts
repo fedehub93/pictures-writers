@@ -17,6 +17,7 @@ import {
   BRAND_DEFAULT_CONTENT,
   BRAND_DEFAULT_TYPOGRAPHY,
 } from "./Brand/defaults";
+import { BUTTON_DEFAULT_VARIANT } from "./Button/constants";
 import {
   COPYRIGHT_DEFAULT_CONTENT,
   COPYRIGHT_DEFAULT_TYPOGRAPHY,
@@ -79,16 +80,25 @@ export const HEADING_DEFAULT_PROPS: HeadingProps = {
 
 export const BUTTON_DEFAULT_PROPS: ButtonProps = {
   button: {
+    variant: BUTTON_DEFAULT_VARIANT,
     link: {
       type: "external",
       url: "",
       label: "Inserisci il tuo link",
     },
   },
-  typography: {
+  /**
+   * A freshly dropped Button has to read as a call to action without the
+   * author opening Dimension: the variant supplies the look, this gives it a
+   * target-sized box. Every breakpoint inherits the desktop padding through
+   * the stylesheet's ladder; the author can still repaint it.
+   */
+  dimension: {
     desktop: {
-      fontWeight: "700",
-      color: "var(--primary)",
+      paddingTop: "0.5rem",
+      paddingRight: "1rem",
+      paddingBottom: "0.5rem",
+      paddingLeft: "1rem",
     },
   },
 };

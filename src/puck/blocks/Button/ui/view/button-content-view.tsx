@@ -9,12 +9,14 @@ import { IconView } from "@/puck/fields/icon/ui/view/icon-view";
 import { LinkView } from "@/puck/fields/link/ui/view/link-view";
 import { BUTTON_DEFAULT_PROPS } from "@/puck/blocks/defaults";
 import {
+  BUTTON_DEFAULT_VARIANT,
   BUTTON_ICON_DEFAULT_POSITION,
   BUTTON_ICON_DEFAULT_SPACING,
 } from "@/puck/blocks/Button/constants";
 import type {
   ButtonContentProps,
   ButtonIconPosition,
+  ButtonVariant,
 } from "@/puck/blocks/Button/types";
 import { EMPTY_LINK } from "@/puck/fields/link/lib/links";
 import {
@@ -26,14 +28,25 @@ import type { ContentFieldRenderProps } from "@/puck/utils/with-content-field";
 
 const DEFAULT_LABEL = BUTTON_DEFAULT_PROPS.button?.link?.label;
 
+const VARIANT_ITEMS: { value: ButtonVariant; title: string }[] = [
+  { value: "primary", title: "Primary" },
+  { value: "secondary", title: "Secondary" },
+  { value: "outline", title: "Outline" },
+  { value: "ghost", title: "Ghost" },
+];
+
 /**
  * The one authored section of a Button.
  *
- * Order is the order the button reads — Text, Link, Icon, Icon position, Icon
- * spacing — and the text is presented first even though it is stored as the
- * Smart link's label. The link editor keeps owning target selection (and the
- * auto-fill from an entity title); its own label control is switched off
- * because the Text control above owns the words.
+ * Order is the order the button reads — Variant, Text, Link, Icon, Icon
+ * position, Icon spacing — and the text is presented first of the content
+ * even though it is stored as the Smart link's label. The link editor keeps
+ * owning target selection (and the auto-fill from an entity title); its own
+ * label control is switched off because the Text control above owns the words.
+ *
+ * The variant leads because it is the starting look. Its inheritance is stated
+ * in one line inside the section: a Decoration or Typography field sees only
+ * its own prop, so it cannot show the variant's value as a placeholder.
  */
 export const ButtonContentView = ({
   value,
@@ -47,6 +60,28 @@ export const ButtonContentView = ({
 
   return (
     <div className="grid grid-cols-1 gap-y-4 p-1">
+      <div className="flex flex-col gap-y-1">
+        <PropHeader
+          name="variant"
+          label="Variant"
+          isModified={
+            value.variant !== undefined &&
+            value.variant !== BUTTON_DEFAULT_VARIANT
+          }
+          onReset={() => reset("variant")}
+        />
+        <SegmentedControl<ButtonVariant>
+          name="variant"
+          value={value.variant ?? BUTTON_DEFAULT_VARIANT}
+          onChange={(variant) => update("variant", variant)}
+          items={VARIANT_ITEMS}
+        />
+        <p className="text-xs text-muted-foreground">
+          The variant sets the starting style; a Decoration or Typography value
+          overrides it.
+        </p>
+      </div>
+
       <div className="flex flex-col gap-y-1">
         <PropHeader
           name="text"

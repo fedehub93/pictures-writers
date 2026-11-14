@@ -11,6 +11,7 @@ import { getLayoutClassNames } from "@/puck/fields/layout/get-layout-classes";
 import type { ButtonProps } from "./types";
 import { ButtonBlockUi } from "./ui/button";
 import { BUTTON_BASE_WIDTH } from "./constants";
+import { resolveButtonVariantStyles } from "./variants";
 
 /**
  * Pure render shared by the editor canvas and the public page.
@@ -26,11 +27,16 @@ export const renderButtonBlock: PuckComponent<ButtonProps> = ({
   decoration,
   puck,
 }) => {
+  const variantStyles = resolveButtonVariantStyles(button?.variant, {
+    typography,
+    decoration,
+  });
+
   const styleVars = {
     ...getLayoutVars(layout),
     ...getDimensionVars(dimension, { baseWidth: BUTTON_BASE_WIDTH }),
-    ...getTypographyVars(typography),
-    ...getDecorationVars(decoration),
+    ...getTypographyVars(variantStyles.typography),
+    ...getDecorationVars(variantStyles.decoration),
   };
 
   return (

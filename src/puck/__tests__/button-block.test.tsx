@@ -3,10 +3,11 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
 import type { LinkProps } from "../fields/link/types";
-import type { ButtonContentProps } from "../blocks/Button/types";
+import type { ButtonContentProps, ButtonVariant } from "../blocks/Button/types";
 
 import { renderButtonBlock } from "../blocks/Button/render";
 import { ButtonBlockUi } from "../blocks/Button/ui/button";
+import { BUTTON_DEFAULT_PROPS } from "../blocks/defaults";
 
 /**
  * `DynamicIcon` keeps no DOM until its glyph chunk resolves, so the icon
@@ -189,6 +190,187 @@ describe("Button block icon", () => {
     expect(rootTag(html)).not.toContain("tabindex");
     expect(html).toContain(">Removed page</span>");
     expect(html).toContain('data-icon="play"');
+  });
+});
+
+/**
+ * The variant is data, not a class: the render emits its Decoration and
+ * Typography values as the same style variables an authored value emits, and
+ * the authored value wins where it exists.
+ */
+describe("Button block variant", () => {
+  it("emits a complete primary button from the block's defaults", () => {
+    const html = renderToStaticMarkup(
+      renderButtonBlock({
+        ...BUTTON_DEFAULT_PROPS,
+        id: "button",
+        puck: PUCK,
+      }),
+    );
+    const root = rootTag(html);
+
+    // A fresh Button is a primary call to action, not a bare label: the
+    // variant supplies the colours and the defaults supply the target size.
+    expect(root).toContain("--bgc-d:var(--primary)");
+    expect(root).toContain("--tc-d:var(--primary-foreground)");
+    expect(root).toContain("--pt-d:0.5rem");
+    expect(root).toContain("--pl-d:1rem");
+  });
+
+  it("starts a variant-less button from primary, at every breakpoint", () => {
+    const html = renderToStaticMarkup(
+      renderButtonBlock({ id: "button", button: { link: LINK }, puck: PUCK }),
+    );
+    const root = rootTag(html);
+
+    for (const suffix of ["d", "t", "m"]) {
+      expect(root).toContain(`--bgc-${suffix}:var(--primary)`);
+      expect(root).toContain(`--tc-${suffix}:var(--primary-foreground)`);
+    }
+  });
+
+  /**
+   * The expected values come from the theme tokens the rest of the site
+   * already uses, not from the variant table.
+   */
+  it.each([
+    {
+      variant: "primary",
+      backgroundColor: "var(--primary)",
+      color: "var(--primary-foreground)",
+      borderColor: "var(--primary)",
+    },
+    {
+      variant: "secondary",
+      backgroundColor: "var(--secondary)",
+      color: "var(--secondary-foreground)",
+      borderColor: "var(--secondary)",
+    },
+    {
+      variant: "outline",
+      backgroundColor: "transparent",
+      color: "var(--foreground)",
+      borderColor: "var(--border)",
+    },
+    {
+      variant: "ghost",
+      backgroundColor: "transparent",
+      color: "var(--foreground)",
+      borderColor: "transparent",
+    },
+  ] as const)(
+    "emits the $variant style variables at every breakpoint",
+    ({ variant, backgroundColor, color, borderColor }) => {
+      const html = renderToStaticMarkup(
+        renderButtonBlock({
+          id: "button",
+          button: { variant, link: LINK },
+          puck: PUCK,
+        }),
+      );
+      const root = rootTag(html);
+
+      for (const suffix of ["d", "t", "m"]) {
+        expect(root).toContain(`--bgc-${suffix}:${backgroundColor}`);
+        expect(root).toContain(`--tc-${suffix}:${color}`);
+        expect(root).toContain(`--bc-${suffix}:${borderColor}`);
+        expect(root).toContain(`--btw-${suffix}:1px`);
+        expect(root).toContain(`--rtl-${suffix}:var(--radius)`);
+      }
+    },
+  );
+
+  it("lets an authored value win at its breakpoint and keeps the variant elsewhere", () => {
+    const html = renderToStaticMarkup(
+      renderButtonBlock({
+        id: "button",
+        button: { variant: "primary", link: LINK },
+        decoration: { desktop: { backgroundColor: "#ff0000" } },
+        typography: { desktop: { color: "#0000ff" } },
+        puck: PUCK,
+      }),
+    );
+    const root = rootTag(html);
+
+    expect(root).toContain("--bgc-d:#ff0000");
+    expect(root).toContain("--tc-d:#0000ff");
+    expect(root).toContain("--bgc-t:var(--primary)");
+    expect(root).toContain("--tc-t:var(--primary-foreground)");
+    expect(root).toContain("--bgc-m:var(--primary)");
+    expect(root).toContain("--tc-m:var(--primary-foreground)");
+  });
+
+  it("brings the variant's value back when an authored value is cleared", () => {
+    const authored = renderToStaticMarkup(
+      renderButtonBlock({
+        id: "button",
+        button: { variant: "primary", link: LINK },
+        decoration: { desktop: { backgroundColor: "#ff0000" } },
+        puck: PUCK,
+      }),
+    );
+    // A cleared colour control leaves the key behind with `undefined`; that
+    // counts as no authored value, like a key the panel has removed.
+    const cleared = renderToStaticMarkup(
+      renderButtonBlock({
+        id: "button",
+        button: { variant: "primary", link: LINK },
+        decoration: { desktop: { backgroundColor: undefined } },
+        typography: { desktop: { color: undefined } },
+        puck: PUCK,
+      }),
+    );
+
+    expect(rootTag(authored)).toContain("--bgc-d:#ff0000");
+    expect(rootTag(cleared)).not.toContain("#ff0000");
+    expect(rootTag(cleared)).toContain("--bgc-d:var(--primary)");
+    expect(rootTag(cleared)).toContain("--tc-d:var(--primary-foreground)");
+  });
+
+  it("falls back to primary when a stored variant is not one of the four", () => {
+    const html = renderToStaticMarkup(
+      renderButtonBlock({
+        id: "button",
+        button: { link: LINK, variant: "invented" as ButtonVariant },
+        puck: PUCK,
+      }),
+    );
+
+    expect(rootTag(html)).toContain("--bgc-d:var(--primary)");
+    expect(rootTag(html)).toContain("--tc-d:var(--primary-foreground)");
+  });
+
+  it("keeps every authored value when the variant changes", () => {
+    const authored = {
+      decoration: {
+        desktop: { backgroundColor: "#ff0000" },
+        mobile: { borderColor: "#00ff00" },
+      },
+      typography: {
+        tablet: { fontSize: "2rem", color: "#0000ff" },
+      },
+    };
+
+    const html = renderToStaticMarkup(
+      renderButtonBlock({
+        id: "button",
+        button: { variant: "ghost", link: LINK },
+        ...authored,
+        puck: PUCK,
+      }),
+    );
+    const root = rootTag(html);
+
+    // The authored values survive at every breakpoint they were written at.
+    expect(root).toContain("--bgc-d:#ff0000");
+    expect(root).toContain("--bc-m:#00ff00");
+    expect(root).toContain("--fs-t:2rem");
+    expect(root).toContain("--tc-t:#0000ff");
+
+    // The variant re-emits where the author wrote nothing.
+    expect(root).toContain("--bgc-t:transparent");
+    expect(root).toContain("--bgc-m:transparent");
+    expect(root).toContain("--tc-d:var(--foreground)");
   });
 });
 

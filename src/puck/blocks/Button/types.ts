@@ -10,14 +10,25 @@ import type { LinkProps } from "@/puck/fields/link";
 export type ButtonIconPosition = "before" | "after";
 
 /**
- * The authored content of a Button: one text, one target and one optional
- * icon.
+ * The starting look of a Button.
+ *
+ * A variant is a set of `decoration` and `typography` values, not a stylesheet
+ * class: the render merges it underneath the authored values, so a state can
+ * later override both through the same style variables (ADR-0043).
+ */
+export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost";
+
+/**
+ * The authored content of a Button: one text, one target, one optional icon
+ * and the variant it starts from.
  *
  * The text is stored as the Smart link's label, so auto-filling it from the
- * linked entity's title keeps working. The panel presents the text first
- * (`ui/view/button-content-view.tsx`) without changing the stored shape.
+ * linked entity's title keeps working. The panel presents the variant first
+ * and the text first of the content (`ui/view/button-content-view.tsx`)
+ * without changing the stored shape.
  */
 export type ButtonContentProps = {
+  variant?: ButtonVariant;
   link?: LinkProps;
   icon?: IconProps;
   iconPosition?: ButtonIconPosition;

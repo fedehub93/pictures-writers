@@ -1,4 +1,7 @@
-import type { ButtonIconPosition } from "./types";
+import type { ButtonIconPosition, ButtonVariant } from "./types";
+
+/** The variant an unauthored Button starts from. There is no empty variant. */
+export const BUTTON_DEFAULT_VARIANT: ButtonVariant = "primary";
 
 /**
  * The width a Button resolves to when no width is authored.
