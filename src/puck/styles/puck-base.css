@@ -848,3 +848,79 @@
 .puck-text-edit-actions:not([data-text-edit-armed]) [data-puck-rte-menu] {
   display: none;
 }
+
+/* --- 9. BUTTON HOVER (the block system's only stateful rule) ---
+   A Button answers the pointer with nothing authored: the state is read, not
+   configured. This is deliberately the only stateful rule in the stylesheet,
+   and it exists to prove the naming contract rather than to introduce a
+   mechanism; adding focus or active later is a selector, a media query and a
+   variable, not a redesign.
+
+   The rule reads the hover state's own variables (`--bgc-h-d`, `--bgc-h-t`,
+   `--bgc-h-m`) and never redefines a base one. That is not a style preference:
+   an authored value reaches the block root as an inline custom property, and no
+   stylesheet rule outranks an inline declaration, so `:hover { --bgc-d: ... }`
+   would be dead against an author who painted the button.
+
+   Where no state variable is emitted — primary and secondary, whose background
+   is a colour of its own — the fallback is a mix of the base background with
+   the theme's foreground. Deriving from the background is what makes an
+   overridden primary hover from the author's colour instead of the theme's, and
+   mixing with the foreground (rather than black) keeps the wash visible on a
+   transparent background too, in either theme.
+
+   The state has two selectors on purpose. On the page it belongs to a control,
+   so `a` scopes it: a Button whose target resolves to nothing renders as text
+   and must not answer the pointer as if it were clickable. In the canvas the
+   stored Smart link is unresolved, so the same Button is drawn as text while it
+   is authored; `[data-puck-component]` is written by Puck's canvas only and lets
+   the canvas preview the state there. The published bundle carries the second
+   selector as inert bytes, like §7 and §8.
+
+   The state is the outer axis and the Breakpoint the inner one: the same
+   desktop → tablet → mobile fallback chain the base variables use, expressed
+   here with the state's values ahead of the derived colour. `background-color`
+   carries `!important` because `.puck-deco` declares it that way; the state
+   rule outranks it by specificity, so the order of the two is not load-bearing.
+
+   Only colour changes, and it is transitioned rather than laid out: a hover
+   that moved the box would resize the page around it. The duration is a design
+   choice, short enough to read as feedback on a heavy page. */
+.puck-button {
+  transition: background-color 160ms ease;
+}
+
+a.puck-button:hover,
+[data-puck-component].puck-button:hover {
+  background-color: var(
+    --bgc-h-d,
+    color-mix(in srgb, var(--bgc-d) 85%, var(--foreground))
+  ) !important;
+}
+
+@media (max-width: 1023px) {
+  a.puck-button:hover,
+  [data-puck-component].puck-button:hover {
+    background-color: var(
+      --bgc-h-t,
+      var(--bgc-h-d),
+      color-mix(in srgb, var(--bgc-t, var(--bgc-d)) 85%, var(--foreground))
+    ) !important;
+  }
+}
+
+@media (max-width: 767px) {
+  a.puck-button:hover,
+  [data-puck-component].puck-button:hover {
+    background-color: var(
+      --bgc-h-m,
+      var(--bgc-h-t),
+      var(--bgc-h-d),
+      color-mix(
+        in srgb,
+        var(--bgc-m, var(--bgc-t, var(--bgc-d))) 85%,
+        var(--foreground)
+      )
+    ) !important;
+  }
+}

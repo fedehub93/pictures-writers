@@ -77,6 +77,11 @@ export const ButtonBlockUi = ({
       dragRef={dragRef}
       className={cn(
         "puck-dim puck-typo puck-deco",
+        // The hover state's stylesheet rule is scoped to this class, so it
+        // reaches no other block. The rule itself is anchor-scoped on the page
+        // and editor-scoped in the canvas: a Button that resolves to text does
+        // not answer the pointer, while the canvas still previews the state.
+        "puck-button",
         hasIcon ? "inline-flex items-center" : "inline-block",
         "puck-block-root",
         layoutClassName,

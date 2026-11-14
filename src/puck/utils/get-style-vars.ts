@@ -120,9 +120,14 @@ export const getTypographyVars = (data?: Responsive<TypographyProps>) => {
 };
 
 /**
- * UTILITY: DECORATION
+ * The Decoration property list, emitted once for the base state and once per
+ * state. `infix` is empty for the base state and carries the State's own
+ * name for a stateful one: `h-` turns `--bgc-d` into `--bgc-h-d`.
  */
-export const getDecorationVars = (data?: Responsive<DecorationProps>) => {
+const collectDecorationVars = (
+  data: Responsive<DecorationProps> | undefined,
+  infix: string,
+) => {
   if (!data) return {};
   const vars: Record<string, string> = {};
 
@@ -131,20 +136,53 @@ export const getDecorationVars = (data?: Responsive<DecorationProps>) => {
     if (!p) continue;
     const s = getSuffix(bp);
 
-    if (p.opacity) vars[`--op-${s}`] = p.opacity;
-    if (p.backgroundColor) vars[`--bgc-${s}`] = p.backgroundColor;
-    if (p.borderTopWidth) vars[`--btw-${s}`] = p.borderTopWidth;
-    if (p.borderRightWidth) vars[`--brw-${s}`] = p.borderRightWidth;
-    if (p.borderBottomWidth) vars[`--bbw-${s}`] = p.borderBottomWidth;
-    if (p.borderLeftWidth) vars[`--blw-${s}`] = p.borderLeftWidth;
-    if (p.borderStyle) vars[`--bs-${s}`] = p.borderStyle;
-    if (p.borderColor) vars[`--bc-${s}`] = p.borderColor;
-    if (p.borderTopLeftRadius) vars[`--rtl-${s}`] = p.borderTopLeftRadius;
-    if (p.borderTopRightRadius) vars[`--rtr-${s}`] = p.borderTopRightRadius;
-    if (p.borderBottomLeftRadius) vars[`--rbl-${s}`] = p.borderBottomLeftRadius;
+    if (p.opacity) vars[`--op-${infix}${s}`] = p.opacity;
+    if (p.backgroundColor) vars[`--bgc-${infix}${s}`] = p.backgroundColor;
+    if (p.borderTopWidth) vars[`--btw-${infix}${s}`] = p.borderTopWidth;
+    if (p.borderRightWidth) vars[`--brw-${infix}${s}`] = p.borderRightWidth;
+    if (p.borderBottomWidth) vars[`--bbw-${infix}${s}`] = p.borderBottomWidth;
+    if (p.borderLeftWidth) vars[`--blw-${infix}${s}`] = p.borderLeftWidth;
+    if (p.borderStyle) vars[`--bs-${infix}${s}`] = p.borderStyle;
+    if (p.borderColor) vars[`--bc-${infix}${s}`] = p.borderColor;
+    if (p.borderTopLeftRadius) vars[`--rtl-${infix}${s}`] = p.borderTopLeftRadius;
+    if (p.borderTopRightRadius)
+      vars[`--rtr-${infix}${s}`] = p.borderTopRightRadius;
+    if (p.borderBottomLeftRadius)
+      vars[`--rbl-${infix}${s}`] = p.borderBottomLeftRadius;
     if (p.borderBottomRightRadius)
-      vars[`--rbr-${s}`] = p.borderBottomRightRadius;
+      vars[`--rbr-${infix}${s}`] = p.borderBottomRightRadius;
   }
 
   return vars;
 };
+
+/**
+ * UTILITY: DECORATION
+ */
+export const getDecorationVars = (data?: Responsive<DecorationProps>) =>
+  collectDecorationVars(data, "");
+
+/**
+ * The infix the hover state appends to a Style variable: `--bgc-h-d`.
+ *
+ * Only hover exists today. A second state brings its own infix rather than a
+ * type, because the naming contract is the only part that has to be right now
+ * (ADR-0043).
+ */
+export const HOVER_STATE = "h";
+
+/**
+ * UTILITY: DECORATION UNDER A STATE
+ *
+ * A State appends its own Style variables instead of redefining the base ones:
+ * an authored value reaches the Block root as an inline custom property, and
+ * no stylesheet rule could outrank it. The State is an infix, so the
+ * Breakpoint stays the suffix every other reader parses — `--bgc-h-d` is the
+ * desktop background under the hover state (ADR-0043). The State is the outer
+ * axis and the Breakpoint the inner one, matching the CSS: the state's rule
+ * outside, the media query inside.
+ */
+export const getDecorationStateVars = (
+  data: Responsive<DecorationProps> | undefined,
+  state: string,
+) => collectDecorationVars(data, `${state}-`);

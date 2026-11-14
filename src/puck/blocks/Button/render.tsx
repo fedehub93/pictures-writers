@@ -1,6 +1,8 @@
 import type { PuckComponent } from "@puckeditor/core";
 
 import {
+  HOVER_STATE,
+  getDecorationStateVars,
   getDecorationVars,
   getDimensionVars,
   getTypographyVars,
@@ -37,6 +39,9 @@ export const renderButtonBlock: PuckComponent<ButtonProps> = ({
     ...getDimensionVars(dimension, { baseWidth: BUTTON_BASE_WIDTH }),
     ...getTypographyVars(variantStyles.typography),
     ...getDecorationVars(variantStyles.decoration),
+    // The hover state appends its own variables; the stylesheet reads them and
+    // derives one from the base colour where the variant dictates none.
+    ...getDecorationStateVars(variantStyles.hover, HOVER_STATE),
   };
 
   return (
