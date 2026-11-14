@@ -21,6 +21,7 @@ Read the sections for the terms in play; the whole file is not a prerequisite.
 - [Commerce](#commerce)
 - [Site layout](#site-layout)
 - [Puck editor fidelity](#puck-editor-fidelity)
+- [Block styling](#block-styling)
 - [FAQ](#faq)
 - [Automation engine](#automation-engine)
 - [External integrations](#external-integrations)
@@ -441,6 +442,14 @@ _Avoid_: mobile menu breakpoint, hamburger size.
 The panel a menu item with children opens on desktop when the NavbarBlock uses the mega layout: a grid of cards, each with an optional icon, a title and a description. On mobile the same content is projected as a vertical accordion.
 _Avoid_: dropdown, submenu, flyout.
 
+**Smart link**:
+A link target stored by identity rather than by URL — a Page, Post, Product or category, or a plain URL — and resolved server-side when the document is rendered, so moving or renaming the entity does not break the pages that point at it. A target that cannot be resolved renders as text.
+_Avoid_: internal link, dynamic link, permalink.
+
+**Button block**:
+A Puck block that renders an anchor carrying a text, an optional icon and a target, styled as a call to action; it is the only block that authors a standalone Smart link outside a list or the NavbarBlock.
+_Avoid_: link block (its former name), CTA (a NavbarBlock menu item), button when a form's submit control is meant.
+
 **Link list**:
 A Puck block that renders a titled list of links, used primarily in the Footer region.
 
@@ -483,7 +492,7 @@ The outermost element a Puck block renders. It carries the block's dimension, la
 _Avoid_: block wrapper, component wrapper, editor wrapper (there is none); expecting the selection outline on a child of the block.
 
 **Block base width**:
-The width a block resolves to when no width is authored at any breakpoint: the natural size it declares because its root is a text-level box (a Link is `fit-content`). It is emitted on the desktop rung so the responsive ladder inherits it, it outranks the implied fill a content area gets from a max width, and any authored width — own or inherited, the explicit `auto` included — outranks it. It is a block constant, not a stored document value, so it needs no migration; the Width control's *Auto* row names it as `block default (<value>)`.
+The width a block resolves to when no width is authored at any breakpoint: the natural size it declares because its root is a text-level box (a Button is `fit-content`). It is emitted on the desktop rung so the responsive ladder inherits it, it outranks the implied fill a content area gets from a max width, and any authored width — own or inherited, the explicit `auto` included — outranks it. It is a block constant, not a stored document value, so it needs no migration; the Width control's *Auto* row names it as `block default (<value>)`.
 _Avoid_: document width, stored default, fallback width; treating it as a prop of the document.
 
 **Root zone**:
@@ -517,6 +526,20 @@ _Avoid_: bubble menu, floating menu, selection toolbar (those name a menu anchor
 **Heading level**:
 The `h1`–`h6` element a Heading block emits, authored as a block property in the sidebar and independent of the text it contains. A Text block has no Heading level of its own: the levels it may contain are inline content.
 _Avoid_: heading tag, title level, H-select.
+
+## Block styling
+
+**Style variable**:
+The CSS custom property a block writes inline on its Block root to carry one authored style value at one Breakpoint and State, named `<prop>-[<state>-]<breakpoint>` — `--bgc-d` is the desktop background of the base state, `--bgc-h-d` the hover one. The values cascade desktop → tablet → mobile through the stylesheet's fallback chain.
+_Avoid_: style token, theme variable, class.
+
+**Variant**:
+A named starting point for a block's style — for the Button, primary, secondary, outline or ghost — stored as the same props the author edits and merged underneath them, so an authored value always wins. It is data, not a stylesheet class.
+_Avoid_: preset (a suggested value inside a unit input), theme, skin, type.
+
+**State**:
+A condition in which a block shows different style values than its base, such as hover. It is the outer axis and the Breakpoint the inner one, and it appends its own Style variables instead of redefining the base ones, which an authored inline value would outrank.
+_Avoid_: interaction, hover when another state is meant; pseudo-class as the name of the concept.
 
 ## FAQ
 

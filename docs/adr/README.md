@@ -90,6 +90,7 @@ folder.
 | [0040](./0040-one-element-tree-in-canvas-and-page.md) | One element tree in the canvas and on the page | accepted |
 | [0041](./0041-inline-text-editing-in-puck-blocks.md) | Inline text editing in the Puck text blocks, with a block toolbar instead of a selection bubble | accepted (revised: drag and the caret corrected by [0042](./0042-text-editing-mode-and-the-canvas-lock.md)) |
 | [0042](./0042-text-editing-mode-and-the-canvas-lock.md) | A text block is locked until an explicit text editing mode; the lock covers the overlay portal | accepted; corrects [0041](./0041-inline-text-editing-in-puck-blocks.md) on drag and the caret |
+| [0043](./0043-button-variant-is-data-not-a-class.md) | One Button block, whose variant is a set of props rather than a class | accepted |
 
 ## Platform, integrations and tenancy
 
