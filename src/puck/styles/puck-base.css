@@ -518,7 +518,7 @@
     --rbr-t: initial;
 
     opacity: var(--op-t, var(--op-d));
-    background-color: var(--bgc-t, var(--bgc-d));
+    background-color: var(--bgc-t, var(--bgc-d)) !important;
     border-top-width: var(--btw-t, var(--btw-d, 0));
     border-right-width: var(--brw-t, var(--brw-d, 0));
     border-bottom-width: var(--bbw-t, var(--bbw-d, 0));
@@ -675,7 +675,7 @@
     --rbr-m: initial;
 
     opacity: var(--op-m, var(--op-t, var(--op-d)));
-    background-color: var(--bgc-m, var(--bgc-t, var(--bgc-d)));
+    background-color: var(--bgc-m, var(--bgc-t, var(--bgc-d))) !important;
     border-top-width: var(--btw-m, var(--btw-t, var(--btw-d, 0)));
     border-right-width: var(--brw-m, var(--brw-t, var(--brw-d, 0)));
     border-bottom-width: var(--bbw-m, var(--bbw-t, var(--bbw-d, 0)));
