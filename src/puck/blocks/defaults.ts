@@ -28,8 +28,9 @@ import { NAVBAR_BLOCK_DEFAULT_CONTENT } from "./NavbarBlock/defaults";
 import { SEARCH_BAR_DEFAULT_CONTENT } from "./SearchBar/defaults";
 import {
   TOP_BAR_DEFAULT_DECORATION,
-  TOP_BAR_DEFAULT_DIMENSION,
   TOP_BAR_DEFAULT_LAYOUT,
+  TOP_BAR_DEFAULT_SIZE,
+  TOP_BAR_DEFAULT_SPACING,
 } from "./TopBar/defaults";
 
 /**
@@ -89,11 +90,11 @@ export const BUTTON_DEFAULT_PROPS: ButtonProps = {
   },
   /**
    * A freshly dropped Button has to read as a call to action without the
-   * author opening Dimension: the variant supplies the look, this gives it a
+   * author opening Spacing: the variant supplies the look, this gives it a
    * target-sized box. Every breakpoint inherits the desktop padding through
    * the stylesheet's ladder; the author can still repaint it.
    */
-  dimension: {
+  spacing: {
     desktop: {
       paddingTop: "0.5rem",
       paddingRight: "1rem",
@@ -104,7 +105,7 @@ export const BUTTON_DEFAULT_PROPS: ButtonProps = {
 };
 
 export const SEPARATOR_DEFAULT_PROPS: SeparatorBlockProps = {
-  dimension: {
+  size: {
     desktop: {
       width: "100%",
       height: "2px",
@@ -128,7 +129,8 @@ export const TOP_BAR_DEFAULT_PROPS: TopBarBlockProps = {
   content: [],
   settings: { dismissible: false },
   layout: TOP_BAR_DEFAULT_LAYOUT,
-  dimension: TOP_BAR_DEFAULT_DIMENSION,
+  size: TOP_BAR_DEFAULT_SIZE,
+  spacing: TOP_BAR_DEFAULT_SPACING,
   decoration: TOP_BAR_DEFAULT_DECORATION,
 };
 

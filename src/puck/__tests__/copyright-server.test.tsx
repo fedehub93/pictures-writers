@@ -35,11 +35,11 @@ describe("Copyright server render", () => {
     expect(html).toContain("--fs-d:0.875rem");
   });
 
-  it("forwards typography and dimension to the public markup", async () => {
+  it("forwards typography and spacing to the public markup", async () => {
     const element = await CopyrightServer({
       content: { showYear: true },
       typography: { desktop: { fontSize: "0.875rem" } },
-      dimension: { desktop: { marginTop: "8px" } },
+      spacing: { desktop: { marginTop: "8px" } },
     });
 
     const html = renderToStaticMarkup(element);

@@ -20,7 +20,7 @@ export type ContentFieldRenderProps<T extends object> = {
  * wrapper turns that object into the same accordion section, with the same icon
  * and the same update helpers as the shared style fields. Controls inside the
  * section keep using `PropHeader`, so the reset affordance behaves the same as
- * in Dimension, Decoration and Typography.
+ * in Size, Spacing, Decoration and Typography.
  */
 export function withContentField<T extends object>({
   label,

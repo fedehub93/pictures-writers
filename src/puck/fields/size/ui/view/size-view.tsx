@@ -13,19 +13,19 @@ import {
 } from "@/shared/ui/select";
 import { Input } from "@/shared/ui/input";
 
-import type { DimensionProps } from "../../index";
+import type { SizeProps } from "../../index";
 import { getWidthPresets } from "../../presets";
 
 /** A field row that can also feed the value/unit input's own options. */
-type LayoutField = FieldDef<DimensionProps> & {
+type SizeRow = FieldDef<SizeProps> & {
   presets?: ValueUnitPreset[];
   allowedKeywords?: string[];
 };
 
-const getLayoutFields = (
+const getSizeRows = (
   inheritedWidth?: string,
   baseWidth?: string,
-): LayoutField[] => [
+): SizeRow[] => [
   {
     key: "width",
     label: "Width",
@@ -41,20 +41,6 @@ const getLayoutFields = (
   { key: "minHeight", label: "Min height", type: "unit", placeholder: "auto" },
 ];
 
-const marginFields: FieldDef<DimensionProps>[] = [
-  { key: "marginTop", label: "Top", type: "unit", placeholder: "0" },
-  { key: "marginRight", label: "Right", type: "unit", placeholder: "0" },
-  { key: "marginBottom", label: "Bottom", type: "unit", placeholder: "0" },
-  { key: "marginLeft", label: "Left", type: "unit", placeholder: "0" },
-];
-
-const paddingFields: FieldDef<DimensionProps>[] = [
-  { key: "paddingTop", label: "Top", type: "unit", placeholder: "0" },
-  { key: "paddingRight", label: "Right", type: "unit", placeholder: "0" },
-  { key: "paddingBottom", label: "Bottom", type: "unit", placeholder: "0" },
-  { key: "paddingLeft", label: "Left", type: "unit", placeholder: "0" },
-];
-
 const aspectRatioOptions = [
   { value: "auto", label: "Auto (Default)" },
   { value: "1 / 1", label: "1:1 (Square)" },
@@ -64,22 +50,22 @@ const aspectRatioOptions = [
   { value: "9 / 16", label: "9:16 (Vertical)" },
 ];
 
-interface DimensionViewProps {
-  currentValues: Partial<DimensionProps>;
-  renderValues: DimensionProps;
-  resetProp: (key: keyof DimensionProps) => void;
-  onUpdate: (values: Partial<DimensionProps>) => void;
+interface SizeViewProps {
+  currentValues: Partial<SizeProps>;
+  renderValues: SizeProps;
+  resetProp: (key: keyof SizeProps) => void;
+  onUpdate: (values: Partial<SizeProps>) => void;
   /** The width the block resolves to when nothing is authored. */
   baseWidth?: string;
 }
 
-export const DimensionView = ({
+export const SizeView = ({
   currentValues,
   renderValues,
   resetProp,
   onUpdate,
   baseWidth,
-}: DimensionViewProps) => {
+}: SizeViewProps) => {
   const isAspectRatioModified = currentValues.aspectRatio !== undefined;
   const currentRatioValue = renderValues.aspectRatio;
 
@@ -97,13 +83,12 @@ export const DimensionView = ({
     ? undefined
     : renderValues.width?.trim() || undefined;
 
-  const layoutFields = getLayoutFields(inheritedWidth, baseWidth);
+  const sizeRows = getSizeRows(inheritedWidth, baseWidth);
 
   return (
     <div className="flex flex-col gap-y-2 p-1">
-      {/* --- LAYOUT --- */}
       <div className="grid grid-cols-2 gap-x-4 gap-y-4 p-1">
-        {layoutFields.map((field) => {
+        {sizeRows.map((field) => {
           const isModified = currentValues[field.key] !== undefined;
           const displayValue = renderValues[field.key] ?? "";
           return (
@@ -169,64 +154,6 @@ export const DimensionView = ({
               />
             )}
           </div>
-        </div>
-      </div>
-
-      {/* --- MARGIN --- */}
-      <div className="mt-4">
-        <span className="text-sm font-medium">Margin</span>
-        <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-4 p-2 bg-muted/60 rounded">
-          {marginFields.map((field) => {
-            const isModified = currentValues[field.key] !== undefined;
-            const displayValue = renderValues[field.key] ?? "";
-            return (
-              <div key={field.key} className="flex flex-col gap-y-1">
-                <PropHeader
-                  name={field.key}
-                  label={field.label}
-                  isModified={isModified}
-                  onReset={() => resetProp(field.key)}
-                />
-                <ValueUnitInput
-                  name={field.key}
-                  value={displayValue}
-                  onChange={(newVal) =>
-                    onUpdate({ [field.key]: newVal || undefined })
-                  }
-                  placeholder={field.placeholder}
-                />
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* --- PADDING --- */}
-      <div className="mt-4">
-        <span className="text-sm font-medium">Padding</span>
-        <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-4 p-2 bg-muted/60 rounded">
-          {paddingFields.map((field) => {
-            const isModified = currentValues[field.key] !== undefined;
-            const displayValue = renderValues[field.key] ?? "";
-            return (
-              <div key={field.key} className="flex flex-col gap-y-1">
-                <PropHeader
-                  name={field.key}
-                  label={field.label}
-                  isModified={isModified}
-                  onReset={() => resetProp(field.key)}
-                />
-                <ValueUnitInput
-                  name={field.key}
-                  value={displayValue}
-                  onChange={(newVal) =>
-                    onUpdate({ [field.key]: newVal || undefined })
-                  }
-                  placeholder={field.placeholder}
-                />
-              </div>
-            );
-          })}
         </div>
       </div>
     </div>

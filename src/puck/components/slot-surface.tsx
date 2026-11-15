@@ -6,7 +6,7 @@ import { cn } from "@/shared/lib/utils";
 export type SlotSurfaceProps = {
   /** The block's slot, resolved by Puck from the `items`/`content` field. */
   Items: SlotComponent;
-  /** Responsive custom properties for layout, dimension, typography and decoration. */
+  /** Responsive custom properties for layout, size, spacing, typography and decoration. */
   styleVars: Record<string, string>;
   /** Authored display classes and editor-only visibility markers. */
   layoutClassName?: string;
@@ -18,7 +18,7 @@ export type SlotSurfaceProps = {
  * Root element shared by the blocks whose layout surface is their slot.
  *
  * Container, Flex and Grid render exactly this element: the slot *is* the block
- * box, so the authored layout variables, the dimension/typography/decoration
+ * box, so the authored layout variables, the size/spacing/typography/decoration
  * classes and Puck's selection node all live on it. Keeping the expression in
  * one place is what stops those three blocks from drifting apart.
  *

@@ -2,7 +2,8 @@ import type { PuckComponent } from "@puckeditor/core";
 
 import {
   getDecorationVars,
-  getDimensionVars,
+  getSizeVars,
+  getSpacingVars,
 } from "@/puck/utils/get-style-vars";
 import { getLayoutVars } from "@/puck/fields/layout/get-layout-vars";
 import { getLayoutClassNames } from "@/puck/fields/layout/get-layout-classes";
@@ -25,13 +26,15 @@ import type { SearchBarBlockProps } from "./types";
 export const renderSearchBarBlock: PuckComponent<SearchBarBlockProps> = ({
   content,
   layout,
-  dimension,
+  size,
+  spacing,
   decoration,
   puck,
 }) => {
   const styleVars = {
     ...getLayoutVars(layout),
-    ...getDimensionVars(dimension),
+    ...getSizeVars(size),
+    ...getSpacingVars(spacing),
     ...getDecorationVars(decoration),
   };
 

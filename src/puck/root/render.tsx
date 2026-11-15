@@ -4,7 +4,8 @@ import type { PuckContext } from "@puckeditor/core";
 
 import {
   getDecorationVars,
-  getDimensionVars,
+  getSizeVars,
+  getSpacingVars,
 } from "@/puck/utils/get-style-vars";
 import { getLayoutVars } from "@/puck/fields/layout/get-layout-vars";
 
@@ -41,13 +42,15 @@ export const CANVAS_TOKENS: Record<string, string> = {
  */
 export const PageRootContent = ({
   children,
-  dimension,
+  size,
+  spacing,
   layout,
   decoration,
   isEditing,
 }: {
   children: ReactNode;
-  dimension?: RootProps["dimension"];
+  size?: RootProps["size"];
+  spacing?: RootProps["spacing"];
   layout?: RootProps["layout"];
   decoration?: RootProps["decoration"];
   isEditing?: boolean;
@@ -58,7 +61,8 @@ export const PageRootContent = ({
     "--disp-d": "block",
     "--w-d": "100%",
     ...getLayoutVars(layout),
-    ...getDimensionVars(dimension),
+    ...getSizeVars(size),
+    ...getSpacingVars(spacing),
     ...decorationVars,
     ...(isEditing ? CANVAS_TOKENS : {}),
   };
@@ -81,13 +85,15 @@ export const PageRootContent = ({
  */
 export const renderRoot = ({
   children,
-  dimension,
+  size,
+  spacing,
   layout,
   decoration,
   puck,
 }: RootProps & { puck?: PuckContext }) => (
   <PageRootContent
-    dimension={dimension}
+    size={size}
+    spacing={spacing}
     layout={layout}
     decoration={decoration}
     isEditing={puck?.isEditing}

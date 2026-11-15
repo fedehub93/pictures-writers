@@ -147,12 +147,35 @@ describe("Layout field availability", () => {
     }
   });
 
+  it("declares Size before Spacing after Layout on every block", () => {
+    for (const [name, component] of Object.entries(editorComponentConfigs)) {
+      const keys = Object.keys(component.fields ?? {});
+
+      expect(keys, `${name} should expose Size`).toContain("size");
+      expect(keys, `${name} should expose Spacing`).toContain("spacing");
+      expect(keys.indexOf("layout"), name).toBeLessThan(keys.indexOf("size"));
+      expect(keys.indexOf("size"), name).toBeLessThan(
+        keys.indexOf("spacing"),
+      );
+
+      // The style sections that follow keep their own order after both.
+      for (const later of ["typography", "decoration"]) {
+        if (keys.includes(later)) {
+          expect(keys.indexOf("spacing"), name).toBeLessThan(
+            keys.indexOf(later),
+          );
+        }
+      }
+    }
+  });
+
   it("exposes the surface fields on the Root", () => {
     const fields = (RootEditor.fields ?? {}) as Record<string, unknown>;
 
     expect(fields).not.toHaveProperty("title");
     expect(fields).toHaveProperty("layout");
-    expect(fields).toHaveProperty("dimension");
+    expect(fields).toHaveProperty("size");
+    expect(fields).toHaveProperty("spacing");
     expect(fields).toHaveProperty("decoration");
   });
 });

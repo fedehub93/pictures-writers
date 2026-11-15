@@ -1,5 +1,6 @@
 import {
-  getDimensionVars,
+  getSizeVars,
+  getSpacingVars,
   getTypographyVars,
 } from "@/puck/utils/get-style-vars";
 import { getLayoutVars } from "@/puck/fields/layout/get-layout-vars";
@@ -27,7 +28,8 @@ import { BrandBlockUi } from "./ui/brand";
 export const renderBrandBlock = ({
   content,
   layout,
-  dimension,
+  size,
+  spacing,
   typography,
   siteName,
   logoUrl,
@@ -37,7 +39,8 @@ export const renderBrandBlock = ({
 }: BrandBlockRenderProps) => {
   const styleVars = {
     ...getLayoutVars(layout),
-    ...getDimensionVars(dimension),
+    ...getSizeVars(size),
+    ...getSpacingVars(spacing),
     ...getTypographyVars(typography ?? BRAND_DEFAULT_TYPOGRAPHY),
   };
 

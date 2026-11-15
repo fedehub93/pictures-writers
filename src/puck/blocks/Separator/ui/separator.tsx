@@ -13,8 +13,8 @@ export const SeparatorBlockUi = ({
   dragRef?: BlockDragRef;
 }) => {
   return (
-    // The authored dimension describes the block box, so this element owns both
-    // the size variables and the editor's selection ref; the rule below only
+    // The authored box describes the block, so this element owns the size and
+    // spacing variables and the editor's selection ref; the rule below only
     // fills it. No `w-full`/`min-w-full` here: they would override an authored
     // width through `min-width`.
     <div

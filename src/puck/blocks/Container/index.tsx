@@ -1,7 +1,8 @@
 import { type ComponentConfig } from "@puckeditor/core";
 
 import { LayoutField } from "@/puck/fields/layout";
-import { DimensionField } from "@/puck/fields/dimension";
+import { SizeField } from "@/puck/fields/size";
+import { SpacingField } from "@/puck/fields/spacing";
 import { TypographyField } from "@/puck/fields/typography";
 import { DecorationField } from "@/puck/fields/decoration";
 
@@ -19,7 +20,8 @@ export const ContainerBlock: ComponentConfig<ContainerBlockProps> = {
   inline: true,
   fields: {
     layout: LayoutField,
-    dimension: DimensionField,
+    size: SizeField,
+    spacing: SpacingField,
     typography: TypographyField,
     decoration: DecorationField,
     items: {

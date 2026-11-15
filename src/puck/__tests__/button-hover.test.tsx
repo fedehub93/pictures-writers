@@ -340,7 +340,8 @@ describe("Button state surface", () => {
     expect(Object.keys(ButtonBlock.fields ?? {})).toEqual([
       "button",
       "layout",
-      "dimension",
+      "size",
+      "spacing",
       "typography",
       "decoration",
     ]);

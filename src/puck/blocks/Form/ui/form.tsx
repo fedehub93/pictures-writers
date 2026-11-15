@@ -25,8 +25,8 @@ export const FormBlockUi = ({
       // The placeholder is the block root in this state too: without the ref an
       // empty Form could not be selected in the canvas. It deliberately keeps
       // its own `size-full` box instead of `puck-dim`: the message fills the
-      // area it is dropped in, and the authored dimension only describes the
-      // real form.
+      // area it is dropped in, and the authored size and spacing only describe
+      // the real form.
       <div
         ref={dragRef}
         className={cn(

@@ -380,7 +380,7 @@ describe("Button block variant", () => {
  * still outranks it. Neither case is a stored document value.
  */
 describe("Button block base width", () => {
-  it("emits the natural width on an unauthored dimension", () => {
+  it("emits the natural width on an unauthored size", () => {
     const html = renderToStaticMarkup(
       renderButtonBlock({ id: "button", button: { link: LINK }, puck: PUCK }),
     );
@@ -393,7 +393,7 @@ describe("Button block base width", () => {
       renderButtonBlock({
         id: "button",
         button: { link: LINK },
-        dimension: { desktop: { width: "50%" } },
+        size: { desktop: { width: "50%" } },
         puck: PUCK,
       }),
     );
@@ -407,7 +407,7 @@ describe("Button block base width", () => {
       renderButtonBlock({
         id: "button",
         button: { link: LINK },
-        dimension: { desktop: { maxWidth: "30rem" } },
+        size: { desktop: { maxWidth: "30rem" } },
         puck: PUCK,
       }),
     );
@@ -417,7 +417,7 @@ describe("Button block base width", () => {
     expect(rootTag(html)).not.toContain("--w-d:100%");
   });
 
-  it("still applies the base width when the document authored other dimension values", () => {
+  it("still applies the base width when the document authored spacing values", () => {
     // Nearly every existing Button authored padding or margins. A document
     // default would have been dropped by Puck's shallow merge for exactly these
     // documents; the block base width is read independently of the object.
@@ -425,7 +425,7 @@ describe("Button block base width", () => {
       renderButtonBlock({
         id: "button",
         button: { link: LINK },
-        dimension: { desktop: { paddingTop: "12px" } },
+        spacing: { desktop: { paddingTop: "12px" } },
         puck: PUCK,
       }),
     );
@@ -438,7 +438,7 @@ describe("Button block base width", () => {
     const props = {
       id: "button",
       button: { link: LINK },
-      dimension: { desktop: { maxWidth: "30rem" } },
+      size: { desktop: { maxWidth: "30rem" } },
       puck: PUCK,
     };
 

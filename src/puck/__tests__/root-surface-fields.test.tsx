@@ -112,15 +112,17 @@ describe("root surface render", () => {
 });
 
 describe("root surface fields", () => {
-  it("exposes Layout, Dimension and Decoration on the page root in that order", () => {
+  it("exposes Layout, Size, Spacing and Decoration on the page root in that order", () => {
     const fields = rootFields(pageEditorConfig.root);
     const keys = Object.keys(fields);
 
     expect(fields).toHaveProperty("layout");
-    expect(fields).toHaveProperty("dimension");
+    expect(fields).toHaveProperty("size");
+    expect(fields).toHaveProperty("spacing");
     expect(fields).toHaveProperty("decoration");
-    expect(keys.indexOf("layout")).toBeLessThan(keys.indexOf("dimension"));
-    expect(keys.indexOf("dimension")).toBeLessThan(keys.indexOf("decoration"));
+    expect(keys.indexOf("layout")).toBeLessThan(keys.indexOf("size"));
+    expect(keys.indexOf("size")).toBeLessThan(keys.indexOf("spacing"));
+    expect(keys.indexOf("spacing")).toBeLessThan(keys.indexOf("decoration"));
   });
 
   it("keeps the surface fields on the Header and Footer roots", () => {
@@ -128,17 +130,22 @@ describe("root surface fields", () => {
       const fields = rootFields(editorConfigForRegion(key).root);
 
       expect(fields, key).toHaveProperty("layout");
-      expect(fields, key).toHaveProperty("dimension");
+      expect(fields, key).toHaveProperty("size");
+      expect(fields, key).toHaveProperty("spacing");
       expect(fields, key).toHaveProperty("decoration");
     }
   });
 
-  it("keeps the sticky switch on the Header root", () => {
+  it("keeps the sticky switch last on the Header root", () => {
     const fields = rootFields(HeaderRootEditor);
+    const keys = Object.keys(fields);
 
     expect(fields).toHaveProperty("sticky");
     expect(fields).toHaveProperty("layout");
+    expect(fields).toHaveProperty("size");
+    expect(fields).toHaveProperty("spacing");
     expect(fields).toHaveProperty("decoration");
+    expect(keys.indexOf("decoration")).toBeLessThan(keys.indexOf("sticky"));
   });
 
   it("does not expose the inert title on any root", () => {
@@ -162,7 +169,8 @@ describe("root surface fields", () => {
   it("shares the root fields through the RootEditor", () => {
     expect(rootFields(HeaderRootEditor)).toMatchObject({
       layout: rootFields(RootEditor).layout,
-      dimension: rootFields(RootEditor).dimension,
+      size: rootFields(RootEditor).size,
+      spacing: rootFields(RootEditor).spacing,
       decoration: rootFields(RootEditor).decoration,
     });
   });

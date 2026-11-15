@@ -1,7 +1,8 @@
 import type { PuckComponent } from "@puckeditor/core";
 
 import {
-  getDimensionVars,
+  getSizeVars,
+  getSpacingVars,
   getTypographyVars,
 } from "@/puck/utils/get-style-vars";
 import { getLayoutVars } from "@/puck/fields/layout/get-layout-vars";
@@ -20,13 +21,15 @@ export const renderHeadingBlock: PuckComponent<HeadingProps> = ({
   text,
   level,
   layout,
-  dimension,
+  size,
+  spacing,
   typography,
   puck,
 }) => {
   const styleVars = {
     ...getLayoutVars(layout),
-    ...getDimensionVars(dimension),
+    ...getSizeVars(size),
+    ...getSpacingVars(spacing),
     ...getTypographyVars(typography),
   };
 

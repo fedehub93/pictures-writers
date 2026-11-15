@@ -2,7 +2,8 @@ import type { PuckComponent } from "@puckeditor/core";
 
 import {
   getDecorationVars,
-  getDimensionVars,
+  getSizeVars,
+  getSpacingVars,
 } from "@/puck/utils/get-style-vars";
 import {
   getLayoutVars,
@@ -14,8 +15,9 @@ import { cn } from "@/shared/lib/utils";
 
 import {
   TOP_BAR_DEFAULT_DECORATION,
-  TOP_BAR_DEFAULT_DIMENSION,
   TOP_BAR_DEFAULT_LAYOUT,
+  TOP_BAR_DEFAULT_SIZE,
+  TOP_BAR_DEFAULT_SPACING,
 } from "./defaults";
 import type { TopBarBlockProps } from "./types";
 import { TopBarBlockUi } from "./ui/top-bar";
@@ -51,7 +53,7 @@ const withDesktopDisplay = (vars: Record<string, string>) => ({
  * contract arranges the blocks inside the bar. The strip root keeps only the
  * item-level rules (the display rule that hides the whole strip and
  * `align-self`, which describes the bar as a child of its parent), plus its
- * dimension and decoration.
+ * size, spacing and decoration.
  *
  * The style fallbacks keep a new bar neutral when a document omits the shared
  * fields: Puck merges `defaultProps` in the editor canvas only, not in the
@@ -68,7 +70,8 @@ export const renderTopBarBlock: PuckComponent<TopBarBlockProps> = ({
   content: Content,
   settings,
   layout,
-  dimension,
+  size,
+  spacing,
   decoration,
   puck,
 }) => {
@@ -89,7 +92,8 @@ export const renderTopBarBlock: PuckComponent<TopBarBlockProps> = ({
   });
   const rootStyleVars: Record<string, string> = {
     ...withDesktopDisplay({ ...displayVars, ...itemVars }),
-    ...getDimensionVars(dimension ?? TOP_BAR_DEFAULT_DIMENSION),
+    ...getSizeVars(size ?? TOP_BAR_DEFAULT_SIZE),
+    ...getSpacingVars(spacing ?? TOP_BAR_DEFAULT_SPACING),
     ...getDecorationVars(decoration ?? TOP_BAR_DEFAULT_DECORATION),
   };
 

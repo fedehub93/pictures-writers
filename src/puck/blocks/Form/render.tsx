@@ -1,6 +1,6 @@
 import type { PuckComponent } from "@puckeditor/core";
 
-import { getDimensionVars } from "@/puck/utils/get-style-vars";
+import { getSizeVars, getSpacingVars } from "@/puck/utils/get-style-vars";
 import { getLayoutVars } from "@/puck/fields/layout/get-layout-vars";
 import { getLayoutClassNames } from "@/puck/fields/layout/get-layout-classes";
 
@@ -16,12 +16,14 @@ import { FormBlockUi } from "./ui/form";
 export const renderFormBlock: PuckComponent<FormBlockProps> = ({
   form,
   layout,
-  dimension,
+  size,
+  spacing,
   puck,
 }) => {
   const styleVars = {
     ...getLayoutVars(layout),
-    ...getDimensionVars(dimension),
+    ...getSizeVars(size),
+    ...getSpacingVars(spacing),
   };
 
   return (

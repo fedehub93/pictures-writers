@@ -1,6 +1,7 @@
 import { RootConfig } from "@puckeditor/core";
 
-import { DimensionField } from "@/puck/fields/dimension";
+import { SizeField } from "@/puck/fields/size";
+import { SpacingField } from "@/puck/fields/spacing";
 import { RootLayoutField } from "@/puck/fields/layout";
 import { DecorationField } from "@/puck/fields/decoration";
 
@@ -12,7 +13,8 @@ export type { RootProps };
 export const RootEditor: RootConfig<RootProps> = {
   fields: {
     layout: RootLayoutField,
-    dimension: DimensionField,
+    size: SizeField,
+    spacing: SpacingField,
     decoration: DecorationField,
   },
   render: renderRoot,

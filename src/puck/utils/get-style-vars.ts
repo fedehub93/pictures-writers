@@ -1,5 +1,6 @@
 import type { Responsive } from "@/puck/utils/responsive";
-import type { DimensionProps } from "@/puck/fields/dimension";
+import type { SizeProps } from "@/puck/fields/size";
+import type { SpacingProps } from "@/puck/fields/spacing";
 import type { TypographyProps } from "@/puck/fields/typography";
 import type { DecorationProps } from "@/puck/fields/decoration";
 import type { Breakpoint } from "@/puck/utils/breakpoints";
@@ -12,7 +13,7 @@ const getSuffix = (bp: Breakpoint) => bp.charAt(0);
 /** The width a *Fill* box resolves to; the implied fill below emits the same. */
 const FILL_WIDTH = "100%";
 
-export interface DimensionVarOptions {
+export interface SizeVarOptions {
   /**
    * The width the block resolves to when no width is authored: its natural
    * size. It is a block constant, not a document value, so it needs no
@@ -22,7 +23,7 @@ export interface DimensionVarOptions {
 }
 
 /**
- * UTILITY: DIMENSION
+ * UTILITY: SIZE
  *
  * Width precedence, highest first: an authored width at the breakpoint (own or
  * inherited from a wider one, the explicit `auto` included) → the block base
@@ -30,9 +31,9 @@ export interface DimensionVarOptions {
  * max width. A block with a base width has a natural size, so it never needs
  * the fill to stop it collapsing.
  */
-export const getDimensionVars = (
-  data?: Responsive<DimensionProps>,
-  { baseWidth }: DimensionVarOptions = {},
+export const getSizeVars = (
+  data?: Responsive<SizeProps>,
+  { baseWidth }: SizeVarOptions = {},
 ) => {
   const base = baseWidth?.trim();
 
@@ -77,6 +78,27 @@ export const getDimensionVars = (
     if (p.maxWidth) vars[`--mw-${s}`] = p.maxWidth;
     if (p.minHeight) vars[`--mh-${s}`] = p.minHeight;
     if (p.aspectRatio) vars[`--ratio-${s}`] = p.aspectRatio;
+  }
+
+  return vars;
+};
+
+/**
+ * UTILITY: SPACING
+ *
+ * The eight margin and padding variables. They share the Breakpoint suffix and
+ * the reset scope with the size variables: both land on the same block root,
+ * so `.puck-dim` resets and consumes the whole box (see `puck-base.css`).
+ */
+export const getSpacingVars = (data?: Responsive<SpacingProps>) => {
+  if (!data) return {};
+  const vars: Record<string, string> = {};
+
+  for (const bp of BREAKPOINTS) {
+    const p = data[bp];
+    if (!p) continue;
+    const s = getSuffix(bp);
+
     if (p.marginTop) vars[`--mt-${s}`] = p.marginTop;
     if (p.marginRight) vars[`--mr-${s}`] = p.marginRight;
     if (p.marginBottom) vars[`--mb-${s}`] = p.marginBottom;

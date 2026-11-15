@@ -70,7 +70,8 @@ describe("Heading block", () => {
     const html = renderHeading({
       text: "Title",
       level: "h3",
-      dimension: { desktop: { width: "100%", marginTop: "12px" } },
+      size: { desktop: { width: "100%" } },
+      spacing: { desktop: { marginTop: "12px" } },
       typography: { desktop: { fontSize: "2rem" } },
       layout: { desktop: { display: "none" } },
     });

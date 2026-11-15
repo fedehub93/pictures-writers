@@ -93,7 +93,7 @@ describe("LinkList block", () => {
     expect(html).toContain('<h2 class="font-semibold">Risorse</h2>');
   });
 
-  it("renders typography and dimension as responsive CSS custom properties", () => {
+  it("renders typography and spacing as responsive CSS custom properties", () => {
     const html = render({
       content: {
         title: "Risorse",
@@ -103,7 +103,7 @@ describe("LinkList block", () => {
         desktop: { fontSize: "1rem", color: "var(--primary)" },
         tablet: { fontSize: "0.875rem" },
       },
-      dimension: {
+      spacing: {
         desktop: { marginTop: "12px" },
         tablet: { paddingBottom: "8px" },
       },
@@ -122,7 +122,8 @@ describe("LinkList block", () => {
     const fields = (linkList?.fields ?? {}) as Record<string, unknown>;
 
     expect(fields.content).toMatchObject({ type: "custom" });
-    expect(fields).toHaveProperty("dimension");
+    expect(fields).toHaveProperty("size");
+    expect(fields).toHaveProperty("spacing");
     expect(fields).toHaveProperty("typography");
     expect(fields).not.toHaveProperty("title");
     expect(fields).not.toHaveProperty("links");

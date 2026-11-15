@@ -19,7 +19,7 @@ describe("migrateSiteRegionPuckData", () => {
         showSiteName: true,
         customText: "Pictures Writers",
         customLogoUrl: "/logo.png",
-        dimension: { desktop: { width: "auto" } },
+        size: { desktop: { width: "auto" } },
       },
     });
 
@@ -33,7 +33,7 @@ describe("migrateSiteRegionPuckData", () => {
         customText: "Pictures Writers",
         customLogoUrl: "/logo.png",
       },
-      dimension: { desktop: { width: "auto" } },
+      size: { desktop: { width: "auto" } },
     });
     expect(result.changes).toEqual([
       {
@@ -83,7 +83,7 @@ describe("migrateSiteRegionPuckData", () => {
         id: "navbar-1",
         layout: "mega",
         items,
-        dimension: { desktop: { width: "full" } },
+        size: { desktop: { width: "full" } },
       },
     });
 
@@ -92,7 +92,7 @@ describe("migrateSiteRegionPuckData", () => {
     expect(result.data.content[0]?.props).toEqual({
       id: "navbar-1",
       content: { layout: "mega", items },
-      dimension: { desktop: { width: "full" } },
+      size: { desktop: { width: "full" } },
     });
     expect(result.changes[0]).toMatchObject({
       componentType: "NavbarBlock",
@@ -237,7 +237,7 @@ describe("migrateSiteRegionPuckData", () => {
               showSiteName: false,
               customText: "Pictures Writers",
             },
-            dimension: { desktop: { width: "auto" } },
+            size: { desktop: { width: "auto" } },
           },
         },
         {

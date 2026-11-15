@@ -2,7 +2,8 @@ import type { ReactNode } from "react";
 import type { Slot } from "@puckeditor/core";
 
 import type { DecorationProps } from "@/puck/fields/decoration";
-import type { DimensionProps } from "@/puck/fields/dimension";
+import type { SizeProps } from "@/puck/fields/size";
+import type { SpacingProps } from "@/puck/fields/spacing";
 import type { LayoutProps } from "@/puck/fields/layout";
 import type { BlockDragRef } from "@/puck/types";
 import type { Responsive } from "@/puck/utils/responsive";
@@ -17,7 +18,8 @@ export type TopBarBlockProps = {
   content: Slot;
   settings?: TopBarSettings;
   layout?: Responsive<LayoutProps>;
-  dimension?: Responsive<DimensionProps>;
+  size?: Responsive<SizeProps>;
+  spacing?: Responsive<SpacingProps>;
   decoration?: Responsive<DecorationProps>;
 };
 
@@ -37,8 +39,9 @@ export type TopBarBlockUiProps = {
    */
   editMode?: boolean;
   /**
-   * Root-level responsive style variables: display, `align-self`, dimension and
-   * decoration. The container layout variables live on the slot wrapper.
+   * Root-level responsive style variables: display, `align-self`, size,
+   * spacing and decoration. The container layout variables live on the slot
+   * wrapper.
    */
   styleVars?: Record<string, string>;
   /** Authored display classes and editor visibility markers for the root. */

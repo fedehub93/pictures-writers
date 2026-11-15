@@ -1,7 +1,8 @@
 import { type ComponentConfig } from "@puckeditor/core";
 
 import { richTextFields } from "@/puck/fields/rich-text";
-import { DimensionField } from "@/puck/fields/dimension";
+import { SizeField } from "@/puck/fields/size";
+import { SpacingField } from "@/puck/fields/spacing";
 import { TypographyField } from "@/puck/fields/typography";
 import { DisplayOnlyLayoutField } from "@/puck/fields/layout";
 
@@ -25,7 +26,8 @@ export const Heading: ComponentConfig<HeadingProps> = {
     },
     text: richTextFields.heading,
     layout: DisplayOnlyLayoutField,
-    dimension: DimensionField,
+    size: SizeField,
+    spacing: SpacingField,
     typography: TypographyField,
   },
   defaultProps: HEADING_DEFAULT_PROPS,

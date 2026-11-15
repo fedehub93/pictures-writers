@@ -120,11 +120,12 @@ describe("Text block", () => {
     expect(html).toContain("--tc-d:var(--primary)");
   });
 
-  it("renders dimension as responsive CSS custom properties", () => {
+  it("renders size and spacing as responsive CSS custom properties", () => {
     const html = renderText({
       text: "Spaced",
-      dimension: {
-        desktop: { width: "100%", height: "50vh", marginTop: "12px" },
+      size: { desktop: { width: "100%", height: "50vh" } },
+      spacing: {
+        desktop: { marginTop: "12px" },
         tablet: { paddingBottom: "8px" },
       },
     });
@@ -179,11 +180,12 @@ describe("Text block", () => {
     );
   });
 
-  it("exposes the shared rich text field, dimension and typography", () => {
+  it("exposes the shared rich text field, size, spacing and typography", () => {
     const fields = config.components.Text.fields ?? {};
 
     expect(fields).toHaveProperty("text");
-    expect(fields).toHaveProperty("dimension");
+    expect(fields).toHaveProperty("size");
+    expect(fields).toHaveProperty("spacing");
     expect(fields).toHaveProperty("typography");
     expect(fields).not.toHaveProperty("align");
     expect(fields).not.toHaveProperty("color");

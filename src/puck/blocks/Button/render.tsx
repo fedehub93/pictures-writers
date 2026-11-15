@@ -4,7 +4,8 @@ import {
   HOVER_STATE,
   getDecorationStateVars,
   getDecorationVars,
-  getDimensionVars,
+  getSizeVars,
+  getSpacingVars,
   getTypographyVars,
 } from "@/puck/utils/get-style-vars";
 import { getLayoutVars } from "@/puck/fields/layout/get-layout-vars";
@@ -24,7 +25,8 @@ import { resolveButtonVariantStyles } from "./variants";
 export const renderButtonBlock: PuckComponent<ButtonProps> = ({
   button,
   layout,
-  dimension,
+  size,
+  spacing,
   typography,
   decoration,
   puck,
@@ -36,7 +38,8 @@ export const renderButtonBlock: PuckComponent<ButtonProps> = ({
 
   const styleVars = {
     ...getLayoutVars(layout),
-    ...getDimensionVars(dimension, { baseWidth: BUTTON_BASE_WIDTH }),
+    ...getSizeVars(size, { baseWidth: BUTTON_BASE_WIDTH }),
+    ...getSpacingVars(spacing),
     ...getTypographyVars(variantStyles.typography),
     ...getDecorationVars(variantStyles.decoration),
     // The hover state appends its own variables; the stylesheet reads them and

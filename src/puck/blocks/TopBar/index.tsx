@@ -1,7 +1,8 @@
 import { ComponentConfig } from "@puckeditor/core";
 
 import { DecorationField } from "@/puck/fields/decoration";
-import { DimensionField } from "@/puck/fields/dimension";
+import { SizeField } from "@/puck/fields/size";
+import { SpacingField } from "@/puck/fields/spacing";
 import { LayoutField } from "@/puck/fields/layout";
 
 import { TOP_BAR_DEFAULT_PROPS } from "../defaults";
@@ -17,7 +18,7 @@ export type { TopBarBlockProps };
  *
  * The Top bar owns no copy: `content` is a Puck slot for arbitrary blocks, and
  * the only other setting is whether visitors can dismiss it. The shared
- * Layout, Dimension and Decoration fields style the strip.
+ * Layout, Size, Spacing and Decoration fields style the strip.
  */
 export const TopBar: ComponentConfig<TopBarBlockProps> = {
   // Puck's `inline` branch is the only supported way to skip the per-block
@@ -30,7 +31,8 @@ export const TopBar: ComponentConfig<TopBarBlockProps> = {
     },
     settings: TopBarSettingsField,
     layout: LayoutField,
-    dimension: DimensionField,
+    size: SizeField,
+    spacing: SpacingField,
     decoration: DecorationField,
   },
   defaultProps: TOP_BAR_DEFAULT_PROPS,

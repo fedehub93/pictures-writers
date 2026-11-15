@@ -10,16 +10,18 @@ const PLACEHOLDER_IMAGE =
 /**
  * Image block UI.
  *
- * `Dimension` describes the box of the block and `Decoration` styles the
- * picture inside it. The box used to be hard-coded to `w-full` and only the
- * `<img>` carried the authored width: on the public page that made an inline
- * image claim a whole flex row and squeeze its siblings, while the editor
- * canvas hid the problem behind Puck's per-block wrapper.
+ * `Size` describes the box of the block, `Spacing` the space around and inside
+ * it, and `Decoration` styles the picture inside it. The box used to be
+ * hard-coded to `w-full` and only the `<img>` carried the authored width: on
+ * the public page that made an inline image claim a whole flex row and squeeze
+ * its siblings, while the editor canvas hid the problem behind Puck's per-block
+ * wrapper.
  */
 export const ImageBlockUi = ({
   image,
   layoutVars,
-  dimensionVars,
+  sizeVars,
+  spacingVars,
   decorationVars,
   layoutClassName,
   editing,
@@ -27,7 +29,8 @@ export const ImageBlockUi = ({
 }: {
   image?: ImageProps;
   layoutVars: Record<string, string>;
-  dimensionVars: Record<string, string>;
+  sizeVars: Record<string, string>;
+  spacingVars: Record<string, string>;
   decorationVars: Record<string, string>;
   layoutClassName?: string;
   /** Editor-only: the canvas keeps the anchor but cancels its navigation. */
@@ -59,7 +62,8 @@ export const ImageBlockUi = ({
   const rootClassName = cn("puck-dim puck-block-root", layoutClassName);
   const rootStyle = {
     ...pickDisplayVars(layoutVars),
-    ...dimensionVars,
+    ...sizeVars,
+    ...spacingVars,
   };
   // A linked image renders as an anchor block root, so the canvas has to cancel
   // its navigation exactly like a Button block.

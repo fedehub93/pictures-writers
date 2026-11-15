@@ -29,9 +29,9 @@ import type { TopBarBlockUiProps } from "../types";
  * editable even if the same browser dismissed it on the public site.
  *
  * The strip root carries only the block-level rules: visibility, `align-self`,
- * dimension and decoration. The layout that arranges the slot blocks lives on
- * the slot wrapper (see `render.tsx`), so the close button is taken out of flow
- * and pinned to the trailing edge instead of being a flex item of the row.
+ * size, spacing and decoration. The layout that arranges the slot blocks lives
+ * on the slot wrapper (see `render.tsx`), so the close button is taken out of
+ * flow and pinned to the trailing edge instead of being a flex item of the row.
  */
 export const TopBarBlockUi = ({
   id,

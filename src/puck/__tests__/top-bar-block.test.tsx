@@ -9,7 +9,8 @@ import { TOP_BAR_DEFAULT_PROPS } from "../blocks/defaults";
 import { TopBar } from "../blocks/TopBar";
 import {
   TOP_BAR_DEFAULT_DECORATION,
-  TOP_BAR_DEFAULT_DIMENSION,
+  TOP_BAR_DEFAULT_SIZE,
+  TOP_BAR_DEFAULT_SPACING,
 } from "../blocks/TopBar/defaults";
 import { shouldHideTopBar } from "../blocks/TopBar/lib/visibility";
 import type {
@@ -71,7 +72,8 @@ function render(
     content: SlotComponent;
     settings?: TopBarSettings;
     layout?: TopBarBlockProps["layout"];
-    dimension?: TopBarBlockProps["dimension"];
+    size?: TopBarBlockProps["size"];
+    spacing?: TopBarBlockProps["spacing"];
     decoration?: TopBarBlockProps["decoration"];
   },
   puck: PuckContext = PUCK,
@@ -159,11 +161,14 @@ describe("TopBar block", () => {
     expect(canvasHtml).toContain("puck-top-bar-slot");
   });
 
-  it("renders dimension and decoration as responsive CSS custom properties on the root", () => {
+  it("renders size, spacing and decoration as responsive CSS custom properties on the root", () => {
     const html = render({
       content: ContentSlot,
-      dimension: {
-        desktop: { width: "100%", paddingTop: "8px", paddingLeft: "16px" },
+      size: {
+        desktop: { width: "100%" },
+      },
+      spacing: {
+        desktop: { paddingTop: "8px", paddingLeft: "16px" },
         tablet: { paddingBottom: "4px" },
       },
       decoration: {
@@ -473,7 +478,8 @@ describe("TopBar block", () => {
   });
 
   it("stores the neutral default as the block defaults", () => {
-    expect(TopBar.defaultProps?.dimension).toEqual(TOP_BAR_DEFAULT_DIMENSION);
+    expect(TopBar.defaultProps?.size).toEqual(TOP_BAR_DEFAULT_SIZE);
+    expect(TopBar.defaultProps?.spacing).toEqual(TOP_BAR_DEFAULT_SPACING);
     expect(TopBar.defaultProps?.decoration).toEqual(
       TOP_BAR_DEFAULT_DECORATION,
     );
@@ -485,7 +491,8 @@ describe("TopBar block", () => {
 
     expect(fields.content).toMatchObject({ type: "slot" });
     expect(fields.settings).toMatchObject({ type: "custom" });
-    expect(fields).toHaveProperty("dimension");
+    expect(fields).toHaveProperty("size");
+    expect(fields).toHaveProperty("spacing");
     expect(fields).toHaveProperty("decoration");
     expect(fields).not.toHaveProperty("text");
     expect(fields).not.toHaveProperty("link");

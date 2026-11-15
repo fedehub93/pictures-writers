@@ -1,6 +1,7 @@
 import { type ComponentConfig } from "@puckeditor/core";
 
-import { DimensionField } from "@/puck/fields/dimension";
+import { SizeField } from "@/puck/fields/size";
+import { SpacingField } from "@/puck/fields/spacing";
 import { TypographyField } from "@/puck/fields/typography";
 import { DisplayOnlyLayoutField } from "@/puck/fields/layout";
 import { IconField } from "@/puck/fields/icon";
@@ -18,7 +19,8 @@ export const IconBlock: ComponentConfig<IconBlockProps> = {
   fields: {
     icon: IconField,
     layout: DisplayOnlyLayoutField,
-    dimension: DimensionField,
+    size: SizeField,
+    spacing: SpacingField,
     typography: TypographyField,
   },
   render: renderIconBlock,

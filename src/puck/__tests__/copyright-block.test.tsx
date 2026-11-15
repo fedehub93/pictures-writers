@@ -92,7 +92,7 @@ describe("Copyright block", () => {
     expect(html).toContain(">Terms</a>");
   });
 
-  it("renders typography and dimension as responsive CSS custom properties", () => {
+  it("renders typography and spacing as responsive CSS custom properties", () => {
     const html = render({
       content: { showYear: true },
       siteName: "Acme",
@@ -101,7 +101,7 @@ describe("Copyright block", () => {
         desktop: { fontSize: "1rem", color: "var(--primary)" },
         tablet: { fontSize: "0.875rem" },
       },
-      dimension: {
+      spacing: {
         desktop: { marginTop: "12px" },
         tablet: { paddingBottom: "8px" },
       },
@@ -170,7 +170,8 @@ describe("Copyright block", () => {
     const fields = (Copyright.fields ?? {}) as Record<string, unknown>;
 
     expect(fields.content).toMatchObject({ type: "custom" });
-    expect(fields).toHaveProperty("dimension");
+    expect(fields).toHaveProperty("size");
+    expect(fields).toHaveProperty("spacing");
     expect(fields).toHaveProperty("typography");
     expect(fields).not.toHaveProperty("showYear");
     expect(fields).not.toHaveProperty("extraText");

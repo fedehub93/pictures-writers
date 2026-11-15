@@ -8,7 +8,7 @@ vi.mock("next/navigation", () => ({
 import { NavbarBlockServer } from "../blocks/NavbarBlock/server";
 
 describe("NavbarBlock server render", () => {
-  it("resolves the menu links and forwards dimension and decoration", async () => {
+  it("resolves the menu links and forwards spacing and decoration", async () => {
     const element = await NavbarBlockServer({
       content: {
         items: [
@@ -20,7 +20,7 @@ describe("NavbarBlock server render", () => {
         ],
         layout: "compact",
       },
-      dimension: { desktop: { marginTop: "12px" } },
+      spacing: { desktop: { marginTop: "12px" } },
       decoration: { desktop: { backgroundColor: "var(--accent)" } },
       appearance: { desktop: { fontSize: "1.25rem" } },
     });

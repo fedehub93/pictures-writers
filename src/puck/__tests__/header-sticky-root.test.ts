@@ -23,7 +23,8 @@ describe("Header sticky root field", () => {
     const fields = readRootFields(HeaderRootEditor);
 
     expect(fields).not.toHaveProperty("title");
-    expect(fields).toHaveProperty("dimension");
+    expect(fields).toHaveProperty("size");
+    expect(fields).toHaveProperty("spacing");
   });
 
   it("does not expose the switch on the Footer root", () => {

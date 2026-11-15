@@ -12,7 +12,9 @@ type FieldInputType = "text" | "unit";
  * page, so the same render function serves both paths.
  *
  * The ref belongs on the element that also carries the block's root classes
- * (`puck-dim`, plus `puck-layout` for the container blocks). Putting it on a
+ * (`puck-dim`, plus `puck-layout` for the container blocks). The class resets
+ * and consumes both the size and the spacing variables, so the ref, the
+ * authored box and the selection outline all name one element. Putting it on a
  * child, or on a wrapper the block renders for its own layout, makes the
  * editor select a box that the published page does not have.
  */

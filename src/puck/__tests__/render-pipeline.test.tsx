@@ -112,7 +112,7 @@ const SHARED_CASES: SharedCase[] = [
     props: {
       items: SlotStub,
       layout: { desktop: { display: "flex" } },
-      dimension: { desktop: { paddingTop: "12px" } },
+      spacing: { desktop: { paddingTop: "12px" } },
       typography: { desktop: { fontSize: "16px" } },
       decoration: { desktop: { backgroundColor: "var(--accent)" } },
     },
@@ -122,7 +122,7 @@ const SHARED_CASES: SharedCase[] = [
     props: {
       items: SlotStub,
       layout: { desktop: { display: "flex" } },
-      dimension: { desktop: { paddingLeft: "8px" } },
+      spacing: { desktop: { paddingLeft: "8px" } },
       typography: { desktop: { fontSize: "15px" } },
       decoration: { desktop: { borderRightWidth: "1px" } },
     },
@@ -131,8 +131,7 @@ const SHARED_CASES: SharedCase[] = [
     name: "Grid",
     props: {
       items: SlotStub,
-      layout: { desktop: { display: "grid" } },
-      dimension: { desktop: { rowGap: "1rem" } },
+      layout: { desktop: { display: "grid", rowGap: "1rem" } },
       typography: { desktop: { fontWeight: "600" } },
       decoration: { desktop: { backgroundColor: "var(--muted)" } },
     },
@@ -147,7 +146,7 @@ const SHARED_CASES: SharedCase[] = [
   },
   {
     name: "Separator",
-    props: { dimension: { desktop: { width: "100%", height: "2px" } } },
+    props: { size: { desktop: { width: "100%", height: "2px" } } },
   },
   {
     name: "Icon",
@@ -168,7 +167,7 @@ const SHARED_CASES: SharedCase[] = [
     name: "Text",
     props: {
       text: "Hello\nWorld",
-      dimension: { desktop: { marginTop: "12px" } },
+      spacing: { desktop: { marginTop: "12px" } },
       typography: {
         desktop: { fontSize: "18px", textAlign: "center", color: "var(--primary)" },
         tablet: { fontSize: "16px" },
@@ -195,7 +194,7 @@ const SHARED_CASES: SharedCase[] = [
         title: "Resources",
         links: [{ link: { type: "external", url: "/blog/", label: "Blog" } }],
       },
-      dimension: { desktop: { marginTop: "12px" } },
+      spacing: { desktop: { marginTop: "12px" } },
       typography: { desktop: { fontSize: "0.875rem" } },
     },
   },
@@ -205,7 +204,7 @@ const SHARED_CASES: SharedCase[] = [
     props: {
       content: SlotStub,
       settings: { dismissible: false },
-      dimension: { desktop: { paddingTop: "8px" } },
+      spacing: { desktop: { paddingTop: "8px" } },
       decoration: { desktop: { backgroundColor: "var(--accent)" } },
     },
   },
@@ -214,7 +213,7 @@ const SHARED_CASES: SharedCase[] = [
     region: "HEADER",
     props: {
       content: { placeholder: "Search", variant: "inline" },
-      dimension: { desktop: { marginTop: "8px" } },
+      spacing: { desktop: { marginTop: "8px" } },
       decoration: { desktop: { backgroundColor: "var(--accent)" } },
     },
   },
@@ -410,7 +409,7 @@ describe("consolidated Puck render pipeline", () => {
             label: "Example",
           },
         },
-        dimension: { desktop: { maxWidth: "30rem" } },
+        size: { desktop: { maxWidth: "30rem" } },
       },
     });
 
@@ -450,7 +449,7 @@ describe("consolidated Puck render pipeline", () => {
       name: "Container",
       props: {
         items: AbsoluteChildSlot,
-        dimension: { desktop: { paddingTop: "40px" } },
+        spacing: { desktop: { paddingTop: "40px" } },
       },
     });
 

@@ -1,5 +1,6 @@
 import {
-  getDimensionVars,
+  getSizeVars,
+  getSpacingVars,
   getTypographyVars,
 } from "@/puck/utils/get-style-vars";
 import { getLayoutVars } from "@/puck/fields/layout/get-layout-vars";
@@ -20,14 +21,16 @@ import { LinkListBlockUi } from "./ui/link-list";
 export const renderLinkListBlock = ({
   content,
   layout,
-  dimension,
+  size,
+  spacing,
   typography,
   editing,
   dragRef,
 }: LinkListBlockRenderProps) => {
   const styleVars = {
     ...getLayoutVars(layout),
-    ...getDimensionVars(dimension),
+    ...getSizeVars(size),
+    ...getSpacingVars(spacing),
     ...getTypographyVars(typography),
   };
 

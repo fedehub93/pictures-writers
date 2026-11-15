@@ -121,12 +121,19 @@
    neither moves the box nor creates a stacking context (there is no `z-index`
    here, and none is added). The class is separate from `.puck-dim` because the
    empty Form placeholder is a block root that deliberately keeps its own
-   `size-full` box instead of the dimension contract. */
+   `size-full` box instead of the size and spacing `.puck-dim` declares. */
 .puck-block-root {
   position: relative;
 }
 
-/* --- 1. DIMENSION --- */
+/* --- 1. BOX (size + spacing) ---
+   `.puck-dim` is the box scope, not the twin of an authoring field: the Size
+   and Spacing fields are two surfaces over one element. The class resets and
+   consumes the whole box — width, height, max width, min height, aspect ratio
+   and the four margins and paddings — so a value authored on a parent never
+   leaks into a block that did not author it. The name predates the split and is
+   kept on purpose: renaming it would touch every block root for no behavioural
+   change. */
 .puck-dim {
   /* Reset locale: se la variabile non è definita inline sull'elemento, 
      viene resettata e non eredita quella del genitore */
@@ -143,10 +150,6 @@
   --pr-d: initial;
   --pb-d: initial;
   --pl-d: initial;
-  --top-d: initial;
-  --bottom-d: initial;
-  --left-d: initial;
-  --right-d: initial;
 
   width: var(--w-d) !important;
   height: var(--h-d) !important;
@@ -161,10 +164,6 @@
   padding-right: var(--pr-d);
   padding-bottom: var(--pb-d);
   padding-left: var(--pl-d);
-  top: var(--top-d);
-  bottom: var(--bottom-d);
-  left: var(--left-d);
-  right: var(--right-d);
 }
 
 /* --- 2. TYPOGRAPHY --- */
@@ -447,10 +446,6 @@
     --pr-t: initial;
     --pb-t: initial;
     --pl-t: initial;
-    --top-t: initial;
-    --bottom-t: initial;
-    --left-t: initial;
-    --right-t: initial;
 
     width: var(--w-t, var(--w-d)) !important;
     height: var(--h-t, var(--h-d)) !important;
@@ -465,10 +460,6 @@
     padding-right: var(--pr-t, var(--pr-d));
     padding-bottom: var(--pb-t, var(--pb-d));
     padding-left: var(--pl-t, var(--pl-d));
-    top: var(--top-t, var(--top-d));
-    bottom: var(--bottom-t, var(--bottom-d));
-    left: var(--left-t, var(--left-d));
-    right: var(--right-t, var(--right-d));
   }
   .puck-typo {
     --ff-t: initial;
@@ -604,10 +595,6 @@
     --pr-m: initial;
     --pb-m: initial;
     --pl-m: initial;
-    --top-m: initial;
-    --bottom-m: initial;
-    --left-m: initial;
-    --right-m: initial;
 
     width: var(--w-m, var(--w-t, var(--w-d))) !important;
     height: var(--h-m, var(--h-t, var(--h-d))) !important;
@@ -622,10 +609,6 @@
     padding-right: var(--pr-m, var(--pr-t, var(--pr-d)));
     padding-bottom: var(--pb-m, var(--pb-t, var(--pb-d)));
     padding-left: var(--pl-m, var(--pl-t, var(--pl-d)));
-    top: var(--top-m, var(--top-t, var(--top-d)));
-    bottom: var(--bottom-m, var(--bottom-t, var(--bottom-d)));
-    left: var(--left-m, var(--left-t, var(--left-d)));
-    right: var(--right-m, var(--right-t, var(--right-d)));
   }
   .puck-typo {
     --ff-m: initial;

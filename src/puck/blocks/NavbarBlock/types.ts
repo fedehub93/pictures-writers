@@ -1,5 +1,6 @@
 import type { DecorationProps } from "@/puck/fields/decoration";
-import type { DimensionProps } from "@/puck/fields/dimension";
+import type { SizeProps } from "@/puck/fields/size";
+import type { SpacingProps } from "@/puck/fields/spacing";
 import type { IconProps } from "@/puck/fields/icon";
 import type { LayoutProps } from "@/puck/fields/layout";
 import type {
@@ -189,7 +190,8 @@ export type NavbarBlockProps = {
   content?: NavbarBlockContent;
   appearance?: Responsive<NavbarAppearanceProps>;
   layout?: Responsive<LayoutProps>;
-  dimension?: Responsive<DimensionProps>;
+  size?: Responsive<SizeProps>;
+  spacing?: Responsive<SpacingProps>;
   decoration?: Responsive<DecorationProps>;
 };
 
@@ -198,7 +200,8 @@ export type NavbarBlockRenderProps = {
   content?: NavbarBlockRenderContent;
   appearance?: Responsive<NavbarAppearanceProps>;
   layout?: Responsive<LayoutProps>;
-  dimension?: Responsive<DimensionProps>;
+  size?: Responsive<SizeProps>;
+  spacing?: Responsive<SpacingProps>;
   decoration?: Responsive<DecorationProps>;
   /** True inside the editor canvas, where hidden blocks stay selectable. */
   editing?: boolean;

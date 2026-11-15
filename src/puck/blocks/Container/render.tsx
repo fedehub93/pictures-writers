@@ -2,7 +2,8 @@ import type { PuckComponent } from "@puckeditor/core";
 
 import {
   getDecorationVars,
-  getDimensionVars,
+  getSizeVars,
+  getSpacingVars,
   getTypographyVars,
 } from "@/puck/utils/get-style-vars";
 import { getLayoutVars } from "@/puck/fields/layout/get-layout-vars";
@@ -19,7 +20,8 @@ import type { ContainerBlockProps } from "./types";
  */
 export const renderContainerBlock: PuckComponent<ContainerBlockProps> = ({
   layout,
-  dimension,
+  size,
+  spacing,
   typography,
   decoration,
   items: Items,
@@ -27,7 +29,8 @@ export const renderContainerBlock: PuckComponent<ContainerBlockProps> = ({
 }) => {
   const styleVars = {
     ...getLayoutVars(layout),
-    ...getDimensionVars(dimension),
+    ...getSizeVars(size),
+    ...getSpacingVars(spacing),
     ...getTypographyVars(typography),
     ...getDecorationVars(decoration),
   };

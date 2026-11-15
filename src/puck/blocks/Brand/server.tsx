@@ -16,7 +16,8 @@ import { renderBrandBlock } from "./render";
 export const BrandServer = async ({
   content,
   layout,
-  dimension,
+  size,
+  spacing,
   typography,
 }: BrandBlockProps) => {
   const settings = await getSettings();
@@ -24,7 +25,8 @@ export const BrandServer = async ({
   return renderBrandBlock({
     content,
     layout,
-    dimension,
+    size,
+    spacing,
     typography,
     siteName: settings.siteName ?? undefined,
     logoUrl: settings.logoUrl ?? undefined,

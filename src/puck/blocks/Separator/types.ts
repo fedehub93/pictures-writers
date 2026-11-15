@@ -1,8 +1,10 @@
 import type { Responsive } from "@/puck/utils/responsive";
-import type { DimensionProps } from "@/puck/fields/dimension";
+import type { SizeProps } from "@/puck/fields/size";
+import type { SpacingProps } from "@/puck/fields/spacing";
 import type { LayoutProps } from "@/puck/fields/layout";
 
 export type SeparatorBlockProps = {
   layout?: Responsive<LayoutProps>;
-  dimension?: Responsive<DimensionProps>;
+  size?: Responsive<SizeProps>;
+  spacing?: Responsive<SpacingProps>;
 };

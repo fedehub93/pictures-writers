@@ -1,6 +1,7 @@
 import { ComponentConfig, type PuckComponent } from "@puckeditor/core";
 
-import { DimensionField } from "@/puck/fields/dimension";
+import { SizeField } from "@/puck/fields/size";
+import { SpacingField } from "@/puck/fields/spacing";
 import { DisplayOnlyLayoutField } from "@/puck/fields/layout";
 import { TypographyField } from "@/puck/fields/typography";
 import { readSiteRegionMetadata } from "@/puck/metadata";
@@ -46,7 +47,8 @@ export const Copyright: ComponentConfig<CopyrightBlockProps> = {
   fields: {
     content: CopyrightContentField,
     layout: DisplayOnlyLayoutField,
-    dimension: DimensionField,
+    size: SizeField,
+    spacing: SpacingField,
     typography: TypographyField,
   },
   defaultProps: COPYRIGHT_DEFAULT_PROPS,

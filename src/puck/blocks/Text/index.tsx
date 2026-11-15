@@ -1,7 +1,8 @@
 import { ComponentConfig } from "@puckeditor/core";
 
 import { richTextFields } from "@/puck/fields/rich-text";
-import { DimensionField } from "@/puck/fields/dimension";
+import { SizeField } from "@/puck/fields/size";
+import { SpacingField } from "@/puck/fields/spacing";
 import { TypographyField } from "@/puck/fields/typography";
 import { DisplayOnlyLayoutField } from "@/puck/fields/layout";
 
@@ -19,7 +20,8 @@ export const Text: ComponentConfig<TextBlockProps> = {
   fields: {
     text: richTextFields.text,
     layout: DisplayOnlyLayoutField,
-    dimension: DimensionField,
+    size: SizeField,
+    spacing: SpacingField,
     typography: TypographyField,
   },
   defaultProps: TEXT_DEFAULT_PROPS,

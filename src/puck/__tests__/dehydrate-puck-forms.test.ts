@@ -8,7 +8,7 @@ describe("dehydratePuckForms", () => {
       root: {
         props: {
           title: "Legacy root title",
-          dimension: { desktop: { minHeight: "20rem" } },
+          size: { desktop: { minHeight: "20rem" } },
         },
       },
       content: [],
@@ -18,7 +18,7 @@ describe("dehydratePuckForms", () => {
 
     expect(saved.root.props).toEqual({
       title: "Legacy root title",
-      dimension: { desktop: { minHeight: "20rem" } },
+      size: { desktop: { minHeight: "20rem" } },
     });
   });
 });

@@ -369,11 +369,11 @@ describe("NavbarBlock", () => {
     expect(html).toContain(">Workbook<");
   });
 
-  it("applies dimension and decoration as responsive CSS custom properties", () => {
+  it("applies spacing and decoration as responsive CSS custom properties", () => {
     const html = renderToStaticMarkup(
       renderNavbarBlock({
         content: { items: ITEMS, layout: "compact" },
-        dimension: {
+        spacing: {
           desktop: { marginTop: "12px", paddingRight: "16px" },
           tablet: { paddingBottom: "8px" },
         },
@@ -482,7 +482,8 @@ describe("NavbarBlock", () => {
     expect(fields).toHaveProperty("appearance");
     expect(fields.appearance).toBe(NavbarStyleField);
     expect(fields).toHaveProperty("layout");
-    expect(fields).toHaveProperty("dimension");
+    expect(fields).toHaveProperty("size");
+    expect(fields).toHaveProperty("spacing");
     expect(fields).toHaveProperty("decoration");
     expect(fields).not.toHaveProperty("items");
     expect(fields).not.toHaveProperty("typography");

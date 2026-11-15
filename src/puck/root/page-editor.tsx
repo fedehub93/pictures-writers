@@ -40,7 +40,8 @@ export function createPageEditorRoot({
 }: PageEditorRootConfigs): RootConfig<RootProps> {
   const PageEditorRoot = ({
     children,
-    dimension,
+    size,
+    spacing,
     layout,
     decoration,
     puck,
@@ -55,7 +56,8 @@ export function createPageEditorRoot({
         siteLayout={readSiteLayoutPreview(puck?.metadata)}
         metadata={puck?.metadata}
         isEditing={puck?.isEditing ?? true}
-        dimension={dimension}
+        size={size}
+        spacing={spacing}
         layout={layout}
         decoration={decoration}
       >
@@ -80,7 +82,8 @@ export function createPageEditorRoot({
  */
 export function PageEditorRootUi({
   children,
-  dimension,
+  size,
+  spacing,
   layout,
   decoration,
   headerConfig,
@@ -91,7 +94,8 @@ export function PageEditorRootUi({
   metadata,
 }: {
   children: ReactNode;
-  dimension?: RootProps["dimension"];
+  size?: RootProps["size"];
+  spacing?: RootProps["spacing"];
   layout?: RootProps["layout"];
   decoration?: RootProps["decoration"];
   headerConfig: Config;
@@ -125,7 +129,8 @@ export function PageEditorRootUi({
       )}
 
       <PageRootContent
-        dimension={dimension}
+        size={size}
+        spacing={spacing}
         layout={layout}
         decoration={decoration}
         isEditing={isEditing}

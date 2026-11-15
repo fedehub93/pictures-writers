@@ -1,6 +1,7 @@
 import {
   getDecorationVars,
-  getDimensionVars,
+  getSizeVars,
+  getSpacingVars,
 } from "@/puck/utils/get-style-vars";
 import { getLayoutVars } from "@/puck/fields/layout/get-layout-vars";
 import { getLayoutClassNames } from "@/puck/fields/layout/get-layout-classes";
@@ -18,15 +19,16 @@ import { NavbarBlockUi } from "./ui/navbar-block";
  * editor canvas stays database-free and the public path never pulls in editor
  * field modules.
  *
- * Dimension, decoration and navigation appearance are opt-in: with no value no
- * CSS variables are emitted, so the navigation keeps its own spacing and
+ * Size, spacing, decoration and navigation appearance are opt-in: with no value
+ * no CSS variables are emitted, so the navigation keeps its own spacing and
  * surface.
  */
 export const renderNavbarBlock = ({
   content,
   appearance,
   layout,
-  dimension,
+  size,
+  spacing,
   decoration,
   editing,
   dragRef,
@@ -34,7 +36,8 @@ export const renderNavbarBlock = ({
   const appearanceVars = getNavbarAppearanceVars(appearance);
   const styleVars = {
     ...getLayoutVars(layout),
-    ...getDimensionVars(dimension),
+    ...getSizeVars(size),
+    ...getSpacingVars(spacing),
     ...getDecorationVars(decoration),
     ...appearanceVars,
   };

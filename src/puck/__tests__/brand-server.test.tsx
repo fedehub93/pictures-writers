@@ -34,10 +34,10 @@ describe("Brand server render", () => {
     expect(html).toContain("--fs-d:1.125rem");
   });
 
-  it("forwards typography and dimension to the public markup", async () => {
+  it("forwards typography and spacing to the public markup", async () => {
     const element = await BrandServer({
       typography: { desktop: { fontSize: "1.25rem" } },
-      dimension: { desktop: { marginTop: "8px" } },
+      spacing: { desktop: { marginTop: "8px" } },
     });
 
     const html = renderToStaticMarkup(element);

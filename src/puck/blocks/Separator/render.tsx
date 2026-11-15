@@ -1,6 +1,6 @@
 import type { PuckComponent } from "@puckeditor/core";
 
-import { getDimensionVars } from "@/puck/utils/get-style-vars";
+import { getSizeVars, getSpacingVars } from "@/puck/utils/get-style-vars";
 import { getLayoutVars } from "@/puck/fields/layout/get-layout-vars";
 import { getLayoutClassNames } from "@/puck/fields/layout/get-layout-classes";
 
@@ -15,12 +15,14 @@ import { SeparatorBlockUi } from "./ui/separator";
  */
 export const renderSeparatorBlock: PuckComponent<SeparatorBlockProps> = ({
   layout,
-  dimension,
+  size,
+  spacing,
   puck,
 }) => {
   const styleVars = {
     ...getLayoutVars(layout),
-    ...getDimensionVars(dimension),
+    ...getSizeVars(size),
+    ...getSpacingVars(spacing),
   };
 
   return (

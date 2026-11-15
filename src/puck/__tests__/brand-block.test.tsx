@@ -141,7 +141,7 @@ describe("Brand block", () => {
     expect(html).toBe("");
   });
 
-  it("renders typography and dimension as responsive CSS custom properties", () => {
+  it("renders typography and spacing as responsive CSS custom properties", () => {
     const html = render({
       content: { showLogo: true, showSiteName: true },
       siteName: "Acme",
@@ -149,7 +149,7 @@ describe("Brand block", () => {
         desktop: { fontSize: "1.5rem", color: "var(--primary)" },
         tablet: { fontSize: "1.25rem" },
       },
-      dimension: {
+      spacing: {
         desktop: { marginTop: "12px" },
         tablet: { paddingBottom: "8px" },
       },
@@ -186,7 +186,8 @@ describe("Brand block", () => {
     const fields = (Brand.fields ?? {}) as Record<string, unknown>;
 
     expect(fields.content).toMatchObject({ type: "custom" });
-    expect(fields).toHaveProperty("dimension");
+    expect(fields).toHaveProperty("size");
+    expect(fields).toHaveProperty("spacing");
     expect(fields).toHaveProperty("typography");
     expect(fields).not.toHaveProperty("showLogo");
     expect(fields).not.toHaveProperty("showSiteName");

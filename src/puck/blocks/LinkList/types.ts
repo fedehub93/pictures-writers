@@ -1,5 +1,6 @@
 import type { LinkListItem } from "@/puck/fields/link";
-import type { DimensionProps } from "@/puck/fields/dimension";
+import type { SizeProps } from "@/puck/fields/size";
+import type { SpacingProps } from "@/puck/fields/spacing";
 import type { LayoutProps } from "@/puck/fields/layout";
 import type { TypographyProps } from "@/puck/fields/typography";
 import type { BlockDragRef } from "@/puck/types";
@@ -16,7 +17,8 @@ export type LinkListBlockContent = {
 export type LinkListBlockProps = {
   content?: LinkListBlockContent;
   layout?: Responsive<LayoutProps>;
-  dimension?: Responsive<DimensionProps>;
+  size?: Responsive<SizeProps>;
+  spacing?: Responsive<SpacingProps>;
   typography?: Responsive<TypographyProps>;
 };
 

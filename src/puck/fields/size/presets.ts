@@ -4,7 +4,7 @@ import type { ValueUnitPreset } from "@/puck/components/value-unit-input/types";
  * Width states offered next to the numeric input.
  *
  * The stored prop keeps its shape (`width?: string`), so no document migration
- * is involved. *Fill* stores the same `100%` that `getDimensionVars` implies
+ * is involved. *Fill* stores the same `100%` that `getSizeVars` implies
  * when a breakpoint authors only a max width, *Fit content* stores
  * `fit-content`, and *Auto* stores nothing — the same as clearing the field.
  *

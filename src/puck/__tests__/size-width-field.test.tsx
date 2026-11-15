@@ -3,8 +3,8 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, describe, expect, it } from "vitest";
 
-import type { DimensionProps } from "../fields/dimension";
-import { DimensionView } from "../fields/dimension/ui/view/dimension-view";
+import type { SizeProps } from "../fields/size";
+import { SizeView } from "../fields/size/ui/view/size-view";
 
 /**
  * The Width field says what it means without taking a row of its own: the
@@ -27,9 +27,9 @@ function cleanup() {
 afterEach(cleanup);
 
 function renderView(overrides: {
-  currentValues?: Partial<DimensionProps>;
-  renderValues?: DimensionProps;
-  onUpdate?: (values: Partial<DimensionProps>) => void;
+  currentValues?: Partial<SizeProps>;
+  renderValues?: SizeProps;
+  onUpdate?: (values: Partial<SizeProps>) => void;
   baseWidth?: string;
 }) {
   cleanup();
@@ -40,7 +40,7 @@ function renderView(overrides: {
 
   act(() => {
     root!.render(
-      <DimensionView
+      <SizeView
         currentValues={overrides.currentValues ?? {}}
         renderValues={overrides.renderValues ?? {}}
         resetProp={() => undefined}
@@ -99,7 +99,7 @@ function pressEnter(input: HTMLInputElement) {
   });
 }
 
-describe("Dimension Width field", () => {
+describe("Size Width field", () => {
   it("offers Auto, Fill and Fit content as presets of the width input", () => {
     renderView({});
     openPresets();
@@ -146,7 +146,7 @@ describe("Dimension Width field", () => {
   });
 
   it("stores 100% when Fill is picked", () => {
-    const updates: Partial<DimensionProps>[] = [];
+    const updates: Partial<SizeProps>[] = [];
     renderView({ onUpdate: (values) => updates.push(values) });
 
     openPresets();
@@ -156,7 +156,7 @@ describe("Dimension Width field", () => {
   });
 
   it("stores fit-content when Fit content is picked", () => {
-    const updates: Partial<DimensionProps>[] = [];
+    const updates: Partial<SizeProps>[] = [];
     renderView({ onUpdate: (values) => updates.push(values) });
 
     openPresets();
@@ -166,7 +166,7 @@ describe("Dimension Width field", () => {
   });
 
   it("clears back to the block default when Auto is picked", () => {
-    const updates: Partial<DimensionProps>[] = [];
+    const updates: Partial<SizeProps>[] = [];
     renderView({
       baseWidth: "fit-content",
       renderValues: { width: "100%" },
@@ -199,7 +199,7 @@ describe("Dimension Width field", () => {
   });
 
   it("stores a typed number with the default unit", () => {
-    const updates: Partial<DimensionProps>[] = [];
+    const updates: Partial<SizeProps>[] = [];
     renderView({ onUpdate: (values) => updates.push(values) });
 
     type(widthInput(), "24");
@@ -209,7 +209,7 @@ describe("Dimension Width field", () => {
   });
 
   it("stores an explicit auto keyword typed by hand, which cancels an inherited width", () => {
-    const updates: Partial<DimensionProps>[] = [];
+    const updates: Partial<SizeProps>[] = [];
     renderView({
       renderValues: { width: "fit-content" },
       onUpdate: (values) => updates.push(values),

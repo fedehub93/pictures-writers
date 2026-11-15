@@ -1,6 +1,7 @@
 import { type ComponentConfig } from "@puckeditor/core";
 
-import { createDimensionField } from "@/puck/fields/dimension";
+import { createSizeField } from "@/puck/fields/size";
+import { SpacingField } from "@/puck/fields/spacing";
 import { DecorationField } from "@/puck/fields/decoration";
 import { TypographyField } from "@/puck/fields/typography";
 import { DisplayOnlyLayoutField } from "@/puck/fields/layout";
@@ -21,7 +22,8 @@ export const ButtonBlock: ComponentConfig<ButtonProps> = {
   fields: {
     button: ButtonContentField,
     layout: DisplayOnlyLayoutField,
-    dimension: createDimensionField({ baseWidth: BUTTON_BASE_WIDTH }),
+    size: createSizeField({ baseWidth: BUTTON_BASE_WIDTH }),
+    spacing: SpacingField,
     typography: TypographyField,
     decoration: DecorationField,
   },

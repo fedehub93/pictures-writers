@@ -1,7 +1,8 @@
 import { ComponentConfig, type PuckComponent } from "@puckeditor/core";
 
 import { DecorationField } from "@/puck/fields/decoration";
-import { DimensionField } from "@/puck/fields/dimension";
+import { SizeField } from "@/puck/fields/size";
+import { SpacingField } from "@/puck/fields/spacing";
 import { DisplayOnlyLayoutField } from "@/puck/fields/layout";
 
 import { NAVBAR_BLOCK_DEFAULT_PROPS } from "../defaults";
@@ -33,7 +34,8 @@ export const NavbarBlock: ComponentConfig<NavbarBlockProps> = {
     content: NavbarContentField,
     appearance: NavbarStyleField,
     layout: DisplayOnlyLayoutField,
-    dimension: DimensionField,
+    size: SizeField,
+    spacing: SpacingField,
     decoration: DecorationField,
   },
   defaultProps: NAVBAR_BLOCK_DEFAULT_PROPS,

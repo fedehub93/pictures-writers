@@ -17,7 +17,8 @@ export const NavbarBlockServer = async ({
   content,
   appearance,
   layout,
-  dimension,
+  size,
+  spacing,
   decoration,
 }: NavbarBlockProps) => {
   const resolvedItems = await resolveMenuLinks(content?.items);
@@ -26,7 +27,8 @@ export const NavbarBlockServer = async ({
     content: { ...content, items: resolvedItems },
     appearance,
     layout,
-    dimension,
+    size,
+    spacing,
     decoration,
   });
 };

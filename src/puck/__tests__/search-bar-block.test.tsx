@@ -66,10 +66,10 @@ describe("SearchBar block", () => {
     expect(html).toContain('type="search"');
   });
 
-  it("applies dimension and decoration as responsive CSS custom properties", () => {
+  it("applies spacing and decoration as responsive CSS custom properties", () => {
     const html = renderBlock({
       content: { placeholder: "Find an article", variant: "inline" },
-      dimension: {
+      spacing: {
         desktop: { marginTop: "12px", paddingLeft: "8px" },
         tablet: { paddingBottom: "4px" },
       },
@@ -100,7 +100,7 @@ describe("SearchBar block", () => {
   it("applies the shared variables to the compact variant too", () => {
     const html = renderBlock({
       content: { placeholder: "Find an article", variant: "compact" },
-      dimension: { desktop: { marginTop: "8px" } },
+      spacing: { desktop: { marginTop: "8px" } },
       decoration: { desktop: { backgroundColor: "var(--accent)" } },
     });
 
@@ -130,7 +130,8 @@ describe("SearchBar block", () => {
     const fields = (SearchBar.fields ?? {}) as Record<string, unknown>;
 
     expect(fields.content).toMatchObject({ type: "custom" });
-    expect(fields).toHaveProperty("dimension");
+    expect(fields).toHaveProperty("size");
+    expect(fields).toHaveProperty("spacing");
     expect(fields).toHaveProperty("decoration");
     expect(fields).not.toHaveProperty("placeholder");
     expect(fields).not.toHaveProperty("variant");

@@ -156,7 +156,7 @@ const INLINE_CASES: InlineCase[] = [
   },
   {
     name: "Separator",
-    props: { dimension: { desktop: { width: "100%", height: "2px" } } },
+    props: { size: { desktop: { width: "100%", height: "2px" } } },
     rootClasses: ["puck-dim"],
   },
   {
@@ -337,7 +337,7 @@ describe("inline block roots", () => {
       expect(selected).toBe(rootElement);
       expect(host.children).toHaveLength(1);
 
-      // `puck-dim` is the class that activates the authored dimension, so it
+      // `puck-dim` is the class that activates the authored size and spacing, so it
       // must live on the same element the editor selects.
       expect(
         rootElement!.classList.contains("puck-dim"),
