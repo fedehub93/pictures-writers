@@ -46,6 +46,13 @@ export interface SizeSpacingMigrationChange {
   size: string[];
   /** Property names written into `spacing`, unique across the breakpoints. */
   spacing: string[];
+  /**
+   * Destinations written as an empty object because the authored box kept no
+   * key for them. The marker suppresses the block render default for that
+   * surface, so the report has to name it apart from a destination the
+   * migration left untouched.
+   */
+  emptyMarkers: ("size" | "spacing")[];
 }
 
 export interface SizeSpacingMigrationWarning {
@@ -76,17 +83,15 @@ function readComponentId(props: PlainObject): string | undefined {
 
 /**
  * A stored `dimension` is a responsive map: an object keyed only by breakpoint
- * names. Anything else is reported instead of being rewritten, so a value the
+ * names. An empty object is still one — vacuously — and converts to the empty
+ * markers rather than being reported, so no `dimension` key survives the run.
+ * Anything else is reported instead of being rewritten, so a value the
  * migration does not understand is never thrown away.
  */
 function isResponsiveDimension(value: unknown): value is PlainObject {
   if (!isPlainObject(value)) return false;
 
-  const keys = Object.keys(value);
-
-  return (
-    keys.length > 0 && keys.every((key) => isBreakpoint(key))
-  );
+  return Object.keys(value).every((key) => isBreakpoint(key));
 }
 
 /**
@@ -120,13 +125,50 @@ function mergeResponsive(moved: PlainObject, existing: PlainObject): PlainObject
 }
 
 /**
- * Split one `props` object's `dimension` into `size` and `spacing`.
+ * Write one destination of an authored box.
  *
  * The eight margin and padding keys move to `spacing`; every other key is the
- * box's own size and moves to `size`. `spacing` is only written when at least
- * one spacing key is present, so a size-only document does not gain an empty
- * object. A `dimension` that is not a responsive map, or a `size`/`spacing`
- * sibling that is not an object, is preserved and reported.
+ * box's own size and moves to `size`. A half that keeps no key is still
+ * written, as an empty object, because an absent half is not neutral: the block
+ * render falls back on its own default for whichever surface the document does
+ * not carry (`TOP_BAR_DEFAULT_SIZE` and `TOP_BAR_DEFAULT_SPACING` are the live
+ * cases). Before the split an authored `dimension` suppressed those defaults as
+ * a whole, so a legacy box authored without padding has to reach the new shape
+ * as `spacing: {}` rather than as no `spacing` at all.
+ *
+ * A props object that already carries `size` or `spacing` was written by the
+ * new editor: its per-surface absence is meaningful, so no empty sibling is
+ * invented for it.
+ */
+function writeDestination(
+  props: PlainObject,
+  target: "size" | "spacing",
+  moved: PlainObject,
+  fields: string[],
+  hasNewShape: boolean,
+  emptyMarkers: ("size" | "spacing")[],
+): void {
+  if (fields.length > 0) {
+    props[target] = isPlainObject(props[target])
+      ? mergeResponsive(moved, props[target] as PlainObject)
+      : moved;
+
+    return;
+  }
+
+  if (!hasNewShape) {
+    props[target] = {};
+    emptyMarkers.push(target);
+  }
+}
+
+/**
+ * Split one `props` object's `dimension` into `size` and `spacing`.
+ *
+ * The keys are divided by `writeDestination`, which also owns the empty-marker
+ * rule and the new-shape exception. A `dimension` that is not a responsive map,
+ * or a `size`/`spacing` sibling that is not an object, is preserved and
+ * reported.
  */
 function migrateProps(
   componentType: string,
@@ -173,6 +215,12 @@ function migrateProps(
     }
   }
 
+  // A props object that already carries the new shape was saved by the new
+  // editor: its per-surface absence is meaningful, so an empty destination is
+  // not invented for it.
+  const hasNewShape =
+    isPlainObject(props.size) || isPlainObject(props.spacing);
+
   const movedSize: PlainObject = {};
   const movedSpacing: PlainObject = {};
   const sizeFields: string[] = [];
@@ -202,20 +250,26 @@ function migrateProps(
     }
   }
 
-  if (sizeFields.length > 0) {
-    props.size = isPlainObject(props.size)
-      ? mergeResponsive(movedSize, props.size)
-      : movedSize;
-  }
+  const emptyMarkers: ("size" | "spacing")[] = [];
 
-  if (spacingFields.length > 0) {
-    props.spacing = isPlainObject(props.spacing)
-      ? mergeResponsive(movedSpacing, props.spacing)
-      : movedSpacing;
-  }
+  writeDestination(props, "size", movedSize, sizeFields, hasNewShape, emptyMarkers);
+  writeDestination(
+    props,
+    "spacing",
+    movedSpacing,
+    spacingFields,
+    hasNewShape,
+    emptyMarkers,
+  );
 
   delete props.dimension;
-  changes.push({ componentType, componentId, size: sizeFields, spacing: spacingFields });
+  changes.push({
+    componentType,
+    componentId,
+    size: sizeFields,
+    spacing: spacingFields,
+    emptyMarkers,
+  });
 }
 
 /**

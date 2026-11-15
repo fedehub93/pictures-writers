@@ -386,6 +386,43 @@ describe("TopBar block", () => {
     expect(slot).toContain("--ai-d:center");
   });
 
+  it("keeps an authored size from bringing the default padding back", () => {
+    // A document migrated from the single `dimension` prop carries an empty
+    // `spacing` object when it never authored padding. The empty object is what
+    // suppresses `TOP_BAR_DEFAULT_SPACING`, so the strip keeps the look it had
+    // before the split instead of gaining a padding it never had.
+    const html = render({
+      content: ContentSlot,
+      size: { desktop: { height: "3rem" } },
+      spacing: {},
+    });
+
+    const root = tagWithClass(html, "puck-top-bar");
+
+    expect(root).toContain("--h-d:3rem");
+    expect(root).not.toContain("--w-d");
+    expect(root).not.toContain("--pt-d");
+    expect(root).not.toContain("--pb-d");
+    expect(root).not.toContain("--pl-d");
+    expect(root).not.toContain("--pr-d");
+  });
+
+  it("keeps the default width off a padding-only authored box", () => {
+    // The mirror case: a legacy box that authored only padding reaches the new
+    // shape as `size: {}`, which suppresses `TOP_BAR_DEFAULT_SIZE`. The class
+    // keeps the strip full width; the variable must not come back.
+    const html = render({
+      content: ContentSlot,
+      size: {},
+      spacing: { desktop: { paddingTop: "8px" } },
+    });
+
+    const root = tagWithClass(html, "puck-top-bar");
+
+    expect(root).toContain("--pt-d:8px");
+    expect(root).not.toContain("--w-d");
+  });
+
   it("keeps a row when a document omits display from its layout", () => {
     const html = render({
       content: ContentSlot,

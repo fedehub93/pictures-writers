@@ -55,13 +55,24 @@ function describeChanges(changes: SizeSpacingMigrationChange[]): string {
   return changes
     .map((change) => {
       const component = `${change.componentType}${change.componentId ? `#${change.componentId}` : ""}`;
-      const moved: string[] = [];
-      if (change.size.length > 0) moved.push(`size ${change.size.join(", ")}`);
-      if (change.spacing.length > 0) {
-        moved.push(`spacing ${change.spacing.join(", ")}`);
-      }
+      // A destination written without keys is named apart from one the
+      // migration left untouched: the empty marker is what keeps a block
+      // default suppressed, so a reviewer has to see it.
+      const describeDestination = (
+        target: "size" | "spacing",
+        fields: string[],
+      ) => {
+        if (fields.length > 0) return `${target} ${fields.join(", ")}`;
+        if (change.emptyMarkers.includes(target)) return `${target} (empty)`;
 
-      return `${component}: ${moved.length > 0 ? moved.join("; ") : "dimension removed"}`;
+        return null;
+      };
+      const parts = [
+        describeDestination("size", change.size),
+        describeDestination("spacing", change.spacing),
+      ].filter((part): part is string => part !== null);
+
+      return `${component}: ${parts.length > 0 ? parts.join("; ") : "no destination written"}`;
     })
     .join("; ");
 }

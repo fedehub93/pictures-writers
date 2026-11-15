@@ -64,18 +64,20 @@ describe("migrateSizeSpacing", () => {
         componentId: undefined,
         size: ["maxWidth"],
         spacing: ["marginLeft", "marginRight", "paddingLeft", "paddingRight"],
+        emptyMarkers: [],
       },
       {
         componentType: "Button",
         componentId: "button-1",
         size: ["width", "height"],
         spacing: ["paddingTop", "paddingBottom"],
+        emptyMarkers: [],
       },
     ]);
     expect(result.warnings).toEqual([]);
   });
 
-  it("writes only size when the dimension holds no spacing key", () => {
+  it("keeps an authored box: an empty spacing is written when the dimension holds no spacing key", () => {
     const input = {
       root: { props: {} },
       content: [
@@ -95,24 +97,28 @@ describe("migrateSizeSpacing", () => {
     const result = migrateSizeSpacing(input);
     const props = result.changes.length === 1 ? result.data.content[0]?.props : null;
 
+    // `spacing: {}` is not decoration: absent spacing makes a block render fall
+    // back on its own default, which the pre-split authored `dimension` had
+    // suppressed. The empty object carries that suppression over.
     expect(props).toEqual({
       id: "separator-1",
       size: {
         desktop: { width: "100%", height: "1px" },
       },
+      spacing: {},
     });
-    expect(props).not.toHaveProperty("spacing");
     expect(result.changes).toEqual([
       {
         componentType: "Separator",
         componentId: "separator-1",
         size: ["width", "height"],
         spacing: [],
+        emptyMarkers: ["spacing"],
       },
     ]);
   });
 
-  it("removes an empty dimension without writing an empty size or spacing", () => {
+  it("keeps both destinations when the dimension is authored but empty", () => {
     const input = {
       root: { props: {} },
       content: [{ type: "Text", props: { id: "text-1", dimension: { desktop: {} } } }],
@@ -120,9 +126,81 @@ describe("migrateSizeSpacing", () => {
 
     const result = migrateSizeSpacing(input);
 
-    expect(result.data.content[0]?.props).toEqual({ id: "text-1" });
+    expect(result.data.content[0]?.props).toEqual({
+      id: "text-1",
+      size: {},
+      spacing: {},
+    });
     expect(result.changes).toEqual([
-      { componentType: "Text", componentId: "text-1", size: [], spacing: [] },
+      {
+        componentType: "Text",
+        componentId: "text-1",
+        size: [],
+        spacing: [],
+        emptyMarkers: ["size", "spacing"],
+      },
+    ]);
+  });
+
+  it("converts a dimension that is an empty object and warns about nothing", () => {
+    const input = {
+      root: { props: {} },
+      content: [{ type: "Text", props: { id: "text-1", dimension: {} } }],
+    };
+
+    const result = migrateSizeSpacing(input);
+
+    // An empty object is still a responsive map, vacuously: it must not be
+    // reported as a value the migration cannot read, or its key would survive
+    // every run and the suppression it carried would be lost.
+    expect(result.data.content[0]?.props).toEqual({
+      id: "text-1",
+      size: {},
+      spacing: {},
+    });
+    expect(result.warnings).toEqual([]);
+    expect(result.changes).toEqual([
+      {
+        componentType: "Text",
+        componentId: "text-1",
+        size: [],
+        spacing: [],
+        emptyMarkers: ["size", "spacing"],
+      },
+    ]);
+  });
+
+  it("adds no empty destination when the props already carry the new shape", () => {
+    const input = {
+      root: { props: {} },
+      content: [
+        {
+          type: "TopBar",
+          props: {
+            id: "top-bar-1",
+            dimension: { desktop: { height: "3rem" } },
+            size: { desktop: { height: "4rem" } },
+          },
+        },
+      ],
+    };
+
+    const result = migrateSizeSpacing(input);
+
+    // The new editor wrote `size`, so a missing `spacing` is the new shape's
+    // own "nothing authored": the block default applies, as the canvas showed.
+    expect(result.data.content[0]?.props).toEqual({
+      id: "top-bar-1",
+      size: { desktop: { height: "4rem" } },
+    });
+    expect(result.changes).toEqual([
+      {
+        componentType: "TopBar",
+        componentId: "top-bar-1",
+        size: ["height"],
+        spacing: [],
+        emptyMarkers: [],
+      },
     ]);
   });
 
@@ -270,6 +348,7 @@ describe("migrateSizeSpacing", () => {
         componentId: "button-1",
         size: ["width"],
         spacing: ["marginTop", "paddingTop"],
+        emptyMarkers: [],
       },
     ]);
     expect(result.warnings).toEqual([]);
@@ -340,6 +419,7 @@ describe("migrateSizeSpacing", () => {
         componentId: "mystery-1",
         size: ["width"],
         spacing: ["paddingTop"],
+        emptyMarkers: [],
       },
     ]);
   });
@@ -367,6 +447,7 @@ describe("migrateSizeSpacing", () => {
     expect(content.at(-1)?.props).toEqual({
       id: "button-1",
       size: { desktop: { width: "10rem" } },
+      spacing: {},
     });
     expect(result.changes).toEqual([
       {
@@ -374,6 +455,7 @@ describe("migrateSizeSpacing", () => {
         componentId: "button-1",
         size: ["width"],
         spacing: [],
+        emptyMarkers: ["spacing"],
       },
     ]);
     expect(result.warnings).toEqual([]);
@@ -419,6 +501,7 @@ describe("migrateSizeSpacing", () => {
     };
     expect(nested.content[0]?.props).toEqual({
       id: "nested-text",
+      size: {},
       spacing: { desktop: { marginTop: "2rem" } },
     });
     const zoned = (
@@ -426,6 +509,7 @@ describe("migrateSizeSpacing", () => {
     )["page-footer"];
     expect(zoned?.[0]?.props).toEqual({
       id: "zoned-copyright",
+      size: {},
       spacing: { mobile: { paddingTop: "1rem" } },
     });
     expect(result.changes).toEqual([
@@ -434,12 +518,14 @@ describe("migrateSizeSpacing", () => {
         componentId: "nested-text",
         size: [],
         spacing: ["marginTop"],
+        emptyMarkers: ["size"],
       },
       {
         componentType: "Copyright",
         componentId: "zoned-copyright",
         size: [],
         spacing: ["paddingTop"],
+        emptyMarkers: ["size"],
       },
     ]);
   });

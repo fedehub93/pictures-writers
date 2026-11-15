@@ -85,6 +85,7 @@ const legacyRegion = {
 const migratedRegion = {
   root: {
     props: {
+      size: {},
       spacing: { desktop: { paddingTop: "2rem", paddingBottom: "2rem" } },
     },
   },
@@ -142,12 +143,14 @@ describe("migrateSizeSpacingDocuments", () => {
             componentId: undefined,
             size: ["maxWidth"],
             spacing: ["marginTop"],
+            emptyMarkers: [],
           },
           {
             componentType: "Button",
             componentId: "button-1",
             size: ["width"],
             spacing: ["paddingTop"],
+            emptyMarkers: [],
           },
         ],
         warnings: [],
@@ -163,6 +166,7 @@ describe("migrateSizeSpacingDocuments", () => {
             componentId: undefined,
             size: [],
             spacing: ["paddingTop", "paddingBottom"],
+            emptyMarkers: ["size"],
           },
         ],
         warnings: [],
@@ -225,7 +229,7 @@ describe("migrateSizeSpacingDocuments", () => {
     ]);
     expect(progress).toContain("fail page home v1: write failed");
     expect(progress).toContain(
-      "migrate siteRegion HEADER v1: root: spacing paddingTop, paddingBottom",
+      "migrate siteRegion HEADER v1: root: size (empty); spacing paddingTop, paddingBottom",
     );
   });
 
@@ -276,6 +280,43 @@ describe("migrateSizeSpacingDocuments", () => {
 
     expect(progress).toContain(
       "would migrate page home v1: root: size maxWidth; spacing marginTop; Button#button-1: size width; spacing paddingTop",
+    );
+  });
+
+  it("names the empty marker but not a destination it left untouched", async () => {
+    dbMocks.regionFindMany.mockResolvedValue([
+      regionRow("region-v1", 1, "HEADER", legacyRegion),
+    ]);
+    dbMocks.pageFindMany.mockResolvedValue([
+      pageRow("page-v1", 1, "home", {
+        root: { props: {} },
+        content: [
+          {
+            type: "TopBar",
+            props: {
+              id: "top-bar-1",
+              dimension: { desktop: { height: "3rem" } },
+              size: { desktop: { height: "4rem" } },
+            },
+          },
+        ],
+      }),
+    ]);
+
+    const progress: string[] = [];
+    await migrateSizeSpacingDocuments({
+      dryRun: true,
+      onProgress: (line) => progress.push(line),
+    });
+
+    // The legacy region root keeps its padding and gains the empty `size`
+    // marker; the top bar was saved by the new editor, so its missing spacing
+    // is not a marker and must not be reported as one.
+    expect(progress).toContain(
+      "would migrate siteRegion HEADER v1: root: size (empty); spacing paddingTop, paddingBottom",
+    );
+    expect(progress).toContain(
+      "would migrate page home v1: TopBar#top-bar-1: size height",
     );
   });
 });
