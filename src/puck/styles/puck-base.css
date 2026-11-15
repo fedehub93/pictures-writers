@@ -879,9 +879,15 @@
 
    The state is the outer axis and the Breakpoint the inner one: the same
    desktop → tablet → mobile fallback chain the base variables use, expressed
-   here with the state's values ahead of the derived colour. `background-color`
-   carries `!important` because `.puck-deco` declares it that way; the state
-   rule outranks it by specificity, so the order of the two is not load-bearing.
+   here with the state's values ahead of the derived colour. A `var()` takes
+   one fallback, so the rungs nest: `var(--a, var(--b, value))`. Listing them
+   in a single `var()` — `var(--a, var(--b), value)` — makes everything after
+   the first comma one fallback, a comma-separated list that is two values for
+   one property and therefore invalid at computed-value time; the box then
+   falls back to the initial `background-color` and turns transparent.
+   `background-color` carries `!important` because `.puck-deco` declares it
+   that way; the state rule outranks it by specificity, so the order of the
+   two is not load-bearing.
 
    Only colour changes, and it is transitioned rather than laid out: a hover
    that moved the box would resize the page around it. The duration is a design
@@ -903,8 +909,10 @@ a.puck-button:hover,
   [data-puck-component].puck-button:hover {
     background-color: var(
       --bgc-h-t,
-      var(--bgc-h-d),
-      color-mix(in srgb, var(--bgc-t, var(--bgc-d)) 85%, var(--foreground))
+      var(
+        --bgc-h-d,
+        color-mix(in srgb, var(--bgc-t, var(--bgc-d)) 85%, var(--foreground))
+      )
     ) !important;
   }
 }
@@ -914,12 +922,16 @@ a.puck-button:hover,
   [data-puck-component].puck-button:hover {
     background-color: var(
       --bgc-h-m,
-      var(--bgc-h-t),
-      var(--bgc-h-d),
-      color-mix(
-        in srgb,
-        var(--bgc-m, var(--bgc-t, var(--bgc-d))) 85%,
-        var(--foreground)
+      var(
+        --bgc-h-t,
+        var(
+          --bgc-h-d,
+          color-mix(
+            in srgb,
+            var(--bgc-m, var(--bgc-t, var(--bgc-d))) 85%,
+            var(--foreground)
+          )
+        )
       )
     ) !important;
   }

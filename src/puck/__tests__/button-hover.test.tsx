@@ -80,6 +80,81 @@ function selectorsOf(rule: Rule) {
   return rule.selector.split(",").map((part) => part.trim());
 }
 
+/** Splits a CSS value at the commas that are not inside a function. */
+function splitTopLevel(value: string) {
+  const parts: string[] = [];
+  let depth = 0;
+  let start = 0;
+
+  for (let index = 0; index < value.length; index += 1) {
+    if (value[index] === "(") depth += 1;
+    else if (value[index] === ")") depth -= 1;
+    else if (value[index] === "," && depth === 0) {
+      parts.push(value.slice(start, index));
+      start = index + 1;
+    }
+  }
+
+  parts.push(value.slice(start));
+  return parts;
+}
+
+function matchingParen(value: string, openIndex: number) {
+  let depth = 0;
+
+  for (let index = openIndex; index < value.length; index += 1) {
+    if (value[index] === "(") depth += 1;
+    if (value[index] === ")" && --depth === 0) return index;
+  }
+
+  throw new Error(`Unbalanced parentheses in "${value}"`);
+}
+
+/** A `var()` chain's rungs, outermost first, and the value at the bottom. */
+type VarChain = { names: string[]; tail: string };
+
+/**
+ * Reads a `var()` fallback chain, outermost first.
+ *
+ * A `var()` takes one fallback, so a state ladder is nested:
+ * `var(--a, var(--b, value))`. The shape that shipped — `var(--a, var(--b),
+ * value)` — is a different value: the fallback is the comma-separated list
+ * `var(--b), value`, two values for one property, invalid at computed-value
+ * time. A substring assertion cannot tell the two apart; this can.
+ */
+function varChain(value: string): VarChain {
+  const declaration = value.replace(/!important\s*$/, "").trim();
+
+  const read = (node: string): VarChain => {
+    if (!node.startsWith("var(")) {
+      if (splitTopLevel(node).length > 1) {
+        throw new Error(
+          `"${declaration}" puts a comma-separated list where one value belongs`,
+        );
+      }
+
+      return { names: [], tail: node };
+    }
+
+    const close = matchingParen(node, 3);
+    if (close !== node.length - 1) {
+      throw new Error(`"${declaration}" has tokens after its var() chain`);
+    }
+
+    const args = splitTopLevel(node.slice(4, close));
+    if (args.length !== 2) {
+      throw new Error(
+        `"${declaration}" passes ${args.length - 1} values to one var(); each fallback must nest in its own var()`,
+      );
+    }
+
+    const inner = read(args[1].trim());
+    return { names: [args[0].trim(), ...inner.names], tail: inner.tail };
+  };
+
+  return read(declaration);
+}
+
 function rulesFor(selector: string, media: string | null) {
   return rules.filter(
     (candidate) =>
@@ -130,23 +205,21 @@ describe("Button hover stylesheet", () => {
     expect(value).toContain("!important");
   });
 
-  it("reads the state's variable ahead of the derived colour at every rung", () => {
-    const tablet = declarations(hoverRule(TABLET_MEDIA)).get(
-      "background-color",
-    )!;
-    expect(tablet).toContain("--bgc-h-t");
-    expect(tablet).toContain("--bgc-h-d");
-    expect(tablet.indexOf("--bgc-h-t")).toBeLessThan(tablet.indexOf("color-mix"));
-    expect(tablet).toContain("var(--bgc-t, var(--bgc-d))");
+  it("reads the state's variable ahead of the derived colour as a nested chain at every rung", () => {
+    const chainAt = (media: string | null) =>
+      varChain(declarations(hoverRule(media)).get("background-color")!);
 
-    const mobile = declarations(hoverRule(MOBILE_MEDIA)).get(
-      "background-color",
-    )!;
-    expect(mobile).toContain("--bgc-h-m");
-    expect(mobile).toContain("--bgc-h-t");
-    expect(mobile).toContain("--bgc-h-d");
-    expect(mobile.indexOf("--bgc-h-m")).toBeLessThan(mobile.indexOf("color-mix"));
-    expect(mobile).toContain("var(--bgc-m, var(--bgc-t, var(--bgc-d)))");
+    const desktop = chainAt(null);
+    expect(desktop.names).toEqual(["--bgc-h-d"]);
+    expect(desktop.tail).toContain("color-mix(");
+
+    const tablet = chainAt(TABLET_MEDIA);
+    expect(tablet.names).toEqual(["--bgc-h-t", "--bgc-h-d"]);
+    expect(tablet.tail).toContain("var(--bgc-t, var(--bgc-d))");
+
+    const mobile = chainAt(MOBILE_MEDIA);
+    expect(mobile.names).toEqual(["--bgc-h-m", "--bgc-h-t", "--bgc-h-d"]);
+    expect(mobile.tail).toContain("var(--bgc-m, var(--bgc-t, var(--bgc-d)))");
   });
 
   it("never redefines a base variable under the state", () => {
