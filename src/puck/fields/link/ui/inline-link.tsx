@@ -27,8 +27,10 @@ import {
  *
  * `editing` is Puck's `isEditing`: in the canvas the anchor keeps its markup
  * and its `target`/`rel`, but the click no longer navigates, so the click
- * selects the block instead of leaving the document. The published page and
- * the interactive preview pass `false` and keep every default action.
+ * selects the block instead of leaving the document. The published page, the
+ * interactive preview and the Draft preview pass `false` and keep every
+ * default action; the Draft preview's document arrives here with its Smart
+ * links already resolved against their published targets.
  */
 export const InlineSmartLink = ({
   link,

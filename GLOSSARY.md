@@ -458,8 +458,12 @@ One of the three width ranges a responsive value is authored for: mobile, tablet
 _Avoid_: device, screen size, media query.
 
 **Canvas**:
-The live preview inside the page or Site region editor, drawn at the selected Breakpoint. It shares the layout contract with the published page but is not the published page: the content it draws is inert, so clicking a link selects its block instead of navigating or opening a tab, while the published page and the interactive preview keep links live.
+The live preview inside the page or Site region editor, drawn at the selected Breakpoint. It shares the layout contract with the published page but is not the published page: the content it draws is inert, so clicking a link selects its block instead of navigating or opening a tab, while the published page, the interactive preview and the Draft preview keep links live.
 _Avoid_: preview page, editor view.
+
+**Draft preview**:
+The preview route at `/draft/<slug>/` that renders a Page's current draft as the page document, with live links: Smart links are resolved against their published targets exactly as on the published page, so a target with no live version stays plain text. It is the page document in draft form, distinct from the two editor surfaces: the Canvas draws the stored document and is inert, while the interactive preview navigates inside the editor without leaving it.
+_Avoid_: draft page, staging page; Canvas or interactive preview when the draft route is meant.
 
 **Editor root**:
 The document-wide settings of a single Puck document — what an editor sets when no block is selected. It belongs to one version of a Page or Site region and is distinct from a Root, which is the item's stable content identity.
