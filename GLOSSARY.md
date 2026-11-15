@@ -492,7 +492,7 @@ The public Puck `<Render>` output is the canonical rendering; the editor canvas 
 _Avoid_: treating the editor canvas as a pixel-perfect preview.
 
 **Block root**:
-The outermost element a Puck block renders. It carries the block's dimension, layout, typography and decoration variables and the containing block for positioned descendants, in the canvas and on the published page alike; a block that renders nothing (no link, no items) has no root at all. In the canvas it is also the element the editor selects, hovers, drags and outlines: every block declares `inline: true` and attaches Puck's `dragRef` to this element, so nothing sits between a block and its parent. For Container, Flex and Grid the root is the slot element; a slot-owning block with a box of its own, such as the Top bar, keeps that box as the root.
+The outermost element a Puck block renders. It carries the block's size and spacing, layout, typography and decoration variables and the containing block for positioned descendants, in the canvas and on the published page alike; a block that renders nothing (no link, no items) has no root at all. In the canvas it is also the element the editor selects, hovers, drags and outlines: every block declares `inline: true` and attaches Puck's `dragRef` to this element, so nothing sits between a block and its parent. For Container, Flex and Grid the root is the slot element; a slot-owning block with a box of its own, such as the Top bar, keeps that box as the root.
 _Avoid_: block wrapper, component wrapper, editor wrapper (there is none); expecting the selection outline on a child of the block.
 
 **Block base width**:

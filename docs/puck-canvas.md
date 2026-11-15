@@ -53,7 +53,7 @@ rest a text block's markup is the page's.
 
 `Heading` and `Text` write their text on the block itself, not in the sidebar. Both mount the
 shared `richtext` field from `src/puck/fields/rich-text/` with `contentEditable: true` and
-`visible: false`: Puck draws no control for the field, so typography, dimension, layout and (on
+`visible: false`: Puck draws no control for the field, so size, spacing, typography, layout and (on
 `Heading`) the level stay in the sidebar and the text does not. The field is still declared in
 the descriptor — the canvas transform reads the raw field, only the sidebar honours `visible`.
 Re-showing the sidebar field is the way back from a canvas regression; `createRichTextField` is
@@ -156,8 +156,8 @@ only pin structurally; a failed step means the upgrade is not acceptable yet. Op
 - [ ] `Esc` leaves the mode: toolbar unmounted, block still selected, focus on the block root,
       selection collapsed; a second `Esc` deselects. A click on another block or on the page
       background also leaves the mode, and only one block is ever in it.
-- [ ] The sidebar shows `Level`, `Layout`, `Dimension` and `Typography` for the Heading, and
-      `Layout`, `Dimension`, `Typography` for the Text — no text field.
+- [ ] The sidebar shows `Level`, `Layout`, `Size`, `Spacing` and `Typography` for the Heading, and
+      `Layout`, `Size`, `Spacing`, `Typography` for the Text — no text field.
 - [ ] Bold, italic and underline apply from the toolbar and survive a click outside the text.
 - [ ] The link panel opens inside `#preview-frame`, applies an href, removes it, opens the href
       in a new tab, and writes `target="_blank"` plus `rel="noopener noreferrer"` only when
