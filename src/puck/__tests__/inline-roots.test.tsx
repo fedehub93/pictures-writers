@@ -101,16 +101,6 @@ const INLINE_CASES: InlineCase[] = [
     rootClasses: LAYOUT_ROOT_CLASSES,
   },
   {
-    name: "Flex",
-    props: { items: SlotStub },
-    rootClasses: LAYOUT_ROOT_CLASSES,
-  },
-  {
-    name: "Grid",
-    props: { items: SlotStub },
-    rootClasses: LAYOUT_ROOT_CLASSES,
-  },
-  {
     name: "TopBar",
     region: "HEADER",
     props: { content: SlotStub, settings: { dismissible: false } },
@@ -375,28 +365,25 @@ describe("inline block roots", () => {
 
   it("keeps an empty slot block selectable", async () => {
     const dragRef = vi.fn();
+    const component = componentFor("Container");
 
-    for (const name of ["Container", "Flex", "Grid"] as const) {
-      const component = componentFor(name);
-
-      const host = await mount(
-        component.render({
-          ...mergePropsWithDefaults(defaultsFor(name), {
-            id: `empty-${name}`,
-            items: SlotStub,
-          }),
-          puck: { ...PUCK, dragRef },
+    const host = await mount(
+      component.render({
+        ...mergePropsWithDefaults(defaultsFor("Container"), {
+          id: "empty-container",
+          items: SlotStub,
         }),
-      );
+        puck: { ...PUCK, dragRef },
+      }),
+    );
 
-      const rootElement = host.firstElementChild as HTMLElement;
+    const rootElement = host.firstElementChild as HTMLElement;
 
-      // No wrapper and no `display: none`: the empty block still has the box
-      // Puck needs for its drop target and for the selection overlay.
-      expect(host.children).toHaveLength(1);
-      expect(rootElement.dataset.slot).toBe("stub");
-      expect(dragRef.mock.calls.at(-1)?.[0]).toBe(rootElement);
-    }
+    // No wrapper and no `display: none`: the empty block still has the box Puck
+    // needs for its drop target and for the selection overlay.
+    expect(host.children).toHaveLength(1);
+    expect(rootElement.dataset.slot).toBe("stub");
+    expect(dragRef.mock.calls.at(-1)?.[0]).toBe(rootElement);
   });
 
   it("keeps the Button fallback root ref'ed when the target is unresolved", async () => {

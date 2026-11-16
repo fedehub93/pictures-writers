@@ -1,7 +1,5 @@
 import type { ButtonProps } from "./Button/types";
 import type { ContainerBlockProps } from "./Container/types";
-import type { FlexBlockProps } from "./Flex/types";
-import type { GridBlockProps } from "./Grid/types";
 import type { HeadingProps } from "./Heading/types";
 import type { SeparatorBlockProps } from "./Separator/types";
 import type { TextBlockProps } from "./Text/types";
@@ -60,24 +58,6 @@ export const CONTAINER_DEFAULT_PROPS: ContainerBlockProps = {
   layout: {
     desktop: {
       display: "block",
-    },
-  },
-};
-
-export const FLEX_DEFAULT_PROPS: FlexBlockProps = {
-  items: [],
-  layout: {
-    desktop: {
-      display: "flex",
-    },
-  },
-};
-
-export const GRID_DEFAULT_PROPS: GridBlockProps = {
-  items: [],
-  layout: {
-    desktop: {
-      display: "grid",
     },
   },
 };
@@ -166,8 +146,6 @@ export const NAVBAR_BLOCK_DEFAULT_PROPS: NavbarBlockProps = {
  */
 export const BLOCK_DEFAULT_PROPS: Record<string, object> = {
   Container: CONTAINER_DEFAULT_PROPS,
-  Flex: FLEX_DEFAULT_PROPS,
-  Grid: GRID_DEFAULT_PROPS,
   Heading: HEADING_DEFAULT_PROPS,
   Button: BUTTON_DEFAULT_PROPS,
   Separator: SEPARATOR_DEFAULT_PROPS,

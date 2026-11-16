@@ -17,10 +17,11 @@ export type SlotSurfaceProps = {
 /**
  * Root element shared by the blocks whose layout surface is their slot.
  *
- * Container, Flex and Grid render exactly this element: the slot *is* the block
- * box, so the authored layout variables, the size/spacing/typography/decoration
- * classes and Puck's selection node all live on it. Keeping the expression in
- * one place is what stops those three blocks from drifting apart.
+ * The Container renders exactly this element: the slot *is* the block box, so
+ * the authored layout variables, the size/spacing/typography/decoration classes
+ * and Puck's selection node all live on it. The expression lives in one module
+ * so the render path that draws the canvas and the one that publishes the page
+ * cannot drift apart.
  *
  * The selection ref goes on the slot element because the block is `inline`:
  * Puck then skips its per-block wrapper `div` and hands the ref to the block.

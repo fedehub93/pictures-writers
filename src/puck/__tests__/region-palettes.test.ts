@@ -12,7 +12,7 @@ const EXPECTED_CATEGORIES: Record<
   Record<string, { title: string; components: string[] }>
 > = {
   HEADER: {
-    layout: { title: "Layout", components: ["Container", "Flex", "Grid"] },
+    layout: { title: "Layout", components: ["Container"] },
     region: { title: "Site layout", components: ["Brand"] },
     header: {
       title: "Header",
@@ -22,7 +22,7 @@ const EXPECTED_CATEGORIES: Record<
     typography: { title: "Typography", components: ["Heading", "Text"] },
   },
   FOOTER: {
-    layout: { title: "Layout", components: ["Container", "Flex", "Grid"] },
+    layout: { title: "Layout", components: ["Container"] },
     region: {
       title: "Site layout",
       components: ["Brand", "LinkList", "Copyright"],

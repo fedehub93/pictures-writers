@@ -51,13 +51,12 @@ describe("the elements palette", () => {
     },
   );
 
-  it("does not offer a registered block that no category lists", () => {
+  it("offers the Container tile and no retired layout block", () => {
     const html = renderPalette();
 
     expect(offers(html, "Container")).toBe(true);
-    // Flex and Grid are still registered so stored documents keep rendering,
-    // but the page categories do not list them, so the palette must not offer
-    // their tiles.
+    // Flex and Grid are retired: they are no longer registered and no category
+    // lists them, so the palette must not offer their tiles.
     expect(offers(html, "Flex")).toBe(false);
     expect(offers(html, "Grid")).toBe(false);
   });

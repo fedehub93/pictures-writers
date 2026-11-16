@@ -120,8 +120,8 @@ const createLayoutField = ({
   );
 
 /**
- * Layout field for blocks that contain other blocks (Container, Flex, Grid and
- * the Top bar slot): display, flex and grid controls.
+ * Layout field for blocks that contain other blocks (the Container and the Top
+ * bar slot): display, flex and grid controls.
  */
 export const LayoutField = createLayoutField();
 

@@ -3,8 +3,6 @@ import type { Config } from "@puckeditor/core";
 import { RootEditor, type RootProps } from "./root";
 
 import { ContainerBlock, type ContainerBlockProps } from "./blocks/Container";
-import { FlexBlock, type FlexBlockProps } from "./blocks/Flex";
-import { GridBlock, type GridBlockProps } from "./blocks/Grid";
 import { SeparatorBlock, type SeparatorBlockProps } from "./blocks/Separator";
 import { ImageBlock, type ImageBlockProps } from "./blocks/Image";
 import { FormBlock, type FormBlockProps } from "./blocks/Form";
@@ -31,8 +29,6 @@ import {
 
 export type SavedComponents = {
   Container: ContainerBlockProps;
-  Flex: FlexBlockProps;
-  Grid: GridBlockProps;
   Separator: SeparatorBlockProps;
   Icon: IconBlockProps;
   Image: ImageBlockProps;
@@ -46,8 +42,6 @@ export type SavedComponents = {
 
 export type HydratedComponents = {
   Container: ContainerBlockProps;
-  Flex: FlexBlockProps;
-  Grid: GridBlockProps;
   Separator: SeparatorBlockProps;
   Icon: IconBlockProps;
   Image: ImageBlockProps;
@@ -85,8 +79,6 @@ export type HydratedComponents = {
  */
 export const editorComponentConfigs: Config["components"] = {
   Container: ContainerBlock,
-  Flex: FlexBlock,
-  Grid: GridBlock,
   Separator: SeparatorBlock,
   Icon: IconBlock,
   Image: ImageBlock,
@@ -111,8 +103,6 @@ export type PageEditorConfig = Config<HydratedComponents, RootProps>;
  */
 const PAGE_COMPONENT_NAMES = [
   "Container",
-  "Flex",
-  "Grid",
   "Separator",
   "Icon",
   "Image",

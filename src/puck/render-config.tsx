@@ -15,9 +15,7 @@ import {
   BUTTON_DEFAULT_PROPS,
   CONTAINER_DEFAULT_PROPS,
   COPYRIGHT_DEFAULT_PROPS,
-  FLEX_DEFAULT_PROPS,
   FORM_DEFAULT_PROPS,
-  GRID_DEFAULT_PROPS,
   HEADING_DEFAULT_PROPS,
   LINK_LIST_DEFAULT_PROPS,
   NAVBAR_BLOCK_DEFAULT_PROPS,
@@ -31,8 +29,6 @@ import type { RootProps } from "./root/types";
 import { renderRoot } from "./root/render";
 
 import { renderContainerBlock } from "./blocks/Container/render";
-import { renderFlexBlock } from "./blocks/Flex/render";
-import { renderGridBlock } from "./blocks/Grid/render";
 import { renderImageBlock } from "./blocks/Image/render";
 import { renderFormBlock } from "./blocks/Form/render";
 import { renderSeparatorBlock } from "./blocks/Separator/render";
@@ -86,8 +82,6 @@ export const rootRenderConfig: RootConfig<RootProps> = {
  */
 export const RENDER_COMPONENT_NAMES = [
   "Container",
-  "Flex",
-  "Grid",
   "Image",
   "Form",
   "Separator",
@@ -123,22 +117,6 @@ export const renderComponentConfigs: Config<any, RootProps>["components"] = {
       },
     },
     render: withPublicDefaults(CONTAINER_DEFAULT_PROPS, renderContainerBlock),
-  },
-  Flex: {
-    fields: {
-      items: {
-        type: "slot",
-      },
-    },
-    render: withPublicDefaults(FLEX_DEFAULT_PROPS, renderFlexBlock),
-  },
-  Grid: {
-    fields: {
-      items: {
-        type: "slot",
-      },
-    },
-    render: withPublicDefaults(GRID_DEFAULT_PROPS, renderGridBlock),
   },
   Image: {
     // No default props: the Image block has none (ADR-0039, revision).

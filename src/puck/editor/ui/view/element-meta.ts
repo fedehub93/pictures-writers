@@ -11,8 +11,6 @@ import {
   TagIcon,
   ListIcon,
   CopyrightIcon,
-  LayoutGridIcon,
-  Rows3Icon,
   PanelTopIcon,
   MenuIcon,
   type LucideIcon,
@@ -27,8 +25,6 @@ import {
  */
 export const ELEMENT_ICONS: Record<string, LucideIcon> = {
   Container: SquareIcon,
-  Flex: Rows3Icon,
-  Grid: LayoutGridIcon,
   Heading: HeadingIcon,
   Text: TextIcon,
   Image: ImageIcon,

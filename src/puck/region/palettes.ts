@@ -15,12 +15,8 @@ import type { Config } from "@puckeditor/core";
  * blocks a region allows.
  */
 
-/** Layout blocks available in every Site region. */
-export const REGION_LAYOUT_COMPONENTS = [
-  "Container",
-  "Flex",
-  "Grid",
-] as const;
+/** The layout block available in every Site region. */
+export const REGION_LAYOUT_COMPONENTS = ["Container"] as const;
 
 /** Brand block available in every Site region. */
 export const REGION_BRAND_COMPONENTS = ["Brand"] as const;

@@ -34,6 +34,8 @@
     "site-regions:migrate-puck-data:dry-run": "tsx --conditions=react-server scripts/migrate-site-region-puck-data.ts --dry-run",
     "puck:migrate-size-spacing": "tsx --conditions=react-server scripts/migrate-puck-size-spacing.ts",
     "puck:migrate-size-spacing:dry-run": "tsx --conditions=react-server scripts/migrate-puck-size-spacing.ts --dry-run",
+    "puck:migrate-layout-blocks": "tsx --conditions=react-server scripts/migrate-puck-layout-blocks.ts",
+    "puck:migrate-layout-blocks:dry-run": "tsx --conditions=react-server scripts/migrate-puck-layout-blocks.ts --dry-run",
     "postinstall": "prisma generate"
   },
   "dependencies": {

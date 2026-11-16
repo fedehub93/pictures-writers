@@ -10,6 +10,7 @@ import { renderConfigForRegion } from "../region/render-config";
 import { PuckRender, renderComponentConfigs } from "../render-config";
 import { BLOCK_DEFAULT_PROPS } from "../blocks/defaults";
 import { mergePropsWithDefaults } from "../lib/merge-props";
+import { migrateLayoutBlocks } from "../migrations/migrate-layout-blocks";
 
 import { installPuckBaseStyles } from "./helpers/puck-base-css";
 
@@ -115,25 +116,6 @@ const SHARED_CASES: SharedCase[] = [
       spacing: { desktop: { paddingTop: "12px" } },
       typography: { desktop: { fontSize: "16px" } },
       decoration: { desktop: { backgroundColor: "var(--accent)" } },
-    },
-  },
-  {
-    name: "Flex",
-    props: {
-      items: SlotStub,
-      layout: { desktop: { display: "flex" } },
-      spacing: { desktop: { paddingLeft: "8px" } },
-      typography: { desktop: { fontSize: "15px" } },
-      decoration: { desktop: { borderRightWidth: "1px" } },
-    },
-  },
-  {
-    name: "Grid",
-    props: {
-      items: SlotStub,
-      layout: { desktop: { display: "grid", rowGap: "1rem" } },
-      typography: { desktop: { fontWeight: "600" } },
-      decoration: { desktop: { backgroundColor: "var(--muted)" } },
     },
   },
   {
@@ -324,14 +306,6 @@ describe("consolidated Puck render pipeline", () => {
       props: { items: SlotStub },
     },
     {
-      name: "Flex",
-      props: { items: SlotStub },
-    },
-    {
-      name: "Grid",
-      props: { items: SlotStub },
-    },
-    {
       name: "Image",
       props: {},
     },
@@ -505,29 +479,62 @@ describe("consolidated Puck render pipeline", () => {
     }
   });
 
-  it("emits no editor-only layout classes for Container, Flex and Grid", () => {
+  it("emits no editor-only layout classes for the Container", () => {
     const config = renderConfigForRegion("HEADER");
+    const sharedCase = SHARED_CASES.find((entry) => entry.name === "Container");
 
-    for (const name of ["Container", "Flex", "Grid"] as const) {
-      const sharedCase = SHARED_CASES.find((entry) => entry.name === name);
+    if (!sharedCase) throw new Error("Container case is missing");
 
-      if (!sharedCase) throw new Error(`${name} case is missing`);
+    const render = config.components.Container.render as unknown as (
+      props: Record<string, unknown>,
+    ) => React.ReactNode;
 
-      const render = config.components[name].render as unknown as (
-        props: Record<string, unknown>,
-      ) => React.ReactNode;
+    const editorHtml = renderThrough(render, sharedCase.props, {
+      ...PUCK,
+      isEditing: true,
+    });
+    const publicHtml = renderThrough(render, sharedCase.props);
 
-      const editorHtml = renderThrough(render, sharedCase.props, {
-        ...PUCK,
-        isEditing: true,
-      });
-      const publicHtml = renderThrough(render, sharedCase.props);
-
-      expect(editorHtml).not.toContain("flex-1");
-      expect(publicHtml).not.toContain("flex-1");
-      expect(editorHtml).toBe(publicHtml);
-    }
+    expect(editorHtml).not.toContain("flex-1");
+    expect(publicHtml).not.toContain("flex-1");
+    expect(editorHtml).toBe(publicHtml);
   });
+
+  it.each([
+    ["Flex", "flex"],
+    ["Grid", "grid"],
+  ] as const)(
+    "renders a Container from what a retired %s document held",
+    (retiredType, display) => {
+      // The stored node carried no layout: its display came from the block's
+      // defaults. The migration writes that mode into the document, and the
+      // surviving Container must render the same mode from it.
+      const migrated = migrateLayoutBlocks({
+        root: { props: {} },
+        content: [
+          {
+            type: retiredType,
+            props: {
+              id: `${display}-1`,
+              items: [],
+              spacing: { desktop: { paddingTop: "12px" } },
+            },
+          },
+        ],
+      });
+      const node = migrated.data.content[0];
+
+      if (!node) throw new Error("the migrated node is missing");
+
+      const { editorHtml, publicHtml } = renderCase({
+        name: "Container",
+        props: { ...node.props, items: SlotStub },
+      });
+
+      expect(editorHtml).toContain(`--disp-d:${display}`);
+      expect(publicHtml).toBe(editorHtml);
+    },
+  );
 
   it("renders Site region blocks through the public Puck render config", () => {
     const client = new QueryClient();

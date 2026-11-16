@@ -103,6 +103,28 @@ Se il vecchio container è già stato fermato (nessun healthcheck o errore di ro
 
   (Evita di stampare segreti in terminali condivisi.)
 
+### 2.5 Migrazione dei documenti Puck (Flex e Grid → Container)
+
+Il passaggio a un solo blocco di layout elimina i tipi `Flex` e `Grid`: i documenti che li contengono vanno riscritti **prima** del deploy che li rimuove dal codice. Con la versione precedente ancora live un `Container` viene renderizzato correttamente; deployando prima, le pagine pubblicate mostrerebbero il placeholder del componente non trovato.
+
+1. Anteprima, che non scrive nulla e riporta ogni versione che cambierebbe:
+
+   ```bash
+   npm run puck:migrate-layout-blocks:dry-run
+   ```
+
+2. Esecuzione, con la versione precedente ancora in produzione e in una finestra di basso traffico:
+
+   ```bash
+   npm run puck:migrate-layout-blocks
+   ```
+
+3. Solo dopo, deploy del codice che rimuove i due blocchi.
+
+La trasformazione scrive nel rung desktop la modalità con cui il nodo veniva renderizzato (flex o grid) prima di cambiare il tipo, preserva le altre proprietà e i figli, ed è idempotente: una seconda esecuzione non riporta modifiche. `scanned` conta tutte le versioni di Page e Site region (bozze, correnti, live e storico); `documents` elenca le versioni modificate con i nodi toccati; `failed` elenca le righe non scritte e il motivo, senza interrompere il resto.
+
+Entrambi i comandi leggono il `DATABASE_URL` dell'ambiente in cui girano. Il container ancora live è la versione precedente e non ha lo script: l'esecuzione avviene da un checkout del nuovo branch con `DATABASE_URL` puntato al database di produzione (tramite tunnel SSH sul database), oppure con `docker run --rm` dell'immagine nuova sulla rete del progetto Coolify. Non eseguirla dentro il container della versione precedente.
+
 ---
 
 ## 3. Rollback dell'app
