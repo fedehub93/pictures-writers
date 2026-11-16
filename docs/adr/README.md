@@ -93,6 +93,7 @@ folder.
 | [0043](./0043-button-variant-is-data-not-a-class.md) | One Button block, whose variant is a set of props rather than a class | accepted (partially superseded: the variant stays a prop, its look moves to a class of Style variables — [0045](./0045-block-starting-look-is-a-class-of-style-variables.md)) |
 | [0044](./0044-size-and-spacing-style-fields.md) | One block box, split into Size and Spacing fields over one class and one set of variables | accepted |
 | [0045](./0045-block-starting-look-is-a-class-of-style-variables.md) | A block's starting look is a class of Style variables, not an inline copy per instance | accepted; partially supersedes [0043](./0043-button-variant-is-data-not-a-class.md) |
+| [0046](./0046-one-layout-block.md) | One layout block: a container's display mode is a property, not a block type | accepted |
 
 ## Platform, integrations and tenancy
 

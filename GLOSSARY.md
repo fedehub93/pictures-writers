@@ -419,6 +419,10 @@ The Site region rendered at the bottom of every public page.
 The Header and Footer regions drawn around the Page being edited in the page editor canvas, so the author sees the whole page. It is read-only, is not part of the Page document, and shows the layout as visitors would get it once the regions are published.
 _Avoid_: page preview, full-page preview, chrome.
 
+**Container**:
+The Puck block that arranges other blocks in a slot, whose display mode — block, flex, grid, or none for responsive visibility — is a property of the block rather than a different block. It is the only layout block, so a flex row and a grid are the same Container with a different mode.
+_Avoid_: Flex block, Grid block, section, wrapper.
+
 **Top bar**:
 A Puck block placed inside the Header region, typically a full-width strip above the main navbar. It is a generic container with a Puck slot for arbitrary content and an optional dismissal, not an announcement-specific block.
 _Avoid_: announcement bar, promo bar when referring to the CMS block.
@@ -492,7 +496,7 @@ The public Puck `<Render>` output is the canonical rendering; the editor canvas 
 _Avoid_: treating the editor canvas as a pixel-perfect preview.
 
 **Block root**:
-The outermost element a Puck block renders. It carries the block's size and spacing, layout, typography and decoration variables and the containing block for positioned descendants, in the canvas and on the published page alike; a block that renders nothing (no link, no items) has no root at all. In the canvas it is also the element the editor selects, hovers, drags and outlines: every block declares `inline: true` and attaches Puck's `dragRef` to this element, so nothing sits between a block and its parent. For Container, Flex and Grid the root is the slot element; a slot-owning block with a box of its own, such as the Top bar, keeps that box as the root.
+The outermost element a Puck block renders. It carries the block's size and spacing, layout, typography and decoration variables and the containing block for positioned descendants, in the canvas and on the published page alike; a block that renders nothing (no link, no items) has no root at all. In the canvas it is also the element the editor selects, hovers, drags and outlines: every block declares `inline: true` and attaches Puck's `dragRef` to this element, so nothing sits between a block and its parent. For a Container the root is the slot element; a slot-owning block with a box of its own, such as the Top bar, keeps that box as the root.
 _Avoid_: block wrapper, component wrapper, editor wrapper (there is none); expecting the selection outline on a child of the block.
 
 **Block base width**:
