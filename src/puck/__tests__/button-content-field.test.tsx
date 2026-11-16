@@ -126,6 +126,18 @@ describe("Button content section", () => {
     expect(html).toContain("Icon position");
     expect(html).toContain("Icon spacing");
   });
+
+  it("states in one line where the unset style values come from", () => {
+    const html = renderStatic();
+
+    // The Variant and the base box are class-owned, so the Decoration,
+    // Typography and Spacing fields — each reading only its own prop — cannot
+    // show them as placeholders. One line covers all three (ADR-0045).
+    expect(html).toContain("set the starting style");
+    expect(html).toContain(
+      "a Decoration, Typography or Spacing value overrides it",
+    );
+  });
 });
 
 let root: ReturnType<typeof createRoot> | null = null;

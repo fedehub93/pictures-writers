@@ -13,9 +13,9 @@ export type ButtonIconPosition = "before" | "after";
 /**
  * The starting look of a Button.
  *
- * A variant is a set of `decoration` and `typography` values, not a stylesheet
- * class: the render merges it underneath the authored values, so a state can
- * later override both through the same style variables (ADR-0043).
+ * The document stores the name only: the look is a class on the Block root
+ * (`puck-button-<variant>`) that declares the Variant's Style variables, one
+ * specificity level below an authored inline value (ADR-0045).
  */
 export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost";
 

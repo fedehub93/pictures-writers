@@ -7,7 +7,10 @@ import type { ButtonContentProps, ButtonVariant } from "../blocks/Button/types";
 
 import { renderButtonBlock } from "../blocks/Button/render";
 import { ButtonBlockUi } from "../blocks/Button/ui/button";
-import { BUTTON_VARIANTS } from "../blocks/Button/constants";
+import {
+  BUTTON_BASE_BOX_CLASS,
+  BUTTON_VARIANTS,
+} from "../blocks/Button/constants";
 import { BUTTON_DEFAULT_PROPS } from "../blocks/defaults";
 
 import {
@@ -242,6 +245,21 @@ function expectNoVariantVariable(root: string) {
   }
 }
 
+/**
+ * The four paddings a Button starts with. They belong to the block's base-box
+ * class, not to the document: a render that emits one has copied the box back
+ * onto the instance, which is what made a cleared field collapse the Button.
+ */
+const PADDING_VARIABLES = ["--pt-", "--pr-", "--pb-", "--pl-"];
+
+function expectNoPaddingVariable(root: string) {
+  for (const variable of PADDING_VARIABLES) {
+    expect(root, `${variable}* belongs in the base-box class`).not.toContain(
+      variable,
+    );
+  }
+}
+
 describe("Button block variant", () => {
   it("starts from the default variant's class, with no variant variable inline", () => {
     const html = renderToStaticMarkup(
@@ -253,11 +271,13 @@ describe("Button block variant", () => {
     );
     const root = rootTag(html);
 
-    // A fresh Button is a primary call to action: the class supplies the look,
-    // while the spacing default still writes the target-sized box.
+    // A fresh Button is a primary call to action: the variant's class supplies
+    // the look and the block's base-box class supplies the target-sized box,
+    // so nothing about either look is written onto the instance.
     expect(root).toContain(VARIANT_CLASS.primary);
     expectNoVariantVariable(root);
-    expect(root).toContain("--pt-d:0.5rem");
+    expect(root).toContain(BUTTON_BASE_BOX_CLASS);
+    expectNoPaddingVariable(root);
   });
 
   it.each(["primary", "secondary", "outline", "ghost"] as const)(
@@ -358,6 +378,7 @@ describe("Button block variant", () => {
     for (const root of [anchor, text]) {
       expect(root).toContain("puck-button");
       expect(root).toContain(VARIANT_CLASS.outline);
+      expect(root).toContain(BUTTON_BASE_BOX_CLASS);
     }
   });
 
@@ -379,6 +400,153 @@ describe("Button block variant", () => {
 });
 
 /**
+ * The base box is the block's, not the document's.
+ *
+ * The four paddings that make a Button a target-sized control used to arrive
+ * from the block's default props, so the panel showed them as authored and
+ * clearing one stripped the Button of its box. They are now Style variables on
+ * the block's own class: a fresh Button emits nothing, an authored value still
+ * wins at its Breakpoint, and clearing returns the box (ADR-0045).
+ */
+describe("Button block base box", () => {
+  it("is not part of the block's default props", () => {
+    expect(BUTTON_DEFAULT_PROPS.spacing).toBeUndefined();
+  });
+
+  it("lets an authored padding win at the breakpoint it was authored at", () => {
+    const html = renderToStaticMarkup(
+      renderButtonBlock({
+        id: "button",
+        button: { variant: "primary", link: LINK },
+        spacing: {
+          desktop: { paddingTop: "2rem" },
+          mobile: { paddingLeft: "3rem" },
+        },
+        puck: PUCK,
+      }),
+    );
+    const root = rootTag(html);
+
+    // The class stays underneath; the authored values sit above it.
+    expect(root).toContain(BUTTON_BASE_BOX_CLASS);
+    expect(root).toContain("--pt-d:2rem");
+    expect(root).toContain("--pl-m:3rem");
+  });
+
+  it("returns the base box when the panel clears a padding", () => {
+    // The panel produces two shapes for "not authored": its reset deletes the
+    // key and leaves the Breakpoint empty, and clearing a unit input writes an
+    // empty string. Neither is a value, so the class's box applies.
+    const cleared = [
+      { desktop: {} },
+      {
+        desktop: {
+          paddingTop: "",
+          paddingRight: "",
+          paddingBottom: "",
+          paddingLeft: "",
+        },
+      },
+    ];
+
+    for (const spacing of cleared) {
+      const root = rootTag(
+        renderToStaticMarkup(
+          renderButtonBlock({
+            id: "button",
+            button: { link: LINK },
+            spacing,
+            puck: PUCK,
+          }),
+        ),
+      );
+
+      expect(root).toContain(BUTTON_BASE_BOX_CLASS);
+      expectNoPaddingVariable(root);
+    }
+  });
+
+  it("gives a padding authored on one breakpoint the base box at the others", () => {
+    // The intended document-visible change: shallow default merging means a
+    // document that stored padding at a single Breakpoint has none at the
+    // others today. The class supplies the base there, with no migration.
+    const root = rootTag(
+      renderToStaticMarkup(
+        renderButtonBlock({
+          id: "button",
+          button: { link: LINK },
+          spacing: { mobile: { paddingLeft: "3rem" } },
+          puck: PUCK,
+        }),
+      ),
+    );
+
+    expect(root).toContain(BUTTON_BASE_BOX_CLASS);
+    expect(root).toContain("--pl-m:3rem");
+    // Desktop and tablet emit nothing, so the ladder inherits the class's box.
+    expect(root).not.toContain("--pl-d");
+    expect(root).not.toContain("--pl-t");
+  });
+
+  it("renders a document that stored its paddings unchanged", () => {
+    const html = renderToStaticMarkup(
+      renderButtonBlock({
+        id: "button",
+        button: { link: LINK },
+        spacing: {
+          desktop: {
+            paddingTop: "0.5rem",
+            paddingRight: "1rem",
+            paddingBottom: "0.5rem",
+            paddingLeft: "1rem",
+          },
+        },
+        puck: PUCK,
+      }),
+    );
+    const root = rootTag(html);
+
+    expect(root).toContain(BUTTON_BASE_BOX_CLASS);
+    expect(root).toContain("--pt-d:0.5rem");
+    expect(root).toContain("--pr-d:1rem");
+    expect(root).toContain("--pb-d:0.5rem");
+    expect(root).toContain("--pl-d:1rem");
+  });
+});
+
+function selectorsOf(rule: Rule) {
+  return rule.selector.split(",").map((part) => part.trim());
+}
+
+function rulesForSelector(rules: Rule[], selector: string) {
+  return rules.filter((rule) => selectorsOf(rule).includes(selector));
+}
+
+function ruleForSelector(rules: Rule[], selector: string): Rule {
+  const [rule] = rulesForSelector(rules, selector);
+
+  if (!rule) {
+    throw new Error(`puck-base.css has no ${selector} rule`);
+  }
+
+  return rule;
+}
+
+/** Index of the base rule that resets a selector's variable, if any. */
+function resetRuleIndex(
+  rules: Rule[],
+  resetSelector: string,
+  property: string,
+) {
+  return rules.findIndex(
+    (rule) =>
+      rule.media === null &&
+      selectorsOf(rule).includes(resetSelector) &&
+      declarations(rule).has(property),
+  );
+}
+
+/**
  * The stylesheet is the source of truth for the four looks.
  *
  * A variant rule declares only custom properties: a property would outrank the
@@ -392,22 +560,12 @@ describe("Button variant stylesheet", () => {
 
   const selector = (variant: ButtonVariant) => `.${VARIANT_CLASS[variant]}`;
 
-  function selectorsOf(rule: Rule) {
-    return rule.selector.split(",").map((part) => part.trim());
-  }
-
   function rulesFor(variant: ButtonVariant) {
-    return rules.filter((rule) => selectorsOf(rule).includes(selector(variant)));
+    return rulesForSelector(rules, selector(variant));
   }
 
   function ruleFor(variant: ButtonVariant): Rule {
-    const [rule] = rulesFor(variant);
-
-    if (!rule) {
-      throw new Error(`puck-base.css has no ${selector(variant)} rule`);
-    }
-
-    return rule;
+    return ruleForSelector(rules, selector(variant));
   }
 
   /** What every variant shares: the box and the weight. */
@@ -496,18 +654,9 @@ describe("Button variant stylesheet", () => {
    * `.puck-deco` and `.puck-typo` reset the variables to `initial` at equal
    * specificity, so a variant rule placed before them would be erased.
    */
-  function resetRuleIndex(resetSelector: string, property: string) {
-    return rules.findIndex(
-      (rule) =>
-        rule.media === null &&
-        selectorsOf(rule).includes(resetSelector) &&
-        declarations(rule).has(property),
-    );
-  }
-
   it("declares each variant after the reset scopes it has to outrank", () => {
-    const boxReset = resetRuleIndex(".puck-deco", "--bgc-d");
-    const typeReset = resetRuleIndex(".puck-typo", "--fw-d");
+    const boxReset = resetRuleIndex(rules, ".puck-deco", "--bgc-d");
+    const typeReset = resetRuleIndex(rules, ".puck-typo", "--fw-d");
 
     expect(boxReset).toBeGreaterThanOrEqual(0);
     expect(typeReset).toBeGreaterThanOrEqual(0);
@@ -518,6 +667,56 @@ describe("Button variant stylesheet", () => {
       expect(index).toBeGreaterThan(boxReset);
       expect(index).toBeGreaterThan(typeReset);
     }
+  });
+});
+
+/**
+ * The base box is a rule like a Variant's: custom properties only, the desktop
+ * rung only, written after the box reset it has to outrank. A property would
+ * bypass `.puck-dim`'s variables and take the box out of the author's hands.
+ */
+describe("Button base box stylesheet", () => {
+  const rules = readPuckBaseRules();
+  const BOX_SELECTOR = `.${BUTTON_BASE_BOX_CLASS}`;
+
+  function boxRules() {
+    return rulesForSelector(rules, BOX_SELECTOR);
+  }
+
+  function boxRule(): Rule {
+    return ruleForSelector(rules, BOX_SELECTOR);
+  }
+
+  it("declares the four paddings once, on the desktop rung", () => {
+    expect(boxRules()).toHaveLength(1);
+
+    const rule = boxRule();
+    expect(rule.media).toBeNull();
+    expect(Object.fromEntries(declarations(rule))).toEqual({
+      "--pt-d": "0.5rem",
+      "--pr-d": "1rem",
+      "--pb-d": "0.5rem",
+      "--pl-d": "1rem",
+    });
+  });
+
+  it("declares only custom properties and no !important", () => {
+    for (const [property, value] of declarations(boxRule())) {
+      expect(
+        property.startsWith("--"),
+        `${BOX_SELECTOR} declares ${property}; a property would bypass .puck-dim`,
+      ).toBe(true);
+      expect(value).not.toContain("!important");
+    }
+  });
+
+  it("is declared after the box reset it has to outrank", () => {
+    // `.puck-dim` resets `--pt-d` to `initial` at equal specificity, so the box
+    // rule placed before it would be erased.
+    const resetIndex = resetRuleIndex(rules, ".puck-dim", "--pt-d");
+
+    expect(resetIndex).toBeGreaterThanOrEqual(0);
+    expect(rules.indexOf(boxRule())).toBeGreaterThan(resetIndex);
   });
 });
 

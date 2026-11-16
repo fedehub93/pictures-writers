@@ -13,6 +13,7 @@ import { cn } from "@/shared/lib/utils";
 import type { ButtonContentProps } from "../types";
 import { getButtonVariantClass } from "../variants";
 import {
+  BUTTON_BASE_BOX_CLASS,
   BUTTON_ICON_DEFAULT_POSITION,
   BUTTON_ICON_DEFAULT_SPACING,
 } from "../constants";
@@ -87,6 +88,10 @@ export const ButtonBlockUi = ({
         // the stylesheet as Style variables. The document stores only the name;
         // an unknown one resolves to the default so the Button keeps its look.
         getButtonVariantClass(button?.variant),
+        // The base box is the block's too: its four paddings live in the
+        // stylesheet, so a cleared Spacing field returns the box instead of
+        // collapsing the Button (ADR-0045).
+        BUTTON_BASE_BOX_CLASS,
         hasIcon ? "inline-flex items-center" : "inline-block",
         "puck-block-root",
         layoutClassName,

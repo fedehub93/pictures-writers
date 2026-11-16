@@ -79,6 +79,12 @@ export const HEADING_DEFAULT_PROPS: HeadingProps = {
   level: HEADING_DEFAULT_LEVEL,
 };
 
+/**
+ * The Button has no Spacing default: the target-sized box is the block's base
+ * box, declared by `puck-button-box` in `puck-base.css`. As a default prop it
+ * would read as an authored value, so clearing the field would collapse the
+ * Button instead of returning the box (ADR-0045).
+ */
 export const BUTTON_DEFAULT_PROPS: ButtonProps = {
   button: {
     variant: BUTTON_DEFAULT_VARIANT,
@@ -86,20 +92,6 @@ export const BUTTON_DEFAULT_PROPS: ButtonProps = {
       type: "external",
       url: "",
       label: "Inserisci il tuo link",
-    },
-  },
-  /**
-   * A freshly dropped Button has to read as a call to action without the
-   * author opening Spacing: the variant supplies the look, this gives it a
-   * target-sized box. Every breakpoint inherits the desktop padding through
-   * the stylesheet's ladder; the author can still repaint it.
-   */
-  spacing: {
-    desktop: {
-      paddingTop: "0.5rem",
-      paddingRight: "1rem",
-      paddingBottom: "0.5rem",
-      paddingLeft: "1rem",
     },
   },
 };

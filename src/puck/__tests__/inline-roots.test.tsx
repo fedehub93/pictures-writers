@@ -137,7 +137,7 @@ const INLINE_CASES: InlineCase[] = [
         },
       },
     },
-    rootClasses: ["puck-dim", "puck-typo", "puck-deco", "puck-button", "puck-button-primary"],
+    rootClasses: ["puck-dim", "puck-typo", "puck-deco", "puck-button", "puck-button-primary", "puck-button-box"],
   },
   {
     name: "Image",

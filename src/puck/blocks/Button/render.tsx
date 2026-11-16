@@ -19,10 +19,10 @@ import { BUTTON_BASE_WIDTH } from "./constants";
  * It deliberately imports only the block UI and the shared style-variable
  * utilities so the public render path never pulls in editor field modules.
  *
- * The variant's look is not resolved here: the document says which variant the
- * Button is, and the block's own class carries the values as Style variables.
- * The render emits only what the author authored, inline, where it outranks
- * that class (ADR-0045).
+ * The variant's look and the Button's base box are not resolved here: the
+ * document says which variant the Button is, and the block's own classes carry
+ * the values as Style variables. The render emits only what the author
+ * authored, inline, where it outranks those classes (ADR-0045).
  */
 export const renderButtonBlock: PuckComponent<ButtonProps> = ({
   button,

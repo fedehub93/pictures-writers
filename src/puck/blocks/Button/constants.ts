@@ -17,6 +17,17 @@ export const BUTTON_VARIANTS = [
 ] as const satisfies readonly ButtonVariant[];
 
 /**
+ * The root class carrying the Button's base box.
+ *
+ * The four paddings that make a Button a target-sized control are declared by
+ * this class in `puck-base.css`, as Style variables, exactly like a Variant's
+ * look. Keeping them here rather than in the block's default props means an
+ * empty Spacing field reads as "nothing authored" and a cleared value returns
+ * the box instead of collapsing the Button (ADR-0045).
+ */
+export const BUTTON_BASE_BOX_CLASS = "puck-button-box";
+
+/**
  * The width a Button resolves to when no width is authored.
  *
  * A Button's root is the anchor itself, so once it becomes a flex or grid item

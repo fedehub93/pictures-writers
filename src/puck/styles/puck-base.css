@@ -380,30 +380,44 @@
   border-bottom-right-radius: var(--rbr-d);
 }
 
-/* --- 4a. BUTTON VARIANT (the block's starting look) ---
-   A Button's Variant is one prop in the document; its look is these rules. They
-   declare the same Style variables the render used to write inline, one
+/* --- 4a. BUTTON STARTING LOOK (Variant and base box) ---
+   A Button's starting look is two kinds of thing, and both are rules here. The
+   Variant is one prop in the document and paints Decoration and Typography; the
+   base box is the block's own target-sized padding, which no document stores.
+   They declare the same Style variables the render used to write inline, one
    specificity level below an inline declaration, so an authored value still
    wins and the look is not repeated on every instance (ADR-0045).
 
-   Two rules govern this section. A Variant rule declares custom properties
-   only — never a property, never `!important` — because a property would
-   outrank the variables `.puck-deco` and `.puck-typo` read, taking the value
-   out of the author's hands: an empty Decoration field could not reach the
-   class's value and an authored value would need a third mechanism to win. And
-   it declares the desktop rung only: the ladder's `var(--bgc-t, var(--bgc-d))`
-   carries the value to tablet and mobile, while the reset scope's `initial`
-   keeps an ancestor's value from leaking in. An authored value is inline and
-   outranks the class at every rung, so a value written on a wider rung is what
-   the narrower ones inherit — the same rule every other block follows.
-
-   One rule per Variant, written after `.puck-deco` and `.puck-typo`: at equal
-   specificity, a later reset would erase the look.
+   Three rules govern this section. A rule here declares custom properties only
+   — never a property, never `!important` — because a property would outrank the
+   variables `.puck-deco`, `.puck-typo` and `.puck-dim` read, taking the value
+   out of the author's hands: an empty field could not reach the class's value
+   and an authored value would need a third mechanism to win. It declares the
+   desktop rung only: the ladder's `var(--bgc-t, var(--bgc-d))` carries the
+   value to tablet and mobile, while the reset scope's `initial` keeps an
+   ancestor's value from leaking in. An authored value is inline and outranks
+   the class at every rung, so a value written on a wider rung is what the
+   narrower ones inherit — the same rule every other block follows. And it is
+   written after the reset it has to outrank: the Variant rules after
+   `.puck-deco` and `.puck-typo`, the base box after `.puck-dim`. At equal
+   specificity, a later reset would erase the value.
 
    Primary and secondary dictate no state variables, so the hover rule in §9
    derives one from their base colour. Outline and ghost name the theme's hover
    surface, because a transparent background only yields a faint foreground
    wash. */
+
+/* The base box: every Button is a target-sized control, authored or not. An
+   empty Spacing field means "nothing authored here", so a cleared value falls
+   back to these four paddings instead of unsetting the box and collapsing the
+   Button. */
+.puck-button-box {
+  --pt-d: 0.5rem;
+  --pr-d: 1rem;
+  --pb-d: 0.5rem;
+  --pl-d: 1rem;
+}
+
 .puck-button-primary {
   --bgc-d: var(--primary);
   --bs-d: solid;

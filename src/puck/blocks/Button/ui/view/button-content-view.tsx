@@ -81,8 +81,8 @@ export const ButtonContentView = ({
           items={VARIANT_ITEMS}
         />
         <p className="text-xs text-muted-foreground">
-          The variant sets the starting style; a Decoration or Typography value
-          overrides it.
+          The variant and the Button&apos;s base box set the starting style; a
+          Decoration, Typography or Spacing value overrides it.
         </p>
       </div>
 
