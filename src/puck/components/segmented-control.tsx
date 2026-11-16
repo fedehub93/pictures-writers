@@ -5,6 +5,8 @@ import { cn } from "@/shared/lib/utils";
 import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
 import { ComponentType } from "react";
 
+import { PANEL_CONTROL } from "@/puck/components/panel-control";
+
 interface SegmentedControlProps<T extends string> {
   name: string;
   value: T;
@@ -26,7 +28,10 @@ export function SegmentedControl<T extends string>({
       onValueChange={(val) => {
         if (val) onChange(val as T);
       }}
-      className="flex items-center justify-start bg-background rounded-md h-8 w-full min-w-0 gap-0 border border-input"
+      className={cn(
+        PANEL_CONTROL.height,
+        "flex items-center justify-start bg-background rounded-md w-full min-w-0 gap-0 border border-input",
+      )}
     >
       {items.map((item) => (
         <ToggleGroupItem

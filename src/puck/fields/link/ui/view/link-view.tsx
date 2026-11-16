@@ -5,15 +5,16 @@ import { useTRPC } from "@/trpc/client";
 import { useDebounceValue } from "usehooks-ts";
 
 import { CommandSelect } from "@/shared/components/command-select";
+import { cn } from "@/shared/lib/utils";
 import { Skeleton } from "@/shared/ui/skeleton";
 import {
   Select,
   SelectContent,
   SelectItem,
-  SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
 
+import { PANEL_CONTROL, PanelSelectTrigger } from "@/puck/components/panel-control";
 import { PropHeader } from "@/puck/components/prop-header";
 import { SwitchInput } from "@/puck/components/switch-input";
 import { TextInput } from "@/puck/components/text-input";
@@ -165,12 +166,9 @@ export const LinkView = ({
           onReset={() => onUpdate(withSmartLinkType(state, "external"))}
         />
         <Select value={linkType} onValueChange={handleTypeChange}>
-          <SelectTrigger
-            id={fieldId("type")}
-            className="w-full h-8 border-input text-xs"
-          >
+          <PanelSelectTrigger id={fieldId("type")} className="w-full">
             <SelectValue placeholder="Link type" />
-          </SelectTrigger>
+          </PanelSelectTrigger>
           <SelectContent>
             {LINK_TYPE_OPTIONS.map((option) => (
               <SelectItem key={option.value} value={option.value}>
@@ -249,7 +247,7 @@ export const LinkView = ({
             onReset={() => onUpdate(withSmartLinkTarget(state, ""))}
           />
           {isLoading && options.length === 0 ? (
-            <Skeleton className="w-full h-9" />
+            <Skeleton className={cn("w-full", PANEL_CONTROL.height)} />
           ) : (
             <CommandSelect
               options={pickerOptions.map((option) => ({
@@ -261,7 +259,7 @@ export const LinkView = ({
               onSearch={setSearch}
               value={selectedId ?? ""}
               placeholder="Select content"
-              className="w-full"
+              className={cn(PANEL_CONTROL.picker, "w-full")}
             />
           )}
         </div>

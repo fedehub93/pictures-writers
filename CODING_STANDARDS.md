@@ -54,6 +54,9 @@ tests pass.
 - **Match the live pattern.** tRPC (`src/trpc/routers/_app.ts`) and App Router route handlers
   (`src/app/api/`) both exist. Use the one the feature already uses; introducing a third is a
   finding, not a preference.
+- **The vendored primitives are not edited.** `src/shared/ui/` is the vendor's surface, so a change
+  belongs in the call site or in a module that wraps it: a local patch is erased the next time the
+  component is reinstalled.
 - **Public bundle discipline** (ADR-0028, ADR-0029). No explicit prefetch, third-party scripts stay
   `afterInteractive`, and a new dependency on a public path needs a bundle reason.
 

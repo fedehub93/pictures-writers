@@ -3,21 +3,22 @@ import "client-only";
 
 import { PlusIcon, Trash2Icon } from "lucide-react";
 
-import type { IconProps } from "@/puck/fields/icon";
-import { IconView } from "@/puck/fields/icon/ui/view/icon-view";
-import { LinkView } from "@/puck/fields/link/ui/view/link-view";
-import { normalizeLinkProps, type LinkProps } from "@/puck/fields/link/types";
-import { TextInput } from "@/puck/components/text-input";
 import { Button } from "@/shared/ui/button";
 import { Label } from "@/shared/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
-  SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
 import { Textarea } from "@/shared/ui/textarea";
+
+import { PanelSelectTrigger } from "@/puck/components/panel-control";
+import { TextInput } from "@/puck/components/text-input";
+import type { IconProps } from "@/puck/fields/icon";
+import { IconView } from "@/puck/fields/icon/ui/view/icon-view";
+import { LinkView } from "@/puck/fields/link/ui/view/link-view";
+import { normalizeLinkProps, type LinkProps } from "@/puck/fields/link/types";
 
 import { createColumnChild } from "../lib/menu";
 import type {
@@ -133,9 +134,9 @@ export const MenuItemEditor = ({
             })
           }
         >
-          <SelectTrigger id="navbar-cta-variant" className="h-8 w-full text-xs">
+          <PanelSelectTrigger id="navbar-cta-variant" className="w-full">
             <SelectValue />
-          </SelectTrigger>
+          </PanelSelectTrigger>
           <SelectContent>
             <SelectItem value="primary">Primary</SelectItem>
             <SelectItem value="secondary">Secondary</SelectItem>

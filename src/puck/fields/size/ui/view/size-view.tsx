@@ -1,5 +1,8 @@
 import type { FieldDef } from "@/puck/types";
 
+import { cn } from "@/shared/lib/utils";
+
+import { PANEL_CONTROL, PanelSelectTrigger } from "@/puck/components/panel-control";
 import { PropHeader } from "@/puck/components/prop-header";
 import { ValueUnitInput } from "@/puck/components/value-unit-input";
 import type { ValueUnitPreset } from "@/puck/components/value-unit-input/types";
@@ -8,7 +11,6 @@ import {
   Select,
   SelectContent,
   SelectItem,
-  SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
 import { Input } from "@/shared/ui/input";
@@ -132,9 +134,9 @@ export const SizeView = ({
                 }
               }}
             >
-              <SelectTrigger className="h-8 text-xs flex-1">
+              <PanelSelectTrigger className="flex-1">
                 <SelectValue placeholder="Auto" />
-              </SelectTrigger>
+              </PanelSelectTrigger>
               <SelectContent>
                 {aspectRatioOptions.map((opt) => (
                   <SelectItem key={opt.value} value={opt.value}>
@@ -147,7 +149,7 @@ export const SizeView = ({
 
             {isCustomRatio && (
               <Input
-                className="h-8 text-xs w-1/2 placeholder:text-xs"
+                className={cn(PANEL_CONTROL.box, "w-1/2")}
                 value={currentRatioValue}
                 onChange={(e) => onUpdate({ aspectRatio: e.target.value })}
                 placeholder="es. 3 / 2"

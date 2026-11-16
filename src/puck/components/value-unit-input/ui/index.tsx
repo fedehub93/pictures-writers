@@ -21,6 +21,8 @@ import {
 import { Button } from "@/shared/ui/button";
 import { Popover, PopoverContent } from "@/shared/ui/popover";
 
+import { PANEL_CONTROL } from "@/puck/components/panel-control";
+
 import type { ValueUnitInputProps } from "../types";
 
 import { useValueUnitInput } from "../hooks/use-value-unit-input";
@@ -67,7 +69,12 @@ export function ValueUnitInput({
   const hasPresets = !!presets && presets.length > 0;
 
   return (
-    <InputGroup className="h-8 bg-background flex shadow-none focus-within:ring-2! focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background">
+    <InputGroup
+      className={cn(
+        PANEL_CONTROL.height,
+        "bg-background flex shadow-none focus-within:ring-2! focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background",
+      )}
+    >
       <Popover open={hasPresets && openPresets} onOpenChange={setOpenPresets}>
         <PopoverAnchor asChild>
           <div className="flex-1">
@@ -94,7 +101,10 @@ export function ValueUnitInput({
               }}
               placeholder={placeholder}
               autoComplete="off"
-              className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 text-xs! w-full"
+              className={cn(
+                PANEL_CONTROL.box,
+                "border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 w-full",
+              )}
             />
           </div>
         </PopoverAnchor>
