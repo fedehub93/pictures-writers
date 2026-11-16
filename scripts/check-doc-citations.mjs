@@ -1,11 +1,15 @@
 #!/usr/bin/env node
-// Fails when a tracked doc cites a repo path that is not in the repo.
+// Fails when a source doc cites a repo path that is not committed.
 //
 // A doc that names a file is a promise: an ADR pointing at its evidence, a guide at the module it
 // describes. The promise breaks in two ways a reader cannot see — the file moved, or the file was
 // never committed (a working-tree-only spike report is a broken pointer for everyone else). Both
-// are caught here, because the candidate set is `git ls-files`: a path that exists only on the
+// are caught here, because the cited-path set is `git ls-files`: a path that exists only on the
 // author's disk is reported like a missing one.
+//
+// The docs scanned include the untracked ones: the ADR being written right now is the doc that most
+// needs checking, and skipping it turns a green run into a false assurance. A cited path keeps the
+// tracked-only rule — commit the file, or the promise is not kept.
 //
 // Scope is the docs, not the tickets: `.scratch/` holds closed plans that legitimately name files
 // deleted since. A doc that deliberately names an absent path (removed, proposed) goes in
@@ -26,9 +30,9 @@ const isSourceDoc = (file) =>
 const CITATION =
   /`((?:src|docs|scripts|tests|prisma|public|\.scratch|\.agents|\.github)\/[A-Za-z0-9_./()@[\]-]+\.[a-z0-9]+)(?::\d+(?:-\d+)?)?`/g;
 
-function readTracked() {
+function readGitPaths(args) {
   try {
-    return execSync("git ls-files -z", { cwd: ROOT, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 })
+    return execSync(`git ${args}`, { cwd: ROOT, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 })
       .split("\0")
       .filter(Boolean);
   } catch {
@@ -53,11 +57,23 @@ function readIgnores() {
   return ignores;
 }
 
-const tracked = new Set(readTracked());
+const tracked = new Set(readGitPaths("ls-files -z"));
+
+// A doc written but not yet staged is still a doc in the working tree, and it is the one most
+// likely to name a file that does not exist yet. The cited path keeps the tracked-only rule.
+const untrackedDocs = readGitPaths("ls-files --others --exclude-standard -z").filter(
+  (file) => !tracked.has(file) && file.endsWith(".md") && isSourceDoc(file),
+);
+
+const docs = [
+  ...[...tracked].filter((file) => file.endsWith(".md") && isSourceDoc(file)),
+  ...untrackedDocs,
+];
+
 const ignores = readIgnores();
 const failures = [];
 
-for (const doc of [...tracked].filter((f) => f.endsWith(".md") && isSourceDoc(f))) {
+for (const doc of docs) {
   const text = fs.readFileSync(doc, "utf8");
   for (const match of text.matchAll(CITATION)) {
     const cited = match[1];
@@ -73,5 +89,6 @@ if (failures.length) {
   process.exit(1);
 }
 
-const checked = [...tracked].filter((f) => f.endsWith(".md") && isSourceDoc(f)).length;
-console.log(`check-doc-citations: ${checked} docs, 0 broken citations.`);
+console.log(
+  `check-doc-citations: ${docs.length} docs (${untrackedDocs.length} untracked), 0 broken citations.`,
+);
