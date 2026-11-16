@@ -1,6 +1,7 @@
 # One Button block, whose variant is a set of props rather than a class
 
 **Status**: accepted
+**Partially superseded by**: [ADR-0045](./0045-block-starting-look-is-a-class-of-style-variables.md), which keeps the variant as one prop but moves its look — and the Button's base box — out of the inline style attribute into the block's own class. The rejection of "the variant as a stylesheet class" below applies to a class of properties, not to a class of Style variables.
 
 The `Link` block was already a button. Its root is the anchor itself, it carries Dimension (padding, width), Typography and Decoration (background, border, radius), and its block base width is `fit-content` — a constant whose own comment calls fill "the deliberate choice for a full-width button". What it could not do was show an icon, and what its name promised was something else: a text link, which the rich text link mark, the Link list and the NavbarBlock already author. No published document contains the block, so it is renamed to `Button` in place instead of being kept beside a new one. A single block, with no `appearance` switch: `appearance: link | button` would be two components in one panel, hiding each other's fields and offering a second way to author what a link mark in a text block already authors.
 

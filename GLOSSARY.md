@@ -534,12 +534,16 @@ _Avoid_: heading tag, title level, H-select.
 ## Block styling
 
 **Style variable**:
-The CSS custom property a block writes inline on its Block root to carry one authored style value at one Breakpoint and State, named `<prop>-[<state>-]<breakpoint>` — `--bgc-d` is the desktop background of the base state, `--bgc-h-d` the hover one. The values cascade desktop → tablet → mobile through the stylesheet's fallback chain.
+The CSS custom property that carries one style value of a block at one Breakpoint and State, named `<prop>-[<state>-]<breakpoint>` — `--bgc-d` is the desktop background of the base state, `--bgc-h-d` the hover one. A value the author writes is written inline on the Block root; the look a block starts from — its Variant and its base box — is declared by the block's own class. Inline outranks the class, which is what makes an authored value win. The values cascade desktop → tablet → mobile through the stylesheet's fallback chain.
 _Avoid_: style token, theme variable, class.
 
 **Variant**:
-A named starting point for a block's style — for the Button, primary, secondary, outline or ghost — stored as the same props the author edits and merged underneath them, so an authored value always wins. It is data, not a stylesheet class.
+A named starting point for a block's style — for the Button, primary, secondary, outline or ghost. The document stores the name; the look is a class on the Block root that declares the Variant's Style variables, at every Breakpoint and in the States the Variant dictates, so no value is repeated per instance and an authored value still wins. It is data — one prop — and the class only carries its values.
 _Avoid_: preset (a suggested value inside a unit input), theme, skin, type.
+
+**Base box**:
+The part of a block's starting look that belongs to the block rather than to a Variant: for the Button, the four paddings that make it a target-sized control. It is declared by the block's own class as Style variables, so it is not a stored document value and a cleared field returns it instead of unsetting the box. The Block base width carries the same idea in a render constant instead, because the Width control quotes the same value.
+_Avoid_: default style, preset, block padding.
 
 **State**:
 A condition in which a block shows different style values than its base, such as hover. It is the outer axis and the Breakpoint the inner one, and it appends its own Style variables instead of redefining the base ones, which an authored inline value would outrank.
