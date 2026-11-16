@@ -380,6 +380,96 @@
   border-bottom-right-radius: var(--rbr-d);
 }
 
+/* --- 4a. BUTTON VARIANT (the block's starting look) ---
+   A Button's Variant is one prop in the document; its look is these rules. They
+   declare the same Style variables the render used to write inline, one
+   specificity level below an inline declaration, so an authored value still
+   wins and the look is not repeated on every instance (ADR-0045).
+
+   Two rules govern this section. A Variant rule declares custom properties
+   only — never a property, never `!important` — because a property would
+   outrank the variables `.puck-deco` and `.puck-typo` read, taking the value
+   out of the author's hands: an empty Decoration field could not reach the
+   class's value and an authored value would need a third mechanism to win. And
+   it declares the desktop rung only: the ladder's `var(--bgc-t, var(--bgc-d))`
+   carries the value to tablet and mobile, while the reset scope's `initial`
+   keeps an ancestor's value from leaking in. An authored value is inline and
+   outranks the class at every rung, so a value written on a wider rung is what
+   the narrower ones inherit — the same rule every other block follows.
+
+   One rule per Variant, written after `.puck-deco` and `.puck-typo`: at equal
+   specificity, a later reset would erase the look.
+
+   Primary and secondary dictate no state variables, so the hover rule in §9
+   derives one from their base colour. Outline and ghost name the theme's hover
+   surface, because a transparent background only yields a faint foreground
+   wash. */
+.puck-button-primary {
+  --bgc-d: var(--primary);
+  --bs-d: solid;
+  --bc-d: var(--primary);
+  --btw-d: 1px;
+  --brw-d: 1px;
+  --bbw-d: 1px;
+  --blw-d: 1px;
+  --rtl-d: var(--radius);
+  --rtr-d: var(--radius);
+  --rbl-d: var(--radius);
+  --rbr-d: var(--radius);
+  --tc-d: var(--primary-foreground);
+  --fw-d: 500;
+}
+
+.puck-button-secondary {
+  --bgc-d: var(--secondary);
+  --bs-d: solid;
+  --bc-d: var(--secondary);
+  --btw-d: 1px;
+  --brw-d: 1px;
+  --bbw-d: 1px;
+  --blw-d: 1px;
+  --rtl-d: var(--radius);
+  --rtr-d: var(--radius);
+  --rbl-d: var(--radius);
+  --rbr-d: var(--radius);
+  --tc-d: var(--secondary-foreground);
+  --fw-d: 500;
+}
+
+.puck-button-outline {
+  --bgc-d: transparent;
+  --bs-d: solid;
+  --bc-d: var(--border);
+  --btw-d: 1px;
+  --brw-d: 1px;
+  --bbw-d: 1px;
+  --blw-d: 1px;
+  --rtl-d: var(--radius);
+  --rtr-d: var(--radius);
+  --rbl-d: var(--radius);
+  --rbr-d: var(--radius);
+  --tc-d: var(--foreground);
+  --fw-d: 500;
+  --bgc-h-d: var(--accent);
+}
+
+.puck-button-ghost {
+  --bgc-d: transparent;
+  --bs-d: solid;
+  --bc-d: transparent;
+  --btw-d: 1px;
+  --brw-d: 1px;
+  --bbw-d: 1px;
+  --blw-d: 1px;
+  --rtl-d: var(--radius);
+  --rtr-d: var(--radius);
+  --rbl-d: var(--radius);
+  --rbr-d: var(--radius);
+  --tc-d: var(--foreground);
+  --fw-d: 500;
+  --bgc-h-d: var(--accent);
+}
+
 /* --- RESPONSIVE LOGIC (Desktop-First) --- */
 
 @media (max-width: 1023px) {

@@ -4,6 +4,19 @@ import type { ButtonIconPosition, ButtonVariant } from "./types";
 export const BUTTON_DEFAULT_VARIANT: ButtonVariant = "primary";
 
 /**
+ * The variants the panel offers, in the order it offers them.
+ *
+ * One list, read by both the panel and the resolver, so a variant the author
+ * can pick also has a class the stylesheet paints.
+ */
+export const BUTTON_VARIANTS = [
+  "primary",
+  "secondary",
+  "outline",
+  "ghost",
+] as const satisfies readonly ButtonVariant[];
+
+/**
  * The width a Button resolves to when no width is authored.
  *
  * A Button's root is the anchor itself, so once it becomes a flex or grid item

@@ -7,7 +7,14 @@ import type { ButtonContentProps, ButtonVariant } from "../blocks/Button/types";
 
 import { renderButtonBlock } from "../blocks/Button/render";
 import { ButtonBlockUi } from "../blocks/Button/ui/button";
+import { BUTTON_VARIANTS } from "../blocks/Button/constants";
 import { BUTTON_DEFAULT_PROPS } from "../blocks/defaults";
+
+import {
+  declarations,
+  readPuckBaseRules,
+  type Rule,
+} from "./helpers/css-rules";
 
 /**
  * `DynamicIcon` keeps no DOM until its glyph chunk resolves, so the icon
@@ -194,12 +201,49 @@ describe("Button block icon", () => {
 });
 
 /**
- * The variant is data, not a class: the render emits its Decoration and
- * Typography values as the same style variables an authored value emits, and
- * the authored value wins where it exists.
+ * The variant is data: the document stores its name, and the block's own class
+ * carries the look it starts from as Style variables. The render writes only
+ * what the author authored, inline, where it outranks that class (ADR-0045).
  */
+
+const VARIANT_CLASS: Record<ButtonVariant, string> = {
+  primary: "puck-button-primary",
+  secondary: "puck-button-secondary",
+  outline: "puck-button-outline",
+  ghost: "puck-button-ghost",
+};
+
+/**
+ * The Style variables a variant used to write onto every instance. They now
+ * belong to the stylesheet, so a render that emits one has copied the look
+ * back onto the element.
+ */
+const VARIANT_VARIABLES = [
+  "--bgc-",
+  "--tc-",
+  "--bs-",
+  "--bc-",
+  "--btw-",
+  "--brw-",
+  "--bbw-",
+  "--blw-",
+  "--rtl-",
+  "--rtr-",
+  "--rbl-",
+  "--rbr-",
+  "--fw-",
+];
+
+function expectNoVariantVariable(root: string) {
+  for (const variable of VARIANT_VARIABLES) {
+    expect(root, `${variable}* belongs in the stylesheet`).not.toContain(
+      variable,
+    );
+  }
+}
+
 describe("Button block variant", () => {
-  it("emits a complete primary button from the block's defaults", () => {
+  it("starts from the default variant's class, with no variant variable inline", () => {
     const html = renderToStaticMarkup(
       renderButtonBlock({
         ...BUTTON_DEFAULT_PROPS,
@@ -209,58 +253,16 @@ describe("Button block variant", () => {
     );
     const root = rootTag(html);
 
-    // A fresh Button is a primary call to action, not a bare label: the
-    // variant supplies the colours and the defaults supply the target size.
-    expect(root).toContain("--bgc-d:var(--primary)");
-    expect(root).toContain("--tc-d:var(--primary-foreground)");
+    // A fresh Button is a primary call to action: the class supplies the look,
+    // while the spacing default still writes the target-sized box.
+    expect(root).toContain(VARIANT_CLASS.primary);
+    expectNoVariantVariable(root);
     expect(root).toContain("--pt-d:0.5rem");
-    expect(root).toContain("--pl-d:1rem");
   });
 
-  it("starts a variant-less button from primary, at every breakpoint", () => {
-    const html = renderToStaticMarkup(
-      renderButtonBlock({ id: "button", button: { link: LINK }, puck: PUCK }),
-    );
-    const root = rootTag(html);
-
-    for (const suffix of ["d", "t", "m"]) {
-      expect(root).toContain(`--bgc-${suffix}:var(--primary)`);
-      expect(root).toContain(`--tc-${suffix}:var(--primary-foreground)`);
-    }
-  });
-
-  /**
-   * The expected values come from the theme tokens the rest of the site
-   * already uses, not from the variant table.
-   */
-  it.each([
-    {
-      variant: "primary",
-      backgroundColor: "var(--primary)",
-      color: "var(--primary-foreground)",
-      borderColor: "var(--primary)",
-    },
-    {
-      variant: "secondary",
-      backgroundColor: "var(--secondary)",
-      color: "var(--secondary-foreground)",
-      borderColor: "var(--secondary)",
-    },
-    {
-      variant: "outline",
-      backgroundColor: "transparent",
-      color: "var(--foreground)",
-      borderColor: "var(--border)",
-    },
-    {
-      variant: "ghost",
-      backgroundColor: "transparent",
-      color: "var(--foreground)",
-      borderColor: "transparent",
-    },
-  ] as const)(
-    "emits the $variant style variables at every breakpoint",
-    ({ variant, backgroundColor, color, borderColor }) => {
+  it.each(["primary", "secondary", "outline", "ghost"] as const)(
+    "carries the %s class and no variant variable inline",
+    (variant) => {
       const html = renderToStaticMarkup(
         renderButtonBlock({
           id: "button",
@@ -268,63 +270,62 @@ describe("Button block variant", () => {
           puck: PUCK,
         }),
       );
-      const root = rootTag(html);
 
-      for (const suffix of ["d", "t", "m"]) {
-        expect(root).toContain(`--bgc-${suffix}:${backgroundColor}`);
-        expect(root).toContain(`--tc-${suffix}:${color}`);
-        expect(root).toContain(`--bc-${suffix}:${borderColor}`);
-        expect(root).toContain(`--btw-${suffix}:1px`);
-        expect(root).toContain(`--rtl-${suffix}:var(--radius)`);
-      }
+      expect(rootTag(html)).toContain(VARIANT_CLASS[variant]);
+      expectNoVariantVariable(rootTag(html));
     },
   );
 
-  it("lets an authored value win at its breakpoint and keeps the variant elsewhere", () => {
+  it("starts a variant-less button from primary's class", () => {
+    const html = renderToStaticMarkup(
+      renderButtonBlock({ id: "button", button: { link: LINK }, puck: PUCK }),
+    );
+
+    expect(rootTag(html)).toContain(VARIANT_CLASS.primary);
+    expectNoVariantVariable(rootTag(html));
+  });
+
+  it("still writes an authored value inline, at the breakpoint it was authored at", () => {
     const html = renderToStaticMarkup(
       renderButtonBlock({
         id: "button",
         button: { variant: "primary", link: LINK },
-        decoration: { desktop: { backgroundColor: "#ff0000" } },
-        typography: { desktop: { color: "#0000ff" } },
+        decoration: {
+          desktop: { backgroundColor: "#ff0000" },
+          mobile: { borderColor: "#00ff00" },
+        },
+        typography: {
+          tablet: { fontSize: "2rem", color: "#0000ff" },
+        },
         puck: PUCK,
       }),
     );
     const root = rootTag(html);
 
+    // The class stays on the root; the authored values sit above it.
+    expect(root).toContain(VARIANT_CLASS.primary);
     expect(root).toContain("--bgc-d:#ff0000");
-    expect(root).toContain("--tc-d:#0000ff");
-    expect(root).toContain("--bgc-t:var(--primary)");
-    expect(root).toContain("--tc-t:var(--primary-foreground)");
-    expect(root).toContain("--bgc-m:var(--primary)");
-    expect(root).toContain("--tc-m:var(--primary-foreground)");
+    expect(root).toContain("--bc-m:#00ff00");
+    expect(root).toContain("--fs-t:2rem");
+    expect(root).toContain("--tc-t:#0000ff");
   });
 
   it("brings the variant's value back when an authored value is cleared", () => {
-    const authored = renderToStaticMarkup(
-      renderButtonBlock({
-        id: "button",
-        button: { variant: "primary", link: LINK },
-        decoration: { desktop: { backgroundColor: "#ff0000" } },
-        puck: PUCK,
-      }),
-    );
-    // A cleared colour control leaves the key behind with `undefined`; that
-    // counts as no authored value, like a key the panel has removed.
     const cleared = renderToStaticMarkup(
       renderButtonBlock({
         id: "button",
         button: { variant: "primary", link: LINK },
+        // A cleared colour control leaves the key behind with `undefined`; that
+        // counts as no authored value, like a key the panel has removed.
         decoration: { desktop: { backgroundColor: undefined } },
         typography: { desktop: { color: undefined } },
         puck: PUCK,
       }),
     );
+    const root = rootTag(cleared);
 
-    expect(rootTag(authored)).toContain("--bgc-d:#ff0000");
-    expect(rootTag(cleared)).not.toContain("#ff0000");
-    expect(rootTag(cleared)).toContain("--bgc-d:var(--primary)");
-    expect(rootTag(cleared)).toContain("--tc-d:var(--primary-foreground)");
+    expect(root).toContain(VARIANT_CLASS.primary);
+    expectNoVariantVariable(root);
   });
 
   it("falls back to primary when a stored variant is not one of the four", () => {
@@ -335,42 +336,188 @@ describe("Button block variant", () => {
         puck: PUCK,
       }),
     );
-
-    expect(rootTag(html)).toContain("--bgc-d:var(--primary)");
-    expect(rootTag(html)).toContain("--tc-d:var(--primary-foreground)");
-  });
-
-  it("keeps every authored value when the variant changes", () => {
-    const authored = {
-      decoration: {
-        desktop: { backgroundColor: "#ff0000" },
-        mobile: { borderColor: "#00ff00" },
-      },
-      typography: {
-        tablet: { fontSize: "2rem", color: "#0000ff" },
-      },
-    };
-
-    const html = renderToStaticMarkup(
-      renderButtonBlock({
-        id: "button",
-        button: { variant: "ghost", link: LINK },
-        ...authored,
-        puck: PUCK,
-      }),
-    );
     const root = rootTag(html);
 
-    // The authored values survive at every breakpoint they were written at.
-    expect(root).toContain("--bgc-d:#ff0000");
-    expect(root).toContain("--bc-m:#00ff00");
-    expect(root).toContain("--fs-t:2rem");
-    expect(root).toContain("--tc-t:#0000ff");
+    expect(root).toContain(VARIANT_CLASS.primary);
+    expect(root).not.toContain("invented");
+    expectNoVariantVariable(root);
+  });
 
-    // The variant re-emits where the author wrote nothing.
-    expect(root).toContain("--bgc-t:transparent");
-    expect(root).toContain("--bgc-m:transparent");
-    expect(root).toContain("--tc-d:var(--foreground)");
+  it("puts the same variant class on an anchor and on the plain-text fallback", () => {
+    const anchor = rootTag(renderUi({ variant: "outline", link: LINK }));
+    const text = rootTag(
+      renderUi({
+        variant: "outline",
+        link: { label: "Removed page" } as LinkProps,
+      }),
+    );
+
+    expect(anchor.startsWith("<a ")).toBe(true);
+    expect(text.startsWith("<span ")).toBe(true);
+
+    for (const root of [anchor, text]) {
+      expect(root).toContain("puck-button");
+      expect(root).toContain(VARIANT_CLASS.outline);
+    }
+  });
+
+  it("renders the same variant markup in the canvas and on the published page", () => {
+    const props = {
+      id: "button",
+      button: { variant: "ghost" as const, link: LINK },
+      puck: PUCK,
+    };
+
+    const published = renderToStaticMarkup(renderButtonBlock(props));
+    const editing = renderToStaticMarkup(
+      renderButtonBlock({ ...props, puck: { ...PUCK, isEditing: true } }),
+    );
+
+    expect(editing).toBe(published);
+    expect(rootTag(published)).toContain(VARIANT_CLASS.ghost);
+  });
+});
+
+/**
+ * The stylesheet is the source of truth for the four looks.
+ *
+ * A variant rule declares only custom properties: a property would outrank the
+ * variables `.puck-deco` and `.puck-typo` read, so an empty Decoration field
+ * could not reach the class's value, and an authored value would need a third
+ * mechanism to win. It declares the desktop rung only; the ladder carries the
+ * value to tablet and mobile (ADR-0045).
+ */
+describe("Button variant stylesheet", () => {
+  const rules = readPuckBaseRules();
+
+  const selector = (variant: ButtonVariant) => `.${VARIANT_CLASS[variant]}`;
+
+  function selectorsOf(rule: Rule) {
+    return rule.selector.split(",").map((part) => part.trim());
+  }
+
+  function rulesFor(variant: ButtonVariant) {
+    return rules.filter((rule) => selectorsOf(rule).includes(selector(variant)));
+  }
+
+  function ruleFor(variant: ButtonVariant): Rule {
+    const [rule] = rulesFor(variant);
+
+    if (!rule) {
+      throw new Error(`puck-base.css has no ${selector(variant)} rule`);
+    }
+
+    return rule;
+  }
+
+  /** What every variant shares: the box and the weight. */
+  const SHARED_DECLARATIONS: Record<string, string> = {
+    "--bs-d": "solid",
+    "--btw-d": "1px",
+    "--brw-d": "1px",
+    "--bbw-d": "1px",
+    "--blw-d": "1px",
+    "--rtl-d": "var(--radius)",
+    "--rtr-d": "var(--radius)",
+    "--rbl-d": "var(--radius)",
+    "--rbr-d": "var(--radius)",
+    "--fw-d": "500",
+  };
+
+  /** The theme tokens the rest of the site already uses, plus the dictated hover. */
+  const VARIANT_DECLARATIONS: Record<ButtonVariant, Record<string, string>> = {
+    primary: {
+      "--bgc-d": "var(--primary)",
+      "--bc-d": "var(--primary)",
+      "--tc-d": "var(--primary-foreground)",
+    },
+    secondary: {
+      "--bgc-d": "var(--secondary)",
+      "--bc-d": "var(--secondary)",
+      "--tc-d": "var(--secondary-foreground)",
+    },
+    outline: {
+      "--bgc-d": "transparent",
+      "--bc-d": "var(--border)",
+      "--tc-d": "var(--foreground)",
+      "--bgc-h-d": "var(--accent)",
+    },
+    ghost: {
+      "--bgc-d": "transparent",
+      "--bc-d": "transparent",
+      "--tc-d": "var(--foreground)",
+      "--bgc-h-d": "var(--accent)",
+    },
+  };
+
+  it.each(["primary", "secondary", "outline", "ghost"] as const)(
+    "holds the %s look once, on the desktop rung, as Style variables",
+    (variant) => {
+      // The look is declared once, on the desktop rung: the ladder carries it
+      // to tablet and mobile. An authored value is inline and outranks the
+      // class at every rung, so a value written on a wider rung is what the
+      // narrower ones inherit — the same rule every other block follows.
+      expect(rulesFor(variant)).toHaveLength(1);
+
+      const rule = ruleFor(variant);
+      expect(rule.media).toBeNull();
+      expect(Object.fromEntries(declarations(rule))).toEqual({
+        ...SHARED_DECLARATIONS,
+        ...VARIANT_DECLARATIONS[variant],
+      });
+    },
+  );
+
+  it("paints every variant the panel offers", () => {
+    // The panel and the render read one list: a variant the author can pick
+    // must have a class the stylesheet paints, not a look lost in TypeScript.
+    for (const variant of BUTTON_VARIANTS) {
+      expect(
+        rulesFor(variant),
+        `${selector(variant)} must paint ${variant}`,
+      ).toHaveLength(1);
+    }
+  });
+
+  it.each(["primary", "secondary", "outline", "ghost"] as const)(
+    "declares only custom properties and no !important for %s",
+    (variant) => {
+      for (const [property, value] of declarations(ruleFor(variant))) {
+        expect(
+          property.startsWith("--"),
+          `${selector(variant)} declares ${property}; a property would outrank the variables`,
+        ).toBe(true);
+        expect(value).not.toContain("!important");
+      }
+    },
+  );
+
+  /**
+   * `.puck-deco` and `.puck-typo` reset the variables to `initial` at equal
+   * specificity, so a variant rule placed before them would be erased.
+   */
+  function resetRuleIndex(resetSelector: string, property: string) {
+    return rules.findIndex(
+      (rule) =>
+        rule.media === null &&
+        selectorsOf(rule).includes(resetSelector) &&
+        declarations(rule).has(property),
+    );
+  }
+
+  it("declares each variant after the reset scopes it has to outrank", () => {
+    const boxReset = resetRuleIndex(".puck-deco", "--bgc-d");
+    const typeReset = resetRuleIndex(".puck-typo", "--fw-d");
+
+    expect(boxReset).toBeGreaterThanOrEqual(0);
+    expect(typeReset).toBeGreaterThanOrEqual(0);
+
+    for (const variant of ["primary", "secondary", "outline", "ghost"] as const) {
+      const index = rules.indexOf(ruleFor(variant));
+
+      expect(index).toBeGreaterThan(boxReset);
+      expect(index).toBeGreaterThan(typeReset);
+    }
   });
 });
 

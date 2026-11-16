@@ -12,6 +12,7 @@ import {
   BUTTON_DEFAULT_VARIANT,
   BUTTON_ICON_DEFAULT_POSITION,
   BUTTON_ICON_DEFAULT_SPACING,
+  BUTTON_VARIANTS,
 } from "@/puck/blocks/Button/constants";
 import type {
   ButtonContentProps,
@@ -28,12 +29,15 @@ import type { ContentFieldRenderProps } from "@/puck/utils/with-content-field";
 
 const DEFAULT_LABEL = BUTTON_DEFAULT_PROPS.button?.link?.label;
 
-const VARIANT_ITEMS: { value: ButtonVariant; title: string }[] = [
-  { value: "primary", title: "Primary" },
-  { value: "secondary", title: "Secondary" },
-  { value: "outline", title: "Outline" },
-  { value: "ghost", title: "Ghost" },
-];
+const VARIANT_TITLES: Record<ButtonVariant, string> = {
+  primary: "Primary",
+  secondary: "Secondary",
+  outline: "Outline",
+  ghost: "Ghost",
+};
+
+const VARIANT_ITEMS: { value: ButtonVariant; title: string }[] =
+  BUTTON_VARIANTS.map((value) => ({ value, title: VARIANT_TITLES[value] }));
 
 /**
  * The one authored section of a Button.

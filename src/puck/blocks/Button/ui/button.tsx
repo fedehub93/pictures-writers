@@ -11,6 +11,7 @@ import { InlineSmartLink } from "@/puck/fields/link/ui/inline-link";
 import { cn } from "@/shared/lib/utils";
 
 import type { ButtonContentProps } from "../types";
+import { getButtonVariantClass } from "../variants";
 import {
   BUTTON_ICON_DEFAULT_POSITION,
   BUTTON_ICON_DEFAULT_SPACING,
@@ -82,6 +83,10 @@ export const ButtonBlockUi = ({
         // and editor-scoped in the canvas: a Button that resolves to text does
         // not answer the pointer, while the canvas still previews the state.
         "puck-button",
+        // The look the Button starts from is the variant's class, declared in
+        // the stylesheet as Style variables. The document stores only the name;
+        // an unknown one resolves to the default so the Button keeps its look.
+        getButtonVariantClass(button?.variant),
         hasIcon ? "inline-flex items-center" : "inline-block",
         "puck-block-root",
         layoutClassName,

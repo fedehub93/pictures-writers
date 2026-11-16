@@ -1,8 +1,6 @@
 import type { PuckComponent } from "@puckeditor/core";
 
 import {
-  HOVER_STATE,
-  getDecorationStateVars,
   getDecorationVars,
   getSizeVars,
   getSpacingVars,
@@ -14,13 +12,17 @@ import { getLayoutClassNames } from "@/puck/fields/layout/get-layout-classes";
 import type { ButtonProps } from "./types";
 import { ButtonBlockUi } from "./ui/button";
 import { BUTTON_BASE_WIDTH } from "./constants";
-import { resolveButtonVariantStyles } from "./variants";
 
 /**
  * Pure render shared by the editor canvas and the public page.
  *
  * It deliberately imports only the block UI and the shared style-variable
  * utilities so the public render path never pulls in editor field modules.
+ *
+ * The variant's look is not resolved here: the document says which variant the
+ * Button is, and the block's own class carries the values as Style variables.
+ * The render emits only what the author authored, inline, where it outranks
+ * that class (ADR-0045).
  */
 export const renderButtonBlock: PuckComponent<ButtonProps> = ({
   button,
@@ -31,20 +33,12 @@ export const renderButtonBlock: PuckComponent<ButtonProps> = ({
   decoration,
   puck,
 }) => {
-  const variantStyles = resolveButtonVariantStyles(button?.variant, {
-    typography,
-    decoration,
-  });
-
   const styleVars = {
     ...getLayoutVars(layout),
     ...getSizeVars(size, { baseWidth: BUTTON_BASE_WIDTH }),
     ...getSpacingVars(spacing),
-    ...getTypographyVars(variantStyles.typography),
-    ...getDecorationVars(variantStyles.decoration),
-    // The hover state appends its own variables; the stylesheet reads them and
-    // derives one from the base colour where the variant dictates none.
-    ...getDecorationStateVars(variantStyles.hover, HOVER_STATE),
+    ...getTypographyVars(typography),
+    ...getDecorationVars(decoration),
   };
 
   return (

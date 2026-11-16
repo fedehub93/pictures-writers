@@ -21,11 +21,12 @@ import { declarations, readPuckBaseRules, type Rule } from "./helpers/css-rules"
 /**
  * Hover is read, not authored.
  *
- * Two seams carry it: the render emits the state's own style variables
- * (`--bgc-h-d`) for a variant that dictates a hover, and one stylesheet rule
- * reads them with a colour derived from the base background where no variant
- * value exists. The state never redefines a base variable, because an authored
- * value is inline and no stylesheet rule could outrank it (ADR-0043).
+ * Two seams carry it: the variant's class declares the state's own Style
+ * variables (`--bgc-h-d`) where the variant dictates a hover, and one
+ * stylesheet rule reads them with a colour derived from the base background
+ * where no variant value exists. Neither the render nor the state writes a
+ * base variable, because an authored value is inline and no stylesheet rule
+ * could outrank it (ADR-0043, ADR-0045).
  */
 
 const PUCK: PuckContext = {
@@ -252,22 +253,39 @@ describe("Button hover stylesheet", () => {
 });
 
 describe("Button hover variables", () => {
-  it.each(["outline", "ghost"] as const)(
-    "dictates the hover of the transparent %s variant at every breakpoint",
-    (variant) => {
-      const root = renderRoot({ variant, link: LINK });
+  function variantRule(selector: string): Rule {
+    const [rule] = rulesFor(selector, null);
 
-      for (const suffix of ["d", "t", "m"]) {
-        expect(root).toContain(`--bgc-h-${suffix}:var(--accent)`);
-        // The state appends its own variable; the base one keeps its value.
-        expect(root).toContain(`--bgc-${suffix}:transparent`);
-      }
+    if (!rule) {
+      throw new Error(`${selector} has no rule in puck-base.css`);
+    }
+
+    return rule;
+  }
+
+  it.each(["outline", "ghost"] as const)(
+    "dictates the %s hover in the variant's class, not on the instance",
+    (variant) => {
+      const rule = variantRule(`.puck-button-${variant}`);
+
+      // The base value the hover rules out is the transparent one, and the
+      // dictated surface is the theme's accent.
+      expect(declarations(rule).get("--bgc-d")).toBe("transparent");
+      expect(declarations(rule).get("--bgc-h-d")).toBe("var(--accent)");
+
+      const root = renderRoot({ variant, link: LINK });
+      expect(root).toContain(`puck-button-${variant}`);
+      expect(root).not.toContain("--bgc-h-");
     },
   );
 
   it.each(["primary", "secondary"] as const)(
     "leaves the derived hover to the stylesheet for %s",
     (variant) => {
+      // No state variable: the rule mixes the hover from the base background.
+      expect(declarations(variantRule(`.puck-button-${variant}`)).has("--bgc-h-d")).toBe(
+        false,
+      );
       expect(renderRoot({ variant, link: LINK })).not.toContain("--bgc-h-");
     },
   );
@@ -278,10 +296,12 @@ describe("Button hover variables", () => {
       { desktop: { backgroundColor: "#ff0000" } },
     );
 
-    // The base value is the authored one; the variant still dictates the
-    // state, because the derived colour cannot read a transparent surface.
+    // The base value is the authored one and stays inline; the variant's class
+    // still dictates the state, because the derived colour cannot read a
+    // transparent surface.
     expect(root).toContain("--bgc-d:#ff0000");
-    expect(root).toContain("--bgc-h-d:var(--accent)");
+    expect(root).toContain("puck-button-ghost");
+    expect(root).not.toContain("--bgc-h-");
   });
 
   it("leaves an overridden primary's hover to derive from the authored colour", () => {
@@ -295,13 +315,13 @@ describe("Button hover variables", () => {
     expect(root).not.toContain("--bgc-h-");
   });
 
-  it("falls back to a derived hover for a stored unknown variant", () => {
+  it("falls back to the default variant's class for a stored unknown variant", () => {
     const root = renderRoot({
       variant: "invented" as ButtonVariant,
       link: LINK,
     });
 
-    expect(root).toContain("--bgc-d:var(--primary)");
+    expect(root).toContain("puck-button-primary");
     expect(root).not.toContain("--bgc-h-");
   });
 
