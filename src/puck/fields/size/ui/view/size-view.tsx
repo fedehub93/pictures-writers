@@ -118,7 +118,7 @@ export const SizeView = ({
         <div className="col-span-2 flex flex-col gap-y-1">
           <PropHeader
             name="aspectRatio"
-            label="Aspect Ratio"
+            label="Aspect ratio"
             isModified={isAspectRatioModified}
             onReset={() => resetProp("aspectRatio")}
           />

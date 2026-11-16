@@ -55,25 +55,25 @@ const borderWidthFields: FieldDef<DecorationProps>[] = [
 const radiusFields: FieldDef<DecorationProps>[] = [
   {
     key: "borderTopLeftRadius",
-    label: "Top Left",
+    label: "Top left",
     type: "unit",
     placeholder: "0",
   },
   {
     key: "borderTopRightRadius",
-    label: "Top Right",
+    label: "Top right",
     type: "unit",
     placeholder: "0",
   },
   {
     key: "borderBottomLeftRadius",
-    label: "Bottom Left",
+    label: "Bottom left",
     type: "unit",
     placeholder: "0",
   },
   {
     key: "borderBottomRightRadius",
-    label: "Bottom Right",
+    label: "Bottom right",
     type: "unit",
     placeholder: "0",
   },
@@ -130,7 +130,7 @@ export const DecorationView = ({
         <PropHeader
           key={`prop-background-color`}
           name="backgroundColor"
-          label="Background Color"
+          label="Background color"
           isModified={currentValues.backgroundColor !== undefined}
           onReset={() => resetProp("backgroundColor")}
         />
@@ -178,7 +178,7 @@ export const DecorationView = ({
             <SelectField
               key="borderStyle"
               name="borderStyle"
-              label="Border Style"
+              label="Border style"
               placeholder="none"
               options={borderStyles}
               currentValues={currentValues}
@@ -212,7 +212,7 @@ export const DecorationView = ({
 
       {/* --- BORDER RADIUS --- */}
       <div className="mt-4">
-        <span className="text-sm font-medium">Border Radius</span>
+        <span className="text-sm font-medium">Border radius</span>
         <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-4 p-2 bg-muted/60 rounded">
           {radiusFields.map((field) => {
             const isModified = currentValues[field.key] !== undefined;

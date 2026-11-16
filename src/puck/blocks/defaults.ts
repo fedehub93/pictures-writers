@@ -45,6 +45,14 @@ import {
  * The composite objects (Top bar, Brand, and the rest of the region blocks)
  * live here too, so their `index.tsx` does not have to restate what is already
  * a constant in the block's own `defaults` module.
+ *
+ * A block's starting look stays in `defaultProps`, with one exception. The
+ * Button's base box and its Variant live in `puck-button-box` and the variant
+ * classes in `puck-base.css`, because a padding written as a default prop is
+ * indistinguishable from an authored value and clearing the field would
+ * collapse the Button (ADR-0045). The Top bar and the Separator are the
+ * boundary and keep every default they have here; a block that wants a class
+ * instead brings its own arguments.
  */
 
 export const CONTAINER_DEFAULT_PROPS: ContainerBlockProps = {

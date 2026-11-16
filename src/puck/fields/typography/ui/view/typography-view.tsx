@@ -49,7 +49,7 @@ export const TypographyView = ({
       <SelectField
         key="fontFamily"
         name="fontFamily"
-        label="Font Family"
+        label="Font family"
         placeholder="inherit"
         options={["inherit"]}
         currentValues={currentValues}
@@ -62,7 +62,7 @@ export const TypographyView = ({
       <div className="flex flex-col gap-y-1">
         <PropHeader
           name="fontSize"
-          label="Font Size"
+          label="Font size"
           isModified={currentValues.fontSize !== undefined}
           onReset={() => resetProp("fontSize")}
         />
@@ -79,7 +79,7 @@ export const TypographyView = ({
       <SelectField
         key="fontWeight"
         name="fontWeight"
-        label="Font Weight"
+        label="Font weight"
         placeholder="normal"
         options={weightOptions}
         currentValues={currentValues}
@@ -92,7 +92,7 @@ export const TypographyView = ({
       <div className="flex flex-col gap-y-1">
         <PropHeader
           name="letterSpacing"
-          label="Letter Spacing"
+          label="Letter spacing"
           isModified={currentValues.letterSpacing !== undefined}
           onReset={() => resetProp("letterSpacing")}
         />
