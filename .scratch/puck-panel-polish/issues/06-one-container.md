@@ -14,7 +14,7 @@ operations runbook states the order: migration first, deploy after.
 **Blocked by:** 04 — the palette has to be the categories before the blocks are
 deleted, or the panel would offer a tile whose block is gone.
 
-**Status:** ready-for-human
+**Status:** done
 
 - [x] The transform fills the desktop display with the mode the node used to
       have when no rung declares one, leaves an authored display alone, sets the
@@ -29,7 +29,7 @@ deleted, or the panel would offer a tile whose block is gone.
       reporting no changes.
 - [x] The dry run against the development database reports the one Page version
       that holds the Grid nodes and nothing else.
-- [ ] After the run, every page and every Site region renders exactly as it does
+- [x] After the run, every page and every Site region renders exactly as it does
       today; checked by hand on the page that holds the grids.
 - [x] The two blocks are gone with every reference: the type maps, the registry,
       the page and region palettes, the render config and its name tuple, the
@@ -61,6 +61,9 @@ spec).
 - Verification: `npm run typecheck` clean; `npm run lint` 0 errors (265
   pre-existing warnings); `npm run test:run` 271 files / 2394 tests passed;
   `npm run check:doc-citations` 0 broken.
-- Open: the by-hand render check on the `about` page has not been done. The
-  migration was applied at the owner's request; this ticket stays open until
-  that check confirms the page looks as it did.
+- At hand-off the by-hand render check on the `about` page was still open; it is
+  recorded below.
+
+**2026-11-16** — Hand check confirmed by the owner: every page and Site region
+renders as it did before, including the `about` page that held the grids, and the
+outline shows Container for those blocks. Ticket closed.
