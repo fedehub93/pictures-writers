@@ -1,33 +1,28 @@
-import {
-  SearchIcon,
-  ChevronDownIcon,
-  GripIcon,
-  InfoIcon,
-  SquareIcon,
-} from "lucide-react";
-import { Config, createUsePuck, Drawer, Puck } from "@puckeditor/core";
+import "client-only";
+
+import { useState } from "react";
+import { Config, createUsePuck, Puck } from "@puckeditor/core";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { ScrollArea } from "@/shared/ui/scroll-area";
-import { Input } from "@/shared/ui/input";
-import { Badge } from "@/shared/ui/badge";
-import { Card } from "@/shared/ui/card";
 
-import { ELEMENT_ICONS, ELEMENT_LABELS } from "./element-meta";
+import { ElementsPalette } from "./element-palette";
 
 const usePuck = createUsePuck<Config>();
 
+/**
+ * The editor's left column: the palette drawn from the config's categories,
+ * and Puck's outline.
+ *
+ * There is deliberately no "Globals" tab: it had no content. Every tab here
+ * renders something.
+ */
 export const ElementsPanel = () => {
   const config = usePuck((state) => state.config);
-  const elements = Object.keys(config.components).map((name) => ({
-    name,
-    label: ELEMENT_LABELS[name] ?? name,
-    icon: ELEMENT_ICONS[name] ?? SquareIcon,
-  }));
+  const [search, setSearch] = useState("");
 
   return (
     <div className="flex flex-col w-full h-full bg-background">
-      {/* Header: shrink-0 previene la compressione */}
       <div className="py-4 text-center font-bold text-base border-b shrink-0">
         Elements
       </div>
@@ -48,69 +43,19 @@ export const ElementsPanel = () => {
           >
             Outline
           </TabsTrigger>
-          <TabsTrigger
-            value="globals"
-            className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-black data-[state=active]:shadow-none text-muted-foreground text-xs h-full"
-          >
-            Globals
-          </TabsTrigger>
         </TabsList>
 
         <TabsContent
           value="widgets"
           className="flex-1 m-0 overflow-hidden outline-none data-[state=active]:flex flex-col"
         >
-          {/* ScrollArea ha dimensioni piene, il padding è gestito dal div interno */}
+          {/* The scroll area fills the tab; the palette owns its padding. */}
           <ScrollArea className="h-full w-full">
-            <div className="p-4">
-              {/* Search */}
-              <div className="relative mb-6">
-                <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search Widget..."
-                  className="pl-9 bg-background shadow-sm border-muted-foreground/30 text-sm"
-                />
-              </div>
-
-              {/* Accordion / Category Header */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2 font-semibold text-sm cursor-pointer">
-                  <ChevronDownIcon className="h-4 w-4" />
-                  Atomic Elements
-                </div>
-                <Badge
-                  variant="outline"
-                  className="flex items-center gap-1 font-normal text-xs px-2 py-0.5 rounded-full bg-muted/30"
-                >
-                  New
-                  <InfoIcon className="h-3 w-3 text-muted-foreground" />
-                </Badge>
-              </div>
-
-              {/* Elements Grid */}
-              <Drawer>
-                <div className="grid grid-cols-2 gap-3 pb-8">
-                  {elements.map((element) => (
-                    <Drawer.Item key={element.name} name={element.name}>
-                      {() => (
-                        <Card className="relative max-w-40 mx-auto flex flex-col items-center justify-center p-4 h-22.5 cursor-pointer hover:border-primary/50 transition-colors shadow-sm rounded-md">
-                          <div className="absolute top-2 right-2 text-muted-foreground">
-                            <GripIcon className="h-3 w-3 opacity-50" />
-                          </div>
-
-                          <div className="flex flex-col items-center">
-                            <element.icon className="size-6 text-slate-600 mb-2 stroke-[1.5]" />
-                            <span className="text-xs text-slate-600 font-medium">
-                              {element.label}
-                            </span>
-                          </div>
-                        </Card>
-                      )}
-                    </Drawer.Item>
-                  ))}
-                </div>
-              </Drawer>
-            </div>
+            <ElementsPalette
+              config={config}
+              search={search}
+              onSearchChange={setSearch}
+            />
           </ScrollArea>
         </TabsContent>
         <TabsContent value="outline">
