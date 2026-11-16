@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import type { PuckContext } from "@puckeditor/core";
+import type { CustomField, PuckContext } from "@puckeditor/core";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -25,13 +25,45 @@ const PUCK: PuckContext = {
   dragRef: null,
 };
 
+const levelField = config.components.Heading.fields?.level as CustomField<
+  HeadingLevel | undefined
+>;
+
+/** The level editor driven through the props the panel hands it. */
+function renderLevelField(
+  value: HeadingLevel | undefined,
+  onChange: (value: HeadingLevel | undefined) => void = () => undefined,
+): string {
+  return renderToStaticMarkup(
+    levelField.render({
+      field: levelField,
+      name: "level",
+      id: "level",
+      value,
+      onChange,
+    }),
+  );
+}
+
+/** The one tag in SSR markup that carries `id="level"`. */
+function levelTrigger(html: string): string {
+  const tag = [...html.matchAll(/<[a-z][^>]*>/g)]
+    .map(([match]) => match)
+    .find((candidate) => candidate.includes('id="level"'));
+
+  if (!tag) throw new Error("No level control in the markup.");
+  return tag;
+}
+
+function classesOf(tag: string): string[] {
+  return (tag.match(/class="([^"]*)"/)?.[1] ?? "").split(/\s+/);
+}
+
 const renderHeading = (
   props: HeadingProps = {},
   puck: PuckContext = PUCK,
 ): string =>
-  renderToStaticMarkup(
-    renderHeadingBlock({ id: "heading", ...props, puck }),
-  );
+  renderToStaticMarkup(renderHeadingBlock({ id: "heading", ...props, puck }));
 
 let root: Root | null = null;
 let host: HTMLDivElement | null = null;
@@ -126,19 +158,99 @@ describe("Heading block", () => {
     expect(dragRef).toHaveBeenCalledWith(heading);
   });
 
-  it("exposes a Level select defaulting to h2 in the editor config", () => {
-    const levelField = config.components.Heading.fields?.level;
-
-    expect(levelField).toMatchObject({
-      type: "select",
-      options: HEADING_LEVEL_OPTIONS,
-    });
+  it("offers the same levels the render validates against", () => {
+    expect(HEADING_LEVEL_OPTIONS.map((option) => option.value)).toEqual([
+      ...HEADING_LEVELS,
+    ]);
+    expect(HEADING_DEFAULT_LEVEL).toBe("h2");
     expect(config.components.Heading.defaultProps?.level).toBe(
       HEADING_DEFAULT_LEVEL,
     );
-    expect(HEADING_DEFAULT_LEVEL).toBe("h2");
-    expect(HEADING_LEVEL_OPTIONS.map((option) => option.value)).toEqual([
-      ...HEADING_LEVELS,
+  });
+
+  it("edits the level with the panel's control box", () => {
+    const html = renderLevelField("h3");
+    const trigger = levelTrigger(html);
+    const triggerClasses = classesOf(trigger);
+
+    expect(html).toContain(">Level<");
+    expect(trigger).toContain('data-size="sm"');
+    expect(triggerClasses).toContain("px-2");
+    expect(triggerClasses).toContain("text-xs!");
+    expect(triggerClasses.some((name) => /^h-(\d|\()/.test(name))).toBe(false);
+  });
+
+  it("shows the level the page would emit for an unknown stored value", () => {
+    host = document.createElement("div");
+    document.body.append(host);
+    root = createRoot(host);
+
+    act(() => {
+      root!.render(
+        levelField.render({
+          field: levelField,
+          name: "level",
+          id: "level",
+          value: "h7" as HeadingLevel,
+          onChange: () => undefined,
+        }),
+      );
+    });
+
+    expect(host.querySelector('[data-slot="select-value"]')?.textContent).toBe(
+      HEADING_DEFAULT_LEVEL.toUpperCase(),
+    );
+    expect(
+      host.querySelector('button[title="Reset to default"]'),
+    ).not.toBeNull();
+  });
+
+  it("shows its reset only for an authored level", () => {
+    expect(renderLevelField(undefined)).not.toContain("Reset to default");
+    expect(renderLevelField(HEADING_DEFAULT_LEVEL)).not.toContain(
+      "Reset to default",
+    );
+    expect(renderLevelField("h3")).toContain("Reset to default");
+  });
+
+  it("resets an authored level to the default through its props", () => {
+    const onChange = vi.fn();
+
+    host = document.createElement("div");
+    document.body.append(host);
+    root = createRoot(host);
+
+    act(() => {
+      root!.render(
+        levelField.render({
+          field: levelField,
+          name: "level",
+          id: "level",
+          value: "h3",
+          onChange,
+        }),
+      );
+    });
+
+    const reset = host.querySelector('button[title="Reset to default"]');
+
+    expect(reset).not.toBeNull();
+
+    act(() => {
+      (reset as HTMLButtonElement).click();
+    });
+
+    expect(onChange).toHaveBeenCalledWith(undefined);
+  });
+
+  it("puts the content first and the level before the style sections", () => {
+    expect(Object.keys(config.components.Heading.fields ?? {})).toEqual([
+      "text",
+      "level",
+      "layout",
+      "size",
+      "spacing",
+      "typography",
     ]);
   });
 });
