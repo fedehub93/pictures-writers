@@ -17,8 +17,8 @@ import type { CopyrightBlockContent } from "./types";
  * The Copyright section.
  *
  * Year, extra text and links are the whole authored content of the block, so
- * they share one accordion. The links use the same inline editor as the Link
- * list block.
+ * they share one accordion. The links use the same dialog as the Link list
+ * block.
  */
 export const CopyrightContentField: Field<CopyrightBlockContent | undefined> =
   withContentField<CopyrightBlockContent>({

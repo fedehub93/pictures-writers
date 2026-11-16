@@ -16,8 +16,9 @@ import type { LinkListBlockContent } from "./types";
  * The Link list section.
  *
  * The title and the links are the whole authored content of the block, so they
- * share one accordion. The links use the shared inline editor instead of the
- * native array field because they live inside this custom section.
+ * share one accordion. The links are edited in a dedicated dialog and the panel
+ * keeps their count, because one full link editor per row inside the 300px
+ * sidebar is where a mistake or a long URL is hardest to see.
  */
 export const LinkListContentField: Field<LinkListBlockContent | undefined> =
   withContentField<LinkListBlockContent>({

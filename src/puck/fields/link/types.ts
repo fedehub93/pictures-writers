@@ -17,6 +17,21 @@ export const SMART_LINK_TYPES = [
 
 export type SmartLinkType = (typeof SMART_LINK_TYPES)[number];
 
+/**
+ * Author-facing name of each target type.
+ *
+ * The type picker and the list of links in the footer dialog read the same
+ * map, so a type is named once and never drifts between the two surfaces.
+ */
+export const SMART_LINK_TYPE_LABELS: Record<SmartLinkType, string> = {
+  external: "External URL",
+  page: "Page",
+  post: "Post",
+  product: "Product",
+  category: "Blog category",
+  productCategory: "Shop category",
+};
+
 export type SmartLink =
   | { type: "external"; url: string; openInNewTab?: boolean }
   | { type: "page"; pageId: string }

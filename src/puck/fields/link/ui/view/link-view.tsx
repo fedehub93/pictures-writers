@@ -20,6 +20,8 @@ import { SwitchInput } from "@/puck/components/switch-input";
 import { TextInput } from "@/puck/components/text-input";
 
 import {
+  SMART_LINK_TYPES,
+  SMART_LINK_TYPE_LABELS,
   type LinkProps,
   type SmartLinkType,
   getSmartLinkEntityId,
@@ -29,14 +31,11 @@ import {
   withSmartLinkType,
 } from "../../types";
 
-const LINK_TYPE_OPTIONS: { value: SmartLinkType; label: string }[] = [
-  { value: "external", label: "External URL" },
-  { value: "page", label: "Page" },
-  { value: "post", label: "Post" },
-  { value: "product", label: "Product" },
-  { value: "category", label: "Blog category" },
-  { value: "productCategory", label: "Shop category" },
-];
+const LINK_TYPE_OPTIONS: { value: SmartLinkType; label: string }[] =
+  SMART_LINK_TYPES.map((value) => ({
+    value,
+    label: SMART_LINK_TYPE_LABELS[value],
+  }));
 
 interface PickerOption {
   id: string;
