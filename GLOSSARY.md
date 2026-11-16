@@ -538,7 +538,7 @@ The CSS custom property that carries one style value of a block at one Breakpoin
 _Avoid_: style token, theme variable, class.
 
 **Variant**:
-A named starting point for a block's style — for the Button, primary, secondary, outline or ghost. The document stores the name; the look is a class on the Block root that declares the Variant's Style variables, at every Breakpoint and in the States the Variant dictates, so no value is repeated per instance and an authored value still wins. It is data — one prop — and the class only carries its values.
+A named starting point for a block's style — for the Button, primary, secondary, outline or ghost. The document stores the name; the look is a class on the Block root that declares the Variant's Style variables from the desktop rung — the ladder carries them to every Breakpoint — and in the States the Variant dictates, so no value is repeated per instance and an authored value still wins. It is data — one prop — and the class only carries its values.
 _Avoid_: preset (a suggested value inside a unit input), theme, skin, type.
 
 **Base box**:
