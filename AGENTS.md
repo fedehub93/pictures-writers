@@ -44,7 +44,7 @@ Tests use Vitest (`vitest.config.ts`) and live beside the source or in `__tests_
 
 ### Before committing
 
-Run `npm run lint`, `npm run typecheck` and the full test suite; `.github/workflows/test.yml` runs all three on push to `main` and on pull requests. That workflow does not build, so run a production build before merging changes that touch routing, config or Prisma.
+Run `npm run check:doc-citations` when a change touches documentation or moves a file a doc names. Run `npm run lint`, `npm run typecheck` and the full test suite when it touches code. `.github/workflows/test.yml` runs all four checks on push to `main` and on pull requests. That workflow does not build, so run a production build before merging changes that touch routing, config or Prisma.
 
 ## Code Conventions
 
@@ -120,7 +120,7 @@ Operational docs:
 
 ### Issue tracker
 
-Issues and specs live as markdown files under `.scratch/<feature-slug>/`. See `docs/agents/issue-tracker.md`.
+Issues and specs live as markdown files under `.scratch/<feature-slug>/`. Closing one has its own protocol — status, checklist, a `## Comments` entry naming the landing commit, and a ticket-only `docs(<area>): close the <ticket> ticket` commit — in `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
