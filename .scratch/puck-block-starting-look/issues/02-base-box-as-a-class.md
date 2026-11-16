@@ -1,5 +1,5 @@
 ---
-Status: ready-for-human
+Status: done
 Type: task
 Blocked by: 01
 ---
@@ -15,13 +15,13 @@ clears returns the base box instead of collapsing the Button.
 **Blocked by:** 01 — the same stylesheet section and the same test file, not a
 behavioural dependency. Doing them in parallel would edit both twice.
 
-**Status:** ready-for-human — implementation landed, visual hand check pending.
+**Status:** done
 
 ## Acceptance criteria
 
 - [x] A freshly dropped Button no longer emits its four paddings inline and no
       longer receives them from the block's default props.
-- [ ] The Button's class declares those four paddings, and a Button looks exactly
+- [x] The Button's class declares those four paddings, and a Button looks exactly
       as it did before, in the canvas and on the published page.
 - [x] An authored padding still wins at the Breakpoint it was authored at.
 - [x] Clearing a padding value returns the base box instead of collapsing the
@@ -77,3 +77,9 @@ Landed in `c193c5eb` (`feat(puck): carry a Button's base box on its class`).
   ordering against `.puck-dim` and the canvas/page markup parity are pinned by
   tests; the visual glance at an empty, an authored and a cleared Button in the
   canvas and on the page is the reviewer's.
+
+### 2026-11-16 — closed
+
+Hand check done by the user: an empty, an authored and a cleared Button read
+correctly in the canvas and on the published page. The second criterion is
+ticked and the ticket is `done`. No further code change.
