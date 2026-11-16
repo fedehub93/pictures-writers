@@ -48,6 +48,8 @@ Run `npm run check:doc-citations` when a change touches documentation or moves a
 
 ## Code Conventions
 
+These are the implementation conventions. A reviewer judges what no tool can enforce against `CODING_STANDARDS.md`; the two files are halves of one standard.
+
 - **Imports**: use the path aliases in `tsconfig.json` instead of relative chains.
 - **Components**: server components by default. Interactive components import `"client-only"` at the top; vendored shadcn primitives in `src/shared/ui/` keep `"use client"`; server-only modules import `"server-only"`. The Puck client/server boundary is documented in `src/puck/config.ts` — read it before adding a directive to a block.
 - **Feature modules**: inside `src/modules/<feature>/` the subfolders are a convention rather than a rule — `server/` for procedures and queries, `ui/` for components (split `admin/` and `public/` when both exist), `hooks/`, `lib/`, `store/` for Zustand. Code moves to `src/shared/` when a second module imports it, not in anticipation.
