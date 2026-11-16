@@ -58,8 +58,13 @@ export const CommandSelect = ({
         )}
         disabled={disabled}
       >
-        <div>{selectedOption?.children ?? placeholder}</div>
-        <ChevronsUpDownIcon />
+        {/* Without a zero minimum width the value refuses to shrink below its
+            text, and a long title paints outside the button instead of ending
+            in an ellipsis. */}
+        <div className="min-w-0 truncate">
+          {selectedOption?.children ?? placeholder}
+        </div>
+        <ChevronsUpDownIcon className="shrink-0" />
       </Button>
       <CommandResponsiveDialog
         open={open}
