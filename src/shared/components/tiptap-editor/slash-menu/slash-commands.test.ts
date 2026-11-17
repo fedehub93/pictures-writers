@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { Editor, type JSONContent } from "@tiptap/core";
 
 import { DEFAULT_INFO_BOX_ICON } from "../extensions/info-box";
@@ -14,6 +14,26 @@ import type {
   SlashCommandModalService,
 } from "./types";
 
+/**
+ * Every editor this file builds goes through here. ProseMirror schedules a
+ * DOMObserver flush with `setTimeout`, and only `destroy()` stops it; a timer
+ * that outlives the file's happy-dom environment fails `document is not
+ * defined` in the next file and turns a green run into an unhandled error.
+ */
+const editors: Editor[] = [];
+
+const createEditor = (options: ConstructorParameters<typeof Editor>[0]) => {
+  const editor = new Editor(options);
+  editors.push(editor);
+  return editor;
+};
+
+afterEach(() => {
+  while (editors.length > 0) {
+    editors.pop()?.destroy();
+  }
+});
+
 const findCommand = (commands: SlashCommand[], id: string): SlashCommand => {
   const command = commands.find((cmd) => cmd.id === id);
   if (!command) throw new Error(`Missing slash command: ${id}`);
@@ -21,7 +41,7 @@ const findCommand = (commands: SlashCommand[], id: string): SlashCommand => {
 };
 
 const createEditorWithSlash = (text: string) =>
-  new Editor({
+  createEditor({
     extensions: createProductionExtensions(),
     content: {
       type: "doc",
@@ -291,7 +311,7 @@ describe("custom slash commands", () => {
 
   describe("tablecontent", () => {
     const createEditorWithTocSlash = (text: string) =>
-      new Editor({
+      createEditor({
         extensions: createProductionExtensions(),
         content: {
           type: "doc",
