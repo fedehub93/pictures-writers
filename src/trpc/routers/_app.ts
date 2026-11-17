@@ -16,6 +16,7 @@ import { ordersRouter } from "@/modules/shop/orders/server/procedures";
 import { productCategoriesRouter } from "@/modules/shop/product-categories/server/procedures";
 import { productsRouter } from "@/modules/shop/products/server/procedures";
 import { pagesRouter } from "@/modules/pages/server/procedures";
+import { siteRegionsRouter } from "@/modules/site-regions/server/procedures";
 import { postsRouter } from "@/modules/blog/posts/server/procedures";
 import { reviewsRouter } from "@/modules/reviews/server/procedures";
 import { schedulerRouter } from "@/modules/scheduler/server/procedures";
@@ -49,6 +50,7 @@ export const appRouter = createTRPCRouter({
   users: usersRouter,
   scheduler: schedulerRouter,
   singleSends: singleSendsRouter,
+  siteRegions: siteRegionsRouter,
   submissions: formSubmissionsRouter,
   tags: tagsRouter,
   templates: templatesRouter,

@@ -58,8 +58,7 @@ export const DeleteTemplateDialog = ({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Template</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete the template "{templateName}"? This
-            action cannot be undone.
+            {`Are you sure you want to delete the template "${templateName}"? This action cannot be undone.`}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="flex gap-2 justify-end">

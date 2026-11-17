@@ -2,7 +2,7 @@ name: Tests
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
 
 jobs:
@@ -52,3 +52,41 @@ jobs:
       - run: npm ci
 
       - run: npm run test:run
+
+  static-analysis:
+    runs-on: ubuntu-latest
+
+    env:
+      # prisma generate runs on postinstall and reads DATABASE_URL from
+      # prisma.config.ts. ESLint and tsc never connect to a database, so this
+      # job needs no service container.
+      DATABASE_URL: postgresql://dev:dev@localhost:5999/dev
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      # Keep CI on the exact npm that generated the lockfile, matching test.yml.
+      - name: Pin npm
+        run: npm install -g npm@12.0.2
+
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # `npm run typecheck` runs `next typegen` first: the typed-routes helpers
+      # (`PageProps`, `RouteContext`) and `next-env.d.ts` are generated into
+      # `.next` and gitignored, so a clean checkout has neither and `tsc` fails
+      # with "Cannot find name 'PageProps'".
+      - name: Typecheck
+        run: npm run typecheck
+
+      # A doc that names a file is a promise the reader cannot check by reading. The check reads
+      # `git ls-files`, so a path that exists only on a contributor's disk fails like a missing one.
+      - name: Doc citations
+        run: npm run check:doc-citations

@@ -17,8 +17,13 @@ import {
 import { resolveIntegrationPublicConfig } from "@/modules/integrations/lib/public-config";
 import { withIntegrationResolutionCache } from "@/modules/integrations/lib/resolution-cache";
 
-import { Navbar } from "@/app/(home)/_components/navbar";
-import { Footer } from "@/app/(home)/_components/footer";
+import { resolveRegionPuckData } from "@/modules/site-regions/lib/default-regions";
+import { getHeaderClassName } from "@/modules/site-regions/lib/header-sticky";
+import { getCachedLiveRegionByKey } from "@/modules/site-regions/server/queries";
+
+import { PuckRender } from "@/puck/render-config";
+import { renderConfigForRegion } from "@/puck/region/render-config";
+
 import { getHeadMetadata } from "@/app/(home)/_components/seo/head-metadata";
 
 import { QueryProvider } from "@/shared/providers/query-provider";
@@ -49,7 +54,13 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [settings, iubendaConfig, gtmConfig] = await Promise.all([
+  const [
+    settings,
+    iubendaConfig,
+    gtmConfig,
+    headerRegion,
+    footerRegion,
+  ] = await Promise.all([
     getSettings(),
     withIntegrationResolutionCache(() =>
       resolveIntegrationPublicConfig(INTEGRATION_PROVIDER_IUBENDA),
@@ -57,21 +68,30 @@ export default async function RootLayout({
     withIntegrationResolutionCache(() =>
       resolveIntegrationPublicConfig(INTEGRATION_PROVIDER_GTM),
     ),
+    getCachedLiveRegionByKey("HEADER"),
+    getCachedLiveRegionByKey("FOOTER"),
   ]);
+
+  const headerPuckData = resolveRegionPuckData("HEADER", headerRegion);
+  const footerPuckData = resolveRegionPuckData("FOOTER", footerRegion);
 
   const socialUrls = settings.socials
     .filter((s): s is typeof s & { url: string } => !!s.url)
     .map((s) => s.url);
   return (
     <html lang="it" suppressHydrationWarning>
-      <head>
+      {/* Keep the React-rendered head free of children. Iubenda's runtime
+          inserts its core script before the first <script> in the document;
+          React 19 hydrates a JSX <head> positionally and that insertion would
+          shift the first managed node, failing hydration. The CMP block lives
+          at the top of <body> instead (ADR 0031). */}
+      <head />
+      <HolyLoader color="var(--primary)" />
+      <body className={figtree.className}>
         <PublicHeadScripts
           iubendaConfig={iubendaConfig}
           gtmId={gtmConfig?.containerId}
         />
-      </head>
-      <HolyLoader color="var(--primary)" />
-      <body className={figtree.className}>
         <Suspense fallback={null}>
           <PageViewTracker />
         </Suspense>
@@ -89,10 +109,26 @@ export default async function RootLayout({
         />
         <ToastProvider />
         <QueryProvider>
-          <div className={cn(`h-full`, figtree.className)}>
-            <Navbar />
-            <main className="pt-32 md:pt-28">{children}</main>
-            <Footer />
+          {/* Keep the wrapper at least viewport-high but let it grow with the
+              page: a fixed height would clamp `position: sticky` to one
+              viewport and the header would stop sticking on long pages. */}
+          <div className={cn(`min-h-full`, figtree.className)}>
+            {/* Sticky uses `position: sticky`, so the header stays in normal
+                flow and `main` never needs a reserved offset. The switch only
+                adds positioning; the surface comes from the region blocks. */}
+            <header className={getHeaderClassName(headerPuckData)}>
+              <PuckRender
+                config={renderConfigForRegion("HEADER")}
+                initialData={headerPuckData}
+              />
+            </header>
+            <main>{children}</main>
+            <footer>
+              <PuckRender
+                config={renderConfigForRegion("FOOTER")}
+                initialData={footerPuckData}
+              />
+            </footer>
           </div>
         </QueryProvider>
         {process.env.NODE_ENV === "production" && (

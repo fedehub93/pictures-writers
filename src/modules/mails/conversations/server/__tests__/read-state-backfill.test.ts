@@ -91,6 +91,10 @@ function backfillStatements() {
 
 async function runBackfill() {
   for (const statement of backfillStatements()) {
+    // Trusted exception: the SQL is read from a migration committed in this
+    // repo, not from request input, and cannot be expressed as a single
+    // parameterized query.
+    // eslint-disable-next-line no-restricted-syntax
     await db.$executeRawUnsafe(statement);
   }
 }

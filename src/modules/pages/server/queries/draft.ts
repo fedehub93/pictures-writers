@@ -4,6 +4,8 @@ import { ContentStatus } from "@/generated/prisma";
 
 import { hydratePuckForms } from "@/puck/utils/hydrate-puck-forms";
 
+import { resolveSmartLinksInPuckData } from "@/modules/site-regions/server/resolve-link";
+
 const DRAFT_STATUSES = [ContentStatus.DRAFT, ContentStatus.CHANGED];
 
 export const getPublishedDraftPagesBuilding = async () => {
@@ -56,13 +58,20 @@ export const getDraftPageBySlug = async (slug: string) => {
 
   const version = root.currentVersion;
 
+  const hydratedPuckData = version.puckData
+    ? await hydratePuckForms(version.puckData)
+    : null;
+
   const hydratedPage = {
     id: version.id,
     rootId: root.id,
     title: version.title,
     slug: root.slug,
-    puckData: version.puckData
-      ? await hydratePuckForms(version.puckData)
+    // The preview predicts publication: forms are hydrated and Smart links are
+    // resolved against their live targets, exactly as the published read does.
+    // The stored draft document keeps the raw Smart links.
+    puckData: hydratedPuckData
+      ? await resolveSmartLinksInPuckData(hydratedPuckData)
       : null,
     publishedAt: version.publishedAt,
     firstPublishedAt: root.firstPublishedAt,

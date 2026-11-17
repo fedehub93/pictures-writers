@@ -189,7 +189,7 @@ export const FlexProps = ({
           <div className="flex flex-col gap-y-1">
             <PropHeader
               name="justifyContent"
-              label="Justify Content"
+              label="Justify content"
               isModified={values.justifyContent !== undefined}
               onReset={() => resetProp("justifyContent")}
             />
@@ -203,7 +203,7 @@ export const FlexProps = ({
           <div className="flex flex-col gap-y-1">
             <PropHeader
               name="alignItems"
-              label="Align Items"
+              label="Align items"
               isModified={values.alignItems !== undefined}
               onReset={() => resetProp("alignItems")}
             />
@@ -222,7 +222,7 @@ export const FlexProps = ({
           <div className="flex flex-col gap-y-1">
             <PropHeader
               name="columnGap"
-              label="Column Gap"
+              label="Column gap"
               isModified={values.columnGap !== undefined}
               onReset={() => resetProp("columnGap")}
             />
@@ -236,7 +236,7 @@ export const FlexProps = ({
           <div className="flex flex-col gap-y-1">
             <PropHeader
               name="rowGap"
-              label="Row Gap"
+              label="Row gap"
               isModified={values.rowGap !== undefined}
               onReset={() => resetProp("rowGap")}
             />

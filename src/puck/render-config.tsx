@@ -1,173 +1,235 @@
-import { Color, TextStyle } from "@tiptap/extension-text-style";
 import {
   type Config,
   type Data,
+  type PuckComponent,
   Render,
   type RootConfig,
 } from "@puckeditor/core";
 import "@puckeditor/core/puck.css";
 
+import { richTextDescriptors } from "./fields/rich-text/presets";
+
+import { mergePropsWithDefaults } from "./lib/merge-props";
 import {
-  getDecorationVars,
-  getDimensionVars,
-  getTypographyVars,
-} from "./utils/get-style-vars";
-import { getLayoutVars } from "./fields/layout/get-layout-vars";
+  BRAND_DEFAULT_PROPS,
+  BUTTON_DEFAULT_PROPS,
+  CONTAINER_DEFAULT_PROPS,
+  COPYRIGHT_DEFAULT_PROPS,
+  FORM_DEFAULT_PROPS,
+  HEADING_DEFAULT_PROPS,
+  LINK_LIST_DEFAULT_PROPS,
+  NAVBAR_BLOCK_DEFAULT_PROPS,
+  SEARCH_BAR_DEFAULT_PROPS,
+  SEPARATOR_DEFAULT_PROPS,
+  TEXT_DEFAULT_PROPS,
+  TOP_BAR_DEFAULT_PROPS,
+} from "./blocks/defaults";
 
-import { type RootProps } from "./root";
+import type { RootProps } from "./root/types";
+import { renderRoot } from "./root/render";
 
-import { RootBlockUi } from "./root/ui/root";
+import { renderContainerBlock } from "./blocks/Container/render";
+import { renderImageBlock } from "./blocks/Image/render";
+import { renderFormBlock } from "./blocks/Form/render";
+import { renderSeparatorBlock } from "./blocks/Separator/render";
+import { renderIconBlock } from "./blocks/Icon/render";
+import { renderHeadingBlock } from "./blocks/Heading/render";
+import { renderTextBlock } from "./blocks/Text/render";
+import { renderButtonBlock } from "./blocks/Button/render";
 
-import { HeadingBlockUi } from "./blocks/Heading/ui/heading";
+import { BrandServer } from "./blocks/Brand/server";
+import type { BrandBlockProps } from "./blocks/Brand/types";
+import { renderLinkListBlock } from "./blocks/LinkList/render";
+import { CopyrightServer } from "./blocks/Copyright/server";
+import type { CopyrightBlockProps } from "./blocks/Copyright/types";
+import { renderTopBarBlock } from "./blocks/TopBar/render";
+import { renderSearchBarBlock } from "./blocks/SearchBar/render";
+import { NavbarBlockServer } from "./blocks/NavbarBlock/server";
+import type { NavbarBlockProps } from "./blocks/NavbarBlock/types";
 
-import { ContainerBlockUi } from "./blocks/Container/ui/container-block-ui";
-import { FlexBlockUi } from "./blocks/Flex/ui/flex-block-ui";
-import { GridBlockUi } from "./blocks/Grid/ui/grid";
-import { ImageBlockUi } from "./blocks/Image/ui/image";
-import { FormBlockUi } from "./blocks/Form/ui/form";
-import { SeparatorBlockUi } from "./blocks/Separator/ui/separator";
-import { IconBlockUi } from "./blocks/Icon/ui/icon";
-import { LinkBlockUi } from "./blocks/Link/ui/link";
+/**
+ * Apply a block's default props to the public render.
+ *
+ * Puck merges defaultProps in the editor canvas only; the public `<Render>`
+ * receives the saved props as-is. This wrapper restores parity so a block
+ * dropped from the palette looks the same in both environments. The defaults
+ * are passed as the object rather than looked up by name, so a block cannot
+ * silently lose them to a typo.
+ */
+const withPublicDefaults = <P extends object>(
+  defaults: object,
+  render: PuckComponent<P>,
+): PuckComponent<P> =>
+  function PublicRenderWithDefaults(props) {
+    return render(mergePropsWithDefaults(defaults, props));
+  };
 
-const RootRender: RootConfig<RootProps> = {
-  fields: {
-    title: { type: "text" },
+/**
+ * Public render root. It declares no fields: the render path only needs the
+ * render function, while the editor root fields live in `RootEditor`.
+ */
+export const rootRenderConfig: RootConfig<RootProps> = {
+  render: renderRoot,
+};
+
+/**
+ * Names of the blocks with a public render function.
+ *
+ * Kept as a tuple so region palettes are checked against it at compile time.
+ * Page blocks live in `renderComponentConfigs`; footer-only blocks live in
+ * `regionOnlyRenderComponentConfigs` and are merged by
+ * `regionComponentConfigs`.
+ */
+export const RENDER_COMPONENT_NAMES = [
+  "Container",
+  "Image",
+  "Form",
+  "Separator",
+  "Icon",
+  "Heading",
+  "Text",
+  "Button",
+  "Brand",
+  "LinkList",
+  "Copyright",
+  "TopBar",
+  "SearchBar",
+  "NavbarBlock",
+] as const;
+
+export type RenderComponentName = (typeof RENDER_COMPONENT_NAMES)[number];
+
+/**
+ * Render functions for the blocks shared by pages and Site regions.
+ *
+ * Every entry consumes the block's single pure render implementation. Only the
+ * field descriptors Puck needs at render time (slots and rich text) are
+ * declared here, so the public render path never imports editor field modules.
+ * A region picks the subset it allows from this map (see
+ * `region/render-config.ts`), so adding a block here never makes it available
+ * in every palette by accident.
+ */
+export const renderComponentConfigs: Config<any, RootProps>["components"] = {
+  Container: {
+    fields: {
+      items: {
+        type: "slot",
+      },
+    },
+    render: withPublicDefaults(CONTAINER_DEFAULT_PROPS, renderContainerBlock),
   },
-  render: ({ children, dimension }) => {
-    const styleVars = {
-      ...getDimensionVars(dimension),
-    };
-
-    return <RootBlockUi styleVars={styleVars}>{children}</RootBlockUi>;
+  Image: {
+    // No default props: the Image block has none (ADR-0039, revision).
+    render: renderImageBlock,
+  },
+  Form: {
+    render: withPublicDefaults(FORM_DEFAULT_PROPS, renderFormBlock),
+  },
+  Separator: {
+    render: withPublicDefaults(SEPARATOR_DEFAULT_PROPS, renderSeparatorBlock),
+  },
+  Icon: {
+    // No default props: the Icon block has none.
+    render: renderIconBlock,
+  },
+  Heading: {
+    // Rich text is resolved at render time from the field descriptor, so the
+    // public config shares the editor field's schema without pulling in the
+    // editor menu module.
+    fields: {
+      text: richTextDescriptors.heading,
+    },
+    render: withPublicDefaults(HEADING_DEFAULT_PROPS, renderHeadingBlock),
+  },
+  Text: {
+    // Same reason as Heading: the public render resolves the stored HTML with
+    // the descriptor's schema, so the editor and the page cannot diverge.
+    fields: {
+      text: richTextDescriptors.text,
+    },
+    render: withPublicDefaults(TEXT_DEFAULT_PROPS, renderTextBlock),
+  },
+  Button: {
+    render: withPublicDefaults(BUTTON_DEFAULT_PROPS, renderButtonBlock),
   },
 };
 
-const config: Config<any, RootProps> = {
-  components: {
-    Container: {
+/**
+ * Render functions for blocks that only exist in a Site region palette.
+ *
+ * Brand, Copyright and NavbarBlock read Installation settings or resolve CMS
+ * links on the server, so their public entries go through a thin adapter
+ * around the server renderer. The editor canvas keeps using the shared pure
+ * render from each block, which stays database-free.
+ */
+const BrandRender: PuckComponent<BrandBlockProps> = (props) => (
+  <BrandServer {...props} />
+);
+
+const CopyrightRender: PuckComponent<CopyrightBlockProps> = (props) => (
+  <CopyrightServer {...props} />
+);
+
+const NavbarBlockRender: PuckComponent<NavbarBlockProps> = (props) => (
+  <NavbarBlockServer {...props} />
+);
+
+const regionOnlyRenderComponentConfigs: Config<any, RootProps>["components"] =
+  {
+    Brand: {
+      render: withPublicDefaults(BRAND_DEFAULT_PROPS, BrandRender),
+    },
+    LinkList: {
+      render: withPublicDefaults(LINK_LIST_DEFAULT_PROPS, renderLinkListBlock),
+    },
+    Copyright: {
+      render: withPublicDefaults(COPYRIGHT_DEFAULT_PROPS, CopyrightRender),
+    },
+    TopBar: {
+      // The slot field is declared so the public render resolves the nested
+      // content exactly like the editor canvas.
       fields: {
-        items: {
+        content: {
           type: "slot",
         },
       },
-      render: ({ layout, dimension, typography, decoration, items: Items }) => {
-        const styleVars = {
-          ...getLayoutVars(layout),
-          ...getDimensionVars(dimension),
-          ...getTypographyVars(typography),
-          ...getDecorationVars(decoration),
-        };
-        return <ContainerBlockUi Items={Items} styleVars={styleVars} />;
-      },
+      render: withPublicDefaults(TOP_BAR_DEFAULT_PROPS, renderTopBarBlock),
     },
-    Flex: {
-      fields: {
-        items: {
-          type: "slot",
-        },
-      },
-      render: ({ layout, dimension, typography, decoration, items: Items }) => {
-        const styleVars = {
-          ...getLayoutVars(layout),
-          ...getDimensionVars(dimension),
-          ...getTypographyVars(typography),
-          ...getDecorationVars(decoration),
-        };
-        return <FlexBlockUi Items={Items} styleVars={styleVars} />;
-      },
+    SearchBar: {
+      render: withPublicDefaults(SEARCH_BAR_DEFAULT_PROPS, renderSearchBarBlock),
     },
-    Grid: {
-      fields: {
-        items: {
-          type: "slot",
-        },
-      },
-      render: ({ layout, dimension, typography, decoration, items: Items }) => {
-        const styleVars = {
-          ...getLayoutVars(layout),
-          ...getDimensionVars(dimension),
-          ...getTypographyVars(typography),
-          ...getDecorationVars(decoration),
-        };
-        return <GridBlockUi Items={Items} styleVars={styleVars} />;
-      },
+    NavbarBlock: {
+      render: withPublicDefaults(NAVBAR_BLOCK_DEFAULT_PROPS, NavbarBlockRender),
     },
-    Image: {
-      render: ({ image, dimension, decoration }) => {
-        const styleVars = {
-          ...getDimensionVars(dimension),
-          ...getDecorationVars(decoration),
-        };
+  };
 
-        return <ImageBlockUi image={image} styleVars={styleVars} />;
-      },
-    },
-    Form: {
-      render: ({ form, dimension }) => {
-        const styleVars = {
-          ...getDimensionVars(dimension),
-        };
-        return <FormBlockUi form={form} styleVars={styleVars} />;
-      },
-    },
-    Separator: {
-      render: ({ dimension }) => {
-        const styleVars = {
-          ...getDimensionVars(dimension),
-        };
+/**
+ * Full render map used by Site regions: the shared blocks plus the
+ * region-only ones.
+ */
+export const regionComponentConfigs: Config<any, RootProps>["components"] = {
+  ...renderComponentConfigs,
+  ...regionOnlyRenderComponentConfigs,
+};
 
-        return <SeparatorBlockUi styleVars={styleVars} />;
-      },
-    },
-    Icon: {
-      render: ({ icon, dimension, typography }) => {
-        const styleVars = {
-          ...getDimensionVars(dimension),
-          ...getTypographyVars(typography),
-        };
-
-        return <IconBlockUi icon={icon} styleVars={styleVars} />;
-      },
-    },
-    Heading: {
-      fields: {
-        text: {
-          type: "richtext",
-          tiptap: {
-            extensions: [TextStyle, Color],
-          },
-        },
-      },
-
-      render: ({ text, dimension, typography }) => {
-        const styleVars = {
-          ...getDimensionVars(dimension),
-          ...getTypographyVars(typography),
-        };
-
-        return <HeadingBlockUi text={text} styleVars={styleVars} />;
-      },
-    },
-    Link: {
-      render: ({ link, dimension, typography, decoration }) => {
-        const styleVars = {
-          ...getDimensionVars(dimension),
-          ...getTypographyVars(typography),
-          ...getDecorationVars(decoration),
-        };
-
-        return <LinkBlockUi link={link} styleVars={styleVars} />;
-      },
-    },
-  },
-  root: RootRender,
+export const pageRenderConfig: Config<any, RootProps> = {
+  components: renderComponentConfigs,
+  root: rootRenderConfig,
 };
 
 export type PuckEditorProps = {
   initialData: Data;
+  /**
+   * Render palette to use. Defaults to the page palette so existing callers
+   * keep rendering pages unchanged.
+   */
+  config?: Config<any, RootProps>;
 };
 
 // Render Puck editor
-export function PuckRender({ initialData }: PuckEditorProps) {
+export function PuckRender({
+  initialData,
+  config = pageRenderConfig,
+}: PuckEditorProps) {
   return <Render config={config} data={initialData} />;
 }

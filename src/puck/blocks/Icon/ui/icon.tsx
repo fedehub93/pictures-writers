@@ -1,25 +1,42 @@
 import { Icon } from "@/shared/ui/icon-picker";
+import { cn } from "@/shared/lib/utils";
 
-import { IconProps } from "@/puck/fields/icon";
+import type { IconProps } from "@/puck/fields/icon";
+import type { BlockDragRef } from "@/puck/types";
 
 export const IconBlockUi = ({
   icon,
   styleVars,
+  layoutClassName,
+  dragRef,
 }: {
   icon?: IconProps;
   styleVars: Record<string, string>;
+  layoutClassName?: string;
+  /** Editor-only: Puck's selection ref, attached to the block root. */
+  dragRef?: BlockDragRef;
 }) => {
+  const className = cn("puck-dim puck-typo puck-block-root", layoutClassName);
+
+  // The icon *is* the block: the ref goes on the rendered `<svg>`, which is the
+  // box the parent lays out, not on a wrapper around it.
   if (!icon?.name) {
     return (
       <Icon
+        ref={dragRef}
         name="circle-question-mark"
-        className="puck-dim puck-typo"
+        className={className}
         style={styleVars}
       />
     );
   }
 
   return (
-    <Icon name={icon.name} className="puck-dim puck-typo" style={styleVars} />
+    <Icon
+      ref={dragRef}
+      name={icon.name}
+      className={className}
+      style={styleVars}
+    />
   );
 };

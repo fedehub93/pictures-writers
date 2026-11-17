@@ -1,36 +1,28 @@
-import { ComponentConfig } from "@puckeditor/core";
+import { type ComponentConfig } from "@puckeditor/core";
 
-import { Responsive } from "@/puck/utils/responsive";
+import { SizeField } from "@/puck/fields/size";
+import { SpacingField } from "@/puck/fields/spacing";
+import { DisplayOnlyLayoutField } from "@/puck/fields/layout";
+import { FormField } from "@/puck/fields/form";
 
-import { DimensionField, DimensionProps } from "@/puck/fields/dimension";
+import { FORM_DEFAULT_PROPS } from "../defaults";
 
-import { getDimensionVars } from "@/puck/utils/get-style-vars";
-import { FormField, type HydratedFormProps } from "@/puck/fields/form";
+import type { FormBlockProps } from "./types";
+import { renderFormBlock } from "./render";
 
-import { FormBlockUi } from "./ui/form";
-
-export type FormBlockProps = {
-  form?: HydratedFormProps;
-  dimension?: Responsive<DimensionProps>;
-};
+export type { FormBlockProps };
 
 export const FormBlock: ComponentConfig<FormBlockProps> = {
+  // The wrapper that carries the authored box is the block root; the
+  // render attaches `puck.dragRef` to it and `inline` is Puck's only supported
+  // way to skip its wrapper `div`.
+  inline: true,
   fields: {
     form: FormField,
-    dimension: DimensionField,
+    layout: DisplayOnlyLayoutField,
+    size: SizeField,
+    spacing: SpacingField,
   },
-  defaultProps: {
-    form: {
-      id: "",
-      content: null,
-      gtmEventName: "",
-    },
-  },
-  render: ({ form, dimension }) => {
-    const styleVars = {
-      ...getDimensionVars(dimension),
-    };
-
-    return <FormBlockUi form={form} styleVars={styleVars} />;
-  },
+  defaultProps: FORM_DEFAULT_PROPS,
+  render: renderFormBlock,
 };

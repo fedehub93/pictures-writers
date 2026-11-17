@@ -1,0 +1,78 @@
+[
+  { "action": "wait", "ms": 2000 },
+  {
+    "action": "evaluate",
+    "expression": "(() => { const f = document.getElementById('preview-frame').contentDocument; return { armed: Array.from(f.querySelectorAll('[data-text-editing]')).map((el) => el.textContent.trim()), toolbar: !!f.querySelector('button[title=\"Bold\"]'), activeTag: f.activeElement ? f.activeElement.tagName : null }; })()"
+  },
+  { "action": "doubleClick", "target": "h2", "text": "Probe heading" },
+  {
+    "action": "evaluate",
+    "expression": "(() => { const f = document.getElementById('preview-frame').contentDocument; return { armed: Array.from(f.querySelectorAll('[data-text-editing]')).map((el) => el.textContent.trim()), toolbar: !!f.querySelector('button[title=\"Bold\"]'), activeTag: f.activeElement ? f.activeElement.tagName : null }; })()"
+  },
+  { "action": "press", "key": "Escape" },
+  {
+    "action": "evaluate",
+    "expression": "(() => { const f = document.getElementById('preview-frame').contentDocument; const sel = f.getSelection(); return { armed: Array.from(f.querySelectorAll('[data-text-editing]')).map((el) => el.textContent.trim()), toolbar: !!f.querySelector('button[title=\"Bold\"]'), activeTag: f.activeElement ? f.activeElement.tagName : null, selectionRangeCount: sel ? sel.rangeCount : null, selectionCollapsed: sel ? sel.isCollapsed : null }; })()"
+  },
+  {
+    "action": "evaluate",
+    "expression": "(() => ({ current: document.querySelector('[aria-current=\"true\"]')?.textContent?.trim() ?? null, pageSettings: Array.from(document.querySelectorAll('h2')).some((el) => el.textContent.trim() === 'Page settings') }))()"
+  },
+  { "action": "press", "key": "Escape" },
+  {
+    "action": "evaluate",
+    "expression": "(() => ({ current: document.querySelector('[aria-current=\"true\"]')?.textContent?.trim() ?? null, pageSettings: Array.from(document.querySelectorAll('h2')).some((el) => el.textContent.trim() === 'Page settings') }))()"
+  },
+  { "action": "click", "target": "h2", "text": "Probe heading" },
+  {
+    "action": "evaluate",
+    "expression": "(() => ({ current: document.querySelector('[aria-current=\"true\"]')?.textContent?.trim() ?? null, pageSettings: Array.from(document.querySelectorAll('h2')).some((el) => el.textContent.trim() === 'Page settings') }))()"
+  },
+  { "action": "press", "key": "Enter" },
+  {
+    "action": "evaluate",
+    "expression": "(() => { const f = document.getElementById('preview-frame').contentDocument; const sel = f.getSelection(); return { armed: Array.from(f.querySelectorAll('[data-text-editing]')).map((el) => el.textContent.trim()), toolbar: !!f.querySelector('button[title=\"Bold\"]'), activeTag: f.activeElement ? f.activeElement.tagName : null, contenteditable: f.activeElement ? f.activeElement.getAttribute('contenteditable') : null, selectionCollapsed: sel ? sel.isCollapsed : null, selectionInsideEditor: !!(sel && f.activeElement && f.activeElement.contains(sel.anchorNode)) }; })()"
+  },
+  { "action": "press", "key": "Escape" },
+  {
+    "action": "evaluate",
+    "expression": "(() => ({ current: document.querySelector('[aria-current=\"true\"]')?.textContent?.trim() ?? null }))()"
+  },
+  { "action": "doubleClick", "target": "h2", "text": "Probe heading" },
+  {
+    "action": "evaluate",
+    "expression": "(() => { const f = document.getElementById('preview-frame').contentDocument; return { armed: Array.from(f.querySelectorAll('[data-text-editing]')).map((el) => el.textContent.trim()), toolbar: !!f.querySelector('button[title=\"Bold\"]') }; })()"
+  },
+  { "action": "click", "target": "p", "text": "Probe paragraph" },
+  {
+    "action": "evaluate",
+    "expression": "(() => { const f = document.getElementById('preview-frame').contentDocument; return { armed: Array.from(f.querySelectorAll('[data-text-editing]')).map((el) => el.textContent.trim()), toolbar: !!f.querySelector('button[title=\"Bold\"]'), current: document.querySelector('[aria-current=\"true\"]')?.textContent?.trim() ?? null }; })()"
+  },
+  { "action": "press", "key": "Escape" },
+  { "action": "doubleClick", "target": "h2", "text": "Probe heading" },
+  {
+    "action": "evaluate",
+    "expression": "(() => { const f = document.getElementById('preview-frame').contentDocument; return { armed: Array.from(f.querySelectorAll('[data-text-editing]')).map((el) => el.textContent.trim()), toolbar: !!f.querySelector('button[title=\"Bold\"]') }; })()"
+  },
+  {
+    "action": "evaluate",
+    "expression": "(() => { const button = Array.from(document.querySelectorAll('button')).find((el) => !el.closest('#preview-frame') && !el.disabled); button.focus(); return { focused: document.activeElement ? document.activeElement.tagName : null, text: button.textContent.trim().slice(0, 20) }; })()"
+  },
+  { "action": "press", "key": "Escape" },
+  {
+    "action": "evaluate",
+    "expression": "(() => { const f = document.getElementById('preview-frame').contentDocument; return { armed: Array.from(f.querySelectorAll('[data-text-editing]')).map((el) => el.textContent.trim()), toolbar: !!f.querySelector('button[title=\"Bold\"]'), current: document.querySelector('[aria-current=\"true\"]')?.textContent?.trim() ?? null }; })()"
+  },
+  { "action": "press", "key": "Escape" },
+  { "action": "click", "target": "h2", "text": "Probe heading" },
+  { "action": "press", "key": "Enter" },
+  {
+    "action": "evaluate",
+    "expression": "(() => { const f = document.getElementById('preview-frame').contentDocument; return { armed: Array.from(f.querySelectorAll('[data-text-editing]')).map((el) => el.textContent.trim()), toolbar: !!f.querySelector('button[title=\"Bold\"]') }; })()"
+  },
+  { "action": "drag", "x": 10, "y": 300, "dx": 0, "dy": 1 },
+  {
+    "action": "evaluate",
+    "expression": "(() => { const f = document.getElementById('preview-frame').contentDocument; return { armed: Array.from(f.querySelectorAll('[data-text-editing]')).map((el) => el.textContent.trim()), toolbar: !!f.querySelector('button[title=\"Bold\"]'), current: document.querySelector('[aria-current=\"true\"]')?.textContent?.trim() ?? null }; })()"
+  }
+]

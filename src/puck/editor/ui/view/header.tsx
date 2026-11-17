@@ -6,6 +6,7 @@ import {
   ZoomOutIcon,
   ZoomInIcon,
   ChevronDownIcon,
+  PanelTopIcon,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
@@ -19,24 +20,44 @@ import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Skeleton } from "@/shared/ui/skeleton";
 
+import type { SiteLayoutPreview } from "@/modules/site-regions/lib/site-layout-preview";
+
 import { useEditorStore } from "../../store/use-editor-store";
 import { HeaderActions } from "../components/header-actions";
+import { PreviewToggle } from "../components/preview-toggle";
+import { SiteLayoutStatusChips } from "../components/site-layout-status-chips";
+import type { EditorHeaderProps } from "./editor";
 
 const usePuck = createUsePuck<Config>();
 
-export const BuilderHeader = () => {
+export const BuilderHeader = ({
+  header,
+  siteLayout,
+}: {
+  header?: EditorHeaderProps;
+  siteLayout?: SiteLayoutPreview;
+}) => {
   const trpc = useTRPC();
-  const { rootId } = useParams<{ rootId: string }>();
+  const { rootId } = useParams<{ rootId?: string }>();
   const { viewports } = usePuck((s) => s.appState.ui);
   const history = usePuck((s) => s.history);
   const dispatch = usePuck((s) => s.dispatch);
 
-  const { scale, setScale, isAutoZoom, setIsAutoZoom } = useEditorStore();
+  const {
+    scale,
+    setScale,
+    isAutoZoom,
+    setIsAutoZoom,
+    showSiteLayout,
+    setShowSiteLayout,
+  } = useEditorStore();
 
+  // A caller that supplies its own header (the Site region editor) is not
+  // editing a Page, so skip the page query entirely.
   const { data: page } = useQuery({
     ...trpc.pages.getLastByRootId.queryOptions(
-      { rootId: rootId },
-      { enabled: !!rootId },
+      { rootId: rootId ?? "" },
+      { enabled: !!rootId && !header },
     ),
   });
 
@@ -96,8 +117,13 @@ export const BuilderHeader = () => {
           <div className="h-4 w-px bg-border hidden md:block" /> */}
 
           <h1 className="text-sm font-medium text-foreground hidden md:block">
-            {page?.title}
+            {header?.title ?? page?.title}
           </h1>
+
+          <SiteLayoutStatusChips
+            showSiteLayout={showSiteLayout}
+            siteLayout={siteLayout}
+          />
         </div>
 
         <div className="absolute left-1/2 -translate-x-1/2 flex items-center">
@@ -136,6 +162,30 @@ export const BuilderHeader = () => {
           </div>
 
           <div className="w-px h-4 bg-border mx-2" />
+
+          {/* Site layout preview: page editor only, region editors keep their
+              own header and canvas without the regions. */}
+          {!header && (
+            <>
+              <Button
+                type="button"
+                variant={showSiteLayout ? "secondary" : "ghost"}
+                size="icon"
+                aria-pressed={showSiteLayout}
+                title={
+                  showSiteLayout
+                    ? "Hide the site header and footer"
+                    : "Show the site header and footer"
+                }
+                onClick={() => setShowSiteLayout(!showSiteLayout)}
+                className="size-8 rounded-md text-slate-700 hover:bg-muted"
+              >
+                <PanelTopIcon className="size-4" />
+              </Button>
+
+              <div className="w-px h-4 bg-border mx-2" />
+            </>
+          )}
 
           {/* Zoom */}
           <div className="flex items-center gap-1">
@@ -194,8 +244,18 @@ export const BuilderHeader = () => {
 
           <div className="h-4 w-px bg-border mx-1" />
 
-          {!page && <Skeleton className="h-8 min-w-10 lg:min-w-60" />}
-          {page && (
+          {header?.showPreview && (
+            <>
+              <PreviewToggle />
+              <div className="h-4 w-px bg-border mx-1" />
+            </>
+          )}
+
+          {header?.actions}
+          {!header && !page && (
+            <Skeleton className="h-8 min-w-10 lg:min-w-60" />
+          )}
+          {!header && page && (
             <HeaderActions
               page={{
                 id: page.id,

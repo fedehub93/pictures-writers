@@ -18,3 +18,12 @@ This eliminates full builds for content changes, propagates edits instantly, and
 
 - On self-hosted `next start`, the ISR cache is in-memory, per-instance, lost on restart, and not shared across replicas. Accepted for a single-instance deployment; revisit when scaling to multiple replicas.
 - Freshness now depends on the revalidation calls firing correctly; the 24h ISR backstop is the safety net, not the source of freshness.
+
+## Update: Site regions (2026-11)
+
+The trigger for the deferred tag-based layer has arrived: the public layout reads
+the published Header and Footer Site regions on every page. Those reads are
+wrapped in `unstable_cache` under the `site-regions` tag with a short TTL.
+Publish and unpublish revalidate both `/` with the `layout` scope and that tag,
+so the read cache cannot serve a superseded region. The route-level policy above
+is unchanged for every other content type.

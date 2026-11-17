@@ -1,0 +1,128 @@
+import { getLinkHref } from "@/puck/fields/link/types";
+
+import type {
+  NavItem,
+  NavItemType,
+  NavbarColumnChild,
+  NavbarColumnChildUi,
+  NavbarMenuLink,
+} from "../types";
+
+/**
+ * Prefer the label the editor set on the item, then the link label the
+ * resolver filled in (for example from the target entity title).
+ */
+export function getNavLabel(
+  label: string | undefined,
+  link?: NavbarMenuLink,
+): string {
+  return label?.trim() || link?.label?.trim() || "";
+}
+
+export function createNavItem(type: NavItemType): NavItem {
+  switch (type) {
+    case "link":
+      return {
+        type: "link",
+        label: "Link",
+        link: { type: "external", url: "" },
+      };
+    case "column":
+      return { type: "column", label: "Column", items: [] };
+    case "card":
+      return {
+        type: "card",
+        label: "Card",
+        link: { type: "external", url: "" },
+      };
+    case "cta":
+      return {
+        type: "cta",
+        label: "Action",
+        link: { type: "external", url: "" },
+        variant: "primary",
+      };
+  }
+}
+
+export function createColumnChild(): NavbarColumnChild {
+  return { label: "", link: { type: "external", url: "" } };
+}
+
+/**
+ * Whether a column child carries the copy a mega panel card is made of.
+ *
+ * A column composed only of plain links keeps its legacy list rendering, so
+ * documents authored before `description` and `icon` existed do not change.
+ */
+export function hasMegaPanelContent(
+  child: Pick<NavbarColumnChildUi, "description" | "icon">,
+): boolean {
+  return Boolean(child.description?.trim() || child.icon?.name);
+}
+
+export function moveNavItem<T>(
+  items: T[],
+  index: number,
+  direction: -1 | 1,
+): T[] {
+  const target = index + direction;
+  if (target < 0 || target >= items.length) return items;
+
+  const next = [...items];
+  const current = next[index];
+  const swap = next[target];
+  if (!current || !swap) return items;
+
+  next[index] = swap;
+  next[target] = current;
+  return next;
+}
+
+/**
+ * Whether a resolved href points at the current page or one of its children.
+ *
+ * `trailingSlash` is enabled on the public site, but `usePathname` and stored
+ * hrefs can disagree on the trailing slash, so both sides are normalized.
+ * External links, query-only paths and missing hrefs are never active.
+ */
+export function isNavLinkActive(
+  pathname: string | null | undefined,
+  href: string | undefined,
+): boolean {
+  if (!pathname || !href) return false;
+  if (!href.startsWith("/")) return false;
+
+  const [path] = href.split(/[?#]/);
+  const [currentPath] = pathname.split(/[?#]/);
+  if (!path || !currentPath) return false;
+
+  if (path === "/") return currentPath === "/";
+
+  const normalizedHref = path.endsWith("/") ? path.slice(0, -1) : path;
+  const normalizedPathname =
+    currentPath.endsWith("/") && currentPath !== "/"
+      ? currentPath.slice(0, -1)
+      : currentPath;
+
+  return (
+    normalizedPathname === normalizedHref ||
+    normalizedPathname.startsWith(`${normalizedHref}/`)
+  );
+}
+
+/**
+ * Whether any child of a navigation column points at the current page.
+ *
+ * The parent trigger has no href of its own, so it is marked active through
+ * its children, matching how the retired hardcoded navbar highlighted a
+ * section while visiting one of its pages.
+ */
+export function hasActiveNavChild(
+  pathname: string | null | undefined,
+  children: NavbarColumnChildUi[] | undefined,
+): boolean {
+  return (children ?? []).some((child) =>
+    isNavLinkActive(pathname, getLinkHref(child.link)),
+  );
+}

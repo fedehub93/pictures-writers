@@ -90,7 +90,7 @@ export const RootPropertiesComponent = ({
             name="submission.onSuccess.type"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Cosa succede dopo l'invio?</FormLabel>
+                <FormLabel>Cosa succede dopo l&apos;invio?</FormLabel>
                 <Select
                   value={field.value}
                   onValueChange={(val) =>
@@ -107,7 +107,7 @@ export const RootPropertiesComponent = ({
                       Mostra un Messaggio (Toast)
                     </SelectItem>
                     <SelectItem value="redirect">
-                      Reindirizza a un'altra pagina
+                      Reindirizza a un&apos;altra pagina
                     </SelectItem>
                   </SelectContent>
                 </Select>

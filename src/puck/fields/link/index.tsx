@@ -1,41 +1,49 @@
+import type { Field } from "@puckeditor/core";
 import { LinkIcon } from "lucide-react";
 
 import { withAccordionField } from "@/puck/utils/with-accordion-field";
 
 import { LinkView } from "./ui/view/link-view";
+import { normalizeLinkProps } from "./types";
+import type { LegacyLinkProps, LinkProps } from "./types";
 
-export interface LinkProps {
-  label?: string;
-  href?: string;
-}
+export type {
+  LegacyLinkProps,
+  LinkListItem,
+  LinkProps,
+  SmartLink,
+  SmartLinkType,
+} from "./types";
 
-export const LinkField = withAccordionField(
-  "Link",
-  <LinkIcon className="size-4 text-muted-foreground" />,
-  ({
-    onChange,
-    value,
-  }: {
-    onChange: (value: LinkProps) => void;
-    value: LinkProps;
-  }) => {
-    const state = value ?? {};
+export const createLinkField = ({
+  showLabel = true,
+}: {
+  showLabel?: boolean;
+} = {}): Field =>
+  withAccordionField(
+    "Link",
+    <LinkIcon className="size-4 text-muted-foreground" />,
+    ({
+      onChange,
+      value,
+    }: {
+      onChange: (value: LinkProps) => void;
+      value: LinkProps | LegacyLinkProps | null | undefined;
+    }) => {
+      const state = normalizeLinkProps(value) ?? {
+        type: "external",
+        url: "",
+      };
 
-    const update = (updates: LinkProps) => {
-      onChange({
-        ...state,
-        ...updates,
-      });
-    };
+      return (
+        <LinkView state={state} onUpdate={onChange} showLabel={showLabel} />
+      );
+    },
+    true,
+  );
 
-    const resetProp = (key: keyof LinkProps) => {
-      const newState = { ...state };
-      delete newState[key];
-
-      onChange(newState);
-    };
-
-    return <LinkView state={state} onUpdate={update} resetProp={resetProp} />;
-  },
-  true,
-);
+/**
+ * Default single-link editor: target + visible label. Blocks that render their
+ * own copy use `createLinkField({ showLabel: false })`.
+ */
+export const LinkField: Field = createLinkField();

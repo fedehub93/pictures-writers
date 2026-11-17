@@ -1,8 +1,9 @@
+import { PanelSelectTrigger } from "@/puck/components/panel-control";
+
 import {
   Select,
   SelectContent,
   SelectItem,
-  SelectTrigger,
   SelectValue,
 } from "@/shared/ui/select";
 
@@ -48,9 +49,9 @@ export const SelectField = <T,>({
           } as Partial<T>)
         }
       >
-        <SelectTrigger id={name} className="w-full h-8 border-input text-xs">
+        <PanelSelectTrigger id={name} className="w-full">
           <SelectValue placeholder={placeholder} />
-        </SelectTrigger>
+        </PanelSelectTrigger>
         <SelectContent>
           {options.map((v) => (
             <SelectItem key={v} value={v}>

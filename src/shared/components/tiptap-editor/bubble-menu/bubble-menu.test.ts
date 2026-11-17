@@ -1,16 +1,31 @@
 // @vitest-environment happy-dom
-import { describe, it, expect } from "vitest";
+import { afterEach, describe, it, expect } from "vitest";
 import { Editor, type JSONContent } from "@tiptap/core";
 import { NodeSelection } from "@tiptap/pm/state";
 
 import { createProductionExtensions } from "../lib/create-editor-extensions";
 import { shouldShowBubbleMenu } from "./bubble-menu-utils";
 
-const createEditor = (content: JSONContent) =>
-  new Editor({
+// Every editor owns a ProseMirror EditorView, whose DOMObserver polls on a
+// timer. Left alive past the file, the poll fires after the environment is torn
+// down and Vitest fails the run with `ReferenceError: document is not defined`,
+// so each editor created here is destroyed in afterEach.
+const editors: Editor[] = [];
+
+const createEditor = (content: JSONContent) => {
+  const editor = new Editor({
     extensions: createProductionExtensions(),
     content,
   });
+
+  editors.push(editor);
+
+  return editor;
+};
+
+afterEach(() => {
+  for (const editor of editors.splice(0)) editor.destroy();
+});
 
 describe("bubble menu", () => {
   describe("visibility predicate", () => {

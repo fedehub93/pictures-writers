@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
@@ -9,33 +9,29 @@ import { CONTACT_EMAIL } from "@/constants";
 import { removeSubscription } from "@/actions/remove-subscription";
 
 export const RemoveSubscriptionForm = () => {
-  const [error, setError] = useState<string | undefined>();
-  const [success, setSuccess] = useState<string | undefined>();
+  const [result, setResult] = useState<{ error?: string } | null>(null);
+  const startedRef = useRef<string | null>(null);
   const searchParams = useSearchParams();
 
   const id = searchParams.get("id");
 
-  const onSubmit = useCallback(() => {
-    if (success || error) return;
-
-    if (!id) {
-      setError("Missing id!");
-      return;
-    }
+  useEffect(() => {
+    // Run each id's one-shot confirmation once even under StrictMode's double
+    // effect invocation; the result is applied from the promise callback so
+    // the effect itself never sets state synchronously.
+    if (!id || startedRef.current === id) return;
+    startedRef.current = id;
 
     removeSubscription(id)
       .then((data) => {
-        setSuccess(data.success);
-        setError(data.error);
+        setResult({ error: data.error });
       })
       .catch(() => {
-        setError("Something went wrong!");
+        setResult({ error: "Something went wrong!" });
       });
-  }, [id, success, error]);
+  }, [id]);
 
-  useEffect(() => {
-    onSubmit();
-  }, [onSubmit]);
+  const error = id ? result?.error : "Missing id!";
 
   return (
     <section className="w-full items-center">

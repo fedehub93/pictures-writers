@@ -21,6 +21,8 @@ import {
 import { Button } from "@/shared/ui/button";
 import { Popover, PopoverContent } from "@/shared/ui/popover";
 
+import { PANEL_CONTROL } from "@/puck/components/panel-control";
+
 import type { ValueUnitInputProps } from "../types";
 
 import { useValueUnitInput } from "../hooks/use-value-unit-input";
@@ -67,7 +69,13 @@ export function ValueUnitInput({
   const hasPresets = !!presets && presets.length > 0;
 
   return (
-    <InputGroup className="h-8 bg-background flex shadow-none focus-within:ring-2! focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background">
+    <InputGroup
+      className={cn(
+        PANEL_CONTROL.height,
+        PANEL_CONTROL.fill,
+        "flex shadow-none focus-within:ring-2! focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background",
+      )}
+    >
       <Popover open={hasPresets && openPresets} onOpenChange={setOpenPresets}>
         <PopoverAnchor asChild>
           <div className="flex-1">
@@ -94,7 +102,10 @@ export function ValueUnitInput({
               }}
               placeholder={placeholder}
               autoComplete="off"
-              className="border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 text-xs! w-full"
+              className={cn(
+                PANEL_CONTROL.box,
+                "border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 w-full",
+              )}
             />
           </div>
         </PopoverAnchor>
@@ -104,7 +115,7 @@ export function ValueUnitInput({
             align="center"
             onOpenAutoFocus={(e) => e.preventDefault()}
             onPointerDownOutside={() => setOpenPresets(false)}
-            className="w-52 p-1 bg-popover text-popover-foreground rounded-md border shadow-md"
+            className="w-64 p-1 bg-popover text-popover-foreground rounded-md border shadow-md"
           >
             <div className="max-h-60 overflow-y-auto space-y-0.5">
               <div className="px-2 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
@@ -113,6 +124,12 @@ export function ValueUnitInput({
               {presets.map((preset) => {
                 const isSelected =
                   preset.value === textInput && preset.unit === selectedUnit;
+                // A keyword preset (`auto`, `fit-content`) has no unit to show,
+                // and an empty value has nothing to preview at all.
+                const presetPreview =
+                  preset.unit === "-"
+                    ? preset.value
+                    : `${preset.value}${preset.unit}`;
 
                 return (
                   <Button
@@ -125,16 +142,18 @@ export function ValueUnitInput({
                       setOpenPresets(false);
                     }}
                     className={cn(
-                      "text-xs p-0 px-2 h-8 flex items-center justify-between w-full",
+                      "text-xs p-0 px-2 h-8 flex items-center justify-between gap-2 w-full",
                       isSelected && "text-primary",
                     )}
                   >
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold">{preset.label}</span>
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="shrink-0 font-semibold">
+                        {preset.label}
+                      </span>
                       {preset.description && (
                         <span
                           className={cn(
-                            "text-muted-foreground",
+                            "truncate text-muted-foreground",
                             isSelected && "text-primary",
                           )}
                         >
@@ -144,12 +163,11 @@ export function ValueUnitInput({
                     </div>
                     <div
                       className={cn(
-                        "flex items-center gap-1.5 font-mono text-muted-foreground",
+                        "flex shrink-0 items-center gap-1.5 font-mono whitespace-nowrap text-muted-foreground",
                         isSelected && "text-primary",
                       )}
                     >
-                      {preset.value}
-                      {preset.unit}
+                      {presetPreview}
                     </div>
                   </Button>
                 );

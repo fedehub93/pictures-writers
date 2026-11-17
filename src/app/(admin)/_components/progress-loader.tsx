@@ -1,18 +1,14 @@
 "use client";
 
 import { cn } from "@/shared/lib/utils";
-import { useEffect, useState } from "react";
+import { useHydrated } from "@/shared/hooks/use-hydrated";
 import { useProgressLoader } from "../_hooks/use-progress-loader-store";
 
 export const ProgressLoader = () => {
-  const [isMounted, setIsMounted] = useState(false);
+  const isHydrated = useHydrated();
   const { isOpen, data } = useProgressLoader();
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) {
+  if (!isHydrated) {
     return null;
   }
 

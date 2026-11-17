@@ -1,0 +1,131 @@
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it } from "vitest";
+
+import type { LinkListBlockProps } from "../blocks/LinkList/types";
+import { renderLinkListBlock } from "../blocks/LinkList/render";
+import { editorConfigForRegion } from "../region/editor-config";
+
+function render(props: LinkListBlockProps) {
+  return renderToStaticMarkup(renderLinkListBlock(props));
+}
+
+describe("LinkList block", () => {
+  it("renders a titled list of resolved links", () => {
+    const html = render({
+      content: {
+        title: "Risorse",
+        links: [
+          { link: { type: "external", url: "/blog/", label: "Blog" } },
+          { link: { type: "external", url: "/about/", label: "Chi siamo" } },
+        ],
+      },
+    });
+
+    expect(html).toContain("<ul");
+    expect(html).toContain(">Risorse<");
+    expect(html).toContain('href="/blog"');
+    expect(html).toContain(">Blog</a>");
+    expect(html).toContain('href="/about"');
+    expect(html).toContain(">Chi siamo</a>");
+  });
+
+  it("renders unresolved entity links as plain text", () => {
+    const html = render({
+      content: {
+        title: "Menu",
+        links: [{ link: { type: "page", pageId: "root-1", label: "About" } }],
+      },
+    });
+
+    expect(html).not.toContain("<a");
+    expect(html).toContain(">About</span>");
+  });
+
+  it("renders resolved entity links stored in the legacy href shape", () => {
+    const html = render({
+      content: {
+        title: "Menu",
+        links: [{ link: { label: "About", href: "/about/" } }],
+      },
+    });
+
+    expect(html).toContain('href="/about"');
+    expect(html).toContain(">About</a>");
+  });
+
+  it("opens resolved external links in a new tab when requested", () => {
+    const html = render({
+      content: {
+        title: "Social",
+        links: [
+          {
+            link: {
+              type: "external",
+              url: "https://example.com/",
+              label: "Example",
+              openInNewTab: true,
+            },
+          },
+        ],
+      },
+    });
+
+    expect(html).toContain('target="_blank"');
+    expect(html).toContain('rel="noreferrer"');
+  });
+
+  it("omits empty rows instead of rendering dead links", () => {
+    const html = render({
+      content: {
+        title: "Empty",
+        links: [{ link: { type: "external", url: "" } }, {}],
+      },
+    });
+
+    expect(html).toContain("<ul");
+    expect(html).not.toContain("<li");
+    expect(html).not.toContain("<a");
+  });
+
+  it("keeps the title semibold", () => {
+    const html = render({ content: { title: "Risorse", links: [] } });
+
+    expect(html).toContain('<h2 class="font-semibold">Risorse</h2>');
+  });
+
+  it("renders typography and spacing as responsive CSS custom properties", () => {
+    const html = render({
+      content: {
+        title: "Risorse",
+        links: [{ link: { type: "external", url: "/blog/", label: "Blog" } }],
+      },
+      typography: {
+        desktop: { fontSize: "1rem", color: "var(--primary)" },
+        tablet: { fontSize: "0.875rem" },
+      },
+      spacing: {
+        desktop: { marginTop: "12px" },
+        tablet: { paddingBottom: "8px" },
+      },
+    });
+
+    expect(html).toContain("puck-dim puck-typo");
+    expect(html).toContain("--fs-d:1rem");
+    expect(html).toContain("--fs-t:0.875rem");
+    expect(html).toContain("--tc-d:var(--primary)");
+    expect(html).toContain("--mt-d:12px");
+    expect(html).toContain("--pb-t:8px");
+  });
+
+  it("exposes one Link list content section and only the shared style fields", () => {
+    const linkList = editorConfigForRegion("FOOTER").components.LinkList;
+    const fields = (linkList?.fields ?? {}) as Record<string, unknown>;
+
+    expect(fields.content).toMatchObject({ type: "custom" });
+    expect(fields).toHaveProperty("size");
+    expect(fields).toHaveProperty("spacing");
+    expect(fields).toHaveProperty("typography");
+    expect(fields).not.toHaveProperty("title");
+    expect(fields).not.toHaveProperty("links");
+  });
+});

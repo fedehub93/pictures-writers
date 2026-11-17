@@ -1,6 +1,8 @@
+"use client"
+
 import * as React from "react"
 import * as NavigationMenuPrimitive from "@radix-ui/react-navigation-menu"
-import { cva } from "class-variance-authority"
+import { cva, type VariantProps } from "class-variance-authority"
 import { ChevronDown } from "lucide-react"
 
 import { cn } from "@/shared/lib/utils"
@@ -41,16 +43,36 @@ NavigationMenuList.displayName = NavigationMenuPrimitive.List.displayName
 const NavigationMenuItem = NavigationMenuPrimitive.Item
 
 const navigationMenuTriggerStyle = cva(
-  "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-hidden disabled:pointer-events-none disabled:opacity-50 data-active:bg-accent/50 data-[state=open]:bg-accent/50"
+  "group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus:outline-hidden disabled:pointer-events-none disabled:opacity-50",
+  {
+    variants: {
+      look: {
+        // Default shadcn surface. Every visual state is declared here so the
+        // variants never rely on class-attribute order to override each other.
+        surface:
+          "bg-background hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-active:bg-accent/50 data-[state=open]:bg-accent/50",
+        plain:
+          "bg-transparent hover:bg-transparent hover:text-primary focus:bg-transparent focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring data-active:bg-transparent data-[state=open]:bg-transparent",
+      },
+    },
+    defaultVariants: {
+      look: "surface",
+    },
+  }
 )
+
+type NavigationMenuTriggerProps = React.ComponentPropsWithoutRef<
+  typeof NavigationMenuPrimitive.Trigger
+> &
+  VariantProps<typeof navigationMenuTriggerStyle>
 
 const NavigationMenuTrigger = React.forwardRef<
   React.ElementRef<typeof NavigationMenuPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof NavigationMenuPrimitive.Trigger>
->(({ className, children, ...props }, ref) => (
+  NavigationMenuTriggerProps
+>(({ className, look, children, ...props }, ref) => (
   <NavigationMenuPrimitive.Trigger
     ref={ref}
-    className={cn(navigationMenuTriggerStyle(), "group", className)}
+    className={cn(navigationMenuTriggerStyle({ look }), "group", className)}
     {...props}
   >
     {children}{" "}

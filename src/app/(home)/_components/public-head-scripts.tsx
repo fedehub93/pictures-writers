@@ -9,9 +9,12 @@ interface PublicHeadScriptsProps {
 }
 
 /**
- * Third-party scripts rendered in the public document head. The CMP is a raw
- * inline block so its position is fixed; GTM stays afterInteractive and always
- * comes after it.
+ * Third-party scripts for the public document, rendered at the top of `<body>`
+ * rather than in `<head>`. Iubenda's runtime inserts its core script before the
+ * first `<script>` in the document, and React 19 hydrates a JSX `<head>`
+ * positionally, so that insertion would break hydration (ADR 0031). The CMP is
+ * a raw inline block so its position is fixed; GTM stays afterInteractive and
+ * always comes after it.
  */
 export const PublicHeadScripts = ({
   iubendaConfig,

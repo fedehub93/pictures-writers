@@ -1,29 +1,29 @@
 {
-  "note": "Initial budgets are deliberately generous. Update them intentionally when a bundle change is accepted; see docs/performance/bundle-budget.md.",
+  "note": "Budget raised with the Site regions PR: the public layout now renders the Header and Footer as Puck documents, which puts the Puck render runtime, the rich text schema and the icon set on every page. See .scratch/performance-optimization/issues/07-public-render-ships-the-editor.md.",
   "routes": {
     "/": {
-      "clientJs": 950000,
-      "clientCss": 50000
+      "clientJs": 1650000,
+      "clientCss": 60000
     },
     "/blog/[slug]": {
-      "clientJs": 500000,
-      "clientCss": 50000
+      "clientJs": 1600000,
+      "clientCss": 60000
     },
     "/shop": {
-      "clientJs": 1500000,
-      "clientCss": 50000
+      "clientJs": 1950000,
+      "clientCss": 60000
     },
     "/shop/[categorySlug]": {
-      "clientJs": 1500000,
-      "clientCss": 50000
+      "clientJs": 1950000,
+      "clientCss": 60000
     },
     "/shop/[categorySlug]/[productSlug]": {
-      "clientJs": 1500000,
-      "clientCss": 50000
+      "clientJs": 1950000,
+      "clientCss": 60000
     },
     "/shop/checkout": {
-      "clientJs": 500000,
-      "clientCss": 50000
+      "clientJs": 1600000,
+      "clientCss": 60000
     },
     "/sign-in": {
       "clientJs": 600000,

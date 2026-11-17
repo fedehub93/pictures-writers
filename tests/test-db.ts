@@ -1,7 +1,10 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-import "dotenv/config"; // load .env first (general app config, no override)
 import { config as loadEnv, parse as parseEnv } from "dotenv";
+
+// Load .env first (general app config, no override). `quiet` disables dotenv's
+// startup banner: this module is imported by every Vitest worker.
+loadEnv({ quiet: true });
 
 const ENV_PATH = path.resolve(process.cwd(), ".env");
 const TEST_ENV_PATH = path.resolve(process.cwd(), ".env.test");
@@ -33,7 +36,7 @@ export function resolveTestDatabaseUrl(): string {
 
   const devUrl = parseEnv(readFileSync(ENV_PATH, "utf8")).DATABASE_URL;
 
-  loadEnv({ path: TEST_ENV_PATH, override: true });
+  loadEnv({ path: TEST_ENV_PATH, override: true, quiet: true });
 
   const url = process.env.DATABASE_URL;
   if (!url) {

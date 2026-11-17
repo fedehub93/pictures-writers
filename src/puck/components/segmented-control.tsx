@@ -5,6 +5,8 @@ import { cn } from "@/shared/lib/utils";
 import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
 import { ComponentType } from "react";
 
+import { PANEL_CONTROL } from "@/puck/components/panel-control";
+
 interface SegmentedControlProps<T extends string> {
   name: string;
   value: T;
@@ -26,7 +28,11 @@ export function SegmentedControl<T extends string>({
       onValueChange={(val) => {
         if (val) onChange(val as T);
       }}
-      className="flex items-center justify-start bg-background rounded-md h-8 w-full gap-0 border border-input"
+      className={cn(
+        PANEL_CONTROL.height,
+        PANEL_CONTROL.fill,
+        "flex items-center justify-start rounded-md w-full min-w-0 gap-0 border border-input",
+      )}
     >
       {items.map((item) => (
         <ToggleGroupItem
@@ -35,13 +41,17 @@ export function SegmentedControl<T extends string>({
           title={item.title}
           aria-label={item.title}
           className={cn(
-            "flex-1 h-full rounded-sm transition-all py-0",
+            "flex-1 min-w-0 h-full rounded-sm transition-all px-1.5 py-0 text-xs",
             value === item.value &&
               "data-[state=on]:bg-accent data-[state=on]:border-x text-foreground",
           )}
         >
-          {item.icon && <item.icon className="size-4" strokeWidth={2.5} />}
-          {!item.icon && <span>{item.title}</span>}
+          {item.icon && (
+            <item.icon className="size-4 shrink-0" strokeWidth={2.5} />
+          )}
+          {!item.icon && (
+            <span className="min-w-0 truncate">{item.title}</span>
+          )}
         </ToggleGroupItem>
       ))}
     </ToggleGroup>

@@ -1,30 +1,21 @@
-import { ReactNode } from "react";
 import { RootConfig } from "@puckeditor/core";
 
-import { Responsive } from "@/puck/utils/responsive";
+import { SizeField } from "@/puck/fields/size";
+import { SpacingField } from "@/puck/fields/spacing";
+import { RootLayoutField } from "@/puck/fields/layout";
+import { DecorationField } from "@/puck/fields/decoration";
 
-import { DimensionField, DimensionProps } from "@/puck/fields/dimension";
+import type { RootProps } from "./types";
+import { renderRoot } from "./render";
 
-import { getDimensionVars } from "@/puck/utils/get-style-vars";
-
-import { RootBlockUi } from "./ui/root";
-
-export type RootProps = {
-  children: ReactNode;
-  title?: string;
-  dimension?: Responsive<DimensionProps>;
-};
+export type { RootProps };
 
 export const RootEditor: RootConfig<RootProps> = {
   fields: {
-    title: { type: "text", label:"Title" },
-    dimension: DimensionField,
+    layout: RootLayoutField,
+    size: SizeField,
+    spacing: SpacingField,
+    decoration: DecorationField,
   },
-  render: ({ children, dimension }) => {
-    const styleVars = {
-      ...getDimensionVars(dimension),
-    };
-
-    return <RootBlockUi styleVars={styleVars}>{children}</RootBlockUi>;
-  },
+  render: renderRoot,
 };

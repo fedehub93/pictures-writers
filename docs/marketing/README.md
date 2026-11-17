@@ -54,6 +54,6 @@ docs/marketing/
 |---|---|
 | Issue e spec di lavoro | `.scratch/<feature-slug>/` |
 | Decisioni architetturali | `docs/adr/` |
-| Contesto di dominio condiviso | `CONTEXT.md` |
+| Contesto di dominio condiviso | `GLOSSARY.md` |
 | Regole per gli agenti | `AGENTS.md` |
 | Skill installate | `.agents/skills/` |

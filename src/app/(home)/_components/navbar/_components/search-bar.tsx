@@ -1,124 +1,41 @@
 "use client";
-import { Search } from "lucide-react";
-import { useDebounceValue } from "usehooks-ts";
-import { useState } from "react";
-import { BeatLoader } from "react-spinners";
-import Link from "next/link";
-import { formatDistance } from "date-fns";
-import { it } from "date-fns/locale";
-import Image from "next/image";
 
+import { useState } from "react";
+import { Search } from "lucide-react";
+
+import { SearchBox } from "@/shared/components/search/search-box";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
-import { Input } from "@/shared/ui/input";
-import { ScrollArea } from "@/shared/ui/scroll-area";
 
-import { usePostsInfiniteQuery } from "@/hooks/use-posts-infinite-query";
-
+/**
+ * Mobile search panel of the legacy static navbar.
+ *
+ * The field, debounce and result list live in the shared `SearchBox`, so the
+ * legacy component and the new `SearchBar` Puck block use one implementation.
+ * The static navbar itself is kept until the Site-region cutover.
+ */
 export const SearchBar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [debouncedSearch, setDebouncedSearch] = useDebounceValue("", 500);
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
-    usePostsInfiniteQuery({ s: debouncedSearch, windowIsOpen: isOpen });
-
-  const onHandleOpen = () => {
-    setIsOpen(!isOpen);
-  };
   return (
     <div>
       <Button
         role="button"
         size="icon"
         variant="ghost"
-        onClick={onHandleOpen}
+        onClick={() => setIsOpen((open) => !open)}
         className="md:hidden"
+        aria-label="Toggle search"
       >
         <Search className="h-4 w-4" />
       </Button>
       <div
         className={cn(
-          "bg-white fixed top-32 left-0 h-0 w-screen transition-all duration-500 overflow-hidden px-6 shadow-xl opacity-0 md:hidden",
-          isOpen && "h-auto min-h-20 opacity-100",
+          "fixed left-0 top-32 z-50 w-screen overflow-hidden bg-background px-6 opacity-0 shadow-xl transition-all duration-500 md:hidden",
+          isOpen ? "h-auto min-h-20 opacity-100" : "h-0",
         )}
       >
-        <div className="w-full">
-          <Input
-            id="search"
-            name="search"
-            onChange={(e) => {
-              setDebouncedSearch(e.target.value);
-            }}
-            className="my-4 shadow-lg border-2 border-primary"
-            placeholder="Cerca..."
-          />
-        </div>
-        <div className="md:hidden">
-          {debouncedSearch && (
-            <ScrollArea className="max-h-150 md:max-h-100 overflow-auto">
-              {status === "pending" ? (
-                <div className="flex h-full flex-col flex-1 justify-center items-center py-8">
-                  <BeatLoader />
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                    Caricando articoli ...
-                  </p>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center py-4 gap-y-4">
-                  {data?.pages?.map((group, i) => (
-                    <div key={i} className="flex flex-col items-center gap-y-4">
-                      {group.posts.map((item) => (
-                        <Link
-                          href={`/${item.slug}`}
-                          key={item.title}
-                          className="relative flex gap-x-4 gap-y-8 group w-full"
-                          onClick={() => setIsOpen(false)}
-                        >
-                          <div className="relative w-14 h-14 aspect-square top-0 transition-all duration-300 self-start">
-                            <Image
-                              src={item.imageCover?.url ?? ""}
-                              alt={item.imageCover?.altText || ""}
-                              fill
-                              className="object-cover rounded-md"
-                            />
-                          </div>
-                          <div className="flex flex-col gap-y-2 justify-evenly">
-                            <p className="text-base font-medium leading-4">
-                              {item.title}
-                            </p>
-                            <div className="flex items-center justify-between">
-                              <p className="self-end text-xs text-muted-foreground">
-                                Pubblicato{" "}
-                                {item.publishedAt
-                                  ? formatDistance(item.publishedAt, new Date(), {
-                                      addSuffix: true,
-                                      locale: it,
-                                    })
-                                  : "—"}
-                              </p>
-                            </div>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  ))}
-                  <Button
-                    type="button"
-                    onClick={() => fetchNextPage()}
-                    disabled={!hasNextPage || isFetchingNextPage}
-                    className="mt-4 mx-auto"
-                  >
-                    {isFetchingNextPage
-                      ? "Loading more..."
-                      : hasNextPage
-                        ? "Load More"
-                        : "Nothing more to load"}
-                  </Button>
-                </div>
-              )}
-            </ScrollArea>
-          )}
-        </div>
+        <SearchBox variant="inline" placeholder="Cerca..." className="py-4" />
       </div>
     </div>
   );

@@ -345,7 +345,7 @@ curl -i -X POST https://<DOMAIN>/api/webhooks/stripe/ -H "Content-Type: applicat
 
 ### 15.1 Correzione consigliata
 
-`src/app/api/database/backup/route.ts` è pubblico. Prima del cutover:
+`/api/database/backup/` era pubblico (✅ risolto: la route è stata rimossa in `a200ba67`). Prima del cutover:
 
 - rimuovilo, oppure
 - aggiungi `authAdmin()` e limita ai soli admin, oppure

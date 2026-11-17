@@ -1,33 +1,26 @@
-import { ComponentConfig } from "@puckeditor/core";
+import { type ComponentConfig } from "@puckeditor/core";
 
-import { Responsive } from "@/puck/utils/responsive";
+import { SizeField } from "@/puck/fields/size";
+import { SpacingField } from "@/puck/fields/spacing";
+import { DisplayOnlyLayoutField } from "@/puck/fields/layout";
 
-import { DimensionField, DimensionProps } from "@/puck/fields/dimension";
+import { SEPARATOR_DEFAULT_PROPS } from "../defaults";
 
-import { getDimensionVars } from "@/puck/utils/get-style-vars";
-import { Separator } from "@/shared/ui/separator";
+import type { SeparatorBlockProps } from "./types";
+import { renderSeparatorBlock } from "./render";
 
-export type SeparatorBlockProps = {
-  dimension?: Responsive<DimensionProps>;
-};
+export type { SeparatorBlockProps };
 
 export const SeparatorBlock: ComponentConfig<SeparatorBlockProps> = {
+  // The box that carries the authored size and spacing is the block root; the render
+  // attaches `puck.dragRef` to it and `inline` is Puck's only supported way to
+  // skip its wrapper `div`.
+  inline: true,
   fields: {
-    dimension: DimensionField,
+    layout: DisplayOnlyLayoutField,
+    size: SizeField,
+    spacing: SpacingField,
   },
-  defaultProps: {
-    dimension: {
-      desktop: {
-        width: "100%",
-        height: "2px",
-      },
-    },
-  },
-  render: ({ dimension }) => {
-    const styleVars = {
-      ...getDimensionVars(dimension),
-    };
-
-    return <Separator style={styleVars} className="puck-dim" />;
-  },
+  defaultProps: SEPARATOR_DEFAULT_PROPS,
+  render: renderSeparatorBlock,
 };

@@ -5,8 +5,10 @@ import { useTRPC } from "@/trpc/client";
 import { useDebounceValue } from "usehooks-ts";
 
 import { CommandSelect } from "@/shared/components/command-select";
+import { cn } from "@/shared/lib/utils";
 import { Skeleton } from "@/shared/ui/skeleton";
 
+import { PANEL_CONTROL } from "@/puck/components/panel-control";
 import type { HydratedFormProps } from "@/puck/fields/form";
 
 interface FormViewProps {
@@ -28,7 +30,7 @@ export const FormView = ({ state, onUpdate }: FormViewProps) => {
 
   // Se è il primissimo caricamento e non abbiamo ancora dati, mostriamo lo Skeleton
   if (isLoading && !data) {
-    return <Skeleton className="w-full h-10" />;
+    return <Skeleton className={cn("w-full", PANEL_CONTROL.height)} />;
   }
 
   return (
@@ -62,7 +64,7 @@ export const FormView = ({ state, onUpdate }: FormViewProps) => {
         onSearch={setFormSearch}
         value={state.id}
         placeholder="Select a form"
-        className="w-full"
+        className={cn(PANEL_CONTROL.picker, "w-full")}
       />
       <div>Not found what you&apos;re looking for?</div>
     </div>

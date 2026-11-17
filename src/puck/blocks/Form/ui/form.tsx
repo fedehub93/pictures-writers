@@ -1,21 +1,40 @@
 "use client";
 
 import type { HydratedFormProps } from "@/puck/fields/form";
+import type { BlockDragRef } from "@/puck/types";
 import { FormRunner } from "@/modules/forms/builder/runner/form-runner";
 import { submitForm } from "@/actions/submit-form";
+import { cn } from "@/shared/lib/utils";
 
 import { getCaptchaToken } from "@/app/(home)/_components/utils/captcha";
 
 export const FormBlockUi = ({
   form,
   styleVars,
+  layoutClassName,
+  dragRef,
 }: {
   form?: HydratedFormProps;
   styleVars: Record<string, string>;
+  layoutClassName?: string;
+  /** Editor-only: Puck's selection ref, attached to the block root. */
+  dragRef?: BlockDragRef;
 }) => {
   if (!form || !form.content)
     return (
-      <div className="flex items-center justify-center size-full">
+      // The placeholder is the block root in this state too: without the ref an
+      // empty Form could not be selected in the canvas. It deliberately keeps
+      // its own `size-full` box instead of `puck-dim`: the message fills the
+      // area it is dropped in, and the authored size and spacing only describe
+      // the real form.
+      <div
+        ref={dragRef}
+        className={cn(
+          "flex items-center justify-center size-full puck-block-root",
+          layoutClassName,
+        )}
+        style={styleVars}
+      >
         Select a valid form!
       </div>
     );
@@ -40,7 +59,11 @@ export const FormBlockUi = ({
   };
 
   return (
-    <div className="puck-dim" style={styleVars}>
+    <div
+      ref={dragRef}
+      className={cn("puck-dim puck-block-root", layoutClassName)}
+      style={styleVars}
+    >
       <FormRunner
         id={form.id}
         onSubmitHandler={onSubmit}

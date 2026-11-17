@@ -3,6 +3,23 @@ import { ComponentType } from "react";
 
 type FieldInputType = "text" | "unit";
 
+/**
+ * Puck's drag/selection ref, handed to a block that declares `inline: true`.
+ *
+ * Puck renders such a block without its wrapper `div`, so the block must attach
+ * this to the element that is its root: the node the editor selects, drags and
+ * outlines, and the box the parent lays out. It is `null` on the published
+ * page, so the same render function serves both paths.
+ *
+ * The ref belongs on the element that also carries the block's root classes
+ * (`puck-dim`, plus `puck-layout` for the container blocks). The class resets
+ * and consumes both the size and the spacing variables, so the ref, the
+ * authored box and the selection outline all name one element. Putting it on a
+ * child, or on a wrapper the block renders for its own layout, makes the
+ * editor select a box that the published page does not have.
+ */
+export type BlockDragRef = ((element: Element | null) => void) | null;
+
 export type FieldDef<T> = {
   key: keyof T;
   label: string;

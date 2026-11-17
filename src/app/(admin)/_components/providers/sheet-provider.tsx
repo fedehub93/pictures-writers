@@ -1,16 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useHydrated } from "@/shared/hooks/use-hydrated";
 import { EditContentImageSheet } from "../sheets/edit-content-image";
 
 export const SheetProvider = () => {
-  const [isMounted, setIsMounted] = useState(false);
+  const isHydrated = useHydrated();
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) {
+  if (!isHydrated) {
     return null;
   }
 

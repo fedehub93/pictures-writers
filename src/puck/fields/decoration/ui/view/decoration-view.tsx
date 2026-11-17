@@ -19,28 +19,61 @@ const opacityFields: FieldDef<DecorationProps>[] = [
 
 const borderStyles = ["none", "solid", "dashed", "dotted", "double"];
 
+const borderWidthUnits = ["px", "rem", "em", "vw", "vh"];
+
+const borderWidthFields: FieldDef<DecorationProps>[] = [
+  {
+    key: "borderTopWidth",
+    label: "Top",
+    type: "unit",
+    placeholder: "0",
+    units: borderWidthUnits,
+  },
+  {
+    key: "borderRightWidth",
+    label: "Right",
+    type: "unit",
+    placeholder: "0",
+    units: borderWidthUnits,
+  },
+  {
+    key: "borderBottomWidth",
+    label: "Bottom",
+    type: "unit",
+    placeholder: "0",
+    units: borderWidthUnits,
+  },
+  {
+    key: "borderLeftWidth",
+    label: "Left",
+    type: "unit",
+    placeholder: "0",
+    units: borderWidthUnits,
+  },
+];
+
 const radiusFields: FieldDef<DecorationProps>[] = [
   {
     key: "borderTopLeftRadius",
-    label: "Top Left",
+    label: "Top left",
     type: "unit",
     placeholder: "0",
   },
   {
     key: "borderTopRightRadius",
-    label: "Top Right",
+    label: "Top right",
     type: "unit",
     placeholder: "0",
   },
   {
     key: "borderBottomLeftRadius",
-    label: "Bottom Left",
+    label: "Bottom left",
     type: "unit",
     placeholder: "0",
   },
   {
     key: "borderBottomRightRadius",
-    label: "Bottom Right",
+    label: "Bottom right",
     type: "unit",
     placeholder: "0",
   },
@@ -97,7 +130,7 @@ export const DecorationView = ({
         <PropHeader
           key={`prop-background-color`}
           name="backgroundColor"
-          label="Background Color"
+          label="Background color"
           isModified={currentValues.backgroundColor !== undefined}
           onReset={() => resetProp("backgroundColor")}
         />
@@ -115,35 +148,45 @@ export const DecorationView = ({
       <div className="mt-4">
         <span className="text-sm font-medium">Border</span>
         <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-4 p-2 bg-muted/60 rounded">
-          <div className="flex flex-col gap-y-1">
-            <PropHeader
-              name="borderWidth"
-              label="Border Width"
-              isModified={currentValues.borderWidth !== undefined}
-              onReset={() => resetProp("borderWidth")}
-            />
-            <ValueUnitInput
-              name="borderWidth"
-              value={renderValues.borderWidth ?? ""}
-              onChange={(newVal) =>
-                onUpdate({ borderWidth: newVal || undefined })
-              }
-              placeholder="3"
+          {borderWidthFields.map((field) => {
+            const isModified = currentValues[field.key] !== undefined;
+            const displayValue = renderValues[field.key] ?? "";
+            return (
+              <div key={field.key} className="flex flex-col gap-y-1">
+                <PropHeader
+                  name={field.key}
+                  label={field.label}
+                  isModified={isModified}
+                  onReset={() => resetProp(field.key)}
+                />
+                <ValueUnitInput
+                  name={field.key}
+                  value={displayValue}
+                  onChange={(newVal) =>
+                    onUpdate({ [field.key]: newVal || undefined })
+                  }
+                  placeholder={field.placeholder}
+                  units={field.units}
+                  defaultUnit="px"
+                  allowedKeywords={[]}
+                />
+              </div>
+            );
+          })}
+
+          <div className="col-span-2">
+            <SelectField
+              key="borderStyle"
+              name="borderStyle"
+              label="Border style"
+              placeholder="none"
+              options={borderStyles}
+              currentValues={currentValues}
+              renderValues={renderValues}
+              resetProp={resetProp}
+              update={onUpdate}
             />
           </div>
-
-          {/* ROW 1: Border Style (Col 2) */}
-          <SelectField
-            key="borderStyle"
-            name="borderStyle"
-            label="Border Style"
-            placeholder="none"
-            options={borderStyles}
-            currentValues={currentValues}
-            renderValues={renderValues}
-            resetProp={resetProp}
-            update={onUpdate}
-          />
           <div
             key={`container-border-color`}
             className="col-span-2 flex flex-col gap-y-1"
@@ -169,7 +212,7 @@ export const DecorationView = ({
 
       {/* --- BORDER RADIUS --- */}
       <div className="mt-4">
-        <span className="text-sm font-medium">Border Radius</span>
+        <span className="text-sm font-medium">Border radius</span>
         <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-4 p-2 bg-muted/60 rounded">
           {radiusFields.map((field) => {
             const isModified = currentValues[field.key] !== undefined;

@@ -55,7 +55,7 @@ export const ImageView = ({
           <div className="flex flex-col gap-y-1">
             <PropHeader
               name="alt"
-              label="Alt Text"
+              label="Alt text"
               isModified={currentValues.alt !== undefined}
               onReset={() => resetProp("alt")}
             />
@@ -70,7 +70,7 @@ export const ImageView = ({
           <div className="flex flex-col gap-y-1">
             <PropHeader
               name="href"
-              label="Link (Opzionale)"
+              label="Link (opzionale)"
               isModified={currentValues.href !== undefined}
               onReset={() => resetProp("href")}
             />
@@ -88,7 +88,7 @@ export const ImageView = ({
         <SelectField
           key="objectFit"
           name="objectFit"
-          label="Object Fit"
+          label="Object fit"
           placeholder="fill"
           options={objectFitOptions.map((o) => o.value)}
           currentValues={currentValues}

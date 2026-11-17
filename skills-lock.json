@@ -1,29 +1,35 @@
 {
-  "version": 1,
+  "version": 2,
   "skills": {
+    "puck": {
+      "source": "puckeditor/skills",
+      "sourceType": "github",
+      "skillPath": "skills/puck/SKILL.md",
+      "computedHash": "df0acd40a7829be1a026ba95aa71e7c562f43ff34901f46348cb321c8b44fc49"
+    },
     "resend": {
       "source": "resend/resend-skills",
       "sourceType": "github",
       "skillPath": "skills/resend/SKILL.md",
-      "computedHash": "c612402651d36245dfc8d2bc87271fe70928bcbc7451f66b47162f2b3165a8d4"
+      "computedHash": "903c2a23cb6935c80deb2f62439ac99f673badecdf89d4151ebb422a09dc0015"
     },
     "shadcn": {
       "source": "shadcn-ui/ui",
       "sourceType": "github",
       "skillPath": "skills/shadcn/SKILL.md",
-      "computedHash": "f99ef49d9909d380ca683ceb8dc8c25775c20ee38140112c394e037d8c11ee18"
+      "computedHash": "388962d16c7a4f13aaeee0d8f128e50a87df8553d42ef7988c39c0e1c74a40e8"
     },
     "tiptap": {
       "source": "ueberdosis/tiptap",
       "sourceType": "github",
-      "skillPath": "skills/tiptap/SKILL.md",
-      "computedHash": "a03cf281b8af7d20afff32efb0a4a08bd2171a2b4935f46a93de831e146705ac"
+      "skillPath": ".agents/skills/tiptap/SKILL.md",
+      "computedHash": "75e80435dd1ff884dc0c7d20f06d593da95b10f836638631e7dc77b926905da3"
     },
     "zod": {
       "source": "pproenca/dot-skills",
       "sourceType": "github",
       "skillPath": "skills/.curated/zod/SKILL.md",
-      "computedHash": "e15dbf6f7f4f81616843cf855cbc984ad301455c7e298d7820c02fb3280e16f3"
+      "computedHash": "0dda8a9c32affa99f4981924798d7399f0f5bd3ecc37910cfc4b05f260f442cd"
     }
   }
 }

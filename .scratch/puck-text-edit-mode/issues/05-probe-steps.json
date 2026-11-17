@@ -1,0 +1,64 @@
+[
+  { "action": "wait", "ms": 2500 },
+  { "action": "click", "target": "h2", "text": "Probe heading" },
+  {
+    "action": "evaluate",
+    "expression": "(() => { const f = document.getElementById('preview-frame').contentDocument; const sel = f.getSelection(); return { phase: 'locked-select', armed: Array.from(f.querySelectorAll('[data-text-editing]')).length, caretInside: !!(sel && f.activeElement && f.activeElement.contains(sel.anchorNode)), selectionCollapsed: sel ? sel.isCollapsed : null, contenteditable: f.activeElement ? f.activeElement.getAttribute('contenteditable') : null, toolbar: (() => { const m = f.querySelector('[data-puck-rte-menu]'); return m ? f.defaultView.getComputedStyle(m).display !== 'none' : false; })(), buttons: Array.from(f.querySelectorAll('[data-text-edit-action]')).map((b) => ({ text: b.textContent.trim(), pressed: b.getAttribute('aria-pressed') })), current: document.querySelector('[aria-current=\"true\"]')?.textContent?.trim() ?? null }; })()"
+  },
+  { "action": "drag", "target": "h2", "text": "Probe heading", "dx": 0, "dy": 260 },
+  {
+    "action": "evaluate",
+    "expression": "(() => { const f = document.getElementById('preview-frame').contentDocument; return { phase: 'locked-drag', order: Array.from(f.querySelectorAll('[data-puck-component]')).map((el) => el.textContent.trim()) }; })()"
+  },
+  { "action": "doubleClick", "target": "h2", "text": "Probe heading" },
+  {
+    "action": "evaluate",
+    "expression": "(() => { const f = document.getElementById('preview-frame').contentDocument; const sel = f.getSelection(); const menu = f.querySelector('[data-puck-rte-menu]'); return { phase: 'dblclick-armed', armed: Array.from(f.querySelectorAll('[data-text-editing]')).map((el) => el.textContent.trim()), contenteditable: f.activeElement ? f.activeElement.getAttribute('contenteditable') : null, caretInside: !!(sel && f.activeElement && f.activeElement.contains(sel.anchorNode)), anchorText: sel && sel.anchorNode ? sel.anchorNode.textContent : null, anchorOffset: sel ? sel.anchorOffset : null, toolbar: menu ? f.defaultView.getComputedStyle(menu).display !== 'none' : false, grip: !!f.querySelector('[data-puck-overlay][class*=\"isSelected\"] button[title=\"Drag to reorder\"]'), buttons: Array.from(f.querySelectorAll('[data-text-edit-action]')).map((b) => ({ text: b.textContent.trim(), pressed: b.getAttribute('aria-pressed') })), current: document.querySelector('[aria-current=\"true\"]')?.textContent?.trim() ?? null }; })()"
+  },
+  {
+    "action": "drag",
+    "target": "[data-puck-overlay][class*=\"isSelected\"] button[title=\"Drag to reorder\"]",
+    "dx": 0,
+    "dy": -260
+  },
+  {
+    "action": "evaluate",
+    "expression": "(() => { const f = document.getElementById('preview-frame').contentDocument; const sel = f.getSelection(); const menu = f.querySelector('[data-puck-rte-menu]'); return { phase: 'grip-drag-while-armed', order: Array.from(f.querySelectorAll('[data-puck-component]')).map((el) => el.textContent.trim()), armed: Array.from(f.querySelectorAll('[data-text-editing]')).map((el) => el.textContent.trim()), contenteditable: f.activeElement ? f.activeElement.getAttribute('contenteditable') : null, caretInside: !!(sel && f.activeElement && f.activeElement.contains(sel.anchorNode)), toolbar: menu ? f.defaultView.getComputedStyle(menu).display !== 'none' : false }; })()"
+  },
+  { "action": "press", "key": "Escape" },
+  {
+    "action": "evaluate",
+    "expression": "(() => { const f = document.getElementById('preview-frame').contentDocument; const sel = f.getSelection(); const menu = f.querySelector('[data-puck-rte-menu]'); return { phase: 'first-escape', armed: Array.from(f.querySelectorAll('[data-text-editing]')).length, toolbar: menu ? f.defaultView.getComputedStyle(menu).display !== 'none' : false, activeTag: f.activeElement ? f.activeElement.tagName : null, contenteditable: f.activeElement ? f.activeElement.getAttribute('contenteditable') : null, selectionCollapsed: sel ? sel.isCollapsed : null, current: document.querySelector('[aria-current=\"true\"]')?.textContent?.trim() ?? null }; })()"
+  },
+  { "action": "press", "key": "Escape" },
+  {
+    "action": "evaluate",
+    "expression": "(() => { const f = document.getElementById('preview-frame').contentDocument; return { phase: 'second-escape', armed: Array.from(f.querySelectorAll('[data-text-editing]')).length, current: document.querySelector('[aria-current=\"true\"]')?.textContent?.trim() ?? null, greedy: document.querySelector('[aria-label=\"Page settings\"], [aria-current=\"page\"]')?.textContent?.trim() ?? null }; })()"
+  },
+  { "action": "click", "target": "h2", "text": "Probe heading" },
+  { "action": "press", "key": "Enter" },
+  {
+    "action": "evaluate",
+    "expression": "(() => { const f = document.getElementById('preview-frame').contentDocument; const sel = f.getSelection(); return { phase: 'enter-armed', armed: Array.from(f.querySelectorAll('[data-text-editing]')).map((el) => el.textContent.trim()), contenteditable: f.activeElement ? f.activeElement.getAttribute('contenteditable') : null, caretInside: !!(sel && f.activeElement && f.activeElement.contains(sel.anchorNode)), buttons: Array.from(f.querySelectorAll('[data-text-edit-action]')).map((b) => ({ text: b.textContent.trim(), pressed: b.getAttribute('aria-pressed') })) }; })()"
+  },
+  { "action": "click", "target": "p", "text": "Probe paragraph" },
+  {
+    "action": "evaluate",
+    "expression": "(() => { const f = document.getElementById('preview-frame').contentDocument; const menu = f.querySelector('[data-puck-rte-menu]'); return { phase: 'other-block-click', armed: Array.from(f.querySelectorAll('[data-text-editing]')).length, toolbar: menu ? f.defaultView.getComputedStyle(menu).display !== 'none' : false, current: document.querySelector('[aria-current=\"true\"]')?.textContent?.trim() ?? null }; })()"
+  },
+  { "action": "click", "target": "h2", "text": "Probe heading" },
+  { "action": "click", "target": "[data-text-edit-action]" },
+  {
+    "action": "evaluate",
+    "expression": "(() => { const f = document.getElementById('preview-frame').contentDocument; return { phase: 'button-armed', armed: Array.from(f.querySelectorAll('[data-text-editing]')).map((el) => el.textContent.trim()), contenteditable: f.activeElement ? f.activeElement.getAttribute('contenteditable') : null, buttons: Array.from(f.querySelectorAll('[data-text-edit-action]')).map((b) => ({ text: b.textContent.trim(), pressed: b.getAttribute('aria-pressed') })) }; })()"
+  },
+  { "action": "click", "target": "[data-text-edit-action]" },
+  {
+    "action": "evaluate",
+    "expression": "(() => { const f = document.getElementById('preview-frame').contentDocument; const menu = f.querySelector('[data-puck-rte-menu]'); return { phase: 'button-done', armed: Array.from(f.querySelectorAll('[data-text-editing]')).length, toolbar: menu ? f.defaultView.getComputedStyle(menu).display !== 'none' : false, activeTag: f.activeElement ? f.activeElement.tagName : null, buttons: Array.from(f.querySelectorAll('[data-text-edit-action]')).map((b) => ({ text: b.textContent.trim(), pressed: b.getAttribute('aria-pressed') })), current: document.querySelector('[aria-current=\"true\"]')?.textContent?.trim() ?? null }; })()"
+  },
+  { "action": "click", "target": "[data-text-edit-action]" },
+  { "action": "type", "text": " plus" },
+  { "action": "read", "target": ".ProseMirror" },
+  { "action": "press", "key": "Escape" }
+]

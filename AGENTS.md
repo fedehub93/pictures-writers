@@ -12,270 +12,69 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Project Overview
 
-**Pictures Writers** is a full-stack CMS, blog, and e-commerce platform built with Next.js 16. It features a public-facing website, an admin dashboard for content management, a visual page builder (Puck editor), email marketing tools, ad campaign management, and a shop with Stripe payments.
+**Pictures Writers** is a full-stack CMS, blog and e-commerce platform on Next.js 16: public site, admin dashboard, Puck page builder, email marketing, ad campaigns, and a Stripe shop.
 
-### Key Technologies
+- `src/app/` — App Router (`(admin)`, `(auth)`, `(home)`, `api/`).
+- `src/modules/<feature>/` — one folder per feature.
+- `src/shared/` — code a second module may import; `src/puck/` — Puck config and blocks.
 
-- **Framework**: Next.js 16 (App Router, React 19, TypeScript)
-- **Styling**: Tailwind CSS v4, Sass (for some files), shadcn/ui components
-- **Database**: PostgreSQL via Prisma (with `@prisma/adapter-pg`)
-- **API**: tRPC (v11) + Next.js App Router API routes
-- **Auth**: Better Auth with Prisma adapter (email/password)
-- **Payments**: Stripe (checkout + webhooks)
-- **Email**: SendGrid, Resend, React Email Editor
-- **File uploads**: UploadThing
-- **Page builder**: Puck editor (`@puckeditor/core`)
-- **Rich text**: TipTap
-- **Forms**: React Hook Form + Zod
-- **State**: Zustand, TanStack Query (React Query)
-- **Tables**: TanStack Table
-- **Drag & drop**: `@hello-pangea/dnd`, `@dnd-kit/react`
-- **Deployment**: Self-hosted on a Hetzner VPS (ARM64) managed with Coolify; app and PostgreSQL run as containers, TLS/reverse proxy via Coolify's Traefik. Vercel is no longer used.
-
-### Architecture
-
-The project uses Next.js App Router with route groups:
-
-- `(admin)/admin/*` — Admin dashboard (protected, Inter font, TRPC provider, sidebar layout)
-- `(auth)/sign-in` — Authentication pages
-- `(home)/*` — Public site (Figtree font, blog, shop, landing pages)
-- `api/*` — API routes (REST-style + tRPC + auth + webhooks)
-
-Feature modules live under `src/modules/*` (blog, mails, forms, pages, dashboard). Shared code lives under `src/shared/*`. The Puck visual editor configuration and custom blocks live under `src/puck/*`.
-
----
-
-## Setup Commands
-
-### Install dependencies
-
-```bash
-npm install
-```
-
-### Environment variables
-
-Create `.env` (see existing `.env` for reference). Required variables include:
-
-- `DATABASE_URL` — PostgreSQL connection string
-- `NEXT_PUBLIC_APP_URL` — public URL of the site, e.g. `http://localhost:3000`; in production the Coolify service URL/domain
-- `BETTER_AUTH_URL` — same public URL; required by Better Auth in production
-- `BETTER_AUTH_SECRET` — Better Auth signing secret
-- `SECRETS_ENCRYPTION_KEY` — Random 32+ byte value used to encrypt stored secrets (automation credentials and integration secrets). Generate with `openssl rand -base64 32` or equivalent; do not use a human passphrase.
-- `AUTOMATION_CREDENTIALS_KEY` — Legacy fallback key used to decrypt existing automation `Credential` rows created before `SECRETS_ENCRYPTION_KEY` was introduced.
-- `SCHEDULED_PUBLICATION_SECRET` — shared secret for the scheduler and automations cron endpoints
-- `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` — stable build-time key so Server Actions survive rolling deploys
-- `UPLOADTHING_TOKEN` — UploadThing token
-- `NEXT_SENDGRID_KEY` — SendGrid API key
-- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` / `STRIPE_API_KEY` / `STRIPE_WEBHOOK_SECRET`
-- `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` — reCAPTCHA
-
-In production these live in the Coolify application environment, not in a file on the server. See `docs/self-hosting/appendice-a-variabili-ambiente.md` for the full table and build/runtime scope.
-
-### Database setup
-
-```bash
-# Generate Prisma client (also runs automatically on postinstall)
-npx prisma generate
-
-# Run migrations
-npx prisma migrate dev
-
-# Deploy migrations (production/Coolify)
-npx prisma migrate deploy
-
-# Open Prisma Studio
-npx prisma studio
-```
-
-The Prisma schema is at `prisma/schema.prisma`. The generated client outputs to `generated/prisma` and is imported via `@/generated/prisma`.
-
----
+Commands live in `package.json`; environment variables in `docs/self-hosting/appendice-a-variabili-ambiente.md`. Read those rather than a copy here.
 
 ## Development Workflow
 
-### Start the development server
+### Local databases
 
-```bash
-npm run dev
-```
+Point local development at the dedicated container on `localhost:5434` — PostgreSQL 18, the same major as production, so a production dump can be restored locally. Never point it at production: the dev automation pump fires real cron triggers every 15 seconds. The test database is PostgreSQL 16 on `localhost:5433`.
 
-This uses Turbopack by default. To use Webpack instead:
+Both `docker-compose.yml` and `docker-compose.dev.yml` publish these ports on `127.0.0.1` only. A bare `5434:5432` also opens an IPv6 listener, and Docker Desktop on Windows accepts IPv6 connections it never forwards, so clients that resolve `localhost` to `::1` hang instead of failing. Both `src/lib/db.ts` and `src/shared/lib/db.ts` set a connect timeout for the same reason — a wedged connection must surface as an error, not as a `next build` that never finishes — and they must stay aligned, like the two auth files (gotcha 6).
 
-```bash
-npm run dev -- --webpack
-```
+**Ask before touching the development database.** Do not run `npm run dev:db:reset`, `docker compose down -v`, `prisma migrate reset`, `db push --force-reset`, or any `DROP`/`TRUNCATE`/`DELETE` against `pictures_writers_dev` without explicit confirmation from the user first: those commands discard data that is not reproducible from the repo. Prefer `dev:db:down` + `dev:db:up` to recreate a container (the volume survives), and ask before restoring a dump over the database as well.
 
-### Build for production
+**Agent sessions use a second database.** `npm run dev:agent` runs `next dev` against `pictures_writers_agent`, seeded by `npm run agent:env` + `npm run agent:seed` with a probe user and one page. `pictures_writers_dev` can be a restored production dump, so an agent that reads it sees real content, credentials and session tokens; the agent environment is the boundary that keeps those out of a session. Browser probes run through `node --env-file=.env.agent scripts/builder-probe.mjs` — see `docs/agents/browser-probe.md`.
 
-```bash
-npm run build
-```
+The `dev:db:*` scripts pin their own Compose project (`pictures-writers-dev`) and `docker-compose.dev.yml`, which is separate from `docker-compose.yml`: resetting the test database cannot drop development data. Run SQL through a pipe instead of quoting it into a `-c` argument: `Get-Content q.sql | npm run -s dev:db:psql` on PowerShell, `npm run -s dev:db:psql < q.sql` on bash.
 
-To build with Webpack:
+A failed compile or crashed request in development shows up in `.next/dev/logs/next-development.log`.
 
-```bash
-npm run build-webpack
-```
+### Tests
 
-To analyze bundle size:
+Tests use Vitest (`vitest.config.ts`) and live beside the source or in `__tests__/`. They run only against the database in `.env.test`: `tests/test-db.ts` refuses to start if the file is missing or its `DATABASE_URL` matches the one in `.env`, and `tests/global-setup.ts` runs `prisma migrate deploy` against it. Keep that database disposable — tests run migrations and can wipe data.
 
-```bash
-npm run build:analyze
-```
+`generated/prisma` is gitignored. When schema changes don't show up, run `npx prisma generate`: a stale client makes tests fail with "column does not exist".
 
-### Production build (includes Prisma steps)
+### Before committing
 
-```bash
-npm run build:production
-```
+Run `npm run check:doc-citations` when a change touches documentation or moves a file a doc names. Run `npm run lint`, `npm run typecheck` and the full test suite when it touches code. `.github/workflows/test.yml` runs all four checks on push to `main` and on pull requests. That workflow does not build, so run a production build before merging changes that touch routing, config or Prisma.
 
-This runs `prisma generate`, `prisma migrate deploy`, and `next build`. In Coolify the equivalent build command is `npx prisma migrate deploy && npm run build`; migrations must run before the build because the prerender reads the database.
+## Code Conventions
 
-### Start production server
+These are the implementation conventions. A reviewer judges what no tool can enforce against `CODING_STANDARDS.md`; the two files are halves of one standard.
 
-```bash
-npm run start                 # next start
-sh scripts/start-production.sh  # migrate (with retry) then next start; used by Coolify
-```
+- **Imports**: use the path aliases in `tsconfig.json` instead of relative chains.
+- **Components**: server components by default. Interactive components import `"client-only"` at the top; vendored shadcn primitives in `src/shared/ui/` keep `"use client"`; server-only modules import `"server-only"`. The Puck client/server boundary is documented in `src/puck/config.ts` — read it before adding a directive to a block.
+- **Feature modules**: inside `src/modules/<feature>/` the subfolders are a convention rather than a rule — `server/` for procedures and queries, `ui/` for components (split `admin/` and `public/` when both exist), `hooks/`, `lib/`, `store/` for Zustand. Code moves to `src/shared/` when a second module imports it, not in anticipation.
 
-`scripts/start-production.sh` is the Coolify start command. It retries `prisma migrate deploy` while the database container is still starting, then execs `npm run start`.
+## Database
 
----
+The Prisma schema is `prisma/schema.prisma`; the client generates to `generated/prisma` and is imported as `@/generated/prisma`. Schema changes ship with their migration files. Prisma maps models to quoted PascalCase tables and camelCase columns (`"PageRoot"`, `"puckData"`); `\dt` in `npm run -s dev:db:psql` lists them.
 
-## Testing Instructions
+### Raw SQL
 
-Tests run with **Vitest** (`vitest.config.ts`). Test files live alongside source files or in a `__tests__` directory.
+Prefer the typed client. When raw SQL is unavoidable, use the tagged templates (`db.$queryRaw` and `db.$executeRaw` with a template literal): interpolated values become bound parameters.
 
-```bash
-npm run test        # watch mode
-npm run test:run    # single run (used in CI)
-```
+Never put request data in an SQL identifier (table, column, `ORDER BY`, direction). Identifiers come from a closed allow-list — see the exhaustive `switch` in `src/shared/lib/lock-root.ts`.
 
-### Test database
+ESLint rejects `$queryRawUnsafe`, `$executeRawUnsafe` and `Prisma.raw`. The rare trusted exception (for example replaying a committed migration in a test) needs `// eslint-disable-next-line no-restricted-syntax` with a written justification.
 
-Vitest runs **only** against a dedicated PostgreSQL test database defined in `.env.test`; it refuses to start if that file is missing or if its `DATABASE_URL` is identical to the dev/production one in `.env` (`tests/test-db.ts`). `tests/global-setup.ts` runs `prisma migrate deploy` against the test database on every run.
+## API Patterns
 
-Recommended local setup: a disposable PostgreSQL 16 container, on a non-default port to avoid clashing with any local Postgres.
+tRPC lives in `src/trpc/`: routers in `routers/_app.ts`, context and init in `init.ts`, React client in `client.tsx`, server caller in `server.tsx`. `protectedProcedure` checks the Better Auth session.
 
-```bash
-npm run test:db:up      # docker compose up -d db (postgres:16 on localhost:5433)
-npm run test:run
-npm run test:db:down    # stop the container
-npm run test:db:reset   # recreate it from scratch (drops the volume)
-```
-
-`.env.test` (gitignored) should contain:
-
-```
-DATABASE_URL=postgresql://postgres:postgres@localhost:5433/pictures_writers_test
-```
-
-CI (`.github/workflows/test.yml`) provisions the same `postgres:16` as a service container and creates `.env` / `.env.test` at runtime. Don't point the test database at the production Coolify PostgreSQL: tests run migrations and can wipe data.
-
-> **Out-of-sync client gotcha**: `generated/prisma` is gitignored. If schema changes aren't reflected, run `npx prisma generate` — a stale client can make tests fail with "column does not exist".
-
-Before committing, always run:
-
-```bash
-npm run lint
-```
-
----
-
-## Code Style Guidelines
-
-### Linting
-
-```bash
-npm run lint
-```
-
-ESLint config is in `eslint.config.mjs`. It extends:
-
-- `eslint-config-next/core-web-vitals`
-- `eslint-config-next/typescript`
-
-Key rules:
-
-- `@typescript-eslint/no-unused-vars` is on — prefix unused variables/args with `_` to suppress warnings
-- `@typescript-eslint/no-namespace` allows declarations
-
-### TypeScript
-
-- Strict mode enabled
-- Module resolution: `bundler`
-- Target: `ES2017`
-- Isolated modules enabled
-
-### Import aliases
-
-```
-@/*              → ./src/*
-@/modules/*      → ./src/modules/*
-@/shared/*       → ./src/shared/*
-@/generated/*    → ./generated/*
-@/generated/prisma → ./generated/prisma
-```
-
-### Tailwind CSS v4
-
-- Global CSS imports (no `tailwind.config.ts` in use — Tailwind v4 CSS-based config)
-- PostCSS config in `postcss.config.js`
-- Animate utilities from `tailwindcss-animate` and `tw-animate-css`
-
-### Component conventions
-
-- Uses **shadcn/ui** components in `src/shared/ui/*`
-- Components are mostly React Server Components unless they need interactivity
-- Client components should import `"client-only"` at the top
-- Server-only code should import `"server-only"` at the top
-
-### File organization patterns
-
-```
-src/
-  app/              → Next.js App Router pages and layouts
-    (admin)/        → Admin route group
-    (auth)/         → Auth route group
-    (home)/         → Public site route group
-    api/            → API routes
-  modules/          → Feature modules (blog, mails, forms, pages, etc.)
-    <feature>/
-      server/       → Server-side code (API procedures, queries)
-      ui/           → UI components (admin/, public/)
-      hooks/        → React hooks
-      lib/          → Utilities
-      store/        → Zustand stores
-  shared/           → Shared code across modules
-    ui/             → shadcn/ui components
-    lib/            → Shared utilities (db.ts, auth.ts, utils.ts)
-    components/     → Shared components
-    hooks/          → Shared hooks
-    providers/      → React context providers
-  puck/             → Puck editor configuration and custom blocks
-  actions/          → Next.js Server Actions
-  data/             → Data fetching helpers
-  constants/        → App constants
-  schemas/          → Validation schemas
-  store/            → Global stores
-  styles/           → Global styles
-  trpc/             → tRPC setup (client, server, routers, init)
-```
-
----
+Some features use App Router API routes directly under `src/app/api/` — admin CRUD, checkout, media, products, UploadThing, webhooks. Both patterns are live; match the feature you are editing rather than introducing a third pattern.
 
 ## Build and Deployment
 
-### Build output
-
-- Next.js builds to `.next/`
-- Images use a custom `next/image` loader (`src/modules/media/lib/image-loader.ts`): renditions are served straight from the storage CDN and the Next optimizer route is not used for media
-- Trailing slashes are enabled (`trailingSlash: true`)
-
-### Deployment (Hetzner VPS + Coolify)
-
-Production is a single Hetzner VPS (ARM64, Ubuntu) managed with Coolify. The Next.js app and PostgreSQL run as Docker containers in the same Coolify project/environment; Coolify's Traefik terminates TLS with Let's Encrypt. There is no Vercel deployment and no Neon database anymore.
+Production is a single Hetzner VPS (ARM64, Ubuntu) managed with Coolify. The Next.js app and PostgreSQL run as Docker containers in the same Coolify project; Coolify's Traefik terminates TLS with Let's Encrypt.
 
 Coolify configuration:
 
@@ -289,8 +88,8 @@ Coolify configuration:
 
 Rules that follow from this setup:
 
-- The build container must reach PostgreSQL because `next build` prerenders pages that call Prisma (`getSettings`, `generateStaticParams`, sitemap/robots). This is why migrations run inside the build command, before `next build`.
-- Don't use Coolify's "Pre-deployment command" for migrations: it runs in the old container and is skipped on the first deploy. Keep migrations in the build command and the start script.
+- The build container must reach PostgreSQL because `next build` prerenders pages that call Prisma (`getSettings`, `generateStaticParams`, sitemap/robots). That is why migrations run inside the build command, before `next build`.
+- Keep migrations in the build command and the start script. Don't use Coolify's "Pre-deployment command" for them: it runs in the old container and is skipped on the first deploy.
 - Rolling deploys keep the old container alive while the new one builds, so migrations must be backwards compatible (expand/contract) and `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` must stay stable.
 - `NEXT_PUBLIC_*` variables are inlined at build time: changing one requires a redeploy, not a restart.
 - ISR cache is in-memory and per instance. The deployment is single-instance by design; freshness relies on `revalidatePath` (ADR-0001), with the 24h ISR backstop as a safety net.
@@ -298,83 +97,8 @@ Rules that follow from this setup:
 
 Operational docs:
 
-- Full migration plan (historical): `docs/self-hosting/`
 - Deploy, rollback, backup and restore runbook: `docs/self-hosting/08-operations-runbook.md`
-- Environment variable reference: `docs/self-hosting/appendice-a-variabili-ambiente.md`
 - Hosting decision: ADR-0032 (`docs/adr/0032-self-hosted-hetzner-coolify.md`)
-
-### Important build config
-
-- `outputFileTracingIncludes` includes Prisma client files to avoid runtime errors in Next.js 16
-- Handlebars is aliased to the dist build in both Turbopack and Webpack configs
-- React Compiler is enabled
-- Typed routes are enabled
-
----
-
-## Auth and Authorization
-
-### Authentication
-
-- **Better Auth** with Prisma adapter (`src/lib/auth.ts` and `src/shared/lib/auth.ts`)
-- Email/password login enabled with auto sign-in
-- Auth API route: `/api/auth/[...all]` (GET/POST handlers)
-- Custom session plugin adds `role` and `imageUrl` to sessions
-
-### Admin access
-
-- Admin routes use `requireAdminAuth()` to protect pages
-- Admin layout is at `src/app/(admin)/layout.tsx`
-- Role-based access is enforced via session role
-
----
-
-## Database
-
-### Prisma setup
-
-- Schema: `prisma/schema.prisma`
-- Client output: `generated/prisma`
-- Adapter: `@prisma/adapter-pg` (PostgreSQL)
-- Generator: `prisma-json-types-generator` for typed JSON fields
-
-### Key models
-
-- `User`, `Session`, `Account` — Better Auth
-- `Post`, `Category`, `Tag` — Blog
-- `Product`, `ShopCategory`, `Review` — Shop
-- `Page` — CMS pages (with Puck data)
-- `Form`, `FormSubmission` — Forms
-- `Audience`, `Contact`, `SingleSend`, `Template` — Email marketing
-- `Campaign`, `Block`, `Item` — Ad campaigns
-- `Settings`, `Language`, `Widget` — Site configuration
-
----
-
-## API Patterns
-
-### tRPC
-
-- tRPC router: `src/trpc/routers/_app.ts`
-- tRPC init/context: `src/trpc/init.ts`
-- React client: `src/trpc/client.tsx`
-- Server caller: `src/trpc/server.tsx`
-- Protected procedures use `protectedProcedure` which checks Better Auth session
-
-### App Router API routes
-
-Some features use Next.js App Router API routes directly under `src/app/api/`, including:
-
-- Admin CRUD APIs (`/api/admin/*`)
-- Auth API (`/api/auth/[...all]`)
-- Checkout API (`/api/checkout`)
-- Database API (`/api/database`)
-- Media API (`/api/media`)
-- Products API (`/api/products`)
-- UploadThing API (`/api/uploadthing`)
-- Webhooks (`/api/webhooks/*`)
-
----
 
 ## Common Gotchas
 
@@ -382,30 +106,23 @@ Some features use Next.js App Router API routes directly under `src/app/api/`, i
 
 2. **Handlebars bundling**: Handlebars is aliased to `handlebars/dist/handlebars.js` in both Turbopack and Webpack configs.
 
-3. **Trailing slashes**: `trailingSlash: true` is set. All URLs should use trailing slashes.
+3. **Trailing slashes**: `trailingSlash: true` is set. All route URLs use trailing slashes; `NEXT_PUBLIC_APP_URL` and `BETTER_AUTH_URL` are bare origins without one.
 
 4. **Images**: a custom loader is configured, so `/_next/image` is not used for media. Renditions are pregenerated at upload time (see ADR-0026); widths come from the shared ladder in `src/modules/media/lib/image-ladder.mjs`.
 
-5. **No middleware file**: Auth is handled per-page via `requireAdminAuth()` and via Better Auth API routes.
+5. **No middleware file**: Auth is handled per-page via `requireAdminAuth()` (`src/shared/lib/auth-utils.ts`) and via Better Auth API routes.
 
 6. **Two auth files**: There are two auth configurations — `src/lib/auth.ts` (used by API routes) and `src/shared/lib/auth.ts` (used by tRPC). Keep them in sync.
 
 7. **Puck styles**: Puck base styles are imported in admin and home layouts. Custom blocks live in `src/puck/blocks/`.
 
----
-
-## Pull Request Guidelines
-
-- Run `npm run lint` before committing
-- Ensure `npm run build` passes
-- For DB schema changes, include migration files (`npx prisma migrate dev`)
-- Update Prisma client if schema changed (`npx prisma generate`)
+8. **Puck canvas**: the canvas is an iframe and is not the page — block roots, selection clicks and markup parity differ. Read `docs/puck-canvas.md` before changing a block's interaction; for Puck internals read the `.reference/puck` clone (v0.24.0), not the minified `dist`.
 
 ## Agent skills
 
 ### Issue tracker
 
-Issues and specs live as markdown files under `.scratch/<feature-slug>/`. See `docs/agents/issue-tracker.md`.
+Issues and specs live as markdown files under `.scratch/<feature-slug>/`. Closing one has its own protocol — status, checklist, a `## Comments` entry naming the landing commit, and a ticket-only `docs(<area>): close the <ticket> ticket` commit — in `docs/agents/issue-tracker.md`.
 
 ### Triage labels
 
@@ -413,8 +130,10 @@ Use the default triage labels: `needs-triage`, `needs-info`, `ready-for-agent`, 
 
 ### Domain docs
 
-This is a single-context repo using root `CONTEXT.md` and `docs/adr/`. See `docs/agents/domain.md`.
+Single-context repo: root `GLOSSARY.md` plus `docs/adr/`. Read only the glossary sections for the terms in play, and start ADRs from the index in `docs/adr/README.md`. See `docs/agents/domain.md`.
 
 ### Marketing & SEO docs
 
-Strategy, content, SEO, email and launch documents live in `docs/marketing/` (they used to sit in `.agents/`). Start from `docs/marketing/README.md` for the map, reading order and current status.
+Strategy, content, SEO, email and launch documents live in `docs/marketing/`. Start from `docs/marketing/README.md` for the map, reading order and current status.
+
+Marketing skills look for `.agents/product-marketing.md`, which is a pointer to `docs/marketing/strategy/product-marketing.md` — the canonical product marketing context. Read that document, not the pointer.

@@ -6,6 +6,7 @@ import { Input } from "@/shared/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 import { Button } from "@/shared/ui/button";
 
+import { PANEL_CONTROL } from "@/puck/components/panel-control";
 import { PALETTE_COLORS, THEME_COLORS } from "@/puck/constants";
 
 import type { ValueColorInputProps } from "../types";
@@ -25,7 +26,11 @@ export const ValueColorInput = ({
       <Input
         name={name}
         type="text"
-        className="flex h-8 w-full px-3 py-1 text-xs placeholder:text-xs transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className={cn(
+          PANEL_CONTROL.box,
+          PANEL_CONTROL.fill,
+          "w-full placeholder:text-muted-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        )}
         value={value}
         onChange={handleInputChange}
         placeholder={placeholder}

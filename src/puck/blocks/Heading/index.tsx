@@ -1,41 +1,31 @@
-import { ReactNode } from "react";
-import { ComponentConfig } from "@puckeditor/core";
+import { type ComponentConfig } from "@puckeditor/core";
 
-import { cn } from "@/shared/lib/utils";
+import { richTextFields } from "@/puck/fields/rich-text";
+import { SizeField } from "@/puck/fields/size";
+import { SpacingField } from "@/puck/fields/spacing";
+import { TypographyField } from "@/puck/fields/typography";
+import { DisplayOnlyLayoutField } from "@/puck/fields/layout";
 
-import { Responsive } from "@/puck/utils/responsive";
+import { HEADING_DEFAULT_PROPS } from "../defaults";
 
-import { RichTextField } from "@/puck/fields/rich-text";
-import { DimensionField, DimensionProps } from "@/puck/fields/dimension";
-import { TypographyField, TypographyProps } from "@/puck/fields/typography";
+import type { HeadingProps } from "./types";
+import { HeadingLevelField } from "./field";
+import { renderHeadingBlock } from "./render";
 
-import {
-  getDimensionVars,
-  getTypographyVars,
-} from "@/puck/utils/get-style-vars";
-import { HeadingBlockUi } from "./ui/heading";
-
-export type HeadingProps = {
-  text?: ReactNode;
-  dimension?: Responsive<DimensionProps>;
-  typography?: Responsive<TypographyProps>;
-};
+export type { HeadingProps };
 
 export const Heading: ComponentConfig<HeadingProps> = {
+  // The block root is the element the render attaches `puck.dragRef` to;
+  // `inline` is Puck's only supported way to skip its wrapper `div`.
+  inline: true,
   fields: {
-    text: RichTextField,
-    dimension: DimensionField,
+    text: richTextFields.heading,
+    level: HeadingLevelField,
+    layout: DisplayOnlyLayoutField,
+    size: SizeField,
+    spacing: SpacingField,
     typography: TypographyField,
   },
-  defaultProps: {
-    text: "Heading",
-  },
-  render: ({ text, dimension, typography }) => {
-    const styleVars = {
-      ...getDimensionVars(dimension),
-      ...getTypographyVars(typography),
-    };
-
-    return <HeadingBlockUi text={text} styleVars={styleVars} />;
-  },
+  defaultProps: HEADING_DEFAULT_PROPS,
+  render: renderHeadingBlock,
 };

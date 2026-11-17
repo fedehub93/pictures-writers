@@ -103,6 +103,28 @@ Se il vecchio container è già stato fermato (nessun healthcheck o errore di ro
 
   (Evita di stampare segreti in terminali condivisi.)
 
+### 2.5 Migrazione dei documenti Puck (Flex e Grid → Container)
+
+Il passaggio a un solo blocco di layout elimina i tipi `Flex` e `Grid`: i documenti che li contengono vanno riscritti **prima** del deploy che li rimuove dal codice. Con la versione precedente ancora live un `Container` viene renderizzato correttamente; deployando prima, le pagine pubblicate mostrerebbero il placeholder del componente non trovato.
+
+1. Anteprima, che non scrive nulla e riporta ogni versione che cambierebbe:
+
+   ```bash
+   npm run puck:migrate-layout-blocks:dry-run
+   ```
+
+2. Esecuzione, con la versione precedente ancora in produzione e in una finestra di basso traffico:
+
+   ```bash
+   npm run puck:migrate-layout-blocks
+   ```
+
+3. Solo dopo, deploy del codice che rimuove i due blocchi.
+
+La trasformazione scrive nel rung desktop la modalità con cui il nodo veniva renderizzato (flex o grid) prima di cambiare il tipo, preserva le altre proprietà e i figli, ed è idempotente: una seconda esecuzione non riporta modifiche. `scanned` conta tutte le versioni di Page e Site region (bozze, correnti, live e storico); `documents` elenca le versioni modificate con i nodi toccati; `failed` elenca le righe non scritte e il motivo, senza interrompere il resto.
+
+Entrambi i comandi leggono il `DATABASE_URL` dell'ambiente in cui girano. Il container ancora live è la versione precedente e non ha lo script: l'esecuzione avviene da un checkout del nuovo branch con `DATABASE_URL` puntato al database di produzione (tramite tunnel SSH sul database), oppure con `docker run --rm` dell'immagine nuova sulla rete del progetto Coolify. Non eseguirla dentro il container della versione precedente.
+
 ---
 
 ## 3. Rollback dell'app
@@ -185,6 +207,34 @@ Non esiste più un fallback DNS verso Vercel/Neon: la produzione è la VPS. Il r
 | Errore umano su file | 0 (git) | minuti |
 
 Se ti serve un RPO più basso, aggiungi WAL archiving/PITR (pgBackRest/WAL-G) e testalo. Non improvvisare in emergenza.
+
+### 4.5 Restore di un dump in sviluppo
+
+Il dump di produzione contiene utenti veri, contenuti veri e **token di sessione in chiaro**: la
+colonna `token` di `Session` non è un hash. Se il `.env` di sviluppo condivide
+`BETTER_AUTH_SECRET` con la produzione, quel token vale anche là, e il dominio di produzione è
+scritto in questo stesso repo. Quindi, subito dopo un restore e prima di aprire qualunque
+sessione:
+
+1. Svuota le righe che sono credenziali:
+
+   ```bash
+   Get-Content scripts/sanitize-dev-dump.sql | npm run -s dev:db:psql
+   ```
+
+   Rimuove `Session`, `Verification`, `Credential` e `Integration`; utenti, account e contenuti
+   restano, quindi il sito locale si vede e il login funziona.
+
+2. Non copiare **nessuna** variabile di produzione nel `.env` di sviluppo. In particolare
+   `BETTER_AUTH_SECRET`, `SECRETS_ENCRYPTION_KEY`, `AUTOMATION_CREDENTIALS_KEY`,
+   `SCHEDULED_PUBLICATION_SECRET` e le chiavi di Resend, SendGrid e UploadThing. Le chiavi di
+   terze parti vivono solo in Coolify; in sviluppo si usano chiavi separate o vuote.
+
+3. Con chiavi di cifratura diverse, le righe con `secretEncrypted` sono illeggibili in locale: è
+   il comportamento voluto, e il passo 1 le elimina comunque.
+
+Un agente non lavora su questo database: `npm run dev:agent` usa `pictures_writers_agent`, come
+spiegano `AGENTS.md` e `docs/agents/browser-probe.md`.
 
 ---
 

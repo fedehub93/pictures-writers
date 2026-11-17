@@ -189,7 +189,8 @@ model User {
   invitationsCreated Invitation[]             @relation("InvitationCreator")
   activitiesAsActor  AdministrativeActivity[] @relation("ActivityActor")
 
-  pageVersions PageVersion[]
+  pageVersions       PageVersion[]
+  siteRegionVersions SiteRegionVersion[]
 
   postVersions PostVersion[]
   categories   Category[]
@@ -211,7 +212,7 @@ model User {
 
 /// Per-user arrangement of Dashboard widgets. Stores a sparse override (a list
 /// of widget instances keyed by a stable instance key) merged over the
-/// code-defined widget registry. See ADR-0015 and CONTEXT.md "Dashboard
+/// code-defined widget registry. See ADR-0015 and GLOSSARY.md "Dashboard
 /// layout".
 model DashboardLayout {
   id     String @id @default(uuid())
@@ -403,7 +404,7 @@ enum PageEditorType {
 }
 
 /// Logical page identity. Owns the stable slug and the two special version
-/// pointers (current draft + live version). See CONTEXT.md "Current version".
+/// pointers (current draft + live version). See GLOSSARY.md "Current version".
 model PageRoot {
   id   String @id @default(uuid())
   slug String @unique
@@ -462,9 +463,66 @@ model PageVersion {
   @@index([status, scheduledAt])
 }
 
+enum SiteRegionKey {
+  HEADER
+  FOOTER
+}
+
+/// Logical identity of a global Site region (header, footer). Mirrors
+/// PageRoot but is keyed by a fixed enum instead of a slug, because an
+/// Installation has at most one row per region. See GLOSSARY.md "Site region".
+model SiteRegion {
+  id  String        @id @default(uuid())
+  key SiteRegionKey @unique
+
+  firstPublishedAt DateTime?
+
+  currentVersion   SiteRegionVersion? @relation("SiteRegionCurrentVersion", fields: [currentVersionId], references: [id], onDelete: SetNull)
+  currentVersionId String?            @unique
+
+  liveVersion   SiteRegionVersion? @relation("SiteRegionLiveVersion", fields: [liveVersionId], references: [id], onDelete: SetNull)
+  liveVersionId String?            @unique
+
+  versions SiteRegionVersion[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// One revision of a Site region. Owns the mutable Puck content and a
+/// sequential version number scoped to its root.
+model SiteRegionVersion {
+  id String @id @default(uuid())
+
+  version Int
+
+  status   ContentStatus @default(DRAFT)
+  /// [PuckData]
+  puckData Json?         @db.JsonB
+
+  root   SiteRegion @relation(fields: [rootId], references: [id], onDelete: Cascade)
+  rootId String
+
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId String?
+
+  publishedAt DateTime?
+  scheduledAt DateTime?
+
+  currentForRoot SiteRegion? @relation("SiteRegionCurrentVersion")
+  liveForRoot    SiteRegion? @relation("SiteRegionLiveVersion")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([rootId, version])
+  @@index([rootId])
+  @@index([status, scheduledAt])
+}
+
 /// Logical post identity. Owns the stable slug, the first publication date,
 /// and the two special version pointers (current draft + live version).
-/// See CONTEXT.md "Post".
+/// See GLOSSARY.md "Post".
 model PostRoot {
   id   String @id @default(uuid())
   slug String @unique
@@ -769,7 +827,7 @@ model EmailSingleSendLog {
 // ─── Email conversations (inbound + one-to-one) ───────────────────────────────
 // Provider is global (EmailSetting). EmailAccount records live on top of it and
 // represent an address plus its display name, signature and activation state.
-// See ADR-0022 and CONTEXT.md "Email conversations".
+// See ADR-0022 and GLOSSARY.md "Email conversations".
 
 enum EmailMessageDirection {
   INBOUND
@@ -934,7 +992,7 @@ enum ProductAcquisitionMode {
 /// Logical product identity. Owns the stable slug, the immutable type, the
 /// first publication date, and the two special version pointers (current draft
 /// + live version). Durable references (reviews, order items, purchases) point
-/// here so they survive a new product revision. See CONTEXT.md "Product".
+/// here so they survive a new product revision. See GLOSSARY.md "Product".
 model ProductRoot {
   id   String      @id @default(uuid())
   slug String      @unique
@@ -1410,7 +1468,7 @@ enum AutomationStatus {
   PUBLISHED
 }
 
-/// Authored, versioned workflow blueprint in the CMS (see CONTEXT.md "Automation engine").
+/// Authored, versioned workflow blueprint in the CMS (see GLOSSARY.md "Automation engine").
 model Automation {
   id   String @id @default(uuid())
   name String
@@ -1543,7 +1601,7 @@ enum AutomationRunStepStatus {
   SKIPPED
 }
 
-/// Run-time ledger of one Node execution inside a Run (see CONTEXT.md "Step").
+/// Run-time ledger of one Node execution inside a Run (see GLOSSARY.md "Step").
 model AutomationRunStep {
   id String @id @default(uuid())
 
@@ -1585,7 +1643,7 @@ model AutomationRunStep {
   @@index([status, leaseExpiresAt, resumeAt])
 }
 
-/// Stored, encrypted secret that Nodes reference by id (see CONTEXT.md "Credential").
+/// Stored, encrypted secret that Nodes reference by id (see GLOSSARY.md "Credential").
 model Credential {
   id   String @id @default(uuid())
   name String
@@ -1627,7 +1685,7 @@ enum PaymentStatus {
   FAILED
 }
 
-/// Commercial buyer (see CONTEXT.md "Customer"), distinct from User and EmailContact.
+/// Commercial buyer (see GLOSSARY.md "Customer"), distinct from User and EmailContact.
 model Customer {
   id          String    @id @default(uuid())
   email       String    @unique
@@ -1642,7 +1700,7 @@ model Customer {
   updatedAt   DateTime  @updatedAt
 }
 
-/// Commercial request by a Customer to buy products or services (see CONTEXT.md "Order").
+/// Commercial request by a Customer to buy products or services (see GLOSSARY.md "Order").
 model Order {
   id          String      @id @default(uuid())
   orderNumber String      @unique
@@ -1665,7 +1723,7 @@ model Order {
   updatedAt   DateTime    @updatedAt
 }
 
-/// A single line inside an Order with a price/name snapshot (see CONTEXT.md "Order item").
+/// A single line inside an Order with a price/name snapshot (see GLOSSARY.md "Order item").
 model OrderItem {
   id           String   @id @default(uuid())
   orderId      String
@@ -1680,7 +1738,7 @@ model OrderItem {
   createdAt    DateTime @default(now())
 }
 
-/// Record of money received or expected for an Order (see CONTEXT.md "Payment").
+/// Record of money received or expected for an Order (see GLOSSARY.md "Payment").
 model Payment {
   id        String        @id @default(uuid())
   orderId   String

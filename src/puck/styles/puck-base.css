@@ -33,7 +33,107 @@
   grid-template-rows: var(--gtr-d);
 }
 
-/* --- 1. DIMENSION --- */
+/* --- 0a. ITEM LAYOUT ---
+   A block whose layout surface is an inner element (the Top bar slot) still
+   needs the item-level half of the layout contract on its root: `display`
+   hides the whole block and `align-self` describes it as a child of its
+   parent. The reset and the desktop-first cascade mirror `.puck-layout`. */
+.puck-layout-item {
+  --disp-d: initial;
+  --disp-t: initial;
+  --disp-m: initial;
+  --as-d: initial;
+  --as-t: initial;
+  --as-m: initial;
+
+  display: var(--disp-d);
+  align-self: var(--as-d);
+}
+
+@media (max-width: 1023px) {
+  .puck-layout-item {
+    display: var(--disp-t, var(--disp-d));
+    align-self: var(--as-t, var(--as-d));
+  }
+}
+
+@media (max-width: 767px) {
+  .puck-layout-item {
+    display: var(--disp-m, var(--disp-t, var(--disp-d)));
+    align-self: var(--as-m, var(--as-t, var(--as-d)));
+  }
+}
+
+/* --- 0b. DISPLAY (leaf blocks) ---
+   A leaf block only opts into the display rule when it carries an authored
+   display value. The class resets the variables locally so a parent's
+   `--disp-*` cannot leak into an unrelated block. */
+.puck-display {
+  --disp-d: initial;
+  --disp-t: initial;
+  --disp-m: initial;
+}
+
+.puck-display-d {
+  display: var(--disp-d);
+}
+
+/* --- 0c. ROOT ZONE (editor only) ---
+   While editing, Puck renders the document's root content into its own zone
+   element, which becomes the real parent of the top-level blocks. The published
+   page has no such element: those blocks are children of the root itself.
+   Without this rule the canvas lays the top level out as block flow while the
+   published page lays it out with the root's flex/grid, so the same document
+   measures differently — e.g. a Container with `max-width` and auto margins
+   fills its measure in the canvas and shrinks to fit on the live page.
+
+   The layout variables are inherited from the root, so the zone only declares
+   the container half of the contract. `align-self` is deliberately absent: it
+   describes the root as a child of its own parent, not its content. The
+   declarations carry no fallback, so a missing variable degrades the zone the
+   same way it degrades `.puck-layout`: parity is the contract, not a guess.
+
+   `root:default-zone` is Puck's `rootDroppableId` and the attribute exists only
+   in the canvas, so this rule cannot reach the published page. */
+[data-puck-dropzone="root:default-zone"] {
+  display: var(--disp-d);
+  flex-direction: var(--fd-d);
+  flex-wrap: var(--fwrap-d);
+  justify-content: var(--jc-d);
+  align-items: var(--ai-d);
+  align-content: var(--ac-d);
+  justify-items: var(--ji-d);
+  row-gap: var(--rgap-d);
+  column-gap: var(--cgap-d);
+  grid-template-columns: var(--gtc-d);
+  grid-template-rows: var(--gtr-d);
+}
+
+/* --- 0d. BLOCK ROOT (containing block) ---
+   A block root is the element the parent lays out and the editor selects. Puck
+   sets `position: relative` imperatively on the node it owns while editing, but
+   the published page had no equivalent: an absolutely positioned descendant
+   resolved against two different boxes. With 40px of padding on the block, a
+   child pinned to `top: 0` landed at dx 0 on the page and dx 40 in the canvas.
+
+   Declaring the same position on the root in both paths removes the
+   difference without changing layout: `position: relative` with no offsets
+   neither moves the box nor creates a stacking context (there is no `z-index`
+   here, and none is added). The class is separate from `.puck-dim` because the
+   empty Form placeholder is a block root that deliberately keeps its own
+   `size-full` box instead of the size and spacing `.puck-dim` declares. */
+.puck-block-root {
+  position: relative;
+}
+
+/* --- 1. BOX (size + spacing) ---
+   `.puck-dim` is the box scope, not the twin of an authoring field: the Size
+   and Spacing fields are two surfaces over one element. The class resets and
+   consumes the whole box — width, height, max width, min height, aspect ratio
+   and the four margins and paddings — so a value authored on a parent never
+   leaks into a block that did not author it. The name predates the split and is
+   kept on purpose: renaming it would touch every block root for no behavioural
+   change. */
 .puck-dim {
   /* Reset locale: se la variabile non è definita inline sull'elemento, 
      viene resettata e non eredita quella del genitore */
@@ -50,10 +150,6 @@
   --pr-d: initial;
   --pb-d: initial;
   --pl-d: initial;
-  --top-d: initial;
-  --bottom-d: initial;
-  --left-d: initial;
-  --right-d: initial;
 
   width: var(--w-d) !important;
   height: var(--h-d) !important;
@@ -68,10 +164,6 @@
   padding-right: var(--pr-d);
   padding-bottom: var(--pb-d);
   padding-left: var(--pl-d);
-  top: var(--top-d);
-  bottom: var(--bottom-d);
-  left: var(--left-d);
-  right: var(--right-d);
 }
 
 /* --- 2. TYPOGRAPHY --- */
@@ -93,11 +185,180 @@
   color: var(--tc-d);
 }
 
+/* --- 2a. RICH TEXT CONTAINER ---
+   The element that holds a block's authored rich text, shared by the Heading
+   and Text roots. Tailwind's preflight zeroes paragraph margins, so the rhythm
+   has to be restored here; sizes are in `em` to follow the block's typography
+   rather than pin a pixel value. The first and last child carry no outer
+   margin, so a container never adds space at its own edges. */
+.puck-rich-text p + p {
+  margin-top: 1em;
+}
+
+/* A paragraph after a list needs the same gap the list has before it:
+   the paragraph rule above only covers two adjacent paragraphs. */
+.puck-rich-text ul + p,
+.puck-rich-text ol + p {
+  margin-top: 1em;
+}
+
+/* Not a direct-child selector: Puck's editor wrapper sits between the block
+   root and the authored paragraphs, in both the canvas and the published
+   render. The descendant form reaches the first and last content element
+   through that wrapper. */
+.puck-rich-text :first-child {
+  margin-top: 0;
+}
+
+.puck-rich-text :last-child {
+  margin-bottom: 0;
+}
+
+/* Lists: Tailwind's preflight strips both the marker and the indent, so an
+   authored `<ul>`/`<ol>` needs them back. The top margin mirrors the
+   paragraph rhythm; the first/last-child rules above remove the outer edges. */
+.puck-rich-text ul,
+.puck-rich-text ol {
+  margin-top: 1em;
+  padding-inline-start: 1.5em;
+}
+
+.puck-rich-text ul {
+  list-style-type: disc;
+}
+
+.puck-rich-text ol {
+  list-style-type: decimal;
+}
+
+/* Headings inside a Text block are content, not the page's heading ladder, so
+   their scale is in `em` and follows the block's own font size. The top margin
+   keeps them apart from the passage above; the bottom one compresses the
+   paragraph that follows. */
+.puck-rich-text h1,
+.puck-rich-text h2,
+.puck-rich-text h3,
+.puck-rich-text h4,
+.puck-rich-text h5,
+.puck-rich-text h6 {
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.puck-rich-text h1 {
+  font-size: 2em;
+}
+
+.puck-rich-text h2 {
+  font-size: 1.5em;
+}
+
+.puck-rich-text h3 {
+  font-size: 1.25em;
+}
+
+.puck-rich-text h4 {
+  font-size: 1.125em;
+}
+
+.puck-rich-text h5 {
+  font-size: 1em;
+}
+
+.puck-rich-text h6 {
+  font-size: 0.875em;
+}
+
+/* --- 2b. EMPTY BLOCK PLACEHOLDER ---
+   Tiptap's Placeholder extension tags the empty text block at the caret with
+   `is-empty` and carries the block's hint in `data-placeholder`. The hint is a
+   decoration of the editor, never part of the document, so the published page
+   has neither the class nor the attribute. It floats out of flow and takes no
+   height: a cleared block still collapses, and the hint sits where the caret
+   is. */
+.puck-rich-text .is-empty[data-placeholder]::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* Puck's own stylesheet gives an empty paragraph a non-breaking space so the
+   caret has a line to sit on in the editor. The published page has no caret,
+   and a cleared block must not reserve a blank line. The rule is scoped to a
+   paragraph that is the only child - the cleared block - so an authored blank
+   line between two paragraphs keeps its height. In the canvas the paragraph at
+   the caret carries `data-placeholder` and keeps the hint above, and an empty
+   ProseMirror block holds a `<br>` so it is not `:empty` at all. */
+.puck-rich-text .rich-text p:empty:only-child:not([data-placeholder])::before {
+  content: none;
+}
+
+/* --- 3. NAVIGATION ---
+   Dedicated variables for the NavbarBlock. They are kept apart from `--fs-*`
+   and `--rgap-*` because `.puck-typo` / `.puck-layout` reset those on their own
+   wrappers. `--nav-fs-*` drives every link label; card typography and the CTA
+   keep their own sizes. `--nav-gap-*` drives the desktop top-level row and the
+   mobile sheet rows.
+
+   The defaults below are today's look: 14px inline labels with an 8px gap,
+   16px sheet labels with a 4px gap. Empty authored values emit no variable, so
+   a document created before the style field renders unchanged. */
+.puck-nav {
+  --nav-fs-d: initial;
+  --nav-fs-t: initial;
+  --nav-fs-m: initial;
+  --nav-gap-d: initial;
+  --nav-gap-t: initial;
+  --nav-gap-m: initial;
+
+  font-size: var(--nav-fs-d, 14px);
+}
+
+/* Link labels carry their own rule instead of relying on inheritance: the
+   shared `AccordionContent` hard-codes `text-sm`, which would otherwise pin
+   the nested mobile column links to 14px. A direct declaration wins over that
+   inherited size. */
+.puck-nav .puck-nav-label {
+  font-size: var(--nav-fs-d, 14px);
+}
+
+.puck-nav .puck-nav-row {
+  gap: var(--nav-gap-d, 8px);
+}
+
+/* The sheet is portaled to <body>, outside `.puck-nav`. The block repeats the
+   variables on `SheetContent`, and the sheet always uses the mobile value. */
+.puck-nav-sheet {
+  --nav-fs-d: initial;
+  --nav-fs-t: initial;
+  --nav-fs-m: initial;
+  --nav-gap-d: initial;
+  --nav-gap-t: initial;
+  --nav-gap-m: initial;
+
+  font-size: var(--nav-fs-m, var(--nav-fs-t, var(--nav-fs-d, 16px)));
+}
+
+.puck-nav-sheet .puck-nav-label {
+  font-size: var(--nav-fs-m, var(--nav-fs-t, var(--nav-fs-d, 16px)));
+}
+
+.puck-nav-sheet .puck-nav-sheet-list {
+  gap: var(--nav-gap-m, var(--nav-gap-t, var(--nav-gap-d, 4px)));
+}
+
 /* --- 4. DECORATION --- */
 .puck-deco {
   --op-d: initial;
   --bgc-d: initial;
-  --bw-d: initial;
+  --btw-d: initial;
+  --brw-d: initial;
+  --bbw-d: initial;
+  --blw-d: initial;
   --bs-d: initial;
   --bc-d: initial;
   --rtl-d: initial;
@@ -107,7 +368,10 @@
 
   opacity: var(--op-d);
   background-color: var(--bgc-d) !important;
-  border-width: var(--bw-d);
+  border-top-width: var(--btw-d, 0);
+  border-right-width: var(--brw-d, 0);
+  border-bottom-width: var(--bbw-d, 0);
+  border-left-width: var(--blw-d, 0);
   border-style: var(--bs-d);
   border-color: var(--bc-d);
   border-top-left-radius: var(--rtl-d);
@@ -116,9 +380,113 @@
   border-bottom-right-radius: var(--rbr-d);
 }
 
+/* --- 4a. BUTTON STARTING LOOK (Variant and base box) ---
+   A Button's starting look is two kinds of thing, and both are rules here. The
+   Variant is one prop in the document and paints Decoration and Typography; the
+   base box is the block's own target-sized padding, which no document stores.
+   They declare the same Style variables the render used to write inline, one
+   specificity level below an inline declaration, so an authored value still
+   wins and the look is not repeated on every instance (ADR-0045).
+
+   Three rules govern this section. A rule here declares custom properties only
+   — never a property, never `!important` — because a property would outrank the
+   variables `.puck-deco`, `.puck-typo` and `.puck-dim` read, taking the value
+   out of the author's hands: an empty field could not reach the class's value
+   and an authored value would need a third mechanism to win. It declares the
+   desktop rung only: the ladder's `var(--bgc-t, var(--bgc-d))` carries the
+   value to tablet and mobile, while the reset scope's `initial` keeps an
+   ancestor's value from leaking in. An authored value is inline and outranks
+   the class at every rung, so a value written on a wider rung is what the
+   narrower ones inherit — the same rule every other block follows. And it is
+   written after the reset it has to outrank: the Variant rules after
+   `.puck-deco` and `.puck-typo`, the base box after `.puck-dim`. At equal
+   specificity, a later reset would erase the value.
+
+   Primary and secondary dictate no state variables, so the hover rule in §9
+   derives one from their base colour. Outline and ghost name the theme's hover
+   surface, because a transparent background only yields a faint foreground
+   wash. */
+
+/* The base box: every Button is a target-sized control, authored or not. An
+   empty Spacing field means "nothing authored here", so a cleared value falls
+   back to these four paddings instead of unsetting the box and collapsing the
+   Button. */
+.puck-button-box {
+  --pt-d: 0.5rem;
+  --pr-d: 1rem;
+  --pb-d: 0.5rem;
+  --pl-d: 1rem;
+}
+
+.puck-button-primary {
+  --bgc-d: var(--primary);
+  --bs-d: solid;
+  --bc-d: var(--primary);
+  --btw-d: 1px;
+  --brw-d: 1px;
+  --bbw-d: 1px;
+  --blw-d: 1px;
+  --rtl-d: var(--radius);
+  --rtr-d: var(--radius);
+  --rbl-d: var(--radius);
+  --rbr-d: var(--radius);
+  --tc-d: var(--primary-foreground);
+  --fw-d: 500;
+}
+
+.puck-button-secondary {
+  --bgc-d: var(--secondary);
+  --bs-d: solid;
+  --bc-d: var(--secondary);
+  --btw-d: 1px;
+  --brw-d: 1px;
+  --bbw-d: 1px;
+  --blw-d: 1px;
+  --rtl-d: var(--radius);
+  --rtr-d: var(--radius);
+  --rbl-d: var(--radius);
+  --rbr-d: var(--radius);
+  --tc-d: var(--secondary-foreground);
+  --fw-d: 500;
+}
+
+.puck-button-outline {
+  --bgc-d: transparent;
+  --bs-d: solid;
+  --bc-d: var(--border);
+  --btw-d: 1px;
+  --brw-d: 1px;
+  --bbw-d: 1px;
+  --blw-d: 1px;
+  --rtl-d: var(--radius);
+  --rtr-d: var(--radius);
+  --rbl-d: var(--radius);
+  --rbr-d: var(--radius);
+  --tc-d: var(--foreground);
+  --fw-d: 500;
+  --bgc-h-d: var(--accent);
+}
+
+.puck-button-ghost {
+  --bgc-d: transparent;
+  --bs-d: solid;
+  --bc-d: transparent;
+  --btw-d: 1px;
+  --brw-d: 1px;
+  --bbw-d: 1px;
+  --blw-d: 1px;
+  --rtl-d: var(--radius);
+  --rtr-d: var(--radius);
+  --rbl-d: var(--radius);
+  --rbr-d: var(--radius);
+  --tc-d: var(--foreground);
+  --fw-d: 500;
+  --bgc-h-d: var(--accent);
+}
+
 /* --- RESPONSIVE LOGIC (Desktop-First) --- */
 
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
   .puck-layout {
     /* Reset locale Tablet */
     --disp-t: initial;
@@ -148,6 +516,25 @@
     grid-template-rows: var(--gtr-t, var(--gtr-d));
   }
 
+  .puck-display-t {
+    display: var(--disp-t);
+  }
+
+  /* Root zone: only the container half follows the layout ladder. */
+  [data-puck-dropzone="root:default-zone"] {
+    display: var(--disp-t, var(--disp-d));
+    flex-direction: var(--fd-t, var(--fd-d));
+    flex-wrap: var(--fwrap-t, var(--fwrap-d));
+    justify-content: var(--jc-t, var(--jc-d));
+    align-items: var(--ai-t, var(--ai-d));
+    align-content: var(--ac-t, var(--ac-d));
+    justify-items: var(--ji-t, var(--ji-d));
+    row-gap: var(--rgap-t, var(--rgap-d));
+    column-gap: var(--cgap-t, var(--cgap-d));
+    grid-template-columns: var(--gtc-t, var(--gtc-d));
+    grid-template-rows: var(--gtr-t, var(--gtr-d));
+  }
+
   .puck-dim {
     /* Reset variabili Tablet per evitare eredità */
     --w-t: initial;
@@ -163,10 +550,6 @@
     --pr-t: initial;
     --pb-t: initial;
     --pl-t: initial;
-    --top-t: initial;
-    --bottom-t: initial;
-    --left-t: initial;
-    --right-t: initial;
 
     width: var(--w-t, var(--w-d)) !important;
     height: var(--h-t, var(--h-d)) !important;
@@ -181,10 +564,6 @@
     padding-right: var(--pr-t, var(--pr-d));
     padding-bottom: var(--pb-t, var(--pb-d));
     padding-left: var(--pl-t, var(--pl-d));
-    top: var(--top-t, var(--top-d));
-    bottom: var(--bottom-t, var(--bottom-d));
-    left: var(--left-t, var(--left-d));
-    right: var(--right-t, var(--right-d));
   }
   .puck-typo {
     --ff-t: initial;
@@ -204,10 +583,28 @@
     color: var(--tc-t, var(--tc-d));
   }
 
+  .puck-nav {
+    --nav-fs-t: initial;
+    --nav-gap-t: initial;
+
+    font-size: var(--nav-fs-t, var(--nav-fs-d, 14px));
+  }
+
+  .puck-nav .puck-nav-label {
+    font-size: var(--nav-fs-t, var(--nav-fs-d, 14px));
+  }
+
+  .puck-nav .puck-nav-row {
+    gap: var(--nav-gap-t, var(--nav-gap-d, 8px));
+  }
+
   .puck-deco {
     --op-t: initial;
     --bgc-t: initial;
-    --bw-t: initial;
+    --btw-t: initial;
+    --brw-t: initial;
+    --bbw-t: initial;
+    --blw-t: initial;
     --bs-t: initial;
     --bc-t: initial;
     --rtl-t: initial;
@@ -216,8 +613,11 @@
     --rbr-t: initial;
 
     opacity: var(--op-t, var(--op-d));
-    background-color: var(--bgc-t, var(--bgc-d));
-    border-width: var(--bw-t, var(--bw-d));
+    background-color: var(--bgc-t, var(--bgc-d)) !important;
+    border-top-width: var(--btw-t, var(--btw-d, 0));
+    border-right-width: var(--brw-t, var(--brw-d, 0));
+    border-bottom-width: var(--bbw-t, var(--bbw-d, 0));
+    border-left-width: var(--blw-t, var(--blw-d, 0));
     border-style: var(--bs-t, var(--bs-d));
     border-color: var(--bc-t, var(--bc-d));
     border-top-left-radius: var(--rtl-t, var(--rtl-d));
@@ -225,6 +625,14 @@
     border-bottom-left-radius: var(--rbl-t, var(--rbl-d));
     border-bottom-right-radius: var(--rbr-t, var(--rbr-d));
   }
+}
+
+/* --- 5. TOP BAR --- */
+/* An empty Top bar must leave no strip behind on the public site. The public
+   variant is the only one that opts into this rule, so an empty bar stays
+   selectable and droppable inside the editor canvas. */
+.puck-top-bar-public:has(> .puck-top-bar-slot:empty) {
+  display: none;
 }
 
 @media (max-width: 767px) {
@@ -257,6 +665,25 @@
     grid-template-rows: var(--gtr-m, var(--gtr-t, var(--gtr-d)));
   }
 
+  .puck-display-m {
+    display: var(--disp-m);
+  }
+
+  /* Root zone: only the container half follows the layout ladder. */
+  [data-puck-dropzone="root:default-zone"] {
+    display: var(--disp-m, var(--disp-t, var(--disp-d)));
+    flex-direction: var(--fd-m, var(--fd-t, var(--fd-d)));
+    flex-wrap: var(--fwrap-m, var(--fwrap-t, var(--fwrap-d)));
+    justify-content: var(--jc-m, var(--jc-t, var(--jc-d)));
+    align-items: var(--ai-m, var(--ai-t, var(--ai-d)));
+    align-content: var(--ac-m, var(--ac-t, var(--ac-d)));
+    justify-items: var(--ji-m, var(--ji-t, var(--ji-d)));
+    row-gap: var(--rgap-m, var(--rgap-t, var(--rgap-d)));
+    column-gap: var(--cgap-m, var(--cgap-t, var(--cgap-d)));
+    grid-template-columns: var(--gtc-m, var(--gtc-t, var(--gtc-d)));
+    grid-template-rows: var(--gtr-m, var(--gtr-t, var(--gtr-d)));
+  }
+
   .puck-dim {
     /* Reset variabili Mobile */
     --w-m: initial;
@@ -272,10 +699,6 @@
     --pr-m: initial;
     --pb-m: initial;
     --pl-m: initial;
-    --top-m: initial;
-    --bottom-m: initial;
-    --left-m: initial;
-    --right-m: initial;
 
     width: var(--w-m, var(--w-t, var(--w-d))) !important;
     height: var(--h-m, var(--h-t, var(--h-d))) !important;
@@ -290,10 +713,6 @@
     padding-right: var(--pr-m, var(--pr-t, var(--pr-d)));
     padding-bottom: var(--pb-m, var(--pb-t, var(--pb-d)));
     padding-left: var(--pl-m, var(--pl-t, var(--pl-d)));
-    top: var(--top-m, var(--top-t, var(--top-d)));
-    bottom: var(--bottom-m, var(--bottom-t, var(--bottom-d)));
-    left: var(--left-m, var(--left-t, var(--left-d)));
-    right: var(--right-m, var(--right-t, var(--right-d)));
   }
   .puck-typo {
     --ff-m: initial;
@@ -313,10 +732,28 @@
     color: var(--tc-m, var(--tc-t, var(--tc-d)));
   }
 
+  .puck-nav {
+    --nav-fs-m: initial;
+    --nav-gap-m: initial;
+
+    font-size: var(--nav-fs-m, var(--nav-fs-t, var(--nav-fs-d, 14px)));
+  }
+
+  .puck-nav .puck-nav-label {
+    font-size: var(--nav-fs-m, var(--nav-fs-t, var(--nav-fs-d, 14px)));
+  }
+
+  .puck-nav .puck-nav-row {
+    gap: var(--nav-gap-m, var(--nav-gap-t, var(--nav-gap-d, 8px)));
+  }
+
   .puck-deco {
     --op-m: initial;
     --bgc-m: initial;
-    --bw-m: initial;
+    --btw-m: initial;
+    --brw-m: initial;
+    --bbw-m: initial;
+    --blw-m: initial;
     --bs-m: initial;
     --bc-m: initial;
     --rtl-m: initial;
@@ -325,13 +762,264 @@
     --rbr-m: initial;
 
     opacity: var(--op-m, var(--op-t, var(--op-d)));
-    background-color: var(--bgc-m, var(--bgc-t, var(--bgc-d)));
-    border-width: var(--bw-m, var(--bw-t, var(--bw-d)));
+    background-color: var(--bgc-m, var(--bgc-t, var(--bgc-d))) !important;
+    border-top-width: var(--btw-m, var(--btw-t, var(--btw-d, 0)));
+    border-right-width: var(--brw-m, var(--brw-t, var(--brw-d, 0)));
+    border-bottom-width: var(--bbw-m, var(--bbw-t, var(--bbw-d, 0)));
+    border-left-width: var(--blw-m, var(--blw-t, var(--blw-d, 0)));
     border-style: var(--bs-m, var(--bs-t, var(--bs-d)));
     border-color: var(--bc-m, var(--bc-t, var(--bc-d)));
     border-top-left-radius: var(--rtl-m, var(--rtl-t, var(--rtl-d)));
     border-top-right-radius: var(--rtr-m, var(--rtr-t, var(--rtr-d)));
     border-bottom-left-radius: var(--rbl-m, var(--rbl-t, var(--rbl-d)));
     border-bottom-right-radius: var(--rbr-m, var(--rbr-t, var(--rbr-d)));
+  }
+}
+
+/* --- 6. EDITOR-ONLY VISIBILITY PLACEHOLDER ---
+   A block hidden at the viewport selected in the toolbar stays in the canvas
+   as a dashed ghost, so it remains selectable and editable.
+
+   The placeholder class rides on the block's own root. Every block is inline
+   and attaches Puck's drag ref to that element, so the node carrying
+   `puck-hidden-placeholder` is the node Puck owns (`data-puck-component`):
+   there is no wrapper between the two any more, and the selectors below match
+   the class on the block itself instead of reaching through a parent.
+
+   The editor-only guarantee is the class emission, not the selector: only
+   `getLayoutClassNames(…, { editing: true })` emits these classes and the
+   published render has no equivalent. Keeping the rules class-based also
+   keeps them independent of Puck's canvas attributes, so an upgrade that stops
+   tagging the node cannot leave a hidden block at its authored
+   `display: none`, invisible and unselectable rather than merely un-ghosted.
+
+   The canvas is an iframe whose width is exactly the selected bucket, so the
+   media queries below already identify the viewport being edited. That is why
+   the ghost no longer needs a marker on the editor shell: an attribute on an
+   ancestor outside the iframe cannot reach the canvas, while the width can.
+
+   The ghost properties are reset locally, the way `.puck-display` resets the
+   display ladder: a hidden parent is a ghost too, and without the reset its
+   outline and label are inherited by a nested block hidden at a different
+   breakpoint.
+
+   With a single element the fade cannot sit on the content while the outline
+   and the label stay solid: `opacity` on the root fades the box, the outline
+   and the label together. That is the simpler option and reads correctly — a
+   ghost that is uniformly faint. It is declared inside the media queries, not
+   on the base rule, so an authored opacity keeps applying at every other
+   width.
+
+   Each media query sets the ghost properties only for the breakpoint it owns,
+   so the ghost appears at exactly one canvas width. With the properties unset
+   the outline is 0px and `content: none` draws no label. */
+.puck-hidden-placeholder {
+  --puck-ghost-outline: initial;
+  --puck-hidden-label: initial;
+
+  position: relative;
+  outline: var(--puck-ghost-outline, 0) dashed
+    var(--puck-color-selection-border, #94a3b8);
+  outline-offset: -2px;
+}
+
+.puck-hidden-placeholder::after {
+  content: var(--puck-hidden-label, none);
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  transform: translateY(-100%);
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--puck-color-surface-inverse, #181818);
+  color: #fff;
+  font-family: var(--puck-font-family, inherit);
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* The authored `display: none` would otherwise make the block impossible to
+   select at the viewport being edited. The ghost restores a normal box only
+   for the matching bucket; every other width keeps the authored display. */
+@media (min-width: 1024px) {
+  .puck-hidden-at-desktop.puck-hidden-placeholder {
+    display: block !important;
+    --puck-ghost-outline: 2px;
+    --puck-hidden-label: "Hidden on desktop";
+    opacity: 0.45;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .puck-hidden-at-tablet.puck-hidden-placeholder {
+    display: block !important;
+    --puck-ghost-outline: 2px;
+    --puck-hidden-label: "Hidden on tablet";
+    opacity: 0.45;
+  }
+}
+
+@media (max-width: 767px) {
+  .puck-hidden-at-mobile.puck-hidden-placeholder {
+    display: block !important;
+    --puck-ghost-outline: 2px;
+    --puck-hidden-label: "Hidden on mobile";
+    opacity: 0.45;
+  }
+}
+
+/* --- 7. TEXT EDIT MODE (canvas only) ---
+   A text block mounts Puck's inline editor on the canvas, and Puck mounts it
+   always: the editor's overlay portal covers the whole block root, so the text
+   takes the pointer, the caret enters on the first click, and a press can never
+   reach the block to drag it (dnd-kit refuses a target inside
+   `[contenteditable]`).
+
+   The lock covers the portal *and its descendants*, which is the part that
+   matters: Puck forces `pointer-events: auto !important` on the portal and on
+   every descendant, so a rule that names only the editor leaves the paragraphs
+   hit-testable and locks nothing. Covering the descendants makes the block root
+   the press target — the text becomes a handle for the block — which is the
+   intended behaviour, not a side effect.
+
+   The armed rule is the same mechanism in reverse: `data-text-editing` exists
+   on the block root only while the editor store names that block, and it gives
+   the portal its pointer back. Both rules carry `!important` and outrank Puck's
+   base `[data-puck-overlay-portal]` rule by specificity, so the stylesheet
+   order cannot leave a locked block editable. (Puck's rule for an in-progress
+   drag ties with the armed rule at (0,3,0); source order decides there, and
+   during a drag the portal's pointer-events no longer matter.)
+
+   Neither rule matches the published page: `data-puck-component` is written by
+   Puck's canvas only. This file is shared with the public layouts, so the two
+   declarations are in the public bundle, but they are inert bytes — no
+   attribute, no markup and no JavaScript change on the page. */
+[data-puck-component] [data-puck-overlay-portal],
+[data-puck-component] [data-puck-overlay-portal] * {
+  pointer-events: none !important;
+}
+
+[data-puck-component][data-text-editing] [data-puck-overlay-portal],
+[data-puck-component][data-text-editing] [data-puck-overlay-portal] * {
+  pointer-events: auto !important;
+}
+
+/* --- 8. TEXT EDIT ACTION (canvas only) ---
+   The action bar's Edit text / Done button is the only action that carries a
+   word instead of an icon, so it needs the label's size to keep the bar's
+   height; everything else about it is Puck's own `ActionBar.Action`. The
+   attribute is written by the editor override and exists nowhere else, so the
+   rule is inert bytes in the published bundle. */
+[data-text-edit-action] {
+  font-family: inherit;
+  font-size: var(--puck-actionbar-font-size, var(--puck-font-size-xxxs, 11px));
+  font-weight: var(--puck-font-weight-medium, 500);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Puck mounts the inline formatting toolbar while its richtext state names the
+   block, and that state outlives the block: undo followed by redo brings a text
+   block back with the toolbar on it while the block is locked. The bar scopes
+   the toolbar to the mode with an attribute on a wrapper, and the wrapper is
+   `display: contents` so Puck's actions stay the group's own flex children.
+   `data-puck-rte-menu` is the toolbar root's own marker, the one Puck reads on
+   blur to keep it mounted while a panel takes the focus. */
+.puck-text-edit-actions {
+  display: contents;
+}
+
+.puck-text-edit-actions:not([data-text-edit-armed]) [data-puck-rte-menu] {
+  display: none;
+}
+
+/* --- 9. BUTTON HOVER (the block system's only stateful rule) ---
+   A Button answers the pointer with nothing authored: the state is read, not
+   configured. This is deliberately the only stateful rule in the stylesheet,
+   and it exists to prove the naming contract rather than to introduce a
+   mechanism; adding focus or active later is a selector, a media query and a
+   variable, not a redesign.
+
+   The rule reads the hover state's own variables (`--bgc-h-d`, `--bgc-h-t`,
+   `--bgc-h-m`) and never redefines a base one. That is not a style preference:
+   an authored value reaches the block root as an inline custom property, and no
+   stylesheet rule outranks an inline declaration, so `:hover { --bgc-d: ... }`
+   would be dead against an author who painted the button.
+
+   Where no state variable is emitted — primary and secondary, whose background
+   is a colour of its own — the fallback is a mix of the base background with
+   the theme's foreground. Deriving from the background is what makes an
+   overridden primary hover from the author's colour instead of the theme's, and
+   mixing with the foreground (rather than black) keeps the wash visible on a
+   transparent background too, in either theme.
+
+   The state has two selectors on purpose. On the page it belongs to a control,
+   so `a` scopes it: a Button whose target resolves to nothing renders as text
+   and must not answer the pointer as if it were clickable. In the canvas the
+   stored Smart link is unresolved, so the same Button is drawn as text while it
+   is authored; `[data-puck-component]` is written by Puck's canvas only and lets
+   the canvas preview the state there. The published bundle carries the second
+   selector as inert bytes, like §7 and §8.
+
+   The state is the outer axis and the Breakpoint the inner one: the same
+   desktop → tablet → mobile fallback chain the base variables use, expressed
+   here with the state's values ahead of the derived colour. A `var()` takes
+   one fallback, so the rungs nest: `var(--a, var(--b, value))`. Listing them
+   in a single `var()` — `var(--a, var(--b), value)` — makes everything after
+   the first comma one fallback, a comma-separated list that is two values for
+   one property and therefore invalid at computed-value time; the box then
+   falls back to the initial `background-color` and turns transparent.
+   `background-color` carries `!important` because `.puck-deco` declares it
+   that way; the state rule outranks it by specificity, so the order of the
+   two is not load-bearing.
+
+   Only colour changes, and it is transitioned rather than laid out: a hover
+   that moved the box would resize the page around it. The duration is a design
+   choice, short enough to read as feedback on a heavy page. */
+.puck-button {
+  transition: background-color 160ms ease;
+}
+
+a.puck-button:hover,
+[data-puck-component].puck-button:hover {
+  background-color: var(
+    --bgc-h-d,
+    color-mix(in srgb, var(--bgc-d) 85%, var(--foreground))
+  ) !important;
+}
+
+@media (max-width: 1023px) {
+  a.puck-button:hover,
+  [data-puck-component].puck-button:hover {
+    background-color: var(
+      --bgc-h-t,
+      var(
+        --bgc-h-d,
+        color-mix(in srgb, var(--bgc-t, var(--bgc-d)) 85%, var(--foreground))
+      )
+    ) !important;
+  }
+}
+
+@media (max-width: 767px) {
+  a.puck-button:hover,
+  [data-puck-component].puck-button:hover {
+    background-color: var(
+      --bgc-h-m,
+      var(
+        --bgc-h-t,
+        var(
+          --bgc-h-d,
+          color-mix(
+            in srgb,
+            var(--bgc-m, var(--bgc-t, var(--bgc-d))) 85%,
+            var(--foreground)
+          )
+        )
+      )
+    ) !important;
   }
 }

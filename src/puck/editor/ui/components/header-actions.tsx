@@ -13,12 +13,12 @@ import { cn } from "@/shared/lib/utils";
 import { Skeleton } from "@/shared/ui/skeleton";
 import { Button } from "@/shared/ui/button";
 
-import { config } from "@/puck/custom-config";
+import type { PageEditorConfig } from "@/puck/config";
 
 import { PageUpdateValues } from "@/modules/pages/schemas";
 import { usePagesFilters } from "@/modules/pages/hooks/use-pages-filters";
 
-const usePuck = createUsePuck<typeof config>();
+const usePuck = createUsePuck<PageEditorConfig>();
 
 interface HeaderActionsProps {
   page: {

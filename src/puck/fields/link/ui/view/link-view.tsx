@@ -1,45 +1,357 @@
+"use client";
+
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { useTRPC } from "@/trpc/client";
+import { useDebounceValue } from "usehooks-ts";
+
+import { CommandSelect } from "@/shared/components/command-select";
+import { cn } from "@/shared/lib/utils";
+import { Skeleton } from "@/shared/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/shared/ui/select";
+
+import { PANEL_CONTROL, PanelSelectTrigger } from "@/puck/components/panel-control";
 import { PropHeader } from "@/puck/components/prop-header";
+import { SwitchInput } from "@/puck/components/switch-input";
 import { TextInput } from "@/puck/components/text-input";
 
-import type { LinkProps } from "../../index";
+import {
+  SMART_LINK_TYPES,
+  SMART_LINK_TYPE_LABELS,
+  type LinkProps,
+  type SmartLinkType,
+  getSmartLinkEntityId,
+  getSmartLinkType,
+  withLinkLabel,
+  withSmartLinkTarget,
+  withSmartLinkType,
+} from "../../types";
+
+const LINK_TYPE_OPTIONS: { value: SmartLinkType; label: string }[] =
+  SMART_LINK_TYPES.map((value) => ({
+    value,
+    label: SMART_LINK_TYPE_LABELS[value],
+  }));
+
+interface PickerOption {
+  id: string;
+  value: string;
+  title: string;
+}
 
 interface LinkViewProps {
   state: LinkProps;
   onUpdate: (values: LinkProps) => void;
-  resetProp: (key: keyof LinkProps) => void;
+  /**
+   * Show the visible label control. Blocks that render their own copy set this
+   * to false so the editor does not offer a label that never reaches the page.
+   */
+  showLabel?: boolean;
+  /**
+   * A label equal to this value is treated as unauthored, so selecting an
+   * entity still auto-fills the label from its title. Blocks whose default
+   * props carry a placeholder label set it here.
+   */
+  defaultLabel?: string;
+  /**
+   * Prefix for the control ids. A list renders one editor per row, so the ids
+   * must stay unique inside the properties panel.
+   */
+  idPrefix?: string;
 }
 
-export const LinkView = ({ state, onUpdate, resetProp }: LinkViewProps) => {
+export const LinkView = ({
+  state,
+  onUpdate,
+  showLabel = true,
+  defaultLabel,
+  idPrefix = "",
+}: LinkViewProps) => {
+  const trpc = useTRPC();
+  const [search, setSearch] = useDebounceValue("", 300);
+
+  const fieldId = (name: string) => `${idPrefix}${name}`;
+
+  const linkType = getSmartLinkType(state);
+
+  const pages = useQuery({
+    ...trpc.pages.getMany.queryOptions({ pageSize: 100, search }),
+    enabled: linkType === "page",
+    placeholderData: keepPreviousData,
+  });
+  const posts = useQuery({
+    ...trpc.posts.getMany.queryOptions({ pageSize: 100, search }),
+    enabled: linkType === "post",
+    placeholderData: keepPreviousData,
+  });
+  const products = useQuery({
+    ...trpc.products.getMany.queryOptions({
+      pageSize: 100,
+      search,
+      // Entity links only resolve against the live version, so the picker
+      // should not offer drafts that would render as plain text.
+      publishedOnly: true,
+    }),
+    enabled: linkType === "product",
+    placeholderData: keepPreviousData,
+  });
+  const categories = useQuery({
+    ...trpc.categories.getMany.queryOptions({ pageSize: 100, search }),
+    enabled: linkType === "category",
+    placeholderData: keepPreviousData,
+  });
+  const productCategories = useQuery({
+    ...trpc.productCategories.getMany.queryOptions({ pageSize: 100, search }),
+    enabled: linkType === "productCategory",
+    placeholderData: keepPreviousData,
+  });
+
+  const { options, isLoading } = getEntityOptions({
+    linkType,
+    pages: pages.data,
+    posts: posts.data,
+    products: products.data,
+    categories: categories.data,
+    productCategories: productCategories.data,
+    pagesLoading: pages.isLoading,
+    postsLoading: posts.isLoading,
+    productsLoading: products.isLoading,
+    categoriesLoading: categories.isLoading,
+    productCategoriesLoading: productCategories.isLoading,
+  });
+
+  const selectedId = getSmartLinkEntityId(state);
+  const pickerOptions = withSelectedOption(options, selectedId, state.label);
+
+  const handleTypeChange = (value: string) => {
+    setSearch("");
+    onUpdate(withSmartLinkType(state, value as SmartLinkType));
+  };
+
+  const handleTargetChange = (value: string | null) => {
+    if (!value) return;
+
+    const option = pickerOptions.find((candidate) => candidate.value === value);
+    const previousOption = pickerOptions.find(
+      (candidate) => candidate.value === selectedId,
+    );
+
+    // The label is auto-filled from the entity title, but a label the editor
+    // typed must survive a target change. "Unchanged since it was auto-filled"
+    // is detected by comparing it with the previous entity title; a block
+    // default label is not text the author typed either.
+    const hasCustomLabel =
+      Boolean(state.label?.trim()) &&
+      state.label !== defaultLabel &&
+      state.label !== previousOption?.title;
+    const next = withSmartLinkTarget(state, value);
+
+    onUpdate(
+      withLinkLabel(next, hasCustomLabel ? state.label : option?.title),
+    );
+  };
+
   return (
     <div className="grid grid-cols-1 gap-y-4 p-1">
       <div className="flex flex-col gap-y-1">
         <PropHeader
-          name="label"
-          label="Label"
-          isModified={state.label !== undefined}
-          onReset={() => resetProp("label")}
+          name={fieldId("type")}
+          label="Link type"
+          isModified={linkType !== "external"}
+          onReset={() => onUpdate(withSmartLinkType(state, "external"))}
         />
-        <TextInput
-          name="label"
-          value={state.label}
-          onChange={(newVal) => onUpdate({ label: newVal || undefined })}
-          placeholder="Google"
-        />
+        <Select value={linkType} onValueChange={handleTypeChange}>
+          <PanelSelectTrigger id={fieldId("type")} className="w-full">
+            <SelectValue placeholder="Link type" />
+          </PanelSelectTrigger>
+          <SelectContent>
+            {LINK_TYPE_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
-      <div className="flex flex-col gap-y-1">
-        <PropHeader
-          name="href"
-          label="Link"
-          isModified={state.href !== undefined}
-          onReset={() => resetProp("href")}
-        />
-        <TextInput
-          name="href"
-          value={state.href}
-          onChange={(newVal) => onUpdate({ href: newVal || undefined })}
-          placeholder="https://google.com/"
-        />
-      </div>
+
+      {showLabel ? (
+        <div className="flex flex-col gap-y-1">
+          <PropHeader
+            name={fieldId("label")}
+            label="Label"
+            isModified={state.label !== undefined}
+            onReset={() => onUpdate(withLinkLabel(state, undefined))}
+          />
+          <TextInput
+            name={fieldId("label")}
+            value={state.label}
+            onChange={(newVal) =>
+              onUpdate(withLinkLabel(state, newVal || undefined))
+            }
+            placeholder="Leave empty to use the content title"
+          />
+        </div>
+      ) : null}
+
+      {linkType === "external" ? (
+        <>
+          <div className="flex flex-col gap-y-1">
+            <PropHeader
+              name={fieldId("url")}
+              label="URL"
+              isModified={state.type === "external" && state.url !== ""}
+              onReset={() => onUpdate(withSmartLinkTarget(state, ""))}
+            />
+            <TextInput
+              name={fieldId("url")}
+              value={state.type === "external" ? state.url : ""}
+              onChange={(newVal) => onUpdate(withSmartLinkTarget(state, newVal))}
+              placeholder="https://google.com/"
+            />
+          </div>
+
+          <div className="flex flex-col gap-y-1">
+            <PropHeader
+              name={fieldId("openInNewTab")}
+              label="Opening"
+              isModified={
+                state.type === "external" && state.openInNewTab === true
+              }
+              onReset={() =>
+                state.type === "external" &&
+                onUpdate({ ...state, openInNewTab: undefined })
+              }
+            />
+            <SwitchInput
+              name={fieldId("openInNewTab")}
+              label="Open in new tab"
+              checked={state.type === "external" && state.openInNewTab === true}
+              onChange={(checked) => {
+                if (state.type !== "external") return;
+                onUpdate({ ...state, openInNewTab: checked });
+              }}
+            />
+          </div>
+        </>
+      ) : (
+        <div className="flex flex-col gap-y-1">
+          <PropHeader
+            name={fieldId("target")}
+            label="Destination"
+            isModified={Boolean(selectedId)}
+            onReset={() => onUpdate(withSmartLinkTarget(state, ""))}
+          />
+          {isLoading && options.length === 0 ? (
+            <Skeleton className={cn("w-full", PANEL_CONTROL.height)} />
+          ) : (
+            <CommandSelect
+              options={pickerOptions.map((option) => ({
+                id: option.id,
+                value: option.value,
+                children: <span>{option.title}</span>,
+              }))}
+              onSelect={handleTargetChange}
+              onSearch={setSearch}
+              value={selectedId ?? ""}
+              placeholder="Select content"
+              className={cn(PANEL_CONTROL.picker, "w-full")}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 };
+
+interface EntityOptionsInput {
+  linkType: SmartLinkType;
+  pages: { items: { rootId: string; title: string }[] } | undefined;
+  posts: { items: { rootId: string; title: string }[] } | undefined;
+  products: { items: { rootId: string; title: string }[] } | undefined;
+  categories: { items: { id: string; title: string }[] } | undefined;
+  productCategories: { items: { id: string; title: string }[] } | undefined;
+  pagesLoading: boolean;
+  postsLoading: boolean;
+  productsLoading: boolean;
+  categoriesLoading: boolean;
+  productCategoriesLoading: boolean;
+}
+
+function getEntityOptions({
+  linkType,
+  pages,
+  posts,
+  products,
+  categories,
+  productCategories,
+  pagesLoading,
+  postsLoading,
+  productsLoading,
+  categoriesLoading,
+  productCategoriesLoading,
+}: EntityOptionsInput): { options: PickerOption[]; isLoading: boolean } {
+  switch (linkType) {
+    case "page":
+      return { options: toRootOptions(pages), isLoading: pagesLoading };
+    case "post":
+      return { options: toRootOptions(posts), isLoading: postsLoading };
+    case "product":
+      return { options: toRootOptions(products), isLoading: productsLoading };
+    case "category":
+      return { options: toIdOptions(categories), isLoading: categoriesLoading };
+    case "productCategory":
+      return {
+        options: toIdOptions(productCategories),
+        isLoading: productCategoriesLoading,
+      };
+    case "external":
+      return { options: [], isLoading: false };
+  }
+}
+
+function toRootOptions(
+  data: { items: { rootId: string; title: string }[] } | undefined,
+): PickerOption[] {
+  return (data?.items ?? []).map((item) => ({
+    id: item.rootId,
+    value: item.rootId,
+    title: item.title,
+  }));
+}
+
+function toIdOptions(
+  data: { items: { id: string; title: string }[] } | undefined,
+): PickerOption[] {
+  return (data?.items ?? []).map((item) => ({
+    id: item.id,
+    value: item.id,
+    title: item.title,
+  }));
+}
+
+/**
+ * Keep the current target visible when it is not in the first page of results
+ * (for example after opening an older document).
+ */
+function withSelectedOption(
+  options: PickerOption[],
+  selectedId: string | undefined,
+  label: string | undefined,
+): PickerOption[] {
+  if (!selectedId || options.some((option) => option.value === selectedId)) {
+    return options;
+  }
+
+  return [
+    {
+      id: selectedId,
+      value: selectedId,
+      title: label?.trim() || selectedId,
+    },
+    ...options,
+  ];
+}
