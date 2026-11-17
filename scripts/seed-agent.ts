@@ -1,10 +1,16 @@
 /**
- * Seed the agent database: an admin probe user and one page the browser probe can drive.
+ * Seed the agent database: an admin probe user, one page the browser probe can drive,
+ * and one published post.
  *
  *   npm run agent:seed
  *
  * Idempotent and it doubles as the probe's reset: the page content is rewritten from the
  * fixture on every run, so a probe that typed into the canvas starts from a known state.
+ *
+ * The published post is not for the probe: `/blog` reads `posts[0]` without a guard, so a
+ * database with no published post cannot prerender. Without it `next build` only runs
+ * against the development database, which is exactly what the agent database exists to
+ * avoid.
  *
  * The script only writes to `pictures_writers_agent` on localhost. That guard is the point:
  * the development database can hold a restored production dump, and a seed that ran there
@@ -17,6 +23,7 @@ import { resolve } from "node:path";
 
 import { hashPassword } from "better-auth/crypto";
 
+import { ContentStatus } from "@/generated/prisma";
 import { createPage } from "@/modules/pages/server/create-page";
 import { db } from "@/shared/lib/db";
 
@@ -42,6 +49,16 @@ const PROBE_PUCK_DATA: PrismaJson.PuckData = {
     },
   ],
   zones: {},
+};
+
+const PROBE_POST_SLUG = "blog/probe-post";
+const PROBE_POST_TITLE = "Probe post";
+const PROBE_POST_TEXT = "Probe post body";
+
+/** The smallest TipTap document the renderer accepts, matching the test fixture shape. */
+const PROBE_POST_BODY: PrismaJson.TipTapBodyData = {
+  type: "doc",
+  content: [{ type: "paragraph", content: [{ type: "text", text: PROBE_POST_TEXT }] }],
 };
 
 function assertAgentDatabase() {
@@ -161,6 +178,88 @@ async function upsertProbePage(userId: string) {
   return existing.id;
 }
 
+/** Create the single published version the static build needs, plus its author edge. */
+async function createProbePostVersion(rootId: string, userId: string) {
+  return db.postVersion.create({
+    data: {
+      rootId,
+      version: 1,
+      title: PROBE_POST_TITLE,
+      status: ContentStatus.PUBLISHED,
+      publishedAt: new Date(),
+      tiptapBodyData: PROBE_POST_BODY,
+      userId,
+      authors: { create: [{ userId, sort: 0 }] },
+    },
+  });
+}
+
+async function upsertProbePost(userId: string) {
+  const existing = await db.postRoot.findUnique({
+    where: { slug: PROBE_POST_SLUG },
+    include: { currentVersion: true, liveVersion: true },
+  });
+
+  if (!existing) {
+    const root = await db.postRoot.create({
+      data: { slug: PROBE_POST_SLUG, firstPublishedAt: new Date() },
+    });
+
+    const version = await createProbePostVersion(root.id, userId);
+
+    await db.postRoot.update({
+      where: { id: root.id },
+      data: { currentVersionId: version.id, liveVersionId: version.id },
+    });
+
+    return root.id;
+  }
+
+  const liveVersionId = existing.liveVersionId ?? existing.currentVersionId;
+
+  if (!liveVersionId) {
+    const version = await createProbePostVersion(existing.id, userId);
+
+    await db.postRoot.update({
+      where: { id: existing.id },
+      data: {
+        currentVersionId: version.id,
+        liveVersionId: version.id,
+        firstPublishedAt: existing.firstPublishedAt ?? new Date(),
+      },
+    });
+
+    return existing.id;
+  }
+
+  await db.postVersion.update({
+    where: { id: liveVersionId },
+    data: {
+      title: PROBE_POST_TITLE,
+      status: ContentStatus.PUBLISHED,
+      publishedAt: existing.liveVersion?.publishedAt ?? new Date(),
+      tiptapBodyData: PROBE_POST_BODY,
+    },
+  });
+
+  await db.postAuthor.upsert({
+    where: { postId_userId: { postId: liveVersionId, userId } },
+    create: { postId: liveVersionId, userId, sort: 0 },
+    update: {},
+  });
+
+  await db.postRoot.update({
+    where: { id: existing.id },
+    data: {
+      currentVersionId: existing.currentVersionId ?? liveVersionId,
+      liveVersionId,
+      firstPublishedAt: existing.firstPublishedAt ?? new Date(),
+    },
+  });
+
+  return existing.id;
+}
+
 /** Keep `PROBE_PAGE_ROOT_ID` in step with the database, so the probe needs no Prisma import. */
 function writePageRootId(rootId: string) {
   const path = resolve(process.env.AGENT_ENV_FILE ?? ".env.agent");
@@ -178,11 +277,13 @@ async function main() {
 
   const user = await upsertProbeUser();
   const rootId = await upsertProbePage(user.id);
+  const postRootId = await upsertProbePost(user.id);
 
   writePageRootId(rootId);
 
   console.log(`probe user: ${user.email}`);
   console.log(`probe page: /${PROBE_SLUG} (${rootId})`);
+  console.log(`probe post: /${PROBE_POST_SLUG} (${postRootId})`);
   console.log("builder URL: /admin/pages/" + rootId + "/builder/");
 }
 
