@@ -19,9 +19,9 @@ columns fill the admin content area exactly instead of overshooting it by 4px.
       does not move.
 - [x] The Widgets tab still scrolls through its `ScrollArea`, with its markup
       and classes unchanged.
-- [ ] The properties panel and the canvas behave exactly as before. — named in
-      the comment below: the builder was loaded and drew without page
-      exceptions, but neither the canvas nor the panel was driven this run.
+- [x] The properties panel and the canvas behave exactly as before: clicking a
+      block in the canvas still selects it and swaps the panel to that block's
+      fields, and the panel still scrolls inside its own container.
 - [x] `editor.tsx` declares `h-[calc(100vh-4rem)]`, matching the `h-16` admin
       header, with a comment saying why the number is the header's.
 - [x] A comment next to the Outline tab says why a tab needs `min-h-0`, so the
@@ -48,9 +48,13 @@ columns fill the admin content area exactly instead of overshooting it by 4px.
 - No scrollable ancestor remains above the editor: walking from the tab list to
   the document, no element has `overflow-y: auto` with a scrollable overflow, so
   the 4px the old height overshot is gone.
-- The canvas and the properties panel were not driven: the probe loaded the
-  builder and reported no page exceptions, nothing more. The panel's controls
-  are covered by ticket 02's tests and probe.
+- The canvas and the properties panel were driven afterwards, which is what the
+  last box needed: the builder's right column starts on Page settings (Layout,
+  Size, Spacing, Decoration) with its field scroller at 333/333 and
+  `overflow-y: auto`; a click on the canvas `h2` selects the Heading, the frame
+  then reports 2 blocks and one **Edit text** action button, and the panel swaps
+  to the Heading's fields — `Level` (H2 selected) and the Layout, Size, Spacing
+  and Typography sections — with no page exceptions.
 - Verification: `npm run typecheck` clean; `npm run lint` 0 errors (265
   pre-existing warnings, none in a touched file); `npm run test:run` 271 files /
   2400 tests passed; `npm run check:doc-citations` 94 docs, 0 broken citations.
