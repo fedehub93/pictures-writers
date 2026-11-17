@@ -28,6 +28,7 @@ export const ValueColorInput = ({
         type="text"
         className={cn(
           PANEL_CONTROL.box,
+          PANEL_CONTROL.fill,
           "w-full placeholder:text-muted-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         )}
         value={value}

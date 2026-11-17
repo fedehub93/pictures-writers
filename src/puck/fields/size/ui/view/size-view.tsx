@@ -149,7 +149,7 @@ export const SizeView = ({
 
             {isCustomRatio && (
               <Input
-                className={cn(PANEL_CONTROL.box, "w-1/2")}
+                className={cn(PANEL_CONTROL.box, PANEL_CONTROL.fill, "w-1/2")}
                 value={currentRatioValue}
                 onChange={(e) => onUpdate({ aspectRatio: e.target.value })}
                 placeholder="es. 3 / 2"

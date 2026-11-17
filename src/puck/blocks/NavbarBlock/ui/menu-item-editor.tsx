@@ -13,7 +13,10 @@ import {
 } from "@/shared/ui/select";
 import { Textarea } from "@/shared/ui/textarea";
 
-import { PanelSelectTrigger } from "@/puck/components/panel-control";
+import {
+  PANEL_CONTROL,
+  PanelSelectTrigger,
+} from "@/puck/components/panel-control";
 import { TextInput } from "@/puck/components/text-input";
 import type { IconProps } from "@/puck/fields/icon";
 import { IconView } from "@/puck/fields/icon/ui/view/icon-view";
@@ -90,7 +93,7 @@ export const MenuItemEditor = ({
               })
             }
             rows={2}
-            className="min-h-16 text-xs"
+            className={PANEL_CONTROL.textArea}
             placeholder="Short description shown inside the card"
           />
         </div>
@@ -251,7 +254,7 @@ const ColumnItemsEditor = ({
                 })
               }
               rows={2}
-              className="min-h-16 text-xs"
+              className={PANEL_CONTROL.textArea}
               placeholder="Short description shown next to the link"
             />
           </div>

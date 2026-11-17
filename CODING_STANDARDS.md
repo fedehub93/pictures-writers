@@ -57,6 +57,11 @@ tests pass.
 - **The vendored primitives are not edited.** `src/shared/ui/` is the vendor's surface, so a change
   belongs in the call site or in a module that wraps it: a local patch is erased the next time the
   component is reinstalled.
+- **The editor's properties panel owns its controls' box and fill.**
+  `src/puck/components/panel-control.tsx` is the one place a panel control takes its size and its
+  background from. A new control reads `PANEL_CONTROL` instead of choosing a background, because the
+  panel draws controls both on its own surface and inside `bg-muted/60` groups: a fill that is left
+  to the surface changes shade between sections.
 - **Public bundle discipline** (ADR-0028, ADR-0029). No explicit prefetch, third-party scripts stay
   `afterInteractive`, and a new dependency on a public path needs a bundle reason.
 

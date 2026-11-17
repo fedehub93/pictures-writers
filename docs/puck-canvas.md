@@ -170,6 +170,11 @@ only pin structurally; a failed step means the upgrade is not acceptable yet. Op
       blockquote and alignment do nothing (the options are off, not just the buttons).
 - [ ] Clearing a block shows "Add a heading" or "Start writing" at the caret; Save, reload, and
       the block is still empty with its hint, and the stored document has no hint.
+- [ ] The left column's **Outline** tab scrolls: on a document longer than the column, the layer
+      tree scrolls vertically while its header stays put, and the **Widgets** tab still scrolls
+      through its own scroll area. This is the one contract that lives in Puck's internals — its
+      layers box is a `min-height: 0; overflow: auto` flex child, so the tab it mounts in must be a
+      bounded flex column (`src/puck/editor/ui/view/sidebar.tsx`). A happy-dom test cannot see it.
 - [ ] Publish and open the page: bold, links, lists, extra paragraphs and the `hN` tag are all
       present, the heading scale follows the block's authored font size, and there is no editor
       wrapper, `data-puck-overlay-portal`, `contenteditable` or placeholder.

@@ -1,4 +1,5 @@
 import { Input } from "@/shared/ui/input";
+import { cn } from "@/shared/lib/utils";
 
 import { PANEL_CONTROL } from "@/puck/components/panel-control";
 
@@ -23,7 +24,7 @@ export const TextInput = ({
       value={displayValue}
       placeholder={placeholder}
       onChange={(e) => onChange(e.target.value)}
-      className={PANEL_CONTROL.box}
+      className={cn(PANEL_CONTROL.box, PANEL_CONTROL.fill)}
       autoComplete="off"
     />
   );

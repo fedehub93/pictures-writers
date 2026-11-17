@@ -40,6 +40,8 @@ import { SelectField } from "../components/select-input";
 import { TextInput } from "../components/text-input";
 import { ValueColorInput } from "../components/value-color-input";
 import { ValueUnitInput } from "../components/value-unit-input";
+import { PANEL_CONTROL } from "../components/panel-control";
+import { MenuItemEditor } from "../blocks/NavbarBlock/ui/menu-item-editor";
 import { LinkView } from "../fields/link/ui/view/link-view";
 import { SizeView } from "../fields/size/ui/view/size-view";
 
@@ -186,10 +188,7 @@ describe("the properties panel's control box", () => {
     expect(writesHeight(classesOf(aspectRatio))).toBe(false);
     expect(hasClass(classesOf(aspectRatio), "px-2")).toBe(true);
 
-    const customRatio = [...html.matchAll(/<input[^>]*>/g)]
-      .map(([match]) => match)
-      .find((candidate) => candidate.includes('placeholder="es. 3 / 2"'));
-    if (!customRatio) throw new Error("No custom aspect ratio input.");
+    const customRatio = tagWith(html, "placeholder", "es. 3 / 2");
 
     expect(hasClass(classesOf(customRatio), "h-8")).toBe(true);
     expect(hasClass(classesOf(customRatio), "px-2")).toBe(true);
@@ -232,5 +231,114 @@ describe("the properties panel's control box", () => {
     const picker = classesOf(pickerButton(html));
     expect(hasClass(picker, "h-9")).toBe(true);
     expect(hasClass(picker, "h-8")).toBe(false);
+  });
+});
+
+/**
+ * The panel draws its controls on its own surface and inside `bg-muted/60`
+ * groups, so a transparent control changes shade as it moves between sections.
+ * The fill is shared and does not come from the surface, which is the invariant
+ * these tests fix: the same background on every control, and no
+ * `bg-transparent` left for `twMerge` to have removed.
+ */
+function expectPanelFill(classList: string) {
+  expect(hasClass(classList, "bg-background")).toBe(true);
+  expect(hasClass(classList, "dark:bg-input/30")).toBe(true);
+  expect(hasClass(classList, "bg-transparent")).toBe(false);
+}
+
+describe("the properties panel's control fill", () => {
+  it("gives the text field, the select and the colour field one fill", () => {
+    const html = render(
+      <>
+        <TextInput name="label" value="About" onChange={noop} />
+        <SelectField<{ type: string }>
+          name="type"
+          label="Link type"
+          options={["page", "external"]}
+          currentValues={{}}
+          renderValues={{ type: "page" }}
+          resetProp={noop}
+          update={noop}
+        />
+        <ValueColorInput name="backgroundColor" value="#fff" onChange={noop} />
+      </>,
+    );
+
+    expectPanelFill(classesOf(tagWith(html, "id", "label")));
+    expectPanelFill(classesOf(tagWith(html, "id", "type")));
+    expectPanelFill(classesOf(tagWith(html, "name", "backgroundColor")));
+  });
+
+  it("gives the unit input the fill on its box, not on its inner input", () => {
+    const html = render(
+      <ValueUnitInput name="width" value="10" onChange={noop} />,
+    );
+
+    expectPanelFill(classesOf(tagWith(html, "data-slot", "input-group")));
+
+    // The inner input takes the panel's box too; painting it would stack a
+    // second translucent layer over the group in dark mode.
+    const inner = classesOf(tagWith(html, "id", "width"));
+    expect(hasClass(inner, "bg-background")).toBe(false);
+  });
+
+  it("gives the segmented control and the picker the same fill", () => {
+    const html = render(
+      <>
+        <SegmentedControl<"left" | "center">
+          name="align"
+          value="left"
+          onChange={noop}
+          items={[
+            { value: "left", title: "Left" },
+            { value: "center", title: "Center" },
+          ]}
+        />
+        <LinkView
+          state={{ type: "page", pageId: "root-1", label: "About" }}
+          onUpdate={noop}
+        />
+      </>,
+    );
+
+    expectPanelFill(classesOf(tagWith(html, "id", "align")));
+    expectPanelFill(classesOf(pickerButton(html)));
+  });
+
+  it("gives the size field's custom ratio input the same fill", () => {
+    const html = render(
+      <SizeView
+        currentValues={{ aspectRatio: "2 / 1" }}
+        renderValues={{ aspectRatio: "2 / 1" }}
+        resetProp={noop}
+        onUpdate={noop}
+      />,
+    );
+
+    expectPanelFill(classesOf(tagWith(html, "placeholder", "es. 3 / 2")));
+  });
+
+  it("gives the block fields' textareas the same fill", () => {
+    const html = render(
+      <MenuItemEditor
+        item={{
+          type: "card",
+          label: "Card",
+          link: { type: "external", url: "" },
+        }}
+        onChange={noop}
+      />,
+    );
+
+    // The two description textareas of the menu editor render here; the
+    // Copyright field's textarea takes the same token, pinned below.
+    const textareas = [...html.matchAll(/<textarea[^>]*>/g)].map(
+      ([tag]) => tag,
+    );
+    expect(textareas.length).toBeGreaterThan(0);
+    for (const textarea of textareas) expectPanelFill(classesOf(textarea));
+
+    expectPanelFill(PANEL_CONTROL.textArea);
   });
 });

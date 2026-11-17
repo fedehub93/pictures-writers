@@ -48,7 +48,7 @@ _Avoid_: Section title when referring to the content node.
 
 **Outline**:
 A temporary desktop navigation view derived from the headings in the active Tiptap post editor. It is not persisted as part of the post.
-_Avoid_: Table of contents when referring to the admin editing aid.
+_Avoid_: Table of contents when referring to the admin editing aid; Layer tree when the post's heading navigation is meant.
 
 **Tiptap editor**:
 The single rich-text editor for editorial content (posts, product descriptions). It produces structured JSON content and is the source of the admin outline.
@@ -530,6 +530,14 @@ _Avoid_: text field, body, description, rich text field when the storage format 
 **Block toolbar**:
 The bar Puck anchors to the selected block in the canvas: it hosts the block's actions and, while a text block is in Text editing mode, the formatting controls of its Content field.
 _Avoid_: bubble menu, floating menu, selection toolbar (those name a menu anchored to the selection instead of the block).
+
+**Layer tree**:
+The tree of blocks the editor's left column draws from the document, one row per block, read top to bottom in document order. It is the editor's map of the document, and it scrolls inside its tab while its own header stays put. Distinct from the admin Outline, which is derived from the headings of a Tiptap post and is not a tree of blocks.
+_Avoid_: Outline when the tree itself is meant (the word names the tab), layer panel, DOM tree.
+
+**Panel control**:
+One control of the editor's properties panel — a text field, a number-and-unit field, a select, a segmented choice, a picker — drawn as one compact box at the panel's own size and with the panel's one fill, so that a section reads as a single form. It is deliberately smaller than a backoffice form control and does not take its background from whatever surface it is nested in.
+_Avoid_: sidebar field, prop input, widget when a control is meant.
 
 **Heading level**:
 The `h1`–`h6` element a Heading block emits, authored as a block property in the sidebar and independent of the text it contains. A Text block has no Heading level of its own: the levels it may contain are inline content.

@@ -21,12 +21,38 @@ import { SelectTrigger } from "@/shared/ui/select";
 const HEIGHT = "h-8";
 const INSET = "px-2 text-xs!";
 
+/**
+ * The fill every panel control shares.
+ *
+ * A transparent control takes the colour of whatever it is drawn on, and the
+ * panel draws controls both on its own surface and inside `bg-muted/60`
+ * groups, so the same field would change shade as it moved between sections.
+ * This fill does not: it is `bg-background`, opaque in the light theme, and the
+ * same `dark:bg-input/30` tint the text primitives carry, so a panel control
+ * looks like a field elsewhere in the admin in both themes. It is not fully
+ * opaque in dark, where the tint still composites over the surface — but the
+ * two surfaces it sits on differ by about 1% there, so the residual difference
+ * is imperceptible while the light theme's is not.
+ *
+ * It is not part of `box`: the unit input's inner `<input>` takes the box too,
+ * and painting it would stack a second translucent layer over the group in
+ * dark mode. A token that carries the fill says so in its comment.
+ */
+const FILL = "bg-background dark:bg-input/30";
+
 export const PANEL_CONTROL = {
-  /** The whole box, for a control that owns its own border. */
+  /** The box alone. A control that owns its border adds `fill`, unless it is
+   * already drawn inside another boxed control. */
   box: `${HEIGHT} ${INSET}`,
   /** The height alone, for a box whose inner control carries the padding. */
   height: HEIGHT,
-  /** The picker's box: its icon makes the Button pad itself on a variant. */
+  /** The shared background, for a control that owns its own border. */
+  fill: FILL,
+  /** A two-row textarea: the panel's fill and text, no fixed height. */
+  textArea: `${FILL} min-h-16 text-xs`,
+  /** The picker's box: its icon makes the Button pad itself on a variant. The
+   * fill is not repeated here — the picker is a `Button variant="outline"`,
+   * which already carries `bg-background` and its dark tint. */
   picker: `${HEIGHT} ${INSET} has-[>svg]:px-2`,
 } as const;
 
@@ -38,5 +64,11 @@ export function PanelSelectTrigger({
   className,
   ...props
 }: Omit<ComponentProps<typeof SelectTrigger>, "size">) {
-  return <SelectTrigger size="sm" className={cn(INSET, className)} {...props} />;
+  return (
+    <SelectTrigger
+      size="sm"
+      className={cn(INSET, FILL, className)}
+      {...props}
+    />
+  );
 }

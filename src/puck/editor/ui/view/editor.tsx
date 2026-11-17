@@ -37,7 +37,10 @@ export const Editor = ({
 
   return (
     <TextEditModeProvider>
-      <div className="flex flex-col h-[calc(100vh-3.75rem)] overflow-hidden">
+      {/* `4rem` is the admin header's `h-16`, the only chrome above the editor:
+          the columns must fill exactly the content area, or the admin scroller
+          behind them absorbs the difference and every column is 4px short. */}
+      <div className="flex flex-col h-[calc(100vh-4rem)] overflow-hidden">
         <BuilderHeader header={header} siteLayout={siteLayout} />
         {/*
           `grid-rows-1` is load-bearing: the implicit row would be `auto`, and an

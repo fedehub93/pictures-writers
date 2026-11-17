@@ -30,7 +30,8 @@ export function SegmentedControl<T extends string>({
       }}
       className={cn(
         PANEL_CONTROL.height,
-        "flex items-center justify-start bg-background rounded-md w-full min-w-0 gap-0 border border-input",
+        PANEL_CONTROL.fill,
+        "flex items-center justify-start rounded-md w-full min-w-0 gap-0 border border-input",
       )}
     >
       {items.map((item) => (

@@ -4,9 +4,10 @@ import "client-only";
 import type { Field } from "@puckeditor/core";
 import { CopyrightIcon } from "lucide-react";
 
-import { LinksSection } from "@/puck/fields/link/ui/links-section";
+import { PANEL_CONTROL } from "@/puck/components/panel-control";
 import { PropHeader } from "@/puck/components/prop-header";
 import { SwitchInput } from "@/puck/components/switch-input";
+import { LinksSection } from "@/puck/fields/link/ui/links-section";
 import { withContentField } from "@/puck/utils/with-content-field";
 import { Textarea } from "@/shared/ui/textarea";
 
@@ -59,7 +60,7 @@ export const CopyrightContentField: Field<CopyrightBlockContent | undefined> =
             value={value.extraText ?? ""}
             onChange={(event) => update("extraText", event.target.value)}
             rows={2}
-            className="min-h-16 text-xs"
+            className={PANEL_CONTROL.textArea}
             placeholder="All rights reserved."
           />
         </div>

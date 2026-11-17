@@ -58,7 +58,21 @@ export const ElementsPanel = () => {
             />
           </ScrollArea>
         </TabsContent>
-        <TabsContent value="outline">
+        {/*
+          The widgets tab's height contract, with `min-h-0` stated: Puck's
+          outline is a growing flex column whose layers box is
+          `min-height: 0; overflow: auto`, and it scrolls only once this tab has
+          a definite height. Without the class the tab takes its content's
+          height, the layers box grows with the tree and no scrollbar ever
+          appears — the column's `overflow-hidden` then clips the rows below
+          the fold. `outline-none` is the widgets tab's too: Radix makes the
+          active panel focusable, so tabbing to it would otherwise draw a ring
+          around the panel.
+        */}
+        <TabsContent
+          value="outline"
+          className="flex-1 m-0 min-h-0 overflow-hidden outline-none data-[state=active]:flex flex-col"
+        >
           <Puck.Outline />
         </TabsContent>
       </Tabs>

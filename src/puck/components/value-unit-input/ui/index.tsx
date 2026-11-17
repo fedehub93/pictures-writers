@@ -72,7 +72,8 @@ export function ValueUnitInput({
     <InputGroup
       className={cn(
         PANEL_CONTROL.height,
-        "bg-background flex shadow-none focus-within:ring-2! focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background",
+        PANEL_CONTROL.fill,
+        "flex shadow-none focus-within:ring-2! focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background",
       )}
     >
       <Popover open={hasPresets && openPresets} onOpenChange={setOpenPresets}>
