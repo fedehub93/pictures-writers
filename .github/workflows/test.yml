@@ -2,7 +2,7 @@ name: Tests
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
 
 jobs:
@@ -79,6 +79,10 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # `npm run typecheck` runs `next typegen` first: the typed-routes helpers
+      # (`PageProps`, `RouteContext`) and `next-env.d.ts` are generated into
+      # `.next` and gitignored, so a clean checkout has neither and `tsc` fails
+      # with "Cannot find name 'PageProps'".
       - name: Typecheck
         run: npm run typecheck
 

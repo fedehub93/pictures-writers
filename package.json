@@ -13,7 +13,7 @@
     "bundle:baseline": "tsx scripts/bundle-budget.ts --write-baseline",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "check:doc-citations": "node scripts/check-doc-citations.mjs",
     "test": "vitest",
     "test:run": "vitest run",
