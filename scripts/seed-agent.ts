@@ -23,8 +23,9 @@ import { resolve } from "node:path";
 
 import { hashPassword } from "better-auth/crypto";
 
-import { ContentStatus } from "@/generated/prisma";
+import { ContentStatus, type SiteRegionKey } from "@/generated/prisma";
 import { createPage } from "@/modules/pages/server/create-page";
+import { SITE_REGION_KEYS } from "@/modules/site-regions/constants";
 import { db } from "@/shared/lib/db";
 
 const AGENT_DATABASE = "pictures_writers_agent";
@@ -60,6 +61,29 @@ const PROBE_POST_BODY: PrismaJson.TipTapBodyData = {
   type: "doc",
   content: [{ type: "paragraph", content: [{ type: "text", text: PROBE_POST_TEXT }] }],
 };
+
+/**
+ * One distinct marker per region, so a request that returns the header document
+ * where the footer belongs is visible in the HTML instead of looking plausible.
+ * The public layout reads both regions on every page.
+ */
+const PROBE_REGION_MARKERS: Record<SiteRegionKey, string> = {
+  HEADER: "SITE-REGION-HEADER-9f2c",
+  FOOTER: "SITE-REGION-FOOTER-4a71",
+};
+
+function regionPuckData(marker: string): PrismaJson.PuckData {
+  return {
+    root: {},
+    content: [
+      {
+        type: "Text",
+        props: { id: `probe-region-${marker}`, text: `<p>${marker}</p>` },
+      },
+    ],
+    zones: {},
+  };
+}
 
 function assertAgentDatabase() {
   const raw = process.env.DATABASE_URL;
@@ -260,6 +284,81 @@ async function upsertProbePost(userId: string) {
   return existing.id;
 }
 
+/** Publish one version of a region, so the layout reads a stored document instead of its fallback. */
+async function createProbeRegionVersion(rootId: string, puckData: PrismaJson.PuckData, userId: string) {
+  return db.siteRegionVersion.create({
+    data: {
+      rootId,
+      version: 1,
+      status: ContentStatus.PUBLISHED,
+      publishedAt: new Date(),
+      puckData,
+      userId,
+    },
+  });
+}
+
+async function upsertProbeRegion(key: SiteRegionKey, userId: string) {
+  const puckData = regionPuckData(PROBE_REGION_MARKERS[key]);
+
+  const existing = await db.siteRegion.findUnique({
+    where: { key },
+    include: { currentVersion: true, liveVersion: true },
+  });
+
+  if (!existing) {
+    const root = await db.siteRegion.create({
+      data: { key, firstPublishedAt: new Date() },
+    });
+
+    const version = await createProbeRegionVersion(root.id, puckData, userId);
+
+    await db.siteRegion.update({
+      where: { id: root.id },
+      data: { currentVersionId: version.id, liveVersionId: version.id },
+    });
+
+    return root.id;
+  }
+
+  const liveVersionId = existing.liveVersionId ?? existing.currentVersionId;
+
+  if (!liveVersionId) {
+    const version = await createProbeRegionVersion(existing.id, puckData, userId);
+
+    await db.siteRegion.update({
+      where: { id: existing.id },
+      data: {
+        currentVersionId: version.id,
+        liveVersionId: version.id,
+        firstPublishedAt: existing.firstPublishedAt ?? new Date(),
+      },
+    });
+
+    return existing.id;
+  }
+
+  await db.siteRegionVersion.update({
+    where: { id: liveVersionId },
+    data: {
+      status: ContentStatus.PUBLISHED,
+      publishedAt: existing.liveVersion?.publishedAt ?? new Date(),
+      puckData,
+    },
+  });
+
+  await db.siteRegion.update({
+    where: { id: existing.id },
+    data: {
+      currentVersionId: existing.currentVersionId ?? liveVersionId,
+      liveVersionId,
+      firstPublishedAt: existing.firstPublishedAt ?? new Date(),
+    },
+  });
+
+  return existing.id;
+}
+
 /** Keep `PROBE_PAGE_ROOT_ID` in step with the database, so the probe needs no Prisma import. */
 function writePageRootId(rootId: string) {
   const path = resolve(process.env.AGENT_ENV_FILE ?? ".env.agent");
@@ -279,11 +378,16 @@ async function main() {
   const rootId = await upsertProbePage(user.id);
   const postRootId = await upsertProbePost(user.id);
 
+  for (const key of SITE_REGION_KEYS) {
+    await upsertProbeRegion(key, user.id);
+  }
+
   writePageRootId(rootId);
 
   console.log(`probe user: ${user.email}`);
   console.log(`probe page: /${PROBE_SLUG} (${rootId})`);
   console.log(`probe post: /${PROBE_POST_SLUG} (${postRootId})`);
+  console.log(`probe regions: ${SITE_REGION_KEYS.join(", ")} (${PROBE_REGION_MARKERS.HEADER} / ${PROBE_REGION_MARKERS.FOOTER})`);
   console.log("builder URL: /admin/pages/" + rootId + "/builder/");
 }
 
