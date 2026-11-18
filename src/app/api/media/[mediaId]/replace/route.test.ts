@@ -8,11 +8,23 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { MediaType } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
+import { formatBytes } from "@/lib/format";
 
+import {
+  BYTES_PER_MEGABYTE,
+  mediaUsageBytes,
+} from "@/modules/media/lib/quota";
+import { getMediaUsageBytes } from "@/modules/media/server/media-quota";
 import { createLocalStorageDriver } from "@/modules/media/server/storage/local";
 import type { StorageDriver } from "@/modules/media/server/storage/types";
+import {
+  resetMediaQuota,
+  setMediaQuotaMb,
+} from "@/modules/media/server/__tests__/quota-fixtures";
 
 import { POST } from "./route";
+
+const MB = BYTES_PER_MEGABYTE;
 
 const storage = vi.hoisted(() => ({
   driver: undefined as StorageDriver | undefined,
@@ -65,6 +77,8 @@ describe("POST /api/media/[mediaId]/replace", () => {
   });
 
   afterEach(async () => {
+    await resetMediaQuota();
+
     if (mediaIds.length > 0) {
       await db.media.deleteMany({ where: { id: { in: mediaIds } } });
     }
@@ -149,5 +163,45 @@ describe("POST /api/media/[mediaId]/replace", () => {
 
     const row = await db.media.findUniqueOrThrow({ where: { id: media.id } });
     expect(row.revision).toBe(1);
+  });
+
+  it("answers 413 with the quota figures and keeps the previous revision", async () => {
+    const media = await createMedia();
+    const used = await getMediaUsageBytes();
+    const current = await db.media.findUniqueOrThrow({
+      where: { id: media.id },
+      select: { size: true, renditions: true },
+    });
+    const usedWithoutCurrent = used - mediaUsageBytes([current]);
+    const quotaMb = Math.ceil((usedWithoutCurrent + 1) / MB);
+
+    const filler = await db.media.create({
+      data: {
+        name: `quota-filler-${randomUUID()}`,
+        url: `/media/quota-filler-${randomUUID()}`,
+        size: quotaMb * MB - usedWithoutCurrent,
+      },
+    });
+    mediaIds.push(filler.id);
+    await setMediaQuotaMb(quotaMb);
+
+    const payload = await uploadImagePayload(
+      await createPng({ r: 210, g: 40, b: 60 }),
+    );
+
+    const response = await POST(request(payload), context(media.id));
+    const body = await response.json();
+
+    expect(response.status).toBe(413);
+    expect(body).toMatchObject({
+      code: "MEDIA_QUOTA_EXCEEDED",
+      totalBytes: quotaMb * MB,
+    });
+    expect(body.usedBytes).toBeGreaterThanOrEqual(0);
+    expect(body.error).toContain(formatBytes(body.usedBytes));
+
+    const row = await db.media.findUniqueOrThrow({ where: { id: media.id } });
+    expect(row.revision).toBe(1);
+    await expect(driver.get(payload.key)).rejects.toThrow();
   });
 });

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { MediaType } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
+import { formatBytes } from "@/lib/format";
 import { authAdmin } from "@/lib/auth-service";
 
 import {
@@ -14,9 +15,16 @@ import {
   MediaProcessingError,
   type MediaUploadSource,
 } from "@/modules/media/server/media-service";
+import {
+  assertMediaQuotaAllows,
+  MediaQuotaExceededError,
+} from "@/modules/media/server/media-quota";
 import { resolveStorageDriver } from "@/modules/media/server/storage";
 
 const MEDIA_BATCH = 3;
+
+/** Matches the image limit the media library enforced while UploadThing owned the transport. */
+export const MEDIA_MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
 
 export async function GET(req: Request) {
   try {
@@ -109,6 +117,40 @@ function isMultipartRequest(req: Request): boolean {
   return contentType.includes("multipart/form-data");
 }
 
+/**
+ * Machine-readable upload failures: the admin UI can tell an oversize file
+ * (answered by the transport itself), an exceeded quota and a duplicate apart.
+ */
+function mediaUploadErrorResponse(error: unknown): NextResponse {
+  if (error instanceof DuplicateMediaError) {
+    return NextResponse.json(
+      { code: "DUPLICATE_MEDIA", duplicate: true, media: error.existing },
+      { status: 409 },
+    );
+  }
+
+  if (error instanceof MediaQuotaExceededError) {
+    return NextResponse.json(
+      {
+        code: error.code,
+        error: error.message,
+        usedBytes: error.usedBytes,
+        totalBytes: error.totalBytes,
+        quotaMb: error.quotaMb,
+      },
+      { status: 413 },
+    );
+  }
+
+  if (error instanceof MediaProcessingError) {
+    console.log("[MEDIA_POST]", error);
+    return NextResponse.json({ error: error.message }, { status: 422 });
+  }
+
+  console.log("[MEDIA_POST]", error);
+  return new NextResponse("Internal Error", { status: 500 });
+}
+
 async function handleMultipartUpload(req: Request): Promise<Response> {
   const { driver, name: driverName } = resolveStorageDriver();
   const form = await req.formData();
@@ -131,6 +173,24 @@ async function handleMultipartUpload(req: Request): Promise<Response> {
       { status: 400 },
     );
   }
+
+  if (file.size > MEDIA_MAX_UPLOAD_BYTES) {
+    return NextResponse.json(
+      {
+        code: "FILE_TOO_LARGE",
+        error: `This file is larger than the ${formatBytes(
+          MEDIA_MAX_UPLOAD_BYTES,
+          0,
+        )} upload limit.`,
+        maxBytes: MEDIA_MAX_UPLOAD_BYTES,
+      },
+      { status: 413 },
+    );
+  }
+
+  // Refuse before the bytes reach storage. The exact total, including the
+  // generated renditions, is checked again before the row is created.
+  await assertMediaQuotaAllows(file.size);
 
   const bytes = new Uint8Array(await file.arrayBuffer());
   const tempKey = `tmp/${crypto.randomUUID()}`;
@@ -173,22 +233,7 @@ export async function POST(req: Request) {
     }
 
     if (isMultipartRequest(req)) {
-      return handleMultipartUpload(req).catch((error) => {
-        if (error instanceof DuplicateMediaError) {
-          return NextResponse.json(
-            { duplicate: true, media: error.existing },
-            { status: 409 },
-          );
-        }
-
-        if (error instanceof MediaProcessingError) {
-          console.log("[MEDIA_POST]", error);
-          return NextResponse.json({ error: error.message }, { status: 422 });
-        }
-
-        console.log("[MEDIA_POST]", error);
-        return new NextResponse("Internal Error", { status: 500 });
-      });
+      return handleMultipartUpload(req).catch(mediaUploadErrorResponse);
     }
 
     const values = (await req.json()) as MediaUploadPayload;
@@ -221,19 +266,7 @@ export async function POST(req: Request) {
 
       return NextResponse.json(media);
     } catch (error) {
-      if (error instanceof DuplicateMediaError) {
-        return NextResponse.json(
-          { duplicate: true, media: error.existing },
-          { status: 409 },
-        );
-      }
-
-      if (error instanceof MediaProcessingError) {
-        console.log("[MEDIA_POST]", error);
-        return NextResponse.json({ error: error.message }, { status: 422 });
-      }
-
-      throw error;
+      return mediaUploadErrorResponse(error);
     }
   } catch (error) {
     console.log("[MEDIA_POST]", error);

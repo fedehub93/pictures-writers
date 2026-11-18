@@ -28,6 +28,10 @@ import {
 } from "@/shared/ui/select";
 import { useSettings } from "../../_components/providers/settings-provider";
 import { Separator } from "@/shared/ui/separator";
+import {
+  MEDIA_QUOTA_DEFAULT_MB,
+  parseMediaQuotaMb,
+} from "@/modules/media/lib/quota";
 
 /// A curated set of common IANA zones; add more as needed.
 const SITE_TIME_ZONES = [
@@ -61,6 +65,12 @@ const formSchema = z.object({
   logoUrl: z.string().optional(),
   deployWebhookUrl: z.string().optional(),
   timezone: z.string().optional(),
+  mediaQuotaMb: z
+    .string()
+    .min(1, { error: "Media quota is required" })
+    .refine((value) => parseMediaQuotaMb(value) !== null, {
+      error: "Media quota must be a whole number of megabytes, at least 1",
+    }),
 });
 
 const MainSettingsPage = () => {
@@ -76,6 +86,7 @@ const MainSettingsPage = () => {
       logoUrl: settings?.logoUrl || "",
       deployWebhookUrl: settings?.deployWebhookUrl || "",
       timezone: settings?.timezone || "Europe/Rome",
+      mediaQuotaMb: String(settings?.mediaQuotaMb ?? MEDIA_QUOTA_DEFAULT_MB),
     },
   });
 
@@ -87,6 +98,8 @@ const MainSettingsPage = () => {
 
       await axios.patch(`/api/settings`, {
         ...values,
+        mediaQuotaMb:
+          parseMediaQuotaMb(values.mediaQuotaMb) ?? MEDIA_QUOTA_DEFAULT_MB,
       });
 
       toast.success("Settings updated successfully");
@@ -203,6 +216,31 @@ const MainSettingsPage = () => {
                 <FormDescription>
                   Automations schedule in this time zone (cron triggers and Wait
                   time-of-day).
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="mediaQuotaMb"
+            render={({ field }) => (
+              <FormItem className="min-w-40 flex-auto">
+                <FormLabel>Media quota (MB)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min={1}
+                    step={1}
+                    disabled={isLoading || isSubmitting}
+                    placeholder={String(MEDIA_QUOTA_DEFAULT_MB)}
+                    {...field}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Maximum total size of the media library: originals plus
+                  generated renditions, archived media included. Uploads that
+                  would go past it are refused.
                 </FormDescription>
                 <FormMessage />
               </FormItem>

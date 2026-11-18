@@ -1,4 +1,5 @@
 import { mkdtemp, rm } from "node:fs/promises";
+import { randomBytes } from "node:crypto";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -7,11 +8,24 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { MediaType } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
+import { formatBytes } from "@/lib/format";
 
+import { BYTES_PER_MEGABYTE } from "@/modules/media/lib/quota";
+import {
+  archiveMedia,
+  deleteMediaPermanentlyBatch,
+} from "@/modules/media/server/media-service";
+import { getMediaUsageBytes } from "@/modules/media/server/media-quota";
 import { createLocalStorageDriver } from "@/modules/media/server/storage/local";
 import type { StorageDriver } from "@/modules/media/server/storage/types";
+import {
+  resetMediaQuota,
+  setMediaQuotaMb,
+} from "@/modules/media/server/__tests__/quota-fixtures";
 
-import { POST } from "./route";
+import { MEDIA_MAX_UPLOAD_BYTES, POST } from "./route";
+
+const MB = BYTES_PER_MEGABYTE;
 
 const storage = vi.hoisted(() => ({ driver: undefined as unknown }));
 
@@ -40,6 +54,19 @@ async function createPng(): Promise<Uint8Array<ArrayBuffer>> {
   return new Uint8Array(buffer);
 }
 
+async function createNoisePng(
+  width = 500,
+  height = 500,
+): Promise<Uint8Array<ArrayBuffer>> {
+  const buffer = await sharp(randomBytes(width * height * 3), {
+    raw: { width, height, channels: 3 },
+  })
+    .png()
+    .toBuffer();
+
+  return new Uint8Array(buffer);
+}
+
 function request(body: unknown): Request {
   return new Request("http://localhost/api/media", {
     method: "POST",
@@ -61,6 +88,8 @@ describe("POST /api/media", () => {
   });
 
   afterEach(async () => {
+    await resetMediaQuota();
+
     if (mediaIds.length > 0) {
       await db.media.deleteMany({ where: { id: { in: mediaIds } } });
     }
@@ -263,5 +292,115 @@ describe("POST /api/media", () => {
 
     const row = await db.media.findUniqueOrThrow({ where: { id: media.id } });
     expect(row.renditions).toBeNull();
+  });
+
+  it("answers 413 FILE_TOO_LARGE for a file over the transport limit", async () => {
+    const form = new FormData();
+    form.append(
+      "file",
+      new File([new Uint8Array(MEDIA_MAX_UPLOAD_BYTES + 1)], "huge.png", {
+        type: "image/png",
+      }),
+    );
+    form.append("name", "Huge multipart");
+
+    const response = await POST(multipartRequest(form));
+    const body = await response.json();
+
+    expect(response.status).toBe(413);
+    expect(body).toMatchObject({
+      code: "FILE_TOO_LARGE",
+      maxBytes: MEDIA_MAX_UPLOAD_BYTES,
+    });
+    await expect(
+      db.media.count({ where: { name: "Huge multipart" } }),
+    ).resolves.toBe(0);
+  });
+
+  it("refuses an upload past the quota before writing any bytes", async () => {
+    await setMediaQuotaMb(1);
+
+    const puts: string[] = [];
+    storage.driver = {
+      ...driver,
+      put: async (key, data, contentType) => {
+        puts.push(key);
+        await driver.put(key, data, contentType);
+      },
+    } satisfies StorageDriver;
+
+    const form = new FormData();
+    form.append(
+      "file",
+      new File([new Uint8Array(2 * MB)], "over.png", { type: "image/png" }),
+    );
+    form.append("name", "Over quota");
+
+    const response = await POST(multipartRequest(form));
+    const body = await response.json();
+
+    expect(response.status).toBe(413);
+    expect(body).toMatchObject({
+      code: "MEDIA_QUOTA_EXCEEDED",
+      quotaMb: 1,
+      totalBytes: MB,
+    });
+    expect(body.usedBytes).toBeGreaterThanOrEqual(0);
+    expect(body.error).toContain(formatBytes(body.usedBytes));
+    expect(body.error).toContain(formatBytes(MB));
+    expect(puts).toEqual([]);
+    await expect(
+      db.media.count({ where: { name: "Over quota" } }),
+    ).resolves.toBe(0);
+  });
+
+  it("accepts the same upload again after enough media is deleted", async () => {
+    const noise = await createNoisePng(700, 700);
+
+    const hogForm = new FormData();
+    hogForm.append("file", new File([noise], "hog.png", { type: "image/png" }));
+    hogForm.append("name", "Quota hog");
+
+    const hogResponse = await POST(multipartRequest(hogForm));
+    const hog = await hogResponse.json();
+    mediaIds.push(hog.id);
+
+    const used = await getMediaUsageBytes();
+    const quotaMb = Math.ceil((used + 1) / MB);
+    await setMediaQuotaMb(quotaMb);
+
+    const retryForm = () => {
+      const form = new FormData();
+      form.append(
+        "file",
+        new File([noise], "hog.png", { type: "image/png" }),
+      );
+      form.append("name", "Quota retry");
+      return form;
+    };
+
+    const refused = await POST(multipartRequest(retryForm()));
+    const refusedBody = await refused.json();
+
+    expect(refused.status).toBe(413);
+    expect(refusedBody).toMatchObject({
+      code: "MEDIA_QUOTA_EXCEEDED",
+      usedBytes: used,
+      totalBytes: quotaMb * MB,
+    });
+    await expect(
+      db.media.count({ where: { name: "Quota retry" } }),
+    ).resolves.toBe(0);
+
+    await archiveMedia(hog.id);
+    await deleteMediaPermanentlyBatch({ driver, mediaIds: [hog.id] });
+    mediaIds.splice(mediaIds.indexOf(hog.id), 1);
+
+    const retried = await POST(multipartRequest(retryForm()));
+    const retriedBody = await retried.json();
+    mediaIds.push(retriedBody.id);
+
+    expect(retried.status).toBe(200);
+    expect(retriedBody.key).toBe(`default/${retriedBody.id}/1/original`);
   });
 });

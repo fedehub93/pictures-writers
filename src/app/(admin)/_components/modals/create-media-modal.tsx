@@ -175,10 +175,19 @@ export const CreateMediaModal = () => {
         return;
       }
 
+      const data = axios.isAxiosError(error)
+        ? error.response?.data
+        : undefined;
       const message =
-        axios.isAxiosError(error) && error.response?.data?.error
-          ? error.response.data.error
-          : "Something went wrong";
+        typeof data?.error === "string" ? data.error : "Something went wrong";
+
+      // An oversize file can never succeed, so clear it; a quota refusal keeps
+      // the selection, because deleting media makes the same upload valid.
+      if (data?.code === "FILE_TOO_LARGE") {
+        toast.error(message);
+        updateFile(null);
+        return;
+      }
 
       toast.error(message);
     } finally {

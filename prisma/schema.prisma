@@ -41,6 +41,10 @@ model Settings {
   /// cron triggers and to the Wait node's time-of-day anchoring.
   timezone String? @default("Europe/Rome")
 
+  /// Maximum size of the media library in megabytes, counted over originals
+  /// plus generated renditions and including archived Media.
+  mediaQuotaMb Int @default(5120)
+
   /// [Scripts]
   scripts Json @default("null") @db.JsonB
 

@@ -14,11 +14,16 @@ import {
   mediaLibrarySelect,
   type MediaLibraryItem,
 } from "@/modules/media/lib/media-library";
+import { mediaUsageBytes } from "@/modules/media/lib/quota";
 import { mediaPath } from "@/modules/media/lib/url";
 import type { MediaRendition } from "@/modules/media/types";
 
 import { checksumOf } from "./image-bytes";
 import { mediaRevisionPrefix, mediaStoragePrefix } from "./media-key";
+import {
+  MediaQuotaExceededError,
+  withMediaQuotaAdmission,
+} from "./media-quota";
 import { countMediaReferencesFor } from "./media-usage";
 import { generateRenditions, normaliseImage } from "./process-image";
 import {
@@ -116,21 +121,45 @@ function findDuplicate(checksum: string): Promise<MediaLibraryItem | null> {
   });
 }
 
+/**
+ * Errors whose meaning must survive the catch that cleans up after a failed
+ * write. Wrapping the quota refusal would turn "delete some media" into a
+ * generic processing failure.
+ */
+function isRethrowableMediaError(
+  error: unknown,
+): error is MediaProcessingError | MediaQuotaExceededError {
+  return (
+    error instanceof MediaProcessingError ||
+    error instanceof MediaQuotaExceededError
+  );
+}
+
 async function createPlainMedia(
   source: MediaUploadSource,
 ): Promise<MediaLibraryItem> {
-  return db.media.create({
-    data: {
-      name: source.name,
-      key: source.key,
-      url: source.url,
-      size: source.size ?? null,
-      type: source.type,
-      altText: source.altText || null,
-      mimeType: source.mimeType || null,
-    },
-    select: mediaLibrarySelect,
-  });
+  if (source.size == null) {
+    throw new MediaProcessingError(
+      "The uploaded file size is required so it can be counted against the media quota.",
+    );
+  }
+
+  return withMediaQuotaAdmission(
+    { incomingBytes: source.size },
+    (tx) =>
+      tx.media.create({
+        data: {
+          name: source.name,
+          key: source.key,
+          url: source.url,
+          size: source.size,
+          type: source.type,
+          altText: source.altText || null,
+          mimeType: source.mimeType || null,
+        },
+        select: mediaLibrarySelect,
+      }),
+  );
 }
 
 interface StoredImageRevision {
@@ -331,16 +360,24 @@ export async function createMediaFromUpload({
       archived: false,
     });
 
-    const media = await db.media.create({
-      data: {
-        ...storedImageFields(stored, revision, checksum),
-        id,
-        name: source.name,
-        altText: source.altText || null,
-        storageDriver,
+    const media = await withMediaQuotaAdmission(
+      {
+        incomingBytes: mediaUsageBytes([
+          { size: stored.size, renditions: stored.renditions },
+        ]),
       },
-      select: mediaLibrarySelect,
-    });
+      (tx) =>
+        tx.media.create({
+          data: {
+            ...storedImageFields(stored, revision, checksum),
+            id,
+            name: source.name,
+            altText: source.altText || null,
+            storageDriver,
+          },
+          select: mediaLibrarySelect,
+        }),
+    );
 
     // The uploaded object was only the processing input. Best-effort removal
     // keeps the storage tier clean; legacy UploadThing file keys are not
@@ -353,7 +390,7 @@ export async function createMediaFromUpload({
   } catch (error) {
     await driver.deletePrefix(prefix).catch(() => undefined);
 
-    if (error instanceof MediaProcessingError) throw error;
+    if (isRethrowableMediaError(error)) throw error;
 
     throw new MediaProcessingError(
       "The image could not be processed. Nothing was added to the library.",
@@ -417,14 +454,23 @@ export async function replaceMediaFile({
         archived: existing.archivedAt !== null,
       });
 
-      media = await db.media.update({
-        where: { id: mediaId },
-        data: {
-          ...storedImageFields(stored, revision, checksum),
-          storageDriver,
+      media = await withMediaQuotaAdmission(
+        {
+          incomingBytes: mediaUsageBytes([
+            { size: stored.size, renditions: stored.renditions },
+          ]),
+          excludeMediaId: mediaId,
         },
-        select: mediaLibrarySelect,
-      });
+        (tx) =>
+          tx.media.update({
+            where: { id: mediaId },
+            data: {
+              ...storedImageFields(stored, revision, checksum),
+              storageDriver,
+            },
+            select: mediaLibrarySelect,
+          }),
+      );
     } else {
       const stored = await writePlainRevision({
         driver,
@@ -434,26 +480,37 @@ export async function replaceMediaFile({
         mimeType: source.mimeType || existing.mimeType,
       });
 
-      media = await db.media.update({
-        where: { id: mediaId },
-        data: {
-          key: stored.key,
-          url: stored.url,
-          size: stored.size,
-          mimeType: stored.mimeType,
-          checksum,
-          revision,
-          storageDriver,
-          metadata: null,
-          renditions: null,
-        },
-        select: mediaLibrarySelect,
-      });
+      media = await withMediaQuotaAdmission(
+        { incomingBytes: stored.size, excludeMediaId: mediaId },
+        (tx) =>
+          tx.media.update({
+            where: { id: mediaId },
+            data: {
+              key: stored.key,
+              url: stored.url,
+              size: stored.size,
+              mimeType: stored.mimeType,
+              checksum,
+              revision,
+              storageDriver,
+              metadata: null,
+              renditions: null,
+            },
+            select: mediaLibrarySelect,
+          }),
+      );
     }
   } catch (error) {
     await driver.deletePrefix(newPrefix).catch(() => undefined);
 
-    if (error instanceof MediaProcessingError) throw error;
+    // The uploaded object was only the processing input; a refused or failed
+    // replacement must not leave it behind. The Media's own prefix is spared so
+    // the revision still being served is never removed.
+    if (!source.key.startsWith(mediaPrefix)) {
+      await driver.delete(source.key).catch(() => undefined);
+    }
+
+    if (isRethrowableMediaError(error)) throw error;
 
     throw new MediaProcessingError(
       "The file could not be replaced. The previous version is still in place.",

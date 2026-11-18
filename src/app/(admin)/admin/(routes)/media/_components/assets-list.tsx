@@ -12,6 +12,7 @@ import {
   type MediaLibraryEntry,
   type MediaLibraryView,
 } from "@/modules/media/lib/media-library";
+import type { MediaQuotaStatus } from "@/modules/media/lib/quota";
 
 import { apiErrorMessage } from "@/shared/lib/api-error";
 import { Button } from "@/shared/ui/button";
@@ -20,10 +21,12 @@ import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 import { ExtendedPagination } from "@/shared/components/extended-pagination";
 import { SearchInput } from "@/app/(admin)/_components/search-input";
 import { MediaActions } from "./actions";
+import { MediaQuotaMeter } from "./quota-meter";
 
 interface AssetListProps {
   items: MediaLibraryEntry[];
   view: MediaLibraryView;
+  quota: MediaQuotaStatus;
   pagination: {
     page: number;
     perPage: number;
@@ -32,7 +35,12 @@ interface AssetListProps {
   };
 }
 
-export const AssetsList = ({ items, view, pagination }: AssetListProps) => {
+export const AssetsList = ({
+  items,
+  view,
+  quota,
+  pagination,
+}: AssetListProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -145,6 +153,7 @@ export const AssetsList = ({ items, view, pagination }: AssetListProps) => {
             </ConfirmModal>
           )}
         </div>
+        <MediaQuotaMeter quota={quota} />
         {view === "active" && <MediaActions />}
       </div>
       <p className="text-xs text-muted-foreground pb-4">{MEDIA_USAGE_NOTE}</p>

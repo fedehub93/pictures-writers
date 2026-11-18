@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
 import { SettingsScripts } from "@/types";
 import { revalidateContent } from "@/shared/lib/revalidate-content";
+import { parseMediaQuotaMb } from "@/modules/media/lib/quota";
 
 export async function PATCH(req: Request) {
   try {
@@ -15,6 +16,22 @@ export async function PATCH(req: Request) {
     }
 
     const data: Record<string, unknown> = { ...values };
+
+    if (values.mediaQuotaMb !== undefined) {
+      const quotaMb = parseMediaQuotaMb(values.mediaQuotaMb);
+
+      if (quotaMb === null) {
+        return NextResponse.json(
+          {
+            error:
+              "The media quota must be a whole number of megabytes, at least 1.",
+          },
+          { status: 400 },
+        );
+      }
+
+      data.mediaQuotaMb = quotaMb;
+    }
 
     if (Array.isArray(values.scripts)) {
       data.scripts = values.scripts.map((v: SettingsScripts) => ({
