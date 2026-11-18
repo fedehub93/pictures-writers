@@ -27,7 +27,7 @@ folder.
 | [0012](./0012-taxonomy-is-not-versioned.md) | Taxonomy is not versioned | accepted |
 | [0013](./0013-root-plus-version-for-post.md) | Split the Post model into `PostRoot` + `PostVersion` | accepted |
 | [0014](./0014-root-plus-version-for-product.md) | Split Product into `ProductRoot` + `ProductVersion`, and take `ProductCategory` out of versioning | accepted |
-| [0026](./0026-media-storage-seam-and-pregenerated-renditions.md) | Media storage seam and pregenerated renditions | accepted |
+| [0026](./0026-media-storage-seam-and-pregenerated-renditions.md) | Media storage seam and pregenerated renditions | accepted (revised 2026-11: delivery is an application route, driver recorded per Media) |
 
 ## Forms and public bundle
 

@@ -11,6 +11,11 @@ import { db } from "@/shared/lib/db";
 
 import { MEDIA_RENDITION_WIDTHS } from "@/modules/media/lib/image-ladder.mjs";
 import { resolveMediaImageSource } from "@/modules/media/lib/image-loader";
+import {
+  MEDIA_MANIFEST_PARAM,
+  decodeMediaManifest,
+  stripMediaManifest,
+} from "@/modules/media/lib/manifest";
 import type { MediaRendition } from "@/modules/media/types";
 
 import {
@@ -25,6 +30,8 @@ import {
   StorageObjectNotFoundError,
   type StorageDriver,
 } from "../storage/types";
+import { createFakeUploadThingApi } from "../storage/__tests__/fake-uploadthing";
+import { createUploadThingStorageDriver } from "../storage/uploadthing";
 
 async function createPng(
   width = 2000,
@@ -182,6 +189,41 @@ describe("createMediaFromUpload", () => {
     }
 
     expect(puts).toBe(putsAfterUpload);
+  });
+
+  it("stores the canonical relative address for a remote upload and embeds the provider origin in the manifest", async () => {
+    const fake = createFakeUploadThingApi();
+    const remote = createUploadThingStorageDriver(fake.api, fake.fetch);
+    const key = await putSource(await createPng(), remote);
+
+    const media = await createMediaFromUpload({
+      driver: remote,
+      storageDriver: "uploadthing",
+      source: sourceFor(key),
+    });
+    mediaIds.push(media.id);
+
+    expect(stripMediaManifest(media.url)).toBe(`/media/${media.key}`);
+    expect(media.url).not.toContain("://");
+
+    const manifest = decodeMediaManifest(
+      new URL(media.url, "http://localhost").searchParams.get(
+        MEDIA_MANIFEST_PARAM,
+      ),
+    );
+
+    expect(manifest?.renditions.length).toBeGreaterThan(0);
+    for (const rendition of manifest!.renditions) {
+      expect(rendition.url).toMatch(/^https:\/\/fake-app\.ufs\.sh\/f\//);
+    }
+
+    // The public site renders the rendition straight from the provider and
+    // falls back to the canonical address, which the delivery route redirects.
+    const avif960 = manifest!.renditions.find(
+      (rendition) => rendition.width === 960 && rendition.format === "avif",
+    );
+    expect(resolveMediaImageSource(media.url, 960)).toBe(avif960!.url);
+    expect(resolveMediaImageSource(media.url, 100)).toBe(`/media/${media.key}`);
   });
 
   it("generates the full ladder even for a source smaller than the widest rendition", async () => {

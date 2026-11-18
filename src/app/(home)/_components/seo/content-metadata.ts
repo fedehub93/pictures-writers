@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import { db } from "@/lib/db";
 import { getAuthorsString } from "@/data/user";
 import { getSettings } from "@/data/settings";
+import { absoluteMediaUrl } from "@/modules/media/server/media-url";
 
 export async function getPageMetadataBySlug(
   slug: string,
@@ -129,6 +130,12 @@ export async function getPostMetadataBySlug(
   }
 
   const authorsString = getAuthorsString(version.authors.map((v) => v.user));
+  // Stored Media addresses are relative; a social crawler needs one that
+  // answers on its own.
+  const coverImageUrl = version.imageCover
+    ? absoluteMediaUrl(version.imageCover.url, siteUrl)
+    : null;
+
   return {
     title: version.seo.title,
     description: version.seo.description,
@@ -151,11 +158,11 @@ export async function getPostMetadataBySlug(
         version.seo.ogTwitterDescription || version.seo.description || "",
       url: version.seo.ogTwitterUrl || "",
       siteName: siteName!,
-      images: version.imageCover
+      images: coverImageUrl
         ? [
             {
-              url: version.imageCover.url,
-              alt: version.imageCover.altText || "",
+              url: coverImageUrl,
+              alt: version.imageCover?.altText || "",
             },
           ]
         : [],
@@ -170,7 +177,7 @@ export async function getPostMetadataBySlug(
       title: version.seo.ogTwitterTitle || version.seo.title,
       description:
         version.seo.ogTwitterDescription || version.seo.description || "",
-      images: version.imageCover ? [version.imageCover.url] : [],
+      images: coverImageUrl ? [coverImageUrl] : [],
       creator: authorsString,
     },
   };
@@ -275,4 +282,3 @@ export async function getTagMetdataBySlug(
     },
   };
 }
-

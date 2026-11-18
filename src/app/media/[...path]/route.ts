@@ -6,7 +6,7 @@ import { Readable } from "node:stream";
 
 import { NextResponse } from "next/server";
 
-import { db } from "@/shared/lib/db";
+import { findDeliveryMedia } from "@/modules/media/server/media-delivery";
 import {
   driverForStorageDriver,
   getLocalStorageRoot,
@@ -158,29 +158,21 @@ async function handleMediaRequest(
     return new NextResponse(null, { status: 404 });
   }
 
-  const media = await db.media.findFirst({
-    where: { key },
-    select: {
-      id: true,
-      key: true,
-      mimeType: true,
-      storageDriver: true,
-    },
-  });
+  const media = await findDeliveryMedia(key);
 
   if (!media || !media.key) {
     return new NextResponse(null, { status: 404 });
   }
 
   if (media.storageDriver === "local") {
-    return streamLocalObject(media.key, req, media.mimeType);
+    return streamLocalObject(key, req, media.mimeType);
   }
 
   // Remote driver (or a legacy row with no recorded driver): redirect to the
   // provider's CDN so the existing Installation keeps serving its files.
   try {
     const driver = driverForStorageDriver(media.storageDriver);
-    const url = await driver.url(media.key);
+    const url = await driver.url(key);
 
     // Driver URLs may be absolute provider origins or relative local addresses.
     // The redirect must always be absolute.

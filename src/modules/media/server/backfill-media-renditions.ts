@@ -9,12 +9,8 @@ import { storageKeyFromMediaUrl } from "@/modules/media/lib/url";
 import { describeBackfillFailure } from "./backfill-failure";
 import { forEachWithConcurrency } from "./bounded-concurrency";
 import { checksumOf } from "./image-bytes";
-import {
-  isMediaRevisionKey,
-  mediaRevisionPrefix,
-  storedImageFields,
-  writeImageRevision,
-} from "./media-service";
+import { isMediaRevisionKey, mediaRevisionPrefix } from "./media-key";
+import { storedImageFields, writeImageRevision } from "./media-service";
 import type { StorageDriver } from "./storage";
 
 export interface MediaRenditionBackfillPending {

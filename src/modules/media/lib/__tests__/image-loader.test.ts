@@ -145,10 +145,22 @@ describe("resolveMediaImageSource", () => {
     );
   });
 
-  it("resolves legacy absolute /assets URLs to the provider original", () => {
+  it("passes an absolute own-host /assets URL through untouched", () => {
+    const src = "https://pictureswriters.com/assets/legacy-id";
+
+    expect(resolveMediaImageSource(src, 960)).toBe(src);
+  });
+
+  it("resolves a relative /media address without a manifest to itself", () => {
     expect(
-      resolveMediaImageSource("https://pictureswriters.com/assets/legacy-id", 960),
-    ).toBe(`${UPLOADTHING_FILE_ORIGIN}${UPLOADTHING_FILE_PATH}legacy-id`);
+      resolveMediaImageSource("/media/default/media-1/1/original", 960),
+    ).toBe("/media/default/media-1/1/original");
+  });
+
+  it("passes an absolute own-host /media address through untouched", () => {
+    const src = "https://pictureswriters.com/media/default/media-1/1/original";
+
+    expect(resolveMediaImageSource(src, 960)).toBe(src);
   });
 
   it("ignores a malformed delivery token and falls back to the original", () => {

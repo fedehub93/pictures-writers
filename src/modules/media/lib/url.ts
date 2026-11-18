@@ -6,10 +6,6 @@ import {
 } from "./image-ladder.mjs";
 
 const UPLOADTHING_HOST_SUFFIXES = [".ufs.sh", "utfs.io"];
-const PICTURES_WRITERS_HOST_SUFFIXES = [
-  "pictureswriters.com",
-  ".pictureswriters.com",
-];
 
 export interface ParsedSrc {
   url: URL;
@@ -33,15 +29,6 @@ export function mediaPath(key: string): string {
   return `${MEDIA_PATH_PREFIX}/${normalized}`;
 }
 
-/**
- * Absolute form of a media address, used only at boundaries that need it
- * (social metadata, JSON-LD, sitemap, email HTML).
- */
-export function absoluteMediaUrl(key: string, siteUrl: string): string {
-  const base = siteUrl.replace(/\/+$/, "");
-  return `${base}${mediaPath(key)}`;
-}
-
 export function serializeSrc(url: URL, absolute: boolean): string {
   if (absolute) return url.toString();
 
@@ -61,10 +48,6 @@ function matchesHost(
 
 export function isUploadThingUrl(url: URL): boolean {
   return matchesHost(url.hostname, UPLOADTHING_HOST_SUFFIXES);
-}
-
-export function isPicturesWritersUrl(url: URL): boolean {
-  return matchesHost(url.hostname, PICTURES_WRITERS_HOST_SUFFIXES);
 }
 
 /**

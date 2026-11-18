@@ -2,6 +2,7 @@
 
 import {
   LEGACY_ASSET_PREFIX,
+  MEDIA_PATH_PREFIX,
   UPLOADTHING_FILE_ORIGIN,
   UPLOADTHING_FILE_PATH,
 } from "./image-ladder.mjs";
@@ -11,12 +12,7 @@ import {
   stripMediaManifest,
   type MediaManifestRendition,
 } from "./manifest";
-import {
-  isPicturesWritersUrl,
-  isUploadThingUrl,
-  parseSrc,
-  serializeSrc,
-} from "./url";
+import { isUploadThingUrl, parseSrc, serializeSrc } from "./url";
 
 export interface MediaImageLoaderProps {
   src: string;
@@ -40,12 +36,19 @@ function legacyAssetOriginal(url: URL): string {
   return `${UPLOADTHING_FILE_ORIGIN}${UPLOADTHING_FILE_PATH}${key}`;
 }
 
+/**
+ * The loader recognises address shapes, never hostnames: addresses on this
+ * Installation are relative, so a matching absolute address is somebody else's
+ * and is passed through untouched. The own-host check lives on the server,
+ * where the Installation's canonical URL is known.
+ */
 function isManaged(url: URL, absolute: boolean): boolean {
-  if (url.pathname.startsWith(LEGACY_ASSET_PREFIX)) {
-    return !absolute || isPicturesWritersUrl(url);
-  }
+  if (absolute) return isUploadThingUrl(url);
 
-  return absolute && isUploadThingUrl(url);
+  return (
+    url.pathname.startsWith(LEGACY_ASSET_PREFIX) ||
+    url.pathname.startsWith(`${MEDIA_PATH_PREFIX}/`)
+  );
 }
 
 function pickRendition(
@@ -82,11 +85,7 @@ export function resolveMediaImageSource(src: string, width: number): string {
     url.searchParams.get(MEDIA_MANIFEST_PARAM),
   );
 
-  // A delivery token is self-describing and carries only validated URLs. It is
-  // trusted for a managed provider URL or a relative (local driver) URL, never
-  // for a third-party host, whose images must pass through untouched.
-  const isRelativeDelivery = !absolute && manifest !== null;
-  if (!isManaged(url, absolute) && !isRelativeDelivery) return src;
+  if (!isManaged(url, absolute)) return src;
 
   const originalUrl = url.pathname.startsWith(LEGACY_ASSET_PREFIX)
     ? legacyAssetOriginal(url)

@@ -14,9 +14,11 @@ import {
   mediaLibrarySelect,
   type MediaLibraryItem,
 } from "@/modules/media/lib/media-library";
+import { mediaPath } from "@/modules/media/lib/url";
 import type { MediaRendition } from "@/modules/media/types";
 
 import { checksumOf } from "./image-bytes";
+import { mediaRevisionPrefix, mediaStoragePrefix } from "./media-key";
 import { countMediaReferencesFor } from "./media-usage";
 import { generateRenditions, normaliseImage } from "./process-image";
 import {
@@ -114,31 +116,6 @@ function findDuplicate(checksum: string): Promise<MediaLibraryItem | null> {
   });
 }
 
-export function mediaRevisionPrefix(
-  mediaId: string,
-  revision: number,
-  installationSlug: string = getInstallationSlug(),
-): string {
-  return `${installationSlug}/${mediaId}/${revision}/`;
-}
-
-export function mediaStoragePrefix(
-  mediaId: string,
-  installationSlug: string = getInstallationSlug(),
-): string {
-  return `${installationSlug}/${mediaId}/`;
-}
-
-/** Whether a storage key is the original or a rendition of one revision. */
-export function isMediaRevisionKey(
-  mediaId: string,
-  revision: number,
-  key: string,
-  installationSlug: string = getInstallationSlug(),
-): boolean {
-  return key.startsWith(mediaRevisionPrefix(mediaId, revision, installationSlug));
-}
-
 async function createPlainMedia(
   source: MediaUploadSource,
 ): Promise<MediaLibraryItem> {
@@ -217,11 +194,13 @@ export async function writeImageRevision({
       });
     }
 
-    const originalUrl = await driver.url(originalKey);
+    // Stored addresses are canonical and relative: the delivery route resolves
+    // the driver from the row. Rendition URLs are resolved through the driver,
+    // so a remote Media carries the provider origin inside its manifest.
     const renditionUrls = await Promise.all(
       manifest.map((rendition) => driver.url(rendition.key)),
     );
-    const url = buildMediaDeliveryUrl(originalUrl, {
+    const url = buildMediaDeliveryUrl(mediaPath(originalKey), {
       revision,
       archived,
       renditions: manifest.map((rendition, index) => ({
@@ -268,7 +247,7 @@ async function writePlainRevision({
 
     return {
       key,
-      url: await driver.url(key),
+      url: mediaPath(key),
       size: bytes.byteLength,
       mimeType,
     };

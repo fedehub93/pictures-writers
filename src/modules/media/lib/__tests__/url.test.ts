@@ -1,7 +1,25 @@
 import { describe, expect, it } from "vitest";
 
 import { UPLOADTHING_FILE_ORIGIN } from "../image-ladder.mjs";
-import { getUploadThingOrigin, storageKeyFromMediaUrl } from "../url";
+import {
+  getUploadThingOrigin,
+  mediaPath,
+  storageKeyFromMediaUrl,
+} from "../url";
+
+describe("mediaPath", () => {
+  it("composes the canonical relative address for a storage key", () => {
+    expect(mediaPath("default/abc/1/original")).toBe(
+      "/media/default/abc/1/original",
+    );
+  });
+
+  it("does not double the slash when the key starts with one", () => {
+    expect(mediaPath("/default/abc/1/original")).toBe(
+      "/media/default/abc/1/original",
+    );
+  });
+});
 
 describe("getUploadThingOrigin", () => {
   it("returns the origin of a ufs.sh image", () => {
@@ -33,6 +51,19 @@ describe("storageKeyFromMediaUrl", () => {
     expect(storageKeyFromMediaUrl("/media/default/abc/1/original")).toBe(
       "default/abc/1/original",
     );
+  });
+
+  it("ignores the delivery token and an absolute canonical form", () => {
+    expect(
+      storageKeyFromMediaUrl(
+        "/media/default/abc/1/original?mt=anything",
+      ),
+    ).toBe("default/abc/1/original");
+    expect(
+      storageKeyFromMediaUrl(
+        "https://example.test/media/default/abc/1/original",
+      ),
+    ).toBe("default/abc/1/original");
   });
 
   it("extracts the key from a legacy /assets/<key> URL", () => {
