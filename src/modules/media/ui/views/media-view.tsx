@@ -68,6 +68,9 @@ const MediaLibrary = ({
   const [checkedIds, setCheckedIds] = useState<string[]>([]);
   const [isBulkLoading, setIsBulkLoading] = useState(false);
 
+  // The grid and the batch consume only ids that are on screen right now, so a
+  // row removed by a refetch after a refused action cannot be acted on and is
+  // not drawn as checked.
   const selectedIds = checkedIds.filter((id) =>
     items.some((item) => item.id === id),
   );
@@ -83,31 +86,33 @@ const MediaLibrary = ({
   };
 
   const runBulkAction = async (
-    action: () => Promise<number>,
+    action: (ids: string[]) => Promise<number>,
     success: (count: number) => string,
   ) => {
     try {
       setIsBulkLoading(true);
-      const count = await action();
+      const count = await action(selectedIds);
       toast.success(success(count));
       setCheckedIds([]);
-      await invalidateLibrary();
     } catch (error) {
       toast.error(mediaErrorMessage(error));
     } finally {
+      // A refused batch writes nothing, but the resync repairs drift from
+      // another tab and proves the rows, count and quota the admin sees.
+      await invalidateLibrary();
       setIsBulkLoading(false);
     }
   };
 
   const onBulkArchive = () =>
     runBulkAction(
-      () => archive.mutateAsync({ ids: selectedIds }),
+      (ids) => archive.mutateAsync({ ids }),
       (count) => `Archived ${count} Media`,
     );
 
   const onBulkDelete = () =>
     runBulkAction(
-      () => remove.mutateAsync({ ids: selectedIds }),
+      (ids) => remove.mutateAsync({ ids }),
       (count) => `Deleted ${count} Media permanently`,
     );
 
@@ -148,7 +153,7 @@ const MediaLibrary = ({
       </div>
       <MediaGrid
         items={items}
-        checkedIds={checkedIds}
+        checkedIds={selectedIds}
         onCheckboxChange={handleCheckboxChange}
       />
       {items.length === 0 && (

@@ -6,7 +6,6 @@ import Image from "next/image";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { MediaType } from "@/generated/prisma";
 
@@ -48,6 +47,7 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 import { formatBytes } from "@/lib/format";
+import { useMediaInvalidation } from "@/modules/media/hooks/use-media-invalidation";
 
 const formSchema = z.object({
   name: z.string().min(1, {
@@ -81,7 +81,7 @@ function mediaTypeFromMimeType(mimeType: string): MediaType {
 
 export const CreateMediaModal = () => {
   const { isOpen, onClose, type, onCallback } = useModal();
-  const router = useRouter();
+  const { invalidateLibrary } = useMediaInvalidation();
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [duplicate, setDuplicate] = useState<DuplicateState | null>(null);
@@ -165,6 +165,9 @@ export const CreateMediaModal = () => {
       onCallback?.(response.data);
       resetState();
       onClose();
+      // Refresh the library reads through the cache, so the new Media appears
+      // at the top of the grid without a route reload.
+      void invalidateLibrary();
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 409) {
         setDuplicate({
@@ -192,7 +195,6 @@ export const CreateMediaModal = () => {
       toast.error(message);
     } finally {
       setIsOverriding(false);
-      router.refresh();
     }
   };
 
@@ -205,7 +207,7 @@ export const CreateMediaModal = () => {
     toast.success(`Using "${duplicate.media.name}"`);
     resetState();
     onClose();
-    router.refresh();
+    void invalidateLibrary();
   };
 
   const uploadAnyway = () => {

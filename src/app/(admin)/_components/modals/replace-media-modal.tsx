@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import axios from "axios";
-import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
 import {
@@ -21,9 +20,11 @@ import {
   type FileUploadOnChange,
 } from "@/shared/components/file-upload";
 
+import { useMediaInvalidation } from "@/modules/media/hooks/use-media-invalidation";
+
 export const ReplaceMediaModal = () => {
   const { isOpen, onClose, type, data } = useModal();
-  const router = useRouter();
+  const { invalidateLibrary } = useMediaInvalidation();
   const [upload, setUpload] = useState<FileUploadOnChange | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -40,6 +41,7 @@ export const ReplaceMediaModal = () => {
     try {
       setIsLoading(true);
 
+      // The bytes stay on the route handler; only the read cache is refreshed.
       await axios.post(`/api/media/${data.id}/replace`, {
         key: upload.key,
         mimeType: upload.mimeType,
@@ -47,6 +49,7 @@ export const ReplaceMediaModal = () => {
 
       toast.success("File replaced");
       handleClose();
+      void invalidateLibrary();
     } catch (error) {
       const message =
         axios.isAxiosError(error) && error.response?.data?.error
@@ -56,7 +59,6 @@ export const ReplaceMediaModal = () => {
       toast.error(message);
     } finally {
       setIsLoading(false);
-      router.refresh();
     }
   };
 
@@ -69,7 +71,7 @@ export const ReplaceMediaModal = () => {
           </DialogTitle>
           <DialogDescription className="text-center text-zinc-500">
             Upload a new file for &quot;{data?.name}&quot;. Every content that
-            uses this asset keeps its reference and will serve the new file.
+            uses this Media keeps its reference and will serve the new file.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 px-6">

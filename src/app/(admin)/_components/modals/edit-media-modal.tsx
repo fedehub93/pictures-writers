@@ -1,10 +1,10 @@
 "use client";
 
-import axios from "axios";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
+import { useMutation } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import { useEffect } from "react";
 
 import {
@@ -26,7 +26,12 @@ import {
 import { Input } from "@/shared/ui/input";
 import { Button } from "@/shared/ui/button";
 
+import { useTRPC } from "@/trpc/client";
+
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
+
+import { mediaErrorMessage } from "@/modules/media/lib/error-message";
+import { useMediaInvalidation } from "@/modules/media/hooks/use-media-invalidation";
 
 const formSchema = z.object({
   name: z.string().min(1, {
@@ -37,7 +42,10 @@ const formSchema = z.object({
 
 export const EditMediaModal = () => {
   const { isOpen, onClose, type, data } = useModal();
-  const router = useRouter();
+
+  const trpc = useTRPC();
+  const update = useMutation(trpc.media.update.mutationOptions());
+  const { invalidateLibrary } = useMediaInvalidation();
 
   const isModalOpen = isOpen && type === "editMediaAsset";
 
@@ -49,18 +57,29 @@ export const EditMediaModal = () => {
     },
   });
 
-  const isLoading = form.formState.isSubmitting;
+  const isLoading = form.formState.isSubmitting || update.isPending;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    try {
-      await axios.patch(`/api/media/${data?.id}`, values);
+    if (!data?.id) {
+      toast.error("The Media to update is missing.");
+      return;
+    }
 
+    try {
+      await update.mutateAsync({
+        id: data.id,
+        name: values.name,
+        altText: values.altText ?? null,
+      });
+
+      toast.success("Media updated");
       form.reset();
       onClose();
+      // Refresh the grid and the header through the shared cache; the dialog
+      // does not wait for the refetch and no route reload happens.
+      void invalidateLibrary();
     } catch (error) {
-      console.log(error);
-    } finally {
-      router.refresh();
+      toast.error(mediaErrorMessage(error));
     }
   };
 
@@ -79,10 +98,11 @@ export const EditMediaModal = () => {
       <DialogContent className="bg-white text-black p-0 overflow-hidden">
         <DialogHeader className="pt-8 px-6">
           <DialogTitle className="text-2xl text-center font-bold">
-            Edit asset
+            Edit Media
           </DialogTitle>
           <DialogDescription className="text-center text-zinc-500">
-            Add an image, audio, video or file in order to use in your contents.
+            Change the name and alt text. The stored file and every reference
+            stay the same.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -101,7 +121,7 @@ export const EditMediaModal = () => {
                       <Input
                         disabled={isLoading}
                         className="bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0"
-                        placeholder="Enter asset name"
+                        placeholder="Enter Media name"
                         {...field}
                       />
                     </FormControl>
