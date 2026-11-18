@@ -4,7 +4,7 @@ import { formatBytes } from "@/lib/format";
 import {
   MEDIA_QUOTA_WARNING_RATIO,
   type MediaQuotaStatus,
-} from "@/modules/media/lib/quota";
+} from "../../lib/quota";
 
 const BAR_COLOR: Record<MediaQuotaStatus["level"], string> = {
   ok: "bg-emerald-500",

@@ -1,27 +1,30 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
-import axios from "axios";
-import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { useMutation } from "@tanstack/react-query";
 import { Archive, ArchiveRestore, File, Trash } from "lucide-react";
 import { MediaType } from "@/generated/prisma";
 
-import { Checkbox } from "@/shared/ui/checkbox";
+import { useTRPC } from "@/trpc/client";
 import { Badge } from "@/shared/ui/badge";
-import { formatBytes } from "@/lib/format";
 import { Button } from "@/shared/ui/button";
-import { apiErrorMessage } from "@/shared/lib/api-error";
+import { Checkbox } from "@/shared/ui/checkbox";
+import { formatBytes } from "@/lib/format";
+
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
+
+import { mediaErrorMessage } from "../../lib/error-message";
+import { useMediaInvalidation } from "../../hooks/use-media-invalidation";
 import {
   formatMediaDimensions,
   type MediaLibraryEntry,
-} from "@/modules/media/lib/media-library";
+} from "../../lib/media-library";
 
-interface AssetCardProps {
+interface MediaCardProps {
   media: MediaLibraryEntry;
+  checked: boolean;
   onCheckboxChange: (id: string, isChecked: boolean) => void;
 }
 
@@ -49,11 +52,20 @@ function DetailRow({
   );
 }
 
-export const AssetCard = ({ media, onCheckboxChange }: AssetCardProps) => {
-  const [isChecked, setIsChecked] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+export const MediaCard = ({
+  media,
+  checked,
+  onCheckboxChange,
+}: MediaCardProps) => {
   const { onOpen } = useModal();
-  const router = useRouter();
+
+  const trpc = useTRPC();
+  const { invalidateLibrary } = useMediaInvalidation();
+
+  const archive = useMutation(trpc.media.archive.mutationOptions());
+  const restore = useMutation(trpc.media.restore.mutationOptions());
+  const remove = useMutation(trpc.media.removeMany.mutationOptions());
+  const isLoading = archive.isPending || restore.isPending || remove.isPending;
 
   const {
     id,
@@ -71,9 +83,8 @@ export const AssetCard = ({ media, onCheckboxChange }: AssetCardProps) => {
   const dimensions = formatMediaDimensions(media);
   const isArchived = archivedAt !== null;
 
-  const handleCheckboxChange = (checked: boolean) => {
-    setIsChecked(checked);
-    onCheckboxChange(id, checked);
+  const handleCheckboxChange = (next: boolean) => {
+    onCheckboxChange(id, next);
   };
 
   const onHandleEdit = () => {
@@ -84,40 +95,40 @@ export const AssetCard = ({ media, onCheckboxChange }: AssetCardProps) => {
     onOpen("replaceMediaAsset", undefined, { id, name, type });
   };
 
-  const runAction = async (
-    action: () => Promise<unknown>,
-    success: string,
-  ) => {
+  const runAction = async (action: () => Promise<unknown>, success: string) => {
     try {
-      setIsLoading(true);
       await action();
       toast.success(success);
+      await invalidateLibrary();
     } catch (error) {
-      toast.error(apiErrorMessage(error, "Something went wrong"));
-    } finally {
-      setIsLoading(false);
-      router.refresh();
+      toast.error(mediaErrorMessage(error));
     }
   };
 
   const onArchive = () =>
-    runAction(() => axios.post(`/api/media/${id}/archive`), "Asset archived");
+    runAction(
+      () => archive.mutateAsync({ ids: [id] }),
+      "Media archived",
+    );
 
   const onRestore = () =>
-    runAction(() => axios.post(`/api/media/${id}/restore`), "Asset restored");
+    runAction(
+      () => restore.mutateAsync({ ids: [id] }),
+      "Media restored",
+    );
 
   const onDelete = () =>
     runAction(
-      () => axios.delete(`/api/media/${id}`),
-      "Asset deleted permanently",
+      () => remove.mutateAsync({ ids: [id] }),
+      "Media deleted permanently",
     );
 
   const archiveDescription =
     usageCount > 0
       ? `${usageCount} content ${
           usageCount === 1 ? "item references" : "items reference"
-        } this asset. Archiving keeps it served and keeps those references intact; you can restore it later. References embedded in rich text or page data are not counted.`
-      : "Archived media leave the library but keep being served and referenced. You can restore them later.";
+        } this Media. Archiving keeps it served and keeps those references intact; you can restore it later. References embedded in rich text or page data are not counted.`
+      : "Archived Media leave the library but keep being served and referenced. You can restore them later.";
 
   const deleteDescription =
     usageCount > 0
@@ -129,7 +140,7 @@ export const AssetCard = ({ media, onCheckboxChange }: AssetCardProps) => {
   return (
     <div className="relative group hover:shadow-2xs transition overflow-hidden border rounded-lg h-full">
       <div className="absolute p-4 z-10 w-full flex items-start justify-between gap-x-2">
-        <Checkbox checked={isChecked} onCheckedChange={handleCheckboxChange} />
+        <Checkbox checked={checked} onCheckedChange={handleCheckboxChange} />
         <div className="flex flex-wrap justify-end gap-x-2 gap-y-2">
           {!isArchived ? (
             <>
@@ -234,7 +245,7 @@ function ArchiveConfirm({
 }) {
   return (
     <ConfirmModal
-      title="Archive this asset?"
+      title="Archive this Media?"
       description={description}
       confirmLabel="Archive"
       onConfirm={onConfirm}
@@ -258,7 +269,7 @@ function DeleteConfirm({
 }) {
   return (
     <ConfirmModal
-      title="Delete this asset permanently?"
+      title="Delete this Media permanently?"
       description={description}
       confirmLabel="Delete permanently"
       onConfirm={onConfirm}

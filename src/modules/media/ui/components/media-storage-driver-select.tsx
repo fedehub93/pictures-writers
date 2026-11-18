@@ -2,14 +2,9 @@
 
 import { useState } from "react";
 import axios from "axios";
-import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
-import {
-  STORAGE_DRIVERS,
-  STORAGE_DRIVER_LABELS,
-  type StorageDriverName,
-} from "@/modules/media/lib/storage-driver";
+import { useMediaInvalidation } from "../../hooks/use-media-invalidation";
 import { apiErrorMessage } from "@/shared/lib/api-error";
 import {
   Select,
@@ -19,7 +14,13 @@ import {
   SelectValue,
 } from "@/shared/ui/select";
 
-interface StorageDriverSelectProps {
+import {
+  STORAGE_DRIVERS,
+  STORAGE_DRIVER_LABELS,
+  type StorageDriverName,
+} from "../../lib/storage-driver";
+
+interface MediaStorageDriverSelectProps {
   active: StorageDriverName;
   uploadThingAvailable: boolean;
 }
@@ -29,11 +30,11 @@ interface StorageDriverSelectProps {
  * the setting on every upload, so there is no restart and no redeploy. Media
  * already stored keeps being served by the driver recorded on its own row.
  */
-export const StorageDriverSelect = ({
+export const MediaStorageDriverSelect = ({
   active,
   uploadThingAvailable,
-}: StorageDriverSelectProps) => {
-  const router = useRouter();
+}: MediaStorageDriverSelectProps) => {
+  const { invalidateMeta } = useMediaInvalidation();
   const [value, setValue] = useState<StorageDriverName>(active);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -49,7 +50,7 @@ export const StorageDriverSelect = ({
       toast.success(
         `New uploads will be stored on ${STORAGE_DRIVER_LABELS[next].toLowerCase()}.`,
       );
-      router.refresh();
+      void invalidateMeta();
     } catch (error) {
       setValue(previous);
       toast.error(
