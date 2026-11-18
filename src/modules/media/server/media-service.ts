@@ -28,7 +28,7 @@ import { countMediaReferencesFor } from "./media-usage";
 import { generateRenditions, normaliseImage } from "./process-image";
 import {
   getInstallationSlug,
-  resolveStorageDriver,
+  resolveActiveStorageDriver,
   type StorageDriverName,
 } from "./storage";
 import type { StorageDriver } from "./storage/types";
@@ -45,8 +45,8 @@ export interface MediaUploadSource {
 
 export interface CreateMediaFromUploadOptions {
   driver: StorageDriver;
-  /** The historical storage driver that wrote this file. Defaults to the active driver. */
-  storageDriver?: StorageDriverName | string;
+  /** The driver that wrote this file. Defaults to the active driver. */
+  storageDriver?: StorageDriverName;
   source: MediaUploadSource;
   /** Explicit admin override: keep the duplicate and create a second row. */
   override?: boolean;
@@ -63,8 +63,8 @@ export interface MediaReplacementSource {
 
 export interface ReplaceMediaFileOptions {
   driver: StorageDriver;
-  /** Defaults to the active driver. */
-  storageDriver?: StorageDriverName | string;
+  /** The driver that wrote the replacement bytes. */
+  storageDriver: StorageDriverName;
   mediaId: string;
   source: MediaReplacementSource;
 }
@@ -133,6 +133,17 @@ function isRethrowableMediaError(
     error instanceof MediaProcessingError ||
     error instanceof MediaQuotaExceededError
   );
+}
+
+/**
+ * The driver name a Media row records. A new upload defaults to the active
+ * driver, resolved at call time so a choice saved in the media library is
+ * honoured without a restart.
+ */
+async function recordedStorageDriver(
+  storageDriver?: StorageDriverName,
+): Promise<StorageDriverName> {
+  return storageDriver ?? (await resolveActiveStorageDriver()).name;
 }
 
 async function createPlainMedia(
@@ -315,10 +326,12 @@ export function storedImageFields(
  */
 export async function createMediaFromUpload({
   driver,
-  storageDriver = resolveStorageDriver().name,
+  storageDriver,
   source,
   override = false,
 }: CreateMediaFromUploadOptions): Promise<MediaLibraryItem> {
+  // Non-image uploads still arrive through the provider's transport (the legacy
+  // JSON path), so their rows record no driver and resolve as remote.
   if (source.type !== MediaType.IMAGE) {
     return createPlainMedia(source);
   }
@@ -328,6 +341,8 @@ export async function createMediaFromUpload({
       "The uploaded image cannot be processed because its storage key is missing.",
     );
   }
+
+  const driverThatWrote = await recordedStorageDriver(storageDriver);
 
   let originalBytes: Uint8Array<ArrayBuffer>;
   try {
@@ -373,7 +388,7 @@ export async function createMediaFromUpload({
             id,
             name: source.name,
             altText: source.altText || null,
-            storageDriver,
+            storageDriver: driverThatWrote,
           },
           select: mediaLibrarySelect,
         }),
@@ -409,7 +424,7 @@ export async function createMediaFromUpload({
  */
 export async function replaceMediaFile({
   driver,
-  storageDriver = resolveStorageDriver().name,
+  storageDriver,
   mediaId,
   source,
 }: ReplaceMediaFileOptions): Promise<MediaLibraryItem> {

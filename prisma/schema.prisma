@@ -45,6 +45,11 @@ model Settings {
   /// plus generated renditions and including archived Media.
   mediaQuotaMb Int @default(5120)
 
+  /// Active storage driver for new uploads ("local" or "uploadthing"). NULL
+  /// means no choice was made yet and the environment decides, so an existing
+  /// Installation keeps writing where it always has.
+  storageDriver String?
+
   /// [Scripts]
   scripts Json @default("null") @db.JsonB
 

@@ -38,6 +38,12 @@ vi.mock("@/modules/media/server/storage", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/modules/media/server/storage")>()),
   getStorageDriver: () => storage.driver,
   resolveStorageDriver: () => ({ driver: storage.driver, name: "local" }),
+  // The suite also creates Media through the upload route, whose active driver
+  // must be the temporary local driver.
+  resolveActiveStorageDriver: async () => ({
+    driver: storage.driver,
+    name: "local",
+  }),
 }));
 
 async function createPng(

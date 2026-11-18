@@ -4,7 +4,12 @@ import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { createStorageDriver, storageConfigFromEnv } from "../driver";
+import {
+  createStorageDriver,
+  isUploadThingConfigured,
+  storageConfigFromEnv,
+  storageDriverNameFromSetting,
+} from "../driver";
 
 describe("storageConfigFromEnv", () => {
   it("uses UploadThing by default", () => {
@@ -37,6 +42,45 @@ describe("storageConfigFromEnv", () => {
     expect(() =>
       storageConfigFromEnv({ MEDIA_STORAGE_DRIVER: "s3" }),
     ).toThrowError(/s3/);
+  });
+});
+
+describe("storageDriverNameFromSetting", () => {
+  it("lets the saved setting win over the environment", () => {
+    expect(
+      storageDriverNameFromSetting("local", {
+        MEDIA_STORAGE_DRIVER: "uploadthing",
+      }),
+    ).toBe("local");
+    expect(
+      storageDriverNameFromSetting("uploadthing", {
+        MEDIA_STORAGE_DRIVER: "local",
+      }),
+    ).toBe("uploadthing");
+  });
+
+  it("falls back to the environment when no setting was saved", () => {
+    expect(
+      storageDriverNameFromSetting(null, { MEDIA_STORAGE_DRIVER: "local" }),
+    ).toBe("local");
+  });
+
+  it("keeps today's driver when neither the setting nor the environment names one", () => {
+    expect(storageDriverNameFromSetting(undefined, {})).toBe("uploadthing");
+  });
+
+  it("ignores a stored value the application does not know", () => {
+    expect(
+      storageDriverNameFromSetting("s3", { MEDIA_STORAGE_DRIVER: "local" }),
+    ).toBe("local");
+  });
+});
+
+describe("isUploadThingConfigured", () => {
+  it("is available only while a token is configured", () => {
+    expect(isUploadThingConfigured({ UPLOADTHING_TOKEN: "secret" })).toBe(true);
+    expect(isUploadThingConfigured({ UPLOADTHING_TOKEN: "  " })).toBe(false);
+    expect(isUploadThingConfigured({})).toBe(false);
   });
 });
 

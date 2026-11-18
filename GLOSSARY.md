@@ -147,7 +147,7 @@ The stable, storage-agnostic path identifying an object inside the media bucket,
 _Avoid_: Path, filename, URL when referring to the identifier.
 
 **Storage driver**:
-The adapter that writes, deletes and addresses objects for one storage Provider. One per installation, chosen by configuration.
+The adapter that writes, deletes and addresses objects for one storage Provider. The active driver for new uploads is an Installation setting, falling back to configuration when the owner has not chosen; every Media records the driver that wrote it, so delivery resolves per row.
 _Avoid_: Provider, which is the external service; storage integration, which would be the Provider plus its stored secrets.
 
 **Media revision**:
@@ -696,7 +696,7 @@ All the Installations one Control plane manages, across one or more Hosts.
 _Avoid_: Cluster, pool, network.
 
 **Installation settings**:
-The single-row configuration an Installation owns and its backoffice edits — site name, canonical URL, timezone, locale, media quota. It belongs to that Installation alone and is never supplied through environment variables.
+The single-row configuration an Installation owns and its backoffice edits - site name, canonical URL, timezone, locale, media quota, active storage driver. It belongs to that Installation alone and is never supplied through environment variables.
 _Avoid_: Site config, global settings, tenant settings.
 
 **Bootstrap**:

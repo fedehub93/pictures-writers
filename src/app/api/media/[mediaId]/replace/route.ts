@@ -4,7 +4,7 @@ import { authAdmin } from "@/lib/auth-service";
 
 import type { MediaReplacementSource } from "@/modules/media/server/media-service";
 import { replaceMediaFile } from "@/modules/media/server/media-service";
-import { getStorageDriver } from "@/modules/media/server/storage";
+import { resolveStorageDriver } from "@/modules/media/server/storage";
 
 import { mediaErrorResponse } from "../../_lib/media-error-response";
 
@@ -41,8 +41,10 @@ export async function POST(
     };
 
     try {
+      const { driver, name } = resolveStorageDriver();
       const media = await replaceMediaFile({
-        driver: getStorageDriver(),
+        driver,
+        storageDriver: name,
         mediaId,
         source,
       });

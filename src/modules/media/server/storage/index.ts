@@ -4,8 +4,10 @@ export {
   getInstallationSlug,
   getLocalStorageRoot,
   getStorageDriver,
+  isUploadThingConfigured,
   resolveStorageDriver,
   storageConfigFromEnv,
+  storageDriverNameFromSetting,
   DEFAULT_INSTALLATION_SLUG,
   DEFAULT_LOCAL_PUBLIC_URL,
   DEFAULT_LOCAL_ROOT,
@@ -14,6 +16,12 @@ export {
   type StorageDriverName,
   type StorageEnvironment,
 } from "./driver";
+export {
+  getActiveStorageDriverName,
+  getStorageDriverChoice,
+  resolveActiveStorageDriver,
+  type StorageDriverChoice,
+} from "./active";
 export {
   StorageObjectNotFoundError,
   type StorageDriver,

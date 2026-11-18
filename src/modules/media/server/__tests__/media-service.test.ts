@@ -398,6 +398,7 @@ describe("replaceMediaFile", () => {
   function replace(mediaId: string, key: string, target: StorageDriver = driver) {
     return replaceMediaFile({
       driver: target,
+      storageDriver: "local",
       mediaId,
       source: { key, mimeType: "image/png" },
     });
@@ -553,6 +554,7 @@ describe("replaceMediaFile", () => {
     const newBytes = new Uint8Array([9, 8, 7, 6, 5, 4, 3]);
     const replaced = await replaceMediaFile({
       driver,
+      storageDriver: "local",
       mediaId: media.id,
       source: {
         key: await putSource(newBytes, driver, "application/pdf"),

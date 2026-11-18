@@ -36,6 +36,10 @@ vi.mock("@/lib/auth-service", () => ({
 vi.mock("@/modules/media/server/storage", () => ({
   getStorageDriver: () => storage.driver,
   resolveStorageDriver: () => ({ driver: storage.driver, name: "local" }),
+  resolveActiveStorageDriver: async () => ({
+    driver: storage.driver,
+    name: "local",
+  }),
   getInstallationSlug: () => "default",
 }));
 

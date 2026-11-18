@@ -19,7 +19,7 @@ import {
   assertMediaQuotaAllows,
   MediaQuotaExceededError,
 } from "@/modules/media/server/media-quota";
-import { resolveStorageDriver } from "@/modules/media/server/storage";
+import { resolveActiveStorageDriver } from "@/modules/media/server/storage";
 
 const MEDIA_BATCH = 3;
 
@@ -152,7 +152,7 @@ function mediaUploadErrorResponse(error: unknown): NextResponse {
 }
 
 async function handleMultipartUpload(req: Request): Promise<Response> {
-  const { driver, name: driverName } = resolveStorageDriver();
+  const { driver, name: driverName } = await resolveActiveStorageDriver();
   const form = await req.formData();
   const file = form.get("file");
   const override = form.get("override") === "true";
@@ -256,7 +256,7 @@ export async function POST(req: Request) {
     };
 
     try {
-      const { driver, name: driverName } = resolveStorageDriver();
+      const { driver, name: driverName } = await resolveActiveStorageDriver();
       const media = await createMediaFromUpload({
         driver,
         storageDriver: driverName,

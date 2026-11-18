@@ -5,6 +5,8 @@ import { authAdmin } from "@/lib/auth-service";
 import { SettingsScripts } from "@/types";
 import { revalidateContent } from "@/shared/lib/revalidate-content";
 import { parseMediaQuotaMb } from "@/modules/media/lib/quota";
+import { parseStorageDriver } from "@/modules/media/lib/storage-driver";
+import { isUploadThingConfigured } from "@/modules/media/server/storage";
 
 export async function PATCH(req: Request) {
   try {
@@ -31,6 +33,29 @@ export async function PATCH(req: Request) {
       }
 
       data.mediaQuotaMb = quotaMb;
+    }
+
+    if (values.storageDriver !== undefined) {
+      const storageDriver = parseStorageDriver(values.storageDriver);
+
+      if (storageDriver === null) {
+        return NextResponse.json(
+          { error: 'The storage driver must be "local" or "uploadthing".' },
+          { status: 400 },
+        );
+      }
+
+      if (storageDriver === "uploadthing" && !isUploadThingConfigured()) {
+        return NextResponse.json(
+          {
+            error:
+              "UploadThing cannot be selected while UPLOADTHING_TOKEN is not configured.",
+          },
+          { status: 400 },
+        );
+      }
+
+      data.storageDriver = storageDriver;
     }
 
     if (Array.isArray(values.scripts)) {

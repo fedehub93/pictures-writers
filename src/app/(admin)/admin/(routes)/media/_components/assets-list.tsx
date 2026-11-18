@@ -13,6 +13,7 @@ import {
   type MediaLibraryView,
 } from "@/modules/media/lib/media-library";
 import type { MediaQuotaStatus } from "@/modules/media/lib/quota";
+import type { StorageDriverName } from "@/modules/media/lib/storage-driver";
 
 import { apiErrorMessage } from "@/shared/lib/api-error";
 import { Button } from "@/shared/ui/button";
@@ -22,11 +23,16 @@ import { ExtendedPagination } from "@/shared/components/extended-pagination";
 import { SearchInput } from "@/app/(admin)/_components/search-input";
 import { MediaActions } from "./actions";
 import { MediaQuotaMeter } from "./quota-meter";
+import { StorageDriverSelect } from "./storage-driver-select";
 
 interface AssetListProps {
   items: MediaLibraryEntry[];
   view: MediaLibraryView;
   quota: MediaQuotaStatus;
+  storage: {
+    active: StorageDriverName;
+    uploadThingAvailable: boolean;
+  };
   pagination: {
     page: number;
     perPage: number;
@@ -39,6 +45,7 @@ export const AssetsList = ({
   items,
   view,
   quota,
+  storage,
   pagination,
 }: AssetListProps) => {
   const router = useRouter();
@@ -154,6 +161,10 @@ export const AssetsList = ({
           )}
         </div>
         <MediaQuotaMeter quota={quota} />
+        <StorageDriverSelect
+          active={storage.active}
+          uploadThingAvailable={storage.uploadThingAvailable}
+        />
         {view === "active" && <MediaActions />}
       </div>
       <p className="text-xs text-muted-foreground pb-4">{MEDIA_USAGE_NOTE}</p>

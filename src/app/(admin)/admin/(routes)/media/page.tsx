@@ -9,6 +9,7 @@ import {
   type MediaLibraryView,
 } from "@/modules/media/lib/media-library";
 import { getMediaQuotaStatus } from "@/modules/media/server/media-quota";
+import { getStorageDriverChoice } from "@/modules/media/server/storage";
 import { countMediaReferencesFor } from "@/modules/media/server/media-usage";
 
 import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
@@ -54,9 +55,10 @@ const MediaPage = async (props: {
     db.media.count({ where }),
   ]);
 
-  const [usage, quota] = await Promise.all([
+  const [usage, quota, storage] = await Promise.all([
     countMediaReferencesFor(assets.map((asset) => asset.id)),
     getMediaQuotaStatus(),
+    getStorageDriverChoice(),
   ]);
   const items: MediaLibraryEntry[] = assets.map((asset) => ({
     ...asset,
@@ -74,7 +76,7 @@ const MediaPage = async (props: {
     <div className="h-full w-full flex flex-col gap-y-4 px-6 py-3">
       <ContentHeader label="Media assets" totalEntries={totalAssets} />
       <div className="flex flex-col gap-y-4">
-        <AssetsList items={items} pagination={pagination} view={view} quota={quota} />
+        <AssetsList items={items} pagination={pagination} view={view} quota={quota} storage={storage} />
       </div>
     </div>
   );

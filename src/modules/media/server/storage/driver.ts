@@ -3,11 +3,16 @@ import "server-only";
 import path from "node:path";
 import { UTApi } from "uploadthing/server";
 
+import {
+  parseStorageDriver,
+  type StorageDriverName,
+} from "@/modules/media/lib/storage-driver";
+
 import { createLocalStorageDriver } from "./local";
 import type { StorageDriver } from "./types";
 import { createUploadThingStorageDriver } from "./uploadthing";
 
-export type StorageDriverName = "local" | "uploadthing";
+export type { StorageDriverName };
 
 export type StorageDriverConfig =
   | { driver: "uploadthing"; token?: string }
@@ -58,6 +63,30 @@ export function getLocalStorageRoot(
   env: StorageEnvironment = process.env,
 ): string {
   return env.MEDIA_STORAGE_LOCAL_ROOT || path.resolve(DEFAULT_LOCAL_ROOT);
+}
+
+/**
+ * Whether the UploadThing choice can be offered at all. The token stays in the
+ * environment until storage becomes an Integration; without it the media
+ * library disables the option instead of letting an upload fail.
+ */
+export function isUploadThingConfigured(
+  env: StorageEnvironment = process.env,
+): boolean {
+  return Boolean(env.UPLOADTHING_TOKEN?.trim());
+}
+
+/**
+ * The driver a new upload will use: the saved Installation setting first, then
+ * the environment, then today's default. A stored value the application no
+ * longer knows is treated as absent so an upgrade never breaks uploads; the
+ * settings API rejects such a value before it can be written.
+ */
+export function storageDriverNameFromSetting(
+  setting: unknown,
+  env: StorageEnvironment = process.env,
+): StorageDriverName {
+  return parseStorageDriver(setting) ?? storageConfigFromEnv(env).driver;
 }
 
 export function createStorageDriver(
