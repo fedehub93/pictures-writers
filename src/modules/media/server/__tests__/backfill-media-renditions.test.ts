@@ -128,13 +128,13 @@ describe("backfillMediaRenditions", () => {
     const row = await db.media.findUniqueOrThrow({ where: { id: media.id } });
     const manifest = row.renditions as MediaRendition[];
 
-    expect(row.key).toBe(`${media.id}/1/original`);
+    expect(row.key).toBe(`default/${media.id}/1/original`);
     expect(row.mimeType).toBe("image/png");
     expect(row.metadata).toMatchObject({ width: 1000, height: 600 });
     expect(manifest).toHaveLength(MEDIA_RENDITION_WIDTHS.length * 2);
     expect(
       manifest.every((rendition) =>
-        rendition.key.startsWith(`${media.id}/1/`),
+        rendition.key.startsWith(`default/${media.id}/1/`),
       ),
     ).toBe(true);
 
@@ -171,7 +171,7 @@ describe("backfillMediaRenditions", () => {
     await expect(driver.get(legacyKey)).resolves.toBeDefined();
     await expect(
       db.media.findUniqueOrThrow({ where: { id: media.id } }),
-    ).resolves.toMatchObject({ key: `${media.id}/1/original` });
+    ).resolves.toMatchObject({ key: `default/${media.id}/1/original` });
   });
 
   it("can be run twice without creating new objects or touching processed rows", async () => {
@@ -254,7 +254,7 @@ describe("backfillMediaRenditions", () => {
     ]);
     await expect(
       db.media.findUniqueOrThrow({ where: { id: healthy.id } }),
-    ).resolves.toMatchObject({ key: `${healthy.id}/1/original` });
+    ).resolves.toMatchObject({ key: `default/${healthy.id}/1/original` });
     await expect(
       db.media.findUniqueOrThrow({ where: { id: broken.id } }),
     ).resolves.toMatchObject({ renditions: null });

@@ -68,6 +68,21 @@ describe.each(harnesses)("%s storage driver", (_name, createHarness) => {
     expect(url).toContain("original");
   });
 
+  it("returns the canonical relative address for local storage and the provider origin for remote storage", async () => {
+    const { driver } = harness;
+
+    await driver.put("media-1/1/original", new Uint8Array([1, 2, 3]), "image/png");
+
+    const url = await driver.url("media-1/1/original");
+
+    if (_name === "local") {
+      expect(url).toBe("/media/media-1/1/original");
+    } else {
+      expect(url).toMatch(/^https:\/\//);
+      expect(url).not.toContain("/media/");
+    }
+  });
+
   it("fails with a typed error when reading a missing object", async () => {
     const { driver } = harness;
 

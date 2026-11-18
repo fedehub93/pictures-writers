@@ -62,3 +62,5 @@ export const UPLOADTHING_FILE_ORIGIN = "https://ghhc7ejbae.ufs.sh";
 export const UPLOADTHING_FILE_PATH = "/f/";
 
 export const LEGACY_ASSET_PREFIX = "/assets/";
+
+export const MEDIA_PATH_PREFIX = "/media";

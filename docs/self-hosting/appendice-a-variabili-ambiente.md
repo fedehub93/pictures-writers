@@ -141,6 +141,18 @@ Google Tag Manager non è più una variabile d'ambiente: il container id si conf
 | `NODE_OPTIONS` | `--max-old-space-size=3072` | ✅ | ❌ | ❌ | Evita OOM |
 | `NEXT_TELEMETRY_DISABLED` | `1` | ✅ | ✅ | ❌ | |
 
+### 3.11 Media storage
+
+| Variabile | Esempio | Build | Runtime | Segreta | Note |
+|---|---|:---:|:---:|:---:|---|
+| `MEDIA_STORAGE_DRIVER` | `local` / `uploadthing` | ❌ | ✅ | ❌ | Driver attivo per i nuovi upload. Default `uploadthing` per non mutare le Installazioni esistenti. |
+| `MEDIA_STORAGE_LOCAL_ROOT` | `/app/media-storage` o `/data/media` | ❌ | ✅ | ❌ | Percorso nel container dove il driver locale scrive i file. |
+| `MEDIA_STORAGE_LOCAL_PUBLIC_URL` | `/media` | ✅ | ✅ | ❌ | Prefisso pubblico delle URL locali. Default `/media`. |
+| `INSTALLATION_SLUG` | `tenant-xyz` | ❌ | ✅ | ❌ | Segmento iniziale di ogni nuova storage key. Default `default` se assente. |
+| `UPLOADTHING_TOKEN` | `<token>` | ❌ | ✅ | ✅ | Vedi §3.5. Richiesto solo quando `MEDIA_STORAGE_DRIVER=uploadthing`. |
+
+> Il driver `local` richiede un **volume persistente** montato su `MEDIA_STORAGE_LOCAL_ROOT`. Senza di esso, un redeploy cancellerebbe i file caricati. Il volume va incluso nel backup insieme al database.
+
 ---
 
 ## 4. Blocco pronto (produzione)
@@ -177,6 +189,12 @@ NEXT_PUBLIC_RECAPTCHA_SITE_KEY=<DAL_PASSWORD_MANAGER>
 RECAPTCHA_SECRET_KEY=<DAL_PASSWORD_MANAGER>
 
 SCHEDULED_PUBLICATION_SECRET=<DAL_PASSWORD_MANAGER>
+
+# Media storage. Per restare su UploadThing come oggi, lascia il default.
+# MEDIA_STORAGE_DRIVER=uploadthing
+# MEDIA_STORAGE_LOCAL_ROOT=/app/media-storage
+# MEDIA_STORAGE_LOCAL_PUBLIC_URL=/media
+# INSTALLATION_SLUG=default
 
 NIXPACKS_NODE_VERSION=24
 NODE_OPTIONS=--max-old-space-size=3072

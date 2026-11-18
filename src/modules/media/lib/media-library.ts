@@ -15,6 +15,7 @@ export const mediaLibrarySelect = {
   mimeType: true,
   checksum: true,
   revision: true,
+  storageDriver: true,
   metadata: true,
   archivedAt: true,
   createdAt: true,

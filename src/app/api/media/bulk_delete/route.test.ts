@@ -26,8 +26,10 @@ vi.mock("@/lib/auth-service", () => ({
   authAdmin: async () => ({ id: "admin-user" }),
 }));
 
-vi.mock("@/modules/media/server/storage", () => ({
+vi.mock("@/modules/media/server/storage", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/modules/media/server/storage")>()),
   getStorageDriver: () => storage.driver,
+  resolveStorageDriver: () => ({ driver: storage.driver, name: "local" }),
 }));
 
 function request(body: unknown): Request {

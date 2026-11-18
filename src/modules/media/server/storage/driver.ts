@@ -7,6 +7,8 @@ import { createLocalStorageDriver } from "./local";
 import type { StorageDriver } from "./types";
 import { createUploadThingStorageDriver } from "./uploadthing";
 
+export type StorageDriverName = "local" | "uploadthing";
+
 export type StorageDriverConfig =
   | { driver: "uploadthing"; token?: string }
   | { driver: "local"; root: string; publicBaseUrl: string };
@@ -15,6 +17,7 @@ export type StorageEnvironment = Record<string, string | undefined>;
 
 export const DEFAULT_LOCAL_ROOT = ".media-storage";
 export const DEFAULT_LOCAL_PUBLIC_URL = "/media";
+export const DEFAULT_INSTALLATION_SLUG = "default";
 
 export function storageConfigFromEnv(
   env: StorageEnvironment = process.env,
@@ -39,6 +42,24 @@ export function storageConfigFromEnv(
   );
 }
 
+export interface ResolvedStorageDriver {
+  driver: StorageDriver;
+  name: StorageDriverName;
+}
+
+export function getInstallationSlug(
+  env: StorageEnvironment = process.env,
+): string {
+  const slug = env.INSTALLATION_SLUG?.trim();
+  return slug || DEFAULT_INSTALLATION_SLUG;
+}
+
+export function getLocalStorageRoot(
+  env: StorageEnvironment = process.env,
+): string {
+  return env.MEDIA_STORAGE_LOCAL_ROOT || path.resolve(DEFAULT_LOCAL_ROOT);
+}
+
 export function createStorageDriver(
   config: StorageDriverConfig = storageConfigFromEnv(),
 ): StorageDriver {
@@ -52,9 +73,37 @@ export function createStorageDriver(
   }
 }
 
-let defaultDriver: StorageDriver | undefined;
+export function resolveStorageDriver(
+  env: StorageEnvironment = process.env,
+): ResolvedStorageDriver {
+  const config = storageConfigFromEnv(env);
+  return { driver: createStorageDriver(config), name: config.driver };
+}
 
-export function getStorageDriver(): StorageDriver {
-  defaultDriver ??= createStorageDriver();
-  return defaultDriver;
+export function getStorageDriver(env?: StorageEnvironment): StorageDriver {
+  return resolveStorageDriver(env).driver;
+}
+
+export function driverForStorageDriver(
+  name: string | null | undefined,
+  env: StorageEnvironment = process.env,
+): StorageDriver {
+  const driverName = (name ?? "uploadthing") as StorageDriverName;
+
+  switch (driverName) {
+    case "local":
+      return createLocalStorageDriver({
+        root: getLocalStorageRoot(env),
+        publicBaseUrl:
+          env.MEDIA_STORAGE_LOCAL_PUBLIC_URL || DEFAULT_LOCAL_PUBLIC_URL,
+      });
+    case "uploadthing":
+      return createUploadThingStorageDriver(
+        env.UPLOADTHING_TOKEN
+          ? new UTApi({ token: env.UPLOADTHING_TOKEN })
+          : new UTApi(),
+      );
+    default:
+      return createStorageDriver(storageConfigFromEnv(env));
+  }
 }

@@ -1,5 +1,6 @@
 import {
   LEGACY_ASSET_PREFIX,
+  MEDIA_PATH_PREFIX,
   UPLOADTHING_FILE_ORIGIN,
   UPLOADTHING_FILE_PATH,
 } from "./image-ladder.mjs";
@@ -21,6 +22,24 @@ export function parseSrc(src: string): ParsedSrc {
   } catch {
     return { url: new URL(src, "http://media.local"), absolute: false };
   }
+}
+
+/**
+ * The canonical, provider-independent media address for a storage key.
+ * `Media.url` stores this relative form so the database never carries a domain.
+ */
+export function mediaPath(key: string): string {
+  const normalized = key.replace(/^\/+/, "");
+  return `${MEDIA_PATH_PREFIX}/${normalized}`;
+}
+
+/**
+ * Absolute form of a media address, used only at boundaries that need it
+ * (social metadata, JSON-LD, sitemap, email HTML).
+ */
+export function absoluteMediaUrl(key: string, siteUrl: string): string {
+  const base = siteUrl.replace(/\/+$/, "");
+  return `${base}${mediaPath(key)}`;
 }
 
 export function serializeSrc(url: URL, absolute: boolean): string {

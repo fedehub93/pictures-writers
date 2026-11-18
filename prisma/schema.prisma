@@ -331,6 +331,7 @@ model Media {
   mimeType  String?
   checksum  String?
   revision  Int       @default(1)
+  storageDriver String?
   /// [MediaMetadata]
   metadata  Json?     @db.JsonB
   /// [MediaRenditions]

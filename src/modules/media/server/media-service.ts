@@ -19,7 +19,12 @@ import type { MediaRendition } from "@/modules/media/types";
 import { checksumOf } from "./image-bytes";
 import { countMediaReferencesFor } from "./media-usage";
 import { generateRenditions, normaliseImage } from "./process-image";
-import type { StorageDriver } from "./storage";
+import {
+  getInstallationSlug,
+  resolveStorageDriver,
+  type StorageDriverName,
+} from "./storage";
+import type { StorageDriver } from "./storage/types";
 
 export interface MediaUploadSource {
   key: string | null;
@@ -33,6 +38,8 @@ export interface MediaUploadSource {
 
 export interface CreateMediaFromUploadOptions {
   driver: StorageDriver;
+  /** The historical storage driver that wrote this file. Defaults to the active driver. */
+  storageDriver?: StorageDriverName | string;
   source: MediaUploadSource;
   /** Explicit admin override: keep the duplicate and create a second row. */
   override?: boolean;
@@ -49,6 +56,8 @@ export interface MediaReplacementSource {
 
 export interface ReplaceMediaFileOptions {
   driver: StorageDriver;
+  /** Defaults to the active driver. */
+  storageDriver?: StorageDriverName | string;
   mediaId: string;
   source: MediaReplacementSource;
 }
@@ -105,8 +114,19 @@ function findDuplicate(checksum: string): Promise<MediaLibraryItem | null> {
   });
 }
 
-export function mediaRevisionPrefix(mediaId: string, revision: number): string {
-  return `${mediaId}/${revision}/`;
+export function mediaRevisionPrefix(
+  mediaId: string,
+  revision: number,
+  installationSlug: string = getInstallationSlug(),
+): string {
+  return `${installationSlug}/${mediaId}/${revision}/`;
+}
+
+export function mediaStoragePrefix(
+  mediaId: string,
+  installationSlug: string = getInstallationSlug(),
+): string {
+  return `${installationSlug}/${mediaId}/`;
 }
 
 /** Whether a storage key is the original or a rendition of one revision. */
@@ -114,8 +134,9 @@ export function isMediaRevisionKey(
   mediaId: string,
   revision: number,
   key: string,
+  installationSlug: string = getInstallationSlug(),
 ): boolean {
-  return key.startsWith(mediaRevisionPrefix(mediaId, revision));
+  return key.startsWith(mediaRevisionPrefix(mediaId, revision, installationSlug));
 }
 
 async function createPlainMedia(
@@ -286,6 +307,7 @@ export function storedImageFields(
  */
 export async function createMediaFromUpload({
   driver,
+  storageDriver = resolveStorageDriver().name,
   source,
   override = false,
 }: CreateMediaFromUploadOptions): Promise<MediaLibraryItem> {
@@ -318,7 +340,8 @@ export async function createMediaFromUpload({
 
   const id = randomUUID();
   const revision = 1;
-  const prefix = `${id}/`;
+  const installationSlug = getInstallationSlug();
+  const prefix = mediaStoragePrefix(id, installationSlug);
 
   try {
     const stored = await writeImageRevision({
@@ -335,6 +358,7 @@ export async function createMediaFromUpload({
         id,
         name: source.name,
         altText: source.altText || null,
+        storageDriver,
       },
       select: mediaLibrarySelect,
     });
@@ -369,6 +393,7 @@ export async function createMediaFromUpload({
  */
 export async function replaceMediaFile({
   driver,
+  storageDriver = resolveStorageDriver().name,
   mediaId,
   source,
 }: ReplaceMediaFileOptions): Promise<MediaLibraryItem> {
@@ -393,9 +418,12 @@ export async function replaceMediaFile({
   }
 
   const revision = existing.revision + 1;
-  const mediaPrefix = `${mediaId}/`;
-  const newPrefix = mediaRevisionPrefix(mediaId, revision);
-  const previousPrefix = mediaRevisionPrefix(mediaId, existing.revision);
+  const installationSlug = getInstallationSlug();
+  const mediaPrefix = mediaStoragePrefix(mediaId, installationSlug);
+  const newPrefix = mediaRevisionPrefix(mediaId, revision, installationSlug);
+  const previousPrefix = existing.key
+    ? `${existing.key.split("/").slice(0, -1).join("/")}/`
+    : mediaRevisionPrefix(mediaId, existing.revision, installationSlug);
   const checksum = checksumOf(bytes);
 
   let media: MediaLibraryItem;
@@ -412,7 +440,10 @@ export async function replaceMediaFile({
 
       media = await db.media.update({
         where: { id: mediaId },
-        data: storedImageFields(stored, revision, checksum),
+        data: {
+          ...storedImageFields(stored, revision, checksum),
+          storageDriver,
+        },
         select: mediaLibrarySelect,
       });
     } else {
@@ -433,6 +464,7 @@ export async function replaceMediaFile({
           mimeType: stored.mimeType,
           checksum,
           revision,
+          storageDriver,
           metadata: null,
           renditions: null,
         },
@@ -534,6 +566,23 @@ export interface DeleteMediaPermanentlyBatchOptions {
   mediaIds: string[];
 }
 
+function storagePrefixFor(mediaId: string, key: string | null): string {
+  const fallback = `${getInstallationSlug()}/${mediaId}/`;
+  if (!key) return fallback;
+
+  const segments = key.split("/");
+  // Namespaced revision: <slug>/<mediaId>/<revision>/<file>
+  if (segments.length === 4) {
+    return `${segments[0]}/${segments[1]}/`;
+  }
+  // Flat revision: <mediaId>/<revision>/<file>
+  if (segments.length === 3) {
+    return `${segments[0]}/`;
+  }
+
+  return fallback;
+}
+
 /**
  * Permanently removes archived Media.
  *
@@ -567,7 +616,7 @@ export async function deleteMediaPermanentlyBatch({
   }
 
   for (const item of media) {
-    const prefix = `${item.id}/`;
+    const prefix = storagePrefixFor(item.id, item.key);
 
     try {
       await driver.deletePrefix(prefix);

@@ -88,6 +88,7 @@ describe("createMediaFromUpload", () => {
   ) {
     const media = await createMediaFromUpload({
       driver: options.target ?? driver,
+      storageDriver: "local",
       source: sourceFor(key),
       override: options.override,
     });
@@ -111,7 +112,7 @@ describe("createMediaFromUpload", () => {
       archivedAt: null,
       checksum: createHash("sha256").update(bytes).digest("hex"),
     });
-    expect(media.key).toBe(`${media.id}/1/original`);
+    expect(media.key).toBe(`default/${media.id}/1/original`);
     expect(media.size).toBe((await driver.get(media.key!)).byteLength);
 
     const row = await db.media.findUniqueOrThrow({ where: { id: media.id } });
@@ -122,7 +123,7 @@ describe("createMediaFromUpload", () => {
     expect(manifest.map((rendition) => rendition.key).sort()).toEqual(
       MEDIA_RENDITION_WIDTHS.flatMap((width) =>
         ["avif", "webp"].map(
-          (format) => `${media.id}/1/${width}.${format}`,
+          (format) => `default/${media.id}/1/${width}.${format}`,
         ),
       ).sort(),
     );
@@ -234,7 +235,7 @@ describe("createMediaFromUpload", () => {
     const second = await createMedia(overrideKey, { override: true });
 
     expect(second.id).not.toBe(first.id);
-    expect(second.key).toBe(`${second.id}/1/original`);
+    expect(second.key).toBe(`default/${second.id}/1/original`);
     expect(second.key).not.toBe(first.key);
     expect(second.checksum).toBe(first.checksum);
     await expect(
@@ -264,13 +265,13 @@ describe("createMediaFromUpload", () => {
     );
 
     expect(error).toBeInstanceOf(MediaProcessingError);
-    expect(prefix).toMatch(/^[0-9a-f-]+\/$/);
+    expect(prefix).toMatch(/^default\/[0-9a-f-]+\/$/);
+
+    const failedMediaId = prefix.split("/")[1];
     await expect(
-      db.media.count({ where: { id: prefix.replace(/\/$/, "") } }),
+      db.media.count({ where: { id: failedMediaId } }),
     ).resolves.toBe(0);
-    await expect(
-      driver.deletePrefix(prefix.replace(/\/$/, "")),
-    ).resolves.toBe(0);
+    await expect(driver.deletePrefix(prefix)).resolves.toBe(0);
   });
 
   it("reports an unreadable source without creating a row", async () => {
@@ -345,6 +346,7 @@ describe("replaceMediaFile", () => {
   async function createImageMedia(key: string) {
     const media = await createMediaFromUpload({
       driver,
+      storageDriver: "local",
       source: sourceFor(key),
     });
     mediaIds.push(media.id);
@@ -376,7 +378,7 @@ describe("replaceMediaFile", () => {
     expect(media.name).toBe("Uploaded image");
     expect(media.altText).toBe("Alt text");
     expect(media.revision).toBe(2);
-    expect(media.key).toBe(`${first.id}/2/original`);
+    expect(media.key).toBe(`default/${first.id}/2/original`);
     expect(media.size).toBe((await driver.get(media.key!)).byteLength);
 
     const row = await db.media.findUniqueOrThrow({ where: { id: first.id } });
@@ -387,7 +389,7 @@ describe("replaceMediaFile", () => {
     );
     expect(manifest).toHaveLength(MEDIA_RENDITION_WIDTHS.length * 2);
     expect(
-      manifest.every((rendition) => rendition.key.startsWith(`${first.id}/2/`)),
+      manifest.every((rendition) => rendition.key.startsWith(`default/${first.id}/2/`)),
     ).toBe(true);
 
     for (const key of previousRenditionKeys) {
@@ -449,7 +451,7 @@ describe("replaceMediaFile", () => {
     const failingDriver: StorageDriver = {
       ...driver,
       put: async (target, data, contentType) => {
-        if (target.startsWith(`${first.id}/2/`) && target.includes("/360.avif")) {
+        if (target.startsWith(`default/${first.id}/2/`) && target.includes("/360.avif")) {
           throw new Error("simulated boom");
         }
         await driver.put(target, data, contentType);
@@ -475,7 +477,7 @@ describe("replaceMediaFile", () => {
       await expect(driver.get(rendition.key)).resolves.toBeDefined();
     }
     await expect(
-      driver.deletePrefix(`${first.id}/2/`),
+      driver.deletePrefix(`default/${first.id}/2/`),
     ).resolves.toBe(0);
   });
 
@@ -486,13 +488,14 @@ describe("replaceMediaFile", () => {
       replace(mediaId, await putSource(await createPng())),
     ).rejects.toBeInstanceOf(MediaNotFoundError);
 
-    await expect(driver.deletePrefix(`${mediaId}/`)).resolves.toBe(0);
+    await expect(driver.deletePrefix(`default/${mediaId}/`)).resolves.toBe(0);
   });
 
   it("replaces a non-image file without generating renditions", async () => {
     const oldBytes = new Uint8Array([1, 2, 3, 4]);
     const media = await createMediaFromUpload({
       driver,
+      storageDriver: "local",
       source: {
         key: await putSource(oldBytes, driver, "application/pdf"),
         url: "https://ghhc7ejbae.ufs.sh/f/legacy.pdf",
@@ -519,7 +522,7 @@ describe("replaceMediaFile", () => {
       id: media.id,
       type: MediaType.FILE,
       revision: 2,
-      key: `${media.id}/2/original`,
+      key: `default/${media.id}/2/original`,
       size: newBytes.byteLength,
       mimeType: "application/pdf",
       checksum: createHash("sha256").update(newBytes).digest("hex"),
