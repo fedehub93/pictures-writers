@@ -15,9 +15,9 @@ export const useMediaInvalidation = () => {
 
   const invalidateLibrary = () =>
     Promise.all([
-      queryClient.invalidateQueries({
-        queryKey: trpc.media.getMany.queryKey(),
-      }),
+      // The path filter, not the query key: the library reads pages and the
+      // picker reads an infinite list, and one write must refresh both.
+      queryClient.invalidateQueries(trpc.media.getMany.pathFilter()),
       invalidateMeta(),
     ]);
 

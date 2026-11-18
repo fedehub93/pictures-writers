@@ -1,5 +1,5 @@
 "use client";
-import { Media, MediaType } from "@/generated/prisma";
+import { MediaType } from "@/generated/prisma";
 import Image from "next/image";
 import { File, Loader2 } from "lucide-react";
 import { useDebounceValue } from "usehooks-ts";
@@ -14,21 +14,29 @@ import { Input } from "@/shared/ui/input";
 import { Separator } from "@/shared/ui/separator";
 
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
-import { useAssetsQuery } from "../../_hooks/use-assets-query";
 import { ScrollArea } from "@/shared/ui/scroll-area";
 import { Button } from "@/shared/ui/button";
+import { MEDIA_SEARCH_DEBOUNCE_MS } from "@/modules/media/constants";
 import { MediaCreateAction } from "@/modules/media/ui/components/media-create-action";
+import { useMediaInfiniteQuery } from "@/modules/media/hooks/use-media-infinite-query";
+import type { MediaLibraryEntry } from "@/modules/media/lib/media-library";
 
 export const SelectAssetModal = () => {
   const { isOpen, onClose, type, onCallback } = useModal();
-  const [debouncedSearch, setDebouncedSearch] = useDebounceValue("", 1000);
+  const [debouncedSearch, setDebouncedSearch] = useDebounceValue(
+    "",
+    MEDIA_SEARCH_DEBOUNCE_MS,
+  );
 
   const isModalOpen = isOpen && type === "selectAsset";
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
-    useAssetsQuery(debouncedSearch, isModalOpen);
+    useMediaInfiniteQuery({
+      search: debouncedSearch,
+      enabled: isModalOpen,
+    });
 
-  if (isOpen && status === "error") {
+  if (isModalOpen && status === "error") {
     return (
       <div className="flex h-full flex-col flex-1 justify-center items-center">
         <p className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -38,8 +46,8 @@ export const SelectAssetModal = () => {
     );
   }
 
-  const onSelect = async (asset: Media) => {
-    onCallback(asset);
+  const onSelect = (media: MediaLibraryEntry) => {
+    onCallback(media);
     handleClose();
   };
 
@@ -68,7 +76,7 @@ export const SelectAssetModal = () => {
           </div>
         </DialogHeader>
         <ScrollArea className=" max-h-100">
-          {isOpen && status === "pending" ? (
+          {isModalOpen && status === "pending" ? (
             <div className="flex h-full flex-col flex-1 justify-center items-center py-8">
               <Loader2 className="h-7 w-7 text-zinc-500 animate-spin my-4" />
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -77,17 +85,17 @@ export const SelectAssetModal = () => {
             </div>
           ) : (
             <div className="flex flex-col items-center py-4 px-6 gap-y-4">
-              {data?.pages?.map((group, i) => (
-                <div key={i} className="flex gap-x-4">
-                  {group.items.map((item: Media) => (
+              <div className="flex flex-wrap justify-center gap-4">
+                {data?.pages.flatMap((group) =>
+                  group.items.map((item) => (
                     <div
-                      key={item.name}
+                      key={item.id}
                       className="relative w-64 rounded-md aspect-video overflow-hidden cursor-pointer hover:scale-105 duration-500 transition-all"
                     >
                       {item.type === MediaType.IMAGE && (
                         <Image
                           src={item.url}
-                          alt={item.altText || "ciao"}
+                          alt={item.altText || item.name}
                           onClick={() => onSelect(item)}
                           fill
                           sizes="35vw"
@@ -105,9 +113,9 @@ export const SelectAssetModal = () => {
                         </div>
                       )}
                     </div>
-                  ))}
-                </div>
-              ))}
+                  )),
+                )}
+              </div>
               <Button
                 type="button"
                 onClick={() => fetchNextPage()}

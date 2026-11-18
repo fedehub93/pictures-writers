@@ -9,7 +9,7 @@ import {
   InputGroupInput,
 } from "@/shared/ui/input-group";
 
-import { DEFAULT_PAGE } from "../../constants";
+import { DEFAULT_PAGE, MEDIA_SEARCH_DEBOUNCE_MS } from "../../constants";
 import { useMediaFilters } from "../../hooks/use-media-filters";
 
 /**
@@ -28,7 +28,7 @@ export const MediaSearchFilter = () => {
         onChange={(event) =>
           setFilters(
             { search: event.target.value, page: DEFAULT_PAGE },
-            { limitUrlUpdates: debounce(500) },
+            { limitUrlUpdates: debounce(MEDIA_SEARCH_DEBOUNCE_MS) },
           )
         }
       />
