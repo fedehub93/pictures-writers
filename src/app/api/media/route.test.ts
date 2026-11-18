@@ -197,6 +197,30 @@ describe("POST /api/media", () => {
     expect(response.status).toBe(400);
   });
 
+  it("creates a second row when a duplicate multipart upload is overridden", async () => {
+    const bytes = await createPng();
+    const file = new File([bytes], "duplicate.png", { type: "image/png" });
+    const form = new FormData();
+    form.append("file", file);
+    form.append("name", "Duplicate multipart");
+
+    const first = await (await POST(multipartRequest(form))).json();
+    mediaIds.push(first.id);
+
+    const secondForm = new FormData();
+    secondForm.append("file", new File([bytes], "duplicate2.png", { type: "image/png" }));
+    secondForm.append("name", "Duplicate multipart");
+    secondForm.append("override", "true");
+
+    const response = await POST(multipartRequest(secondForm));
+    const second = await response.json();
+    mediaIds.push(second.id);
+
+    expect(response.status).toBe(200);
+    expect(second.id).not.toBe(first.id);
+    expect(second.key).toBe(`default/${second.id}/1/original`);
+  });
+
   it("answers 422 and removes the temporary object when a multipart image fails processing", async () => {
     const file = new File([new Uint8Array([1, 2, 3])], "broken.png", {
       type: "image/png",

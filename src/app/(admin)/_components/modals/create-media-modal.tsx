@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import axios from "axios";
+import Image from "next/image";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -39,7 +40,6 @@ import { Input } from "@/shared/ui/input";
 import { Button } from "@/shared/ui/button";
 
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
-import { FileUpload } from "@/shared/components/file-upload";
 import {
   Select,
   SelectContent,
@@ -50,12 +50,8 @@ import {
 import { formatBytes } from "@/lib/format";
 
 const formSchema = z.object({
-  key: z.string(),
   name: z.string().min(1, {
     error: "Media name is required",
-  }),
-  url: z.string().min(1, {
-    error: "Media asset url is required",
   }),
   altText: z.optional(z.string()),
   type: z.enum(MediaType),
@@ -72,25 +68,34 @@ interface DuplicateMedia {
 
 interface DuplicateState {
   media: DuplicateMedia;
+  file: File;
   values: MediaFormValues;
+}
+
+function mediaTypeFromMimeType(mimeType: string): MediaType {
+  if (mimeType.startsWith("image/")) return MediaType.IMAGE;
+  if (mimeType.startsWith("video/")) return MediaType.VIDEO;
+  if (mimeType.startsWith("audio/")) return MediaType.AUDIO;
+  return MediaType.FILE;
 }
 
 export const CreateMediaModal = () => {
   const { isOpen, onClose, type, onCallback } = useModal();
   const router = useRouter();
+  const [file, setFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [duplicate, setDuplicate] = useState<DuplicateState | null>(null);
   const [isOverriding, setIsOverriding] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const isModalOpen = isOpen && type === "createMediaAsset";
 
   const form = useForm<MediaFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      key: "",
       name: "",
-      url: "",
       altText: "",
-      type: MediaType.IMAGE,
+      type: MediaType.FILE,
       size: 0,
       mimeType: "",
     },
@@ -98,19 +103,75 @@ export const CreateMediaModal = () => {
 
   const isLoading = form.formState.isSubmitting || isOverriding;
 
+  const updateFile = (next: File | null) => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+
+    setFile(next);
+    setPreviewUrl(next ? URL.createObjectURL(next) : null);
+
+    if (next) {
+      form.setValue("name", next.name);
+      form.setValue("size", next.size);
+      form.setValue("mimeType", next.type);
+      form.setValue("type", mediaTypeFromMimeType(next.type));
+    } else {
+      form.setValue("name", "");
+      form.setValue("size", 0);
+      form.setValue("mimeType", "");
+      form.setValue("type", MediaType.FILE);
+    }
+  };
+
+  const resetState = () => {
+    updateFile(null);
+    form.reset();
+    setDuplicate(null);
+  };
+
+  const handleClose = () => {
+    resetState();
+    onClose();
+  };
+
+  const submitFile = async (
+    values: MediaFormValues,
+    selectedFile: File,
+    override = false,
+  ) => {
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+    formData.append("name", values.name);
+    if (values.altText) formData.append("altText", values.altText);
+    if (override) formData.append("override", "true");
+
+    return axios.post("/api/media", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  };
+
   const submitValues = async (values: MediaFormValues, override = false) => {
+    if (!file) {
+      toast.error("Select a file to upload");
+      return;
+    }
+
     try {
       if (override) setIsOverriding(true);
 
-      const response = await axios.post("/api/media", { ...values, override });
+      const response = await submitFile(values, file, override);
 
       onCallback?.(response.data);
-      form.reset();
-      setDuplicate(null);
+      resetState();
       onClose();
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 409) {
-        setDuplicate({ media: error.response.data.media, values });
+        setDuplicate({
+          media: error.response.data.media,
+          file,
+          values,
+        });
         return;
       }
 
@@ -128,19 +189,12 @@ export const CreateMediaModal = () => {
 
   const onSubmit = (values: MediaFormValues) => submitValues(values);
 
-  const handleClose = () => {
-    form.reset();
-    setDuplicate(null);
-    onClose();
-  };
-
   const useExisting = () => {
     if (!duplicate) return;
 
     onCallback?.(duplicate.media);
     toast.success(`Using "${duplicate.media.name}"`);
-    setDuplicate(null);
-    form.reset();
+    resetState();
     onClose();
     router.refresh();
   };
@@ -153,184 +207,208 @@ export const CreateMediaModal = () => {
     void submitValues(values, true);
   };
 
+  const renderPreview = () => {
+    if (!file) return null;
+
+    if (file.type.startsWith("image/") && previewUrl) {
+      return (
+        <div className="relative w-96 h-72 rounded-md overflow-hidden">
+          <Image
+            src={previewUrl}
+            alt="Selected file"
+            fill
+            className="object-cover"
+          />
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex items-center justify-center w-96 h-72 rounded-md border border-dashed">
+        <span className="text-sm text-zinc-600">{file.name}</span>
+      </div>
+    );
+  };
+
   return (
     <>
       <Dialog open={isModalOpen} onOpenChange={handleClose}>
-      <DialogContent className="bg-white text-black p-0 overflow-hidden">
-        <DialogHeader className="pt-8 px-6">
-          <DialogTitle className="text-2xl text-center font-bold">
-            Create new asset
-          </DialogTitle>
-          <DialogDescription className="text-center text-zinc-500">
-            Add an image, audio, video or file in order to use in your contents.
-          </DialogDescription>
-        </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            <div className="space-y-4 px-6">
-              <div className="flex items-center justify-center text-center">
+        <DialogContent className="bg-white text-black p-0 overflow-hidden">
+          <DialogHeader className="pt-8 px-6">
+            <DialogTitle className="text-2xl text-center font-bold">
+              Create new asset
+            </DialogTitle>
+            <DialogDescription className="text-center text-zinc-500">
+              Add an image, audio, video or file in order to use in your contents.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <div className="space-y-4 px-6">
+                <div className="flex flex-col items-center justify-center text-center gap-y-2">
+                  <input
+                    ref={inputRef}
+                    type="file"
+                    className="hidden"
+                    onChange={(event) =>
+                      updateFile(event.target.files?.[0] ?? null)
+                    }
+                  />
+                  {file ? (
+                    <div className="relative">
+                      {renderPreview()}
+                      <button
+                        type="button"
+                        onClick={() => updateFile(null)}
+                        className="absolute -top-2 -right-2 bg-rose-500 text-white p-1 rounded-full shadow-2xs"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => inputRef.current?.click()}
+                      className="w-96 h-72 rounded-md border-2 border-dashed border-zinc-300 flex flex-col items-center justify-center text-zinc-500 hover:border-zinc-400 transition"
+                    >
+                      <span className="text-sm">Click to select a file</span>
+                    </button>
+                  )}
+                </div>
+                <div className="flex justify-between w-full gap-x-4">
+                  <FormField
+                    control={form.control}
+                    name="type"
+                    render={({ field }) => (
+                      <FormItem className="flex-1">
+                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70">
+                          Asset Type
+                        </FormLabel>
+                        <Select
+                          disabled={isLoading}
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="bg-zinc-300/50 border-0 focus:ring-0 text-black ring-offset-0 focus:ring-offset-0 capitalize outline-hidden">
+                              <SelectValue placeholder="Select asset type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {Object.values(MediaType).map((type) => (
+                              <SelectItem
+                                key={type}
+                                value={type}
+                                className="capitalize"
+                              >
+                                {type.toLowerCase()}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="size"
+                    render={({ field }) => (
+                      <FormItem className="flex-1">
+                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70">
+                          Size
+                        </FormLabel>
+                        <FormControl>
+                          <div className="text-sm">
+                            <Input
+                              disabled={true}
+                              className="hidden"
+                              placeholder="Enter asset name"
+                              hidden
+                              {...field}
+                            />
+                            <span className="block mt-4">
+                              {formatBytes(field.value)}
+                            </span>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
                 <FormField
                   control={form.control}
-                  name="url"
+                  name="name"
                   render={({ field }) => (
                     <FormItem>
+                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70">
+                        Name
+                      </FormLabel>
                       <FormControl>
-                        <FileUpload
-                          endpoint="mediaAsset"
-                          value={field.value}
-                          onChange={({ key, name, url, size, mimeType }) => {
-                            field.onChange(url);
-                            form.setValue("key", key);
-                            form.setValue("name", name);
-                            form.setValue("size", size);
-                            form.setValue("mimeType", mimeType ?? "");
-
-                            if (mimeType?.startsWith("image/")) {
-                              form.setValue("type", MediaType.IMAGE);
-                            } else if (mimeType) {
-                              form.setValue("type", MediaType.FILE);
-                            }
-                          }}
+                        <Input
+                          disabled={isLoading}
+                          className="bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0"
+                          placeholder="Enter asset name"
+                          {...field}
                         />
                       </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="flex justify-between w-full gap-x-4">
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70">
-                        Asset Type
-                      </FormLabel>
-                      <Select
-                        disabled={isLoading}
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="bg-zinc-300/50 border-0 focus:ring-0 text-black ring-offset-0 focus:ring-offset-0 capitalize outline-hidden">
-                            <SelectValue placeholder="Select asset type" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {Object.values(MediaType).map((type) => (
-                            <SelectItem
-                              key={type}
-                              value={type}
-                              className="capitalize"
-                            >
-                              {type.toLowerCase()}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
                 <FormField
                   control={form.control}
-                  name="size"
+                  name="altText"
                   render={({ field }) => (
-                    <FormItem className="flex-1">
+                    <FormItem>
                       <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70">
-                        Size
+                        Alt text
                       </FormLabel>
                       <FormControl>
-                        <div className="text-sm">
-                          <Input
-                            disabled={true}
-                            className="hidden"
-                            placeholder="Enter asset name"
-                            hidden
-                            {...field}
-                          />
-                          <span className="block mt-4">
-                            {formatBytes(field.value)}
-                          </span>
-                        </div>
+                        <Input
+                          disabled={isLoading}
+                          className="bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0"
+                          placeholder="Enter alternative text"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70">
-                      Name
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        disabled={isLoading}
-                        className="bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0"
-                        placeholder="Enter asset name"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="altText"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70">
-                      Alt text
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        disabled={isLoading}
-                        className="bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0"
-                        placeholder="Enter alternative text"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <DialogFooter className="bg-gray-100 px-6 py-4">
-              <Button disabled={isLoading}>Create</Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
-    <AlertDialog
-      open={duplicate !== null}
-      onOpenChange={(open) => {
-        if (!open) setDuplicate(null);
-      }}
-    >
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>This file is already in the library</AlertDialogTitle>
-          <AlertDialogDescription>
-            &quot;{duplicate?.media.name}&quot; has the same content. Use the
-            existing asset, or upload a second copy with its own name and alt
-            text.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel onClick={useExisting}>
-            Use existing
-          </AlertDialogCancel>
-          <AlertDialogAction onClick={uploadAnyway} disabled={isOverriding}>
-            {isOverriding ? "Uploading..." : "Upload anyway"}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  </>
+              <DialogFooter className="bg-gray-100 px-6 py-4">
+                <Button disabled={isLoading || !file}>Create</Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+      <AlertDialog
+        open={duplicate !== null}
+        onOpenChange={(open) => {
+          if (!open) setDuplicate(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>This file is already in the library</AlertDialogTitle>
+            <AlertDialogDescription>
+              &quot;{duplicate?.media.name}&quot; has the same content. Use the
+              existing asset, or upload a second copy with its own name and alt
+              text.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={useExisting}>
+              Use existing
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={uploadAnyway} disabled={isOverriding}>
+              {isOverriding ? "Uploading..." : "Upload anyway"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };

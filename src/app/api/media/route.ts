@@ -109,13 +109,11 @@ function isMultipartRequest(req: Request): boolean {
   return contentType.includes("multipart/form-data");
 }
 
-async function handleMultipartUpload(
-  req: Request,
-  override: boolean,
-): Promise<Response> {
+async function handleMultipartUpload(req: Request): Promise<Response> {
   const { driver, name: driverName } = resolveStorageDriver();
   const form = await req.formData();
   const file = form.get("file");
+  const override = form.get("override") === "true";
 
   if (!(file instanceof File)) {
     return NextResponse.json(
@@ -175,7 +173,7 @@ export async function POST(req: Request) {
     }
 
     if (isMultipartRequest(req)) {
-      return handleMultipartUpload(req, false).catch((error) => {
+      return handleMultipartUpload(req).catch((error) => {
         if (error instanceof DuplicateMediaError) {
           return NextResponse.json(
             { duplicate: true, media: error.existing },
