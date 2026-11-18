@@ -115,6 +115,10 @@ function safeDecode(value: string): string {
 export function storageKeyFromMediaUrl(src: string): string | null {
   const { url, absolute } = parseSrc(src);
 
+  if (url.pathname.startsWith(MEDIA_PATH_PREFIX + "/")) {
+    return safeDecode(url.pathname.slice(MEDIA_PATH_PREFIX.length + 1));
+  }
+
   if (url.pathname.startsWith(LEGACY_ASSET_PREFIX)) {
     return safeDecode(url.pathname.slice(LEGACY_ASSET_PREFIX.length));
   }
