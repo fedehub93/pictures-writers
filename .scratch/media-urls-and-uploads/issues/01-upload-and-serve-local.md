@@ -21,3 +21,5 @@
 ## Comments
 
 **2026-11-18** — Closed by `11ec7644`. Added the `POST /api/media` multipart handler, the `GET /media/<key>` delivery route, the local storage driver wiring, and the `Media.storageDriver` column. The media service now reads uploaded bytes back from the active driver instead of treating the upload as a remote URL. Verification: `npm run typecheck` clean, `npm run lint` 0 errors, `npm run check:doc-citations` 0 broken, `npm run test:run` 272 test files / 2413 tests passed.
+
+**2026-11-18 (follow-up)** — `e207f68e` makes the backfill key extractor understand canonical `/media/<key>` URLs; `893fa68f` connects the media library create modal to the multipart endpoint so uploads no longer go through UploadThing. Full suite re-run: 272 test files / 2418 tests passed.
