@@ -1,5 +1,7 @@
 import type { Prisma } from "@/generated/prisma";
 
+export type { MediaLibraryView } from "../constants";
+
 /**
  * Projection used by every media-library surface. It deliberately omits
  * `renditions`: the manifest is derived data the admin never edits.
@@ -25,9 +27,6 @@ export const mediaLibrarySelect = {
 export type MediaLibraryItem = Prisma.MediaGetPayload<{
   select: typeof mediaLibrarySelect;
 }>;
-
-/** Which half of the library the admin is looking at. */
-export type MediaLibraryView = "active" | "archived";
 
 /** A library row plus its relational reference count for the current page. */
 export interface MediaLibraryEntry extends MediaLibraryItem {

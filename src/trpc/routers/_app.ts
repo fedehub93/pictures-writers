@@ -12,6 +12,7 @@ import { contactsRouter } from "@/modules/mails/contacts/server/procedures";
 import { conversationsRouter } from "@/modules/mails/conversations/server/procedures";
 import { formsRouter } from "@/modules/forms/server/procedures";
 import { formSubmissionsRouter } from "@/modules/forms/submissions/server/procedures";
+import { mediaRouter } from "@/modules/media/server/procedures";
 import { ordersRouter } from "@/modules/shop/orders/server/procedures";
 import { productCategoriesRouter } from "@/modules/shop/product-categories/server/procedures";
 import { productsRouter } from "@/modules/shop/products/server/procedures";
@@ -40,6 +41,7 @@ export const appRouter = createTRPCRouter({
   forms: formsRouter,
   integrations: integrationsRouter,
   mailSettings: settingsRouter,
+  media: mediaRouter,
   orders: ordersRouter,
   pages: pagesRouter,
   posts: postsRouter,

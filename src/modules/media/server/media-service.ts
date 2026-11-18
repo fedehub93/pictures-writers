@@ -557,6 +557,80 @@ export async function replaceMediaFile({
 }
 
 /**
+ * Loads every requested Media before a batch transition, so an unknown id
+ * aborts the whole call instead of leaving a partially applied selection.
+ */
+async function loadMediaForBatch(mediaIds: string[]) {
+  const uniqueIds = [...new Set(mediaIds)];
+  if (uniqueIds.length === 0) return [];
+
+  const media = await db.media.findMany({
+    where: { id: { in: uniqueIds } },
+  });
+
+  const found = new Set(media.map((item) => item.id));
+  const missing = uniqueIds.find((id) => !found.has(id));
+  if (missing) throw new MediaNotFoundError(missing);
+
+  return media;
+}
+
+/**
+ * Hides a list of Media from the library without touching their bytes or
+ * references. Archived media keep being served (the loader falls back to the
+ * original), which is why archiving is reversible and never clears a cover.
+ * Already-archived rows are left untouched, so the number returned is how many
+ * actually transitioned.
+ */
+export async function archiveMediaBatch(mediaIds: string[]): Promise<number> {
+  const pending = (await loadMediaForBatch(mediaIds)).filter(
+    (item) => item.archivedAt === null,
+  );
+  if (pending.length === 0) return 0;
+
+  const archivedAt = new Date();
+
+  await db.$transaction(
+    pending.map((item) =>
+      db.media.update({
+        where: { id: item.id },
+        data: {
+          archivedAt,
+          url: withMediaDeliveryArchived(item.url, true),
+        },
+      }),
+    ),
+  );
+
+  return pending.length;
+}
+
+/**
+ * Brings a list of archived Media back into the library and re-enables their
+ * renditions, returning how many actually transitioned.
+ */
+export async function restoreMediaBatch(mediaIds: string[]): Promise<number> {
+  const pending = (await loadMediaForBatch(mediaIds)).filter(
+    (item) => item.archivedAt !== null,
+  );
+  if (pending.length === 0) return 0;
+
+  await db.$transaction(
+    pending.map((item) =>
+      db.media.update({
+        where: { id: item.id },
+        data: {
+          archivedAt: null,
+          url: withMediaDeliveryArchived(item.url, false),
+        },
+      }),
+    ),
+  );
+
+  return pending.length;
+}
+
+/**
  * Hides a Media from the library without touching its bytes or references.
  * Archived media keep being served (the loader falls back to the original),
  * which is why archiving is reversible and never clears a cover.
