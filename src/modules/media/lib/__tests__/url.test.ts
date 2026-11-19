@@ -4,6 +4,7 @@ import { UPLOADTHING_FILE_ORIGIN } from "../image-ladder.mjs";
 import {
   getUploadThingOrigin,
   mediaPath,
+  mediaSourceKey,
   storageKeyFromMediaUrl,
 } from "../url";
 
@@ -78,5 +79,29 @@ describe("storageKeyFromMediaUrl", () => {
 
   it("returns null for unrelated URLs", () => {
     expect(storageKeyFromMediaUrl("https://example.com/cover.jpg")).toBeNull();
+  });
+});
+
+describe("mediaSourceKey", () => {
+  it("prefers the recorded key", () => {
+    expect(
+      mediaSourceKey({
+        key: "default/abc/2/original",
+        url: "/media/default/abc/1/original",
+      }),
+    ).toBe("default/abc/2/original");
+  });
+
+  it("falls back to the key the address encodes", () => {
+    expect(
+      mediaSourceKey({ key: null, url: "/assets/legacy-key" }),
+    ).toBe("legacy-key");
+  });
+
+  it("treats an empty key and an unreadable address as no key", () => {
+    expect(mediaSourceKey({ key: "", url: "https://example.com/a.jpg" })).toBe(
+      null,
+    );
+    expect(mediaSourceKey({ key: null, url: "/assets/" })).toBeNull();
   });
 });

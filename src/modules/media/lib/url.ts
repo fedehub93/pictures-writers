@@ -95,6 +95,22 @@ function safeDecode(value: string): string {
   }
 }
 
+/**
+ * The key a Media's original lives under: the recorded column when present,
+ * otherwise the key its address encodes. Legacy rows may carry no key, and an
+ * address that encodes none leaves the object unreachable.
+ */
+export function mediaSourceKey(media: {
+  key: string | null;
+  url: string;
+}): string | null {
+  if (typeof media.key === "string" && media.key.length > 0) return media.key;
+
+  const key = storageKeyFromMediaUrl(media.url);
+
+  return key && key.length > 0 ? key : null;
+}
+
 export function storageKeyFromMediaUrl(src: string): string | null {
   const { url, absolute } = parseSrc(src);
 

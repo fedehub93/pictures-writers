@@ -4,7 +4,7 @@ import { MediaType } from "@/generated/prisma";
 
 import { db } from "@/shared/lib/db";
 
-import { storageKeyFromMediaUrl } from "@/modules/media/lib/url";
+import { mediaSourceKey } from "@/modules/media/lib/url";
 
 import { describeBackfillFailure } from "./backfill-failure";
 import { forEachWithConcurrency } from "./bounded-concurrency";
@@ -170,7 +170,7 @@ export async function backfillMediaRenditions({
     pending,
     concurrency,
     async (item: RenditionBackfillMedia) => {
-      const sourceKey = item.key ?? storageKeyFromMediaUrl(item.url);
+      const sourceKey = mediaSourceKey(item);
 
       if (!sourceKey) {
         const reason = "no readable storage key";

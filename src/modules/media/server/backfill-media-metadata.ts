@@ -4,7 +4,7 @@ import { MediaType } from "@/generated/prisma";
 
 import { db } from "@/shared/lib/db";
 
-import { storageKeyFromMediaUrl } from "@/modules/media/lib/url";
+import { mediaSourceKey } from "@/modules/media/lib/url";
 
 import { describeBackfillFailure } from "./backfill-failure";
 import { forEachWithConcurrency } from "./bounded-concurrency";
@@ -139,7 +139,7 @@ export async function backfillMediaMetadata({
     }
 
     try {
-      const key = item.key ?? storageKeyFromMediaUrl(item.url);
+      const key = mediaSourceKey(item);
 
       if (!key) {
         report.failed.push({

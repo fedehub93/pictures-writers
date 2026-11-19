@@ -136,14 +136,60 @@ export type RecordedStorageDriverResolution =
       reason: string;
     };
 
+export type RecordedStorageDriverNameResolution =
+  | { resolved: true; name: StorageDriverName }
+  | {
+      resolved: false;
+      /** The known driver that is not configured, or `null` for an unknown name. */
+      name: StorageDriverName | null;
+      /** Why the row's objects cannot be reached from this instance. */
+      reason: string;
+    };
+
 /**
- * The driver that owns one Media row's objects, resolved from the driver
- * recorded on that row rather than from the active choice.
+ * The driver name that owns one Media row, resolved from the driver recorded on
+ * that row rather than from the active choice.
  *
- * A row with no recorded driver was written before the storage seam landed: it
- * lives on UploadThing and resolves as remote. A name this build does not know
- * is unresolvable rather than a reason to guess, and a driver whose credentials
+ * Pure, so a read-only caller (the audit) can answer the same question as the
+ * batch operations without building a client or touching a provider. A row with
+ * no recorded driver was written before the storage seam landed: it lives on
+ * UploadThing and resolves as remote. A name this build does not know is
+ * unresolvable rather than a reason to guess, and a driver whose credentials
  * are absent here is reported so a batch can skip it instead of failing.
+ */
+export function resolveMediaDriverName(
+  recorded: string | null,
+  env: StorageEnvironment = process.env,
+): RecordedStorageDriverNameResolution {
+  const known = parseStorageDriver(recorded);
+  const name = known ?? (recorded === null ? "uploadthing" : null);
+
+  if (name === null) {
+    return {
+      resolved: false,
+      name: null,
+      reason: `unknown storage driver "${recorded}"`,
+    };
+  }
+
+  if (!isStorageDriverConfigured(name, env)) {
+    return {
+      resolved: false,
+      name,
+      reason: `storage driver "${name}" is not configured`,
+    };
+  }
+
+  return { resolved: true, name };
+}
+
+/**
+ * The driver client that owns one Media row's objects, built from the name
+ * `resolveMediaDriverName` resolved rather than from the active choice.
+ *
+ * The rules for a missing, unknown or unconfigured driver live in
+ * `resolveMediaDriverName`; this adds the client, reusing the active one (or a
+ * cached one) when the row's driver matches.
  *
  * Pass `cache` to a batch so every row written by the same driver shares one
  * client instead of building one per Media.
@@ -160,19 +206,13 @@ export function resolveMediaStorageDriver(
     cache?: Map<StorageDriverName, StorageDriver>;
   },
 ): RecordedStorageDriverResolution {
-  const known = parseStorageDriver(recorded);
-  const name = known ?? (recorded === null ? "uploadthing" : null);
+  const resolution = resolveMediaDriverName(recorded, env);
 
-  if (name === null) {
-    return { resolved: false, reason: `unknown storage driver "${recorded}"` };
+  if (!resolution.resolved) {
+    return { resolved: false, reason: resolution.reason };
   }
 
-  if (!isStorageDriverConfigured(name, env)) {
-    return {
-      resolved: false,
-      reason: `storage driver "${name}" is not configured`,
-    };
-  }
+  const { name } = resolution;
 
   if (name === active.name) return { resolved: true, driver: active.driver };
 
