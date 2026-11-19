@@ -20,6 +20,7 @@ import {
   MediaInUseError,
   MediaNotArchivedError,
   MediaNotFoundError,
+  MediaProcessingError,
   restoreMedia,
 } from "../media-service";
 import { countMediaReferences, countMediaReferencesFor } from "../media-usage";
@@ -191,7 +192,10 @@ describe("media archive, restore and deletion", () => {
     const { media } = await createImageMedia();
 
     await expect(
-      deleteMediaPermanently({ driver, activeStorageDriver: "local", mediaId: media.id }),
+      deleteMediaPermanently({
+        active: { driver, name: "local" },
+        mediaId: media.id,
+      }),
     ).rejects.toBeInstanceOf(MediaNotArchivedError);
 
     await expect(
@@ -205,8 +209,7 @@ describe("media archive, restore and deletion", () => {
     await archiveMedia(media.id);
 
     await deleteMediaPermanently({
-      driver,
-      activeStorageDriver: "local",
+      active: { driver, name: "local" },
       mediaId: media.id,
     });
 
@@ -236,8 +239,7 @@ describe("media archive, restore and deletion", () => {
     await archiveMedia(media.id);
 
     const result = await deleteMediaPermanentlyBatch({
-      driver,
-      activeStorageDriver: "local",
+      active: { driver, name: "local" },
       mediaIds: [media.id],
       env: { UPLOADTHING_TOKEN: "fake-token" },
     });
@@ -258,8 +260,7 @@ describe("media archive, restore and deletion", () => {
     await archiveMedia(media.id);
 
     const error = await deleteMediaPermanently({
-      driver,
-      activeStorageDriver: "local",
+      active: { driver, name: "local" },
       mediaId: media.id,
     }).catch((reason) => reason);
 
@@ -301,8 +302,7 @@ describe("media archive, restore and deletion", () => {
     );
     await expect(
       deleteMediaPermanently({
-        driver,
-        activeStorageDriver: "local",
+        active: { driver, name: "local" },
         mediaId,
       }),
     ).rejects.toBeInstanceOf(MediaNotFoundError);
@@ -312,14 +312,18 @@ describe("media archive, restore and deletion", () => {
     const { media: local } = await createImageMedia();
     await archiveMedia(local.id);
 
+    // A revision left behind by an interrupted replace must not survive the
+    // Media, which is why the whole installation directory is the unit.
+    const staleKey = `default/${local.id}/2/original`;
+    await driver.put(staleKey, new Uint8Array([9, 9, 9]), "image/png");
+
     const flat = await createLegacyMedia(`legacy-flat-${randomUUID()}`);
     const namespaced = await createLegacyMedia(
       `${randomUUID()}/1/original`,
     );
 
     const result = await deleteMediaPermanentlyBatch({
-      driver,
-      activeStorageDriver: "local",
+      active: { driver, name: "local" },
       mediaIds: [local.id, flat.id, namespaced.id],
       env: { UPLOADTHING_TOKEN: "fake-token" },
     });
@@ -346,6 +350,9 @@ describe("media archive, restore and deletion", () => {
     await expect(driver.get(local.key!)).rejects.toBeInstanceOf(
       StorageObjectNotFoundError,
     );
+    await expect(driver.get(staleKey)).rejects.toBeInstanceOf(
+      StorageObjectNotFoundError,
+    );
 
     // ...and both legacy key shapes were removed from the provider.
     const remote = remoteDriver();
@@ -362,8 +369,7 @@ describe("media archive, restore and deletion", () => {
     const legacy = await createLegacyMedia(`legacy-${randomUUID()}`);
 
     const result = await deleteMediaPermanentlyBatch({
-      driver,
-      activeStorageDriver: "local",
+      active: { driver, name: "local" },
       mediaIds: [local.id, legacy.id],
       // No UploadThing token: the row's driver cannot be reached here.
       env: {},
@@ -371,13 +377,14 @@ describe("media archive, restore and deletion", () => {
 
     expect(result.deleted).toBe(2);
     expect(
-      new Map(result.cleanup.map((entry) => [entry.mediaId, entry.status])),
-    ).toEqual(
-      new Map([
-        [local.id, "removed"],
-        [legacy.id, "skipped"],
-      ]),
-    );
+      result.cleanup.find((entry) => entry.mediaId === local.id),
+    ).toMatchObject({ status: "removed" });
+    expect(
+      result.cleanup.find((entry) => entry.mediaId === legacy.id),
+    ).toMatchObject({
+      status: "skipped",
+      reason: expect.stringContaining("not configured"),
+    });
 
     await expect(
       db.media.findMany({ where: { id: { in: [local.id, legacy.id] } } }),
@@ -408,26 +415,84 @@ describe("media archive, restore and deletion", () => {
     mediaIds.push(unknown.id);
 
     const result = await deleteMediaPermanentlyBatch({
-      driver,
-      activeStorageDriver: "local",
+      active: { driver, name: "local" },
       mediaIds: [local.id, unknown.id],
       env: {},
     });
 
     expect(result.deleted).toBe(2);
     expect(
-      new Map(result.cleanup.map((entry) => [entry.mediaId, entry.status])),
-    ).toEqual(
-      new Map([
-        [local.id, "removed"],
-        [unknown.id, "skipped"],
-      ]),
-    );
+      result.cleanup.find((entry) => entry.mediaId === local.id),
+    ).toMatchObject({ status: "removed" });
+    expect(
+      result.cleanup.find((entry) => entry.mediaId === unknown.id),
+    ).toMatchObject({
+      status: "skipped",
+      reason: expect.stringContaining('unknown storage driver "s3"'),
+    });
     await expect(
       db.media.findMany({ where: { id: { in: [local.id, unknown.id] } } }),
     ).resolves.toEqual([]);
     await expect(driver.deletePrefix(`default/${local.id}/`)).resolves.toBe(0);
   });
+
+  it("deletes the rows it finished and leaves the rest when an object cannot be removed", async () => {
+    const finished = await createLocalDocument();
+    const failing = await createLocalDocument();
+    const failure = `default/${failing.id}/`;
+
+    const failingDriver: StorageDriver = {
+      ...driver,
+      deletePrefix: async (prefix) => {
+        if (prefix === failure) throw new Error("simulated provider failure");
+        return driver.deletePrefix(prefix);
+      },
+    };
+
+    const error = await deleteMediaPermanentlyBatch({
+      active: { driver: failingDriver, name: "local" },
+      mediaIds: [finished.id, failing.id],
+      env: {},
+    }).catch((reason) => reason);
+
+    expect(error).toBeInstanceOf(MediaProcessingError);
+    expect((error as Error).message).toContain("1 Media was deleted");
+
+    // The first row was cleaned and deleted; the second keeps its row and its
+    // bytes, so the library never points at an object that is already gone.
+    await expect(
+      db.media.findUnique({ where: { id: finished.id } }),
+    ).resolves.toBeNull();
+    await expect(
+      db.media.findUnique({ where: { id: failing.id } }),
+    ).resolves.not.toBeNull();
+    await expect(driver.get(failing.key!)).resolves.toBeDefined();
+  });
+
+  async function createLocalDocument() {
+    const id = randomUUID();
+    const key = `default/${id}/1/original`;
+    const bytes = new Uint8Array([4, 5, 6]);
+    await driver.put(key, bytes, "application/pdf");
+
+    const media = await db.media.create({
+      data: {
+        id,
+        name: "Local document",
+        key,
+        url: `/media/${key}`,
+        size: bytes.byteLength,
+        type: MediaType.FILE,
+        mimeType: "application/pdf",
+        revision: 1,
+        storageDriver: "local",
+        archivedAt: new Date(),
+      },
+    });
+    mediaIds.push(media.id);
+
+    return media;
+  }
 
   async function createLegacyMedia(
     key: string,

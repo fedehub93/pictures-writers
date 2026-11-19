@@ -41,6 +41,7 @@ import {
   resolveActiveStorageDriver,
   resolveMediaStorageDriver,
   StorageObjectNotFoundError,
+  type ResolvedStorageDriver,
   type StorageDriverName,
   type StorageEnvironment,
 } from "./storage";
@@ -576,8 +577,7 @@ export async function createMediaFromUpload({
 async function cleanupPreviousRevision({
   media,
   installationSlug,
-  activeDriver,
-  activeDriverName,
+  active,
   env,
 }: {
   media: {
@@ -587,16 +587,14 @@ async function cleanupPreviousRevision({
     storageDriver: string | null;
   };
   installationSlug: string;
-  activeDriver: StorageDriver;
-  activeDriverName: StorageDriverName;
+  active: ResolvedStorageDriver;
   env: StorageEnvironment;
 }): Promise<MediaCleanupStatus> {
   // A Media with no recorded driver was written before the storage seam: it
   // lives on UploadThing and its object is addressed by the provider's file
   // key, not by a revision prefix.
   const resolution = resolveMediaStorageDriver(media.storageDriver, {
-    activeDriver,
-    activeDriverName,
+    active,
     env,
   });
 
@@ -770,8 +768,7 @@ export async function replaceMediaFile({
     const previousRevisionCleanup = await cleanupPreviousRevision({
       media: existing,
       installationSlug,
-      activeDriver: driver,
-      activeDriverName: storageDriver,
+      active: { driver, name: storageDriver },
       env,
     });
 
@@ -911,10 +908,8 @@ export async function restoreMedia(mediaId: string): Promise<MediaLibraryItem> {
 }
 
 export interface DeleteMediaPermanentlyOptions {
-  /** The driver the active choice resolved to. */
-  driver: StorageDriver;
-  /** The name of `driver`; rows recording it reuse that instance. */
-  activeStorageDriver: StorageDriverName;
+  /** The active driver, reused for rows recorded against it. */
+  active: ResolvedStorageDriver;
   mediaId: string;
   /** Resolves each row's recorded driver; defaults to the process env. */
   env?: StorageEnvironment;
@@ -929,71 +924,70 @@ export interface DeleteMediaPermanentlyBatchResult {
   deleted: number;
   /**
    * What happened to each deleted Media's objects, in the order the rows were
-   * loaded. A row whose provider cannot be reached here is `skipped`, never a
-   * reason to abort the batch.
+   * processed. A row whose provider cannot be reached here is `skipped`, never
+   * a reason to abort the batch.
    */
   cleanup: MediaDeletionCleanup[];
 }
 
+type MediaObjectCleanup = Pick<MediaDeletionCleanup, "status" | "reason">;
+
 /**
  * Removes one Media's objects through the driver that wrote them.
  *
- * The revision prefix covers every object written under the namespace. A row
- * with no recorded driver predates it: its key is the provider's own file key,
- * which `deletePrefix` cannot address by customId, so the exact object is
- * removed as well.
+ * A namespaced Media is removed by its whole prefix, so no stale revision is
+ * left behind. A row with no recorded driver predates the namespace: its key is
+ * the provider's own file key, which a customId prefix scan cannot address, so
+ * that exact object is the unit of cleanup.
  */
 async function removeMediaObjects({
   media,
-  activeDriver,
-  activeStorageDriver,
+  active,
   installationSlug,
   env,
+  drivers,
 }: {
   media: { id: string; key: string | null; storageDriver: string | null };
-  activeDriver: StorageDriver;
-  activeStorageDriver: StorageDriverName;
+  active: ResolvedStorageDriver;
   installationSlug: string;
   env: StorageEnvironment;
-}): Promise<MediaCleanupStatus> {
+  drivers: Map<StorageDriverName, StorageDriver>;
+}): Promise<MediaObjectCleanup> {
   const resolution = resolveMediaStorageDriver(media.storageDriver, {
-    activeDriver,
-    activeDriverName: activeStorageDriver,
+    active,
     env,
+    cache: drivers,
   });
 
-  if (!resolution.resolved) return "skipped";
+  if (!resolution.resolved) {
+    return { status: "skipped", reason: resolution.reason };
+  }
 
-  const prefix = mediaStoragePrefixForKey(
-    media.id,
-    media.key,
-    installationSlug,
+  if (parseStorageDriver(media.storageDriver) === null) {
+    if (!media.key) return { status: "removed" };
+
+    try {
+      await resolution.driver.delete(media.key);
+    } catch (error) {
+      if (error instanceof StorageObjectNotFoundError) {
+        return { status: "removed" };
+      }
+
+      console.error(
+        "[MEDIA_DELETE] Could not remove the legacy original",
+        error,
+      );
+      return { status: "failed" };
+    }
+
+    return { status: "removed" };
+  }
+
+  await resolution.driver.deletePrefix(
+    mediaStoragePrefixForKey(media.id, media.key, installationSlug),
   );
 
-  try {
-    await resolution.driver.deletePrefix(prefix);
-  } catch (error) {
-    throw new MediaProcessingError(
-      "The stored objects could not be removed. Nothing was deleted.",
-      { cause: error },
-    );
-  }
-
-  if (media.storageDriver !== null || !media.key) return "removed";
-
-  try {
-    await resolution.driver.delete(media.key);
-  } catch (error) {
-    if (error instanceof StorageObjectNotFoundError) return "removed";
-
-    console.error(
-      "[MEDIA_DELETE] Could not remove the legacy original",
-      error,
-    );
-    return "failed";
-  }
-
-  return "removed";
+  return { status: "removed" };
 }
 
 /**
@@ -1001,13 +995,12 @@ async function removeMediaObjects({
  *
  * Every id is validated before anything is touched: an active Media or one
  * still referenced by content aborts the whole batch, so a selected cover is
- * never cleared silently. Storage is deleted before the rows, through the
- * driver recorded on each row, so a library that mixes local and provider Media
- * leaves nothing behind on either.
+ * never cleared silently. Each row's objects are then removed through the
+ * driver recorded on it and the row is deleted before the next one starts, so
+ * a storage failure never leaves a row whose bytes are already gone.
  */
 export async function deleteMediaPermanentlyBatch({
-  driver,
-  activeStorageDriver,
+  active,
   mediaIds,
   env = process.env,
 }: DeleteMediaPermanentlyBatchOptions): Promise<DeleteMediaPermanentlyBatchResult> {
@@ -1016,14 +1009,17 @@ export async function deleteMediaPermanentlyBatch({
 
   const media = await db.media.findMany({
     where: { id: { in: uniqueIds } },
+    // A deterministic order lets the batch delete as it goes: the rows that
+    // were already cleaned are gone, and the rest are untouched.
+    orderBy: { createdAt: "asc" },
   });
 
   const found = new Set(media.map((item) => item.id));
   const missing = uniqueIds.find((id) => !found.has(id));
   if (missing) throw new MediaNotFoundError(missing);
 
-  const active = media.find((item) => item.archivedAt === null);
-  if (active) throw new MediaNotArchivedError(active.id);
+  const notArchived = media.find((item) => item.archivedAt === null);
+  if (notArchived) throw new MediaNotArchivedError(notArchived.id);
 
   const usage = await countMediaReferencesFor(uniqueIds);
   const referenced = uniqueIds.find((id) => (usage.get(id) ?? 0) > 0);
@@ -1032,24 +1028,40 @@ export async function deleteMediaPermanentlyBatch({
   }
 
   const installationSlug = getInstallationSlug(env);
+  const drivers = new Map<StorageDriverName, StorageDriver>([
+    [active.name, active.driver],
+  ]);
   const cleanup: MediaDeletionCleanup[] = [];
+  let deleted = 0;
 
   for (const item of media) {
-    cleanup.push({
-      mediaId: item.id,
-      status: await removeMediaObjects({
+    let outcome: MediaObjectCleanup;
+
+    try {
+      outcome = await removeMediaObjects({
         media: item,
-        activeDriver: driver,
-        activeStorageDriver,
+        active,
         installationSlug,
         env,
-      }),
-    });
+        drivers,
+      });
+    } catch (error) {
+      throw new MediaProcessingError(
+        deleted === 0
+          ? "The stored objects could not be removed. Nothing was deleted."
+          : `${deleted} ${
+              deleted === 1 ? "Media was" : "Media were"
+            } deleted; the rest were left untouched because their stored objects could not be removed.`,
+        { cause: error },
+      );
+    }
+
+    cleanup.push({ mediaId: item.id, ...outcome });
+    await db.media.delete({ where: { id: item.id } });
+    deleted += 1;
   }
 
-  await db.media.deleteMany({ where: { id: { in: uniqueIds } } });
-
-  return { deleted: uniqueIds.length, cleanup };
+  return { deleted, cleanup };
 }
 
 export async function deleteMediaPermanently(

@@ -554,8 +554,7 @@ describe("POST /api/media", () => {
 
     await archiveMedia(hog.id);
     await deleteMediaPermanentlyBatch({
-      driver,
-      activeStorageDriver: "local",
+      active: { driver, name: "local" },
       mediaIds: [hog.id],
     });
     mediaIds.splice(mediaIds.indexOf(hog.id), 1);

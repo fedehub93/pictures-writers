@@ -678,4 +678,44 @@ describe("replaceMediaFile", () => {
     });
     expect(new Uint8Array(await driver.get(media.key!))).toEqual(bytes);
   });
+
+  it("reports the cleanup as skipped for a driver this build does not know", async () => {
+    const mediaId = randomUUID();
+    const unknown = await db.media.create({
+      data: {
+        id: mediaId,
+        name: "Future driver document",
+        key: "s3/future-original",
+        url: "https://unsupported.example/future-original",
+        size: 12,
+        type: MediaType.FILE,
+        mimeType: "application/pdf",
+        revision: 1,
+        storageDriver: "s3",
+      },
+    });
+    mediaIds.push(unknown.id);
+
+    const bytes = new Uint8Array([6, 6, 6]);
+    const { media, previousRevisionCleanup } = await replaceMediaFile({
+      driver,
+      storageDriver: "local",
+      mediaId,
+      source: {
+        key: await putSource(bytes, driver, "application/pdf"),
+        mimeType: "application/pdf",
+      },
+      env: {},
+    });
+
+    // An unknown name is not a reason to guess at a driver: the previous
+    // object stays put and the replace still succeeds.
+    expect(previousRevisionCleanup).toBe("skipped");
+    expect(media).toMatchObject({
+      id: mediaId,
+      revision: 2,
+      storageDriver: "local",
+    });
+    expect(new Uint8Array(await driver.get(media.key!))).toEqual(bytes);
+  });
 });

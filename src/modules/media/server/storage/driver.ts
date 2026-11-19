@@ -129,7 +129,7 @@ export function getStorageDriver(env?: StorageEnvironment): StorageDriver {
 }
 
 export type RecordedStorageDriverResolution =
-  | { resolved: true; driver: StorageDriver; name: StorageDriverName }
+  | { resolved: true; driver: StorageDriver }
   | {
       resolved: false;
       /** Why the row's objects cannot be reached from this instance. */
@@ -144,17 +144,20 @@ export type RecordedStorageDriverResolution =
  * lives on UploadThing and resolves as remote. A name this build does not know
  * is unresolvable rather than a reason to guess, and a driver whose credentials
  * are absent here is reported so a batch can skip it instead of failing.
+ *
+ * Pass `cache` to a batch so every row written by the same driver shares one
+ * client instead of building one per Media.
  */
 export function resolveMediaStorageDriver(
   recorded: string | null,
   {
-    activeDriver,
-    activeDriverName,
+    active,
     env = process.env,
+    cache,
   }: {
-    activeDriver: StorageDriver;
-    activeDriverName: StorageDriverName;
+    active: ResolvedStorageDriver;
     env?: StorageEnvironment;
+    cache?: Map<StorageDriverName, StorageDriver>;
   },
 ): RecordedStorageDriverResolution {
   const known = parseStorageDriver(recorded);
@@ -165,17 +168,21 @@ export function resolveMediaStorageDriver(
   }
 
   if (!isStorageDriverConfigured(name, env)) {
-    return { resolved: false, reason: `storage driver "${name}" is not configured` };
+    return {
+      resolved: false,
+      reason: `storage driver "${name}" is not configured`,
+    };
   }
 
-  return {
-    resolved: true,
-    name,
-    driver:
-      name === activeDriverName
-        ? activeDriver
-        : driverForStorageDriver(name, env),
-  };
+  if (name === active.name) return { resolved: true, driver: active.driver };
+
+  const cached = cache?.get(name);
+  if (cached) return { resolved: true, driver: cached };
+
+  const driver = driverForStorageDriver(name, env);
+  cache?.set(name, driver);
+
+  return { resolved: true, driver };
 }
 
 export function driverForStorageDriver(

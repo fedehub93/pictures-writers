@@ -16,11 +16,13 @@ export type MediaCleanupStatus = "removed" | "skipped" | "failed";
 /**
  * What happened to the objects of one permanently deleted Media. `skipped`
  * means the driver recorded on the row is unknown or not configured here, so
- * the bytes were deliberately left in place while the row was removed.
+ * the bytes were deliberately left in place while the row was removed;
+ * `reason` says which of the two it was.
  */
 export interface MediaDeletionCleanup {
   mediaId: string;
   status: MediaCleanupStatus;
+  reason?: string;
 }
 
 /**

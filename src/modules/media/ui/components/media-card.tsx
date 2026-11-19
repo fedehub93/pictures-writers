@@ -96,10 +96,12 @@ export const MediaCard = ({
     onOpen("replaceMediaAsset", undefined, { id, name, type });
   };
 
-  const runAction = async (action: () => Promise<unknown>, success: string) => {
+  const runAction = async <T,>(
+    action: () => Promise<T>,
+    announce: (result: T) => void,
+  ) => {
     try {
-      await action();
-      toast.success(success);
+      announce(await action());
       await invalidateLibrary();
     } catch (error) {
       toast.error(mediaErrorMessage(error));
@@ -109,28 +111,25 @@ export const MediaCard = ({
   const onArchive = () =>
     runAction(
       () => archive.mutateAsync({ ids: [id] }),
-      "Media archived",
+      () => toast.success("Media archived"),
     );
 
   const onRestore = () =>
     runAction(
       () => restore.mutateAsync({ ids: [id] }),
-      "Media restored",
+      () => toast.success("Media restored"),
     );
 
-  const onDelete = async () => {
-    try {
-      const { cleanup } = await remove.mutateAsync({ ids: [id] });
-      toast.success("Media deleted permanently");
+  const onDelete = () =>
+    runAction(
+      () => remove.mutateAsync({ ids: [id] }),
+      ({ cleanup }) => {
+        toast.success("Media deleted permanently");
 
-      const notice = mediaDeletionCleanupNotice(cleanup);
-      if (notice) toast(notice);
-
-      await invalidateLibrary();
-    } catch (error) {
-      toast.error(mediaErrorMessage(error));
-    }
-  };
+        const notice = mediaDeletionCleanupNotice(cleanup);
+        if (notice) toast(notice);
+      },
+    );
 
   const archiveDescription =
     usageCount > 0

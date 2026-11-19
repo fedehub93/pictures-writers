@@ -155,7 +155,7 @@ A counter on a Media that changes when its original file is replaced, giving eve
 _Avoid_: Version, reserved for the reviewed revisions of Post, Page and Product.
 
 **Archived media**:
-A Media hidden from the library while remaining served and referenceable by published content. Permanent deletion is a separate, manual act that removes its whole storage prefix.
+A Media hidden from the library while remaining served and referenceable by published content. Permanent deletion is a separate, manual act that removes each Media's objects through the driver recorded on its row.
 _Avoid_: Deleted, trashed, soft-deleted as a model concept.
 
 ## Forms

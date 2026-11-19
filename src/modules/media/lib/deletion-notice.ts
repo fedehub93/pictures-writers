@@ -9,8 +9,9 @@ function storedObjects(count: number): string {
 /**
  * The sentence an admin sees when a permanent deletion removed the rows but
  * left some objects in storage, or `null` when every object was removed. A
- * skipped object is not an error: its driver is not configured here, so the
- * deletion cannot address it, and the admin must know it stayed behind.
+ * skipped object is not an error: its recorded driver is unknown or not
+ * configured here, so the deletion cannot address it, and the admin must know
+ * it stayed behind.
  */
 export function mediaDeletionCleanupNotice(
   cleanup: MediaDeletionCleanup[],
@@ -24,9 +25,9 @@ export function mediaDeletionCleanupNotice(
 
   if (skipped > 0) {
     notes.push(
-      `${storedObjects(skipped)} left in place because the provider that owns ${
+      `${storedObjects(skipped)} left in place because the driver recorded on ${
         skipped === 1 ? "it" : "them"
-      } is not configured on this installation`,
+      } is not available on this installation`,
     );
   }
 
