@@ -371,7 +371,7 @@ docker exec -it <APP_CONTAINER> env MEDIA_RENDITION_BACKFILL_CONCURRENCY=2 \
   npm run media:backfill-renditions
 ```
 
-Il report finale è JSON: `processed` = immagini completate, `skipped` = già elaborate, `failed` = sorgenti con il motivo. Dettagli in `docs/self-hosting/08-operations-runbook.md`, sezione 4bis.
+Il report finale è JSON: `processed` = immagini completate, `skipped` = già elaborate, `failed` = sorgenti con il motivo. Ogni riga è letta e scritta attraverso il driver registrato su di essa, quindi una libreria mista si elabora in un'unica esecuzione. Il comando esce con codice `1` se `failed` non è vuoto; le anteprime segnalano già le righe il cui driver non è configurato. Dettagli in `docs/self-hosting/08-operations-runbook.md`, sezione 4bis.
 
 ---
 

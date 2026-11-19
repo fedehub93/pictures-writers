@@ -259,10 +259,12 @@ MEDIA_BACKFILL_CONCURRENCY=4 npm run media:backfill-metadata
 ```
 
 - Il job processa solo `MediaType.IMAGE`; PDF, audio e video restano intatti.
+- Ogni riga viene letta attraverso il driver registrato su di essa, non attraverso quello attivo: una libreria mista (Media storici su UploadThing e Media scritti su disco) si elabora in un'unica esecuzione. Una riga il cui driver non è configurato su questa istanza, o il cui nome questa build non conosce, finisce in `failed` con il motivo e il resto continua.
 - Le sorgenti non raggiungibili vengono riportate e saltate, senza interrompere il resto.
 - Rieseguirlo è sicuro: le righe già complete vengono saltate (`updated: 0`).
 - La concorrenza predefinita è 4; alzala solo se la VPS non ha altro carico.
 - Il report finale elenca `scanned`, `updated`, `skipped` e i `failed` con il motivo.
+- Il comando esce con codice `1` se `failed` non è vuoto, anche in dry-run: un gate di deploy può fidarsi del codice invece di leggere il report.
 
 Finché il backfill non è completo il loader serve gli originali: nessuna immagine rotta e nessun blocco del deploy.
 
@@ -287,9 +289,12 @@ docker exec -it <APP_CONTAINER> npm run media:backfill-renditions
 ```
 
 - Processa solo `MediaType.IMAGE`; PDF, audio e video non vengono toccati.
+- Legge e scrive ogni riga attraverso il driver registrato su di essa: una libreria mista elabora in un'unica esecuzione le Media storiche del provider e quelle locali. Una riga il cui driver non è configurato qui, o il cui nome questa build non conosce, finisce in `failed` con il motivo e non interrompe il run.
 - La concorrenza predefinita è **2**. Conta le immagini elaborate in parallelo, non le rendition: ogni immagine esegue in sequenza i tagli della scala. Alzala solo se la VPS è altrimenti inattiva; su 4 vCPU non conviene superare 2–4.
 - È idempotente: le Media che hanno già un manifest di rendition vengono saltate, quindi rieseguirlo non duplica oggetti né riscrive righe.
 - Una sorgente non raggiungibile o non decodificabile finisce nell'elenco `failed` con il motivo e non interrompe il resto. Le altre immagini continuano a essere elaborate.
+- Un Media elaborato attraverso il provider conserva gli indirizzi del provider nel manifest delle rendition (`?mt=`); uno elaborato su disco porta indirizzi relativi `/media/...`.
+- Il comando esce con codice `1` se `failed` non è vuoto. Un'anteprima non legge gli oggetti, ma segnala già le righe il cui driver non è configurato qui.
 - Se un'immagine fallisce, il job rimuove gli oggetti parziali della nuova revisione quando il prefisso era vuoto; l'originale gi� in consegna non viene mai rimosso. L'immagine continua a essere servita come prima e un rerun sovrascrive eventuali rendition orfane.
 - L'originale storico **non viene cancellato**: gli URL assoluti dentro Puck, TipTap, email e annunci continuano a funzionare. Solo gli URL della libreria (e quindi le pagine che usano la relazione `Media`) passano alle rendition.
 - Un'immagine archiviata viene elaborata ma continua a essere servita come originale; ripristinandola, il loader torna a usare le rendition.

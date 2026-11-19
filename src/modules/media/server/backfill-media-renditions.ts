@@ -11,7 +11,14 @@ import { forEachWithConcurrency } from "./bounded-concurrency";
 import { checksumOf } from "./image-bytes";
 import { isMediaRevisionKey, mediaRevisionPrefix } from "./media-key";
 import { storedImageFields, writeImageRevision } from "./media-service";
-import type { StorageDriver } from "./storage";
+import {
+  getInstallationSlug,
+  resolveMediaStorageDriver,
+  type ResolvedStorageDriver,
+  type StorageDriver,
+  type StorageDriverName,
+  type StorageEnvironment,
+} from "./storage";
 
 export interface MediaRenditionBackfillPending {
   mediaId: string;
@@ -32,13 +39,20 @@ export interface MediaRenditionBackfillReport {
   skipped: number;
   /** Work found at the start of the run. Dry-run returns the list unchanged. */
   pending: MediaRenditionBackfillPending[];
-  /** Sources that could not be reached or decoded, each with its reason. */
+  /**
+   * Rows that could not be processed or reached, each with its reason. A dry
+   * run never reads a source, so it reports only the rows whose recorded
+   * driver this instance cannot resolve.
+   */
   failed: MediaRenditionBackfillFailure[];
   dryRun: boolean;
 }
 
 export interface MediaRenditionBackfillOptions {
-  driver: StorageDriver;
+  /** The active driver, reused for rows recorded against it. */
+  active: ResolvedStorageDriver;
+  /** Resolves each row's recorded driver; defaults to the process env. */
+  env?: StorageEnvironment;
   /** Limit the run to specific Media ids. Used by tests and by retries. */
   mediaIds?: string[];
   concurrency?: number;
@@ -51,6 +65,7 @@ type RenditionBackfillMedia = {
   name: string;
   key: string | null;
   url: string;
+  storageDriver: string | null;
   revision: number;
   archivedAt: Date | null;
   renditions: unknown;
@@ -77,9 +92,15 @@ function hasRenditionManifest(value: unknown): boolean {
  * The source object is never deleted: legacy absolute URLs embedded in Puck,
  * TipTap, ad and email content still point at it, and the loader keeps serving
  * it until that content is migrated.
+ *
+ * Every row is read and written through the driver recorded on it, so a
+ * library that mixes legacy provider Media and Media written by another driver
+ * is processed in one run. A driver this instance cannot reach is reported
+ * with the row and the run continues.
  */
 export async function backfillMediaRenditions({
-  driver,
+  active,
+  env = process.env,
   mediaIds,
   concurrency = DEFAULT_RENDITION_BACKFILL_CONCURRENCY,
   dryRun = false,
@@ -95,6 +116,7 @@ export async function backfillMediaRenditions({
       name: true,
       key: true,
       url: true,
+      storageDriver: true,
       revision: true,
       archivedAt: true,
       renditions: true,
@@ -112,12 +134,37 @@ export async function backfillMediaRenditions({
     dryRun,
   };
 
+  // One client per driver for the whole run, shared by every row it wrote.
+  const drivers = new Map<StorageDriverName, StorageDriver>([
+    [active.name, active.driver],
+  ]);
+
   if (dryRun) {
     for (const item of pending) {
+      // Resolving a driver writes nothing and reads no object, but it does
+      // tell an operator before the run which rows this instance cannot serve.
+      const resolution = resolveMediaStorageDriver(item.storageDriver, {
+        active,
+        env,
+        cache: drivers,
+      });
+
+      if (!resolution.resolved) {
+        report.failed.push({
+          mediaId: item.id,
+          name: item.name,
+          reason: resolution.reason,
+        });
+        onProgress?.(`fail ${item.id}: ${resolution.reason}`);
+        continue;
+      }
+
       onProgress?.(`pending ${item.id} (${item.name})`);
     }
     return report;
   }
+
+  const installationSlug = getInstallationSlug(env);
 
   await forEachWithConcurrency(
     pending,
@@ -132,18 +179,36 @@ export async function backfillMediaRenditions({
         return;
       }
 
-      const sourceIsPartOfRevision = isMediaRevisionKey(
-        item.id,
-        item.revision,
-        sourceKey,
-      );
-
       try {
+        const resolution = resolveMediaStorageDriver(item.storageDriver, {
+          active,
+          env,
+          cache: drivers,
+        });
+
+        if (!resolution.resolved) {
+          report.failed.push({
+            mediaId: item.id,
+            name: item.name,
+            reason: resolution.reason,
+          });
+          onProgress?.(`fail ${item.id}: ${resolution.reason}`);
+          return;
+        }
+
+        const driver = resolution.driver;
+        const sourceIsPartOfRevision = isMediaRevisionKey(
+          item.id,
+          item.revision,
+          sourceKey,
+          installationSlug,
+        );
         const bytes = await driver.get(sourceKey);
         const stored = await writeImageRevision({
           driver,
           id: item.id,
           revision: item.revision,
+          installationSlug,
           bytes,
           archived: item.archivedAt !== null,
           cleanupOnFailure: !sourceIsPartOfRevision,
@@ -164,7 +229,9 @@ export async function backfillMediaRenditions({
           // original, leave it intact and let a retry overwrite the renditions.
           if (!sourceIsPartOfRevision) {
             await driver
-              .deletePrefix(mediaRevisionPrefix(item.id, item.revision))
+              .deletePrefix(
+                mediaRevisionPrefix(item.id, item.revision, installationSlug),
+              )
               .catch(() => undefined);
           }
           throw error;

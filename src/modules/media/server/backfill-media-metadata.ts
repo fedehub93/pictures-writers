@@ -9,7 +9,13 @@ import { storageKeyFromMediaUrl } from "@/modules/media/lib/url";
 import { describeBackfillFailure } from "./backfill-failure";
 import { forEachWithConcurrency } from "./bounded-concurrency";
 import { inspectImage } from "./inspect-image";
-import type { StorageDriver } from "./storage";
+import {
+  resolveMediaStorageDriver,
+  type ResolvedStorageDriver,
+  type StorageDriver,
+  type StorageDriverName,
+  type StorageEnvironment,
+} from "./storage";
 
 export interface MediaMetadataBackfillFailure {
   mediaId: string;
@@ -26,7 +32,10 @@ export interface MediaMetadataBackfillReport {
 }
 
 export interface MediaMetadataBackfillOptions {
-  driver: StorageDriver;
+  /** The active driver, reused for rows recorded against it. */
+  active: ResolvedStorageDriver;
+  /** Resolves each row's recorded driver; defaults to the process env. */
+  env?: StorageEnvironment;
   /** Limit the run to specific Media ids. Used by tests and by retries. */
   mediaIds?: string[];
   concurrency?: number;
@@ -39,6 +48,7 @@ type BackfillMedia = {
   name: string;
   key: string | null;
   url: string;
+  storageDriver: string | null;
   mimeType: string | null;
   size: number | null;
   checksum: string | null;
@@ -73,9 +83,15 @@ function hasCompleteMetadata(media: BackfillMedia): boolean {
  * Fills the metadata of every image Media that is missing it. It only writes
  * derived columns, so running it again is a no-op for already-processed rows.
  * Unreachable sources are reported and skipped, never fatal.
+ *
+ * Each row is read through the driver recorded on it, so a library that mixes
+ * legacy provider Media and Media written by the local driver is processed in
+ * one run. A driver this instance cannot reach is reported with the row and
+ * the run continues.
  */
 export async function backfillMediaMetadata({
-  driver,
+  active,
+  env = process.env,
   mediaIds,
   concurrency = 4,
   dryRun = false,
@@ -99,6 +115,7 @@ export async function backfillMediaMetadata({
       name: true,
       key: true,
       url: true,
+      storageDriver: true,
       mimeType: true,
       size: true,
       checksum: true,
@@ -108,6 +125,11 @@ export async function backfillMediaMetadata({
   });
 
   report.scanned = media.length;
+
+  // One client per driver for the whole run, shared by every row it wrote.
+  const drivers = new Map<StorageDriverName, StorageDriver>([
+    [active.name, active.driver],
+  ]);
 
   await forEachWithConcurrency(media, concurrency, async (item) => {
     if (hasCompleteMetadata(item)) {
@@ -129,7 +151,23 @@ export async function backfillMediaMetadata({
         return;
       }
 
-      const bytes = await driver.get(key);
+      const resolution = resolveMediaStorageDriver(item.storageDriver, {
+        active,
+        env,
+        cache: drivers,
+      });
+
+      if (!resolution.resolved) {
+        report.failed.push({
+          mediaId: item.id,
+          name: item.name,
+          reason: resolution.reason,
+        });
+        onProgress?.(`fail ${item.id}: ${resolution.reason}`);
+        return;
+      }
+
+      const bytes = await resolution.driver.get(key);
       const inspected = await inspectImage(bytes);
 
       if (!dryRun) {

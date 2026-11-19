@@ -22,7 +22,10 @@ deliver   GET /media/<key>
 ```
 
 The active driver decides where **new** uploads go. Delivery never asks the active driver: it
-asks the row, so switching storage affects only new files.
+asks the row, so switching storage affects only new files. The metadata and rendition backfills
+resolve the recorded driver per row for reads and writes, so a library that mixes legacy provider
+Media and local Media is processed in one run; a row whose driver is not configured here is
+reported and the run continues.
 
 Every Media type enters through the same multipart transport. An image is normalised and cut
 into the rendition ladder; a document, audio file or video is copied untouched to
@@ -37,6 +40,7 @@ path writes under the Media's own revision.
 | Concern | File |
 | --- | --- |
 | Upload, replace, archive, delete, revisions | `src/modules/media/server/media-service.ts` |
+| Metadata and rendition backfills | `src/modules/media/server/backfill-media-metadata.ts`, `src/modules/media/server/backfill-media-renditions.ts` |
 | Key grammar: compose, parse, revision prefix | `src/modules/media/server/media-key.ts` |
 | Key -> owning Media (originals and renditions) | `src/modules/media/server/media-delivery.ts` |
 | Driver interface and factory | `src/modules/media/server/storage/driver.ts` |
