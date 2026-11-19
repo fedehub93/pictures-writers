@@ -6,14 +6,17 @@ import { Readable } from "node:stream";
 
 import { NextResponse } from "next/server";
 
-import { findDeliveryMedia } from "@/modules/media/server/media-delivery";
+import { renditionUrlForKey } from "@/modules/media/lib/manifest";
 import {
-  driverForStorageDriver,
-  getLocalStorageRoot,
-} from "@/modules/media/server/storage";
-import { StorageObjectNotFoundError } from "@/modules/media/server/storage/types";
+  findDeliveryFile,
+  type DeliveryFile,
+} from "@/modules/media/server/media-delivery";
+import { getLocalStorageRoot } from "@/modules/media/server/storage";
 
 const IMMUTABLE_CACHE = "public, max-age=31536000, immutable";
+// The provider hop points at bytes that a later move can take away. It is
+// cached for minutes, never immutably: only the bytes behind it are immutable.
+const REDIRECT_CACHE = "public, max-age=300";
 
 function isSafeMediaKey(key: string): boolean {
   if (
@@ -31,12 +34,9 @@ function isSafeMediaKey(key: string): boolean {
   );
 }
 
-function contentTypeForKey(
-  key: string,
-  mediaMimeType: string | null,
-): string {
+function contentTypeForKey(key: string, file: DeliveryFile): string {
   if (key.endsWith("/original")) {
-    return mediaMimeType ?? "application/octet-stream";
+    return file.contentType ?? file.mediaMimeType ?? "application/octet-stream";
   }
 
   const extension = key.split(".").pop()?.toLowerCase();
@@ -46,7 +46,7 @@ function contentTypeForKey(
     case "webp":
       return "image/webp";
     default:
-      return mediaMimeType ?? "application/octet-stream";
+      return file.contentType ?? file.mediaMimeType ?? "application/octet-stream";
   }
 }
 
@@ -87,7 +87,7 @@ function parseRange(range: string, size: number): ParsedRange | null {
 async function streamLocalObject(
   key: string,
   req: Request,
-  mediaMimeType: string | null,
+  file: DeliveryFile,
 ): Promise<Response> {
   const root = getLocalStorageRoot();
   const filePath = path.join(root, ...key.split("/"));
@@ -97,13 +97,12 @@ async function streamLocalObject(
     return new NextResponse(null, { status: 404 });
   }
 
-  const contentType = contentTypeForKey(key, mediaMimeType);
-  const etag = etagForKey(key);
   const headers: Record<string, string> = {
-    "Content-Type": contentType,
-    ETag: etag,
+    "Content-Type": contentTypeForKey(key, file),
+    ETag: etagForKey(key),
     "Cache-Control": IMMUTABLE_CACHE,
     "Accept-Ranges": "bytes",
+    "Content-Length": String(stats.size),
   };
 
   if (req.method === "HEAD") {
@@ -140,56 +139,54 @@ async function streamLocalObject(
 
   return new NextResponse(Readable.toWeb(stream) as ReadableStream, {
     status: 200,
-    headers: {
-      ...headers,
-      "Content-Length": String(stats.size),
-    },
+    headers,
   });
+}
+
+function remoteAddressFor(key: string, file: DeliveryFile): string | null {
+  if (!file.rendition) return file.remoteUrl;
+
+  // A rendition has no record of its own. Its provider address is the one the
+  // manifest recorded when the bytes were written, so the hop never asks the
+  // provider to resolve a key.
+  return renditionUrlForKey(file.mediaUrl, key);
 }
 
 async function handleMediaRequest(
   req: Request,
   { params }: { params: Promise<{ path: string[] }> },
 ): Promise<Response> {
-  const { path } = await params;
-  const key = path.join("/");
+  const { path: segments } = await params;
+  const key = segments.join("/");
 
   if (!isSafeMediaKey(key)) {
     return new NextResponse(null, { status: 404 });
   }
 
-  const media = await findDeliveryMedia(key);
+  const file = await findDeliveryFile(key);
 
-  if (!media || !media.key) {
+  if (!file) {
     return new NextResponse(null, { status: 404 });
   }
 
-  if (media.storageDriver === "local") {
-    return streamLocalObject(key, req, media.mimeType);
+  if (file.driver === "local") {
+    return streamLocalObject(key, req, file);
   }
 
-  // Remote driver (or a legacy row with no recorded driver): redirect to the
-  // provider's CDN so the existing Installation keeps serving its files.
-  try {
-    const driver = driverForStorageDriver(media.storageDriver);
-    const url = await driver.url(key);
+  const remoteAddress = remoteAddressFor(key, file);
 
-    // Driver URLs may be absolute provider origins or relative local addresses.
-    // The redirect must always be absolute.
-    const absoluteUrl = new URL(url, req.url).toString();
-
-    return NextResponse.redirect(absoluteUrl, {
-      status: 302,
-      headers: { "Cache-Control": IMMUTABLE_CACHE },
-    });
-  } catch (error) {
-    if (error instanceof StorageObjectNotFoundError) {
-      return new NextResponse(null, { status: 404 });
-    }
-
-    console.error("[MEDIA_DELIVERY]", error);
-    return new NextResponse(null, { status: 500 });
+  if (!remoteAddress) {
+    return new NextResponse(null, { status: 404 });
   }
+
+  // The redirect must always be absolute, while a recorded address may be
+  // relative to this Installation.
+  const absoluteUrl = new URL(remoteAddress, req.url).toString();
+
+  return NextResponse.redirect(absoluteUrl, {
+    status: 302,
+    headers: { "Cache-Control": REDIRECT_CACHE },
+  });
 }
 
 export async function GET(

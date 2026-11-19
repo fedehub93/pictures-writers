@@ -18,9 +18,9 @@ upload    browser -> POST /api/media (multipart)
           -> StoredFile row: key, driver, remoteUrl, content type, size, checksum
 
 deliver   GET /media/<key>
-          -> findDeliveryMedia
-          -> driverForStorageDriver(row.storageDriver)
-          -> local: stream from disk | remote: 302 to the CDN
+          -> findDeliveryFile
+          -> stored-file record: driver, remote address, content type
+          -> local: stream from disk | remote: 302 to the recorded address
 ```
 
 Every Media with a readable storage key has exactly one `StoredFile`, the
@@ -30,9 +30,15 @@ and kind. New uploads and replacements write it in the same transaction as the
 Media, so a failed write leaves neither; the one-time
 `npm run media:backfill-files` creates it for Media that predate it, from what
 the library already knows, and reports any Media whose key it cannot read. The
-command never rewrites a Media row. Delivery still reads the Media's own
-columns, so the two records stay in step until delivery and the backfills move
-onto the location record.
+command never rewrites a Media row.
+
+Delivery reads that record. A local file streams from disk with its recorded
+content type; a remote file redirects to the address the record carries and
+performs no provider API call. A rendition has no record of its own: delivery
+proves it belongs to its Media's revision prefix and, when the Media is remote,
+reads the provider address from the rendition manifest. A Media whose record
+has not been created yet still resolves from its own columns, so deploying this
+code before the one-time backfill cannot darken an existing picture.
 
 The active driver decides where **new** uploads go. Delivery never asks the active driver: it
 asks the row, so switching storage affects only new files. The metadata and rendition backfills
@@ -119,11 +125,16 @@ provider's rendition URLs, which is the debt recorded below. The absolute form i
 at a boundary that cannot use a relative URL: social metadata, JSON-LD, Stripe checkout images
 and email HTML, through `absoluteMediaUrl` in `src/modules/media/server/media-url.ts`.
 
-The route's `302` hop serves any row whose recorded driver is not local, including a pre-seam row
+The route's `302` hop serves any file whose recorded driver is not local, including a pre-seam row
 with no record (it resolves as UploadThing). That row's stored address is absolute, so the browser
 asks the provider directly and does not request `/media/<key>` for it. That is why the hop is not a
 path to own-domain addresses for legacy Media: routing them through it would put a provider
 lookup, or a rewrite, in front of every existing image.
+
+The hop carries `Cache-Control: public, max-age=300`, never `immutable`: the redirect points at
+bytes a later move can take away, so caching it as if it were the file would leave a visitor
+requesting a deleted object. `immutable` remains on the `200` response, whose bytes never change
+under a key because a replace bumps the revision.
 
 The legacy `/assets/<key>` address is a build-time rewrite to the provider in
 `next.config.mjs`. It stays for URLs stored before `/media/` existed; new Media never use it.

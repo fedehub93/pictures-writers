@@ -8,6 +8,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { db } from "@/shared/lib/db";
 import { MediaType } from "@/generated/prisma";
+import { buildMediaDeliveryUrl } from "@/modules/media/lib/manifest";
+import { mediaPath } from "@/modules/media/lib/url";
 import { createMediaFromUpload } from "@/modules/media/server/media-service";
 import { createLocalStorageDriver } from "@/modules/media/server/storage/local";
 import type { StorageDriver } from "@/modules/media/server/storage/types";
@@ -27,8 +29,7 @@ vi.mock("@/modules/media/server/storage", async (importOriginal) => {
   return {
     ...original,
     getLocalStorageRoot: () => storage.root,
-    driverForStorageDriver: (name: string | null | undefined) =>
-      name === "local" ? storage.local : storage.remote,
+    driverForStorageDriver: () => storage.remote,
   };
 });
 
@@ -59,6 +60,7 @@ function etagForKey(key: string): string {
 
 describe("GET /media/<key>", () => {
   let mediaIds: string[];
+  let providerUrlReads: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
     mediaIds = [];
@@ -66,6 +68,7 @@ describe("GET /media/<key>", () => {
     storage.local = createLocalStorageDriver({ root: storage.root });
     const fake = createFakeUploadThingApi();
     storage.remote = createUploadThingStorageDriver(fake.api, fake.fetch);
+    providerUrlReads = vi.spyOn(fake.api, "getFileUrls");
   });
 
   afterEach(async () => {
@@ -75,31 +78,78 @@ describe("GET /media/<key>", () => {
     await rm(storage.root, { recursive: true, force: true });
   });
 
-  async function createLocalImage(keyOverride?: string) {
-    const bytes = await createPng();
-    const id = randomUUID();
-    const key = keyOverride ?? `default/${id}/1/original`;
+  interface MediaFixture {
+    id?: string;
+    key: string;
+    url?: string;
+    type?: MediaType;
+    mimeType?: string | null;
+    size?: number | null;
+    storageDriver?: string | null;
+  }
 
-    await storage.local!.put(key, bytes, "image/png");
-
+  async function createMedia(fixture: MediaFixture) {
     const media = await db.media.create({
       data: {
-        id,
-        name: "Delivery image",
-        key,
-        url: `/media/${key}`,
-        type: MediaType.IMAGE,
-        mimeType: "image/png",
-        size: bytes.byteLength,
-        storageDriver: "local",
+        id: fixture.id ?? randomUUID(),
+        name: "Delivery fixture",
+        key: fixture.key,
+        url: fixture.url ?? `/media/${fixture.key}`,
+        type: fixture.type ?? MediaType.IMAGE,
+        mimeType:
+          fixture.mimeType === undefined ? "image/png" : fixture.mimeType,
+        size: fixture.size ?? null,
+        storageDriver:
+          fixture.storageDriver === undefined ? "local" : fixture.storageDriver,
       },
     });
 
     mediaIds.push(media.id);
+    return media;
+  }
+
+  async function createStoredFile(
+    media: { id: string; key: string | null },
+    location: {
+      driver?: string;
+      remoteUrl?: string | null;
+      contentType?: string | null;
+      size?: number | null;
+    } = {},
+  ) {
+    return db.storedFile.create({
+      data: {
+        key: media.key as string,
+        driver: location.driver ?? "local",
+        remoteUrl: location.remoteUrl ?? null,
+        contentType: location.contentType ?? "image/png",
+        size: location.size ?? null,
+        mediaId: media.id,
+      },
+    });
+  }
+
+  async function createLocalImage(keyOverride?: string, contentType = "image/png") {
+    const bytes = await createPng();
+    const id = randomUUID();
+    const key = keyOverride ?? `default/${id}/1/original`;
+
+    await storage.local!.put(key, bytes, contentType);
+
+    // The Media's own columns carry no content type on purpose: the response
+    // must come from the stored-file record.
+    const media = await createMedia({
+      id,
+      key,
+      mimeType: null,
+      size: bytes.byteLength,
+    });
+    await createStoredFile(media, { contentType, size: bytes.byteLength });
+
     return { media, bytes, key };
   }
 
-  it("streams a local image with content type, ETag and immutable cache", async () => {
+  it("streams a local image from its stored-file location with content type, ETag and immutable cache", async () => {
     const { bytes, key } = await createLocalImage();
 
     const response = await GET(
@@ -113,11 +163,50 @@ describe("GET /media/<key>", () => {
       "public, max-age=31536000, immutable",
     );
     expect(response.headers.get("etag")).toBe(etagForKey(key));
+    expect(response.headers.get("content-length")).toBe(String(bytes.byteLength));
     expect(new Uint8Array(await response.arrayBuffer())).toEqual(bytes);
   });
 
-  it("returns the same headers with no body for HEAD", async () => {
-    const { key } = await createLocalImage();
+  it("streams a local document with its recorded type, byte length and Range support", async () => {
+    const text = "0123456789";
+    const key = `default/${randomUUID()}/1/original`;
+    await storage.local!.put(key, new TextEncoder().encode(text), "text/plain");
+
+    const media = await createMedia({
+      key,
+      type: MediaType.FILE,
+      mimeType: null,
+      size: text.length,
+    });
+    await createStoredFile(media, {
+      contentType: "text/plain",
+      size: text.length,
+    });
+
+    const response = await GET(
+      new Request(`http://localhost/media/${key}`),
+      context(key),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toBe("text/plain");
+    expect(response.headers.get("content-length")).toBe(String(text.length));
+    expect(await response.text()).toBe(text);
+
+    const ranged = await GET(
+      new Request(`http://localhost/media/${key}`, {
+        headers: { range: "bytes=2-5" },
+      }),
+      context(key),
+    );
+
+    expect(ranged.status).toBe(206);
+    expect(ranged.headers.get("content-range")).toBe("bytes 2-5/10");
+    expect(await ranged.text()).toBe("2345");
+  });
+
+  it("returns the same headers and byte length with no body for HEAD", async () => {
+    const { bytes, key } = await createLocalImage();
 
     const response = await HEAD(
       new Request(`http://localhost/media/${key}`, { method: "HEAD" }),
@@ -130,38 +219,8 @@ describe("GET /media/<key>", () => {
       "public, max-age=31536000, immutable",
     );
     expect(response.headers.get("etag")).toBe(etagForKey(key));
+    expect(response.headers.get("content-length")).toBe(String(bytes.byteLength));
     expect(await response.text()).toBe("");
-  });
-
-  it("answers a Range request with partial content", async () => {
-    const text = "0123456789";
-    const key = `default/${randomUUID()}/1/original`;
-    await storage.local!.put(key, new TextEncoder().encode(text), "text/plain");
-
-    const media = await db.media.create({
-      data: {
-        id: randomUUID(),
-        name: "Range file",
-        key,
-        url: `/media/${key}`,
-        type: MediaType.FILE,
-        mimeType: "text/plain",
-        size: text.length,
-        storageDriver: "local",
-      },
-    });
-    mediaIds.push(media.id);
-
-    const response = await GET(
-      new Request(`http://localhost/media/${key}`, {
-        headers: { range: "bytes=2-5" },
-      }),
-      context(key),
-    );
-
-    expect(response.status).toBe(206);
-    expect(response.headers.get("content-range")).toBe("bytes 2-5/10");
-    expect(await response.text()).toBe("2345");
   });
 
   it("answers 404 for an unknown key", async () => {
@@ -197,11 +256,28 @@ describe("GET /media/<key>", () => {
     expect(response.status).toBe(404);
   });
 
-  it("streams a rendition whose key belongs to a local Media", async () => {
+  it("answers 404 when the recorded file is missing from disk", async () => {
+    const key = `default/${randomUUID()}/1/original`;
+    const media = await createMedia({ key, size: 10 });
+    await createStoredFile(media, { contentType: "text/plain", size: 10 });
+
+    const response = await GET(
+      new Request(`http://localhost/media/${key}`),
+      context(key),
+    );
+
+    expect(response.status).toBe(404);
+  });
+
+  it("streams a rendition whose key belongs to a local Media without a record of its own", async () => {
     const { media } = await createLocalImage();
     const renditionKey = `default/${media.id}/1/720.avif`;
     const renditionBytes = await createPng();
     await storage.local!.put(renditionKey, renditionBytes, "image/avif");
+
+    expect(
+      await db.storedFile.count({ where: { key: renditionKey } }),
+    ).toBe(0);
 
     const response = await GET(
       new Request(`http://localhost/media/${renditionKey}`),
@@ -227,56 +303,14 @@ describe("GET /media/<key>", () => {
     expect(response.status).toBe(404);
   });
 
-  it("redirects a remote Media to its provider URL", async () => {
+  it("redirects a remote file to its recorded location with a short cache", async () => {
     const key = `default/${randomUUID()}/1/original`;
-    const bytes = await createPng();
-    await storage.remote!.put(key, bytes, "image/png");
-
-    const media = await db.media.create({
-      data: {
-        id: randomUUID(),
-        name: "Remote image",
-        key,
-        url: `/media/${key}`,
-        type: MediaType.IMAGE,
-        mimeType: "image/png",
-        storageDriver: "uploadthing",
-      },
+    const remoteUrl = "https://cdn.example.test/files/original.png";
+    const media = await createMedia({
+      key,
+      storageDriver: "uploadthing",
     });
-    mediaIds.push(media.id);
-
-    const response = await GET(
-      new Request(`http://localhost/media/${key}`),
-      context(key),
-    );
-
-    const providerUrl = await storage.remote!.url(key);
-
-    expect(response.status).toBe(302);
-    expect(providerUrl).toMatch(/^https:\/\/fake-app\.ufs\.sh\/f\//);
-    expect(response.headers.get("location")).toBe(providerUrl);
-    expect(response.headers.get("cache-control")).toBe(
-      "public, max-age=31536000, immutable",
-    );
-  });
-
-  it("treats a row with no recorded driver as remote", async () => {
-    const key = `default/${randomUUID()}/1/original`;
-    const bytes = await createPng();
-    await storage.remote!.put(key, bytes, "image/png");
-
-    const media = await db.media.create({
-      data: {
-        id: randomUUID(),
-        name: "Legacy image",
-        key,
-        url: `/media/${key}`,
-        type: MediaType.IMAGE,
-        mimeType: "image/png",
-        storageDriver: null,
-      },
-    });
-    mediaIds.push(media.id);
+    await createStoredFile(media, { driver: "uploadthing", remoteUrl });
 
     const response = await GET(
       new Request(`http://localhost/media/${key}`),
@@ -284,15 +318,71 @@ describe("GET /media/<key>", () => {
     );
 
     expect(response.status).toBe(302);
-    expect(response.headers.get("location")).toBe(
-      await storage.remote!.url(key),
-    );
-    expect(response.headers.get("cache-control")).toBe(
-      "public, max-age=31536000, immutable",
-    );
+    expect(response.headers.get("location")).toBe(remoteUrl);
+    expect(response.headers.get("cache-control")).toBe("public, max-age=300");
+    expect(response.headers.get("cache-control")).not.toContain("immutable");
+    expect(providerUrlReads).not.toHaveBeenCalled();
   });
 
-  it("serves a newly uploaded remote Media through /media/ and redirects to the provider", async () => {
+  it("resolves a Media with no recorded driver from its remote location", async () => {
+    // A pre-seam row may have no stored-file record yet; its own absolute
+    // address still names where the bytes are, without a provider call.
+    const providerKey = "file-legacy-flat-key";
+    const remoteUrl = `https://fake-app.ufs.sh/f/${providerKey}`;
+
+    const media = await createMedia({
+      key: providerKey,
+      url: remoteUrl,
+      storageDriver: null,
+    });
+
+    const response = await GET(
+      new Request(`http://localhost/media/${providerKey}`),
+      context(providerKey),
+    );
+
+    expect(response.status).toBe(302);
+    expect(response.headers.get("location")).toBe(remoteUrl);
+    expect(response.headers.get("cache-control")).toBe("public, max-age=300");
+    expect(providerUrlReads).not.toHaveBeenCalled();
+    expect(media.storageDriver).toBeNull();
+  });
+
+  it("redirects a remote rendition to the address its Media manifest records without reading the provider", async () => {
+    const id = randomUUID();
+    const key = `default/${id}/1/original`;
+    const renditionKey = `default/${id}/1/720.avif`;
+    const renditionUrl = "https://cdn.example.test/files/720.avif";
+
+    const url = buildMediaDeliveryUrl(mediaPath(key), {
+      revision: 1,
+      archived: false,
+      renditions: [{ url: renditionUrl, width: 720, format: "avif" }],
+    });
+
+    const media = await createMedia({
+      id,
+      key,
+      url,
+      storageDriver: "uploadthing",
+    });
+    await createStoredFile(media, {
+      driver: "uploadthing",
+      remoteUrl: "https://cdn.example.test/files/original",
+    });
+
+    const response = await GET(
+      new Request(`http://localhost/media/${renditionKey}`),
+      context(renditionKey),
+    );
+
+    expect(response.status).toBe(302);
+    expect(response.headers.get("location")).toBe(renditionUrl);
+    expect(response.headers.get("cache-control")).toBe("public, max-age=300");
+    expect(providerUrlReads).not.toHaveBeenCalled();
+  });
+
+  it("serves a newly uploaded remote Media through /media/ and redirects to the recorded provider location", async () => {
     const sourceKey = `uploads/${randomUUID()}`;
     await storage.remote!.put(sourceKey, await createPng(), "image/png");
 
@@ -311,55 +401,35 @@ describe("GET /media/<key>", () => {
 
     const deliveryUrl = new URL(media.url, "http://localhost");
     const key = deliveryUrl.pathname.replace(/^\/media\//, "");
+    const stored = await db.storedFile.findUnique({ where: { mediaId: media.id } });
+
+    providerUrlReads.mockClear();
 
     const response = await GET(
       new Request(`http://localhost${deliveryUrl.pathname}`),
       context(key),
     );
 
+    expect(stored?.remoteUrl).toMatch(/^https:\/\/fake-app\.ufs\.sh\/f\//);
     expect(response.status).toBe(302);
-    expect(response.headers.get("location")).toBe(
-      await storage.remote!.url(key),
-    );
-    expect(response.headers.get("cache-control")).toBe(
-      "public, max-age=31536000, immutable",
-    );
+    expect(response.headers.get("location")).toBe(stored?.remoteUrl);
+    expect(response.headers.get("cache-control")).toBe("public, max-age=300");
+    expect(providerUrlReads).not.toHaveBeenCalled();
   });
 
-  it("redirects a flat legacy key with no Installation segment to the provider", async () => {
-    // Legacy Media rows kept UploadThing's generated file key rather than a
-    // customId, and carry no recorded driver.
-    const providerKey = "file-legacy-flat-key";
-    await storage.remote!.put(
-      "legacy-flat-key",
-      new Uint8Array([1, 2, 3]),
-      "image/png",
-    );
-
-    const media = await db.media.create({
-      data: {
-        id: randomUUID(),
-        name: "Pre-seam image",
-        key: providerKey,
-        url: `https://fake-app.ufs.sh/f/${providerKey}`,
-        type: MediaType.IMAGE,
-        mimeType: "image/png",
-        storageDriver: null,
-      },
+  it("answers 404 rather than a stack trace when a remote record carries no provider address", async () => {
+    const key = `default/${randomUUID()}/1/original`;
+    const media = await createMedia({
+      key,
+      storageDriver: "uploadthing",
     });
-    mediaIds.push(media.id);
+    await createStoredFile(media, { driver: "uploadthing", remoteUrl: null });
 
     const response = await GET(
-      new Request(`http://localhost/media/${providerKey}`),
-      context(providerKey),
+      new Request(`http://localhost/media/${key}`),
+      context(key),
     );
 
-    expect(response.status).toBe(302);
-    expect(response.headers.get("location")).toBe(
-      `https://fake-app.ufs.sh/f/${encodeURIComponent(providerKey)}`,
-    );
-    expect(response.headers.get("cache-control")).toBe(
-      "public, max-age=31536000, immutable",
-    );
+    expect(response.status).toBe(404);
   });
 });

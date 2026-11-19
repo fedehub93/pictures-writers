@@ -204,10 +204,12 @@ describe("choosing UploadThing for new uploads", () => {
     );
 
     expect(served.status).toBe(302);
+    expect(served.headers.get("location")).toBe(file.remoteUrl);
     expect(served.headers.get("location")).toMatch(
       /^https:\/\/fake-app\.ufs\.sh\/f\//,
     );
-    expect(served.headers.get("cache-control")).toContain("immutable");
+    expect(served.headers.get("cache-control")).toBe("public, max-age=300");
+    expect(served.headers.get("cache-control")).not.toContain("immutable");
   });
 
   it("replaces a remote Media through the active provider and cleans the previous revision", async () => {
