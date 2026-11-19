@@ -63,10 +63,7 @@ describe("GET /media/<key>", () => {
   beforeEach(async () => {
     mediaIds = [];
     storage.root = await mkdtemp(path.join(tmpdir(), "media-delivery-"));
-    storage.local = createLocalStorageDriver({
-      root: storage.root,
-      publicBaseUrl: "/media",
-    });
+    storage.local = createLocalStorageDriver({ root: storage.root });
     const fake = createFakeUploadThingApi();
     storage.remote = createUploadThingStorageDriver(fake.api, fake.fetch);
   });

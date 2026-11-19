@@ -78,7 +78,7 @@ describe("POST /api/media/[mediaId]/replace", () => {
   beforeEach(async () => {
     mediaIds = [];
     root = await mkdtemp(path.join(tmpdir(), "media-replace-route-"));
-    driver = createLocalStorageDriver({ root, publicBaseUrl: "/media" });
+    driver = createLocalStorageDriver({ root });
     storage.driver = driver;
   });
 

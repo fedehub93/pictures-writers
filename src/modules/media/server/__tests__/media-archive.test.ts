@@ -47,7 +47,7 @@ describe("media archive, restore and deletion", () => {
     mediaIds = [];
     cleanup = [];
     root = await mkdtemp(path.join(tmpdir(), "media-archive-"));
-    driver = createLocalStorageDriver({ root, publicBaseUrl: "/media" });
+    driver = createLocalStorageDriver({ root });
   });
 
   afterEach(async () => {

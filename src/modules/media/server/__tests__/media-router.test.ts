@@ -61,7 +61,7 @@ beforeEach(async () => {
   postRootIds.length = 0;
 
   root = await mkdtemp(path.join(tmpdir(), "media-router-"));
-  driver = createLocalStorageDriver({ root, publicBaseUrl: "/media" });
+  driver = createLocalStorageDriver({ root });
   storage.driver = driver;
 
   caller = createCaller({ userId: "media-router-test", auth: { id: "media-router-test" } });

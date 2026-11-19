@@ -18,7 +18,7 @@ async function createLocalHarness(): Promise<Harness> {
   const root = await mkdtemp(path.join(tmpdir(), "media-storage-"));
 
   return {
-    driver: createLocalStorageDriver({ root, publicBaseUrl: "/media" }),
+    driver: createLocalStorageDriver({ root }),
     cleanup: () => rm(root, { recursive: true, force: true }),
   };
 }

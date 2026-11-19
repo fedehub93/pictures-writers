@@ -9,7 +9,6 @@ export {
   storageConfigFromEnv,
   storageDriverNameFromSetting,
   DEFAULT_INSTALLATION_SLUG,
-  DEFAULT_LOCAL_PUBLIC_URL,
   DEFAULT_LOCAL_ROOT,
   type ResolvedStorageDriver,
   type StorageDriverConfig,

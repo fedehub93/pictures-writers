@@ -16,12 +16,11 @@ export type { StorageDriverName };
 
 export type StorageDriverConfig =
   | { driver: "uploadthing"; token?: string }
-  | { driver: "local"; root: string; publicBaseUrl: string };
+  | { driver: "local"; root: string };
 
 export type StorageEnvironment = Record<string, string | undefined>;
 
 export const DEFAULT_LOCAL_ROOT = ".media-storage";
-export const DEFAULT_LOCAL_PUBLIC_URL = "/media";
 export const DEFAULT_INSTALLATION_SLUG = "default";
 
 export function storageConfigFromEnv(
@@ -37,8 +36,7 @@ export function storageConfigFromEnv(
   if (name === "local") {
     return {
       driver: "local",
-      root: env.MEDIA_STORAGE_LOCAL_ROOT || path.resolve(DEFAULT_LOCAL_ROOT),
-      publicBaseUrl: env.MEDIA_STORAGE_LOCAL_PUBLIC_URL || DEFAULT_LOCAL_PUBLIC_URL,
+      root: getLocalStorageRoot(env),
     };
   }
 
@@ -123,8 +121,6 @@ export function driverForStorageDriver(
     case "local":
       return createLocalStorageDriver({
         root: getLocalStorageRoot(env),
-        publicBaseUrl:
-          env.MEDIA_STORAGE_LOCAL_PUBLIC_URL || DEFAULT_LOCAL_PUBLIC_URL,
       });
     case "uploadthing":
       return createUploadThingStorageDriver(

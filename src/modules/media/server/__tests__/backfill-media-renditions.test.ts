@@ -95,7 +95,7 @@ describe("backfillMediaRenditions", () => {
   beforeEach(async () => {
     mediaIds = [];
     root = await mkdtemp(path.join(tmpdir(), "media-renditions-"));
-    driver = createLocalStorageDriver({ root, publicBaseUrl: "/media" });
+    driver = createLocalStorageDriver({ root });
   });
 
   afterEach(async () => {

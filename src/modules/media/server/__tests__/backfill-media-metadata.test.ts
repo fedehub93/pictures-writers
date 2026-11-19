@@ -66,7 +66,6 @@ describe("backfillMediaMetadata", () => {
     root = await mkdtemp(path.join(tmpdir(), "media-backfill-"));
     driver = createLocalStorageDriver({
       root,
-      publicBaseUrl: "/media",
     });
   });
 

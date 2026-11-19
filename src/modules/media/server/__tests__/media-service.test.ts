@@ -70,7 +70,7 @@ describe("createMediaFromUpload", () => {
   beforeEach(async () => {
     mediaIds = [];
     root = await mkdtemp(path.join(tmpdir(), "media-service-"));
-    driver = createLocalStorageDriver({ root, publicBaseUrl: "/media" });
+    driver = createLocalStorageDriver({ root });
   });
 
   afterEach(async () => {
@@ -365,7 +365,7 @@ describe("replaceMediaFile", () => {
   beforeEach(async () => {
     mediaIds = [];
     root = await mkdtemp(path.join(tmpdir(), "media-replace-"));
-    driver = createLocalStorageDriver({ root, publicBaseUrl: "/media" });
+    driver = createLocalStorageDriver({ root });
   });
 
   afterEach(async () => {

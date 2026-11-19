@@ -76,6 +76,10 @@ lookup: local renditions stop resolving.
 `/media/<key>`; when the Media has renditions, the URL also carries `?mt=` with the revision,
 the archived flag and the rendition URLs. `stripMediaManifest` returns the plain path.
 
+The local driver composes exactly this address through `mediaPath`; there is no environment
+variable for a local public prefix, so a configuration mistake cannot produce addresses the
+delivery route does not serve.
+
 The path carries no domain. The `?mt=` token is the exception: for a remote row it can embed the
 provider's rendition URLs, which is the debt recorded below. The absolute form is composed only
 at a boundary that cannot use a relative URL: social metadata, JSON-LD, Stripe checkout images

@@ -3,11 +3,12 @@ import "server-only";
 import { mkdir, readdir, readFile, rmdir, stat, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+import { mediaPath } from "@/modules/media/lib/url";
+
 import { StorageObjectNotFoundError, type StorageDriver } from "./types";
 
 export interface LocalStorageOptions {
   root: string;
-  publicBaseUrl: string;
 }
 
 function assertSafePath(value: string, label: "key" | "prefix"): void {
@@ -99,7 +100,6 @@ async function pruneEmptyDirectories(root: string, directory: string): Promise<v
 
 export function createLocalStorageDriver({
   root,
-  publicBaseUrl,
 }: LocalStorageOptions): StorageDriver {
   return {
     async put(key, bytes) {
@@ -141,8 +141,7 @@ export function createLocalStorageDriver({
       const file = objectPath(root, key);
       await withKeyNotFound(key, () => stat(file));
 
-      const base = publicBaseUrl.replace(/\/+$/, "");
-      return `${base}/${key.split("/").map(encodeURIComponent).join("/")}`;
+      return mediaPath(key);
     },
   };
 }

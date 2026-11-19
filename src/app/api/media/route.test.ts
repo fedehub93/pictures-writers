@@ -87,7 +87,7 @@ describe("POST /api/media", () => {
   beforeEach(async () => {
     mediaIds = [];
     root = await mkdtemp(path.join(tmpdir(), "media-route-"));
-    driver = createLocalStorageDriver({ root, publicBaseUrl: "/media" });
+    driver = createLocalStorageDriver({ root });
     storage.driver = driver;
   });
 

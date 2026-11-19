@@ -147,11 +147,12 @@ Google Tag Manager non è più una variabile d'ambiente: il container id si conf
 |---|---|:---:|:---:|:---:|---|
 | `MEDIA_STORAGE_DRIVER` | `local` / `uploadthing` | ❌ | ✅ | ❌ | Fallback per i nuovi upload quando nessun driver è stato scelto in Admin → Media. Il driver attivo è un'impostazione dell'Installazione e ha la precedenza. Default `uploadthing` per non mutare le Installazioni esistenti. |
 | `MEDIA_STORAGE_LOCAL_ROOT` | `/app/media-storage` o `/data/media` | ❌ | ✅ | ❌ | Percorso nel container dove il driver locale scrive i file. |
-| `MEDIA_STORAGE_LOCAL_PUBLIC_URL` | `/media` | ✅ | ✅ | ❌ | Prefisso pubblico delle URL locali. Default `/media`. |
 | `INSTALLATION_SLUG` | `tenant-xyz` | ❌ | ✅ | ❌ | Segmento iniziale di ogni nuova storage key. Default `default` se assente. |
 | `UPLOADTHING_TOKEN` | `<token>` | ❌ | ✅ | ✅ | Vedi §3.5. Richiesto per poter scegliere UploadThing dal backoffice: senza token l'opzione è visibile ma disabilitata nella libreria media. |
 
 > Il driver `local` richiede un **volume persistente** montato su `MEDIA_STORAGE_LOCAL_ROOT`. Senza di esso, un redeploy cancellerebbe i file caricati. Il volume va incluso nel backup insieme al database.
+
+> I file serviti dal driver `local` hanno sempre l'indirizzo canonico `/media/<key>`, servito dalla route di delivery. Non esiste una variabile per cambiare il prefisso: un eventuale `MEDIA_STORAGE_LOCAL_PUBLIC_URL` rimasto in un file di ambiente viene ignorato.
 
 ---
 
@@ -195,7 +196,6 @@ SCHEDULED_PUBLICATION_SECRET=<DAL_PASSWORD_MANAGER>
 # Per restare su UploadThing come oggi, lascia il default.
 # MEDIA_STORAGE_DRIVER=uploadthing
 # MEDIA_STORAGE_LOCAL_ROOT=/app/media-storage
-# MEDIA_STORAGE_LOCAL_PUBLIC_URL=/media
 # INSTALLATION_SLUG=default
 
 NIXPACKS_NODE_VERSION=24

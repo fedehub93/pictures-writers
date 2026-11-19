@@ -66,7 +66,7 @@ describe("media quota", () => {
 
   beforeEach(async () => {
     root = await mkdtemp(path.join(tmpdir(), "media-quota-"));
-    driver = createLocalStorageDriver({ root, publicBaseUrl: "/media" });
+    driver = createLocalStorageDriver({ root });
   });
 
   afterEach(async () => {
