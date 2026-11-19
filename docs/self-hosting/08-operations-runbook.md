@@ -12,6 +12,7 @@ Tutto ciò che serve per gestire Pictures Writers sulla VPS dopo il cutover: dep
 
 - [ ] Coolify: app e DB **Healthy**.
 - [ ] Ultimo backup DB: **Success**.
+- [ ] Ultimo backup del volume media (se usi il driver `local`): **Success**.
 - [ ] Errori ripetuti nei log runtime.
 - [ ] Spazio disco < 80%.
 - [ ] Uptime esterno: tutto verde.
@@ -28,6 +29,7 @@ Tutto ciò che serve per gestire Pictures Writers sulla VPS dopo il cutover: dep
 ### Ogni mese (30 minuti)
 
 - [ ] Test di restore del backup in un DB usa-e-getta.
+- [ ] Spazio del volume media e crescita della libreria (`du -sh` sul mount).
 - [ ] Aggiornamento Coolify (dopo release notes) in finestra di manutenzione.
 - [ ] Aggiornamento dipendenze npm (in branch, con test).
 - [ ] Review accessi: utenti admin, chiavi SSH, token.
@@ -36,9 +38,9 @@ Tutto ciò che serve per gestire Pictures Writers sulla VPS dopo il cutover: dep
 
 ### Ogni 3 mesi
 
-- [ ] Restore completo su una VPS di test.
+- [ ] Restore completo su una VPS di test, DB e volume media.
 - [ ] Rotazione dei segreti che si possono ruotare (vedi §9).
-- [ ] Verifica GDPR/subprocessors (Hetzner, Cloudflare, Resend, Stripe, UploadThing).
+- [ ] Verifica GDPR/subprocessors (Hetzner, Cloudflare, Resend, Stripe, UploadThing finché restano Media sul provider).
 - [ ] Aggiornamento major di PostgreSQL solo con procedura dedicata (mai in-place senza backup).
 
 ---
@@ -192,10 +194,11 @@ Non esiste più un fallback DNS verso Vercel/Neon: la produzione è la VPS. Il r
 1. Crea una nuova VPS dallo snapshot Hetzner (o reinstalla).
 2. Ripristina `/data/coolify/source/.env`.
 3. Riavvia Coolify.
-4. Verifica che i volumi Docker siano presenti.
-5. Se il volume del DB è perso, ripristina l'ultimo dump S3.
+4. Verifica che i volumi Docker siano presenti, incluso il volume `media-storage` montato su `/data/media`.
+5. Se il volume del DB è perso, ripristina l'ultimo dump S3. Se il volume media è perso, ripristinalo dall'archivio (4bis.5) prima di avviare l'app.
 6. Ricrea DNS se l'IP è cambiato.
 7. Verifica TLS.
+8. Esegui `npm run media:audit` e un paio di richieste a un Media locale e a uno storico.
 
 ### 4.4 RPO/RTO realistici
 
@@ -203,6 +206,7 @@ Non esiste più un fallback DNS verso Vercel/Neon: la produzione è la VPS. Il r
 |---|---|---|
 | Errore applicativo | 0 | minuti (rollback) |
 | DB corrotto | fino a 24 h (backup giornaliero) | 30–90 min |
+| Volume media perso | fino a 24 h (backup del volume, se il driver `local` è attivo) | 30–90 min |
 | VPS persa | fino a 24 h | 1–3 h (nuova VPS + restore) |
 | Errore umano su file | 0 (git) | minuti |
 
@@ -238,11 +242,13 @@ spiegano `AGENTS.md` e `docs/agents/browser-probe.md`.
 
 ---
 
-## 4bis. Media: consegna, backfill metadati e rendition
+## 4bis. Media: consegna, backfill, volume e audit
 
-### 4bis.1 Come vengono servite le immagini
+### 4bis.1 Come vengono serviti i media
 
-La VPS **non** ottimizza le immagini durante una visita. Un loader custom di `next/image` (`src/modules/media/lib/image-loader.ts`) restituisce l'URL di una rendition già presente sul CDN di UploadThing, oppure l'originale quando la rendition non esiste ancora. Le rendition vengono prodotte dai job di processing (upload e backfill); finché non esistono, il loader serve l'originale. `/_next/image` e i vecchi oggetti in `.next/cache/images` non sono più usati.
+La VPS **non** ottimizza le immagini durante una visita. Le rendition AVIF/WebP sono già state prodotte al momento dell'upload (o dal backfill); il loader custom di `next/image` (`src/modules/media/lib/image-loader.ts`) restituisce l'indirizzo della rendition già presente, oppure l'originale quando la rendition non esiste ancora. `/_next/image` e i vecchi oggetti in `.next/cache/images` non sono più usati.
+
+La consegna passa dalla route `GET /media/<key>`: un Media scritto dal driver `local` viene letto dal volume e inviato con `Content-Type`, `ETag`, `Cache-Control` e `Accept-Ranges`; un Media remoto riceve un `302` verso il CDN del provider. Ogni riga conserva il driver che l'ha scritta, quindi una libreria mista (Media storici su UploadThing, nuovi Media su disco) funziona senza migrazione e senza riscrivere indirizzi. Un Media storico con indirizzo assoluto non passa dalla route: il browser va direttamente al provider.
 
 La scala delle larghezze è una costante condivisa (`src/modules/media/lib/image-ladder.mjs`) tra `next.config.mjs` e il processore: il loader non può chiedere una larghezza che non venga generata.
 
@@ -331,6 +337,100 @@ Esempio di esecuzione completa:
 Se `failed` non è vuoto, controlla che l'oggetto esista ancora sul provider con la chiave indicata: un URL UploadThing cancellato non è recuperabile. Le Media fallite restano servite come originali e possono essere riprovate con lo stesso comando.
 
 **Verifica.** Dopo il run, dal sito controlla che una pagina con immagine storica serva un URL di rendition (`.avif`/`.webp` sul CDN) invece dell'originale, e che il media library mostri ancora una sola riga per file. Il job non modifica i contenuti: se un URL assoluto dentro un testo punta ancora all'originale, è atteso.
+
+### 4bis.4 Driver locale: volume persistente
+
+Il driver `local` scrive sotto `MEDIA_STORAGE_LOCAL_ROOT`. In produzione quel percorso deve stare su un **volume Docker persistente**: senza volume, ogni redeploy cancella i file caricati. La produzione corrente monta un volume `media-storage` su `/data/media` e imposta:
+
+```bash
+MEDIA_STORAGE_LOCAL_ROOT=/data/media
+```
+
+Non serve impostare `MEDIA_STORAGE_DRIVER=local`: il driver attivo per i nuovi upload si sceglie in **Admin → Media** e vive in `Settings.storageDriver`; la variabile è solo il fallback di un'Installazione che non ha ancora scelto. `MEDIA_STORAGE_LOCAL_PUBLIC_URL` non esiste più: gli indirizzi locali sono sempre `/media/<key>`.
+
+Verifica del mount:
+
+```bash
+docker volume ls | grep media-storage
+docker inspect <APP_CONTAINER> --format '{{json .Mounts}}'
+```
+
+Il container scrive come root. Se ricrei il volume, verifica che sia scrivibile prima di scegliere `local`. Un file caricato dopo il mount deve restare servibile dopo un redeploy.
+
+### 4bis.5 Backup e restore del volume media
+
+Il backup del database **non** contiene i file su disco: il volume va incluso nella stessa pianificazione. In Coolify: volume `media-storage` → **Backups**, schedule giornaliero, retention come il DB. Verifica che l'ultimo run sia `Success`, che l'archivio abbia dimensione > 0 e che sia scaricabile.
+
+Backup manuale equivalente (nome reale del volume da `docker volume ls`, app ferma o finestra di basso traffico):
+
+```bash
+docker run --rm -v <MEDIA_VOLUME>:/data -v "$PWD":/backup alpine \
+  sh -c 'tar -czf /backup/media-storage-$(date +%F).tar.gz -C /data .'
+```
+
+Conserva l'archivio fuori dalla VPS. Tieni insieme dump del DB e archivio del volume: uno senza l'altro non ricostruisce la libreria.
+
+Restore in produzione:
+
+1. Ferma l'app.
+2. Fai comunque un backup del volume attuale.
+3. Estrai l'archivio in un volume **vuoto** (non sopra quello vecchio):
+
+   ```bash
+   docker run --rm -v <MEDIA_VOLUME_RESTORE>:/data -v "$PWD":/backup alpine \
+     sh -c 'tar -xzf /backup/media-storage-YYYY-MM-DD.tar.gz -C /data'
+   ```
+
+4. Verifica il contenuto (`docker run --rm -v <MEDIA_VOLUME_RESTORE>:/data alpine find /data -type f | wc -l`) e sostituisci il volume montato dall'app, oppure svuota quello vecchio e ricopia.
+5. Avvia l'app ed esegui l'audit (4bis.6): `unresolved: 0`, `missing=0`, `orphaned=0`.
+6. Apri dal sito un Media locale e un Media storico e verifica che rispondano 200.
+
+Il drill completo — restore in uno scratch environment e file servito dal suo indirizzo — va eseguito almeno una volta e poi ogni 3 mesi, come il restore del DB.
+
+### 4bis.6 Audit della libreria
+
+Prima e dopo ogni cambio di driver, e dopo un restore del volume, esegui il controllo read-only:
+
+```bash
+npm run media:audit
+```
+
+Dentro il container:
+
+```bash
+docker exec -it <APP_CONTAINER> npm run media:audit
+```
+
+Legge ogni Media, risolve il driver registrato sulla riga e stampa un report come questo (esempio):
+
+```txt
+media: 723
+drivers: local=3 unrecorded=720
+unconfigured drivers: none
+bytes: accounted=377135934 localAccounted=31781 localOnDisk=31781 localDifference=0
+objects: accounted=35 onDisk=35 missing=0 orphaned=0
+unresolved: 0
+```
+
+| Campo | Significato |
+|---|---|
+| `drivers` | Righe per driver: `local`, `uploadthing`, `unrecorded` (Media anteriori al seam, risolti come UploadThing) e `unknown` (nome che questa build non conosce). |
+| `unconfigured drivers` | Driver registrati su qualche riga ma senza credenziali su questa istanza (es. `uploadthing` senza `UPLOADTHING_TOKEN`). |
+| `bytes` | Byte contabilizzati sull'intera libreria, byte delle sole righe locali, byte realmente sul volume e differenza (`localOnDisk - localAccounted`). |
+| `objects` | Oggetti locali contabilizzati, presenti sul volume, mancanti e orfani. |
+| `unresolved` | Media che non si risolvono, con id e motivo (`unknown-driver`, `driver-unconfigured`, `no-storage-key`, `object-missing`). |
+
+I file locali sono verificati uno per uno sul volume; le righe remote solo tramite configurazione e grammatica della chiave, perché un comando read-only non deve scaricare 720 oggetti dal provider. Il comando **esce 1** se `unresolved` non è vuoto, quindi può fare da gate di deploy. Gli oggetti orfani sono riportati ma non fanno fallire il comando: ogni Media si risolve comunque. Il report contiene solo id e aggregati, mai chiavi, indirizzi o nomi.
+
+Un `uploadthing` non configurato compare in `unresolved` anche se gli URL assoluti dei Media storici continuano a rispondere: significa che questa istanza non può cancellare né rielaborare quei file. Rimetti il token prima di un'operazione che tocca i byte.
+
+### 4bis.7 Ordine di attivazione del driver locale
+
+1. **Codice e migrazioni.** Deploy del codice che include `Media.storageDriver`. Finché nessuno sceglie un driver, il setting è vuoto, la risoluzione ricade sull'ambiente e il default storico resta UploadThing: nulla cambia.
+2. **Volume e backup.** Monta il volume, imposta `MEDIA_STORAGE_LOCAL_ROOT`, programma il backup del volume. Carica un file di prova e verifica che sopravviva a un redeploy.
+3. **Drill di restore.** Ripristina il volume in uno scratch environment e servi un file. Annota data e esito.
+4. **Scelta.** Solo allora seleziona `local` in **Admin → Media**. I nuovi upload vanno su disco, i Media esistenti restano sul provider. Esegui `npm run media:audit`.
+5. **Ritorno.** Per tornare indietro seleziona `uploadthing`: i file già locali continuano a essere serviti dal volume e i nuovi upload tornano al provider.
 
 ---
 
@@ -616,7 +716,7 @@ echo | openssl s_client -servername <DOMAIN> -connect <DOMAIN>:443 2>/dev/null |
 3. **Cache condivisa** (Redis cache handler) se aggiungi repliche.
 4. **DB separato** su un'altra VPS o servizio gestito, se il DB cresce.
 5. **CDN** (Cloudflare) per asset statici.
-6. **Storage file** su S3/MinIO se lasci UploadThing.
+6. **Storage file** su S3/R2: il driver non esiste ancora; oggi la scelta è tra il volume locale e UploadThing. Aggiungerlo richiede un driver che rispetti il contratto di storage (`src/modules/media/server/storage/driver.ts`), non una riscrittura dei contenuti.
 
 Non aggiungere repliche finché non hai una cache condivisa e una strategia per sessioni/scheduler. L'app è progettata per una singola istanza (ADR-0001).
 
@@ -627,7 +727,8 @@ Non aggiungere repliche finché non hai una cache condivisa e una strategia per 
 - Hetzner: CAX21 + IPv4 + backup + snapshot occasionali.
 - S3: R2/B2, pochi centesimi.
 - Dominio: invariato.
-- Stripe/Resend/UploadThing: invariati.
+- Stripe/Resend: invariati.
+- UploadThing: nessun costo per i nuovi caricamenti quando il driver attivo è `local`; resta il piano del provider per i Media storici finché non vengono spostati (progetto separato). Il volume locale consuma disco Hetzner.
 - Controlla mensilmente il pannello Hetzner per volumi/snapshot dimenticati.
 - Vercel e Neon sono già stati cancellati: la produzione e il database vivono solo su Hetzner/Coolify.
 

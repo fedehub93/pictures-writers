@@ -1,6 +1,8 @@
 # 01 — Analisi, inventario e piano
 
 > **Storico:** questo è lo snapshot pre-migrazione (Vercel + Neon). La produzione attuale è su Hetzner + Coolify con PostgreSQL locale. Tieni questo file solo per capire il contesto della migrazione.
+>
+> **Aggiornamento (novembre 2026):** lo storage dei media non è più solo UploadThing. Il driver `local` è selezionabile e i nuovi upload possono stare su un volume della VPS; i Media esistenti restano sul provider senza migrazione. Vale per le voci su UploadThing qui sotto; per lo stato attuale vedi `docs/media.md` e `08-operations-runbook.md` §4bis.
 
 Questo documento fotografa **tutto ciò che Pictures Writers usava prima della migrazione** e stabilisce cosa andava migrato, cosa resta esterno e cosa poteva rompersi.
 
@@ -109,7 +111,7 @@ Conseguenza: **il container di build deve raggiungere PostgreSQL**. Non è un de
 - ISR (`revalidate = 86400`) + `revalidatePath` on-demand (ADR-0001). Cache locale dell'istanza.
 - `revalidateContent()` chiama `revalidatePath` su path e layout.
 - Scheduler e automazioni girano **solo** quando un cron chiama gli endpoint. Non ci sono processi in background nel container (il pump di sviluppo è disattivato in produzione).
-- UploadThing: il browser carica i file **direttamente** su UploadThing; il server riceve solo i metadati. Gli allegati inbound di Resend vengono copiati su UploadThing dal server.
+- UploadThing: all'epoca il browser caricava i file **direttamente** su UploadThing; il server riceveva solo i metadati. Gli allegati inbound di Resend vengono ancora copiati su UploadThing dal server. La libreria media usa invece il trasporto multipart dell'applicazione (`POST /api/media`) e il driver attivo.
 - Le email escono verso SendGrid/Resend.
 - Stripe: checkout verso Stripe, webhook in ingresso.
 - `sharp` viene usato **solo nei job di processing** (backfill dei metadati ora; generazione delle rendition al momento dell'upload in seguito). Durante una visita la VPS non tocca le immagini: un loader custom di `next/image` serve la rendition già presente sul CDN e ripiega sull'originale.
@@ -120,7 +122,7 @@ Conseguenza: **il container di build deve raggiungere PostgreSQL**. Non è un de
 - Nessun `vercel.json`, nessun Vercel Cron.
 - Nessun uso di `waitUntil`, `after()`, `unstable_cache`, Edge Runtime.
 - Nessun WebSocket/queue esterna.
-- Nessun filesystem persistente usato per gli upload (tutto su UploadThing).
+- All'epoca nessun filesystem persistente era usato per gli upload (tutto su UploadThing). Oggi il driver `local` può scrivere su un volume della VPS.
 - `@vercel/speed-insights` era installato ma commentato; è stato rimosso con la migrazione.
 - `maxDuration` è dichiarato in due route ma su self-hosting viene ignorato (nessun limite serverless: i job possono durare di più).
 - Il vecchio modulo Vercel che esponeva `triggerWebhookBuild` non aveva chiamanti; è stato rimosso. Il pulsante admin "Build website" usa `revalidateContent("all")`. Il campo `Settings.deployWebhookUrl` resta vestigiale: puoi lasciarlo o svuotarlo, non influenza il deploy.
@@ -140,7 +142,7 @@ Elenco completo ricavato dal codice e dal `.env` (senza valori). Dettaglio in `a
 | `BETTER_AUTH_SECRET` | firma sessioni | ❌ | ✅ | ✅ | **non rigenerare** |
 | `SECRETS_ENCRYPTION_KEY` | cifratura credenziali integrazioni | ❌ | ✅ | ✅ | **non rigenerare** |
 | `AUTOMATION_CREDENTIALS_KEY` | decrypt credenziali legacy automazioni | ❌ | ✅ | ✅ | copiare identica |
-| `UPLOADTHING_TOKEN` | UploadThing | ❌ | ✅ | ✅ | invariato |
+| `UPLOADTHING_TOKEN` | UploadThing e Media storici | ❌ | ✅ | ✅ | richiesto anche con driver `local` per i Media già sul provider |
 | `STRIPE_API_KEY` | Stripe server | ❌ | ✅ | ✅ | invariato |
 | `STRIPE_WEBHOOK_SECRET` | verifica webhook | ❌ | ✅ | ✅ | invariato se l'endpoint non cambia |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe client | ✅ | ✅ | ❌ | |
@@ -228,7 +230,7 @@ Un DB di blog/CMS con qualche migliaio di contatti e immagini remote è tipicame
 - Schema completo + dati.
 - La tabella `_prisma_migrations` (fondamentale: dice a Prisma quali migrazioni sono già applicate).
 - Enum, indici, vincoli, foreign key.
-- **Non** contiene i file di UploadThing (sono esterni).
+- **Non** contiene i file dei Media: quelli su UploadThing sono esterni, quelli del driver `local` stanno sul volume e vanno salvati a parte (`08-operations-runbook.md` §4bis.5).
 - **Non** contiene i segreti cifrati in chiaro: contiene i blob cifrati con `SECRETS_ENCRYPTION_KEY`.
 
 ### 6.4 Estensioni
@@ -258,7 +260,7 @@ Questo è il modo più sicuro per provare l'app senza duplicare subito il DB.
 | DB esposto? | **No** | Solo rete Docker interna. Accesso eccezionale via tunnel SSH. |
 | App replicas | **1** | Cache ISR locale; scheduler con lease ma inutile rischiare. |
 | Cache | **Locale, nessun Redis** | ADR-0001. Redis si aggiunge solo se si scala. |
-| File | **UploadThing invariato** | Nessuna migrazione file, nessun rischio. |
+| File | **UploadThing o driver locale** | Nessuna migrazione dei Media esistenti; i nuovi upload possono andare su disco. |
 | Cron | **cron-job.org invariato** (poi opzionale cron VPS) | Il dominio resta lo stesso: nessuna modifica ai job. |
 | Dominio | **Invariato** | Cookie, webhook, email, SEO, reCAPTCHA. |
 | TLS | **Let's Encrypt via Traefik (Coolify)** | Automatico, rinnovo incluso. |

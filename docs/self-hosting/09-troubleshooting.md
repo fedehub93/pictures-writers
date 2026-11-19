@@ -356,7 +356,7 @@ Webhook non arrivato o fallito. Controlla Stripe → Webhooks → eventi; riprov
 
 ---
 
-## 7. UploadThing
+## 7. Media e UploadThing
 
 ### 403 / CORS sull'upload
 
@@ -377,6 +377,24 @@ Webhook non arrivato o fallito. Controlla Stripe → Webhooks → eventi; riprov
 - Errore di rete nel fetch dell'immagine remota.
 - Binario sharp mancante/sbagliato.
 - L'errore è silenziato (fallback a un pixel): controlla i log.
+
+### Media locale: 404, header o Range sbagliati
+
+- Verifica il driver registrato sulla riga: un Media `local` deve essere servito da `/media/<key>`; un Media storico con indirizzo assoluto non passa dalla route e va direttamente al provider.
+- `404` su un Media locale: file assente dal volume o root sbagliato. Controlla `MEDIA_STORAGE_LOCAL_ROOT` nel container e il mount (`docker inspect <APP_CONTAINER> --format '{{json .Mounts}}'`).
+- Un file caricato che sparisce dopo un redeploy significa che il volume non è montato o punta a una directory effimera.
+- `Range`/`HEAD`: la route locale risponde `Accept-Ranges: bytes` e `206` per una richiesta parziale. Se manca, un proxy davanti all'app sta intercettando la richiesta.
+
+### L'audit segnala Media non risolti
+
+Esegui `npm run media:audit` e leggi il motivo accanto all'id. Campi e significato completo del report sono in `08-operations-runbook.md` §4bis.6; in sintesi, il rimedio per ogni motivo:
+
+- `driver-unconfigured`: rimetti il token o ripristina la configurazione del driver. Gli URL assoluti rispondono ancora, ma delete e backfill non possono toccare quei file.
+- `object-missing`: ripristina il volume o correggi `MEDIA_STORAGE_LOCAL_ROOT`.
+- `no-storage-key`: ispeziona la riga; non cancellarla finché i byte non sono recuperati.
+- `unknown-driver`: torna alla build che conosce il driver o migra la riga.
+
+Gli oggetti orfani (`orphaned`) non fanno fallire il comando: sono file sul volume che nessuna riga locale contabilizza. Vanno ispezionati prima di cancellarli.
 
 ---
 

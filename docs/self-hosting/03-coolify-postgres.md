@@ -379,7 +379,7 @@ Se hai attivato i backup Hetzner, hai anche uno snapshot dell'intera VPS (disco,
 
 ### 4.5 Cosa NON è coperto
 
-- File di UploadThing (sono su UploadThing; verifica la loro politica di backup/retention).
+- File dei Media: quelli su UploadThing restano esterni (verifica la politica di backup/retention del provider); quelli del driver `local` stanno nel volume montato su `/data/media` e vanno inclusi nel backup con la stessa pianificazione del DB. Procedura: `08-operations-runbook.md` §4bis.5.
 - Segreti cifrati nel DB: servono `SECRETS_ENCRYPTION_KEY` e `AUTOMATION_CREDENTIALS_KEY` **insieme** al dump. Senza, le integrazioni non si decifrano.
 - Configurazione di Coolify: `/data/coolify/source/.env` e il volume di Coolify. Salvali a parte.
 

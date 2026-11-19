@@ -140,8 +140,13 @@ BETTER_AUTH_SECRET=<VALORE_DA_VERCEL>
 SECRETS_ENCRYPTION_KEY=<VALORE_DA_VERCEL>
 AUTOMATION_CREDENTIALS_KEY=<VALORE_DA_VERCEL>
 
-# ── UploadThing ─────────────────────────────────────────
+# ── UploadThing (Media storici e driver UploadThing) ────
 UPLOADTHING_TOKEN=<VALORE_DA_VERCEL>
+
+# ── Media storage locale (opzionale, richiede un volume) ─
+# Il driver attivo si sceglie in Admin → Media. Queste sono il fallback.
+# MEDIA_STORAGE_LOCAL_ROOT=/data/media
+# INSTALLATION_SLUG=default
 
 # ── Stripe ──────────────────────────────────────────────
 STRIPE_API_KEY=<VALORE_DA_VERCEL>
@@ -202,6 +207,7 @@ e rideploya. Il resto resta identico.
 | `SECRETS_ENCRYPTION_KEY` | ❌ | ✅ |
 | `AUTOMATION_CREDENTIALS_KEY` | ❌ | ✅ |
 | `UPLOADTHING_TOKEN` | ❌ | ✅ |
+| `MEDIA_STORAGE_DRIVER` / `MEDIA_STORAGE_LOCAL_ROOT` / `INSTALLATION_SLUG` | ❌ | ✅ |
 | `STRIPE_API_KEY` / `STRIPE_WEBHOOK_SECRET` | ❌ | ✅ |
 | `NEXT_SENDGRID_KEY` / `NEXT_RESEND_*` | ❌ | ✅ |
 | `RECAPTCHA_SECRET_KEY` | ❌ | ✅ |
@@ -474,7 +480,7 @@ Lascia la cache locale. **Non** montare volumi su `.next/cache` al primo rilasci
 - [ ] `https://staging.<DOMAIN>/sitemap.xml` risponde e contiene URL con il dominio corretto (attenzione: `Settings.siteUrl` punta ancora alla produzione; per lo staging è normale).
 - [ ] `https://staging.<DOMAIN>/robots.txt` risponde.
 - [ ] Login admin funziona (con un utente di test del branch Neon).
-- [ ] Upload di un'immagine su UploadThing funziona.
+- [ ] Upload di un'immagine funziona con il driver scelto (UploadThing o `local`). Con `local`, il file resta servibile dopo un redeploy.
 - [ ] Salvataggio di un post/pagina funziona.
 - [ ] `npx prisma migrate status` è pulito.
 - [ ] Log senza errori ricorrenti.

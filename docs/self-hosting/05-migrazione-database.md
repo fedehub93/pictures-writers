@@ -416,7 +416,7 @@ Su un DB piccolo è veloce. Se il DB è grande, eseguilo fuori dalla finestra.
 - **Réplica di lettura**: non necessaria per un singolo sito.
 - **Connessione pooler**: l'app usa `pg` con pool per processo; con una sola istanza va bene.
 - **`pg_stat_statements`**: utile per individuare query lente dopo qualche settimana.
-- **Storage dei file**: se vuoi eliminare anche UploadThing, valuta MinIO/S3 + migrazione degli URL nel DB. Progetto separato.
+- **Storage dei file**: i Media esistenti possono restare su UploadThing, oppure i nuovi upload possono usare il volume locale. Spostare i file già esistenti su disco (copia dei byte e riscrittura degli URL nel DB) resta un progetto separato.
 
 ---
 

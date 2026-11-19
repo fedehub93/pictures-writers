@@ -2,7 +2,8 @@
 
 This is the map of the media module, not a spec. The decisions are in
 `docs/adr/0026-media-storage-seam-and-pregenerated-renditions.md`; the requirements and the
-ticket history are in `.scratch/media-urls-and-uploads/spec.md`.
+ticket history are in `.scratch/media-urls-and-uploads/spec.md` and
+`.scratch/local-storage-completion/spec.md`.
 
 Read this before changing anything under `src/modules/media/`, `src/app/media/` or
 `src/app/api/media/`.
@@ -27,6 +28,11 @@ resolve the recorded driver per row for reads and writes, so a library that mixe
 Media and local Media is processed in one run; a row whose driver is not configured here is
 reported and the run continues.
 
+A mixed library is the expected state on this Installation, not an edge case: the Media that
+predate the seam stay on UploadThing, and a Media uploaded with the local driver active goes to
+disk. Deletion, both backfills and the audit resolve the driver per row; no batch operation may
+resolve one driver for a whole selection.
+
 Every Media type enters through the same multipart transport. An image is normalised and cut
 into the rendition ladder; a document, audio file or video is copied untouched to
 `<revision>/original` and has no renditions. `classifyMediaType` decides the kind from the MIME
@@ -49,6 +55,7 @@ path writes under the Media's own revision.
 | Driver names the admin and the API share | `src/modules/media/lib/storage-driver.ts` |
 | MIME type -> Media type (image, video, audio, document) | `src/modules/media/lib/media-type.ts` |
 | Rendition manifest and the `?mt=` token | `src/modules/media/lib/manifest.ts` |
+| Read-only library audit | `src/modules/media/server/media-audit.ts`, `scripts/audit-media.ts` |
 | Parsing and composing addresses | `src/modules/media/lib/url.ts` |
 | Absolute form and own-host check | `src/modules/media/server/media-url.ts` |
 | Quota arithmetic (pure vs database) | `src/modules/media/lib/quota.ts`, `src/modules/media/server/media-quota.ts` |
@@ -98,6 +105,12 @@ provider's rendition URLs, which is the debt recorded below. The absolute form i
 at a boundary that cannot use a relative URL: social metadata, JSON-LD, Stripe checkout images
 and email HTML, through `absoluteMediaUrl` in `src/modules/media/server/media-url.ts`.
 
+The route's `302` hop applies only to a row that stores a relative address and records a remote
+driver. A pre-seam Media stores an absolute provider URL and the browser asks the provider
+directly, so it never requests `/media/<key>` and never enters the route. That is why the hop is
+not a path to own-domain addresses for legacy Media: making those traverse it would put a
+provider lookup, or a rewrite, in front of every existing image.
+
 The legacy `/assets/<key>` address is a build-time rewrite to the provider in
 `next.config.mjs`. It stays for URLs stored before `/media/` existed; new Media never use it.
 
@@ -110,6 +123,26 @@ archived ones included. `src/modules/media/lib/quota.ts` is the pure arithmetic;
 
 Permanent deletion is the only operation that frees quota. Archiving hides a Media from the
 library but keeps counting it.
+
+## Health check
+
+`npm run media:audit` is a read-only check of the whole library after a storage change. It reads
+every Media row, resolves the driver recorded on it and reports:
+
+- how many Media each driver wrote (`local`, `uploadthing`, `unrecorded` for pre-seam rows and
+  `unknown` for a name this build does not know);
+- the recorded drivers this Installation has no credentials for;
+- every Media that does not resolve, by id, with a reason (`unknown-driver`,
+  `driver-unconfigured`, `no-storage-key`, `object-missing`);
+- the bytes the database accounts for, the bytes local rows account for, and the bytes actually
+  on the local volume;
+- accounted, on-disk, missing and orphaned local objects.
+
+Local objects are checked file by file against the volume. Remote rows are checked through their
+driver's configuration and key grammar only; a read-only command must not fetch every provider
+object. The command exits `1` when any Media is unresolved, so it can gate a deployment; orphaned
+files are reported but do not fail it. The report carries Media ids and aggregates, never keys,
+addresses or names, so it is safe to paste into a deployment log.
 
 ## Adding a driver
 

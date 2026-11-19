@@ -135,7 +135,7 @@ Ripeti almeno le sezioni 1–8 dopo la fase C (database locale).
 
 ---
 
-## 6. Media e UploadThing
+## 6. Media
 
 - [x] Upload immagine dal media manager.
 - [x] Upload PDF.
@@ -145,12 +145,22 @@ Ripeti almeno le sezioni 1–8 dopo la fase C (database locale).
 - [x] Cancellazione singola.
 - [x] Cancellazione multipla (bulk).
 - [x] Il file cancellato non è più raggiungibile.
-- [x] L'URL `/assets/:id` funziona.
+- [x] L'URL `/assets/:id` funziona per i Media storici.
 - [x] Le immagini di copertina/hero usano il blur placeholder letto da `Media.metadata`, senza errori nei log e senza `sharp` nel render.
 - [x] Upload da un form pubblico (submission).
 - [x] Upload di un allegato email (composer).
 
-> Se il dominio di staging è diverso, verifica che UploadThing consenta l'origine. In caso di errore CORS/403, aggiungi il dominio nelle impostazioni dell'app UploadThing.
+### Driver locale (novembre 2026)
+
+- [ ] Upload di immagine, PDF, audio e video con `local` attivo.
+- [ ] Immagine e documento serviti da `/media/<key>` con `Content-Type`, cache e `Range`.
+- [ ] Replace con `local` attivo, senza dropzone UploadThing.
+- [ ] Cancellazione di una selezione mista (legacy + locale) senza oggetti residui.
+- [ ] Passaggio `local` → `uploadthing` → `local` senza URL rotti.
+- [ ] `npm run media:audit` riporta `unresolved: 0`.
+- [ ] Un file locale resta servibile dopo un redeploy (volume persistente).
+
+> Se il dominio di staging è diverso, verifica che UploadThing consenta l'origine. In caso di errore CORS/403, aggiungi il dominio nelle impostazioni dell'app UploadThing. I Media storici usano ancora UploadThing anche quando il driver attivo è `local`.
 
 ---
 
@@ -399,7 +409,7 @@ done
 | Pagine Puck | ☐ OK ☐ KO | | |
 | Auth/admin | ☐ OK ☐ KO | | |
 | Contenuti/versioning | ☐ OK ☐ KO | | |
-| Media/UploadThing | ☐ OK ☐ KO | | |
+| Media | ☐ OK ☐ KO | | |
 | Form/reCAPTCHA | ☐ OK ☐ KO | | |
 | Shop/Stripe | ☐ OK ☐ KO | | |
 | Email outbound | ☐ OK ☐ KO | | |
