@@ -1,9 +1,6 @@
 export const DEFAULT_PAGE = 1;
 
-/**
- * The library page already renders eight Media per page; the refactor keeps
- * that number rather than making the admin work in a different batch size.
- */
+/** The library renders eight Media per page; the picker has its own size. */
 export const DEFAULT_PAGE_SIZE = 8;
 export const MAX_PAGE_SIZE = 100;
 export const MIN_PAGE_SIZE = 1;

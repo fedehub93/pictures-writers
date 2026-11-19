@@ -22,7 +22,3 @@ export const mediaSearchParams = {
 };
 
 export const loadMediaSearchParams = createLoader(mediaSearchParams);
-
-export type MediaSearchParams = Awaited<
-  ReturnType<typeof loadMediaSearchParams>
->;

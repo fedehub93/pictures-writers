@@ -1,7 +1,5 @@
 import type { Prisma } from "@/generated/prisma";
 
-export type { MediaLibraryView } from "../constants";
-
 /**
  * Projection used by every media-library surface. It deliberately omits
  * `renditions`: the manifest is derived data the admin never edits.
