@@ -105,11 +105,11 @@ provider's rendition URLs, which is the debt recorded below. The absolute form i
 at a boundary that cannot use a relative URL: social metadata, JSON-LD, Stripe checkout images
 and email HTML, through `absoluteMediaUrl` in `src/modules/media/server/media-url.ts`.
 
-The route's `302` hop applies only to a row that stores a relative address and records a remote
-driver. A pre-seam Media stores an absolute provider URL and the browser asks the provider
-directly, so it never requests `/media/<key>` and never enters the route. That is why the hop is
-not a path to own-domain addresses for legacy Media: making those traverse it would put a
-provider lookup, or a rewrite, in front of every existing image.
+The route's `302` hop serves any row whose recorded driver is not local, including a pre-seam row
+with no record (it resolves as UploadThing). That row's stored address is absolute, so the browser
+asks the provider directly and does not request `/media/<key>` for it. That is why the hop is not a
+path to own-domain addresses for legacy Media: routing them through it would put a provider
+lookup, or a rewrite, in front of every existing image.
 
 The legacy `/assets/<key>` address is a build-time rewrite to the provider in
 `next.config.mjs`. It stays for URLs stored before `/media/` existed; new Media never use it.
@@ -139,10 +139,10 @@ every Media row, resolves the driver recorded on it and reports:
 - accounted, on-disk, missing and orphaned local objects.
 
 Local objects are checked file by file against the volume. Remote rows are checked through their
-driver's configuration and key grammar only; a read-only command must not fetch every provider
-object. The command exits `1` when any Media is unresolved, so it can gate a deployment; orphaned
-files are reported but do not fail it. The report carries Media ids and aggregates, never keys,
-addresses or names, so it is safe to paste into a deployment log.
+driver's configuration and the presence of a readable key only; a read-only command must not fetch
+every provider object. The command exits `1` when any Media is unresolved, so it can gate a
+deployment; orphaned files are reported but do not fail it. The report carries Media ids and
+aggregates, never keys, addresses or names, so it is safe to paste into a deployment log.
 
 ## Adding a driver
 

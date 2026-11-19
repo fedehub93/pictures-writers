@@ -206,7 +206,7 @@ Non esiste più un fallback DNS verso Vercel/Neon: la produzione è la VPS. Il r
 |---|---|---|
 | Errore applicativo | 0 | minuti (rollback) |
 | DB corrotto | fino a 24 h (backup giornaliero) | 30–90 min |
-| Volume media perso | fino a 24 h (backup del volume, se il driver `local` è attivo) | 30–90 min |
+| Volume media perso | fino a 24 h (backup del volume, oggi locale alla VPS; off-site non ancora attivo) | 30–90 min |
 | VPS persa | fino a 24 h | 1–3 h (nuova VPS + restore) |
 | Errore umano su file | 0 (git) | minuti |
 
@@ -359,7 +359,9 @@ Il container scrive come root. Se ricrei il volume, verifica che sia scrivibile 
 
 ### 4bis.5 Backup e restore del volume media
 
-Il backup del database **non** contiene i file su disco: il volume va incluso nella stessa pianificazione. In Coolify: volume `media-storage` → **Backups**, schedule giornaliero, retention come il DB. Verifica che l'ultimo run sia `Success`, che l'archivio abbia dimensione > 0 e che sia scaricabile.
+Il backup del database **non** contiene i file su disco: il volume va incluso nella stessa pianificazione. Programma un backup giornaliero del volume (in Coolify, se la versione offre il backup dei volumi, altrimenti con un job sul server che esegue il comando sotto) e verifica che l'ultimo run sia `Success`, che l'archivio abbia dimensione > 0 e che sia scaricabile.
+
+> **Stato attuale (novembre 2026):** il backup schedulato del volume è locale alla VPS; non esiste ancora una copia off-site. Finché non la aggiungi, la perdita della VPS copre anche i file locali, a meno che gli snapshot Hetzner siano attivi.
 
 Backup manuale equivalente (nome reale del volume da `docker volume ls`, app ferma o finestra di basso traffico):
 
@@ -368,7 +370,7 @@ docker run --rm -v <MEDIA_VOLUME>:/data -v "$PWD":/backup alpine \
   sh -c 'tar -czf /backup/media-storage-$(date +%F).tar.gz -C /data .'
 ```
 
-Conserva l'archivio fuori dalla VPS. Tieni insieme dump del DB e archivio del volume: uno senza l'altro non ricostruisce la libreria.
+Conserva l'archivio fuori dalla VPS: la copia off-site è il passo successivo (scarica l'archivio o caricalo su R2/B2/S3). Tieni insieme dump del DB e archivio del volume: uno senza l'altro non ricostruisce la libreria.
 
 Restore in produzione:
 
@@ -420,7 +422,7 @@ unresolved: 0
 | `objects` | Oggetti locali contabilizzati, presenti sul volume, mancanti e orfani. |
 | `unresolved` | Media che non si risolvono, con id e motivo (`unknown-driver`, `driver-unconfigured`, `no-storage-key`, `object-missing`). |
 
-I file locali sono verificati uno per uno sul volume; le righe remote solo tramite configurazione e grammatica della chiave, perché un comando read-only non deve scaricare 720 oggetti dal provider. Il comando **esce 1** se `unresolved` non è vuoto, quindi può fare da gate di deploy. Gli oggetti orfani sono riportati ma non fanno fallire il comando: ogni Media si risolve comunque. Il report contiene solo id e aggregati, mai chiavi, indirizzi o nomi.
+I file locali sono verificati uno per uno sul volume; le righe remote solo tramite configurazione e presenza di una chiave leggibile, perché un comando read-only non deve scaricare 720 oggetti dal provider. Il comando **esce 1** se `unresolved` non è vuoto, quindi può fare da gate di deploy. Gli oggetti orfani sono riportati ma non fanno fallire il comando: ogni Media si risolve comunque. Il report contiene solo id e aggregati, mai chiavi, indirizzi o nomi.
 
 Un `uploadthing` non configurato compare in `unresolved` anche se gli URL assoluti dei Media storici continuano a rispondere: significa che questa istanza non può cancellare né rielaborare quei file. Rimetti il token prima di un'operazione che tocca i byte.
 
@@ -728,7 +730,7 @@ Non aggiungere repliche finché non hai una cache condivisa e una strategia per 
 - S3: R2/B2, pochi centesimi.
 - Dominio: invariato.
 - Stripe/Resend: invariati.
-- UploadThing: nessun costo per i nuovi caricamenti quando il driver attivo è `local`; resta il piano del provider per i Media storici finché non vengono spostati (progetto separato). Il volume locale consuma disco Hetzner.
+- UploadThing: il piano del provider dipende dai Media ancora ospitati; il volume locale consuma disco Hetzner. Spostare i Media storici è un progetto separato.
 - Controlla mensilmente il pannello Hetzner per volumi/snapshot dimenticati.
 - Vercel e Neon sono già stati cancellati: la produzione e il database vivono solo su Hetzner/Coolify.
 

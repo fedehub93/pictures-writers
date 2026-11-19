@@ -6,7 +6,7 @@ Questa cartella contiene il piano completo, passo per passo, per spostare **Pict
 >
 > Il documento è stato scritto il **20 ottobre 2026** sullo stato del repository di allora. Rileggi sempre le sezioni "Verifica" prima di eseguire un comando in produzione.
 >
-> **Aggiornamento (novembre 2026):** lo storage dei media non è più solo UploadThing. Il driver `local` è selezionabile da **Admin → Media**, i nuovi upload possono stare su un volume della VPS e i Media esistenti restano sul provider senza migrazione. Il diagramma e le sezioni che seguono descrivono la migrazione di ottobre; per lo stato attuale leggi `docs/media.md` e `08-operations-runbook.md` §4bis.
+> **Aggiornamento (novembre 2026):** lo storage dei media non è più solo UploadThing. Il driver `local` è selezionabile da **Admin → Media**, i nuovi upload possono stare su un volume della VPS e i Media esistenti restano sul provider senza migrazione. Il diagramma racconta la migrazione di ottobre; per lo stato attuale leggi `docs/media.md` e `08-operations-runbook.md` §4bis.
 
 ---
 
@@ -22,7 +22,7 @@ Vercel (Next.js serverless)                Traefik / Let's Encrypt (Coolify)
    │                                          │
    ├── NeonDB (Postgres + pooler)             ├── Next.js 16 (container, `next start`)
    ├── UploadThing (file)                     ├── PostgreSQL 18 (container, rete interna)
-   ├── Stripe / Resend / SendGrid             ├── UploadThing (invariato, esterno)
+   ├── Stripe / Resend / SendGrid             ├── UploadThing (file esterni)
    ├── Google Tag Manager / reCAPTCHA         ├── Stripe / Resend / SendGrid (invariati)
    └── cron-job.org (scheduler)               ├── GTM / reCAPTCHA (invariati)
                                               └── cron-job.org oppure cron della VPS
