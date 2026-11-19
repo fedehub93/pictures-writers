@@ -4,6 +4,7 @@
  *
  *   npm run agent:seed
  *
+ * It applies pending migrations first, so a schema change does not need a manual step.
  * Idempotent and it doubles as the probe's reset: the page content is rewritten from the
  * fixture on every run, so a probe that typed into the canvas starts from a known state.
  *
@@ -17,6 +18,7 @@
  * would create accounts and pages next to real data.
  */
 
+import { execSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -101,6 +103,18 @@ function assertAgentDatabase() {
       `Refusing to seed ${url.hostname}/${database}: this script writes only to ${AGENT_DATABASE} on localhost.`,
     );
   }
+}
+
+/**
+ * Apply pending migrations before the first query. The agent database is
+ * disposable, so a schema change is safe to apply here, and `agent:seed`
+ * stays a one-command reset rather than asking for a separate migrate step.
+ */
+function runMigrations() {
+  execSync("npx prisma migrate deploy", {
+    stdio: "inherit",
+    env: { ...process.env, PRISMA_SCHEMA_DISABLE_ADVISORY_LOCK: "true" },
+  });
 }
 
 async function upsertProbeUser() {
@@ -423,6 +437,7 @@ function writePageRootId(rootId: string) {
 
 async function main() {
   assertAgentDatabase();
+  runMigrations();
 
   const user = await upsertProbeUser();
   const rootId = await upsertProbePage(user.id);

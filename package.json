@@ -7,6 +7,7 @@
     "build": "next build",
     "build-webpack": "next build --webpack",
     "build:production": "prisma generate && prisma migrate deploy && next build",
+    "build:agent": "node scripts/build-agent.mjs",
     "build:analyze": "cross-env ANALYZE=true next build",
     "bundle:analyze": "next experimental-analyze --output",
     "bundle:budget": "tsx scripts/bundle-budget.ts",
