@@ -9,6 +9,12 @@ import { MediaType } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 import { archiveMedia } from "@/modules/media/server/media-service";
 import { getMediaUsageBytes } from "@/modules/media/server/media-quota";
+import { createLocalStorageDriver } from "@/modules/media/server/storage/local";
+import {
+  StorageObjectNotFoundError,
+  type StorageDriver,
+} from "@/modules/media/server/storage/types";
+import type { MediaRendition } from "@/modules/media/types";
 import {
   resetStorageDriverSetting,
   setStorageDriverSetting,
@@ -16,6 +22,7 @@ import {
 
 import { GET as getMedia } from "@/app/media/[...path]/route";
 import { PATCH as patchSettings } from "@/app/api/settings/route";
+import { POST as postReplaceMedia } from "@/app/api/media/[mediaId]/replace/route";
 import { POST as postMedia } from "../route";
 
 vi.mock("@/lib/auth-service", () => ({
@@ -50,6 +57,23 @@ function multipartRequest(
     method: "POST",
     body: form,
   });
+}
+
+function replacementRequest(
+  bytes: Uint8Array<ArrayBuffer>,
+  { mimeType = "image/png", fileName = "replacement.png" } = {},
+): Request {
+  const form = new FormData();
+  form.append("file", new File([bytes], fileName, { type: mimeType }));
+
+  return new Request("http://localhost/api/media/media-id/replace", {
+    method: "POST",
+    body: form,
+  });
+}
+
+function replaceContext(mediaId: string) {
+  return { params: Promise.resolve({ mediaId }) };
 }
 
 function deliveryRequest(url: string, init?: RequestInit): Request {
@@ -134,6 +158,58 @@ describe("the storage choice in the media library", () => {
     expect(served.headers.get("cache-control")).toContain("immutable");
     expect(served.headers.get("etag")).toBeTruthy();
     expect(bytes.byteLength).toBe(media.size);
+  });
+
+  it("replaces a file on local disk while the environment still names UploadThing", async () => {
+    await setStorageDriverSetting("local");
+
+    const created = await postMedia(
+      multipartRequest(await createPng(), "Before replace"),
+    );
+    const media = await created.json();
+    mediaIds.push(media.id);
+
+    const before = await db.media.findUniqueOrThrow({
+      where: { id: media.id },
+    });
+    const previousRenditions = before.renditions as MediaRendition[];
+
+    const replacement = await createPng();
+    const response = await postReplaceMedia(
+      replacementRequest(replacement),
+      replaceContext(media.id),
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.previousRevisionCleanup).toBe("removed");
+    expect(body.media).toMatchObject({
+      id: media.id,
+      revision: 2,
+      storageDriver: "local",
+      key: `default/${media.id}/2/original`,
+    });
+    expect(
+      body.media.url.startsWith(`/media/${body.media.key}`),
+    ).toBe(true);
+    expect(body.media.url).not.toContain("://");
+
+    const localDriver: StorageDriver = createLocalStorageDriver({ root });
+    const stored = await localDriver.get(body.media.key);
+    expect(stored.byteLength).toBe(body.media.size);
+
+    for (const key of [before.key!, ...previousRenditions.map((r) => r.key)]) {
+      await expect(localDriver.get(key)).rejects.toBeInstanceOf(
+        StorageObjectNotFoundError,
+      );
+    }
+
+    const served = await getMedia(
+      deliveryRequest(body.media.url),
+      deliveryContext(body.media.url),
+    );
+    expect(served.status).toBe(200);
+    expect(served.headers.get("content-type")).toBe("image/png");
   });
 
   it.each([

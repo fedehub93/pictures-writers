@@ -4,7 +4,7 @@ import type {
 } from "../uploadthing";
 
 interface StoredFile {
-  customId: string;
+  customId: string | null;
   key: string;
   bytes: Uint8Array<ArrayBuffer>;
   contentType: string;
@@ -25,14 +25,6 @@ function uploadResult(file: StoredFile): UploadThingUploadResult {
   };
 }
 
-function requireCustomIdKeys(opts?: {
-  keyType?: "fileKey" | "customId";
-}): void {
-  if (opts?.keyType !== "customId") {
-    throw new Error("The storage driver must address UploadThing by customId");
-  }
-}
-
 export function createFakeUploadThingApi() {
   const files = new Map<string, StoredFile>();
 
@@ -47,18 +39,26 @@ export function createFakeUploadThingApi() {
         bytes: new Uint8Array(await file.arrayBuffer()),
         contentType: file.type,
       };
-      files.set(customId, stored);
+      files.set(`custom:${customId}`, stored);
 
       return uploadResult(stored);
     },
 
     async deleteFiles(keys, opts) {
-      requireCustomIdKeys(opts);
-
+      const keyType = opts?.keyType ?? "customId";
       let deletedCount = 0;
+
       for (const key of keys) {
-        if (files.delete(key)) deletedCount += 1;
+        for (const [id, file] of files) {
+          const matches =
+            keyType === "customId" ? file.customId === key : file.key === key;
+          if (!matches) continue;
+
+          files.delete(id);
+          deletedCount += 1;
+        }
       }
+
       return { success: true, deletedCount };
     },
 
@@ -77,11 +77,11 @@ export function createFakeUploadThingApi() {
         };
       }
 
-      requireCustomIdKeys(opts);
-
       return {
         data: keys.flatMap((customId) => {
-          const file = files.get(customId);
+          const file = [...files.values()].find(
+            (candidate) => candidate.customId === customId,
+          );
           if (!file) return [];
           return [{ key: file.key, url: `${UFS_URL}${encodeURIComponent(file.key)}` }];
         }),
@@ -111,6 +111,15 @@ export function createFakeUploadThingApi() {
 
       if (!file) return new Response(null, { status: 404 });
       return new Response(file.bytes, { headers: { "content-type": file.contentType } });
+    },
+    /** Writes a pre-seam object: a provider file key with no customId. */
+    putLegacyObject(key: string, bytes: Uint8Array<ArrayBuffer>, contentType: string) {
+      files.set(`legacy:${key}`, {
+        customId: null,
+        key,
+        bytes,
+        contentType,
+      });
     },
   };
 }

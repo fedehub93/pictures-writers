@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { MediaType } from "@/generated/prisma";
-import { formatBytes } from "@/lib/format";
 import { authAdmin } from "@/lib/auth-service";
 
-import { classifyMediaType } from "@/modules/media/lib/media-type";
 import {
   createMediaFromUpload,
   DuplicateMediaError,
@@ -17,20 +15,9 @@ import {
 } from "@/modules/media/server/media-quota";
 import { resolveActiveStorageDriver } from "@/modules/media/server/storage";
 
-/**
- * The limits the media library enforced while UploadThing owned the transport:
- * images keep 4 MB, every other Media type gets 16 MB.
- */
-export const MEDIA_MAX_IMAGE_UPLOAD_BYTES = 4 * 1024 * 1024;
-export const MEDIA_MAX_NON_IMAGE_UPLOAD_BYTES = 16 * 1024 * 1024;
+import { checkUploadFile, writeTemporaryUpload } from "./_lib/upload-transport";
 
 type MediaUploadPayload = Partial<MediaUploadSource> & { override?: boolean };
-
-function uploadLimitFor(type: MediaType): number {
-  return type === MediaType.IMAGE
-    ? MEDIA_MAX_IMAGE_UPLOAD_BYTES
-    : MEDIA_MAX_NON_IMAGE_UPLOAD_BYTES;
-}
 
 function isMultipartRequest(req: Request): boolean {
   const contentType = req.headers.get("content-type") ?? "";
@@ -85,50 +72,21 @@ async function handleMultipartUpload(req: Request): Promise<Response> {
   }
 
   const mimeType = file.type;
-  const type = classifyMediaType(mimeType);
+  const checked = checkUploadFile(file);
 
-  if (!type) {
-    return NextResponse.json(
-      {
-        code: "UNSUPPORTED_MEDIA_TYPE",
-        error:
-          "This file type is not supported. Upload an image, document, audio or video file.",
-        mimeType: mimeType || null,
-      },
-      { status: 415 },
-    );
-  }
-
-  const maxBytes = uploadLimitFor(type);
-
-  if (file.size > maxBytes) {
-    return NextResponse.json(
-      {
-        code: "FILE_TOO_LARGE",
-        error: `This file is larger than the ${formatBytes(
-          maxBytes,
-          0,
-        )} upload limit.`,
-        maxBytes,
-      },
-      { status: 413 },
-    );
-  }
+  if (!checked.ok) return checked.response;
 
   // Refuse before the bytes reach storage. The exact total, including the
   // generated renditions, is checked again before the row is created.
   await assertMediaQuotaAllows(file.size);
 
-  const bytes = new Uint8Array(await file.arrayBuffer());
-  const tempKey = `tmp/${crypto.randomUUID()}`;
-
-  await driver.put(tempKey, bytes, mimeType);
+  const tempKey = await writeTemporaryUpload(driver, file, mimeType);
 
   const source: MediaUploadSource = {
     key: tempKey,
     url: await driver.url(tempKey),
     name: form.get("name")?.toString() || file.name,
-    type,
+    type: checked.type,
     altText: form.get("altText")?.toString() || null,
     mimeType: mimeType || null,
     size: file.size,

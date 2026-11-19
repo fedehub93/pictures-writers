@@ -113,8 +113,11 @@ library but keeps counting it.
 2. Add the name to `STORAGE_DRIVERS` in `src/modules/media/lib/storage-driver.ts`.
 3. Wire it in `createStorageDriver` / `driverForStorageDriver`, and in the settings validation
    in `src/app/api/settings/route.ts`.
-4. Extend `storage-contract.test.ts`; the same suite must pass for every driver.
-5. Keep keys driver-agnostic: a driver never appears in the image loader or in a stored absolute
+4. Add it to `isStorageDriverConfigured` (`src/modules/media/server/storage/driver.ts`): cleanup
+   resolves a row's recorded driver and skips, rather than fails, when that driver is not
+   configured on this instance.
+5. Extend `storage-contract.test.ts`; the same suite must pass for every driver.
+6. Keep keys driver-agnostic: a driver never appears in the image loader or in a stored absolute
    URL.
 
 ## Known debt (2026-11)

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { StorageObjectNotFoundError } from "../types";
 import { createFakeUploadThingApi } from "./fake-uploadthing";
 import { createUploadThingStorageDriver } from "../uploadthing";
 
@@ -16,6 +17,20 @@ describe("UploadThing storage driver legacy objects", () => {
     await expect(driver.get("file-media-1/1/original")).resolves.toEqual(bytes);
     await expect(driver.url("file-media-1/1/original")).resolves.toContain(
       "/f/",
+    );
+  });
+
+  it("deletes a pre-seam object by its provider file key", async () => {
+    const fake = createFakeUploadThingApi();
+    const driver = createUploadThingStorageDriver(fake.api, fake.fetch);
+    const bytes = new Uint8Array([4, 5, 6]);
+
+    fake.putLegacyObject("legacy-provider-key", bytes, "image/png");
+
+    await driver.delete("legacy-provider-key");
+
+    await expect(driver.get("legacy-provider-key")).rejects.toThrow(
+      StorageObjectNotFoundError,
     );
   });
 });

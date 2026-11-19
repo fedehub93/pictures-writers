@@ -4,6 +4,7 @@ export {
   getInstallationSlug,
   getLocalStorageRoot,
   getStorageDriver,
+  isStorageDriverConfigured,
   isUploadThingConfigured,
   resolveStorageDriver,
   storageConfigFromEnv,

@@ -86,12 +86,22 @@ export function createUploadThingStorageDriver(
     },
 
     async delete(key) {
-      const result = await api.deleteFiles([key], { keyType: "customId" });
+      const byCustomId = await api.deleteFiles([key], { keyType: "customId" });
 
-      if (!result.success) {
+      if (!byCustomId.success) {
         throw new Error(`Unable to delete storage object "${key}"`);
       }
-      if (result.deletedCount === 0) throw new StorageObjectNotFoundError(key);
+      if (byCustomId.deletedCount > 0) return;
+
+      // Objects stored before the storage seam have no customId and are
+      // addressed by the provider's own file key. Delivery already reads them
+      // that way, so cleanup must be able to remove them too.
+      const byFileKey = await api.deleteFiles([key], { keyType: "fileKey" });
+
+      if (!byFileKey.success) {
+        throw new Error(`Unable to delete storage object "${key}"`);
+      }
+      if (byFileKey.deletedCount === 0) throw new StorageObjectNotFoundError(key);
     },
 
     async deletePrefix(prefix) {

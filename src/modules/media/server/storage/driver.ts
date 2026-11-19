@@ -75,6 +75,23 @@ export function isUploadThingConfigured(
 }
 
 /**
+ * Whether this instance can reach the driver. Local disk is always available;
+ * UploadThing needs its token. A row recorded against an unconfigured driver
+ * still resolves for delivery, but an operation cannot clean its objects up.
+ */
+export function isStorageDriverConfigured(
+  name: StorageDriverName,
+  env: StorageEnvironment = process.env,
+): boolean {
+  switch (name) {
+    case "local":
+      return true;
+    case "uploadthing":
+      return isUploadThingConfigured(env);
+  }
+}
+
+/**
  * The driver a new upload will use: the saved Installation setting first, then
  * the environment, then today's default. A stored value the application no
  * longer knows is treated as absent so an upgrade never breaks uploads; the

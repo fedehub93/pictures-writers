@@ -15,11 +15,16 @@ import {
   type MediaLibraryItem,
 } from "@/modules/media/lib/media-library";
 import { mediaUsageBytes } from "@/modules/media/lib/quota";
+import { parseStorageDriver } from "@/modules/media/lib/storage-driver";
 import { mediaPath } from "@/modules/media/lib/url";
-import type { MediaRendition } from "@/modules/media/types";
+import type { MediaCleanupStatus, MediaRendition } from "@/modules/media/types";
 
 import { checksumOf } from "./image-bytes";
-import { mediaRevisionPrefix, mediaStoragePrefix } from "./media-key";
+import {
+  mediaKeyDirectory,
+  mediaRevisionPrefix,
+  mediaStoragePrefix,
+} from "./media-key";
 import {
   MediaQuotaExceededError,
   withMediaQuotaAdmission,
@@ -28,8 +33,12 @@ import { countMediaReferencesFor } from "./media-usage";
 import { generateRenditions, normaliseImage } from "./process-image";
 import {
   getInstallationSlug,
+  driverForStorageDriver,
+  isStorageDriverConfigured,
   resolveActiveStorageDriver,
+  StorageObjectNotFoundError,
   type StorageDriverName,
+  type StorageEnvironment,
 } from "./storage";
 import type { StorageDriver } from "./storage/types";
 
@@ -74,6 +83,18 @@ export interface ReplaceMediaFileOptions {
   storageDriver: StorageDriverName;
   mediaId: string;
   source: MediaReplacementSource;
+  /** Resolves the driver recorded on the row; defaults to the process env. */
+  env?: StorageEnvironment;
+}
+
+/**
+ * What happened to the objects of the revision the row pointed at before the
+ * replacement. "skipped" means the driver recorded on the row is not
+ * configured on this instance, so its bytes were deliberately left in place.
+ */
+export interface ReplaceMediaFileResult {
+  media: MediaLibraryItem;
+  previousRevisionCleanup: MediaCleanupStatus;
 }
 
 export class DuplicateMediaError extends Error {
@@ -200,6 +221,7 @@ export interface WriteImageRevisionOptions {
   driver: StorageDriver;
   id: string;
   revision: number;
+  installationSlug?: string;
   bytes: Uint8Array<ArrayBuffer>;
   archived: boolean;
   /**
@@ -214,11 +236,12 @@ export async function writeImageRevision({
   driver,
   id,
   revision,
+  installationSlug = getInstallationSlug(),
   bytes,
   archived,
   cleanupOnFailure = true,
 }: WriteImageRevisionOptions): Promise<StoredImageRevision> {
-  const prefix = mediaRevisionPrefix(id, revision);
+  const prefix = mediaRevisionPrefix(id, revision, installationSlug);
 
   try {
     const image = await normaliseImage(bytes);
@@ -277,16 +300,18 @@ async function writePlainRevision({
   driver,
   id,
   revision,
+  installationSlug,
   bytes,
   mimeType,
 }: {
   driver: StorageDriver;
   id: string;
   revision: number;
+  installationSlug: string;
   bytes: Uint8Array<ArrayBuffer>;
   mimeType: string | null;
 }): Promise<StoredPlainRevision> {
-  const prefix = mediaRevisionPrefix(id, revision);
+  const prefix = mediaRevisionPrefix(id, revision, installationSlug);
   const key = `${prefix}original`;
 
   try {
@@ -365,6 +390,7 @@ async function createStoredPlainMedia({
       driver,
       id,
       revision,
+      installationSlug,
       bytes,
       mimeType: source.mimeType ?? null,
     });
@@ -492,6 +518,7 @@ export async function createMediaFromUpload({
       driver,
       id,
       revision,
+      installationSlug,
       bytes: originalBytes,
       archived: false,
     });
@@ -536,145 +563,221 @@ export async function createMediaFromUpload({
 }
 
 /**
+ * Removes the bytes of the revision the row no longer points at, through the
+ * driver recorded on that row rather than the active one. A provider that is
+ * not configured on this instance is skipped instead of failing the replace;
+ * every other hiccup is logged and reported, and never turns a successful
+ * replacement into a failure.
+ */
+async function cleanupPreviousRevision({
+  media,
+  installationSlug,
+  activeDriver,
+  activeDriverName,
+  env,
+}: {
+  media: {
+    id: string;
+    key: string | null;
+    revision: number;
+    storageDriver: string | null;
+  };
+  installationSlug: string;
+  activeDriver: StorageDriver;
+  activeDriverName: StorageDriverName;
+  env: StorageEnvironment;
+}): Promise<MediaCleanupStatus> {
+  // A Media with no recorded driver was written before the storage seam: it
+  // lives on UploadThing and its object is addressed by the provider's file
+  // key, not by a revision prefix.
+  const recorded = parseStorageDriver(media.storageDriver);
+  const recordedName = recorded ?? "uploadthing";
+
+  if (!isStorageDriverConfigured(recordedName, env)) return "skipped";
+
+  const previousDriver =
+    recordedName === activeDriverName
+      ? activeDriver
+      : driverForStorageDriver(recorded, env);
+
+  const prefix =
+    recorded === null
+      ? null
+      : media.key
+        ? mediaKeyDirectory(media.key)
+        : mediaRevisionPrefix(media.id, media.revision, installationSlug);
+  let failed = false;
+
+  if (prefix) {
+    try {
+      await previousDriver.deletePrefix(prefix);
+    } catch (error) {
+      failed = true;
+      console.error(
+        "[MEDIA_REPLACE] Could not remove the previous revision",
+        error,
+      );
+    }
+  }
+
+  // A legacy row records one provider object, and a flat key has no directory
+  // at all: remove that exact object instead of a prefix.
+  const exactKey = prefix === null ? media.key : null;
+  if (exactKey) {
+    try {
+      await previousDriver.delete(exactKey);
+    } catch (error) {
+      if (!(error instanceof StorageObjectNotFoundError)) {
+        failed = true;
+        console.error(
+          "[MEDIA_REPLACE] Could not remove the previous original",
+          error,
+        );
+      }
+    }
+  }
+
+  return failed ? "failed" : "removed";
+}
+
+/**
  * Replaces the bytes of an existing Media without changing its identity.
  *
- * The new revision is written under `<mediaId>/<revision>/` first, the row is
- * updated, and only then the previous revision's prefix is removed. A failure
- * before the row update deletes only the new prefix, so the old bytes remain
- * delivered exactly as before.
+ * The new revision is written through the active driver under
+ * `<mediaId>/<revision>/` first, the row is updated, and only then the previous
+ * revision is removed through the driver recorded on the row. A failure before
+ * the row update deletes only the new prefix, so the old bytes, address and
+ * manifest remain delivered exactly as before.
+ *
+ * The uploaded object is only this transport's input: it is removed on every
+ * outcome, including an unknown Media.
  */
 export async function replaceMediaFile({
   driver,
   storageDriver,
   mediaId,
   source,
-}: ReplaceMediaFileOptions): Promise<MediaLibraryItem> {
-  const existing = await db.media.findUnique({ where: { id: mediaId } });
+  env = process.env,
+}: ReplaceMediaFileOptions): Promise<ReplaceMediaFileResult> {
+  const sourceKey = source.key;
 
-  if (!existing) throw new MediaNotFoundError(mediaId);
-
-  if (!source.key) {
+  if (!sourceKey) {
     throw new MediaProcessingError(
       "The replacement file cannot be processed because its storage key is missing.",
     );
   }
 
-  let bytes: Uint8Array<ArrayBuffer>;
-  try {
-    bytes = await driver.get(source.key);
-  } catch (error) {
-    throw new MediaProcessingError(
-      "The replacement file could not be read from storage.",
-      { cause: error },
-    );
-  }
-
-  const revision = existing.revision + 1;
-  const installationSlug = getInstallationSlug();
+  const installationSlug = getInstallationSlug(env);
   const mediaPrefix = mediaStoragePrefix(mediaId, installationSlug);
-  const newPrefix = mediaRevisionPrefix(mediaId, revision, installationSlug);
-  const previousPrefix = existing.key
-    ? `${existing.key.split("/").slice(0, -1).join("/")}/`
-    : mediaRevisionPrefix(mediaId, existing.revision, installationSlug);
-  const checksum = checksumOf(bytes);
-
-  let media: MediaLibraryItem;
 
   try {
-    if (existing.type === MediaType.IMAGE) {
-      const stored = await writeImageRevision({
-        driver,
-        id: mediaId,
-        revision,
-        bytes,
-        archived: existing.archivedAt !== null,
-      });
+    const existing = await db.media.findUnique({ where: { id: mediaId } });
 
-      media = await withMediaQuotaAdmission(
-        {
-          incomingBytes: mediaUsageBytes([
-            { size: stored.size, renditions: stored.renditions },
-          ]),
-          excludeMediaId: mediaId,
-        },
-        (tx) =>
-          tx.media.update({
-            where: { id: mediaId },
-            data: {
-              ...storedImageFields(stored, revision, checksum),
-              storageDriver,
-            },
-            select: mediaLibrarySelect,
-          }),
-      );
-    } else {
-      const stored = await writePlainRevision({
-        driver,
-        id: mediaId,
-        revision,
-        bytes,
-        mimeType: source.mimeType || existing.mimeType,
-      });
+    if (!existing) throw new MediaNotFoundError(mediaId);
 
-      media = await withMediaQuotaAdmission(
-        { incomingBytes: stored.size, excludeMediaId: mediaId },
-        (tx) =>
-          tx.media.update({
-            where: { id: mediaId },
-            data: {
-              key: stored.key,
-              url: stored.url,
-              size: stored.size,
-              mimeType: stored.mimeType,
-              checksum,
-              revision,
-              storageDriver,
-              metadata: null,
-              renditions: null,
-            },
-            select: mediaLibrarySelect,
-          }),
+    let bytes: Uint8Array<ArrayBuffer>;
+    try {
+      bytes = await driver.get(sourceKey);
+    } catch (error) {
+      throw new MediaProcessingError(
+        "The replacement file could not be read from storage.",
+        { cause: error },
       );
     }
-  } catch (error) {
-    await driver.deletePrefix(newPrefix).catch(() => undefined);
 
-    // The uploaded object was only the processing input; a refused or failed
-    // replacement must not leave it behind. The Media's own prefix is spared so
-    // the revision still being served is never removed.
-    if (!source.key.startsWith(mediaPrefix)) {
-      await driver.delete(source.key).catch(() => undefined);
+    const revision = existing.revision + 1;
+    const newPrefix = mediaRevisionPrefix(mediaId, revision, installationSlug);
+    const checksum = checksumOf(bytes);
+
+    let media: MediaLibraryItem;
+
+    try {
+      if (existing.type === MediaType.IMAGE) {
+        const stored = await writeImageRevision({
+          driver,
+          id: mediaId,
+          revision,
+          installationSlug,
+          bytes,
+          archived: existing.archivedAt !== null,
+        });
+
+        media = await withMediaQuotaAdmission(
+          {
+            incomingBytes: mediaUsageBytes([
+              { size: stored.size, renditions: stored.renditions },
+            ]),
+            excludeMediaId: mediaId,
+          },
+          (tx) =>
+            tx.media.update({
+              where: { id: mediaId },
+              data: {
+                ...storedImageFields(stored, revision, checksum),
+                storageDriver,
+              },
+              select: mediaLibrarySelect,
+            }),
+        );
+      } else {
+        const stored = await writePlainRevision({
+          driver,
+          id: mediaId,
+          revision,
+          installationSlug,
+          bytes,
+          mimeType: source.mimeType || existing.mimeType,
+        });
+
+        media = await withMediaQuotaAdmission(
+          { incomingBytes: stored.size, excludeMediaId: mediaId },
+          (tx) =>
+            tx.media.update({
+              where: { id: mediaId },
+              data: {
+                key: stored.key,
+                url: stored.url,
+                size: stored.size,
+                mimeType: stored.mimeType,
+                checksum,
+                revision,
+                storageDriver,
+                metadata: null,
+                renditions: null,
+              },
+              select: mediaLibrarySelect,
+            }),
+        );
+      }
+    } catch (error) {
+      await driver.deletePrefix(newPrefix).catch(() => undefined);
+
+      if (isRethrowableMediaError(error)) throw error;
+
+      throw new MediaProcessingError(
+        "The file could not be replaced. The previous version is still in place.",
+        { cause: error },
+      );
     }
 
-    if (isRethrowableMediaError(error)) throw error;
+    // The row already points at the new revision, so a cleanup hiccup must not
+    // turn a successful replacement into a reported failure.
+    const previousRevisionCleanup = await cleanupPreviousRevision({
+      media: existing,
+      installationSlug,
+      activeDriver: driver,
+      activeDriverName: storageDriver,
+      env,
+    });
 
-    throw new MediaProcessingError(
-      "The file could not be replaced. The previous version is still in place.",
-      { cause: error },
-    );
+    return { media, previousRevisionCleanup };
+  } finally {
+    // The uploaded object is the transport's input, never a Media object. The
+    // Media's own prefix is spared so the revision being served is untouched.
+    if (!sourceKey.startsWith(mediaPrefix)) {
+      await driver.delete(sourceKey).catch(() => undefined);
+    }
   }
-
-  // The row already points at the new revision, so a cleanup hiccup must not
-  // turn a successful replacement into a reported failure. The objects are no
-  // longer reachable from any Media URL.
-  await driver.deletePrefix(previousPrefix).catch((error) => {
-    console.error("[MEDIA_REPLACE] Could not remove the previous revision", error);
-  });
-
-  // Media created before the storage seam keep their original at the legacy
-  // upload key rather than under the prefix. Best-effort removal stops the old
-  // bytes from being served, but legacy UploadThing file keys are not
-  // addressable by customId and simply stay behind.
-  if (existing.key && !existing.key.startsWith(mediaPrefix)) {
-    await driver.delete(existing.key).catch(() => undefined);
-  }
-
-  // The uploaded object was only the processing input.
-  if (!source.key.startsWith(mediaPrefix)) {
-    await driver.delete(source.key).catch(() => undefined);
-  }
-
-  return media;
 }
 
 /**

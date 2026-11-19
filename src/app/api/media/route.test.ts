@@ -26,8 +26,9 @@ import {
 import {
   MEDIA_MAX_IMAGE_UPLOAD_BYTES,
   MEDIA_MAX_NON_IMAGE_UPLOAD_BYTES,
-  POST,
-} from "./route";
+} from "@/modules/media/lib/upload-limits";
+
+import { POST } from "./route";
 
 const MB = BYTES_PER_MEGABYTE;
 
@@ -37,14 +38,14 @@ vi.mock("@/lib/auth-service", () => ({
   authAdmin: async () => ({ id: "admin-user" }),
 }));
 
-vi.mock("@/modules/media/server/storage", () => ({
+vi.mock("@/modules/media/server/storage", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/modules/media/server/storage")>()),
   getStorageDriver: () => storage.driver,
   resolveStorageDriver: () => ({ driver: storage.driver, name: "local" }),
   resolveActiveStorageDriver: async () => ({
     driver: storage.driver,
     name: "local",
   }),
-  getInstallationSlug: () => "default",
 }));
 
 async function createPng(): Promise<Uint8Array<ArrayBuffer>> {

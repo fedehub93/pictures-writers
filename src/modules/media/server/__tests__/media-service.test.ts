@@ -448,6 +448,9 @@ describe("replaceMediaFile", () => {
       storageDriver: "local",
       mediaId,
       source: { key, mimeType: "image/png" },
+      // The suites never resolve a provider: an unconfigured UploadThing is
+      // enough to prove cleanup follows the row.
+      env: {},
     });
   }
 
@@ -462,7 +465,10 @@ describe("replaceMediaFile", () => {
       g: 40,
       b: 60,
     });
-    const media = await replace(first.id, await putSource(replacementBytes));
+    const { media, previousRevisionCleanup } = await replace(
+      first.id,
+      await putSource(replacementBytes),
+    );
 
     expect(media.id).toBe(first.id);
     expect(media.name).toBe("Uploaded image");
@@ -470,6 +476,7 @@ describe("replaceMediaFile", () => {
     expect(media.revision).toBe(2);
     expect(media.key).toBe(`default/${first.id}/2/original`);
     expect(media.size).toBe((await driver.get(media.key!)).byteLength);
+    expect(previousRevisionCleanup).toBe("removed");
 
     const row = await db.media.findUniqueOrThrow({ where: { id: first.id } });
     const manifest = row.renditions as MediaRendition[];
@@ -494,7 +501,7 @@ describe("replaceMediaFile", () => {
 
   it("keeps delivering the new revision through the same Media", async () => {
     const first = await createImageMedia(await putSource(await createPng()));
-    const media = await replace(
+    const { media } = await replace(
       first.id,
       await putSource(await createPng(1200, 800, { r: 210, g: 40, b: 60 })),
     );
@@ -526,7 +533,7 @@ describe("replaceMediaFile", () => {
       );
       const after = await db.seo.findUniqueOrThrow({ where: { id: seo.id } });
 
-      expect(replaced.id).toBe(first.id);
+      expect(replaced.media.id).toBe(first.id);
       expect(after.ogTwitterImageId).toBe(first.id);
     } finally {
       await db.seo.delete({ where: { id: seo.id } });
@@ -595,11 +602,14 @@ describe("replaceMediaFile", () => {
         size: 4,
         altText: null,
       },
+      // The application transport records the driver that wrote the row, so
+      // the replacement cleans up through local disk.
+      storeUploadedObject: true,
     });
     mediaIds.push(media.id);
 
     const newBytes = new Uint8Array([9, 8, 7, 6, 5, 4, 3]);
-    const replaced = await replaceMediaFile({
+    const { media: replaced } = await replaceMediaFile({
       driver,
       storageDriver: "local",
       mediaId: media.id,
@@ -607,6 +617,7 @@ describe("replaceMediaFile", () => {
         key: await putSource(newBytes, driver, "application/pdf"),
         mimeType: "application/pdf",
       },
+      env: {},
     });
 
     expect(replaced).toMatchObject({
@@ -625,5 +636,46 @@ describe("replaceMediaFile", () => {
     await expect(driver.get(media.key!)).rejects.toBeInstanceOf(
       StorageObjectNotFoundError,
     );
+  });
+
+  it("reports the cleanup as skipped when the previous provider is not configured", async () => {
+    const mediaId = randomUUID();
+    const legacy = await db.media.create({
+      data: {
+        id: mediaId,
+        name: "Legacy provider document",
+        key: "legacy-flat-key",
+        url: "https://old-provider.example/f/legacy-flat-key",
+        size: 12,
+        type: MediaType.FILE,
+        mimeType: "application/pdf",
+        revision: 1,
+        storageDriver: "uploadthing",
+      },
+    });
+    mediaIds.push(legacy.id);
+
+    const bytes = new Uint8Array([5, 4, 3, 2, 1]);
+    const { media, previousRevisionCleanup } = await replaceMediaFile({
+      driver,
+      storageDriver: "local",
+      mediaId,
+      source: {
+        key: await putSource(bytes, driver, "application/pdf"),
+        mimeType: "application/pdf",
+      },
+      // No UploadThing token: the row's driver cannot be reached, but that
+      // must not block the replace.
+      env: {},
+    });
+
+    expect(previousRevisionCleanup).toBe("skipped");
+    expect(media).toMatchObject({
+      id: mediaId,
+      revision: 2,
+      storageDriver: "local",
+      key: `default/${mediaId}/2/original`,
+    });
+    expect(new Uint8Array(await driver.get(media.key!))).toEqual(bytes);
   });
 });

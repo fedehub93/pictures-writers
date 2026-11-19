@@ -30,6 +30,16 @@ export function mediaStoragePrefix(
 }
 
 /**
+ * The directory a key lives in, or `null` for a flat provider key. Removing a
+ * revision is removing one such directory, so the segment logic stays here
+ * with the grammar it describes.
+ */
+export function mediaKeyDirectory(key: string): string | null {
+  const separator = key.lastIndexOf("/");
+  return separator > 0 ? key.slice(0, separator + 1) : null;
+}
+
+/**
  * Whether a storage key is the original or a rendition of one revision.
  */
 export function isMediaRevisionKey(
