@@ -327,6 +327,50 @@ enum MediaType {
   VIDEO
 }
 
+/// The role a stored file has for the Installation. One row of StoredFile
+/// holds the location of the bytes; the role row (Media, Attachment, Avatar)
+/// holds what the product does with them.
+enum StoredFileKind {
+  MEDIA
+  ATTACHMENT
+  AVATAR
+}
+
+/// Who may create a stored file. Public-origin files are subject to the
+/// reserve so they can never block an internal upload.
+enum StoredFileOrigin {
+  INTERNAL
+  PUBLIC
+}
+
+/// Where the bytes of one file are. The key is unique and the driver is
+/// recorded per file, so choosing a driver never moves a byte and a move
+/// changes this row only. `remoteUrl` is null for a local file.
+model StoredFile {
+  id String @id @default(uuid())
+
+  key         String @unique
+  driver      String
+  remoteUrl   String? @db.Text
+  contentType String?
+  size        Int?
+  checksum    String?
+  kind        StoredFileKind   @default(MEDIA)
+  origin      StoredFileOrigin @default(INTERNAL)
+
+  /// The Media this file belongs to. The role keeps the relation so the
+  /// backfill can create a record without rewriting the Media's own row.
+  mediaId String? @unique
+  media   Media?  @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([driver])
+  @@index([kind])
+  @@index([checksum])
+}
+
 model Media {
   id String @id @default(uuid())
 
@@ -354,6 +398,9 @@ model Media {
   products     ProductGallery[]
   user         User[]
   pageVersions PageVersion[]
+
+  /// The location of this Media's bytes, one-to-one.
+  storedFile StoredFile?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

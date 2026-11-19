@@ -16,7 +16,7 @@ import {
 } from "@/modules/media/lib/media-library";
 import { mediaUsageBytes } from "@/modules/media/lib/quota";
 import { parseStorageDriver } from "@/modules/media/lib/storage-driver";
-import { mediaPath } from "@/modules/media/lib/url";
+import { mediaPath, parseSrc } from "@/modules/media/lib/url";
 import type {
   MediaCleanupStatus,
   MediaDeletionCleanup,
@@ -46,6 +46,10 @@ import {
   type StorageEnvironment,
 } from "./storage";
 import type { StorageDriver } from "./storage/types";
+import {
+  createStoredFileForMedia,
+  remoteUrlForUpload,
+} from "./stored-file";
 
 export interface MediaUploadSource {
   key: string | null;
@@ -188,21 +192,39 @@ async function createPlainMedia(
     );
   }
 
+  const size = source.size;
+
   return withMediaQuotaAdmission(
-    { incomingBytes: source.size },
-    (tx) =>
-      tx.media.create({
+    { incomingBytes: size },
+    async (tx) => {
+      const media = await tx.media.create({
         data: {
           name: source.name,
           key: source.key,
           url: source.url,
-          size: source.size,
+          size,
           type: source.type,
           altText: source.altText || null,
           mimeType: source.mimeType || null,
         },
         select: mediaLibrarySelect,
-      }),
+      });
+
+      // The legacy provider path records the object exactly as it arrived:
+      // there is no recorded driver in that era, which resolves as UploadThing.
+      if (source.key) {
+        await createStoredFileForMedia(tx, media.id, {
+          key: source.key,
+          driver: "uploadthing",
+          remoteUrl: parseSrc(source.url).absolute ? source.url : null,
+          contentType: source.mimeType || null,
+          size,
+          checksum: null,
+        });
+      }
+
+      return media;
+    },
   );
 }
 
@@ -400,10 +422,16 @@ async function createStoredPlainMedia({
       mimeType: source.mimeType ?? null,
     });
 
+    const remoteUrl = await remoteUrlForUpload(
+      driver,
+      storageDriver,
+      stored.key,
+    );
+
     const media = await withMediaQuotaAdmission(
       { incomingBytes: stored.size },
-      (tx) =>
-        tx.media.create({
+      async (tx) => {
+        const created = await tx.media.create({
           data: {
             id,
             name: source.name,
@@ -418,7 +446,19 @@ async function createStoredPlainMedia({
             storageDriver,
           },
           select: mediaLibrarySelect,
-        }),
+        });
+
+        await createStoredFileForMedia(tx, created.id, {
+          key: stored.key,
+          driver: storageDriver,
+          remoteUrl,
+          contentType: stored.mimeType,
+          size: stored.size,
+          checksum,
+        });
+
+        return created;
+      },
     );
 
     await removeUploadedObject();
@@ -528,14 +568,20 @@ export async function createMediaFromUpload({
       archived: false,
     });
 
+    const remoteUrl = await remoteUrlForUpload(
+      driver,
+      driverThatWrote,
+      stored.key,
+    );
+
     const media = await withMediaQuotaAdmission(
       {
         incomingBytes: mediaUsageBytes([
           { size: stored.size, renditions: stored.renditions },
         ]),
       },
-      (tx) =>
-        tx.media.create({
+      async (tx) => {
+        const created = await tx.media.create({
           data: {
             ...storedImageFields(stored, revision, checksum),
             id,
@@ -544,7 +590,19 @@ export async function createMediaFromUpload({
             storageDriver: driverThatWrote,
           },
           select: mediaLibrarySelect,
-        }),
+        });
+
+        await createStoredFileForMedia(tx, created.id, {
+          key: stored.key,
+          driver: driverThatWrote,
+          remoteUrl,
+          contentType: stored.mimeType,
+          size: stored.size,
+          checksum,
+        });
+
+        return created;
+      },
     );
 
     // The uploaded object was only the processing input. Best-effort removal

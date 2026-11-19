@@ -184,6 +184,20 @@ describe("choosing UploadThing for new uploads", () => {
     expect(media.key).toBe(`default/${media.id}/1/original`);
     expect(media.url).toMatch(new RegExp(`^/media/${media.key}(\\?|$)`));
 
+    const file = await db.storedFile.findUniqueOrThrow({
+      where: { mediaId: media.id },
+    });
+    expect(file).toMatchObject({
+      key: media.key,
+      driver: "uploadthing",
+      contentType: "image/png",
+      size: media.size,
+      checksum: media.checksum,
+      kind: "MEDIA",
+      origin: "INTERNAL",
+    });
+    expect(file.remoteUrl).toMatch(/^https:\/\/fake-app\.ufs\.sh\/f\//);
+
     const served = await getMedia(
       deliveryRequest(media.url),
       deliveryContext(media.url),

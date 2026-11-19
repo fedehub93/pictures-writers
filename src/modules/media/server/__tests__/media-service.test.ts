@@ -375,10 +375,11 @@ describe("createMediaFromUpload", () => {
   it.each([MediaType.FILE, MediaType.AUDIO, MediaType.VIDEO])(
     "keeps legacy %s uploads exactly as before",
     async (type) => {
+      const key = `uploads/${randomUUID()}`;
       const media = await createMediaFromUpload({
         driver,
         source: {
-          key: `uploads/${randomUUID()}`,
+          key,
           url: "https://ghhc7ejbae.ufs.sh/f/legacy-attachment",
           name: "Attachment",
           type,
@@ -400,6 +401,20 @@ describe("createMediaFromUpload", () => {
 
       const row = await db.media.findUniqueOrThrow({ where: { id: media.id } });
       expect(row.renditions).toBeNull();
+
+      // The legacy path stores the record with the absolute address it
+      // arrived with and the driver an unrecorded row resolves to.
+      const file = await db.storedFile.findUniqueOrThrow({
+        where: { mediaId: media.id },
+      });
+      expect(file).toMatchObject({
+        key,
+        driver: "uploadthing",
+        remoteUrl: "https://ghhc7ejbae.ufs.sh/f/legacy-attachment",
+        contentType: "application/octet-stream",
+        size: 4321,
+        checksum: null,
+      });
     },
   );
 });

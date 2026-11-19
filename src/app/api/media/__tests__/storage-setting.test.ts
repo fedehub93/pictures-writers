@@ -147,6 +147,20 @@ describe("the storage choice in the media library", () => {
     expect(media.url).toMatch(new RegExp(`^/media/${media.key}(\\?|$)`));
     expect(media.url).not.toContain("://");
 
+    const file = await db.storedFile.findUniqueOrThrow({
+      where: { mediaId: media.id },
+    });
+    expect(file).toMatchObject({
+      key: media.key,
+      driver: "local",
+      remoteUrl: null,
+      contentType: "image/png",
+      size: media.size,
+      checksum: media.checksum,
+      kind: "MEDIA",
+      origin: "INTERNAL",
+    });
+
     const served = await getMedia(
       deliveryRequest(media.url),
       deliveryContext(media.url),
@@ -239,6 +253,20 @@ describe("the storage choice in the media library", () => {
       });
       expect(media.url).toBe(`/media/${media.key}`);
       expect(media.url).not.toContain("://");
+
+      const file = await db.storedFile.findUniqueOrThrow({
+        where: { mediaId: media.id },
+      });
+      expect(file).toMatchObject({
+        key: media.key,
+        driver: "local",
+        remoteUrl: null,
+        contentType: mimeType,
+        size: bytes.byteLength,
+        checksum: media.checksum,
+        kind: "MEDIA",
+        origin: "INTERNAL",
+      });
 
       const served = await getMedia(
         deliveryRequest(media.url),

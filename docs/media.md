@@ -15,12 +15,23 @@ upload    browser -> POST /api/media (multipart)
           -> createMediaFromUpload
           -> active storage driver
           -> Media row: key, url, storageDriver
+          -> StoredFile row: key, driver, remoteUrl, content type, size, checksum
 
 deliver   GET /media/<key>
           -> findDeliveryMedia
           -> driverForStorageDriver(row.storageDriver)
           -> local: stream from disk | remote: 302 to the CDN
 ```
+
+Every Media also has exactly one `StoredFile`, the record that answers "where
+are the bytes": its key, the driver that owns it, the provider address when the
+driver is remote, content type, size, checksum and kind. New uploads create it
+in the same transaction as the Media, so a failed upload leaves neither; the
+one-time `npm run media:backfill-files` creates it for Media that predate it,
+from what the library already knows, and reports any Media whose key it cannot
+read. The command never rewrites a Media row. Delivery still reads the Media's
+own columns, so the two records stay in step until delivery and the backfills
+move onto the location record.
 
 The active driver decides where **new** uploads go. Delivery never asks the active driver: it
 asks the row, so switching storage affects only new files. The metadata and rendition backfills
@@ -46,6 +57,8 @@ path writes under the Media's own revision.
 | Concern | File |
 | --- | --- |
 | Upload, replace, archive, delete, revisions | `src/modules/media/server/media-service.ts` |
+| Stored-file location of one upload | `src/modules/media/server/stored-file.ts` |
+| One-time location backfill for existing Media | `src/modules/media/server/backfill-stored-files.ts`, `scripts/backfill-stored-files.ts` |
 | Metadata and rendition backfills | `src/modules/media/server/backfill-media-metadata.ts`, `src/modules/media/server/backfill-media-renditions.ts` |
 | Key grammar: compose, parse, revision prefix | `src/modules/media/server/media-key.ts` |
 | Key -> owning Media (originals and renditions) | `src/modules/media/server/media-delivery.ts` |
