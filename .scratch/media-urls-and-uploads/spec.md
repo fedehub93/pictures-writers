@@ -1,6 +1,11 @@
 # Media addresses and driver-agnostic uploads
 
-**Status:** ready-for-agent
+**Status:** done
+
+> **Chiuso (novembre 2026).** Le modifiche previste da questa spec sono in `HEAD`; la
+> documentazione operativa che citava UploadThing come invariato è stata aggiornata da
+> `.scratch/local-storage-completion/spec.md`, che ha completato anche upload, replace,
+> cancellazione e backfill per riga, volume persistente e audit.
 
 ## Problem Statement
 
@@ -194,3 +199,11 @@ A good test asserts observable behaviour at the highest seam that can express it
 - **ADR-0026** already records that the storage key is the truth and the URL a projection, so no new ADR is proposed. The one thing worth adding to it is why the delivery hop is an application route, and why the driver is recorded per Media rather than per Installation.
 - **This spec narrows the environment-variable exception** to ADR-0023 rather than ending it: the *choice* of driver leaves the environment, the *token* stays until the Integration exists.
 - **The self-hosting docs** currently state that UploadThing stays external and that local storage would be a separate project. Once this ships they need a paragraph each: the `/media/` address, the local driver, the persistent volume, and the volume backup that must run alongside the database backup.
+
+## Comments
+
+**2026-11-19 - chiusa con la spec `local-storage-completion`.**
+
+Lo storage locale è ora un driver di prima classe: upload multipart per ogni tipo di Media, replace attraverso il driver attivo, cancellazione, backfill e audit per riga, volume persistente con backup e restore documentati. La documentazione operativa è aggiornata in `0e17793f`; questa spec resta chiusa su carta.
+
+Verifica della chiusura: `npm run check:doc-citations` 96 doc / 0 citazioni rotte, lint 0 errori, typecheck pulito, `npm run test:run` 283 file / 2559 test passati.
