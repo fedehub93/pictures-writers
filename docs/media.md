@@ -68,7 +68,7 @@ path writes under the Media's own revision.
 | One-time location backfill for existing Media | `src/modules/media/server/backfill-stored-files.ts`, `scripts/backfill-stored-files.ts` |
 | Metadata and rendition backfills | `src/modules/media/server/backfill-media-metadata.ts`, `src/modules/media/server/backfill-media-renditions.ts` |
 | Key grammar: compose, parse, revision prefix | `src/modules/media/server/media-key.ts` |
-| Key -> owning Media (originals and renditions) | `src/modules/media/server/media-delivery.ts` |
+| Stored file -> owning Media (originals and renditions) | `src/modules/media/server/media-delivery.ts` |
 | Driver interface and factory | `src/modules/media/server/storage/driver.ts` |
 | Local and UploadThing drivers | `src/modules/media/server/storage/local.ts`, `src/modules/media/server/storage/uploadthing.ts` |
 | Active driver: setting -> env -> default | `src/modules/media/server/storage/active.ts` |
@@ -90,25 +90,34 @@ New keys are `<installationSlug>/<mediaId>/<revision>/<file>`, where `<file>` is
 `<width>.<format>`. The whole revision shares the prefix, so deleting a Media is one
 `deletePrefix`, and replacing a file bumps the revision so no cache can serve the old bytes.
 
-`src/modules/media/server/media-key.ts` is the only composer and parser. Do not re-implement
-segment counting in the route or the service; `parseMediaKey` returns `null` for a legacy flat
-key, which is how the delivery route tells the two shapes apart.
+`src/modules/media/server/media-key.ts` is the only composer and parser of the key's path
+segments. Do not re-implement segment counting in the route or the service; `parseMediaKey`
+returns `null` for a legacy flat key, which is how the delivery route tells the two shapes apart.
+The delivery token in `src/modules/media/lib/manifest.ts` parses only a rendition filename
+(`<width>.<format>`) to find the address it already carries; it never parses a storage key.
 
 Legacy keys are flat (`<provider-key>` or `<mediaId>/<revision>/<file>`) and are never renamed.
 A Media with no recorded `storageDriver` is remote, because that is where its bytes are.
 
 ## A rendition has no row
 
-An original is stored on `Media.key`. A rendition shares the revision prefix but has no Media
-row of its own. The delivery route therefore:
+An original is recorded on the StoredFile's key. A rendition shares the revision prefix but has
+no record of its own. The delivery route therefore:
 
-1. looks up the exact `Media.key`;
-2. if that misses, parses the key, finds the owner by `id + revision`, and requires the requested
-   key to start with the owner's revision prefix.
+1. looks up the StoredFile by key;
+2. if that misses, looks up the Media by key, for a row whose record was not created before the
+   one-time backfill;
+3. if that misses, parses the key, finds the owner by `id + revision`, and requires the requested
+   key to start with the owner's stored-file revision prefix.
 
 That is what makes `/media/<slug>/<id>/<revision>/720.avif` work. A key that parses but does not
 belong to the resolved row is a 404, not a stream. Do not "simplify" the route to an exact-key
 lookup: local renditions stop resolving.
+
+For a remote Media, the rendition's provider address is read from the `?mt=` manifest its Media's
+address already carries, so the redirect never asks the provider. A manifest with no address for
+the requested rendition answers 404 rather than falling back to a provider read; so does an address
+that points back at `/media/`, which a manifest written while the file was local still carries.
 
 ## Addresses
 
@@ -128,8 +137,8 @@ and email HTML, through `absoluteMediaUrl` in `src/modules/media/server/media-ur
 The route's `302` hop serves any file whose recorded driver is not local, including a pre-seam row
 with no record (it resolves as UploadThing). That row's stored address is absolute, so the browser
 asks the provider directly and does not request `/media/<key>` for it. That is why the hop is not a
-path to own-domain addresses for legacy Media: routing them through it would put a provider
-lookup, or a rewrite, in front of every existing image.
+path to own-domain addresses for legacy Media: their stored addresses are absolute, so serving
+them on this Installation's domain requires the address sweep, not the hop.
 
 The hop carries `Cache-Control: public, max-age=300`, never `immutable`: the redirect points at
 bytes a later move can take away, so caching it as if it were the file would leave a visitor
