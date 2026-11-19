@@ -7,9 +7,10 @@ import {
 } from "@/modules/media/server/media-audit";
 
 /**
- * Read-only: prints the library's driver mix, the Media that do not resolve
- * through their recorded driver, the local volume against the accounted bytes
- * and the unconfigured drivers. Exits non-zero when anything is unresolved.
+ * Read-only: prints the library's driver mix, the drivers this instance can
+ * reach, the stored files that do not resolve through their recorded driver,
+ * the local volume against the accounted bytes. Exits non-zero when anything
+ * is unresolved.
  */
 async function main() {
   const report = await auditMediaLibrary();

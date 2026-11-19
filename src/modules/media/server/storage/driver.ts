@@ -129,7 +129,7 @@ export function getStorageDriver(env?: StorageEnvironment): StorageDriver {
 }
 
 export type RecordedStorageDriverResolution =
-  | { resolved: true; driver: StorageDriver }
+  | { resolved: true; driver: StorageDriver; name: StorageDriverName }
   | {
       resolved: false;
       /** Why the row's objects cannot be reached from this instance. */
@@ -224,15 +224,17 @@ export function resolveMediaStorageDriver(
 
   const { name } = resolution;
 
-  if (name === active.name) return { resolved: true, driver: active.driver };
+  if (name === active.name) {
+    return { resolved: true, driver: active.driver, name };
+  }
 
   const cached = cache?.get(name);
-  if (cached) return { resolved: true, driver: cached };
+  if (cached) return { resolved: true, driver: cached, name };
 
   const driver = driverForStorageDriver(name, env);
   cache?.set(name, driver);
 
-  return { resolved: true, driver };
+  return { resolved: true, driver, name };
 }
 
 export function driverForStorageDriver(

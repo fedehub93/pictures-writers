@@ -1,10 +1,9 @@
 import "server-only";
 
+import type { Prisma } from "@/generated/prisma";
 import { MediaType } from "@/generated/prisma";
 
 import { db } from "@/shared/lib/db";
-
-import { mediaSourceKey } from "@/modules/media/lib/url";
 
 import { describeBackfillFailure } from "./backfill-failure";
 import { forEachWithConcurrency } from "./bounded-concurrency";
@@ -19,6 +18,12 @@ import {
   type StorageDriverName,
   type StorageEnvironment,
 } from "./storage";
+import {
+  mediaStorageLocation,
+  remoteUrlForUpload,
+  storedFileLocationSelect,
+  updateStoredFileForMedia,
+} from "./stored-file";
 
 export interface MediaRenditionBackfillPending {
   mediaId: string;
@@ -60,16 +65,24 @@ export interface MediaRenditionBackfillOptions {
   onProgress?: (line: string) => void;
 }
 
-type RenditionBackfillMedia = {
-  id: string;
-  name: string;
-  key: string | null;
-  url: string;
-  storageDriver: string | null;
-  revision: number;
-  archivedAt: Date | null;
-  renditions: unknown;
-};
+const renditionBackfillMediaSelect = {
+  id: true,
+  name: true,
+  key: true,
+  url: true,
+  storageDriver: true,
+  mimeType: true,
+  size: true,
+  checksum: true,
+  revision: true,
+  archivedAt: true,
+  renditions: true,
+  storedFile: { select: storedFileLocationSelect },
+} satisfies Prisma.MediaSelect;
+
+type RenditionBackfillMedia = Prisma.MediaGetPayload<{
+  select: typeof renditionBackfillMediaSelect;
+}>;
 
 /**
  * Image processing is CPU-bound and shares a 4-vCPU host with Postgres and the
@@ -93,10 +106,15 @@ function hasRenditionManifest(value: unknown): boolean {
  * TipTap, ad and email content still point at it, and the loader keeps serving
  * it until that content is migrated.
  *
- * Every row is read and written through the driver recorded on it, so a
- * library that mixes legacy provider Media and Media written by another driver
- * is processed in one run. A driver this instance cannot reach is reported
- * with the row and the run continues.
+ * Every row is read and written through the driver recorded on its stored-file
+ * record; the Media's own storage columns answer only until that record
+ * exists, so a library that mixes legacy provider Media and Media written by
+ * another driver is processed in one run. A driver this instance cannot reach
+ * is reported with the row and the run continues.
+ *
+ * The record follows the delivered original: when a legacy flat key moves into
+ * its revision prefix, the record's key and provider address move with it, so
+ * no later quota, audit or move reads the abandoned object.
  */
 export async function backfillMediaRenditions({
   active,
@@ -111,16 +129,7 @@ export async function backfillMediaRenditions({
       type: MediaType.IMAGE,
       ...(mediaIds ? { id: { in: mediaIds } } : {}),
     },
-    select: {
-      id: true,
-      name: true,
-      key: true,
-      url: true,
-      storageDriver: true,
-      revision: true,
-      archivedAt: true,
-      renditions: true,
-    },
+    select: renditionBackfillMediaSelect,
     orderBy: { createdAt: "asc" },
   });
 
@@ -143,7 +152,8 @@ export async function backfillMediaRenditions({
     for (const item of pending) {
       // Resolving a driver writes nothing and reads no object, but it does
       // tell an operator before the run which rows this instance cannot serve.
-      const resolution = resolveMediaStorageDriver(item.storageDriver, {
+      const location = mediaStorageLocation(item);
+      const resolution = resolveMediaStorageDriver(location.driver, {
         active,
         env,
         cache: drivers,
@@ -170,7 +180,8 @@ export async function backfillMediaRenditions({
     pending,
     concurrency,
     async (item: RenditionBackfillMedia) => {
-      const sourceKey = mediaSourceKey(item);
+      const location = mediaStorageLocation(item);
+      const sourceKey = location.key;
 
       if (!sourceKey) {
         const reason = "no readable storage key";
@@ -180,7 +191,7 @@ export async function backfillMediaRenditions({
       }
 
       try {
-        const resolution = resolveMediaStorageDriver(item.storageDriver, {
+        const resolution = resolveMediaStorageDriver(location.driver, {
           active,
           env,
           cache: drivers,
@@ -213,15 +224,35 @@ export async function backfillMediaRenditions({
           archived: item.archivedAt !== null,
           cleanupOnFailure: !sourceIsPartOfRevision,
         });
+        const checksum = checksumOf(bytes);
 
         try {
-          await db.media.update({
-            where: { id: item.id },
-            data: storedImageFields(
-              stored,
-              item.revision,
-              checksumOf(bytes),
-            ),
+          // Resolving the provider address can fail if the object is not yet
+          // visible; keep it inside the cleanup so a failure leaves no orphan.
+          const remoteUrl = await remoteUrlForUpload(
+            driver,
+            resolution.name,
+            stored.key,
+          );
+
+          await db.$transaction(async (tx) => {
+            await tx.media.update({
+              where: { id: item.id },
+              data: storedImageFields(stored, item.revision, checksum),
+            });
+
+            // The delivered original has moved into its revision prefix, so
+            // the record that answers "where are the bytes" must move with it.
+            if (item.storedFile) {
+              await updateStoredFileForMedia(tx, item.id, {
+                key: stored.key,
+                driver: resolution.name,
+                remoteUrl,
+                contentType: stored.mimeType,
+                size: stored.size,
+                checksum,
+              });
+            }
           });
         } catch (error) {
           // The row never learned about the new objects. Remove them when the

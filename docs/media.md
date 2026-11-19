@@ -42,9 +42,13 @@ code before the one-time backfill cannot darken an existing picture.
 
 The active driver decides where **new** uploads go. Delivery never asks the active driver: it
 asks the row, so switching storage affects only new files. The metadata and rendition backfills
-resolve the recorded driver per row for reads and writes, so a library that mixes legacy provider
-Media and local Media is processed in one run; a row whose driver is not configured here is
-reported and the run continues.
+read the stored-file record — its key, its driver, its size, content type and checksum — and fall
+back to the Media's storage columns only for a row whose record does not exist yet. They resolve
+the recorded driver per row for reads and writes, so a library that mixes legacy provider Media
+and local Media is processed in one run; a row whose driver is not configured here is reported
+and the run continues. Both backfills keep the record true: the metadata run writes back the size,
+content type and checksum it discovers, and the rendition run moves the record's key and provider
+address when a legacy flat key becomes a namespaced one.
 
 A mixed library is the expected state on this Installation, not an edge case: the Media that
 predate the seam stay on UploadThing, and a Media uploaded with the local driver active goes to
@@ -97,7 +101,8 @@ The delivery token in `src/modules/media/lib/manifest.ts` parses only a renditio
 (`<width>.<format>`) to find the address it already carries; it never parses a storage key.
 
 Legacy keys are flat (`<provider-key>` or `<mediaId>/<revision>/<file>`) and are never renamed.
-A Media with no recorded `storageDriver` is remote, because that is where its bytes are.
+Before a stored-file record exists, a Media with no recorded `storageDriver` is remote, because
+that is where its bytes are.
 
 ## A rendition has no row
 
@@ -121,9 +126,10 @@ that points back at `/media/`, which a manifest written while the file was local
 
 ## Addresses
 
-`Media.key` is the truth. `Media.url` is the relative delivery address
-`/media/<key>`; when the Media has renditions, the URL also carries `?mt=` with the revision,
-the archived flag and the rendition URLs. `stripMediaManifest` returns the plain path.
+The stored-file record's key is the truth. `Media.key` mirrors it until the column is dropped:
+`Media.url` is the relative delivery address `/media/<key>`; when the Media has renditions, the URL
+also carries `?mt=` with the revision, the archived flag and the rendition URLs.
+`stripMediaManifest` returns the plain path.
 
 The local driver composes exactly this address through `mediaPath`; there is no environment
 variable for a local public prefix, so a configuration mistake cannot produce addresses the
@@ -151,8 +157,9 @@ The legacy `/assets/<key>` address is a build-time rewrite to the provider in
 ## Quota
 
 `Settings.mediaQuotaMb` (default 5120) is the Installation's byte budget for media. Usage is
-the original's `Media.size` plus the bytes in the rendition manifest, over every Media,
-archived ones included. `src/modules/media/lib/quota.ts` is the pure arithmetic;
+the original's stored-file size plus the bytes in the rendition manifest, over every Media,
+archived ones included. The record answers the original's size; `Media.size` is read only for a
+row that has no record yet. `src/modules/media/lib/quota.ts` is the pure arithmetic;
 `src/modules/media/server/media-quota.ts` reads the database and holds the admission lock.
 
 Permanent deletion is the only operation that frees quota. Archiving hides a Media from the
@@ -161,22 +168,24 @@ library but keeps counting it.
 ## Health check
 
 `npm run media:audit` is a read-only check of the whole library after a storage change. It reads
-every Media row, resolves the driver recorded on it and reports:
+every Stored file, resolves the driver recorded on it and reports:
 
-- how many Media each driver wrote (`local`, `uploadthing`, `unrecorded` for pre-seam rows and
-  `unknown` for a name this build does not know);
-- the recorded drivers this Installation has no credentials for;
-- every Media that does not resolve, by id, with a reason (`unknown-driver`,
-  `driver-unconfigured`, `no-storage-key`, `object-missing`);
-- the bytes the database accounts for, the bytes local rows account for, and the bytes actually
+- how many files each driver wrote (`local`, `uploadthing`, and `unknown` for a name this build
+  does not know);
+- the drivers this Installation can reach, and the recorded drivers it has no credentials for;
+- every file that does not resolve, by id, with a reason (`unknown-driver`,
+  `driver-unconfigured`, `no-storage-key`, `no-stored-file`, `object-missing`);
+- the bytes the database accounts for, the bytes local files account for, and the bytes actually
   on the local volume;
 - accounted, on-disk, missing and orphaned local objects.
 
-Local objects are checked file by file against the volume. Remote rows are checked through their
-driver's configuration and the presence of a readable key only; a read-only command must not fetch
-every provider object. The command exits `1` when any Media is unresolved, so it can gate a
-deployment; orphaned files are reported but do not fail it. The report carries Media ids and
-aggregates, never keys, addresses or names, so it is safe to paste into a deployment log.
+A Media with no stored-file record is reported as `no-stored-file`, so the audit fails until the
+one-time location backfill has run. Local objects are checked file by file against the volume,
+using the key the record carries; remote files are checked through their driver's configuration
+and the presence of a readable key only, because a read-only command must not fetch every
+provider object. The command exits `1` when any file is unresolved, so it can gate a deployment;
+orphaned files are reported but do not fail it. The report carries file ids and aggregates, never
+keys, addresses or names, so it is safe to paste into a deployment log.
 
 ## Adding a driver
 

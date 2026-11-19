@@ -114,6 +114,15 @@ describe("backfillMediaRenditions", () => {
     type?: MediaType;
     storageDriver?: string | null;
     renditions?: MediaRendition[] | null;
+    /** The stored-file record; omit to cover a row that predates the backfill. */
+    record?: {
+      key: string;
+      driver: string;
+      remoteUrl?: string | null;
+      contentType?: string | null;
+      size?: number | null;
+      checksum?: string | null;
+    };
   }) {
     const media = await db.media.create({
       data: {
@@ -127,6 +136,20 @@ describe("backfillMediaRenditions", () => {
         renditions: data.renditions
           ? (data.renditions as PrismaJson.MediaRenditions)
           : null,
+        ...(data.record
+          ? {
+              storedFile: {
+                create: {
+                  key: data.record.key,
+                  driver: data.record.driver,
+                  remoteUrl: data.record.remoteUrl ?? null,
+                  contentType: data.record.contentType ?? null,
+                  size: data.record.size ?? null,
+                  checksum: data.record.checksum ?? null,
+                },
+              },
+            }
+          : {}),
       },
     });
 
@@ -143,6 +166,13 @@ describe("backfillMediaRenditions", () => {
       key: null,
       url: `/assets/${legacyKey}`,
       storageDriver: null,
+      record: {
+        key: legacyKey,
+        driver: "uploadthing",
+        remoteUrl: `https://fake-app.ufs.sh/f/${encodeURIComponent(legacyKey)}`,
+        contentType: "image/png",
+        size: bytes.byteLength,
+      },
     });
 
     return { media, legacyKey };
@@ -159,6 +189,12 @@ describe("backfillMediaRenditions", () => {
       key,
       url: mediaPath(key),
       storageDriver: "local",
+      record: {
+        key,
+        driver: "local",
+        contentType: "image/png",
+        size: bytes.byteLength,
+      },
     });
 
     return { media, key };
@@ -267,6 +303,76 @@ describe("backfillMediaRenditions", () => {
       await expect(remoteDriver.get(rendition.key)).resolves.toBeDefined();
     }
     await expect(remoteDriver.get(row.key!)).resolves.toBeDefined();
+  });
+
+  it("reads the source through the stored-file record instead of the Media's storage columns", async () => {
+    const bytes = await createPng(700, 420);
+    const id = randomUUID();
+    const recordKey = `default/${id}/1/original`;
+    await localDriver.put(recordKey, bytes, "image/png");
+
+    // The Media's own columns point at an object no driver here can read;
+    // only the record names the bytes that actually exist.
+    await createMedia({
+      id,
+      key: `stale-${randomUUID()}`,
+      url: `https://example.test/${randomUUID()}.png`,
+      storageDriver: "uploadthing",
+      record: {
+        key: recordKey,
+        driver: "local",
+        contentType: "image/png",
+        size: bytes.byteLength,
+      },
+    });
+
+    const report = await run();
+
+    expect(report).toMatchObject({ scanned: 1, processed: 1, failed: [] });
+
+    const row = await db.media.findUniqueOrThrow({ where: { id } });
+    const record = await db.storedFile.findUniqueOrThrow({
+      where: { mediaId: id },
+    });
+
+    expect(row.key).toBe(recordKey);
+    expect(row.metadata).toMatchObject({ width: 700, height: 420 });
+    expect(record).toMatchObject({
+      key: recordKey,
+      driver: "local",
+      remoteUrl: null,
+      contentType: "image/png",
+      checksum: row.checksum,
+      size: row.size,
+    });
+  });
+
+  it("moves a legacy record's key into the revision and keeps its remote address true", async () => {
+    const bytes = await createPng(640, 320);
+    const { media, legacyKey } = await createLegacyRemoteImage(bytes);
+    const expectedKey = `default/${media.id}/1/original`;
+
+    const report = await run();
+
+    expect(report).toMatchObject({ scanned: 1, processed: 1, failed: [] });
+
+    const row = await db.media.findUniqueOrThrow({ where: { id: media.id } });
+    const record = await db.storedFile.findUniqueOrThrow({
+      where: { mediaId: media.id },
+    });
+
+    expect(row.key).toBe(expectedKey);
+    expect(record).toMatchObject({
+      key: expectedKey,
+      driver: "uploadthing",
+      remoteUrl: await remoteDriver.url(expectedKey),
+      contentType: "image/png",
+      checksum: row.checksum,
+      size: row.size,
+    });
+
+    // The legacy object is content's own address and survives the backfill.
+    await expect(remoteDriver.get(legacyKey)).resolves.toBeDefined();
   });
 
   it("generates the ladder for a local image and keeps relative addresses", async () => {
@@ -476,10 +582,15 @@ describe("backfillMediaRenditions", () => {
 
     const localBytes = await createPng(800, 480);
     const { media: healthy } = await createLocalImage(localBytes);
+
+    // The Media's own column says local, but the record names a driver this
+    // instance has no credential for.
+    const unconfiguredKey = `missing-${randomUUID()}`;
     const unconfigured = await createMedia({
-      key: `missing-${randomUUID()}`,
+      key: `stale-${randomUUID()}`,
       url: "https://example.test/missing.png",
-      storageDriver: "uploadthing",
+      storageDriver: "local",
+      record: { key: unconfiguredKey, driver: "uploadthing" },
     });
 
     const report = await run();

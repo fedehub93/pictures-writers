@@ -135,7 +135,7 @@ Where the bytes of a Stored file live: its storage key on one storage driver, pl
 _Avoid_: Provider, bucket, path when referring to the record.
 
 **Media**:
-The logical identity of one uploaded file in the library: its name, type, storage key, size, checksum, alt text, and the manifest of the renditions derived from it. One Media per original file; content references the Media, never a rendition.
+The logical identity of one uploaded file in the library: its name, type, alt text, revision and the manifest of the renditions derived from it. The location of its bytes - storage key, driver, content type, size, checksum - is its Stored file. One Media per original file; content references the Media, never a rendition.
 _Avoid_: Asset, file, attachment when referring to the library entity; using Media for a derived rendition.
 
 **Media type**:
@@ -151,7 +151,7 @@ A named entry in the rendition ladder, pairing a use in the interface with the w
 _Avoid_: Preset, variant.
 
 **Storage key**:
-The stable, storage-agnostic path identifying an object inside the media bucket, from which the provider URL is derived. A Media keeps the original's key; a rendition derives its own from it.
+The stable, storage-agnostic path identifying an object inside the media bucket, held by the Stored file. A Media's own key column mirrors it until that column is dropped, and a rendition derives its key from the original's.
 _Avoid_: Path, filename, URL when referring to the identifier.
 
 **Storage driver**:

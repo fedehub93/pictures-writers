@@ -84,6 +84,8 @@ describe("media quota", () => {
     size: number | null;
     renditions?: unknown;
     archivedAt?: Date | null;
+    /** The stored-file record; omit to cover a row that predates the backfill. */
+    file?: { size: number | null };
   }) {
     const id = randomUUID();
     createdIds.push(id);
@@ -96,6 +98,17 @@ describe("media quota", () => {
         size: input.size,
         renditions: input.renditions as PrismaJson.MediaRenditions,
         archivedAt: input.archivedAt ?? null,
+        ...(input.file
+          ? {
+              storedFile: {
+                create: {
+                  key: `default/${id}/1/original`,
+                  driver: "local",
+                  size: input.file.size,
+                },
+              },
+            }
+          : {}),
       },
     });
   }
@@ -114,6 +127,22 @@ describe("media quota", () => {
     await createRow({ size: 2000, renditions: null });
 
     await expect(getMediaUsageBytes()).resolves.toBe(baseline + 3200);
+  });
+
+  it("counts the stored-file record's size rather than the Media's own column", async () => {
+    const baseline = await getMediaUsageBytes();
+
+    await createRow({
+      size: 1000,
+      renditions: [
+        { key: "a", width: 320, height: 200, bytes: 200, format: "webp" },
+      ],
+      file: { size: 2500 },
+    });
+
+    // The record answers "where are the bytes"; the Media column is a mirror
+    // that a later move can leave behind.
+    await expect(getMediaUsageBytes()).resolves.toBe(baseline + 2700);
   });
 
   it("refuses a plain Media row past the quota and creates no row", async () => {

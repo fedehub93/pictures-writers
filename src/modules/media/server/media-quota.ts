@@ -11,13 +11,38 @@ import {
   mediaUsageBytes,
   megabytesToBytes,
   type MediaQuotaStatus,
+  type MediaQuotaUsageRow,
 } from "@/modules/media/lib/quota";
+
+import { mediaStorageSize } from "./stored-file";
 
 /**
  * One advisory-lock key, so two uploads cannot both pass the "before the row
  * is created" check when the library has room for only one of them.
  */
 const MEDIA_QUOTA_LOCK_KEY = 0x4d454449; // "MEDI"
+
+const mediaUsageSelect = {
+  size: true,
+  renditions: true,
+  storedFile: { select: { size: true } },
+} satisfies Prisma.MediaSelect;
+
+type MediaUsageRow = Prisma.MediaGetPayload<{
+  select: typeof mediaUsageSelect;
+}>;
+
+/**
+ * The original's size comes from its stored-file record; the Media's own
+ * column is read only until that record carries a size. Renditions stay on the
+ * Media. The arithmetic itself is unchanged.
+ */
+function quotaUsageRow(row: MediaUsageRow): MediaQuotaUsageRow {
+  return {
+    size: mediaStorageSize(row, row.storedFile),
+    renditions: row.renditions,
+  };
+}
 
 export class MediaQuotaExceededError extends Error {
   readonly code = "MEDIA_QUOTA_EXCEEDED";
@@ -50,12 +75,12 @@ async function readUsage(
     client.settings.findFirst({ select: { mediaQuotaMb: true } }),
     client.media.findMany({
       where: excludeMediaId ? { id: { not: excludeMediaId } } : undefined,
-      select: { size: true, renditions: true },
+      select: mediaUsageSelect,
     }),
   ]);
 
   return {
-    usedBytes: mediaUsageBytes(rows),
+    usedBytes: mediaUsageBytes(rows.map(quotaUsageRow)),
     quotaMb: settings?.mediaQuotaMb ?? MEDIA_QUOTA_DEFAULT_MB,
   };
 }

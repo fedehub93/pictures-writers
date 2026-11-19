@@ -1,10 +1,9 @@
 import "server-only";
 
+import type { Prisma } from "@/generated/prisma";
 import { MediaType } from "@/generated/prisma";
 
 import { db } from "@/shared/lib/db";
-
-import { mediaSourceKey } from "@/modules/media/lib/url";
 
 import { describeBackfillFailure } from "./backfill-failure";
 import { forEachWithConcurrency } from "./bounded-concurrency";
@@ -16,6 +15,11 @@ import {
   type StorageDriverName,
   type StorageEnvironment,
 } from "./storage";
+import {
+  mediaStorageLocation,
+  storedFileLocationSelect,
+  updateStoredFileForMedia,
+} from "./stored-file";
 
 export interface MediaMetadataBackfillFailure {
   mediaId: string;
@@ -43,17 +47,22 @@ export interface MediaMetadataBackfillOptions {
   onProgress?: (line: string) => void;
 }
 
-type BackfillMedia = {
-  id: string;
-  name: string;
-  key: string | null;
-  url: string;
-  storageDriver: string | null;
-  mimeType: string | null;
-  size: number | null;
-  checksum: string | null;
-  metadata: unknown;
-};
+const metadataMediaSelect = {
+  id: true,
+  name: true,
+  key: true,
+  url: true,
+  storageDriver: true,
+  mimeType: true,
+  size: true,
+  checksum: true,
+  metadata: true,
+  storedFile: { select: storedFileLocationSelect },
+} satisfies Prisma.MediaSelect;
+
+type BackfillMedia = Prisma.MediaGetPayload<{
+  select: typeof metadataMediaSelect;
+}>;
 
 function asObject(value: unknown): Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
@@ -61,10 +70,16 @@ function asObject(value: unknown): Record<string, unknown> {
     : {};
 }
 
+/**
+ * Whether the row already carries everything this backfill would write, on
+ * both the Media and — when it exists — its stored-file record. Requiring both
+ * keeps the record and the mirrored columns in step; a record left empty by a
+ * previous state is filled, not trusted because the Media column happens to
+ * be complete.
+ */
 function hasCompleteMetadata(media: BackfillMedia): boolean {
   const metadata = asObject(media.metadata);
-
-  return (
+  const mediaComplete =
     typeof media.mimeType === "string" &&
     media.mimeType.length > 0 &&
     typeof media.size === "number" &&
@@ -74,20 +89,35 @@ function hasCompleteMetadata(media: BackfillMedia): boolean {
     typeof metadata.width === "number" &&
     typeof metadata.height === "number" &&
     typeof metadata.blurDataURL === "string" &&
-    metadata.blurDataURL.startsWith("data:")
+    metadata.blurDataURL.startsWith("data:");
+
+  if (!mediaComplete) return false;
+
+  const record = media.storedFile;
+  if (!record) return true;
+
+  return (
+    typeof record.contentType === "string" &&
+    record.contentType.length > 0 &&
+    typeof record.size === "number" &&
+    record.size > 0 &&
+    typeof record.checksum === "string" &&
+    record.checksum.length > 0
   );
 }
-
 
 /**
  * Fills the metadata of every image Media that is missing it. It only writes
  * derived columns, so running it again is a no-op for already-processed rows.
  * Unreachable sources are reported and skipped, never fatal.
  *
- * Each row is read through the driver recorded on it, so a library that mixes
- * legacy provider Media and Media written by the local driver is processed in
- * one run. A driver this instance cannot reach is reported with the row and
- * the run continues.
+ * Each row is read through the driver recorded on its stored-file record; the
+ * Media's own storage columns answer only until that record exists. A library
+ * that mixes legacy provider Media and Media written by the local driver is
+ * processed in one run. A driver this instance cannot reach is reported with
+ * the row and the run continues. The record learns the same content type, size
+ * and checksum the run discovers, so it stays the one place that describes the
+ * bytes.
  */
 export async function backfillMediaMetadata({
   active,
@@ -110,17 +140,7 @@ export async function backfillMediaMetadata({
       type: MediaType.IMAGE,
       ...(mediaIds ? { id: { in: mediaIds } } : {}),
     },
-    select: {
-      id: true,
-      name: true,
-      key: true,
-      url: true,
-      storageDriver: true,
-      mimeType: true,
-      size: true,
-      checksum: true,
-      metadata: true,
-    },
+    select: metadataMediaSelect,
     orderBy: { createdAt: "asc" },
   });
 
@@ -139,7 +159,8 @@ export async function backfillMediaMetadata({
     }
 
     try {
-      const key = mediaSourceKey(item);
+      const location = mediaStorageLocation(item);
+      const key = location.key;
 
       if (!key) {
         report.failed.push({
@@ -151,7 +172,7 @@ export async function backfillMediaMetadata({
         return;
       }
 
-      const resolution = resolveMediaStorageDriver(item.storageDriver, {
+      const resolution = resolveMediaStorageDriver(location.driver, {
         active,
         env,
         cache: drivers,
@@ -171,17 +192,28 @@ export async function backfillMediaMetadata({
       const inspected = await inspectImage(bytes);
 
       if (!dryRun) {
-        await db.media.update({
-          where: { id: item.id },
-          data: {
-            size: inspected.size,
-            mimeType: inspected.mimeType,
-            checksum: inspected.checksum,
-            metadata: {
-              ...asObject(item.metadata),
-              ...inspected.metadata,
-            } as PrismaJson.MediaMetadata,
-          },
+        const data = {
+          size: inspected.size,
+          mimeType: inspected.mimeType,
+          checksum: inspected.checksum,
+          metadata: {
+            ...asObject(item.metadata),
+            ...inspected.metadata,
+          } as PrismaJson.MediaMetadata,
+        };
+
+        await db.$transaction(async (tx) => {
+          await tx.media.update({ where: { id: item.id }, data });
+
+          // The record answers "where are the bytes" for every later reader;
+          // it must learn the metadata this run discovered.
+          if (item.storedFile) {
+            await updateStoredFileForMedia(tx, item.id, {
+              contentType: inspected.mimeType,
+              size: inspected.size,
+              checksum: inspected.checksum,
+            });
+          }
         });
       }
 

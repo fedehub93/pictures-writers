@@ -97,6 +97,14 @@ describe("backfillMediaMetadata", () => {
     mimeType?: string;
     size?: number;
     checksum?: string;
+    /** The stored-file record; omit to cover a row that predates the backfill. */
+    record?: {
+      key: string;
+      driver: string;
+      contentType?: string | null;
+      size?: number | null;
+      checksum?: string | null;
+    };
   }) {
     const media = await db.media.create({
       data: {
@@ -110,6 +118,19 @@ describe("backfillMediaMetadata", () => {
         mimeType: data.mimeType ?? null,
         size: data.size ?? null,
         checksum: data.checksum ?? null,
+        ...(data.record
+          ? {
+              storedFile: {
+                create: {
+                  key: data.record.key,
+                  driver: data.record.driver,
+                  contentType: data.record.contentType ?? null,
+                  size: data.record.size ?? null,
+                  checksum: data.record.checksum ?? null,
+                },
+              },
+            }
+          : {}),
       },
     });
 
@@ -126,6 +147,7 @@ describe("backfillMediaMetadata", () => {
       key: null,
       url: `/assets/${legacyKey}`,
       storageDriver: null,
+      record: { key: legacyKey, driver: "uploadthing" },
     });
 
     return { media, legacyKey };
@@ -185,11 +207,78 @@ describe("backfillMediaMetadata", () => {
     ).toMatch(/^data:image\/webp;base64,/);
   });
 
+  it("reads and keeps true the stored-file record instead of the Media's storage columns", async () => {
+    const bytes = await createPng(70, 30);
+    const recordKey = `default/${randomUUID()}/1/original`;
+    await active.driver.put(recordKey, bytes, "image/png");
+
+    // The Media's own columns point at an object no driver here can read;
+    // only the record names the bytes that actually exist.
+    const media = await createMedia({
+      key: `stale-${randomUUID()}`,
+      url: `https://example.test/${randomUUID()}.png`,
+      storageDriver: "uploadthing",
+      record: { key: recordKey, driver: "local" },
+    });
+
+    const report = await run();
+
+    expect(report).toMatchObject({ scanned: 1, updated: 1, failed: [] });
+    await expect(
+      db.media.findUniqueOrThrow({ where: { id: media.id } }),
+    ).resolves.toMatchObject({
+      mimeType: "image/png",
+      metadata: expect.objectContaining({ width: 70, height: 30 }),
+    });
+    await expect(
+      db.storedFile.findUniqueOrThrow({ where: { mediaId: media.id } }),
+    ).resolves.toMatchObject({
+      key: recordKey,
+      driver: "local",
+      contentType: "image/png",
+      size: bytes.byteLength,
+      checksum: sha256(bytes),
+    });
+  });
+
+  it("fills a stored-file record the Media's own columns already describe", async () => {
+    const bytes = await createPng();
+    const recordKey = `default/${randomUUID()}/1/original`;
+    await active.driver.put(recordKey, bytes, "image/png");
+
+    const media = await createMedia({
+      key: recordKey,
+      mimeType: "image/png",
+      size: bytes.byteLength,
+      checksum: sha256(bytes),
+      metadata: {
+        width: 80,
+        height: 40,
+        blurDataURL: "data:image/webp;base64,abc",
+      },
+      record: { key: recordKey, driver: "local" },
+    });
+
+    const report = await run();
+
+    expect(report).toMatchObject({ scanned: 1, updated: 1, failed: [] });
+    await expect(
+      db.storedFile.findUniqueOrThrow({ where: { mediaId: media.id } }),
+    ).resolves.toMatchObject({
+      contentType: "image/png",
+      size: bytes.byteLength,
+      checksum: sha256(bytes),
+    });
+  });
+
   it("changes nothing when run again", async () => {
     const bytes = await createPng();
     const key = `media-${randomUUID()}/1/original`;
     await active.driver.put(key, bytes, "image/png");
-    const media = await createMedia({ key });
+    const media = await createMedia({
+      key,
+      record: { key, driver: "local" },
+    });
 
     await run();
     const first = await db.media.findUniqueOrThrow({ where: { id: media.id } });
@@ -253,7 +342,10 @@ describe("backfillMediaMetadata", () => {
     const localBytes = await createPng(80, 40);
     const localKey = `media-${randomUUID()}/1/original`;
     await active.driver.put(localKey, localBytes, "image/png");
-    const local = await createMedia({ key: localKey });
+    const local = await createMedia({
+      key: localKey,
+      record: { key: localKey, driver: "local" },
+    });
 
     const remoteBytes = await createPng(50, 25);
     const { media: legacy } = await createLegacyRemoteImage(remoteBytes);
@@ -306,17 +398,26 @@ describe("backfillMediaMetadata", () => {
     const bytes = await createPng();
     const localKey = `media-${randomUUID()}/1/original`;
     await active.driver.put(localKey, bytes, "image/png");
-    const healthy = await createMedia({ key: localKey });
-
-    const unconfigured = await createMedia({
-      key: `media-${randomUUID()}/1/original`,
-      url: `https://example.test/${randomUUID()}.png`,
-      storageDriver: "uploadthing",
+    const healthy = await createMedia({
+      key: localKey,
+      record: { key: localKey, driver: "local" },
     });
-    const unknown = await createMedia({
-      key: `media-${randomUUID()}/1/original`,
+
+    // The Media's own column says local, but the record — the one place that
+    // answers where the bytes are — names an unreachable driver.
+    const unconfiguredKey = `media-${randomUUID()}/1/original`;
+    const unconfigured = await createMedia({
+      key: `stale-${randomUUID()}/1/original`,
       url: `https://example.test/${randomUUID()}.png`,
-      storageDriver: "s3",
+      storageDriver: "local",
+      record: { key: unconfiguredKey, driver: "uploadthing" },
+    });
+    const unknownKey = `media-${randomUUID()}/1/original`;
+    const unknown = await createMedia({
+      key: `stale-${randomUUID()}/1/original`,
+      url: `https://example.test/${randomUUID()}.png`,
+      storageDriver: "local",
+      record: { key: unknownKey, driver: "s3" },
     });
 
     const report = await run();
