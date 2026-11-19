@@ -24,6 +24,14 @@ deliver   GET /media/<key>
 The active driver decides where **new** uploads go. Delivery never asks the active driver: it
 asks the row, so switching storage affects only new files.
 
+Every Media type enters through the same multipart transport. An image is normalised and cut
+into the rendition ladder; a document, audio file or video is copied untouched to
+`<revision>/original` and has no renditions. `classifyMediaType` decides the kind from the MIME
+type: images keep the 4 MB transport limit, every other type gets 16 MB, and a type it cannot
+classify is refused before any byte is written. The legacy JSON upload path still records a
+provider object as it arrives and leaves the row without a recorded driver; only the multipart
+path writes under the Media's own revision.
+
 ## Where things live
 
 | Concern | File |
@@ -35,6 +43,7 @@ asks the row, so switching storage affects only new files.
 | Local and UploadThing drivers | `src/modules/media/server/storage/local.ts`, `src/modules/media/server/storage/uploadthing.ts` |
 | Active driver: setting -> env -> default | `src/modules/media/server/storage/active.ts` |
 | Driver names the admin and the API share | `src/modules/media/lib/storage-driver.ts` |
+| MIME type -> Media type (image, video, audio, document) | `src/modules/media/lib/media-type.ts` |
 | Rendition manifest and the `?mt=` token | `src/modules/media/lib/manifest.ts` |
 | Parsing and composing addresses | `src/modules/media/lib/url.ts` |
 | Absolute form and own-host check | `src/modules/media/server/media-url.ts` |

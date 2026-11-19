@@ -171,6 +171,40 @@ describe("media quota", () => {
     await expect(listFiles(root)).resolves.toEqual(filesBefore);
   });
 
+  it("removes the revision and the temporary object when the quota refuses a non-image", async () => {
+    const baseline = await getMediaUsageBytes();
+    const quotaMb = Math.ceil((baseline + 1) / MB);
+
+    await createRow({ size: quotaMb * MB - baseline, renditions: null });
+    await setMediaQuotaMb(quotaMb);
+
+    const bytes = new Uint8Array(1024).fill(3);
+    const sourceKey = `tmp/${randomUUID()}`;
+    await driver.put(sourceKey, bytes, "application/pdf");
+
+    const name = `quota-document-${randomUUID()}`;
+
+    await expect(
+      createMediaFromUpload({
+        driver,
+        storageDriver: "local",
+        storeUploadedObject: true,
+        source: {
+          key: sourceKey,
+          url: `/media/${sourceKey}`,
+          name,
+          type: MediaType.FILE,
+          mimeType: "application/pdf",
+          size: bytes.byteLength,
+        },
+      }),
+    ).rejects.toBeInstanceOf(MediaQuotaExceededError);
+
+    await expect(db.media.count({ where: { name } })).resolves.toBe(0);
+
+    await expect(listFiles(root)).resolves.toEqual([]);
+  });
+
   it("keeps the previous error type for a broken image", async () => {
     const sourceKey = `uploads/${randomUUID()}`;
     await driver.put(sourceKey, new Uint8Array([1, 2, 3]), "image/png");

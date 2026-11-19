@@ -3,7 +3,7 @@
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { useMutation } from "@tanstack/react-query";
-import { Archive, ArchiveRestore, File, Trash } from "lucide-react";
+import { Archive, ArchiveRestore, FileText, Trash } from "lucide-react";
 import { MediaType } from "@/generated/prisma";
 
 import { useTRPC } from "@/trpc/client";
@@ -196,8 +196,26 @@ export const MediaCard = ({
             src={url}
           />
         )}
+        {type === MediaType.VIDEO && (
+          <video
+            controls
+            preload="metadata"
+            src={url}
+            className="absolute inset-0 w-full h-full object-cover bg-black"
+          />
+        )}
+        {type === MediaType.AUDIO && (
+          <div className="absolute inset-0 flex items-center justify-center bg-muted px-3">
+            <audio controls preload="metadata" src={url} className="w-full" />
+          </div>
+        )}
         {type === MediaType.FILE && (
-          <File className="absolute w-full h-full" strokeWidth={1} />
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-muted text-muted-foreground">
+            <FileText className="size-10" strokeWidth={1} />
+            <span className="text-xs font-medium uppercase">
+              {mimeType?.split("/").pop()?.split(";")[0] || "document"}
+            </span>
+          </div>
         )}
       </div>
       <div className="flex flex-col gap-y-2 p-3">

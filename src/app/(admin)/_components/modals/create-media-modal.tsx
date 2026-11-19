@@ -48,6 +48,7 @@ import {
 } from "@/shared/ui/select";
 import { formatBytes } from "@/lib/format";
 import { useMediaInvalidation } from "@/modules/media/hooks/use-media-invalidation";
+import { classifyMediaType } from "@/modules/media/lib/media-type";
 
 const formSchema = z.object({
   name: z.string().min(1, {
@@ -70,13 +71,6 @@ interface DuplicateState {
   media: DuplicateMedia;
   file: File;
   values: MediaFormValues;
-}
-
-function mediaTypeFromMimeType(mimeType: string): MediaType {
-  if (mimeType.startsWith("image/")) return MediaType.IMAGE;
-  if (mimeType.startsWith("video/")) return MediaType.VIDEO;
-  if (mimeType.startsWith("audio/")) return MediaType.AUDIO;
-  return MediaType.FILE;
 }
 
 export const CreateMediaModal = () => {
@@ -108,14 +102,25 @@ export const CreateMediaModal = () => {
       URL.revokeObjectURL(previewUrl);
     }
 
+    // The endpoint refuses a type it cannot classify, so the form refuses it
+    // first instead of showing a Media type the upload will not accept.
+    const type = next ? classifyMediaType(next.type) : null;
+
+    if (next && !type) {
+      toast.error(
+        "This file type is not supported. Choose an image, document, audio or video file.",
+      );
+      next = null;
+    }
+
     setFile(next);
     setPreviewUrl(next ? URL.createObjectURL(next) : null);
 
-    if (next) {
+    if (next && type) {
       form.setValue("name", next.name);
       form.setValue("size", next.size);
       form.setValue("mimeType", next.type);
-      form.setValue("type", mediaTypeFromMimeType(next.type));
+      form.setValue("type", type);
     } else {
       form.setValue("name", "");
       form.setValue("size", 0);

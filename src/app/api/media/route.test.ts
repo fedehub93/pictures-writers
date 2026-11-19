@@ -23,7 +23,11 @@ import {
   setMediaQuotaMb,
 } from "@/modules/media/server/__tests__/quota-fixtures";
 
-import { MEDIA_MAX_UPLOAD_BYTES, POST } from "./route";
+import {
+  MEDIA_MAX_IMAGE_UPLOAD_BYTES,
+  MEDIA_MAX_NON_IMAGE_UPLOAD_BYTES,
+  POST,
+} from "./route";
 
 const MB = BYTES_PER_MEGABYTE;
 
@@ -219,15 +223,130 @@ describe("POST /api/media", () => {
     expect(stored.byteLength).toBe(media.size);
   });
 
-  it("rejects a multipart upload that is not an image", async () => {
-    const file = new File(["hello"], "note.txt", { type: "text/plain" });
+  it("rejects a multipart upload whose type the library cannot classify", async () => {
+    const file = new File(["hello"], "blob.bin", {
+      type: "application/octet-stream",
+    });
     const form = new FormData();
     form.append("file", file);
-    form.append("name", "Note");
+    form.append("name", "Blob");
 
     const response = await POST(multipartRequest(form));
+    const body = await response.json();
 
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(415);
+    expect(body).toMatchObject({
+      code: "UNSUPPORTED_MEDIA_TYPE",
+      mimeType: "application/octet-stream",
+    });
+    await expect(
+      db.media.count({ where: { name: "Blob" } }),
+    ).resolves.toBe(0);
+  });
+
+  it.each([
+    ["document", "application/pdf", "brochure.pdf", MediaType.FILE],
+    ["audio", "audio/mpeg", "track.mp3", MediaType.AUDIO],
+    ["video", "video/mp4", "clip.mp4", MediaType.VIDEO],
+  ])(
+    "stores a multipart %s under its own revision and records the driver",
+    async (_label, mimeType, fileName, expectedType) => {
+      const bytes = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
+      const form = new FormData();
+      form.append("file", new File([bytes], fileName, { type: mimeType }));
+      form.append("name", `Multipart ${fileName}`);
+
+      const response = await POST(multipartRequest(form));
+      const media = await response.json();
+      mediaIds.push(media.id);
+
+      expect(response.status).toBe(200);
+      expect(media).toMatchObject({
+        type: expectedType,
+        mimeType,
+        storageDriver: "local",
+        size: bytes.byteLength,
+        revision: 1,
+        checksum: expect.any(String),
+      });
+      expect(media.key).toBe(`default/${media.id}/1/original`);
+      expect(media.url).toBe(`/media/${media.key}`);
+      await expect(driver.get(media.key)).resolves.toEqual(bytes);
+
+      const row = await db.media.findUniqueOrThrow({ where: { id: media.id } });
+      expect(row.renditions).toBeNull();
+    },
+  );
+
+  it("answers 413 for a non-image over the 16 MB limit", async () => {
+    const form = new FormData();
+    form.append(
+      "file",
+      new File(
+        [new Uint8Array(MEDIA_MAX_NON_IMAGE_UPLOAD_BYTES + 1)],
+        "huge.pdf",
+        { type: "application/pdf" },
+      ),
+    );
+    form.append("name", "Huge document");
+
+    const response = await POST(multipartRequest(form));
+    const body = await response.json();
+
+    expect(response.status).toBe(413);
+    expect(body).toMatchObject({
+      code: "FILE_TOO_LARGE",
+      maxBytes: MEDIA_MAX_NON_IMAGE_UPLOAD_BYTES,
+    });
+    await expect(
+      db.media.count({ where: { name: "Huge document" } }),
+    ).resolves.toBe(0);
+  });
+
+  it("refuses an image over 4 MB even when it is under the non-image limit", async () => {
+    const form = new FormData();
+    form.append(
+      "file",
+      new File(
+        [new Uint8Array(MEDIA_MAX_IMAGE_UPLOAD_BYTES + 1)],
+        "large.png",
+        { type: "image/png" },
+      ),
+    );
+    form.append("name", "Large image");
+
+    const response = await POST(multipartRequest(form));
+    const body = await response.json();
+
+    expect(response.status).toBe(413);
+    expect(body).toMatchObject({
+      code: "FILE_TOO_LARGE",
+      maxBytes: MEDIA_MAX_IMAGE_UPLOAD_BYTES,
+    });
+  });
+
+  it("answers 409 for a duplicate non-image checksum", async () => {
+    const bytes = new Uint8Array([9, 8, 7, 6, 5]);
+
+    const upload = () => {
+      const form = new FormData();
+      form.append("file", new File([bytes], "report.pdf", { type: "application/pdf" }));
+      form.append("name", "Duplicate document");
+      return multipartRequest(form);
+    };
+
+    const first = await (await POST(upload())).json();
+    mediaIds.push(first.id);
+
+    const response = await POST(upload());
+    const body = await response.json();
+
+    expect(response.status).toBe(409);
+    expect(body).toMatchObject({
+      code: "DUPLICATE_MEDIA",
+      duplicate: true,
+      media: { id: first.id },
+    });
   });
 
   it("creates a second row when a duplicate multipart upload is overridden", async () => {
@@ -302,7 +421,7 @@ describe("POST /api/media", () => {
     const form = new FormData();
     form.append(
       "file",
-      new File([new Uint8Array(MEDIA_MAX_UPLOAD_BYTES + 1)], "huge.png", {
+      new File([new Uint8Array(MEDIA_MAX_IMAGE_UPLOAD_BYTES + 1)], "huge.png", {
         type: "image/png",
       }),
     );
@@ -314,7 +433,7 @@ describe("POST /api/media", () => {
     expect(response.status).toBe(413);
     expect(body).toMatchObject({
       code: "FILE_TOO_LARGE",
-      maxBytes: MEDIA_MAX_UPLOAD_BYTES,
+      maxBytes: MEDIA_MAX_IMAGE_UPLOAD_BYTES,
     });
     await expect(
       db.media.count({ where: { name: "Huge multipart" } }),
@@ -355,6 +474,42 @@ describe("POST /api/media", () => {
     expect(puts).toEqual([]);
     await expect(
       db.media.count({ where: { name: "Over quota" } }),
+    ).resolves.toBe(0);
+  });
+
+  it("refuses a non-image past the quota before writing any bytes", async () => {
+    await setMediaQuotaMb(1);
+
+    const puts: string[] = [];
+    storage.driver = {
+      ...driver,
+      put: async (key, data, contentType) => {
+        puts.push(key);
+        await driver.put(key, data, contentType);
+      },
+    } satisfies StorageDriver;
+
+    const form = new FormData();
+    form.append(
+      "file",
+      new File([new Uint8Array(2 * MB)], "over-quota.pdf", {
+        type: "application/pdf",
+      }),
+    );
+    form.append("name", "Over quota document");
+
+    const response = await POST(multipartRequest(form));
+    const body = await response.json();
+
+    expect(response.status).toBe(413);
+    expect(body).toMatchObject({
+      code: "MEDIA_QUOTA_EXCEEDED",
+      quotaMb: 1,
+      totalBytes: MB,
+    });
+    expect(puts).toEqual([]);
+    await expect(
+      db.media.count({ where: { name: "Over quota document" } }),
     ).resolves.toBe(0);
   });
 

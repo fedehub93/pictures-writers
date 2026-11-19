@@ -50,6 +50,13 @@ export interface CreateMediaFromUploadOptions {
   source: MediaUploadSource;
   /** Explicit admin override: keep the duplicate and create a second row. */
   override?: boolean;
+  /**
+   * Whether `source.key` is a temporary object written through this driver by
+   * the application transport. When true, a non-image is copied under its own
+   * revision and the row records the driver; when false, the legacy provider
+   * upload is recorded exactly as before.
+   */
+  storeUploadedObject?: boolean;
 }
 
 /**
@@ -297,6 +304,108 @@ async function writePlainRevision({
   }
 }
 
+/**
+ * Stores a non-image uploaded through the application transport under its own
+ * revision and records the driver that wrote it. The temporary object is only
+ * the processing input, so it is removed once the Media exists.
+ */
+async function createStoredPlainMedia({
+  driver,
+  storageDriver,
+  source,
+  override,
+}: {
+  driver: StorageDriver;
+  storageDriver: StorageDriverName;
+  source: MediaUploadSource;
+  override: boolean;
+}): Promise<MediaLibraryItem> {
+  if (!source.key) {
+    throw new MediaProcessingError(
+      "The uploaded file cannot be processed because its storage key is missing.",
+    );
+  }
+
+  const sourceKey = source.key;
+  const id = randomUUID();
+  const revision = 1;
+  const installationSlug = getInstallationSlug();
+  const prefix = mediaStoragePrefix(id, installationSlug);
+
+  // The temporary object is the application transport's input, never a Media
+  // object, so every outcome other than a created row removes it.
+  const removeUploadedObject = async () => {
+    if (sourceKey.startsWith(prefix)) return;
+    await driver.delete(sourceKey).catch(() => undefined);
+  };
+
+  let bytes: Uint8Array<ArrayBuffer>;
+  try {
+    bytes = await driver.get(sourceKey);
+  } catch (error) {
+    await removeUploadedObject();
+    throw new MediaProcessingError(
+      "The uploaded file could not be read from storage.",
+      { cause: error },
+    );
+  }
+
+  const checksum = checksumOf(bytes);
+
+  if (!override) {
+    const existing = await findDuplicate(checksum);
+    if (existing) {
+      await removeUploadedObject();
+      throw new DuplicateMediaError(existing);
+    }
+  }
+
+  try {
+    const stored = await writePlainRevision({
+      driver,
+      id,
+      revision,
+      bytes,
+      mimeType: source.mimeType ?? null,
+    });
+
+    const media = await withMediaQuotaAdmission(
+      { incomingBytes: stored.size },
+      (tx) =>
+        tx.media.create({
+          data: {
+            id,
+            name: source.name,
+            altText: source.altText || null,
+            key: stored.key,
+            url: stored.url,
+            size: stored.size,
+            type: source.type,
+            mimeType: stored.mimeType,
+            checksum,
+            revision,
+            storageDriver,
+          },
+          select: mediaLibrarySelect,
+        }),
+    );
+
+    await removeUploadedObject();
+
+    return media;
+  } catch (error) {
+    await driver.deletePrefix(prefix).catch(() => undefined);
+    await removeUploadedObject();
+
+    if (isRethrowableMediaError(error)) throw error;
+
+    throw new MediaProcessingError(
+      "The file could not be stored. Nothing was added to the library.",
+      { cause: error },
+    );
+  }
+}
+
 export function storedImageFields(
   stored: StoredImageRevision,
   revision: number,
@@ -321,19 +430,31 @@ export function storedImageFields(
  * Images are downloaded once, normalised, cut into the full rendition ladder
  * and written under `<mediaId>/<revision>/`. The Media row is only created
  * after every object exists, and a failure removes the whole prefix so the
- * library never holds a half-processed file. Other media types keep the
- * historical behaviour: the uploaded object is recorded, never copied.
+ * library never holds a half-processed file. A non-image that arrives through
+ * the application transport is stored as one original under the same layout;
+ * one that arrives from the legacy provider path is recorded as before.
  */
 export async function createMediaFromUpload({
   driver,
   storageDriver,
   source,
   override = false,
+  storeUploadedObject = false,
 }: CreateMediaFromUploadOptions): Promise<MediaLibraryItem> {
-  // Non-image uploads still arrive through the provider's transport (the legacy
-  // JSON path), so their rows record no driver and resolve as remote.
   if (source.type !== MediaType.IMAGE) {
-    return createPlainMedia(source);
+    // Non-image uploads that did not arrive through the application transport
+    // keep the legacy provider shape: the uploaded object is recorded exactly
+    // as before and the row carries no driver, so it resolves as remote.
+    if (!storeUploadedObject) {
+      return createPlainMedia(source);
+    }
+
+    return createStoredPlainMedia({
+      driver,
+      storageDriver: await recordedStorageDriver(storageDriver),
+      source,
+      override,
+    });
   }
 
   if (!source.key) {

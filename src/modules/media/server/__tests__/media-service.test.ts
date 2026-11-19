@@ -325,8 +325,55 @@ describe("createMediaFromUpload", () => {
     await expect(db.media.count({ where: { key: null } })).resolves.toBe(0);
   });
 
+  it.each([
+    [MediaType.FILE, "application/pdf"],
+    [MediaType.AUDIO, "audio/mpeg"],
+    [MediaType.VIDEO, "video/mp4"],
+  ])(
+    "stores a %s uploaded through the transport under its own revision",
+    async (type, mimeType) => {
+      const bytes = new Uint8Array([4, 5, 6, 7, 8, 9]);
+      const sourceKey = `tmp/${randomUUID()}`;
+      await driver.put(sourceKey, bytes, mimeType);
+
+      const media = await createMediaFromUpload({
+        driver,
+        storageDriver: "local",
+        storeUploadedObject: true,
+        source: {
+          key: sourceKey,
+          url: `/media/${sourceKey}`,
+          name: "Download",
+          type,
+          mimeType,
+          size: bytes.byteLength,
+        },
+      });
+      mediaIds.push(media.id);
+
+      expect(media).toMatchObject({
+        key: `default/${media.id}/1/original`,
+        url: `/media/default/${media.id}/1/original`,
+        type,
+        mimeType,
+        storageDriver: "local",
+        size: bytes.byteLength,
+        revision: 1,
+      });
+      expect(media.checksum).toBeTruthy();
+
+      await expect(driver.get(media.key!)).resolves.toEqual(bytes);
+      await expect(driver.get(sourceKey)).rejects.toBeInstanceOf(
+        StorageObjectNotFoundError,
+      );
+
+      const row = await db.media.findUniqueOrThrow({ where: { id: media.id } });
+      expect(row.renditions).toBeNull();
+    },
+  );
+
   it.each([MediaType.FILE, MediaType.AUDIO, MediaType.VIDEO])(
-    "keeps %s uploads exactly as before",
+    "keeps legacy %s uploads exactly as before",
     async (type) => {
       const media = await createMediaFromUpload({
         driver,

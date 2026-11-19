@@ -4,6 +4,7 @@ import { MediaType } from "@/generated/prisma";
 import { formatBytes } from "@/lib/format";
 import { authAdmin } from "@/lib/auth-service";
 
+import { classifyMediaType } from "@/modules/media/lib/media-type";
 import {
   createMediaFromUpload,
   DuplicateMediaError,
@@ -16,16 +17,19 @@ import {
 } from "@/modules/media/server/media-quota";
 import { resolveActiveStorageDriver } from "@/modules/media/server/storage";
 
-/** Matches the image limit the media library enforced while UploadThing owned the transport. */
-export const MEDIA_MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
+/**
+ * The limits the media library enforced while UploadThing owned the transport:
+ * images keep 4 MB, every other Media type gets 16 MB.
+ */
+export const MEDIA_MAX_IMAGE_UPLOAD_BYTES = 4 * 1024 * 1024;
+export const MEDIA_MAX_NON_IMAGE_UPLOAD_BYTES = 16 * 1024 * 1024;
 
 type MediaUploadPayload = Partial<MediaUploadSource> & { override?: boolean };
 
-function mediaTypeFromMimeType(mimeType: string): MediaType {
-  if (mimeType.startsWith("image/")) return MediaType.IMAGE;
-  if (mimeType.startsWith("video/")) return MediaType.VIDEO;
-  if (mimeType.startsWith("audio/")) return MediaType.AUDIO;
-  return MediaType.FILE;
+function uploadLimitFor(type: MediaType): number {
+  return type === MediaType.IMAGE
+    ? MEDIA_MAX_IMAGE_UPLOAD_BYTES
+    : MEDIA_MAX_NON_IMAGE_UPLOAD_BYTES;
 }
 
 function isMultipartRequest(req: Request): boolean {
@@ -80,25 +84,32 @@ async function handleMultipartUpload(req: Request): Promise<Response> {
     );
   }
 
-  const mimeType = file.type || "application/octet-stream";
-  const type = mediaTypeFromMimeType(mimeType);
+  const mimeType = file.type;
+  const type = classifyMediaType(mimeType);
 
-  if (type !== MediaType.IMAGE) {
+  if (!type) {
     return NextResponse.json(
-      { error: "Only image uploads are supported through multipart." },
-      { status: 400 },
+      {
+        code: "UNSUPPORTED_MEDIA_TYPE",
+        error:
+          "This file type is not supported. Upload an image, document, audio or video file.",
+        mimeType: mimeType || null,
+      },
+      { status: 415 },
     );
   }
 
-  if (file.size > MEDIA_MAX_UPLOAD_BYTES) {
+  const maxBytes = uploadLimitFor(type);
+
+  if (file.size > maxBytes) {
     return NextResponse.json(
       {
         code: "FILE_TOO_LARGE",
         error: `This file is larger than the ${formatBytes(
-          MEDIA_MAX_UPLOAD_BYTES,
+          maxBytes,
           0,
         )} upload limit.`,
-        maxBytes: MEDIA_MAX_UPLOAD_BYTES,
+        maxBytes,
       },
       { status: 413 },
     );
@@ -119,7 +130,7 @@ async function handleMultipartUpload(req: Request): Promise<Response> {
     name: form.get("name")?.toString() || file.name,
     type,
     altText: form.get("altText")?.toString() || null,
-    mimeType,
+    mimeType: mimeType || null,
     size: file.size,
   };
 
@@ -129,6 +140,9 @@ async function handleMultipartUpload(req: Request): Promise<Response> {
       storageDriver: driverName,
       source,
       override,
+      // The bytes reached storage through this endpoint, so every Media type is
+      // written under its own revision and records the driver that wrote it.
+      storeUploadedObject: true,
     });
 
     return NextResponse.json(media);
