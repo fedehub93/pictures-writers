@@ -6,7 +6,9 @@ import { Readable } from "node:stream";
 
 import { NextResponse } from "next/server";
 
+import { MEDIA_PATH_PREFIX } from "@/modules/media/lib/image-ladder.mjs";
 import { renditionUrlForKey } from "@/modules/media/lib/manifest";
+import { parseSrc } from "@/modules/media/lib/url";
 import {
   findDeliveryFile,
   type DeliveryFile,
@@ -36,7 +38,7 @@ function isSafeMediaKey(key: string): boolean {
 
 function contentTypeForKey(key: string, file: DeliveryFile): string {
   if (key.endsWith("/original")) {
-    return file.contentType ?? file.mediaMimeType ?? "application/octet-stream";
+    return file.contentType ?? "application/octet-stream";
   }
 
   const extension = key.split(".").pop()?.toLowerCase();
@@ -46,7 +48,7 @@ function contentTypeForKey(key: string, file: DeliveryFile): string {
     case "webp":
       return "image/webp";
     default:
-      return file.contentType ?? file.mediaMimeType ?? "application/octet-stream";
+      return file.contentType ?? "application/octet-stream";
   }
 }
 
@@ -152,6 +154,22 @@ function remoteAddressFor(key: string, file: DeliveryFile): string | null {
   return renditionUrlForKey(file.mediaUrl, key);
 }
 
+/**
+ * A manifest written while the file was local carries `/media/<key>` addresses.
+ * If a later move records the file as remote without rewriting that manifest,
+ * redirecting to it would send the visitor back to this route forever. The
+ * inconsistent record answers 404 instead.
+ */
+function pointsAtThisRoute(address: string): boolean {
+  const { url, absolute } = parseSrc(address);
+  if (absolute) return false;
+
+  return (
+    url.pathname === MEDIA_PATH_PREFIX ||
+    url.pathname.startsWith(`${MEDIA_PATH_PREFIX}/`)
+  );
+}
+
 async function handleMediaRequest(
   req: Request,
   { params }: { params: Promise<{ path: string[] }> },
@@ -175,7 +193,7 @@ async function handleMediaRequest(
 
   const remoteAddress = remoteAddressFor(key, file);
 
-  if (!remoteAddress) {
+  if (!remoteAddress || pointsAtThisRoute(remoteAddress)) {
     return new NextResponse(null, { status: 404 });
   }
 

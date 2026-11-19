@@ -43,8 +43,6 @@ export interface DeliveryFile {
   remoteUrl: string | null;
   /** The original's recorded content type; null for a rendition. */
   contentType: string | null;
-  /** The owning Media's content type, used when no newer record exists. */
-  mediaMimeType: string | null;
   /** The Media's stored address, which carries a remote rendition manifest. */
   mediaUrl: string;
   /** Whether the requested key is a rendition rather than the original. */
@@ -54,8 +52,10 @@ export interface DeliveryFile {
 function locationOf(
   media: DeliveryMediaRow,
   record: StoredFileLocationRow | null,
-  rendition: boolean,
+  role: "original" | "rendition",
 ): DeliveryFile {
+  const rendition = role === "rendition";
+
   return {
     driver: recordedStorageDriverName(record?.driver ?? media.storageDriver),
     // A record written before the address backfill may still lack the provider
@@ -64,7 +64,6 @@ function locationOf(
       record?.remoteUrl ??
       (rendition ? null : remoteUrlForAddress(media.url)),
     contentType: rendition ? null : (record?.contentType ?? media.mimeType),
-    mediaMimeType: media.mimeType,
     mediaUrl: media.url,
     rendition,
   };
@@ -93,7 +92,7 @@ export async function findDeliveryFile(
   });
 
   if (record?.media) {
-    return locationOf(record.media, record, false);
+    return locationOf(record.media, record, "original");
   }
 
   const legacy = await db.media.findFirst({
@@ -102,7 +101,7 @@ export async function findDeliveryFile(
   });
 
   if (legacy?.key) {
-    return locationOf(legacy, null, false);
+    return locationOf(legacy, null, "original");
   }
 
   const parts = parseMediaKey(key);
@@ -122,6 +121,6 @@ export async function findDeliveryFile(
   if (!originalKey) return null;
 
   return key.startsWith(`${parentKeyPrefix(originalKey)}/`)
-    ? locationOf(owner, owner.storedFile, true)
+    ? locationOf(owner, owner.storedFile, "rendition")
     : null;
 }

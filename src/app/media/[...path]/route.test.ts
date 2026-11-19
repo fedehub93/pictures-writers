@@ -129,12 +129,12 @@ describe("GET /media/<key>", () => {
     });
   }
 
-  async function createLocalImage(keyOverride?: string, contentType = "image/png") {
+  async function createLocalImage() {
     const bytes = await createPng();
     const id = randomUUID();
-    const key = keyOverride ?? `default/${id}/1/original`;
+    const key = `default/${id}/1/original`;
 
-    await storage.local!.put(key, bytes, contentType);
+    await storage.local!.put(key, bytes, "image/png");
 
     // The Media's own columns carry no content type on purpose: the response
     // must come from the stored-file record.
@@ -144,7 +144,10 @@ describe("GET /media/<key>", () => {
       mimeType: null,
       size: bytes.byteLength,
     });
-    await createStoredFile(media, { contentType, size: bytes.byteLength });
+    await createStoredFile(media, {
+      contentType: "image/png",
+      size: bytes.byteLength,
+    });
 
     return { media, bytes, key };
   }
@@ -330,7 +333,7 @@ describe("GET /media/<key>", () => {
     const providerKey = "file-legacy-flat-key";
     const remoteUrl = `https://fake-app.ufs.sh/f/${providerKey}`;
 
-    const media = await createMedia({
+    await createMedia({
       key: providerKey,
       url: remoteUrl,
       storageDriver: null,
@@ -345,7 +348,6 @@ describe("GET /media/<key>", () => {
     expect(response.headers.get("location")).toBe(remoteUrl);
     expect(response.headers.get("cache-control")).toBe("public, max-age=300");
     expect(providerUrlReads).not.toHaveBeenCalled();
-    expect(media.storageDriver).toBeNull();
   });
 
   it("redirects a remote rendition to the address its Media manifest records without reading the provider", async () => {
@@ -379,6 +381,42 @@ describe("GET /media/<key>", () => {
     expect(response.status).toBe(302);
     expect(response.headers.get("location")).toBe(renditionUrl);
     expect(response.headers.get("cache-control")).toBe("public, max-age=300");
+    expect(providerUrlReads).not.toHaveBeenCalled();
+  });
+
+  it("answers 404 rather than redirecting a remote rendition back to its own route", async () => {
+    // A manifest written while the file was local carries /media/<key>; a
+    // remote record whose manifest still names it must not loop.
+    const id = randomUUID();
+    const key = `default/${id}/1/original`;
+    const renditionKey = `default/${id}/1/720.avif`;
+
+    const url = buildMediaDeliveryUrl(mediaPath(key), {
+      revision: 1,
+      archived: false,
+      renditions: [
+        { url: `/media/${renditionKey}`, width: 720, format: "avif" },
+      ],
+    });
+
+    const media = await createMedia({
+      id,
+      key,
+      url,
+      storageDriver: "uploadthing",
+    });
+    await createStoredFile(media, {
+      driver: "uploadthing",
+      remoteUrl: "https://cdn.example.test/files/original",
+    });
+
+    const response = await GET(
+      new Request(`http://localhost/media/${renditionKey}`),
+      context(renditionKey),
+    );
+
+    expect(response.status).toBe(404);
+    expect(response.headers.get("location")).toBeNull();
     expect(providerUrlReads).not.toHaveBeenCalled();
   });
 

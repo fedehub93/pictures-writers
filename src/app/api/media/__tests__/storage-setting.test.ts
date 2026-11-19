@@ -171,6 +171,7 @@ describe("the storage choice in the media library", () => {
     expect(served.headers.get("content-type")).toBe("image/png");
     expect(served.headers.get("cache-control")).toContain("immutable");
     expect(served.headers.get("etag")).toBeTruthy();
+    expect(served.headers.get("content-length")).toBe(String(media.size));
     expect(bytes.byteLength).toBe(media.size);
   });
 
@@ -275,6 +276,9 @@ describe("the storage choice in the media library", () => {
 
       expect(served.status).toBe(200);
       expect(served.headers.get("content-type")).toBe(mimeType);
+      expect(served.headers.get("content-length")).toBe(
+        String(bytes.byteLength),
+      );
       expect(new Uint8Array(await served.arrayBuffer())).toEqual(bytes);
 
       const ranged = await getMedia(
