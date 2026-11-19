@@ -125,8 +125,6 @@ library but keeps counting it.
 - `Media.url` carries the `?mt=` token, and for remote rows that token embeds provider URLs,
   while the spec says `Media.url` is `/media/<key>` and nothing else. Decide before the byte
   migration: derive the token at render time, or record the exception in ADR-0026.
-- `removeMany` resolves one storage driver for the whole batch. A batch containing rows written
-  by different drivers leaves objects behind. Resolve per row, like delivery.
 - Updating `altText` changes published output but does not revalidate it
   (`revalidateContent` is not called).
 - The picker copy still says "asset"; the glossary term is Media.

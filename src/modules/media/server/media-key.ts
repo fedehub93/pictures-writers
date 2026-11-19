@@ -40,6 +40,27 @@ export function mediaKeyDirectory(key: string): string | null {
 }
 
 /**
+ * The directory that owns every object of one Media. A namespaced key belongs
+ * to `<installationSlug>/<mediaId>/`, so removing that prefix removes every
+ * revision an interrupted operation might have left behind. A key written
+ * before the namespace is either `<mediaId>/<revision>/<file>`, whose owning
+ * directory is `<mediaId>/`, or flat, which has no directory at all.
+ */
+export function mediaStoragePrefixForKey(
+  mediaId: string,
+  key: string | null,
+  installationSlug: string = getInstallationSlug(),
+): string {
+  const parsed = key ? parseMediaKey(key) : null;
+  if (parsed) return mediaStoragePrefix(parsed.mediaId, parsed.installationSlug);
+
+  const segments = key?.split("/") ?? [];
+  if (segments.length === 3) return `${segments[0]}/`;
+
+  return mediaStoragePrefix(mediaId, installationSlug);
+}
+
+/**
  * Whether a storage key is the original or a rendition of one revision.
  */
 export function isMediaRevisionKey(

@@ -15,6 +15,7 @@ import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 
 import type { MediaLibraryView } from "../../constants";
 import { mediaErrorMessage } from "../../lib/error-message";
+import { mediaDeletionCleanupNotice } from "../../lib/deletion-notice";
 import {
   MEDIA_USAGE_NOTE,
   type MediaLibraryEntry,
@@ -85,14 +86,13 @@ const MediaLibrary = ({
     );
   };
 
-  const runBulkAction = async (
-    action: (ids: string[]) => Promise<number>,
-    success: (count: number) => string,
+  const runBulkAction = async <T,>(
+    action: (ids: string[]) => Promise<T>,
+    announce: (result: T) => void,
   ) => {
     try {
       setIsBulkLoading(true);
-      const count = await action(selectedIds);
-      toast.success(success(count));
+      announce(await action(selectedIds));
       setCheckedIds([]);
     } catch (error) {
       toast.error(mediaErrorMessage(error));
@@ -107,13 +107,18 @@ const MediaLibrary = ({
   const onBulkArchive = () =>
     runBulkAction(
       (ids) => archive.mutateAsync({ ids }),
-      (count) => `Archived ${count} Media`,
+      (count) => toast.success(`Archived ${count} Media`),
     );
 
   const onBulkDelete = () =>
     runBulkAction(
       (ids) => remove.mutateAsync({ ids }),
-      (count) => `Deleted ${count} Media permanently`,
+      ({ deleted, cleanup }) => {
+        toast.success(`Deleted ${deleted} Media permanently`);
+
+        const notice = mediaDeletionCleanupNotice(cleanup);
+        if (notice) toast(notice);
+      },
     );
 
   return (

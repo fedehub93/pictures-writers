@@ -6,6 +6,7 @@ export {
   getStorageDriver,
   isStorageDriverConfigured,
   isUploadThingConfigured,
+  resolveMediaStorageDriver,
   resolveStorageDriver,
   storageConfigFromEnv,
   storageDriverNameFromSetting,

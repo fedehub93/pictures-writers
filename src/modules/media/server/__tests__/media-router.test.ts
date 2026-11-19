@@ -421,7 +421,10 @@ describe("mediaRouter", () => {
     });
 
     it("deletes the rows and the storage prefix when the Media is archived and unreferenced", async () => {
-      const media = await createMedia({ archivedAt: new Date() });
+      const media = await createMedia({
+        archivedAt: new Date(),
+        storageDriver: "local",
+      });
       const key = `default/${media.id}/1/original`;
       await db.media.update({
         where: { id: media.id },
@@ -429,7 +432,10 @@ describe("mediaRouter", () => {
       });
       await driver.put(key, new Uint8Array([1, 2, 3]), "image/png");
 
-      expect(await caller.removeMany({ ids: [media.id] })).toBe(1);
+      expect(await caller.removeMany({ ids: [media.id] })).toMatchObject({
+        deleted: 1,
+        cleanup: [{ mediaId: media.id, status: "removed" }],
+      });
 
       await expect(
         db.media.findUnique({ where: { id: media.id } }),

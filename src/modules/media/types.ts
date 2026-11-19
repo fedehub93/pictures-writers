@@ -14,6 +14,16 @@ export type MediaRenditionFormat = "avif" | "webp";
 export type MediaCleanupStatus = "removed" | "skipped" | "failed";
 
 /**
+ * What happened to the objects of one permanently deleted Media. `skipped`
+ * means the driver recorded on the row is unknown or not configured here, so
+ * the bytes were deliberately left in place while the row was removed.
+ */
+export interface MediaDeletionCleanup {
+  mediaId: string;
+  status: MediaCleanupStatus;
+}
+
+/**
  * One derived copy of a Media's original. `key` is the truth; the delivery
  * URL is a projection resolved by the storage driver when the manifest is
  * written into a delivery URL.

@@ -17,13 +17,18 @@ import {
 import { mediaUsageBytes } from "@/modules/media/lib/quota";
 import { parseStorageDriver } from "@/modules/media/lib/storage-driver";
 import { mediaPath } from "@/modules/media/lib/url";
-import type { MediaCleanupStatus, MediaRendition } from "@/modules/media/types";
+import type {
+  MediaCleanupStatus,
+  MediaDeletionCleanup,
+  MediaRendition,
+} from "@/modules/media/types";
 
 import { checksumOf } from "./image-bytes";
 import {
   mediaKeyDirectory,
   mediaRevisionPrefix,
   mediaStoragePrefix,
+  mediaStoragePrefixForKey,
 } from "./media-key";
 import {
   MediaQuotaExceededError,
@@ -33,9 +38,8 @@ import { countMediaReferencesFor } from "./media-usage";
 import { generateRenditions, normaliseImage } from "./process-image";
 import {
   getInstallationSlug,
-  driverForStorageDriver,
-  isStorageDriverConfigured,
   resolveActiveStorageDriver,
+  resolveMediaStorageDriver,
   StorageObjectNotFoundError,
   type StorageDriverName,
   type StorageEnvironment,
@@ -590,15 +594,16 @@ async function cleanupPreviousRevision({
   // A Media with no recorded driver was written before the storage seam: it
   // lives on UploadThing and its object is addressed by the provider's file
   // key, not by a revision prefix.
+  const resolution = resolveMediaStorageDriver(media.storageDriver, {
+    activeDriver,
+    activeDriverName,
+    env,
+  });
+
+  if (!resolution.resolved) return "skipped";
+
   const recorded = parseStorageDriver(media.storageDriver);
-  const recordedName = recorded ?? "uploadthing";
-
-  if (!isStorageDriverConfigured(recordedName, env)) return "skipped";
-
-  const previousDriver =
-    recordedName === activeDriverName
-      ? activeDriver
-      : driverForStorageDriver(recorded, env);
+  const previousDriver = resolution.driver;
 
   const prefix =
     recorded === null
@@ -906,30 +911,89 @@ export async function restoreMedia(mediaId: string): Promise<MediaLibraryItem> {
 }
 
 export interface DeleteMediaPermanentlyOptions {
+  /** The driver the active choice resolved to. */
   driver: StorageDriver;
+  /** The name of `driver`; rows recording it reuse that instance. */
+  activeStorageDriver: StorageDriverName;
   mediaId: string;
+  /** Resolves each row's recorded driver; defaults to the process env. */
+  env?: StorageEnvironment;
 }
 
-export interface DeleteMediaPermanentlyBatchOptions {
-  driver: StorageDriver;
+export interface DeleteMediaPermanentlyBatchOptions
+  extends Omit<DeleteMediaPermanentlyOptions, "mediaId"> {
   mediaIds: string[];
 }
 
-function storagePrefixFor(mediaId: string, key: string | null): string {
-  const fallback = `${getInstallationSlug()}/${mediaId}/`;
-  if (!key) return fallback;
+export interface DeleteMediaPermanentlyBatchResult {
+  deleted: number;
+  /**
+   * What happened to each deleted Media's objects, in the order the rows were
+   * loaded. A row whose provider cannot be reached here is `skipped`, never a
+   * reason to abort the batch.
+   */
+  cleanup: MediaDeletionCleanup[];
+}
 
-  const segments = key.split("/");
-  // Namespaced revision: <slug>/<mediaId>/<revision>/<file>
-  if (segments.length === 4) {
-    return `${segments[0]}/${segments[1]}/`;
-  }
-  // Flat revision: <mediaId>/<revision>/<file>
-  if (segments.length === 3) {
-    return `${segments[0]}/`;
+/**
+ * Removes one Media's objects through the driver that wrote them.
+ *
+ * The revision prefix covers every object written under the namespace. A row
+ * with no recorded driver predates it: its key is the provider's own file key,
+ * which `deletePrefix` cannot address by customId, so the exact object is
+ * removed as well.
+ */
+async function removeMediaObjects({
+  media,
+  activeDriver,
+  activeStorageDriver,
+  installationSlug,
+  env,
+}: {
+  media: { id: string; key: string | null; storageDriver: string | null };
+  activeDriver: StorageDriver;
+  activeStorageDriver: StorageDriverName;
+  installationSlug: string;
+  env: StorageEnvironment;
+}): Promise<MediaCleanupStatus> {
+  const resolution = resolveMediaStorageDriver(media.storageDriver, {
+    activeDriver,
+    activeDriverName: activeStorageDriver,
+    env,
+  });
+
+  if (!resolution.resolved) return "skipped";
+
+  const prefix = mediaStoragePrefixForKey(
+    media.id,
+    media.key,
+    installationSlug,
+  );
+
+  try {
+    await resolution.driver.deletePrefix(prefix);
+  } catch (error) {
+    throw new MediaProcessingError(
+      "The stored objects could not be removed. Nothing was deleted.",
+      { cause: error },
+    );
   }
 
-  return fallback;
+  if (media.storageDriver !== null || !media.key) return "removed";
+
+  try {
+    await resolution.driver.delete(media.key);
+  } catch (error) {
+    if (error instanceof StorageObjectNotFoundError) return "removed";
+
+    console.error(
+      "[MEDIA_DELETE] Could not remove the legacy original",
+      error,
+    );
+    return "failed";
+  }
+
+  return "removed";
 }
 
 /**
@@ -937,15 +1001,18 @@ function storagePrefixFor(mediaId: string, key: string | null): string {
  *
  * Every id is validated before anything is touched: an active Media or one
  * still referenced by content aborts the whole batch, so a selected cover is
- * never cleared silently. Storage is deleted before the rows, and every object
- * lives under `<mediaId>/`, which makes the prefix the unit of cleanup.
+ * never cleared silently. Storage is deleted before the rows, through the
+ * driver recorded on each row, so a library that mixes local and provider Media
+ * leaves nothing behind on either.
  */
 export async function deleteMediaPermanentlyBatch({
   driver,
+  activeStorageDriver,
   mediaIds,
-}: DeleteMediaPermanentlyBatchOptions): Promise<number> {
+  env = process.env,
+}: DeleteMediaPermanentlyBatchOptions): Promise<DeleteMediaPermanentlyBatchResult> {
   const uniqueIds = [...new Set(mediaIds)];
-  if (uniqueIds.length === 0) return 0;
+  if (uniqueIds.length === 0) return { deleted: 0, cleanup: [] };
 
   const media = await db.media.findMany({
     where: { id: { in: uniqueIds } },
@@ -964,39 +1031,34 @@ export async function deleteMediaPermanentlyBatch({
     throw new MediaInUseError(referenced, usage.get(referenced) ?? 0);
   }
 
+  const installationSlug = getInstallationSlug(env);
+  const cleanup: MediaDeletionCleanup[] = [];
+
   for (const item of media) {
-    const prefix = storagePrefixFor(item.id, item.key);
-
-    try {
-      await driver.deletePrefix(prefix);
-    } catch (error) {
-      throw new MediaProcessingError(
-        "The stored objects could not be removed. Nothing was deleted.",
-        { cause: error },
-      );
-    }
-
-    // Media created before the storage seam keep their original outside the
-    // Media prefix. Legacy UploadThing file keys are not addressable by
-    // customId, so a failure here only leaves that legacy object behind.
-    if (item.key && !item.key.startsWith(prefix)) {
-      await driver.delete(item.key).catch((error) => {
-        console.error(
-          "[MEDIA_DELETE] Could not remove the legacy original",
-          error,
-        );
-      });
-    }
+    cleanup.push({
+      mediaId: item.id,
+      status: await removeMediaObjects({
+        media: item,
+        activeDriver: driver,
+        activeStorageDriver,
+        installationSlug,
+        env,
+      }),
+    });
   }
 
   await db.media.deleteMany({ where: { id: { in: uniqueIds } } });
 
-  return uniqueIds.length;
+  return { deleted: uniqueIds.length, cleanup };
 }
 
-export async function deleteMediaPermanently({
-  driver,
-  mediaId,
-}: DeleteMediaPermanentlyOptions): Promise<void> {
-  await deleteMediaPermanentlyBatch({ driver, mediaIds: [mediaId] });
+export async function deleteMediaPermanently(
+  options: DeleteMediaPermanentlyOptions,
+): Promise<MediaDeletionCleanup> {
+  const result = await deleteMediaPermanentlyBatch({
+    ...options,
+    mediaIds: [options.mediaId],
+  });
+
+  return result.cleanup[0];
 }

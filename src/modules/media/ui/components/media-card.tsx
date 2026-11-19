@@ -16,6 +16,7 @@ import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 
 import { mediaErrorMessage } from "../../lib/error-message";
+import { mediaDeletionCleanupNotice } from "../../lib/deletion-notice";
 import { useMediaInvalidation } from "../../hooks/use-media-invalidation";
 import {
   formatMediaDimensions,
@@ -117,11 +118,19 @@ export const MediaCard = ({
       "Media restored",
     );
 
-  const onDelete = () =>
-    runAction(
-      () => remove.mutateAsync({ ids: [id] }),
-      "Media deleted permanently",
-    );
+  const onDelete = async () => {
+    try {
+      const { cleanup } = await remove.mutateAsync({ ids: [id] });
+      toast.success("Media deleted permanently");
+
+      const notice = mediaDeletionCleanupNotice(cleanup);
+      if (notice) toast(notice);
+
+      await invalidateLibrary();
+    } catch (error) {
+      toast.error(mediaErrorMessage(error));
+    }
+  };
 
   const archiveDescription =
     usageCount > 0

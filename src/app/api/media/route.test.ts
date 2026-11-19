@@ -553,7 +553,11 @@ describe("POST /api/media", () => {
     ).resolves.toBe(0);
 
     await archiveMedia(hog.id);
-    await deleteMediaPermanentlyBatch({ driver, mediaIds: [hog.id] });
+    await deleteMediaPermanentlyBatch({
+      driver,
+      activeStorageDriver: "local",
+      mediaIds: [hog.id],
+    });
     mediaIds.splice(mediaIds.indexOf(hog.id), 1);
 
     const retried = await POST(multipartRequest(retryForm()));

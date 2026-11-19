@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 
 import sharp from "sharp";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { MediaType, ProductType } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
@@ -16,6 +16,7 @@ import {
   archiveMedia,
   createMediaFromUpload,
   deleteMediaPermanently,
+  deleteMediaPermanentlyBatch,
   MediaInUseError,
   MediaNotArchivedError,
   MediaNotFoundError,
@@ -23,7 +24,55 @@ import {
 } from "../media-service";
 import { countMediaReferences, countMediaReferencesFor } from "../media-usage";
 import { createLocalStorageDriver } from "../storage/local";
-import type { StorageDriver } from "../storage/types";
+import {
+  StorageObjectNotFoundError,
+  type StorageDriver,
+} from "../storage/types";
+import { createUploadThingStorageDriver } from "../storage/uploadthing";
+
+const uploadThing = vi.hoisted(() => ({
+  fake: undefined as
+    | {
+        api: import("../storage/uploadthing").UploadThingApi;
+        fetch: typeof fetch;
+        putLegacyObject: (
+          key: string,
+          bytes: Uint8Array<ArrayBuffer>,
+          contentType: string,
+        ) => void;
+      }
+    | undefined,
+}));
+
+// Deletion resolves a legacy row through the provider, so the fake is injected
+// at the same seam the storage contract suite uses: the UploadThing client.
+vi.mock("uploadthing/server", async () => {
+  const { createFakeUploadThingApi } = await import(
+    "@/modules/media/server/storage/__tests__/fake-uploadthing"
+  );
+  const fake = createFakeUploadThingApi();
+  uploadThing.fake = fake;
+
+  return {
+    UTApi: class {
+      uploadFiles = fake.api.uploadFiles;
+      deleteFiles = fake.api.deleteFiles;
+      getFileUrls = fake.api.getFileUrls;
+      listFiles = fake.api.listFiles;
+    },
+  };
+});
+
+function remoteDriver(): StorageDriver {
+  if (!uploadThing.fake) {
+    throw new Error("The fake UploadThing client was not installed.");
+  }
+
+  return createUploadThingStorageDriver(
+    uploadThing.fake.api,
+    uploadThing.fake.fetch,
+  );
+}
 
 async function createPng(
   background = { r: 40, g: 120, b: 200 },
@@ -69,6 +118,7 @@ describe("media archive, restore and deletion", () => {
 
     const media = await createMediaFromUpload({
       driver,
+      storageDriver: "local",
       source: {
         key,
         url: `https://ghhc7ejbae.ufs.sh/f/${key}`,
@@ -141,7 +191,7 @@ describe("media archive, restore and deletion", () => {
     const { media } = await createImageMedia();
 
     await expect(
-      deleteMediaPermanently({ driver, mediaId: media.id }),
+      deleteMediaPermanently({ driver, activeStorageDriver: "local", mediaId: media.id }),
     ).rejects.toBeInstanceOf(MediaNotArchivedError);
 
     await expect(
@@ -154,7 +204,11 @@ describe("media archive, restore and deletion", () => {
     const { media } = await createImageMedia();
     await archiveMedia(media.id);
 
-    await deleteMediaPermanently({ driver, mediaId: media.id });
+    await deleteMediaPermanently({
+      driver,
+      activeStorageDriver: "local",
+      mediaId: media.id,
+    });
 
     await expect(
       db.media.findUnique({ where: { id: media.id } }),
@@ -162,30 +216,40 @@ describe("media archive, restore and deletion", () => {
     await expect(driver.deletePrefix(`${media.id}/`)).resolves.toBe(0);
   });
 
-  it("removes a legacy original stored outside the Media prefix", async () => {
-    const key = `uploads/${randomUUID()}`;
-    await driver.put(key, new Uint8Array([1, 2, 3]), "application/pdf");
+  it("removes a legacy original by its provider file key", async () => {
+    const key = `legacy-${randomUUID()}`;
+    const bytes = new Uint8Array([1, 2, 3]);
+    uploadThing.fake!.putLegacyObject(key, bytes, "application/pdf");
 
     const media = await createMediaFromUpload({
       driver,
       source: {
         key,
-        url: `https://ghhc7ejbae.ufs.sh/f/${key}`,
+        url: `https://fake-app.ufs.sh/f/${key}`,
         name: "Legacy attachment",
         type: MediaType.FILE,
         mimeType: "application/pdf",
-        size: 3,
+        size: bytes.byteLength,
       },
     });
     mediaIds.push(media.id);
     await archiveMedia(media.id);
 
-    await deleteMediaPermanently({ driver, mediaId: media.id });
+    const result = await deleteMediaPermanentlyBatch({
+      driver,
+      activeStorageDriver: "local",
+      mediaIds: [media.id],
+      env: { UPLOADTHING_TOKEN: "fake-token" },
+    });
 
+    expect(result.deleted).toBe(1);
+    expect(result.cleanup).toEqual([{ mediaId: media.id, status: "removed" }]);
     await expect(
       db.media.findUnique({ where: { id: media.id } }),
     ).resolves.toBeNull();
-    await expect(driver.get(key)).rejects.toBeDefined();
+    await expect(remoteDriver().get(key)).rejects.toBeInstanceOf(
+      StorageObjectNotFoundError,
+    );
   });
 
   it("refuses permanent deletion when content still references the Media", async () => {
@@ -195,6 +259,7 @@ describe("media archive, restore and deletion", () => {
 
     const error = await deleteMediaPermanently({
       driver,
+      activeStorageDriver: "local",
       mediaId: media.id,
     }).catch((reason) => reason);
 
@@ -235,9 +300,158 @@ describe("media archive, restore and deletion", () => {
       MediaNotFoundError,
     );
     await expect(
-      deleteMediaPermanently({ driver, mediaId }),
+      deleteMediaPermanently({
+        driver,
+        activeStorageDriver: "local",
+        mediaId,
+      }),
     ).rejects.toBeInstanceOf(MediaNotFoundError);
   });
+
+  it("deletes a mixed selection through the driver recorded on each row", async () => {
+    const { media: local } = await createImageMedia();
+    await archiveMedia(local.id);
+
+    const flat = await createLegacyMedia(`legacy-flat-${randomUUID()}`);
+    const namespaced = await createLegacyMedia(
+      `${randomUUID()}/1/original`,
+    );
+
+    const result = await deleteMediaPermanentlyBatch({
+      driver,
+      activeStorageDriver: "local",
+      mediaIds: [local.id, flat.id, namespaced.id],
+      env: { UPLOADTHING_TOKEN: "fake-token" },
+    });
+
+    expect(result.deleted).toBe(3);
+    expect(
+      new Map(result.cleanup.map((entry) => [entry.mediaId, entry.status])),
+    ).toEqual(
+      new Map([
+        [local.id, "removed"],
+        [flat.id, "removed"],
+        [namespaced.id, "removed"],
+      ]),
+    );
+
+    await expect(
+      db.media.findMany({
+        where: { id: { in: [local.id, flat.id, namespaced.id] } },
+      }),
+    ).resolves.toEqual([]);
+
+    // Every byte under the local Media's prefix is gone...
+    await expect(driver.deletePrefix(`default/${local.id}/`)).resolves.toBe(0);
+    await expect(driver.get(local.key!)).rejects.toBeInstanceOf(
+      StorageObjectNotFoundError,
+    );
+
+    // ...and both legacy key shapes were removed from the provider.
+    const remote = remoteDriver();
+    for (const legacy of [flat, namespaced]) {
+      await expect(remote.get(legacy.key!)).rejects.toBeInstanceOf(
+        StorageObjectNotFoundError,
+      );
+    }
+  });
+
+  it("deletes the rows and reports the object when the legacy provider is not configured", async () => {
+    const { media: local } = await createImageMedia();
+    await archiveMedia(local.id);
+    const legacy = await createLegacyMedia(`legacy-${randomUUID()}`);
+
+    const result = await deleteMediaPermanentlyBatch({
+      driver,
+      activeStorageDriver: "local",
+      mediaIds: [local.id, legacy.id],
+      // No UploadThing token: the row's driver cannot be reached here.
+      env: {},
+    });
+
+    expect(result.deleted).toBe(2);
+    expect(
+      new Map(result.cleanup.map((entry) => [entry.mediaId, entry.status])),
+    ).toEqual(
+      new Map([
+        [local.id, "removed"],
+        [legacy.id, "skipped"],
+      ]),
+    );
+
+    await expect(
+      db.media.findMany({ where: { id: { in: [local.id, legacy.id] } } }),
+    ).resolves.toEqual([]);
+    await expect(driver.deletePrefix(`default/${local.id}/`)).resolves.toBe(0);
+
+    // The provider object stays behind on purpose, and the report says so.
+    await expect(remoteDriver().get(legacy.key!)).resolves.toBeDefined();
+  });
+
+  it("skips a Media whose recorded driver is unknown without aborting the batch", async () => {
+    const { media: local } = await createImageMedia();
+    await archiveMedia(local.id);
+
+    const unknown = await db.media.create({
+      data: {
+        name: "Future driver document",
+        key: `s3/${randomUUID()}/1/original`,
+        url: `https://unsupported.example/${randomUUID()}`,
+        size: 3,
+        type: MediaType.FILE,
+        mimeType: "application/pdf",
+        revision: 1,
+        storageDriver: "s3",
+        archivedAt: new Date(),
+      },
+    });
+    mediaIds.push(unknown.id);
+
+    const result = await deleteMediaPermanentlyBatch({
+      driver,
+      activeStorageDriver: "local",
+      mediaIds: [local.id, unknown.id],
+      env: {},
+    });
+
+    expect(result.deleted).toBe(2);
+    expect(
+      new Map(result.cleanup.map((entry) => [entry.mediaId, entry.status])),
+    ).toEqual(
+      new Map([
+        [local.id, "removed"],
+        [unknown.id, "skipped"],
+      ]),
+    );
+    await expect(
+      db.media.findMany({ where: { id: { in: [local.id, unknown.id] } } }),
+    ).resolves.toEqual([]);
+    await expect(driver.deletePrefix(`default/${local.id}/`)).resolves.toBe(0);
+  });
+
+  async function createLegacyMedia(
+    key: string,
+    bytes = new Uint8Array([1, 2, 3]),
+  ) {
+    uploadThing.fake!.putLegacyObject(key, bytes, "application/pdf");
+
+    const media = await db.media.create({
+      data: {
+        name: "Legacy provider document",
+        key,
+        url: `https://fake-app.ufs.sh/f/${encodeURIComponent(key)}`,
+        size: bytes.byteLength,
+        type: MediaType.FILE,
+        mimeType: "application/pdf",
+        revision: 1,
+        storageDriver: null,
+        archivedAt: new Date(),
+      },
+    });
+    mediaIds.push(media.id);
+
+    return media;
+  }
 
   async function createPostVersion(mediaId: string) {
     const root = await db.postRoot.create({
@@ -315,6 +529,7 @@ describe("media archive, restore and deletion", () => {
     await driver.put(otherKey, await createPng({ r: 200, g: 40, b: 90 }), "image/png");
     const other = await createMediaFromUpload({
       driver,
+      storageDriver: "local",
       source: {
         key: otherKey,
         url: `https://ghhc7ejbae.ufs.sh/f/${otherKey}`,

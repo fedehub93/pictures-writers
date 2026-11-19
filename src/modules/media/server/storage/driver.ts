@@ -128,6 +128,56 @@ export function getStorageDriver(env?: StorageEnvironment): StorageDriver {
   return resolveStorageDriver(env).driver;
 }
 
+export type RecordedStorageDriverResolution =
+  | { resolved: true; driver: StorageDriver; name: StorageDriverName }
+  | {
+      resolved: false;
+      /** Why the row's objects cannot be reached from this instance. */
+      reason: string;
+    };
+
+/**
+ * The driver that owns one Media row's objects, resolved from the driver
+ * recorded on that row rather than from the active choice.
+ *
+ * A row with no recorded driver was written before the storage seam landed: it
+ * lives on UploadThing and resolves as remote. A name this build does not know
+ * is unresolvable rather than a reason to guess, and a driver whose credentials
+ * are absent here is reported so a batch can skip it instead of failing.
+ */
+export function resolveMediaStorageDriver(
+  recorded: string | null,
+  {
+    activeDriver,
+    activeDriverName,
+    env = process.env,
+  }: {
+    activeDriver: StorageDriver;
+    activeDriverName: StorageDriverName;
+    env?: StorageEnvironment;
+  },
+): RecordedStorageDriverResolution {
+  const known = parseStorageDriver(recorded);
+  const name = known ?? (recorded === null ? "uploadthing" : null);
+
+  if (name === null) {
+    return { resolved: false, reason: `unknown storage driver "${recorded}"` };
+  }
+
+  if (!isStorageDriverConfigured(name, env)) {
+    return { resolved: false, reason: `storage driver "${name}" is not configured` };
+  }
+
+  return {
+    resolved: true,
+    name,
+    driver:
+      name === activeDriverName
+        ? activeDriver
+        : driverForStorageDriver(name, env),
+  };
+}
+
 export function driverForStorageDriver(
   name: string | null | undefined,
   env: StorageEnvironment = process.env,

@@ -181,10 +181,13 @@ export const mediaRouter = createTRPCRouter({
       try {
         // Delete through the driver the library reports, so a choice saved in
         // Settings is honoured even when the environment variable is unset.
-        const { driver } = await resolveActiveStorageDriver();
+        // Each row's objects are still removed through the driver recorded on
+        // that row, so a mixed library is cleaned on both sides.
+        const { driver, name } = await resolveActiveStorageDriver();
 
         return await deleteMediaPermanentlyBatch({
           driver,
+          activeStorageDriver: name,
           mediaIds: input.ids,
         });
       } catch (error) {
