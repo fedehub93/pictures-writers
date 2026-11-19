@@ -23,15 +23,16 @@ deliver   GET /media/<key>
           -> local: stream from disk | remote: 302 to the CDN
 ```
 
-Every Media also has exactly one `StoredFile`, the record that answers "where
-are the bytes": its key, the driver that owns it, the provider address when the
-driver is remote, content type, size, checksum and kind. New uploads create it
-in the same transaction as the Media, so a failed upload leaves neither; the
-one-time `npm run media:backfill-files` creates it for Media that predate it,
-from what the library already knows, and reports any Media whose key it cannot
-read. The command never rewrites a Media row. Delivery still reads the Media's
-own columns, so the two records stay in step until delivery and the backfills
-move onto the location record.
+Every Media with a readable storage key has exactly one `StoredFile`, the
+record that answers "where are the bytes": its key, the driver that owns it,
+the provider address when the driver is remote, content type, size, checksum
+and kind. New uploads and replacements write it in the same transaction as the
+Media, so a failed write leaves neither; the one-time
+`npm run media:backfill-files` creates it for Media that predate it, from what
+the library already knows, and reports any Media whose key it cannot read. The
+command never rewrites a Media row. Delivery still reads the Media's own
+columns, so the two records stay in step until delivery and the backfills move
+onto the location record.
 
 The active driver decides where **new** uploads go. Delivery never asks the active driver: it
 asks the row, so switching storage affects only new files. The metadata and rendition backfills

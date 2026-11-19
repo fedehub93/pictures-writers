@@ -147,6 +147,16 @@ export type RecordedStorageDriverNameResolution =
     };
 
 /**
+ * The driver name an existing row records. A row with no recorded driver was
+ * written before the storage seam and lives on UploadThing. A name this build
+ * does not know is preserved rather than guessed at, so the audit can report it.
+ */
+export function recordedStorageDriverName(recorded: string | null): string {
+  const trimmed = recorded?.trim();
+  return trimmed ? trimmed : "uploadthing";
+}
+
+/**
  * The driver name that owns one Media row, resolved from the driver recorded on
  * that row rather than from the active choice.
  *

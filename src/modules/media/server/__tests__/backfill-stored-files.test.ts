@@ -192,6 +192,52 @@ describe("backfillStoredFiles", () => {
     expect(after).toEqual(before);
   });
 
+  it("records a legacy /assets address as a provider location", async () => {
+    const key = `legacy-asset-${randomUUID()}`;
+    const media = await createMedia({
+      key: null,
+      url: `/assets/${key}`,
+      storageDriver: null,
+    });
+
+    const report = await run();
+
+    expect(report).toMatchObject({ created: 1, failed: [] });
+    await expect(
+      db.storedFile.findUniqueOrThrow({ where: { mediaId: media.id } }),
+    ).resolves.toMatchObject({
+      key,
+      driver: "uploadthing",
+      remoteUrl: `https://ghhc7ejbae.ufs.sh/f/${key}`,
+    });
+  });
+
+  it("reports a key that belongs to another Media instead of aborting the run", async () => {
+    const key = `shared-${randomUUID()}`;
+    const first = await createMedia({
+      key,
+      url: `/media/${key}`,
+      storageDriver: "local",
+    });
+    const second = await createMedia({
+      key,
+      url: `/media/${key}/copy`,
+      storageDriver: "local",
+    });
+
+    const report = await run();
+
+    expect(report.created).toBe(1);
+    expect(report.failed).toHaveLength(1);
+    expect(report.failed[0]).toMatchObject({
+      reason: "storage key already belongs to another file",
+    });
+    expect([first.id, second.id]).toContain(report.failed[0].mediaId);
+    await expect(
+      db.storedFile.count({ where: { key } }),
+    ).resolves.toBe(1);
+  });
+
   it("writes nothing in a dry run", async () => {
     const local = await createLocalMedia();
 

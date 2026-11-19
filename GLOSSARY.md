@@ -126,6 +126,14 @@ _Avoid_: Cache TTL when referring to the strategy.
 
 ## Media
 
+**Stored file**:
+The record of where one file's bytes are: its storage key, the driver that owns it, the remote address when that driver is remote, content type, size, checksum, kind and origin. A Media is one role of a Stored file; attachments and avatars are other roles. One Stored file per file the Installation owns, independent of the role and the driver.
+_Avoid_: Asset; file when the role matters; Kind for the location record, since kind is the role.
+
+**Storage location**:
+Where the bytes of a Stored file live: its storage key on one storage driver, plus the remote address when the driver is a provider. It is stored per file, never per Installation, so choosing a driver and moving bytes are separate acts.
+_Avoid_: Provider, bucket, path when referring to the record.
+
 **Media**:
 The logical identity of one uploaded file in the library: its name, type, storage key, size, checksum, alt text, and the manifest of the renditions derived from it. One Media per original file; content references the Media, never a rendition.
 _Avoid_: Asset, file, attachment when referring to the library entity; using Media for a derived rendition.
@@ -149,6 +157,10 @@ _Avoid_: Path, filename, URL when referring to the identifier.
 **Storage driver**:
 The adapter that writes, deletes and addresses objects for one storage Provider. The active driver for new uploads is an Installation setting, falling back to configuration when the owner has not chosen; every Media records the driver that wrote it, so delivery resolves per row.
 _Avoid_: Provider, which is the external service; storage integration, which would be the Provider plus its stored secrets.
+
+**Re-home**:
+Moving a Stored file's bytes from the driver that holds them to the active driver without changing its key or its canonical address. It rewrites the file's driver and remote address only; a file that cannot be read stays where it is and keeps serving.
+_Avoid_: Migrate, sync, move when a revision or address changes, which is a replace rather than a re-home.
 
 **Media revision**:
 A counter on a Media that changes when its original file is replaced, giving every rendition a new storage key so no cache can serve the previous file.

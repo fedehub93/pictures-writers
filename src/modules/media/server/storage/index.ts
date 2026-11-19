@@ -6,6 +6,7 @@ export {
   getStorageDriver,
   isStorageDriverConfigured,
   isUploadThingConfigured,
+  recordedStorageDriverName,
   resolveMediaDriverName,
   resolveMediaStorageDriver,
   resolveStorageDriver,

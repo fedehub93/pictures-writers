@@ -16,7 +16,7 @@ import {
 } from "@/modules/media/lib/media-library";
 import { mediaUsageBytes } from "@/modules/media/lib/quota";
 import { parseStorageDriver } from "@/modules/media/lib/storage-driver";
-import { mediaPath, parseSrc } from "@/modules/media/lib/url";
+import { mediaPath, mediaSourceKey } from "@/modules/media/lib/url";
 import type {
   MediaCleanupStatus,
   MediaDeletionCleanup,
@@ -38,6 +38,7 @@ import { countMediaReferencesFor } from "./media-usage";
 import { generateRenditions, normaliseImage } from "./process-image";
 import {
   getInstallationSlug,
+  recordedStorageDriverName,
   resolveActiveStorageDriver,
   resolveMediaStorageDriver,
   StorageObjectNotFoundError,
@@ -48,6 +49,8 @@ import {
 import type { StorageDriver } from "./storage/types";
 import {
   createStoredFileForMedia,
+  mediaStoredFileCreateData,
+  remoteUrlForAddress,
   remoteUrlForUpload,
 } from "./stored-file";
 
@@ -193,6 +196,15 @@ async function createPlainMedia(
   }
 
   const size = source.size;
+  // A Media without a readable location could never be served or audited, so
+  // the legacy branch refuses it rather than creating a row nothing can find.
+  const key = mediaSourceKey({ key: source.key, url: source.url });
+
+  if (!key) {
+    throw new MediaProcessingError(
+      "The uploaded file cannot be recorded because its storage key is missing.",
+    );
+  }
 
   return withMediaQuotaAdmission(
     { incomingBytes: size },
@@ -212,16 +224,14 @@ async function createPlainMedia(
 
       // The legacy provider path records the object exactly as it arrived:
       // there is no recorded driver in that era, which resolves as UploadThing.
-      if (source.key) {
-        await createStoredFileForMedia(tx, media.id, {
-          key: source.key,
-          driver: "uploadthing",
-          remoteUrl: parseSrc(source.url).absolute ? source.url : null,
-          contentType: source.mimeType || null,
-          size,
-          checksum: null,
-        });
-      }
+      await createStoredFileForMedia(tx, media.id, {
+        key,
+        driver: recordedStorageDriverName(null),
+        remoteUrl: remoteUrlForAddress(source.url),
+        contentType: source.mimeType || null,
+        size,
+        checksum: null,
+      });
 
       return media;
     },
@@ -763,6 +773,15 @@ export async function replaceMediaFile({
           archived: existing.archivedAt !== null,
         });
 
+        const location = {
+          key: stored.key,
+          driver: storageDriver,
+          remoteUrl: await remoteUrlForUpload(driver, storageDriver, stored.key),
+          contentType: stored.mimeType,
+          size: stored.size,
+          checksum,
+        };
+
         media = await withMediaQuotaAdmission(
           {
             incomingBytes: mediaUsageBytes([
@@ -770,15 +789,25 @@ export async function replaceMediaFile({
             ]),
             excludeMediaId: mediaId,
           },
-          (tx) =>
-            tx.media.update({
+          async (tx) => {
+            const updated = await tx.media.update({
               where: { id: mediaId },
               data: {
                 ...storedImageFields(stored, revision, checksum),
                 storageDriver,
               },
               select: mediaLibrarySelect,
-            }),
+            });
+            const file = mediaStoredFileCreateData(mediaId, location);
+
+            await tx.storedFile.upsert({
+              where: { mediaId },
+              create: file,
+              update: file,
+            });
+
+            return updated;
+          },
         );
       } else {
         const stored = await writePlainRevision({
@@ -790,10 +819,19 @@ export async function replaceMediaFile({
           mimeType: source.mimeType || existing.mimeType,
         });
 
+        const location = {
+          key: stored.key,
+          driver: storageDriver,
+          remoteUrl: await remoteUrlForUpload(driver, storageDriver, stored.key),
+          contentType: stored.mimeType,
+          size: stored.size,
+          checksum,
+        };
+
         media = await withMediaQuotaAdmission(
           { incomingBytes: stored.size, excludeMediaId: mediaId },
-          (tx) =>
-            tx.media.update({
+          async (tx) => {
+            const updated = await tx.media.update({
               where: { id: mediaId },
               data: {
                 key: stored.key,
@@ -807,7 +845,17 @@ export async function replaceMediaFile({
                 renditions: null,
               },
               select: mediaLibrarySelect,
-            }),
+            });
+            const file = mediaStoredFileCreateData(mediaId, location);
+
+            await tx.storedFile.upsert({
+              where: { mediaId },
+              create: file,
+              update: file,
+            });
+
+            return updated;
+          },
         );
       }
     } catch (error) {

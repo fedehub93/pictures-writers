@@ -373,7 +373,7 @@ describe("createMediaFromUpload", () => {
   );
 
   it.each([MediaType.FILE, MediaType.AUDIO, MediaType.VIDEO])(
-    "keeps legacy %s uploads exactly as before",
+    "records a legacy %s upload through its provider address",
     async (type) => {
       const key = `uploads/${randomUUID()}`;
       const media = await createMediaFromUpload({
@@ -417,6 +417,26 @@ describe("createMediaFromUpload", () => {
       });
     },
   );
+
+  it("refuses a legacy upload whose address names no storage key", async () => {
+    const name = `Keyless ${randomUUID()}`;
+
+    await expect(
+      createMediaFromUpload({
+        driver,
+        source: {
+          key: null,
+          url: "https://example.test/file.pdf",
+          name,
+          type: MediaType.FILE,
+          mimeType: "application/pdf",
+          size: 1234,
+        },
+      }),
+    ).rejects.toBeInstanceOf(MediaProcessingError);
+
+    await expect(db.media.count({ where: { name } })).resolves.toBe(0);
+  });
 });
 
 describe("replaceMediaFile", () => {
@@ -512,6 +532,33 @@ describe("replaceMediaFile", () => {
     await expect(driver.get(before.key!)).rejects.toBeInstanceOf(
       StorageObjectNotFoundError,
     );
+  });
+
+  it("keeps the stored-file record on the revision the Media now serves", async () => {
+    const first = await createImageMedia(await putSource(await createPng()));
+    const replacementBytes = await createPng(1200, 800, {
+      r: 210,
+      g: 40,
+      b: 60,
+    });
+
+    const { media } = await replace(
+      first.id,
+      await putSource(replacementBytes),
+    );
+
+    const file = await db.storedFile.findUniqueOrThrow({
+      where: { mediaId: first.id },
+    });
+    expect(file).toMatchObject({
+      key: media.key,
+      driver: "local",
+      remoteUrl: null,
+      contentType: "image/png",
+      size: media.size,
+      checksum: media.checksum,
+    });
+    expect(file.key).toBe(`default/${first.id}/2/original`);
   });
 
   it("keeps delivering the new revision through the same Media", async () => {

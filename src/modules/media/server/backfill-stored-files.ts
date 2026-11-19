@@ -2,8 +2,14 @@ import "server-only";
 
 import { db } from "@/shared/lib/db";
 
-import { stripMediaManifest } from "@/modules/media/lib/manifest";
-import { mediaSourceKey, parseSrc } from "@/modules/media/lib/url";
+import { mediaSourceKey } from "@/modules/media/lib/url";
+
+import { describeBackfillFailure } from "./backfill-failure";
+import { recordedStorageDriverName } from "./storage";
+import {
+  mediaStoredFileCreateData,
+  remoteUrlForAddress,
+} from "./stored-file";
 
 export interface StoredFileBackfillFailure {
   mediaId: string;
@@ -30,43 +36,10 @@ export interface StoredFileBackfillOptions {
   onProgress?: (line: string) => void;
 }
 
-type BackfillMedia = {
-  id: string;
-  name: string;
-  key: string | null;
-  url: string;
-  storageDriver: string | null;
-  mimeType: string | null;
-  size: number | null;
-  checksum: string | null;
-};
-
-/**
- * The driver an existing Media's bytes live on. A row with no recorded driver
- * predates the storage seam, so it resolves as UploadThing exactly as delivery
- * does today. A name this build does not know is preserved rather than guessed
- * at, so the audit can report it.
- */
-function recordedDriver(media: Pick<BackfillMedia, "storageDriver">): string {
-  const recorded = media.storageDriver?.trim();
-  return recorded ? recorded : "uploadthing";
-}
-
-/**
- * The provider address already stored on a Media whose address is absolute.
- * A local Media carries a canonical relative address, so it has no remote
- * location. The rendition token is not part of the object's address.
- */
-function recordedRemoteUrl(media: Pick<BackfillMedia, "url">): string | null {
-  return parseSrc(media.url).absolute
-    ? stripMediaManifest(media.url)
-    : null;
-}
-
 /**
  * Creates the one StoredFile record every Media needs, from what the library
- * already knows: its key, driver, size, content type, checksum and the
- * absolute address when it has one.
+ * already knows: its key, driver, size, content type, checksum and the remote
+ * address its absolute or legacy-provider address names.
  *
  * The command never rewrites a Media row. It is idempotent: a Media that
  * already has a record is skipped, and a record found by key is linked instead
@@ -142,17 +115,6 @@ export async function backfillStoredFiles({
       continue;
     }
 
-    const location = {
-      key,
-      driver: recordedDriver(item),
-      remoteUrl: recordedRemoteUrl(item),
-      contentType: item.mimeType,
-      size: item.size,
-      checksum: item.checksum,
-      kind: "MEDIA" as const,
-      origin: "INTERNAL" as const,
-    };
-
     const found = byKey.get(key);
     if (found?.mediaId && found.mediaId !== item.id) {
       const reason = "storage key already belongs to another file";
@@ -161,21 +123,35 @@ export async function backfillStoredFiles({
       continue;
     }
 
-    if (!dryRun) {
-      if (found) {
-        await db.storedFile.update({
-          where: { id: found.id },
-          data: { ...location, mediaId: item.id },
-        });
-      } else {
-        await db.storedFile.create({
-          data: { ...location, mediaId: item.id },
-        });
-      }
-    }
+    try {
+      const data = mediaStoredFileCreateData(item.id, {
+        key,
+        driver: recordedStorageDriverName(item.storageDriver),
+        remoteUrl: remoteUrlForAddress(item.url),
+        contentType: item.mimeType,
+        size: item.size,
+        checksum: item.checksum,
+      });
 
-    report.created += 1;
-    onProgress?.(`${dryRun ? "would create" : "create"} ${item.id}`);
+      if (!dryRun) {
+        const file = found
+          ? await db.storedFile.update({
+              where: { id: found.id },
+              data,
+            })
+          : await db.storedFile.create({ data });
+
+        byKey.set(file.key, file);
+        byMediaId.set(item.id, file);
+      }
+
+      report.created += 1;
+      onProgress?.(`${dryRun ? "would create" : "create"} ${item.id}`);
+    } catch (error) {
+      const reason = describeBackfillFailure(error);
+      report.failed.push({ mediaId: item.id, name: item.name, reason });
+      onProgress?.(`fail ${item.id}: ${reason}`);
+    }
   }
 
   return report;
