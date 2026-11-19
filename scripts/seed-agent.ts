@@ -24,6 +24,7 @@ import { resolve } from "node:path";
 import { hashPassword } from "better-auth/crypto";
 
 import { ContentStatus, type SiteRegionKey } from "@/generated/prisma";
+import { createPostVersionSeo } from "@/modules/blog/posts/lib/post-seo";
 import { createPage } from "@/modules/pages/server/create-page";
 import { SITE_REGION_KEYS } from "@/modules/site-regions/constants";
 import { db } from "@/shared/lib/db";
@@ -202,8 +203,44 @@ async function upsertProbePage(userId: string) {
   return existing.id;
 }
 
+/**
+ * A post version owns a SEO row from creation, and the admin post page reads it
+ * without a null guard: a version without one crashes the page on CharsCounter.
+ */
+async function createProbePostSeo(): Promise<string> {
+  const seo = await createPostVersionSeo(db, PROBE_POST_TITLE, {});
+
+  return seo.id;
+}
+
+/** Repair a version a previous seed created without its SEO row. */
+async function ensureProbePostSeo(
+  versionId: string,
+  seoId: string | null,
+): Promise<string> {
+  if (seoId) {
+    await db.seo.update({
+      where: { id: seoId },
+      data: { title: PROBE_POST_TITLE },
+    });
+
+    return seoId;
+  }
+
+  const created = await createProbePostSeo();
+
+  await db.postVersion.update({
+    where: { id: versionId },
+    data: { seoId: created },
+  });
+
+  return created;
+}
+
 /** Create the single published version the static build needs, plus its author edge. */
 async function createProbePostVersion(rootId: string, userId: string) {
+  const seoId = await createProbePostSeo();
+
   return db.postVersion.create({
     data: {
       rootId,
@@ -212,6 +249,7 @@ async function createProbePostVersion(rootId: string, userId: string) {
       status: ContentStatus.PUBLISHED,
       publishedAt: new Date(),
       tiptapBodyData: PROBE_POST_BODY,
+      seoId,
       userId,
       authors: { create: [{ userId, sort: 0 }] },
     },
@@ -254,6 +292,18 @@ async function upsertProbePost(userId: string) {
     });
 
     return existing.id;
+  }
+
+  await ensureProbePostSeo(liveVersionId, existing.liveVersion?.seoId ?? null);
+
+  if (
+    existing.currentVersionId &&
+    existing.currentVersionId !== liveVersionId
+  ) {
+    await ensureProbePostSeo(
+      existing.currentVersionId,
+      existing.currentVersion?.seoId ?? null,
+    );
   }
 
   await db.postVersion.update({
