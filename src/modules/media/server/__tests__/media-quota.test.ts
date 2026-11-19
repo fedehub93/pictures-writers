@@ -145,6 +145,18 @@ describe("media quota", () => {
     await expect(getMediaUsageBytes()).resolves.toBe(baseline + 2700);
   });
 
+  it("counts an archived file's record rather than its Media column", async () => {
+    const baseline = await getMediaUsageBytes();
+
+    await createRow({
+      size: 1000,
+      archivedAt: new Date("2026-11-18T10:00:00Z"),
+      file: { size: 2500 },
+    });
+
+    await expect(getMediaUsageBytes()).resolves.toBe(baseline + 2500);
+  });
+
   it("refuses a plain Media row past the quota and creates no row", async () => {
     await setMediaQuotaMb(1);
 
@@ -165,6 +177,9 @@ describe("media quota", () => {
     ).rejects.toBeInstanceOf(MediaQuotaExceededError);
 
     await expect(db.media.count({ where: { name } })).resolves.toBe(0);
+    await expect(
+      db.storedFile.count({ where: { media: { name } } }),
+    ).resolves.toBe(0);
   });
 
   it("removes the written objects when the check before the row fails", async () => {
@@ -197,6 +212,9 @@ describe("media quota", () => {
     ).rejects.toBeInstanceOf(MediaQuotaExceededError);
 
     await expect(db.media.count({ where: { name } })).resolves.toBe(0);
+    await expect(
+      db.storedFile.count({ where: { media: { name } } }),
+    ).resolves.toBe(0);
     await expect(listFiles(root)).resolves.toEqual(filesBefore);
   });
 
@@ -230,6 +248,9 @@ describe("media quota", () => {
     ).rejects.toBeInstanceOf(MediaQuotaExceededError);
 
     await expect(db.media.count({ where: { name } })).resolves.toBe(0);
+    await expect(
+      db.storedFile.count({ where: { media: { name } } }),
+    ).resolves.toBe(0);
 
     await expect(listFiles(root)).resolves.toEqual([]);
   });

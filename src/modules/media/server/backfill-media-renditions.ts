@@ -5,6 +5,11 @@ import { MediaType } from "@/generated/prisma";
 
 import { db } from "@/shared/lib/db";
 
+import {
+  mediaStorageLocation,
+  storedFileLocationSelect,
+} from "@/modules/media/lib/stored-file-location";
+
 import { describeBackfillFailure } from "./backfill-failure";
 import { forEachWithConcurrency } from "./bounded-concurrency";
 import { checksumOf } from "./image-bytes";
@@ -19,9 +24,7 @@ import {
   type StorageEnvironment,
 } from "./storage";
 import {
-  mediaStorageLocation,
   remoteUrlForUpload,
-  storedFileLocationSelect,
   updateStoredFileForMedia,
 } from "./stored-file";
 

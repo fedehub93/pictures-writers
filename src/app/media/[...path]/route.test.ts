@@ -170,6 +170,23 @@ describe("GET /media/<key>", () => {
     expect(new Uint8Array(await response.arrayBuffer())).toEqual(bytes);
   });
 
+  it("keeps serving an archived Media from its stored-file record", async () => {
+    const { media, bytes, key } = await createLocalImage();
+    await db.media.update({
+      where: { id: media.id },
+      data: { archivedAt: new Date() },
+    });
+
+    const response = await GET(
+      new Request(`http://localhost/media/${key}`),
+      context(key),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toBe("image/png");
+    expect(new Uint8Array(await response.arrayBuffer())).toEqual(bytes);
+  });
+
   it("streams a local document with its recorded type, byte length and Range support", async () => {
     const text = "0123456789";
     const key = `default/${randomUUID()}/1/original`;

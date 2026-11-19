@@ -273,6 +273,17 @@ describe("choosing UploadThing for new uploads", () => {
         mimeType: "image/png",
         revision: 1,
         storageDriver: null,
+        // The shape the one-time location backfill leaves: the record names
+        // UploadThing and carries the absolute address it still serves.
+        storedFile: {
+          create: {
+            key: legacyKey,
+            driver: "uploadthing",
+            remoteUrl: `https://fake-app.ufs.sh/f/${legacyKey}`,
+            contentType: "image/png",
+            size: legacyBytes.byteLength,
+          },
+        },
       },
     });
     mediaIds.push(legacy.id);

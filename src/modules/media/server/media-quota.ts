@@ -14,7 +14,7 @@ import {
   type MediaQuotaUsageRow,
 } from "@/modules/media/lib/quota";
 
-import { mediaStorageSize } from "./stored-file";
+import { mediaStorageSize } from "@/modules/media/lib/stored-file-location";
 
 /**
  * One advisory-lock key, so two uploads cannot both pass the "before the row

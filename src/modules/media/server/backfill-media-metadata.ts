@@ -5,6 +5,11 @@ import { MediaType } from "@/generated/prisma";
 
 import { db } from "@/shared/lib/db";
 
+import {
+  mediaStorageLocation,
+  storedFileLocationSelect,
+} from "@/modules/media/lib/stored-file-location";
+
 import { describeBackfillFailure } from "./backfill-failure";
 import { forEachWithConcurrency } from "./bounded-concurrency";
 import { inspectImage } from "./inspect-image";
@@ -15,11 +20,7 @@ import {
   type StorageDriverName,
   type StorageEnvironment,
 } from "./storage";
-import {
-  mediaStorageLocation,
-  storedFileLocationSelect,
-  updateStoredFileForMedia,
-} from "./stored-file";
+import { updateStoredFileForMedia } from "./stored-file";
 
 export interface MediaMetadataBackfillFailure {
   mediaId: string;

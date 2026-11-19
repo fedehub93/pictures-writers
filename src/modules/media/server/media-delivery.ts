@@ -4,6 +4,11 @@ import type { Prisma } from "@/generated/prisma";
 import { StoredFileKind } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 
+import {
+  storedFileLocationSelect,
+  type StoredFileLocationRow,
+} from "@/modules/media/lib/stored-file-location";
+
 import { parentKeyPrefix, parseMediaKey } from "./media-key";
 import { recordedStorageDriverName } from "./storage";
 import { remoteUrlForAddress } from "./stored-file";
@@ -16,19 +21,8 @@ const deliveryMediaSelect = {
   storageDriver: true,
 } satisfies Prisma.MediaSelect;
 
-const storedFileLocationSelect = {
-  key: true,
-  driver: true,
-  remoteUrl: true,
-  contentType: true,
-} satisfies Prisma.StoredFileSelect;
-
 type DeliveryMediaRow = Prisma.MediaGetPayload<{
   select: typeof deliveryMediaSelect;
-}>;
-
-type StoredFileLocationRow = Prisma.StoredFileGetPayload<{
-  select: typeof storedFileLocationSelect;
 }>;
 
 /**

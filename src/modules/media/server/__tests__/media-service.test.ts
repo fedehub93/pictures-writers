@@ -313,6 +313,9 @@ describe("createMediaFromUpload", () => {
     await expect(
       db.media.count({ where: { id: failedMediaId } }),
     ).resolves.toBe(0);
+    await expect(
+      db.storedFile.count({ where: { mediaId: failedMediaId } }),
+    ).resolves.toBe(0);
     await expect(driver.deletePrefix(prefix)).resolves.toBe(0);
   });
 
@@ -638,6 +641,72 @@ describe("replaceMediaFile", () => {
     await expect(
       driver.deletePrefix(`default/${first.id}/2/`),
     ).resolves.toBe(0);
+  });
+
+  it("cleans the previous revision through the driver recorded on the file", async () => {
+    const first = await createImageMedia(await putSource(await createPng()));
+    const before = await db.media.findUniqueOrThrow({ where: { id: first.id } });
+    const previousManifest = before.renditions as MediaRendition[];
+
+    // A move, or a stale mirror column, can leave the Media behind; the
+    // stored-file record is what owns the bytes.
+    await db.media.update({
+      where: { id: first.id },
+      data: { storageDriver: "uploadthing" },
+    });
+
+    const { previousRevisionCleanup } = await replace(
+      first.id,
+      await putSource(await createPng(1200, 800, { r: 210, g: 40, b: 60 })),
+    );
+
+    expect(previousRevisionCleanup).toBe("removed");
+    await expect(driver.get(before.key!)).rejects.toBeInstanceOf(
+      StorageObjectNotFoundError,
+    );
+    for (const rendition of previousManifest) {
+      await expect(driver.get(rendition.key)).rejects.toBeInstanceOf(
+        StorageObjectNotFoundError,
+      );
+    }
+  });
+
+  it("succeeds and reports a cleanup failure when the previous revision cannot be removed", async () => {
+    const first = await createImageMedia(await putSource(await createPng()));
+    const before = await db.media.findUniqueOrThrow({ where: { id: first.id } });
+    const previousPrefix = `default/${first.id}/1/`;
+
+    const failingCleanupDriver: StorageDriver = {
+      ...driver,
+      deletePrefix: async (prefix) => {
+        if (prefix === previousPrefix) {
+          throw new Error("simulated cleanup failure");
+        }
+        return driver.deletePrefix(prefix);
+      },
+    };
+
+    const { media, previousRevisionCleanup } = await replace(
+      first.id,
+      await putSource(await createPng(1200, 800, { r: 210, g: 40, b: 60 })),
+      failingCleanupDriver,
+    );
+
+    // The new revision is served and recorded; the old bytes stay behind and
+    // the outcome says so. A cleanup hiccup never fails the replace.
+    expect(previousRevisionCleanup).toBe("failed");
+    expect(media).toMatchObject({
+      id: first.id,
+      revision: 2,
+      key: `default/${first.id}/2/original`,
+    });
+    await expect(driver.get(media.key!)).resolves.toBeDefined();
+    await expect(driver.get(before.key!)).resolves.toBeDefined();
+
+    const file = await db.storedFile.findUniqueOrThrow({
+      where: { mediaId: first.id },
+    });
+    expect(file.key).toBe(media.key);
   });
 
   it("rejects an unknown Media without writing anything", async () => {

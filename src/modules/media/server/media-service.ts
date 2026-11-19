@@ -15,7 +15,6 @@ import {
   type MediaLibraryItem,
 } from "@/modules/media/lib/media-library";
 import { mediaUsageBytes } from "@/modules/media/lib/quota";
-import { parseStorageDriver } from "@/modules/media/lib/storage-driver";
 import { mediaPath, mediaSourceKey } from "@/modules/media/lib/url";
 import type {
   MediaCleanupStatus,
@@ -23,12 +22,19 @@ import type {
   MediaRendition,
 } from "@/modules/media/types";
 
+import {
+  mediaStorageLocation,
+  storedFileLocationSelect,
+  type MediaStorageColumns,
+} from "@/modules/media/lib/stored-file-location";
+
 import { checksumOf } from "./image-bytes";
 import {
   mediaKeyDirectory,
   mediaRevisionPrefix,
   mediaStoragePrefix,
   mediaStoragePrefixForKey,
+  parseMediaKey,
 } from "./media-key";
 import {
   MediaQuotaExceededError,
@@ -635,12 +641,97 @@ export async function createMediaFromUpload({
   }
 }
 
+interface MediaCleanupRow extends MediaStorageColumns {
+  id: string;
+  revision: number;
+  renditions: unknown;
+}
+
+/**
+ * The unit of removal for one Media's objects: the driver that owns them, the
+ * directory holding a revision when it has one, and every recorded key that
+ * may sit outside that directory.
+ */
+interface MediaCleanupTarget {
+  driver: string | null;
+  prefix: string | null;
+  keys: string[];
+}
+
+/**
+ * The pre-seam layout was `<mediaId>/<revision>/<file>` and carried no
+ * installation slug, so a legacy key's own segments are the prefix. A flat
+ * provider key has no directory at all.
+ */
+function legacyKeyPrefix(
+  key: string,
+  scope: "revision" | "installation",
+): string | null {
+  const segments = key.split("/");
+  if (segments.length < 2) return null;
+
+  const depth = scope === "installation" ? 1 : Math.min(2, segments.length - 1);
+  return `${segments.slice(0, depth).join("/")}/`;
+}
+
+/**
+ * Where one Media's objects are, read from its stored-file record.
+ *
+ * A namespaced key is one directory: the superseded revision's directory for a
+ * replace, the Media's whole installation directory for a deletion. A legacy
+ * key may be a provider file key that a customId scan cannot find, while its
+ * renditions are separate objects: the exact key and every key recorded in the
+ * manifest are named directly, and the legacy directory is removed as well so
+ * an interrupted operation cannot leave an object behind. The Media's own
+ * columns answer only until the one-time backfill creates the record.
+ */
+function mediaCleanupTarget(
+  media: MediaCleanupRow,
+  installationSlug: string,
+  scope: "revision" | "installation",
+): MediaCleanupTarget {
+  const location = mediaStorageLocation(media);
+  const key = location.key;
+  const renditions = Array.isArray(media.renditions)
+    ? (media.renditions as MediaRendition[])
+    : [];
+  const renditionKeys = renditions
+    .map((rendition) => rendition.key)
+    .filter((candidate): candidate is string => typeof candidate === "string");
+
+  if (key && parseMediaKey(key)) {
+    const prefix =
+      scope === "installation"
+        ? mediaStoragePrefixForKey(media.id, key, installationSlug)
+        : mediaKeyDirectory(key);
+
+    return { driver: location.driver, prefix, keys: [] };
+  }
+
+  if (key) {
+    return {
+      driver: location.driver,
+      prefix: legacyKeyPrefix(key, scope),
+      keys: [...new Set([key, ...renditionKeys])],
+    };
+  }
+
+  return {
+    driver: location.driver,
+    prefix:
+      scope === "installation"
+        ? mediaStoragePrefixForKey(media.id, null, installationSlug)
+        : null,
+    keys: renditionKeys,
+  };
+}
+
 /**
  * Removes the bytes of the revision the row no longer points at, through the
- * driver recorded on that row rather than the active one. A provider that is
- * not configured on this instance is skipped instead of failing the replace;
- * every other hiccup is logged and reported, and never turns a successful
- * replacement into a failure.
+ * driver recorded on its stored-file record rather than the active one. A
+ * driver that is not configured on this instance is skipped instead of failing
+ * the replace; every other hiccup is logged and reported, and never turns a
+ * successful replacement into a failure.
  */
 async function cleanupPreviousRevision({
   media,
@@ -648,40 +739,25 @@ async function cleanupPreviousRevision({
   active,
   env,
 }: {
-  media: {
-    id: string;
-    key: string | null;
-    revision: number;
-    storageDriver: string | null;
-  };
+  media: MediaCleanupRow;
   installationSlug: string;
   active: ResolvedStorageDriver;
   env: StorageEnvironment;
 }): Promise<MediaCleanupStatus> {
-  // A Media with no recorded driver was written before the storage seam: it
-  // lives on UploadThing and its object is addressed by the provider's file
-  // key, not by a revision prefix.
-  const resolution = resolveMediaStorageDriver(media.storageDriver, {
+  const target = mediaCleanupTarget(media, installationSlug, "revision");
+  const resolution = resolveMediaStorageDriver(target.driver, {
     active,
     env,
   });
 
   if (!resolution.resolved) return "skipped";
 
-  const recorded = parseStorageDriver(media.storageDriver);
   const previousDriver = resolution.driver;
-
-  const prefix =
-    recorded === null
-      ? null
-      : media.key
-        ? mediaKeyDirectory(media.key)
-        : mediaRevisionPrefix(media.id, media.revision, installationSlug);
   let failed = false;
 
-  if (prefix) {
+  if (target.prefix) {
     try {
-      await previousDriver.deletePrefix(prefix);
+      await previousDriver.deletePrefix(target.prefix);
     } catch (error) {
       failed = true;
       console.error(
@@ -693,10 +769,9 @@ async function cleanupPreviousRevision({
 
   // A legacy row records one provider object, and a flat key has no directory
   // at all: remove that exact object instead of a prefix.
-  const exactKey = prefix === null ? media.key : null;
-  if (exactKey) {
+  for (const key of target.keys) {
     try {
-      await previousDriver.delete(exactKey);
+      await previousDriver.delete(key);
     } catch (error) {
       if (!(error instanceof StorageObjectNotFoundError)) {
         failed = true;
@@ -742,7 +817,10 @@ export async function replaceMediaFile({
   const mediaPrefix = mediaStoragePrefix(mediaId, installationSlug);
 
   try {
-    const existing = await db.media.findUnique({ where: { id: mediaId } });
+    const existing = await db.media.findUnique({
+      where: { id: mediaId },
+      include: { storedFile: { select: storedFileLocationSelect } },
+    });
 
     if (!existing) throw new MediaNotFoundError(mediaId);
 
@@ -898,6 +976,7 @@ async function loadMediaForBatch(mediaIds: string[]) {
 
   const media = await db.media.findMany({
     where: { id: { in: uniqueIds } },
+    include: { storedFile: { select: storedFileLocationSelect } },
   });
 
   const found = new Set(media.map((item) => item.id));
@@ -1053,13 +1132,14 @@ async function removeMediaObjects({
   env,
   drivers,
 }: {
-  media: { id: string; key: string | null; storageDriver: string | null };
+  media: MediaCleanupRow;
   active: ResolvedStorageDriver;
   installationSlug: string;
   env: StorageEnvironment;
   drivers: Map<StorageDriverName, StorageDriver>;
 }): Promise<MediaObjectCleanup> {
-  const resolution = resolveMediaStorageDriver(media.storageDriver, {
+  const target = mediaCleanupTarget(media, installationSlug, "installation");
+  const resolution = resolveMediaStorageDriver(target.driver, {
     active,
     env,
     cache: drivers,
@@ -1069,29 +1149,20 @@ async function removeMediaObjects({
     return { status: "skipped", reason: resolution.reason };
   }
 
-  if (parseStorageDriver(media.storageDriver) === null) {
-    if (!media.key) return { status: "removed" };
-
-    try {
-      await resolution.driver.delete(media.key);
-    } catch (error) {
-      if (error instanceof StorageObjectNotFoundError) {
-        return { status: "removed" };
-      }
-
-      console.error(
-        "[MEDIA_DELETE] Could not remove the legacy original",
-        error,
-      );
-      return { status: "failed" };
-    }
-
-    return { status: "removed" };
+  if (target.prefix) {
+    await resolution.driver.deletePrefix(target.prefix);
   }
 
-  await resolution.driver.deletePrefix(
-    mediaStoragePrefixForKey(media.id, media.key, installationSlug),
-  );
+  for (const key of target.keys) {
+    try {
+      await resolution.driver.delete(key);
+    } catch (error) {
+      if (error instanceof StorageObjectNotFoundError) continue;
+
+      console.error("[MEDIA_DELETE] Could not remove the legacy original", error);
+      return { status: "failed" };
+    }
+  }
 
   return { status: "removed" };
 }
@@ -1115,6 +1186,7 @@ export async function deleteMediaPermanentlyBatch({
 
   const media = await db.media.findMany({
     where: { id: { in: uniqueIds } },
+    include: { storedFile: { select: storedFileLocationSelect } },
     // A deterministic order lets the batch delete as it goes: the rows that
     // were already cleaned are gone, and the rest are untouched.
     orderBy: { createdAt: "asc" },

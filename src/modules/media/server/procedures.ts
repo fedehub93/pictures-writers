@@ -8,7 +8,11 @@ import { db } from "@/shared/lib/db";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 
-import { mediaLibrarySelect } from "@/modules/media/lib/media-library";
+import {
+  mediaLibraryItem,
+  mediaLibraryRowSelect,
+  mediaLibrarySelect,
+} from "@/modules/media/lib/media-library";
 
 import {
   DEFAULT_MEDIA_VIEW,
@@ -84,7 +88,9 @@ export const mediaRouter = createTRPCRouter({
       const [rows, total] = await Promise.all([
         db.media.findMany({
           where,
-          select: mediaLibrarySelect,
+          // The storage facts the admin sees come from the stored-file record;
+          // the Media's own columns are only the address and the archive state.
+          select: mediaLibraryRowSelect,
           orderBy: MEDIA_LIST_ORDER_BY,
           take: input.pageSize,
           skip: (input.page - 1) * input.pageSize,
@@ -96,7 +102,7 @@ export const mediaRouter = createTRPCRouter({
 
       return {
         items: rows.map((row) => ({
-          ...row,
+          ...mediaLibraryItem(row),
           usageCount: usage.get(row.id) ?? 0,
         })),
         total,

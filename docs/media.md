@@ -41,19 +41,26 @@ has not been created yet still resolves from its own columns, so deploying this
 code before the one-time backfill cannot darken an existing picture.
 
 The active driver decides where **new** uploads go. Delivery never asks the active driver: it
-asks the row, so switching storage affects only new files. The metadata and rendition backfills
-read the stored-file record — its key, its driver, its size, content type and checksum — and fall
-back to the Media's storage columns only for a row whose record does not exist yet. They resolve
-the recorded driver per row for reads and writes, so a library that mixes legacy provider Media
-and local Media is processed in one run; a row whose driver is not configured here is reported
-and the run continues. Both backfills keep the record true: the metadata run writes back the size,
-content type and checksum it discovers, and the rendition run moves the record's key and provider
-address when a legacy flat key becomes a namespaced one.
+asks the row, so switching storage affects only new files. Replace and permanent deletion read
+the stored-file record too: the revision a replace supersedes is cleaned through the driver
+recorded on the file, and the key's shape decides whether the unit is a prefix or the provider's
+exact file key, so a backfilled pre-seam row is still removed by the key it has. The admin
+library reads the record's key, size, content type, checksum and driver; `Media.url` stays the
+canonical address the record's key composes. The Media's own storage columns are kept in step on
+every write and are read only for a row whose record the one-time backfill has not created yet.
+The metadata and rendition backfills read the stored-file record — its key, its driver, its
+size, content type and checksum — and fall back to the Media's storage columns only for a row
+whose record does not exist yet. They resolve the recorded driver per row for reads and writes,
+so a library that mixes legacy provider Media and local Media is processed in one run; a row
+whose driver is not configured here is reported and the run continues. Both backfills keep the
+record true: the metadata run writes back the size, content type and checksum it discovers, and
+the rendition run moves the record's key and provider address when a legacy flat key becomes a
+namespaced one.
 
 A mixed library is the expected state on this Installation, not an edge case: the Media that
 predate the seam stay on UploadThing, and a Media uploaded with the local driver active goes to
-disk. Deletion, both backfills and the audit resolve the driver per row; no batch operation may
-resolve one driver for a whole selection.
+disk. Deletion, replacement, both backfills and the audit resolve the driver recorded on each
+file; no batch operation may resolve one driver for a whole selection.
 
 Every Media type enters through the same multipart transport. An image is normalised and cut
 into the rendition ladder; a document, audio file or video is copied untouched to
@@ -69,6 +76,7 @@ path writes under the Media's own revision.
 | --- | --- |
 | Upload, replace, archive, delete, revisions | `src/modules/media/server/media-service.ts` |
 | Stored-file location of one upload | `src/modules/media/server/stored-file.ts` |
+| Stored-file location columns shared by server and library | `src/modules/media/lib/stored-file-location.ts` |
 | One-time location backfill for existing Media | `src/modules/media/server/backfill-stored-files.ts`, `scripts/backfill-stored-files.ts` |
 | Metadata and rendition backfills | `src/modules/media/server/backfill-media-metadata.ts`, `src/modules/media/server/backfill-media-renditions.ts` |
 | Key grammar: compose, parse, revision prefix | `src/modules/media/server/media-key.ts` |

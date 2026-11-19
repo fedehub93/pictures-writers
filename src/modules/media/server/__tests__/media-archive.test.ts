@@ -219,6 +219,100 @@ describe("media archive, restore and deletion", () => {
     await expect(driver.deletePrefix(`${media.id}/`)).resolves.toBe(0);
   });
 
+  it("removes a Media's objects through the driver recorded on the file", async () => {
+    const { media } = await createImageMedia();
+    await archiveMedia(media.id);
+    const before = await db.media.findUniqueOrThrow({ where: { id: media.id } });
+
+    // A move, or a stale mirror column, can leave the Media behind; the
+    // stored-file record is what owns the bytes.
+    await db.media.update({
+      where: { id: media.id },
+      data: {
+        key: `elsewhere/${randomUUID()}/1/original`,
+        storageDriver: "uploadthing",
+      },
+    });
+
+    const result = await deleteMediaPermanentlyBatch({
+      active: { driver, name: "local" },
+      mediaIds: [media.id],
+      env: {},
+    });
+
+    expect(result).toEqual({
+      deleted: 1,
+      cleanup: [{ mediaId: media.id, status: "removed" }],
+    });
+    await expect(driver.get(before.key!)).rejects.toBeInstanceOf(
+      StorageObjectNotFoundError,
+    );
+    await expect(
+      db.storedFile.findUnique({ where: { mediaId: media.id } }),
+    ).resolves.toBeNull();
+  });
+
+  it("removes the renditions of a legacy row whose original is a provider file key", async () => {
+    const mediaId = randomUUID();
+    const originalKey = `legacy-${randomUUID()}`;
+    const renditionKey = `${mediaId}/1/320.avif`;
+    const originalBytes = new Uint8Array([1, 2, 3]);
+    const renditionBytes = new Uint8Array([4, 5, 6]);
+
+    uploadThing.fake!.putLegacyObject(originalKey, originalBytes, "image/png");
+    // A rendition written by the app is addressed by its customId; the
+    // pre-seam original has none, so only its exact key can find it.
+    await remoteDriver().put(renditionKey, renditionBytes, "image/avif");
+
+    const media = await db.media.create({
+      data: {
+        id: mediaId,
+        name: "Legacy image with renditions",
+        key: originalKey,
+        url: `https://fake-app.ufs.sh/f/${originalKey}`,
+        size: originalBytes.byteLength,
+        type: MediaType.IMAGE,
+        mimeType: "image/png",
+        revision: 1,
+        archivedAt: new Date(),
+        renditions: [
+          {
+            key: renditionKey,
+            width: 320,
+            height: 200,
+            bytes: renditionBytes.byteLength,
+            format: "avif",
+          },
+        ],
+        storedFile: {
+          create: {
+            key: originalKey,
+            driver: "uploadthing",
+            remoteUrl: `https://fake-app.ufs.sh/f/${originalKey}`,
+            contentType: "image/png",
+            size: originalBytes.byteLength,
+          },
+        },
+      },
+    });
+    mediaIds.push(media.id);
+
+    const result = await deleteMediaPermanentlyBatch({
+      active: { driver, name: "local" },
+      mediaIds: [media.id],
+      env: { UPLOADTHING_TOKEN: "fake-token" },
+    });
+
+    expect(result.cleanup).toEqual([{ mediaId, status: "removed" }]);
+    const remote = remoteDriver();
+    await expect(remote.get(originalKey)).rejects.toBeInstanceOf(
+      StorageObjectNotFoundError,
+    );
+    await expect(remote.get(renditionKey)).rejects.toBeInstanceOf(
+      StorageObjectNotFoundError,
+    );
+  });
+
   it("removes a legacy original by its provider file key", async () => {
     const key = `legacy-${randomUUID()}`;
     const bytes = new Uint8Array([1, 2, 3]);
@@ -487,6 +581,14 @@ describe("media archive, restore and deletion", () => {
         revision: 1,
         storageDriver: "local",
         archivedAt: new Date(),
+        storedFile: {
+          create: {
+            key,
+            driver: "local",
+            contentType: "application/pdf",
+            size: bytes.byteLength,
+          },
+        },
       },
     });
     mediaIds.push(media.id);
@@ -511,6 +613,17 @@ describe("media archive, restore and deletion", () => {
         revision: 1,
         storageDriver: null,
         archivedAt: new Date(),
+        // The one-time location backfill records a pre-seam row as an
+        // UploadThing file with the absolute address it still carries.
+        storedFile: {
+          create: {
+            key,
+            driver: "uploadthing",
+            remoteUrl: `https://fake-app.ufs.sh/f/${encodeURIComponent(key)}`,
+            contentType: "application/pdf",
+            size: bytes.byteLength,
+          },
+        },
       },
     });
     mediaIds.push(media.id);

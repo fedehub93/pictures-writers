@@ -120,6 +120,57 @@ async function createReferencingPost(mediaId: string) {
 
 describe("mediaRouter", () => {
   describe("getMany", () => {
+    it("reads the storage facts from the stored-file record", async () => {
+      const media = await createMedia({
+        name: `Record ${randomUUID()}`,
+        key: "mirror/original",
+        url: "/media/mirror/original",
+        size: 10,
+        mimeType: "image/jpeg",
+        checksum: "mirror-checksum",
+      });
+      await db.storedFile.create({
+        data: {
+          mediaId: media.id,
+          key: `default/${media.id}/1/original`,
+          driver: "local",
+          contentType: "image/png",
+          size: 4242,
+          checksum: "record-checksum",
+        },
+      });
+
+      const result = await caller.getMany({ search: media.name });
+      const item = result.items.find((entry) => entry.id === media.id);
+
+      expect(item).toMatchObject({
+        key: `default/${media.id}/1/original`,
+        url: "/media/mirror/original",
+        size: 4242,
+        mimeType: "image/png",
+        checksum: "record-checksum",
+        storageDriver: "local",
+      });
+      expect(item).not.toHaveProperty("storedFile");
+    });
+
+    it("falls back to the Media's own columns before the record exists", async () => {
+      const media = await createMedia({
+        name: `No record ${randomUUID()}`,
+        size: 321,
+        mimeType: "image/webp",
+        checksum: "media-checksum",
+      });
+
+      const result = await caller.getMany({ search: media.name });
+
+      expect(result.items[0]).toMatchObject({
+        size: 321,
+        mimeType: "image/webp",
+        checksum: "media-checksum",
+      });
+    });
+
     it("defaults to page 1 with eight items", async () => {
       const marker = `Defaults ${randomUUID()}`;
       for (let index = 0; index < 9; index += 1) {
