@@ -21,15 +21,17 @@ Installation and none of them has been run from this session. The deploy branch
 media migrations, so the first deploy is ahead of the gate; the media work lives on
 `feature-local-media`.
 
-Done in `edfa7ec2` (`docs(media): document the production location backfill gate`):
+Done in `edfa7ec2` (`docs(media): document the production location backfill gate`), with the
+review fixes in `docs(media): tighten the backfill gate after review`:
 
 - `docs/self-hosting/08-operations-runbook.md` §4bis.8 is the procedure for the whole gate:
   the explicit driver record before the deploy, the deploy with migrations and the volume,
   dry run + run + second run of `media:backfill-files` with the expected `720/720` and
-  `0/720` reports, the SQL that proves the count and the absence of duplicates, the
-  canonical-address check over all 720, the audit gate, and the dump/restore drill. It also
-  says what to do when the run reports a failure or the audit names an `external` legacy
-  attachment.
+  `0/720` reports, the SQL that proves the count, the recorded `remoteUrl` (and its two
+  provider hosts) and the absence of duplicates, the canonical-address check over all 720, the
+  audit gate, and the dump/restore drill. It also says what to do when the run reports a
+  failure or the audit lists a file as `unknown-driver` — typically a legacy email attachment
+  the migration recorded on `external`.
 - §4bis.6 now documents the audit as the stored-file report it is (`files`, `drivers`,
   `configured drivers`, `no-stored-file`) instead of the old Media-shaped sample, and states
   that a red audit before this backfill is expected, not a fault.
@@ -47,8 +49,8 @@ Verified here, on this branch:
 - `npm run media:backfill-files -- --dry-run` and `npm run media:audit` were executed against
   the agent database: the documented invocation prints the documented report shape (the library
   there is empty, so `scanned: 0`), and the §4bis.6 output format is the command's real one.
-- The §4bis.8 count/duplicate query was run against the agent schema; it returns the expected
-  five-column row.
+- All four §4bis.8 SQL statements (counts, provider hosts, restore check, saved setting) were
+  run against the agent schema: they parse and return the documented column sets.
 
 Still open, on production:
 
@@ -57,9 +59,12 @@ Still open, on production:
   `local-storage-completion/01`;
 - set `MEDIA_STORAGE_DRIVER=uploadthing` before that deploy and confirm the resolved driver is
   `uploadthing` afterwards;
-- run the backfill twice and record `scanned/created/skipped/failed` from both runs;
+- run the backfill twice and record `scanned/created/skipped/failed` from both runs, then the
+  count/`remoteUrl`/host query: a record without its provider address would still pass delivery
+  through the Media fallback, so it is checked explicitly;
 - check all 720 canonical addresses: a final `200` following the redirect is the criterion
   while the bytes are remote. The canonical address answers `302` to the recorded provider
   location until the re-home, so the checklist's "200" is read as "resolves to the bytes", not
   as "no hop";
-- record the audit's `unresolved` line and the dump/restore count of `"StoredFile"`.
+- record the audit's `unresolved` line and the dump/restore row (`720 | 0 | 0` for count,
+  linked Media and recorded address).
