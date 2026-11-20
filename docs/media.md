@@ -56,7 +56,10 @@ and kind. New uploads and replacements write it in the same transaction as the
 Media, so a failed write leaves neither; the one-time
 `npm run media:backfill-files` creates it for Media that predate it, from what
 the library already knows, and reports any Media whose key it cannot read. The
-command never rewrites a Media row.
+command never rewrites a Media row. The production order of that first deploy —
+the explicit driver record, the volume, the command, its expected counts, the
+canonical-address check and the audit gate — is in
+`docs/self-hosting/08-operations-runbook.md` §4bis.8.
 
 Delivery reads that record. A local file streams from disk with its recorded
 content type; a remote file redirects to the address the record carries and

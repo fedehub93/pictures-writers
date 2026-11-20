@@ -403,11 +403,12 @@ Dentro il container:
 docker exec -it <APP_CONTAINER> npm run media:audit
 ```
 
-Legge ogni Media, risolve il driver registrato sulla riga e stampa un report come questo (esempio):
+Legge ogni file registrato, risolve il driver registrato sul file e stampa un report come questo (esempio):
 
 ```txt
-media: 723
-drivers: local=3 unrecorded=720
+files: 723
+drivers: local=3 uploadthing=720
+configured drivers: local uploadthing
 unconfigured drivers: none
 bytes: accounted=377135934 localAccounted=31781 localOnDisk=31781 localDifference=0
 objects: accounted=35 onDisk=35 missing=0 orphaned=0
@@ -416,13 +417,17 @@ unresolved: 0
 
 | Campo | Significato |
 |---|---|
-| `drivers` | Righe per driver: `local`, `uploadthing`, `unrecorded` (Media anteriori al seam, risolti come UploadThing) e `unknown` (nome che questa build non conosce). |
-| `unconfigured drivers` | Driver registrati su qualche riga ma senza credenziali su questa istanza (es. `uploadthing` senza `UPLOADTHING_TOKEN`). |
+| `files` | Ogni file registrato, di qualunque ruolo: Media, allegato, avatar. |
+| `drivers` | File per driver registrato; `unknown` per un nome che questa build non conosce. |
+| `configured drivers` | Driver con credenziali su questa istanza. |
+| `unconfigured drivers` | Driver registrati su qualche file ma senza credenziali su questa istanza (es. `uploadthing` senza `UPLOADTHING_TOKEN`). |
 | `bytes` | Byte contabilizzati sull'intera libreria, byte delle sole righe locali, byte realmente sul volume e differenza (`localOnDisk - localAccounted`). |
 | `objects` | Oggetti locali contabilizzati, presenti sul volume, mancanti e orfani. |
-| `unresolved` | Media che non si risolvono, con id e motivo (`unknown-driver`, `driver-unconfigured`, `no-storage-key`, `object-missing`). |
+| `unresolved` | File che non si risolvono, con id e motivo (`unknown-driver`, `driver-unconfigured`, `no-storage-key`, `no-stored-file`, `object-missing`). |
 
-I file locali sono verificati uno per uno sul volume; le righe remote solo tramite configurazione e presenza di una chiave leggibile, perché un comando read-only non deve scaricare 720 oggetti dal provider. Il comando **esce 1** se `unresolved` non è vuoto, quindi può fare da gate di deploy. Gli oggetti orfani sono riportati ma non fanno fallire il comando: ogni Media si risolve comunque. Il report contiene solo id e aggregati, mai chiavi, indirizzi o nomi.
+Prima del backfill della posizione (4bis.8) ogni Media è ancora senza record e compare in `unresolved` come `no-stored-file`: il comando esce `1`. Non è un guasto, è il gate che chiede il comando, e la consegna intanto funziona perché ripiega sulle colonne della Media. Dopo 4bis.8 la lista deve essere vuota.
+
+I file locali sono verificati uno per uno sul volume; le righe remote solo tramite configurazione e presenza di una chiave leggibile, perché un comando read-only non deve scaricare 720 oggetti dal provider. Il comando **esce 1** se `unresolved` non è vuoto, quindi può fare da gate di deploy. Gli oggetti orfani sono riportati ma non fanno fallire il comando: ogni file si risolve comunque. Il report contiene solo id e aggregati, mai chiavi, indirizzi o nomi.
 
 Un `uploadthing` non configurato compare in `unresolved` anche se gli URL assoluti dei Media storici continuano a rispondere: significa che questa istanza non può cancellare né rielaborare quei file. Rimetti il token prima di un'operazione che tocca i byte.
 
@@ -433,6 +438,177 @@ Un `uploadthing` non configurato compare in `unresolved` anche se gli URL assolu
 3. **Drill di restore.** Ripristina il volume in uno scratch environment e servi un file. Annota data e esito.
 4. **Scelta.** Solo allora seleziona `local` in **Admin → Media**. I nuovi upload vanno su disco, i Media esistenti restano sul provider. Esegui `npm run media:audit`.
 5. **Ritorno.** Per tornare indietro seleziona `uploadthing`: i file già locali continuano a essere serviti dal volume e i nuovi upload tornano al provider.
+
+> L'ordine completo su un'Installazione esistente è: registra il driver (4bis.7.1) → deploy con
+> migrazioni e volume → **backfill della posizione (4bis.8)** → sweep degli indirizzi → scelta
+> `local` → re-home → purge dopo la finestra di grazia. Il backfill della posizione è il passo
+> che rende verde l'audit e che permette di smettere di leggere le colonne di storage della Media.
+
+### 4bis.8 Primo deploy del modello stored-file e backfill della posizione
+
+Il modello `StoredFile` è la porta che fa leggere a consegna, quota, audit, libreria admin e
+backfill la posizione da un solo posto. Il codice può essere deployato **prima** che il backfill
+sia stato eseguito: la consegna ripiega sulle colonne della Media, quindi nessuna immagine si
+spegne. Quello che non può essere verde prima è l'audit, perché ogni Media senza record compare
+come `no-stored-file`. Questo è quindi il passo una tantum che chiude il primo deploy e che
+permette, dopo, di togliere le colonne di storage dalla Media.
+
+Va eseguito una volta, in una finestra di basso traffico, prima dello sweep degli indirizzi e del
+re-home. Il comando non riscrive nessuna riga `Media`.
+
+1. **Registra il driver attivo, prima del deploy.** Il fallback del codice è `local`:
+   un'Installazione che non ha mai scelto scriverebbe i nuovi upload sul disco. Su questa
+   Installazione imposta `MEDIA_STORAGE_DRIVER=uploadthing` in Coolify (`UPLOADTHING_TOKEN` è già
+   presente) e riavvia, come in 4bis.7.1. La variabile è la registrazione esplicita della scelta:
+   se la togli, il fallback torna `local` e i nuovi upload finiscono sul disco.
+
+   ```bash
+   docker exec <APP_CONTAINER> printenv MEDIA_STORAGE_DRIVER   # uploadthing
+   ```
+
+2. **Deploya il branch con migrazioni e volume.** Le migrazioni girano nel Build Command prima di
+   `next build`. Quelle di questo branch sono additive (tabelle `StoredFile`, `Attachment`,
+   `StoragePurgeEntry`, colonne su `Settings`; nessuna colonna che il vecchio container legge
+   viene rimossa), quindi il rolling update è sicuro. Il volume `media-storage` deve essere
+   montato su `/data/media` con `MEDIA_STORAGE_LOCAL_ROOT=/data/media` (4bis.4), anche se per ora
+   gli upload vanno al provider: serve al re-home e ai file locali.
+
+   ```bash
+   docker inspect <APP_CONTAINER> --format '{{json .Mounts}}'
+   docker exec <APP_CONTAINER> printenv MEDIA_STORAGE_DRIVER MEDIA_STORAGE_LOCAL_ROOT
+   docker exec -i <DB_CONTAINER> psql -U postgres -d postgres -At \
+     -c "SELECT coalesce(\"storageDriver\", '(unset)') FROM \"Settings\";"
+   ```
+
+   La scelta salvata dal selettore (`Settings.storageDriver`) è `uploadthing` o `(unset)`, nel
+   qual caso vale la variabile; `local` è un errore da correggere prima di procedere. In
+   **Admin → Media** il driver attivo deve risultare UploadThing.
+
+3. **Anteprima, esecuzione, e una seconda esecuzione.** Dentro il container nuovo:
+
+   ```bash
+   docker exec -it <APP_CONTAINER> npm run media:backfill-files -- --dry-run
+   docker exec -it <APP_CONTAINER> npm run media:backfill-files
+   ```
+
+   Un Media con indirizzo assoluto riceve quell'indirizzo come `remoteUrl`; un Media locale, o il
+   legacy `/assets/<key>`, segue la regola condivisa; un Media con chiave illeggibile finisce in
+   `failed` con il motivo e non viene perso in silenzio. Il comando esce `1` se `failed` non è
+   vuoto.
+
+   Sulle 720 Media del caso reale il primo run riporta:
+
+   ```json
+   { "scanned": 720, "created": 720, "skipped": 0, "failed": [], "dryRun": false }
+   ```
+
+   Esegui di nuovo lo stesso comando: deve riportare `created: 0`, `skipped: 720`. È la prova,
+   sui dati veri, che non nascono duplicati. Se `failed` non è vuoto, fermati e indaga quel Media
+   prima di proseguire: il gate chiede 720 su 720, non 719.
+
+   > La migrazione `add_attachment_and_avatar_role` copia già in `StoredFile` gli allegati email
+   > storici. Sono file registrati ma non Media, quindi non compaiono in `scanned`/`created`; si
+   > vedono solo nel conteggio `files` dell'audit.
+
+4. **Verifica conteggi e duplicati.**
+
+   ```sql
+   SELECT
+     (SELECT count(*) FROM "Media") AS media,
+     (SELECT count(*) FROM "StoredFile" WHERE kind = 'MEDIA') AS media_files,
+     (SELECT count(*) FROM "Media" m WHERE NOT EXISTS (
+        SELECT 1 FROM "StoredFile" f WHERE f."mediaId" = m.id)) AS media_without_record,
+     (SELECT count(*) FROM (
+        SELECT "mediaId" FROM "StoredFile"
+        WHERE "mediaId" IS NOT NULL
+        GROUP BY "mediaId" HAVING count(*) > 1) d) AS duplicated_roles,
+     (SELECT count(*) FROM (
+        SELECT "key" FROM "StoredFile"
+        GROUP BY "key" HAVING count(*) > 1) k) AS duplicated_keys;
+   ```
+
+   Atteso: `media_files = media` (sui 720 di questa Installazione `media = 720`),
+   `media_without_record = 0`, `duplicated_roles = 0`, `duplicated_keys = 0`. Se `media` non è
+   720, annota il numero vero: è la libreria, non il ticket.
+
+5. **Ogni Media risponde sul suo indirizzo canonico.** L'indirizzo canonico è `/media/<key>`.
+   Segui i redirect con `-L`: la risposta finale è `200`. Finché i byte sono sul provider la
+   catena passa dal `302` verso il `remoteUrl` registrato (i 720 coprono due host storici, non uno
+   solo) e si chiude sul provider; dopo il re-home la stessa richiesta risponde `200` senza passare
+   da nessun provider. Senza `-L` vedi i soli redirect (il trailing slash e il salto al provider),
+   non un errore. Libreria e contenuti puntano ancora agli indirizzi assoluti del provider finché
+   non passa lo sweep: questo controllo prova che l'indirizzo canonico di ogni file esiste e
+   risolve, che è ciò da cui lo sweep dipende. Estrai le chiavi ed esegui il controllo su tutte:
+
+   ```bash
+   docker exec -i <DB_CONTAINER> psql -U postgres -d postgres -At \
+     -c "SELECT key FROM \"StoredFile\" WHERE kind = 'MEDIA' ORDER BY key;" \
+     > /tmp/media-keys.txt
+   wc -l /tmp/media-keys.txt          # 720
+
+   while IFS= read -r key; do
+     code=$(curl -sL -o /dev/null -w '%{http_code}' "https://<DOMAIN>/media/${key}")
+     [ "$code" = "200" ] || echo "$key $code"
+   done < /tmp/media-keys.txt
+   ```
+
+   L'output atteso del ciclo è vuoto: nessuna riga stampata significa 720 risposte `200` seguendo
+   il redirect. Una chiave stampata è un file da indagare **prima** dello sweep.
+
+6. **Audit verde.**
+
+   ```bash
+   docker exec -it <APP_CONTAINER> npm run media:audit
+   ```
+
+   Atteso sui 720 Media appena registrati:
+
+   ```txt
+   files: 720
+   drivers: uploadthing=720
+   configured drivers: local uploadthing
+   unconfigured drivers: none
+   unresolved: 0
+   ```
+
+   `files` può essere maggiore di 720 se dopo il deploy sono stati caricati file nuovi o se la
+   migrazione ha copiato allegati storici; ciò che conta per il gate è `unresolved: 0` e
+   `unconfigured drivers: none`. Le righe `bytes` e `objects` descrivono il volume locale: con i
+   byte ancora sul provider valgono zero, e un file di prova rimasto sul volume compare come
+   orfano senza far fallire il comando. Un `unconfigured drivers: uploadthing` significa che il
+   container non vede `UPLOADTHING_TOKEN`: rimettilo prima di toccare i byte. Se `unresolved`
+   elenca un file con `unknown-driver`, è tipicamente un allegato email storico la cui URL non era
+   né del provider né `/files/` e che la migrazione ha registrato sul driver `external`: va
+   risolto o rimosso a mano, perché nessun driver di questa build sa cancellarne l'oggetto.
+   L'audit esce `1` finché `unresolved` non è vuoto, quindi il suo codice chiude il gate.
+
+7. **Dump e prova di restore.** Il record deve sopravvivere a un dump e a un restore, altrimenti
+   non è un dato di produzione:
+
+   ```bash
+   docker exec -it <DB_CONTAINER> pg_dump -U postgres -d postgres -Fc \
+     -f /tmp/pw-after-backfill.dump
+   docker cp <DB_CONTAINER>:/tmp/pw-after-backfill.dump ~/pw-after-backfill.dump
+
+   docker run -d --name pw-restore-test -e POSTGRES_PASSWORD=test \
+     -p 127.0.0.1:55432:5432 postgres:18
+   sleep 5
+   docker cp ~/pw-after-backfill.dump pw-restore-test:/tmp/backup.dump
+   docker exec -it pw-restore-test pg_restore -U postgres -d postgres \
+     --no-owner --no-privileges --clean --if-exists /tmp/backup.dump
+   docker exec -it pw-restore-test psql -U postgres -d postgres -c \
+     "SELECT count(*) FROM \"StoredFile\" WHERE kind = 'MEDIA';"
+   ```
+
+   Atteso `720`. Poi `docker rm -f pw-restore-test`, cancella il dump di prova (o conservalo
+   fuori dal repository come backup), e annota data ed esito. Il dump di restore usa-e-getta è
+   lo stesso schema dell'appendice C §10.
+
+**Se qualcosa va storto.** Il backfill è ripartibile e idempotente: si rilancia senza duplicare.
+Un rollback dell'app non cancella i record e il vecchio codice li ignora; il comando non ha
+riscritto nessuna riga `Media`, quindi non c'è nulla da annullare. Non eseguire sweep, re-home o
+la rimozione delle colonne prima che i passi 4–6 siano verdi: sono quelli che provano la
+posizione, e ticket 14 (le colonne tolte) dipende da questo gate.
 
 ---
 
