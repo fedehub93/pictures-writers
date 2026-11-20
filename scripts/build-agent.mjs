@@ -56,6 +56,15 @@ const env = {
   [pathKey]: `${join(repoRoot, "node_modules", ".bin")}${delimiter}${process.env[pathKey] ?? ""}`,
 };
 
+// `next build` collects every route, and a module-scope client evaluates at build time:
+// `src/lib/stripe.ts` constructs Stripe from `STRIPE_API_KEY`. A placeholder keeps the agent
+// build independent of the development `.env`, which is the only other place the key exists.
+// No request is made at build time, and a real key in `.env.agent` still wins.
+const BUILD_ONLY_DEFAULTS = { STRIPE_API_KEY: "sk_test_agent_build_only" };
+for (const [key, value] of Object.entries(BUILD_ONLY_DEFAULTS)) {
+  if (!env[key]) env[key] = value;
+}
+
 const prismaCli = join(repoRoot, "node_modules", "prisma", "build", "index.js");
 const nextCli = join(repoRoot, "node_modules", "next", "dist", "bin", "next");
 

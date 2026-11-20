@@ -44,7 +44,7 @@ Tests use Vitest (`vitest.config.ts`) and live beside the source or in `__tests_
 
 ### Before committing
 
-Run `npm run check:doc-citations` when a change touches documentation or moves a file a doc names. Run `npm run lint`, `npm run typecheck` and the full test suite when it touches code. `.github/workflows/test.yml` runs all four checks on push to `main` and on pull requests. That workflow does not build, so run `npm run build:agent` before merging changes that touch routing, config or Prisma.
+Run `npm run check:doc-citations` when a change touches documentation or moves a file a doc names. Run `npm run lint`, `npm run typecheck` and the full test suite when it touches code. Before the last commit of a ticket that touches routing, config or Prisma, run `npm run build:agent`: the tests do not build, so only it catches a broken route handler, a server-only boundary or the Prisma binary missing from the trace. `.github/workflows/test.yml` runs lint, typecheck, doc citations, the test suite and the same build on push to `master` and on pull requests.
 
 ## Code Conventions
 
@@ -58,6 +58,8 @@ These are the implementation conventions. A reviewer judges what no tool can enf
 ## Database
 
 The Prisma schema is `prisma/schema.prisma`; the client generates to `generated/prisma` and is imported as `@/generated/prisma`. Schema changes ship with their migration files. Prisma maps models to quoted PascalCase tables and camelCase columns (`"PageRoot"`, `"puckData"`); `\dt` in `npm run -s dev:db:psql` lists them.
+
+A migration with hand-written SQL — a data transform, a backfill, an expand/contract step — is checked against a seeded scratch database before it ships: `docs/agents/migration-check.md`.
 
 ### Raw SQL
 

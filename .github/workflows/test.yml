@@ -90,3 +90,58 @@ jobs:
       # `git ls-files`, so a path that exists only on a contributor's disk fails like a missing one.
       - name: Doc citations
         run: npm run check:doc-citations
+
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: pictures_writers_agent
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d pictures_writers_agent"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/pictures_writers_agent
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Pin npm
+        run: npm install -g npm@12.0.2
+
+      - run: npm ci
+
+      # `build:agent` refuses anything but an `.env.agent` pointing at pictures_writers_agent on
+      # localhost, so this job can never read a development database. The secrets are build-time
+      # placeholders: nothing here reaches production.
+      - name: Create the agent env file
+        run: |
+          cat > .env.agent <<'EOF'
+          DATABASE_URL=postgresql://postgres:postgres@localhost:5432/pictures_writers_agent
+          BETTER_AUTH_URL=http://localhost:3000
+          NEXT_PUBLIC_APP_URL=http://localhost:3000
+          BETTER_AUTH_SECRET=ci-build-only-secret-do-not-use-in-production
+          SCHEDULED_PUBLICATION_SECRET=ci-build-only-secret-do-not-use-in-production
+          MEDIA_STORAGE_DRIVER=local
+          UPLOADTHING_TOKEN=
+          EOF
+
+      # Neither job above builds, and neither does the test suite. This is the only check that
+      # catches a route handler that fails to compile, a server-only import reached from a client
+      # boundary, or the Prisma binary missing from the output trace.
+      - name: Build
+        run: npm run build:agent
