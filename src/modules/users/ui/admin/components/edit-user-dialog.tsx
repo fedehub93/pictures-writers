@@ -39,10 +39,11 @@ import {
   TableRow,
 } from "@/shared/ui/table";
 
-import { FileUpload } from "@/shared/components/file-upload";
 import { GenericInput } from "@/shared/components/form-component/generic-input";
 import { SidebarDialog } from "@/shared/components/sidebar-dialog";
 import { Separator } from "@/shared/ui/separator";
+
+import { AvatarUpload } from "./avatar-upload";
 
 type User = inferRouterOutputs<AppRouter>["users"]["getMany"]["users"][number];
 
@@ -225,12 +226,10 @@ export function EditUserDialog({
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <FileUpload
-                                  endpoint="userImage"
-                                  value={field.value}
-                                  onChange={({ url }) => field.onChange(url)}
-                                  size="small"
-                                  className="rounded-full size-36!"
+                                <AvatarUpload
+                                  value={field.value ?? ""}
+                                  onChange={field.onChange}
+                                  disabled={pending}
                                 />
                               </FormControl>
                             </FormItem>

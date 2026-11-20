@@ -1,3 +1,4 @@
+import { storedFilePath } from "./file-path";
 import {
   LEGACY_ASSET_PREFIX,
   MEDIA_PATH_PREFIX,
@@ -23,10 +24,10 @@ export function parseSrc(src: string): ParsedSrc {
 /**
  * The canonical, provider-independent media address for a storage key.
  * `Media.url` stores this relative form so the database never carries a domain.
+ * Composing a Media address is one role of the shared file composer.
  */
 export function mediaPath(key: string): string {
-  const normalized = key.replace(/^\/+/, "");
-  return `${MEDIA_PATH_PREFIX}/${normalized}`;
+  return storedFilePath("MEDIA", key);
 }
 
 export function serializeSrc(url: URL, absolute: boolean): string {

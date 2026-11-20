@@ -12,7 +12,7 @@ import {
   type EmailProviderAdapter,
   type VerifiedWebhookEvent,
 } from "@/modules/mails/lib/types";
-import { createUploadThingStorage } from "@/modules/mails/conversations/lib/attachment-storage";
+import { createOwnedAttachmentStorage } from "@/modules/mails/conversations/lib/attachment-storage";
 import { handleInboundEmail } from "@/modules/mails/conversations/lib/handle-inbound-email";
 
 const TIMESTAMP_TOLERANCE_SECONDS = 5 * 60;
@@ -117,7 +117,7 @@ async function handleWebhook(req: Request) {
   try {
     const result = await handleInboundEmail(event.data, {
       adapter,
-      storage: createUploadThingStorage(),
+      storage: createOwnedAttachmentStorage(),
     });
     return NextResponse.json(result, { status: 200 });
   } catch (error) {

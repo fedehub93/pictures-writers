@@ -276,9 +276,13 @@ _Avoid_: Received message when the direction matters.
 A message sent manually by an admin to an email address through an `EmailAccount`. Distinct from marketing sends.
 _Avoid_: Direct message, reply when the entity is a stored email.
 
-**Email attachment**:
-A file attached to an inbound or outbound email, persisted in application storage and owned by its parent `EmailMessage`.
-_Avoid_: File, upload when the context is email.
+**Attachment**:
+The role a Stored file has when it belongs to an email message or a form submission. The role keeps the original filename and the external provider id; the file keeps the bytes, address, content type and size. Exactly one owner, and it is deleted with that owner.
+_Avoid_: Email attachment when the submission case matters; file, upload when the role is what is meant.
+
+**Avatar**:
+The role a Stored file has when it is a user's profile image. The user's image column keeps the canonical `/files/<key>` address, because the auth layer owns it; the stored-file record is what makes the image die with the user.
+_Avoid_: Profile image file, user image as the storage record.
 
 **HTML part**:
 The formatted body of an email, stored on `EmailMessage.bodyHtml`. It is what the composer sent or the sender's provider delivered, and it is untrusted: the mailbox never injects it as markup into the admin document.

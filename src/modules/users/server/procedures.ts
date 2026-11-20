@@ -28,7 +28,12 @@ import {
 import { sendInvitationEmail } from "./emails";
 import { auth } from "@/shared/lib/auth";
 import { recordAdministrativeActivity } from "@/modules/administrative-activity";
+import {
+  deleteOwnedFileObjects,
+  reportOwnedFileCleanupFailures,
+} from "@/modules/media/server/owned-file";
 import { getUserOrderBy } from "../lib/user-list";
+import { AvatarFileError, claimAvatar } from "./avatar";
 
 const roleSelect = {
   id: true,
@@ -136,7 +141,7 @@ export const usersRouter = createTRPCRouter({
   update: permissionProcedure(PERMISSIONS.USERS_UPDATE)
     .input(updateUserSchema)
     .mutation(async ({ input, ctx }) => {
-      return db.$transaction(
+      const result = await db.$transaction(
         async (transaction) => {
           const target = await getTarget(transaction, input.id);
           const role = await getActiveRole(transaction, input.roleId);
@@ -151,13 +156,35 @@ export const usersRouter = createTRPCRouter({
             resultingUser: { ...target, roleDefinition: role },
           });
 
+          let avatar:
+            | Awaited<ReturnType<typeof claimAvatar>>
+            | { imageUrl: string | null; previous: null };
+          try {
+            avatar =
+              input.imageUrl === undefined
+                ? { imageUrl: target.imageUrl, previous: null }
+                : await claimAvatar(
+                    transaction,
+                    input.id,
+                    input.imageUrl,
+                  );
+          } catch (error) {
+            if (error instanceof AvatarFileError) {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message: error.message,
+              });
+            }
+            throw error;
+          }
+
           const updated = await transaction.user.update({
             where: { id: input.id },
             data: {
               firstName: input.firstName,
               lastName: input.lastName,
               bio: input.bio,
-              imageUrl: input.imageUrl,
+              imageUrl: avatar.imageUrl,
               roleId: role.id,
             },
             select: userSelect,
@@ -185,10 +212,19 @@ export const usersRouter = createTRPCRouter({
               roleId: updated.roleDefinition?.id ?? null,
             },
           });
-          return updated;
+          return { updated, previousAvatar: avatar.previous };
         },
         { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
       );
+
+      if (result.previousAvatar) {
+        reportOwnedFileCleanupFailures(
+          { userId: input.id },
+          await deleteOwnedFileObjects([result.previousAvatar]),
+        );
+      }
+
+      return result.updated;
     }),
   updateStatus: permissionProcedure(PERMISSIONS.USERS_UPDATE)
     .input(updateStatusSchema)

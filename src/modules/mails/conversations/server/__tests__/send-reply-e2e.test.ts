@@ -29,7 +29,7 @@ vi.mock("@/modules/mails/lib/core", () => ({
 
 import { createCallerFactory } from "@/trpc/init";
 
-import { EmailProvider } from "@/generated/prisma";
+import { EmailProvider, StoredFileKind } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 
 import { conversationsRouter } from "../procedures";
@@ -38,6 +38,7 @@ const createCaller = createCallerFactory(conversationsRouter);
 
 const accountIds: string[] = [];
 const userIds: string[] = [];
+const storedFileIds: string[] = [];
 
 let caller: ReturnType<typeof createCaller>;
 let userId: string;
@@ -46,6 +47,13 @@ async function resetTables() {
   await db.emailSendLog.deleteMany({});
   await db.emailSetting.deleteMany({});
   await db.emailAccount.deleteMany({});
+  if (storedFileIds.length > 0) {
+    await db.attachment.deleteMany({
+      where: { storedFileId: { in: storedFileIds } },
+    });
+    await db.storedFile.deleteMany({ where: { id: { in: storedFileIds } } });
+  }
+  storedFileIds.length = 0;
 }
 
 async function seedConversation() {
@@ -115,16 +123,24 @@ describe("conversations.sendReply end-to-end", () => {
       data: { emailProvider: EmailProvider.RESEND, maxEmailsPerDay: 100 },
     });
     const { conversation } = await seedConversation();
+    const attachment = await db.storedFile.create({
+      data: {
+        key: `default/${randomUUID()}/1/quote.pdf`,
+        driver: "local",
+        contentType: "application/pdf",
+        size: 1234,
+        kind: StoredFileKind.ATTACHMENT,
+      },
+    });
+    storedFileIds.push(attachment.id);
 
     const result = await caller.sendReply({
       conversationId: conversation.id,
       bodyHtml: "<p>Thanks for reaching out</p>",
       attachments: [
         {
+          storedFileId: attachment.id,
           filename: "quote.pdf",
-          contentType: "application/pdf",
-          url: "https://files.test/quote.pdf",
-          size: 1234,
         },
       ],
     });
@@ -139,7 +155,7 @@ describe("conversations.sendReply end-to-end", () => {
 
     const message = await db.emailMessage.findUniqueOrThrow({
       where: { id: result.messageId },
-      include: { attachments: true },
+      include: { attachments: { include: { storedFile: true } } },
     });
 
     expect(message).toMatchObject({
@@ -151,9 +167,12 @@ describe("conversations.sendReply end-to-end", () => {
     expect(message.attachments).toHaveLength(1);
     expect(message.attachments[0]).toMatchObject({
       filename: "quote.pdf",
+      storedFileId: attachment.id,
+    });
+    expect(message.attachments[0]!.storedFile).toMatchObject({
+      key: attachment.key,
       contentType: "application/pdf",
       size: 1234,
-      url: "https://files.test/quote.pdf",
     });
   });
 

@@ -33,6 +33,8 @@ const unreadConversation: ConversationListItem = {
         id: "attachment-preview-1",
         filename: "Financial_Reports.pdf",
         contentType: "application/pdf",
+        size: 1024,
+        url: "/files/default/attachment-preview-1/1/Financial_Reports.pdf",
       },
     ],
   },
@@ -188,6 +190,8 @@ const sentMessages: SentMessageListItem[] = [
         id: "attachment-1",
         filename: "quote.pdf",
         contentType: "application/pdf",
+        size: 2048,
+        url: "/files/default/attachment-1/1/quote.pdf",
       },
     ],
   },
@@ -256,14 +260,10 @@ const thread: ConversationGetOne = {
       attachments: [
         {
           id: "attachment-1",
-          emailMessageId: "message-1",
           filename: "workflow-data.pdf",
           contentType: "application/pdf",
           size: 54608,
-          url: "https://files.example/workflow-data.pdf",
-          externalId: "external-attachment-1",
-          createdAt: new Date("2026-10-17T11:58:00.000Z"),
-          updatedAt: new Date("2026-10-17T11:58:00.000Z"),
+          url: "/files/default/attachment-1/1/workflow-data.pdf",
         },
       ],
     },
@@ -367,7 +367,9 @@ describe("conversation detail rendering", () => {
     expect(html).toContain("script-src");
     expect(html).toContain("&lt;p&gt;Greetings. I have purchased some socks");
     expect(html).toContain("workflow-data.pdf");
-    expect(html).toContain('href="https://files.example/workflow-data.pdf"');
+    expect(html).toContain(
+      'href="/files/default/attachment-1/1/workflow-data.pdf"',
+    );
     expect(html).toContain('download="workflow-data.pdf"');
     expect(html).toContain("Received");
     expect(html).not.toContain("Show images");

@@ -5,6 +5,10 @@ import { customSession } from "better-auth/plugins";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 
 import { db } from "@/shared/lib/db";
+import {
+  deleteUserAvatarObjects,
+  reportOwnedFileCleanupFailures,
+} from "@/modules/media/server/owned-file";
 import { sendPasswordResetEmail } from "@/modules/users/server/emails";
 
 export const auth = betterAuth({
@@ -33,6 +37,16 @@ export const auth = betterAuth({
           return invitation ? false : undefined;
         },
         after: async (_user, _context) => {},
+      },
+      delete: {
+        // Kept in step with `src/lib/auth.ts`: the avatar's objects are removed
+        // through the driver recorded on the file before the user row goes.
+        before: async (user) => {
+          reportOwnedFileCleanupFailures(
+            { userId: user.id },
+            await deleteUserAvatarObjects(user.id),
+          );
+        },
       },
     },
     session: {

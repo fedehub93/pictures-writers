@@ -36,13 +36,10 @@ export type ConversationGetOneInput = z.infer<
 >;
 
 export const conversationAttachmentSchema = z.object({
+  /** The stored file the application transport wrote. */
+  storedFileId: z.string().uuid({ error: "A stored file is required" }),
+  /** The original filename shown to the recipient. */
   filename: z.string().trim().min(1, { error: "A filename is required" }),
-  contentType: z
-    .string()
-    .trim()
-    .min(1, { error: "A content type is required" }),
-  url: z.string().url({ error: "A valid attachment url is required" }),
-  size: z.number().int().nonnegative().optional(),
 });
 
 export const conversationSendSchema = z.object({

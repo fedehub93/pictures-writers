@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { EmailProvider } from "@/generated/prisma";
+import { EmailProvider, StoredFileKind } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 import type {
   EmailProviderAdapter,
@@ -45,11 +45,35 @@ async function createAccount(
   });
 }
 
+const storedFileIds: string[] = [];
+
+async function createAttachmentFile(filename: string) {
+  const file = await db.storedFile.create({
+    data: {
+      key: `default/${randomUUID()}/1/${filename}`,
+      driver: "local",
+      contentType: "application/pdf",
+      size: 1234,
+      kind: StoredFileKind.ATTACHMENT,
+    },
+  });
+
+  storedFileIds.push(file.id);
+  return file;
+}
+
 async function resetTables() {
   await db.emailSendLog.deleteMany({});
   await db.emailSetting.deleteMany({});
   await db.emailAccount.deleteMany({});
   await db.emailContact.deleteMany({});
+  if (storedFileIds.length > 0) {
+    await db.attachment.deleteMany({
+      where: { storedFileId: { in: storedFileIds } },
+    });
+    await db.storedFile.deleteMany({ where: { id: { in: storedFileIds } } });
+  }
+  storedFileIds.length = 0;
 }
 
 describe("sendNewMessage", () => {
@@ -63,6 +87,8 @@ describe("sendNewMessage", () => {
     const bodyHtml =
       "<p>Nice to meet you</p><ol><li>First step</li><li>Second step</li></ol>";
 
+    const attachment = await createAttachmentFile("intro.pdf");
+
     const result = await sendNewMessage({
       emailAccountId: account.id,
       to: "newcomer@example.com",
@@ -70,9 +96,8 @@ describe("sendNewMessage", () => {
       bodyHtml,
       attachments: [
         {
+          storedFileId: attachment.id,
           filename: "intro.pdf",
-          contentType: "application/pdf",
-          url: "https://files.test/intro.pdf",
         },
       ],
       adapter,
@@ -91,7 +116,7 @@ describe("sendNewMessage", () => {
 
     const message = await db.emailMessage.findUniqueOrThrow({
       where: { id: result.messageId },
-      include: { attachments: true, conversation: true },
+      include: { attachments: { include: { storedFile: true } }, conversation: true },
     });
 
     expect(message).toMatchObject({
@@ -116,8 +141,12 @@ describe("sendNewMessage", () => {
     expect(message.attachments).toHaveLength(1);
     expect(message.attachments[0]).toMatchObject({
       filename: "intro.pdf",
+      storedFileId: attachment.id,
+    });
+    expect(message.attachments[0]!.storedFile).toMatchObject({
+      key: attachment.key,
       contentType: "application/pdf",
-      url: "https://files.test/intro.pdf",
+      size: 1234,
     });
   });
 

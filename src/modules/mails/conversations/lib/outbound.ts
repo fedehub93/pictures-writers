@@ -2,10 +2,7 @@ import "server-only";
 
 import { getTodayEmailsAvailable } from "@/modules/mails/lib/mail";
 import { resolveAdapter } from "@/modules/mails/lib/core";
-import type {
-  EmailProviderAdapter,
-  OutboundAttachment,
-} from "@/modules/mails/lib/types";
+import type { EmailProviderAdapter } from "@/modules/mails/lib/types";
 
 /** Throw a caller-provided typed error when no transactional quota remains. */
 export async function assertTransactionalQuota(
@@ -37,7 +34,8 @@ export interface OutboundMessageFields {
   toAddresses: string[];
   externalId?: string | null;
   inReplyTo?: string | null;
-  attachments?: OutboundAttachment[];
+  /** The Attachment rows to create with the message. */
+  attachments?: { filename: string; storedFileId: string }[];
   sentAt: Date;
 }
 
@@ -61,9 +59,7 @@ export function outboundMessageCreateData(fields: OutboundMessageFields) {
       ? {
           create: fields.attachments.map((attachment) => ({
             filename: attachment.filename,
-            contentType: attachment.contentType,
-            size: attachment.size ?? null,
-            url: attachment.url,
+            storedFileId: attachment.storedFileId,
           })),
         }
       : undefined,

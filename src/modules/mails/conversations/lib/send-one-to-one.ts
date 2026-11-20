@@ -2,11 +2,13 @@ import "server-only";
 
 import { db } from "@/shared/lib/db";
 import { htmlToPlainText } from "@/modules/mails/lib/html-to-text";
-import type {
-  EmailProviderAdapter,
-  OutboundAttachment,
-} from "@/modules/mails/lib/types";
+import type { EmailProviderAdapter } from "@/modules/mails/lib/types";
 
+import {
+  AttachmentResolutionError,
+  resolveOutboundAttachments,
+  type AttachmentInput,
+} from "./attachments";
 import { stampConversationActivity } from "./conversation-activity";
 import { replySubject } from "./format";
 import {
@@ -19,7 +21,8 @@ import { resolveFrom } from "./sender";
 export type ConversationSendErrorCode =
   | "NOT_FOUND"
   | "QUOTA_EXCEEDED"
-  | "PROVIDER_ERROR";
+  | "PROVIDER_ERROR"
+  | "ATTACHMENT_NOT_FOUND";
 
 export class ConversationSendError extends Error {
   constructor(
@@ -34,7 +37,7 @@ export interface SendConversationMessageInput {
   conversationId: string;
   bodyHtml: string;
   subject?: string;
-  attachments?: OutboundAttachment[];
+  attachments?: AttachmentInput[];
   /** Injected adapter for testing; resolved from settings otherwise. */
   adapter?: EmailProviderAdapter;
 }
@@ -84,6 +87,19 @@ export async function sendConversationMessage(
   const subject = input.subject?.trim() || replySubject(lastMessage?.subject);
   const bodyText = htmlToPlainText(input.bodyHtml);
 
+  let resolvedAttachments;
+  try {
+    resolvedAttachments = await resolveOutboundAttachments(input.attachments);
+  } catch (error) {
+    if (error instanceof AttachmentResolutionError) {
+      throw new ConversationSendError(
+        error.message,
+        "ATTACHMENT_NOT_FOUND",
+      );
+    }
+    throw error;
+  }
+
   const result = await adapter.sendOneToOne({
     to: conversation.contactEmail,
     from,
@@ -91,7 +107,7 @@ export async function sendConversationMessage(
     html: input.bodyHtml,
     text: bodyText,
     replyTo: account.email,
-    attachments: input.attachments,
+    attachments: resolvedAttachments.provider,
   });
 
   if (!result.success) {
@@ -109,7 +125,7 @@ export async function sendConversationMessage(
         toAddresses: [conversation.contactEmail],
         externalId: result.externalId,
         inReplyTo: lastMessage?.messageId ?? null,
-        attachments: input.attachments,
+        attachments: resolvedAttachments.create,
         sentAt: new Date(),
       }),
     });

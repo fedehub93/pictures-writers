@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 
 import { formatFileSize } from "../../lib/format";
-import { type EmailAttachmentGetOne } from "../../types";
+import { type AttachmentGetOne } from "../../types";
 
 function iconForContentType(contentType: string) {
   if (contentType.startsWith("image/")) return ImageIcon;
@@ -27,7 +27,7 @@ function iconForContentType(contentType: string) {
 }
 
 interface AttachmentListProps {
-  attachments: EmailAttachmentGetOne[];
+  attachments: AttachmentGetOne[];
 }
 
 export const AttachmentList = ({ attachments }: AttachmentListProps) => {

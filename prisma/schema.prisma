@@ -184,6 +184,11 @@ model User {
   profileImage   Media?  @relation(fields: [profileImageId], references: [id], onDelete: Cascade)
   profileImageId String?
 
+  /// The avatar file this user owns. The image column stays the canonical
+  /// address, because the auth layer owns it; this relation is what makes the
+  /// file die with the user.
+  avatarFile StoredFile? @relation("UserAvatarFile")
+
   accounts Account[]
   sessions Session[]
 
@@ -362,6 +367,15 @@ model StoredFile {
   /// backfill can create a record without rewriting the Media's own row.
   mediaId String? @unique
   media   Media?  @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  /// The user whose avatar this file is. `SetNull` rather than `Cascade`: if
+  /// the objects cannot be removed through their recorded driver, the row must
+  /// survive so the audit can report it instead of losing the location.
+  avatarOwnerId String? @unique
+  avatarOwner   User?   @relation("UserAvatarFile", fields: [avatarOwnerId], references: [id], onDelete: SetNull)
+
+  /// The attachment role, when this file is one.
+  attachment Attachment?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1007,7 +1021,7 @@ model EmailMessage {
 
   sentAt DateTime?
 
-  attachments EmailAttachment[]
+  attachments Attachment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1016,20 +1030,29 @@ model EmailMessage {
   @@index([externalId])
 }
 
-model EmailAttachment {
+/// The attachment role of a StoredFile. Exactly one owner: the message that
+/// carried or sent it, or the form submission it belongs to. The file itself
+/// owns the bytes, address, content type and size, so those live nowhere else.
+model Attachment {
   id String @id @default(uuid())
 
-  emailMessage   EmailMessage @relation(fields: [emailMessageId], references: [id], onDelete: Cascade)
-  emailMessageId String
+  emailMessage   EmailMessage? @relation(fields: [emailMessageId], references: [id], onDelete: Cascade)
+  emailMessageId String?
 
-  filename    String
-  contentType String
-  size        Int?
-  url         String
-  externalId  String?
+  formSubmission   FormSubmission? @relation(fields: [formSubmissionId], references: [id], onDelete: Cascade)
+  formSubmissionId String?
+
+  filename   String
+  externalId String?
+
+  storedFileId String     @unique
+  storedFile   StoredFile @relation(fields: [storedFileId], references: [id], onDelete: Restrict)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([emailMessageId])
+  @@index([formSubmissionId])
 }
 
 enum ProductType {
@@ -1358,7 +1381,9 @@ model FormSubmission {
 
   email String?
   /// [SubmissionData]
-  data  Json    @db.JsonB // dati sottomessi dall’utente
+  data  Json    @db.JsonB // dati sottomessi dall'utente
+
+  attachments Attachment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

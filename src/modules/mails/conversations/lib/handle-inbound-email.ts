@@ -144,8 +144,8 @@ function parseEmailAddress(raw: string): { email: string; name?: string } {
 /**
  * Persist an inbound email: match it to an active `EmailAccount`, copy its
  * attachments into application storage, and record the Conversation,
- * EmailMessage and EmailAttachments. Returns `discarded` when no account owns
- * any of the recipient addresses.
+ * EmailMessage and Attachments. Returns `discarded` when no account owns any
+ * of the recipient addresses.
  */
 export async function handleInboundEmail(
   event: InboundWebhookData,
@@ -201,9 +201,7 @@ export async function handleInboundEmail(
     });
     storedAttachments.push({
       filename: attachment.filename,
-      contentType: attachment.contentType,
-      size: attachment.size ?? null,
-      url: stored.url,
+      storedFileId: stored.storedFileId,
       externalId: attachment.externalId,
     });
   }

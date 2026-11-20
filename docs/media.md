@@ -5,8 +5,8 @@ This is the map of the media module, not a spec. The decisions are in
 ticket history are in `.scratch/media-urls-and-uploads/spec.md` and
 `.scratch/local-storage-completion/spec.md`.
 
-Read this before changing anything under `src/modules/media/`, `src/app/media/` or
-`src/app/api/media/`.
+Read this before changing anything under `src/modules/media/`, `src/app/media/`,
+`src/app/api/media/`, `src/app/files/` or `src/app/api/files/`.
 
 ## The two paths
 
@@ -22,6 +22,16 @@ deliver   GET /media/<key>
           -> stored-file record: driver, remote address, content type
           -> local: stream from disk | remote: 302 to the recorded address
 ```
+
+Attachments and avatars are other roles on the same record. The email composer
+and the admin user editor use the application transports
+(`POST /api/files/attachments` and `POST /api/files/avatars`), which write
+through the active driver and answer under `/files/<key>`. The composer hands
+the send use-case a stored-file id; the user update claims an avatar by its
+canonical address and releases the previous one. Neither role has renditions and neither appears in the Media library. Their
+objects are removed through the driver recorded on each file when the owning
+message or user goes; a driver that is not configured here is reported by the
+audit and its record is kept rather than lost.
 
 Every Media with a readable storage key has exactly one `StoredFile`, the
 record that answers "where are the bytes": its key, the driver that owns it,
@@ -75,6 +85,8 @@ path writes under the Media's own revision.
 | Concern | File |
 | --- | --- |
 | Upload, replace, archive, delete, revisions | `src/modules/media/server/media-service.ts` |
+| Attachment and avatar writes, cleanup, user avatars | `src/modules/media/server/owned-file.ts` |
+| Canonical `/media` and `/files` addresses, one composer | `src/modules/media/lib/file-path.ts` |
 | Stored-file location of one upload | `src/modules/media/server/stored-file.ts` |
 | Stored-file location columns shared by server and library | `src/modules/media/lib/stored-file-location.ts` |
 | One-time location backfill for existing Media | `src/modules/media/server/backfill-stored-files.ts`, `scripts/backfill-stored-files.ts` |
@@ -94,7 +106,11 @@ path writes under the Media's own revision.
 | Admin reads and row operations (tRPC) | `src/modules/media/server/procedures.ts` |
 | Upload endpoint | `src/app/api/media/route.ts` |
 | Replace endpoint | `src/app/api/media/[mediaId]/replace/route.ts` |
-| Public delivery route | `src/app/media/[...path]/route.ts` |
+| Public Media delivery route | `src/app/media/[...path]/route.ts` |
+| Public attachment and avatar delivery route | `src/app/files/[...path]/route.ts` |
+| Admin attachment and avatar transports | `src/app/api/files/_lib/upload-owned-route.ts`, `src/app/api/files/attachments/route.ts`, `src/app/api/files/avatars/route.ts` |
+| Shared local streaming, Range and redirect headers | `src/modules/media/server/file-response.ts` |
+| Avatar ownership and release | `src/modules/users/server/avatar.ts` |
 
 ## Key grammar
 

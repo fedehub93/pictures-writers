@@ -1,5 +1,8 @@
+import { randomUUID } from "node:crypto";
+
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { StoredFileKind } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 import type {
   EmailInboundAdapter,
@@ -60,6 +63,8 @@ function makeAdapter(inbound: InboundEmail): EmailInboundAdapter {
   };
 }
 
+const createdStoredFileIds: string[] = [];
+
 function makeStorage(): {
   storage: AttachmentStorage;
   stored: {
@@ -78,9 +83,19 @@ function makeStorage(): {
     storage: {
       async store(params) {
         stored.push(params);
-        return { url: `https://storage.test/${params.filename}` };
+        const file = await db.storedFile.create({
+          data: {
+            key: `default/${randomUUID()}/1/${params.filename}`,
+            driver: "local",
+            contentType: params.contentType,
+            size: params.content.byteLength,
+            kind: StoredFileKind.ATTACHMENT,
+          },
+          select: { id: true },
+        });
+        createdStoredFileIds.push(file.id);
+        return { storedFileId: file.id };
       },
-      async delete() {},
     },
   };
 }
@@ -111,6 +126,7 @@ describe("handleInboundEmail", () => {
 
     await db.emailAccount.deleteMany({});
     createdAccountIds.length = 0;
+    createdStoredFileIds.length = 0;
   });
 
   afterEach(async () => {
@@ -121,7 +137,16 @@ describe("handleInboundEmail", () => {
         where: { id: { in: createdAccountIds } },
       });
     }
+    if (createdStoredFileIds.length > 0) {
+      await db.attachment.deleteMany({
+        where: { storedFileId: { in: createdStoredFileIds } },
+      });
+      await db.storedFile.deleteMany({
+        where: { id: { in: createdStoredFileIds } },
+      });
+    }
     createdAccountIds.length = 0;
+    createdStoredFileIds.length = 0;
   });
 
   it("records the conversation, message and attachments and marks it unread", async () => {
@@ -147,7 +172,13 @@ describe("handleInboundEmail", () => {
 
     const conversation = await db.conversation.findFirst({
       where: { emailAccountId: account.id },
-      include: { messages: { include: { attachments: true } } },
+      include: {
+        messages: {
+          include: {
+            attachments: { include: { storedFile: true } },
+          },
+        },
+      },
     });
 
     expect(conversation).not.toBeNull();
@@ -168,10 +199,14 @@ describe("handleInboundEmail", () => {
     expect(message.attachments).toHaveLength(1);
     expect(message.attachments[0]).toMatchObject({
       filename: "report.pdf",
-      contentType: "application/pdf",
-      size: 1234,
       externalId: "att-1",
-      url: "https://storage.test/report.pdf",
+    });
+    expect(message.attachments[0]!.storedFile).toMatchObject({
+      driver: "local",
+      contentType: "application/pdf",
+      size: 10,
+      kind: "ATTACHMENT",
+      origin: "INTERNAL",
     });
 
     // The provider URL was downloaded and the bytes copied into storage.

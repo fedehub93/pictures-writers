@@ -1,16 +1,17 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { FileIcon, ImagePlusIcon, PaperclipIcon, XIcon } from "lucide-react";
 import { toast } from "sonner";
 
-import { useUploadThing } from "@/lib/uploadthing";
 import { cn } from "@/shared/lib/utils";
+import { uploadOwnedFile } from "@/shared/lib/upload-owned-file";
 import { Button } from "@/shared/ui/button";
 
 import { formatFileSize } from "../../../lib/format";
 
 export type ComposerAttachment = {
+  storedFileId: string;
   filename: string;
   contentType: string;
   url: string;
@@ -24,9 +25,9 @@ interface ComposerAttachmentButtonsProps {
 }
 
 /**
- * Upload triggers for the composer. The upload happens client-side through the
- * existing UploadThing flow; the stored URLs are handed to the caller, which
- * forwards them to the send mutation.
+ * Upload triggers for the composer. The bytes go through the application
+ * transport, so an Installation with no provider account can still attach a
+ * file; the returned stored-file id is what the send mutation claims.
  */
 export const ComposerAttachmentButtons = ({
   onAdd,
@@ -35,26 +36,36 @@ export const ComposerAttachmentButtons = ({
 }: ComposerAttachmentButtonsProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const { startUpload, isUploading } = useUploadThing("emailAttachments", {
-    onClientUploadComplete: (files) => {
+  const handleFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    setIsUploading(true);
+
+    try {
+      const uploaded = await Promise.all(
+        Array.from(files).map((file) =>
+          uploadOwnedFile("/api/files/attachments", file),
+        ),
+      );
+
       onAdd(
-        files.map((file) => ({
-          filename: file.name,
-          contentType: file.type,
-          url: file.ufsUrl,
+        uploaded.map((file) => ({
+          storedFileId: file.storedFileId,
+          filename: file.filename,
+          contentType: file.contentType,
+          url: file.url,
           size: file.size,
         })),
       );
-    },
-    onUploadError: (error) => {
-      toast.error(error.message);
-    },
-  });
-
-  const handleFiles = (files: FileList | null) => {
-    if (!files || files.length === 0) return;
-    void startUpload(Array.from(files));
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "The file could not be uploaded.",
+      );
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const uploadDisabled = disabled || isUploading;

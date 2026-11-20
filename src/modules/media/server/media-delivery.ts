@@ -26,6 +26,17 @@ type DeliveryMediaRow = Prisma.MediaGetPayload<{
 }>;
 
 /**
+ * Where the bytes of an attachment or avatar are. The prefix is the role,
+ * never the driver, so this is the same answer for a local file and one still
+ * on a provider.
+ */
+export interface OwnedDeliveryFile {
+  driver: string;
+  remoteUrl: string | null;
+  contentType: string | null;
+}
+
+/**
  * Where the bytes of a requested delivery key are. The stored-file record is
  * the answer; the Media's own storage columns are read only to fall back for a
  * row whose record has not been created yet.
@@ -41,6 +52,31 @@ export interface DeliveryFile {
   mediaUrl: string;
   /** Whether the requested key is a rendition rather than the original. */
   rendition: boolean;
+}
+
+/**
+ * Resolves the stored file a `/files/<key>` address names. Only the roles
+ * served under that prefix answer: a Media key is a 404 here, just as an
+ * attachment key is a 404 under `/media/`.
+ */
+export async function findOwnedDeliveryFile(
+  key: string,
+): Promise<OwnedDeliveryFile | null> {
+  const record = await db.storedFile.findFirst({
+    where: {
+      key,
+      kind: { in: [StoredFileKind.ATTACHMENT, StoredFileKind.AVATAR] },
+    },
+    select: storedFileLocationSelect,
+  });
+
+  if (!record) return null;
+
+  return {
+    driver: recordedStorageDriverName(record.driver),
+    remoteUrl: record.remoteUrl,
+    contentType: record.contentType,
+  };
 }
 
 function locationOf(
