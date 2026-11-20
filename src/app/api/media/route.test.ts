@@ -1,5 +1,4 @@
 import { mkdtemp, rm } from "node:fs/promises";
-import { randomBytes } from "node:crypto";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -56,19 +55,6 @@ async function createPng(): Promise<Uint8Array<ArrayBuffer>> {
       channels: 3,
       background: { r: 30, g: 90, b: 210 },
     },
-  })
-    .png()
-    .toBuffer();
-
-  return new Uint8Array(buffer);
-}
-
-async function createNoisePng(
-  width = 500,
-  height = 500,
-): Promise<Uint8Array<ArrayBuffer>> {
-  const buffer = await sharp(randomBytes(width * height * 3), {
-    raw: { width, height, channels: 3 },
   })
     .png()
     .toBuffer();
@@ -423,10 +409,16 @@ describe("POST /api/media", () => {
   });
 
   it("accepts the same upload again after enough media is deleted", async () => {
-    const noise = await createNoisePng(700, 700);
+    // A document on purpose: admission is the same check for every Media type,
+    // and two megabytes clear the one-megabyte quota granularity below, while
+    // an image of that size would spend the test's budget encoding renditions.
+    const document = () =>
+      new File([new Uint8Array(2 * MB)], "quota-hog.pdf", {
+        type: "application/pdf",
+      });
 
     const hogForm = new FormData();
-    hogForm.append("file", new File([noise], "hog.png", { type: "image/png" }));
+    hogForm.append("file", document());
     hogForm.append("name", "Quota hog");
 
     const hogResponse = await POST(multipartRequest(hogForm));
@@ -439,10 +431,7 @@ describe("POST /api/media", () => {
 
     const retryForm = () => {
       const form = new FormData();
-      form.append(
-        "file",
-        new File([noise], "hog.png", { type: "image/png" }),
-      );
+      form.append("file", document());
       form.append("name", "Quota retry");
       return form;
     };
