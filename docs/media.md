@@ -123,6 +123,7 @@ arrived is gone.
 | MIME type -> Media type (image, video, audio, document) | `src/modules/media/lib/media-type.ts` |
 | Rendition manifest and the `?mt=` token | `src/modules/media/lib/manifest.ts` |
 | Read-only library audit | `src/modules/media/server/media-audit.ts`, `scripts/audit-media.ts` |
+| Address sweep for legacy provider URLs | `src/modules/media/server/address-sweep.ts`, `scripts/sweep-media-addresses.ts` |
 | Re-home preflight arithmetic | `src/modules/media/lib/rehome.ts` |
 | Re-home job, preflight and journal | `src/modules/media/server/rehome.ts`, `scripts/rehome-media.ts` |
 | Move progress, stop and supersede state | `src/modules/media/server/rehome-runner.ts` |
@@ -200,7 +201,8 @@ The route's `302` hop serves any file whose recorded driver is not local, includ
 with no record (it resolves as UploadThing). That row's stored address is absolute, so the browser
 asks the provider directly and does not request `/media/<key>` for it. That is why the hop is not a
 path to own-domain addresses for legacy Media: their stored addresses are absolute, so serving
-them on this Installation's domain requires the address sweep, not the hop.
+them on this Installation's domain requires the address sweep
+(`npm run media:sweep-addresses`), not the hop.
 
 The hop carries `Cache-Control: public, max-age=300`, never `immutable`: the redirect points at
 bytes a later move can take away, so caching it as if it were the file would leave a visitor
@@ -209,6 +211,38 @@ under a key because a replace bumps the revision.
 
 The legacy `/assets/<key>` address is a build-time rewrite to the provider in
 `next.config.mjs`. It stays for URLs stored before `/media/` existed; new Media never use it.
+
+## Address sweep
+
+A library that predates the seam stores the provider's absolute URL in `Media.url` and in the
+content that copied it: Puck documents, TipTap bodies, product descriptions, ad images, the logo
+setting, form submission data, user images and the legacy attachment rows. Those strings are the
+only thing tying the Installation to the provider's host. `npm run media:sweep-addresses` rewrites
+each one into the canonical address of the Stored file it names. The one-time location backfill
+(`npm run media:backfill-files`) comes first: a Media with no Stored file has no canonical address
+to write, so the sweep reports its address and leaves it.
+
+The canonical address comes from one index built from every Stored file: a Media answers with
+`/media/<key>`, an attachment or avatar with `/files/<key>`. A content reference gets a rendition
+token whose rendition URLs are themselves `/media/<key>` paths, so a later move cannot leave a
+provider URL inside a page; `Media.url` keeps the rendition token it already carries, because that
+token is what lets the delivery route redirect a remote rendition before the bytes move. A provider
+URL, the legacy `/assets/` shape and an absolute address the library already recorded all resolve
+through the index. An ordinary external link is left alone. Running the command again reports zero
+changes, because an address already in canonical form is never touched.
+
+The sweep moves no byte and writes no Stored file: keys, revisions, drivers and remote locations
+are read, never changed. It only rewrites addresses, so it can run while the site serves: the
+provider addresses it replaces still answer until the purge, and a cached page keeps them until its
+normal revalidation (the 24h ISR backstop or the next deploy), so no visitor sees a broken picture.
+It must run first: a Media still addressed by a provider URL is refused by the move
+(`address-not-canonical`), because journaling that provider object would let the purge delete bytes
+published content still links to.
+
+`npm run media:sweep-addresses:dry-run` (or `--dry-run`) reports the same work without writing.
+The report names each field with the rows, addresses and unresolved counts; it never prints a key,
+an address or a provider host. An address no Stored file owns is left exactly as it was, and the
+command exits `1` so the next storage step can be gated on it.
 
 ## Re-home
 
@@ -228,8 +262,9 @@ flip; a provider object is not deleted, because the redirect hop may still be ca
 
 A Media whose stored address is still a provider URL is refused by id (`address-not-canonical`)
 and left serving: moving it would journal the provider object for removal while published pages
-still link to it, so the address sweep has to run first. Attachments and avatars carry no address
-on their role; the strings their owners hold are what the sweep rewrites before they move.
+still link to it, so the address sweep (`npm run media:sweep-addresses`) has to run first.
+Attachments and avatars carry no address on their role; the strings their owners hold are what
+the sweep rewrites before they move.
 
 An interrupted run resumes where it stopped: a file already flipped is no longer pending, so it
 is never copied again. A file whose source cannot be read is reported by stored-file id, stays on

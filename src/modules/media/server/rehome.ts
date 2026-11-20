@@ -15,6 +15,7 @@ import {
   stripMediaManifest,
 } from "@/modules/media/lib/manifest";
 import { mediaUsageBytes } from "@/modules/media/lib/quota";
+import { mediaRenditionLocations } from "@/modules/media/lib/renditions";
 import {
   planRehome,
   rehomeDiskShortageMessage,
@@ -24,10 +25,7 @@ import {
   type RehomePlan,
 } from "@/modules/media/lib/rehome";
 import { mediaPath, parseSrc } from "@/modules/media/lib/url";
-import type {
-  MediaRendition,
-  MediaRenditionFormat,
-} from "@/modules/media/types";
+import type { MediaRenditionFormat } from "@/modules/media/types";
 
 import { checksumOf } from "./image-bytes";
 import {
@@ -288,30 +286,6 @@ const jobFileSelect = {
 
 type RehomeFile = Prisma.StoredFileGetPayload<{ select: typeof jobFileSelect }>;
 
-function isRendition(value: unknown): value is MediaRendition {
-  if (typeof value !== "object" || value === null) return false;
-
-  const rendition = value as Record<string, unknown>;
-
-  return (
-    typeof rendition.key === "string" &&
-    rendition.key.length > 0 &&
-    typeof rendition.width === "number" &&
-    Number.isFinite(rendition.width) &&
-    rendition.width > 0 &&
-    (rendition.format === "avif" || rendition.format === "webp")
-  );
-}
-
-/**
- * The renditions a Media's manifest locates. An entry without a key or a
- * width cannot be copied without guessing, so it is left where it is and its
- * address stays in the delivery token.
- */
-function movableRenditions(value: unknown): MediaRendition[] {
-  return Array.isArray(value) ? value.filter(isRendition) : [];
-}
-
 function renditionContentType(format: MediaRenditionFormat): string {
   return format === "avif" ? "image/avif" : "image/webp";
 }
@@ -339,7 +313,7 @@ function deliveredUrlAfterMove(
   media: NonNullable<RehomeFile["media"]>,
   renditionUrls: Map<string, string>,
 ): string {
-  const moved = movableRenditions(media.renditions);
+  const moved = mediaRenditionLocations(media.renditions);
   if (moved.length === 0) return media.url;
 
   const entries = moved.map((rendition) => ({
@@ -471,7 +445,7 @@ async function moveStoredFile({
     return { ok: false, reason: "checksum-mismatch" };
   }
 
-  const renditions = movableRenditions(file.media?.renditions ?? null);
+  const renditions = mediaRenditionLocations(file.media?.renditions ?? null);
   const renditionBytes: Uint8Array<ArrayBuffer>[] = [];
 
   for (const rendition of renditions) {

@@ -166,6 +166,10 @@ _Avoid_: Media quota when attachments and avatars are in scope; disk limit, plan
 The share of the Storage quota that files of public origin - a visitor's form attachment - may occupy. It is an Installation setting (`publicOriginReserveMb`, default 512 MB, a tenth of the default quota). A public upload must fit both the quota and the reserve; the owner's uploads are bounded by the quota only, so a stranger can never block the library. Zero refuses every public upload, and an Installation with no public forms never reaches it.
 _Avoid_: Upload limit, public quota (it is a ceiling inside the quota, not a second budget).
 
+**Address sweep**:
+The one-time, idempotent command that rewrites every legacy provider address stored in content and in `Media.url` into the canonical address of the Stored file it names. It moves no byte and changes no key, revision or driver; an address it cannot resolve is reported by field and count, and the run fails rather than leaving a provider host behind.
+_Avoid_: URL migration, rewrite when it implies moving bytes or renaming keys.
+
 **Re-home**:
 Moving a Stored file's bytes from the driver that holds them to the active driver without changing its key or its canonical address. It copies and verifies the bytes, reads the copy back, then rewrites the file's driver and remote address; a file that cannot be read stays where it is and keeps serving, a Media still addressed by a provider URL waits for the address sweep, and a provider object it abandons is recorded in the Purge journal.
 _Avoid_: Migrate, sync, move when a revision or address changes, which is a replace rather than a re-home.
