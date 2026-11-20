@@ -34,6 +34,7 @@
     "media:backfill-files": "tsx --conditions=react-server scripts/backfill-stored-files.ts",
     "media:audit": "tsx --conditions=react-server scripts/audit-media.ts",
     "media:rehome": "tsx --conditions=react-server scripts/rehome-media.ts",
+    "media:purge": "tsx --conditions=react-server scripts/purge-media.ts",
     "media:sweep-addresses": "tsx --conditions=react-server scripts/sweep-media-addresses.ts",
     "media:sweep-addresses:dry-run": "tsx --conditions=react-server scripts/sweep-media-addresses.ts --dry-run",
     "site-regions:migrate-puck-data": "tsx --conditions=react-server scripts/migrate-site-region-puck-data.ts",

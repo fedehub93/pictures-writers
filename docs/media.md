@@ -128,6 +128,7 @@ arrived is gone.
 | Re-home job, preflight and journal | `src/modules/media/server/rehome.ts`, `scripts/rehome-media.ts` |
 | Move progress, stop and supersede state | `src/modules/media/server/rehome-runner.ts` |
 | Library move panel | `src/modules/media/ui/components/media-rehome-panel.tsx` |
+| Purge job, guards, grace window and confirmation | `src/modules/media/server/purge.ts`, `scripts/purge-media.ts` |
 | Purge journal | `StoragePurgeEntry` in `prisma/schema.prisma` |
 | Parsing and composing addresses | `src/modules/media/lib/url.ts` |
 | Absolute form and own-host check | `src/modules/media/server/media-url.ts` |
@@ -283,8 +284,8 @@ Every provider object the move abandons is written to the **purge journal**
 Pre-seam keys are not namespaced, so the journal, not a prefix scan, is what lets a later purge
 remove exactly what a move left. A key that becomes live again on a driver has its journal entry
 removed in the same flip, so the purge is never pointed at bytes the library serves. The journal
-is consumed by the separate purge command, after a grace window; the move never deletes a
-provider object.
+is consumed by `npm run media:purge --driver <name>` after a grace window (seven days by default);
+the move never deletes a provider object.
 
 `npm run media:rehome` runs the same job from the command line. It prints the plan, needs `--yes`
 for a warning-level plan, refuses an impossible one, and exits non-zero when a file could not be
@@ -292,6 +293,36 @@ moved. The media library offers the same move, shows the identical preflight, an
 failures by id. The run's progress and stop live in memory
 (`src/modules/media/server/rehome-runner.ts`): the deployment is single-instance by design, and
 a restart loses only the progress display, never the files already flipped.
+
+## Purge
+
+`npm run media:purge --driver <name>` deletes exactly the provider objects the purge journal
+recorded, and nothing else. It is the only irreversible step in the storage lifecycle and it
+never runs on its own. The recovery window is seven days by default; `--grace-days` shortens or
+lengthens it.
+
+Before deleting a byte the command proves the move is complete. It refuses while any stored file
+still records that driver, while the audit is not green, and while this instance has no
+credentials for the driver; nothing is deleted on a refusal. With nothing older than the window
+for that driver it reports zero and touches nothing, so a later run after the token is gone still
+succeeds. The operator must then type the driver's name: any other answer leaves the journal
+untouched. Objects younger than the grace window are left alone and reported as waiting, so a
+mistaken move still has a recovery path.
+
+The deletes happen one object at a time. Before each delete the command re-reads the journal
+entry, so a newer move that made the key live again removes it from this run. A provider failure
+is reported by journal entry and the rest of the batch continues; an object the provider no
+longer has is treated as removed, because the provider already resolves none of it. A deleted
+object's journal entry goes with it, so the same run cannot delete twice and a second run reports
+zero. Without `--driver` the command prints
+the journal grouped by driver; an empty journal is nothing to do and exits zero, while a populated
+one exits non-zero so the choice is explicit. `pendingPurge` backs that summary. The report
+carries journal entry ids and aggregates, never storage keys, addresses or a provider host.
+
+The grace window covers the redirect hop's five-minute cache and the 24h ISR backstop with room to
+spare. Email HTML that was already sent still embeds the provider's address and is the one
+accepted casualty of a purge after that window; the alternative is keeping those objects alive
+indefinitely.
 
 ## Quota
 

@@ -175,8 +175,12 @@ Moving a Stored file's bytes from the driver that holds them to the active drive
 _Avoid_: Migrate, sync, move when a revision or address changes, which is a replace rather than a re-home.
 
 **Purge journal**:
-The record of every provider object a Re-home abandoned, by driver and exact storage key, stamped when the move flipped the file. It is what lets the separate purge delete exactly those objects after a grace window, including a pre-seam object whose key is not namespaced and cannot be found by a prefix scan.
+The record of every provider object a Re-home abandoned, by driver and exact storage key, stamped when the move flipped the file. It is what lets the Purge delete exactly those objects after a grace window, including a pre-seam object whose key is not namespaced and cannot be found by a prefix scan.
 _Avoid_: Trash, backup, audit log; the journal names objects to delete, not files the library still serves.
+
+**Purge**:
+The one irreversible storage step: deletes exactly the provider objects the Purge journal recorded, after a grace window (seven days by default). It refuses while any Stored file still records that driver or the audit is not green, requires the driver's name typed by the operator, leaves younger entries waiting, and reports each provider failure by journal entry while the rest of the batch continues.
+_Avoid_: Cleanup, sync, delete when it implies a prefix scan or an automatic step.
 
 **Media revision**:
 A counter on a Media that changes when its original file is replaced, giving every rendition a new storage key so no cache can serve the previous file.
