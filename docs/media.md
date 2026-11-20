@@ -2,8 +2,8 @@
 
 This is the map of the media module, not a spec. The decisions are in
 `docs/adr/0026-media-storage-seam-and-pregenerated-renditions.md`; the requirements and the
-ticket history are in `.scratch/media-urls-and-uploads/spec.md` and
-`.scratch/local-storage-completion/spec.md`.
+ticket history are in `.scratch/media-urls-and-uploads/spec.md`,
+`.scratch/local-storage-completion/spec.md` and `.scratch/storage-location/spec.md`.
 
 Read this before changing anything under `src/modules/media/`, `src/app/media/`,
 `src/app/api/media/`, `src/app/files/` or `src/app/api/files/`.
@@ -85,10 +85,12 @@ record true: the metadata run writes back the size, content type and checksum it
 the rendition run moves the record's key and provider address when a legacy flat key becomes a
 namespaced one.
 
-A mixed library is the expected state on this Installation, not an edge case: the Media that
-predate the seam stay on UploadThing, and a Media uploaded with the local driver active goes to
-disk. Deletion, replacement, both backfills and the audit resolve the driver recorded on each
-file; no batch operation may resolve one driver for a whole selection.
+A mixed library is a transition, not a target: the Media that predate the seam stay on
+UploadThing until the owner chooses to move them, and a Media uploaded with the local driver
+active goes to disk. The library shows how many stored files remain on another driver and offers
+the move; nothing moves automatically. Deletion, replacement, both backfills, the re-home and
+the audit resolve the driver recorded on each file; no batch operation may resolve one driver
+for a whole selection.
 
 Every Media type enters through the same multipart transport. An image is normalised and cut
 into the rendition ladder; a document, audio file or video is copied untouched to
@@ -121,6 +123,11 @@ arrived is gone.
 | MIME type -> Media type (image, video, audio, document) | `src/modules/media/lib/media-type.ts` |
 | Rendition manifest and the `?mt=` token | `src/modules/media/lib/manifest.ts` |
 | Read-only library audit | `src/modules/media/server/media-audit.ts`, `scripts/audit-media.ts` |
+| Re-home preflight arithmetic | `src/modules/media/lib/rehome.ts` |
+| Re-home job, preflight and journal | `src/modules/media/server/rehome.ts`, `scripts/rehome-media.ts` |
+| Move progress, stop and supersede state | `src/modules/media/server/rehome-runner.ts` |
+| Library move panel | `src/modules/media/ui/components/media-rehome-panel.tsx` |
+| Purge journal | `StoragePurgeEntry` in `prisma/schema.prisma` |
 | Parsing and composing addresses | `src/modules/media/lib/url.ts` |
 | Absolute form and own-host check | `src/modules/media/server/media-url.ts` |
 | Quota arithmetic (pure vs database) | `src/modules/media/lib/quota.ts`, `src/modules/media/server/media-quota.ts` |
@@ -203,7 +210,56 @@ under a key because a replace bumps the revision.
 The legacy `/assets/<key>` address is a build-time rewrite to the provider in
 `next.config.mjs`. It stays for URLs stored before `/media/` existed; new Media never use it.
 
+## Re-home
+
+Switching the active driver changes where the next upload is written. **Re-home** moves the
+bytes of every stored file that is not on the active driver there, so the library becomes one
+driver's again. It is an explicit, resumable job; it never runs on its own.
+
+The goal is recomputed from the database at every start: every stored file sits on the active
+driver. The job copies one file at a time — a Media's original and every rendition in its
+manifest, an attachment or avatar its one object — verifies the source against the checksum the
+record carries (a rendition against its recorded size), reads the copy back from the target to
+prove it is those bytes, then flips the record's `driver` and `remoteUrl` in one transaction. The
+key, the revision and the original's canonical address never change; only a Media's `?mt=` token
+learns the new rendition addresses. A failure before the flip removes the target copy and leaves
+the source serving, so no failure path can break an address. A local source is removed after the
+flip; a provider object is not deleted, because the redirect hop may still be cached.
+
+A Media whose stored address is still a provider URL is refused by id (`address-not-canonical`)
+and left serving: moving it would journal the provider object for removal while published pages
+still link to it, so the address sweep has to run first. Attachments and avatars carry no address
+on their role; the strings their owners hold are what the sweep rewrites before they move.
+
+An interrupted run resumes where it stopped: a file already flipped is no longer pending, so it
+is never copied again. A file whose source cannot be read is reported by stored-file id, stays on
+its current driver and keeps serving. A newer driver choice supersedes the run at the next file,
+and the next run converges on the new target. The library polls the run's progress and can stop
+it at a file boundary; the file being copied finishes first, so a stop is always safe.
+
+Before starting, the preflight estimates the bytes the move copies (originals plus rendition
+manifests) and reserves `10%` headroom. When the volume can hold the copies but not the headroom,
+the owner must confirm; when it cannot hold even the copies, the run is refused. A file whose
+recorded size is unknown makes the estimate incomplete, so that too needs a confirmation. A
+provider target has no volume here and never warns.
+
+Every provider object the move abandons is written to the **purge journal**
+(`StoragePurgeEntry`): the driver, the exact key and its size, stamped with the flip's time.
+Pre-seam keys are not namespaced, so the journal, not a prefix scan, is what lets a later purge
+remove exactly what a move left. A key that becomes live again on a driver has its journal entry
+removed in the same flip, so the purge is never pointed at bytes the library serves. The journal
+is consumed by the separate purge command, after a grace window; the move never deletes a
+provider object.
+
+`npm run media:rehome` runs the same job from the command line. It prints the plan, needs `--yes`
+for a warning-level plan, refuses an impossible one, and exits non-zero when a file could not be
+moved. The media library offers the same move, shows the identical preflight, and reports the
+failures by id. The run's progress and stop live in memory
+(`src/modules/media/server/rehome-runner.ts`): the deployment is single-instance by design, and
+a restart loses only the progress display, never the files already flipped.
+
 ## Quota
+
 
 `Settings.mediaQuotaMb` (default 5120) is the Installation's byte budget for the disk. One number
 covers every `StoredFile`, whatever its role: a Media contributes its original's stored-file size
@@ -248,8 +304,10 @@ one-time location backfill has run. Local objects are checked file by file again
 using the key the record carries; remote files are checked through their driver's configuration
 and the presence of a readable key only, because a read-only command must not fetch every
 provider object. The command exits `1` when any file is unresolved, so it can gate a deployment;
-orphaned files are reported but do not fail it. The report carries file ids and aggregates, never
-keys, addresses or names, so it is safe to paste into a deployment log.
+orphaned files are reported but do not fail it. After a re-home every file records the target
+driver, so the report names one driver and no unresolved file; a file the move could not read is
+exactly what its unresolved list names. The report carries file ids and aggregates, never keys,
+addresses or names, so it is safe to paste into a deployment log.
 
 ## Adding a driver
 
@@ -267,8 +325,9 @@ keys, addresses or names, so it is safe to paste into a deployment log.
 ## Known debt (2026-11)
 
 - `Media.url` carries the `?mt=` token, and for remote rows that token embeds provider URLs,
-  while the spec says `Media.url` is `/media/<key>` and nothing else. Decide before the byte
-  migration: derive the token at render time, or record the exception in ADR-0026.
+  while the spec says `Media.url` is `/media/<key>` and nothing else. Re-home rewrites the token
+  in the same transaction as the flip, so a move keeps delivery working; deriving the token at
+  render time remains the cleaner shape and is not done.
 - Updating `altText` changes published output but does not revalidate it
   (`revalidateContent` is not called).
 - The picker copy still says "asset"; the glossary term is Media.

@@ -33,6 +33,7 @@
     "media:backfill-renditions": "tsx --conditions=react-server scripts/backfill-media-renditions.ts",
     "media:backfill-files": "tsx --conditions=react-server scripts/backfill-stored-files.ts",
     "media:audit": "tsx --conditions=react-server scripts/audit-media.ts",
+    "media:rehome": "tsx --conditions=react-server scripts/rehome-media.ts",
     "site-regions:migrate-puck-data": "tsx --conditions=react-server scripts/migrate-site-region-puck-data.ts",
     "site-regions:migrate-puck-data:dry-run": "tsx --conditions=react-server scripts/migrate-site-region-puck-data.ts --dry-run",
     "puck:migrate-size-spacing": "tsx --conditions=react-server scripts/migrate-puck-size-spacing.ts",

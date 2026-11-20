@@ -7,14 +7,16 @@ import { useMediaFilters } from "../../hooks/use-media-filters";
 
 import { MediaCreateAction } from "./media-create-action";
 import { MediaQuotaMeter } from "./media-quota-meter";
+import { MediaRehomePanel } from "./media-rehome-panel";
 import { MediaSearchFilter } from "./media-search-filter";
 import { MediaStorageDriverSelect } from "./media-storage-driver-select";
 import { MediaViewSwitch } from "./media-view-switch";
 
 /**
  * The header owns the filtered count, the search, the view switch, the quota,
- * the storage driver choice and the upload action. It renders outside the
- * grid's suspense boundary, so the list resolving never hides the controls.
+ * the storage driver choice, the offer to move files still elsewhere and the
+ * upload action. It renders outside the grid's suspense boundary, so the list
+ * resolving never hides the controls.
  */
 export const MediaListHeader = () => {
   const [filters] = useMediaFilters();
@@ -43,6 +45,9 @@ export const MediaListHeader = () => {
           {filters.view === "active" && <MediaCreateAction />}
         </div>
       </div>
+      {data && (
+        <MediaRehomePanel pending={data.rehome} active={data.storage.active} />
+      )}
     </div>
   );
 };

@@ -393,6 +393,24 @@ model StoredFile {
   @@index([checksum])
 }
 
+/// The purge journal: one object a Re-home left behind on the driver it moved
+/// away from. The purge deletes exactly what a move recorded, because a
+/// pre-seam key is not namespaced and cannot be found by a prefix scan.
+/// `createdAt` starts the grace window; the composite unique makes a resumed
+/// run idempotent.
+model StoragePurgeEntry {
+  id String @id @default(uuid())
+
+  driver String
+  key    String
+  size   Int?
+
+  createdAt DateTime @default(now())
+
+  @@unique([driver, key])
+  @@index([driver, createdAt])
+}
+
 model Media {
   id String @id @default(uuid())
 

@@ -324,12 +324,51 @@ describe("mediaRouter", () => {
       expect(meta.quota.percent).toBeGreaterThanOrEqual(0);
       expect(["local", "uploadthing"]).toContain(meta.storage.active);
       expect(typeof meta.storage.uploadThingAvailable).toBe("boolean");
+      expect(meta.rehome.files).toBeGreaterThanOrEqual(0);
+      expect(meta.rehome.bytes).toBeGreaterThanOrEqual(0);
+      expect(meta.rehome.unknownFiles).toBeGreaterThanOrEqual(0);
 
       const archivedMeta = await caller.getMeta({
         search: marker,
         view: "archived",
       });
       expect(archivedMeta.total).toBe(1);
+    });
+  });
+
+  describe("rehome", () => {
+    it("previews the space the next move needs without writing", async () => {
+      const plan = await caller.rehomePlan();
+
+      expect(plan.target).toBe("local");
+      expect(plan.files).toBe(
+        await db.storedFile.count({ where: { driver: { not: "local" } } }),
+      );
+      expect(plan.bytes).toBeGreaterThanOrEqual(0);
+      expect(plan.requiredBytes).toBeGreaterThanOrEqual(plan.bytes);
+      expect(plan.unknownFiles).toBeGreaterThanOrEqual(0);
+      expect(["ok", "warning", "refused"]).toContain(plan.level);
+    });
+
+    it("reports the idle state without starting a run", async () => {
+      const status = await caller.rehomeStatus();
+
+      expect(status).toEqual({
+        status: "idle",
+        target: null,
+        total: 0,
+        processed: 0,
+        moved: 0,
+        failed: 0,
+        failures: [],
+        bytesMoved: 0,
+        abandoned: 0,
+        startedAt: null,
+        finishedAt: null,
+        superseded: false,
+        stopped: false,
+        error: null,
+      });
     });
   });
 

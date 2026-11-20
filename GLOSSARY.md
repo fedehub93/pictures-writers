@@ -167,8 +167,12 @@ The share of the Storage quota that files of public origin - a visitor's form at
 _Avoid_: Upload limit, public quota (it is a ceiling inside the quota, not a second budget).
 
 **Re-home**:
-Moving a Stored file's bytes from the driver that holds them to the active driver without changing its key or its canonical address. It rewrites the file's driver and remote address only; a file that cannot be read stays where it is and keeps serving.
+Moving a Stored file's bytes from the driver that holds them to the active driver without changing its key or its canonical address. It copies and verifies the bytes, reads the copy back, then rewrites the file's driver and remote address; a file that cannot be read stays where it is and keeps serving, a Media still addressed by a provider URL waits for the address sweep, and a provider object it abandons is recorded in the Purge journal.
 _Avoid_: Migrate, sync, move when a revision or address changes, which is a replace rather than a re-home.
+
+**Purge journal**:
+The record of every provider object a Re-home abandoned, by driver and exact storage key, stamped when the move flipped the file. It is what lets the separate purge delete exactly those objects after a grace window, including a pre-seam object whose key is not namespaced and cannot be found by a prefix scan.
+_Avoid_: Trash, backup, audit log; the journal names objects to delete, not files the library still serves.
 
 **Media revision**:
 A counter on a Media that changes when its original file is replaced, giving every rendition a new storage key so no cache can serve the previous file.

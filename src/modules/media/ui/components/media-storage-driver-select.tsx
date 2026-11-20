@@ -34,7 +34,7 @@ export const MediaStorageDriverSelect = ({
   active,
   uploadThingAvailable,
 }: MediaStorageDriverSelectProps) => {
-  const { invalidateMeta } = useMediaInvalidation();
+  const { invalidateMeta, invalidateRehome } = useMediaInvalidation();
   const [value, setValue] = useState<StorageDriverName>(active);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -50,7 +50,7 @@ export const MediaStorageDriverSelect = ({
       toast.success(
         `New uploads will be stored on ${STORAGE_DRIVER_LABELS[next].toLowerCase()}.`,
       );
-      void invalidateMeta();
+      void Promise.all([invalidateMeta(), invalidateRehome()]);
     } catch (error) {
       setValue(previous);
       toast.error(

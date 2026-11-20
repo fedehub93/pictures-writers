@@ -8,6 +8,12 @@ import {
   MediaNotFoundError,
   MediaProcessingError,
 } from "./media-service";
+import {
+  RehomeConfirmationRequiredError,
+  RehomeDiskSpaceError,
+  RehomeTargetUnconfiguredError,
+} from "./rehome";
+import { RehomeAlreadyRunningError } from "./rehome-runner";
 
 /**
  * Translate a media service error into the matching `TRPCError`, keeping the
@@ -25,9 +31,21 @@ export function toMediaTrpcError(error: unknown): TRPCError {
 
   if (
     error instanceof MediaNotArchivedError ||
-    error instanceof MediaInUseError
+    error instanceof MediaInUseError ||
+    error instanceof RehomeAlreadyRunningError
   ) {
     return new TRPCError({ code: "CONFLICT", message: error.message });
+  }
+
+  if (
+    error instanceof RehomeConfirmationRequiredError ||
+    error instanceof RehomeDiskSpaceError ||
+    error instanceof RehomeTargetUnconfiguredError
+  ) {
+    return new TRPCError({
+      code: "PRECONDITION_FAILED",
+      message: error.message,
+    });
   }
 
   if (error instanceof MediaProcessingError) {

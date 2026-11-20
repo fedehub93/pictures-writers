@@ -33,6 +33,8 @@ import {
 } from "./media-service";
 import { getMediaQuotaStatus } from "./media-quota";
 import { countMediaReferencesFor } from "./media-usage";
+import { pendingRehome, planRehomeRun } from "./rehome";
+import { rehomeRunner } from "./rehome-runner";
 import { getStorageDriverChoice, resolveActiveStorageDriver } from "./storage";
 
 const MEDIA_LIST_ORDER_BY: Prisma.MediaOrderByWithRelationInput[] = [
@@ -120,15 +122,17 @@ export const mediaRouter = createTRPCRouter({
     .query(async ({ input }) => {
       const where = buildMediaWhere(input);
 
-      // One query for the count, then the existing quota and driver sources:
-      // the header must not grow a second arithmetic of its own.
-      const [total, quota, storage] = await Promise.all([
+      // The active driver answers both the choice and how many files are
+      // still elsewhere; the quota and the header count stay the sources they
+      // already were, so the header never grows a second arithmetic.
+      const storage = await getStorageDriverChoice();
+      const [total, quota, rehome] = await Promise.all([
         db.media.count({ where }),
         getMediaQuotaStatus(),
-        getStorageDriverChoice(),
+        pendingRehome(storage.active),
       ]);
 
-      return { total, quota, storage };
+      return { total, quota, storage, rehome };
     }),
 
   update: permissionProcedure(PERMISSIONS.MEDIA_UPDATE)
@@ -199,4 +203,46 @@ export const mediaRouter = createTRPCRouter({
         throw toMediaTrpcError(error);
       }
     }),
+
+  /**
+   * The space the next move needs, without writing anything. The library asks
+   * before it offers the move, so the warning the admin reads is the check
+   * the server enforces.
+   */
+  rehomePlan: permissionProcedure(PERMISSIONS.MEDIA_READ).query(async () => {
+    try {
+      return await planRehomeRun();
+    } catch (error) {
+      throw toMediaTrpcError(error);
+    }
+  }),
+
+  /** The current or last run's progress. The library polls it while running. */
+  rehomeStatus: permissionProcedure(PERMISSIONS.MEDIA_READ).query(() =>
+    rehomeRunner.getState(),
+  ),
+
+  /**
+   * Starts the move and returns immediately: copying a library takes longer
+   * than a request, so progress is read through `rehomeStatus`. A warning
+   * plan needs `confirmed`; an impossible one is refused here.
+   */
+  rehomeStart: permissionProcedure(PERMISSIONS.MEDIA_UPDATE)
+    .input(z.object({ confirmed: z.boolean().default(false) }))
+    .mutation(async ({ input }) => {
+      try {
+        return await rehomeRunner.start({ confirmed: input.confirmed });
+      } catch (error) {
+        throw toMediaTrpcError(error);
+      }
+    }),
+
+  /**
+   * Stops at the next file boundary. The file being copied finishes, so a
+   * stop never leaves a half-written object or a record pointing at bytes
+   * that are not there.
+   */
+  rehomeStop: permissionProcedure(PERMISSIONS.MEDIA_UPDATE).mutation(() =>
+    rehomeRunner.stop(),
+  ),
 });

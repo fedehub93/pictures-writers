@@ -13,6 +13,17 @@ export const useMediaInvalidation = () => {
   const invalidateMeta = () =>
     queryClient.invalidateQueries({ queryKey: trpc.media.getMeta.queryKey() });
 
+  /**
+   * The move's own reads. A driver switch changes what a move would do, so
+   * the preflight and the progress must be asked again rather than shown
+   * with the previous target.
+   */
+  const invalidateRehome = () =>
+    Promise.all([
+      queryClient.invalidateQueries(trpc.media.rehomePlan.pathFilter()),
+      queryClient.invalidateQueries(trpc.media.rehomeStatus.pathFilter()),
+    ]);
+
   const invalidateLibrary = () =>
     Promise.all([
       // The path filter, not the query key: the library reads pages and the
@@ -21,5 +32,5 @@ export const useMediaInvalidation = () => {
       invalidateMeta(),
     ]);
 
-  return { invalidateLibrary, invalidateMeta };
+  return { invalidateLibrary, invalidateMeta, invalidateRehome };
 };
