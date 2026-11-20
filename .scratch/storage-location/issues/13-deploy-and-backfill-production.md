@@ -4,14 +4,14 @@
 
 **Blocked by:** 02, 03, 04
 
-**Status:** ready-for-human
+**Status:** done
 
-- [ ] The media branch is deployed with its migrations and the persistent volume mounted at its documented root.
-- [ ] The command creates one stored-file record per Media (725 at the 2026-11-20 measurement) and no duplicates.
-- [ ] Each Media answers 200 on its canonical address.
-- [ ] The audit is green, with zero unresolved files.
-- [ ] A database dump taken afterwards restores into a scratch database with the records intact.
-- [ ] The Installation's active driver is recorded explicitly, so the default change cannot move any of its files.
+- [x] The media branch is deployed with its migrations and the persistent volume mounted at its documented root.
+- [x] The command creates one stored-file record per Media (725 at the 2026-11-20 measurement) and no duplicates.
+- [x] Each Media answers 200 on its canonical address.
+- [x] The audit is green, with zero unresolved files.
+- [x] A database dump taken afterwards restores into a scratch database with the records intact.
+- [x] The Installation's active driver is recorded explicitly, so the default change cannot move any of its files.
 
 ## Comments
 
@@ -92,3 +92,45 @@ Still open, on production:
   as "no hop";
 - record the audit's `unresolved` line and the dump/restore row (`725 | 0 | 0` for count,
   linked Media and recorded address, plus the one attachment in `files`).
+
+**2026-11-20 — closed on production**
+
+Landed as PR #89, merge commit `ff71f12f` (`Merge pull request #89 from
+fedehub93/feature-local-media`), branch head `85d3b9ff`. Three fixes landed while the first
+deploy was being brought up and are part of what runs: `485aa78f` (the Installation is created
+once when the build workers race), `f4eb9014` (the quota-forgiveness test no longer goes through
+the image encoder), `85d3b9ff` (an empty blog index renders on a fresh installation).
+
+The items listed above as still open were run on the production Installation, in this order:
+
+- **Deploy.** The seven migrations applied before `next build` (`_prisma_migrations` at 97, none
+  rolled back). `media-storage` is mounted on `/data/media`,
+  `MEDIA_STORAGE_LOCAL_ROOT=/data/media`, `MEDIA_STORAGE_DRIVER=uploadthing`; in Admin → Media
+  the active driver resolves to UploadThing, so the new `local` default cannot move any existing
+  file.
+- **Backfill.** `media:backfill-files` created one record per Media with `failed: []`; the second
+  run reported `created: 0` with every Media skipped. The counts query returned
+  `media = media_files` with `media_without_record = 0`, `without_remote_url = 0`,
+  `duplicated_roles = 0` and `duplicated_keys = 0`, and the only hosts are `ghhc7ejbae.ufs.sh`
+  and `utfs.io`.
+- **Canonical addresses.** Every Media's `/media/<key>` was requested with the redirects
+  followed: no key ended on anything but `200`. The hop is the trailing slash plus the recorded
+  provider address, which answers `302` until the re-home.
+- **Audit.** `unresolved: 0`, exit 0; `files` is the Media count plus the legacy email attachment
+  the migration copied.
+- **Dump and restore.** A dump taken after the backfill restored into a scratch `postgres:18`
+  with the full Media count and zero rows without a linked Media or a recorded address.
+
+The counts are the 2026-11-20 measurement (725 Media, 706 on the newer provider host and 19 on
+the older one, one legacy `utfs.io` attachment mapped to `uploadthing`) rather than the ticket's
+original 720: the library had grown between the spec and the deploy, and the rehearsal recorded
+above is what corrected the expected numbers.
+
+Two corrections to §4bis.8 came out of the run: on this Installation the database is not called
+`postgres`, so every manual `psql`/`pg_dump` needs the name from `DATABASE_URL`; and the restore
+drill as documented hides its own failures (`sleep 5`, no `--exit-on-error`, three copies of the
+dump between containers). Both are documentation, not gate items, and are not part of this
+closure.
+
+Verification: the six checks above, on the production Installation, 2026-11-20. No code changed
+in this commit.
