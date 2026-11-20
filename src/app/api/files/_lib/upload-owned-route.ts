@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { StoredFileKind } from "@/generated/prisma";
 import { authAdmin } from "@/lib/auth-service";
-import { formatBytes } from "@/lib/format";
+import { readMultipartFile } from "@/shared/lib/multipart-upload";
 
 import { storeOwnedFile } from "@/modules/media/server/owned-file";
 
@@ -40,40 +40,12 @@ export function createOwnedUploadHandler({
         return new NextResponse("Unauthorized", { status: 401 });
       }
 
-      const contentType = req.headers.get("content-type") ?? "";
-      if (!contentType.includes("multipart/form-data")) {
-        return NextResponse.json(
-          { code: "NO_FILE", error: `A ${noun} is required.` },
-          { status: 400 },
-        );
-      }
+      const parsed = await readMultipartFile(req, { noun, maxBytes });
+      if ("refusal" in parsed) return parsed.refusal;
 
-      const form = await req.formData();
-      const file = form.get("file");
-
-      if (!(file instanceof File)) {
-        return NextResponse.json(
-          { code: "NO_FILE", error: `A ${noun} is required.` },
-          { status: 400 },
-        );
-      }
-
+      const { file } = parsed;
       const typeRefusal = checkType?.(file);
       if (typeRefusal) return typeRefusal;
-
-      if (file.size > maxBytes) {
-        return NextResponse.json(
-          {
-            code: "FILE_TOO_LARGE",
-            error: `This ${noun} is larger than the ${formatBytes(
-              maxBytes,
-              0,
-            )} upload limit.`,
-            maxBytes,
-          },
-          { status: 413 },
-        );
-      }
 
       const stored = await storeOwnedFile({
         kind,

@@ -41,7 +41,10 @@ export function FieldDataViewer({ instance, value }: FieldDataViewerProps) {
         return (
           <ul className="flex flex-col gap-2">
             {files.map((file) => (
-              <li key={file.key} className="flex items-center gap-x-2">
+              <li
+                key={file.storedFileId ?? file.key ?? file.url}
+                className="flex items-center gap-x-2"
+              >
                 <a
                   href={file.url}
                   target="_blank"

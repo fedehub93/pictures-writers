@@ -33,6 +33,15 @@ objects are removed through the driver recorded on each file when the owning
 message or user goes; a driver that is not configured here is reported by the
 audit and its record is kept rather than lost.
 
+A public form submission uses its own anonymous transport
+(`POST /api/forms/<formId>/attachments`). It is rate-limited per client and per
+form, capped at 4 MB and writes the record with `origin = public`, so the
+budget can protect the owner from a stranger. The upload answers with a
+`storedFileId` and the canonical `/files/<key>` address; the submission claims
+it in the same transaction that saves the answer, so the stored data points at
+the attachment and never at a provider address. A refused upload writes neither
+bytes nor a record.
+
 Every Media with a readable storage key has exactly one `StoredFile`, the
 record that answers "where are the bytes": its key, the driver that owns it,
 the provider address when the driver is remote, content type, size, checksum
@@ -109,6 +118,8 @@ path writes under the Media's own revision.
 | Public Media delivery route | `src/app/media/[...path]/route.ts` |
 | Public attachment and avatar delivery route | `src/app/files/[...path]/route.ts` |
 | Admin attachment and avatar transports | `src/app/api/files/_lib/upload-owned-route.ts`, `src/app/api/files/attachments/route.ts`, `src/app/api/files/avatars/route.ts` |
+| Public form attachment transport and limits | `src/app/api/forms/[formId]/attachments/route.ts`, `src/modules/forms/server/public-attachments.ts` |
+| Form answer claims its attachments | `src/modules/forms/submissions/server/create-submission.ts` |
 | Shared local streaming, Range and redirect headers | `src/modules/media/server/file-response.ts` |
 | Avatar ownership and release | `src/modules/users/server/avatar.ts` |
 

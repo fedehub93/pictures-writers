@@ -3,7 +3,7 @@ import { Label } from "@/shared/ui/label";
 import { Badge } from "@/shared/ui/badge";
 
 import type { FormElementInstance } from "../../../types/core";
-import { FileUploadButton } from "@/shared/components/file-upload-button";
+import { PublicFileUpload } from "@/shared/components/public-file-upload";
 
 export const UploadFieldDesignerComponent = ({
   elementInstance,
@@ -26,12 +26,8 @@ export const UploadFieldDesignerComponent = ({
         )}
       </div>
 
-      <FileUploadButton
-        endpoint="submissionAttachments"
-        size="small"
-        onChange={() => {}}
-        disabled={true}
-      />
+      {/* No form id and disabled: the canvas renders the control, never an upload. */}
+      <PublicFileUpload size="small" onChange={() => {}} disabled={true} />
 
       {helperText && (
         <p className="text-muted-foreground text-xs">{helperText}</p>

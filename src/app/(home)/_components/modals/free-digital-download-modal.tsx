@@ -150,7 +150,7 @@ export const FreeDigitalDownloadModal = ({
             </Alert>
           ) : (
             <FormRunner
-              id={formId}
+              formId={formId}
               onSubmitHandler={onHandleSubmit}
               content={resolvedContent}
               gtmEventName={gtmEventName ?? null}

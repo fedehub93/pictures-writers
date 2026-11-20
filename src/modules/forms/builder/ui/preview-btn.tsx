@@ -11,11 +11,11 @@ import { FormActionResponse } from "@/actions/submit-form";
 import type { FormRootInstance } from "../types/core";
 
 export const PreviewBtn = ({
-  id,
+  formId,
   gtmEventName,
   content,
 }: {
-  id: string;
+  formId: string;
   gtmEventName: string | null;
   content: FormRootInstance;
 }) => {
@@ -49,7 +49,7 @@ export const PreviewBtn = ({
         <div className="bg-accent flex flex-col grow items-center justify-center p-4 overflow-y-auto">
           <div className="max-w-155 flex flex-col gap-4 grow bg-background h-full w-full rounded p-8 overflow-y-auto">
             <FormRunner
-              id={id}
+              formId={formId}
               onSubmitHandler={onSubmit}
               content={content}
               gtmEventName={gtmEventName}

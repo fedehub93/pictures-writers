@@ -65,7 +65,7 @@ export const FormBlockUi = ({
       style={styleVars}
     >
       <FormRunner
-        id={form.id}
+        formId={form.id}
         onSubmitHandler={onSubmit}
         gtmEventName={form.gtmEventName}
         content={form.content}

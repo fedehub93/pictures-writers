@@ -2,6 +2,10 @@
 
 import { createContactByEmail } from "@/data/email-contact";
 import { emitFormSubmitted } from "@/modules/forms/automations/emit";
+import {
+  createFormSubmission,
+  FormSubmissionAttachmentError,
+} from "@/modules/forms/submissions/server/create-submission";
 import { handleFormSubmitted } from "@/lib/event-handler";
 
 import { verifyRecaptcha } from "@/lib/recaptcha";
@@ -60,13 +64,20 @@ export const submitForm = async (
 
     // The submission keeps the typed answers in `data` and stores the canonical
     // address in `email`, so both the audit trail and the joins stay correct.
-    await db.formSubmission.create({
-      data: {
-        formId: formId,
+    // Any public upload the visitor attached is claimed in the same step.
+    try {
+      await createFormSubmission({
+        formId,
         email: responderEmail,
         data: values,
-      },
-    });
+      });
+    } catch (error) {
+      if (error instanceof FormSubmissionAttachmentError) {
+        return { success: false, message: error.message };
+      }
+
+      throw error;
+    }
 
     const contact = await createContactByEmail(responderEmail, "submit_form");
 

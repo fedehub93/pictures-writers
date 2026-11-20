@@ -10,7 +10,10 @@ import {
 } from "@/shared/ui/field";
 
 import type { FormElementInstance } from "../../../types/core";
-import { FileUploadButton } from "@/shared/components/file-upload-button";
+import type { PublicFormAttachment } from "@/shared/lib/public-form-upload";
+
+import { useFormUploadFormId } from "../../../runner/form-upload-context";
+import { PublicFileUpload } from "@/shared/components/public-file-upload";
 
 export function UploadFieldFormComponent({
   elementInstance,
@@ -18,8 +21,9 @@ export function UploadFieldFormComponent({
   elementInstance: FormElementInstance<"UploadField">;
 }) {
   const { control } = useFormContext();
+  const formId = useFormUploadFormId();
 
-  const { name, label, helperText, files, validation } =
+  const { name, label, helperText, validation } =
     elementInstance.properties;
 
   return (
@@ -44,12 +48,11 @@ export function UploadFieldFormComponent({
               )}
             </FieldLabel>
 
-            <FileUploadButton
-              endpoint="submissionAttachments"
+            <PublicFileUpload
+              formId={formId}
               size="small"
-              value={field.value as any[]}
-              onChange={(files: any[]) => field.onChange(files)}
-              disabled={false}
+              value={(field.value ?? []) as PublicFormAttachment[]}
+              onChange={(files: PublicFormAttachment[]) => field.onChange(files)}
             />
 
             {helperText && !errorMessage && (
