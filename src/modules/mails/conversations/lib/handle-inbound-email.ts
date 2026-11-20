@@ -117,6 +117,58 @@ export interface HandleInboundEmailDeps {
   storage: AttachmentStorage;
 }
 
+interface StoredInboundAttachment {
+  filename: string;
+  storedFileId: string;
+  externalId: string;
+}
+
+/**
+ * Copy every attachment the provider supplied into our storage. A storage
+ * failure is logged and the attachment is skipped: the message itself must
+ * still arrive, and one failed file must not cost the others their copy.
+ */
+async function copyInboundAttachments(params: {
+  adapter: EmailInboundAdapter;
+  storage: AttachmentStorage;
+  emailExternalId: string;
+  attachments: InboundAttachmentMetadata[];
+}): Promise<StoredInboundAttachment[]> {
+  const storedAttachments: StoredInboundAttachment[] = [];
+
+  for (const attachment of params.attachments) {
+    const content = await downloadAttachment({
+      adapter: params.adapter,
+      emailExternalId: params.emailExternalId,
+      attachment,
+    });
+
+    try {
+      const stored = await params.storage.store({
+        filename: attachment.filename,
+        contentType: attachment.contentType,
+        content,
+      });
+      storedAttachments.push({
+        filename: attachment.filename,
+        storedFileId: stored.storedFileId,
+        externalId: attachment.externalId,
+      });
+    } catch (error) {
+      console.error(
+        "[RESEND_INBOUND_WEBHOOK] attachment could not be stored",
+        {
+          attachmentId: attachment.externalId,
+          filename: attachment.filename,
+          error: error instanceof Error ? error.message : String(error),
+        },
+      );
+    }
+  }
+
+  return storedAttachments;
+}
+
 /** Lowercase, trim and drop empty/duplicate addresses. */
 function normalizeAddresses(addresses: string[]): string[] {
   const seen = new Set<string>();
@@ -186,25 +238,12 @@ export async function handleInboundEmail(
     };
   }
 
-  // Copy each attachment from the provider's expiring URL into our storage.
-  const storedAttachments = [];
-  for (const attachment of inbound.attachments) {
-    const content = await downloadAttachment({
-      adapter: deps.adapter,
-      emailExternalId: inbound.externalId,
-      attachment,
-    });
-    const stored = await deps.storage.store({
-      filename: attachment.filename,
-      contentType: attachment.contentType,
-      content,
-    });
-    storedAttachments.push({
-      filename: attachment.filename,
-      storedFileId: stored.storedFileId,
-      externalId: attachment.externalId,
-    });
-  }
+  const storedAttachments = await copyInboundAttachments({
+    adapter: deps.adapter,
+    storage: deps.storage,
+    emailExternalId: inbound.externalId,
+    attachments: inbound.attachments,
+  });
 
   const sender = parseEmailAddress(inbound.from);
   // The address is the Conversation grouping key, so store one canonical form.

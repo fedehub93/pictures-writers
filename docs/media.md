@@ -33,6 +33,13 @@ objects are removed through the driver recorded on each file when the owning
 message or user goes; a driver that is not configured here is reported by the
 audit and its record is kept rather than lost.
 
+An inbound email follows the same path. The webhook handler downloads each
+attachment from the provider's expiring URL and writes it through the active
+driver before it records the message, so the copy that survives is the one the
+Installation owns. A storage failure is logged and only that attachment is
+skipped: the message still arrives, and a failed write does not undo a copy
+already stored.
+
 A public form submission uses its own anonymous transport
 (`POST /api/forms/<formId>/attachments`). It is rate-limited per client and per
 form, capped at 4 MB and writes the record with `origin = public`, so the
@@ -122,6 +129,7 @@ path writes under the Media's own revision.
 | Form answer claims its attachments | `src/modules/forms/submissions/server/create-submission.ts` |
 | Shared local streaming, Range and redirect headers | `src/modules/media/server/file-response.ts` |
 | Avatar ownership and release | `src/modules/users/server/avatar.ts` |
+| Inbound email attachment copy | `src/modules/mails/conversations/lib/handle-inbound-email.ts`, `src/modules/mails/conversations/lib/attachment-storage.ts` |
 
 ## Key grammar
 

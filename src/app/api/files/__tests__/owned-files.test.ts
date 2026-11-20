@@ -30,11 +30,18 @@ import { db } from "@/shared/lib/db";
 import { conversationsRouter } from "@/modules/mails/conversations/server/procedures";
 import { usersRouter } from "@/modules/users/server/procedures";
 import { sendConversationMessage } from "@/modules/mails/conversations/lib/send-one-to-one";
+import { createOwnedAttachmentStorage } from "@/modules/mails/conversations/lib/attachment-storage";
+import { handleInboundEmail } from "@/modules/mails/conversations/lib/handle-inbound-email";
 import type {
+  EmailInboundAdapter,
   EmailProviderAdapter,
+  InboundEmail,
   SendOneToOneParams,
 } from "@/modules/mails/lib/types";
-import { providerAdapterStubs } from "@/modules/mails/lib/__tests__/inbound-adapter-stubs";
+import {
+  inboundAdapterStubs,
+  providerAdapterStubs,
+} from "@/modules/mails/lib/__tests__/inbound-adapter-stubs";
 import {
   deleteMediaPermanentlyBatch,
   MediaNotFoundError,
@@ -139,6 +146,8 @@ describe("attachments and avatars on the Installation's own domain", () => {
   });
 
   afterEach(async () => {
+    vi.unstubAllGlobals();
+
     for (const id of accountIds) {
       await db.emailAccount.delete({ where: { id } }).catch(() => undefined);
     }
@@ -348,6 +357,154 @@ describe("attachments and avatars on the Installation's own domain", () => {
       await db.storedFile.findUnique({ where: { id: uploaded.storedFileId } }),
     ).toBeNull();
     expect(await exists(path.join(root, ...key.split("/")))).toBe(false);
+  });
+
+  it("copies inbound attachments through the active driver and serves them from /files", async () => {
+    const account = await db.emailAccount.create({
+      data: {
+        name: "Support",
+        email: `support-${randomUUID()}@example.com`,
+      },
+    });
+    accountIds.push(account.id);
+
+    const noteBytes = new TextEncoder().encode("a note");
+    const attachments = [
+      {
+        externalId: "att-1",
+        filename: "report.pdf",
+        contentType: "application/pdf",
+        size: PDF_BYTES.byteLength,
+      },
+      {
+        externalId: "att-2",
+        filename: "note.txt",
+        contentType: "text/plain",
+        size: noteBytes.byteLength,
+      },
+    ];
+    const messageId = "<inbound@example.com>";
+    const subject = "Two attachments";
+    const inbound: InboundEmail = {
+      externalId: `inbound-${randomUUID()}`,
+      messageId,
+      references: [],
+      from: "Alice <alice@example.com>",
+      to: [account.email],
+      cc: [],
+      bcc: [],
+      subject,
+      bodyText: "See attached",
+      receivedAt: new Date("2026-11-20T10:00:00.000Z"),
+      attachments,
+    };
+    const adapter: EmailInboundAdapter = {
+      ...inboundAdapterStubs,
+      fetchInbound: async () => inbound,
+      listInboundAttachments: async () => attachments,
+      getAttachmentDownloadUrl: async (_emailId, attachmentId) => ({
+        url: `https://provider.test/${attachmentId}`,
+      }),
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url =
+          typeof input === "string"
+            ? input
+            : input instanceof URL
+              ? input.href
+              : input.url;
+        return new Response(
+          url.endsWith("att-1") ? PDF_BYTES : noteBytes,
+          { status: 200 },
+        );
+      }),
+    );
+
+    const result = await handleInboundEmail(
+      {
+        email_id: inbound.externalId,
+        message_id: messageId,
+        from: inbound.from,
+        to: inbound.to,
+        cc: [],
+        bcc: [],
+        received_for: [account.email],
+        subject,
+        created_at: inbound.receivedAt.toISOString(),
+      },
+      { adapter, storage: createOwnedAttachmentStorage() },
+    );
+
+    expect(result.status).toBe("processed");
+    if (result.status !== "processed") return;
+
+    const message = await db.emailMessage.findUniqueOrThrow({
+      where: { id: result.messageId },
+      include: { attachments: { include: { storedFile: true } } },
+    });
+    expect(message.attachments).toHaveLength(2);
+    expect(message.attachments.map((attachment) => attachment.filename)).toEqual(
+      ["report.pdf", "note.txt"],
+    );
+
+    const expectedContentTypes = ["application/pdf", "text/plain"];
+    const delivered: Uint8Array[] = [];
+    for (const [index, attachment] of message.attachments.entries()) {
+      const file = attachment.storedFile;
+      expect(file).toMatchObject({
+        driver: "local",
+        kind: StoredFileKind.ATTACHMENT,
+        origin: "INTERNAL",
+      });
+      storedKeys.push(file.key);
+
+      const address = `/files/${file.key}`;
+      const response = await getFile(
+        deliveryRequest(address),
+        deliveryContext(address),
+      );
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toBe(
+        expectedContentTypes[index],
+      );
+      delivered.push(new Uint8Array(await response.arrayBuffer()));
+    }
+    expect(delivered).toEqual([PDF_BYTES, noteBytes]);
+
+    // Deleting the conversation that owns the message removes both objects
+    // through each file's driver.
+    await db.conversation.update({
+      where: { id: result.conversationId },
+      data: { deletedAt: new Date() },
+    });
+    const userId = randomUUID();
+    const user = await db.user.create({
+      data: { email: `${userId}@example.com` },
+    });
+    userIds.push(user.id);
+    await db.emailAccount.update({
+      where: { id: account.id },
+      data: { userPermissions: { create: [{ userId: user.id }] } },
+    });
+    const caller = createConversationsCaller({
+      userId: user.id,
+      auth: { id: user.id },
+    });
+
+    await caller.deleteForever({ id: result.conversationId });
+
+    expect(
+      await db.storedFile.count({ where: { key: { in: storedKeys } } }),
+    ).toBe(0);
+    for (const attachment of message.attachments) {
+      expect(
+        await exists(
+          path.join(root, ...attachment.storedFile.key.split("/")),
+        ),
+      ).toBe(false);
+    }
   });
 
   it("sets an avatar without a provider token and serves it from /files/<key>", async () => {
