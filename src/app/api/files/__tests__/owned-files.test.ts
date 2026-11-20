@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { mkdtemp, rm, stat } from "node:fs/promises";
+import { mkdtemp, readdir, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -25,7 +25,7 @@ vi.mock("@/trpc/init", async () => {
 
 import { createCallerFactory } from "@/trpc/init";
 
-import { StoredFileKind } from "@/generated/prisma";
+import { StoredFileKind, StoredFileOrigin } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 import { conversationsRouter } from "@/modules/mails/conversations/server/procedures";
 import { usersRouter } from "@/modules/users/server/procedures";
@@ -47,8 +47,21 @@ import {
   MediaNotFoundError,
 } from "@/modules/media/server/media-service";
 import { auditMediaLibrary } from "@/modules/media/server/media-audit";
-import { deleteUserAvatarObjects } from "@/modules/media/server/owned-file";
+import {
+  getMediaUsageBytes,
+  PublicOriginReserveExceededError,
+} from "@/modules/media/server/media-quota";
+import {
+  deleteUserAvatarObjects,
+  storeOwnedFile,
+} from "@/modules/media/server/owned-file";
 import { createLocalStorageDriver } from "@/modules/media/server/storage/local";
+import { BYTES_PER_MEGABYTE } from "@/modules/media/lib/quota";
+import {
+  resetMediaQuota,
+  setMediaQuotaMb,
+  setPublicOriginReserveMb,
+} from "@/modules/media/server/__tests__/quota-fixtures";
 import {
   resetStorageDriverSetting,
   setStorageDriverSetting,
@@ -114,6 +127,25 @@ async function exists(filePath: string): Promise<boolean> {
   );
 }
 
+async function listFiles(directory: string, prefix = ""): Promise<string[]> {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const files: string[] = [];
+
+  for (const entry of entries) {
+    const relative = prefix ? `${prefix}/${entry.name}` : entry.name;
+
+    if (entry.isDirectory()) {
+      files.push(
+        ...(await listFiles(path.join(directory, entry.name), relative)),
+      );
+    } else {
+      files.push(relative);
+    }
+  }
+
+  return files;
+}
+
 describe("attachments and avatars on the Installation's own domain", () => {
   let root: string;
   let previousEnv: Record<string, string | undefined>;
@@ -164,6 +196,7 @@ describe("attachments and avatars on the Installation's own domain", () => {
     }
 
     await resetStorageDriverSetting();
+    await resetMediaQuota();
     await rm(root, { recursive: true, force: true });
 
     for (const [name, value] of Object.entries(previousEnv)) {
@@ -672,6 +705,70 @@ describe("attachments and avatars on the Installation's own domain", () => {
       "http://localhost/media/legacy/report.pdf",
     );
     expect(response.headers.get("cache-control")).toBe("public, max-age=300");
+  });
+
+  it("refuses a public-origin file at the reserve while an internal upload succeeds", async () => {
+    const baseline = await getMediaUsageBytes();
+    await setMediaQuotaMb(Math.ceil((baseline + 4 * BYTES_PER_MEGABYTE) / BYTES_PER_MEGABYTE));
+    await setPublicOriginReserveMb(1);
+
+    // Seed the public share exactly at its reserve. The seed has a record but
+    // no object: the assertion is about the budget, not about those bytes.
+    const seedId = randomUUID();
+    const seedKey = `default/${seedId}/1/seed.pdf`;
+    storedKeys.push(seedKey);
+    await db.storedFile.create({
+      data: {
+        id: seedId,
+        key: seedKey,
+        driver: "local",
+        contentType: "application/pdf",
+        size: BYTES_PER_MEGABYTE,
+        kind: StoredFileKind.ATTACHMENT,
+        origin: StoredFileOrigin.PUBLIC,
+      },
+    });
+
+    const publicBefore = await db.storedFile.count({
+      where: { origin: StoredFileOrigin.PUBLIC },
+    });
+    const bytes = new Uint8Array(1024).fill(9);
+
+    const [publicResult, internalResult] = await Promise.allSettled([
+      storeOwnedFile({
+        kind: StoredFileKind.ATTACHMENT,
+        origin: StoredFileOrigin.PUBLIC,
+        filename: "visitor.pdf",
+        contentType: "application/pdf",
+        bytes,
+      }),
+      storeOwnedFile({
+        kind: StoredFileKind.ATTACHMENT,
+        origin: StoredFileOrigin.INTERNAL,
+        filename: "admin.pdf",
+        contentType: "application/pdf",
+        bytes,
+      }),
+    ]);
+
+    expect(publicResult.status).toBe("rejected");
+    if (publicResult.status === "rejected") {
+      expect(publicResult.reason).toBeInstanceOf(
+        PublicOriginReserveExceededError,
+      );
+    }
+
+    expect(internalResult.status).toBe("fulfilled");
+    if (internalResult.status !== "fulfilled") return;
+
+    storedKeys.push(internalResult.value.key);
+
+    // The refused upload left no bytes and no record; the internal one wrote
+    // both, so the two never blocked each other.
+    await expect(
+      db.storedFile.count({ where: { origin: StoredFileOrigin.PUBLIC } }),
+    ).resolves.toBe(publicBefore);
+    await expect(listFiles(root)).resolves.toEqual([internalResult.value.key]);
   });
 
   it("reports an attachment whose driver is not configured instead of losing it", async () => {

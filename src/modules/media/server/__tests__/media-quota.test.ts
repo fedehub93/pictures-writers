@@ -6,7 +6,7 @@ import path from "node:path";
 import sharp from "sharp";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { MediaType } from "@/generated/prisma";
+import { MediaType, StoredFileKind, StoredFileOrigin } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 
 import { BYTES_PER_MEGABYTE } from "@/modules/media/lib/quota";
@@ -17,11 +17,16 @@ import {
 } from "../media-service";
 import {
   MediaQuotaExceededError,
+  getMediaQuotaStatus,
   getMediaUsageBytes,
 } from "../media-quota";
 import { createLocalStorageDriver } from "../storage/local";
 import type { StorageDriver } from "../storage/types";
-import { resetMediaQuota, setMediaQuotaMb } from "./quota-fixtures";
+import {
+  resetMediaQuota,
+  setMediaQuotaMb,
+  setPublicOriginReserveMb,
+} from "./quota-fixtures";
 
 const MB = BYTES_PER_MEGABYTE;
 
@@ -63,6 +68,7 @@ describe("media quota", () => {
   let root: string;
   let driver: StorageDriver;
   const createdIds: string[] = [];
+  const storedFileIds: string[] = [];
 
   beforeEach(async () => {
     root = await mkdtemp(path.join(tmpdir(), "media-quota-"));
@@ -77,8 +83,35 @@ describe("media quota", () => {
       createdIds.length = 0;
     }
 
+    if (storedFileIds.length > 0) {
+      await db.storedFile.deleteMany({ where: { id: { in: storedFileIds } } });
+      storedFileIds.length = 0;
+    }
+
     await rm(root, { recursive: true, force: true });
   });
+
+  async function createOwnedFile(input: {
+    kind: StoredFileKind;
+    size: number;
+    origin?: StoredFileOrigin;
+  }): Promise<string> {
+    const id = randomUUID();
+    storedFileIds.push(id);
+
+    await db.storedFile.create({
+      data: {
+        id,
+        key: `default/${id}/1/file`,
+        driver: "local",
+        size: input.size,
+        kind: input.kind,
+        origin: input.origin ?? StoredFileOrigin.INTERNAL,
+      },
+    });
+
+    return id;
+  }
 
   async function createRow(input: {
     size: number | null;
@@ -155,6 +188,45 @@ describe("media quota", () => {
     });
 
     await expect(getMediaUsageBytes()).resolves.toBe(baseline + 2500);
+  });
+
+  it("counts attachments and avatars beside Media in the same budget", async () => {
+    const baseline = await getMediaUsageBytes();
+
+    await createOwnedFile({
+      kind: StoredFileKind.ATTACHMENT,
+      size: 700,
+    });
+    await createOwnedFile({
+      kind: StoredFileKind.AVATAR,
+      size: 900,
+    });
+
+    await expect(getMediaUsageBytes()).resolves.toBe(baseline + 1600);
+  });
+
+  it("names the public-origin share against the reserve", async () => {
+    const baseline = await getMediaQuotaStatus();
+    await setPublicOriginReserveMb(2);
+    await setMediaQuotaMb(10);
+
+    await createOwnedFile({
+      kind: StoredFileKind.ATTACHMENT,
+      size: 700,
+      origin: StoredFileOrigin.PUBLIC,
+    });
+    await createOwnedFile({
+      kind: StoredFileKind.ATTACHMENT,
+      size: 900,
+      origin: StoredFileOrigin.INTERNAL,
+    });
+
+    const status = await getMediaQuotaStatus();
+
+    expect(status.usedBytes).toBe(baseline.usedBytes + 1600);
+    expect(status.publicBytes).toBe(baseline.publicBytes + 700);
+    expect(status.totalBytes).toBe(10 * MB);
+    expect(status.reserveBytes).toBe(2 * MB);
   });
 
   it("refuses a plain Media row past the quota and creates no row", async () => {

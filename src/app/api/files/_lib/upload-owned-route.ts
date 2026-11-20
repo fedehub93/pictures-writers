@@ -5,6 +5,7 @@ import { authAdmin } from "@/lib/auth-service";
 import { readMultipartFile } from "@/shared/lib/multipart-upload";
 
 import { storeOwnedFile } from "@/modules/media/server/owned-file";
+import { quotaErrorResponse } from "@/modules/media/server/quota-error-response";
 
 export interface OwnedUploadRouteOptions {
   /** Permission the caller must hold to use this transport. */
@@ -62,6 +63,9 @@ export function createOwnedUploadHandler({
         size: stored.size,
       });
     } catch (error) {
+      const quota = quotaErrorResponse(error);
+      if (quota) return quota;
+
       console.log(logTag, error);
       return new NextResponse("Internal Error", { status: 500 });
     }

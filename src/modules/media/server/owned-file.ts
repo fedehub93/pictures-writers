@@ -18,6 +18,10 @@ import {
   type StorageDriverName,
   type StorageDriver,
 } from "./storage";
+import {
+  assertStorageQuotaAllows,
+  withStorageQuotaAdmission,
+} from "./media-quota";
 import { remoteUrlForUpload } from "./stored-file";
 
 const MAX_FILENAME_LENGTH = 120;
@@ -78,7 +82,9 @@ export interface StoredOwnedFile {
 /**
  * Writes one attachment or avatar through the active driver and records where
  * its bytes are in the same step. The browser never picks the driver and the
- * address never names it. A failed write leaves neither bytes nor a row.
+ * address never names it. It is admitted against the one storage quota first:
+ * a public-origin file that would pass the reserve is refused before any byte
+ * is written, and a record that fails after the write removes those bytes too.
  */
 export async function storeOwnedFile({
   kind,
@@ -88,6 +94,10 @@ export async function storeOwnedFile({
   origin = StoredFileOrigin.INTERNAL,
 }: StoreOwnedFileInput): Promise<StoredOwnedFile> {
   const { driver, name } = await resolveActiveStorageDriver();
+  const incomingBytes = bytes.byteLength;
+
+  await assertStorageQuotaAllows({ incomingBytes, origin });
+
   const id = randomUUID();
   const key = ownedFileKey(id, filename);
   const checksum = createHash("sha256").update(bytes).digest("hex");
@@ -96,20 +106,24 @@ export async function storeOwnedFile({
 
   try {
     const remoteUrl = await remoteUrlForUpload(driver, name, key);
-    const record = await db.storedFile.create({
-      data: {
-        id,
-        key,
-        driver: name,
-        remoteUrl,
-        contentType,
-        size: bytes.byteLength,
-        checksum,
-        kind,
-        origin,
-      },
-      select: { id: true, key: true, driver: true, remoteUrl: true },
-    });
+    const record = await withStorageQuotaAdmission(
+      { incomingBytes, origin },
+      (tx) =>
+        tx.storedFile.create({
+          data: {
+            id,
+            key,
+            driver: name,
+            remoteUrl,
+            contentType,
+            size: incomingBytes,
+            checksum,
+            kind,
+            origin,
+          },
+          select: { id: true, key: true, driver: true, remoteUrl: true },
+        }),
+    );
 
     return {
       id: record.id,
@@ -117,12 +131,19 @@ export async function storeOwnedFile({
       driver: name,
       remoteUrl: record.remoteUrl,
       contentType,
-      size: bytes.byteLength,
+      size: incomingBytes,
       address: storedFilePath(roleForKind(kind), record.key),
     };
   } catch (error) {
-    // A record that never existed must not leave bytes behind either.
-    await driver.delete(key).catch(() => undefined);
+    // A record that never existed must not leave bytes behind either. The
+    // pre-check should have caught a refusal, so this is the rare concurrent
+    // case; a cleanup that fails is reported rather than silently orphaned.
+    await driver.delete(key).catch(() => {
+      console.error(
+        "[STORED_FILE_QUOTA_CLEANUP] refused write left bytes behind",
+        { fileId: id },
+      );
+    });
     throw error;
   }
 }

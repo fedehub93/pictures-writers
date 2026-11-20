@@ -9,6 +9,10 @@ vi.mock("@/lib/recaptcha", () => ({
   verifyRecaptcha: vi.fn(async () => ({ success: true })),
 }));
 
+vi.mock("@/lib/auth-service", () => ({
+  authAdmin: async () => ({ id: "admin-user" }),
+}));
+
 vi.mock("@/trpc/init", async () => {
   const { initTRPC } = await import("@trpc/server");
   const superjson = (await import("superjson")).default;
@@ -38,12 +42,23 @@ import {
   PUBLIC_FORM_UPLOAD_FORM_LIMIT,
   resetPublicFormUploadRateLimit,
 } from "@/modules/forms/server/public-attachments";
+import { BYTES_PER_MEGABYTE } from "@/modules/media/lib/quota";
+import {
+  getMediaQuotaStatus,
+  getMediaUsageBytes,
+} from "@/modules/media/server/media-quota";
+import {
+  resetMediaQuota,
+  setMediaQuotaMb,
+  setPublicOriginReserveMb,
+} from "@/modules/media/server/__tests__/quota-fixtures";
 import {
   resetStorageDriverSetting,
   setStorageDriverSetting,
 } from "@/modules/media/server/__tests__/storage-setting-fixtures";
 
 import { GET as getFile } from "@/app/files/[...path]/route";
+import { POST as postAdminAttachment } from "../../files/attachments/route";
 import { POST as postPublicAttachment } from "../[formId]/attachments/route";
 
 const createSubmissionsCaller = createCallerFactory(formSubmissionsRouter);
@@ -93,6 +108,27 @@ async function exists(filePath: string): Promise<boolean> {
   );
 }
 
+async function listFiles(directory: string, prefix = ""): Promise<string[]> {
+  const entries = await readdir(directory, { withFileTypes: true }).catch(
+    () => [],
+  );
+  const files: string[] = [];
+
+  for (const entry of entries) {
+    const relative = prefix ? `${prefix}/${entry.name}` : entry.name;
+
+    if (entry.isDirectory()) {
+      files.push(
+        ...(await listFiles(path.join(directory, entry.name), relative)),
+      );
+    } else {
+      files.push(relative);
+    }
+  }
+
+  return files;
+}
+
 describe("public form attachments", () => {
   let root: string;
   let previousEnv: Record<string, string | undefined>;
@@ -132,6 +168,7 @@ describe("public form attachments", () => {
 
     resetPublicFormUploadRateLimit();
     await resetStorageDriverSetting();
+    await resetMediaQuota();
     await rm(root, { recursive: true, force: true });
 
     for (const [name, value] of Object.entries(previousEnv)) {
@@ -153,6 +190,7 @@ describe("public form attachments", () => {
 
   it("serves a visitor's PDF from the Installation's domain and claims it for the submission", async () => {
     const form = await createForm();
+    const usageBefore = await getMediaUsageBytes();
 
     const response = await postPublicAttachment(
       uploadRequest(
@@ -187,6 +225,9 @@ describe("public form attachments", () => {
       contentType: "application/pdf",
       size: PDF_BYTES.byteLength,
     });
+    await expect(getMediaUsageBytes()).resolves.toBe(
+      usageBefore + PDF_BYTES.byteLength,
+    );
 
     const result = await submitForm(
       form.id,
@@ -265,6 +306,8 @@ describe("public form attachments", () => {
     expect(
       await exists(path.join(root, ...uploaded.url.slice("/files/".length).split("/"))),
     ).toBe(false);
+    // The bytes stop counting with the attachment's owner.
+    await expect(getMediaUsageBytes()).resolves.toBe(usageBefore);
   });
 
   it("refuses a file over the cap with a machine-readable answer and writes nothing", async () => {
@@ -297,6 +340,85 @@ describe("public form attachments", () => {
       }),
     ).toBe(before);
     expect(await readdir(root).catch(() => [])).toEqual([]);
+  });
+
+  it("refuses a public upload at the reserve while an admin upload at the same moment succeeds", async () => {
+    const form = await createForm();
+    const before = await getMediaQuotaStatus();
+
+    await setMediaQuotaMb(
+      Math.ceil((before.usedBytes + 4 * BYTES_PER_MEGABYTE) / BYTES_PER_MEGABYTE),
+    );
+    await setPublicOriginReserveMb(1);
+
+    // Spend the public reserve with a real upload: the visitor's budget is now
+    // exactly its 1 MB ceiling.
+    const seedBytes = new Uint8Array(BYTES_PER_MEGABYTE).fill(7);
+    const seedResponse = await postPublicAttachment(
+      uploadRequest(
+        form.id,
+        seedBytes,
+        "seed.pdf",
+        "application/pdf",
+        "203.0.113.60",
+      ),
+      uploadContext(form.id),
+    );
+    const seed = await seedResponse.json();
+    storedFileIds.push(seed.storedFileId);
+    expect(seedResponse.status).toBe(200);
+
+    const filesBefore = await listFiles(root);
+    const recordsBefore = await db.storedFile.count();
+
+    const adminBytes = new TextEncoder().encode("an admin attachment");
+    const [publicResponse, adminResponse] = await Promise.all([
+      postPublicAttachment(
+        uploadRequest(
+          form.id,
+          new TextEncoder().encode("one visitor over the reserve"),
+          "over.pdf",
+          "application/pdf",
+          "203.0.113.61",
+        ),
+        uploadContext(form.id),
+      ),
+      postAdminAttachment(
+        new Request("http://localhost/api/files/attachments", {
+          method: "POST",
+          body: (() => {
+            const body = new FormData();
+            body.append(
+              "file",
+              new File([adminBytes], "admin.pdf", { type: "application/pdf" }),
+            );
+            return body;
+          })(),
+        }),
+      ),
+    ]);
+
+    const publicBody = await publicResponse.json();
+    const adminBody = await adminResponse.json();
+    storedFileIds.push(adminBody.storedFileId);
+
+    expect(publicResponse.status).toBe(413);
+    expect(publicBody).toMatchObject({
+      code: "PUBLIC_ORIGIN_RESERVE_EXCEEDED",
+      reserveMb: 1,
+    });
+    expect(adminResponse.status).toBe(200);
+
+    // Only the admin upload wrote a record and an object: the refusal cost
+    // nothing.
+    expect(await db.storedFile.count()).toBe(recordsBefore + 1);
+    expect(await listFiles(root)).toHaveLength(filesBefore.length + 1);
+
+    const after = await getMediaQuotaStatus();
+    expect(after.publicBytes).toBe(before.publicBytes + seedBytes.byteLength);
+    expect(after.usedBytes).toBe(
+      before.usedBytes + seedBytes.byteLength + adminBytes.byteLength,
+    );
   });
 
   it("refuses a burst from one client", async () => {

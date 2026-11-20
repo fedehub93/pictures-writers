@@ -9,10 +9,8 @@ import {
   MediaProcessingError,
   type MediaUploadSource,
 } from "@/modules/media/server/media-service";
-import {
-  assertMediaQuotaAllows,
-  MediaQuotaExceededError,
-} from "@/modules/media/server/media-quota";
+import { assertStorageQuotaAllows } from "@/modules/media/server/media-quota";
+import { quotaErrorResponse } from "@/modules/media/server/quota-error-response";
 import { resolveActiveStorageDriver } from "@/modules/media/server/storage";
 
 import { checkUploadFile, writeTemporaryUpload } from "./_lib/upload-transport";
@@ -36,23 +34,13 @@ function mediaUploadErrorResponse(error: unknown): NextResponse {
     );
   }
 
-  if (error instanceof MediaQuotaExceededError) {
-    return NextResponse.json(
-      {
-        code: error.code,
-        error: error.message,
-        usedBytes: error.usedBytes,
-        totalBytes: error.totalBytes,
-        quotaMb: error.quotaMb,
-      },
-      { status: 413 },
-    );
-  }
-
   if (error instanceof MediaProcessingError) {
     console.log("[MEDIA_POST]", error);
     return NextResponse.json({ error: error.message }, { status: 422 });
   }
+
+  const quota = quotaErrorResponse(error);
+  if (quota) return quota;
 
   console.log("[MEDIA_POST]", error);
   return new NextResponse("Internal Error", { status: 500 });
@@ -78,7 +66,7 @@ async function handleMultipartUpload(req: Request): Promise<Response> {
 
   // Refuse before the bytes reach storage. The exact total, including the
   // generated renditions, is checked again before the row is created.
-  await assertMediaQuotaAllows(file.size);
+  await assertStorageQuotaAllows({ incomingBytes: file.size });
 
   const tempKey = await writeTemporaryUpload(driver, file, mimeType);
 

@@ -4,7 +4,12 @@ import { db } from "@/lib/db";
 import { authAdmin } from "@/lib/auth-service";
 import { SettingsScripts } from "@/types";
 import { revalidateContent } from "@/shared/lib/revalidate-content";
-import { parseMediaQuotaMb } from "@/modules/media/lib/quota";
+import {
+  MEDIA_QUOTA_DEFAULT_MB,
+  PUBLIC_ORIGIN_RESERVE_DEFAULT_MB,
+  parseMediaQuotaMb,
+  parsePublicOriginReserveMb,
+} from "@/modules/media/lib/quota";
 import { parseStorageDriver } from "@/modules/media/lib/storage-driver";
 import { isUploadThingConfigured } from "@/modules/media/server/storage";
 
@@ -35,6 +40,24 @@ export async function PATCH(req: Request) {
       data.mediaQuotaMb = quotaMb;
     }
 
+    if (values.publicOriginReserveMb !== undefined) {
+      const reserveMb = parsePublicOriginReserveMb(
+        values.publicOriginReserveMb,
+      );
+
+      if (reserveMb === null) {
+        return NextResponse.json(
+          {
+            error:
+              "The public-origin reserve must be a whole number of megabytes, zero or more.",
+          },
+          { status: 400 },
+        );
+      }
+
+      data.publicOriginReserveMb = reserveMb;
+    }
+
     if (values.storageDriver !== undefined) {
       const storageDriver = parseStorageDriver(values.storageDriver);
 
@@ -63,6 +86,28 @@ export async function PATCH(req: Request) {
         ...v,
         content: v.content?.trim(),
       }));
+    }
+
+    const current = await db.settings.findFirst({
+      select: { mediaQuotaMb: true, publicOriginReserveMb: true },
+    });
+    const quotaMb =
+      typeof data.mediaQuotaMb === "number"
+        ? data.mediaQuotaMb
+        : (current?.mediaQuotaMb ?? MEDIA_QUOTA_DEFAULT_MB);
+    const reserveMb =
+      typeof data.publicOriginReserveMb === "number"
+        ? data.publicOriginReserveMb
+        : (current?.publicOriginReserveMb ?? PUBLIC_ORIGIN_RESERVE_DEFAULT_MB);
+
+    if (reserveMb > quotaMb) {
+      return NextResponse.json(
+        {
+          error:
+            "The public-origin reserve must not exceed the storage quota: it is a share held inside the quota.",
+        },
+        { status: 400 },
+      );
     }
 
     const updatedSettings = await db.settings.updateMany({

@@ -11,6 +11,7 @@ import {
   requirePublicForm,
   storePublicFormAttachment,
 } from "@/modules/forms/server/public-attachments";
+import { quotaErrorResponse } from "@/modules/media/server/quota-error-response";
 
 function rateLimited(retryAfterMs: number): NextResponse {
   const retryAfterSeconds = Math.max(1, Math.ceil(retryAfterMs / 1000));
@@ -75,6 +76,9 @@ export async function POST(
         { status: error.status },
       );
     }
+
+    const quota = quotaErrorResponse(error);
+    if (quota) return quota;
 
     console.log("[PUBLIC_FORM_ATTACHMENT]", error);
     return new NextResponse("Internal Error", { status: 500 });

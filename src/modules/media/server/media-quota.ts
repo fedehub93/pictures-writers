@@ -1,12 +1,14 @@
 import "server-only";
 
-import type { Prisma } from "@/generated/prisma";
+import { StoredFileOrigin, type Prisma } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 import { formatBytes } from "@/lib/format";
 
 import {
   MEDIA_QUOTA_DEFAULT_MB,
+  PUBLIC_ORIGIN_RESERVE_DEFAULT_MB,
   fitsMediaQuota,
+  fitsPublicOriginReserve,
   mediaQuotaStatus,
   mediaUsageBytes,
   megabytesToBytes,
@@ -14,34 +16,47 @@ import {
   type MediaQuotaUsageRow,
 } from "@/modules/media/lib/quota";
 
-import { mediaStorageSize } from "@/modules/media/lib/stored-file-location";
-
 /**
  * One advisory-lock key, so two uploads cannot both pass the "before the row
- * is created" check when the library has room for only one of them.
+ * is created" check when the library has room for only one of them. Every
+ * transport — library, attachment, avatar and public form — takes the same
+ * lock, which is what lets the reserve protect an internal upload started at
+ * the same moment as a public one.
  */
-const MEDIA_QUOTA_LOCK_KEY = 0x4d454449; // "MEDI"
+const STORAGE_QUOTA_LOCK_KEY = 0x4d454449; // "MEDI"
 
-const mediaUsageSelect = {
+const usageFileSelect = {
+  mediaId: true,
+  size: true,
+  origin: true,
+  media: { select: { renditions: true } },
+} satisfies Prisma.StoredFileSelect;
+
+type UsageFileRow = Prisma.StoredFileGetPayload<{
+  select: typeof usageFileSelect;
+}>;
+
+const legacyMediaUsageSelect = {
+  id: true,
   size: true,
   renditions: true,
-  storedFile: { select: { size: true } },
 } satisfies Prisma.MediaSelect;
 
-type MediaUsageRow = Prisma.MediaGetPayload<{
-  select: typeof mediaUsageSelect;
+type LegacyMediaUsageRow = Prisma.MediaGetPayload<{
+  select: typeof legacyMediaUsageSelect;
 }>;
 
 /**
- * The original's size comes from its stored-file record; the Media's own
- * column is read only until that record carries a size. Renditions stay on the
- * Media. The arithmetic itself is unchanged.
+ * The bytes one stored file occupies: its own size plus the renditions its
+ * Media role accounts for. An attachment or avatar has no renditions and
+ * contributes only its own size.
  */
-function quotaUsageRow(row: MediaUsageRow): MediaQuotaUsageRow {
-  return {
-    size: mediaStorageSize(row, row.storedFile),
-    renditions: row.renditions,
-  };
+function fileUsageRow(file: UsageFileRow): MediaQuotaUsageRow {
+  return { size: file.size, renditions: file.media?.renditions ?? null };
+}
+
+function legacyUsageRow(media: LegacyMediaUsageRow): MediaQuotaUsageRow {
+  return { size: media.size, renditions: media.renditions };
 }
 
 export class MediaQuotaExceededError extends Error {
@@ -53,50 +68,115 @@ export class MediaQuotaExceededError extends Error {
     readonly quotaMb: number,
   ) {
     super(
-      `The media library uses ${formatBytes(usedBytes)} of its ${formatBytes(
+      `Storage uses ${formatBytes(usedBytes)} of its ${formatBytes(
         totalBytes,
-      )} quota, so this upload would exceed it. Delete media permanently or raise the quota in Settings.`,
+      )} quota, so this upload would exceed it. Delete files permanently or raise the quota in Settings.`,
     );
     this.name = "MediaQuotaExceededError";
   }
 }
 
-interface MediaUsageSnapshot {
-  usedBytes: number;
-  quotaMb: number;
+/**
+ * A public-origin upload that would take visitors past their reserve. It is a
+ * separate, machine-readable refusal because the owner's own uploads are not
+ * affected: the total quota still has room, the reserve does not.
+ */
+export class PublicOriginReserveExceededError extends Error {
+  readonly code = "PUBLIC_ORIGIN_RESERVE_EXCEEDED";
+
+  constructor(
+    readonly publicBytes: number,
+    readonly reserveBytes: number,
+    readonly reserveMb: number,
+  ) {
+    super(
+      `Public uploads use ${formatBytes(publicBytes)} of their ${formatBytes(
+        reserveBytes,
+      )} reserve, so this upload would exceed it. The owner's uploads are unaffected.`,
+    );
+    this.name = "PublicOriginReserveExceededError";
+  }
 }
 
-/** Reads the quota and the bytes every Media occupies in one round trip. */
+interface StorageUsageSnapshot {
+  usedBytes: number;
+  publicBytes: number;
+  quotaMb: number;
+  reserveMb: number;
+}
+
+/**
+ * Reads the quota, the reserve and the bytes every stored file occupies in one
+ * round trip. A Media whose one-time location record does not exist yet still
+ * counts from its own columns, so deploying this code before the backfill
+ * cannot under-count the disk.
+ */
 async function readUsage(
   client: Prisma.TransactionClient,
   excludeMediaId?: string,
-): Promise<MediaUsageSnapshot> {
-  const [settings, rows] = await Promise.all([
-    client.settings.findFirst({ select: { mediaQuotaMb: true } }),
+): Promise<StorageUsageSnapshot> {
+  const [settings, files, legacyMedia] = await Promise.all([
+    client.settings.findFirst({
+      select: { mediaQuotaMb: true, publicOriginReserveMb: true },
+    }),
+    client.storedFile.findMany({ select: usageFileSelect }),
     client.media.findMany({
-      where: excludeMediaId ? { id: { not: excludeMediaId } } : undefined,
-      select: mediaUsageSelect,
+      where: { storedFile: null },
+      select: legacyMediaUsageSelect,
     }),
   ]);
 
+  const countedFiles = excludeMediaId
+    ? files.filter((file) => file.mediaId !== excludeMediaId)
+    : files;
+  const countedLegacy = excludeMediaId
+    ? legacyMedia.filter((media) => media.id !== excludeMediaId)
+    : legacyMedia;
+
   return {
-    usedBytes: mediaUsageBytes(rows.map(quotaUsageRow)),
+    usedBytes: mediaUsageBytes([
+      ...countedFiles.map(fileUsageRow),
+      ...countedLegacy.map(legacyUsageRow),
+    ]),
+    publicBytes: mediaUsageBytes(
+      countedFiles
+        .filter((file) => file.origin === StoredFileOrigin.PUBLIC)
+        .map(fileUsageRow),
+    ),
     quotaMb: settings?.mediaQuotaMb ?? MEDIA_QUOTA_DEFAULT_MB,
+    reserveMb:
+      settings?.publicOriginReserveMb ?? PUBLIC_ORIGIN_RESERVE_DEFAULT_MB,
   };
 }
 
 function assertQuotaFits(
-  usedBytes: number,
+  usage: StorageUsageSnapshot,
   incomingBytes: number,
-  quotaMb: number,
+  origin: StoredFileOrigin,
 ): void {
-  if (fitsMediaQuota(usedBytes, incomingBytes, quotaMb)) return;
+  if (!fitsMediaQuota(usage.usedBytes, incomingBytes, usage.quotaMb)) {
+    throw new MediaQuotaExceededError(
+      usage.usedBytes,
+      megabytesToBytes(usage.quotaMb),
+      usage.quotaMb,
+    );
+  }
 
-  throw new MediaQuotaExceededError(
-    usedBytes,
-    megabytesToBytes(quotaMb),
-    quotaMb,
-  );
+  // The reserve bounds visitors only: the owner may always use the whole quota.
+  if (
+    origin === StoredFileOrigin.PUBLIC &&
+    !fitsPublicOriginReserve(
+      usage.publicBytes,
+      incomingBytes,
+      usage.reserveMb,
+    )
+  ) {
+    throw new PublicOriginReserveExceededError(
+      usage.publicBytes,
+      megabytesToBytes(usage.reserveMb),
+      usage.reserveMb,
+    );
+  }
 }
 
 export async function getMediaUsageBytes(): Promise<number> {
@@ -104,22 +184,56 @@ export async function getMediaUsageBytes(): Promise<number> {
 }
 
 export async function getMediaQuotaStatus(): Promise<MediaQuotaStatus> {
-  const { usedBytes, quotaMb } = await readUsage(db);
+  const { usedBytes, publicBytes, quotaMb, reserveMb } = await readUsage(db);
 
-  return mediaQuotaStatus(usedBytes, quotaMb);
+  return mediaQuotaStatus(usedBytes, quotaMb, publicBytes, reserveMb);
+}
+
+export interface StorageQuotaAdmission {
+  /** Bytes this write will add. */
+  incomingBytes: number;
+  /** Who may create the file; public uploads are also bounded by the reserve. */
+  origin?: StoredFileOrigin;
+  /** A Media being replaced no longer counts against itself. */
+  excludeMediaId?: string;
 }
 
 /**
- * The transport-level check: refuses an upload before its bytes are written.
- * It only knows the file's own size, so the exact total (with renditions) is
- * checked again when the row is created.
+ * The pre-write check for an owned file or a library upload. A public upload
+ * decides here whether it may even reach the driver, so a refusal writes
+ * neither bytes nor a row. The exact total is checked again under the lock
+ * before the record is created.
  */
-export async function assertMediaQuotaAllows(
-  incomingBytes: number,
-): Promise<void> {
-  const { usedBytes, quotaMb } = await readUsage(db);
+export async function assertStorageQuotaAllows({
+  incomingBytes,
+  origin = StoredFileOrigin.INTERNAL,
+}: StorageQuotaAdmission): Promise<void> {
+  const usage = await readUsage(db);
 
-  assertQuotaFits(usedBytes, incomingBytes, quotaMb);
+  assertQuotaFits(usage, incomingBytes, origin);
+}
+
+/**
+ * Runs a write inside a transaction that re-reads usage and admits it only if
+ * it still fits. The advisory lock serialises concurrent admissions, so an
+ * upload started a moment earlier is seen by the next one.
+ */
+export async function withStorageQuotaAdmission<T>(
+  {
+    incomingBytes,
+    origin = StoredFileOrigin.INTERNAL,
+    excludeMediaId,
+  }: StorageQuotaAdmission,
+  write: (tx: Prisma.TransactionClient) => Promise<T>,
+): Promise<T> {
+  return db.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(${STORAGE_QUOTA_LOCK_KEY})`;
+
+    const usage = await readUsage(tx, excludeMediaId);
+    assertQuotaFits(usage, incomingBytes, origin);
+
+    return write(tx);
+  });
 }
 
 export interface MediaQuotaAdmission {
@@ -130,20 +244,12 @@ export interface MediaQuotaAdmission {
 }
 
 /**
- * Runs the row write inside a transaction that re-reads usage and admits the
- * Media only if it still fits. The advisory lock serialises concurrent
- * admissions, so an upload started a moment earlier is seen by the next one.
+ * The library's admission: a Media is always internal, so the reserve does not
+ * apply to it.
  */
 export async function withMediaQuotaAdmission<T>(
   { incomingBytes, excludeMediaId }: MediaQuotaAdmission,
   write: (tx: Prisma.TransactionClient) => Promise<T>,
 ): Promise<T> {
-  return db.$transaction(async (tx) => {
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(${MEDIA_QUOTA_LOCK_KEY})`;
-
-    const { usedBytes, quotaMb } = await readUsage(tx, excludeMediaId);
-    assertQuotaFits(usedBytes, incomingBytes, quotaMb);
-
-    return write(tx);
-  });
+  return withStorageQuotaAdmission({ incomingBytes, excludeMediaId }, write);
 }

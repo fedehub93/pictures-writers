@@ -1,16 +1,24 @@
 /**
- * Media quota arithmetic.
+ * Storage quota arithmetic.
  *
- * Pure and client-safe: the media library renders the same bytes the upload
- * endpoint enforces, so there is no second source of truth. Usage is the
- * original's size plus the bytes recorded in its rendition manifest, over every
- * Media, archived ones included.
+ * Pure and client-safe: the library renders the same bytes the upload
+ * endpoints enforce, so there is no second source of truth. Usage is every
+ * stored file's size plus the bytes recorded in a Media's rendition manifest,
+ * archived ones included. A second figure names how much of the usage comes
+ * from public-origin files, against the reserve that bounds them.
  */
 
 export const BYTES_PER_MEGABYTE = 1024 * 1024;
 
 /** The default quota for an Installation that never changed it: 5 GB. */
 export const MEDIA_QUOTA_DEFAULT_MB = 5120;
+
+/**
+ * The default share of the quota public-origin files may occupy: 512 MB, a
+ * tenth of the default quota. An Installation with no public forms never
+ * reaches it, and internal uploads are never bounded by it.
+ */
+export const PUBLIC_ORIGIN_RESERVE_DEFAULT_MB = 512;
 
 /** Above this share of the quota the library warns the admin. */
 export const MEDIA_QUOTA_WARNING_RATIO = 0.8;
@@ -26,6 +34,10 @@ export interface MediaQuotaUsageRow {
 export interface MediaQuotaStatus {
   usedBytes: number;
   totalBytes: number;
+  /** How much of `usedBytes` belongs to public-origin files. */
+  publicBytes: number;
+  /** The bytes public-origin files may occupy, inside `totalBytes`. */
+  reserveBytes: number;
   ratio: number;
   percent: number;
   level: MediaQuotaLevel;
@@ -37,20 +49,38 @@ export function megabytesToBytes(megabytes: number): number {
   return Math.floor(megabytes) * BYTES_PER_MEGABYTE;
 }
 
-/**
- * Parses a quota submitted by a form field or a JSON body. A number input
- * sends a string, so both shapes are accepted; anything that is not a whole
- * number of megabytes, at least 1, is rejected.
- */
-export function parseMediaQuotaMb(value: unknown): number | null {
-  const quotaMb =
+function parseWholeMegabytes(value: unknown, minimum: number): number | null {
+  const megabytes =
     typeof value === "number"
       ? value
       : typeof value === "string" && value.trim() !== ""
         ? Number(value)
         : Number.NaN;
 
-  return Number.isInteger(quotaMb) && quotaMb >= 1 ? quotaMb : null;
+  return Number.isInteger(megabytes) && megabytes >= minimum
+    ? megabytes
+    : null;
+}
+
+/**
+ * Parses a quota submitted by a form field or a JSON body. A number input
+ * sends a string, so both shapes are accepted; anything that is not a whole
+ * number of megabytes, at least 1, is rejected.
+ */
+export function parseMediaQuotaMb(value: unknown): number | null {
+  return parseWholeMegabytes(value, 1);
+}
+
+/**
+ * Parses the public-origin reserve. Zero is valid and refuses every public
+ * upload; the reserve is a ceiling on visitors, not a floor for the owner.
+ */
+export function parsePublicOriginReserveMb(value: unknown): number | null {
+  return parseWholeMegabytes(value, 0);
+}
+
+function nonNegativeBytes(value: number): number {
+  return Number.isFinite(value) ? Math.max(0, value) : 0;
 }
 
 function renditionBytes(renditions: unknown): number {
@@ -93,8 +123,11 @@ export function mediaUsageBytes(rows: MediaQuotaUsageRow[]): number {
 export function mediaQuotaStatus(
   usedBytes: number,
   quotaMb: number,
+  publicBytes = 0,
+  reserveMb: number = PUBLIC_ORIGIN_RESERVE_DEFAULT_MB,
 ): MediaQuotaStatus {
-  const used = Number.isFinite(usedBytes) ? Math.max(0, usedBytes) : 0;
+  const used = nonNegativeBytes(usedBytes);
+  const publicUsed = nonNegativeBytes(publicBytes);
   const totalBytes = megabytesToBytes(quotaMb);
   const ratio = totalBytes > 0 ? used / totalBytes : used > 0 ? Infinity : 0;
   const percent =
@@ -107,7 +140,15 @@ export function mediaQuotaStatus(
         ? "warning"
         : "ok";
 
-  return { usedBytes: used, totalBytes, ratio, percent, level };
+  return {
+    usedBytes: used,
+    totalBytes,
+    publicBytes: publicUsed,
+    reserveBytes: megabytesToBytes(reserveMb),
+    ratio,
+    percent,
+    level,
+  };
 }
 
 /**
@@ -119,10 +160,23 @@ export function fitsMediaQuota(
   incomingBytes: number,
   quotaMb: number,
 ): boolean {
-  const used = Number.isFinite(usedBytes) ? Math.max(0, usedBytes) : 0;
-  const incoming = Number.isFinite(incomingBytes)
-    ? Math.max(0, incomingBytes)
-    : 0;
+  return (
+    nonNegativeBytes(usedBytes) + nonNegativeBytes(incomingBytes) <=
+    megabytesToBytes(quotaMb)
+  );
+}
 
-  return used + incoming <= megabytesToBytes(quotaMb);
+/**
+ * Whether a public-origin upload fits inside the reserve. Internal uploads
+ * never call this: the reserve bounds visitors, not the owner.
+ */
+export function fitsPublicOriginReserve(
+  publicBytes: number,
+  incomingBytes: number,
+  reserveMb: number,
+): boolean {
+  return (
+    nonNegativeBytes(publicBytes) + nonNegativeBytes(incomingBytes) <=
+    megabytesToBytes(reserveMb)
+  );
 }

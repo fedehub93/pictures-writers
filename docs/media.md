@@ -119,6 +119,7 @@ path writes under the Media's own revision.
 | Parsing and composing addresses | `src/modules/media/lib/url.ts` |
 | Absolute form and own-host check | `src/modules/media/server/media-url.ts` |
 | Quota arithmetic (pure vs database) | `src/modules/media/lib/quota.ts`, `src/modules/media/server/media-quota.ts` |
+| Quota refusal response | `src/modules/media/server/quota-error-response.ts` |
 | Admin reads and row operations (tRPC) | `src/modules/media/server/procedures.ts` |
 | Upload endpoint | `src/app/api/media/route.ts` |
 | Replace endpoint | `src/app/api/media/[mediaId]/replace/route.ts` |
@@ -199,14 +200,29 @@ The legacy `/assets/<key>` address is a build-time rewrite to the provider in
 
 ## Quota
 
-`Settings.mediaQuotaMb` (default 5120) is the Installation's byte budget for media. Usage is
-the original's stored-file size plus the bytes in the rendition manifest, over every Media,
-archived ones included. The record answers the original's size; `Media.size` is read only for a
-row that has no record yet. `src/modules/media/lib/quota.ts` is the pure arithmetic;
-`src/modules/media/server/media-quota.ts` reads the database and holds the admission lock.
+`Settings.mediaQuotaMb` (default 5120) is the Installation's byte budget for the disk. One number
+covers every `StoredFile`, whatever its role: a Media contributes its original's stored-file size
+plus the bytes in its rendition manifest, an attachment or avatar its own size, and archived
+Media keep counting. A Media whose location record does not exist yet (before the one-time
+backfill) still counts from its own columns, so deploying this code early cannot under-count.
+`src/modules/media/lib/quota.ts` is the pure arithmetic; `src/modules/media/server/media-quota.ts`
+reads the database and holds the admission lock.
+
+Inside that budget, `Settings.publicOriginReserveMb` (default 512, a tenth of the default quota)
+is the share public-origin files may occupy. A public upload is admitted only when it fits both
+the total quota and the reserve, so visitors can never block the owner's uploads; an internal
+upload is bounded by the total quota only. Every transport takes the same advisory lock, so an
+admin upload started at the same moment as a refused public one still succeeds. Zero refuses
+every public upload, and an Installation with no public forms never reaches the reserve. The
+setting is validated against the quota: a reserve above it is refused, because the reserve is a
+share held inside the quota. A refusal answers a machine-readable code — `MEDIA_QUOTA_EXCEEDED`
+for the total, `PUBLIC_ORIGIN_RESERVE_EXCEEDED` for the reserve — and writes neither bytes nor a
+record.
 
 Permanent deletion is the only operation that frees quota. Archiving hides a Media from the
-library but keeps counting it.
+library but keeps counting it. Deleting the owner of an attachment or avatar removes its record
+and its bytes, so the bytes stop counting with them. Nothing is ever deleted automatically for
+budget reasons.
 
 ## Health check
 

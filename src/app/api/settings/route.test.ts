@@ -2,6 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { db } from "@/shared/lib/db";
 import {
+  MEDIA_QUOTA_DEFAULT_MB,
+  PUBLIC_ORIGIN_RESERVE_DEFAULT_MB,
+} from "@/modules/media/lib/quota";
+import {
+  resetMediaQuota,
+  setPublicOriginReserveMb,
+} from "@/modules/media/server/__tests__/quota-fixtures";
+import {
   resetStorageDriverSetting,
   setStorageDriverSetting,
 } from "@/modules/media/server/__tests__/storage-setting-fixtures";
@@ -87,5 +95,77 @@ describe("PATCH /api/settings storageDriver", () => {
 
     expect(response.status).toBe(200);
     await expect(storedStorageDriver()).resolves.toBe("uploadthing");
+  });
+});
+
+describe("PATCH /api/settings publicOriginReserveMb", () => {
+  async function storedReserve(): Promise<number | undefined> {
+    const settings = await db.settings.findFirst({
+      select: { publicOriginReserveMb: true },
+    });
+
+    return settings?.publicOriginReserveMb;
+  }
+
+  async function storedQuota(): Promise<number | undefined> {
+    const settings = await db.settings.findFirst({
+      select: { mediaQuotaMb: true },
+    });
+
+    return settings?.mediaQuotaMb;
+  }
+
+  beforeEach(async () => {
+    await setPublicOriginReserveMb(PUBLIC_ORIGIN_RESERVE_DEFAULT_MB);
+  });
+
+  afterEach(async () => {
+    await resetMediaQuota();
+  });
+
+  it("saves a whole number of megabytes, including zero", async () => {
+    const first = await PATCH(patch({ publicOriginReserveMb: "256" }));
+    expect(first.status).toBe(200);
+    await expect(storedReserve()).resolves.toBe(256);
+
+    const zero = await PATCH(patch({ publicOriginReserveMb: 0 }));
+    expect(zero.status).toBe(200);
+    await expect(storedReserve()).resolves.toBe(0);
+  });
+
+  it("rejects a fractional, negative or missing value instead of defaulting", async () => {
+    for (const value of ["1.5", -1, "", null]) {
+      const response = await PATCH(patch({ publicOriginReserveMb: value }));
+
+      expect(response.status).toBe(400);
+      expect((await response.json()).error).toMatch(/whole number/i);
+    }
+
+    await expect(storedReserve()).resolves.toBe(
+      PUBLIC_ORIGIN_RESERVE_DEFAULT_MB,
+    );
+  });
+
+  it("refuses a reserve larger than the quota and keeps both unchanged", async () => {
+    const response = await PATCH(
+      patch({ mediaQuotaMb: 10, publicOriginReserveMb: 20 }),
+    );
+
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toMatch(/inside the quota/i);
+    await expect(storedQuota()).resolves.toBe(MEDIA_QUOTA_DEFAULT_MB);
+    await expect(storedReserve()).resolves.toBe(
+      PUBLIC_ORIGIN_RESERVE_DEFAULT_MB,
+    );
+  });
+
+  it("accepts a reserve inside the quota", async () => {
+    const response = await PATCH(
+      patch({ mediaQuotaMb: 10, publicOriginReserveMb: 2 }),
+    );
+
+    expect(response.status).toBe(200);
+    await expect(storedQuota()).resolves.toBe(10);
+    await expect(storedReserve()).resolves.toBe(2);
   });
 });

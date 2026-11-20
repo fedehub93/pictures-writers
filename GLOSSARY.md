@@ -158,6 +158,14 @@ _Avoid_: Path, filename, URL when referring to the identifier.
 The adapter that writes, deletes and addresses objects for one storage Provider. The active driver for new uploads is an Installation setting, falling back to configuration when the owner has not chosen; every Media records the driver that wrote it, so delivery resolves per row.
 _Avoid_: Provider, which is the external service; storage integration, which would be the Provider plus its stored secrets.
 
+**Storage quota**:
+The Installation's one byte budget for the disk, covering every Stored file whatever its role: a Media's original plus its rendition manifest, an attachment or avatar its own bytes, archived Media included. It is an Installation setting (`mediaQuotaMb`, default 5 GB). Permanent deletion, and deleting an attachment's or avatar's owner, are what free bytes.
+_Avoid_: Media quota when attachments and avatars are in scope; disk limit, plan.
+
+**Public-origin reserve**:
+The share of the Storage quota that files of public origin - a visitor's form attachment - may occupy. It is an Installation setting (`publicOriginReserveMb`, default 512 MB, a tenth of the default quota). A public upload must fit both the quota and the reserve; the owner's uploads are bounded by the quota only, so a stranger can never block the library. Zero refuses every public upload, and an Installation with no public forms never reaches it.
+_Avoid_: Upload limit, public quota (it is a ceiling inside the quota, not a second budget).
+
 **Re-home**:
 Moving a Stored file's bytes from the driver that holds them to the active driver without changing its key or its canonical address. It rewrites the file's driver and remote address only; a file that cannot be read stays where it is and keeps serving.
 _Avoid_: Migrate, sync, move when a revision or address changes, which is a replace rather than a re-home.
@@ -712,7 +720,7 @@ All the Installations one Control plane manages, across one or more Hosts.
 _Avoid_: Cluster, pool, network.
 
 **Installation settings**:
-The single-row configuration an Installation owns and its backoffice edits - site name, canonical URL, timezone, locale, media quota, active storage driver. It belongs to that Installation alone and is never supplied through environment variables.
+The single-row configuration an Installation owns and its backoffice edits - site name, canonical URL, timezone, locale, storage quota and public-origin reserve, active storage driver. It belongs to that Installation alone and is never supplied through environment variables.
 _Avoid_: Site config, global settings, tenant settings.
 
 **Bootstrap**:

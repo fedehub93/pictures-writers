@@ -45,6 +45,14 @@ model Settings {
   /// plus generated renditions and including archived Media.
   mediaQuotaMb Int @default(5120)
 
+  /// Maximum megabytes of that quota files of public origin may occupy.
+  /// Public uploads beyond it are refused; internal uploads may use the whole
+  /// quota. Zero refuses every public upload. Default: 512 MB (a tenth of the
+  /// default quota), so an Installation with no public forms never reaches it.
+  /// Keep the default equal to PUBLIC_ORIGIN_RESERVE_DEFAULT_MB in
+  /// src/modules/media/lib/quota.ts; the migration carries the same literal.
+  publicOriginReserveMb Int @default(512)
+
   /// Active storage driver for new uploads ("local" or "uploadthing"). NULL
   /// means no choice was made yet and the environment decides, so an existing
   /// Installation keeps writing where it always has.

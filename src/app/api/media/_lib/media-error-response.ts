@@ -4,7 +4,7 @@ import {
   MediaNotFoundError,
   MediaProcessingError,
 } from "@/modules/media/server/media-service";
-import { MediaQuotaExceededError } from "@/modules/media/server/media-quota";
+import { quotaErrorResponse } from "@/modules/media/server/quota-error-response";
 
 /**
  * Shared error mapping for the media API route that replaces a file. `tag` is
@@ -15,18 +15,8 @@ export function mediaErrorResponse(error: unknown, tag: string): NextResponse {
     return NextResponse.json({ error: error.message }, { status: 404 });
   }
 
-  if (error instanceof MediaQuotaExceededError) {
-    return NextResponse.json(
-      {
-        code: error.code,
-        error: error.message,
-        usedBytes: error.usedBytes,
-        totalBytes: error.totalBytes,
-        quotaMb: error.quotaMb,
-      },
-      { status: 413 },
-    );
-  }
+  const quota = quotaErrorResponse(error);
+  if (quota) return quota;
 
   if (error instanceof MediaProcessingError) {
     console.log(tag, error);

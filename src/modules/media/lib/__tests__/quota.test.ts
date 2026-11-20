@@ -3,11 +3,14 @@ import { describe, expect, it } from "vitest";
 import {
   BYTES_PER_MEGABYTE,
   MEDIA_QUOTA_DEFAULT_MB,
+  PUBLIC_ORIGIN_RESERVE_DEFAULT_MB,
   fitsMediaQuota,
+  fitsPublicOriginReserve,
   mediaQuotaStatus,
   mediaUsageBytes,
   megabytesToBytes,
   parseMediaQuotaMb,
+  parsePublicOriginReserveMb,
 } from "../quota";
 
 const MB = BYTES_PER_MEGABYTE;
@@ -84,14 +87,40 @@ describe("fitsMediaQuota", () => {
   });
 });
 
+describe("fitsPublicOriginReserve", () => {
+  it("allows public files exactly at the reserve", () => {
+    expect(fitsPublicOriginReserve(MB, 0, 1)).toBe(true);
+    expect(fitsPublicOriginReserve(MB - 1, 1, 1)).toBe(true);
+  });
+
+  it("refuses a public upload one byte past the reserve", () => {
+    expect(fitsPublicOriginReserve(MB, 1, 1)).toBe(false);
+    expect(fitsPublicOriginReserve(MB + 1, 0, 1)).toBe(false);
+  });
+
+  it("refuses every public upload when the reserve is zero", () => {
+    expect(fitsPublicOriginReserve(0, 1, 0)).toBe(false);
+    expect(fitsPublicOriginReserve(0, 0, 0)).toBe(true);
+  });
+});
+
 describe("mediaQuotaStatus", () => {
   it("reports used and total figures", () => {
     expect(mediaQuotaStatus(2 * MB, 10)).toMatchObject({
       usedBytes: 2 * MB,
       totalBytes: 10 * MB,
+      publicBytes: 0,
+      reserveBytes: PUBLIC_ORIGIN_RESERVE_DEFAULT_MB * MB,
       ratio: 0.2,
       percent: 20,
       level: "ok",
+    });
+  });
+
+  it("names how much of the used bytes are public-origin", () => {
+    expect(mediaQuotaStatus(2 * MB, 10, 512 * 1024, 2)).toMatchObject({
+      publicBytes: 512 * 1024,
+      reserveBytes: 2 * MB,
     });
   });
 
@@ -128,5 +157,23 @@ describe("parseMediaQuotaMb", () => {
     expect(parseMediaQuotaMb("many")).toBeNull();
     expect(parseMediaQuotaMb(null)).toBeNull();
     expect(parseMediaQuotaMb(undefined)).toBeNull();
+  });
+});
+
+describe("parsePublicOriginReserveMb", () => {
+  it("accepts the string a number input submits, including zero", () => {
+    expect(parsePublicOriginReserveMb("512")).toBe(512);
+    expect(parsePublicOriginReserveMb(" 0 ")).toBe(0);
+    expect(parsePublicOriginReserveMb(0)).toBe(0);
+    expect(parsePublicOriginReserveMb(256)).toBe(256);
+  });
+
+  it("rejects empty, fractional and negative values", () => {
+    expect(parsePublicOriginReserveMb("")).toBeNull();
+    expect(parsePublicOriginReserveMb("-1")).toBeNull();
+    expect(parsePublicOriginReserveMb("1.5")).toBeNull();
+    expect(parsePublicOriginReserveMb("many")).toBeNull();
+    expect(parsePublicOriginReserveMb(null)).toBeNull();
+    expect(parsePublicOriginReserveMb(undefined)).toBeNull();
   });
 });
