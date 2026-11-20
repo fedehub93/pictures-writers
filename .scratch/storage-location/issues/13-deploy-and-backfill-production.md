@@ -7,8 +7,8 @@
 **Status:** ready-for-human
 
 - [ ] The media branch is deployed with its migrations and the persistent volume mounted at its documented root.
-- [ ] The command creates 720 stored-file records and no duplicates.
-- [ ] Each of the 720 answers 200 on its canonical address.
+- [ ] The command creates one stored-file record per Media (725 at the 2026-11-20 measurement) and no duplicates.
+- [ ] Each Media answers 200 on its canonical address.
 - [ ] The audit is green, with zero unresolved files.
 - [ ] A database dump taken afterwards restores into a scratch database with the records intact.
 - [ ] The Installation's active driver is recorded explicitly, so the default change cannot move any of its files.
@@ -52,6 +52,30 @@ Verified here, on this branch:
 - All four §4bis.8 SQL statements (counts, provider hosts, restore check, saved setting) were
   run against the agent schema: they parse and return the documented column sets.
 
+Now the rehearsal, which changes the expected numbers:
+
+- **2026-11-20, rehearsal on a production dump.** The dump of 15:58 (8 MB, PG 18) was restored
+  into a scratch database on the dev container and the whole gate was run there: 7 migrations
+  pending before, 0 errors; `media:backfill-files` created 725 and reported `failed: []`; a second
+  run reported `created: 0, skipped: 725`; the counts query returned `725 | 725 | 0 | 0 | 0 | 0`;
+  the hosts query returned `ghhc7ejbae.ufs.sh=706, utfs.io=19`; `media:audit` exited 0 with
+  `files: 726 drivers: uploadthing=726 unresolved: 0 bytes.accounted=387248558`.
+- The library is **725 Media, not 720**: 706 with a three-segment key (`<mediaId>/<rev>/original`,
+  addressed by customId) and 19 with a flat provider file key. The runbook's expected numbers were
+  updated to the measurement; the checklist now asks for one record per Media, not for a literal
+  720.
+- There is **one legacy email attachment**, on `utfs.io` in `/f/<key>` form. The migration maps it
+  to `uploadthing`, so this Installation has **no `external` row** and nothing to resolve by hand
+  before the audit can be green.
+- **`-- --dry-run` is not portable.** On Windows/PowerShell, `npm run media:backfill-files --
+  --dry-run` reaches the script without the flag: the rehearsal's "preview" was a real run (the
+  report said `dryRun: false`). It cost nothing — the run is the one the gate wanted and it is
+  idempotent — but the runbook now uses `docker exec -it -e MEDIA_BACKFILL_DRY_RUN=1`, which is
+  already the form of the other two backfills and works on every shell. Check `dryRun: true` in
+  the preview's report.
+- Not yet rehearsed: the 725 canonical addresses over HTTP (needs the app against the dump) and
+  the dump/restore drill. Both stay in the production gate.
+
 Still open, on production:
 
 - deploy the branch with its migrations; the volume is already mounted at `/data/media` and
@@ -62,9 +86,9 @@ Still open, on production:
 - run the backfill twice and record `scanned/created/skipped/failed` from both runs, then the
   count/`remoteUrl`/host query: a record without its provider address would still pass delivery
   through the Media fallback, so it is checked explicitly;
-- check all 720 canonical addresses: a final `200` following the redirect is the criterion
+- check all 725 canonical addresses: a final `200` following the redirect is the criterion
   while the bytes are remote. The canonical address answers `302` to the recorded provider
   location until the re-home, so the checklist's "200" is read as "resolves to the bytes", not
   as "no hop";
-- record the audit's `unresolved` line and the dump/restore row (`720 | 0 | 0` for count,
-  linked Media and recorded address).
+- record the audit's `unresolved` line and the dump/restore row (`725 | 0 | 0` for count,
+  linked Media and recorded address, plus the one attachment in `files`).

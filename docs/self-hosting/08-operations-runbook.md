@@ -485,30 +485,35 @@ re-home. Il comando non riscrive nessuna riga `Media`.
 3. **Anteprima, esecuzione, e una seconda esecuzione.** Dentro il container nuovo:
 
    ```bash
-   docker exec -it <APP_CONTAINER> npm run media:backfill-files -- --dry-run
+   docker exec -it -e MEDIA_BACKFILL_DRY_RUN=1 <APP_CONTAINER> npm run media:backfill-files
    docker exec -it <APP_CONTAINER> npm run media:backfill-files
    ```
+
+   Usa la variabile e non `-- --dry-run`: il passaggio degli argomenti dopo `--` non è affidabile
+   su ogni shell (su Windows/PowerShell l'anteprima girerebbe come esecuzione reale), mentre la
+   variabile è la stessa forma già usata dagli altri due backfill e vale ovunque. Il report deve
+   dire `dryRun: true`; se dice `false`, l'anteprima non era un'anteprima.
 
    Un Media con indirizzo assoluto riceve quell'indirizzo come `remoteUrl`; il legacy
    `/assets/<key>` riceve l'indirizzo del provider che quell'URL rappresenta; un Media locale
    lascia `remoteUrl` nullo. Un Media con chiave illeggibile finisce in `failed` con il motivo e
    non viene perso in silenzio. Il comando esce `1` se `failed` non è vuoto.
 
-   Sulle 720 Media del caso reale il primo run riporta:
+   Sui 725 Media misurati il 20 novembre 2026 il primo run riporta:
 
    ```json
    {
-     "scanned": 720,
-     "created": 720,
+     "scanned": 725,
+     "created": 725,
      "skipped": 0,
      "failed": [],
      "dryRun": false
    }
    ```
 
-   Esegui di nuovo lo stesso comando: deve riportare `created: 0`, `skipped: 720`. È la prova,
+   Esegui di nuovo lo stesso comando: deve riportare `created: 0`, `skipped: 725`. È la prova,
    sui dati veri, che non nascono duplicati. Se `failed` non è vuoto, fermati e indaga quel Media
-   prima di proseguire: il gate chiede 720 su 720, non 719.
+   prima di proseguire: il gate chiede un record per Media, 725 su 725 alla misura, non 724.
 
    > La migrazione `add_attachment_and_avatar_role` copia già in `StoredFile` gli allegati email
    > storici. Sono file registrati ma non Media, quindi non compaiono in `scanned`/`created`; si
@@ -537,13 +542,13 @@ re-home. Il comando non riscrive nessuna riga `Media`.
         GROUP BY "key" HAVING count(*) > 1) k) AS duplicated_keys;
    ```
 
-   Atteso: `media_files = media` (sui 720 di questa Installazione `media = 720`),
+   Atteso: `media_files = media` (sui 725 misurati il 20 novembre 2026 `media = 725`),
    `media_without_record = 0`, `without_remote_url = 0`, `duplicated_roles = 0`,
-   `duplicated_keys = 0`. Se `media` non è 720, annota il numero vero: è la libreria, non il
+   `duplicated_keys = 0`. Se `media` differisce, annota il numero vero: è la libreria, non il
    ticket. Le due unique rendono i duplicati impossibili per costruzione: la prova sui dati è il
    rerun del passo 3.
 
-   Ogni riga deve inoltre nominare uno dei due host del provider: alla misura erano 701 sul più
+   Ogni riga deve inoltre nominare uno dei due host del provider: alla misura erano 706 sul più
    recente e 19 sul più vecchio, quindi un host inatteso o un terzo host è un segnale.
 
    ```sql
@@ -566,7 +571,7 @@ re-home. Il comando non riscrive nessuna riga `Media`.
    docker exec -i <DB_CONTAINER> psql -U postgres -d postgres -At \
      -c "SELECT key FROM \"StoredFile\" WHERE kind = 'MEDIA' ORDER BY key;" \
      > /tmp/media-keys.txt
-   wc -l /tmp/media-keys.txt          # 720
+   wc -l /tmp/media-keys.txt          # 725
 
    while IFS= read -r key; do
      code=$(curl -sL -o /dev/null -w '%{http_code}' "https://<DOMAIN>/media/${key}")
@@ -574,7 +579,7 @@ re-home. Il comando non riscrive nessuna riga `Media`.
    done < /tmp/media-keys.txt
    ```
 
-   L'output atteso del ciclo è vuoto: nessuna riga stampata significa 720 risposte `200` seguendo
+   L'output atteso del ciclo è vuoto: nessuna riga stampata significa 725 risposte `200` seguendo
    il redirect. Una chiave stampata è un file da indagare **prima** dello sweep.
 
 6. **Audit verde.**
@@ -583,12 +588,13 @@ re-home. Il comando non riscrive nessuna riga `Media`.
    docker exec -it <APP_CONTAINER> npm run media:audit
    ```
 
-   Atteso per i 720 Media appena registrati (una libreria con allegati storici porta `files` più
-   in alto, e file caricati dopo il deploy lo alzano ancora):
+   Atteso per i 725 Media appena registrati più l'allegato email storico che la migrazione ha già
+   copiato (una libreria con altri allegati porta `files` più in alto, e file caricati dopo il
+   deploy lo alzano ancora):
 
    ```txt
-   files: 720
-   drivers: uploadthing=720
+   files: 726
+   drivers: uploadthing=726
    configured drivers: local uploadthing
    unconfigured drivers: none
    unresolved: 0
@@ -626,7 +632,7 @@ re-home. Il comando non riscrive nessuna riga `Media`.
       FROM \"StoredFile\" WHERE kind = 'MEDIA';"
    ```
 
-   Atteso `720 | 0 | 0`: count, legame alla Media e indirizzo remoto sopravvivono al dump. Poi
+   Atteso `725 | 0 | 0`: count, legame alla Media e indirizzo remoto sopravvivono al dump. Poi
    `docker rm -f pw-restore-test`, cancella il dump di prova (o conservalo
    fuori dal repository come backup), e annota data ed esito. Il dump di restore usa-e-getta è
    lo stesso schema dell'appendice C §10.
