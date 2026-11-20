@@ -145,7 +145,7 @@ Google Tag Manager non è più una variabile d'ambiente: il container id si conf
 
 | Variabile | Esempio | Build | Runtime | Segreta | Note |
 |---|---|:---:|:---:|:---:|---|
-| `MEDIA_STORAGE_DRIVER` | `local` / `uploadthing` | ❌ | ✅ | ❌ | Fallback per i nuovi upload quando nessun driver è stato scelto in Admin → Media. Il driver attivo è un'impostazione dell'Installazione e ha la precedenza. Default `uploadthing` per non mutare le Installazioni esistenti. |
+| `MEDIA_STORAGE_DRIVER` | `local` / `uploadthing` | ❌ | ✅ | ❌ | Fallback per i nuovi upload quando nessun driver è stato scelto in Admin → Media. Il driver attivo è un'impostazione dell'Installazione e ha la precedenza. Default `local`, così un'Installazione nuova carica senza account provider; un'Installazione già sul provider deve registrare `uploadthing` esplicitamente. |
 | `MEDIA_STORAGE_LOCAL_ROOT` | `/data/media` | ❌ | ✅ | ❌ | Percorso nel container dove il driver locale scrive i file. Default `.media-storage` nella directory del progetto (sviluppo). In produzione deve stare su un volume persistente. |
 | `INSTALLATION_SLUG` | `tenant-xyz` | ❌ | ✅ | ❌ | Segmento iniziale di ogni nuova storage key. Default `default` se assente. |
 | `UPLOADTHING_TOKEN` | `<token>` | ❌ | ✅ | ✅ | Vedi §3.5. Richiesto per i Media storici e per scegliere UploadThing dal backoffice: senza token l'opzione è visibile ma disabilitata nella libreria media. |

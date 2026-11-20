@@ -37,19 +37,19 @@ describe("resolveActiveStorageDriver", () => {
     expect(resolved.name).toBe("local");
   });
 
-  it("keeps today's driver when neither the setting nor the environment names one", async () => {
+  it("uses local disk when neither the setting nor the environment names one", async () => {
     await setStorageDriverSetting(null);
 
     const resolved = await resolveActiveStorageDriver({});
 
-    expect(resolved.name).toBe("uploadthing");
+    expect(resolved.name).toBe("local");
   });
 
   it("picks up a saved choice on the next resolution, without a restart", async () => {
     await setStorageDriverSetting(null);
 
     await expect(resolveActiveStorageDriver({})).resolves.toMatchObject({
-      name: "uploadthing",
+      name: "local",
     });
 
     await setStorageDriverSetting("local");
@@ -65,7 +65,7 @@ describe("getStorageDriverChoice", () => {
     await setStorageDriverSetting(null);
 
     await expect(getStorageDriverChoice({})).resolves.toEqual({
-      active: "uploadthing",
+      active: "local",
       uploadThingAvailable: false,
     });
   });

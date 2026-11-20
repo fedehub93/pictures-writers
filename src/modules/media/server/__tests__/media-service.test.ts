@@ -55,7 +55,6 @@ async function createPng(
 function sourceFor(key: string) {
   return {
     key,
-    url: `https://ghhc7ejbae.ufs.sh/f/${key}`,
     name: "Uploaded image",
     type: MediaType.IMAGE,
     altText: "Alt text",
@@ -342,14 +341,11 @@ describe("createMediaFromUpload", () => {
       const media = await createMediaFromUpload({
         driver,
         storageDriver: "local",
-        storeUploadedObject: true,
         source: {
           key: sourceKey,
-          url: `/media/${sourceKey}`,
           name: "Download",
           type,
           mimeType,
-          size: bytes.byteLength,
         },
       });
       mediaIds.push(media.id);
@@ -374,72 +370,6 @@ describe("createMediaFromUpload", () => {
       expect(row.renditions).toBeNull();
     },
   );
-
-  it.each([MediaType.FILE, MediaType.AUDIO, MediaType.VIDEO])(
-    "records a legacy %s upload through its provider address",
-    async (type) => {
-      const key = `uploads/${randomUUID()}`;
-      const media = await createMediaFromUpload({
-        driver,
-        source: {
-          key,
-          url: "https://ghhc7ejbae.ufs.sh/f/legacy-attachment",
-          name: "Attachment",
-          type,
-          mimeType: "application/octet-stream",
-          size: 4321,
-          altText: null,
-        },
-      });
-      mediaIds.push(media.id);
-
-      expect(media).toMatchObject({
-        url: "https://ghhc7ejbae.ufs.sh/f/legacy-attachment",
-        type,
-        mimeType: "application/octet-stream",
-        size: 4321,
-        checksum: null,
-        revision: 1,
-      });
-
-      const row = await db.media.findUniqueOrThrow({ where: { id: media.id } });
-      expect(row.renditions).toBeNull();
-
-      // The legacy path stores the record with the absolute address it
-      // arrived with and the driver an unrecorded row resolves to.
-      const file = await db.storedFile.findUniqueOrThrow({
-        where: { mediaId: media.id },
-      });
-      expect(file).toMatchObject({
-        key,
-        driver: "uploadthing",
-        remoteUrl: "https://ghhc7ejbae.ufs.sh/f/legacy-attachment",
-        contentType: "application/octet-stream",
-        size: 4321,
-        checksum: null,
-      });
-    },
-  );
-
-  it("refuses a legacy upload whose address names no storage key", async () => {
-    const name = `Keyless ${randomUUID()}`;
-
-    await expect(
-      createMediaFromUpload({
-        driver,
-        source: {
-          key: null,
-          url: "https://example.test/file.pdf",
-          name,
-          type: MediaType.FILE,
-          mimeType: "application/pdf",
-          size: 1234,
-        },
-      }),
-    ).rejects.toBeInstanceOf(MediaProcessingError);
-
-    await expect(db.media.count({ where: { name } })).resolves.toBe(0);
-  });
 });
 
 describe("replaceMediaFile", () => {
@@ -726,16 +656,11 @@ describe("replaceMediaFile", () => {
       storageDriver: "local",
       source: {
         key: await putSource(oldBytes, driver, "application/pdf"),
-        url: "https://ghhc7ejbae.ufs.sh/f/legacy.pdf",
         name: "Brochure.pdf",
         type: MediaType.FILE,
         mimeType: "application/pdf",
-        size: 4,
         altText: null,
       },
-      // The application transport records the driver that wrote the row, so
-      // the replacement cleans up through local disk.
-      storeUploadedObject: true,
     });
     mediaIds.push(media.id);
 

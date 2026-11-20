@@ -27,7 +27,10 @@ export function storageConfigFromEnv(
   env: StorageEnvironment = process.env,
 ): StorageDriverConfig {
   const configured = env.MEDIA_STORAGE_DRIVER?.trim().toLowerCase();
-  const name = configured || "uploadthing";
+  // A fresh Installation has no token and no saved choice, so the fallback is
+  // local disk. An Installation on a provider records that choice explicitly,
+  // which is what keeps this default from moving its next upload.
+  const name = configured || "local";
 
   if (name === "uploadthing") {
     return { driver: "uploadthing", token: env.UPLOADTHING_TOKEN };
@@ -93,9 +96,9 @@ export function isStorageDriverConfigured(
 
 /**
  * The driver a new upload will use: the saved Installation setting first, then
- * the environment, then today's default. A stored value the application no
- * longer knows is treated as absent so an upgrade never breaks uploads; the
- * settings API rejects such a value before it can be written.
+ * the environment, then local disk. A stored value the application no longer
+ * knows is treated as absent so an upgrade never breaks uploads; the settings
+ * API rejects such a value before it can be written.
  */
 export function storageDriverNameFromSetting(
   setting: unknown,

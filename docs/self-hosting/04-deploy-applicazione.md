@@ -143,8 +143,9 @@ AUTOMATION_CREDENTIALS_KEY=<VALORE_DA_VERCEL>
 # ── UploadThing (Media storici e driver UploadThing) ────
 UPLOADTHING_TOKEN=<VALORE_DA_VERCEL>
 
-# ── Media storage locale (opzionale, richiede un volume) ─
-# Il driver attivo si sceglie in Admin → Media. Queste sono il fallback.
+# ── Media storage locale (default, richiede un volume) ──
+# Il driver attivo si sceglie in Admin → Media. Queste sono il fallback,
+# e senza scelta i nuovi upload finiscono su disco locale.
 # MEDIA_STORAGE_LOCAL_ROOT=/data/media
 # INSTALLATION_SLUG=default
 

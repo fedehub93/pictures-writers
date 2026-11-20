@@ -66,7 +66,9 @@ reads the provider address from the rendition manifest. A Media whose record
 has not been created yet still resolves from its own columns, so deploying this
 code before the one-time backfill cannot darken an existing picture.
 
-The active driver decides where **new** uploads go. Delivery never asks the active driver: it
+The active driver decides where **new** uploads go. Resolution is the saved setting, then
+`MEDIA_STORAGE_DRIVER`, then local disk, which is what lets a fresh Installation upload with no
+provider account. Delivery never asks the active driver: it
 asks the row, so switching storage affects only new files. Replace and permanent deletion read
 the stored-file record too: the revision a replace supersedes is cleaned through the driver
 recorded on the file, and the key's shape decides whether the unit is a prefix or the provider's
@@ -92,9 +94,12 @@ Every Media type enters through the same multipart transport. An image is normal
 into the rendition ladder; a document, audio file or video is copied untouched to
 `<revision>/original` and has no renditions. `classifyMediaType` decides the kind from the MIME
 type: images keep the 4 MB transport limit, every other type gets 16 MB, and a type it cannot
-classify is refused before any byte is written. The legacy JSON upload path still records a
-provider object as it arrives and leaves the row without a recorded driver; only the multipart
-path writes under the Media's own revision.
+classify is refused before any byte is written. The browser ships no storage provider client:
+the library, attachments and avatars, public forms and inbound email all reach storage through
+an application transport, and the provider survives only as a server-side driver while its
+token is configured. `POST /api/media` accepts only multipart: any other body answers
+`UNSUPPORTED_CONTENT_TYPE`, because the JSON branch that recorded a provider object as it
+arrived is gone.
 
 ## Where things live
 

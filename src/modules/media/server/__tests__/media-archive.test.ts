@@ -122,7 +122,6 @@ describe("media archive, restore and deletion", () => {
       storageDriver: "local",
       source: {
         key,
-        url: `https://ghhc7ejbae.ufs.sh/f/${key}`,
         name: "Archive image",
         type: MediaType.IMAGE,
         altText: "Alt text",
@@ -315,22 +314,7 @@ describe("media archive, restore and deletion", () => {
 
   it("removes a legacy original by its provider file key", async () => {
     const key = `legacy-${randomUUID()}`;
-    const bytes = new Uint8Array([1, 2, 3]);
-    uploadThing.fake!.putLegacyObject(key, bytes, "application/pdf");
-
-    const media = await createMediaFromUpload({
-      driver,
-      source: {
-        key,
-        url: `https://fake-app.ufs.sh/f/${key}`,
-        name: "Legacy attachment",
-        type: MediaType.FILE,
-        mimeType: "application/pdf",
-        size: bytes.byteLength,
-      },
-    });
-    mediaIds.push(media.id);
-    await archiveMedia(media.id);
+    const media = await createLegacyMedia(key);
 
     const result = await deleteMediaPermanentlyBatch({
       active: { driver, name: "local" },
@@ -710,7 +694,6 @@ describe("media archive, restore and deletion", () => {
       storageDriver: "local",
       source: {
         key: otherKey,
-        url: `https://ghhc7ejbae.ufs.sh/f/${otherKey}`,
         name: "Other image",
         type: MediaType.IMAGE,
       },

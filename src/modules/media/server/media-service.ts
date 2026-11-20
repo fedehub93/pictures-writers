@@ -15,7 +15,7 @@ import {
   type MediaLibraryItem,
 } from "@/modules/media/lib/media-library";
 import { mediaUsageBytes } from "@/modules/media/lib/quota";
-import { mediaPath, mediaSourceKey } from "@/modules/media/lib/url";
+import { mediaPath } from "@/modules/media/lib/url";
 import type {
   MediaCleanupStatus,
   MediaDeletionCleanup,
@@ -44,7 +44,6 @@ import { countMediaReferencesFor } from "./media-usage";
 import { generateRenditions, normaliseImage } from "./process-image";
 import {
   getInstallationSlug,
-  recordedStorageDriverName,
   resolveActiveStorageDriver,
   resolveMediaStorageDriver,
   StorageObjectNotFoundError,
@@ -56,18 +55,19 @@ import type { StorageDriver } from "./storage/types";
 import {
   createStoredFileForMedia,
   mediaStoredFileCreateData,
-  remoteUrlForAddress,
   remoteUrlForUpload,
 } from "./stored-file";
 
+/**
+ * One file uploaded through the application transport: the temporary object
+ * the active driver wrote, and what the admin typed beside it.
+ */
 export interface MediaUploadSource {
-  key: string | null;
-  url: string;
+  key: string;
   name: string;
   type: MediaType;
   altText?: string | null;
   mimeType?: string | null;
-  size?: number | null;
 }
 
 export interface CreateMediaFromUploadOptions {
@@ -77,13 +77,6 @@ export interface CreateMediaFromUploadOptions {
   source: MediaUploadSource;
   /** Explicit admin override: keep the duplicate and create a second row. */
   override?: boolean;
-  /**
-   * Whether `source.key` is a temporary object written through this driver by
-   * the application transport. When true, a non-image is copied under its own
-   * revision and the row records the driver; when false, the legacy provider
-   * upload is recorded exactly as before.
-   */
-  storeUploadedObject?: boolean;
 }
 
 /**
@@ -190,58 +183,6 @@ async function recordedStorageDriver(
   storageDriver?: StorageDriverName,
 ): Promise<StorageDriverName> {
   return storageDriver ?? (await resolveActiveStorageDriver()).name;
-}
-
-async function createPlainMedia(
-  source: MediaUploadSource,
-): Promise<MediaLibraryItem> {
-  if (source.size == null) {
-    throw new MediaProcessingError(
-      "The uploaded file size is required so it can be counted against the media quota.",
-    );
-  }
-
-  const size = source.size;
-  // A Media without a readable location could never be served or audited, so
-  // the legacy branch refuses it rather than creating a row nothing can find.
-  const key = mediaSourceKey({ key: source.key, url: source.url });
-
-  if (!key) {
-    throw new MediaProcessingError(
-      "The uploaded file cannot be recorded because its storage key is missing.",
-    );
-  }
-
-  return withMediaQuotaAdmission(
-    { incomingBytes: size },
-    async (tx) => {
-      const media = await tx.media.create({
-        data: {
-          name: source.name,
-          key: source.key,
-          url: source.url,
-          size,
-          type: source.type,
-          altText: source.altText || null,
-          mimeType: source.mimeType || null,
-        },
-        select: mediaLibrarySelect,
-      });
-
-      // The legacy provider path records the object exactly as it arrived:
-      // there is no recorded driver in that era, which resolves as UploadThing.
-      await createStoredFileForMedia(tx, media.id, {
-        key,
-        driver: recordedStorageDriverName(null),
-        remoteUrl: remoteUrlForAddress(source.url),
-        contentType: source.mimeType || null,
-        size,
-        checksum: null,
-      });
-
-      return media;
-    },
-  );
 }
 
 interface StoredImageRevision {
@@ -517,25 +458,16 @@ export function storedImageFields(
  * Images are downloaded once, normalised, cut into the full rendition ladder
  * and written under `<mediaId>/<revision>/`. The Media row is only created
  * after every object exists, and a failure removes the whole prefix so the
- * library never holds a half-processed file. A non-image that arrives through
- * the application transport is stored as one original under the same layout;
- * one that arrives from the legacy provider path is recorded as before.
+ * library never holds a half-processed file. A non-image is copied untouched
+ * under the same layout.
  */
 export async function createMediaFromUpload({
   driver,
   storageDriver,
   source,
   override = false,
-  storeUploadedObject = false,
 }: CreateMediaFromUploadOptions): Promise<MediaLibraryItem> {
   if (source.type !== MediaType.IMAGE) {
-    // Non-image uploads that did not arrive through the application transport
-    // keep the legacy provider shape: the uploaded object is recorded exactly
-    // as before and the row carries no driver, so it resolves as remote.
-    if (!storeUploadedObject) {
-      return createPlainMedia(source);
-    }
-
     return createStoredPlainMedia({
       driver,
       storageDriver: await recordedStorageDriver(storageDriver),

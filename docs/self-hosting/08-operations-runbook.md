@@ -346,7 +346,7 @@ Il driver `local` scrive sotto `MEDIA_STORAGE_LOCAL_ROOT`. In produzione quel pe
 MEDIA_STORAGE_LOCAL_ROOT=/data/media
 ```
 
-Non serve impostare `MEDIA_STORAGE_DRIVER=local`: il driver attivo per i nuovi upload si sceglie in **Admin → Media** e vive in `Settings.storageDriver`; la variabile è solo il fallback di un'Installazione che non ha ancora scelto. `MEDIA_STORAGE_LOCAL_PUBLIC_URL` non esiste più: gli indirizzi locali sono sempre `/media/<key>`.
+Non serve impostare `MEDIA_STORAGE_DRIVER=local`: il driver attivo per i nuovi upload si sceglie in **Admin → Media** e vive in `Settings.storageDriver`; la variabile è solo il fallback di un'Installazione che non ha ancora scelto, e il fallback è `local`. Un'Installazione già sul provider registra `uploadthing` esplicitamente (setting o variabile) prima di adottare questo codice. `MEDIA_STORAGE_LOCAL_PUBLIC_URL` non esiste più: gli indirizzi locali sono sempre `/media/<key>`.
 
 Verifica del mount:
 
@@ -428,7 +428,7 @@ Un `uploadthing` non configurato compare in `unresolved` anche se gli URL assolu
 
 ### 4bis.7 Ordine di attivazione del driver locale
 
-1. **Codice e migrazioni.** Deploy del codice che include `Media.storageDriver`. Finché nessuno sceglie un driver, il setting è vuoto, la risoluzione ricade sull'ambiente e il default storico resta UploadThing: nulla cambia.
+1. **Codice e migrazioni.** Prima del deploy, registra esplicitamente il driver attuale dell'Installazione esistente (`Settings.storageDriver = uploadthing`, oppure `MEDIA_STORAGE_DRIVER=uploadthing`): il default del codice è ora `local`, e un'Installazione senza scelta scriverebbe i nuovi upload su disco. Con la scelta esplicita, il deploy non cambia nulla.
 2. **Volume e backup.** Monta il volume, imposta `MEDIA_STORAGE_LOCAL_ROOT`, programma il backup del volume. Carica un file di prova e verifica che sopravviva a un redeploy.
 3. **Drill di restore.** Ripristina il volume in uno scratch environment e servi un file. Annota data e esito.
 4. **Scelta.** Solo allora seleziona `local` in **Admin → Media**. I nuovi upload vanno su disco, i Media esistenti restano sul provider. Esegui `npm run media:audit`.

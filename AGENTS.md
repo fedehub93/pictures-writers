@@ -73,7 +73,7 @@ ESLint rejects `$queryRawUnsafe`, `$executeRawUnsafe` and `Prisma.raw`. The rare
 
 tRPC lives in `src/trpc/`: routers in `routers/_app.ts`, context and init in `init.ts`, React client in `client.tsx`, server caller in `server.tsx`. `protectedProcedure` checks the Better Auth session.
 
-Some features use App Router API routes directly under `src/app/api/` — admin CRUD, checkout, media, products, UploadThing, webhooks. Both patterns are live; match the feature you are editing rather than introducing a third pattern.
+Some features use App Router API routes directly under `src/app/api/` — admin CRUD, checkout, media, products, webhooks. Both patterns are live; match the feature you are editing rather than introducing a third pattern.
 
 ## Build and Deployment
 

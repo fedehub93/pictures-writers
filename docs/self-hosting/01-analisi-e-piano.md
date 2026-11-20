@@ -81,9 +81,12 @@ Questo documento fotografa **tutto ciò che Pictures Writers usava prima della m
 | `/api/webhooks/resend/` | POST | firma Svix | Resend |
 | `/api/auth/[...all]/` | * | Better Auth | browser/admin |
 | `/api/trpc/[trpc]/` | * | sessione | browser/admin |
-| `/api/uploadthing/` | * | token UploadThing + auth | browser |
-| `/api/media/*`, `/api/admin/*`, `/api/settings/*`, `/api/users/*`, `/api/posts`, `/api/products/*`, `/api/invitations/*`, `/api/newsletter/*` | * | sessione/admin | admin e sito |
+| `/api/media/*`, `/api/files/*`, `/api/forms/<id>/attachments`, `/api/admin/*`, `/api/settings/*`, `/api/users/*`, `/api/posts`, `/api/products/*`, `/api/invitations/*`, `/api/newsletter/*` | * | sessione/admin | admin e sito |
 | `/api/database/backup/` | GET | **nessuna** | ⚠️ vedi sicurezza |
+
+> **Novembre 2026:** `/api/uploadthing/` non esiste più. Gli upload passano da `/api/media`,
+> `/api/files/*` e `/api/forms/<id>/attachments`; UploadThing sopravvive solo come driver
+> server-side per i Media storici.
 
 > ⚠️ **Problema di sicurezza preesistente:** l'endpoint `/api/database/backup/` era **pubblico** ed esportava in JSON diverse tabelle (incluse `User` e contatti email). ✅ Risolto: la route è stata rimossa in `a200ba67`. Su Vercel è già raggiungibile. Inoltre, essendo un `GET` senza `dynamic`, Next potrebbe **prerenderizzarlo** durante il build e servirne una fotografia statica. Va rimosso, protetto con `authAdmin()` o marcato `force-dynamic` **prima** del deploy. Non è un problema causato dalla VPS, ma un'occasione per sistemarlo. Vedi §9.
 
@@ -111,7 +114,7 @@ Conseguenza: **il container di build deve raggiungere PostgreSQL**. Non è un de
 - ISR (`revalidate = 86400`) + `revalidatePath` on-demand (ADR-0001). Cache locale dell'istanza.
 - `revalidateContent()` chiama `revalidatePath` su path e layout.
 - Scheduler e automazioni girano **solo** quando un cron chiama gli endpoint. Non ci sono processi in background nel container (il pump di sviluppo è disattivato in produzione).
-- UploadThing: all'epoca il browser caricava i file **direttamente** su UploadThing; il server riceveva solo i metadati. Gli allegati inbound di Resend vengono ancora copiati su UploadThing dal server. La libreria media usa invece il trasporto multipart dell'applicazione (`POST /api/media`) e il driver attivo.
+- UploadThing: all'epoca il browser caricava i file **direttamente** su UploadThing; il server riceveva solo i metadati. Oggi il browser non carica mai file verso un provider di storage: la libreria media usa il trasporto multipart dell'applicazione (`POST /api/media`), allegati e avatar usano `POST /api/files/*` e i moduli pubblici `POST /api/forms/<id>/attachments`, mentre il server scrive con il driver attivo. Gli allegati inbound di Resend vengono copiati dal server nello stesso storage. UploadThing resta solo come driver server-side finché `UPLOADTHING_TOKEN` è configurato, e i Media storici possono ancora essere letti dal browser sul dominio del provider.
 - Le email escono verso SendGrid/Resend.
 - Stripe: checkout verso Stripe, webhook in ingresso.
 - `sharp` viene usato **solo nei job di processing** (backfill dei metadati ora; generazione delle rendition al momento dell'upload in seguito). Durante una visita la VPS non tocca le immagini: un loader custom di `next/image` serve la rendition già presente sul CDN e ripiega sull'originale.

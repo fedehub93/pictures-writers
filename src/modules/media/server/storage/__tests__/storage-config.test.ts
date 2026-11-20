@@ -13,12 +13,27 @@ import {
 } from "../driver";
 
 describe("storageConfigFromEnv", () => {
-  it("uses UploadThing by default", () => {
-    expect(storageConfigFromEnv({})).toEqual({ driver: "uploadthing" });
+  it("falls back to local disk when nothing is configured", () => {
+    expect(storageConfigFromEnv({})).toEqual({
+      driver: "local",
+      root: path.resolve(".media-storage"),
+    });
+  });
+
+  it("does not select the provider from a token alone", () => {
+    expect(storageConfigFromEnv({ UPLOADTHING_TOKEN: "secret" })).toEqual({
+      driver: "local",
+      root: path.resolve(".media-storage"),
+    });
   });
 
   it("passes the UploadThing credential to the UploadThing driver only", () => {
-    expect(storageConfigFromEnv({ UPLOADTHING_TOKEN: "secret" })).toEqual({
+    expect(
+      storageConfigFromEnv({
+        MEDIA_STORAGE_DRIVER: "uploadthing",
+        UPLOADTHING_TOKEN: "secret",
+      }),
+    ).toEqual({
       driver: "uploadthing",
       token: "secret",
     });
@@ -77,8 +92,8 @@ describe("storageDriverNameFromSetting", () => {
     ).toBe("local");
   });
 
-  it("keeps today's driver when neither the setting nor the environment names one", () => {
-    expect(storageDriverNameFromSetting(undefined, {})).toBe("uploadthing");
+  it("falls back to local disk when neither the setting nor the environment names one", () => {
+    expect(storageDriverNameFromSetting(undefined, {})).toBe("local");
   });
 
   it("ignores a stored value the application does not know", () => {

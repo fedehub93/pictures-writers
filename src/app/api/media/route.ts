@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 
-import { MediaType } from "@/generated/prisma";
 import { authAdmin } from "@/lib/auth-service";
 
 import {
@@ -15,16 +14,10 @@ import { resolveActiveStorageDriver } from "@/modules/media/server/storage";
 
 import { checkUploadFile, writeTemporaryUpload } from "./_lib/upload-transport";
 
-type MediaUploadPayload = Partial<MediaUploadSource> & { override?: boolean };
-
-function isMultipartRequest(req: Request): boolean {
-  const contentType = req.headers.get("content-type") ?? "";
-  return contentType.includes("multipart/form-data");
-}
-
 /**
- * Machine-readable upload failures: the admin UI can tell an oversize file
- * (answered by the transport itself), an exceeded quota and a duplicate apart.
+ * Machine-readable upload failures: the admin UI can tell a body that is not
+ * multipart, an oversize file (answered by the transport itself), an exceeded
+ * quota and a duplicate apart.
  */
 function mediaUploadErrorResponse(error: unknown): NextResponse {
   if (error instanceof DuplicateMediaError) {
@@ -46,6 +39,11 @@ function mediaUploadErrorResponse(error: unknown): NextResponse {
   return new NextResponse("Internal Error", { status: 500 });
 }
 
+/**
+ * The library's only upload transport. The browser posts the file itself as
+ * multipart; every byte is written by the active driver, so choosing local
+ * disk needs no provider account.
+ */
 async function handleMultipartUpload(req: Request): Promise<Response> {
   const { driver, name: driverName } = await resolveActiveStorageDriver();
   const form = await req.formData();
@@ -72,12 +70,10 @@ async function handleMultipartUpload(req: Request): Promise<Response> {
 
   const source: MediaUploadSource = {
     key: tempKey,
-    url: await driver.url(tempKey),
     name: form.get("name")?.toString() || file.name,
     type: checked.type,
     altText: form.get("altText")?.toString() || null,
     mimeType: mimeType || null,
-    size: file.size,
   };
 
   try {
@@ -86,9 +82,6 @@ async function handleMultipartUpload(req: Request): Promise<Response> {
       storageDriver: driverName,
       source,
       override,
-      // The bytes reached storage through this endpoint, so every Media type is
-      // written under its own revision and records the driver that wrote it.
-      storeUploadedObject: true,
     });
 
     return NextResponse.json(media);
@@ -108,42 +101,18 @@ export async function POST(req: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    if (isMultipartRequest(req)) {
-      return handleMultipartUpload(req).catch(mediaUploadErrorResponse);
-    }
-
-    const values = (await req.json()) as MediaUploadPayload;
-
-    if (!values.name || !values.url) {
+    const contentType = req.headers.get("content-type") ?? "";
+    if (!contentType.includes("multipart/form-data")) {
       return NextResponse.json(
-        { error: "A name and an uploaded file are required." },
-        { status: 400 },
+        {
+          code: "UNSUPPORTED_CONTENT_TYPE",
+          error: "Media uploads must be multipart/form-data.",
+        },
+        { status: 415 },
       );
     }
 
-    const source: MediaUploadSource = {
-      key: values.key ?? null,
-      url: values.url,
-      name: values.name,
-      type: values.type ?? MediaType.FILE,
-      altText: values.altText ?? null,
-      mimeType: values.mimeType ?? null,
-      size: values.size ?? null,
-    };
-
-    try {
-      const { driver, name: driverName } = await resolveActiveStorageDriver();
-      const media = await createMediaFromUpload({
-        driver,
-        storageDriver: driverName,
-        source,
-        override: values.override === true,
-      });
-
-      return NextResponse.json(media);
-    } catch (error) {
-      return mediaUploadErrorResponse(error);
-    }
+    return handleMultipartUpload(req).catch(mediaUploadErrorResponse);
   } catch (error) {
     console.log("[MEDIA_POST]", error);
     return new NextResponse("Internal Error", { status: 500 });

@@ -446,7 +446,6 @@ describe("GET /media/<key>", () => {
       storageDriver: "uploadthing",
       source: {
         key: sourceKey,
-        url: `https://fake-app.ufs.sh/f/${sourceKey}`,
         name: "Fresh remote image",
         type: MediaType.IMAGE,
         altText: null,

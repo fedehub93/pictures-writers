@@ -133,6 +133,21 @@ describe("the storage choice in the media library", () => {
     }
   });
 
+  it("writes a new upload to local disk when the Installation never chose a driver", async () => {
+    await resetStorageDriverSetting();
+    delete process.env.MEDIA_STORAGE_DRIVER;
+
+    const response = await postMedia(
+      multipartRequest(await createPng(), "Fresh installation"),
+    );
+    const media = await response.json();
+    mediaIds.push(media.id);
+
+    expect(response.status).toBe(200);
+    expect(media.storageDriver).toBe("local");
+    expect(media.url).toMatch(new RegExp(`^/media/${media.key}`));
+  });
+
   it("writes a new upload to local disk and serves it from /media/<key>", async () => {
     await setStorageDriverSetting("local");
 

@@ -18,7 +18,9 @@ export type { StorageDriverChoice };
 
 /**
  * The active storage driver, resolved per request in this order: the choice
- * saved in Installation settings, then the environment, then today's default.
+ * saved in Installation settings, then the environment, then local disk. Local
+ * is the fallback because a fresh Installation must upload with no provider
+ * account; an Installation on a provider records that choice explicitly.
  *
  * Nothing captures the result at module load: saving the setting in the media
  * library is visible to the next upload without a restart or a redeploy. Only

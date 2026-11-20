@@ -229,31 +229,6 @@ describe("media quota", () => {
     expect(status.reserveBytes).toBe(2 * MB);
   });
 
-  it("refuses a plain Media row past the quota and creates no row", async () => {
-    await setMediaQuotaMb(1);
-
-    const name = `quota-plain-${randomUUID()}`;
-
-    await expect(
-      createMediaFromUpload({
-        driver,
-        storageDriver: "local",
-        source: {
-          key: null,
-          url: `/media/${name}`,
-          name,
-          type: MediaType.FILE,
-          size: 2 * MB,
-        },
-      }),
-    ).rejects.toBeInstanceOf(MediaQuotaExceededError);
-
-    await expect(db.media.count({ where: { name } })).resolves.toBe(0);
-    await expect(
-      db.storedFile.count({ where: { media: { name } } }),
-    ).resolves.toBe(0);
-  });
-
   it("removes the written objects when the check before the row fails", async () => {
     const baseline = await getMediaUsageBytes();
     const quotaMb = Math.ceil((baseline + 1) / MB);
@@ -275,7 +250,6 @@ describe("media quota", () => {
         storageDriver: "local",
         source: {
           key: sourceKey,
-          url: `/media/${sourceKey}`,
           name,
           type: MediaType.IMAGE,
           mimeType: "image/png",
@@ -307,14 +281,11 @@ describe("media quota", () => {
       createMediaFromUpload({
         driver,
         storageDriver: "local",
-        storeUploadedObject: true,
         source: {
           key: sourceKey,
-          url: `/media/${sourceKey}`,
           name,
           type: MediaType.FILE,
           mimeType: "application/pdf",
-          size: bytes.byteLength,
         },
       }),
     ).rejects.toBeInstanceOf(MediaQuotaExceededError);
@@ -337,7 +308,6 @@ describe("media quota", () => {
         storageDriver: "local",
         source: {
           key: sourceKey,
-          url: `/media/${sourceKey}`,
           name: `broken-${randomUUID()}`,
           type: MediaType.IMAGE,
           mimeType: "image/png",
