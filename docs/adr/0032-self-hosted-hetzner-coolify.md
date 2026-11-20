@@ -22,3 +22,5 @@ Consequences:
 - **Keep Vercel + Neon**: no server maintenance, but split runtime/database ownership, serverless limits and a scheduler that depends on an external cron anyway. Rejected.
 - **Single VPS with Coolify (chosen)**: one place for app, database, TLS, backups and cron; portable Docker deployment; more operational work.
 - **Other managed platforms (Fly.io, Railway, Render)**: still split the runtime and database across providers and add a new vendor-specific deployment model. Rejected.
+
+**Revision (2026-11) - media storage can be local.** ADR-0026 later made the local driver a first-class option: the active driver for new uploads is an Installation setting, while delivery, replacement and deletion resolve the driver recorded on each Media, and the existing provider Media keep their addresses. UploadThing therefore stays external only for the Media already there and for an Installation that keeps choosing it; the email and payment providers are unchanged.

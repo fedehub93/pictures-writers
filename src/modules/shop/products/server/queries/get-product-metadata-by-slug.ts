@@ -3,11 +3,12 @@ import { Metadata } from "next";
 import { getSettings } from "@/data/settings";
 
 import { db } from "@/shared/lib/db";
+import { absoluteMediaUrl } from "@/modules/media/server/media-url";
 
 export async function getProductMetadataBySlug(
   slug: string,
 ): Promise<Metadata | null> {
-  const { siteName, siteShopUrl } = await getSettings();
+  const { siteName, siteUrl, siteShopUrl } = await getSettings();
 
   const root = await db.productRoot.findFirst({
     where: {
@@ -32,6 +33,12 @@ export async function getProductMetadataBySlug(
     return null;
   }
 
+  // Stored Media addresses are relative; social metadata needs one a crawler
+  // can fetch without knowing the site.
+  const coverImageUrl = version.imageCover
+    ? absoluteMediaUrl(version.imageCover.url, siteUrl)
+    : null;
+
   return {
     title: version.seo.title,
     description: version.seo.description,
@@ -54,11 +61,11 @@ export async function getProductMetadataBySlug(
         version.seo.ogTwitterDescription || version.seo.description || "",
       url: version.seo.ogTwitterUrl || "",
       siteName: siteName!,
-      images: version.imageCover
+      images: coverImageUrl
         ? [
             {
-              url: version.imageCover.url,
-              alt: version.imageCover.altText || "",
+              url: coverImageUrl,
+              alt: version.imageCover?.altText || "",
             },
           ]
         : [],
@@ -73,7 +80,7 @@ export async function getProductMetadataBySlug(
       title: version.seo.ogTwitterTitle || version.seo.title,
       description:
         version.seo.ogTwitterDescription || version.seo.description || "",
-      images: version.imageCover ? [version.imageCover.url] : [],
+      images: coverImageUrl ? [coverImageUrl] : [],
       creator: `${version.user!.firstName} ${version.user!.lastName}`,
     },
   };

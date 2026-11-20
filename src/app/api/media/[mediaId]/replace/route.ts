@@ -2,15 +2,14 @@ import { NextResponse } from "next/server";
 
 import { authAdmin } from "@/lib/auth-service";
 
-import type { MediaReplacementSource } from "@/modules/media/server/media-service";
-import {
-  MediaNotFoundError,
-  MediaProcessingError,
-  replaceMediaFile,
-} from "@/modules/media/server/media-service";
-import { getStorageDriver } from "@/modules/media/server/storage";
+import { replaceMediaFile } from "@/modules/media/server/media-service";
+import { resolveActiveStorageDriver } from "@/modules/media/server/storage";
 
-type MediaReplacementPayload = Partial<MediaReplacementSource>;
+import { mediaErrorResponse } from "../../_lib/media-error-response";
+import {
+  checkUploadFile,
+  writeTemporaryUpload,
+} from "../../_lib/upload-transport";
 
 export async function POST(
   req: Request,
@@ -24,43 +23,51 @@ export async function POST(
 
   try {
     const user = await authAdmin();
-    const values = (await req.json()) as MediaReplacementPayload;
 
     if (!user) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    if (!values.key) {
+    const contentType = req.headers.get("content-type") ?? "";
+    if (!contentType.includes("multipart/form-data")) {
       return NextResponse.json(
         { error: "A replacement file is required." },
         { status: 400 },
       );
     }
 
-    const source: MediaReplacementSource = {
-      key: values.key,
-      mimeType: values.mimeType ?? null,
-    };
+    const form = await req.formData();
+    const file = form.get("file");
+
+    if (!(file instanceof File)) {
+      return NextResponse.json(
+        { error: "A replacement file is required." },
+        { status: 400 },
+      );
+    }
+
+    const checked = checkUploadFile(file);
+
+    if (!checked.ok) return checked.response;
+
+    // Replace follows the same transport as an upload: the bytes enter through
+    // the endpoint and are written by the active driver, never by the provider
+    // the client happened to reach.
+    const { driver, name } = await resolveActiveStorageDriver();
+    const tempKey = await writeTemporaryUpload(driver, file, checked.mimeType);
 
     try {
-      const media = await replaceMediaFile({
-        driver: getStorageDriver(),
+      const result = await replaceMediaFile({
+        driver,
+        storageDriver: name,
         mediaId,
-        source,
+        source: { key: tempKey, mimeType: checked.mimeType || null },
       });
 
-      return NextResponse.json(media);
+      return NextResponse.json(result);
     } catch (error) {
-      if (error instanceof MediaNotFoundError) {
-        return NextResponse.json({ error: error.message }, { status: 404 });
-      }
-
-      if (error instanceof MediaProcessingError) {
-        console.log("[MEDIA_REPLACE]", error);
-        return NextResponse.json({ error: error.message }, { status: 422 });
-      }
-
-      throw error;
+      // The service removes the temporary object on every outcome.
+      return mediaErrorResponse(error, "[MEDIA_REPLACE]");
     }
   } catch (error) {
     console.log("[MEDIA_REPLACE]", error);

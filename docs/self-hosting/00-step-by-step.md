@@ -205,7 +205,7 @@ Obiettivo: dimostrare che **tutte** le funzioni operano come su Vercel.
 - [ ] Login/logout/reset password, ruoli, inviti.
 - [ ] Creazione/modifica/pubblicazione contenuti.
 - [ ] Scheduling + endpoint scheduler.
-- [ ] UploadThing (upload, delete, rewrite `/assets/:id`).
+- [ ] Media: upload, delete, `/assets/:id` per i Media storici, driver scelto (UploadThing o `local`).
 - [ ] Form + reCAPTCHA.
 - [ ] Email outbound.
 - [ ] Email inbound + allegati.

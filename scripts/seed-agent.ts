@@ -4,6 +4,7 @@
  *
  *   npm run agent:seed
  *
+ * It applies pending migrations first, so a schema change does not need a manual step.
  * Idempotent and it doubles as the probe's reset: the page content is rewritten from the
  * fixture on every run, so a probe that typed into the canvas starts from a known state.
  *
@@ -17,6 +18,7 @@
  * would create accounts and pages next to real data.
  */
 
+import { execSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -24,6 +26,7 @@ import { resolve } from "node:path";
 import { hashPassword } from "better-auth/crypto";
 
 import { ContentStatus, type SiteRegionKey } from "@/generated/prisma";
+import { createPostVersionSeo } from "@/modules/blog/posts/lib/post-seo";
 import { createPage } from "@/modules/pages/server/create-page";
 import { SITE_REGION_KEYS } from "@/modules/site-regions/constants";
 import { db } from "@/shared/lib/db";
@@ -100,6 +103,18 @@ function assertAgentDatabase() {
       `Refusing to seed ${url.hostname}/${database}: this script writes only to ${AGENT_DATABASE} on localhost.`,
     );
   }
+}
+
+/**
+ * Apply pending migrations before the first query. The agent database is
+ * disposable, so a schema change is safe to apply here, and `agent:seed`
+ * stays a one-command reset rather than asking for a separate migrate step.
+ */
+function runMigrations() {
+  execSync("npx prisma migrate deploy", {
+    stdio: "inherit",
+    env: { ...process.env, PRISMA_SCHEMA_DISABLE_ADVISORY_LOCK: "true" },
+  });
 }
 
 async function upsertProbeUser() {
@@ -202,8 +217,44 @@ async function upsertProbePage(userId: string) {
   return existing.id;
 }
 
+/**
+ * A post version owns a SEO row from creation, and the admin post page reads it
+ * without a null guard: a version without one crashes the page on CharsCounter.
+ */
+async function createProbePostSeo(): Promise<string> {
+  const seo = await createPostVersionSeo(db, PROBE_POST_TITLE, {});
+
+  return seo.id;
+}
+
+/** Repair a version a previous seed created without its SEO row. */
+async function ensureProbePostSeo(
+  versionId: string,
+  seoId: string | null,
+): Promise<string> {
+  if (seoId) {
+    await db.seo.update({
+      where: { id: seoId },
+      data: { title: PROBE_POST_TITLE },
+    });
+
+    return seoId;
+  }
+
+  const created = await createProbePostSeo();
+
+  await db.postVersion.update({
+    where: { id: versionId },
+    data: { seoId: created },
+  });
+
+  return created;
+}
+
 /** Create the single published version the static build needs, plus its author edge. */
 async function createProbePostVersion(rootId: string, userId: string) {
+  const seoId = await createProbePostSeo();
+
   return db.postVersion.create({
     data: {
       rootId,
@@ -212,6 +263,7 @@ async function createProbePostVersion(rootId: string, userId: string) {
       status: ContentStatus.PUBLISHED,
       publishedAt: new Date(),
       tiptapBodyData: PROBE_POST_BODY,
+      seoId,
       userId,
       authors: { create: [{ userId, sort: 0 }] },
     },
@@ -254,6 +306,18 @@ async function upsertProbePost(userId: string) {
     });
 
     return existing.id;
+  }
+
+  await ensureProbePostSeo(liveVersionId, existing.liveVersion?.seoId ?? null);
+
+  if (
+    existing.currentVersionId &&
+    existing.currentVersionId !== liveVersionId
+  ) {
+    await ensureProbePostSeo(
+      existing.currentVersionId,
+      existing.currentVersion?.seoId ?? null,
+    );
   }
 
   await db.postVersion.update({
@@ -373,6 +437,7 @@ function writePageRootId(rootId: string) {
 
 async function main() {
   assertAgentDatabase();
+  runMigrations();
 
   const user = await upsertProbeUser();
   const rootId = await upsertProbePage(user.id);

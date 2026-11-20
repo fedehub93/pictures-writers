@@ -3,11 +3,13 @@ import "server-only";
 import { db } from "@/shared/lib/db";
 import { normalizeEmail } from "@/shared/lib/email";
 import { htmlToPlainText } from "@/modules/mails/lib/html-to-text";
-import type {
-  EmailProviderAdapter,
-  OutboundAttachment,
-} from "@/modules/mails/lib/types";
+import type { EmailProviderAdapter } from "@/modules/mails/lib/types";
 
+import {
+  AttachmentResolutionError,
+  resolveOutboundAttachments,
+  type AttachmentInput,
+} from "./attachments";
 import { stampConversationActivity } from "./conversation-activity";
 import {
   assertTransactionalQuota,
@@ -19,7 +21,8 @@ import { resolveFrom } from "./sender";
 export type NewMessageErrorCode =
   | "ACCOUNT_NOT_FOUND"
   | "QUOTA_EXCEEDED"
-  | "PROVIDER_ERROR";
+  | "PROVIDER_ERROR"
+  | "ATTACHMENT_NOT_FOUND";
 
 export class NewMessageError extends Error {
   constructor(
@@ -35,7 +38,7 @@ export interface SendNewMessageInput {
   to: string;
   subject: string;
   bodyHtml: string;
-  attachments?: OutboundAttachment[];
+  attachments?: AttachmentInput[];
   /** Injected adapter for testing; resolved from settings otherwise. */
   adapter?: EmailProviderAdapter;
 }
@@ -78,6 +81,16 @@ export async function sendNewMessage(
   const recipient = normalizeEmail(input.to) ?? input.to.trim().toLowerCase();
   const bodyText = htmlToPlainText(input.bodyHtml);
 
+  let resolvedAttachments;
+  try {
+    resolvedAttachments = await resolveOutboundAttachments(input.attachments);
+  } catch (error) {
+    if (error instanceof AttachmentResolutionError) {
+      throw new NewMessageError(error.message, "ATTACHMENT_NOT_FOUND");
+    }
+    throw error;
+  }
+
   const result = await adapter.sendOneToOne({
     to: recipient,
     from,
@@ -85,7 +98,7 @@ export async function sendNewMessage(
     html: input.bodyHtml,
     text: bodyText,
     replyTo: account.email,
-    attachments: input.attachments,
+    attachments: resolvedAttachments.provider,
   });
 
   if (!result.success) {
@@ -141,7 +154,7 @@ export async function sendNewMessage(
           fromAddress: from,
           toAddresses: [recipient],
           externalId: result.externalId,
-          attachments: input.attachments,
+          attachments: resolvedAttachments.create,
           sentAt: new Date(),
         }),
       });

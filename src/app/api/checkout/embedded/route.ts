@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
+import { getSettings } from "@/data/settings";
+import { absoluteMediaUrl } from "@/modules/media/server/media-url";
 
 export async function POST(req: Request) {
   const { productId } = await req.json();
@@ -52,6 +54,10 @@ export async function POST(req: Request) {
       return new NextResponse("Not found", { status: 400 });
     }
 
+    // Stripe fetches the image itself, so a stored relative Media address has
+    // to be composed against the Installation's canonical URL.
+    const { siteUrl } = await getSettings();
+
     const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = [
       {
         quantity: 1,
@@ -60,7 +66,10 @@ export async function POST(req: Request) {
           product_data: {
             name: product.title,
             description: "PRODUCT DESCRIPTION",
-            images: product.imageCover ? [product.imageCover.url] : [],
+            images:
+              product.imageCover && siteUrl
+                ? [absoluteMediaUrl(product.imageCover.url, siteUrl)]
+                : [],
           },
           unit_amount: Math.round(1 * 100),
         },

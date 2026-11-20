@@ -41,6 +41,23 @@ model Settings {
   /// cron triggers and to the Wait node's time-of-day anchoring.
   timezone String? @default("Europe/Rome")
 
+  /// Maximum size of the media library in megabytes, counted over originals
+  /// plus generated renditions and including archived Media.
+  mediaQuotaMb Int @default(5120)
+
+  /// Maximum megabytes of that quota files of public origin may occupy.
+  /// Public uploads beyond it are refused; internal uploads may use the whole
+  /// quota. Zero refuses every public upload. Default: 512 MB (a tenth of the
+  /// default quota), so an Installation with no public forms never reaches it.
+  /// Keep the default equal to PUBLIC_ORIGIN_RESERVE_DEFAULT_MB in
+  /// src/modules/media/lib/quota.ts; the migration carries the same literal.
+  publicOriginReserveMb Int @default(512)
+
+  /// Active storage driver for new uploads ("local" or "uploadthing"). NULL
+  /// means no choice was made yet and the environment decides, so an existing
+  /// Installation keeps writing where it always has.
+  storageDriver String?
+
   /// [Scripts]
   scripts Json @default("null") @db.JsonB
 
@@ -174,6 +191,11 @@ model User {
 
   profileImage   Media?  @relation(fields: [profileImageId], references: [id], onDelete: Cascade)
   profileImageId String?
+
+  /// The avatar file this user owns. The image column stays the canonical
+  /// address, because the auth layer owns it; this relation is what makes the
+  /// file die with the user.
+  avatarFile StoredFile? @relation("UserAvatarFile")
 
   accounts Account[]
   sessions Session[]
@@ -318,6 +340,77 @@ enum MediaType {
   VIDEO
 }
 
+/// The role a stored file has for the Installation. One row of StoredFile
+/// holds the location of the bytes; the role row (Media, Attachment, Avatar)
+/// holds what the product does with them.
+enum StoredFileKind {
+  MEDIA
+  ATTACHMENT
+  AVATAR
+}
+
+/// Who may create a stored file. Public-origin files are subject to the
+/// reserve so they can never block an internal upload.
+enum StoredFileOrigin {
+  INTERNAL
+  PUBLIC
+}
+
+/// Where the bytes of one file are. The key is unique and the driver is
+/// recorded per file, so choosing a driver never moves a byte and a move
+/// changes this row only. `remoteUrl` is null for a local file.
+model StoredFile {
+  id String @id @default(uuid())
+
+  key         String @unique
+  driver      String
+  remoteUrl   String? @db.Text
+  contentType String?
+  size        Int?
+  checksum    String?
+  kind        StoredFileKind   @default(MEDIA)
+  origin      StoredFileOrigin @default(INTERNAL)
+
+  /// The Media this file belongs to. The role keeps the relation so the
+  /// backfill can create a record without rewriting the Media's own row.
+  mediaId String? @unique
+  media   Media?  @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+  /// The user whose avatar this file is. `SetNull` rather than `Cascade`: if
+  /// the objects cannot be removed through their recorded driver, the row must
+  /// survive so the audit can report it instead of losing the location.
+  avatarOwnerId String? @unique
+  avatarOwner   User?   @relation("UserAvatarFile", fields: [avatarOwnerId], references: [id], onDelete: SetNull)
+
+  /// The attachment role, when this file is one.
+  attachment Attachment?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([driver])
+  @@index([kind])
+  @@index([checksum])
+}
+
+/// The purge journal: one object a Re-home left behind on the driver it moved
+/// away from. The purge deletes exactly what a move recorded, because a
+/// pre-seam key is not namespaced and cannot be found by a prefix scan.
+/// `createdAt` starts the grace window; the composite unique makes a resumed
+/// run idempotent.
+model StoragePurgeEntry {
+  id String @id @default(uuid())
+
+  driver String
+  key    String
+  size   Int?
+
+  createdAt DateTime @default(now())
+
+  @@unique([driver, key])
+  @@index([driver, createdAt])
+}
+
 model Media {
   id String @id @default(uuid())
 
@@ -331,6 +424,7 @@ model Media {
   mimeType  String?
   checksum  String?
   revision  Int       @default(1)
+  storageDriver String?
   /// [MediaMetadata]
   metadata  Json?     @db.JsonB
   /// [MediaRenditions]
@@ -344,6 +438,9 @@ model Media {
   products     ProductGallery[]
   user         User[]
   pageVersions PageVersion[]
+
+  /// The location of this Media's bytes, one-to-one.
+  storedFile StoredFile?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -950,7 +1047,7 @@ model EmailMessage {
 
   sentAt DateTime?
 
-  attachments EmailAttachment[]
+  attachments Attachment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -959,20 +1056,29 @@ model EmailMessage {
   @@index([externalId])
 }
 
-model EmailAttachment {
+/// The attachment role of a StoredFile. Exactly one owner: the message that
+/// carried or sent it, or the form submission it belongs to. The file itself
+/// owns the bytes, address, content type and size, so those live nowhere else.
+model Attachment {
   id String @id @default(uuid())
 
-  emailMessage   EmailMessage @relation(fields: [emailMessageId], references: [id], onDelete: Cascade)
-  emailMessageId String
+  emailMessage   EmailMessage? @relation(fields: [emailMessageId], references: [id], onDelete: Cascade)
+  emailMessageId String?
 
-  filename    String
-  contentType String
-  size        Int?
-  url         String
-  externalId  String?
+  formSubmission   FormSubmission? @relation(fields: [formSubmissionId], references: [id], onDelete: Cascade)
+  formSubmissionId String?
+
+  filename   String
+  externalId String?
+
+  storedFileId String     @unique
+  storedFile   StoredFile @relation(fields: [storedFileId], references: [id], onDelete: Restrict)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([emailMessageId])
+  @@index([formSubmissionId])
 }
 
 enum ProductType {
@@ -1301,7 +1407,9 @@ model FormSubmission {
 
   email String?
   /// [SubmissionData]
-  data  Json    @db.JsonB // dati sottomessi dall’utente
+  data  Json    @db.JsonB // dati sottomessi dall'utente
+
+  attachments Attachment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

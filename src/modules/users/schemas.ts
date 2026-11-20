@@ -18,7 +18,9 @@ export const updateUserSchema = z.object({
   firstName: z.string().trim().max(100).nullable().optional(),
   lastName: z.string().trim().max(100).nullable().optional(),
   bio: z.string().trim().max(2000).nullable().optional(),
-  imageUrl: z.string().url().nullable().optional(),
+  // A stored avatar is addressed by its canonical relative path, so this is
+  // validated by the avatar resolver rather than by URL syntax alone.
+  imageUrl: z.string().trim().max(2048).nullable().optional(),
   roleId: z.string().trim().min(1),
 });
 

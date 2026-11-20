@@ -98,7 +98,7 @@ openssl rand -base64 32
 
 | Variabile | Esempio | Build | Runtime | Segreta | Note |
 |---|---|:---:|:---:|:---:|---|
-| `UPLOADTHING_TOKEN` | `<token>` | ❌ | ✅ | ✅ | Invariato |
+| `UPLOADTHING_TOKEN` | `<token>` | ❌ | ✅ | ✅ | Serve ai Media storici e ad UploadThing come driver. Senza token l'opzione UploadThing è visibile ma disabilitata, e l'audit segnala le righe non raggiungibili. |
 
 ### 3.6 Stripe
 
@@ -141,6 +141,19 @@ Google Tag Manager non è più una variabile d'ambiente: il container id si conf
 | `NODE_OPTIONS` | `--max-old-space-size=3072` | ✅ | ❌ | ❌ | Evita OOM |
 | `NEXT_TELEMETRY_DISABLED` | `1` | ✅ | ✅ | ❌ | |
 
+### 3.11 Media storage
+
+| Variabile | Esempio | Build | Runtime | Segreta | Note |
+|---|---|:---:|:---:|:---:|---|
+| `MEDIA_STORAGE_DRIVER` | `local` / `uploadthing` | ❌ | ✅ | ❌ | Fallback per i nuovi upload quando nessun driver è stato scelto in Admin → Media. Il driver attivo è un'impostazione dell'Installazione e ha la precedenza. Default `local`, così un'Installazione nuova carica senza account provider; un'Installazione già sul provider deve registrare `uploadthing` esplicitamente. |
+| `MEDIA_STORAGE_LOCAL_ROOT` | `/data/media` | ❌ | ✅ | ❌ | Percorso nel container dove il driver locale scrive i file. Default `.media-storage` nella directory del progetto (sviluppo). In produzione deve stare su un volume persistente. |
+| `INSTALLATION_SLUG` | `tenant-xyz` | ❌ | ✅ | ❌ | Segmento iniziale di ogni nuova storage key. Default `default` se assente. |
+| `UPLOADTHING_TOKEN` | `<token>` | ❌ | ✅ | ✅ | Vedi §3.5. Richiesto per i Media storici e per scegliere UploadThing dal backoffice: senza token l'opzione è visibile ma disabilitata nella libreria media. |
+
+> Il driver `local` richiede un **volume persistente** montato su `MEDIA_STORAGE_LOCAL_ROOT`. Senza di esso, un redeploy cancellerebbe i file caricati. Il volume va incluso nel backup insieme al database: procedura in `08-operations-runbook.md` §4bis.5.
+
+> I file serviti dal driver `local` hanno sempre l'indirizzo canonico `/media/<key>`, servito dalla route di delivery. Non esiste una variabile per cambiare il prefisso: un eventuale `MEDIA_STORAGE_LOCAL_PUBLIC_URL` rimasto in un file di ambiente viene ignorato.
+
 ---
 
 ## 4. Blocco pronto (produzione)
@@ -177,6 +190,14 @@ NEXT_PUBLIC_RECAPTCHA_SITE_KEY=<DAL_PASSWORD_MANAGER>
 RECAPTCHA_SECRET_KEY=<DAL_PASSWORD_MANAGER>
 
 SCHEDULED_PUBLICATION_SECRET=<DAL_PASSWORD_MANAGER>
+
+# Media storage. Il driver attivo per i nuovi upload si sceglie in Admin → Media;
+# queste variabili restano il fallback per un'Installazione che non ha ancora scelto.
+# Per i nuovi upload su disco, monta un volume persistente e imposta il root:
+# MEDIA_STORAGE_DRIVER=local
+# MEDIA_STORAGE_LOCAL_ROOT=/data/media
+# INSTALLATION_SLUG=default
+# Tieni UPLOADTHING_TOKEN anche con local: serve ai Media storici e alla loro pulizia.
 
 NIXPACKS_NODE_VERSION=24
 NODE_OPTIONS=--max-old-space-size=3072

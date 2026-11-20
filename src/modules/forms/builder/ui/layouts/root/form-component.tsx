@@ -17,17 +17,18 @@ import { Alert, AlertDescription } from "@/shared/ui/alert";
 import type { FormRootInstance } from "../../../types/core";
 
 import { FormNodeRenderer } from "../../../runner/form-node-renderer";
+import { FormUploadProvider } from "../../../runner/form-upload-context";
 import { generateFormSchema } from "../../../lib/generate-form-schema";
 import { generateDefaultValues } from "../../../lib/generate-default-values";
 
 export function RootFormComponent({
-  id,
+  formId,
   elementInstance,
   onSubmitHandler,
   gtmEventName,
   footer,
 }: {
-  id: string;
+  formId: string;
   elementInstance: FormRootInstance;
   onSubmitHandler: (values: Record<string, any>) => Promise<FormActionResponse>;
   gtmEventName: string | null;
@@ -90,30 +91,32 @@ export function RootFormComponent({
 
   return (
     <FormProvider {...methods}>
-      <form
-        onSubmit={methods.handleSubmit(onSubmit)}
-        className="w-full gap-y-4 flex flex-col"
-      >
-        {elementInstance.children.map((node) => (
-          <FormNodeRenderer key={node.id} node={node} />
-        ))}
+      <FormUploadProvider formId={formId}>
+        <form
+          onSubmit={methods.handleSubmit(onSubmit)}
+          className="w-full gap-y-4 flex flex-col"
+        >
+          {elementInstance.children.map((node) => (
+            <FormNodeRenderer key={node.id} node={node} />
+          ))}
 
-        {error && (
-          <Alert variant="destructive">
-            <CircleAlert />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+          {error && (
+            <Alert variant="destructive">
+              <CircleAlert />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
 
-        {footer}
+          {footer}
 
-        {success && (
-          <Alert>
-            <CircleCheck />
-            <AlertDescription>{success}</AlertDescription>
-          </Alert>
-        )}
-      </form>
+          {success && (
+            <Alert>
+              <CircleCheck />
+              <AlertDescription>{success}</AlertDescription>
+            </Alert>
+          )}
+        </form>
+      </FormUploadProvider>
     </FormProvider>
   );
 }

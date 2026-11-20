@@ -4,15 +4,36 @@ import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { createStorageDriver, storageConfigFromEnv } from "../driver";
+import {
+  createStorageDriver,
+  driverForStorageDriver,
+  isUploadThingConfigured,
+  storageConfigFromEnv,
+  storageDriverNameFromSetting,
+} from "../driver";
 
 describe("storageConfigFromEnv", () => {
-  it("uses UploadThing by default", () => {
-    expect(storageConfigFromEnv({})).toEqual({ driver: "uploadthing" });
+  it("falls back to local disk when nothing is configured", () => {
+    expect(storageConfigFromEnv({})).toEqual({
+      driver: "local",
+      root: path.resolve(".media-storage"),
+    });
+  });
+
+  it("does not select the provider from a token alone", () => {
+    expect(storageConfigFromEnv({ UPLOADTHING_TOKEN: "secret" })).toEqual({
+      driver: "local",
+      root: path.resolve(".media-storage"),
+    });
   });
 
   it("passes the UploadThing credential to the UploadThing driver only", () => {
-    expect(storageConfigFromEnv({ UPLOADTHING_TOKEN: "secret" })).toEqual({
+    expect(
+      storageConfigFromEnv({
+        MEDIA_STORAGE_DRIVER: "uploadthing",
+        UPLOADTHING_TOKEN: "secret",
+      }),
+    ).toEqual({
       driver: "uploadthing",
       token: "secret",
     });
@@ -23,13 +44,24 @@ describe("storageConfigFromEnv", () => {
       storageConfigFromEnv({
         MEDIA_STORAGE_DRIVER: "local",
         MEDIA_STORAGE_LOCAL_ROOT: "/var/media",
-        MEDIA_STORAGE_LOCAL_PUBLIC_URL: "/files",
         UPLOADTHING_TOKEN: "secret",
       }),
     ).toEqual({
       driver: "local",
       root: "/var/media",
-      publicBaseUrl: "/files",
+    });
+  });
+
+  it("ignores a leftover local public prefix", () => {
+    expect(
+      storageConfigFromEnv({
+        MEDIA_STORAGE_DRIVER: "local",
+        MEDIA_STORAGE_LOCAL_ROOT: "/var/media",
+        MEDIA_STORAGE_LOCAL_PUBLIC_URL: "/files",
+      }),
+    ).toEqual({
+      driver: "local",
+      root: "/var/media",
     });
   });
 
@@ -37,6 +69,45 @@ describe("storageConfigFromEnv", () => {
     expect(() =>
       storageConfigFromEnv({ MEDIA_STORAGE_DRIVER: "s3" }),
     ).toThrowError(/s3/);
+  });
+});
+
+describe("storageDriverNameFromSetting", () => {
+  it("lets the saved setting win over the environment", () => {
+    expect(
+      storageDriverNameFromSetting("local", {
+        MEDIA_STORAGE_DRIVER: "uploadthing",
+      }),
+    ).toBe("local");
+    expect(
+      storageDriverNameFromSetting("uploadthing", {
+        MEDIA_STORAGE_DRIVER: "local",
+      }),
+    ).toBe("uploadthing");
+  });
+
+  it("falls back to the environment when no setting was saved", () => {
+    expect(
+      storageDriverNameFromSetting(null, { MEDIA_STORAGE_DRIVER: "local" }),
+    ).toBe("local");
+  });
+
+  it("falls back to local disk when neither the setting nor the environment names one", () => {
+    expect(storageDriverNameFromSetting(undefined, {})).toBe("local");
+  });
+
+  it("ignores a stored value the application does not know", () => {
+    expect(
+      storageDriverNameFromSetting("s3", { MEDIA_STORAGE_DRIVER: "local" }),
+    ).toBe("local");
+  });
+});
+
+describe("isUploadThingConfigured", () => {
+  it("is available only while a token is configured", () => {
+    expect(isUploadThingConfigured({ UPLOADTHING_TOKEN: "secret" })).toBe(true);
+    expect(isUploadThingConfigured({ UPLOADTHING_TOKEN: "  " })).toBe(false);
+    expect(isUploadThingConfigured({})).toBe(false);
   });
 });
 
@@ -48,7 +119,6 @@ describe("createStorageDriver", () => {
       const driver = createStorageDriver({
         driver: "local",
         root,
-        publicBaseUrl: "https://cdn.example.test/media",
       });
 
       await driver.put("media-1/1/original", new Uint8Array([7]), "image/png");
@@ -57,7 +127,26 @@ describe("createStorageDriver", () => {
         new Uint8Array([7]),
       );
       await expect(driver.url("media-1/1/original")).resolves.toBe(
-        "https://cdn.example.test/media/media-1/1/original",
+        "/media/media-1/1/original",
+      );
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("composes the canonical address when a leftover public prefix is set", async () => {
+    const root = await mkdtemp(path.join(tmpdir(), "media-storage-config-"));
+
+    try {
+      const driver = driverForStorageDriver("local", {
+        MEDIA_STORAGE_LOCAL_ROOT: root,
+        MEDIA_STORAGE_LOCAL_PUBLIC_URL: "/files",
+      });
+
+      await driver.put("media-1/1/original", new Uint8Array([7]), "image/png");
+
+      await expect(driver.url("media-1/1/original")).resolves.toBe(
+        "/media/media-1/1/original",
       );
     } finally {
       await rm(root, { recursive: true, force: true });

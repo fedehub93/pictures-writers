@@ -9,10 +9,12 @@ import { getCaptchaToken } from "@/app/(home)/_components/utils/captcha";
 
 export const SubmissionFormV2 = ({
   rootId,
+  formId,
   content,
   gtmEventName,
 }: {
   rootId: string;
+  formId: string;
   content: FormRootInstance;
   gtmEventName: string | null;
 }) => {
@@ -37,7 +39,7 @@ export const SubmissionFormV2 = ({
 
   return (
     <FormRunner
-      id={rootId!}
+      formId={formId}
       onSubmitHandler={onSubmit}
       content={content!}
       gtmEventName={gtmEventName}

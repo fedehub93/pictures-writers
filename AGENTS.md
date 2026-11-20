@@ -2,7 +2,7 @@
 
 <!-- BEGIN:nextjs-agent-rules -->
 
-# This is NOT the Next.js you know
+## This is NOT the Next.js you know
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
 
@@ -30,7 +30,7 @@ Both `docker-compose.yml` and `docker-compose.dev.yml` publish these ports on `1
 
 **Ask before touching the development database.** Do not run `npm run dev:db:reset`, `docker compose down -v`, `prisma migrate reset`, `db push --force-reset`, or any `DROP`/`TRUNCATE`/`DELETE` against `pictures_writers_dev` without explicit confirmation from the user first: those commands discard data that is not reproducible from the repo. Prefer `dev:db:down` + `dev:db:up` to recreate a container (the volume survives), and ask before restoring a dump over the database as well.
 
-**Agent sessions use a second database.** `npm run dev:agent` runs `next dev` against `pictures_writers_agent`, seeded by `npm run agent:env` + `npm run agent:seed` with a probe user and one page. `pictures_writers_dev` can be a restored production dump, so an agent that reads it sees real content, credentials and session tokens; the agent environment is the boundary that keeps those out of a session. Browser probes run through `node --env-file=.env.agent scripts/builder-probe.mjs` — see `docs/agents/browser-probe.md`.
+**Agent sessions use a second database.** `npm run dev:agent` runs `next dev` against `pictures_writers_agent`, seeded by `npm run agent:env` + `npm run agent:seed` with a probe user and one page. `npm run build:agent` runs the production build against the same database, so a schema change never needs the development database. `pictures_writers_dev` can be a restored production dump, so an agent that reads it sees real content, credentials and session tokens; the agent environment is the boundary that keeps those out of a session. Browser probes run through `node --env-file=.env.agent scripts/builder-probe.mjs` — see `docs/agents/browser-probe.md`.
 
 The `dev:db:*` scripts pin their own Compose project (`pictures-writers-dev`) and `docker-compose.dev.yml`, which is separate from `docker-compose.yml`: resetting the test database cannot drop development data. Run SQL through a pipe instead of quoting it into a `-c` argument: `Get-Content q.sql | npm run -s dev:db:psql` on PowerShell, `npm run -s dev:db:psql < q.sql` on bash.
 
@@ -44,7 +44,7 @@ Tests use Vitest (`vitest.config.ts`) and live beside the source or in `__tests_
 
 ### Before committing
 
-Run `npm run check:doc-citations` when a change touches documentation or moves a file a doc names. Run `npm run lint`, `npm run typecheck` and the full test suite when it touches code. `.github/workflows/test.yml` runs all four checks on push to `main` and on pull requests. That workflow does not build, so run a production build before merging changes that touch routing, config or Prisma.
+Run `npm run check:doc-citations` when a change touches documentation or moves a file a doc names. Run `npm run lint`, `npm run typecheck` and the full test suite when it touches code. Before the last commit of a ticket that touches routing, config or Prisma, run `npm run build:agent`: the tests do not build, so only it catches a broken route handler, a server-only boundary or the Prisma binary missing from the trace. `.github/workflows/test.yml` runs lint, typecheck, doc citations, the test suite and the same build on push to `master` and on pull requests.
 
 ## Code Conventions
 
@@ -53,10 +53,13 @@ These are the implementation conventions. A reviewer judges what no tool can enf
 - **Imports**: use the path aliases in `tsconfig.json` instead of relative chains.
 - **Components**: server components by default. Interactive components import `"client-only"` at the top; vendored shadcn primitives in `src/shared/ui/` keep `"use client"`; server-only modules import `"server-only"`. The Puck client/server boundary is documented in `src/puck/config.ts` — read it before adding a directive to a block.
 - **Feature modules**: inside `src/modules/<feature>/` the subfolders are a convention rather than a rule — `server/` for procedures and queries, `ui/` for components (split `admin/` and `public/` when both exist), `hooks/`, `lib/`, `store/` for Zustand. Code moves to `src/shared/` when a second module imports it, not in anticipation.
+- **Media**: `docs/media.md` is the map (upload, delivery, key grammar, manifest, quota, known debt); read it before changing the module.
 
 ## Database
 
 The Prisma schema is `prisma/schema.prisma`; the client generates to `generated/prisma` and is imported as `@/generated/prisma`. Schema changes ship with their migration files. Prisma maps models to quoted PascalCase tables and camelCase columns (`"PageRoot"`, `"puckData"`); `\dt` in `npm run -s dev:db:psql` lists them.
+
+A migration with hand-written SQL — a data transform, a backfill, an expand/contract step — is checked against a seeded scratch database before it ships: `docs/agents/migration-check.md`.
 
 ### Raw SQL
 
@@ -70,7 +73,7 @@ ESLint rejects `$queryRawUnsafe`, `$executeRawUnsafe` and `Prisma.raw`. The rare
 
 tRPC lives in `src/trpc/`: routers in `routers/_app.ts`, context and init in `init.ts`, React client in `client.tsx`, server caller in `server.tsx`. `protectedProcedure` checks the Better Auth session.
 
-Some features use App Router API routes directly under `src/app/api/` — admin CRUD, checkout, media, products, UploadThing, webhooks. Both patterns are live; match the feature you are editing rather than introducing a third pattern.
+Some features use App Router API routes directly under `src/app/api/` — admin CRUD, checkout, media, products, webhooks. Both patterns are live; match the feature you are editing rather than introducing a third pattern.
 
 ## Build and Deployment
 

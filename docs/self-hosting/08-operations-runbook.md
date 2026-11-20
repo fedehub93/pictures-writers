@@ -12,6 +12,7 @@ Tutto ciò che serve per gestire Pictures Writers sulla VPS dopo il cutover: dep
 
 - [ ] Coolify: app e DB **Healthy**.
 - [ ] Ultimo backup DB: **Success**.
+- [ ] Ultimo backup del volume media (se usi il driver `local`): **Success**.
 - [ ] Errori ripetuti nei log runtime.
 - [ ] Spazio disco < 80%.
 - [ ] Uptime esterno: tutto verde.
@@ -28,6 +29,7 @@ Tutto ciò che serve per gestire Pictures Writers sulla VPS dopo il cutover: dep
 ### Ogni mese (30 minuti)
 
 - [ ] Test di restore del backup in un DB usa-e-getta.
+- [ ] Spazio del volume media e crescita della libreria (`du -sh` sul mount).
 - [ ] Aggiornamento Coolify (dopo release notes) in finestra di manutenzione.
 - [ ] Aggiornamento dipendenze npm (in branch, con test).
 - [ ] Review accessi: utenti admin, chiavi SSH, token.
@@ -36,9 +38,9 @@ Tutto ciò che serve per gestire Pictures Writers sulla VPS dopo il cutover: dep
 
 ### Ogni 3 mesi
 
-- [ ] Restore completo su una VPS di test.
+- [ ] Restore completo su una VPS di test, DB e volume media.
 - [ ] Rotazione dei segreti che si possono ruotare (vedi §9).
-- [ ] Verifica GDPR/subprocessors (Hetzner, Cloudflare, Resend, Stripe, UploadThing).
+- [ ] Verifica GDPR/subprocessors (Hetzner, Cloudflare, Resend, Stripe, UploadThing finché restano Media sul provider).
 - [ ] Aggiornamento major di PostgreSQL solo con procedura dedicata (mai in-place senza backup).
 
 ---
@@ -192,10 +194,11 @@ Non esiste più un fallback DNS verso Vercel/Neon: la produzione è la VPS. Il r
 1. Crea una nuova VPS dallo snapshot Hetzner (o reinstalla).
 2. Ripristina `/data/coolify/source/.env`.
 3. Riavvia Coolify.
-4. Verifica che i volumi Docker siano presenti.
-5. Se il volume del DB è perso, ripristina l'ultimo dump S3.
+4. Verifica che i volumi Docker siano presenti, incluso il volume `media-storage` montato su `/data/media`.
+5. Se il volume del DB è perso, ripristina l'ultimo dump S3. Se il volume media è perso, ripristinalo dall'archivio (4bis.5) prima di avviare l'app.
 6. Ricrea DNS se l'IP è cambiato.
 7. Verifica TLS.
+8. Esegui `npm run media:audit` e un paio di richieste a un Media locale e a uno storico.
 
 ### 4.4 RPO/RTO realistici
 
@@ -203,6 +206,7 @@ Non esiste più un fallback DNS verso Vercel/Neon: la produzione è la VPS. Il r
 |---|---|---|
 | Errore applicativo | 0 | minuti (rollback) |
 | DB corrotto | fino a 24 h (backup giornaliero) | 30–90 min |
+| Volume media perso | fino a 24 h (backup del volume, oggi locale alla VPS; off-site non ancora attivo) | 30–90 min |
 | VPS persa | fino a 24 h | 1–3 h (nuova VPS + restore) |
 | Errore umano su file | 0 (git) | minuti |
 
@@ -238,11 +242,13 @@ spiegano `AGENTS.md` e `docs/agents/browser-probe.md`.
 
 ---
 
-## 4bis. Media: consegna, backfill metadati e rendition
+## 4bis. Media: consegna, backfill, volume e audit
 
-### 4bis.1 Come vengono servite le immagini
+### 4bis.1 Come vengono serviti i media
 
-La VPS **non** ottimizza le immagini durante una visita. Un loader custom di `next/image` (`src/modules/media/lib/image-loader.ts`) restituisce l'URL di una rendition già presente sul CDN di UploadThing, oppure l'originale quando la rendition non esiste ancora. Le rendition vengono prodotte dai job di processing (upload e backfill); finché non esistono, il loader serve l'originale. `/_next/image` e i vecchi oggetti in `.next/cache/images` non sono più usati.
+La VPS **non** ottimizza le immagini durante una visita. Le rendition AVIF/WebP sono già state prodotte al momento dell'upload (o dal backfill); il loader custom di `next/image` (`src/modules/media/lib/image-loader.ts`) restituisce l'indirizzo della rendition già presente, oppure l'originale quando la rendition non esiste ancora. `/_next/image` e i vecchi oggetti in `.next/cache/images` non sono più usati.
+
+La consegna passa dalla route `GET /media/<key>`: un Media scritto dal driver `local` viene letto dal volume e inviato con `Content-Type`, `ETag`, `Cache-Control` e `Accept-Ranges`; un Media remoto riceve un `302` verso il CDN del provider. Ogni riga conserva il driver che l'ha scritta, quindi una libreria mista (Media storici su UploadThing, nuovi Media su disco) funziona senza migrazione e senza riscrivere indirizzi. Un Media storico con indirizzo assoluto non passa dalla route: il browser va direttamente al provider.
 
 La scala delle larghezze è una costante condivisa (`src/modules/media/lib/image-ladder.mjs`) tra `next.config.mjs` e il processore: il loader non può chiedere una larghezza che non venga generata.
 
@@ -259,10 +265,12 @@ MEDIA_BACKFILL_CONCURRENCY=4 npm run media:backfill-metadata
 ```
 
 - Il job processa solo `MediaType.IMAGE`; PDF, audio e video restano intatti.
+- Ogni riga viene letta attraverso il driver registrato su di essa, non attraverso quello attivo: una libreria mista (Media storici su UploadThing e Media scritti su disco) si elabora in un'unica esecuzione. Una riga il cui driver non è configurato su questa istanza, o il cui nome questa build non conosce, finisce in `failed` con il motivo e il resto continua.
 - Le sorgenti non raggiungibili vengono riportate e saltate, senza interrompere il resto.
 - Rieseguirlo è sicuro: le righe già complete vengono saltate (`updated: 0`).
 - La concorrenza predefinita è 4; alzala solo se la VPS non ha altro carico.
 - Il report finale elenca `scanned`, `updated`, `skipped` e i `failed` con il motivo.
+- Il comando esce con codice `1` se `failed` non è vuoto, anche in dry-run: un gate di deploy può fidarsi del codice invece di leggere il report.
 
 Finché il backfill non è completo il loader serve gli originali: nessuna immagine rotta e nessun blocco del deploy.
 
@@ -287,9 +295,12 @@ docker exec -it <APP_CONTAINER> npm run media:backfill-renditions
 ```
 
 - Processa solo `MediaType.IMAGE`; PDF, audio e video non vengono toccati.
+- Legge e scrive ogni riga attraverso il driver registrato su di essa: una libreria mista elabora in un'unica esecuzione le Media storiche del provider e quelle locali. Una riga il cui driver non è configurato qui, o il cui nome questa build non conosce, finisce in `failed` con il motivo e non interrompe il run.
 - La concorrenza predefinita è **2**. Conta le immagini elaborate in parallelo, non le rendition: ogni immagine esegue in sequenza i tagli della scala. Alzala solo se la VPS è altrimenti inattiva; su 4 vCPU non conviene superare 2–4.
 - È idempotente: le Media che hanno già un manifest di rendition vengono saltate, quindi rieseguirlo non duplica oggetti né riscrive righe.
 - Una sorgente non raggiungibile o non decodificabile finisce nell'elenco `failed` con il motivo e non interrompe il resto. Le altre immagini continuano a essere elaborate.
+- Un Media elaborato attraverso il provider conserva gli indirizzi del provider nel manifest delle rendition (`?mt=`); uno elaborato su disco porta indirizzi relativi `/media/...`.
+- Il comando esce con codice `1` se `failed` non è vuoto. Un'anteprima non legge gli oggetti, ma segnala già le righe il cui driver non è configurato qui.
 - Se un'immagine fallisce, il job rimuove gli oggetti parziali della nuova revisione quando il prefisso era vuoto; l'originale gi� in consegna non viene mai rimosso. L'immagine continua a essere servita come prima e un rerun sovrascrive eventuali rendition orfane.
 - L'originale storico **non viene cancellato**: gli URL assoluti dentro Puck, TipTap, email e annunci continuano a funzionare. Solo gli URL della libreria (e quindi le pagine che usano la relazione `Media`) passano alle rendition.
 - Un'immagine archiviata viene elaborata ma continua a essere servita come originale; ripristinandola, il loader torna a usare le rendition.
@@ -326,6 +337,311 @@ Esempio di esecuzione completa:
 Se `failed` non è vuoto, controlla che l'oggetto esista ancora sul provider con la chiave indicata: un URL UploadThing cancellato non è recuperabile. Le Media fallite restano servite come originali e possono essere riprovate con lo stesso comando.
 
 **Verifica.** Dopo il run, dal sito controlla che una pagina con immagine storica serva un URL di rendition (`.avif`/`.webp` sul CDN) invece dell'originale, e che il media library mostri ancora una sola riga per file. Il job non modifica i contenuti: se un URL assoluto dentro un testo punta ancora all'originale, è atteso.
+
+### 4bis.4 Driver locale: volume persistente
+
+Il driver `local` scrive sotto `MEDIA_STORAGE_LOCAL_ROOT`. In produzione quel percorso deve stare su un **volume Docker persistente**: senza volume, ogni redeploy cancella i file caricati. La produzione corrente monta un volume `media-storage` su `/data/media` e imposta:
+
+```bash
+MEDIA_STORAGE_LOCAL_ROOT=/data/media
+```
+
+Non serve impostare `MEDIA_STORAGE_DRIVER=local`: il driver attivo per i nuovi upload si sceglie in **Admin → Media** e vive in `Settings.storageDriver`; la variabile è solo il fallback di un'Installazione che non ha ancora scelto, e il fallback è `local`. Un'Installazione già sul provider registra `uploadthing` esplicitamente (setting o variabile) prima di adottare questo codice. `MEDIA_STORAGE_LOCAL_PUBLIC_URL` non esiste più: gli indirizzi locali sono sempre `/media/<key>`.
+
+Verifica del mount:
+
+```bash
+docker volume ls | grep media-storage
+docker inspect <APP_CONTAINER> --format '{{json .Mounts}}'
+```
+
+Il container scrive come root. Se ricrei il volume, verifica che sia scrivibile prima di scegliere `local`. Un file caricato dopo il mount deve restare servibile dopo un redeploy.
+
+### 4bis.5 Backup e restore del volume media
+
+Il backup del database **non** contiene i file su disco: il volume va incluso nella stessa pianificazione. Programma un backup giornaliero del volume (in Coolify, se la versione offre il backup dei volumi, altrimenti con un job sul server che esegue il comando sotto) e verifica che l'ultimo run sia `Success`, che l'archivio abbia dimensione > 0 e che sia scaricabile.
+
+> **Stato attuale (novembre 2026):** il backup schedulato del volume è locale alla VPS; non esiste ancora una copia off-site. Finché non la aggiungi, la perdita della VPS copre anche i file locali, a meno che gli snapshot Hetzner siano attivi.
+
+Backup manuale equivalente (nome reale del volume da `docker volume ls`, app ferma o finestra di basso traffico):
+
+```bash
+docker run --rm -v <MEDIA_VOLUME>:/data -v "$PWD":/backup alpine \
+  sh -c 'tar -czf /backup/media-storage-$(date +%F).tar.gz -C /data .'
+```
+
+Conserva l'archivio fuori dalla VPS: la copia off-site è il passo successivo (scarica l'archivio o caricalo su R2/B2/S3). Tieni insieme dump del DB e archivio del volume: uno senza l'altro non ricostruisce la libreria.
+
+Restore in produzione:
+
+1. Ferma l'app.
+2. Fai comunque un backup del volume attuale.
+3. Estrai l'archivio in un volume **vuoto** (non sopra quello vecchio):
+
+   ```bash
+   docker run --rm -v <MEDIA_VOLUME_RESTORE>:/data -v "$PWD":/backup alpine \
+     sh -c 'tar -xzf /backup/media-storage-YYYY-MM-DD.tar.gz -C /data'
+   ```
+
+4. Verifica il contenuto (`docker run --rm -v <MEDIA_VOLUME_RESTORE>:/data alpine find /data -type f | wc -l`) e sostituisci il volume montato dall'app, oppure svuota quello vecchio e ricopia.
+5. Avvia l'app ed esegui l'audit (4bis.6): `unresolved: 0`, `missing=0`, `orphaned=0`.
+6. Apri dal sito un Media locale e un Media storico e verifica che rispondano 200.
+
+Il drill completo — restore in uno scratch environment e file servito dal suo indirizzo — va eseguito almeno una volta e poi ogni 3 mesi, come il restore del DB.
+
+### 4bis.6 Audit della libreria
+
+Prima e dopo ogni cambio di driver, e dopo un restore del volume, esegui il controllo read-only:
+
+```bash
+npm run media:audit
+```
+
+Dentro il container:
+
+```bash
+docker exec -it <APP_CONTAINER> npm run media:audit
+```
+
+Legge ogni file registrato, risolve il driver registrato sul file e stampa un report come questo (esempio):
+
+```txt
+files: 723
+drivers: local=3 uploadthing=720
+configured drivers: local uploadthing
+unconfigured drivers: none
+bytes: accounted=377135934 localAccounted=31781 localOnDisk=31781 localDifference=0
+objects: accounted=35 onDisk=35 missing=0 orphaned=0
+unresolved: 0
+```
+
+| Campo | Significato |
+|---|---|
+| `files` | Ogni file registrato, di qualunque ruolo: Media, allegato, avatar. |
+| `drivers` | File per driver registrato; `unknown` per un nome che questa build non conosce. |
+| `configured drivers` | Driver con credenziali su questa istanza. |
+| `unconfigured drivers` | Driver registrati su qualche file ma senza credenziali su questa istanza (es. `uploadthing` senza `UPLOADTHING_TOKEN`). |
+| `bytes` | Byte contabilizzati sull'intera libreria, byte delle sole righe locali, byte realmente sul volume e differenza (`localOnDisk - localAccounted`). |
+| `objects` | Oggetti locali contabilizzati, presenti sul volume, mancanti e orfani. |
+| `unresolved` | File che non si risolvono, con id e motivo (`unknown-driver`, `driver-unconfigured`, `no-storage-key`, `no-stored-file`, `object-missing`). |
+
+Prima del backfill della posizione (4bis.8) ogni Media è ancora senza record e compare in `unresolved` come `no-stored-file`: il comando esce `1`. Non è un guasto, è il gate che chiede il comando, e la consegna intanto funziona perché ripiega sulle colonne della Media. Dopo 4bis.8 la lista deve essere vuota.
+
+I file locali sono verificati uno per uno sul volume; le righe remote solo tramite configurazione e presenza di una chiave leggibile, perché un comando read-only non deve scaricare 720 oggetti dal provider. Il comando **esce 1** se `unresolved` non è vuoto, quindi può fare da gate di deploy. Gli oggetti orfani sono riportati ma non fanno fallire il comando: ogni file si risolve comunque. Il report contiene solo id e aggregati, mai chiavi, indirizzi o nomi.
+
+Un `uploadthing` non configurato compare in `unresolved` anche se gli URL assoluti dei Media storici continuano a rispondere: significa che questa istanza non può cancellare né rielaborare quei file. Rimetti il token prima di un'operazione che tocca i byte.
+
+### 4bis.7 Ordine di attivazione del driver locale
+
+1. **Codice e migrazioni.** Prima del deploy, registra esplicitamente il driver attuale dell'Installazione esistente (`Settings.storageDriver = uploadthing`, oppure `MEDIA_STORAGE_DRIVER=uploadthing`): il default del codice è ora `local`, e un'Installazione senza scelta scriverebbe i nuovi upload su disco. Con la scelta esplicita, il deploy non cambia nulla.
+2. **Volume e backup.** Monta il volume, imposta `MEDIA_STORAGE_LOCAL_ROOT`, programma il backup del volume. Carica un file di prova e verifica che sopravviva a un redeploy.
+3. **Drill di restore.** Ripristina il volume in uno scratch environment e servi un file. Annota data e esito.
+4. **Scelta.** Solo allora seleziona `local` in **Admin → Media**. I nuovi upload vanno su disco, i Media esistenti restano sul provider. Esegui `npm run media:audit`.
+5. **Ritorno.** Per tornare indietro seleziona `uploadthing`: i file già locali continuano a essere serviti dal volume e i nuovi upload tornano al provider.
+
+> Il backfill della posizione (4bis.8) precede lo sweep, la scelta `local` e il re-home: senza,
+> l'audit resta rosso e le fasi successive partirebbero da una posizione non verificata.
+
+### 4bis.8 Primo deploy del modello stored-file e backfill della posizione
+
+Il modello `StoredFile` è la porta che fa leggere a consegna, quota, audit, libreria admin e
+backfill la posizione da un solo posto. Il codice può essere deployato **prima** che il backfill
+sia stato eseguito: la consegna ripiega sulle colonne della Media, quindi nessuna immagine si
+spegne. Quello che non può essere verde prima è l'audit, perché ogni Media senza record compare
+come `no-stored-file`. Questo è quindi il passo una tantum che chiude il primo deploy e che
+permette, dopo, di togliere le colonne di storage dalla Media.
+
+Va eseguito una volta, in una finestra di basso traffico, prima dello sweep degli indirizzi e del
+re-home. Il comando non riscrive nessuna riga `Media`.
+
+1. **Registra il driver attivo, prima del deploy.** Il fallback del codice è `local`:
+   un'Installazione che non ha mai scelto scriverebbe i nuovi upload sul disco. Su questa
+   Installazione imposta `MEDIA_STORAGE_DRIVER=uploadthing` in Coolify (`UPLOADTHING_TOKEN` è già
+   presente) e riavvia, come in 4bis.7, passo 1. La variabile è la registrazione esplicita:
+   se la togli, il fallback torna `local` e i nuovi upload finiscono sul disco.
+
+   ```bash
+   docker exec <APP_CONTAINER> printenv MEDIA_STORAGE_DRIVER   # uploadthing
+   ```
+
+2. **Deploya il branch con migrazioni e volume.** Le migrazioni girano nel Build Command prima di
+   `next build`. Quelle di questo branch sono additive (tabelle `StoredFile`, `Attachment`,
+   `StoragePurgeEntry`, colonne su `Settings`; nessuna colonna che il vecchio container legge
+   viene rimossa), quindi il rolling update è sicuro. Il volume `media-storage` deve essere
+   montato su `/data/media` con `MEDIA_STORAGE_LOCAL_ROOT=/data/media` (4bis.4), anche se per ora
+   gli upload vanno al provider: serve al re-home e ai file locali.
+
+   ```bash
+   docker inspect <APP_CONTAINER> --format '{{json .Mounts}}'
+   docker exec <APP_CONTAINER> printenv MEDIA_STORAGE_DRIVER MEDIA_STORAGE_LOCAL_ROOT
+   docker exec -i <DB_CONTAINER> psql -U postgres -d postgres -At \
+     -c "SELECT coalesce((SELECT \"storageDriver\" FROM \"Settings\" LIMIT 1), '(unset)');"
+   ```
+
+   La scelta salvata dal selettore (`Settings.storageDriver`) è `uploadthing` o `(unset)`, nel
+   qual caso vale la variabile; `local` è un errore da correggere prima di procedere. In
+   **Admin → Media** il driver attivo deve risultare UploadThing.
+
+3. **Anteprima, esecuzione, e una seconda esecuzione.** Dentro il container nuovo:
+
+   ```bash
+   docker exec -it -e MEDIA_BACKFILL_DRY_RUN=1 <APP_CONTAINER> npm run media:backfill-files
+   docker exec -it <APP_CONTAINER> npm run media:backfill-files
+   ```
+
+   Usa la variabile e non `-- --dry-run`: il passaggio degli argomenti dopo `--` non è affidabile
+   su ogni shell (su Windows/PowerShell l'anteprima girerebbe come esecuzione reale), mentre la
+   variabile è la stessa forma già usata dagli altri due backfill e vale ovunque. Il report deve
+   dire `dryRun: true`; se dice `false`, l'anteprima non era un'anteprima.
+
+   Un Media con indirizzo assoluto riceve quell'indirizzo come `remoteUrl`; il legacy
+   `/assets/<key>` riceve l'indirizzo del provider che quell'URL rappresenta; un Media locale
+   lascia `remoteUrl` nullo. Un Media con chiave illeggibile finisce in `failed` con il motivo e
+   non viene perso in silenzio. Il comando esce `1` se `failed` non è vuoto.
+
+   Sui 725 Media misurati il 20 novembre 2026 il primo run riporta:
+
+   ```json
+   {
+     "scanned": 725,
+     "created": 725,
+     "skipped": 0,
+     "failed": [],
+     "dryRun": false
+   }
+   ```
+
+   Esegui di nuovo lo stesso comando: deve riportare `created: 0`, `skipped: 725`. È la prova,
+   sui dati veri, che non nascono duplicati. Se `failed` non è vuoto, fermati e indaga quel Media
+   prima di proseguire: il gate chiede un record per Media, 725 su 725 alla misura, non 724.
+
+   > La migrazione `add_attachment_and_avatar_role` copia già in `StoredFile` gli allegati email
+   > storici. Sono file registrati ma non Media, quindi non compaiono in `scanned`/`created`; si
+   > vedono solo nel conteggio `files` dell'audit.
+
+4. **Verifica conteggi, indirizzi remoti e duplicati.**
+
+   Il comando registra ogni indirizzo assoluto come `remoteUrl`. La consegna sa ripiegare sulle
+   colonne della Media, quindi senza questo controllo un record con `remoteUrl` nullo resterebbe
+   invisibile e la posizione non sarebbe davvero provata:
+
+   ```sql
+   SELECT
+     (SELECT count(*) FROM "Media") AS media,
+     (SELECT count(*) FROM "StoredFile" WHERE kind = 'MEDIA') AS media_files,
+     (SELECT count(*) FROM "Media" m WHERE NOT EXISTS (
+        SELECT 1 FROM "StoredFile" f WHERE f."mediaId" = m.id)) AS media_without_record,
+     (SELECT count(*) FROM "StoredFile"
+        WHERE kind = 'MEDIA' AND "remoteUrl" IS NULL) AS without_remote_url,
+     (SELECT count(*) FROM (
+        SELECT "mediaId" FROM "StoredFile"
+        WHERE "mediaId" IS NOT NULL
+        GROUP BY "mediaId" HAVING count(*) > 1) d) AS duplicated_roles,
+     (SELECT count(*) FROM (
+        SELECT "key" FROM "StoredFile"
+        GROUP BY "key" HAVING count(*) > 1) k) AS duplicated_keys;
+   ```
+
+   Atteso: `media_files = media` (sui 725 misurati il 20 novembre 2026 `media = 725`),
+   `media_without_record = 0`, `without_remote_url = 0`, `duplicated_roles = 0`,
+   `duplicated_keys = 0`. Se `media` differisce, annota il numero vero: è la libreria, non il
+   ticket. Le due unique rendono i duplicati impossibili per costruzione: la prova sui dati è il
+   rerun del passo 3.
+
+   Ogni riga deve inoltre nominare uno dei due host del provider: alla misura erano 706 sul più
+   recente e 19 sul più vecchio, quindi un host inatteso o un terzo host è un segnale.
+
+   ```sql
+   SELECT split_part(split_part("remoteUrl", '//', 2), '/', 1) AS host, count(*)
+   FROM "StoredFile"
+   WHERE kind = 'MEDIA' AND "remoteUrl" IS NOT NULL
+   GROUP BY 1 ORDER BY 2 DESC;
+   ```
+
+5. **Ogni Media risolve sul suo indirizzo canonico.** L'indirizzo canonico è `/media/<key>`.
+   Segui i redirect con `-L`: la risposta finale è `200`. Finché i byte sono sul provider la
+   catena passa dal `302` verso il `remoteUrl` registrato (i 720 coprono due host storici, non uno
+   solo) e si chiude sul provider; dopo il re-home la stessa richiesta risponde `200` senza passare
+   da nessun provider. Senza `-L` vedi i soli redirect (il trailing slash e il salto al provider),
+   non un errore. Libreria e contenuti puntano ancora agli indirizzi assoluti del provider finché
+   non passa lo sweep: questo controllo prova che l'indirizzo canonico di ogni file esiste e
+   risolve, che è ciò da cui lo sweep dipende. Estrai le chiavi ed esegui il controllo su tutte:
+
+   ```bash
+   docker exec -i <DB_CONTAINER> psql -U postgres -d postgres -At \
+     -c "SELECT key FROM \"StoredFile\" WHERE kind = 'MEDIA' ORDER BY key;" \
+     > /tmp/media-keys.txt
+   wc -l /tmp/media-keys.txt          # 725
+
+   while IFS= read -r key; do
+     code=$(curl -sL -o /dev/null -w '%{http_code}' "https://<DOMAIN>/media/${key}")
+     [ "$code" = "200" ] || echo "$key $code"
+   done < /tmp/media-keys.txt
+   ```
+
+   L'output atteso del ciclo è vuoto: nessuna riga stampata significa 725 risposte `200` seguendo
+   il redirect. Una chiave stampata è un file da indagare **prima** dello sweep.
+
+6. **Audit verde.**
+
+   ```bash
+   docker exec -it <APP_CONTAINER> npm run media:audit
+   ```
+
+   Atteso per i 725 Media appena registrati più l'allegato email storico che la migrazione ha già
+   copiato (una libreria con altri allegati porta `files` più in alto, e file caricati dopo il
+   deploy lo alzano ancora):
+
+   ```txt
+   files: 726
+   drivers: uploadthing=726
+   configured drivers: local uploadthing
+   unconfigured drivers: none
+   unresolved: 0
+   ```
+
+   Il numero che chiude il gate è `unresolved: 0`. `bytes.accounted` è il totale dell'intera
+   libreria, originali più rendition: non è zero e non cambia con il provider. `localAccounted`,
+   `localOnDisk` e gli oggetti locali valgono zero finché i byte sono sul provider; un file di
+   prova rimasto sul volume compare come orfano senza far fallire il comando. Un
+   `unconfigured drivers:
+   uploadthing` significa che il container non vede `UPLOADTHING_TOKEN`: rimettilo prima di
+   toccare i byte. Se `unresolved` elenca un file con `unknown-driver`, è tipicamente un allegato
+   email storico la cui URL non era né del provider né `/files/` e che la migrazione ha
+   registrato sul driver `external`: va risolto o rimosso a mano, perché nessun driver di questa
+   build sa cancellarne l'oggetto.
+
+7. **Dump e prova di restore.** Il record deve sopravvivere a un dump e a un restore, altrimenti
+   non è un dato di produzione:
+
+   ```bash
+   docker exec -it <DB_CONTAINER> pg_dump -U postgres -d postgres -Fc \
+     -f /tmp/pw-after-backfill.dump
+   docker cp <DB_CONTAINER>:/tmp/pw-after-backfill.dump ~/pw-after-backfill.dump
+
+   docker run -d --name pw-restore-test -e POSTGRES_PASSWORD=test \
+     -p 127.0.0.1:55432:5432 postgres:18
+   sleep 5
+   docker cp ~/pw-after-backfill.dump pw-restore-test:/tmp/backup.dump
+   docker exec -it pw-restore-test pg_restore -U postgres -d postgres \
+     --no-owner --no-privileges --clean --if-exists /tmp/backup.dump
+   docker exec -it pw-restore-test psql -U postgres -d postgres -c \
+     "SELECT count(*) AS media_files,
+             count(*) FILTER (WHERE \"mediaId\" IS NULL) AS without_media,
+             count(*) FILTER (WHERE \"remoteUrl\" IS NULL) AS without_remote_url
+      FROM \"StoredFile\" WHERE kind = 'MEDIA';"
+   ```
+
+   Atteso `725 | 0 | 0`: count, legame alla Media e indirizzo remoto sopravvivono al dump. Poi
+   `docker rm -f pw-restore-test`, cancella il dump di prova (o conservalo
+   fuori dal repository come backup), e annota data ed esito. Il dump di restore usa-e-getta è
+   lo stesso schema dell'appendice C §10.
+
+**Se qualcosa va storto.** Il backfill è ripartibile e idempotente: si rilancia senza duplicare.
+Un rollback dell'app non cancella i record e il vecchio codice li ignora; il comando non ha
+riscritto nessuna riga `Media`, quindi non c'è nulla da annullare. Non eseguire sweep, re-home o
+la rimozione delle colonne prima che i passi 4–6 siano verdi: sono quelli che provano la
+posizione, e ticket 14 (le colonne tolte) dipende da questo gate.
 
 ---
 
@@ -611,7 +927,7 @@ echo | openssl s_client -servername <DOMAIN> -connect <DOMAIN>:443 2>/dev/null |
 3. **Cache condivisa** (Redis cache handler) se aggiungi repliche.
 4. **DB separato** su un'altra VPS o servizio gestito, se il DB cresce.
 5. **CDN** (Cloudflare) per asset statici.
-6. **Storage file** su S3/MinIO se lasci UploadThing.
+6. **Storage file** su S3/R2: il driver non esiste ancora; oggi la scelta è tra il volume locale e UploadThing. Aggiungerlo richiede un driver che rispetti il contratto di storage (`src/modules/media/server/storage/driver.ts`), non una riscrittura dei contenuti.
 
 Non aggiungere repliche finché non hai una cache condivisa e una strategia per sessioni/scheduler. L'app è progettata per una singola istanza (ADR-0001).
 
@@ -622,7 +938,8 @@ Non aggiungere repliche finché non hai una cache condivisa e una strategia per 
 - Hetzner: CAX21 + IPv4 + backup + snapshot occasionali.
 - S3: R2/B2, pochi centesimi.
 - Dominio: invariato.
-- Stripe/Resend/UploadThing: invariati.
+- Stripe/Resend: invariati.
+- UploadThing: il piano del provider dipende dai Media ancora ospitati; il volume locale consuma disco Hetzner. Spostare i Media storici è un progetto separato.
 - Controlla mensilmente il pannello Hetzner per volumi/snapshot dimenticati.
 - Vercel e Neon sono già stati cancellati: la produzione e il database vivono solo su Hetzner/Coolify.
 

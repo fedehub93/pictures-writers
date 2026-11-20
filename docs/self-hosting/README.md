@@ -5,6 +5,8 @@ Questa cartella contiene il piano completo, passo per passo, per spostare **Pict
 > **Stato: migrazione completata.** Pictures Writers gira in produzione su Hetzner + Coolify con PostgreSQL locale; Vercel e Neon sono dismessi. Questa cartella resta come resoconto storico della migrazione. Per l'operatività quotidiana usa `08-operations-runbook.md`.
 >
 > Il documento è stato scritto il **20 ottobre 2026** sullo stato del repository di allora. Rileggi sempre le sezioni "Verifica" prima di eseguire un comando in produzione.
+>
+> **Aggiornamento (novembre 2026):** lo storage dei media non è più solo UploadThing. Il driver `local` è selezionabile da **Admin → Media**, i nuovi upload possono stare su un volume della VPS e i Media esistenti restano sul provider senza migrazione. Il diagramma racconta la migrazione di ottobre; per lo stato attuale leggi `docs/media.md` e `08-operations-runbook.md` §4bis.
 
 ---
 
@@ -20,13 +22,13 @@ Vercel (Next.js serverless)                Traefik / Let's Encrypt (Coolify)
    │                                          │
    ├── NeonDB (Postgres + pooler)             ├── Next.js 16 (container, `next start`)
    ├── UploadThing (file)                     ├── PostgreSQL 18 (container, rete interna)
-   ├── Stripe / Resend / SendGrid             ├── UploadThing (invariato, esterno)
+   ├── Stripe / Resend / SendGrid             ├── UploadThing (file esterni)
    ├── Google Tag Manager / reCAPTCHA         ├── Stripe / Resend / SendGrid (invariati)
    └── cron-job.org (scheduler)               ├── GTM / reCAPTCHA (invariati)
                                               └── cron-job.org oppure cron della VPS
 ```
 
-**Cosa resta esterno e non va migrato:** UploadThing (immagini, PDF, allegati), Stripe (checkout e webhook), Resend/SendGrid (email), Google Tag Manager/Analytics, Google reCAPTCHA, cron-job.org (trigger ogni 5 minuti).
+**Cosa resta esterno e non va migrato:** Stripe (checkout e webhook), Resend/SendGrid (email), Google Tag Manager/Analytics, Google reCAPTCHA e cron-job.org restano invariati. I Media già su UploadThing possono restare lì; i nuovi possono essere scritti dal driver locale sul volume della VPS (vedi `docs/media.md`).
 
 **Cosa cambia:** il processo Node che esegue Next.js, il database PostgreSQL, il reverse proxy/TLS e il sistema di deploy.
 
@@ -82,7 +84,7 @@ Questi non sono consigli generici: derivano dal codice di Pictures Writers.
 7. **`package-lock.json` è generato con npm 12.0.2, ma su Nixpacks non puoi installare npm 12.** npm 12 richiede Node ≥ 24.15 e il nixpkgs pinnato da Nixpacks fornisce 24.10.0: `npm install -g npm@12.0.2` fallisce con `EBADENGINE`. Usa l'npm incluso in Node con `npm ci --include=dev` (il lockfile è `lockfileVersion: 3`). Inoltre Nixpacks imposta `NODE_ENV=production`: `--include=dev` è necessario, altrimenti il build non trova TypeScript/Tailwind e a runtime manca la Prisma CLI. `NPM_CONFIG_PRODUCTION=false` non serve.
 8. **Una sola istanza.** La cache ISR di Next è locale (`in-memory` + disco). Con più repliche senza cache handler condiviso vedresti contenuti vecchi. Tieni **1 replica** (vedi ADR-0001).
 9. **Server Actions + rolling update.** L'app usa le Server Actions. Imposta una `NEXT_SERVER_ACTIONS_ENCRYPTION_KEY` stabile in build, altrimenti durante un deploy con due container sovrapposti le action della vecchia pagina possono fallire.
-10. **UploadThing resta esterno.** Il DB contiene solo URL. La migrazione non sposta i file: non cancellare l'app UploadThing. Se in futuro vuoi tagliare anche quel costo, è un progetto separato (S3/MinIO) e richiede la riscrittura degli URL nel DB.
+10. **I Media non richiedono una migrazione.** Lo storage è selezionabile: i Media esistenti restano su UploadThing con i loro indirizzi, i nuovi possono andare su un volume locale. Se scegli `local`, il volume va montato e incluso nel backup (vedi `08-operations-runbook.md` §4bis.4–4bis.5).
 
 ---
 

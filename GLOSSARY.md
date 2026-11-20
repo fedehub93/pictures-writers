@@ -126,8 +126,16 @@ _Avoid_: Cache TTL when referring to the strategy.
 
 ## Media
 
+**Stored file**:
+The record of where one file's bytes are: its storage key, the driver that owns it, the remote address when that driver is remote, content type, size, checksum, kind and origin. A Media is one role of a Stored file; attachments and avatars are other roles. One Stored file per file the Installation owns, independent of the role and the driver.
+_Avoid_: Asset; file when the role matters; Kind for the location record, since kind is the role.
+
+**Storage location**:
+Where the bytes of a Stored file live: its storage key on one storage driver, plus the remote address when the driver is a provider. It is stored per file, never per Installation, so choosing a driver and moving bytes are separate acts.
+_Avoid_: Provider, bucket, path when referring to the record.
+
 **Media**:
-The logical identity of one uploaded file in the library: its name, type, storage key, size, checksum, alt text, and the manifest of the renditions derived from it. One Media per original file; content references the Media, never a rendition.
+The logical identity of one uploaded file in the library: its name, type, alt text, revision and the manifest of the renditions derived from it. The location of its bytes - storage key, driver, content type, size, checksum - is its Stored file. One Media per original file; content references the Media, never a rendition.
 _Avoid_: Asset, file, attachment when referring to the library entity; using Media for a derived rendition.
 
 **Media type**:
@@ -143,19 +151,43 @@ A named entry in the rendition ladder, pairing a use in the interface with the w
 _Avoid_: Preset, variant.
 
 **Storage key**:
-The stable, storage-agnostic path identifying an object inside the media bucket, from which the provider URL is derived. A Media keeps the original's key; a rendition derives its own from it.
+The stable, storage-agnostic path identifying an object inside the media bucket, held by the Stored file. A Media's own key column mirrors it until that column is dropped, and a rendition derives its key from the original's.
 _Avoid_: Path, filename, URL when referring to the identifier.
 
 **Storage driver**:
-The adapter that writes, deletes and addresses objects for one storage Provider. One per installation, chosen by configuration.
+The adapter that writes, deletes and addresses objects for one storage Provider. The active driver for new uploads is an Installation setting, falling back to configuration when the owner has not chosen; every Media records the driver that wrote it, so delivery resolves per row.
 _Avoid_: Provider, which is the external service; storage integration, which would be the Provider plus its stored secrets.
+
+**Storage quota**:
+The Installation's one byte budget for the disk, covering every Stored file whatever its role: a Media's original plus its rendition manifest, an attachment or avatar its own bytes, archived Media included. It is an Installation setting (`mediaQuotaMb`, default 5 GB). Permanent deletion, and deleting an attachment's or avatar's owner, are what free bytes.
+_Avoid_: Media quota when attachments and avatars are in scope; disk limit, plan.
+
+**Public-origin reserve**:
+The share of the Storage quota that files of public origin - a visitor's form attachment - may occupy. It is an Installation setting (`publicOriginReserveMb`, default 512 MB, a tenth of the default quota). A public upload must fit both the quota and the reserve; the owner's uploads are bounded by the quota only, so a stranger can never block the library. Zero refuses every public upload, and an Installation with no public forms never reaches it.
+_Avoid_: Upload limit, public quota (it is a ceiling inside the quota, not a second budget).
+
+**Address sweep**:
+The one-time, idempotent command that rewrites every legacy provider address stored in content and in `Media.url` into the canonical address of the Stored file it names. It moves no byte and changes no key, revision or driver; an address it cannot resolve is reported by field and count, and the run fails rather than leaving a provider host behind.
+_Avoid_: URL migration, rewrite when it implies moving bytes or renaming keys.
+
+**Re-home**:
+Moving a Stored file's bytes from the driver that holds them to the active driver without changing its key or its canonical address. It copies and verifies the bytes, reads the copy back, then rewrites the file's driver and remote address; a file that cannot be read stays where it is and keeps serving, a Media still addressed by a provider URL waits for the address sweep, and a provider object it abandons is recorded in the Purge journal.
+_Avoid_: Migrate, sync, move when a revision or address changes, which is a replace rather than a re-home.
+
+**Purge journal**:
+The record of every provider object a Re-home abandoned, by driver and exact storage key, stamped when the move flipped the file. It is what lets the Purge delete exactly those objects after a grace window, including a pre-seam object whose key is not namespaced and cannot be found by a prefix scan.
+_Avoid_: Trash, backup, audit log; the journal names objects to delete, not files the library still serves.
+
+**Purge**:
+The one irreversible storage step: deletes exactly the provider objects the Purge journal recorded, after a grace window (seven days by default). It refuses while any Stored file still records that driver or the audit is not green, requires the driver's name typed by the operator, leaves younger entries waiting, and reports each provider failure by journal entry while the rest of the batch continues.
+_Avoid_: Cleanup, sync, delete when it implies a prefix scan or an automatic step.
 
 **Media revision**:
 A counter on a Media that changes when its original file is replaced, giving every rendition a new storage key so no cache can serve the previous file.
 _Avoid_: Version, reserved for the reviewed revisions of Post, Page and Product.
 
 **Archived media**:
-A Media hidden from the library while remaining served and referenceable by published content. Permanent deletion is a separate, manual act that removes its whole storage prefix.
+A Media hidden from the library while remaining served and referenceable by published content. Permanent deletion is a separate, manual act that removes each Media's objects through the driver recorded on its row.
 _Avoid_: Deleted, trashed, soft-deleted as a model concept.
 
 ## Forms
@@ -264,9 +296,13 @@ _Avoid_: Received message when the direction matters.
 A message sent manually by an admin to an email address through an `EmailAccount`. Distinct from marketing sends.
 _Avoid_: Direct message, reply when the entity is a stored email.
 
-**Email attachment**:
-A file attached to an inbound or outbound email, persisted in application storage and owned by its parent `EmailMessage`.
-_Avoid_: File, upload when the context is email.
+**Attachment**:
+The role a Stored file has when it belongs to an email message or a form submission. The role keeps the original filename and the external provider id; the file keeps the bytes, address, content type and size. Exactly one owner, and it is deleted with that owner.
+_Avoid_: Email attachment when the submission case matters; file, upload when the role is what is meant.
+
+**Avatar**:
+The role a Stored file has when it is a user's profile image. The user's image column keeps the canonical `/files/<key>` address, because the auth layer owns it; the stored-file record is what makes the image die with the user.
+_Avoid_: Profile image file, user image as the storage record.
 
 **HTML part**:
 The formatted body of an email, stored on `EmailMessage.bodyHtml`. It is what the composer sent or the sender's provider delivered, and it is untrusted: the mailbox never injects it as markup into the admin document.
@@ -696,7 +732,7 @@ All the Installations one Control plane manages, across one or more Hosts.
 _Avoid_: Cluster, pool, network.
 
 **Installation settings**:
-The single-row configuration an Installation owns and its backoffice edits — site name, canonical URL, timezone, locale, media quota. It belongs to that Installation alone and is never supplied through environment variables.
+The single-row configuration an Installation owns and its backoffice edits - site name, canonical URL, timezone, locale, storage quota and public-origin reserve, active storage driver. It belongs to that Installation alone and is never supplied through environment variables.
 _Avoid_: Site config, global settings, tenant settings.
 
 **Bootstrap**:

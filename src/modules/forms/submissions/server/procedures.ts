@@ -9,6 +9,10 @@ import {
   formSubmissionUpdateSchema,
 } from "../schemas";
 import {
+  deleteOwnedFileObjects,
+  reportOwnedFileCleanupFailures,
+} from "@/modules/media/server/owned-file";
+import {
   DEFAULT_PAGE,
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,
@@ -44,11 +48,43 @@ export const formSubmissionsRouter = createTRPCRouter({
   remove: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ input }) => {
-      return await db.formSubmission.delete({
+      // Read the attachments before the cascade removes their roles: the
+      // objects can only be removed through the driver each file records.
+      const submission = await db.formSubmission.findUnique({
+        where: { id: input.id },
+        select: {
+          attachments: {
+            select: {
+              storedFile: { select: { id: true, key: true, driver: true } },
+            },
+          },
+        },
+      });
+      const storedFiles =
+        submission?.attachments.map((attachment) => attachment.storedFile) ??
+        [];
+
+      const deleted = await db.formSubmission.delete({
         where: {
           id: input.id,
         },
       });
+
+      if (storedFiles.length > 0) {
+        try {
+          reportOwnedFileCleanupFailures(
+            { formSubmissionId: input.id },
+            await deleteOwnedFileObjects(storedFiles),
+          );
+        } catch (error) {
+          console.error("[FORM_SUBMISSIONS] attachment cleanup failed", {
+            formSubmissionId: input.id,
+            error,
+          });
+        }
+      }
+
+      return deleted;
     }),
   getOne: protectedProcedure
     .input(z.object({ id: z.string() }))

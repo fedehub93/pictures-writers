@@ -8,7 +8,13 @@ import { PERMISSIONS } from "@/shared/lib/permissions";
 import { createContactByEmail } from "@/data/email-contact";
 import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 
-import { createUploadThingStorage } from "../lib/attachment-storage";
+import { storedFilePath } from "@/modules/media/lib/file-path";
+import {
+  deleteOwnedFileObjects,
+  reportOwnedFileCleanupFailures,
+} from "@/modules/media/server/owned-file";
+
+import type { AttachmentInput } from "../lib/attachments";
 import { messagePreview, splitName } from "../lib/format";
 import {
   NewMessageError,
@@ -34,13 +40,41 @@ import {
 import { assertAccountAccess } from "./access";
 
 const messageAttachmentSelect = {
-  select: { id: true, filename: true, contentType: true },
+  select: {
+    id: true,
+    filename: true,
+    storedFile: {
+      select: { key: true, contentType: true, size: true },
+    },
+  },
   orderBy: { createdAt: "asc" as const },
   take: 3,
 } satisfies Pick<
   Prisma.EmailMessage$attachmentsArgs,
   "select" | "orderBy" | "take"
 >;
+
+type SelectedAttachment = Prisma.AttachmentGetPayload<{
+  select: (typeof messageAttachmentSelect)["select"];
+}>;
+
+/**
+ * The attachment shape every mail view renders. The role carries the original
+ * filename; where the bytes are and what they are come from the stored file,
+ * and the address is always the canonical `/files/<key>`.
+ */
+function attachmentView(attachment: SelectedAttachment) {
+  return {
+    id: attachment.id,
+    filename: attachment.filename,
+    contentType:
+      attachment.storedFile?.contentType ?? "application/octet-stream",
+    size: attachment.storedFile?.size ?? null,
+    url: attachment.storedFile
+      ? storedFilePath("ATTACHMENT", attachment.storedFile.key)
+      : "",
+  };
+}
 
 const listMessageSelect = {
   subject: true,
@@ -199,17 +233,15 @@ function trpcCodeForSendError(
   }
 }
 
-/** Normalize attachment input for the send use-cases. */
-function toOutboundAttachments(
+/** Narrow the validated composer input for the send use-cases. */
+function toAttachmentInputs(
   attachments:
-    | { filename: string; contentType: string; url: string; size?: number }[]
+    | { storedFileId: string; filename: string }[]
     | undefined,
-) {
+): AttachmentInput[] | undefined {
   return attachments?.map((attachment) => ({
+    storedFileId: attachment.storedFileId,
     filename: attachment.filename,
-    contentType: attachment.contentType,
-    size: attachment.size,
-    url: attachment.url,
   }));
 }
 
@@ -268,7 +300,7 @@ export const conversationsRouter = createTRPCRouter({
                 direction: lastMessage.direction,
                 sentAt: lastMessage.sentAt ?? lastMessage.createdAt,
                 hasAttachments: lastMessage.attachments.length > 0,
-                attachments: lastMessage.attachments,
+                attachments: lastMessage.attachments.map(attachmentView),
               }
             : null,
         };
@@ -302,7 +334,7 @@ export const conversationsRouter = createTRPCRouter({
         recipients: message.toAddresses,
         snippet: messagePreview(message),
         sentAt: message.sentAt ?? message.createdAt,
-        attachments: message.attachments,
+        attachments: message.attachments.map(attachmentView),
       }));
     }),
 
@@ -364,7 +396,18 @@ export const conversationsRouter = createTRPCRouter({
         include: {
           messages: {
             orderBy: { createdAt: "asc" },
-            include: { attachments: { orderBy: { createdAt: "asc" } } },
+            include: {
+              attachments: {
+                orderBy: { createdAt: "asc" },
+                select: {
+                  id: true,
+                  filename: true,
+                  storedFile: {
+                    select: { key: true, contentType: true, size: true },
+                  },
+                },
+              },
+            },
           },
           userStates: {
             where: { userId: ctx.auth.id },
@@ -381,11 +424,16 @@ export const conversationsRouter = createTRPCRouter({
         });
       }
 
-      const { userStates, ...conversationWithoutState } = conversation;
+      const { userStates, messages, ...conversationWithoutState } =
+        conversation;
       const state = userStates[0];
 
       return {
         ...conversationWithoutState,
+        messages: messages.map((message) => ({
+          ...message,
+          attachments: message.attachments.map(attachmentView),
+        })),
         isUnread: isUnreadFor(
           conversation.lastInboundAt,
           state?.lastReadAt ?? null,
@@ -479,7 +527,7 @@ export const conversationsRouter = createTRPCRouter({
           conversationId: input.conversationId,
           subject: input.subject,
           bodyHtml: input.bodyHtml,
-          attachments: toOutboundAttachments(input.attachments),
+          attachments: toAttachmentInputs(input.attachments),
         });
       } catch (error) {
         if (error instanceof ConversationSendError) {
@@ -518,7 +566,7 @@ export const conversationsRouter = createTRPCRouter({
           to: input.to,
           subject: input.subject,
           bodyHtml: input.bodyHtml,
-          attachments: toOutboundAttachments(input.attachments),
+          attachments: toAttachmentInputs(input.attachments),
         });
       } catch (error) {
         if (error instanceof NewMessageError) {
@@ -592,12 +640,22 @@ export const conversationsRouter = createTRPCRouter({
       const conversation = await getTrashedConversation(ctx.auth.id, input.id, {
         id: true,
         messages: {
-          select: { attachments: { select: { url: true } } },
+          select: {
+            attachments: {
+              select: {
+                storedFile: {
+                  select: { id: true, key: true, driver: true },
+                },
+              },
+            },
+          },
         },
       });
 
-      const attachmentUrls = conversation.messages.flatMap((message) =>
-        message.attachments.map((attachment) => attachment.url),
+      const storedFiles = conversation.messages.flatMap((message) =>
+        message.attachments.flatMap((attachment) =>
+          attachment.storedFile ? [attachment.storedFile] : [],
+        ),
       );
 
       const deleted = await db.conversation.deleteMany({
@@ -617,9 +675,12 @@ export const conversationsRouter = createTRPCRouter({
         });
       }
 
-      if (attachmentUrls.length > 0) {
+      if (storedFiles.length > 0) {
         try {
-          await createUploadThingStorage().delete(attachmentUrls);
+          reportOwnedFileCleanupFailures(
+            { conversationId: input.id },
+            await deleteOwnedFileObjects(storedFiles),
+          );
         } catch (error) {
           console.error(
             "[CONVERSATIONS] attachment cleanup failed",

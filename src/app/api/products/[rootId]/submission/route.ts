@@ -5,6 +5,10 @@ import { db } from "@/lib/db";
 import { getPublishedProductByRootId } from "@/modules/shop/products";
 import { createContactByEmail } from "@/data/email-contact";
 import { emitFormSubmitted } from "@/modules/forms/automations/emit";
+import {
+  createFormSubmission,
+  FormSubmissionAttachmentError,
+} from "@/modules/forms/submissions/server/create-submission";
 import { normalizeEmail } from "@/shared/lib/email";
 
 export async function POST(
@@ -59,13 +63,23 @@ export async function POST(
       typeof body.email === "string" ? normalizeEmail(body.email) : null;
 
     // Salva la submission
-    const submission = await db.formSubmission.create({
-      data: {
+    let submission;
+    try {
+      submission = await createFormSubmission({
         formId: product.formId,
         email: emailFromBody,
         data: body,
-      },
-    });
+      });
+    } catch (error) {
+      if (error instanceof FormSubmissionAttachmentError) {
+        return NextResponse.json(
+          { error: error.message, code: "ATTACHMENT_INVALID" },
+          { status: 400 },
+        );
+      }
+
+      throw error;
+    }
 
     // Emission needs an email: the contact is keyed by it and the payload's
     // responder is the canonical address. An address-less submission keeps the

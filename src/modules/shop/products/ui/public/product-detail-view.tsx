@@ -1,4 +1,5 @@
 import { getSettings } from "@/data/settings";
+import { absoluteMediaUrl } from "@/modules/media/server/media-url";
 
 import { ProductJsonLd } from "./json-ld/product";
 import { BreadcrumbListJsonLd } from "@/app/(home)/_components/seo/json-ld/breadcrumb-list";
@@ -32,8 +33,15 @@ export const ProductDetailView = async ({ product }: ProductDetailViewProps) => 
     return null;
   }
 
-  const galleryImages =
-    product.gallery.map((image) => image.media.url || "") || [];
+  // JSON-LD is read without a browser, so a stored relative address is
+  // composed against the Installation's canonical URL here.
+  const galleryImages = product.gallery.map((image) =>
+    image.media.url ? absoluteMediaUrl(image.media.url, siteUrl) : "",
+  );
+
+  const coverImage = product.imageCover?.url
+    ? absoluteMediaUrl(product.imageCover.url, siteUrl)
+    : undefined;
 
   const url = `${siteShopUrl}/${product.category.slug}/${product.slug}/`;
 
@@ -55,7 +63,7 @@ export const ProductDetailView = async ({ product }: ProductDetailViewProps) => 
           name={product.title}
           description={product.seo?.description || ""}
           url={url}
-          image={product.imageCover?.url || undefined}
+          image={coverImage}
           providerName={siteName || "Pictures Writers"}
           providerUrl={`${siteUrl}/`}
           courseMode="online"
@@ -87,7 +95,7 @@ export const ProductDetailView = async ({ product }: ProductDetailViewProps) => 
           name={product.title}
           description={product.seo?.description || ""}
           url={url}
-          image={product.imageCover?.url || undefined}
+          image={coverImage}
           organizerName={siteName || "Pictures Writers"}
           siteUrl={`${siteUrl}/`}
           seats={webinarData.seats}

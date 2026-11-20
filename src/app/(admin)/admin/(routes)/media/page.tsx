@@ -1,78 +1,48 @@
-import { db } from "@/lib/db";
+import type { SearchParams } from "nuqs";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+
+import { HydrateClient } from "@/trpc/server";
 
 import { requirePermission } from "@/shared/lib/auth-utils";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 
 import {
-  mediaLibrarySelect,
-  type MediaLibraryEntry,
-  type MediaLibraryView,
-} from "@/modules/media/lib/media-library";
-import { countMediaReferencesFor } from "@/modules/media/server/media-usage";
+  MediaListHeader,
+  MediaView,
+  MediaViewError,
+  MediaViewLoading,
+} from "@/modules/media";
+import { loadMediaSearchParams } from "@/modules/media/params";
+import {
+  prefetchMedia,
+  prefetchMediaMeta,
+} from "@/modules/media/server/prefetch";
 
-import { ContentHeader } from "@/app/(admin)/_components/content/content-header";
-import { AssetsList } from "./_components/assets-list";
+interface Props {
+  searchParams: Promise<SearchParams>;
+}
 
-const PER_PAGE = 8;
-
-const MediaPage = async (props: {
-  searchParams?: Promise<{
-    query?: string;
-    s?: string;
-    page?: string;
-    view?: string;
-  }>;
-}) => {
+const MediaPage = async ({ searchParams }: Props) => {
   await requirePermission(PERMISSIONS.MEDIA_READ);
 
-  const searchParams = await props.searchParams;
+  const filters = await loadMediaSearchParams(searchParams);
 
-  const query = searchParams?.s || "";
-  const page = Number(searchParams?.page) || 1;
-  const view: MediaLibraryView =
-    searchParams?.view === "archived" ? "archived" : "active";
-
-  const skip = (page - 1) * PER_PAGE;
-  const take = PER_PAGE;
-
-  const where = {
-    name: { contains: query, mode: "insensitive" as const },
-    archivedAt: view === "archived" ? { not: null } : null,
-  };
-
-  const [assets, totalAssets] = await db.$transaction([
-    db.media.findMany({
-      where,
-      select: mediaLibrarySelect,
-      take,
-      skip,
-      orderBy: {
-        createdAt: "desc",
-      },
-    }),
-    db.media.count({ where }),
-  ]);
-
-  const usage = await countMediaReferencesFor(assets.map((asset) => asset.id));
-  const items: MediaLibraryEntry[] = assets.map((asset) => ({
-    ...asset,
-    usageCount: usage.get(asset.id) ?? 0,
-  }));
-
-  const pagination = {
-    page,
-    perPage: PER_PAGE,
-    totalRecords: totalAssets,
-    totalPages: Math.ceil(totalAssets / PER_PAGE),
-  };
+  prefetchMedia(filters);
+  await prefetchMediaMeta({
+    search: filters.search,
+    view: filters.view,
+  });
 
   return (
-    <div className="h-full w-full flex flex-col gap-y-4 px-6 py-3">
-      <ContentHeader label="Media assets" totalEntries={totalAssets} />
-      <div className="flex flex-col gap-y-4">
-        <AssetsList items={items} pagination={pagination} view={view} />
-      </div>
-    </div>
+    <HydrateClient>
+      <MediaListHeader />
+      <Suspense fallback={<MediaViewLoading />}>
+        <ErrorBoundary fallback={<MediaViewError />}>
+          <MediaView />
+        </ErrorBoundary>
+      </Suspense>
+    </HydrateClient>
   );
 };
 

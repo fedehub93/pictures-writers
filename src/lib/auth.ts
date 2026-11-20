@@ -4,6 +4,10 @@ import { betterAuth } from "better-auth";
 import { customSession } from "better-auth/plugins";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { db } from "@/lib/db";
+import {
+  deleteUserAvatarObjects,
+  reportOwnedFileCleanupFailures,
+} from "@/modules/media/server/owned-file";
 import { sendPasswordResetEmail } from "@/modules/users/server/emails";
 
 export const auth = betterAuth({
@@ -25,6 +29,17 @@ before: async (user, _context) => {
           return invitation ? false : undefined;
         },
         after: async (_user, _context) => {},
+      },
+      delete: {
+        // The avatar's objects are removed through the driver recorded on it
+        // before the user row goes. A failure leaves the stored-file record
+        // unowned for the audit, rather than losing where the bytes are.
+        before: async (user) => {
+          reportOwnedFileCleanupFailures(
+            { userId: user.id },
+            await deleteUserAvatarObjects(user.id),
+          );
+        },
       },
     },
     session: {

@@ -41,6 +41,9 @@ next-env.d.ts
 # prisma generated client
 /generated/prisma
 
+# local media storage (dev default root of the local driver)
+/.media-storage/
+
 # local reference repositories used by editor skills
 /.reference/
 .env*

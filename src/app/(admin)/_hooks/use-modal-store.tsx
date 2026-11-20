@@ -8,8 +8,6 @@ export type ModalType =
   | "selectPost"
   | "selectProduct"
   | "selectUrl"
-  | "createUser"
-  | "editUser"
   | "editLink"
   | "importAudienceContacts"
   | "createAdBlock"

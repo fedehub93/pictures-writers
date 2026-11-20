@@ -59,7 +59,7 @@ export const FormActions = ({
   return (
     <div className="flex items-center gap-2">
       {content && (
-        <PreviewBtn id={id} gtmEventName={gtmEventName} content={content} />
+        <PreviewBtn formId={id} gtmEventName={gtmEventName} content={content} />
       )}
       {true === true && (
         <>

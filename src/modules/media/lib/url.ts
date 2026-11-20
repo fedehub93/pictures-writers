@@ -1,14 +1,12 @@
+import { storedFilePath } from "./file-path";
 import {
   LEGACY_ASSET_PREFIX,
+  MEDIA_PATH_PREFIX,
   UPLOADTHING_FILE_ORIGIN,
   UPLOADTHING_FILE_PATH,
 } from "./image-ladder.mjs";
 
 const UPLOADTHING_HOST_SUFFIXES = [".ufs.sh", "utfs.io"];
-const PICTURES_WRITERS_HOST_SUFFIXES = [
-  "pictureswriters.com",
-  ".pictureswriters.com",
-];
 
 export interface ParsedSrc {
   url: URL;
@@ -21,6 +19,15 @@ export function parseSrc(src: string): ParsedSrc {
   } catch {
     return { url: new URL(src, "http://media.local"), absolute: false };
   }
+}
+
+/**
+ * The canonical, provider-independent media address for a storage key.
+ * `Media.url` stores this relative form so the database never carries a domain.
+ * Composing a Media address is one role of the shared file composer.
+ */
+export function mediaPath(key: string): string {
+  return storedFilePath("MEDIA", key);
 }
 
 export function serializeSrc(url: URL, absolute: boolean): string {
@@ -42,10 +49,6 @@ function matchesHost(
 
 export function isUploadThingUrl(url: URL): boolean {
   return matchesHost(url.hostname, UPLOADTHING_HOST_SUFFIXES);
-}
-
-export function isPicturesWritersUrl(url: URL): boolean {
-  return matchesHost(url.hostname, PICTURES_WRITERS_HOST_SUFFIXES);
 }
 
 /**
@@ -93,8 +96,28 @@ function safeDecode(value: string): string {
   }
 }
 
+/**
+ * The key a Media's original lives under: the recorded column when present,
+ * otherwise the key its address encodes. Legacy rows may carry no key, and an
+ * address that encodes none leaves the object unreachable.
+ */
+export function mediaSourceKey(media: {
+  key: string | null;
+  url: string;
+}): string | null {
+  if (typeof media.key === "string" && media.key.length > 0) return media.key;
+
+  const key = storageKeyFromMediaUrl(media.url);
+
+  return key && key.length > 0 ? key : null;
+}
+
 export function storageKeyFromMediaUrl(src: string): string | null {
   const { url, absolute } = parseSrc(src);
+
+  if (url.pathname.startsWith(MEDIA_PATH_PREFIX + "/")) {
+    return safeDecode(url.pathname.slice(MEDIA_PATH_PREFIX.length + 1));
+  }
 
   if (url.pathname.startsWith(LEGACY_ASSET_PREFIX)) {
     return safeDecode(url.pathname.slice(LEGACY_ASSET_PREFIX.length));

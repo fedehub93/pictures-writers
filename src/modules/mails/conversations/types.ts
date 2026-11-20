@@ -17,4 +17,4 @@ export type ConversationGetOne =
 
 export type EmailMessageGetOne = ConversationGetOne["messages"][number];
 
-export type EmailAttachmentGetOne = EmailMessageGetOne["attachments"][number];
+export type AttachmentGetOne = EmailMessageGetOne["attachments"][number];

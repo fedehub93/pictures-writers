@@ -1,5 +1,8 @@
+import { randomUUID } from "node:crypto";
+
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { StoredFileKind } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 import type {
   EmailInboundAdapter,
@@ -60,6 +63,8 @@ function makeAdapter(inbound: InboundEmail): EmailInboundAdapter {
   };
 }
 
+const createdStoredFileIds: string[] = [];
+
 function makeStorage(): {
   storage: AttachmentStorage;
   stored: {
@@ -78,9 +83,19 @@ function makeStorage(): {
     storage: {
       async store(params) {
         stored.push(params);
-        return { url: `https://storage.test/${params.filename}` };
+        const file = await db.storedFile.create({
+          data: {
+            key: `default/${randomUUID()}/1/${params.filename}`,
+            driver: "local",
+            contentType: params.contentType,
+            size: params.content.byteLength,
+            kind: StoredFileKind.ATTACHMENT,
+          },
+          select: { id: true },
+        });
+        createdStoredFileIds.push(file.id);
+        return { storedFileId: file.id };
       },
-      async delete() {},
     },
   };
 }
@@ -107,21 +122,35 @@ describe("handleInboundEmail", () => {
   beforeEach(async () => {
     vi.stubGlobal("fetch", fetchMock);
     fetchMock.mockReset();
-    fetchMock.mockResolvedValue(new Response("attachment", { status: 200 }));
+    // A fresh Response per call: bodies cannot be read twice.
+    fetchMock.mockImplementation(
+      async () => new Response("attachment", { status: 200 }),
+    );
 
     await db.emailAccount.deleteMany({});
     createdAccountIds.length = 0;
+    createdStoredFileIds.length = 0;
   });
 
   afterEach(async () => {
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
 
     if (createdAccountIds.length > 0) {
       await db.emailAccount.deleteMany({
         where: { id: { in: createdAccountIds } },
       });
     }
+    if (createdStoredFileIds.length > 0) {
+      await db.attachment.deleteMany({
+        where: { storedFileId: { in: createdStoredFileIds } },
+      });
+      await db.storedFile.deleteMany({
+        where: { id: { in: createdStoredFileIds } },
+      });
+    }
     createdAccountIds.length = 0;
+    createdStoredFileIds.length = 0;
   });
 
   it("records the conversation, message and attachments and marks it unread", async () => {
@@ -147,7 +176,13 @@ describe("handleInboundEmail", () => {
 
     const conversation = await db.conversation.findFirst({
       where: { emailAccountId: account.id },
-      include: { messages: { include: { attachments: true } } },
+      include: {
+        messages: {
+          include: {
+            attachments: { include: { storedFile: true } },
+          },
+        },
+      },
     });
 
     expect(conversation).not.toBeNull();
@@ -168,10 +203,14 @@ describe("handleInboundEmail", () => {
     expect(message.attachments).toHaveLength(1);
     expect(message.attachments[0]).toMatchObject({
       filename: "report.pdf",
-      contentType: "application/pdf",
-      size: 1234,
       externalId: "att-1",
-      url: "https://storage.test/report.pdf",
+    });
+    expect(message.attachments[0]!.storedFile).toMatchObject({
+      driver: "local",
+      contentType: "application/pdf",
+      size: 10,
+      kind: "ATTACHMENT",
+      origin: "INTERNAL",
     });
 
     // The provider URL was downloaded and the bytes copied into storage.
@@ -181,6 +220,138 @@ describe("handleInboundEmail", () => {
       contentType: "application/pdf",
     });
     expect(new TextDecoder().decode(stored[0].content)).toBe("attachment");
+  });
+
+  it("stores every attachment as its own record", async () => {
+    await createAccount();
+    const { storage, stored } = makeStorage();
+    const inbound = inboundEmail({
+      attachments: [
+        {
+          externalId: "att-1",
+          filename: "report.pdf",
+          contentType: "application/pdf",
+        },
+        {
+          externalId: "att-2",
+          filename: "notes.txt",
+          contentType: "text/plain",
+        },
+      ],
+    });
+
+    const result = await handleInboundEmail(webhookEvent(), {
+      adapter: makeAdapter(inbound),
+      storage,
+    });
+
+    expect(result.status).toBe("processed");
+    expect(stored.map((file) => file.filename)).toEqual([
+      "report.pdf",
+      "notes.txt",
+    ]);
+
+    const message = await db.emailMessage.findFirstOrThrow({
+      include: { attachments: { include: { storedFile: true } } },
+    });
+
+    expect(message.attachments).toHaveLength(2);
+    expect(message.attachments.map((attachment) => attachment.filename)).toEqual(
+      ["report.pdf", "notes.txt"],
+    );
+    expect(
+      new Set(message.attachments.map((attachment) => attachment.storedFile.id))
+        .size,
+    ).toBe(2);
+    expect(
+      message.attachments.map((attachment) => attachment.storedFile.contentType),
+    ).toEqual(["application/pdf", "text/plain"]);
+  });
+
+  it("logs a storage failure and still records the message", async () => {
+    await createAccount();
+    const { storage, stored } = makeStorage();
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+    const failingStorage: AttachmentStorage = {
+      async store(params) {
+        if (params.filename === "report.pdf") {
+          throw new Error("disk full");
+        }
+        return storage.store(params);
+      },
+    };
+    const inbound = inboundEmail({
+      attachments: [
+        {
+          externalId: "att-1",
+          filename: "report.pdf",
+          contentType: "application/pdf",
+        },
+        {
+          externalId: "att-2",
+          filename: "notes.txt",
+          contentType: "text/plain",
+        },
+      ],
+    });
+
+    const result = await handleInboundEmail(webhookEvent(), {
+      adapter: makeAdapter(inbound),
+      storage: failingStorage,
+    });
+
+    expect(result.status).toBe("processed");
+    expect(consoleError).toHaveBeenCalledWith(
+      "[RESEND_INBOUND_WEBHOOK] attachment could not be stored",
+      expect.objectContaining({
+        attachmentId: "att-1",
+        filename: "report.pdf",
+        error: "disk full",
+      }),
+    );
+
+    const message = await db.emailMessage.findFirstOrThrow({
+      include: { attachments: true },
+    });
+    expect(message.attachments.map((attachment) => attachment.filename)).toEqual(
+      ["notes.txt"],
+    );
+    expect(stored.map((file) => file.filename)).toEqual(["notes.txt"]);
+  });
+
+  it("keeps the message when every attachment fails to store", async () => {
+    await createAccount();
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+    const failingStorage: AttachmentStorage = {
+      async store() {
+        throw new Error("storage unavailable");
+      },
+    };
+    const inbound = inboundEmail({
+      attachments: [
+        {
+          externalId: "att-1",
+          filename: "report.pdf",
+          contentType: "application/pdf",
+        },
+      ],
+    });
+
+    const result = await handleInboundEmail(webhookEvent(), {
+      adapter: makeAdapter(inbound),
+      storage: failingStorage,
+    });
+
+    expect(result.status).toBe("processed");
+    expect(consoleError).toHaveBeenCalledTimes(1);
+    const message = await db.emailMessage.findFirstOrThrow({
+      include: { attachments: true },
+    });
+    expect(message.attachments).toHaveLength(0);
   });
 
   it("re-resolves the URL and retries when the signed download is forbidden", async () => {

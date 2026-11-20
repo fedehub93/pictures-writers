@@ -87,6 +87,7 @@ const Page = async (props: PageProps<"/shop/[categorySlug]/[productSlug]">) => {
                 <div className="bg-card border rounded-lg shadow p-4 flex flex-col space-y-4">
                   <SubmissionFormV2
                     rootId={product.rootId!}
+                    formId={form.id}
                     content={form.content}
                     gtmEventName={form.gtmEventName}
                   />

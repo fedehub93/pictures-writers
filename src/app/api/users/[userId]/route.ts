@@ -3,7 +3,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { authAdmin } from "@/lib/auth-service";
 import { db } from "@/lib/db";
 import { PERMISSIONS } from "@/shared/lib/authorization";
+import {
+  deleteOwnedFileObjects,
+  reportOwnedFileCleanupFailures,
+} from "@/modules/media/server/owned-file";
 import { legacyUserUpdateSchema } from "@/modules/users/schemas";
+import { AvatarFileError, claimAvatar } from "@/modules/users/server/avatar";
 import { legacyUserSelect } from "@/modules/users/server/legacy-contract";
 
 export async function GET(
@@ -47,19 +52,41 @@ export async function PATCH(
 
     const values = legacyUserUpdateSchema.parse(await req.json());
 
-    const updatedUser = await db.user.update({
-      where: {
-        id: userId,
+    const { updatedUser, previousAvatar } = await db.$transaction(
+      async (transaction) => {
+        const avatar =
+          values.imageUrl === undefined
+            ? null
+            : await claimAvatar(transaction, userId, values.imageUrl);
+
+        const updatedUser = await transaction.user.update({
+          where: {
+            id: userId,
+          },
+          data: {
+            ...values,
+            ...(avatar ? { imageUrl: avatar.imageUrl } : {}),
+          },
+          select: legacyUserSelect,
+        });
+
+        return { updatedUser, previousAvatar: avatar?.previous ?? null };
       },
-      data: {
-        ...values,
-      },
-      select: legacyUserSelect,
-    });
+    );
+
+    if (previousAvatar) {
+      reportOwnedFileCleanupFailures(
+        { userId },
+        await deleteOwnedFileObjects([previousAvatar]),
+      );
+    }
 
     return NextResponse.json(updatedUser);
   } catch (error) {
     console.log("[USER_ID]", error);
+    if (error instanceof AvatarFileError) {
+      return new NextResponse(error.message, { status: 400 });
+    }
     if (error instanceof Error && error.name === "ZodError") {
       return new NextResponse("Invalid request", { status: 400 });
     }

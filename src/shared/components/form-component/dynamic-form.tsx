@@ -21,7 +21,7 @@ import { Checkbox } from "@/shared/ui/checkbox";
 import { GenericInput } from "@/shared/components/form-component/generic-input";
 import { GenericTextarea } from "@/shared/components/form-component/generic-textarea";
 
-import { FileUploadButton } from "@/shared/components/file-upload-button";
+import { PublicFileUpload } from "@/shared/components/public-file-upload";
 import { GoogleRecaptchaV3 } from "@/shared/components/google-recaptchav3";
 
 import { getCaptchaToken } from "@/app/(home)/_components/utils/captcha";
@@ -255,8 +255,8 @@ export default function DynamicForm({
                       <FormItem>
                         <FormLabel className="text-lg">{field.label}</FormLabel>
                         <FormControl>
-                          <FileUploadButton
-                            endpoint="submissionAttachments"
+                          <PublicFileUpload
+                            formId={formDef.id}
                             size="small"
                             value={f.value as any[]}
                             onChange={(files: any[]) => f.onChange(files)}

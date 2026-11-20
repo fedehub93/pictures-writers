@@ -1,4 +1,5 @@
 import type { ActionConfigUnion } from "./action";
+import type { PublicFormAttachment } from "@/shared/lib/public-form-upload";
 
 // --- Validation Base ---
 export interface BaseValidation {
@@ -59,13 +60,7 @@ export interface CheckboxFieldProperties extends BaseFieldProperties {
 }
 
 export interface UploadFieldProperties extends BaseFieldProperties {
-  files: {
-    key: string;
-    name: string;
-    url: string;
-    size: number;
-    type: string;
-  }[];
+  files: PublicFormAttachment[];
 }
 
 // --- Layouts ---

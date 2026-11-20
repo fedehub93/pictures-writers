@@ -77,7 +77,7 @@ Conseguenza: dopo il cambio DNS la propagazione può richiedere fino a ~15 minut
 |---|---|---|
 | Stripe | Dashboard → Developers → Webhooks: endpoint `https://<DOMAIN>/api/webhooks/stripe/`, eventi `checkout.session.completed`, secret corretto | Nessuna modifica |
 | Resend | Webhook inbound `https://<DOMAIN>/api/webhooks/resend/`, signing secret | Nessuna modifica |
-| UploadThing | App attiva, token valido, eventuali allowed origins | Nessuna modifica |
+| UploadThing | App attiva, token valido, eventuali allowed origins (serve ai Media storici se usi il driver `local`) | Nessuna modifica |
 | reCAPTCHA | Key v3, dominio autorizzato | Nessuna modifica |
 | Google Tag Manager | Container attivo | Nessuna modifica |
 | cron-job.org | Due job: `/api/scheduler/run/` e `/api/automations/run/`, header corretto | Nessuna modifica **se** i job usano `https://<DOMAIN>/...`; se usano l'URL `*.vercel.app`, aggiornali |
@@ -265,7 +265,7 @@ Attenzione:
 
 - Una sola istanza: nessuna scalabilità orizzontale automatica. Per questo sito va bene.
 - Il disco è locale: la cache ISR si perde a ogni deploy/restart (accettato da ADR-0001).
-- Le immagini usano un **loader custom** di `next/image`: la VPS non ridimensiona nulla durante le visite e `/_next/image` non è più nel percorso di consegna. I file arrivano direttamente dal CDN di UploadThing: l'originale finché la rendition corrispondente non esiste, la rendition AVIF/WebP quando è stata generata.
+- Le immagini usano un **loader custom** di `next/image`: la VPS non ridimensiona nulla durante le visite e `/_next/image` non è più nel percorso di consegna. La consegna passa da `GET /media/<key>`: un Media locale viene letto dal volume, un Media remoto riceve un `302` verso il CDN di UploadThing. L'originale viene servito finché la rendition corrispondente non esiste, la rendition AVIF/WebP quando è stata generata.
 - `sharp` gira solo nei job di processing (upload e backfill), mai nel render di una pagina. La cache immagini storica di Next è quindi irrilevante e può essere rimossa senza impatto.
 
 Misure da fare prima/dopo:

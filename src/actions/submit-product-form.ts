@@ -7,6 +7,10 @@ import { db } from "@/shared/lib/db";
 import { createContactByEmail } from "@/data/email-contact";
 import { handleFormSubmitted } from "@/lib/event-handler";
 import { emitFormSubmitted } from "@/modules/forms/automations/emit";
+import {
+  createFormSubmission,
+  FormSubmissionAttachmentError,
+} from "@/modules/forms/submissions/server/create-submission";
 
 import { verifyRecaptcha } from "@/lib/recaptcha";
 import { getPublishedProductByRootId } from "@/modules/shop/products";
@@ -61,14 +65,22 @@ export const submitProductForm = async (
     const responderEmail =
       typeof values.email === "string" ? normalizeEmail(values.email) : null;
 
-    // Salva la submission
-    await db.formSubmission.create({
-      data: {
+    // Salva la submission. Any public upload the visitor attached is claimed in
+    // the same transaction, and an attachment the Installation cannot claim
+    // refuses the submission instead of leaving a dead link.
+    try {
+      await createFormSubmission({
         formId: product.formId,
         email: responderEmail,
         data: values,
-      },
-    });
+      });
+    } catch (error) {
+      if (error instanceof FormSubmissionAttachmentError) {
+        return { success: false, message: error.message };
+      }
+
+      throw error;
+    }
 
     // An address-less submission is still recorded, but it cannot own a Contact
     // or start an automation: those are keyed by the address.

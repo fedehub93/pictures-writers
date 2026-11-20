@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { EmailProvider } from "@/generated/prisma";
+import { EmailProvider, StoredFileKind } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 import type {
   EmailProviderAdapter,
@@ -81,15 +81,56 @@ async function seedInboundMessage(conversationId: string, subject: string) {
   });
 }
 
+const storedFileIds: string[] = [];
+let previousAppUrl: string | undefined;
+
+async function createAttachmentFile(
+  filename: string,
+  contentType: string,
+  size: number,
+) {
+  const file = await db.storedFile.create({
+    data: {
+      key: `default/${randomUUID()}/1/${filename}`,
+      driver: "local",
+      contentType,
+      size,
+      kind: StoredFileKind.ATTACHMENT,
+    },
+  });
+
+  storedFileIds.push(file.id);
+  return file;
+}
+
 async function resetTables() {
   await db.emailSendLog.deleteMany({});
   await db.emailSetting.deleteMany({});
   await db.emailAccount.deleteMany({});
+  if (storedFileIds.length > 0) {
+    await db.attachment.deleteMany({
+      where: { storedFileId: { in: storedFileIds } },
+    });
+    await db.storedFile.deleteMany({ where: { id: { in: storedFileIds } } });
+  }
+  storedFileIds.length = 0;
 }
 
 describe("sendConversationMessage", () => {
-  beforeEach(resetTables);
-  afterEach(resetTables);
+  beforeEach(async () => {
+    previousAppUrl = process.env.NEXT_PUBLIC_APP_URL;
+    process.env.NEXT_PUBLIC_APP_URL = "https://app.test";
+    await resetTables();
+  });
+
+  afterEach(async () => {
+    await resetTables();
+    if (previousAppUrl === undefined) {
+      delete process.env.NEXT_PUBLIC_APP_URL;
+    } else {
+      process.env.NEXT_PUBLIC_APP_URL = previousAppUrl;
+    }
+  });
 
   it("sends through the adapter and records the outbound message", async () => {
     const account = await createAccount();
@@ -99,15 +140,19 @@ describe("sendConversationMessage", () => {
 
     const bodyHtml =
       "<p>Thanks for reaching out</p><ul><li>Socks</li><li>Shoes</li></ul>";
+    const attachment = await createAttachmentFile(
+      "quote.pdf",
+      "application/pdf",
+      1234,
+    );
 
     const result = await sendConversationMessage({
       conversationId: conversation.id,
       bodyHtml,
       attachments: [
         {
+          storedFileId: attachment.id,
           filename: "quote.pdf",
-          contentType: "application/pdf",
-          url: "https://files.test/quote.pdf",
         },
       ],
       adapter,
@@ -126,14 +171,15 @@ describe("sendConversationMessage", () => {
         {
           filename: "quote.pdf",
           contentType: "application/pdf",
-          url: "https://files.test/quote.pdf",
+          url: `https://app.test/files/${attachment.key}`,
+          size: 1234,
         },
       ],
     });
 
     const message = await db.emailMessage.findUniqueOrThrow({
       where: { id: result.messageId },
-      include: { attachments: true },
+      include: { attachments: { include: { storedFile: true } } },
     });
 
     expect(message).toMatchObject({
@@ -151,8 +197,13 @@ describe("sendConversationMessage", () => {
     expect(message.attachments).toHaveLength(1);
     expect(message.attachments[0]).toMatchObject({
       filename: "quote.pdf",
+      storedFileId: attachment.id,
+    });
+    expect(message.attachments[0]!.storedFile).toMatchObject({
+      key: attachment.key,
+      driver: "local",
       contentType: "application/pdf",
-      url: "https://files.test/quote.pdf",
+      size: 1234,
     });
   });
 

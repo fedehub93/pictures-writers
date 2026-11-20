@@ -10,7 +10,9 @@ import {
   isEbookMetadata,
   isWebinarMetadata,
 } from "@/modules/shop/products/types";
+import { absoluteMediaUrl } from "@/modules/media/server/media-url";
 import { createContactByEmail } from "@/data/email-contact";
+import { getSettings } from "@/data/settings";
 import { normalizeEmail } from "@/shared/lib/email";
 import { renderTiptapHtml } from "@/shared/components/tiptap-renderer/helpers/render-tiptap-html";
 import { GenericEmail } from "./types";
@@ -26,6 +28,19 @@ export interface SendEmailOptions {
    * this so the log is written once, not twice.
    */
   log?: boolean;
+}
+
+/**
+ * A mail client has no page to resolve a relative address against, so a stored
+ * Media address is composed against the Installation's canonical URL.
+ */
+async function emailMediaUrl(
+  src: string | undefined,
+): Promise<string | undefined> {
+  if (!src) return undefined;
+
+  const { siteUrl } = await getSettings();
+  return absoluteMediaUrl(src, siteUrl);
 }
 
 async function recordSend(data: GenericEmail): Promise<void> {
@@ -195,6 +210,7 @@ export const sendWebinarPurchaseEmail = async (
   if (!webinarTemplate?.bodyHtml) return false;
 
   const template = handlebars.compile(webinarTemplate.bodyHtml);
+  const imageCoverUrl = await emailMediaUrl(webinar.imageCover?.url);
 
   await sendEmail({
     to: recipient,
@@ -205,7 +221,7 @@ export const sendWebinarPurchaseEmail = async (
       id: webinar.id,
       title: webinar.title,
       description: renderTiptapHtml(webinar.tiptapDescription),
-      imageCoverUrl: webinar.imageCover?.url,
+      imageCoverUrl,
     }),
     type: "webinar_purchased",
     replyTo: settings.emailResponse!,
@@ -309,6 +325,7 @@ export const buildFreeDigitalDownloadEmail = async (
   if (!downloadTemplate?.bodyHtml) return null;
 
   const template = handlebars.compile(downloadTemplate.bodyHtml);
+  const imageCoverUrl = await emailMediaUrl(product.imageCover?.url);
   const appUrl = (
     process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
   ).replace(/\/+$/, "");
@@ -328,7 +345,7 @@ export const buildFreeDigitalDownloadEmail = async (
       title: product.title,
       description: renderTiptapHtml(product.tiptapDescription),
       format: format.type,
-      imageCoverUrl: product.imageCover?.url,
+      imageCoverUrl,
       downloadUrl,
     }),
     type: "free_digital_download_email",

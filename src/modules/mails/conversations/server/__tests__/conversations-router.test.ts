@@ -56,20 +56,6 @@ vi.mock("@/modules/mails/conversations/lib/send-new-message", () => {
   return { NewMessageError, sendNewMessage: sendNewMessageMock };
 });
 
-// Permanent deletion removes stored attachment files through the storage
-// adapter. The network call is replaced so the router test can assert the
-// cleanup without reaching UploadThing.
-const { attachmentStorageMock } = vi.hoisted(() => ({
-  attachmentStorageMock: {
-    store: vi.fn(),
-    delete: vi.fn(),
-  },
-}));
-
-vi.mock("@/modules/mails/conversations/lib/attachment-storage", () => ({
-  createUploadThingStorage: () => attachmentStorageMock,
-}));
-
 import { createCallerFactory } from "@/trpc/init";
 
 import { db } from "@/shared/lib/db";
@@ -83,6 +69,7 @@ const createCaller = createCallerFactory(conversationsRouter);
 const accountIds: string[] = [];
 const userIds: string[] = [];
 const contactIds: string[] = [];
+const storedFileKeys: string[] = [];
 
 let caller: ReturnType<typeof createCaller>;
 let userId: string;
@@ -145,10 +132,32 @@ async function createMessage(
     sentAt: Date;
     createdAt: Date;
   }> = {},
-  attachments: { filename: string; contentType: string; url: string }[] = [],
+  attachments: {
+    filename: string;
+    driver?: string;
+    contentType?: string;
+    size?: number;
+  }[] = [],
 ) {
   const direction = overrides.direction ?? "INBOUND";
   const sentAt = overrides.sentAt ?? new Date();
+  const attachmentRows = attachments.map((attachment) => {
+    const key = `default/${randomUUID()}/1/${attachment.filename}`;
+    storedFileKeys.push(key);
+
+    return {
+      filename: attachment.filename,
+      storedFile: {
+        create: {
+          key,
+          driver: attachment.driver ?? "local",
+          contentType: attachment.contentType ?? "application/pdf",
+          size: attachment.size ?? null,
+          kind: "ATTACHMENT" as const,
+        },
+      },
+    };
+  });
   const message = await db.emailMessage.create({
     data: {
       conversationId,
@@ -163,8 +172,8 @@ async function createMessage(
       bccAddresses: [],
       sentAt,
       createdAt: overrides.createdAt ?? sentAt,
-      attachments: attachments.length
-        ? { create: attachments }
+      attachments: attachmentRows.length
+        ? { create: attachmentRows }
         : undefined,
     },
   });
@@ -184,11 +193,9 @@ beforeEach(async () => {
   accountIds.length = 0;
   userIds.length = 0;
   contactIds.length = 0;
+  storedFileKeys.length = 0;
   sendConversationMessageMock.mockReset();
   sendNewMessageMock.mockReset();
-  attachmentStorageMock.store.mockReset();
-  attachmentStorageMock.delete.mockReset();
-  attachmentStorageMock.delete.mockResolvedValue(undefined);
 
   const user = await createUser();
   userId = user.id;
@@ -205,9 +212,15 @@ afterEach(async () => {
   if (userIds.length > 0) {
     await db.user.deleteMany({ where: { id: { in: userIds } } });
   }
+  if (storedFileKeys.length > 0) {
+    await db.storedFile.deleteMany({
+      where: { key: { in: storedFileKeys } },
+    });
+  }
   accountIds.length = 0;
   userIds.length = 0;
   contactIds.length = 0;
+  storedFileKeys.length = 0;
 });
 
 describe("conversationsRouter", () => {
@@ -355,11 +368,7 @@ describe("conversationsRouter", () => {
         withFile.id,
         { bodyHtml: "<p>See attached</p>", bodyText: null },
         [
-          {
-            filename: "invoice.pdf",
-            contentType: "application/pdf",
-            url: "https://files/invoice.pdf",
-          },
+          { filename: "invoice.pdf", contentType: "application/pdf" },
         ],
       );
       const plain = await createConversation(account.id);
@@ -585,11 +594,7 @@ describe("conversationsRouter", () => {
           createdAt: new Date("2026-10-17T11:00:00.000Z"),
         },
         [
-          {
-            filename: "quote.pdf",
-            contentType: "application/pdf",
-            url: "https://files/quote.pdf",
-          },
+          { filename: "quote.pdf", contentType: "application/pdf" },
         ],
       );
 
@@ -770,7 +775,7 @@ describe("conversationsRouter", () => {
       await createMessage(
         conversation.id,
         { bodyText: "Second", direction: "OUTBOUND" },
-        [{ filename: "report.pdf", contentType: "application/pdf", url: "https://files/report.pdf" }],
+        [{ filename: "report.pdf", contentType: "application/pdf" }],
       );
 
       const result = await caller.getOne({ id: conversation.id });
@@ -945,14 +950,14 @@ describe("conversationsRouter", () => {
         providerId: "provider-1",
       });
 
+      const storedFileId = randomUUID();
       const result = await caller.sendReply({
         conversationId: conversation.id,
         bodyHtml: "<p>Thanks</p>",
         attachments: [
           {
+            storedFileId,
             filename: "quote.pdf",
-            contentType: "application/pdf",
-            url: "https://files.test/quote.pdf",
           },
         ],
       });
@@ -968,9 +973,8 @@ describe("conversationsRouter", () => {
         bodyHtml: "<p>Thanks</p>",
         attachments: [
           {
+            storedFileId,
             filename: "quote.pdf",
-            contentType: "application/pdf",
-            url: "https://files.test/quote.pdf",
           },
         ],
       });
@@ -1251,7 +1255,7 @@ describe("conversationsRouter", () => {
         {
           filename: "invoice.pdf",
           contentType: "application/pdf",
-          url: "https://files/invoice.pdf",
+          size: 1234,
         },
       ]);
 
@@ -1267,36 +1271,34 @@ describe("conversationsRouter", () => {
         }),
       ).toBe(0);
       expect(
-        await db.emailAttachment.count({
+        await db.attachment.count({
           where: { emailMessage: { conversationId: conversation.id } },
+        }),
+      ).toBe(0);
+      expect(
+        await db.storedFile.count({
+          where: { key: { in: storedFileKeys } },
         }),
       ).toBe(0);
     });
 
-    it("attempts to remove stored attachment files", async () => {
+    it("removes every stored attachment file through its recorded driver", async () => {
       const account = await createAccount([userId]);
       const conversation = await createConversation(account.id, {
         deletedAt: new Date("2026-10-17T11:00:00.000Z"),
       });
       await createMessage(conversation.id, {}, [
-        {
-          filename: "one.pdf",
-          contentType: "application/pdf",
-          url: "https://files/one.pdf",
-        },
-        {
-          filename: "two.pdf",
-          contentType: "application/pdf",
-          url: "https://files/two.pdf",
-        },
+        { filename: "one.pdf" },
+        { filename: "two.pdf" },
       ]);
 
       await caller.deleteForever({ id: conversation.id });
 
-      expect(attachmentStorageMock.delete).toHaveBeenCalledWith([
-        "https://files/one.pdf",
-        "https://files/two.pdf",
-      ]);
+      expect(
+        await db.storedFile.count({
+          where: { key: { in: storedFileKeys } },
+        }),
+      ).toBe(0);
     });
 
     it("deletes the rows even when storage cleanup fails", async () => {
@@ -1304,16 +1306,11 @@ describe("conversationsRouter", () => {
       const conversation = await createConversation(account.id, {
         deletedAt: new Date("2026-10-17T11:00:00.000Z"),
       });
+      // A driver this build does not know cannot be resolved, so its record
+      // must survive for the audit while the conversation still goes.
       await createMessage(conversation.id, {}, [
-        {
-          filename: "stuck.pdf",
-          contentType: "application/pdf",
-          url: "https://files/stuck.pdf",
-        },
+        { filename: "stuck.pdf", driver: "unknown-driver" },
       ]);
-      attachmentStorageMock.delete.mockRejectedValue(
-        new Error("storage unavailable"),
-      );
       const consoleError = vi
         .spyOn(console, "error")
         .mockImplementation(() => undefined);
@@ -1325,6 +1322,11 @@ describe("conversationsRouter", () => {
       expect(
         await db.conversation.findUnique({ where: { id: conversation.id } }),
       ).toBeNull();
+      expect(
+        await db.storedFile.count({
+          where: { key: { in: storedFileKeys } },
+        }),
+      ).toBe(1);
       consoleError.mockRestore();
     });
 
@@ -1339,7 +1341,6 @@ describe("conversationsRouter", () => {
       expect(
         await db.conversation.findUnique({ where: { id: conversation.id } }),
       ).not.toBeNull();
-      expect(attachmentStorageMock.delete).not.toHaveBeenCalled();
     });
 
     it("rejects a conversation on an account the user is not assigned to", async () => {
@@ -1355,7 +1356,6 @@ describe("conversationsRouter", () => {
       expect(
         await db.conversation.findUnique({ where: { id: conversation.id } }),
       ).not.toBeNull();
-      expect(attachmentStorageMock.delete).not.toHaveBeenCalled();
     });
   });
 

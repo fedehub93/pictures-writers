@@ -57,10 +57,14 @@ export async function generateMetadata(
       },
     });
 
+    const latest = posts[0];
+
     return {
       ...metadata,
-      title: `News: ${posts[0].title}`,
-      description: `Ultime notizie sulla sceneggiatura cinematografica. ${posts[0].title}`,
+      title: latest ? `News: ${latest.title}` : "News",
+      description: latest
+        ? `Ultime notizie sulla sceneggiatura cinematografica. ${latest.title}`
+        : "Ultime notizie sulla sceneggiatura cinematografica.",
       robots: {
         index: false,
         follow: false,

@@ -15,7 +15,6 @@ describe("local storage driver", () => {
     root = await mkdtemp(path.join(tmpdir(), "media-storage-local-"));
     driver = createLocalStorageDriver({
       root,
-      publicBaseUrl: "/media",
     });
   });
 
@@ -28,6 +27,18 @@ describe("local storage driver", () => {
 
     await expect(driver.get("media-1/1/original")).resolves.toEqual(
       new Uint8Array([1]),
+    );
+  });
+
+  it("addresses originals and renditions under the canonical /media path", async () => {
+    await driver.put("media-1/1/original", new Uint8Array([1]), "image/png");
+    await driver.put("media-1/1/720.avif", new Uint8Array([2]), "image/avif");
+
+    await expect(driver.url("media-1/1/original")).resolves.toBe(
+      "/media/media-1/1/original",
+    );
+    await expect(driver.url("media-1/1/720.avif")).resolves.toBe(
+      "/media/media-1/1/720.avif",
     );
   });
 

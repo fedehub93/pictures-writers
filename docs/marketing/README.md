@@ -6,7 +6,7 @@ Documenti di strategia, contenuto, SEO, email e lancio di Pictures Writers. Eran
 
 ```
 docs/marketing/
-  strategy/   → contesto, strategia contenuti, piano marketing
+  strategy/   → contesto, strategia contenuti, piano marketing, definizione servizi
   seo/        → AI search, schema, riscritture SERP, piani di misurazione
   content/    → copy deck e ottimizzazione conversione delle pagine
   email/      → sequence e playbook newsletter
@@ -28,6 +28,7 @@ docs/marketing/
 | `strategy/product-marketing.md` | Posizionamento, ICP, voce, obiezioni, proof point | ✅ contesto master | 05/10/2026 |
 | `strategy/content-strategy.md` | Pillar e cluster, calendario, funnel, KPI §8 | 🔄 v1.1 — target numerici fissati | 22/10/2026 |
 | `strategy/marketing-plan.md` | Piano AARRR 13 sezioni (ott 2026–set 2027), rubric, decisioni | ✅ completo · #1 attribuzione offline parcheggiata | 05/10/2026 |
+| `strategy/pitch-deck-service.md` | Servizio Dossier di progetto: posizionamento, target, deliverable, competitor, Check + Base + Pro, prezzi e lancio (solo Italia) | 🔄 prezzi confermati; nomi e kit da definire | 18/11/2026 |
 | `content/copywriting.md` | Copy deck: title, meta, intro, CTA per hub e pagine | 🔄 applicazione in CMS in corso | 02/10/2026 |
 | `content/cro.md` | Audit pagine, quick win e test di conversione | 🔄 quick win residui | 23/09/2026 |
 | `content/lead-magnet-01-template-soggetto.md` | LM1 "Il soggetto in 8 mezze pagine": decisioni, contenuto v2, specifica Figma, template prodotto, landing, email | 🔄 contenuto v2 e specifica Figma pronti; da impaginare | 22/10/2026 |

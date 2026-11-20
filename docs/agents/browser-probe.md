@@ -81,12 +81,13 @@ there would put synthetic pages next to real data.
 
 ```bash
 npm run agent:env     # once: creates .env.agent (agent database URL, agent-only secrets)
-npm run agent:seed    # creates the probe user and resets the probe page; also the reset
+npm run agent:seed    # applies pending migrations, creates the probe user, resets the probe page
 npm run dev:agent     # next dev against .env.agent
+npm run build:agent   # the production build against the same database
 ```
 
-`dev:agent` refuses to start unless `.env.agent` points at `pictures_writers_agent` on
-localhost, and `builder-probe` repeats that check before signing in. The probe logs in through
+`dev:agent` and `build:agent` refuse to run unless `.env.agent` points at
+`pictures_writers_agent` on localhost, and `builder-probe` repeats that check before signing in. The probe logs in through
 `/api/auth/sign-in/email` as `PROBE_ADMIN_EMAIL`: it never reads `BETTER_AUTH_SECRET` and never
 touches the development database.
 
