@@ -439,10 +439,8 @@ Un `uploadthing` non configurato compare in `unresolved` anche se gli URL assolu
 4. **Scelta.** Solo allora seleziona `local` in **Admin → Media**. I nuovi upload vanno su disco, i Media esistenti restano sul provider. Esegui `npm run media:audit`.
 5. **Ritorno.** Per tornare indietro seleziona `uploadthing`: i file già locali continuano a essere serviti dal volume e i nuovi upload tornano al provider.
 
-> L'ordine completo su un'Installazione esistente è: registra il driver (4bis.7.1) → deploy con
-> migrazioni e volume → **backfill della posizione (4bis.8)** → sweep degli indirizzi → scelta
-> `local` → re-home → purge dopo la finestra di grazia. Il backfill della posizione è il passo
-> che rende verde l'audit e che permette di smettere di leggere le colonne di storage della Media.
+> Il backfill della posizione (4bis.8) precede lo sweep, la scelta `local` e il re-home: senza,
+> l'audit resta rosso e le fasi successive partirebbero da una posizione non verificata.
 
 ### 4bis.8 Primo deploy del modello stored-file e backfill della posizione
 
@@ -459,7 +457,7 @@ re-home. Il comando non riscrive nessuna riga `Media`.
 1. **Registra il driver attivo, prima del deploy.** Il fallback del codice è `local`:
    un'Installazione che non ha mai scelto scriverebbe i nuovi upload sul disco. Su questa
    Installazione imposta `MEDIA_STORAGE_DRIVER=uploadthing` in Coolify (`UPLOADTHING_TOKEN` è già
-   presente) e riavvia, come in 4bis.7.1. La variabile è la registrazione esplicita della scelta:
+   presente) e riavvia, come in 4bis.7, passo 1. La variabile è la registrazione esplicita:
    se la togli, il fallback torna `local` e i nuovi upload finiscono sul disco.
 
    ```bash
@@ -477,7 +475,7 @@ re-home. Il comando non riscrive nessuna riga `Media`.
    docker inspect <APP_CONTAINER> --format '{{json .Mounts}}'
    docker exec <APP_CONTAINER> printenv MEDIA_STORAGE_DRIVER MEDIA_STORAGE_LOCAL_ROOT
    docker exec -i <DB_CONTAINER> psql -U postgres -d postgres -At \
-     -c "SELECT coalesce(\"storageDriver\", '(unset)') FROM \"Settings\";"
+     -c "SELECT coalesce((SELECT \"storageDriver\" FROM \"Settings\" LIMIT 1), '(unset)');"
    ```
 
    La scelta salvata dal selettore (`Settings.storageDriver`) è `uploadthing` o `(unset)`, nel
@@ -491,15 +489,21 @@ re-home. Il comando non riscrive nessuna riga `Media`.
    docker exec -it <APP_CONTAINER> npm run media:backfill-files
    ```
 
-   Un Media con indirizzo assoluto riceve quell'indirizzo come `remoteUrl`; un Media locale, o il
-   legacy `/assets/<key>`, segue la regola condivisa; un Media con chiave illeggibile finisce in
-   `failed` con il motivo e non viene perso in silenzio. Il comando esce `1` se `failed` non è
-   vuoto.
+   Un Media con indirizzo assoluto riceve quell'indirizzo come `remoteUrl`; il legacy
+   `/assets/<key>` riceve l'indirizzo del provider che quell'URL rappresenta; un Media locale
+   lascia `remoteUrl` nullo. Un Media con chiave illeggibile finisce in `failed` con il motivo e
+   non viene perso in silenzio. Il comando esce `1` se `failed` non è vuoto.
 
    Sulle 720 Media del caso reale il primo run riporta:
 
    ```json
-   { "scanned": 720, "created": 720, "skipped": 0, "failed": [], "dryRun": false }
+   {
+     "scanned": 720,
+     "created": 720,
+     "skipped": 0,
+     "failed": [],
+     "dryRun": false
+   }
    ```
 
    Esegui di nuovo lo stesso comando: deve riportare `created: 0`, `skipped: 720`. È la prova,
@@ -510,7 +514,11 @@ re-home. Il comando non riscrive nessuna riga `Media`.
    > storici. Sono file registrati ma non Media, quindi non compaiono in `scanned`/`created`; si
    > vedono solo nel conteggio `files` dell'audit.
 
-4. **Verifica conteggi e duplicati.**
+4. **Verifica conteggi, indirizzi remoti e duplicati.**
+
+   Il comando registra ogni indirizzo assoluto come `remoteUrl`. La consegna sa ripiegare sulle
+   colonne della Media, quindi senza questo controllo un record con `remoteUrl` nullo resterebbe
+   invisibile e la posizione non sarebbe davvero provata:
 
    ```sql
    SELECT
@@ -518,6 +526,8 @@ re-home. Il comando non riscrive nessuna riga `Media`.
      (SELECT count(*) FROM "StoredFile" WHERE kind = 'MEDIA') AS media_files,
      (SELECT count(*) FROM "Media" m WHERE NOT EXISTS (
         SELECT 1 FROM "StoredFile" f WHERE f."mediaId" = m.id)) AS media_without_record,
+     (SELECT count(*) FROM "StoredFile"
+        WHERE kind = 'MEDIA' AND "remoteUrl" IS NULL) AS without_remote_url,
      (SELECT count(*) FROM (
         SELECT "mediaId" FROM "StoredFile"
         WHERE "mediaId" IS NOT NULL
@@ -528,10 +538,22 @@ re-home. Il comando non riscrive nessuna riga `Media`.
    ```
 
    Atteso: `media_files = media` (sui 720 di questa Installazione `media = 720`),
-   `media_without_record = 0`, `duplicated_roles = 0`, `duplicated_keys = 0`. Se `media` non è
-   720, annota il numero vero: è la libreria, non il ticket.
+   `media_without_record = 0`, `without_remote_url = 0`, `duplicated_roles = 0`,
+   `duplicated_keys = 0`. Se `media` non è 720, annota il numero vero: è la libreria, non il
+   ticket. Le due unique rendono i duplicati impossibili per costruzione: la prova sui dati è il
+   rerun del passo 3.
 
-5. **Ogni Media risponde sul suo indirizzo canonico.** L'indirizzo canonico è `/media/<key>`.
+   Ogni riga deve inoltre nominare uno dei due host del provider: alla misura erano 701 sul più
+   recente e 19 sul più vecchio, quindi un host inatteso o un terzo host è un segnale.
+
+   ```sql
+   SELECT split_part(split_part("remoteUrl", '//', 2), '/', 1) AS host, count(*)
+   FROM "StoredFile"
+   WHERE kind = 'MEDIA' AND "remoteUrl" IS NOT NULL
+   GROUP BY 1 ORDER BY 2 DESC;
+   ```
+
+5. **Ogni Media risolve sul suo indirizzo canonico.** L'indirizzo canonico è `/media/<key>`.
    Segui i redirect con `-L`: la risposta finale è `200`. Finché i byte sono sul provider la
    catena passa dal `302` verso il `remoteUrl` registrato (i 720 coprono due host storici, non uno
    solo) e si chiude sul provider; dopo il re-home la stessa richiesta risponde `200` senza passare
@@ -561,7 +583,8 @@ re-home. Il comando non riscrive nessuna riga `Media`.
    docker exec -it <APP_CONTAINER> npm run media:audit
    ```
 
-   Atteso sui 720 Media appena registrati:
+   Atteso per i 720 Media appena registrati (una libreria con allegati storici porta `files` più
+   in alto, e file caricati dopo il deploy lo alzano ancora):
 
    ```txt
    files: 720
@@ -571,16 +594,16 @@ re-home. Il comando non riscrive nessuna riga `Media`.
    unresolved: 0
    ```
 
-   `files` può essere maggiore di 720 se dopo il deploy sono stati caricati file nuovi o se la
-   migrazione ha copiato allegati storici; ciò che conta per il gate è `unresolved: 0` e
-   `unconfigured drivers: none`. Le righe `bytes` e `objects` descrivono il volume locale: con i
-   byte ancora sul provider valgono zero, e un file di prova rimasto sul volume compare come
-   orfano senza far fallire il comando. Un `unconfigured drivers: uploadthing` significa che il
-   container non vede `UPLOADTHING_TOKEN`: rimettilo prima di toccare i byte. Se `unresolved`
-   elenca un file con `unknown-driver`, è tipicamente un allegato email storico la cui URL non era
-   né del provider né `/files/` e che la migrazione ha registrato sul driver `external`: va
-   risolto o rimosso a mano, perché nessun driver di questa build sa cancellarne l'oggetto.
-   L'audit esce `1` finché `unresolved` non è vuoto, quindi il suo codice chiude il gate.
+   Il numero che chiude il gate è `unresolved: 0`. `bytes.accounted` è il totale dell'intera
+   libreria, originali più rendition: non è zero e non cambia con il provider. `localAccounted`,
+   `localOnDisk` e gli oggetti locali valgono zero finché i byte sono sul provider; un file di
+   prova rimasto sul volume compare come orfano senza far fallire il comando. Un
+   `unconfigured drivers:
+   uploadthing` significa che il container non vede `UPLOADTHING_TOKEN`: rimettilo prima di
+   toccare i byte. Se `unresolved` elenca un file con `unknown-driver`, è tipicamente un allegato
+   email storico la cui URL non era né del provider né `/files/` e che la migrazione ha
+   registrato sul driver `external`: va risolto o rimosso a mano, perché nessun driver di questa
+   build sa cancellarne l'oggetto.
 
 7. **Dump e prova di restore.** Il record deve sopravvivere a un dump e a un restore, altrimenti
    non è un dato di produzione:
@@ -597,10 +620,14 @@ re-home. Il comando non riscrive nessuna riga `Media`.
    docker exec -it pw-restore-test pg_restore -U postgres -d postgres \
      --no-owner --no-privileges --clean --if-exists /tmp/backup.dump
    docker exec -it pw-restore-test psql -U postgres -d postgres -c \
-     "SELECT count(*) FROM \"StoredFile\" WHERE kind = 'MEDIA';"
+     "SELECT count(*) AS media_files,
+             count(*) FILTER (WHERE \"mediaId\" IS NULL) AS without_media,
+             count(*) FILTER (WHERE \"remoteUrl\" IS NULL) AS without_remote_url
+      FROM \"StoredFile\" WHERE kind = 'MEDIA';"
    ```
 
-   Atteso `720`. Poi `docker rm -f pw-restore-test`, cancella il dump di prova (o conservalo
+   Atteso `720 | 0 | 0`: count, legame alla Media e indirizzo remoto sopravvivono al dump. Poi
+   `docker rm -f pw-restore-test`, cancella il dump di prova (o conservalo
    fuori dal repository come backup), e annota data ed esito. Il dump di restore usa-e-getta è
    lo stesso schema dell'appendice C §10.
 
