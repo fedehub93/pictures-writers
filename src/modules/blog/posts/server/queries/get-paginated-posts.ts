@@ -1,6 +1,10 @@
 import { Prisma } from "@/generated/prisma";
 
 import { db } from "@/shared/lib/db";
+import {
+  mediaPresentationSelect,
+  withMediaUrl,
+} from "@/modules/media/lib/media-address";
 
 export const getPaginatedPosts = async ({
   cursor,
@@ -50,11 +54,7 @@ export const getPaginatedPosts = async ({
       liveVersion: {
         include: {
           imageCover: {
-            select: {
-              id: true,
-              url: true,
-              altText: true,
-            },
+            select: { ...mediaPresentationSelect },
           },
           user: {
             select: {
@@ -81,7 +81,9 @@ export const getPaginatedPosts = async ({
         slug: root.slug,
         description: version.description,
         publishedAt: version.publishedAt,
-        imageCover: version.imageCover,
+        imageCover: version.imageCover
+          ? withMediaUrl(version.imageCover)
+          : null,
         user: version.user,
       };
     });

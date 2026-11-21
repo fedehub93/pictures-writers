@@ -14,7 +14,7 @@ Read this before changing anything under `src/modules/media/`, `src/app/media/`,
 upload    browser -> POST /api/media (multipart)
           -> createMediaFromUpload
           -> active storage driver
-          -> Media row: key, url, storageDriver
+          -> Media row: name, type, altText, revision, metadata, renditions, archivedAt
           -> StoredFile row: key, driver, remoteUrl, content type, size, checksum
 
 deliver   GET /media/<key>
@@ -49,44 +49,50 @@ it in the same transaction that saves the answer, so the stored data points at
 the attachment and never at a provider address. A refused upload writes neither
 bytes nor a record.
 
-Every Media with a readable storage key has exactly one `StoredFile`, the
-record that answers "where are the bytes": its key, the driver that owns it,
-the provider address when the driver is remote, content type, size, checksum
-and kind. New uploads and replacements write it in the same transaction as the
-Media, so a failed write leaves neither; the one-time
-`npm run media:backfill-files` creates it for Media that predate it, from what
-the library already knows, and reports any Media whose key it cannot read. The
-command never rewrites a Media row. The production order of that first deploy —
-the explicit driver record, the volume, the command, its expected counts, the
-canonical-address check and the audit gate — is in
+Every Media has exactly one `StoredFile`, the record that answers "where are the
+bytes": its key, the driver that owns it, the provider address when the driver
+is remote, content type, size, checksum and kind. New uploads and replacements
+write it in the same transaction as the Media, so a failed write leaves neither.
+The one-time `npm run media:backfill-files` created it for Media that predate it,
+from what the library already knew, and reported any Media whose key it could not
+read. The command never rewrote a Media row. The production order of that first
+deploy — the explicit driver record, the volume, the command, its expected counts,
+the canonical-address check and the audit gate — is in
 `docs/self-hosting/08-operations-runbook.md` §4bis.8.
 
 Delivery reads that record. A local file streams from disk with its recorded
 content type; a remote file redirects to the address the record carries and
 performs no provider API call. A rendition has no record of its own: delivery
-proves it belongs to its Media's revision prefix and, when the Media is remote,
-reads the provider address from the rendition manifest. A Media whose record
-has not been created yet still resolves from its own columns, so deploying this
-code before the one-time backfill cannot darken an existing picture.
+proves it belongs to its Media's revision prefix and reads the address its
+manifest entry recorded when the bytes were written. A Media without a record
+has no location to answer with, so it is a `404`; the audit reports it as
+`no-stored-file`.
 
 The active driver decides where **new** uploads go. Resolution is the saved setting, then
 `MEDIA_STORAGE_DRIVER`, then local disk, which is what lets a fresh Installation upload with no
-provider account. Delivery never asks the active driver: it
-asks the row, so switching storage affects only new files. Replace and permanent deletion read
-the stored-file record too: the revision a replace supersedes is cleaned through the driver
-recorded on the file, and the key's shape decides whether the unit is a prefix or the provider's
-exact file key, so a backfilled pre-seam row is still removed by the key it has. The admin
-library reads the record's key, size, content type, checksum and driver; `Media.url` stays the
-canonical address the record's key composes. The Media's own storage columns are kept in step on
-every write and are read only for a row whose record the one-time backfill has not created yet.
-The metadata and rendition backfills read the stored-file record — its key, its driver, its
-size, content type and checksum — and fall back to the Media's storage columns only for a row
-whose record does not exist yet. They resolve the recorded driver per row for reads and writes,
-so a library that mixes legacy provider Media and local Media is processed in one run; a row
-whose driver is not configured here is reported and the run continues. Both backfills keep the
-record true: the metadata run writes back the size, content type and checksum it discovers, and
-the rendition run moves the record's key and provider address when a legacy flat key becomes a
-namespaced one.
+provider account. Delivery never asks the active driver: it asks the row, so switching storage
+affects only new files. Replace and permanent deletion read the stored-file record too: the
+revision a replace supersedes is cleaned through the driver recorded on the file, and the key's
+shape decides whether the unit is a prefix or the provider's exact file key, so a backfilled
+pre-seam row is still removed by the key it has.
+
+The admin library reads the record's key, size, content type, checksum and driver, and composes
+the row's address from that key through the one composer in `media/lib/file-path.ts`. This release
+neither reads nor writes the Media's storage columns: they stay frozen at their last values until
+the contraction drops them in the next deploy. The address also carries the rendition token the
+browser's image loader reads: each entry in `Media.renditions` records the address its bytes were
+given at write time — a canonical `/media/<key>` for a local file, the provider's address for a
+remote one. A row written before that field existed carried the same addresses in the token of its
+old `Media.url`; `npm run media:backfill-manifest-urls` copies them into `renditions`. The start
+script runs that command before the first request, so the server never needs the column; the
+command is idempotent and can be run again after the switch to catch an upload the previous
+container wrote during it. The metadata and rendition backfills read the stored-file record — its
+key, its driver, its size, content type and checksum — and never a Media column. They resolve the
+recorded driver per row for reads and writes, so a library that mixes legacy provider Media and
+local Media is processed in one run; a row whose driver is not configured here is reported and the
+run continues. Both backfills keep the record true: the metadata run writes back the size, content
+type and checksum it discovers, and the rendition run moves the record's key and provider address
+when a legacy flat key becomes a namespaced one.
 
 A mixed library is a transition, not a target: the Media that predate the seam stay on
 UploadThing until the owner chooses to move them, and a Media uploaded with the local driver
@@ -113,9 +119,11 @@ arrived is gone.
 | Upload, replace, archive, delete, revisions | `src/modules/media/server/media-service.ts` |
 | Attachment and avatar writes, cleanup, user avatars | `src/modules/media/server/owned-file.ts` |
 | Canonical `/media` and `/files` addresses, one composer | `src/modules/media/lib/file-path.ts` |
+| Media delivery address and rendition manifest projection | `src/modules/media/lib/media-address.ts` |
 | Stored-file location of one upload | `src/modules/media/server/stored-file.ts` |
 | Stored-file location columns shared by server and library | `src/modules/media/lib/stored-file-location.ts` |
 | One-time location backfill for existing Media | `src/modules/media/server/backfill-stored-files.ts`, `scripts/backfill-stored-files.ts` |
+| One-time rendition-address backfill | `src/modules/media/server/backfill-manifest-urls.ts`, `scripts/backfill-media-manifest-urls.ts` |
 | Metadata and rendition backfills | `src/modules/media/server/backfill-media-metadata.ts`, `src/modules/media/server/backfill-media-renditions.ts` |
 | Key grammar: compose, parse, revision prefix | `src/modules/media/server/media-key.ts` |
 | Stored file -> owning Media (originals and renditions) | `src/modules/media/server/media-delivery.ts` |
@@ -158,12 +166,12 @@ New keys are `<installationSlug>/<mediaId>/<revision>/<file>`, where `<file>` is
 `src/modules/media/server/media-key.ts` is the only composer and parser of the key's path
 segments. Do not re-implement segment counting in the route or the service; `parseMediaKey`
 returns `null` for a legacy flat key, which is how the delivery route tells the two shapes apart.
-The delivery token in `src/modules/media/lib/manifest.ts` parses only a rendition filename
-(`<width>.<format>`) to find the address it already carries; it never parses a storage key.
+The delivery token in `src/modules/media/lib/manifest.ts` is read by the browser's image loader;
+the server never parses a storage key out of it.
 
 Legacy keys are flat (`<provider-key>` or `<mediaId>/<revision>/<file>`) and are never renamed.
-Before a stored-file record exists, a Media with no recorded `storageDriver` is remote, because
-that is where its bytes are.
+The record's driver says where the bytes are; a pre-seam record names `uploadthing` and carries
+the absolute address the row still serves.
 
 ## A rendition has no row
 
@@ -171,42 +179,40 @@ An original is recorded on the StoredFile's key. A rendition shares the revision
 no record of its own. The delivery route therefore:
 
 1. looks up the StoredFile by key;
-2. if that misses, looks up the Media by key, for a row whose record was not created before the
-   one-time backfill;
-3. if that misses, parses the key, finds the owner by `id + revision`, and requires the requested
+2. if that misses, parses the key, finds the owner by `id + revision`, and requires the requested
    key to start with the owner's stored-file revision prefix.
 
 That is what makes `/media/<slug>/<id>/<revision>/720.avif` work. A key that parses but does not
 belong to the resolved row is a 404, not a stream. Do not "simplify" the route to an exact-key
 lookup: local renditions stop resolving.
 
-For a remote Media, the rendition's provider address is read from the `?mt=` manifest its Media's
-address already carries, so the redirect never asks the provider. A manifest with no address for
-the requested rendition answers 404 rather than falling back to a provider read; so does an address
+For a remote Media, the rendition's provider address is read from the entry its Media's rendition
+manifest recorded, so the redirect never asks the provider. A manifest with no address for the
+requested rendition answers 404 rather than falling back to a provider read; so does an address
 that points back at `/media/`, which a manifest written while the file was local still carries.
 
 ## Addresses
 
-The stored-file record's key is the truth. `Media.key` mirrors it until the column is dropped:
-`Media.url` is the relative delivery address `/media/<key>`; when the Media has renditions, the URL
-also carries `?mt=` with the revision, the archived flag and the rendition URLs.
-`stripMediaManifest` returns the plain path.
+The stored-file record's key is the truth. `src/modules/media/lib/file-path.ts` is the one composer
+of an address: `storedFilePath("MEDIA", key)` builds `/media/<key>`, and `mediaDeliveryAddress` in
+`media/lib/media-address.ts` adds the `?mt=` delivery token. No other module builds either half.
+When the Media has renditions, the token carries the revision, the archived flag and the address
+each rendition was given at write time; `stripMediaManifest` returns the plain path.
 
-The local driver composes exactly this address through `mediaPath`; there is no environment
+The local driver composes exactly this address through the same composer; there is no environment
 variable for a local public prefix, so a configuration mistake cannot produce addresses the
 delivery route does not serve.
 
-The path carries no domain. The `?mt=` token is the exception: for a remote row it can embed the
-provider's rendition URLs, which is the debt recorded below. The absolute form is composed only
-at a boundary that cannot use a relative URL: social metadata, JSON-LD, Stripe checkout images
-and email HTML, through `absoluteMediaUrl` in `src/modules/media/server/media-url.ts`.
+The path carries no domain. The `?mt=` token is the exception: for a remote row it embeds the
+provider's rendition addresses, which is the debt recorded below. The absolute form is composed
+only at a boundary that cannot use a relative URL: social metadata, JSON-LD, Stripe checkout
+images and email HTML, through `absoluteMediaUrl` in `src/modules/media/server/media-url.ts`.
 
-The route's `302` hop serves any file whose recorded driver is not local, including a pre-seam row
-with no record (it resolves as UploadThing). That row's stored address is absolute, so the browser
-asks the provider directly and does not request `/media/<key>` for it. That is why the hop is not a
-path to own-domain addresses for legacy Media: their stored addresses are absolute, so serving
-them on this Installation's domain requires the address sweep
-(`npm run media:sweep-addresses`), not the hop.
+The route's `302` hop serves any file whose recorded driver is not local. A pre-seam row's bytes
+are still on the provider, but its address is now canonical, so a browser asks `/media/<key>` and
+the route redirects to the recorded provider address. Serving those bytes on this Installation's
+domain therefore requires the address sweep (`npm run media:sweep-addresses`) for the content that
+still names the provider, not the hop.
 
 The hop carries `Cache-Control: public, max-age=300`, never `immutable`: the redirect points at
 bytes a later move can take away, so caching it as if it were the file would leave a visitor
@@ -218,19 +224,19 @@ The legacy `/assets/<key>` address is a build-time rewrite to the provider in
 
 ## Address sweep
 
-A library that predates the seam stores the provider's absolute URL in `Media.url` and in the
+A library that predates the seam stored the provider's absolute URL in `Media.url` and in the
 content that copied it: Puck documents, TipTap bodies, product descriptions, ad images, the logo
 setting, form submission data, user images and the legacy attachment rows. Those strings are the
 only thing tying the Installation to the provider's host. `npm run media:sweep-addresses` rewrites
 each one into the canonical address of the Stored file it names. The one-time location backfill
-(`npm run media:backfill-files`) comes first: a Media with no Stored file has no canonical address
-to write, so the sweep reports its address and leaves it.
+ran before it; a Media with no Stored file has no canonical address to write, so the sweep reports
+its address and leaves it.
 
 The canonical address comes from one index built from every Stored file: a Media answers with
 `/media/<key>`, an attachment or avatar with `/files/<key>`. A content reference gets a rendition
 token whose rendition URLs are themselves `/media/<key>` paths, so a later move cannot leave a
-provider URL inside a page; `Media.url` keeps the rendition token it already carries, because that
-token is what lets the delivery route redirect a remote rendition before the bytes move. A provider
+provider URL inside a page; the Media's manifest keeps the address delivery reads, because that
+entry is what lets the delivery route redirect a remote rendition before the bytes move. A provider
 URL, the legacy `/assets/` shape and an absolute address the library already recorded all resolve
 through the index. An ordinary external link is left alone. Running the command again reports zero
 changes, because an address already in canonical form is never touched.
@@ -333,8 +339,7 @@ indefinitely.
 `Settings.mediaQuotaMb` (default 5120) is the Installation's byte budget for the disk. One number
 covers every `StoredFile`, whatever its role: a Media contributes its original's stored-file size
 plus the bytes in its rendition manifest, an attachment or avatar its own size, and archived
-Media keep counting. A Media whose location record does not exist yet (before the one-time
-backfill) still counts from its own columns, so deploying this code early cannot under-count.
+Media keep counting. A Media with no record contributes nothing; the audit reports it.
 `src/modules/media/lib/quota.ts` is the pure arithmetic; `src/modules/media/server/media-quota.ts`
 reads the database and holds the admission lock.
 
@@ -393,10 +398,11 @@ addresses or names, so it is safe to paste into a deployment log.
 
 ## Known debt (2026-11)
 
-- `Media.url` carries the `?mt=` token, and for remote rows that token embeds provider URLs,
-  while the spec says `Media.url` is `/media/<key>` and nothing else. Re-home rewrites the token
-  in the same transaction as the flip, so a move keeps delivery working; deriving the token at
-  render time remains the cleaner shape and is not done.
+- The composed delivery address carries the `?mt=` token, and for remote rows that token embeds
+  provider URLs. Re-home rewrites the manifest in the same transaction as the flip, so a move keeps
+  delivery working; deriving the token at render time remains the cleaner shape and is not done.
+  The `Media.url` column that used to hold it is frozen in this release and disappears in the
+  contraction.
 - Updating `altText` changes published output but does not revalidate it
   (`revalidateContent` is not called).
 - The picker copy still says "asset"; the glossary term is Media.

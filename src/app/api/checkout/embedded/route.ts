@@ -4,6 +4,10 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
 import { getSettings } from "@/data/settings";
+import {
+  mediaPresentationSelect,
+  withMediaUrl,
+} from "@/modules/media/lib/media-address";
 import { absoluteMediaUrl } from "@/modules/media/server/media-url";
 
 export async function POST(req: Request) {
@@ -25,11 +29,7 @@ export async function POST(req: Request) {
             id: true,
             title: true,
             price: true,
-            imageCover: {
-              select: {
-                url: true,
-              },
-            },
+            imageCover: { select: mediaPresentationSelect },
           },
         },
       },
@@ -57,6 +57,9 @@ export async function POST(req: Request) {
     // Stripe fetches the image itself, so a stored relative Media address has
     // to be composed against the Installation's canonical URL.
     const { siteUrl } = await getSettings();
+    const coverImageUrl = product.imageCover
+      ? withMediaUrl(product.imageCover).url
+      : null;
 
     const line_items: Stripe.Checkout.SessionCreateParams.LineItem[] = [
       {
@@ -67,8 +70,8 @@ export async function POST(req: Request) {
             name: product.title,
             description: "PRODUCT DESCRIPTION",
             images:
-              product.imageCover && siteUrl
-                ? [absoluteMediaUrl(product.imageCover.url, siteUrl)]
+              coverImageUrl && siteUrl
+                ? [absoluteMediaUrl(coverImageUrl, siteUrl)]
                 : [],
           },
           unit_amount: Math.round(1 * 100),

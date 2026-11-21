@@ -4,15 +4,14 @@ import {
   type StoredFileRole,
 } from "./file-path";
 import { LEGACY_ASSET_PREFIX } from "./image-ladder.mjs";
+import { composeMediaAddress } from "./media-address";
 import {
-  buildMediaDeliveryUrl,
   decodeMediaManifest,
   MEDIA_MANIFEST_PARAM,
 } from "./manifest";
 import { mediaRenditionLocations } from "./renditions";
 import {
   isUploadThingUrl,
-  mediaPath,
   parseSrc,
   storageKeyFromMediaUrl,
 } from "./url";
@@ -47,7 +46,6 @@ export interface StoredAddressIndexEntry {
   role: StoredFileRole;
   remoteUrl: string | null;
   media?: {
-    url: string;
     revision: number;
     archived: boolean;
     renditions: unknown;
@@ -67,56 +65,34 @@ export interface AddressRewriteResult {
 /**
  * The canonical address of a Media inside content: its `/media/<key>` path,
  * plus a rendition token whose rendition URLs are the Installation's own
- * `/media/<renditionKey>` paths. A remote rendition still answers, because
- * the delivery route reads the provider address from the Media's own token.
+ * `/media/<renditionKey>` paths. A rendition is named only when its manifest
+ * recorded an address, because that is what delivery resolves it through.
  */
 export function canonicalMediaAddress(
   key: string,
   media: NonNullable<StoredAddressIndexEntry["media"]>,
 ): string {
-  // Content can only rely on a rendition when the Media's own address carries
-  // the token the delivery route resolves it through. Without one, the plain
-  // original is safer than a rendition address that would 404.
-  if (!parseSrc(media.url).url.searchParams.has(MEDIA_MANIFEST_PARAM)) {
-    return mediaPath(key);
-  }
-
   // A rendition answers only under the original's revision prefix; the
   // delivery route proves ownership the same way. A legacy key that cannot
   // own the rendition leaves it out instead of writing an address that 404s.
   const prefix = `${key.split("/").slice(0, 3).join("/")}/`;
   const renditions = mediaRenditionLocations(media.renditions).filter(
-    (rendition) => rendition.key.startsWith(prefix),
+    (rendition) => rendition.key.startsWith(prefix) && rendition.url,
   );
 
-  return buildMediaDeliveryUrl(mediaPath(key), {
+  if (renditions.length === 0) {
+    return storedFilePath("MEDIA", key);
+  }
+
+  return composeMediaAddress(key, {
     revision: media.revision,
     archived: media.archived,
     renditions: renditions.map((rendition) => ({
       width: rendition.width,
       format: rendition.format,
-      url: mediaPath(rendition.key),
+      url: storedFilePath("MEDIA", rendition.key),
     })),
   });
-}
-
-/**
- * The canonical address of a Media's own row. Unlike a content address, the
- * row keeps the rendition token it already carries: while the bytes are still
- * on a provider, that token is what lets the delivery route redirect a
- * rendition without asking the provider. A Re-home rewrites the token when
- * the bytes move.
- */
-export function canonicalMediaRowAddress(
-  key: string,
-  currentUrl: string,
-): string {
-  const base = mediaPath(key);
-  const token = parseSrc(currentUrl).url.searchParams.get(
-    MEDIA_MANIFEST_PARAM,
-  );
-
-  return token ? `${base}?${MEDIA_MANIFEST_PARAM}=${token}` : base;
 }
 
 /**
@@ -142,7 +118,6 @@ export function buildStoredAddressIndex(
 
     byKey.set(entry.key, target);
     if (entry.remoteUrl) byAddress.set(entry.remoteUrl, target);
-    if (entry.media) byAddress.set(entry.media.url, target);
   }
 
   for (const entry of entries) {
@@ -153,7 +128,7 @@ export function buildStoredAddressIndex(
 
       byKey.set(rendition.key, {
         fileId: entry.fileId,
-        address: mediaPath(rendition.key),
+        address: storedFilePath("MEDIA", rendition.key),
       });
     }
   }
@@ -212,7 +187,7 @@ function isCanonicalAddress(
 
   if (address.area === "files") return url.search === "";
 
-  if (url.pathname !== mediaPath(address.key)) return false;
+  if (url.pathname !== storedFilePath("MEDIA", address.key)) return false;
 
   const token = url.searchParams.get(MEDIA_MANIFEST_PARAM);
   if (!token) return url.search === "";

@@ -3,7 +3,7 @@
 import "client-only";
 
 import { useModal } from "./use-modal-store";
-import type { Media } from "@/generated/prisma";
+import type { MediaCover } from "@/modules/media/lib/media-library";
 import type { ProductListItem } from "@/modules/shop/products/types";
 import type { SlashCommandModalService } from "@/shared/components/tiptap-editor/slash-menu/types";
 
@@ -20,7 +20,7 @@ export const useAdminSlashCommandModalService =
 
     return {
       openImagePicker: (onSelect) => {
-        onOpen("selectAsset", (media: Media) => {
+        onOpen("selectAsset", (media: MediaCover) => {
           onSelect({ src: media.url, alt: media.altText || "" });
         });
       },

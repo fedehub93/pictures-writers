@@ -1,5 +1,9 @@
 import { ContentStatus } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
+import {
+  mediaPresentationSelect,
+  withMediaUrl,
+} from "@/modules/media/lib/media-address";
 
 const DRAFT_STATUSES = [
   ContentStatus.DRAFT,
@@ -70,11 +74,7 @@ export const getDraftPostBySlug = async (slug: string) => {
             },
           },
           imageCover: {
-            select: {
-              url: true,
-              altText: true,
-              metadata: true,
-            },
+            select: { ...mediaPresentationSelect },
           },
           authors: {
             select: {
@@ -116,7 +116,9 @@ export const getDraftPostBySlug = async (slug: string) => {
     seo: version.seo,
     categories: version.categories,
     tags: version.tags,
-    imageCover: version.imageCover,
+    imageCover: version.imageCover
+      ? withMediaUrl(version.imageCover)
+      : null,
     authors: version.authors,
     faqs: version.faqs,
   };

@@ -8,8 +8,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { db } from "@/shared/lib/db";
 import { MediaType } from "@/generated/prisma";
-import { buildMediaDeliveryUrl } from "@/modules/media/lib/manifest";
-import { mediaPath } from "@/modules/media/lib/url";
 import { createMediaFromUpload } from "@/modules/media/server/media-service";
 import { createLocalStorageDriver } from "@/modules/media/server/storage/local";
 import type { StorageDriver } from "@/modules/media/server/storage/types";
@@ -81,11 +79,8 @@ describe("GET /media/<key>", () => {
   interface MediaFixture {
     id?: string;
     key: string;
-    url?: string;
     type?: MediaType;
-    mimeType?: string | null;
-    size?: number | null;
-    storageDriver?: string | null;
+    renditions?: PrismaJson.MediaRenditions;
   }
 
   async function createMedia(fixture: MediaFixture) {
@@ -93,19 +88,14 @@ describe("GET /media/<key>", () => {
       data: {
         id: fixture.id ?? randomUUID(),
         name: "Delivery fixture",
-        key: fixture.key,
-        url: fixture.url ?? `/media/${fixture.key}`,
         type: fixture.type ?? MediaType.IMAGE,
-        mimeType:
-          fixture.mimeType === undefined ? "image/png" : fixture.mimeType,
-        size: fixture.size ?? null,
-        storageDriver:
-          fixture.storageDriver === undefined ? "local" : fixture.storageDriver,
+        revision: 1,
+        renditions: fixture.renditions ?? null,
       },
     });
 
     mediaIds.push(media.id);
-    return media;
+    return { ...media, key: fixture.key };
   }
 
   async function createStoredFile(
@@ -138,12 +128,7 @@ describe("GET /media/<key>", () => {
 
     // The Media's own columns carry no content type on purpose: the response
     // must come from the stored-file record.
-    const media = await createMedia({
-      id,
-      key,
-      mimeType: null,
-      size: bytes.byteLength,
-    });
+    const media = await createMedia({ id, key });
     await createStoredFile(media, {
       contentType: "image/png",
       size: bytes.byteLength,
@@ -195,8 +180,6 @@ describe("GET /media/<key>", () => {
     const media = await createMedia({
       key,
       type: MediaType.FILE,
-      mimeType: null,
-      size: text.length,
     });
     await createStoredFile(media, {
       contentType: "text/plain",
@@ -278,7 +261,7 @@ describe("GET /media/<key>", () => {
 
   it("answers 404 when the recorded file is missing from disk", async () => {
     const key = `default/${randomUUID()}/1/original`;
-    const media = await createMedia({ key, size: 10 });
+    const media = await createMedia({ key });
     await createStoredFile(media, { contentType: "text/plain", size: 10 });
 
     const response = await GET(
@@ -326,10 +309,7 @@ describe("GET /media/<key>", () => {
   it("redirects a remote file to its recorded location with a short cache", async () => {
     const key = `default/${randomUUID()}/1/original`;
     const remoteUrl = "https://cdn.example.test/files/original.png";
-    const media = await createMedia({
-      key,
-      storageDriver: "uploadthing",
-    });
+    const media = await createMedia({ key });
     await createStoredFile(media, { driver: "uploadthing", remoteUrl });
 
     const response = await GET(
@@ -344,26 +324,19 @@ describe("GET /media/<key>", () => {
     expect(providerUrlReads).not.toHaveBeenCalled();
   });
 
-  it("resolves a Media with no recorded driver from its remote location", async () => {
-    // A pre-seam row may have no stored-file record yet; its own absolute
-    // address still names where the bytes are, without a provider call.
+  it("answers 404 for a Media with no stored-file record", async () => {
+    // The record is the only answer for where the bytes are; a row without one
+    // has no location, and the audit is what reports it.
     const providerKey = "file-legacy-flat-key";
-    const remoteUrl = `https://fake-app.ufs.sh/f/${providerKey}`;
 
-    await createMedia({
-      key: providerKey,
-      url: remoteUrl,
-      storageDriver: null,
-    });
+    await createMedia({ key: providerKey });
 
     const response = await GET(
       new Request(`http://localhost/media/${providerKey}`),
       context(providerKey),
     );
 
-    expect(response.status).toBe(302);
-    expect(response.headers.get("location")).toBe(remoteUrl);
-    expect(response.headers.get("cache-control")).toBe("public, max-age=300");
+    expect(response.status).toBe(404);
     expect(providerUrlReads).not.toHaveBeenCalled();
   });
 
@@ -373,17 +346,19 @@ describe("GET /media/<key>", () => {
     const renditionKey = `default/${id}/1/720.avif`;
     const renditionUrl = "https://cdn.example.test/files/720.avif";
 
-    const url = buildMediaDeliveryUrl(mediaPath(key), {
-      revision: 1,
-      archived: false,
-      renditions: [{ url: renditionUrl, width: 720, format: "avif" }],
-    });
-
     const media = await createMedia({
       id,
       key,
-      url,
-      storageDriver: "uploadthing",
+      renditions: [
+        {
+          key: renditionKey,
+          width: 720,
+          height: 480,
+          bytes: 400,
+          format: "avif",
+          url: renditionUrl,
+        },
+      ],
     });
     await createStoredFile(media, {
       driver: "uploadthing",
@@ -408,19 +383,19 @@ describe("GET /media/<key>", () => {
     const key = `default/${id}/1/original`;
     const renditionKey = `default/${id}/1/720.avif`;
 
-    const url = buildMediaDeliveryUrl(mediaPath(key), {
-      revision: 1,
-      archived: false,
-      renditions: [
-        { url: `/media/${renditionKey}`, width: 720, format: "avif" },
-      ],
-    });
-
     const media = await createMedia({
       id,
       key,
-      url,
-      storageDriver: "uploadthing",
+      renditions: [
+        {
+          key: renditionKey,
+          width: 720,
+          height: 480,
+          bytes: 400,
+          format: "avif",
+          url: `/media/${renditionKey}`,
+        },
+      ],
     });
     await createStoredFile(media, {
       driver: "uploadthing",
@@ -473,10 +448,7 @@ describe("GET /media/<key>", () => {
 
   it("answers 404 rather than a stack trace when a remote record carries no provider address", async () => {
     const key = `default/${randomUUID()}/1/original`;
-    const media = await createMedia({
-      key,
-      storageDriver: "uploadthing",
-    });
+    const media = await createMedia({ key });
     await createStoredFile(media, { driver: "uploadthing", remoteUrl: null });
 
     const response = await GET(

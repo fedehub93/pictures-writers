@@ -1,4 +1,8 @@
 import { db } from "@/shared/lib/db";
+import {
+  mediaPresentationSelect,
+  withMediaUrl,
+} from "@/modules/media/lib/media-address";
 
 /**
  *
@@ -37,9 +41,8 @@ export const getLastPostByRootId = async (rootId: string) => {
             },
             imageCover: {
               select: {
-                url: true,
+                ...mediaPresentationSelect,
                 name: true,
-                altText: true,
               },
             },
             authors: {
@@ -75,7 +78,9 @@ export const getLastPostByRootId = async (rootId: string) => {
       seo: version.seo,
       categories: version.categories,
       tags: version.tags,
-      imageCover: version.imageCover,
+      imageCover: version.imageCover
+        ? withMediaUrl(version.imageCover)
+        : null,
       authors: version.authors,
     };
   } catch (error) {

@@ -161,7 +161,7 @@ describe("POST /api/media/[mediaId]/replace", () => {
         StorageObjectNotFoundError,
       );
     }
-    await expect(driver.get(before.key!)).rejects.toBeInstanceOf(
+    await expect(driver.get(media.key!)).rejects.toBeInstanceOf(
       StorageObjectNotFoundError,
     );
   });
@@ -272,10 +272,12 @@ describe("POST /api/media/[mediaId]/replace", () => {
     expect(response.status).toBe(422);
     expect(body.error).toMatch(/could not be replaced/i);
 
-    const row = await db.media.findUniqueOrThrow({ where: { id: media.id } });
+    const row = await db.media.findUniqueOrThrow({
+      where: { id: media.id },
+      include: { storedFile: true },
+    });
     expect(row.revision).toBe(1);
-    expect(row.key).toBe(before.key);
-    expect(row.url).toBe(before.url);
+    expect(row.storedFile?.key).toBe(media.key);
     expect(row.renditions).toEqual(before.renditions);
     await expect(driver.deletePrefix("tmp/")).resolves.toBe(0);
   });
@@ -285,16 +287,27 @@ describe("POST /api/media/[mediaId]/replace", () => {
     const used = await getMediaUsageBytes();
     const current = await db.media.findUniqueOrThrow({
       where: { id: media.id },
-      select: { size: true, renditions: true },
+      select: { renditions: true, storedFile: { select: { size: true } } },
     });
-    const usedWithoutCurrent = used - mediaUsageBytes([current]);
+    const usedWithoutCurrent =
+      used -
+      mediaUsageBytes([
+        { size: current.storedFile?.size ?? null, renditions: current.renditions },
+      ]);
     const quotaMb = Math.ceil((usedWithoutCurrent + 1) / MB);
 
+    const fillerId = randomUUID();
     const filler = await db.media.create({
       data: {
-        name: `quota-filler-${randomUUID()}`,
-        url: `/media/quota-filler-${randomUUID()}`,
-        size: quotaMb * MB - usedWithoutCurrent,
+        id: fillerId,
+        name: `quota-filler-${fillerId}`,
+        storedFile: {
+          create: {
+            key: `quota-filler-${fillerId}/1/original`,
+            driver: "local",
+            size: quotaMb * MB - usedWithoutCurrent,
+          },
+        },
       },
     });
     mediaIds.push(filler.id);
@@ -327,13 +340,17 @@ describe("POST /api/media/[mediaId]/replace", () => {
       data: {
         id: mediaId,
         name: "Legacy provider image",
-        key: "legacy-provider-key",
-        url: "https://old-provider.example/f/legacy-provider-key",
-        size: 1234,
         type: MediaType.IMAGE,
-        mimeType: "image/png",
         revision: 1,
-        storageDriver: "uploadthing",
+        storedFile: {
+          create: {
+            key: "legacy-provider-key",
+            driver: "uploadthing",
+            remoteUrl: "https://old-provider.example/f/legacy-provider-key",
+            contentType: "image/png",
+            size: 1234,
+          },
+        },
       },
     });
     mediaIds.push(legacy.id);

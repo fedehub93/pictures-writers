@@ -9,7 +9,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import { toast } from "sonner";
 
-import { ContentStatus, Media } from "@/generated/prisma";
+import { ContentStatus } from "@/generated/prisma";
+
+import type { MediaCover } from "@/modules/media/lib/media-library";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import { Button } from "@/shared/ui/button";
@@ -31,7 +33,7 @@ import { usePostStore } from "../../../store/use-post-store";
 interface ImageFormProps {
   initialData: {
     status: ContentStatus;
-    imageCover: Media | null;
+    imageCover: MediaCover | null;
   };
   rootId: string;
   postId: string;
@@ -44,7 +46,7 @@ export const ImageForm = ({ initialData, rootId, postId }: ImageFormProps) => {
   const setStatus = usePostStore((state) => state.setStatus);
   const { onOpen } = useModal();
 
-  const [previewMedia, setPreviewMedia] = useState<Media | null>(
+  const [previewMedia, setPreviewMedia] = useState<MediaCover | null>(
     initialData.imageCover,
   );
 
@@ -88,7 +90,7 @@ export const ImageForm = ({ initialData, rootId, postId }: ImageFormProps) => {
     0,
   );
 
-  const getImage = (media: Media) => {
+  const getImage = (media: MediaCover) => {
     setPreviewMedia(media);
     form.setValue("imageCoverId", media.id, {
       shouldDirty: true,

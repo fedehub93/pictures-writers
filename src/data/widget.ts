@@ -19,6 +19,10 @@ import {
 } from "@/types";
 import { DEFAULT_SOCIAL_CHANNEL_VALUES } from "@/constants";
 import {
+  mediaPresentationSelect,
+  withMediaUrl,
+} from "@/modules/media/lib/media-address";
+import {
   isEbookMetadata,
   isServiceMetadata,
   isWebinarMetadata,
@@ -214,7 +218,7 @@ export const getWidgetPosts = async ({
     include: {
       liveVersion: {
         include: {
-          imageCover: true,
+          imageCover: { select: mediaPresentationSelect },
         },
       },
     },
@@ -226,6 +230,9 @@ export const getWidgetPosts = async ({
     .filter((root) => Boolean(root.liveVersion))
     .map((root) => ({
       ...root.liveVersion!,
+      imageCover: root.liveVersion!.imageCover
+        ? withMediaUrl(root.liveVersion!.imageCover)
+        : null,
       rootId: root.id,
       slug: root.slug,
     }));
@@ -310,7 +317,7 @@ export const getWidgetProducts = async ({
               slug: true,
             },
           },
-          imageCover: true,
+          imageCover: { select: mediaPresentationSelect },
         },
       },
     },
@@ -326,6 +333,7 @@ export const getWidgetProducts = async ({
 
     const product = {
       ...version,
+      imageCover: version.imageCover ? withMediaUrl(version.imageCover) : null,
       rootId: root.id,
       slug: root.slug,
       type: root.type,

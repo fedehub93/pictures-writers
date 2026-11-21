@@ -9,7 +9,7 @@ import { MediaType } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 
 import { buildMediaDeliveryUrl } from "@/modules/media/lib/manifest";
-import { mediaPath } from "@/modules/media/lib/url";
+import { storedFilePath } from "@/modules/media/lib/file-path";
 
 import { findDeliveryFile } from "../media-delivery";
 import {
@@ -161,7 +161,7 @@ describe("purgeStorageObjects", () => {
       });
     }
 
-    const address = buildMediaDeliveryUrl(mediaPath(key), {
+    const address = buildMediaDeliveryUrl(storedFilePath("MEDIA", key), {
       revision: 1,
       archived: false,
       renditions: renditionInputs,
@@ -171,14 +171,8 @@ describe("purgeStorageObjects", () => {
       data: {
         id,
         name: `Purge remote ${id}`,
-        key,
-        url: address,
         type: MediaType.IMAGE,
-        size: originalBytes,
-        mimeType: "image/png",
-        checksum,
         revision: 1,
-        storageDriver: "uploadthing",
         renditions: manifest as PrismaJson.MediaRenditions,
         storedFile: {
           create: {
@@ -243,8 +237,6 @@ describe("purgeStorageObjects", () => {
       data: {
         id,
         name: `Purge unrecorded ${id}`,
-        key: null,
-        url: mediaPath(`default/${id}/1/original`),
         type: MediaType.IMAGE,
       },
     });

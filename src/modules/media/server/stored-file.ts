@@ -35,7 +35,9 @@ export interface StoredFileLocation {
  * to the provider, so the library knows where those bytes are without asking
  * the provider. Every other relative address is local.
  */
-export function remoteUrlForAddress(address: string): string | null {
+export function remoteUrlForAddress(address: string | null): string | null {
+  if (!address) return null;
+
   const { url, absolute } = parseSrc(address);
 
   if (absolute) return stripMediaManifest(address);

@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 
-import { renditionUrlForKey } from "@/modules/media/lib/manifest";
 import {
   findDeliveryFile,
   type DeliveryFile,
@@ -28,15 +27,6 @@ function contentTypeForKey(key: string, file: DeliveryFile): string {
   }
 }
 
-function remoteAddressFor(key: string, file: DeliveryFile): string | null {
-  if (!file.rendition) return file.remoteUrl;
-
-  // A rendition has no record of its own. Its provider address is the one the
-  // manifest recorded when the bytes were written, so the hop never asks the
-  // provider to resolve a key.
-  return renditionUrlForKey(file.mediaUrl, key);
-}
-
 async function handleMediaRequest(
   req: Request,
   { params }: { params: Promise<{ path: string[] }> },
@@ -62,7 +52,7 @@ async function handleMediaRequest(
     });
   }
 
-  const remoteAddress = remoteAddressFor(key, file);
+  const remoteAddress = file.remoteUrl;
 
   if (!remoteAddress || pointsAtStorageRoute(remoteAddress, "media")) {
     return new NextResponse(null, { status: 404 });

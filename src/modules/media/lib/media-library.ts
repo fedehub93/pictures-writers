@@ -1,41 +1,54 @@
 import type { Prisma } from "@/generated/prisma";
 
-import { storedFileLocationSelect, mediaStorageLocation } from "./stored-file-location";
+import {
+  mediaAddressSelect,
+  mediaDeliveryAddress,
+} from "./media-address";
+import {
+  storedFileLocationSelect,
+  mediaStoredLocation,
+} from "./stored-file-location";
 
 /**
- * Projection used by every media-library surface. It deliberately omits
- * `renditions`: the manifest is derived data the admin never edits.
+ * The Media columns the admin library reads that are not storage facts. The
+ * storage facts — key, address, size, content type, checksum and driver — come
+ * from the stored-file record and the one address composer, so there is no
+ * second copy of them to drift.
  */
 export const mediaLibrarySelect = {
   id: true,
   name: true,
-  key: true,
-  url: true,
-  size: true,
   type: true,
   altText: true,
-  mimeType: true,
-  checksum: true,
   revision: true,
-  storageDriver: true,
   metadata: true,
   archivedAt: true,
   createdAt: true,
   updatedAt: true,
 } satisfies Prisma.MediaSelect;
 
+/**
+ * What a library surface renders: the Media identity plus the storage facts
+ * the row no longer stores, composed from its stored-file record.
+ */
 export type MediaLibraryItem = Prisma.MediaGetPayload<{
   select: typeof mediaLibrarySelect;
-}>;
+}> & {
+  key: string | null;
+  url: string;
+  size: number | null;
+  mimeType: string | null;
+  checksum: string | null;
+  storageDriver: string | null;
+};
 
 /**
- * The library's read projection: the row plus its stored-file record, so the
- * storage facts the admin sees come from where the bytes are rather than from
- * the Media's mirror columns. `url` stays the Media's canonical address: the
- * record knows the key, and the address is composed from it.
+ * The library's read projection: the row, the columns the address composer
+ * needs, and its stored-file record. The joined record is never exposed.
  */
 export const mediaLibraryRowSelect = {
   ...mediaLibrarySelect,
+  ...mediaAddressSelect,
   storedFile: { select: storedFileLocationSelect },
 } satisfies Prisma.MediaSelect;
 
@@ -44,22 +57,23 @@ export type MediaLibraryRow = Prisma.MediaGetPayload<{
 }>;
 
 /**
- * The library row the admin sees. A record answers the key, size, content
- * type, checksum and driver; the Media's own columns are read only for a row
- * whose record the one-time backfill has not created yet, so this code can
- * deploy before it without emptying a field.
+ * The library row the admin sees. The stored-file record answers the key, size,
+ * content type, checksum and driver, and the composed address answers the URL.
+ * A Media without a record is a row the audit reports; it renders no storage
+ * facts rather than reading a mirror that no longer exists.
  */
 export function mediaLibraryItem(row: MediaLibraryRow): MediaLibraryItem {
-  const { storedFile: _record, ...media } = row;
-  const location = mediaStorageLocation(row);
+  const { storedFile, renditions: _renditions, ...media } = row;
+  const location = mediaStoredLocation(storedFile);
 
   return {
     ...media,
-    key: location.key,
-    size: location.size,
-    mimeType: location.contentType,
-    checksum: location.checksum,
-    storageDriver: location.driver,
+    url: mediaDeliveryAddress(row),
+    key: location?.key ?? null,
+    size: location?.size ?? null,
+    mimeType: location?.contentType ?? null,
+    checksum: location?.checksum ?? null,
+    storageDriver: location?.driver ?? null,
   };
 }
 
@@ -67,6 +81,13 @@ export function mediaLibraryItem(row: MediaLibraryRow): MediaLibraryItem {
 export interface MediaLibraryEntry extends MediaLibraryItem {
   usageCount: number;
 }
+
+/**
+ * The fields a cover picker previews. The admin modal returns a full library
+ * entry; a form only reads these three, so it does not depend on the storage
+ * facts the row no longer stores.
+ */
+export type MediaCover = Pick<MediaLibraryItem, "id" | "url" | "altText">;
 
 export const MEDIA_USAGE_NOTE =
   "Used in counts relational references only. References embedded in rich text or page data are not counted.";

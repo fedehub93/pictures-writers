@@ -26,9 +26,11 @@ export interface MediaDeletionCleanup {
 }
 
 /**
- * One derived copy of a Media's original. `key` is the truth; the delivery
- * URL is a projection resolved by the storage driver when the manifest is
- * written into a delivery URL.
+ * One derived copy of a Media's original. `key` is the truth and `url` is the
+ * address the storage driver resolved when the copy was written: a canonical
+ * `/media/<key>` for a local file, the provider's address for a remote one.
+ * Delivery redirects a remote rendition through it, so it never calls the
+ * provider to resolve a key.
  */
 export interface MediaRendition {
   key: string;
@@ -36,6 +38,8 @@ export interface MediaRendition {
   height: number;
   bytes: number;
   format: MediaRenditionFormat;
+  /** Absent on a manifest written before addresses were recorded per entry. */
+  url?: string;
 }
 
 /**

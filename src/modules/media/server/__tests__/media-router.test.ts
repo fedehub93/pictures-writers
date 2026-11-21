@@ -83,16 +83,31 @@ afterEach(async () => {
 
 async function createMedia(
   overrides: Partial<Prisma.MediaUncheckedCreateInput> = {},
+  file: Partial<Prisma.StoredFileUncheckedCreateInput> | null = {},
 ) {
   const id = overrides.id ?? randomUUID();
+  const key = file?.key ?? `default/${id}/1/original`;
   const media = await db.media.create({
     data: {
       id,
       name: `Media ${randomUUID()}`,
-      url: `/media/test/${randomUUID()}/original`,
       type: MediaType.IMAGE,
-      size: 128,
       ...overrides,
+      ...(file
+        ? {
+            storedFile: {
+              create: {
+                key,
+                driver: "local",
+                remoteUrl: null,
+                contentType: "image/png",
+                size: 128,
+                checksum: `checksum-${id}`,
+                ...file,
+              },
+            },
+          }
+        : {}),
     },
   });
 
@@ -121,14 +136,10 @@ async function createReferencingPost(mediaId: string) {
 describe("mediaRouter", () => {
   describe("getMany", () => {
     it("reads the storage facts from the stored-file record", async () => {
-      const media = await createMedia({
-        name: `Record ${randomUUID()}`,
-        key: "mirror/original",
-        url: "/media/mirror/original",
-        size: 10,
-        mimeType: "image/jpeg",
-        checksum: "mirror-checksum",
-      });
+      const media = await createMedia(
+        { name: `Record ${randomUUID()}` },
+        null,
+      );
       await db.storedFile.create({
         data: {
           mediaId: media.id,
@@ -145,7 +156,7 @@ describe("mediaRouter", () => {
 
       expect(item).toMatchObject({
         key: `default/${media.id}/1/original`,
-        url: "/media/mirror/original",
+        url: `/media/default/${media.id}/1/original`,
         size: 4242,
         mimeType: "image/png",
         checksum: "record-checksum",
@@ -154,20 +165,21 @@ describe("mediaRouter", () => {
       expect(item).not.toHaveProperty("storedFile");
     });
 
-    it("falls back to the Media's own columns before the record exists", async () => {
-      const media = await createMedia({
-        name: `No record ${randomUUID()}`,
-        size: 321,
-        mimeType: "image/webp",
-        checksum: "media-checksum",
-      });
+    it("reports a Media with no record as having no storage facts", async () => {
+      const media = await createMedia(
+        { name: `No record ${randomUUID()}` },
+        null,
+      );
 
       const result = await caller.getMany({ search: media.name });
 
       expect(result.items[0]).toMatchObject({
-        size: 321,
-        mimeType: "image/webp",
-        checksum: "media-checksum",
+        key: null,
+        url: "",
+        size: null,
+        mimeType: null,
+        checksum: null,
+        storageDriver: null,
       });
     });
 
@@ -377,11 +389,11 @@ describe("mediaRouter", () => {
       const media = await createMedia({
         name: `Original ${randomUUID()}`,
         altText: "Original alt text",
-        checksum: `checksum-${randomUUID()}`,
         revision: 3,
       });
       const before = await db.media.findUniqueOrThrow({
         where: { id: media.id },
+        include: { storedFile: true },
       });
 
       // The extra keys are what the old mass-assignment update would have
@@ -400,22 +412,19 @@ describe("mediaRouter", () => {
 
       const after = await db.media.findUniqueOrThrow({
         where: { id: media.id },
+        include: { storedFile: true },
       });
       expect(after).toMatchObject({
         id: before.id,
-        key: before.key,
-        url: before.url,
-        size: before.size,
         type: before.type,
-        mimeType: before.mimeType,
-        checksum: before.checksum,
         revision: before.revision,
-        storageDriver: before.storageDriver,
         metadata: before.metadata,
         renditions: before.renditions,
         archivedAt: before.archivedAt,
         createdAt: before.createdAt,
       });
+      expect(after.storedFile?.key).toBe(before.storedFile?.key);
+      expect(after.storedFile?.driver).toBe(before.storedFile?.driver);
     });
 
     it("throws NOT_FOUND for an unknown Media", async () => {
@@ -511,15 +520,8 @@ describe("mediaRouter", () => {
     });
 
     it("deletes the rows and the storage prefix when the Media is archived and unreferenced", async () => {
-      const media = await createMedia({
-        archivedAt: new Date(),
-        storageDriver: "local",
-      });
+      const media = await createMedia({ archivedAt: new Date() });
       const key = `default/${media.id}/1/original`;
-      await db.media.update({
-        where: { id: media.id },
-        data: { key, url: `/media/${key}` },
-      });
       await driver.put(key, new Uint8Array([1, 2, 3]), "image/png");
 
       expect(await caller.removeMany({ ids: [media.id] })).toMatchObject({

@@ -58,9 +58,6 @@ export interface PendingRehome {
  * - `source-unconfigured`: the recorded driver is unknown here or has no
  *   credentials, so its bytes cannot be read.
  * - `unreadable`: the source object could not be read.
- * - `address-not-canonical`: the Media's stored address is still a provider
- *   address. Moving it would schedule the provider object for removal while
- *   published pages still link to it; the address sweep comes first.
  * - `checksum-mismatch`: the source bytes, or the copy read back from the
  *   target, do not match the checksum the record carries.
  * - `copy-failed`: the target could not store or reread the copied objects.
@@ -69,7 +66,6 @@ export interface PendingRehome {
 export type RehomeFailureReason =
   | "source-unconfigured"
   | "unreadable"
-  | "address-not-canonical"
   | "checksum-mismatch"
   | "copy-failed"
   | "record-failed";

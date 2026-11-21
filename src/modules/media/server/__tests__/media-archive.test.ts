@@ -221,17 +221,6 @@ describe("media archive, restore and deletion", () => {
   it("removes a Media's objects through the driver recorded on the file", async () => {
     const { media } = await createImageMedia();
     await archiveMedia(media.id);
-    const before = await db.media.findUniqueOrThrow({ where: { id: media.id } });
-
-    // A move, or a stale mirror column, can leave the Media behind; the
-    // stored-file record is what owns the bytes.
-    await db.media.update({
-      where: { id: media.id },
-      data: {
-        key: `elsewhere/${randomUUID()}/1/original`,
-        storageDriver: "uploadthing",
-      },
-    });
 
     const result = await deleteMediaPermanentlyBatch({
       active: { driver, name: "local" },
@@ -243,7 +232,7 @@ describe("media archive, restore and deletion", () => {
       deleted: 1,
       cleanup: [{ mediaId: media.id, status: "removed" }],
     });
-    await expect(driver.get(before.key!)).rejects.toBeInstanceOf(
+    await expect(driver.get(media.key!)).rejects.toBeInstanceOf(
       StorageObjectNotFoundError,
     );
     await expect(
@@ -267,11 +256,7 @@ describe("media archive, restore and deletion", () => {
       data: {
         id: mediaId,
         name: "Legacy image with renditions",
-        key: originalKey,
-        url: `https://fake-app.ufs.sh/f/${originalKey}`,
-        size: originalBytes.byteLength,
         type: MediaType.IMAGE,
-        mimeType: "image/png",
         revision: 1,
         archivedAt: new Date(),
         renditions: [
@@ -480,14 +465,18 @@ describe("media archive, restore and deletion", () => {
     const unknown = await db.media.create({
       data: {
         name: "Future driver document",
-        key: `s3/${randomUUID()}/1/original`,
-        url: `https://unsupported.example/${randomUUID()}`,
-        size: 3,
         type: MediaType.FILE,
-        mimeType: "application/pdf",
         revision: 1,
-        storageDriver: "s3",
         archivedAt: new Date(),
+        storedFile: {
+          create: {
+            key: `s3/${randomUUID()}/1/original`,
+            driver: "s3",
+            remoteUrl: `https://unsupported.example/${randomUUID()}`,
+            contentType: "application/pdf",
+            size: 3,
+          },
+        },
       },
     });
     mediaIds.push(unknown.id);
@@ -557,13 +546,8 @@ describe("media archive, restore and deletion", () => {
       data: {
         id,
         name: "Local document",
-        key,
-        url: `/media/${key}`,
-        size: bytes.byteLength,
         type: MediaType.FILE,
-        mimeType: "application/pdf",
         revision: 1,
-        storageDriver: "local",
         archivedAt: new Date(),
         storedFile: {
           create: {
@@ -577,7 +561,7 @@ describe("media archive, restore and deletion", () => {
     });
     mediaIds.push(media.id);
 
-    return media;
+    return { ...media, key };
   }
 
   async function createLegacyMedia(
@@ -589,15 +573,10 @@ describe("media archive, restore and deletion", () => {
     const media = await db.media.create({
       data: {
         name: "Legacy provider document",
-        key,
-        url: `https://fake-app.ufs.sh/f/${encodeURIComponent(key)}`,
-        size: bytes.byteLength,
         type: MediaType.FILE,
-        mimeType: "application/pdf",
         revision: 1,
-        storageDriver: null,
         archivedAt: new Date(),
-        // The one-time location backfill records a pre-seam row as an
+        // The one-time location backfill recorded a pre-seam row as an
         // UploadThing file with the absolute address it still carries.
         storedFile: {
           create: {
@@ -612,7 +591,7 @@ describe("media archive, restore and deletion", () => {
     });
     mediaIds.push(media.id);
 
-    return media;
+    return { ...media, key };
   }
 
   async function createPostVersion(mediaId: string) {

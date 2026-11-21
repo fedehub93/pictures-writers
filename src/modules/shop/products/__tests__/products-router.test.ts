@@ -47,10 +47,15 @@ let caller: ReturnType<typeof createCaller>;
 let userId: string;
 
 async function createMedia() {
+  const id = randomUUID();
+  const key = `default/${id}/1/original`;
   const media = await db.media.create({
     data: {
+      id,
       name: `media-${randomUUID()}`,
-      url: `https://example.com/${randomUUID()}.png`,
+      storedFile: {
+        create: { key, driver: "local", size: 10 },
+      },
     },
   });
   mediaIds.push(media.id);

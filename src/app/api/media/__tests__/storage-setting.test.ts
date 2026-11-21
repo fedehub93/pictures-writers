@@ -228,7 +228,7 @@ describe("the storage choice in the media library", () => {
     const stored = await localDriver.get(body.media.key);
     expect(stored.byteLength).toBe(body.media.size);
 
-    for (const key of [before.key!, ...previousRenditions.map((r) => r.key)]) {
+    for (const key of [media.key!, ...previousRenditions.map((r) => r.key)]) {
       await expect(localDriver.get(key)).rejects.toBeInstanceOf(
         StorageObjectNotFoundError,
       );

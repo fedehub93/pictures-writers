@@ -14,7 +14,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import * as z from "zod";
 
-import { Media } from "@/generated/prisma";
+import type { MediaCover } from "@/modules/media/lib/media-library";
 
 import { useTRPC } from "@/trpc/client";
 
@@ -100,7 +100,7 @@ export const ProductGalleryForm = ({
     updateProduct({ id, rootId, gallery: next });
   };
 
-  const getImage = (media: Media) => {
+  const getImage = (media: MediaCover) => {
     commit([
       ...gallery,
       { mediaId: media.id, url: media.url, sort: gallery.length + 1 },

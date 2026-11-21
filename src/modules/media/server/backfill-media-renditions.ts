@@ -6,7 +6,7 @@ import { MediaType } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 
 import {
-  mediaStorageLocation,
+  mediaStoredLocation,
   storedFileLocationSelect,
 } from "@/modules/media/lib/stored-file-location";
 
@@ -71,14 +71,7 @@ export interface MediaRenditionBackfillOptions {
 const renditionBackfillMediaSelect = {
   id: true,
   name: true,
-  key: true,
-  url: true,
-  storageDriver: true,
-  mimeType: true,
-  size: true,
-  checksum: true,
   revision: true,
-  archivedAt: true,
   renditions: true,
   storedFile: { select: storedFileLocationSelect },
 } satisfies Prisma.MediaSelect;
@@ -155,7 +148,19 @@ export async function backfillMediaRenditions({
     for (const item of pending) {
       // Resolving a driver writes nothing and reads no object, but it does
       // tell an operator before the run which rows this instance cannot serve.
-      const location = mediaStorageLocation(item);
+      const location = mediaStoredLocation(item.storedFile);
+      if (!location) {
+        report.failed.push({
+          mediaId: item.id,
+          name: item.name,
+          reason: "no stored-file record with a storage key",
+        });
+        onProgress?.(
+          `fail ${item.id}: no stored-file record with a storage key`,
+        );
+        continue;
+      }
+
       const resolution = resolveMediaStorageDriver(location.driver, {
         active,
         env,
@@ -183,11 +188,11 @@ export async function backfillMediaRenditions({
     pending,
     concurrency,
     async (item: RenditionBackfillMedia) => {
-      const location = mediaStorageLocation(item);
-      const sourceKey = location.key;
+      const location = mediaStoredLocation(item.storedFile);
+      const sourceKey = location?.key;
 
-      if (!sourceKey) {
-        const reason = "no readable storage key";
+      if (!sourceKey || !location) {
+        const reason = "no stored-file record with a storage key";
         report.failed.push({ mediaId: item.id, name: item.name, reason });
         onProgress?.(`fail ${item.id}: ${reason}`);
         return;
@@ -224,7 +229,6 @@ export async function backfillMediaRenditions({
           revision: item.revision,
           installationSlug,
           bytes,
-          archived: item.archivedAt !== null,
           cleanupOnFailure: !sourceIsPartOfRevision,
         });
         const checksum = checksumOf(bytes);
@@ -241,21 +245,19 @@ export async function backfillMediaRenditions({
           await db.$transaction(async (tx) => {
             await tx.media.update({
               where: { id: item.id },
-              data: storedImageFields(stored, item.revision, checksum),
+              data: storedImageFields(stored, item.revision),
             });
 
             // The delivered original has moved into its revision prefix, so
             // the record that answers "where are the bytes" must move with it.
-            if (item.storedFile) {
-              await updateStoredFileForMedia(tx, item.id, {
-                key: stored.key,
-                driver: resolution.name,
-                remoteUrl,
-                contentType: stored.mimeType,
-                size: stored.size,
-                checksum,
-              });
-            }
+            await updateStoredFileForMedia(tx, item.id, {
+              key: stored.key,
+              driver: resolution.name,
+              remoteUrl,
+              contentType: stored.mimeType,
+              size: stored.size,
+              checksum,
+            });
           });
         } catch (error) {
           // The row never learned about the new objects. Remove them when the

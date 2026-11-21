@@ -88,10 +88,17 @@ async function createEbookProduct(formId: string | null) {
   });
   productIds.push(root.id);
 
+  const coverKey = `default/${randomUUID()}/1/original`;
   const cover = await db.media.create({
     data: {
       name: "cover",
-      url: `https://cdn.test/${randomUUID()}.jpg`,
+      storedFile: {
+        create: {
+          key: coverKey,
+          driver: "uploadthing",
+          remoteUrl: `https://cdn.test/${randomUUID()}.jpg`,
+        },
+      },
     },
   });
   mediaIds.push(cover.id);
@@ -104,7 +111,7 @@ async function createEbookProduct(formId: string | null) {
     },
   });
 
-  return { root, version, cover };
+  return { root, version, cover: { ...cover, url: `/media/${coverKey}` } };
 }
 
 async function configureDeliveryTemplate({

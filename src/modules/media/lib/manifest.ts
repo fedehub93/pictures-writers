@@ -152,44 +152,6 @@ export function buildMediaDeliveryUrl(
   return serializeSrc(url, absolute);
 }
 
-/** The width and format a rendition key's filename encodes. */
-function renditionOfKey(
-  key: string,
-): { width: number; format: MediaRenditionFormat } | null {
-  const file = key.split("/").pop();
-  const match = file?.match(/^(\d+)\.(avif|webp)$/);
-  if (!match) return null;
-
-  return { width: Number(match[1]), format: match[2] as MediaRenditionFormat };
-}
-
-/**
- * The remote address of a rendition, read from the manifest its Media's
- * delivery URL already carries. Delivery redirects a remote file to a recorded
- * address and never asks the provider, so the rendition's address must be
- * resolved from the token written when the bytes were stored.
- */
-export function renditionUrlForKey(
-  deliveryUrl: string,
-  key: string,
-): string | null {
-  const rendition = renditionOfKey(key);
-  if (!rendition) return null;
-
-  const { url } = parseSrc(deliveryUrl);
-  const manifest = decodeMediaManifest(
-    url.searchParams.get(MEDIA_MANIFEST_PARAM),
-  );
-
-  return (
-    manifest?.renditions.find(
-      (candidate) =>
-        candidate.width === rendition.width &&
-        candidate.format === rendition.format,
-    )?.url ?? null
-  );
-}
-
 /**
  * Rewrites the archive flag inside an existing delivery token. A URL without
  * a token cannot answer renditions anyway, so it is returned untouched.

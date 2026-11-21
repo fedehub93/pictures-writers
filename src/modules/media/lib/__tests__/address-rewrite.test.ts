@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest";
 import {
   buildStoredAddressIndex,
   canonicalMediaAddress,
-  canonicalMediaRowAddress,
   rewriteAddressesInString,
 } from "../address-rewrite";
 
@@ -16,7 +15,6 @@ function providerUrl(key: string): string {
 describe("canonicalMediaAddress", () => {
   it("names each rendition by the Installation's own address", () => {
     const address = canonicalMediaAddress("default/media-1/1/original", {
-      url: "https://fake-app.ufs.sh/f/provider-key?mt=old",
       revision: 1,
       archived: false,
       renditions: [
@@ -26,6 +24,7 @@ describe("canonicalMediaAddress", () => {
           height: 480,
           bytes: 400,
           format: "webp",
+          url: "https://fake-app.ufs.sh/f/default/media-1/1/720.webp",
         },
       ],
     });
@@ -38,7 +37,6 @@ describe("canonicalMediaAddress", () => {
 
   it("leaves out a rendition the original key cannot own", () => {
     const address = canonicalMediaAddress("legacy-flat-key", {
-      url: "https://fake-app.ufs.sh/f/legacy-flat-key?mt=old",
       revision: 1,
       archived: false,
       renditions: [
@@ -48,32 +46,12 @@ describe("canonicalMediaAddress", () => {
           height: 480,
           bytes: 400,
           format: "webp",
+          url: "https://fake-app.ufs.sh/f/media-1/1/720.webp",
         },
       ],
     });
 
     expect(address).toBe("/media/legacy-flat-key");
-  });
-});
-
-describe("canonicalMediaRowAddress", () => {
-  it("keeps the row's own token, provider rendition URLs included", () => {
-    const token = "provider-token";
-    const address = canonicalMediaRowAddress(
-      "default/media-1/1/original",
-      `https://fake-app.ufs.sh/f/provider-key?mt=${token}`,
-    );
-
-    expect(address).toBe(`/media/default/media-1/1/original?mt=${token}`);
-  });
-
-  it("keeps a canonical row address exactly", () => {
-    expect(
-      canonicalMediaRowAddress(
-        "default/media-1/1/original",
-        "/media/default/media-1/1/original",
-      ),
-    ).toBe("/media/default/media-1/1/original");
   });
 });
 
@@ -85,7 +63,6 @@ describe("rewriteAddressesInString", () => {
       role: "MEDIA",
       remoteUrl: providerUrl("default/media-1/1/original"),
       media: {
-        url: providerUrl("default/media-1/1/original"),
         revision: 1,
         archived: false,
         renditions: [],
@@ -128,7 +105,6 @@ describe("rewriteAddressesInString", () => {
         role: "MEDIA",
         remoteUrl: providerUrl("flat-provider-key"),
         media: {
-          url: providerUrl("flat-provider-key"),
           revision: 1,
           archived: false,
           renditions: [],

@@ -10,6 +10,11 @@ import { revalidateContent } from "@/shared/lib/revalidate-content";
 import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 
 import {
+  mediaPresentationSelect,
+  withMediaUrl,
+} from "@/modules/media/lib/media-address";
+
+import {
   DASHBOARD_LIST_LIMIT,
   DEFAULT_PAGE,
   DEFAULT_PAGE_SIZE,
@@ -23,7 +28,7 @@ const reviewProductSelect = {
   currentVersion: {
     select: {
       title: true,
-      imageCover: { select: { url: true, altText: true } },
+      imageCover: { select: { ...mediaPresentationSelect } },
     },
   },
 } satisfies Prisma.ProductRootSelect;
@@ -32,11 +37,15 @@ type ReviewProduct = Prisma.ProductRootGetPayload<{
   select: typeof reviewProductSelect;
 }>;
 
-const mapReviewProduct = (product: ReviewProduct) => ({
-  id: product.id,
-  title: product.currentVersion?.title ?? "",
-  imageCover: product.currentVersion?.imageCover ?? null,
-});
+const mapReviewProduct = (product: ReviewProduct) => {
+  const imageCover = product.currentVersion?.imageCover;
+
+  return {
+    id: product.id,
+    title: product.currentVersion?.title ?? "",
+    imageCover: imageCover ? withMediaUrl(imageCover) : null,
+  };
+};
 
 const reviewData = (input: {
   reviewerName: string;

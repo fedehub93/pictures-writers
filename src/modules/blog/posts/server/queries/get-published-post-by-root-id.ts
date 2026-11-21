@@ -5,6 +5,10 @@
  */
 
 import { db } from "@/shared/lib/db";
+import {
+  mediaPresentationSelect,
+  withMediaUrl,
+} from "@/modules/media/lib/media-address";
 
 export const getPublishedPostByRootId = async (rootId: string) => {
   const root = await db.postRoot.findUnique({
@@ -18,11 +22,7 @@ export const getPublishedPostByRootId = async (rootId: string) => {
           title: true,
           description: true,
           imageCover: {
-            select: {
-              id: true,
-              url: true,
-              altText: true,
-            },
+            select: { ...mediaPresentationSelect },
           },
         },
       },
@@ -37,7 +37,9 @@ export const getPublishedPostByRootId = async (rootId: string) => {
     title: root.liveVersion.title,
     description: root.liveVersion.description,
     slug: root.slug,
-    imageCover: root.liveVersion.imageCover,
+    imageCover: root.liveVersion.imageCover
+      ? withMediaUrl(root.liveVersion.imageCover)
+      : null,
   };
 };
 

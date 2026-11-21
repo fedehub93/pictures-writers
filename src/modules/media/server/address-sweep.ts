@@ -5,15 +5,11 @@ import { db } from "@/shared/lib/db";
 
 import {
   buildStoredAddressIndex,
-  canonicalMediaAddress,
-  canonicalMediaRowAddress,
-  isFileAddressCandidate,
   rewriteAddressesInString,
   rewriteAddressesInValue,
   type AddressRewriteResult,
   type StoredAddressIndex,
   type StoredAddressIndexEntry,
-  type StoredAddressTarget,
 } from "@/modules/media/lib/address-rewrite";
 import type { StoredFileRole } from "@/modules/media/lib/file-path";
 
@@ -23,7 +19,6 @@ import type { StoredFileRole } from "@/modules/media/lib/file-path";
  * exactly the kind of address the spec forbids survives a run.
  */
 export const ADDRESS_SWEEP_FIELDS = [
-  "Media.url",
   "PageVersion.puckData",
   "SiteRegionVersion.puckData",
   "PostVersion.bodyData",
@@ -82,13 +77,7 @@ function roleForKind(kind: StoredFileKind): StoredFileRole {
   return ROLE_BY_KIND[kind];
 }
 
-interface AddressIndex {
-  index: StoredAddressIndex;
-  /** Canonical `Media.url`, keyed by Media id; the row keeps its token. */
-  mediaRowAddresses: Map<string, StoredAddressTarget>;
-}
-
-async function readAddressIndex(): Promise<AddressIndex> {
+async function readAddressIndex(): Promise<StoredAddressIndex> {
   const files = await db.storedFile.findMany({
     select: {
       id: true,
@@ -99,7 +88,6 @@ async function readAddressIndex(): Promise<AddressIndex> {
       media: {
         select: {
           id: true,
-          url: true,
           revision: true,
           archivedAt: true,
           renditions: true,
@@ -116,7 +104,6 @@ async function readAddressIndex(): Promise<AddressIndex> {
     remoteUrl: file.remoteUrl,
     media: file.media
       ? {
-          url: file.media.url,
           revision: file.media.revision,
           archived: file.media.archivedAt !== null,
           renditions: file.media.renditions,
@@ -124,33 +111,7 @@ async function readAddressIndex(): Promise<AddressIndex> {
       : null,
   }));
 
-  const mediaRowAddresses = new Map<string, StoredAddressTarget>();
-  for (const file of files) {
-    if (!file.media) continue;
-
-    const media = {
-      url: file.media.url,
-      revision: file.media.revision,
-      archived: file.media.archivedAt !== null,
-      renditions: file.media.renditions,
-    };
-
-    mediaRowAddresses.set(file.media.id, {
-      fileId: file.id,
-      // A local row streams every rendition by key, so its own token should
-      // name own-domain addresses. A remote row needs the provider addresses
-      // its token already carries to redirect until the bytes move.
-      address:
-        file.driver === "local"
-          ? canonicalMediaAddress(file.key, media)
-          : canonicalMediaRowAddress(file.key, file.media.url),
-    });
-  }
-
-  return {
-    index: buildStoredAddressIndex(entries),
-    mediaRowAddresses,
-  };
+  return buildStoredAddressIndex(entries);
 }
 
 /**
@@ -208,7 +169,7 @@ async function sweepField<T extends { id: string }, V>({
 export async function sweepStorageAddresses({
   dryRun = false,
 }: AddressSweepOptions = {}): Promise<AddressSweepReport> {
-  const { index, mediaRowAddresses } = await readAddressIndex();
+  const index = await readAddressIndex();
   const fileIds = new Set<string>();
   const tallies = new Map<AddressSweepField, FieldTally>(
     ADDRESS_SWEEP_FIELDS.map((field) => [
@@ -219,37 +180,6 @@ export async function sweepStorageAddresses({
 
   const tallyOf = (field: AddressSweepField): FieldTally =>
     tallies.get(field)!;
-
-  const mediaRows = await db.media.findMany({
-    select: { id: true, url: true },
-    orderBy: { id: "asc" },
-  });
-
-  // `Media.url` is the row's own delivery address, not a content reference: it
-  // keeps the rendition token it carries so a remote rendition can still be
-  // redirected before the bytes move. Content is rewritten separately below.
-  const mediaTally = tallyOf("Media.url");
-  for (const row of mediaRows) {
-    const target = mediaRowAddresses.get(row.id);
-
-    if (!target) {
-      if (isFileAddressCandidate(row.url, index)) mediaTally.unresolved += 1;
-      continue;
-    }
-
-    if (target.address === row.url) continue;
-
-    mediaTally.rows += 1;
-    mediaTally.rewritten += 1;
-    fileIds.add(target.fileId);
-
-    if (!dryRun) {
-      await db.media.update({
-        where: { id: row.id },
-        data: { url: target.address },
-      });
-    }
-  }
 
   const pageVersions = await db.pageVersion.findMany({
     select: { id: true, puckData: true },

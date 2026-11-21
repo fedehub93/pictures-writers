@@ -1,6 +1,10 @@
 import { Prisma } from "@/generated/prisma";
 
 import { db } from "@/shared/lib/db";
+import {
+  mediaPresentationSelect,
+  withMediaUrl,
+} from "@/modules/media/lib/media-address";
 
 export type ProductListVersion = "live" | "current";
 
@@ -33,13 +37,13 @@ export const getProductsPaginatedByFilters = async ({
         liveVersion: {
           include: {
             category: { select: { title: true, slug: true } },
-            imageCover: { select: { url: true, altText: true } },
+            imageCover: { select: { ...mediaPresentationSelect } },
           },
         },
         currentVersion: {
           include: {
             category: { select: { title: true, slug: true } },
-            imageCover: { select: { url: true, altText: true } },
+            imageCover: { select: { ...mediaPresentationSelect } },
           },
         },
       },
@@ -66,7 +70,7 @@ export const getProductsPaginatedByFilters = async ({
           slug: root.slug,
           updatedAt: v.updatedAt,
           category: v.category,
-          imageCover: v.imageCover,
+          imageCover: v.imageCover ? withMediaUrl(v.imageCover) : null,
           price: v.price,
           discountedPrice: v.discountedPrice,
           metadata: v.metadata,
