@@ -140,7 +140,7 @@ arrived is gone.
 | Library move panel | `src/modules/media/ui/components/media-rehome-panel.tsx` |
 | Purge job, guards, grace window and confirmation | `src/modules/media/server/purge.ts`, `scripts/purge-media.ts` |
 | Purge journal | `StoragePurgeEntry` in `prisma/schema.prisma` |
-| Parsing and composing addresses | `src/modules/media/lib/url.ts` |
+| Parsing addresses and recognizing provider URLs | `src/modules/media/lib/url.ts` |
 | Absolute form and own-host check | `src/modules/media/server/media-url.ts` |
 | Quota arithmetic (pure vs database) | `src/modules/media/lib/quota.ts`, `src/modules/media/server/media-quota.ts` |
 | Quota refusal response | `src/modules/media/server/quota-error-response.ts` |
@@ -244,9 +244,10 @@ The sweep moves no byte and writes no Stored file: keys, revisions, drivers and 
 are read, never changed. It only rewrites addresses, so it can run while the site serves: the
 provider addresses it replaces still answer until the purge, and a cached page keeps them until its
 normal revalidation (the 24h ISR backstop or the next deploy), so no visitor sees a broken picture.
-It must run first: a Media still addressed by a provider URL is refused by the move
-(`address-not-canonical`), because journaling that provider object would let the purge delete bytes
-published content still links to.
+It must run first: the move no longer refuses a row by its address, because a Media carries none,
+so sweep-before-move is an operating rule rather than a run guard. Moving a file whose published
+content still links the provider object would journal that object for the purge, so the runbook
+orders the sweep before the re-home.
 
 `npm run media:sweep-addresses:dry-run` (or `--dry-run`) reports the same work without writing.
 The report names each field with the rows, addresses and unresolved counts; it never prints a key,
@@ -269,11 +270,12 @@ learns the new rendition addresses. A failure before the flip removes the target
 the source serving, so no failure path can break an address. A local source is removed after the
 flip; a provider object is not deleted, because the redirect hop may still be cached.
 
-A Media whose stored address is still a provider URL is refused by id (`address-not-canonical`)
-and left serving: moving it would journal the provider object for removal while published pages
-still link to it, so the address sweep (`npm run media:sweep-addresses`) has to run first.
-Attachments and avatars carry no address on their role; the strings their owners hold are what
-the sweep rewrites before they move.
+The move has no `address-not-canonical` refusal to apply: with the Media's address columns gone
+there is no stored address left to inspect. Moving a file whose published content still links the
+provider object would journal that object for removal, so running the address sweep
+(`npm run media:sweep-addresses`) first is a rule for the operator, recorded in the runbook, not a
+guard in the job. Attachments and avatars carry no address on their role; the strings their owners
+hold are what the sweep rewrites before they move.
 
 An interrupted run resumes where it stopped: a file already flipped is no longer pending, so it
 is never copied again. A file whose source cannot be read is reported by stored-file id, stays on
@@ -400,8 +402,7 @@ addresses or names, so it is safe to paste into a deployment log.
 - The composed delivery address carries the `?mt=` token, and for remote rows that token embeds
   provider URLs. Re-home rewrites the manifest in the same transaction as the flip, so a move keeps
   delivery working; deriving the token at render time remains the cleaner shape and is not done.
-  The `Media.url` column that used to hold it is frozen in this release and disappears in the
-  contraction.
+  The `Media.url` column that used to hold it is gone.
 - Updating `altText` changes published output but does not revalidate it
   (`revalidateContent` is not called).
 - The picker copy still says "asset"; the glossary term is Media.

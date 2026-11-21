@@ -6,7 +6,7 @@
 
 import { db } from "@/shared/lib/db";
 import {
-  mediaPresentationSelect,
+  mediaAddressSelect,
   withMediaUrl,
 } from "@/modules/media/lib/media-address";
 
@@ -43,7 +43,11 @@ export const getPublishedPostBySlug = async (slug: string) => {
             },
           },
           imageCover: {
-            select: { ...mediaPresentationSelect },
+            select: {
+              ...mediaAddressSelect,
+              altText: true,
+              metadata: true,
+            },
           },
           authors: {
             select: {

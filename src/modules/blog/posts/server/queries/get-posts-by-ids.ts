@@ -1,6 +1,6 @@
 import { db } from "@/shared/lib/db";
 import {
-  mediaPresentationSelect,
+  mediaAddressSelect,
   withMediaUrl,
 } from "@/modules/media/lib/media-address";
 
@@ -22,7 +22,7 @@ export const getPostsByIds = async (ids: string[]) => {
           select: {
             id: true,
             title: true,
-            imageCover: { select: { ...mediaPresentationSelect } },
+            imageCover: { select: mediaAddressSelect },
           },
         },
       },

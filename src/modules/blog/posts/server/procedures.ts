@@ -23,6 +23,7 @@ import {
 } from "@/shared/dashboard/author";
 
 import {
+  mediaAddressSelect,
   mediaPresentationSelect,
   withMediaUrl,
 } from "@/modules/media/lib/media-address";
@@ -405,7 +406,7 @@ export const postsRouter = createTRPCRouter({
         currentVersion: {
           include: {
             imageCover: {
-              select: { ...mediaPresentationSelect },
+              select: { ...mediaAddressSelect, altText: true },
             },
             authors: {
               select: {
@@ -557,7 +558,7 @@ export const postsRouter = createTRPCRouter({
             select: {
               id: true,
               title: true,
-              imageCover: { select: { ...mediaPresentationSelect } },
+              imageCover: { select: mediaAddressSelect },
             },
           },
         },

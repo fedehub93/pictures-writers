@@ -688,6 +688,11 @@ Poi chiedi una rendition remota a mano: `/media/<key>/<revision>/<width>.<format
 `302` verso il provider, non `404`. `npm run media:audit` deve essere verde. Fai un dump prima di
 B: dopo B non si torna alla release 13 senza ripristinare il database.
 
+Se l'audit elenca una Media `no-stored-file`, è una riga che il container della release 13 ha
+inserito durante lo switch senza il record: rilancia `media:backfill-files` finché A è ancora live
+(il comando esiste solo in A) e non passare a B prima che l'audit torni verde. Da B in poi una
+Media senza record resta un errore dell'audit, non una riga che il deploy può ricostruire.
+
 **Release B — il contratto.** La migrazione toglie le sei colonne; il codice non le usava più, e B
 ritira anche i due comandi una tantum (`media:backfill-files` e `media:backfill-manifest-urls`) e
 lo step di avvio. Il container precedente è la release A, che non legge né scrive quelle colonne,

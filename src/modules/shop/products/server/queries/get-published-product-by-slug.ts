@@ -2,7 +2,7 @@ import { ProductType } from "@/generated/prisma";
 
 import { db } from "@/shared/lib/db";
 import {
-  mediaPresentationSelect,
+  mediaAddressSelect,
   withMediaUrl,
 } from "@/modules/media/lib/media-address";
 
@@ -37,12 +37,16 @@ export const getPublishedProductBySlug = async (slug: string) => {
             },
           },
           imageCover: {
-            select: { ...mediaPresentationSelect },
+            select: {
+              ...mediaAddressSelect,
+              altText: true,
+              metadata: true,
+            },
           },
           gallery: {
             select: {
               media: {
-                select: { ...mediaPresentationSelect },
+                select: { ...mediaAddressSelect, id: true, altText: true },
               },
               sort: true,
             },
