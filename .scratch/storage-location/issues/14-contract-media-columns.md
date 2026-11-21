@@ -78,3 +78,17 @@ this session.
 - Still operational, not code: release A must be live and its manifest verified, then a dump is
   taken before B. That sequence and the post-B checks are §4bis.9.
 
+**2026-11-21 — review follow-up in `0f33a0f3`.** The two-axis review of `67d06023...HEAD` found
+the reader shapes had drifted: a caller that used to select `url` alone (checkout, mail, the
+by-ids and list queries) was selecting the card projection and returning `id`, `altText` and the
+metadata JSON as well. Those readers now select the address-only projection plus exactly the
+fields they returned before, so "the returned shape is unchanged" holds. The same review found
+three guides still promising the re-home's `address-not-canonical` refusal, which no longer has an
+address to inspect: `docs/media.md`, the glossary and ADR-0026 now state that sweep-before-move is
+an operating rule, and runbook §4bis.9 adds the post-A remedy for a Media the release-13 container
+inserts without a record (re-run `media:backfill-files` while A is live, before the dump). The
+empty URL a record-less Media gets in the library (`mediaDeliveryAddress` returns `""`) is
+recorded as a known follow-up: it is the audit's row, not a render path the gate expects to hit.
+Verification unchanged: typecheck clean, lint 0 errors, doc citations 97/0, full suite 293 files /
+2653 tests, `build:agent` green.
+
