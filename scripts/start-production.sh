@@ -12,11 +12,5 @@ until npx prisma migrate deploy; do
   sleep 5
 done
 
-echo "[start] migrations applied, ensuring the rendition manifest carries every address"
-# Release A's server never reads Media.url, so the addresses it holds must be in
-# Media.renditions before the first request. The command is idempotent and a
-# no-op once the contraction has removed the column.
-npm run media:backfill-manifest-urls
-
-echo "[start] starting Next.js"
+echo "[start] migrations applied, starting Next.js"
 exec npm run start

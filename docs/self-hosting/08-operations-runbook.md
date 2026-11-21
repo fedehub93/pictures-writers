@@ -454,6 +454,10 @@ permette, dopo, di togliere le colonne di storage dalla Media.
 Va eseguito una volta, in una finestra di basso traffico, prima dello sweep degli indirizzi e del
 re-home. Il comando non riscrive nessuna riga `Media`.
 
+> Questa sezione registra il gate eseguito il 20 novembre 2026 sulla Installation. Dalla release B
+> della contrazione `media:backfill-files` non esiste più: il comando non va rieseguito, e i
+> passaggi che lo invocano restano come traccia di ciò che è stato verificato.
+
 1. **Registra il driver attivo, prima del deploy.** Il fallback del codice è `local`:
    un'Installazione che non ha mai scelto scriverebbe i nuovi upload sul disco. Su questa
    Installazione imposta `MEDIA_STORAGE_DRIVER=uploadthing` in Coolify (`UPLOADTHING_TOKEN` è già
@@ -648,7 +652,8 @@ posizione, e ticket 14 (le colonne tolte) dipende da questo gate.
 Togliere dalla `Media` le colonne di storage (`key`, `url`, `size`, `mimeType`, `checksum`,
 `storageDriver`) non si può fare nello stesso deploy che smette di usarle: durante il rolling
 update il container **precedente** sta ancora servendo e le legge e le scrive. La contrazione è
-quindi due release.
+quindi due release. La release A è il commit `723d7e57`; la release B è quella che porta la
+migrazione `contract_media_columns` e non contiene più i due comandi una tantum.
 
 **Release A — il codice smette di leggere e di scrivere le colonne.** La sua migrazione rende
 solo `Media.url` nullable (`relax_media_url`), così il codice può creare una riga senza quella
@@ -660,7 +665,8 @@ su il container precedente. Non aspettarsi alcun cambio visibile: sito, libreria
 funzionano come prima.
 
 Dopo che A è live, esegui il comando una seconda volta a mano: copre un upload che il vecchio
-container ha scritto durante lo switch.
+container ha scritto durante lo switch. Questo passo vale solo finché gira A: dalla release B il
+comando è ritirato e non esiste più.
 
 ```bash
 docker exec -it <APP_CONTAINER> npm run media:backfill-manifest-urls

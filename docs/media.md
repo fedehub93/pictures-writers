@@ -55,10 +55,11 @@ is remote, content type, size, checksum and kind. New uploads and replacements
 write it in the same transaction as the Media, so a failed write leaves neither.
 The one-time `npm run media:backfill-files` created it for Media that predate it,
 from what the library already knew, and reported any Media whose key it could not
-read. The command never rewrote a Media row. The production order of that first
-deploy — the explicit driver record, the volume, the command, its expected counts,
-the canonical-address check and the audit gate — is in
-`docs/self-hosting/08-operations-runbook.md` §4bis.8.
+read. It never rewrote a Media row, and it is retired now that every Media has a
+record. The production order of that first deploy — the explicit driver record,
+the volume, the command, its expected counts, the canonical-address check and the
+audit gate — remains in `docs/self-hosting/08-operations-runbook.md` §4bis.8 as
+the record of that gate.
 
 Delivery reads that record. A local file streams from disk with its recorded
 content type; a remote file redirects to the address the record carries and
@@ -77,16 +78,16 @@ shape decides whether the unit is a prefix or the provider's exact file key, so 
 pre-seam row is still removed by the key it has.
 
 The admin library reads the record's key, size, content type, checksum and driver, and composes
-the row's address from that key through the one composer in `media/lib/file-path.ts`. This release
-neither reads nor writes the Media's storage columns: they stay frozen at their last values until
-the contraction drops them in the next deploy. The address also carries the rendition token the
-browser's image loader reads: each entry in `Media.renditions` records the address its bytes were
-given at write time — a canonical `/media/<key>` for a local file, the provider's address for a
-remote one. A row written before that field existed carried the same addresses in the token of its
-old `Media.url`; `npm run media:backfill-manifest-urls` copies them into `renditions`. The start
-script runs that command before the first request, so the server never needs the column; the
-command is idempotent and can be run again after the switch to catch an upload the previous
-container wrote during it. The metadata and rendition backfills read the stored-file record — its
+the row's address from that key through the one composer in `media/lib/file-path.ts`. The Media no
+longer carries a copy of those facts: its `key`, `url`, `size`, `mimeType`, `checksum` and
+`storageDriver` columns are gone, so a disagreement between two records is no longer possible. The
+address also carries the rendition token the browser's image loader reads: each entry in
+`Media.renditions` records the address its bytes were given at write time — a canonical
+`/media/<key>` for a local file, the provider's address for a remote one. A row written before
+that field existed carried the same addresses in the token of its old `Media.url`;
+`npm run media:backfill-manifest-urls` copied them into `renditions` before the column was
+dropped, so the command is retired with it and the start script no longer runs it. The metadata and
+rendition backfills read the stored-file record — its
 key, its driver, its size, content type and checksum — and never a Media column. They resolve the
 recorded driver per row for reads and writes, so a library that mixes legacy provider Media and
 local Media is processed in one run; a row whose driver is not configured here is reported and the
@@ -122,8 +123,6 @@ arrived is gone.
 | Media delivery address and rendition manifest projection | `src/modules/media/lib/media-address.ts` |
 | Stored-file location of one upload | `src/modules/media/server/stored-file.ts` |
 | Stored-file location columns shared by server and library | `src/modules/media/lib/stored-file-location.ts` |
-| One-time location backfill for existing Media | `src/modules/media/server/backfill-stored-files.ts`, `scripts/backfill-stored-files.ts` |
-| One-time rendition-address backfill | `src/modules/media/server/backfill-manifest-urls.ts`, `scripts/backfill-media-manifest-urls.ts` |
 | Metadata and rendition backfills | `src/modules/media/server/backfill-media-metadata.ts`, `src/modules/media/server/backfill-media-renditions.ts` |
 | Key grammar: compose, parse, revision prefix | `src/modules/media/server/media-key.ts` |
 | Stored file -> owning Media (originals and renditions) | `src/modules/media/server/media-delivery.ts` |
