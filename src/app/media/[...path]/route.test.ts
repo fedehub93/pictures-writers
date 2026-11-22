@@ -306,6 +306,34 @@ describe("GET /media/<key>", () => {
     expect(response.status).toBe(404);
   });
 
+  it("streams a local rendition for a legacy three-segment key", async () => {
+    const id = randomUUID();
+    const key = `${id}/1/original`;
+    const renditionKey = `${id}/1/720.avif`;
+    const bytes = await createPng();
+    const renditionBytes = await createPng();
+
+    await storage.local!.put(key, bytes, "image/png");
+    await storage.local!.put(renditionKey, renditionBytes, "image/avif");
+
+    const media = await createMedia({ id, key });
+    await createStoredFile(media, {
+      contentType: "image/png",
+      size: bytes.byteLength,
+    });
+
+    const response = await GET(
+      new Request(`http://localhost/media/${renditionKey}`),
+      context(renditionKey),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toBe("image/avif");
+    expect(new Uint8Array(await response.arrayBuffer())).toEqual(
+      renditionBytes,
+    );
+  });
+
   it("redirects a remote file to its recorded location with a short cache", async () => {
     const key = `default/${randomUUID()}/1/original`;
     const remoteUrl = "https://cdn.example.test/files/original.png";

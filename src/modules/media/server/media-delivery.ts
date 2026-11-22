@@ -13,7 +13,7 @@ import {
   type StoredFileLocationRow,
 } from "@/modules/media/lib/stored-file-location";
 
-import { parentKeyPrefix, parseMediaKey } from "./media-key";
+import { mediaKeyDirectory, parseMediaDeliveryKey } from "./media-key";
 import { recordedStorageDriverName } from "./storage";
 
 const deliveryMediaSelect = {
@@ -123,7 +123,7 @@ export async function findDeliveryFile(
     return locationOf(record.media, key, "original");
   }
 
-  const parts = parseMediaKey(key);
+  const parts = parseMediaDeliveryKey(key);
   if (!parts) return null;
 
   const owner = await db.media.findFirst({
@@ -136,7 +136,8 @@ export async function findDeliveryFile(
   const originalKey = owner.storedFile?.key;
   if (!originalKey) return null;
 
-  return key.startsWith(`${parentKeyPrefix(originalKey)}/`)
+  const directory = mediaKeyDirectory(originalKey);
+  return directory && key.startsWith(directory)
     ? locationOf(owner, key, "rendition")
     : null;
 }

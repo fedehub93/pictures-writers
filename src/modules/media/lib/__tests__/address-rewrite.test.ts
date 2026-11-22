@@ -53,6 +53,26 @@ describe("canonicalMediaAddress", () => {
 
     expect(address).toBe("/media/legacy-flat-key");
   });
+
+  it("includes renditions for a legacy three-segment key", () => {
+    const address = canonicalMediaAddress("media-1/1/original", {
+      revision: 1,
+      archived: false,
+      renditions: [
+        {
+          key: "media-1/1/720.webp",
+          width: 720,
+          height: 480,
+          bytes: 400,
+          format: "webp",
+          url: "https://fake-app.ufs.sh/f/media-1/1/720.webp",
+        },
+      ],
+    });
+
+    expect(address).toMatch(/^\/media\/media-1\/1\/original\?mt=/);
+    expect(address).not.toContain("ufs.sh");
+  });
 });
 
 describe("rewriteAddressesInString", () => {
