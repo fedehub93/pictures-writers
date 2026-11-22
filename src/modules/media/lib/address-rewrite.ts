@@ -75,7 +75,10 @@ export function canonicalMediaAddress(
   // A rendition answers only under the original's revision prefix; the
   // delivery route proves ownership the same way. A legacy key that cannot
   // own the rendition leaves it out instead of writing an address that 404s.
-  const prefix = `${key.split("/").slice(0, 3).join("/")}/`;
+  // The directory is every segment up to the file name, so both the current
+  // four-segment layout and the legacy three-segment layout are covered.
+  const separator = key.lastIndexOf("/");
+  const prefix = separator > 0 ? key.slice(0, separator + 1) : `${key}/`;
   const renditions = mediaRenditionLocations(media.renditions).filter(
     (rendition) => rendition.key.startsWith(prefix) && rendition.url,
   );

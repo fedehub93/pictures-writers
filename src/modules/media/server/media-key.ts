@@ -88,6 +88,33 @@ export function parseMediaKey(key: string): MediaKeyParts | null {
 }
 
 /**
+ * Parses a delivery key into the parts needed to resolve its owning Media.
+ * Accepts both the current four-segment layout and the legacy three-segment
+ * layout (`<mediaId>/<revision>/<file>`) that pre-dates the installation slug.
+ * Flat provider keys return `null`.
+ */
+export function parseMediaDeliveryKey(key: string): {
+  mediaId: string;
+  revision: number;
+  file: string;
+} | null {
+  const segments = key.split("/");
+  if (segments.length !== 3 && segments.length !== 4) return null;
+
+  const legacy = segments.length === 3;
+  const mediaId = legacy ? segments[0] : segments[1];
+  const rawRevision = legacy ? segments[1] : segments[2];
+  const file = legacy ? segments[2] : segments[3];
+
+  if (!mediaId || !file) return null;
+
+  const revision = Number(rawRevision);
+  if (!Number.isInteger(revision) || revision < 1) return null;
+
+  return { mediaId, revision, file };
+}
+
+/**
  * The directory a key lives in, used to prove a rendition belongs to the Media
  * that the database resolved for it.
  */
