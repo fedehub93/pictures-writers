@@ -13,6 +13,11 @@ export interface MediaRenditionLocation {
   format: MediaRenditionFormat;
   height?: number;
   bytes?: number;
+  /**
+   * The address resolved when the copy was written. Absent on a legacy entry
+   * whose address still lives in the Media's delivery token.
+   */
+  url?: string;
 }
 
 function isFormat(value: unknown): value is MediaRenditionFormat {

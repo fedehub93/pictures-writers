@@ -23,6 +23,11 @@ import {
 } from "@/shared/dashboard/author";
 
 import {
+  mediaPresentationSelect,
+  withMediaUrl,
+} from "@/modules/media/lib/media-address";
+
+import {
   postInsertSchema,
   postUpdateSchema,
   postUpdateSeoSchema,
@@ -225,7 +230,7 @@ export const postsRouter = createTRPCRouter({
                   slug: true,
                 },
               },
-              imageCover: true,
+              imageCover: { select: { ...mediaPresentationSelect } },
               authors: {
                 select: {
                   user: true,
@@ -260,6 +265,9 @@ export const postsRouter = createTRPCRouter({
 
       return {
         ...root.currentVersion,
+        imageCover: root.currentVersion.imageCover
+          ? withMediaUrl(root.currentVersion.imageCover)
+          : null,
         rootId: root.id,
         slug: root.slug,
         firstPublishedAt: root.firstPublishedAt,
@@ -296,7 +304,7 @@ export const postsRouter = createTRPCRouter({
                   slug: true,
                 },
               },
-              imageCover: true,
+              imageCover: { select: { ...mediaPresentationSelect } },
               authors: {
                 select: {
                   user: true,
@@ -331,6 +339,9 @@ export const postsRouter = createTRPCRouter({
 
       return {
         ...root.currentVersion,
+        imageCover: root.currentVersion.imageCover
+          ? withMediaUrl(root.currentVersion.imageCover)
+          : null,
         rootId: root.id,
         slug: root.slug,
         firstPublishedAt: root.firstPublishedAt,
@@ -394,10 +405,7 @@ export const postsRouter = createTRPCRouter({
         currentVersion: {
           include: {
             imageCover: {
-              select: {
-                url: true,
-                altText: true,
-              },
+              select: { ...mediaPresentationSelect },
             },
             authors: {
               select: {
@@ -432,7 +440,9 @@ export const postsRouter = createTRPCRouter({
           firstPublishedAt: root.firstPublishedAt,
           scheduledAt: version.scheduledAt,
           version: version.version,
-          imageCover: version.imageCover,
+          imageCover: version.imageCover
+            ? withMediaUrl(version.imageCover)
+            : null,
           authors: version.authors,
         };
       };
@@ -547,7 +557,7 @@ export const postsRouter = createTRPCRouter({
             select: {
               id: true,
               title: true,
-              imageCover: { select: { url: true } },
+              imageCover: { select: { ...mediaPresentationSelect } },
             },
           },
         },
@@ -557,7 +567,9 @@ export const postsRouter = createTRPCRouter({
         id: root.liveVersion!.id,
         rootId: root.id,
         title: root.liveVersion!.title,
-        imageCover: root.liveVersion!.imageCover,
+        imageCover: root.liveVersion!.imageCover
+          ? withMediaUrl(root.liveVersion!.imageCover)
+          : null,
         slug: root.slug,
       }));
     }),

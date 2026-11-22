@@ -117,7 +117,7 @@ describe("media quota", () => {
     size: number | null;
     renditions?: unknown;
     archivedAt?: Date | null;
-    /** The stored-file record; omit to cover a row that predates the backfill. */
+    /** The record's size, when it differs from the Media's own (ignored) size. */
     file?: { size: number | null };
   }) {
     const id = randomUUID();
@@ -127,21 +127,15 @@ describe("media quota", () => {
       data: {
         id,
         name: `quota-${id}`,
-        url: `/media/quota-${id}`,
-        size: input.size,
         renditions: input.renditions as PrismaJson.MediaRenditions,
         archivedAt: input.archivedAt ?? null,
-        ...(input.file
-          ? {
-              storedFile: {
-                create: {
-                  key: `default/${id}/1/original`,
-                  driver: "local",
-                  size: input.file.size,
-                },
-              },
-            }
-          : {}),
+        storedFile: {
+          create: {
+            key: `default/${id}/1/original`,
+            driver: "local",
+            size: input.file ? input.file.size : input.size,
+          },
+        },
       },
     });
   }
@@ -162,7 +156,7 @@ describe("media quota", () => {
     await expect(getMediaUsageBytes()).resolves.toBe(baseline + 3200);
   });
 
-  it("counts the stored-file record's size rather than the Media's own column", async () => {
+  it("counts a record's size and its rendition manifest", async () => {
     const baseline = await getMediaUsageBytes();
 
     await createRow({
@@ -173,12 +167,12 @@ describe("media quota", () => {
       file: { size: 2500 },
     });
 
-    // The record answers "where are the bytes"; the Media column is a mirror
-    // that a later move can leave behind.
+    // The record answers "where are the bytes"; the rendition manifest is the
+    // role's contribution on top of it.
     await expect(getMediaUsageBytes()).resolves.toBe(baseline + 2700);
   });
 
-  it("counts an archived file's record rather than its Media column", async () => {
+  it("counts an archived file's record", async () => {
     const baseline = await getMediaUsageBytes();
 
     await createRow({

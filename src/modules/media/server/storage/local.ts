@@ -3,7 +3,7 @@ import "server-only";
 import { mkdir, readdir, readFile, rmdir, stat, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-import { mediaPath } from "@/modules/media/lib/url";
+import { storedFilePath } from "@/modules/media/lib/file-path";
 
 import { StorageObjectNotFoundError, type StorageDriver } from "./types";
 
@@ -141,7 +141,7 @@ export function createLocalStorageDriver({
       const file = objectPath(root, key);
       await withKeyNotFound(key, () => stat(file));
 
-      return mediaPath(key);
+      return storedFilePath("MEDIA", key);
     },
   };
 }

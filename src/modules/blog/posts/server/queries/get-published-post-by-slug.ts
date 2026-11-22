@@ -5,6 +5,10 @@
  */
 
 import { db } from "@/shared/lib/db";
+import {
+  mediaPresentationSelect,
+  withMediaUrl,
+} from "@/modules/media/lib/media-address";
 
 export const getPublishedPostBySlug = async (slug: string) => {
   const root = await db.postRoot.findUnique({
@@ -39,11 +43,7 @@ export const getPublishedPostBySlug = async (slug: string) => {
             },
           },
           imageCover: {
-            select: {
-              url: true,
-              altText: true,
-              metadata: true,
-            },
+            select: { ...mediaPresentationSelect },
           },
           authors: {
             select: {
@@ -85,7 +85,9 @@ export const getPublishedPostBySlug = async (slug: string) => {
     seo: version.seo,
     categories: version.categories,
     tags: version.tags,
-    imageCover: version.imageCover,
+    imageCover: version.imageCover
+      ? withMediaUrl(version.imageCover)
+      : null,
     authors: version.authors,
     faqs: version.faqs,
   };

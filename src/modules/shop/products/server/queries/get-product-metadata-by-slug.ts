@@ -3,6 +3,10 @@ import { Metadata } from "next";
 import { getSettings } from "@/data/settings";
 
 import { db } from "@/shared/lib/db";
+import {
+  mediaPresentationSelect,
+  withMediaUrl,
+} from "@/modules/media/lib/media-address";
 import { absoluteMediaUrl } from "@/modules/media/server/media-url";
 
 export async function getProductMetadataBySlug(
@@ -18,7 +22,7 @@ export async function getProductMetadataBySlug(
     include: {
       liveVersion: {
         include: {
-          imageCover: true,
+          imageCover: { select: { ...mediaPresentationSelect } },
           seo: true,
           category: true,
           user: true,
@@ -35,8 +39,11 @@ export async function getProductMetadataBySlug(
 
   // Stored Media addresses are relative; social metadata needs one a crawler
   // can fetch without knowing the site.
-  const coverImageUrl = version.imageCover
-    ? absoluteMediaUrl(version.imageCover.url, siteUrl)
+  const imageCover = version.imageCover
+    ? withMediaUrl(version.imageCover)
+    : null;
+  const coverImageUrl = imageCover
+    ? absoluteMediaUrl(imageCover.url, siteUrl)
     : null;
 
   return {
@@ -65,7 +72,7 @@ export async function getProductMetadataBySlug(
         ? [
             {
               url: coverImageUrl,
-              alt: version.imageCover?.altText || "",
+              alt: imageCover?.altText || "",
             },
           ]
         : [],

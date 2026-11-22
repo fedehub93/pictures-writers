@@ -9,7 +9,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import * as z from "zod";
 
-import { Media } from "@/generated/prisma";
+import type { MediaCover } from "@/modules/media/lib/media-library";
 
 import { useTRPC } from "@/trpc/client";
 
@@ -41,7 +41,7 @@ interface ProductImageFormProps {
   id: string;
   rootId: string;
   initialData: {
-    imageCover: Media | null;
+    imageCover: MediaCover | null;
   };
 }
 
@@ -55,7 +55,7 @@ export const ProductImageForm = ({
   const [filters] = useProductsFilters();
   const { onOpen } = useModal();
 
-  const [previewMedia, setPreviewMedia] = useState<Media | null>(
+  const [previewMedia, setPreviewMedia] = useState<MediaCover | null>(
     initialData.imageCover,
   );
 
@@ -90,7 +90,7 @@ export const ProductImageForm = ({
     updateProduct({ ...dirtyData, id, rootId });
   });
 
-  const getImage = (media: Media) => {
+  const getImage = (media: MediaCover) => {
     setPreviewMedia(media);
     form.setValue("imageCoverId", media.id, {
       shouldDirty: true,

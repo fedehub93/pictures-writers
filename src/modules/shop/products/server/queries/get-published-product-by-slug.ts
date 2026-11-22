@@ -1,6 +1,10 @@
 import { ProductType } from "@/generated/prisma";
 
 import { db } from "@/shared/lib/db";
+import {
+  mediaPresentationSelect,
+  withMediaUrl,
+} from "@/modules/media/lib/media-address";
 
 export const getPublishedProductBySlug = async (slug: string) => {
   const root = await db.productRoot.findFirst({
@@ -33,20 +37,12 @@ export const getPublishedProductBySlug = async (slug: string) => {
             },
           },
           imageCover: {
-            select: {
-              url: true,
-              altText: true,
-              metadata: true,
-            },
+            select: { ...mediaPresentationSelect },
           },
           gallery: {
             select: {
               media: {
-                select: {
-                  id: true,
-                  url: true,
-                  altText: true,
-                },
+                select: { ...mediaPresentationSelect },
               },
               sort: true,
             },
@@ -103,6 +99,11 @@ export const getPublishedProductBySlug = async (slug: string) => {
 
   return {
     ...version,
+    imageCover: version.imageCover ? withMediaUrl(version.imageCover) : null,
+    gallery: version.gallery.map(({ media, sort }) => ({
+      media: withMediaUrl(media),
+      sort,
+    })),
     rootId: root.id,
     slug: root.slug,
     reviews: root.reviews,

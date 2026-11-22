@@ -1,4 +1,8 @@
 import { db } from "@/shared/lib/db";
+import {
+  mediaPresentationSelect,
+  withMediaUrl,
+} from "@/modules/media/lib/media-address";
 
 export const getPublishedProductByRootId = async (rootId: string) => {
   const root = await db.productRoot.findUnique({
@@ -8,7 +12,7 @@ export const getPublishedProductByRootId = async (rootId: string) => {
     include: {
       liveVersion: {
         include: {
-          imageCover: true,
+          imageCover: { select: { ...mediaPresentationSelect } },
           seo: true,
           user: true,
         },
@@ -22,6 +26,9 @@ export const getPublishedProductByRootId = async (rootId: string) => {
 
   return {
     ...root.liveVersion,
+    imageCover: root.liveVersion.imageCover
+      ? withMediaUrl(root.liveVersion.imageCover)
+      : null,
     rootId: root.id,
     slug: root.slug,
     type: root.type,

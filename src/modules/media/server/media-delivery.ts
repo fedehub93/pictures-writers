@@ -5,20 +5,21 @@ import { StoredFileKind } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 
 import {
+  mediaAddressSelect,
+  mediaRenditionAddress,
+} from "@/modules/media/lib/media-address";
+import {
   storedFileLocationSelect,
   type StoredFileLocationRow,
 } from "@/modules/media/lib/stored-file-location";
 
-import { parentKeyPrefix, parseMediaKey } from "./media-key";
+import { mediaKeyDirectory, parseMediaDeliveryKey } from "./media-key";
 import { recordedStorageDriverName } from "./storage";
-import { remoteUrlForAddress } from "./stored-file";
 
 const deliveryMediaSelect = {
+  ...mediaAddressSelect,
   id: true,
-  key: true,
-  url: true,
-  mimeType: true,
-  storageDriver: true,
+  storedFile: { select: storedFileLocationSelect },
 } satisfies Prisma.MediaSelect;
 
 type DeliveryMediaRow = Prisma.MediaGetPayload<{
@@ -38,18 +39,16 @@ export interface OwnedDeliveryFile {
 
 /**
  * Where the bytes of a requested delivery key are. The stored-file record is
- * the answer; the Media's own storage columns are read only to fall back for a
- * row whose record has not been created yet.
+ * the answer for an original; a rendition's address is the one its manifest
+ * recorded when the bytes were written.
  */
 export interface DeliveryFile {
   /** The driver that owns the bytes, with the pre-seam rule applied. */
   driver: string;
-  /** The provider address of the original; null for a local file. */
+  /** The provider address of the requested object; null for a local file. */
   remoteUrl: string | null;
   /** The original's recorded content type; null for a rendition. */
   contentType: string | null;
-  /** The Media's stored address, which carries a remote rendition manifest. */
-  mediaUrl: string;
   /** Whether the requested key is a rendition rather than the original. */
   rendition: boolean;
 }
@@ -81,20 +80,20 @@ export async function findOwnedDeliveryFile(
 
 function locationOf(
   media: DeliveryMediaRow,
-  record: StoredFileLocationRow | null,
+  key: string,
   role: "original" | "rendition",
-): DeliveryFile {
+): DeliveryFile | null {
+  const record: StoredFileLocationRow | null = media.storedFile;
+  if (!record) return null;
+
   const rendition = role === "rendition";
 
   return {
-    driver: recordedStorageDriverName(record?.driver ?? media.storageDriver),
-    // A record written before the address backfill may still lack the provider
-    // location; the Media's own address answers it without asking the provider.
-    remoteUrl:
-      record?.remoteUrl ??
-      (rendition ? null : remoteUrlForAddress(media.url)),
-    contentType: rendition ? null : (record?.contentType ?? media.mimeType),
-    mediaUrl: media.url,
+    driver: recordedStorageDriverName(record.driver),
+    // A rendition has no record of its own: its provider address is the one
+    // its Media's manifest recorded when the bytes were written.
+    remoteUrl: rendition ? mediaRenditionAddress(media, key) : record.remoteUrl,
+    contentType: rendition ? null : record.contentType,
     rendition,
   };
 }
@@ -106,9 +105,8 @@ function locationOf(
  * address come from one place. A rendition has no record of its own: its owner
  * is resolved from the parsed key and the requested key must sit under that
  * Media's revision prefix, which is how ownership is proved rather than
- * trusted. A Media whose record has not been created yet still resolves from
- * its own columns, so deploying this code before the one-time backfill cannot
- * darken an existing picture.
+ * trusted. A Media without a record has no location to answer with, so it is a
+ * 404 rather than a guess.
  */
 export async function findDeliveryFile(
   key: string,
@@ -122,35 +120,24 @@ export async function findDeliveryFile(
   });
 
   if (record?.media) {
-    return locationOf(record.media, record, "original");
+    return locationOf(record.media, key, "original");
   }
 
-  const legacy = await db.media.findFirst({
-    where: { key },
-    select: deliveryMediaSelect,
-  });
-
-  if (legacy?.key) {
-    return locationOf(legacy, null, "original");
-  }
-
-  const parts = parseMediaKey(key);
+  const parts = parseMediaDeliveryKey(key);
   if (!parts) return null;
 
   const owner = await db.media.findFirst({
     where: { id: parts.mediaId, revision: parts.revision },
-    select: {
-      ...deliveryMediaSelect,
-      storedFile: { select: storedFileLocationSelect },
-    },
+    select: deliveryMediaSelect,
   });
 
   if (!owner) return null;
 
-  const originalKey = owner.storedFile?.key ?? owner.key;
+  const originalKey = owner.storedFile?.key;
   if (!originalKey) return null;
 
-  return key.startsWith(`${parentKeyPrefix(originalKey)}/`)
-    ? locationOf(owner, owner.storedFile, "rendition")
+  const directory = mediaKeyDirectory(originalKey);
+  return directory && key.startsWith(directory)
+    ? locationOf(owner, key, "rendition")
     : null;
 }

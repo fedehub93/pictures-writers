@@ -6,7 +6,7 @@ import { MediaType } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 
 import {
-  mediaStorageLocation,
+  mediaStoredLocation,
   storedFileLocationSelect,
 } from "@/modules/media/lib/stored-file-location";
 
@@ -51,12 +51,6 @@ export interface MediaMetadataBackfillOptions {
 const metadataMediaSelect = {
   id: true,
   name: true,
-  key: true,
-  url: true,
-  storageDriver: true,
-  mimeType: true,
-  size: true,
-  checksum: true,
   metadata: true,
   storedFile: { select: storedFileLocationSelect },
 } satisfies Prisma.MediaSelect;
@@ -73,20 +67,13 @@ function asObject(value: unknown): Record<string, unknown> {
 
 /**
  * Whether the row already carries everything this backfill would write, on
- * both the Media and — when it exists — its stored-file record. Requiring both
- * keeps the record and the mirrored columns in step; a record left empty by a
- * previous state is filled, not trusted because the Media column happens to
- * be complete.
+ * both the Media (its derived metadata) and its stored-file record (the facts
+ * that describe the bytes). A record left empty by a previous state is filled,
+ * not trusted because the Media happens to have its dimensions.
  */
 function hasCompleteMetadata(media: BackfillMedia): boolean {
   const metadata = asObject(media.metadata);
   const mediaComplete =
-    typeof media.mimeType === "string" &&
-    media.mimeType.length > 0 &&
-    typeof media.size === "number" &&
-    media.size > 0 &&
-    typeof media.checksum === "string" &&
-    media.checksum.length > 0 &&
     typeof metadata.width === "number" &&
     typeof metadata.height === "number" &&
     typeof metadata.blurDataURL === "string" &&
@@ -95,7 +82,7 @@ function hasCompleteMetadata(media: BackfillMedia): boolean {
   if (!mediaComplete) return false;
 
   const record = media.storedFile;
-  if (!record) return true;
+  if (!record) return false;
 
   return (
     typeof record.contentType === "string" &&
@@ -160,16 +147,18 @@ export async function backfillMediaMetadata({
     }
 
     try {
-      const location = mediaStorageLocation(item);
-      const key = location.key;
+      const location = mediaStoredLocation(item.storedFile);
+      const key = location?.key;
 
-      if (!key) {
+      if (!key || !location) {
         report.failed.push({
           mediaId: item.id,
           name: item.name,
-          reason: "no readable storage key",
+          reason: "no stored-file record with a storage key",
         });
-        onProgress?.(`fail ${item.id}: no readable storage key`);
+        onProgress?.(
+          `fail ${item.id}: no stored-file record with a storage key`,
+        );
         return;
       }
 
@@ -193,28 +182,24 @@ export async function backfillMediaMetadata({
       const inspected = await inspectImage(bytes);
 
       if (!dryRun) {
-        const data = {
-          size: inspected.size,
-          mimeType: inspected.mimeType,
-          checksum: inspected.checksum,
-          metadata: {
-            ...asObject(item.metadata),
-            ...inspected.metadata,
-          } as PrismaJson.MediaMetadata,
-        };
+        const metadata = {
+          ...asObject(item.metadata),
+          ...inspected.metadata,
+        } as PrismaJson.MediaMetadata;
 
         await db.$transaction(async (tx) => {
-          await tx.media.update({ where: { id: item.id }, data });
+          await tx.media.update({
+            where: { id: item.id },
+            data: { metadata },
+          });
 
           // The record answers "where are the bytes" for every later reader;
           // it must learn the metadata this run discovered.
-          if (item.storedFile) {
-            await updateStoredFileForMedia(tx, item.id, {
-              contentType: inspected.mimeType,
-              size: inspected.size,
-              checksum: inspected.checksum,
-            });
-          }
+          await updateStoredFileForMedia(tx, item.id, {
+            contentType: inspected.mimeType,
+            size: inspected.size,
+            checksum: inspected.checksum,
+          });
         });
       }
 

@@ -2,20 +2,17 @@ import "server-only";
 
 import { randomUUID } from "node:crypto";
 
-import { MediaType } from "@/generated/prisma";
+import { MediaType, StoredFileKind, type Prisma } from "@/generated/prisma";
 
 import { db } from "@/shared/lib/db";
 
+import { storedFilePath } from "@/modules/media/lib/file-path";
 import {
-  buildMediaDeliveryUrl,
-  withMediaDeliveryArchived,
-} from "@/modules/media/lib/manifest";
-import {
-  mediaLibrarySelect,
+  mediaLibraryItem,
+  mediaLibraryRowSelect,
   type MediaLibraryItem,
 } from "@/modules/media/lib/media-library";
 import { mediaUsageBytes } from "@/modules/media/lib/quota";
-import { mediaPath } from "@/modules/media/lib/url";
 import type {
   MediaCleanupStatus,
   MediaDeletionCleanup,
@@ -23,9 +20,9 @@ import type {
 } from "@/modules/media/types";
 
 import {
-  mediaStorageLocation,
+  mediaStoredLocation,
   storedFileLocationSelect,
-  type MediaStorageColumns,
+  type StoredFileLocationRow,
 } from "@/modules/media/lib/stored-file-location";
 
 import { checksumOf } from "./image-bytes";
@@ -152,12 +149,37 @@ export class MediaInUseError extends Error {
   }
 }
 
-function findDuplicate(checksum: string): Promise<MediaLibraryItem | null> {
-  return db.media.findFirst({
-    where: { checksum, archivedAt: null },
-    select: mediaLibrarySelect,
+/**
+ * Re-reads a row with its stored-file record once a write has created it, so
+ * the answer carries the storage facts whether or not the record already
+ * existed before the write.
+ */
+async function readLibraryItem(
+  client: Pick<Prisma.TransactionClient, "media">,
+  id: string,
+): Promise<MediaLibraryItem> {
+  const row = await client.media.findUniqueOrThrow({
+    where: { id },
+    select: mediaLibraryRowSelect,
+  });
+
+  return mediaLibraryItem(row);
+}
+
+async function findDuplicate(
+  checksum: string,
+): Promise<MediaLibraryItem | null> {
+  const file = await db.storedFile.findFirst({
+    where: {
+      checksum,
+      kind: StoredFileKind.MEDIA,
+      media: { is: { archivedAt: null } },
+    },
+    select: { media: { select: mediaLibraryRowSelect } },
     orderBy: { createdAt: "asc" },
   });
+
+  return file?.media ? mediaLibraryItem(file.media) : null;
 }
 
 /**
@@ -187,7 +209,6 @@ async function recordedStorageDriver(
 
 interface StoredImageRevision {
   key: string;
-  url: string;
   size: number;
   mimeType: string;
   metadata: PrismaJson.MediaMetadata;
@@ -196,7 +217,6 @@ interface StoredImageRevision {
 
 interface StoredPlainRevision {
   key: string;
-  url: string;
   size: number;
   mimeType: string | null;
 }
@@ -207,7 +227,6 @@ export interface WriteImageRevisionOptions {
   revision: number;
   installationSlug?: string;
   bytes: Uint8Array<ArrayBuffer>;
-  archived: boolean;
   /**
    * Roll back the objects written under this revision on failure. A backfill
    * that reuses an existing original must not: deleting the prefix would
@@ -222,7 +241,6 @@ export async function writeImageRevision({
   revision,
   installationSlug = getInstallationSlug(),
   bytes,
-  archived,
   cleanupOnFailure = true,
 }: WriteImageRevisionOptions): Promise<StoredImageRevision> {
   const prefix = mediaRevisionPrefix(id, revision, installationSlug);
@@ -248,29 +266,24 @@ export async function writeImageRevision({
       });
     }
 
-    // Stored addresses are canonical and relative: the delivery route resolves
-    // the driver from the row. Rendition URLs are resolved through the driver,
-    // so a remote Media carries the provider origin inside its manifest.
+    // The address a rendition answers on is resolved once, when its bytes are
+    // written: canonical for a local file, the provider's for a remote one.
+    // Delivery redirects a remote rendition through the manifest entry, so it
+    // never asks the provider to resolve a key.
     const renditionUrls = await Promise.all(
       manifest.map((rendition) => driver.url(rendition.key)),
     );
-    const url = buildMediaDeliveryUrl(mediaPath(originalKey), {
-      revision,
-      archived,
-      renditions: manifest.map((rendition, index) => ({
-        width: rendition.width,
-        format: rendition.format,
-        url: renditionUrls[index],
-      })),
-    });
+    const renditions = manifest.map((rendition, index) => ({
+      ...rendition,
+      url: renditionUrls[index]!,
+    }));
 
     return {
       key: originalKey,
-      url,
       size: image.bytes.byteLength,
       mimeType: image.mimeType,
       metadata: image.metadata as PrismaJson.MediaMetadata,
-      renditions: manifest,
+      renditions,
     };
   } catch (error) {
     if (cleanupOnFailure) {
@@ -303,7 +316,6 @@ async function writePlainRevision({
 
     return {
       key,
-      url: mediaPath(key),
       size: bytes.byteLength,
       mimeType,
     };
@@ -393,16 +405,10 @@ async function createStoredPlainMedia({
             id,
             name: source.name,
             altText: source.altText || null,
-            key: stored.key,
-            url: stored.url,
-            size: stored.size,
             type: source.type,
-            mimeType: stored.mimeType,
-            checksum,
             revision,
-            storageDriver,
           },
-          select: mediaLibrarySelect,
+          select: { id: true },
         });
 
         await createStoredFileForMedia(tx, created.id, {
@@ -414,7 +420,7 @@ async function createStoredPlainMedia({
           checksum,
         });
 
-        return created;
+        return readLibraryItem(tx, created.id);
       },
     );
 
@@ -437,15 +443,9 @@ async function createStoredPlainMedia({
 export function storedImageFields(
   stored: StoredImageRevision,
   revision: number,
-  checksum: string,
 ) {
   return {
-    key: stored.key,
-    url: stored.url,
-    size: stored.size,
     type: MediaType.IMAGE,
-    mimeType: stored.mimeType,
-    checksum,
     revision,
     metadata: stored.metadata,
     renditions: stored.renditions as PrismaJson.MediaRenditions,
@@ -513,7 +513,6 @@ export async function createMediaFromUpload({
       revision,
       installationSlug,
       bytes: originalBytes,
-      archived: false,
     });
 
     const remoteUrl = await remoteUrlForUpload(
@@ -531,13 +530,12 @@ export async function createMediaFromUpload({
       async (tx) => {
         const created = await tx.media.create({
           data: {
-            ...storedImageFields(stored, revision, checksum),
+            ...storedImageFields(stored, revision),
             id,
             name: source.name,
             altText: source.altText || null,
-            storageDriver: driverThatWrote,
           },
-          select: mediaLibrarySelect,
+          select: { id: true },
         });
 
         await createStoredFileForMedia(tx, created.id, {
@@ -549,7 +547,7 @@ export async function createMediaFromUpload({
           checksum,
         });
 
-        return created;
+        return readLibraryItem(tx, created.id);
       },
     );
 
@@ -573,10 +571,11 @@ export async function createMediaFromUpload({
   }
 }
 
-interface MediaCleanupRow extends MediaStorageColumns {
+interface MediaCleanupRow {
   id: string;
   revision: number;
   renditions: unknown;
+  storedFile: StoredFileLocationRow | null;
 }
 
 /**
@@ -614,16 +613,16 @@ function legacyKeyPrefix(
  * key may be a provider file key that a customId scan cannot find, while its
  * renditions are separate objects: the exact key and every key recorded in the
  * manifest are named directly, and the legacy directory is removed as well so
- * an interrupted operation cannot leave an object behind. The Media's own
- * columns answer only until the one-time backfill creates the record.
+ * an interrupted operation cannot leave an object behind. The stored-file
+ * record is the only answer for the key and the driver.
  */
 function mediaCleanupTarget(
   media: MediaCleanupRow,
   installationSlug: string,
   scope: "revision" | "installation",
 ): MediaCleanupTarget {
-  const location = mediaStorageLocation(media);
-  const key = location.key;
+  const location = mediaStoredLocation(media.storedFile);
+  const key = location?.key ?? null;
   const renditions = Array.isArray(media.renditions)
     ? (media.renditions as MediaRendition[])
     : [];
@@ -637,19 +636,19 @@ function mediaCleanupTarget(
         ? mediaStoragePrefixForKey(media.id, key, installationSlug)
         : mediaKeyDirectory(key);
 
-    return { driver: location.driver, prefix, keys: [] };
+    return { driver: location?.driver ?? null, prefix, keys: [] };
   }
 
   if (key) {
     return {
-      driver: location.driver,
+      driver: location?.driver ?? null,
       prefix: legacyKeyPrefix(key, scope),
       keys: [...new Set([key, ...renditionKeys])],
     };
   }
 
   return {
-    driver: location.driver,
+    driver: location?.driver ?? null,
     prefix:
       scope === "installation"
         ? mediaStoragePrefixForKey(media.id, null, installationSlug)
@@ -780,7 +779,6 @@ export async function replaceMediaFile({
           revision,
           installationSlug,
           bytes,
-          archived: existing.archivedAt !== null,
         });
 
         const location = {
@@ -803,10 +801,9 @@ export async function replaceMediaFile({
             const updated = await tx.media.update({
               where: { id: mediaId },
               data: {
-                ...storedImageFields(stored, revision, checksum),
-                storageDriver,
+                ...storedImageFields(stored, revision),
               },
-              select: mediaLibrarySelect,
+              select: { id: true },
             });
             const file = mediaStoredFileCreateData(mediaId, location);
 
@@ -816,7 +813,7 @@ export async function replaceMediaFile({
               update: file,
             });
 
-            return updated;
+            return readLibraryItem(tx, updated.id);
           },
         );
       } else {
@@ -826,7 +823,8 @@ export async function replaceMediaFile({
           revision,
           installationSlug,
           bytes,
-          mimeType: source.mimeType || existing.mimeType,
+          mimeType:
+            source.mimeType || existing.storedFile?.contentType || null,
         });
 
         const location = {
@@ -844,17 +842,11 @@ export async function replaceMediaFile({
             const updated = await tx.media.update({
               where: { id: mediaId },
               data: {
-                key: stored.key,
-                url: stored.url,
-                size: stored.size,
-                mimeType: stored.mimeType,
-                checksum,
                 revision,
-                storageDriver,
                 metadata: null,
                 renditions: null,
               },
-              select: mediaLibrarySelect,
+              select: { id: true },
             });
             const file = mediaStoredFileCreateData(mediaId, location);
 
@@ -864,7 +856,7 @@ export async function replaceMediaFile({
               update: file,
             });
 
-            return updated;
+            return readLibraryItem(tx, updated.id);
           },
         );
       }
@@ -937,10 +929,7 @@ export async function archiveMediaBatch(mediaIds: string[]): Promise<number> {
     pending.map((item) =>
       db.media.update({
         where: { id: item.id },
-        data: {
-          archivedAt,
-          url: withMediaDeliveryArchived(item.url, true),
-        },
+        data: { archivedAt },
       }),
     ),
   );
@@ -962,10 +951,7 @@ export async function restoreMediaBatch(mediaIds: string[]): Promise<number> {
     pending.map((item) =>
       db.media.update({
         where: { id: item.id },
-        data: {
-          archivedAt: null,
-          url: withMediaDeliveryArchived(item.url, false),
-        },
+        data: { archivedAt: null },
       }),
     ),
   );
@@ -983,20 +969,16 @@ export async function archiveMedia(mediaId: string): Promise<MediaLibraryItem> {
 
   if (!existing) throw new MediaNotFoundError(mediaId);
   if (existing.archivedAt) {
-    return db.media.findUniqueOrThrow({
-      where: { id: mediaId },
-      select: mediaLibrarySelect,
-    });
+    return readLibraryItem(db, mediaId);
   }
 
-  return db.media.update({
+  await db.media.update({
     where: { id: mediaId },
-    data: {
-      archivedAt: new Date(),
-      url: withMediaDeliveryArchived(existing.url, true),
-    },
-    select: mediaLibrarySelect,
+    data: { archivedAt: new Date() },
+    select: { id: true },
   });
+
+  return readLibraryItem(db, mediaId);
 }
 
 /**
@@ -1008,20 +990,16 @@ export async function restoreMedia(mediaId: string): Promise<MediaLibraryItem> {
 
   if (!existing) throw new MediaNotFoundError(mediaId);
   if (!existing.archivedAt) {
-    return db.media.findUniqueOrThrow({
-      where: { id: mediaId },
-      select: mediaLibrarySelect,
-    });
+    return readLibraryItem(db, mediaId);
   }
 
-  return db.media.update({
+  await db.media.update({
     where: { id: mediaId },
-    data: {
-      archivedAt: null,
-      url: withMediaDeliveryArchived(existing.url, false),
-    },
-    select: mediaLibrarySelect,
+    data: { archivedAt: null },
+    select: { id: true },
   });
+
+  return readLibraryItem(db, mediaId);
 }
 
 export interface DeleteMediaPermanentlyOptions {

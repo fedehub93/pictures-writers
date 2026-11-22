@@ -10,6 +10,10 @@ import {
   isEbookMetadata,
   isWebinarMetadata,
 } from "@/modules/shop/products/types";
+import {
+  mediaPresentationSelect,
+  withMediaUrl,
+} from "@/modules/media/lib/media-address";
 import { absoluteMediaUrl } from "@/modules/media/server/media-url";
 import { createContactByEmail } from "@/data/email-contact";
 import { getSettings } from "@/data/settings";
@@ -183,11 +187,7 @@ export const sendWebinarPurchaseEmail = async (
           title: true,
           tiptapDescription: true,
           metadata: true,
-          imageCover: {
-            select: {
-              url: true,
-            },
-          },
+          imageCover: { select: mediaPresentationSelect },
         },
       },
     },
@@ -210,7 +210,9 @@ export const sendWebinarPurchaseEmail = async (
   if (!webinarTemplate?.bodyHtml) return false;
 
   const template = handlebars.compile(webinarTemplate.bodyHtml);
-  const imageCoverUrl = await emailMediaUrl(webinar.imageCover?.url);
+  const imageCoverUrl = await emailMediaUrl(
+    webinar.imageCover ? withMediaUrl(webinar.imageCover).url : undefined,
+  );
 
   await sendEmail({
     to: recipient,
@@ -295,11 +297,7 @@ export const buildFreeDigitalDownloadEmail = async (
           title: true,
           tiptapDescription: true,
           metadata: true,
-          imageCover: {
-            select: {
-              url: true,
-            },
-          },
+          imageCover: { select: mediaPresentationSelect },
         },
       },
     },
@@ -325,7 +323,9 @@ export const buildFreeDigitalDownloadEmail = async (
   if (!downloadTemplate?.bodyHtml) return null;
 
   const template = handlebars.compile(downloadTemplate.bodyHtml);
-  const imageCoverUrl = await emailMediaUrl(product.imageCover?.url);
+  const imageCoverUrl = await emailMediaUrl(
+    product.imageCover ? withMediaUrl(product.imageCover).url : undefined,
+  );
   const appUrl = (
     process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
   ).replace(/\/+$/, "");

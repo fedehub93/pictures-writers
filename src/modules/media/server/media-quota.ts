@@ -36,16 +36,6 @@ type UsageFileRow = Prisma.StoredFileGetPayload<{
   select: typeof usageFileSelect;
 }>;
 
-const legacyMediaUsageSelect = {
-  id: true,
-  size: true,
-  renditions: true,
-} satisfies Prisma.MediaSelect;
-
-type LegacyMediaUsageRow = Prisma.MediaGetPayload<{
-  select: typeof legacyMediaUsageSelect;
-}>;
-
 /**
  * The bytes one stored file occupies: its own size plus the renditions its
  * Media role accounts for. An attachment or avatar has no renditions and
@@ -53,10 +43,6 @@ type LegacyMediaUsageRow = Prisma.MediaGetPayload<{
  */
 function fileUsageRow(file: UsageFileRow): MediaQuotaUsageRow {
   return { size: file.size, renditions: file.media?.renditions ?? null };
-}
-
-function legacyUsageRow(media: LegacyMediaUsageRow): MediaQuotaUsageRow {
-  return { size: media.size, renditions: media.renditions };
 }
 
 export class MediaQuotaExceededError extends Error {
@@ -107,37 +93,26 @@ interface StorageUsageSnapshot {
 
 /**
  * Reads the quota, the reserve and the bytes every stored file occupies in one
- * round trip. A Media whose one-time location record does not exist yet still
- * counts from its own columns, so deploying this code before the backfill
- * cannot under-count the disk.
+ * round trip. Every file has a record, so the budget describes the disk without
+ * a per-Media fallback.
  */
 async function readUsage(
   client: Prisma.TransactionClient,
   excludeMediaId?: string,
 ): Promise<StorageUsageSnapshot> {
-  const [settings, files, legacyMedia] = await Promise.all([
+  const [settings, files] = await Promise.all([
     client.settings.findFirst({
       select: { mediaQuotaMb: true, publicOriginReserveMb: true },
     }),
     client.storedFile.findMany({ select: usageFileSelect }),
-    client.media.findMany({
-      where: { storedFile: null },
-      select: legacyMediaUsageSelect,
-    }),
   ]);
 
   const countedFiles = excludeMediaId
     ? files.filter((file) => file.mediaId !== excludeMediaId)
     : files;
-  const countedLegacy = excludeMediaId
-    ? legacyMedia.filter((media) => media.id !== excludeMediaId)
-    : legacyMedia;
 
   return {
-    usedBytes: mediaUsageBytes([
-      ...countedFiles.map(fileUsageRow),
-      ...countedLegacy.map(legacyUsageRow),
-    ]),
+    usedBytes: mediaUsageBytes(countedFiles.map(fileUsageRow)),
     publicBytes: mediaUsageBytes(
       countedFiles
         .filter((file) => file.origin === StoredFileOrigin.PUBLIC)

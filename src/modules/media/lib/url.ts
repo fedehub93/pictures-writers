@@ -1,4 +1,3 @@
-import { storedFilePath } from "./file-path";
 import {
   LEGACY_ASSET_PREFIX,
   MEDIA_PATH_PREFIX,
@@ -19,15 +18,6 @@ export function parseSrc(src: string): ParsedSrc {
   } catch {
     return { url: new URL(src, "http://media.local"), absolute: false };
   }
-}
-
-/**
- * The canonical, provider-independent media address for a storage key.
- * `Media.url` stores this relative form so the database never carries a domain.
- * Composing a Media address is one role of the shared file composer.
- */
-export function mediaPath(key: string): string {
-  return storedFilePath("MEDIA", key);
 }
 
 export function serializeSrc(url: URL, absolute: boolean): string {
@@ -103,9 +93,10 @@ function safeDecode(value: string): string {
  */
 export function mediaSourceKey(media: {
   key: string | null;
-  url: string;
+  url: string | null;
 }): string | null {
   if (typeof media.key === "string" && media.key.length > 0) return media.key;
+  if (!media.url) return null;
 
   const key = storageKeyFromMediaUrl(media.url);
 

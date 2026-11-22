@@ -15,6 +15,11 @@ import { revalidateContent } from "@/shared/lib/revalidate-content";
 import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 
 import {
+  mediaPresentationSelect,
+  withMediaUrl,
+} from "@/modules/media/lib/media-address";
+
+import {
   DEFAULT_PAGE,
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,
@@ -88,10 +93,16 @@ export const productsRouter = createTRPCRouter({
           currentVersion: {
             include: {
               seo: true,
-              imageCover: true,
+              imageCover: { select: { ...mediaPresentationSelect } },
               category: true,
               gallery: {
-                include: { media: true },
+                select: {
+                  id: true,
+                  productId: true,
+                  mediaId: true,
+                  sort: true,
+                  media: { select: { ...mediaPresentationSelect } },
+                },
                 orderBy: { sort: "asc" },
               },
               faqs: { orderBy: { sort: "asc" } },
@@ -109,6 +120,16 @@ export const productsRouter = createTRPCRouter({
 
       return {
         ...root.currentVersion,
+        imageCover: root.currentVersion.imageCover
+          ? withMediaUrl(root.currentVersion.imageCover)
+          : null,
+        gallery: root.currentVersion.gallery.map(
+          ({ media, sort, ...rest }) => ({
+            ...rest,
+            media: withMediaUrl(media),
+            sort,
+          }),
+        ),
         rootId: root.id,
         slug: root.slug,
         type: root.type,
@@ -124,10 +145,16 @@ export const productsRouter = createTRPCRouter({
           currentVersion: {
             include: {
               seo: true,
-              imageCover: true,
+              imageCover: { select: { ...mediaPresentationSelect } },
               category: true,
               gallery: {
-                include: { media: true },
+                select: {
+                  id: true,
+                  productId: true,
+                  mediaId: true,
+                  sort: true,
+                  media: { select: { ...mediaPresentationSelect } },
+                },
                 orderBy: { sort: "asc" },
               },
               faqs: { orderBy: { sort: "asc" } },
@@ -145,6 +172,16 @@ export const productsRouter = createTRPCRouter({
 
       return {
         ...root.currentVersion,
+        imageCover: root.currentVersion.imageCover
+          ? withMediaUrl(root.currentVersion.imageCover)
+          : null,
+        gallery: root.currentVersion.gallery.map(
+          ({ media, sort, ...rest }) => ({
+            ...rest,
+            media: withMediaUrl(media),
+            sort,
+          }),
+        ),
         rootId: root.id,
         slug: root.slug,
         type: root.type,
@@ -208,7 +245,10 @@ export const productsRouter = createTRPCRouter({
       };
 
       const versionInclude = {
-        include: { imageCover: true, category: true },
+        include: {
+          imageCover: { select: { ...mediaPresentationSelect } },
+          category: true,
+        },
       } as const;
 
       const include = {
@@ -241,7 +281,9 @@ export const productsRouter = createTRPCRouter({
           firstPublishedAt: root.firstPublishedAt,
           createdAt: version.createdAt,
           updatedAt: version.updatedAt,
-          imageCover: version.imageCover,
+          imageCover: version.imageCover
+            ? withMediaUrl(version.imageCover)
+            : null,
           category: version.category,
         };
       };
@@ -318,7 +360,7 @@ export const productsRouter = createTRPCRouter({
             select: {
               id: true,
               title: true,
-              imageCover: { select: { url: true } },
+              imageCover: { select: { ...mediaPresentationSelect } },
             },
           },
         },
@@ -328,7 +370,9 @@ export const productsRouter = createTRPCRouter({
         id: root.liveVersion!.id,
         rootId: root.id,
         title: root.liveVersion!.title,
-        imageCover: root.liveVersion!.imageCover,
+        imageCover: root.liveVersion!.imageCover
+          ? withMediaUrl(root.liveVersion!.imageCover)
+          : null,
       }));
     }),
 

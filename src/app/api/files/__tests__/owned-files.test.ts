@@ -316,7 +316,9 @@ describe("attachments and avatars on the Installation's own domain", () => {
     // appears in the library, cannot be served from /media/ and has no
     // renditions.
     expect(await db.media.count()).toBe(mediaBefore);
-    expect(await db.media.count({ where: { key: fileRecord.key } })).toBe(0);
+    expect(
+      await db.media.count({ where: { storedFile: { is: { key: fileRecord.key } } } }),
+    ).toBe(0);
 
     const wrongPrefix = await getMedia(
       deliveryRequest(`/media/${fileRecord.key}`),
@@ -571,7 +573,7 @@ describe("attachments and avatars on the Installation's own domain", () => {
     expect(uploadResponse.status).toBe(200);
     expect(uploaded.url).toMatch(/^\/files\//);
     expect(
-      await db.media.count({ where: { key } }),
+      await db.media.count({ where: { storedFile: { is: { key } } } }),
     ).toBe(0);
 
     const caller = createUsersCaller({

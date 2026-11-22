@@ -1,4 +1,8 @@
 import { db } from "@/shared/lib/db";
+import {
+  mediaPresentationSelect,
+  withMediaUrl,
+} from "@/modules/media/lib/media-address";
 
 export const getPostsGroupedByRootId = async () => {
   try {
@@ -11,10 +15,7 @@ export const getPostsGroupedByRootId = async () => {
             status: true,
             publishedAt: true,
             imageCover: {
-              select: {
-                url: true,
-                altText: true,
-              },
+              select: { ...mediaPresentationSelect },
             },
             authors: {
               select: {
@@ -50,7 +51,9 @@ export const getPostsGroupedByRootId = async () => {
           status: version.status,
           publishedAt: version.publishedAt,
           firstPublishedAt: root.firstPublishedAt,
-          imageCover: version.imageCover,
+          imageCover: version.imageCover
+            ? withMediaUrl(version.imageCover)
+            : null,
           authors: version.authors,
         };
       });

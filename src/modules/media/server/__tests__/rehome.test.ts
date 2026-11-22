@@ -9,12 +9,16 @@ import { MediaType } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 
 import {
-  buildMediaDeliveryUrl,
   decodeMediaManifest,
   MEDIA_MANIFEST_PARAM,
   stripMediaManifest,
 } from "@/modules/media/lib/manifest";
-import { mediaPath, parseSrc } from "@/modules/media/lib/url";
+import { storedFilePath } from "@/modules/media/lib/file-path";
+import {
+  mediaAddressSelect,
+  mediaDeliveryAddress,
+} from "@/modules/media/lib/media-address";
+import { parseSrc } from "@/modules/media/lib/url";
 
 import { auditMediaLibrary } from "../media-audit";
 import { findDeliveryFile } from "../media-delivery";
@@ -63,7 +67,6 @@ interface CreatedMedia {
     width: number;
     format: "avif" | "webp";
   }[];
-  address: string;
 }
 
 describe("rehomeStoredFiles", () => {
@@ -157,10 +160,6 @@ describe("rehomeStoredFiles", () => {
       height: number;
       bytes: number;
       format: "avif" | "webp";
-    }[] = [];
-    const renditionInputs: {
-      width: number;
-      format: "avif" | "webp";
       url: string;
     }[] = [];
     const renditionObjects: CreatedMedia["renditions"] = [];
@@ -182,10 +181,6 @@ describe("rehomeStoredFiles", () => {
         height: 200,
         bytes: spec.bytes,
         format: spec.format,
-      });
-      renditionInputs.push({
-        width: spec.width,
-        format: spec.format,
         url: renditionUrl,
       });
       renditionObjects.push({
@@ -196,24 +191,12 @@ describe("rehomeStoredFiles", () => {
       });
     }
 
-    const address = buildMediaDeliveryUrl(mediaPath(key), {
-      revision: 1,
-      archived,
-      renditions: renditionInputs,
-    });
-
     const media = await db.media.create({
       data: {
         id,
         name: `Rehome remote ${id}`,
-        key,
-        url: address,
         type: MediaType.IMAGE,
-        size: originalBytes,
-        mimeType: "image/png",
-        checksum,
         revision: 1,
-        storageDriver: "uploadthing",
         archivedAt: archived ? new Date() : null,
         renditions: manifest as PrismaJson.MediaRenditions,
         storedFile: {
@@ -240,7 +223,6 @@ describe("rehomeStoredFiles", () => {
       key,
       original,
       renditions: renditionObjects,
-      address,
     };
   }
 
@@ -264,29 +246,16 @@ describe("rehomeStoredFiles", () => {
         height: 200,
         bytes: renditionBytes.byteLength,
         format: "webp" as const,
+        url: storedFilePath("MEDIA", renditionKey),
       },
     ];
-
-    const address = buildMediaDeliveryUrl(mediaPath(key), {
-      revision: 1,
-      archived: false,
-      renditions: [
-        { width: 320, format: "webp", url: mediaPath(renditionKey) },
-      ],
-    });
 
     const media = await db.media.create({
       data: {
         id,
         name: `Rehome local ${id}`,
-        key,
-        url: address,
         type: MediaType.IMAGE,
-        size: original.byteLength,
-        mimeType: "image/png",
-        checksum,
         revision: 1,
-        storageDriver: "local",
         renditions: manifest as PrismaJson.MediaRenditions,
         storedFile: {
           create: {
@@ -319,7 +288,6 @@ describe("rehomeStoredFiles", () => {
           format: "webp",
         },
       ],
-      address,
     };
   }
 
@@ -342,7 +310,12 @@ describe("rehomeStoredFiles", () => {
     });
     const before = await db.media.findUniqueOrThrow({
       where: { id: created.mediaId },
+      select: mediaAddressSelect,
     });
+    const beforeRecord = await db.storedFile.findUniqueOrThrow({
+      where: { id: created.fileId },
+    });
+    const beforeAddress = mediaDeliveryAddress(before);
 
     const report = await runToLocal();
 
@@ -363,25 +336,28 @@ describe("rehomeStoredFiles", () => {
       key: created.key,
       driver: "local",
       remoteUrl: null,
-      checksum: before.checksum,
+      checksum: beforeRecord.checksum,
       size: 1000,
     });
 
     const after = await db.media.findUniqueOrThrow({
       where: { id: created.mediaId },
+      select: mediaAddressSelect,
     });
-    expect(after.key).toBe(before.key);
+    const afterAddress = mediaDeliveryAddress(after);
+    expect(after.storedFile?.key).toBe(before.storedFile?.key);
     expect(after.revision).toBe(before.revision);
-    expect(after.storageDriver).toBe("local");
-    expect(stripMediaManifest(after.url)).toBe(stripMediaManifest(before.url));
+    expect(stripMediaManifest(afterAddress)).toBe(
+      stripMediaManifest(beforeAddress),
+    );
 
     const rendition = created.renditions[0]!;
-    const manifest = manifestOf(after.url);
+    const manifest = manifestOf(afterAddress);
     expect(manifest?.renditions).toEqual([
       {
         width: 320,
         format: "webp",
-        url: mediaPath(rendition.key),
+        url: storedFilePath("MEDIA", rendition.key),
       },
     ]);
 
@@ -576,15 +552,9 @@ describe("rehomeStoredFiles", () => {
     const media = await db.media.create({
       data: {
         name: `Legacy ${key}`,
-        key: null,
-        // The state after the address sweep: the canonical address already
-        // names the file, while its key is still the provider's flat one.
-        url: mediaPath(key),
+        // A pre-seam key: the flat provider key is not namespaced under the
+        // Media id, so the purge can only find the object through the journal.
         type: MediaType.IMAGE,
-        size: bytes.byteLength,
-        mimeType: "image/jpeg",
-        checksum,
-        storageDriver: null,
         storedFile: {
           create: {
             key,
@@ -618,40 +588,15 @@ describe("rehomeStoredFiles", () => {
 
     const after = await db.media.findUniqueOrThrow({
       where: { id: media.id },
+      select: mediaAddressSelect,
     });
-    expect(after.url).toBe(mediaPath(key));
+    expect(mediaDeliveryAddress(after)).toBe(storedFilePath("MEDIA", key));
   });
 
-  it("refuses a Media still addressed by a provider URL", async () => {
-    const created = await createRemoteMedia({ renditions: [] });
-    const before = await db.media.findUniqueOrThrow({
-      where: { id: created.mediaId },
-    });
-    await db.media.update({
-      where: { id: created.mediaId },
-      data: { url: `${UFS_URL}${created.key}` },
-    });
-
-    const report = await runToLocal();
-
-    expect(report.moved).toBe(0);
-    expect(report.failed).toEqual([
-      { fileId: created.fileId, reason: "address-not-canonical" },
-    ]);
-
-    const record = await db.storedFile.findUniqueOrThrow({
-      where: { id: created.fileId },
-    });
-    expect(record.driver).toBe("uploadthing");
-    expect(record.remoteUrl).not.toBeNull();
-    await expect(local.get(created.key)).rejects.toThrow();
-    expect(
-      await db.storagePurgeEntry.count({ where: { key: created.key } }),
-    ).toBe(0);
-    expect(
-      await db.media.findUniqueOrThrow({ where: { id: created.mediaId } }),
-    ).toMatchObject({ url: `${UFS_URL}${created.key}`, key: before.key });
-  });
+  // A re-home has no `address-not-canonical` refusal: a Media row stores no
+  // address at all, only the record its delivery address is composed from.
+  // Whether that record's key is canonical is the address sweep's job, and
+  // running the sweep before a move is a runbook rule rather than a run guard.
 
   it("verifies the copy it read back from the target, not only the source", async () => {
     const created = await createRemoteMedia({ renditions: [] });
@@ -765,8 +710,9 @@ describe("rehomeStoredFiles", () => {
 
     const after = await db.media.findUniqueOrThrow({
       where: { id: created.mediaId },
+      select: mediaAddressSelect,
     });
-    const manifest = manifestOf(after.url);
+    const manifest = manifestOf(mediaDeliveryAddress(after));
     expect(manifest?.renditions[0]?.url).toBe(
       await provider.url(created.renditions[0]!.key),
     );

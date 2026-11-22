@@ -1,5 +1,6 @@
 import { Prisma } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
+import { withMediaUrl } from "@/modules/media/lib/media-address";
 
 import { postVersionListInclude } from "./post-list-include";
 import type { PostListVersion } from "./get-paginated-posts-by-filters";
@@ -47,7 +48,7 @@ export const getPostsByFilters = async ({
           description: v.description,
           updatedAt: v.updatedAt,
           publishedAt: v.publishedAt,
-          imageCover: v.imageCover,
+          imageCover: v.imageCover ? withMediaUrl(v.imageCover) : null,
           categories: v.categories,
           authors: v.authors,
         };

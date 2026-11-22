@@ -643,6 +643,61 @@ riscritto nessuna riga `Media`, quindi non c'è nulla da annullare. Non eseguire
 la rimozione delle colonne prima che i passi 4–6 siano verdi: sono quelli che provano la
 posizione, e ticket 14 (le colonne tolte) dipende da questo gate.
 
+### 4bis.9 Contrazione della Media: due deploy
+
+Togliere dalla `Media` le colonne di storage (`key`, `url`, `size`, `mimeType`, `checksum`,
+`storageDriver`) non si può fare nello stesso deploy che smette di usarle: durante il rolling
+update il container **precedente** sta ancora servendo e le legge e le scrive. La contrazione è
+quindi due release.
+
+**Release A — il codice smette di leggere e di scrivere le colonne.** La sua migrazione rende
+solo `Media.url` nullable (`relax_media_url`), così il codice può creare una riga senza quella
+colonna; nessuna colonna viene tolta. Il codice compone ogni indirizzo dal record e dal manifest e
+non tocca più le colonne, che restano congelate agli ultimi valori scritti dalla release 13. Il
+comando di avvio esegue `media:backfill-manifest-urls` **prima** di `next start`: il server non ha
+mai bisogno di `Media.url`, e se il comando riporta un errore il deploy si ferma e Coolify tiene
+su il container precedente. Non aspettarsi alcun cambio visibile: sito, libreria, form e email
+funzionano come prima.
+
+Dopo che A è live, esegui il comando una seconda volta a mano: copre un upload che il vecchio
+container ha scritto durante lo switch.
+
+```bash
+docker exec -it <APP_CONTAINER> npm run media:backfill-manifest-urls
+```
+
+Il report deve avere `failed: []` e `updated: 0` (la prima esecuzione è già avvenuta all'avvio).
+Verifica che nessuna rendition di una riga con manifest resti senza indirizzo (0 righe):
+
+```sql
+SELECT count(*) FROM "Media" m
+WHERE jsonb_typeof(m."renditions") = 'array'
+  AND EXISTS (
+    SELECT 1 FROM jsonb_array_elements(m."renditions") e
+    WHERE e->>'url' IS NULL
+  );
+```
+
+Poi chiedi una rendition remota a mano: `/media/<key>/<revision>/<width>.<format>` deve rispondere
+`302` verso il provider, non `404`. `npm run media:audit` deve essere verde. Fai un dump prima di
+B: dopo B non si torna alla release 13 senza ripristinare il database.
+
+**Release B — il contratto.** La migrazione toglie le sei colonne; il codice non le usava più, e B
+ritira anche i due comandi una tantum (`media:backfill-files` e `media:backfill-manifest-urls`) e
+lo step di avvio. Il container precedente è la release A, che non legge né scrive quelle colonne,
+quindi il rolling update è sicuro. Verifica dopo il deploy:
+
+- home, un post, un prodotto, la libreria admin e il picker;
+- un file locale e una rendition locale (200), una rendition ancora remota (302);
+- un replace e una cancellazione su un file di prova;
+- audit verde.
+
+**Se qualcosa va storto.** In A il rollback alla 13 è sicuro finché, dopo che A è live, non sono
+stati fatti upload o replace: A non aggiorna più le colonne specchio, quindi la 13 vedrebbe una
+riga nuova senza `url`. Con upload già avvenuti si va avanti con B, non indietro. Il backfill del
+manifest è ripartibile e non muove byte. Dopo B l'unico rollback è ripristinare il dump preso prima
+del deploy B.
+
 ---
 
 ## 5. Monitoraggio e alert

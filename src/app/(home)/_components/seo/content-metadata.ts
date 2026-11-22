@@ -3,6 +3,10 @@ import { Metadata } from "next";
 import { db } from "@/lib/db";
 import { getAuthorsString } from "@/data/user";
 import { getSettings } from "@/data/settings";
+import {
+  mediaPresentationSelect,
+  withMediaUrl,
+} from "@/modules/media/lib/media-address";
 import { absoluteMediaUrl } from "@/modules/media/server/media-url";
 
 export async function getPageMetadataBySlug(
@@ -102,12 +106,7 @@ export async function getPostMetadataBySlug(
               ogTwitterUrl: true,
             },
           },
-          imageCover: {
-            select: {
-              url: true,
-              altText: true,
-            },
-          },
+          imageCover: { select: mediaPresentationSelect },
           authors: {
             select: {
               user: {
@@ -130,10 +129,13 @@ export async function getPostMetadataBySlug(
   }
 
   const authorsString = getAuthorsString(version.authors.map((v) => v.user));
+  const coverImage = version.imageCover
+    ? withMediaUrl(version.imageCover)
+    : null;
   // Stored Media addresses are relative; a social crawler needs one that
   // answers on its own.
-  const coverImageUrl = version.imageCover
-    ? absoluteMediaUrl(version.imageCover.url, siteUrl)
+  const coverImageUrl = coverImage
+    ? absoluteMediaUrl(coverImage.url, siteUrl)
     : null;
 
   return {

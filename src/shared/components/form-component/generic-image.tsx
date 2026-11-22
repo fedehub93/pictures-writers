@@ -1,5 +1,5 @@
 "use client";
-import { Media } from "@/generated/prisma";
+import type { MediaCover } from "@/modules/media/lib/media-library";
 
 import { useState } from "react";
 import toast from "react-hot-toast";
@@ -40,7 +40,7 @@ export const GenericImage = <T extends FieldValues>({
 
   const { field } = useController({ control, name });
 
-  const getImage = (data: Media) => {
+  const getImage = (data: MediaCover) => {
     onSubmit({ imageId: data.id, imageUrl: data.url });
   };
 

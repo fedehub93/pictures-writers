@@ -1,4 +1,8 @@
 import { db } from "@/shared/lib/db";
+import {
+  mediaPresentationSelect,
+  withMediaUrl,
+} from "@/modules/media/lib/media-address";
 
 /**
  *
@@ -18,7 +22,7 @@ export const getPostsByIds = async (ids: string[]) => {
           select: {
             id: true,
             title: true,
-            imageCover: { select: { url: true } },
+            imageCover: { select: { ...mediaPresentationSelect } },
           },
         },
       },
@@ -28,7 +32,9 @@ export const getPostsByIds = async (ids: string[]) => {
       id: root.liveVersion!.id,
       rootId: root.id,
       title: root.liveVersion!.title,
-      imageCover: root.liveVersion!.imageCover,
+      imageCover: root.liveVersion!.imageCover
+        ? withMediaUrl(root.liveVersion!.imageCover)
+        : null,
       slug: root.slug,
     }));
   } catch (error) {

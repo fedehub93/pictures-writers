@@ -1,22 +1,22 @@
 import { describe, expect, it } from "vitest";
 
+import { storedFilePath } from "../file-path";
 import { UPLOADTHING_FILE_ORIGIN } from "../image-ladder.mjs";
 import {
   getUploadThingOrigin,
-  mediaPath,
   mediaSourceKey,
   storageKeyFromMediaUrl,
 } from "../url";
 
-describe("mediaPath", () => {
+describe("storedFilePath for a Media", () => {
   it("composes the canonical relative address for a storage key", () => {
-    expect(mediaPath("default/abc/1/original")).toBe(
+    expect(storedFilePath("MEDIA", "default/abc/1/original")).toBe(
       "/media/default/abc/1/original",
     );
   });
 
   it("does not double the slash when the key starts with one", () => {
-    expect(mediaPath("/default/abc/1/original")).toBe(
+    expect(storedFilePath("MEDIA", "/default/abc/1/original")).toBe(
       "/media/default/abc/1/original",
     );
   });

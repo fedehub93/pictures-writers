@@ -11,7 +11,6 @@ import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 import {
   mediaLibraryItem,
   mediaLibraryRowSelect,
-  mediaLibrarySelect,
 } from "@/modules/media/lib/media-library";
 
 import {
@@ -155,14 +154,16 @@ export const mediaRouter = createTRPCRouter({
 
       // Only the editable identity fields: the old REST update spread the
       // whole body, which let a caller rewrite url, key or archivedAt.
-      return db.media.update({
+      const updated = await db.media.update({
         where: { id: input.id },
         data: {
           name: input.name,
           altText: input.altText || null,
         },
-        select: mediaLibrarySelect,
+        select: mediaLibraryRowSelect,
       });
+
+      return mediaLibraryItem(updated);
     }),
 
   archive: permissionProcedure(PERMISSIONS.MEDIA_UPDATE)

@@ -23,8 +23,9 @@ import {
   buildMediaDeliveryUrl,
   MEDIA_MANIFEST_PARAM,
 } from "@/modules/media/lib/manifest";
-import { canonicalMediaRowAddress } from "@/modules/media/lib/address-rewrite";
-import { mediaPath, parseSrc } from "@/modules/media/lib/url";
+import { storedFilePath } from "@/modules/media/lib/file-path";
+import { mediaRenditionLocations } from "@/modules/media/lib/renditions";
+import { parseSrc } from "@/modules/media/lib/url";
 
 import { auditMediaLibrary, mediaAuditExitCode } from "../media-audit";
 import {
@@ -48,8 +49,6 @@ interface RemoteMedia {
   oldUrl: string;
   /** What content becomes: a token of own-domain rendition addresses. */
   canonicalUrl: string;
-  /** What `Media.url` becomes: the same path, keeping its existing token. */
-  rowUrl: string;
   providerOriginal: string;
   providerRendition: string;
 }
@@ -177,27 +176,20 @@ describe("sweepStorageAddresses", () => {
       renditions: [{ width: 720, format: "webp", url: providerRendition }],
     });
 
-    const canonicalUrl = buildMediaDeliveryUrl(mediaPath(key), {
+    const canonicalUrl = buildMediaDeliveryUrl(storedFilePath("MEDIA", key), {
       revision: 1,
       archived: false,
       renditions: [
-        { width: 720, format: "webp", url: mediaPath(renditionKey) },
+        { width: 720, format: "webp", url: storedFilePath("MEDIA", renditionKey) },
       ],
     });
-    const rowUrl = canonicalMediaRowAddress(key, oldUrl);
 
     const media = await db.media.create({
       data: {
         id,
         name: `Sweep media ${id}`,
-        key,
-        url: oldUrl,
         type: MediaType.IMAGE,
-        size: 1000,
-        mimeType: "image/webp",
-        checksum: "checksum",
         revision: 1,
-        storageDriver: "uploadthing",
         renditions: [
           {
             key: renditionKey,
@@ -205,6 +197,7 @@ describe("sweepStorageAddresses", () => {
             height: 480,
             bytes: 400,
             format: "webp",
+            url: providerRendition,
           },
         ],
         storedFile: {
@@ -230,7 +223,6 @@ describe("sweepStorageAddresses", () => {
       renditionKey,
       oldUrl,
       canonicalUrl,
-      rowUrl,
       providerOriginal,
       providerRendition,
     };
@@ -608,16 +600,11 @@ describe("sweepStorageAddresses", () => {
 
     expect(report.dryRun).toBe(false);
     expect(report.files).toBe(2);
-    expect(report.rows).toBe(12);
-    expect(report.rewritten).toBe(12);
+    expect(report.rows).toBe(11);
+    expect(report.rewritten).toBe(11);
     expect(report.unresolved).toBe(0);
     expect(addressSweepExitCode(report)).toBe(0);
 
-    expect(fieldReport(report, "Media.url")).toMatchObject({
-      rows: 1,
-      rewritten: 1,
-      unresolved: 0,
-    });
     expect(fieldReport(report, "PageVersion.puckData")).toMatchObject({
       rows: 1,
       rewritten: 1,
@@ -664,23 +651,18 @@ describe("sweepStorageAddresses", () => {
 
     const mediaAfter = await db.media.findUniqueOrThrow({
       where: { id: media.mediaId },
-      select: { url: true, key: true, revision: true, storageDriver: true },
+      select: { revision: true, renditions: true },
     });
-    expect(mediaAfter).toEqual({
-      url: media.rowUrl,
-      key: media.key,
-      revision: 1,
-      storageDriver: "uploadthing",
-    });
-
-    // The row keeps the provider rendition address its token already carried,
-    // so a remote rendition still redirects before the bytes move.
-    expect(
-      decodeMediaManifest(
-        parseSrc(mediaAfter.url).url.searchParams.get(MEDIA_MANIFEST_PARAM),
-      )?.renditions,
-    ).toEqual([
-      { width: 720, format: "webp", url: media.providerRendition },
+    expect(mediaAfter.revision).toBe(1);
+    expect(mediaRenditionLocations(mediaAfter.renditions)).toEqual([
+      {
+        key: media.renditionKey,
+        width: 720,
+        height: 480,
+        bytes: 400,
+        format: "webp",
+        url: media.providerRendition,
+      },
     ]);
 
     // Content gets own-domain rendition addresses, so a later move cannot
@@ -692,7 +674,7 @@ describe("sweepStorageAddresses", () => {
         ),
       )?.renditions,
     ).toEqual([
-      { width: 720, format: "webp", url: mediaPath(media.renditionKey) },
+      { width: 720, format: "webp", url: storedFilePath("MEDIA", media.renditionKey) },
     ]);
 
     const page = await db.pageVersion.findFirstOrThrow({
@@ -725,7 +707,7 @@ describe("sweepStorageAddresses", () => {
           type: "Image",
           props: {
             id: "image-2",
-            image: { src: mediaPath(media.renditionKey) },
+            image: { src: storedFilePath("MEDIA", media.renditionKey) },
           },
         },
       ],
@@ -836,7 +818,7 @@ describe("sweepStorageAddresses", () => {
     const snapshot = {
       media: await db.media.findMany({
         where: { id: { in: mediaIds } },
-        select: { id: true, url: true },
+        select: { id: true, revision: true, renditions: true },
         orderBy: { id: "asc" },
       }),
       pages: await db.pageVersion.findMany({
@@ -869,7 +851,7 @@ describe("sweepStorageAddresses", () => {
     expect(
       await db.media.findMany({
         where: { id: { in: mediaIds } },
-        select: { id: true, url: true },
+        select: { id: true, revision: true, renditions: true },
         orderBy: { id: "asc" },
       }),
     ).toEqual(snapshot.media);
@@ -902,7 +884,7 @@ describe("sweepStorageAddresses", () => {
     const before = {
       media: await db.media.findMany({
         where: { id: { in: mediaIds } },
-        select: { id: true, url: true },
+        select: { id: true, revision: true, renditions: true },
         orderBy: { id: "asc" },
       }),
       pages: await db.pageVersion.findMany({
@@ -917,15 +899,15 @@ describe("sweepStorageAddresses", () => {
     expect(report).toMatchObject({
       dryRun: true,
       files: 2,
-      rows: 12,
-      rewritten: 12,
+      rows: 11,
+      rewritten: 11,
       unresolved: 0,
     });
 
     expect(
       await db.media.findMany({
         where: { id: { in: mediaIds } },
-        select: { id: true, url: true },
+        select: { id: true, revision: true, renditions: true },
         orderBy: { id: "asc" },
       }),
     ).toEqual(before.media);

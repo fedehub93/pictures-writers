@@ -1,11 +1,13 @@
 import { Prisma } from "@/generated/prisma";
 
+import { mediaPresentationSelect } from "@/modules/media/lib/media-address";
+
 /**
  * Shared select used by the public/admin list queries so every list row exposes
  * the same version-owned relations (image, taxonomy, authors).
  */
 export const postVersionListInclude = {
-  imageCover: true,
+  imageCover: { select: { ...mediaPresentationSelect } },
   categories: {
     select: {
       category: {

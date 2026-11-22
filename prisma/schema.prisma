@@ -416,7 +416,7 @@ model Media {
 
   name    String
   key     String?
-  url     String    @unique @db.Text
+  url     String?   @unique @db.Text
   size    Int?
   type    MediaType @default(FILE)
   altText String?

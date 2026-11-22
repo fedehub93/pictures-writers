@@ -7,13 +7,7 @@ import type { Prisma } from "@/generated/prisma";
 import { formatBytes } from "@/lib/format";
 import { db } from "@/shared/lib/db";
 
-import { storedFileAddress } from "@/modules/media/lib/file-path";
-import {
-  buildMediaDeliveryUrl,
-  decodeMediaManifest,
-  MEDIA_MANIFEST_PARAM,
-  stripMediaManifest,
-} from "@/modules/media/lib/manifest";
+import { storedFilePath } from "@/modules/media/lib/file-path";
 import { mediaUsageBytes } from "@/modules/media/lib/quota";
 import { mediaRenditionLocations } from "@/modules/media/lib/renditions";
 import {
@@ -24,7 +18,6 @@ import {
   type RehomeFailureReason,
   type RehomePlan,
 } from "@/modules/media/lib/rehome";
-import { mediaPath, parseSrc } from "@/modules/media/lib/url";
 import type { MediaRenditionFormat } from "@/modules/media/types";
 
 import { checksumOf } from "./image-bytes";
@@ -276,7 +269,6 @@ const jobFileSelect = {
   media: {
     select: {
       id: true,
-      url: true,
       revision: true,
       archivedAt: true,
       renditions: true,
@@ -304,44 +296,22 @@ function sameBytes(
 }
 
 /**
- * Rewrites the rendition addresses inside a Media's delivery token after its
- * bytes moved. The original's address is preserved exactly: only the `?mt=`
- * token changes, and only when the Media has renditions. An entry the run
- * could not locate keeps the address it already carried.
+ * The rendition manifest after its bytes moved: every entry keeps its key and
+ * size facts and learns the address the target driver resolved. A local target
+ * answers under the canonical `/media/<key>`; a remote one carries the
+ * provider's address, which is what delivery redirects to.
  */
-function deliveredUrlAfterMove(
+function renditionsAfterMove(
   media: NonNullable<RehomeFile["media"]>,
   renditionUrls: Map<string, string>,
-): string {
+): PrismaJson.MediaRenditions | null {
   const moved = mediaRenditionLocations(media.renditions);
-  if (moved.length === 0) return media.url;
+  if (moved.length === 0) return null;
 
-  const entries = moved.map((rendition) => ({
-    width: rendition.width,
-    format: rendition.format,
-    url: renditionUrls.get(rendition.key) ?? mediaPath(rendition.key),
-  }));
-
-  for (const kept of
-    decodeMediaManifest(
-      parseSrc(media.url).url.searchParams.get(MEDIA_MANIFEST_PARAM),
-    )?.renditions ?? []) {
-
-    if (
-      !entries.some(
-        (entry) =>
-          entry.width === kept.width && entry.format === kept.format,
-      )
-    ) {
-      entries.push(kept);
-    }
-  }
-
-  return buildMediaDeliveryUrl(stripMediaManifest(media.url), {
-    revision: media.revision,
-    archived: media.archivedAt !== null,
-    renditions: entries,
-  });
+  return moved.map((rendition) => ({
+    ...rendition,
+    url: renditionUrls.get(rendition.key) ?? storedFilePath("MEDIA", rendition.key),
+  })) as PrismaJson.MediaRenditions;
 }
 
 async function discardCopiedObjects(
@@ -379,7 +349,7 @@ interface FailedFile {
  *
  * The bytes are copied first and verified against the checksum the record
  * carries. Only then, inside one transaction, does the record change driver
- * and remote address and the Media's rendition token learn the new
+ * and remote address and the Media's rendition manifest learn the new
  * addresses. The key, the revision and the original's canonical address never
  * change. A provider object left behind is journaled for the purge; a local
  * copy is removed once the record no longer points at it.
@@ -422,16 +392,6 @@ async function moveStoredFile({
   }
 
   if (file.key.length === 0) return { ok: false, reason: "unreadable" };
-
-  // A Media addressed by a provider URL is one the address sweep has not
-  // rewritten yet. Moving it would journal the provider object for removal
-  // while published pages still link to it, so the sweep has to come first.
-  if (file.media) {
-    const address = storedFileAddress(file.media.url);
-    if (address?.area !== "media" || address.key !== file.key) {
-      return { ok: false, reason: "address-not-canonical" };
-    }
-  }
 
   let original: Uint8Array<ArrayBuffer>;
   try {
@@ -519,7 +479,7 @@ async function moveStoredFile({
     if (active.name === "local") {
       remoteUrl = null;
       for (const rendition of renditions) {
-        renditionUrls.set(rendition.key, mediaPath(rendition.key));
+        renditionUrls.set(rendition.key, storedFilePath("MEDIA", rendition.key));
       }
     } else {
       remoteUrl = await active.driver.url(file.key);
@@ -534,10 +494,6 @@ async function moveStoredFile({
     await discardCopiedObjects(active.driver, copied, file.id);
     return { ok: false, reason: "copy-failed" };
   }
-
-  const mediaUrl = file.media
-    ? deliveredUrlAfterMove(file.media, renditionUrls)
-    : null;
 
   // A local source is removed once the record no longer points at it; a
   // provider object must survive the redirect hop's cache and the grace
@@ -570,15 +526,14 @@ async function moveStoredFile({
       });
 
       if (file.media) {
-        await tx.media.update({
-          where: { id: file.media.id },
-          data: {
-            storageDriver: active.name,
-            ...(mediaUrl && mediaUrl !== file.media.url
-              ? { url: mediaUrl }
-              : {}),
-          },
-        });
+        const renditions = renditionsAfterMove(file.media, renditionUrls);
+
+        if (renditions) {
+          await tx.media.update({
+            where: { id: file.media.id },
+            data: { renditions },
+          });
+        }
       }
 
       if (active.name !== "local" && copied.length > 0) {

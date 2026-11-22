@@ -266,13 +266,8 @@ describe("choosing UploadThing for new uploads", () => {
       data: {
         id: mediaId,
         name: "Pre-seam provider image",
-        key: legacyKey,
-        url: `https://fake-app.ufs.sh/f/${legacyKey}`,
-        size: legacyBytes.byteLength,
         type: MediaType.IMAGE,
-        mimeType: "image/png",
         revision: 1,
-        storageDriver: null,
         // The shape the one-time location backfill leaves: the record names
         // UploadThing and carries the absolute address it still serves.
         storedFile: {
@@ -394,7 +389,7 @@ describe("choosing UploadThing for new uploads", () => {
       key: `default/${media.id}/2/original`,
     });
 
-    await expect(localDriver.get(before.key!)).rejects.toBeInstanceOf(
+    await expect(localDriver.get(media.key!)).rejects.toBeInstanceOf(
       StorageObjectNotFoundError,
     );
     expect(

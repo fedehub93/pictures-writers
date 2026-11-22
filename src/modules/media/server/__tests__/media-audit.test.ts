@@ -50,12 +50,13 @@ describe("auditMediaLibrary", () => {
   async function createMedia(data: {
     id?: string;
     name?: string;
-    key: string | null;
-    url: string;
-    storageDriver: string | null;
+    /** Aliases kept for the pre-contraction fixtures; the record owns these. */
+    key?: string | null;
+    url?: string;
+    storageDriver?: string | null;
     size?: number | null;
     renditions?: MediaRendition[] | null;
-    /** The stored-file record; omit to cover a row that predates the backfill. */
+    /** The stored-file record; omit to cover a Media that has none. */
     file?: {
       key: string;
       driver: string;
@@ -67,11 +68,7 @@ describe("auditMediaLibrary", () => {
       data: {
         ...(data.id ? { id: data.id } : {}),
         name: data.name ?? `Audit media ${randomUUID()}`,
-        key: data.key,
-        url: data.url,
         type: MediaType.IMAGE,
-        size: data.size ?? null,
-        storageDriver: data.storageDriver,
         renditions: data.renditions
           ? (data.renditions as PrismaJson.MediaRenditions)
           : null,
@@ -81,7 +78,7 @@ describe("auditMediaLibrary", () => {
                 create: {
                   key: data.file.key,
                   driver: data.file.driver,
-                  size: data.file.size ?? data.size ?? null,
+                  size: data.file.size ?? null,
                   contentType: data.file.contentType ?? null,
                 },
               },

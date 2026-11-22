@@ -6,6 +6,10 @@ import { it } from "date-fns/locale";
 
 import { getAuthorsString } from "@/data/user";
 import { db } from "@/lib/db";
+import {
+  mediaPresentationSelect,
+  withMediaUrl,
+} from "@/modules/media/lib/media-address";
 import { hasMediaDeliveryManifest } from "@/modules/media/lib/manifest";
 
 export const LatestNews = async () => {
@@ -22,7 +26,7 @@ export const LatestNews = async () => {
           id: true,
           title: true,
           description: true,
-          imageCover: true,
+          imageCover: { select: mediaPresentationSelect },
           authors: {
             select: {
               user: true,
@@ -45,6 +49,9 @@ export const LatestNews = async () => {
     .filter((root) => Boolean(root.liveVersion))
     .map((root) => ({
       ...root.liveVersion!,
+      imageCover: root.liveVersion!.imageCover
+        ? withMediaUrl(root.liveVersion!.imageCover)
+        : null,
       rootId: root.id,
       slug: root.slug,
       firstPublishedAt: root.firstPublishedAt,

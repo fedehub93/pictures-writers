@@ -90,44 +90,49 @@ describe("backfillMediaMetadata", () => {
 
   async function createMedia(data: {
     type?: MediaType;
-    key: string | null;
+    /** The record's key. Kept as `key` for the pre-contraction callers. */
+    key?: string | null;
+    /** Ignored: the Media no longer stores an address. */
     url?: string;
+    /** The record's driver, unless `record` names one. */
     storageDriver?: string | null;
     metadata?: PrismaJson.MediaMetadata;
+    /** The record's content facts, unless `record` names them. */
     mimeType?: string;
     size?: number;
     checksum?: string;
-    /** The stored-file record; omit to cover a row that predates the backfill. */
+    /** The stored-file record; `null` covers a row that has none. */
     record?: {
       key: string;
       driver: string;
       contentType?: string | null;
       size?: number | null;
       checksum?: string | null;
-    };
+    } | null;
   }) {
+    const record =
+      data.record === null
+        ? null
+        : {
+            key:
+              data.record?.key ??
+              data.key ??
+              `default/${randomUUID()}/1/original`,
+            driver: data.record?.driver ?? data.storageDriver ?? "local",
+            contentType: data.record?.contentType ?? data.mimeType ?? null,
+            size: data.record?.size ?? data.size ?? null,
+            checksum: data.record?.checksum ?? data.checksum ?? null,
+          };
+
     const media = await db.media.create({
       data: {
         name: `Backfill ${randomUUID()}`,
-        url: data.url ?? `https://example.test/${randomUUID()}.png`,
-        key: data.key,
         type: data.type ?? MediaType.IMAGE,
-        storageDriver:
-          data.storageDriver === undefined ? "local" : data.storageDriver,
         metadata: data.metadata ?? null,
-        mimeType: data.mimeType ?? null,
-        size: data.size ?? null,
-        checksum: data.checksum ?? null,
-        ...(data.record
+        ...(record
           ? {
               storedFile: {
-                create: {
-                  key: data.record.key,
-                  driver: data.record.driver,
-                  contentType: data.record.contentType ?? null,
-                  size: data.record.size ?? null,
-                  checksum: data.record.checksum ?? null,
-                },
+                create: record,
               },
             }
           : {}),
@@ -193,11 +198,12 @@ describe("backfillMediaMetadata", () => {
 
     const updated = await db.media.findUniqueOrThrow({
       where: { id: media.id },
+      include: { storedFile: true },
     });
 
-    expect(updated.mimeType).toBe("image/png");
-    expect(updated.size).toBe(bytes.byteLength);
-    expect(updated.checksum).toBe(sha256(bytes));
+    expect(updated.storedFile?.contentType).toBe("image/png");
+    expect(updated.storedFile?.size).toBe(bytes.byteLength);
+    expect(updated.storedFile?.checksum).toBe(sha256(bytes));
     expect(updated.metadata).toMatchObject({
       width: 80,
       height: 40,
@@ -227,7 +233,6 @@ describe("backfillMediaMetadata", () => {
     await expect(
       db.media.findUniqueOrThrow({ where: { id: media.id } }),
     ).resolves.toMatchObject({
-      mimeType: "image/png",
       metadata: expect.objectContaining({ width: 70, height: 30 }),
     });
     await expect(
@@ -241,22 +246,24 @@ describe("backfillMediaMetadata", () => {
     });
   });
 
-  it("fills a stored-file record the Media's own columns already describe", async () => {
+  it("fills the content facts of a record that carries none", async () => {
     const bytes = await createPng();
     const recordKey = `default/${randomUUID()}/1/original`;
     await active.driver.put(recordKey, bytes, "image/png");
 
     const media = await createMedia({
-      key: recordKey,
-      mimeType: "image/png",
-      size: bytes.byteLength,
-      checksum: sha256(bytes),
       metadata: {
         width: 80,
         height: 40,
         blurDataURL: "data:image/webp;base64,abc",
       },
-      record: { key: recordKey, driver: "local" },
+      record: {
+        key: recordKey,
+        driver: "local",
+        contentType: null,
+        size: null,
+        checksum: null,
+      },
     });
 
     const report = await run();
@@ -287,7 +294,6 @@ describe("backfillMediaMetadata", () => {
     const second = await db.media.findUniqueOrThrow({ where: { id: media.id } });
 
     expect(report).toMatchObject({ scanned: 1, updated: 0, skipped: 1 });
-    expect(second.checksum).toBe(first.checksum);
     expect(second.metadata).toEqual(first.metadata);
     expect(second.updatedAt.getTime()).toBe(first.updatedAt.getTime());
   });
@@ -309,7 +315,7 @@ describe("backfillMediaMetadata", () => {
 
     expect(report).toMatchObject({ scanned: 1, updated: 0, skipped: 1 });
     await expect(
-      db.media.findUniqueOrThrow({ where: { id: media.id } }),
+      db.storedFile.findUniqueOrThrow({ where: { mediaId: media.id } }),
     ).resolves.toMatchObject({ checksum: "already-there" });
   });
 
@@ -334,8 +340,8 @@ describe("backfillMediaMetadata", () => {
       },
     ]);
     await expect(
-      db.media.findUniqueOrThrow({ where: { id: healthy.id } }),
-    ).resolves.toMatchObject({ mimeType: "image/png" });
+      db.storedFile.findUniqueOrThrow({ where: { mediaId: healthy.id } }),
+    ).resolves.toMatchObject({ contentType: "image/png" });
   });
 
   it("reads a mixed library through the driver recorded on each row", async () => {
@@ -362,15 +368,19 @@ describe("backfillMediaMetadata", () => {
     // Different sizes prove each row was read from its own driver: a single
     // driver for the whole run could not reach both sources.
     await expect(
+      db.storedFile.findUniqueOrThrow({ where: { mediaId: local.id } }),
+    ).resolves.toMatchObject({ checksum: sha256(localBytes) });
+    await expect(
       db.media.findUniqueOrThrow({ where: { id: local.id } }),
     ).resolves.toMatchObject({
-      checksum: sha256(localBytes),
       metadata: expect.objectContaining({ width: 80, height: 40 }),
     });
     await expect(
+      db.storedFile.findUniqueOrThrow({ where: { mediaId: legacy.id } }),
+    ).resolves.toMatchObject({ checksum: sha256(remoteBytes) });
+    await expect(
       db.media.findUniqueOrThrow({ where: { id: legacy.id } }),
     ).resolves.toMatchObject({
-      checksum: sha256(remoteBytes),
       metadata: expect.objectContaining({ width: 50, height: 25 }),
     });
   });
@@ -383,9 +393,9 @@ describe("backfillMediaMetadata", () => {
 
     expect(report).toMatchObject({ scanned: 1, updated: 1, failed: [] });
     await expect(
-      db.media.findUniqueOrThrow({ where: { id: media.id } }),
+      db.storedFile.findUniqueOrThrow({ where: { mediaId: media.id } }),
     ).resolves.toMatchObject({
-      mimeType: "image/png",
+      contentType: "image/png",
       checksum: sha256(bytes),
     });
   });
@@ -438,15 +448,15 @@ describe("backfillMediaMetadata", () => {
       ]),
     );
     await expect(
-      db.media.findUniqueOrThrow({ where: { id: healthy.id } }),
+      db.storedFile.findUniqueOrThrow({ where: { mediaId: healthy.id } }),
     ).resolves.toMatchObject({ checksum: sha256(bytes) });
     await expect(
-      db.media.findUniqueOrThrow({ where: { id: unconfigured.id } }),
-    ).resolves.toMatchObject({ mimeType: null, checksum: null });
+      db.storedFile.findUniqueOrThrow({ where: { mediaId: unconfigured.id } }),
+    ).resolves.toMatchObject({ contentType: null, checksum: null });
   });
 
   it("reports an image whose URL does not identify a storage object", async () => {
-    const media = await createMedia({ key: null });
+    const media = await createMedia({ record: null });
 
     const report = await run();
 
@@ -454,7 +464,7 @@ describe("backfillMediaMetadata", () => {
       {
         mediaId: media.id,
         name: media.name,
-        reason: "no readable storage key",
+        reason: "no stored-file record with a storage key",
       },
     ]);
   });
@@ -470,7 +480,7 @@ describe("backfillMediaMetadata", () => {
     expect(report.scanned).toBe(0);
     await expect(
       db.media.findUniqueOrThrow({ where: { id: file.id } }),
-    ).resolves.toMatchObject({ mimeType: null, checksum: null });
+    ).resolves.toMatchObject({ metadata: null });
   });
 
   it("does not write in dry-run mode", async () => {
@@ -488,8 +498,14 @@ describe("backfillMediaMetadata", () => {
       dryRun: true,
     });
     await expect(
-      db.media.findUniqueOrThrow({ where: { id: media.id } }),
-    ).resolves.toMatchObject({ mimeType: null, checksum: null });
+      db.media.findUniqueOrThrow({
+        where: { id: media.id },
+        include: { storedFile: true },
+      }),
+    ).resolves.toMatchObject({
+      metadata: null,
+      storedFile: { contentType: null, size: null, checksum: null },
+    });
   });
 
   it("dry-runs a mixed library without writing either half", async () => {
@@ -509,8 +525,12 @@ describe("backfillMediaMetadata", () => {
     });
     for (const id of [local.id, legacy.id]) {
       await expect(
-        db.media.findUniqueOrThrow({ where: { id } }),
-      ).resolves.toMatchObject({ mimeType: null, checksum: null });
+        db.storedFile.findUniqueOrThrow({ where: { mediaId: id } }),
+      ).resolves.toMatchObject({
+        contentType: null,
+        size: null,
+        checksum: null,
+      });
     }
   });
 });

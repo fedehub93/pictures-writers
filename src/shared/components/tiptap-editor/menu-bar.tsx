@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { Editor, useEditorState } from "@tiptap/react";
 
-import { Media } from "@/generated/prisma";
+import type { MediaCover } from "@/modules/media/lib/media-library";
 
 import { Separator } from "@/shared/ui/separator";
 import {
@@ -107,7 +107,7 @@ export const MenuBar = ({
     editor.chain().focus().toggleUnderline().run();
   };
 
-  const getImage = (data: Media) => {
+  const getImage = (data: MediaCover) => {
     editor
       .chain()
       .focus()

@@ -32,6 +32,7 @@
     "media:backfill-metadata": "tsx --conditions=react-server scripts/backfill-media-metadata.ts",
     "media:backfill-renditions": "tsx --conditions=react-server scripts/backfill-media-renditions.ts",
     "media:backfill-files": "tsx --conditions=react-server scripts/backfill-stored-files.ts",
+    "media:backfill-manifest-urls": "tsx --conditions=react-server scripts/backfill-media-manifest-urls.ts",
     "media:audit": "tsx --conditions=react-server scripts/audit-media.ts",
     "media:rehome": "tsx --conditions=react-server scripts/rehome-media.ts",
     "media:purge": "tsx --conditions=react-server scripts/purge-media.ts",

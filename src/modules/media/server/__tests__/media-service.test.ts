@@ -251,7 +251,7 @@ describe("createMediaFromUpload", () => {
     expect(error).toBeInstanceOf(DuplicateMediaError);
     expect((error as DuplicateMediaError).existing.id).toBe(first.id);
     await expect(
-      db.media.count({ where: { checksum: first.checksum! } }),
+      db.storedFile.count({ where: { checksum: first.checksum! } }),
     ).resolves.toBe(1);
   });
 
@@ -280,7 +280,7 @@ describe("createMediaFromUpload", () => {
     expect(second.key).not.toBe(first.key);
     expect(second.checksum).toBe(first.checksum);
     await expect(
-      db.media.count({ where: { checksum: first.checksum! } }),
+      db.storedFile.count({ where: { checksum: first.checksum! } }),
     ).resolves.toBe(2);
   });
 
@@ -324,7 +324,7 @@ describe("createMediaFromUpload", () => {
     const error = await createMedia(key).catch((reason) => reason);
 
     expect(error).toBeInstanceOf(MediaProcessingError);
-    await expect(db.media.count({ where: { key: null } })).resolves.toBe(0);
+    await expect(db.media.count({ where: { storedFile: null } })).resolves.toBe(0);
   });
 
   it.each([
@@ -449,7 +449,7 @@ describe("replaceMediaFile", () => {
     const row = await db.media.findUniqueOrThrow({ where: { id: first.id } });
     const manifest = row.renditions as MediaRendition[];
 
-    expect(row.checksum).toBe(
+    expect(media.checksum).toBe(
       createHash("sha256").update(replacementBytes).digest("hex"),
     );
     expect(manifest).toHaveLength(MEDIA_RENDITION_WIDTHS.length * 2);
@@ -462,7 +462,7 @@ describe("replaceMediaFile", () => {
         StorageObjectNotFoundError,
       );
     }
-    await expect(driver.get(before.key!)).rejects.toBeInstanceOf(
+    await expect(driver.get(first.key!)).rejects.toBeInstanceOf(
       StorageObjectNotFoundError,
     );
   });
@@ -558,13 +558,16 @@ describe("replaceMediaFile", () => {
 
     expect(error).toBeInstanceOf(MediaProcessingError);
 
-    const row = await db.media.findUniqueOrThrow({ where: { id: first.id } });
+    const row = await db.media.findUniqueOrThrow({
+      where: { id: first.id },
+      include: { storedFile: true },
+    });
     expect(row.revision).toBe(1);
-    expect(row.key).toBe(before.key);
-    expect(row.url).toBe(before.url);
+    expect(row.storedFile?.key).toBe(first.key);
+    expect(row.storedFile?.remoteUrl).toBeNull();
     expect(row.renditions).toEqual(before.renditions);
 
-    await expect(driver.get(before.key!)).resolves.toBeDefined();
+    await expect(driver.get(first.key!)).resolves.toBeDefined();
     for (const rendition of previousManifest) {
       await expect(driver.get(rendition.key)).resolves.toBeDefined();
     }
@@ -578,20 +581,13 @@ describe("replaceMediaFile", () => {
     const before = await db.media.findUniqueOrThrow({ where: { id: first.id } });
     const previousManifest = before.renditions as MediaRendition[];
 
-    // A move, or a stale mirror column, can leave the Media behind; the
-    // stored-file record is what owns the bytes.
-    await db.media.update({
-      where: { id: first.id },
-      data: { storageDriver: "uploadthing" },
-    });
-
     const { previousRevisionCleanup } = await replace(
       first.id,
       await putSource(await createPng(1200, 800, { r: 210, g: 40, b: 60 })),
     );
 
     expect(previousRevisionCleanup).toBe("removed");
-    await expect(driver.get(before.key!)).rejects.toBeInstanceOf(
+    await expect(driver.get(first.key!)).rejects.toBeInstanceOf(
       StorageObjectNotFoundError,
     );
     for (const rendition of previousManifest) {
@@ -631,7 +627,7 @@ describe("replaceMediaFile", () => {
       key: `default/${first.id}/2/original`,
     });
     await expect(driver.get(media.key!)).resolves.toBeDefined();
-    await expect(driver.get(before.key!)).resolves.toBeDefined();
+    await expect(driver.get(first.key!)).resolves.toBeDefined();
 
     const file = await db.storedFile.findUniqueOrThrow({
       where: { mediaId: first.id },
@@ -688,7 +684,7 @@ describe("replaceMediaFile", () => {
 
     const row = await db.media.findUniqueOrThrow({ where: { id: media.id } });
     expect(row.renditions).toBeNull();
-    expect(new Uint8Array(await driver.get(row.key!))).toEqual(newBytes);
+    expect(new Uint8Array(await driver.get(replaced.key!))).toEqual(newBytes);
     await expect(driver.get(media.key!)).rejects.toBeInstanceOf(
       StorageObjectNotFoundError,
     );
@@ -700,13 +696,17 @@ describe("replaceMediaFile", () => {
       data: {
         id: mediaId,
         name: "Legacy provider document",
-        key: "legacy-flat-key",
-        url: "https://old-provider.example/f/legacy-flat-key",
-        size: 12,
         type: MediaType.FILE,
-        mimeType: "application/pdf",
         revision: 1,
-        storageDriver: "uploadthing",
+        storedFile: {
+          create: {
+            key: "legacy-flat-key",
+            driver: "uploadthing",
+            remoteUrl: "https://old-provider.example/f/legacy-flat-key",
+            contentType: "application/pdf",
+            size: 12,
+          },
+        },
       },
     });
     mediaIds.push(legacy.id);
@@ -741,13 +741,17 @@ describe("replaceMediaFile", () => {
       data: {
         id: mediaId,
         name: "Future driver document",
-        key: "s3/future-original",
-        url: "https://unsupported.example/future-original",
-        size: 12,
         type: MediaType.FILE,
-        mimeType: "application/pdf",
         revision: 1,
-        storageDriver: "s3",
+        storedFile: {
+          create: {
+            key: "s3/future-original",
+            driver: "s3",
+            remoteUrl: "https://unsupported.example/future-original",
+            contentType: "application/pdf",
+            size: 12,
+          },
+        },
       },
     });
     mediaIds.push(unknown.id);
