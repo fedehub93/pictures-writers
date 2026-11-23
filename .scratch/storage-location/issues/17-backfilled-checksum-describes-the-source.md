@@ -2,7 +2,7 @@
 
 **What to build:** `StoredFile.checksum` describes the bytes the record actually owns. Today a row processed by `npm run media:backfill-renditions` carries the checksum of the bytes it read as a source, while `size` and the object describe the normalised copy it wrote, so the two disagree for almost the whole library and every verifier that trusts the checksum refuses the file.
 
-**Blocked by:** 13
+**Blocked by:** 13, 16
 
 **Status:** ready-for-agent
 
@@ -35,4 +35,5 @@ Consequences:
   picture the library holds is not recognised.
 - **The address sweep is unaffected**, and the relink work of ticket 16 leans on the same column
   for the opposite reason: the content's objects are the sources, so their bytes hash to the
-  stored checksum (452 of 460).
+  stored checksum (452 of 460). That makes ticket 16 come **before** this one: repairing the
+  column first would erase the only record that ties a content object to its Media.

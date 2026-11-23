@@ -2,7 +2,7 @@
 
 **What to build:** A command that, for every provider address live content still names, fetches the object and matches its bytes against the library: when a Media already owns that file's bytes the content is rewritten to that Media's canonical address, with no new row and no byte moved; an object no Media matches is adopted (a Stored file recording the provider address plus its Media role, still moving no byte); an object the provider no longer has is reported. The outcome is that `media:sweep-addresses` reports zero and the library gains no duplicate.
 
-**Blocked by:** 11, 13, 17
+**Blocked by:** 11, 13
 
 **Status:** ready-for-agent
 
@@ -33,6 +33,11 @@ recorded — see ticket 17). Adopting them would have created about 460 duplicat
 the library from 725 to roughly 1,185 rows for nothing.
 
 The command therefore relinks first and adopts only what no Media matches, checking those five
-perceptually as well. It also has to run after ticket 17, because once the checksums describe the
-stored bytes the match must be made against the stored copy, not the source; the two tickets must
-agree on which bytes the checksum means.
+perceptually as well.
+
+**It must run before ticket 17.** The reason the match works is the defect ticket 17 repairs:
+`StoredFile.checksum` still describes the *source* bytes, and the content objects are exactly
+those sources. Repairing the column first would overwrite the only record that ties a content
+object to its Media. So the order is: relink (16), then repair the checksums (17), then re-home.
+Once the repair has run, a future relink would have to compare against a normalised copy instead,
+which is why this is a one-off and its contract is written here rather than left implicit.
