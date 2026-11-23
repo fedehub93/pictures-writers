@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { Prisma, StoredFileKind } from "@/generated/prisma";
+import type { StoredFileKind } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 
 import {
@@ -17,11 +17,14 @@ import type { StoredFileRole } from "@/modules/media/lib/file-path";
  * Every field the product stores an address in. The list is the sweep's
  * contract: a new content field that can hold a file address belongs here, or
  * exactly the kind of address the spec forbids survives a run.
+ *
+ * `PostVersion.bodyData` is deliberately absent: it is content the renderer
+ * never reads (a save only carries it forward) and the column is slated for
+ * removal, so a provider address inside it is not a dependency of the product.
  */
 export const ADDRESS_SWEEP_FIELDS = [
   "PageVersion.puckData",
   "SiteRegionVersion.puckData",
-  "PostVersion.bodyData",
   "PostVersion.tiptapBodyData",
   "ProductVersion.tiptapDescription",
   "AdItem.imageUrl",
@@ -222,23 +225,8 @@ export async function sweepStorageAddresses({
   });
 
   const postVersions = await db.postVersion.findMany({
-    select: { id: true, bodyData: true, tiptapBodyData: true },
+    select: { id: true, tiptapBodyData: true },
     orderBy: { id: "asc" },
-  });
-
-  await sweepField({
-    rows: postVersions,
-    index,
-    tally: tallyOf("PostVersion.bodyData"),
-    fileIds,
-    dryRun,
-    valueOf: (row) => row.bodyData,
-    rewrite: rewriteAddressesInValue,
-    write: (row, bodyData) =>
-      db.postVersion.update({
-        where: { id: row.id },
-        data: { bodyData: bodyData as Prisma.InputJsonValue },
-      }),
   });
 
   await sweepField({

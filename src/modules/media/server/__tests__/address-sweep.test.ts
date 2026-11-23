@@ -603,8 +603,8 @@ describe("sweepStorageAddresses", () => {
 
     expect(report.dryRun).toBe(false);
     expect(report.files).toBe(2);
-    expect(report.rows).toBe(11);
-    expect(report.rewritten).toBe(11);
+    expect(report.rows).toBe(10);
+    expect(report.rewritten).toBe(10);
     expect(report.unresolved).toBe(0);
     expect(addressSweepExitCode(report)).toBe(0);
 
@@ -613,10 +613,6 @@ describe("sweepStorageAddresses", () => {
       rewritten: 1,
     });
     expect(fieldReport(report, "SiteRegionVersion.puckData")).toMatchObject({
-      rows: 1,
-      rewritten: 1,
-    });
-    expect(fieldReport(report, "PostVersion.bodyData")).toMatchObject({
       rows: 1,
       rewritten: 1,
     });
@@ -720,8 +716,10 @@ describe("sweepStorageAddresses", () => {
       where: { rootId: fixture.postRootId },
       select: { bodyData: true, tiptapBodyData: true },
     });
+    // The legacy body is not content the product renders and is slated for
+    // removal, so the sweep leaves its provider address exactly as it was.
     expect(post.bodyData).toEqual({
-      html: `<p>Cover</p><img src="${media.canonicalUrl}">`,
+      html: `<p>Cover</p><img src="${media.providerOriginal}">`,
     });
     expect(post.tiptapBodyData).toEqual({
       type: "doc",
@@ -902,8 +900,8 @@ describe("sweepStorageAddresses", () => {
     expect(report).toMatchObject({
       dryRun: true,
       files: 2,
-      rows: 11,
-      rewritten: 11,
+      rows: 10,
+      rewritten: 10,
       unresolved: 0,
     });
 
@@ -947,8 +945,8 @@ describe("sweepStorageAddresses", () => {
 
     expect(report).toMatchObject({
       files: 1,
-      rows: 2,
-      rewritten: 3,
+      rows: 1,
+      rewritten: 2,
       unresolved: 0,
     });
     expect(addressSweepExitCode(report)).toBe(0);
@@ -959,7 +957,7 @@ describe("sweepStorageAddresses", () => {
     });
 
     expect(post.bodyData).toEqual({
-      html: `<img srcset="${renditionPath} 720w">`,
+      html: `<img srcset="${media.providerRendition} 720w">`,
     });
     expect(post.tiptapBodyData).toEqual({
       type: "doc",
@@ -1018,7 +1016,7 @@ describe("sweepStorageAddresses", () => {
 
     const report = await sweepStorageAddresses();
 
-    expect(report.unresolved).toBe(3);
+    expect(report.unresolved).toBe(1);
     expect(report.files).toBe(2);
     expect(addressSweepExitCode(report)).toBe(1);
 
@@ -1026,11 +1024,6 @@ describe("sweepStorageAddresses", () => {
       rows: 1,
       rewritten: 1,
       unresolved: 1,
-    });
-    expect(fieldReport(report, "PostVersion.bodyData")).toMatchObject({
-      rows: 1,
-      rewritten: 1,
-      unresolved: 2,
     });
 
     const output = [
