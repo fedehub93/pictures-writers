@@ -82,3 +82,11 @@ ticket 15: re-run `media:sweep-addresses:dry-run` and compare `unresolved` (expe
 addresses that name an object no Stored file owns remain).
 
 Landed in `72eed7b9` (`fix(media): resolve a rendition's recorded address in the sweep`).
+
+Executed on the production dump of 2026-11-23 09:39 UTC (725 Media, 726 Stored files, 11,296
+recorded rendition addresses, 99 migrations): the report is unchanged — `rewritten: 90`,
+`unresolved: 4044`. The fix resolves nothing on that data, because no address in content equals
+an address recorded for a rendition (`by_rendition_url = 0`). The residue has a different cause,
+recorded on ticket 15: 500 distinct provider objects that no Stored file records. The change
+still stands on its own — a rendition's recorded address is an address the library knows and
+must be able to rewrite — but it does not close ticket 15's gate.
