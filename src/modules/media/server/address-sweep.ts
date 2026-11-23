@@ -159,6 +159,42 @@ async function sweepField<T extends { id: string }, V>({
   }
 }
 
+interface VersionRoot {
+  liveVersionId: string | null;
+  currentVersionId: string | null;
+}
+
+/**
+ * The versions whose content a visitor can reach, or can reach at the next
+ * publish: the live version and the current head of every root. A superseded
+ * version is not rendered, and restoring one is not part of the product, so an
+ * address it holds is not a dependency of the Installation and a run leaves it
+ * exactly as it is.
+ */
+function readableVersionIds(roots: readonly VersionRoot[]): string[] {
+  const ids = new Set<string>();
+
+  for (const root of roots) {
+    if (root.liveVersionId) ids.add(root.liveVersionId);
+    if (root.currentVersionId) ids.add(root.currentVersionId);
+  }
+
+  return [...ids];
+}
+
+/**
+ * The version rows a root set makes readable. A root set with no readable
+ * version reads nothing rather than every version.
+ */
+async function readReadableVersions<T extends { id: string }>(
+  roots: readonly VersionRoot[],
+  find: (ids: string[]) => Promise<T[]>,
+): Promise<T[]> {
+  const ids = readableVersionIds(roots);
+
+  return ids.length === 0 ? [] : find(ids);
+}
+
 /**
  * Rewrites every absolute provider address stored anywhere into the canonical
  * address of the file it points to, so the same installation can move its
@@ -184,10 +220,17 @@ export async function sweepStorageAddresses({
   const tallyOf = (field: AddressSweepField): FieldTally =>
     tallies.get(field)!;
 
-  const pageVersions = await db.pageVersion.findMany({
-    select: { id: true, puckData: true },
-    orderBy: { id: "asc" },
-  });
+  const pageVersions = await readReadableVersions(
+    await db.pageRoot.findMany({
+      select: { liveVersionId: true, currentVersionId: true },
+    }),
+    (ids) =>
+      db.pageVersion.findMany({
+        where: { id: { in: ids } },
+        select: { id: true, puckData: true },
+        orderBy: { id: "asc" },
+      }),
+  );
 
   await sweepField({
     rows: pageVersions,
@@ -204,10 +247,17 @@ export async function sweepStorageAddresses({
       }),
   });
 
-  const regionVersions = await db.siteRegionVersion.findMany({
-    select: { id: true, puckData: true },
-    orderBy: { id: "asc" },
-  });
+  const regionVersions = await readReadableVersions(
+    await db.siteRegion.findMany({
+      select: { liveVersionId: true, currentVersionId: true },
+    }),
+    (ids) =>
+      db.siteRegionVersion.findMany({
+        where: { id: { in: ids } },
+        select: { id: true, puckData: true },
+        orderBy: { id: "asc" },
+      }),
+  );
 
   await sweepField({
     rows: regionVersions,
@@ -224,10 +274,17 @@ export async function sweepStorageAddresses({
       }),
   });
 
-  const postVersions = await db.postVersion.findMany({
-    select: { id: true, tiptapBodyData: true },
-    orderBy: { id: "asc" },
-  });
+  const postVersions = await readReadableVersions(
+    await db.postRoot.findMany({
+      select: { liveVersionId: true, currentVersionId: true },
+    }),
+    (ids) =>
+      db.postVersion.findMany({
+        where: { id: { in: ids } },
+        select: { id: true, tiptapBodyData: true },
+        orderBy: { id: "asc" },
+      }),
+  );
 
   await sweepField({
     rows: postVersions,
@@ -246,10 +303,17 @@ export async function sweepStorageAddresses({
       }),
   });
 
-  const productVersions = await db.productVersion.findMany({
-    select: { id: true, tiptapDescription: true },
-    orderBy: { id: "asc" },
-  });
+  const productVersions = await readReadableVersions(
+    await db.productRoot.findMany({
+      select: { liveVersionId: true, currentVersionId: true },
+    }),
+    (ids) =>
+      db.productVersion.findMany({
+        where: { id: { in: ids } },
+        select: { id: true, tiptapDescription: true },
+        orderBy: { id: "asc" },
+      }),
+  );
 
   await sweepField({
     rows: productVersions,
