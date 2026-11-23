@@ -80,3 +80,11 @@ same id, and absent from the published page.
 So the site has no broken picture today. The repair is either to remove those nodes from the
 historical versions (a reported one-off, dry run first) or to accept them; neither blocks the
 re-home, only the purge.
+
+**Then the owner narrowed the contract to what a visitor can reach.** The sweep reads each root's
+live version and its current head only, plus the single-row content; a superseded version is out
+of scope, and `PostVersion.bodyData` went with it. The same dump now reports `rows: 8`,
+`addresses rewritten: 8`, `unresolved: 549` — 540 in live/current post bodies, 2 in Puck data, 5
+across `AdItem`, `FormSubmission` and `User`. Every one of those addresses is an object the
+provider answers for; the unreachable set now sits entirely in superseded versions. So this gate
+needs no content repair: adopt the ≈470 distinct live objects, sweep to zero, re-home, purge.

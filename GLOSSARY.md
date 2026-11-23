@@ -167,7 +167,7 @@ The share of the Storage quota that files of public origin - a visitor's form at
 _Avoid_: Upload limit, public quota (it is a ceiling inside the quota, not a second budget).
 
 **Address sweep**:
-The one-time, idempotent command that rewrites every legacy provider address stored in content into the canonical address of the Stored file it names. It moves no byte and changes no key, revision or driver; an address it cannot resolve is reported by field and count, and the run fails rather than leaving a provider host behind.
+The one-time, idempotent command that rewrites every legacy provider address stored in the content a visitor can reach - each root's live version and current head, plus the single-row settings - into the canonical address of the Stored file it names. It moves no byte and changes no key, revision or driver; an address it cannot resolve is reported by field and count, and the run fails rather than leaving a provider host behind.
 _Avoid_: URL migration, rewrite when it implies moving bytes or renaming keys.
 
 **Re-home**:

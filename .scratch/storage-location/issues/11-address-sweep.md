@@ -83,6 +83,11 @@ addresses that name an object no Stored file owns remain).
 
 Landed in `72eed7b9` (`fix(media): resolve a rendition's recorded address in the sweep`).
 
+The run also narrowed to the content a visitor can reach — each root's live version and current
+head — and `PostVersion.bodyData` left the list for good. On the 2026-11-23 dump that is
+`rows: 8`, `addresses rewritten: 8`, `unresolved: 549`, and none of the 549 is an unreachable
+object: the dead set sits entirely in superseded versions, which the sweep no longer reads.
+
 `PostVersion.bodyData` left the field list the same day: the renderer never reads it, a save only
 carries it forward, and the column is slated for removal, so a provider address inside it is not
 a dependency of the product. On the dump of 2026-11-23 the dry run then reports `rows: 44`,

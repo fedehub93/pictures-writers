@@ -233,6 +233,11 @@ for removal, so an address inside it is not a dependency and the sweep leaves it
 ran before it; a Media with no Stored file has no canonical address to write, so the sweep reports
 its address and leaves it.
 
+The run reads only the content a visitor can reach: each root's live version and its current
+head, plus the single-row settings, order-independent content and legacy attachment rows. A
+superseded version is not rendered, and restoring one is not part of the product, so an address
+it holds is not a dependency of the Installation and the run leaves it exactly as it is.
+
 The canonical address comes from one index built from every Stored file: a Media answers with
 `/media/<key>`, an attachment or avatar with `/files/<key>`. A rendition's own recorded address —
 the provider address its manifest stores for it — resolves to that rendition's `/media/<key>`, so

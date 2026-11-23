@@ -20,11 +20,12 @@
 `PostVersion.bodyData` is out of every scope: it is not rendered, `save-post` only carries it
 forward, and the column is slated for removal, so objects named only by it are not adopted.
 
-Every unreachable reference found so far sits in a superseded post version; the live versions
-hold 462 distinct provider addresses and none is unreachable. The adoption run therefore targets
-the live objects (≈439, ≈69 MB), and the dead references are either removed from the historical
-versions by a reported one-off or accepted — a decision for the owner, not a blocker for the
-re-home (only for the purge).
+The sweep now reads the content a visitor can reach — each root's live version and current head —
+so a superseded version is out of scope entirely: it is not rendered and restoring one is not
+part of the product. On the dump of 2026-11-23 the run reports `unresolved: 549` (540 in
+live/current post bodies, 2 in Puck data, 5 across `AdItem`, `FormSubmission` and `User`), about
+470 distinct objects, and **none of them is unreachable**: every dead reference found earlier sits
+in a superseded version. So the run adopts the live objects only, and no content repair is needed.
 
 ## Comments
 
