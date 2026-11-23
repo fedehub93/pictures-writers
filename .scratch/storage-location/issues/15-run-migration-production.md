@@ -53,5 +53,13 @@ addresses come from a few images inserted after the storage seam, whose URL is
 So the sweep cannot close this gate: there is nothing to join on. Each of those objects must be
 either relinked to an existing Media (if it is the same picture the library already holds) or
 adopted as a Media of its own, recording the provider address as its remote location so the
-sweep can rewrite the content and the re-home can copy the bytes. That is a ticket of its own,
-and this gate stays blocked until the dry run reports only accepted addresses.
+sweep can rewrite the content and the re-home can copy the bytes. That is ticket 16, and this
+gate stays blocked until the dry run reports only accepted addresses.
+
+Measured on the same dump (2026-11-23, read-only, one HEAD per object): of the 505 provider
+objects, 360 answer at the address content has, 79 answer only on the current `ufs.sh` host with
+the same id (the `utfs.io` host is retired), and about 66 no longer answer anywhere — those
+images are already broken today. The live ones are ≈439 objects, ≈69 MB. Only 8 of them have a
+size equal to a library original or a recorded rendition, so they are new Media, not duplicates
+of the library. Ticket 16 owns the run; the unreachable references need a content decision of
+their own.
