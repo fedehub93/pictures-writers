@@ -57,3 +57,28 @@ the content composer.
 Verification: `npm run test:run` — 292 files, 2651 tests passed; `npm run typecheck` clean;
 `npm run lint` 0 errors (247 pre-existing warnings); `npm run check:doc-citations` 97 docs / 0
 broken; `npm run build:agent` succeeded. No browser probe was run for this ticket.
+
+**2026-11-23 — the index missed every rendition address (found on the existing Installation)**
+
+Ticket 15's dry run on a production dump reported `unresolved: 4044` — 2544 in
+`PostVersion.bodyData`, 1485 in `PostVersion.tiptapBodyData`, and 15 across the scalar fields.
+A Media's rendition manifest records the provider address each generated file was written with
+(`https://<provider>/f/<opaque id>`), and stored content names those addresses: a `srcset`
+copied with an article is the common shape — one resolvable original plus seven unresolvable
+renditions per image. The index put only `StoredFile.remoteUrl` in `byAddress`, and the
+provider's opaque id is not the Installation's key, so every rendition address fell through to
+`unresolved` while the provider still served it.
+
+The sweep now indexes each rendition's recorded address too, resolved to that rendition's own
+`/media/<key>` path — never to the original's, which would lose the width and the format the
+content asked for. The fixture that had signed this ticket off encoded the Installation's key in
+the provider URL, so `storageKeyFromMediaUrl` resolved it by key; the address the provider
+actually issues (an opaque id) is now the fixture's shape, and a `srcset` case asserts the
+rewrite and a second run at zero.
+
+Verification: `npx vitest run src/modules/media` — 27 files, 293 tests passed; `npm run
+typecheck` clean; `npx eslint` on the three changed files clean. The real-data proof belongs to
+ticket 15: re-run `media:sweep-addresses:dry-run` and compare `unresolved` (expected: only
+addresses that name an object no Stored file owns remain).
+
+Landed in `72eed7b9` (`fix(media): resolve a rendition's recorded address in the sweep`).

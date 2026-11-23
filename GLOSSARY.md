@@ -143,7 +143,7 @@ The kind of file a Media holds - image, video, audio, document - which decides w
 _Avoid_: Kind, media category; MIME type, which is a property of the file rather than the library category.
 
 **Media rendition**:
-A derived copy of a Media's original at one fixed width and format, produced once, stored as its own object under the Media's storage key, and never authored or referenced by content.
+A derived copy of a Media's original at one fixed width and format, produced once and stored as its own object under the Media's storage key. Content is authored against a Media, not against a rendition; stored content may still name one rendition's address (a `srcset` copied with an article), and that address belongs to that rendition.
 _Avoid_: Variant, size, thumbnail, transformed image.
 
 **Media profile**:

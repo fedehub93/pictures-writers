@@ -232,7 +232,12 @@ ran before it; a Media with no Stored file has no canonical address to write, so
 its address and leaves it.
 
 The canonical address comes from one index built from every Stored file: a Media answers with
-`/media/<key>`, an attachment or avatar with `/files/<key>`. A content reference gets a rendition
+`/media/<key>`, an attachment or avatar with `/files/<key>`. A rendition's own recorded address —
+the provider address its manifest stores for it — resolves to that rendition's `/media/<key>`, so
+content that names a generated file (typically a `srcset` copied with the article) is rewritten
+entry by entry instead of reported as unresolved; it never collapses to the original's address,
+which would lose the width and the format the content asked for. A content reference gets a
+rendition
 token whose rendition URLs are themselves `/media/<key>` paths, so a later move cannot leave a
 provider URL inside a page; the Media's manifest keeps the address delivery reads, because that
 entry is what lets the delivery route redirect a remote rendition before the bytes move. A provider
