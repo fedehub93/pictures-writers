@@ -37,3 +37,35 @@ Consequences:
   for the opposite reason: the content's objects are the sources, so their bytes hash to the
   stored checksum (452 of 460). That makes ticket 16 come **before** this one: repairing the
   column first would erase the only record that ties a content object to its Media.
+
+**2026-11-23 — the provider's key API no longer resolves the pre-seam keys; read the recorded address**
+
+Measured while landing ticket 16 on the same dump. Ticket 16 is now `done` and its real run has
+changed the development database to the state this ticket should start from: 465 content addresses
+relinked and 4 Media adopted, 726 → 730 Stored files, `media:sweep-addresses:dry-run` at zero. Do
+not restore the pre-16 dump for this ticket; `%TEMP%\pre-relink-16.dump` is only ticket 16's
+rollback. The checksum column itself was **not** touched.
+
+The finding that changes this ticket's read path: `driver.get(key)` through the UploadThing driver
+now returns `StorageObjectNotFoundError` for the library's own pre-seam keys, with the token in
+`.env`. It fails both for a flat provider key and for a namespaced `<mediaId>/<revision>/<file>`
+key, because `getFileUrls` resolves neither. The bytes are still served: the `remoteUrl` the record
+carries answers `200` with the identical length, as the earlier probe measured. This is the same
+address delivery redirects to, and the relink of ticket 16 now fetches objects from the address
+(falling back to the same key on the current provider host) rather than from the API.
+
+So a literal "re-read every remote file through its recorded driver" would report most of the
+library unreadable on this dump and repair nothing. The command should read a remote file's
+recorded `remoteUrl` first — the address that actually serves the bytes — and use the driver's
+`get` only as the fallback, while keeping the per-driver report so a genuinely unreachable file is
+still named. Two related consequences:
+
+- the re-home (ticket 15) reads `source.get(file.key)` in `moveStoredFile`; with this token it
+  would refuse every pre-seam file as `unreadable`, so the same address-first rule may belong
+  there before the move is attempted;
+- the four Media ticket 16 adopted may record the older `/a/<appId>/<fileKey>` address shape, so
+  the read path must not assume `/f/<key>`; `storageKeyFromMediaUrl` now parses both.
+
+This is a property of the token/API on this instance, not necessarily of production; confirm it
+with one `driver.get` on the target before deciding whether the fallback is a workaround or the
+contract.
