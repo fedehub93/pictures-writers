@@ -750,7 +750,13 @@ export async function replaceMediaFile({
   try {
     const existing = await db.media.findUnique({
       where: { id: mediaId },
-      include: { storedFile: { select: storedFileLocationSelect } },
+      select: {
+        id: true,
+        type: true,
+        revision: true,
+        renditions: true,
+        storedFile: { select: storedFileLocationSelect },
+      },
     });
 
     if (!existing) throw new MediaNotFoundError(mediaId);
@@ -900,7 +906,11 @@ async function loadMediaForBatch(mediaIds: string[]) {
 
   const media = await db.media.findMany({
     where: { id: { in: uniqueIds } },
-    include: { storedFile: { select: storedFileLocationSelect } },
+    select: {
+      id: true,
+      archivedAt: true,
+      storedFile: { select: storedFileLocationSelect },
+    },
   });
 
   const found = new Set(media.map((item) => item.id));
@@ -965,7 +975,10 @@ export async function restoreMediaBatch(mediaIds: string[]): Promise<number> {
  * which is why archiving is reversible and never clears a cover.
  */
 export async function archiveMedia(mediaId: string): Promise<MediaLibraryItem> {
-  const existing = await db.media.findUnique({ where: { id: mediaId } });
+  const existing = await db.media.findUnique({
+    where: { id: mediaId },
+    select: { id: true, archivedAt: true },
+  });
 
   if (!existing) throw new MediaNotFoundError(mediaId);
   if (existing.archivedAt) {
@@ -986,7 +999,10 @@ export async function archiveMedia(mediaId: string): Promise<MediaLibraryItem> {
  * renditions.
  */
 export async function restoreMedia(mediaId: string): Promise<MediaLibraryItem> {
-  const existing = await db.media.findUnique({ where: { id: mediaId } });
+  const existing = await db.media.findUnique({
+    where: { id: mediaId },
+    select: { id: true, archivedAt: true },
+  });
 
   if (!existing) throw new MediaNotFoundError(mediaId);
   if (!existing.archivedAt) {
@@ -1096,7 +1112,13 @@ export async function deleteMediaPermanentlyBatch({
 
   const media = await db.media.findMany({
     where: { id: { in: uniqueIds } },
-    include: { storedFile: { select: storedFileLocationSelect } },
+    select: {
+      id: true,
+      revision: true,
+      renditions: true,
+      archivedAt: true,
+      storedFile: { select: storedFileLocationSelect },
+    },
     // A deterministic order lets the batch delete as it goes: the rows that
     // were already cleaned are gone, and the rest are untouched.
     orderBy: { createdAt: "asc" },
