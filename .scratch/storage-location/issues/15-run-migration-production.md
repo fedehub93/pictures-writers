@@ -87,4 +87,12 @@ of scope, and `PostVersion.bodyData` went with it. The same dump now reports `ro
 `addresses rewritten: 8`, `unresolved: 549` — 540 in live/current post bodies, 2 in Puck data, 5
 across `AdItem`, `FormSubmission` and `User`. Every one of those addresses is an object the
 provider answers for; the unreachable set now sits entirely in superseded versions. So this gate
-needs no content repair: adopt the ≈470 distinct live objects, sweep to zero, re-home, purge.
+needs no content repair: relink the ≈460 live objects to the Media that already owns their bytes
+(ticket 16), sweep to zero, re-home, purge.
+
+**Before the re-home: the checksum column is wrong for almost the whole library.** Re-fetching the
+708 remote originals whose record carries a checksum gives the exact `size` but a different
+sha256 in 706 cases, because `media:backfill-renditions` recorded the checksum of the bytes it
+read as a source against the normalised copy it wrote. `moveStoredFile` refuses a file whose
+source bytes do not hash to the record (`rehome.ts:403-406`), so a re-home today would move 2
+files and refuse 706. Ticket 17 repairs the column; the re-home step waits for it.
