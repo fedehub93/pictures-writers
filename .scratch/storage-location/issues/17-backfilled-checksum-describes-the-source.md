@@ -4,13 +4,13 @@
 
 **Blocked by:** 13, 16
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] A one-off command re-reads every remote file through its recorded driver and rewrites `checksum` (and `size`/`contentType` when they disagree) from the bytes it read.
-- [ ] The command is idempotent, has a dry run, reports per driver and refuses nothing it can prove; a file whose bytes it cannot read is reported and left alone.
-- [ ] `media:backfill-renditions` records the checksum of the bytes it writes, so a later backfill cannot produce the same disagreement.
-- [ ] The re-home moves the library: no file ends in `checksum-mismatch`.
-- [ ] The duplicate detector recognises a re-upload of a picture the library already holds (it matches by checksum).
+- [x] A one-off command re-reads every remote file through its recorded driver and rewrites `checksum` (and `size`/`contentType` when they disagree) from the bytes it read.
+- [x] The command is idempotent, has a dry run, reports per driver and refuses nothing it can prove; a file whose bytes it cannot read is reported and left alone.
+- [x] `media:backfill-renditions` records the checksum of the bytes it writes, so a later backfill cannot produce the same disagreement.
+- [x] The re-home moves the library: no file ends in `checksum-mismatch`.
+- [x] The duplicate detector recognises a re-upload of a picture the library already holds (it matches by checksum).
 
 ## Comments
 
@@ -69,3 +69,52 @@ still named. Two related consequences:
 This is a property of the token/API on this instance, not necessarily of production; confirm it
 with one `driver.get` on the target before deciding whether the fallback is a workaround or the
 contract.
+
+**2026-11-23 — landed and run on the post-16 development database**
+
+Landed in `2d94c144` (`feat(media): repair the checksum of the bytes a record owns`).
+
+- `npm run media:repair-checksums` (and `:dry-run`, or `MEDIA_REPAIR_DRY_RUN=1`) re-reads every
+  stored file: a remote record from its `remoteUrl` first and its recorded driver's `get` only as
+  the fallback, a local record from the volume. It writes the sha256 and byte length the bytes
+  prove, plus a content type only when the magic bytes name one; the provider's HTTP header is not
+  trusted as proof. The run is idempotent, reports per recorded driver, names an unreadable file by
+  id and driver and leaves it alone, and exits `1` when one remains so it can gate the re-home.
+- `writeImageRevision` returns the checksum of the normalised original it writes, and the upload
+  and replace paths record that value. The upload's duplicate check compares the normalised bytes
+  and falls back to the source checksum for an adopted Media, whose original was never normalised,
+  so a re-upload of any picture the library holds matches. `media:backfill-renditions` records
+  `stored.checksum`.
+- The re-home reads a remote object from its recorded address (and each rendition from its manifest
+  entry) before `driver.get`, because this token's key API no longer resolves the pre-seam keys.
+- Review (Standards and Spec, two axes): applied the shared address-first read in
+  `remote-object.ts`, the extracted `sniff-content-type.ts`, a dedicated `MEDIA_REPAIR_DRY_RUN`,
+  local rows in scope (the old backfill could write them from a different source), the
+  source-checksum duplicate fallback, content type from bytes only, and the new files in the
+  `docs/media.md` map. The Spec axis also asked for a repaired row to go through the re-home, which
+  is a test in the repair suite.
+- Docs: `docs/media.md` (map and a Checksum repair section), ADR-0026 revision, the glossary entry,
+  runbook §4bis.3bis, appendice C.
+
+Real run on `pictures_writers_dev` (the state ticket 16 left):
+
+- Dry run: `files: 730`, `updated: 726`, `unchanged: 4`, `failed: 0`, all `uploadthing`. The four
+  unchanged rows already matched; 726 is the repair. The addresses answered even though the key API
+  did not.
+- Real run: the same counts. A second run: `files: 730`, `updated: 0`, `unchanged: 730`,
+  `failed: 0`.
+- `media:audit` before the move: `files: 730`, `drivers: uploadthing=730`, `unresolved: 0`.
+- `media:rehome` to `local`: `moved: 728`, `bytesMoved: 387072163`, `abandoned: 11992`,
+  `failed: [{ 31b068ec…, unreadable }, { 8316a601…, unreadable }]`. **No file ended in
+  `checksum-mismatch`.** The two were a transient address read; a second run moved both (`moved: 2`,
+  `failed: []`, `abandoned: 34`, `bytesMoved: 676457`).
+- `media:audit` after: `files: 730`, `drivers: local=730`, `bytes: accounted=387748620
+  localAccounted=387748620 localOnDisk=387748620 localDifference=0`, `objects: accounted=12026
+  onDisk=12026 missing=0 orphaned=0`, `unresolved: 0`.
+- `media:repair-checksums:dry-run` after the move: `files: 730`, `updated: 0`, `unchanged: 730`
+  (`local`), `failed: 0`. The local records the re-home wrote describe their bytes.
+
+Verification: `npm run test:run` 296 files / 2686 tests passed; `npm run typecheck` clean;
+`npm run lint` 0 errors (250 pre-existing warnings); `npm run check:doc-citations` 97 docs / 0
+broken; `npm run build:agent` succeeded. No browser probe was run.
+
