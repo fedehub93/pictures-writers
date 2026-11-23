@@ -4,14 +4,14 @@
 
 **Blocked by:** 13, 04
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The Media no longer stores a key, an address, a size, a content type, a checksum or a driver.
-- [ ] Exactly one composer produces a canonical address, and no other code builds one.
-- [ ] Every read that used a Media's storage column now reads the stored-file record.
-- [ ] The library, delivery, quota, audit and both backfills behave as before.
-- [ ] A migration ships with the schema change, and a rolling deploy stays compatible: the old container never reads a column the new one has dropped.
-- [ ] The full suite is green.
+- [x] The Media no longer stores a key, an address, a size, a content type, a checksum or a driver.
+- [x] Exactly one composer produces a canonical address, and no other code builds one.
+- [x] Every read that used a Media's storage column now reads the stored-file record.
+- [x] The library, delivery, quota, audit and both backfills behave as before.
+- [x] A migration ships with the schema change, and a rolling deploy stays compatible: the old container never reads a column the new one has dropped.
+- [x] The full suite is green.
 
 ## Comments
 
@@ -45,4 +45,50 @@ them. It still ships one additive migration of its own.
 
 Release B (drop the columns and retire the two one-time commands) is the next commit and is
 deployed only after A is live and its manifest is verified on the Installation.
+
+**2026-11-21 — release B, landed in `72c4c72b`.** On top of A (`723d7e57`) the contraction is
+complete; the production deploy order stays the one in runbook §4bis.9 and has not been run from
+this session.
+
+- Migration `20261121160000_contract_media_columns` drops `key`, `url`, `size`, `mimeType`,
+  `checksum` and `storageDriver`, in that column list, and the Prisma model matches. Nothing else
+  in the schema changed: `name`, `type`, `altText`, `revision`, `metadata`, `renditions` and
+  `archivedAt` stay, as does the `StoredFile` relation.
+- Retired with the columns: `media:backfill-files` and `media:backfill-manifest-urls` (scripts,
+  server modules and their suites), `remoteUrlForAddress`, `mediaSourceKey`, and the start
+  script's pre-`next start` manifest step. The metadata and rendition backfills remain and still
+  read the stored-file record.
+- The library, delivery, quota, audit, upload, replace, archive/restore, re-home and sweep were
+  already on the record and the manifest after A, so this release changes no behaviour; it removes
+  the copy that could disagree. `storedFilePath` and `mediaDeliveryAddress` are still the only
+  builders of an address.
+- Docs: ADR-0026 records the contraction as a second deploy, `docs/media.md` describes the Media
+  without storage columns and the retired commands, runbook §4bis.8 marks the location backfill as
+  retired and §4bis.9 names A (`723d7e57`) and B (this commit), and the self-hosting checklist
+  records the manifests step as done once.
+- Verification: `npm run lint` 0 errors (251 pre-existing warnings), `npm run typecheck` clean,
+  `npm run check:doc-citations` 97 docs / 0 broken, `npm run test:run` 293 files / 2653 tests
+  passed, `npm run build:agent` green. The migration was exercised per
+  `docs/agents/migration-check.md` on a scratch database: a pre-contract `Media` row (key, url,
+  size, mimeType, checksum, storageDriver, metadata and renditions) plus its `StoredFile` were
+  seeded, the migration applied, and the assertion confirmed the six columns gone while metadata,
+  renditions and the stored-file link survived. The agent database had recorded the contraction
+  before the relax migration, so its bookkeeping needed `prisma migrate resolve --applied
+  20261121150000_relax_media_url`; no data was reset.
+- Still operational, not code: release A must be live and its manifest verified, then a dump is
+  taken before B. That sequence and the post-B checks are §4bis.9.
+
+**2026-11-21 — review follow-up in `0f33a0f3`.** The two-axis review of `67d06023...HEAD` found
+the reader shapes had drifted: a caller that used to select `url` alone (checkout, mail, the
+by-ids and list queries) was selecting the card projection and returning `id`, `altText` and the
+metadata JSON as well. Those readers now select the address-only projection plus exactly the
+fields they returned before, so "the returned shape is unchanged" holds. The same review found
+three guides still promising the re-home's `address-not-canonical` refusal, which no longer has an
+address to inspect: `docs/media.md`, the glossary and ADR-0026 now state that sweep-before-move is
+an operating rule, and runbook §4bis.9 adds the post-A remedy for a Media the release-13 container
+inserts without a record (re-run `media:backfill-files` while A is live, before the dump). The
+empty URL a record-less Media gets in the library (`mediaDeliveryAddress` returns `""`) is
+recorded as a known follow-up: it is the audit's row, not a render path the gate expects to hit.
+Verification unchanged: typecheck clean, lint 0 errors, doc citations 97/0, full suite 293 files /
+2653 tests, `build:agent` green.
 

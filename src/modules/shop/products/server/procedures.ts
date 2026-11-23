@@ -15,6 +15,7 @@ import { revalidateContent } from "@/shared/lib/revalidate-content";
 import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 
 import {
+  mediaAddressSelect,
   mediaPresentationSelect,
   withMediaUrl,
 } from "@/modules/media/lib/media-address";
@@ -360,7 +361,7 @@ export const productsRouter = createTRPCRouter({
             select: {
               id: true,
               title: true,
-              imageCover: { select: { ...mediaPresentationSelect } },
+              imageCover: { select: mediaAddressSelect },
             },
           },
         },

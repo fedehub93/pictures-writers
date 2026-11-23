@@ -6,7 +6,7 @@
 
 import { db } from "@/shared/lib/db";
 import {
-  mediaPresentationSelect,
+  mediaAddressSelect,
   withMediaUrl,
 } from "@/modules/media/lib/media-address";
 
@@ -22,7 +22,7 @@ export const getPublishedPostByRootId = async (rootId: string) => {
           title: true,
           description: true,
           imageCover: {
-            select: { ...mediaPresentationSelect },
+            select: { ...mediaAddressSelect, id: true, altText: true },
           },
         },
       },

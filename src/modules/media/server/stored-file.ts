@@ -3,14 +3,6 @@ import "server-only";
 import type { Prisma } from "@/generated/prisma";
 import { StoredFileKind, StoredFileOrigin } from "@/generated/prisma";
 
-import {
-  LEGACY_ASSET_PREFIX,
-  UPLOADTHING_FILE_ORIGIN,
-  UPLOADTHING_FILE_PATH,
-} from "@/modules/media/lib/image-ladder.mjs";
-import { stripMediaManifest } from "@/modules/media/lib/manifest";
-import { parseSrc } from "@/modules/media/lib/url";
-
 import type { StorageDriver, StorageDriverName } from "./storage";
 
 /**
@@ -26,30 +18,6 @@ export interface StoredFileLocation {
   contentType: string | null;
   size: number | null;
   checksum: string | null;
-}
-
-/**
- * The provider address already encoded by a stored address. An absolute
- * address is used as it is, minus the rendition token, which is not part of
- * the object. The legacy `/assets/<key>` shape is the installation's rewrite
- * to the provider, so the library knows where those bytes are without asking
- * the provider. Every other relative address is local.
- */
-export function remoteUrlForAddress(address: string | null): string | null {
-  if (!address) return null;
-
-  const { url, absolute } = parseSrc(address);
-
-  if (absolute) return stripMediaManifest(address);
-
-  if (url.pathname.startsWith(LEGACY_ASSET_PREFIX)) {
-    const key = url.pathname.slice(LEGACY_ASSET_PREFIX.length);
-    return key
-      ? `${UPLOADTHING_FILE_ORIGIN}${UPLOADTHING_FILE_PATH}${key}`
-      : null;
-  }
-
-  return null;
 }
 
 /**

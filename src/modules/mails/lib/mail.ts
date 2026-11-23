@@ -11,7 +11,7 @@ import {
   isWebinarMetadata,
 } from "@/modules/shop/products/types";
 import {
-  mediaPresentationSelect,
+  mediaAddressSelect,
   withMediaUrl,
 } from "@/modules/media/lib/media-address";
 import { absoluteMediaUrl } from "@/modules/media/server/media-url";
@@ -187,7 +187,7 @@ export const sendWebinarPurchaseEmail = async (
           title: true,
           tiptapDescription: true,
           metadata: true,
-          imageCover: { select: mediaPresentationSelect },
+          imageCover: { select: mediaAddressSelect },
         },
       },
     },
@@ -297,7 +297,7 @@ export const buildFreeDigitalDownloadEmail = async (
           title: true,
           tiptapDescription: true,
           metadata: true,
-          imageCover: { select: mediaPresentationSelect },
+          imageCover: { select: mediaAddressSelect },
         },
       },
     },

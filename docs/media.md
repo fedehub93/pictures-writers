@@ -55,10 +55,11 @@ is remote, content type, size, checksum and kind. New uploads and replacements
 write it in the same transaction as the Media, so a failed write leaves neither.
 The one-time `npm run media:backfill-files` created it for Media that predate it,
 from what the library already knew, and reported any Media whose key it could not
-read. The command never rewrote a Media row. The production order of that first
-deploy — the explicit driver record, the volume, the command, its expected counts,
-the canonical-address check and the audit gate — is in
-`docs/self-hosting/08-operations-runbook.md` §4bis.8.
+read. It never rewrote a Media row, and it is retired now that every Media has a
+record. The production order of that first deploy — the explicit driver record,
+the volume, the command, its expected counts, the canonical-address check and the
+audit gate — remains in `docs/self-hosting/08-operations-runbook.md` §4bis.8 as
+the record of that gate.
 
 Delivery reads that record. A local file streams from disk with its recorded
 content type; a remote file redirects to the address the record carries and
@@ -77,16 +78,16 @@ shape decides whether the unit is a prefix or the provider's exact file key, so 
 pre-seam row is still removed by the key it has.
 
 The admin library reads the record's key, size, content type, checksum and driver, and composes
-the row's address from that key through the one composer in `media/lib/file-path.ts`. This release
-neither reads nor writes the Media's storage columns: they stay frozen at their last values until
-the contraction drops them in the next deploy. The address also carries the rendition token the
-browser's image loader reads: each entry in `Media.renditions` records the address its bytes were
-given at write time — a canonical `/media/<key>` for a local file, the provider's address for a
-remote one. A row written before that field existed carried the same addresses in the token of its
-old `Media.url`; `npm run media:backfill-manifest-urls` copies them into `renditions`. The start
-script runs that command before the first request, so the server never needs the column; the
-command is idempotent and can be run again after the switch to catch an upload the previous
-container wrote during it. The metadata and rendition backfills read the stored-file record — its
+the row's address from that key through the one composer in `media/lib/file-path.ts`. The Media no
+longer carries a copy of those facts: its `key`, `url`, `size`, `mimeType`, `checksum` and
+`storageDriver` columns are gone, so a disagreement between two records is no longer possible. The
+address also carries the rendition token the browser's image loader reads: each entry in
+`Media.renditions` records the address its bytes were given at write time — a canonical
+`/media/<key>` for a local file, the provider's address for a remote one. A row written before
+that field existed carried the same addresses in the token of its old `Media.url`;
+`npm run media:backfill-manifest-urls` copied them into `renditions` before the column was
+dropped, so the command is retired with it and the start script no longer runs it. The metadata and
+rendition backfills read the stored-file record — its
 key, its driver, its size, content type and checksum — and never a Media column. They resolve the
 recorded driver per row for reads and writes, so a library that mixes legacy provider Media and
 local Media is processed in one run; a row whose driver is not configured here is reported and the
@@ -122,8 +123,6 @@ arrived is gone.
 | Media delivery address and rendition manifest projection | `src/modules/media/lib/media-address.ts` |
 | Stored-file location of one upload | `src/modules/media/server/stored-file.ts` |
 | Stored-file location columns shared by server and library | `src/modules/media/lib/stored-file-location.ts` |
-| One-time location backfill for existing Media | `src/modules/media/server/backfill-stored-files.ts`, `scripts/backfill-stored-files.ts` |
-| One-time rendition-address backfill | `src/modules/media/server/backfill-manifest-urls.ts`, `scripts/backfill-media-manifest-urls.ts` |
 | Metadata and rendition backfills | `src/modules/media/server/backfill-media-metadata.ts`, `src/modules/media/server/backfill-media-renditions.ts` |
 | Key grammar: compose, parse, revision prefix | `src/modules/media/server/media-key.ts` |
 | Stored file -> owning Media (originals and renditions) | `src/modules/media/server/media-delivery.ts` |
@@ -141,7 +140,7 @@ arrived is gone.
 | Library move panel | `src/modules/media/ui/components/media-rehome-panel.tsx` |
 | Purge job, guards, grace window and confirmation | `src/modules/media/server/purge.ts`, `scripts/purge-media.ts` |
 | Purge journal | `StoragePurgeEntry` in `prisma/schema.prisma` |
-| Parsing and composing addresses | `src/modules/media/lib/url.ts` |
+| Parsing addresses and recognizing provider URLs | `src/modules/media/lib/url.ts` |
 | Absolute form and own-host check | `src/modules/media/server/media-url.ts` |
 | Quota arithmetic (pure vs database) | `src/modules/media/lib/quota.ts`, `src/modules/media/server/media-quota.ts` |
 | Quota refusal response | `src/modules/media/server/quota-error-response.ts` |
@@ -245,9 +244,10 @@ The sweep moves no byte and writes no Stored file: keys, revisions, drivers and 
 are read, never changed. It only rewrites addresses, so it can run while the site serves: the
 provider addresses it replaces still answer until the purge, and a cached page keeps them until its
 normal revalidation (the 24h ISR backstop or the next deploy), so no visitor sees a broken picture.
-It must run first: a Media still addressed by a provider URL is refused by the move
-(`address-not-canonical`), because journaling that provider object would let the purge delete bytes
-published content still links to.
+It must run first: the move no longer refuses a row by its address, because a Media carries none,
+so sweep-before-move is an operating rule rather than a run guard. Moving a file whose published
+content still links the provider object would journal that object for the purge, so the runbook
+orders the sweep before the re-home.
 
 `npm run media:sweep-addresses:dry-run` (or `--dry-run`) reports the same work without writing.
 The report names each field with the rows, addresses and unresolved counts; it never prints a key,
@@ -270,11 +270,12 @@ learns the new rendition addresses. A failure before the flip removes the target
 the source serving, so no failure path can break an address. A local source is removed after the
 flip; a provider object is not deleted, because the redirect hop may still be cached.
 
-A Media whose stored address is still a provider URL is refused by id (`address-not-canonical`)
-and left serving: moving it would journal the provider object for removal while published pages
-still link to it, so the address sweep (`npm run media:sweep-addresses`) has to run first.
-Attachments and avatars carry no address on their role; the strings their owners hold are what
-the sweep rewrites before they move.
+The move has no `address-not-canonical` refusal to apply: with the Media's address columns gone
+there is no stored address left to inspect. Moving a file whose published content still links the
+provider object would journal that object for removal, so running the address sweep
+(`npm run media:sweep-addresses`) first is a rule for the operator, recorded in the runbook, not a
+guard in the job. Attachments and avatars carry no address on their role; the strings their owners
+hold are what the sweep rewrites before they move.
 
 An interrupted run resumes where it stopped: a file already flipped is no longer pending, so it
 is never copied again. A file whose source cannot be read is reported by stored-file id, stays on
@@ -401,8 +402,7 @@ addresses or names, so it is safe to paste into a deployment log.
 - The composed delivery address carries the `?mt=` token, and for remote rows that token embeds
   provider URLs. Re-home rewrites the manifest in the same transaction as the flip, so a move keeps
   delivery working; deriving the token at render time remains the cleaner shape and is not done.
-  The `Media.url` column that used to hold it is frozen in this release and disappears in the
-  contraction.
+  The `Media.url` column that used to hold it is gone.
 - Updating `altText` changes published output but does not revalidate it
   (`revalidateContent` is not called).
 - The picker copy still says "asset"; the glossary term is Media.

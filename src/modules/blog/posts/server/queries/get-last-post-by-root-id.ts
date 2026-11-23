@@ -1,6 +1,6 @@
 import { db } from "@/shared/lib/db";
 import {
-  mediaPresentationSelect,
+  mediaAddressSelect,
   withMediaUrl,
 } from "@/modules/media/lib/media-address";
 
@@ -41,8 +41,9 @@ export const getLastPostByRootId = async (rootId: string) => {
             },
             imageCover: {
               select: {
-                ...mediaPresentationSelect,
+                ...mediaAddressSelect,
                 name: true,
+                altText: true,
               },
             },
             authors: {

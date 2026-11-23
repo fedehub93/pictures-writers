@@ -415,16 +415,10 @@ model Media {
   id String @id @default(uuid())
 
   name    String
-  key     String?
-  url     String?   @unique @db.Text
-  size    Int?
   type    MediaType @default(FILE)
   altText String?
 
-  mimeType  String?
-  checksum  String?
   revision  Int       @default(1)
-  storageDriver String?
   /// [MediaMetadata]
   metadata  Json?     @db.JsonB
   /// [MediaRenditions]
@@ -445,7 +439,6 @@ model Media {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([checksum])
   @@index([archivedAt])
 }
 

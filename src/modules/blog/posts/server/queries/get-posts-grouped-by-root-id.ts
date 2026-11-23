@@ -1,6 +1,6 @@
 import { db } from "@/shared/lib/db";
 import {
-  mediaPresentationSelect,
+  mediaAddressSelect,
   withMediaUrl,
 } from "@/modules/media/lib/media-address";
 
@@ -15,7 +15,7 @@ export const getPostsGroupedByRootId = async () => {
             status: true,
             publishedAt: true,
             imageCover: {
-              select: { ...mediaPresentationSelect },
+              select: { ...mediaAddressSelect, altText: true },
             },
             authors: {
               select: {

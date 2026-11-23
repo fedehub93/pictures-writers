@@ -2,7 +2,7 @@ import { Prisma } from "@/generated/prisma";
 
 import { db } from "@/shared/lib/db";
 import {
-  mediaPresentationSelect,
+  mediaAddressSelect,
   withMediaUrl,
 } from "@/modules/media/lib/media-address";
 
@@ -37,13 +37,13 @@ export const getProductsPaginatedByFilters = async ({
         liveVersion: {
           include: {
             category: { select: { title: true, slug: true } },
-            imageCover: { select: { ...mediaPresentationSelect } },
+            imageCover: { select: { ...mediaAddressSelect, altText: true } },
           },
         },
         currentVersion: {
           include: {
             category: { select: { title: true, slug: true } },
-            imageCover: { select: { ...mediaPresentationSelect } },
+            imageCover: { select: { ...mediaAddressSelect, altText: true } },
           },
         },
       },

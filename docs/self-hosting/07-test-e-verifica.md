@@ -157,8 +157,8 @@ Ripeti almeno le sezioni 1–8 dopo la fase C (database locale).
 - [ ] Replace con `local` attivo, senza dropzone UploadThing.
 - [ ] Cancellazione di una selezione mista (legacy + locale) senza oggetti residui.
 - [ ] Passaggio `local` → `uploadthing` → `local` senza URL rotti.
-- [ ] `npm run media:backfill-files` registra un record per ogni Media (`created: 725` alla misura del 20 novembre 2026) e al secondo run riporta `created: 0` con tutti i Media in `skipped` (4bis.8).
-- [ ] `npm run media:audit` riporta `unresolved: 0` dopo il backfill della posizione; prima è rosso con `no-stored-file`.
+- [x] Il backfill della posizione (`media:backfill-files`, ora ritirato) ha registrato un record per ogni Media (`created: 725` alla misura del 20 novembre 2026) e al secondo run ha riportato `created: 0` con tutti i Media in `skipped` (4bis.8).
+- [ ] `npm run media:audit` riporta `unresolved: 0`; una Media senza record resta un errore.
 - [ ] Un file locale resta servibile dopo un redeploy (volume persistente).
 
 > Se il dominio di staging è diverso, verifica che UploadThing consenta l'origine. In caso di errore CORS/403, aggiungi il dominio nelle impostazioni dell'app UploadThing. I Media storici usano ancora UploadThing anche quando il driver attivo è `local`.

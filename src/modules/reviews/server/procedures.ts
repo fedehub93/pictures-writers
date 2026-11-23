@@ -10,7 +10,7 @@ import { revalidateContent } from "@/shared/lib/revalidate-content";
 import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 
 import {
-  mediaPresentationSelect,
+  mediaAddressSelect,
   withMediaUrl,
 } from "@/modules/media/lib/media-address";
 
@@ -28,7 +28,7 @@ const reviewProductSelect = {
   currentVersion: {
     select: {
       title: true,
-      imageCover: { select: { ...mediaPresentationSelect } },
+      imageCover: { select: { ...mediaAddressSelect, altText: true } },
     },
   },
 } satisfies Prisma.ProductRootSelect;

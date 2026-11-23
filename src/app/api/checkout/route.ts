@@ -6,7 +6,7 @@ import { stripe } from "@/lib/stripe";
 import { convertToSubcurrency } from "@/lib/format";
 import { getSettings } from "@/data/settings";
 import {
-  mediaPresentationSelect,
+  mediaAddressSelect,
   withMediaUrl,
 } from "@/modules/media/lib/media-address";
 import { absoluteMediaUrl } from "@/modules/media/server/media-url";
@@ -26,7 +26,7 @@ export async function POST(req: Request) {
             id: true,
             title: true,
             price: true,
-            imageCover: { select: mediaPresentationSelect },
+            imageCover: { select: mediaAddressSelect },
           },
         },
       },

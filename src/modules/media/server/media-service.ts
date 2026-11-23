@@ -6,7 +6,6 @@ import { MediaType, StoredFileKind, type Prisma } from "@/generated/prisma";
 
 import { db } from "@/shared/lib/db";
 
-import { storedFilePath } from "@/modules/media/lib/file-path";
 import {
   mediaLibraryItem,
   mediaLibraryRowSelect,

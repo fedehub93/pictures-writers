@@ -2,7 +2,7 @@ import { Prisma } from "@/generated/prisma";
 
 import { db } from "@/shared/lib/db";
 import {
-  mediaPresentationSelect,
+  mediaAddressSelect,
   withMediaUrl,
 } from "@/modules/media/lib/media-address";
 
@@ -54,7 +54,7 @@ export const getPaginatedPosts = async ({
       liveVersion: {
         include: {
           imageCover: {
-            select: { ...mediaPresentationSelect },
+            select: { ...mediaAddressSelect, id: true, altText: true },
           },
           user: {
             select: {
