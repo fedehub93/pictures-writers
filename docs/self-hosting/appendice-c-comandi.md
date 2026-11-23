@@ -369,9 +369,17 @@ docker exec -it <APP_CONTAINER> env MEDIA_BACKFILL_DRY_RUN=1 \
 # Backfill rendition (dopo i metadati, finestra di basso traffico)
 docker exec -it <APP_CONTAINER> env MEDIA_RENDITION_BACKFILL_CONCURRENCY=2 \
   npm run media:backfill-renditions
+
+# Anteprima riparazione checksum (dopo il relink, prima del re-home)
+docker exec -it <APP_CONTAINER> env MEDIA_REPAIR_DRY_RUN=1 \
+  npm run media:repair-checksums
+
+# Riparazione checksum (una tantum)
+docker exec -it <APP_CONTAINER> env MEDIA_CHECKSUM_REPAIR_CONCURRENCY=4 \
+  npm run media:repair-checksums
 ```
 
-Il report finale è JSON: `processed` = immagini completate, `skipped` = già elaborate, `failed` = sorgenti con il motivo. Ogni riga è letta e scritta attraverso il driver registrato su di essa, quindi una libreria mista si elabora in un'unica esecuzione. Il comando esce con codice `1` se `failed` non è vuoto; le anteprime segnalano già le righe il cui driver non è configurato. Dettagli in `docs/self-hosting/08-operations-runbook.md`, sezione 4bis.
+Il report finale è JSON: `processed` = immagini completate, `skipped` = già elaborate, `failed` = sorgenti con il motivo. Ogni riga è letta e scritta attraverso il driver registrato su di essa, quindi una libreria mista si elabora in un'unica esecuzione. Il comando esce con codice `1` se `failed` non è vuoto; le anteprime segnalano già le righe il cui driver non è configurato. `media:repair-checksums` è la riparazione una tantum dei checksum di un backfill eseguito prima di questo codice: è idempotente, ha un'anteprima, legge l'indirizzo registrato per primo e riporta per driver; esce `1` se un file non è leggibile. Dettagli in `docs/self-hosting/08-operations-runbook.md`, sezioni 4bis.3 e 4bis.3bis.
 
 ---
 

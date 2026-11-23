@@ -40,6 +40,7 @@ import {
   type StorageDriverName,
   type StorageEnvironment,
 } from "./storage";
+import { fetchObject } from "./remote-object";
 import { createStoredFileForMedia } from "./stored-file";
 
 /**
@@ -102,32 +103,6 @@ export interface RelinkOptions {
 }
 
 /**
- * The bytes of one object, or `null` when the address does not serve them. A
- * transport failure or a timeout is retried: the run is a one-off over a few
- * hundred objects, and one slow response must not strand an address.
- */
-async function fetchObjectBytes(
-  address: string,
-  fetchImpl: typeof fetch,
-): Promise<Uint8Array<ArrayBuffer> | null> {
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    try {
-      const response = await fetchImpl(address, {
-        signal: AbortSignal.timeout(60_000),
-      });
-
-      if (!response.ok) return null;
-
-      return new Uint8Array(await response.arrayBuffer());
-    } catch {
-      // Try again; a 404 or a 403 is not retried because it is an answer.
-    }
-  }
-
-  return null;
-}
-
-/**
  * The provider origins the library's own remote files were written with. A
  * retired host still answers for most objects, but an object that migrated to
  * the current host answers only there; this is where that host comes from, so
@@ -175,8 +150,8 @@ async function readProviderObject(
   for (const origin of origins) candidates.add(`${origin}${path}`);
 
   for (const candidate of candidates) {
-    const bytes = await fetchObjectBytes(candidate, fetchImpl);
-    if (bytes) return { bytes, address: candidate };
+    const object = await fetchObject(candidate, fetchImpl);
+    if (object) return object;
   }
 
   return null;

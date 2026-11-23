@@ -338,6 +338,50 @@ Se `failed` non è vuoto, controlla che l'oggetto esista ancora sul provider con
 
 **Verifica.** Dopo il run, dal sito controlla che una pagina con immagine storica serva un URL di rendition (`.avif`/`.webp` sul CDN) invece dell'originale, e che il media library mostri ancora una sola riga per file. Il job non modifica i contenuti: se un URL assoluto dentro un testo punta ancora all'originale, è atteso.
 
+### 4bis.3bis Riparazione dei checksum (una tantum)
+
+Le librerie elaborate dal backfill delle rendition **prima** di questo codice hanno un record che
+descrive due oggetti diversi: `size` e `remoteUrl` descrivono la copia normalizzata scritta dal job,
+mentre `checksum` descrive i byte letti come sorgente. Quasi ogni riga non torna, quindi il re-home
+la rifiuta come `checksum-mismatch` e il rilevamento dei duplicati non riconosce più un'immagine già
+presente. Il comando una tantum rilegge ogni file remoto e riscrive `checksum`, `size` e
+`contentType` dai byte che trova.
+
+Va eseguito **dopo** il relink del contenuto e **prima** del re-home. Sul dump di produzione del
+23 novembre 2026 su 708 originali con checksum e indirizzo i byte serviti coincidevano con il
+checksum registrato solo in 2 casi: il resto è il difetto che questo passo ripara.
+
+```bash
+# anteprima: legge, confronta e riporta, senza scrivere
+MEDIA_REPAIR_DRY_RUN=1 npm run media:repair-checksums
+
+# esecuzione
+MEDIA_CHECKSUM_REPAIR_CONCURRENCY=4 npm run media:repair-checksums
+```
+
+Dentro il container:
+
+```bash
+docker exec -it -e MEDIA_REPAIR_DRY_RUN=1 <APP_CONTAINER> npm run media:repair-checksums
+docker exec -it <APP_CONTAINER> npm run media:repair-checksums
+```
+
+- Per un file remoto legge l'indirizzo registrato (`remoteUrl`) per primo, perché l'API a chiavi del
+  provider può non risolvere più le chiavi pre-seam mentre il loro indirizzo serve ancora i byte; la
+  `get` del driver registrato è solo il ripiego. Una riga locale viene letta dal volume, perché lo
+  stesso backfill può averla scritta da una sorgente diversa.
+- È idempotente: una seconda esecuzione riporta `updated: 0` e `unchanged` uguale ai file letti.
+- Il report conta per driver registrato e, per ogni file non leggibile, stampa id, driver e motivo.
+  Non stampa chiavi, indirizzi o host.
+- Un file i cui byte non si leggono viene riportato e lasciato com'è: continua a essere servito e
+  una esecuzione successiva può riprovare. Il comando **esce 1** in quel caso, quindi può fare da
+  gate prima del re-home.
+- Non muove byte, non cambia chiavi, revisioni o driver.
+
+Dopo il run esegui `npm run media:audit` (4bis.6): deve restare `unresolved: 0`. Un secondo run di
+`media:repair-checksums` deve riportare `updated: 0`; da lì il re-home non trova più file da
+rifiutare per `checksum-mismatch`.
+
 ### 4bis.4 Driver locale: volume persistente
 
 Il driver `local` scrive sotto `MEDIA_STORAGE_LOCAL_ROOT`. In produzione quel percorso deve stare su un **volume Docker persistente**: senza volume, ogni redeploy cancella i file caricati. La produzione corrente monta un volume `media-storage` su `/data/media` e imposta:

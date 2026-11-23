@@ -178,6 +178,10 @@ _Avoid_: Migration, re-upload, dedupe when it implies moving bytes or deleting a
 Creating the Media and Stored file for a provider object no library file matches, during a Relink: the Stored file records the provider key as its storage key and the address content named as its remote location, so the Re-home copies those bytes later. No byte moves at adoption, and two addresses that name the same new object add one Media.
 _Avoid_: Import, upload, copy when the bytes stay on the provider.
 
+**Checksum repair**:
+The one-time command that re-reads every Stored file - a remote one from the address it records first, a local one from the volume - and rewrites the checksum, size and content type the bytes prove, so the record describes the object it owns rather than the source a rendition backfill read. It is idempotent, has a dry run, reports per driver, and leaves an unreadable file exactly as it was. A Relink runs before it; a Re-home after it.
+_Avoid_: Backfill, when the bytes are already stored; verify, which writes nothing.
+
 **Re-home**:
 Moving a Stored file's bytes from the driver that holds them to the active driver without changing its key or its canonical address. It copies and verifies the bytes, reads the copy back, then rewrites the file's driver and remote address; a file that cannot be read stays where it is and keeps serving, the address sweep must run before a move because the job no longer inspects a Media address, and a provider object it abandons is recorded in the Purge journal.
 _Avoid_: Migrate, sync, move when a revision or address changes, which is a replace rather than a re-home.

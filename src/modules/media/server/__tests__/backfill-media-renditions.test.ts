@@ -351,6 +351,7 @@ describe("backfillMediaRenditions", () => {
     const record = await db.storedFile.findUniqueOrThrow({
       where: { mediaId: id },
     });
+    const written = await localDriver.get(recordKey);
 
     expect(row.metadata).toMatchObject({ width: 700, height: 420 });
     expect(record).toMatchObject({
@@ -358,9 +359,10 @@ describe("backfillMediaRenditions", () => {
       driver: "local",
       remoteUrl: null,
       contentType: "image/png",
-      checksum: sha256(bytes),
+      checksum: sha256(written),
     });
-    expect(record.size).toBe((await localDriver.get(recordKey)).byteLength);
+    expect(record.checksum).not.toBe(sha256(bytes));
+    expect(record.size).toBe(written.byteLength);
   });
 
   it("moves a legacy record's key into the revision and keeps its remote address true", async () => {
@@ -381,9 +383,10 @@ describe("backfillMediaRenditions", () => {
       driver: "uploadthing",
       remoteUrl: await remoteDriver.url(expectedKey),
       contentType: "image/png",
-      checksum: sha256(bytes),
+      checksum: sha256(await remoteDriver.get(expectedKey)),
       size: (await remoteDriver.get(expectedKey)).byteLength,
     });
+    expect(record.checksum).not.toBe(sha256(bytes));
 
     // The legacy object is content's own address and survives the backfill.
     await expect(remoteDriver.get(legacyKey)).resolves.toBeDefined();

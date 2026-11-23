@@ -21,6 +21,7 @@ import {
 import type { MediaRenditionFormat } from "@/modules/media/types";
 
 import { checksumOf } from "./image-bytes";
+import { readObject } from "./remote-object";
 import {
   getActiveStorageDriverName,
   getLocalStorageRoot,
@@ -257,12 +258,15 @@ export interface RehomeRunOptions extends RehomePlanOptions {
    * here unchanged; nothing about storage is mocked.
    */
   drivers?: Partial<Record<StorageDriverName, StorageDriver>>;
+  /** Test seam: the HTTP client a recorded address is read with. */
+  fetchImpl?: typeof fetch;
 }
 
 const jobFileSelect = {
   id: true,
   key: true,
   driver: true,
+  remoteUrl: true,
   contentType: true,
   size: true,
   checksum: true,
@@ -360,12 +364,14 @@ async function moveStoredFile({
   env,
   drivers,
   supplied,
+  fetchImpl,
 }: {
   file: RehomeFile;
   active: ResolvedStorageDriver;
   env: StorageEnvironment;
   drivers: Map<StorageDriverName, StorageDriver>;
   supplied?: Partial<Record<StorageDriverName, StorageDriver>>;
+  fetchImpl: typeof fetch;
 }): Promise<MovedFile | FailedFile> {
   const nameResolution = resolveMediaDriverName(file.driver, env);
   if (!nameResolution.resolved) {
@@ -395,7 +401,15 @@ async function moveStoredFile({
 
   let original: Uint8Array<ArrayBuffer>;
   try {
-    original = await source.get(file.key);
+    const bytes = await readObject({
+      key: file.key,
+      address: file.remoteUrl,
+      loadDriver: () => source,
+      fetchImpl,
+    });
+
+    if (!bytes) return { ok: false, reason: "unreadable" };
+    original = bytes;
   } catch {
     return { ok: false, reason: "unreadable" };
   }
@@ -411,7 +425,15 @@ async function moveStoredFile({
   for (const rendition of renditions) {
     let bytes: Uint8Array<ArrayBuffer>;
     try {
-      bytes = await source.get(rendition.key);
+      const read = await readObject({
+        key: rendition.key,
+        address: rendition.url,
+        loadDriver: () => source,
+        fetchImpl,
+      });
+
+      if (!read) return { ok: false, reason: "unreadable" };
+      bytes = read;
     } catch {
       return { ok: false, reason: "unreadable" };
     }
@@ -606,6 +628,7 @@ export async function rehomeStoredFiles({
   onProgress,
   isSuperseded,
   drivers: supplied,
+  fetchImpl = fetch,
   availableDiskBytes,
   fileIds,
 }: RehomeRunOptions = {}): Promise<RehomeReport> {
@@ -667,6 +690,7 @@ export async function rehomeStoredFiles({
       env,
       drivers,
       supplied,
+      fetchImpl,
     });
 
     if (outcome.ok) {

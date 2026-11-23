@@ -37,6 +37,7 @@ async function createPng(
   width = 2000,
   height = 1200,
   background = { r: 20, g: 160, b: 80 },
+  compressionLevel?: number,
 ): Promise<Uint8Array<ArrayBuffer>> {
   const buffer = await sharp({
     create: {
@@ -46,7 +47,7 @@ async function createPng(
       background,
     },
   })
-    .png()
+    .png(compressionLevel === undefined ? {} : { compressionLevel })
     .toBuffer();
 
   return new Uint8Array(buffer);
@@ -108,6 +109,7 @@ describe("createMediaFromUpload", () => {
     const key = await putSource(bytes);
 
     const media = await createMedia(key);
+    const stored = await driver.get(media.key!);
 
     expect(media).toMatchObject({
       name: "Uploaded image",
@@ -116,10 +118,13 @@ describe("createMediaFromUpload", () => {
       revision: 1,
       altText: "Alt text",
       archivedAt: null,
-      checksum: createHash("sha256").update(bytes).digest("hex"),
+      checksum: createHash("sha256").update(stored).digest("hex"),
     });
+    expect(media.checksum).not.toBe(
+      createHash("sha256").update(bytes).digest("hex"),
+    );
     expect(media.key).toBe(`default/${media.id}/1/original`);
-    expect(media.size).toBe((await driver.get(media.key!)).byteLength);
+    expect(media.size).toBe(stored.byteLength);
 
     const row = await db.media.findUniqueOrThrow({ where: { id: media.id } });
     const manifest = row.renditions as MediaRendition[];
@@ -253,6 +258,55 @@ describe("createMediaFromUpload", () => {
     await expect(
       db.storedFile.count({ where: { checksum: first.checksum! } }),
     ).resolves.toBe(1);
+  });
+
+  it("refuses a re-upload of a picture it already holds even when the source encoding differs", async () => {
+    const firstSource = await createPng(400, 300, undefined, 1);
+    const first = await createMedia(await putSource(firstSource));
+    const secondSource = await createPng(400, 300, undefined, 6);
+    const sha256 = (value: Uint8Array<ArrayBuffer>) =>
+      createHash("sha256").update(value).digest("hex");
+
+    // The two uploads are different bytes of the same picture; normalisation
+    // makes them the same stored original, which is what the record describes.
+    expect(sha256(secondSource)).not.toBe(sha256(firstSource));
+
+    const error = await createMedia(await putSource(secondSource)).catch(
+      (reason) => reason,
+    );
+
+    expect(error).toBeInstanceOf(DuplicateMediaError);
+    expect((error as DuplicateMediaError).existing.id).toBe(first.id);
+  });
+
+  it("refuses a re-upload of an adopted picture whose original was never normalised", async () => {
+    const raw = await createPng(400, 300, undefined, 1);
+    const key = `default/${randomUUID()}/1/original`;
+    await driver.put(key, raw, "image/png");
+
+    const adopted = await db.media.create({
+      data: {
+        name: "Adopted picture",
+        type: MediaType.IMAGE,
+        storedFile: {
+          create: {
+            key,
+            driver: "local",
+            contentType: "image/png",
+            size: raw.byteLength,
+            checksum: createHash("sha256").update(raw).digest("hex"),
+          },
+        },
+      },
+    });
+    mediaIds.push(adopted.id);
+
+    const error = await createMedia(await putSource(raw)).catch(
+      (reason) => reason,
+    );
+
+    expect(error).toBeInstanceOf(DuplicateMediaError);
+    expect((error as DuplicateMediaError).existing.id).toBe(adopted.id);
   });
 
   it("does not warn about a duplicate that is archived", async () => {
@@ -450,7 +504,9 @@ describe("replaceMediaFile", () => {
     const manifest = row.renditions as MediaRendition[];
 
     expect(media.checksum).toBe(
-      createHash("sha256").update(replacementBytes).digest("hex"),
+      createHash("sha256")
+        .update(await driver.get(media.key!))
+        .digest("hex"),
     );
     expect(manifest).toHaveLength(MEDIA_RENDITION_WIDTHS.length * 2);
     expect(
