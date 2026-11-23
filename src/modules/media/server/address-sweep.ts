@@ -10,6 +10,7 @@ import {
   type AddressRewriteResult,
   type StoredAddressIndex,
   type StoredAddressIndexEntry,
+  type StoredAddressTarget,
 } from "@/modules/media/lib/address-rewrite";
 import type { StoredFileRole } from "@/modules/media/lib/file-path";
 
@@ -62,6 +63,18 @@ export interface AddressSweepReport {
 
 export interface AddressSweepOptions {
   dryRun?: boolean;
+  /**
+   * Addresses a relink gave a target that no Stored file records, keyed by the
+   * address content carries. The sweep resolves them exactly like a recorded
+   * address, so the relink can reuse one run instead of writing content twice.
+   */
+  addressOverrides?: ReadonlyMap<string, StoredAddressTarget>;
+  /**
+   * Receives every address no stored file owns, with the field it appeared in.
+   * A caller can then give it a target (the relink) and sweep again; the
+   * report itself never carries an address.
+   */
+  onUnresolvedAddress?: (address: string, field: AddressSweepField) => void;
 }
 
 interface FieldTally {
@@ -123,24 +136,30 @@ async function readAddressIndex(): Promise<StoredAddressIndex> {
  * skip test, the tally arithmetic and the dry-run gate live here once.
  */
 async function sweepField<T extends { id: string }, V>({
+  field,
   rows,
   index,
-  tally,
+  tallies,
   fileIds,
   dryRun,
+  onUnresolvedAddress,
   valueOf,
   rewrite,
   write,
 }: {
+  field: AddressSweepField;
   rows: readonly T[];
   index: StoredAddressIndex;
-  tally: FieldTally;
+  tallies: ReadonlyMap<AddressSweepField, FieldTally>;
   fileIds: Set<string>;
   dryRun: boolean;
+  onUnresolvedAddress?: (address: string, field: AddressSweepField) => void;
   valueOf: (row: T) => V | null | undefined;
   rewrite: (value: V, index: StoredAddressIndex) => AddressRewriteResult;
   write: (row: T, value: unknown) => Promise<unknown>;
 }): Promise<void> {
+  const tally = tallies.get(field)!;
+
   for (const row of rows) {
     const current = valueOf(row);
     if (current === null || current === undefined || current === "") continue;
@@ -152,6 +171,9 @@ async function sweepField<T extends { id: string }, V>({
     tally.rewritten += result.rewritten;
     tally.unresolved += result.unresolved;
     for (const fileId of result.fileIds) fileIds.add(fileId);
+    for (const address of result.unresolvedAddresses) {
+      onUnresolvedAddress?.(address, field);
+    }
 
     if (result.rewritten > 0 && !dryRun) {
       await write(row, result.value);
@@ -207,8 +229,17 @@ async function readReadableVersions<T extends { id: string }>(
  */
 export async function sweepStorageAddresses({
   dryRun = false,
+  addressOverrides,
+  onUnresolvedAddress,
 }: AddressSweepOptions = {}): Promise<AddressSweepReport> {
-  const index = await readAddressIndex();
+  const recorded = await readAddressIndex();
+  const index: StoredAddressIndex =
+    addressOverrides && addressOverrides.size > 0
+      ? {
+          byAddress: new Map([...recorded.byAddress, ...addressOverrides]),
+          byKey: recorded.byKey,
+        }
+      : recorded;
   const fileIds = new Set<string>();
   const tallies = new Map<AddressSweepField, FieldTally>(
     ADDRESS_SWEEP_FIELDS.map((field) => [
@@ -216,9 +247,6 @@ export async function sweepStorageAddresses({
       { rows: 0, rewritten: 0, unresolved: 0 },
     ]),
   );
-
-  const tallyOf = (field: AddressSweepField): FieldTally =>
-    tallies.get(field)!;
 
   const pageVersions = await readReadableVersions(
     await db.pageRoot.findMany({
@@ -233,11 +261,13 @@ export async function sweepStorageAddresses({
   );
 
   await sweepField({
+    field: "PageVersion.puckData",
     rows: pageVersions,
     index,
-    tally: tallyOf("PageVersion.puckData"),
+    tallies,
     fileIds,
     dryRun,
+    onUnresolvedAddress,
     valueOf: (row) => row.puckData,
     rewrite: rewriteAddressesInValue,
     write: (row, puckData) =>
@@ -260,11 +290,13 @@ export async function sweepStorageAddresses({
   );
 
   await sweepField({
+    field: "SiteRegionVersion.puckData",
     rows: regionVersions,
     index,
-    tally: tallyOf("SiteRegionVersion.puckData"),
+    tallies,
     fileIds,
     dryRun,
+    onUnresolvedAddress,
     valueOf: (row) => row.puckData,
     rewrite: rewriteAddressesInValue,
     write: (row, puckData) =>
@@ -287,11 +319,13 @@ export async function sweepStorageAddresses({
   );
 
   await sweepField({
+    field: "PostVersion.tiptapBodyData",
     rows: postVersions,
     index,
-    tally: tallyOf("PostVersion.tiptapBodyData"),
+    tallies,
     fileIds,
     dryRun,
+    onUnresolvedAddress,
     valueOf: (row) => row.tiptapBodyData,
     rewrite: rewriteAddressesInValue,
     write: (row, tiptapBodyData) =>
@@ -316,11 +350,13 @@ export async function sweepStorageAddresses({
   );
 
   await sweepField({
+    field: "ProductVersion.tiptapDescription",
     rows: productVersions,
     index,
-    tally: tallyOf("ProductVersion.tiptapDescription"),
+    tallies,
     fileIds,
     dryRun,
+    onUnresolvedAddress,
     valueOf: (row) => row.tiptapDescription,
     rewrite: rewriteAddressesInValue,
     write: (row, tiptapDescription) =>
@@ -339,11 +375,13 @@ export async function sweepStorageAddresses({
   });
 
   await sweepField({
+    field: "AdItem.imageUrl",
     rows: adItems,
     index,
-    tally: tallyOf("AdItem.imageUrl"),
+    tallies,
     fileIds,
     dryRun,
+    onUnresolvedAddress,
     valueOf: (row) => row.imageUrl,
     rewrite: rewriteAddressesInString,
     write: (row, value) =>
@@ -359,11 +397,13 @@ export async function sweepStorageAddresses({
   });
 
   await sweepField({
+    field: "Settings.logoUrl",
     rows: settingsRows,
     index,
-    tally: tallyOf("Settings.logoUrl"),
+    tallies,
     fileIds,
     dryRun,
+    onUnresolvedAddress,
     valueOf: (row) => row.logoUrl,
     rewrite: rewriteAddressesInString,
     write: (row, value) =>
@@ -379,11 +419,13 @@ export async function sweepStorageAddresses({
   });
 
   await sweepField({
+    field: "FormSubmission.data",
     rows: submissions,
     index,
-    tally: tallyOf("FormSubmission.data"),
+    tallies,
     fileIds,
     dryRun,
+    onUnresolvedAddress,
     valueOf: (row) => row.data,
     rewrite: rewriteAddressesInValue,
     write: (row, data) =>
@@ -399,11 +441,13 @@ export async function sweepStorageAddresses({
   });
 
   await sweepField({
+    field: "User.image",
     rows: users,
     index,
-    tally: tallyOf("User.image"),
+    tallies,
     fileIds,
     dryRun,
+    onUnresolvedAddress,
     valueOf: (row) => row.image,
     rewrite: rewriteAddressesInString,
     write: (row, value) =>
@@ -414,11 +458,13 @@ export async function sweepStorageAddresses({
   });
 
   await sweepField({
+    field: "User.imageUrl",
     rows: users,
     index,
-    tally: tallyOf("User.imageUrl"),
+    tallies,
     fileIds,
     dryRun,
+    onUnresolvedAddress,
     valueOf: (row) => row.imageUrl,
     rewrite: rewriteAddressesInString,
     write: (row, value) =>
@@ -436,11 +482,13 @@ export async function sweepStorageAddresses({
   >`SELECT "id", "url" FROM "EmailAttachment" ORDER BY "id" ASC`;
 
   await sweepField({
+    field: "EmailAttachment.url",
     rows: legacyAttachments,
     index,
-    tally: tallyOf("EmailAttachment.url"),
+    tallies,
     fileIds,
     dryRun,
+    onUnresolvedAddress,
     valueOf: (row) => row.url,
     rewrite: rewriteAddressesInString,
     write: (row, value) =>
@@ -449,7 +497,7 @@ export async function sweepStorageAddresses({
 
   const fields = ADDRESS_SWEEP_FIELDS.map((field) => ({
     field,
-    ...tallyOf(field),
+    ...tallies.get(field)!,
   }));
 
   const rows = fields.reduce((total, entry) => total + entry.rows, 0);

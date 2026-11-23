@@ -1,6 +1,7 @@
 import {
   LEGACY_ASSET_PREFIX,
   MEDIA_PATH_PREFIX,
+  UPLOADTHING_APP_PATH,
   UPLOADTHING_FILE_ORIGIN,
   UPLOADTHING_FILE_PATH,
 } from "./image-ladder.mjs";
@@ -97,12 +98,18 @@ export function storageKeyFromMediaUrl(src: string): string | null {
     return safeDecode(url.pathname.slice(LEGACY_ASSET_PREFIX.length));
   }
 
-  if (
-    absolute &&
-    isUploadThingUrl(url) &&
-    url.pathname.startsWith(UPLOADTHING_FILE_PATH)
-  ) {
-    return safeDecode(url.pathname.slice(UPLOADTHING_FILE_PATH.length));
+  if (absolute && isUploadThingUrl(url)) {
+    if (url.pathname.startsWith(UPLOADTHING_FILE_PATH)) {
+      return safeDecode(url.pathname.slice(UPLOADTHING_FILE_PATH.length));
+    }
+
+    // The older `/a/<appId>/<fileKey>` shape names the same file key.
+    if (url.pathname.startsWith(UPLOADTHING_APP_PATH)) {
+      const segments = url.pathname.split("/");
+      const key = segments[3];
+
+      if (segments.length === 4 && key) return safeDecode(key);
+    }
   }
 
   return null;

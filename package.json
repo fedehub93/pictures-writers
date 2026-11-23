@@ -36,6 +36,8 @@
     "media:purge": "tsx --conditions=react-server scripts/purge-media.ts",
     "media:sweep-addresses": "tsx --conditions=react-server scripts/sweep-media-addresses.ts",
     "media:sweep-addresses:dry-run": "tsx --conditions=react-server scripts/sweep-media-addresses.ts --dry-run",
+    "media:relink-content": "tsx --conditions=react-server scripts/relink-media-content.ts",
+    "media:relink-content:dry-run": "tsx --conditions=react-server scripts/relink-media-content.ts --dry-run",
     "site-regions:migrate-puck-data": "tsx --conditions=react-server scripts/migrate-site-region-puck-data.ts",
     "site-regions:migrate-puck-data:dry-run": "tsx --conditions=react-server scripts/migrate-site-region-puck-data.ts --dry-run",
     "puck:migrate-size-spacing": "tsx --conditions=react-server scripts/migrate-puck-size-spacing.ts",

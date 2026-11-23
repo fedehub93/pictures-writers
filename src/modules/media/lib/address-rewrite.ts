@@ -61,6 +61,12 @@ export interface AddressRewriteResult {
   unresolved: number;
   /** Stored files a rewritten address points at, duplicates included. */
   fileIds: string[];
+  /**
+   * The addresses behind `unresolved`, in the order they were met. A caller
+   * that intends to give them a target (the relink) needs the strings, not only
+   * the count; the sweep report never carries them.
+   */
+  unresolvedAddresses: string[];
 }
 
 /**
@@ -268,6 +274,7 @@ export function rewriteAddressesInString(
   let rewritten = 0;
   let unresolved = 0;
   const fileIds: string[] = [];
+  const unresolvedAddresses: string[] = [];
 
   const value = source.replace(addressPattern(), (match) => {
     const { candidate, tail } = splitTrailingPunctuation(match);
@@ -277,6 +284,7 @@ export function rewriteAddressesInString(
     const target = resolveTarget(candidate, index);
     if (!target) {
       unresolved += 1;
+      unresolvedAddresses.push(candidate);
       return match;
     }
 
@@ -289,7 +297,7 @@ export function rewriteAddressesInString(
     return `${target.address}${tail}`;
   });
 
-  return { value, rewritten, unresolved, fileIds };
+  return { value, rewritten, unresolved, fileIds, unresolvedAddresses };
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -314,6 +322,7 @@ export function rewriteAddressesInValue(
     let rewritten = 0;
     let unresolved = 0;
     const fileIds: string[] = [];
+    const unresolvedAddresses: string[] = [];
     let changed = false;
 
     const next = value.map((item) => {
@@ -321,17 +330,25 @@ export function rewriteAddressesInValue(
       rewritten += result.rewritten;
       unresolved += result.unresolved;
       fileIds.push(...result.fileIds);
+      unresolvedAddresses.push(...result.unresolvedAddresses);
       if (result.rewritten > 0) changed = true;
       return result.value;
     });
 
-    return { value: changed ? next : value, rewritten, unresolved, fileIds };
+    return {
+      value: changed ? next : value,
+      rewritten,
+      unresolved,
+      fileIds,
+      unresolvedAddresses,
+    };
   }
 
   if (isPlainObject(value)) {
     let rewritten = 0;
     let unresolved = 0;
     const fileIds: string[] = [];
+    const unresolvedAddresses: string[] = [];
     let changed = false;
 
     const next: Record<string, unknown> = {};
@@ -340,12 +357,25 @@ export function rewriteAddressesInValue(
       rewritten += result.rewritten;
       unresolved += result.unresolved;
       fileIds.push(...result.fileIds);
+      unresolvedAddresses.push(...result.unresolvedAddresses);
       if (result.rewritten > 0) changed = true;
       next[key] = result.value;
     }
 
-    return { value: changed ? next : value, rewritten, unresolved, fileIds };
+    return {
+      value: changed ? next : value,
+      rewritten,
+      unresolved,
+      fileIds,
+      unresolvedAddresses,
+    };
   }
 
-  return { value, rewritten: 0, unresolved: 0, fileIds: [] };
+  return {
+    value,
+    rewritten: 0,
+    unresolved: 0,
+    fileIds: [],
+    unresolvedAddresses: [],
+  };
 }

@@ -73,6 +73,14 @@ describe("storageKeyFromMediaUrl", () => {
     ).toBe("uploadthing-key");
   });
 
+  it("extracts the key from the older /a/<appId>/<fileKey> shape", () => {
+    expect(
+      storageKeyFromMediaUrl(
+        "https://utfs.io/a/ghhc7ejbae/uploadthing-key",
+      ),
+    ).toBe("uploadthing-key");
+  });
+
   it("returns null for unrelated URLs", () => {
     expect(storageKeyFromMediaUrl("https://example.com/cover.jpg")).toBeNull();
   });

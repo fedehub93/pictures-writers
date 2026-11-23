@@ -134,6 +134,8 @@ arrived is gone.
 | Rendition manifest and the `?mt=` token | `src/modules/media/lib/manifest.ts` |
 | Read-only library audit | `src/modules/media/server/media-audit.ts`, `scripts/audit-media.ts` |
 | Address sweep for legacy provider URLs | `src/modules/media/server/address-sweep.ts`, `scripts/sweep-media-addresses.ts` |
+| Relink of content objects to the Media that owns their bytes | `src/modules/media/server/relink-content.ts`, `scripts/relink-media-content.ts` |
+| Perceptual (difference) hash for a re-encoded copy | `src/modules/media/server/perceptual-hash.ts` |
 | Re-home preflight arithmetic | `src/modules/media/lib/rehome.ts` |
 | Re-home job, preflight and journal | `src/modules/media/server/rehome.ts`, `scripts/rehome-media.ts` |
 | Move progress, stop and supersede state | `src/modules/media/server/rehome-runner.ts` |
@@ -170,7 +172,9 @@ the server never parses a storage key out of it.
 
 Legacy keys are flat (`<provider-key>` or `<mediaId>/<revision>/<file>`) and are never renamed.
 The record's driver says where the bytes are; a pre-seam record names `uploadthing` and carries
-the absolute address the row still serves.
+the absolute address the row still serves. The provider addresses the same file key as `/f/<key>`
+or, on its older host, `/a/<appId>/<fileKey>`; `storageKeyFromMediaUrl` reads both, because content
+copied before the rename still carries the second shape.
 
 ## A rendition has no row
 
@@ -265,6 +269,48 @@ orders the sweep before the re-home.
 The report names each field with the rows, addresses and unresolved counts; it never prints a key,
 an address or a provider host. An address no Stored file owns is left exactly as it was, and the
 command exits `1` so the next storage step can be gated on it.
+
+## Relink
+
+The sweep can only rewrite an address some Stored file owns. An Installation whose content names
+provider objects that no record knows — images copied into an article before the seam, an ad item
+or a submission upload the backfill never saw — leaves those addresses unresolved by definition.
+`npm run media:relink-content` closes that residue by matching the object, not by trusting the
+string: it collects every address the sweep cannot resolve (with the field and count it appeared
+in), fetches each object from the address content names — falling back to the same provider key on
+the current provider host the library records, because a retired host may answer only there — and
+compares its sha256 with the checksum every Media's record carries.
+
+- **One owner:** the content address becomes that Media's canonical address. No Media, no Stored
+  file and no byte is written; the run only rewrites content.
+- **Several owners** — six checksums are shared inside the current library: the visible Media wins
+  over an archived one, then the oldest `createdAt`, then the lowest id. The address is counted as
+  ambiguous in the report, in total and in each field it appears in, so an operator can see the
+  choice was not unique.
+- **No owner:** the object is compared perceptually with every image the library holds before it is
+  adopted. The hash is a 9x8 difference hash and the match threshold is six of sixty-four bits, so
+  a re-encoded copy of a picture is relinked instead of duplicated. A genuinely new object becomes
+  a Media and a Stored file recording the provider key as the storage key and the address that
+  answered as the remote location — the pre-seam shape — and still moves no byte; the re-home
+  copies those bytes later through the recorded driver. Two addresses that name the same new object, by
+  identical bytes or by a re-encoded copy, add one Media, not two.
+- **Unreachable:** an object the provider no longer serves is reported by field and count, left
+  exactly as it was, and fails the command.
+
+The run ends with an ordinary address sweep carrying its decisions as extra address targets, so
+the sweep's own contract still holds: only live content is read, the run is idempotent, and
+`--dry-run` (or `MEDIA_RELINK_DRY_RUN=1`) fetches, hashes, compares and reports the plan without
+writing a row, a file or an address. The report gives each group by field and count, plus the
+sweep's rewritten and residual totals; it never carries an address, a key or a provider host. The
+expected end state is `unresolved: 0` from `npm run media:sweep-addresses:dry-run`, with no Media
+added for an object the library already held.
+
+The relink leans on `StoredFile.checksum` describing the **source** bytes, not the normalised copy
+the record's size and object describe (the defect ticket 17 repairs). That is why it must run
+**before** the checksum repair: on the production library the content objects are exactly those
+sources, so their bytes hash to the recorded checksum. After the repair a future relink would have
+to compare against a normalised copy instead; this is a one-off command whose contract is written
+here rather than a permanent invariant.
 
 ## Re-home
 

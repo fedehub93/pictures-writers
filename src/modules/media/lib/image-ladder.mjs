@@ -61,6 +61,12 @@ export const UPLOADTHING_FILE_ORIGIN = "https://ghhc7ejbae.ufs.sh";
 
 export const UPLOADTHING_FILE_PATH = "/f/";
 
+/**
+ * UploadThing's older address shape: `/a/<appId>/<fileKey>`. The current shape
+ * is `/f/<fileKey>`; both name the same object by its provider file key.
+ */
+export const UPLOADTHING_APP_PATH = "/a/";
+
 export const LEGACY_ASSET_PREFIX = "/assets/";
 
 export const MEDIA_PATH_PREFIX = "/media";
