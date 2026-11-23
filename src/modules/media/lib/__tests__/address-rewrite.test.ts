@@ -117,6 +117,56 @@ describe("rewriteAddressesInString", () => {
     expect(result.unresolved).toBe(1);
   });
 
+  it("rewrites the address each rendition was written with", () => {
+    const renditionProviderUrl = providerUrl("opaque-provider-id");
+    const renditionIndex = buildStoredAddressIndex([
+      {
+        fileId: "file-1",
+        key: "default/media-1/1/original",
+        role: "MEDIA",
+        remoteUrl: providerUrl("default/media-1/1/original"),
+        media: {
+          revision: 1,
+          archived: false,
+          renditions: [
+            {
+              key: "default/media-1/1/720.webp",
+              width: 720,
+              height: 480,
+              bytes: 400,
+              format: "webp",
+              url: renditionProviderUrl,
+            },
+          ],
+        },
+      },
+    ]);
+
+    const result = rewriteAddressesInString(
+      `<img src="${providerUrl("default/media-1/1/original")}" srcset="${renditionProviderUrl} 720w">`,
+      renditionIndex,
+    );
+
+    // The rendition keeps its own address: content asked for that width and
+    // format, and the Media's address would answer with neither.
+    expect(result.value).toContain('src="/media/default/media-1/1/original?mt=');
+    expect(result.value).toContain(
+      'srcset="/media/default/media-1/1/720.webp 720w"',
+    );
+    expect(result.value).not.toContain("fake-app.ufs.sh");
+    expect(result.rewritten).toBe(2);
+    expect(result.unresolved).toBe(0);
+    expect(result.fileIds).toEqual(["file-1", "file-1"]);
+
+    const second = rewriteAddressesInString(
+      result.value as string,
+      renditionIndex,
+    );
+
+    expect(second).toMatchObject({ rewritten: 0, unresolved: 0 });
+    expect(second.value).toBe(result.value);
+  });
+
   it("rewrites the legacy /assets/ shape and a flat key", () => {
     const legacyIndex = buildStoredAddressIndex([
       {

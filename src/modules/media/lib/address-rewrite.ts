@@ -28,8 +28,9 @@ export interface StoredAddressTarget {
 
 /**
  * The two lookups a rewrite needs: every old address the library already
- * knew (a provider address, the Media's own delivery URL) and every storage
- * key that resolves, renditions included.
+ * knew (a Media's provider address, the provider address each rendition was
+ * written with, the Media's own delivery URL) and every storage key that
+ * resolves, renditions included.
  */
 export interface StoredAddressIndex {
   byAddress: ReadonlyMap<string, StoredAddressTarget>;
@@ -101,7 +102,10 @@ export function canonicalMediaAddress(
 /**
  * Builds the answer to "what is the canonical address of this file" for every
  * file the Installation records. A rendition has no record of its own, so its
- * key is added beside its Media's original.
+ * key is added beside its Media's original, and the address its manifest
+ * recorded resolves to that same path: content that names a rendition — a
+ * copied srcset, the provider address of a generated file — names a file the
+ * library knows.
  */
 export function buildStoredAddressIndex(
   entries: readonly StoredAddressIndexEntry[],
@@ -127,12 +131,19 @@ export function buildStoredAddressIndex(
     if (!entry.media) continue;
 
     for (const rendition of mediaRenditionLocations(entry.media.renditions)) {
-      if (byKey.has(rendition.key)) continue;
-
-      byKey.set(rendition.key, {
+      const target: StoredAddressTarget = {
         fileId: entry.fileId,
         address: storedFilePath("MEDIA", rendition.key),
-      });
+      };
+
+      if (!byKey.has(rendition.key)) byKey.set(rendition.key, target);
+
+      // The address a rendition was written with belongs to that rendition,
+      // never to the original: resolving it to the Media's address would lose
+      // the width and the format the content asked for.
+      if (rendition.url && !byAddress.has(rendition.url)) {
+        byAddress.set(rendition.url, target);
+      }
     }
   }
 

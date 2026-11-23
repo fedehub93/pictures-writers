@@ -168,7 +168,10 @@ describe("sweepStorageAddresses", () => {
     const key = `default/${id}/1/original`;
     const renditionKey = `default/${id}/1/720.webp`;
     const providerOriginal = providerUrl(key);
-    const providerRendition = providerUrl(renditionKey);
+    // The provider names a generated file with its own opaque id, never with
+    // the Installation's key, so the manifest entry is the only place that
+    // address is recorded.
+    const providerRendition = providerUrl(`provider-${randomUUID()}`);
 
     const oldUrl = buildMediaDeliveryUrl(providerOriginal, {
       revision: 1,
@@ -918,6 +921,58 @@ describe("sweepStorageAddresses", () => {
         orderBy: { id: "asc" },
       }),
     ).toEqual(before.pages);
+  });
+
+  it("resolves the address a rendition was written with", async () => {
+    const media = await createRemoteMedia();
+    const renditionPath = storedFilePath("MEDIA", media.renditionKey);
+
+    const postRootId = await createPost(
+      { html: `<img srcset="${media.providerRendition} 720w">` },
+      {
+        type: "doc",
+        content: [
+          {
+            type: "image",
+            attrs: {
+              src: media.providerOriginal,
+              srcset: `${media.providerRendition} 720w`,
+            },
+          },
+        ],
+      },
+    );
+
+    const report = await sweepStorageAddresses();
+
+    expect(report).toMatchObject({
+      files: 1,
+      rows: 2,
+      rewritten: 3,
+      unresolved: 0,
+    });
+    expect(addressSweepExitCode(report)).toBe(0);
+
+    const post = await db.postVersion.findFirstOrThrow({
+      where: { rootId: postRootId },
+      select: { bodyData: true, tiptapBodyData: true },
+    });
+
+    expect(post.bodyData).toEqual({
+      html: `<img srcset="${renditionPath} 720w">`,
+    });
+    expect(post.tiptapBodyData).toEqual({
+      type: "doc",
+      content: [
+        {
+          type: "image",
+          attrs: {
+            src: media.canonicalUrl,
+            srcset: `${renditionPath} 720w`,
+          },
+        },
+      ],
+    });
   });
 
   it("reports an address it cannot resolve by field and count", async () => {
