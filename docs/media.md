@@ -227,7 +227,9 @@ A library that predates the seam stored the provider's absolute URL in `Media.ur
 content that copied it: Puck documents, TipTap bodies, product descriptions, ad images, the logo
 setting, form submission data, user images and the legacy attachment rows. Those strings are the
 only thing tying the Installation to the provider's host. `npm run media:sweep-addresses` rewrites
-each one into the canonical address of the Stored file it names. The one-time location backfill
+each one into the canonical address of the Stored file it names. `PostVersion.bodyData` is the
+exception: the renderer never reads it, a save only carries it forward, and the column is slated
+for removal, so an address inside it is not a dependency and the sweep leaves it alone. The one-time location backfill
 ran before it; a Media with no Stored file has no canonical address to write, so the sweep reports
 its address and leaves it.
 

@@ -83,6 +83,12 @@ addresses that name an object no Stored file owns remain).
 
 Landed in `72eed7b9` (`fix(media): resolve a rendition's recorded address in the sweep`).
 
+`PostVersion.bodyData` left the field list the same day: the renderer never reads it, a save only
+carries it forward, and the column is slated for removal, so a provider address inside it is not
+a dependency of the product. On the dump of 2026-11-23 the dry run then reports `rows: 44`,
+`addresses rewritten: 44`, `unresolved: 1500` instead of `90 / 4044` — the residual is now only
+the content a visitor can reach, plus the historical post versions.
+
 Executed on the production dump of 2026-11-23 09:39 UTC (725 Media, 726 Stored files, 11,296
 recorded rendition addresses, 99 migrations): the report is unchanged — `rewritten: 90`,
 `unresolved: 4044`. The fix resolves nothing on that data, because no address in content equals

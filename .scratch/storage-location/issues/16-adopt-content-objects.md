@@ -15,6 +15,19 @@
 
 ## Comments
 
+**2026-11-23 — scope refined**
+
+`PostVersion.bodyData` is out of every scope: it is not rendered, `save-post` only carries it
+forward, and the column is slated for removal, so objects named only by it are not adopted.
+
+Every unreachable reference found so far sits in a superseded post version; the live versions
+hold 462 distinct provider addresses and none is unreachable. The adoption run therefore targets
+the live objects (≈439, ≈69 MB), and the dead references are either removed from the historical
+versions by a reported one-off or accepted — a decision for the owner, not a blocker for the
+re-home (only for the purge).
+
+## Comments
+
 **2026-11-23 — measured scope, on the dump of 2026-11-23 09:39 UTC**
 
 The sweep's `unresolved: 4044` are **507 distinct addresses**: 505 provider objects and 2

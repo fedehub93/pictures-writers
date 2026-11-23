@@ -63,3 +63,20 @@ images are already broken today. The live ones are ≈439 objects, ≈69 MB. Onl
 size equal to a library original or a recorded rendition, so they are new Media, not duplicates
 of the library. Ticket 16 owns the run; the unreachable references need a content decision of
 their own.
+
+**Later the same day — the legacy body is out of scope, and nothing live is broken**
+
+`PostVersion.bodyData` left the sweep's field list (the renderer never reads it and the column is
+slated for removal), so the dry run now reports `rows: 44`, `addresses rewritten: 44`,
+`unresolved: 1500`.
+
+Split by what a visitor can see: the versions the roots mark as live (`PostRoot.liveVersionId`)
+hold 462 distinct provider addresses and **none of them is unreachable**; the current heads hold
+none either. Every unreachable reference sits in a superseded version. The one inspected by hand
+is `concorso-tre-colori-2027`, version 4, status `CHANGED`, an `image` node with alt "Concorso
+Tre Colori 2027: Iscriviti": 404 at its `utfs.io` address and 404 on the current host with the
+same id, and absent from the published page.
+
+So the site has no broken picture today. The repair is either to remove those nodes from the
+historical versions (a reported one-off, dry run first) or to accept them; neither blocks the
+re-home, only the purge.
