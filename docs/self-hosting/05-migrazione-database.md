@@ -416,7 +416,7 @@ Su un DB piccolo è veloce. Se il DB è grande, eseguilo fuori dalla finestra.
 - **Réplica di lettura**: non necessaria per un singolo sito.
 - **Connessione pooler**: l'app usa `pg` con pool per processo; con una sola istanza va bene.
 - **`pg_stat_statements`**: utile per individuare query lente dopo qualche settimana.
-- **Storage dei file**: i Media esistenti possono restare su UploadThing, oppure i nuovi upload possono usare il volume locale. Spostare i file già esistenti su disco (copia dei byte e riscrittura degli URL nel DB) resta un progetto separato.
+- **Storage dei file**: i Media esistenti possono restare su UploadThing oppure essere spostati sul volume locale con il percorso documentato (backfill della posizione, sweep degli indirizzi, re-home, purge in `08-operations-runbook.md` §4bis). La scelta del driver vale per i nuovi upload ed è reversibile in entrambe le direzioni.
 
 ---
 

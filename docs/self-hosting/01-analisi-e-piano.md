@@ -2,7 +2,7 @@
 
 > **Storico:** questo è lo snapshot pre-migrazione (Vercel + Neon). La produzione attuale è su Hetzner + Coolify con PostgreSQL locale. Tieni questo file solo per capire il contesto della migrazione.
 >
-> **Aggiornamento (novembre 2026):** lo storage dei media non è più solo UploadThing. Il driver `local` è selezionabile e i nuovi upload possono stare su un volume della VPS; i Media esistenti restano sul provider senza migrazione. Vale per le voci su UploadThing qui sotto; per lo stato attuale vedi `docs/media.md` e `08-operations-runbook.md` §4bis.
+> **Aggiornamento (novembre 2026):** lo storage dei media non è più solo UploadThing. Il driver `local` è selezionabile e i nuovi upload possono stare su un volume della VPS; ogni file registra il driver che lo ha scritto, quindi la libreria mista è una **transizione** e i Media storici si spostano con un percorso documentato (backfill della posizione, sweep degli indirizzi, re-home, purge). Vale per le voci su UploadThing qui sotto; per lo stato attuale vedi `docs/media.md` e `08-operations-runbook.md` §4bis.
 
 Questo documento fotografa **tutto ciò che Pictures Writers usava prima della migrazione** e stabilisce cosa andava migrato, cosa resta esterno e cosa poteva rompersi.
 

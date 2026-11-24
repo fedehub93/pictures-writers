@@ -1049,7 +1049,7 @@ Non aggiungere repliche finché non hai una cache condivisa e una strategia per 
 - S3: R2/B2, pochi centesimi.
 - Dominio: invariato.
 - Stripe/Resend: invariati.
-- UploadThing: il piano del provider dipende dai Media ancora ospitati; il volume locale consuma disco Hetzner. Spostare i Media storici è un progetto separato.
+- UploadThing: il costo del piano dipende dai Media ancora ospitati e scende a zero dopo il purge (`npm run media:purge --driver uploadthing`); il volume locale consuma disco Hetzner.
 - Controlla mensilmente il pannello Hetzner per volumi/snapshot dimenticati.
 - Vercel e Neon sono già stati cancellati: la produzione e il database vivono solo su Hetzner/Coolify.
 
