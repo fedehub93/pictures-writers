@@ -28,8 +28,9 @@ export interface StoredAddressTarget {
 
 /**
  * The two lookups a rewrite needs: every old address the library already
- * knew (a provider address, the Media's own delivery URL) and every storage
- * key that resolves, renditions included.
+ * knew (a Media's provider address, the provider address each rendition was
+ * written with, the Media's own delivery URL) and every storage key that
+ * resolves, renditions included.
  */
 export interface StoredAddressIndex {
   byAddress: ReadonlyMap<string, StoredAddressTarget>;
@@ -60,6 +61,12 @@ export interface AddressRewriteResult {
   unresolved: number;
   /** Stored files a rewritten address points at, duplicates included. */
   fileIds: string[];
+  /**
+   * The addresses behind `unresolved`, in the order they were met. A caller
+   * that intends to give them a target (the relink) needs the strings, not only
+   * the count; the sweep report never carries them.
+   */
+  unresolvedAddresses: string[];
 }
 
 /**
@@ -101,7 +108,10 @@ export function canonicalMediaAddress(
 /**
  * Builds the answer to "what is the canonical address of this file" for every
  * file the Installation records. A rendition has no record of its own, so its
- * key is added beside its Media's original.
+ * key is added beside its Media's original, and the address its manifest
+ * recorded resolves to that same path: content that names a rendition — a
+ * copied srcset, the provider address of a generated file — names a file the
+ * library knows.
  */
 export function buildStoredAddressIndex(
   entries: readonly StoredAddressIndexEntry[],
@@ -127,12 +137,19 @@ export function buildStoredAddressIndex(
     if (!entry.media) continue;
 
     for (const rendition of mediaRenditionLocations(entry.media.renditions)) {
-      if (byKey.has(rendition.key)) continue;
-
-      byKey.set(rendition.key, {
+      const target: StoredAddressTarget = {
         fileId: entry.fileId,
         address: storedFilePath("MEDIA", rendition.key),
-      });
+      };
+
+      if (!byKey.has(rendition.key)) byKey.set(rendition.key, target);
+
+      // The address a rendition was written with belongs to that rendition,
+      // never to the original: resolving it to the Media's address would lose
+      // the width and the format the content asked for.
+      if (rendition.url && !byAddress.has(rendition.url)) {
+        byAddress.set(rendition.url, target);
+      }
     }
   }
 
@@ -257,6 +274,7 @@ export function rewriteAddressesInString(
   let rewritten = 0;
   let unresolved = 0;
   const fileIds: string[] = [];
+  const unresolvedAddresses: string[] = [];
 
   const value = source.replace(addressPattern(), (match) => {
     const { candidate, tail } = splitTrailingPunctuation(match);
@@ -266,6 +284,7 @@ export function rewriteAddressesInString(
     const target = resolveTarget(candidate, index);
     if (!target) {
       unresolved += 1;
+      unresolvedAddresses.push(candidate);
       return match;
     }
 
@@ -278,7 +297,7 @@ export function rewriteAddressesInString(
     return `${target.address}${tail}`;
   });
 
-  return { value, rewritten, unresolved, fileIds };
+  return { value, rewritten, unresolved, fileIds, unresolvedAddresses };
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -303,6 +322,7 @@ export function rewriteAddressesInValue(
     let rewritten = 0;
     let unresolved = 0;
     const fileIds: string[] = [];
+    const unresolvedAddresses: string[] = [];
     let changed = false;
 
     const next = value.map((item) => {
@@ -310,17 +330,25 @@ export function rewriteAddressesInValue(
       rewritten += result.rewritten;
       unresolved += result.unresolved;
       fileIds.push(...result.fileIds);
+      unresolvedAddresses.push(...result.unresolvedAddresses);
       if (result.rewritten > 0) changed = true;
       return result.value;
     });
 
-    return { value: changed ? next : value, rewritten, unresolved, fileIds };
+    return {
+      value: changed ? next : value,
+      rewritten,
+      unresolved,
+      fileIds,
+      unresolvedAddresses,
+    };
   }
 
   if (isPlainObject(value)) {
     let rewritten = 0;
     let unresolved = 0;
     const fileIds: string[] = [];
+    const unresolvedAddresses: string[] = [];
     let changed = false;
 
     const next: Record<string, unknown> = {};
@@ -329,12 +357,25 @@ export function rewriteAddressesInValue(
       rewritten += result.rewritten;
       unresolved += result.unresolved;
       fileIds.push(...result.fileIds);
+      unresolvedAddresses.push(...result.unresolvedAddresses);
       if (result.rewritten > 0) changed = true;
       next[key] = result.value;
     }
 
-    return { value: changed ? next : value, rewritten, unresolved, fileIds };
+    return {
+      value: changed ? next : value,
+      rewritten,
+      unresolved,
+      fileIds,
+      unresolvedAddresses,
+    };
   }
 
-  return { value, rewritten: 0, unresolved: 0, fileIds: [] };
+  return {
+    value,
+    rewritten: 0,
+    unresolved: 0,
+    fileIds: [],
+    unresolvedAddresses: [],
+  };
 }

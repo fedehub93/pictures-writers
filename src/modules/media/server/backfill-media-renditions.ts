@@ -12,7 +12,6 @@ import {
 
 import { describeBackfillFailure } from "./backfill-failure";
 import { forEachWithConcurrency } from "./bounded-concurrency";
-import { checksumOf } from "./image-bytes";
 import { isMediaRevisionKey, mediaRevisionPrefix } from "./media-key";
 import { storedImageFields, writeImageRevision } from "./media-service";
 import {
@@ -231,7 +230,6 @@ export async function backfillMediaRenditions({
           bytes,
           cleanupOnFailure: !sourceIsPartOfRevision,
         });
-        const checksum = checksumOf(bytes);
 
         try {
           // Resolving the provider address can fail if the object is not yet
@@ -256,7 +254,7 @@ export async function backfillMediaRenditions({
               remoteUrl,
               contentType: stored.mimeType,
               size: stored.size,
-              checksum,
+              checksum: stored.checksum,
             });
           });
         } catch (error) {

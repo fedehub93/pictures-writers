@@ -37,7 +37,7 @@ import {
   withMediaQuotaAdmission,
 } from "./media-quota";
 import { countMediaReferencesFor } from "./media-usage";
-import { generateRenditions, normaliseImage } from "./process-image";
+import { generateRenditions, normaliseImage, type NormalisedImage } from "./process-image";
 import {
   getInstallationSlug,
   resolveActiveStorageDriver,
@@ -184,14 +184,19 @@ async function findDuplicate(
 /**
  * Errors whose meaning must survive the catch that cleans up after a failed
  * write. Wrapping the quota refusal would turn "delete some media" into a
- * generic processing failure.
+ * generic processing failure, and wrapping a duplicate would lose the Media it
+ * points at.
  */
 function isRethrowableMediaError(
   error: unknown,
-): error is MediaProcessingError | MediaQuotaExceededError {
+): error is
+  | MediaProcessingError
+  | MediaQuotaExceededError
+  | DuplicateMediaError {
   return (
     error instanceof MediaProcessingError ||
-    error instanceof MediaQuotaExceededError
+    error instanceof MediaQuotaExceededError ||
+    error instanceof DuplicateMediaError
   );
 }
 
@@ -210,6 +215,8 @@ interface StoredImageRevision {
   key: string;
   size: number;
   mimeType: string;
+  /** The sha256 of the original this revision wrote, not of the bytes read. */
+  checksum: string;
   metadata: PrismaJson.MediaMetadata;
   renditions: MediaRendition[];
 }
@@ -232,6 +239,13 @@ export interface WriteImageRevisionOptions {
    * remove the object the Media is currently delivered from.
    */
   cleanupOnFailure?: boolean;
+  /**
+   * Called once the normalised original and its checksum exist, before any
+   * object is written or any rendition is generated. The upload path uses it to
+   * refuse a duplicate against the bytes the library would actually hold,
+   * rather than against the encoding the browser happened to send.
+   */
+  beforeWrite?: (checksum: string) => Promise<void>;
 }
 
 export async function writeImageRevision({
@@ -241,11 +255,29 @@ export async function writeImageRevision({
   installationSlug = getInstallationSlug(),
   bytes,
   cleanupOnFailure = true,
+  beforeWrite,
 }: WriteImageRevisionOptions): Promise<StoredImageRevision> {
   const prefix = mediaRevisionPrefix(id, revision, installationSlug);
 
+  let image: NormalisedImage;
   try {
-    const image = await normaliseImage(bytes);
+    image = await normaliseImage(bytes);
+  } catch (error) {
+    if (cleanupOnFailure) {
+      await driver.deletePrefix(prefix).catch(() => undefined);
+    }
+    throw error;
+  }
+
+  // The record describes the object this revision writes, so the checksum is
+  // taken from the normalised original: a caller that hashes the bytes it read
+  // would leave the record naming bytes the library does not own.
+  const checksum = checksumOf(image.bytes);
+
+  // No object exists yet, so a refusal here needs no cleanup.
+  await beforeWrite?.(checksum);
+
+  try {
     const generated = await generateRenditions(image);
     const originalKey = `${prefix}original`;
 
@@ -281,6 +313,7 @@ export async function writeImageRevision({
       key: originalKey,
       size: image.bytes.byteLength,
       mimeType: image.mimeType,
+      checksum,
       metadata: image.metadata as PrismaJson.MediaMetadata,
       renditions,
     };
@@ -493,17 +526,11 @@ export async function createMediaFromUpload({
     );
   }
 
-  const checksum = checksumOf(originalBytes);
-
-  if (!override) {
-    const existing = await findDuplicate(checksum);
-    if (existing) throw new DuplicateMediaError(existing);
-  }
-
   const id = randomUUID();
   const revision = 1;
   const installationSlug = getInstallationSlug();
   const prefix = mediaStoragePrefix(id, installationSlug);
+  const sourceChecksum = checksumOf(originalBytes);
 
   try {
     const stored = await writeImageRevision({
@@ -512,6 +539,23 @@ export async function createMediaFromUpload({
       revision,
       installationSlug,
       bytes: originalBytes,
+      beforeWrite: async (checksum) => {
+        if (override) return;
+
+        // The comparison uses the normalised bytes the library would hold, so a
+        // re-upload of a picture it already owns matches even when the source
+        // was encoded differently: the record's checksum describes the stored
+        // original, and normalisation is deterministic. The source checksum is
+        // the fallback for an adopted Media, whose original is the provider
+        // object as it arrived and was never normalised.
+        const existing =
+          (await findDuplicate(checksum)) ??
+          (sourceChecksum === checksum
+            ? null
+            : await findDuplicate(sourceChecksum));
+
+        if (existing) throw new DuplicateMediaError(existing);
+      },
     });
 
     const remoteUrl = await remoteUrlForUpload(
@@ -543,7 +587,7 @@ export async function createMediaFromUpload({
           remoteUrl,
           contentType: stored.mimeType,
           size: stored.size,
-          checksum,
+          checksum: stored.checksum,
         });
 
         return readLibraryItem(tx, created.id);
@@ -772,7 +816,6 @@ export async function replaceMediaFile({
 
     const revision = existing.revision + 1;
     const newPrefix = mediaRevisionPrefix(mediaId, revision, installationSlug);
-    const checksum = checksumOf(bytes);
 
     let media: MediaLibraryItem;
 
@@ -792,7 +835,7 @@ export async function replaceMediaFile({
           remoteUrl: await remoteUrlForUpload(driver, storageDriver, stored.key),
           contentType: stored.mimeType,
           size: stored.size,
-          checksum,
+          checksum: stored.checksum,
         };
 
         media = await withMediaQuotaAdmission(
@@ -838,7 +881,7 @@ export async function replaceMediaFile({
           remoteUrl: await remoteUrlForUpload(driver, storageDriver, stored.key),
           contentType: stored.mimeType,
           size: stored.size,
-          checksum,
+          checksum: checksumOf(bytes),
         };
 
         media = await withMediaQuotaAdmission(

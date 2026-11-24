@@ -298,6 +298,7 @@ describe("rehomeStoredFiles", () => {
       fileIds,
       availableDiskBytes: null,
       drivers: { uploadthing: provider },
+      fetchImpl: fake.fetch,
       isSuperseded: async () => false,
       ...overrides,
     });
@@ -462,6 +463,36 @@ describe("rehomeStoredFiles", () => {
     expect(delivery?.remoteUrl).toBe(record.remoteUrl);
   });
 
+  it("moves a file whose recorded address serves it when the key API cannot resolve it", async () => {
+    const created = await createRemoteMedia({
+      renditions: [{ width: 320, bytes: 200, format: "webp" }],
+    });
+
+    // The provider's key API no longer resolves pre-seam keys on this
+    // installation, while the recorded addresses still serve the bytes.
+    const keyless: StorageDriver = {
+      ...provider,
+      get: async () => {
+        throw new Error("the key API does not resolve this file");
+      },
+    };
+
+    const report = await runToLocal({ drivers: { uploadthing: keyless } });
+
+    expect(report).toMatchObject({
+      moved: 1,
+      failed: [],
+      bytesMoved: created.original.byteLength + 200,
+    });
+    await expect(local.get(created.key)).resolves.toEqual(created.original);
+    await expect(
+      local.get(created.renditions[0]!.key),
+    ).resolves.toEqual(created.renditions[0]!.bytes);
+    await expect(
+      db.storedFile.findUniqueOrThrow({ where: { id: created.fileId } }),
+    ).resolves.toMatchObject({ driver: "local", remoteUrl: null });
+  });
+
   it("refuses bytes that do not match the recorded checksum and touches nothing", async () => {
     const created = await createRemoteMedia({ renditions: [] });
     await provider.put(created.key, bytesOf(999, 3), "image/png");
@@ -616,6 +647,7 @@ describe("rehomeStoredFiles", () => {
       fileIds,
       availableDiskBytes: null,
       drivers: { uploadthing: provider },
+      fetchImpl: fake.fetch,
       isSuperseded: async () => false,
     });
 
@@ -684,6 +716,7 @@ describe("rehomeStoredFiles", () => {
       fileIds,
       availableDiskBytes: null,
       drivers: { local },
+      fetchImpl: fake.fetch,
       isSuperseded: async () => false,
     });
 

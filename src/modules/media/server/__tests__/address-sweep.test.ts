@@ -168,7 +168,10 @@ describe("sweepStorageAddresses", () => {
     const key = `default/${id}/1/original`;
     const renditionKey = `default/${id}/1/720.webp`;
     const providerOriginal = providerUrl(key);
-    const providerRendition = providerUrl(renditionKey);
+    // The provider names a generated file with its own opaque id, never with
+    // the Installation's key, so the manifest entry is the only place that
+    // address is recorded.
+    const providerRendition = providerUrl(`provider-${randomUUID()}`);
 
     const oldUrl = buildMediaDeliveryUrl(providerOriginal, {
       revision: 1,
@@ -258,7 +261,7 @@ describe("sweepStorageAddresses", () => {
     });
     pageRootIds.push(root.id);
 
-    await db.pageVersion.create({
+    const version = await db.pageVersion.create({
       data: {
         rootId: root.id,
         version: 1,
@@ -266,6 +269,12 @@ describe("sweepStorageAddresses", () => {
         status: ContentStatus.DRAFT,
         puckData: puckData as PrismaJson.PuckData,
       },
+      select: { id: true },
+    });
+
+    await db.pageRoot.update({
+      where: { id: root.id },
+      data: { liveVersionId: version.id, currentVersionId: version.id },
     });
 
     return root.id;
@@ -295,6 +304,11 @@ describe("sweepStorageAddresses", () => {
     });
     regionVersionIds.push(version.id);
 
+    await db.siteRegion.update({
+      where: { id: region.id },
+      data: { liveVersionId: version.id, currentVersionId: version.id },
+    });
+
     return version.id;
   }
 
@@ -307,7 +321,7 @@ describe("sweepStorageAddresses", () => {
     });
     postRootIds.push(root.id);
 
-    await db.postVersion.create({
+    const version = await db.postVersion.create({
       data: {
         rootId: root.id,
         version: 1,
@@ -316,6 +330,12 @@ describe("sweepStorageAddresses", () => {
         bodyData: bodyData as Prisma.InputJsonValue,
         tiptapBodyData: tiptapBodyData as PrismaJson.TipTapBodyData,
       },
+      select: { id: true },
+    });
+
+    await db.postRoot.update({
+      where: { id: root.id },
+      data: { liveVersionId: version.id, currentVersionId: version.id },
     });
 
     return root.id;
@@ -327,7 +347,7 @@ describe("sweepStorageAddresses", () => {
     });
     productRootIds.push(root.id);
 
-    await db.productVersion.create({
+    const version = await db.productVersion.create({
       data: {
         rootId: root.id,
         version: 1,
@@ -335,6 +355,12 @@ describe("sweepStorageAddresses", () => {
         tiptapDescription:
           tiptapDescription as PrismaJson.TipTapBodyData,
       },
+      select: { id: true },
+    });
+
+    await db.productRoot.update({
+      where: { id: root.id },
+      data: { liveVersionId: version.id, currentVersionId: version.id },
     });
 
     return root.id;
@@ -600,8 +626,8 @@ describe("sweepStorageAddresses", () => {
 
     expect(report.dryRun).toBe(false);
     expect(report.files).toBe(2);
-    expect(report.rows).toBe(11);
-    expect(report.rewritten).toBe(11);
+    expect(report.rows).toBe(10);
+    expect(report.rewritten).toBe(10);
     expect(report.unresolved).toBe(0);
     expect(addressSweepExitCode(report)).toBe(0);
 
@@ -610,10 +636,6 @@ describe("sweepStorageAddresses", () => {
       rewritten: 1,
     });
     expect(fieldReport(report, "SiteRegionVersion.puckData")).toMatchObject({
-      rows: 1,
-      rewritten: 1,
-    });
-    expect(fieldReport(report, "PostVersion.bodyData")).toMatchObject({
       rows: 1,
       rewritten: 1,
     });
@@ -717,8 +739,10 @@ describe("sweepStorageAddresses", () => {
       where: { rootId: fixture.postRootId },
       select: { bodyData: true, tiptapBodyData: true },
     });
+    // The legacy body is not content the product renders and is slated for
+    // removal, so the sweep leaves its provider address exactly as it was.
     expect(post.bodyData).toEqual({
-      html: `<p>Cover</p><img src="${media.canonicalUrl}">`,
+      html: `<p>Cover</p><img src="${media.providerOriginal}">`,
     });
     expect(post.tiptapBodyData).toEqual({
       type: "doc",
@@ -899,8 +923,8 @@ describe("sweepStorageAddresses", () => {
     expect(report).toMatchObject({
       dryRun: true,
       files: 2,
-      rows: 11,
-      rewritten: 11,
+      rows: 10,
+      rewritten: 10,
       unresolved: 0,
     });
 
@@ -920,6 +944,129 @@ describe("sweepStorageAddresses", () => {
     ).toEqual(before.pages);
   });
 
+  it("resolves the address a rendition was written with", async () => {
+    const media = await createRemoteMedia();
+    const renditionPath = storedFilePath("MEDIA", media.renditionKey);
+
+    const postRootId = await createPost(
+      { html: `<img srcset="${media.providerRendition} 720w">` },
+      {
+        type: "doc",
+        content: [
+          {
+            type: "image",
+            attrs: {
+              src: media.providerOriginal,
+              srcset: `${media.providerRendition} 720w`,
+            },
+          },
+        ],
+      },
+    );
+
+    const report = await sweepStorageAddresses();
+
+    expect(report).toMatchObject({
+      files: 1,
+      rows: 1,
+      rewritten: 2,
+      unresolved: 0,
+    });
+    expect(addressSweepExitCode(report)).toBe(0);
+
+    const post = await db.postVersion.findFirstOrThrow({
+      where: { rootId: postRootId },
+      select: { bodyData: true, tiptapBodyData: true },
+    });
+
+    expect(post.bodyData).toEqual({
+      html: `<img srcset="${media.providerRendition} 720w">`,
+    });
+    expect(post.tiptapBodyData).toEqual({
+      type: "doc",
+      content: [
+        {
+          type: "image",
+          attrs: {
+            src: media.canonicalUrl,
+            srcset: `${renditionPath} 720w`,
+          },
+        },
+      ],
+    });
+  });
+
+  it("leaves a superseded post version exactly as it was", async () => {
+    const media = await createRemoteMedia();
+
+    const postRootId = await createPost(
+      { html: "" },
+      {
+        type: "doc",
+        content: [
+          {
+            type: "image",
+            attrs: { src: media.providerOriginal, alt: "Live" },
+          },
+        ],
+      },
+    );
+
+    const superseded = await db.postVersion.create({
+      data: {
+        rootId: postRootId,
+        version: 2,
+        title: "Superseded",
+        status: ContentStatus.CHANGED,
+        tiptapBodyData: {
+          type: "doc",
+          content: [
+            {
+              type: "image",
+              attrs: { src: media.providerOriginal, alt: "Old" },
+            },
+          ],
+        } as PrismaJson.TipTapBodyData,
+      },
+      select: { id: true },
+    });
+
+    const report = await sweepStorageAddresses();
+
+    expect(report).toMatchObject({
+      files: 1,
+      rows: 1,
+      rewritten: 1,
+      unresolved: 0,
+    });
+
+    const versions = await db.postVersion.findMany({
+      where: { rootId: postRootId },
+      select: { id: true, tiptapBodyData: true },
+      orderBy: { version: "asc" },
+    });
+
+    expect(versions[0]?.tiptapBodyData).toEqual({
+      type: "doc",
+      content: [
+        {
+          type: "image",
+          attrs: { src: media.canonicalUrl, alt: "Live" },
+        },
+      ],
+    });
+    expect(versions[1]?.id).toBe(superseded.id);
+    expect(versions[1]?.tiptapBodyData).toEqual({
+      type: "doc",
+      content: [
+        {
+          type: "image",
+          attrs: { src: media.providerOriginal, alt: "Old" },
+        },
+      ],
+    });
+  });
+
   it("reports an address it cannot resolve by field and count", async () => {
     await seedEveryField();
     const missingKey = `missing-${randomUUID()}`;
@@ -929,7 +1076,7 @@ describe("sweepStorageAddresses", () => {
       data: { slug: `sweep-unresolved-${randomUUID()}` },
     });
     pageRootIds.push(unresolvedRoot.id);
-    await db.pageVersion.create({
+    const unresolvedPage = await db.pageVersion.create({
       data: {
         rootId: unresolvedRoot.id,
         version: 1,
@@ -940,13 +1087,21 @@ describe("sweepStorageAddresses", () => {
           ],
         } as PrismaJson.PuckData,
       },
+      select: { id: true },
+    });
+    await db.pageRoot.update({
+      where: { id: unresolvedRoot.id },
+      data: {
+        liveVersionId: unresolvedPage.id,
+        currentVersionId: unresolvedPage.id,
+      },
     });
 
     const unresolvedPost = await db.postRoot.create({
       data: { slug: `sweep-unresolved-post-${randomUUID()}` },
     });
     postRootIds.push(unresolvedPost.id);
-    await db.postVersion.create({
+    const unresolvedPostVersion = await db.postVersion.create({
       data: {
         rootId: unresolvedPost.id,
         version: 1,
@@ -959,11 +1114,19 @@ describe("sweepStorageAddresses", () => {
           content: [{ type: "paragraph", content: [{ type: "text", text: "ok" }] }],
         } as PrismaJson.TipTapBodyData,
       },
+      select: { id: true },
+    });
+    await db.postRoot.update({
+      where: { id: unresolvedPost.id },
+      data: {
+        liveVersionId: unresolvedPostVersion.id,
+        currentVersionId: unresolvedPostVersion.id,
+      },
     });
 
     const report = await sweepStorageAddresses();
 
-    expect(report.unresolved).toBe(3);
+    expect(report.unresolved).toBe(1);
     expect(report.files).toBe(2);
     expect(addressSweepExitCode(report)).toBe(1);
 
@@ -971,11 +1134,6 @@ describe("sweepStorageAddresses", () => {
       rows: 1,
       rewritten: 1,
       unresolved: 1,
-    });
-    expect(fieldReport(report, "PostVersion.bodyData")).toMatchObject({
-      rows: 1,
-      rewritten: 1,
-      unresolved: 2,
     });
 
     const output = [

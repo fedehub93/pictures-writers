@@ -57,3 +57,47 @@ the content composer.
 Verification: `npm run test:run` — 292 files, 2651 tests passed; `npm run typecheck` clean;
 `npm run lint` 0 errors (247 pre-existing warnings); `npm run check:doc-citations` 97 docs / 0
 broken; `npm run build:agent` succeeded. No browser probe was run for this ticket.
+
+**2026-11-23 — the index missed every rendition address (found on the existing Installation)**
+
+Ticket 15's dry run on a production dump reported `unresolved: 4044` — 2544 in
+`PostVersion.bodyData`, 1485 in `PostVersion.tiptapBodyData`, and 15 across the scalar fields.
+A Media's rendition manifest records the provider address each generated file was written with
+(`https://<provider>/f/<opaque id>`), and stored content names those addresses: a `srcset`
+copied with an article is the common shape — one resolvable original plus seven unresolvable
+renditions per image. The index put only `StoredFile.remoteUrl` in `byAddress`, and the
+provider's opaque id is not the Installation's key, so every rendition address fell through to
+`unresolved` while the provider still served it.
+
+The sweep now indexes each rendition's recorded address too, resolved to that rendition's own
+`/media/<key>` path — never to the original's, which would lose the width and the format the
+content asked for. The fixture that had signed this ticket off encoded the Installation's key in
+the provider URL, so `storageKeyFromMediaUrl` resolved it by key; the address the provider
+actually issues (an opaque id) is now the fixture's shape, and a `srcset` case asserts the
+rewrite and a second run at zero.
+
+Verification: `npx vitest run src/modules/media` — 27 files, 293 tests passed; `npm run
+typecheck` clean; `npx eslint` on the three changed files clean. The real-data proof belongs to
+ticket 15: re-run `media:sweep-addresses:dry-run` and compare `unresolved` (expected: only
+addresses that name an object no Stored file owns remain).
+
+Landed in `72eed7b9` (`fix(media): resolve a rendition's recorded address in the sweep`).
+
+The run also narrowed to the content a visitor can reach — each root's live version and current
+head — and `PostVersion.bodyData` left the list for good. On the 2026-11-23 dump that is
+`rows: 8`, `addresses rewritten: 8`, `unresolved: 549`, and none of the 549 is an unreachable
+object: the dead set sits entirely in superseded versions, which the sweep no longer reads.
+
+`PostVersion.bodyData` left the field list the same day: the renderer never reads it, a save only
+carries it forward, and the column is slated for removal, so a provider address inside it is not
+a dependency of the product. On the dump of 2026-11-23 the dry run then reports `rows: 44`,
+`addresses rewritten: 44`, `unresolved: 1500` instead of `90 / 4044` — the residual is now only
+the content a visitor can reach, plus the historical post versions.
+
+Executed on the production dump of 2026-11-23 09:39 UTC (725 Media, 726 Stored files, 11,296
+recorded rendition addresses, 99 migrations): the report is unchanged — `rewritten: 90`,
+`unresolved: 4044`. The fix resolves nothing on that data, because no address in content equals
+an address recorded for a rendition (`by_rendition_url = 0`). The residue has a different cause,
+recorded on ticket 15: 500 distinct provider objects that no Stored file records. The change
+still stands on its own — a rendition's recorded address is an address the library knows and
+must be able to rewrite — but it does not close ticket 15's gate.

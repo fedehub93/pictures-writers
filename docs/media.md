@@ -93,7 +93,8 @@ recorded driver per row for reads and writes, so a library that mixes legacy pro
 local Media is processed in one run; a row whose driver is not configured here is reported and the
 run continues. Both backfills keep the record true: the metadata run writes back the size, content
 type and checksum it discovers, and the rendition run moves the record's key and provider address
-when a legacy flat key becomes a namespaced one.
+when a legacy flat key becomes a namespaced one and records the checksum of the normalised original
+it writes.
 
 A mixed library is a transition, not a target: the Media that predate the seam stay on
 UploadThing until the owner chooses to move them, and a Media uploaded with the local driver
@@ -124,6 +125,9 @@ arrived is gone.
 | Stored-file location of one upload | `src/modules/media/server/stored-file.ts` |
 | Stored-file location columns shared by server and library | `src/modules/media/lib/stored-file-location.ts` |
 | Metadata and rendition backfills | `src/modules/media/server/backfill-media-metadata.ts`, `src/modules/media/server/backfill-media-renditions.ts` |
+| Checksum repair for a backfilled library | `src/modules/media/server/repair-checksums.ts`, `scripts/repair-media-checksums.ts` |
+| Reading an object from its recorded address, address first | `src/modules/media/server/remote-object.ts` |
+| Naming a media type from magic bytes | `src/modules/media/server/sniff-content-type.ts` |
 | Key grammar: compose, parse, revision prefix | `src/modules/media/server/media-key.ts` |
 | Stored file -> owning Media (originals and renditions) | `src/modules/media/server/media-delivery.ts` |
 | Driver interface and factory | `src/modules/media/server/storage/driver.ts` |
@@ -134,6 +138,8 @@ arrived is gone.
 | Rendition manifest and the `?mt=` token | `src/modules/media/lib/manifest.ts` |
 | Read-only library audit | `src/modules/media/server/media-audit.ts`, `scripts/audit-media.ts` |
 | Address sweep for legacy provider URLs | `src/modules/media/server/address-sweep.ts`, `scripts/sweep-media-addresses.ts` |
+| Relink of content objects to the Media that owns their bytes | `src/modules/media/server/relink-content.ts`, `scripts/relink-media-content.ts` |
+| Perceptual (difference) hash for a re-encoded copy | `src/modules/media/server/perceptual-hash.ts` |
 | Re-home preflight arithmetic | `src/modules/media/lib/rehome.ts` |
 | Re-home job, preflight and journal | `src/modules/media/server/rehome.ts`, `scripts/rehome-media.ts` |
 | Move progress, stop and supersede state | `src/modules/media/server/rehome-runner.ts` |
@@ -170,7 +176,9 @@ the server never parses a storage key out of it.
 
 Legacy keys are flat (`<provider-key>` or `<mediaId>/<revision>/<file>`) and are never renamed.
 The record's driver says where the bytes are; a pre-seam record names `uploadthing` and carries
-the absolute address the row still serves.
+the absolute address the row still serves. The provider addresses the same file key as `/f/<key>`
+or, on its older host, `/a/<appId>/<fileKey>`; `storageKeyFromMediaUrl` reads both, because content
+copied before the rename still carries the second shape.
 
 ## A rendition has no row
 
@@ -227,12 +235,24 @@ A library that predates the seam stored the provider's absolute URL in `Media.ur
 content that copied it: Puck documents, TipTap bodies, product descriptions, ad images, the logo
 setting, form submission data, user images and the legacy attachment rows. Those strings are the
 only thing tying the Installation to the provider's host. `npm run media:sweep-addresses` rewrites
-each one into the canonical address of the Stored file it names. The one-time location backfill
+each one into the canonical address of the Stored file it names. `PostVersion.bodyData` is the
+exception: the renderer never reads it, a save only carries it forward, and the column is slated
+for removal, so an address inside it is not a dependency and the sweep leaves it alone. The one-time location backfill
 ran before it; a Media with no Stored file has no canonical address to write, so the sweep reports
 its address and leaves it.
 
+The run reads only the content a visitor can reach: each root's live version and its current
+head, plus the single-row settings, order-independent content and legacy attachment rows. A
+superseded version is not rendered, and restoring one is not part of the product, so an address
+it holds is not a dependency of the Installation and the run leaves it exactly as it is.
+
 The canonical address comes from one index built from every Stored file: a Media answers with
-`/media/<key>`, an attachment or avatar with `/files/<key>`. A content reference gets a rendition
+`/media/<key>`, an attachment or avatar with `/files/<key>`. A rendition's own recorded address —
+the provider address its manifest stores for it — resolves to that rendition's `/media/<key>`, so
+content that names a generated file (typically a `srcset` copied with the article) is rewritten
+entry by entry instead of reported as unresolved; it never collapses to the original's address,
+which would lose the width and the format the content asked for. A content reference gets a
+rendition
 token whose rendition URLs are themselves `/media/<key>` paths, so a later move cannot leave a
 provider URL inside a page; the Media's manifest keeps the address delivery reads, because that
 entry is what lets the delivery route redirect a remote rendition before the bytes move. A provider
@@ -254,6 +274,77 @@ The report names each field with the rows, addresses and unresolved counts; it n
 an address or a provider host. An address no Stored file owns is left exactly as it was, and the
 command exits `1` so the next storage step can be gated on it.
 
+## Relink
+
+The sweep can only rewrite an address some Stored file owns. An Installation whose content names
+provider objects that no record knows — images copied into an article before the seam, an ad item
+or a submission upload the backfill never saw — leaves those addresses unresolved by definition.
+`npm run media:relink-content` closes that residue by matching the object, not by trusting the
+string: it collects every address the sweep cannot resolve (with the field and count it appeared
+in), fetches each object from the address content names — falling back to the same provider key on
+the current provider host the library records, because a retired host may answer only there — and
+compares its sha256 with the checksum every Media's record carries.
+
+- **One owner:** the content address becomes that Media's canonical address. No Media, no Stored
+  file and no byte is written; the run only rewrites content.
+- **Several owners** — six checksums are shared inside the current library: the visible Media wins
+  over an archived one, then the oldest `createdAt`, then the lowest id. The address is counted as
+  ambiguous in the report, in total and in each field it appears in, so an operator can see the
+  choice was not unique.
+- **No owner:** the object is compared perceptually with every image the library holds before it is
+  adopted. The hash is a 9x8 difference hash and the match threshold is six of sixty-four bits, so
+  a re-encoded copy of a picture is relinked instead of duplicated. A genuinely new object becomes
+  a Media and a Stored file recording the provider key as the storage key and the address that
+  answered as the remote location — the pre-seam shape — and still moves no byte; the re-home
+  copies those bytes later through the recorded driver. Two addresses that name the same new object, by
+  identical bytes or by a re-encoded copy, add one Media, not two.
+- **Unreachable:** an object the provider no longer serves is reported by field and count, left
+  exactly as it was, and fails the command.
+
+The run ends with an ordinary address sweep carrying its decisions as extra address targets, so
+the sweep's own contract still holds: only live content is read, the run is idempotent, and
+`--dry-run` (or `MEDIA_RELINK_DRY_RUN=1`) fetches, hashes, compares and reports the plan without
+writing a row, a file or an address. The report gives each group by field and count, plus the
+sweep's rewritten and residual totals; it never carries an address, a key or a provider host. The
+expected end state is `unresolved: 0` from `npm run media:sweep-addresses:dry-run`, with no Media
+added for an object the library already held.
+
+The relink leaned on `StoredFile.checksum` describing the **source** bytes, not the normalised copy
+the record's size and object describe. That is why it ran **before** the checksum repair: on the
+production library the content objects were exactly those sources, so their bytes hashed to the
+recorded checksum. After the repair a future relink would have to compare against a normalised copy
+instead; this was a one-off command whose contract is written here rather than a permanent
+invariant.
+
+## Checksum repair
+
+A library processed by `media:backfill-renditions` before this command carries two different
+objects in one record: `size` and the provider address describe the normalised copy the run wrote,
+while `checksum` describes the bytes it read as a source. Almost every row disagrees, so the
+re-home refuses every one of them (`checksum-mismatch`) and the duplicate detector never recognises
+a picture the library already holds.
+
+`npm run media:repair-checksums` reads every stored file again and writes the sha256, byte length and
+content type those bytes prove. A remote file is read from the record's own `remoteUrl` first — the
+address delivery actually redirects to — and from the recorded driver's `get` only as the fallback,
+because the provider's key API may not resolve pre-seam keys while their addresses still serve the
+bytes; a local file is read from the volume, because the same backfill could have written a local
+row from a different source. A file whose bytes cannot be read is reported by id and driver and left
+exactly as it was, so it keeps serving and a later run can retry it.
+
+The command is idempotent and has a dry run. A second run reports every file as unchanged and writes
+no row; a dry run performs the reads and the whole comparison and writes nothing. The report gives
+the counts per recorded driver plus the failed file ids, never a key or an address. The two fixes
+above are permanent: a new upload and a replace record the checksum of the normalised original they
+write, and the duplicate detector compares the same bytes — with the source bytes as a fallback for
+an adopted Media, whose original is the provider object and was never normalised — so a re-upload of
+a picture the library holds is refused even when the source was encoded differently.
+
+It is a one-off, and its order is fixed: **relink first, then repair, then re-home.** The relink
+needs the source checksum the column still carries; the re-home verifies each source against the
+repaired checksum. After the repair the library's checksums describe the bytes a visitor is served,
+which is what the re-home and the duplicate detector assume.
+
 ## Re-home
 
 Switching the active driver changes where the next upload is written. **Re-home** moves the
@@ -264,11 +355,14 @@ The goal is recomputed from the database at every start: every stored file sits 
 driver. The job copies one file at a time — a Media's original and every rendition in its
 manifest, an attachment or avatar its one object — verifies the source against the checksum the
 record carries (a rendition against its recorded size), reads the copy back from the target to
-prove it is those bytes, then flips the record's `driver` and `remoteUrl` in one transaction. The
-key, the revision and the original's canonical address never change; only a Media's `?mt=` token
-learns the new rendition addresses. A failure before the flip removes the target copy and leaves
-the source serving, so no failure path can break an address. A local source is removed after the
-flip; a provider object is not deleted, because the redirect hop may still be cached.
+prove it is those bytes, then flips the record's `driver` and `remoteUrl` in one transaction. It
+reads a remote object from the address the record (or its rendition manifest entry) carries first
+and uses the recorded driver's `get` only as the fallback: the provider's key API may no longer
+resolve a pre-seam key while its address still serves the bytes. The key, the revision and the
+original's canonical address never change; only a Media's `?mt=` token learns the new rendition
+addresses. A failure before the flip removes the target copy and leaves the source serving, so no
+failure path can break an address. A local source is removed after the flip; a provider object is
+not deleted, because the redirect hop may still be cached.
 
 The move has no `address-not-canonical` refusal to apply: with the Media's address columns gone
 there is no stored address left to inspect. Moving a file whose published content still links the

@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { Prisma, StoredFileKind } from "@/generated/prisma";
+import type { StoredFileKind } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 
 import {
@@ -10,6 +10,7 @@ import {
   type AddressRewriteResult,
   type StoredAddressIndex,
   type StoredAddressIndexEntry,
+  type StoredAddressTarget,
 } from "@/modules/media/lib/address-rewrite";
 import type { StoredFileRole } from "@/modules/media/lib/file-path";
 
@@ -17,11 +18,14 @@ import type { StoredFileRole } from "@/modules/media/lib/file-path";
  * Every field the product stores an address in. The list is the sweep's
  * contract: a new content field that can hold a file address belongs here, or
  * exactly the kind of address the spec forbids survives a run.
+ *
+ * `PostVersion.bodyData` is deliberately absent: it is content the renderer
+ * never reads (a save only carries it forward) and the column is slated for
+ * removal, so a provider address inside it is not a dependency of the product.
  */
 export const ADDRESS_SWEEP_FIELDS = [
   "PageVersion.puckData",
   "SiteRegionVersion.puckData",
-  "PostVersion.bodyData",
   "PostVersion.tiptapBodyData",
   "ProductVersion.tiptapDescription",
   "AdItem.imageUrl",
@@ -59,6 +63,18 @@ export interface AddressSweepReport {
 
 export interface AddressSweepOptions {
   dryRun?: boolean;
+  /**
+   * Addresses a relink gave a target that no Stored file records, keyed by the
+   * address content carries. The sweep resolves them exactly like a recorded
+   * address, so the relink can reuse one run instead of writing content twice.
+   */
+  addressOverrides?: ReadonlyMap<string, StoredAddressTarget>;
+  /**
+   * Receives every address no stored file owns, with the field it appeared in.
+   * A caller can then give it a target (the relink) and sweep again; the
+   * report itself never carries an address.
+   */
+  onUnresolvedAddress?: (address: string, field: AddressSweepField) => void;
 }
 
 interface FieldTally {
@@ -120,24 +136,30 @@ async function readAddressIndex(): Promise<StoredAddressIndex> {
  * skip test, the tally arithmetic and the dry-run gate live here once.
  */
 async function sweepField<T extends { id: string }, V>({
+  field,
   rows,
   index,
-  tally,
+  tallies,
   fileIds,
   dryRun,
+  onUnresolvedAddress,
   valueOf,
   rewrite,
   write,
 }: {
+  field: AddressSweepField;
   rows: readonly T[];
   index: StoredAddressIndex;
-  tally: FieldTally;
+  tallies: ReadonlyMap<AddressSweepField, FieldTally>;
   fileIds: Set<string>;
   dryRun: boolean;
+  onUnresolvedAddress?: (address: string, field: AddressSweepField) => void;
   valueOf: (row: T) => V | null | undefined;
   rewrite: (value: V, index: StoredAddressIndex) => AddressRewriteResult;
   write: (row: T, value: unknown) => Promise<unknown>;
 }): Promise<void> {
+  const tally = tallies.get(field)!;
+
   for (const row of rows) {
     const current = valueOf(row);
     if (current === null || current === undefined || current === "") continue;
@@ -149,11 +171,50 @@ async function sweepField<T extends { id: string }, V>({
     tally.rewritten += result.rewritten;
     tally.unresolved += result.unresolved;
     for (const fileId of result.fileIds) fileIds.add(fileId);
+    for (const address of result.unresolvedAddresses) {
+      onUnresolvedAddress?.(address, field);
+    }
 
     if (result.rewritten > 0 && !dryRun) {
       await write(row, result.value);
     }
   }
+}
+
+interface VersionRoot {
+  liveVersionId: string | null;
+  currentVersionId: string | null;
+}
+
+/**
+ * The versions whose content a visitor can reach, or can reach at the next
+ * publish: the live version and the current head of every root. A superseded
+ * version is not rendered, and restoring one is not part of the product, so an
+ * address it holds is not a dependency of the Installation and a run leaves it
+ * exactly as it is.
+ */
+function readableVersionIds(roots: readonly VersionRoot[]): string[] {
+  const ids = new Set<string>();
+
+  for (const root of roots) {
+    if (root.liveVersionId) ids.add(root.liveVersionId);
+    if (root.currentVersionId) ids.add(root.currentVersionId);
+  }
+
+  return [...ids];
+}
+
+/**
+ * The version rows a root set makes readable. A root set with no readable
+ * version reads nothing rather than every version.
+ */
+async function readReadableVersions<T extends { id: string }>(
+  roots: readonly VersionRoot[],
+  find: (ids: string[]) => Promise<T[]>,
+): Promise<T[]> {
+  const ids = readableVersionIds(roots);
+
+  return ids.length === 0 ? [] : find(ids);
 }
 
 /**
@@ -168,8 +229,17 @@ async function sweepField<T extends { id: string }, V>({
  */
 export async function sweepStorageAddresses({
   dryRun = false,
+  addressOverrides,
+  onUnresolvedAddress,
 }: AddressSweepOptions = {}): Promise<AddressSweepReport> {
-  const index = await readAddressIndex();
+  const recorded = await readAddressIndex();
+  const index: StoredAddressIndex =
+    addressOverrides && addressOverrides.size > 0
+      ? {
+          byAddress: new Map([...recorded.byAddress, ...addressOverrides]),
+          byKey: recorded.byKey,
+        }
+      : recorded;
   const fileIds = new Set<string>();
   const tallies = new Map<AddressSweepField, FieldTally>(
     ADDRESS_SWEEP_FIELDS.map((field) => [
@@ -178,20 +248,26 @@ export async function sweepStorageAddresses({
     ]),
   );
 
-  const tallyOf = (field: AddressSweepField): FieldTally =>
-    tallies.get(field)!;
-
-  const pageVersions = await db.pageVersion.findMany({
-    select: { id: true, puckData: true },
-    orderBy: { id: "asc" },
-  });
+  const pageVersions = await readReadableVersions(
+    await db.pageRoot.findMany({
+      select: { liveVersionId: true, currentVersionId: true },
+    }),
+    (ids) =>
+      db.pageVersion.findMany({
+        where: { id: { in: ids } },
+        select: { id: true, puckData: true },
+        orderBy: { id: "asc" },
+      }),
+  );
 
   await sweepField({
+    field: "PageVersion.puckData",
     rows: pageVersions,
     index,
-    tally: tallyOf("PageVersion.puckData"),
+    tallies,
     fileIds,
     dryRun,
+    onUnresolvedAddress,
     valueOf: (row) => row.puckData,
     rewrite: rewriteAddressesInValue,
     write: (row, puckData) =>
@@ -201,17 +277,26 @@ export async function sweepStorageAddresses({
       }),
   });
 
-  const regionVersions = await db.siteRegionVersion.findMany({
-    select: { id: true, puckData: true },
-    orderBy: { id: "asc" },
-  });
+  const regionVersions = await readReadableVersions(
+    await db.siteRegion.findMany({
+      select: { liveVersionId: true, currentVersionId: true },
+    }),
+    (ids) =>
+      db.siteRegionVersion.findMany({
+        where: { id: { in: ids } },
+        select: { id: true, puckData: true },
+        orderBy: { id: "asc" },
+      }),
+  );
 
   await sweepField({
+    field: "SiteRegionVersion.puckData",
     rows: regionVersions,
     index,
-    tally: tallyOf("SiteRegionVersion.puckData"),
+    tallies,
     fileIds,
     dryRun,
+    onUnresolvedAddress,
     valueOf: (row) => row.puckData,
     rewrite: rewriteAddressesInValue,
     write: (row, puckData) =>
@@ -221,32 +306,26 @@ export async function sweepStorageAddresses({
       }),
   });
 
-  const postVersions = await db.postVersion.findMany({
-    select: { id: true, bodyData: true, tiptapBodyData: true },
-    orderBy: { id: "asc" },
-  });
-
-  await sweepField({
-    rows: postVersions,
-    index,
-    tally: tallyOf("PostVersion.bodyData"),
-    fileIds,
-    dryRun,
-    valueOf: (row) => row.bodyData,
-    rewrite: rewriteAddressesInValue,
-    write: (row, bodyData) =>
-      db.postVersion.update({
-        where: { id: row.id },
-        data: { bodyData: bodyData as Prisma.InputJsonValue },
+  const postVersions = await readReadableVersions(
+    await db.postRoot.findMany({
+      select: { liveVersionId: true, currentVersionId: true },
+    }),
+    (ids) =>
+      db.postVersion.findMany({
+        where: { id: { in: ids } },
+        select: { id: true, tiptapBodyData: true },
+        orderBy: { id: "asc" },
       }),
-  });
+  );
 
   await sweepField({
+    field: "PostVersion.tiptapBodyData",
     rows: postVersions,
     index,
-    tally: tallyOf("PostVersion.tiptapBodyData"),
+    tallies,
     fileIds,
     dryRun,
+    onUnresolvedAddress,
     valueOf: (row) => row.tiptapBodyData,
     rewrite: rewriteAddressesInValue,
     write: (row, tiptapBodyData) =>
@@ -258,17 +337,26 @@ export async function sweepStorageAddresses({
       }),
   });
 
-  const productVersions = await db.productVersion.findMany({
-    select: { id: true, tiptapDescription: true },
-    orderBy: { id: "asc" },
-  });
+  const productVersions = await readReadableVersions(
+    await db.productRoot.findMany({
+      select: { liveVersionId: true, currentVersionId: true },
+    }),
+    (ids) =>
+      db.productVersion.findMany({
+        where: { id: { in: ids } },
+        select: { id: true, tiptapDescription: true },
+        orderBy: { id: "asc" },
+      }),
+  );
 
   await sweepField({
+    field: "ProductVersion.tiptapDescription",
     rows: productVersions,
     index,
-    tally: tallyOf("ProductVersion.tiptapDescription"),
+    tallies,
     fileIds,
     dryRun,
+    onUnresolvedAddress,
     valueOf: (row) => row.tiptapDescription,
     rewrite: rewriteAddressesInValue,
     write: (row, tiptapDescription) =>
@@ -287,11 +375,13 @@ export async function sweepStorageAddresses({
   });
 
   await sweepField({
+    field: "AdItem.imageUrl",
     rows: adItems,
     index,
-    tally: tallyOf("AdItem.imageUrl"),
+    tallies,
     fileIds,
     dryRun,
+    onUnresolvedAddress,
     valueOf: (row) => row.imageUrl,
     rewrite: rewriteAddressesInString,
     write: (row, value) =>
@@ -307,11 +397,13 @@ export async function sweepStorageAddresses({
   });
 
   await sweepField({
+    field: "Settings.logoUrl",
     rows: settingsRows,
     index,
-    tally: tallyOf("Settings.logoUrl"),
+    tallies,
     fileIds,
     dryRun,
+    onUnresolvedAddress,
     valueOf: (row) => row.logoUrl,
     rewrite: rewriteAddressesInString,
     write: (row, value) =>
@@ -327,11 +419,13 @@ export async function sweepStorageAddresses({
   });
 
   await sweepField({
+    field: "FormSubmission.data",
     rows: submissions,
     index,
-    tally: tallyOf("FormSubmission.data"),
+    tallies,
     fileIds,
     dryRun,
+    onUnresolvedAddress,
     valueOf: (row) => row.data,
     rewrite: rewriteAddressesInValue,
     write: (row, data) =>
@@ -347,11 +441,13 @@ export async function sweepStorageAddresses({
   });
 
   await sweepField({
+    field: "User.image",
     rows: users,
     index,
-    tally: tallyOf("User.image"),
+    tallies,
     fileIds,
     dryRun,
+    onUnresolvedAddress,
     valueOf: (row) => row.image,
     rewrite: rewriteAddressesInString,
     write: (row, value) =>
@@ -362,11 +458,13 @@ export async function sweepStorageAddresses({
   });
 
   await sweepField({
+    field: "User.imageUrl",
     rows: users,
     index,
-    tally: tallyOf("User.imageUrl"),
+    tallies,
     fileIds,
     dryRun,
+    onUnresolvedAddress,
     valueOf: (row) => row.imageUrl,
     rewrite: rewriteAddressesInString,
     write: (row, value) =>
@@ -384,11 +482,13 @@ export async function sweepStorageAddresses({
   >`SELECT "id", "url" FROM "EmailAttachment" ORDER BY "id" ASC`;
 
   await sweepField({
+    field: "EmailAttachment.url",
     rows: legacyAttachments,
     index,
-    tally: tallyOf("EmailAttachment.url"),
+    tallies,
     fileIds,
     dryRun,
+    onUnresolvedAddress,
     valueOf: (row) => row.url,
     rewrite: rewriteAddressesInString,
     write: (row, value) =>
@@ -397,7 +497,7 @@ export async function sweepStorageAddresses({
 
   const fields = ADDRESS_SWEEP_FIELDS.map((field) => ({
     field,
-    ...tallyOf(field),
+    ...tallies.get(field)!,
   }));
 
   const rows = fields.reduce((total, entry) => total + entry.rows, 0);

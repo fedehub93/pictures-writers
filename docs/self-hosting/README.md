@@ -6,7 +6,7 @@ Questa cartella contiene il piano completo, passo per passo, per spostare **Pict
 >
 > Il documento è stato scritto il **20 ottobre 2026** sullo stato del repository di allora. Rileggi sempre le sezioni "Verifica" prima di eseguire un comando in produzione.
 >
-> **Aggiornamento (novembre 2026):** lo storage dei media non è più solo UploadThing. Il driver `local` è selezionabile da **Admin → Media**, i nuovi upload possono stare su un volume della VPS e i Media esistenti restano sul provider senza migrazione. Il diagramma racconta la migrazione di ottobre; per lo stato attuale leggi `docs/media.md` e `08-operations-runbook.md` §4bis.
+> **Aggiornamento (novembre 2026):** lo storage dei media non è più solo UploadThing. Il driver `local` è selezionabile da **Admin → Media** e vale per i nuovi upload, mentre ogni file registra il driver che lo ha scritto: la libreria mista è una **transizione**, non lo stato finale. Il percorso documentato (backfill della posizione per le installazioni esistenti, sweep degli indirizzi, relink, riparazione dei checksum, re-home, purge) porta i Media storici su disco e poi libera il provider, nell'ordine descritto in `08-operations-runbook.md` §4bis. Il diagramma racconta la migrazione di ottobre; per lo stato attuale leggi `docs/media.md` e `08-operations-runbook.md` §4bis.
 
 ---
 
@@ -28,7 +28,7 @@ Vercel (Next.js serverless)                Traefik / Let's Encrypt (Coolify)
                                               └── cron-job.org oppure cron della VPS
 ```
 
-**Cosa resta esterno e non va migrato:** Stripe (checkout e webhook), Resend/SendGrid (email), Google Tag Manager/Analytics, Google reCAPTCHA e cron-job.org restano invariati. I Media già su UploadThing possono restare lì; i nuovi possono essere scritti dal driver locale sul volume della VPS (vedi `docs/media.md`).
+**Cosa resta esterno e non va migrato:** Stripe (checkout e webhook), Resend/SendGrid (email), Google Tag Manager/Analytics, Google reCAPTCHA e cron-job.org restano invariati. I Media già su UploadThing possono restare lì oppure essere spostati sul volume locale con l'ordine documentato (backfill della posizione, sweep degli indirizzi, re-home, purge); la scelta resta reversibile in entrambe le direzioni (vedi `docs/media.md` e `08-operations-runbook.md` §4bis).
 
 **Cosa cambia:** il processo Node che esegue Next.js, il database PostgreSQL, il reverse proxy/TLS e il sistema di deploy.
 
