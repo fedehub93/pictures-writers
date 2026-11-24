@@ -36,9 +36,14 @@ export const MediaView = () => {
       <MediaFolderSidebar />
       <div className="min-w-0 flex-1">
         {/* Remounting on a filter change is what empties the selection: it never
-            survives into a page, search or view the admin cannot see. */}
+            survives into a page, search, view or folder the admin cannot see. */}
         <MediaLibrary
-          key={JSON.stringify([filters.search, filters.page, filters.view])}
+          key={JSON.stringify([
+            filters.search,
+            filters.page,
+            filters.view,
+            filters.folderId,
+          ])}
           items={data.items}
           view={filters.view}
           page={filters.page}

@@ -13,9 +13,10 @@ import {
 /**
  * One advisory-lock key for every folder write. An update walks the parent
  * chain and then writes, and a delete counts and then deletes; without the lock
- * two concurrent requests can each pass their own check. The lock serialises
- * them, which is what keeps the hierarchy acyclic and a delete from racing a
- * Media into an empty folder.
+ * two concurrent folder writes can each pass their own check, which is how a
+ * cycle or a delete of a just-filled folder would slip through. Media writes
+ * take no lock: the foreign key refuses a row whose folder was deleted under
+ * it, so no Media is ever filed into a folder that no longer exists.
  */
 const MEDIA_FOLDER_LOCK_KEY = 0x4d464c44; // "MFLD"
 
@@ -99,6 +100,20 @@ async function allFoldersFlat(
   return client.mediaFolder.findMany({ select: folderRowSelect });
 }
 
+/**
+ * Refuses a target that no folder backs before anything is written into it.
+ * The foreign key would refuse the row too, but only after an upload has paid
+ * to store the file, and the refusal would read as a storage failure.
+ */
+export async function assertMediaFolderExists(folderId: string): Promise<void> {
+  const folder = await db.mediaFolder.findUnique({
+    where: { id: folderId },
+    select: { id: true },
+  });
+
+  if (!folder) throw new MediaFolderNotFoundError(folderId);
+}
+
 /** The whole hierarchy, nested and ordered, rooted at the implicit My Drive. */
 export async function getMediaFolderTree(): Promise<MediaFolderNode[]> {
   return buildFolderTree(await allFoldersFlat());
@@ -111,14 +126,7 @@ export async function createMediaFolder(input: {
   const name = normalizedFolderName(input.name);
   const parentId = input.parentId ?? null;
 
-  if (parentId) {
-    const parent = await db.mediaFolder.findUnique({
-      where: { id: parentId },
-      select: { id: true },
-    });
-
-    if (!parent) throw new MediaFolderNotFoundError(parentId);
-  }
+  if (parentId) await assertMediaFolderExists(parentId);
 
   return db.mediaFolder.create({
     data: { name, parentId },

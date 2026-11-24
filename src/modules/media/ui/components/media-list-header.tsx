@@ -4,6 +4,7 @@ import { ContentHeader } from "@/app/(admin)/_components/content/content-header"
 
 import { useMediaMeta } from "../../hooks/use-media";
 import { useMediaFilters } from "../../hooks/use-media-filters";
+import { mediaUploadFolderId } from "../../lib/media-folder";
 
 import { MediaCreateAction } from "./media-create-action";
 import { MediaQuotaMeter } from "./media-quota-meter";
@@ -42,7 +43,16 @@ export const MediaListHeader = () => {
               uploadThingAvailable={data.storage.uploadThingAvailable}
             />
           )}
-          {filters.view === "active" && <MediaCreateAction />}
+          {/* Archived holds files that left the library; uploading there could
+              only create an active Media the view would not show. */}
+          {filters.view !== "archived" && (
+            <MediaCreateAction
+              folderId={mediaUploadFolderId({
+                view: filters.view,
+                folderId: filters.folderId,
+              })}
+            />
+          )}
         </div>
       </div>
       {data && (

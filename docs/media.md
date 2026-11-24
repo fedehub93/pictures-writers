@@ -114,6 +114,14 @@ token is configured. `POST /api/media` accepts only multipart: any other body an
 `UNSUPPORTED_CONTENT_TYPE`, because the JSON branch that recorded a provider object as it
 arrived is gone.
 
+The transport takes an optional `folderId` and files the new Media into that folder; a Media
+uploaded without one belongs at the My Drive root. The service checks the folder before it
+records anything, so a folder deleted while the upload dialog was open is answered with
+`MEDIA_FOLDER_NOT_FOUND` instead of an uploaded file filed nowhere. The admin library passes
+the folder it is showing only while My Drive is the view: a flat view over the whole library,
+such as Archived, has no open folder, so uploads started there land at the root
+(`mediaUploadFolderId` in `src/modules/media/lib/media-folder.ts`).
+
 ## Where things live
 
 | Concern | File |

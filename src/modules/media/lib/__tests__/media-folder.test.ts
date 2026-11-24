@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildFolderTree,
+  mediaUploadFolderId,
   wouldCreateCycle,
   type MediaFolderRow,
 } from "../media-folder";
@@ -40,6 +41,24 @@ describe("buildFolderTree", () => {
     ]);
 
     expect(tree.map((node) => node.name)).toEqual(["Orphan"]);
+  });
+});
+
+describe("mediaUploadFolderId", () => {
+  it("files an upload into the folder My Drive has open", () => {
+    expect(mediaUploadFolderId({ view: "active", folderId: "spring" })).toBe(
+      "spring",
+    );
+  });
+
+  it("files an upload at the root when My Drive has no folder open", () => {
+    expect(mediaUploadFolderId({ view: "active", folderId: null })).toBeNull();
+  });
+
+  it("files an upload at the root in a flat view, even with a folder open", () => {
+    expect(
+      mediaUploadFolderId({ view: "archived", folderId: "spring" }),
+    ).toBeNull();
   });
 });
 

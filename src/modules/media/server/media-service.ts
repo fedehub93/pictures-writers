@@ -5,6 +5,7 @@ import { randomUUID } from "node:crypto";
 import { MediaType, StoredFileKind, type Prisma } from "@/generated/prisma";
 
 import { db } from "@/shared/lib/db";
+import { isForeignKeyConstraintError } from "@/shared/lib/prisma-errors";
 
 import {
   mediaLibraryItem,
@@ -37,6 +38,10 @@ import {
   withMediaQuotaAdmission,
 } from "./media-quota";
 import { countMediaReferencesFor } from "./media-usage";
+import {
+  assertMediaFolderExists,
+  MediaFolderNotFoundError,
+} from "./media-folder-service";
 import { generateRenditions, normaliseImage, type NormalisedImage } from "./process-image";
 import {
   getInstallationSlug,
@@ -71,6 +76,11 @@ export interface CreateMediaFromUploadOptions {
   /** The driver that wrote this file. Defaults to the active driver. */
   storageDriver?: StorageDriverName;
   source: MediaUploadSource;
+  /**
+   * The folder the upload is filed into. Absent or null files it at the My
+   * Drive root.
+   */
+  folderId?: string | null;
   /** Explicit admin override: keep the duplicate and create a second row. */
   override?: boolean;
 }
@@ -192,12 +202,29 @@ function isRethrowableMediaError(
 ): error is
   | MediaProcessingError
   | MediaQuotaExceededError
-  | DuplicateMediaError {
+  | DuplicateMediaError
+  | MediaFolderNotFoundError {
   return (
     error instanceof MediaProcessingError ||
     error instanceof MediaQuotaExceededError ||
-    error instanceof DuplicateMediaError
+    error instanceof DuplicateMediaError ||
+    error instanceof MediaFolderNotFoundError
   );
+}
+
+/**
+ * The folder is checked before the bytes are written, but it can still be
+ * deleted before the row that points at it is inserted. That race reaches the
+ * database as a foreign-key refusal; naming the missing folder keeps the
+ * answer the same 404 the pre-check gives.
+ */
+function mediaCreateError(
+  error: unknown,
+  folderId: string | null,
+): unknown {
+  return folderId && isForeignKeyConstraintError(error)
+    ? new MediaFolderNotFoundError(folderId)
+    : error;
 }
 
 /**
@@ -366,11 +393,13 @@ async function createStoredPlainMedia({
   driver,
   storageDriver,
   source,
+  folderId,
   override,
 }: {
   driver: StorageDriver;
   storageDriver: StorageDriverName;
   source: MediaUploadSource;
+  folderId: string | null;
   override: boolean;
 }): Promise<MediaLibraryItem> {
   if (!source.key) {
@@ -432,16 +461,21 @@ async function createStoredPlainMedia({
     const media = await withMediaQuotaAdmission(
       { incomingBytes: stored.size },
       async (tx) => {
-        const created = await tx.media.create({
-          data: {
-            id,
-            name: source.name,
-            altText: source.altText || null,
-            type: source.type,
-            revision,
-          },
-          select: { id: true },
-        });
+        const created = await tx.media
+          .create({
+            data: {
+              id,
+              name: source.name,
+              altText: source.altText || null,
+              type: source.type,
+              revision,
+              folderId,
+            },
+            select: { id: true },
+          })
+          .catch((error: unknown) => {
+            throw mediaCreateError(error, folderId);
+          });
 
         await createStoredFileForMedia(tx, created.id, {
           key: stored.key,
@@ -492,18 +526,25 @@ export function storedImageFields(
  * after every object exists, and a failure removes the whole prefix so the
  * library never holds a half-processed file. A non-image is copied untouched
  * under the same layout.
+ *
+ * A `folderId` files the new Media into that folder; absent or null files it
+ * at the My Drive root.
  */
 export async function createMediaFromUpload({
   driver,
   storageDriver,
   source,
+  folderId = null,
   override = false,
 }: CreateMediaFromUploadOptions): Promise<MediaLibraryItem> {
+  if (folderId) await assertMediaFolderExists(folderId);
+
   if (source.type !== MediaType.IMAGE) {
     return createStoredPlainMedia({
       driver,
       storageDriver: await recordedStorageDriver(storageDriver),
       source,
+      folderId,
       override,
     });
   }
@@ -571,15 +612,20 @@ export async function createMediaFromUpload({
         ]),
       },
       async (tx) => {
-        const created = await tx.media.create({
-          data: {
-            ...storedImageFields(stored, revision),
-            id,
-            name: source.name,
-            altText: source.altText || null,
-          },
-          select: { id: true },
-        });
+        const created = await tx.media
+          .create({
+            data: {
+              ...storedImageFields(stored, revision),
+              id,
+              name: source.name,
+              altText: source.altText || null,
+              folderId,
+            },
+            select: { id: true },
+          })
+          .catch((error: unknown) => {
+            throw mediaCreateError(error, folderId);
+          });
 
         await createStoredFileForMedia(tx, created.id, {
           key: stored.key,

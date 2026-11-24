@@ -22,5 +22,6 @@ export const useMediaFilters = () => {
     view: parseAsStringEnum([...MEDIA_LIBRARY_VIEWS])
       .withDefault(DEFAULT_MEDIA_VIEW)
       .withOptions({ clearOnDefault: true }),
+    folderId: parseAsString.withOptions({ clearOnDefault: true }),
   });
 };

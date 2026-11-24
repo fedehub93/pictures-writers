@@ -1,3 +1,5 @@
+import type { MediaLibraryView } from "../constants";
+
 /** The columns the folder tree needs; a row carries no children yet. */
 export interface MediaFolderRow {
   id: string;
@@ -8,6 +10,21 @@ export interface MediaFolderRow {
 /** A row plus the children the server already nested under it. */
 export interface MediaFolderNode extends MediaFolderRow {
   children: MediaFolderNode[];
+}
+
+/**
+ * The folder an upload lands in: the folder the editor has open, but only
+ * while My Drive is the view. A flat view over the whole library, such as
+ * Archived, has no open folder, so its upload starts at the root.
+ */
+export function mediaUploadFolderId({
+  view,
+  folderId,
+}: {
+  view: MediaLibraryView;
+  folderId: string | null;
+}): string | null {
+  return view === "active" ? folderId : null;
 }
 
 /**
