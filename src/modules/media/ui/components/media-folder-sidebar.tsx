@@ -3,7 +3,13 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useMutation } from "@tanstack/react-query";
-import { FolderPlus, HardDrive } from "lucide-react";
+import {
+  Archive,
+  Clock,
+  FolderPlus,
+  HardDrive,
+  type LucideIcon,
+} from "lucide-react";
 
 import { useTRPC } from "@/trpc/client";
 import { Button } from "@/shared/ui/button";
@@ -20,10 +26,15 @@ import {
 import { ScrollArea } from "@/shared/ui/scroll-area";
 import { Skeleton } from "@/shared/ui/skeleton";
 
+import { DEFAULT_PAGE, type MediaLibraryView } from "../../constants";
 import { useMediaFolderTree } from "../../hooks/use-media";
+import { useMediaFilters } from "../../hooks/use-media-filters";
 import { useMediaInvalidation } from "../../hooks/use-media-invalidation";
 import { mediaErrorMessage } from "../../lib/error-message";
-import type { MediaFolderNode } from "../../lib/media-folder";
+import {
+  openMediaFolderId,
+  type MediaFolderNode,
+} from "../../lib/media-folder";
 
 import { MediaFolderNameDialog } from "./media-folder-name-dialog";
 import { MediaFolderTree } from "./media-folder-tree";
@@ -33,14 +44,16 @@ type DialogState =
   | { mode: "rename"; folder: MediaFolderNode };
 
 /**
- * The library's folder tree. It reads the nested tree the server built and
- * owns the three folder writes; the presentational tree only reports the row
- * an action named, so the same components render without a router in a test.
+ * The library's navigation: My Drive with its folder tree, plus the flat Recent
+ * and Archived views. It reads the nested tree the server built and owns the
+ * three folder writes; the presentational tree only reports the row an action
+ * named, so the same components render without a router in a test.
  */
 export const MediaFolderSidebar = () => {
   const trpc = useTRPC();
   const { data, isPending, isError, refetch } = useMediaFolderTree();
-  const { invalidateFolders } = useMediaInvalidation();
+  const { invalidateFolders, invalidateLibrary } = useMediaInvalidation();
+  const [filters, setFilters] = useMediaFilters();
 
   const create = useMutation(trpc.media.createFolder.mutationOptions());
   const update = useMutation(trpc.media.updateFolder.mutationOptions());
@@ -57,10 +70,24 @@ export const MediaFolderSidebar = () => {
   const isSubmitting = create.isPending || update.isPending;
   const isDeleting = remove.isPending;
 
+  // Every navigation returns to page one: a page number only exists inside the
+  // scope it was counted in.
+  const openView = (view: MediaLibraryView) =>
+    setFilters({ view, folderId: null, page: DEFAULT_PAGE });
+  const openFolder = (folder: MediaFolderNode) => {
+    setFilters({ view: "active", folderId: folder.id, page: DEFAULT_PAGE });
+    // The branch opens with the folder, so the highlighted row is on screen.
+    setExpandedIds((current) => new Set(current).add(folder.id));
+  };
+
+  const selectedFolderId = openMediaFolderId(filters);
+
   const run = async (action: () => Promise<unknown>, message: string) => {
     try {
       await action();
-      await invalidateFolders();
+      // The grid draws the child folders too, so a folder write refreshes both
+      // reads: the tree and the folder cards, which getMany owns.
+      await Promise.all([invalidateFolders(), invalidateLibrary()]);
       setDialog(null);
       setDeleteTarget(null);
       toast.success(message);
@@ -103,6 +130,8 @@ export const MediaFolderSidebar = () => {
         next.delete(id);
         return next;
       });
+      // The grid cannot stay pointed at a folder that no longer exists.
+      if (filters.folderId === id) openView("active");
     }, "Folder deleted");
   };
 
@@ -112,10 +141,21 @@ export const MediaFolderSidebar = () => {
       className="w-56 shrink-0 border-r pr-4"
     >
       <div className="flex items-center justify-between gap-x-2">
-        <div className="flex min-w-0 items-center gap-x-2 text-sm font-medium">
+        <button
+          type="button"
+          onClick={() => openView("active")}
+          aria-current={
+            filters.view === "active" && !filters.folderId ? "page" : undefined
+          }
+          className={`flex min-w-0 flex-1 items-center gap-x-2 rounded-md px-2 py-1.5 text-left text-sm transition hover:bg-accent ${
+            filters.view === "active" && !filters.folderId
+              ? "bg-accent font-medium"
+              : ""
+          }`}
+        >
           <HardDrive className="size-4 shrink-0 text-muted-foreground" />
           <span className="truncate">My Drive</span>
-        </div>
+        </button>
         <Button
           type="button"
           variant="ghost"
@@ -160,6 +200,8 @@ export const MediaFolderSidebar = () => {
               }
               onRename={(folder) => setDialog({ mode: "rename", folder })}
               onDelete={setDeleteTarget}
+              onSelect={openFolder}
+              selectedId={selectedFolderId}
             />
           ) : (
             <p className="py-2 text-xs text-muted-foreground">
@@ -167,6 +209,24 @@ export const MediaFolderSidebar = () => {
             </p>
           ))}
       </ScrollArea>
+
+      <nav
+        aria-label="Library views"
+        className="mt-2 flex flex-col gap-y-0.5 border-t pt-2"
+      >
+        <SidebarNavItem
+          active={filters.view === "recent"}
+          icon={Clock}
+          label="Recent"
+          onClick={() => openView("recent")}
+        />
+        <SidebarNavItem
+          active={filters.view === "archived"}
+          icon={Archive}
+          label="Archived"
+          onClick={() => openView("archived")}
+        />
+      </nav>
 
       {dialog && (
         <MediaFolderNameDialog
@@ -221,3 +281,31 @@ export const MediaFolderSidebar = () => {
     </aside>
   );
 };
+
+/**
+ * The flat views beside the tree. They are buttons, not links: the library
+ * lives in query state, so switching a view must not reload the page.
+ */
+const SidebarNavItem = ({
+  active,
+  icon: Icon,
+  label,
+  onClick,
+}: {
+  active: boolean;
+  icon: LucideIcon;
+  label: string;
+  onClick: () => void;
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    aria-current={active ? "page" : undefined}
+    className={`flex w-full items-center gap-x-2 rounded-md px-2 py-1.5 text-left text-sm transition hover:bg-accent ${
+      active ? "bg-accent font-medium" : ""
+    }`}
+  >
+    <Icon className="size-4 shrink-0 text-muted-foreground" />
+    <span className="truncate">{label}</span>
+  </button>
+);

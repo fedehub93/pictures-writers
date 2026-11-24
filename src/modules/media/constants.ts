@@ -18,8 +18,12 @@ export const MEDIA_SEARCH_DEBOUNCE_MS = 500;
 /** A folder name is a label, not content; one line of the tree should hold it. */
 export const MAX_MEDIA_FOLDER_NAME_LENGTH = 120;
 
-/** Which half of the library the admin is looking at. */
-export const MEDIA_LIBRARY_VIEWS = ["active", "archived"] as const;
+/**
+ * Which part of the library the admin is looking at. My Drive is the folder
+ * view and follows the tree; Recent and Archived are flat views over the whole
+ * library and ignore the open folder.
+ */
+export const MEDIA_LIBRARY_VIEWS = ["active", "recent", "archived"] as const;
 
 export type MediaLibraryView = (typeof MEDIA_LIBRARY_VIEWS)[number];
 

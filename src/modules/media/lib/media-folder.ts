@@ -13,11 +13,20 @@ export interface MediaFolderNode extends MediaFolderRow {
 }
 
 /**
- * The folder an upload lands in: the folder the editor has open, but only
- * while My Drive is the view. A flat view over the whole library, such as
- * Archived, has no open folder, so its upload starts at the root.
+ * A child folder as the grid draws it: the row plus how many active Media are
+ * filed directly in it. Archived Media are not counted, so the number matches
+ * the rows that open the folder shows.
  */
-export function mediaUploadFolderId({
+export interface MediaFolderSummary extends MediaFolderRow {
+  mediaCount: number;
+}
+
+/**
+ * The folder the editor has open: the selected folder while My Drive is the
+ * view, and none in a flat view over the whole library such as Recent or
+ * Archived. Uploads land here and the tree highlights it.
+ */
+export function openMediaFolderId({
   view,
   folderId,
 }: {

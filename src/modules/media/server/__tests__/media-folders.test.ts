@@ -20,7 +20,7 @@ vi.mock("@/trpc/init", async () => {
 
 import { createCallerFactory } from "@/trpc/init";
 
-import { MediaType } from "@/generated/prisma";
+import { MediaType, type Prisma } from "@/generated/prisma";
 import { db } from "@/shared/lib/db";
 
 import { mediaRouter } from "../procedures";
@@ -69,9 +69,19 @@ async function createFolder(name: string, parentId: string | null = null) {
   return folder;
 }
 
-async function createMediaInFolder(folderId: string | null) {
+async function createMediaInFolder(
+  folderId: string | null,
+  overrides: Partial<Prisma.MediaUncheckedCreateInput> = {},
+) {
   const media = await db.media.create({
-    data: { name: `Media ${randomUUID()}`, type: MediaType.FILE, folderId },
+    data: {
+      type: MediaType.FILE,
+      ...overrides,
+      // The marker keeps a search term isolating this test from the rows other
+      // test files hold in the same disposable database.
+      name: overrides.name ?? `${marker} ${randomUUID()}`,
+      folderId,
+    },
   });
   mediaIds.push(media.id);
   return media;
@@ -259,6 +269,218 @@ describe("media folders", () => {
       await expect(
         caller.deleteFolder({ id: randomUUID() }),
       ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    });
+  });
+
+  describe("folder-scoped reads", () => {
+    it("lists only the Media filed directly in the open folder", async () => {
+      const open = await createFolder(`${marker} open`);
+      const other = await createFolder(`${marker} other`);
+      const inside = await createMediaInFolder(open.id);
+      await createMediaInFolder(other.id);
+      await createMediaInFolder(null);
+
+      const result = await caller.getMany({
+        view: "active",
+        folderId: open.id,
+        pageSize: 100,
+      });
+
+      expect(result.items.map((item) => item.id)).toEqual([inside.id]);
+      expect(result.total).toBe(1);
+    });
+
+    it("lists the unfiled Media at the My Drive root", async () => {
+      const folder = await createFolder(`${marker} folder`);
+      const unfiled = await createMediaInFolder(null);
+      const filed = await createMediaInFolder(folder.id);
+
+      const root = await caller.getMany({
+        view: "active",
+        folderId: null,
+        pageSize: 100,
+      });
+      const omitted = await caller.getMany({
+        view: "active",
+        pageSize: 100,
+      });
+      const ids = root.items.map((item) => item.id);
+
+      expect(ids).toContain(unfiled.id);
+      expect(ids).not.toContain(filed.id);
+      // Leaving the folder out of the input means the same scope as the root.
+      expect(omitted.items.map((item) => item.id)).toContain(unfiled.id);
+      expect(omitted.items.map((item) => item.id)).not.toContain(filed.id);
+    });
+
+    it("searches the whole library while browsing a folder", async () => {
+      const folder = await createFolder(`${marker} folder`);
+      const filed = await createMediaInFolder(folder.id);
+      const unfiled = await createMediaInFolder(null);
+
+      const result = await caller.getMany({
+        view: "active",
+        folderId: folder.id,
+        search: marker,
+      });
+
+      // A name is often all the editor remembers; the open folder must not
+      // hide the copy filed elsewhere.
+      expect(result.items.map((item) => item.id).sort()).toEqual(
+        [filed.id, unfiled.id].sort(),
+      );
+    });
+
+    it("lists every active Media in the Recent view, newest first", async () => {
+      const folder = await createFolder(`${marker} folder`);
+      const base = Date.now();
+      const older = await createMediaInFolder(null, {
+        createdAt: new Date(base - 3000),
+      });
+      const newer = await createMediaInFolder(folder.id, {
+        createdAt: new Date(base - 2000),
+      });
+      await createMediaInFolder(folder.id, {
+        createdAt: new Date(base - 1000),
+        archivedAt: new Date(),
+      });
+
+      const recent = await caller.getMany({
+        view: "recent",
+        folderId: folder.id,
+        search: marker,
+      });
+
+      expect(recent.items.map((item) => item.id)).toEqual([
+        newer.id,
+        older.id,
+      ]);
+      expect(recent.folders).toEqual([]);
+    });
+
+    it("lists archived Media from every folder in the Archived view", async () => {
+      const folder = await createFolder(`${marker} folder`);
+      const filed = await createMediaInFolder(folder.id, {
+        archivedAt: new Date(),
+      });
+      const unfiled = await createMediaInFolder(null, {
+        archivedAt: new Date(),
+      });
+
+      const result = await caller.getMany({
+        view: "archived",
+        folderId: folder.id,
+        search: marker,
+      });
+
+      expect(result.items.map((item) => item.id).sort()).toEqual(
+        [filed.id, unfiled.id].sort(),
+      );
+      expect(result.items.every((item) => item.archivedAt !== null)).toBe(true);
+      expect(result.folders).toEqual([]);
+    });
+
+    it("returns the open folder's subfolders with their active item counts", async () => {
+      const parent = await createFolder(`${marker} parent`);
+      const beta = await createFolder(`${marker} beta`, parent.id);
+      const alpha = await createFolder(`${marker} alpha`, parent.id);
+      const grandchild = await createFolder(`${marker} grandchild`, alpha.id);
+      await createMediaInFolder(alpha.id);
+      await createMediaInFolder(alpha.id, { archivedAt: new Date() });
+      await createMediaInFolder(beta.id);
+
+      const contents = await caller.getMany({
+        view: "active",
+        folderId: parent.id,
+      });
+
+      expect(contents.items).toEqual([]);
+      expect(contents.folders.map((folder) => folder.name)).toEqual([
+        `${marker} alpha`,
+        `${marker} beta`,
+      ]);
+      // Archived Media do not count: the number is the rows the folder shows.
+      expect(contents.folders.map((folder) => folder.mediaCount)).toEqual([
+        1, 1,
+      ]);
+
+      const root = await caller.getMany({
+        view: "active",
+        folderId: null,
+      });
+      const roots = root.folders.filter((folder) =>
+        folder.name.startsWith(marker),
+      );
+
+      // A root listing names the top-level folder and no descendant.
+      expect(roots.map((folder) => folder.id)).toEqual([parent.id]);
+      expect(roots.map((folder) => folder.id)).not.toContain(grandchild.id);
+    });
+
+    it("shows folder cards on the first page of a folder only", async () => {
+      const parent = await createFolder(`${marker} parent`);
+      await createFolder(`${marker} child`, parent.id);
+      for (let index = 0; index < 3; index += 1) {
+        await createMediaInFolder(parent.id);
+      }
+
+      const first = await caller.getMany({
+        view: "active",
+        folderId: parent.id,
+        pageSize: 2,
+        page: 1,
+      });
+      const second = await caller.getMany({
+        view: "active",
+        folderId: parent.id,
+        pageSize: 2,
+        page: 2,
+      });
+
+      expect(first.folders.map((folder) => folder.name)).toEqual([
+        `${marker} child`,
+      ]);
+      expect(second.folders).toEqual([]);
+      expect(second.items).toHaveLength(1);
+    });
+
+    it("shows no folder cards while a search term is active", async () => {
+      const parent = await createFolder(`${marker} parent`);
+      await createFolder(`${marker} child`, parent.id);
+
+      const result = await caller.getMany({
+        view: "active",
+        folderId: parent.id,
+        search: marker,
+      });
+
+      expect(result.folders).toEqual([]);
+    });
+
+    it("counts the open folder or the Recent scope in getMeta", async () => {
+      const folder = await createFolder(`${marker} folder`);
+      await createMediaInFolder(folder.id);
+      await createMediaInFolder(folder.id);
+      await createMediaInFolder(null);
+      await createMediaInFolder(folder.id, { archivedAt: new Date() });
+
+      const folderMeta = await caller.getMeta({
+        view: "active",
+        folderId: folder.id,
+      });
+      expect(folderMeta.total).toBe(2);
+
+      const recentMeta = await caller.getMeta({
+        view: "recent",
+        search: marker,
+      });
+      expect(recentMeta.total).toBe(3);
+
+      const archivedMeta = await caller.getMeta({
+        view: "archived",
+        search: marker,
+      });
+      expect(archivedMeta.total).toBe(1);
     });
   });
 });

@@ -13,9 +13,10 @@ import { LoadingState } from "@/shared/components/loading-state";
 
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 
-import type { MediaLibraryView } from "../../constants";
+import { DEFAULT_PAGE, type MediaLibraryView } from "../../constants";
 import { mediaErrorMessage } from "../../lib/error-message";
 import { mediaDeletionCleanupNotice } from "../../lib/deletion-notice";
+import type { MediaFolderSummary } from "../../lib/media-folder";
 import {
   MEDIA_USAGE_NOTE,
   type MediaLibraryEntry,
@@ -31,6 +32,11 @@ export const MediaView = () => {
   const [filters, setFilters] = useMediaFilters();
   const { data } = useSuspenseMedia(filters);
 
+  // Opening a folder is navigation inside My Drive: it always returns to page
+  // one, because a page number belongs to the scope it was counted in.
+  const openFolder = (folderId: string) =>
+    setFilters({ view: "active", folderId, page: DEFAULT_PAGE });
+
   return (
     <div className="flex gap-6 px-6">
       <MediaFolderSidebar />
@@ -45,10 +51,12 @@ export const MediaView = () => {
             filters.folderId,
           ])}
           items={data.items}
+          folders={data.folders}
           view={filters.view}
           page={filters.page}
           totalPages={data.totalPages}
           onPageChange={(page) => setFilters({ page })}
+          onOpenFolder={openFolder}
         />
       </div>
     </div>
@@ -57,18 +65,22 @@ export const MediaView = () => {
 
 interface MediaLibraryProps {
   items: MediaLibraryEntry[];
+  folders: MediaFolderSummary[];
   view: MediaLibraryView;
   page: number;
   totalPages: number;
   onPageChange: (page: number) => void;
+  onOpenFolder: (folderId: string) => void;
 }
 
 const MediaLibrary = ({
   items,
+  folders,
   view,
   page,
   totalPages,
   onPageChange,
+  onOpenFolder,
 }: MediaLibraryProps) => {
   const trpc = useTRPC();
   const { invalidateLibrary } = useMediaInvalidation();
@@ -167,12 +179,18 @@ const MediaLibrary = ({
       </div>
       <MediaGrid
         items={items}
+        folders={folders}
         checkedIds={selectedIds}
         onCheckboxChange={handleCheckboxChange}
+        onOpenFolder={onOpenFolder}
       />
-      {items.length === 0 && (
+      {items.length === 0 && folders.length === 0 && (
         <div className="text-center text-sm text-muted-foreground mt-10">
-          {view === "archived" ? "No archived Media found" : "No Media found"}
+          {view === "archived"
+            ? "No archived Media found"
+            : view === "recent"
+              ? "No Media uploaded yet"
+              : "No Media found"}
         </div>
       )}
       <DataPagination

@@ -32,6 +32,7 @@ const MediaPage = async ({ searchParams }: Props) => {
   await prefetchMediaMeta({
     search: filters.search,
     view: filters.view,
+    folderId: filters.folderId,
   });
 
   return (

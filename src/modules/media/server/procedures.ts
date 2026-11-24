@@ -29,6 +29,7 @@ import {
   createMediaFolder,
   deleteMediaFolder,
   getMediaFolderTree,
+  listMediaFolderChildren,
   updateMediaFolder,
 } from "./media-folder-service";
 import {
@@ -55,15 +56,23 @@ const MEDIA_LIST_ORDER_BY: Prisma.MediaOrderByWithRelationInput[] = [
 function buildMediaWhere({
   search,
   view,
+  folderId,
 }: {
   search?: string | null;
   view: MediaLibraryView;
+  folderId?: string | null;
 }): Prisma.MediaWhereInput {
   const term = search?.trim();
 
   return {
     name: term ? { contains: term, mode: "insensitive" } : undefined,
     archivedAt: view === "archived" ? { not: null } : null,
+    // My Drive browses one level of the tree: the open folder, or the unfiled
+    // Media at the root when none is open. A search spans the library, because
+    // a name is often the only thing the editor remembers; Recent and Archived
+    // are whole-library views anyway, so the folder never narrows them.
+    folderId:
+      view === "active" && !term ? (folderId ?? null) : undefined,
   };
 }
 
@@ -71,7 +80,15 @@ const viewInput = z
   .enum(MEDIA_LIBRARY_VIEWS)
   .default(DEFAULT_MEDIA_VIEW);
 
-const listInput = z.object({
+/** What both the grid and the header count: the filters that pick the rows. */
+const scopeInput = z.object({
+  search: z.string().nullish(),
+  view: viewInput,
+  /** The open folder inside My Drive; absent or null means the My Drive root. */
+  folderId: z.string().min(1).nullish(),
+});
+
+const listInput = scopeInput.extend({
   page: z.number().int().min(1).default(DEFAULT_PAGE),
   pageSize: z
     .number()
@@ -79,8 +96,6 @@ const listInput = z.object({
     .min(MIN_PAGE_SIZE)
     .max(MAX_PAGE_SIZE)
     .default(DEFAULT_PAGE_SIZE),
-  search: z.string().nullish(),
-  view: viewInput,
 });
 
 const idsInput = z.object({
@@ -112,7 +127,17 @@ export const mediaRouter = createTRPCRouter({
     .query(async ({ input }) => {
       const where = buildMediaWhere(input);
 
-      const [rows, total] = await Promise.all([
+      // Folders belong to the first page of My Drive: they are where browsing
+      // starts, not rows that repeat above every page of a folder's Media. A
+      // search lists what matched, not where it could be filed, so it draws no
+      // folder cards either; Recent and Archived are flat views.
+      const term = input.search?.trim();
+      const childFolders =
+        input.view === "active" && input.page === DEFAULT_PAGE && !term
+          ? listMediaFolderChildren(input.folderId ?? null)
+          : Promise.resolve([]);
+
+      const [rows, total, folders] = await Promise.all([
         db.media.findMany({
           where,
           // The storage facts the admin sees come from the stored-file record;
@@ -123,6 +148,7 @@ export const mediaRouter = createTRPCRouter({
           skip: (input.page - 1) * input.pageSize,
         }),
         db.media.count({ where }),
+        childFolders,
       ]);
 
       const usage = await countMediaReferencesFor(rows.map((row) => row.id));
@@ -132,18 +158,14 @@ export const mediaRouter = createTRPCRouter({
           ...mediaLibraryItem(row),
           usageCount: usage.get(row.id) ?? 0,
         })),
+        folders,
         total,
         totalPages: Math.ceil(total / input.pageSize),
       };
     }),
 
   getMeta: permissionProcedure(PERMISSIONS.MEDIA_READ)
-    .input(
-      z.object({
-        search: z.string().nullish(),
-        view: viewInput,
-      }),
-    )
+    .input(scopeInput)
     .query(async ({ input }) => {
       const where = buildMediaWhere(input);
 

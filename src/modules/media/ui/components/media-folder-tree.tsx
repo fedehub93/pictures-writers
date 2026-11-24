@@ -31,6 +31,10 @@ export interface MediaFolderTreeProps {
   onCreateChild: (folder: MediaFolderNode) => void;
   onRename: (folder: MediaFolderNode) => void;
   onDelete: (folder: MediaFolderNode) => void;
+  /** Opens the folder: the library follows the row into its contents. */
+  onSelect: (folder: MediaFolderNode) => void;
+  /** The folder whose contents the grid is showing, if any. */
+  selectedId: string | null;
   /**
    * Which branches are open. Omit both to let the tree hold its own state; the
    * sidebar controls it so a folder created under a collapsed branch can be
@@ -46,6 +50,8 @@ export const MediaFolderTree = ({
   onCreateChild,
   onRename,
   onDelete,
+  onSelect,
+  selectedId,
   expandedIds,
   onExpandedChange,
 }: MediaFolderTreeProps) => {
@@ -74,6 +80,8 @@ export const MediaFolderTree = ({
           onCreateChild={onCreateChild}
           onRename={onRename}
           onDelete={onDelete}
+          onSelect={onSelect}
+          selectedId={selectedId}
         />
       ))}
     </ul>
@@ -88,6 +96,8 @@ interface MediaFolderTreeRowProps {
   onCreateChild: (folder: MediaFolderNode) => void;
   onRename: (folder: MediaFolderNode) => void;
   onDelete: (folder: MediaFolderNode) => void;
+  onSelect: (folder: MediaFolderNode) => void;
+  selectedId: string | null;
 }
 
 const MediaFolderTreeRow = ({
@@ -98,9 +108,12 @@ const MediaFolderTreeRow = ({
   onCreateChild,
   onRename,
   onDelete,
+  onSelect,
+  selectedId,
 }: MediaFolderTreeRowProps) => {
   const open = expanded.has(folder.id);
   const hasChildren = folder.children.length > 0;
+  const isSelected = selectedId === folder.id;
 
   return (
     <li>
@@ -109,7 +122,9 @@ const MediaFolderTreeRow = ({
         onOpenChange={(next) => onToggle(folder.id, next)}
       >
         <div
-          className="group flex items-center gap-x-1 rounded-md pr-1 hover:bg-accent"
+          className={`group flex items-center gap-x-1 rounded-md pr-1 hover:bg-accent ${
+            isSelected ? "bg-accent" : ""
+          }`}
           style={{ paddingLeft: depth * 12 }}
         >
           {hasChildren ? (
@@ -128,10 +143,19 @@ const MediaFolderTreeRow = ({
           ) : (
             <span className="size-6 shrink-0" aria-hidden />
           )}
-          <Folder className="size-4 shrink-0 text-muted-foreground" />
-          <span className="min-w-0 flex-1 truncate py-1 text-sm">
-            {folder.name}
-          </span>
+          <button
+            type="button"
+            onClick={() => onSelect(folder)}
+            aria-current={isSelected ? "page" : undefined}
+            className="flex min-w-0 flex-1 items-center gap-x-1 rounded-sm py-1 text-left text-sm"
+          >
+            <Folder className="size-4 shrink-0 text-muted-foreground" />
+            <span
+              className={`min-w-0 truncate ${isSelected ? "font-medium" : ""}`}
+            >
+              {folder.name}
+            </span>
+          </button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -177,6 +201,8 @@ const MediaFolderTreeRow = ({
                   onCreateChild={onCreateChild}
                   onRename={onRename}
                   onDelete={onDelete}
+                  onSelect={onSelect}
+                  selectedId={selectedId}
                 />
               ))}
             </ul>

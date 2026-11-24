@@ -7,6 +7,7 @@ import {
   buildFolderTree,
   wouldCreateCycle,
   type MediaFolderNode,
+  type MediaFolderSummary,
   type MediaFolderRow,
 } from "../lib/media-folder";
 
@@ -117,6 +118,31 @@ export async function assertMediaFolderExists(folderId: string): Promise<void> {
 /** The whole hierarchy, nested and ordered, rooted at the implicit My Drive. */
 export async function getMediaFolderTree(): Promise<MediaFolderNode[]> {
   return buildFolderTree(await allFoldersFlat());
+}
+
+/**
+ * The folders directly under `parentId` — the My Drive root when null — with
+ * the number of active Media filed in each. Archived Media are excluded, so a
+ * card's count is the number of rows opening that folder shows.
+ */
+export async function listMediaFolderChildren(
+  parentId: string | null,
+): Promise<MediaFolderSummary[]> {
+  const rows = await db.mediaFolder.findMany({
+    where: { parentId },
+    select: {
+      id: true,
+      name: true,
+      parentId: true,
+      _count: { select: { media: { where: { archivedAt: null } } } },
+    },
+    orderBy: [{ name: "asc" }, { id: "asc" }],
+  });
+
+  return rows.map(({ _count, ...folder }) => ({
+    ...folder,
+    mediaCount: _count.media,
+  }));
 }
 
 export async function createMediaFolder(input: {

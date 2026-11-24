@@ -119,8 +119,20 @@ uploaded without one belongs at the My Drive root. The service checks the folder
 records anything, so a folder deleted while the upload dialog was open is answered with
 `MEDIA_FOLDER_NOT_FOUND` instead of an uploaded file filed nowhere. The admin library passes
 the folder it is showing only while My Drive is the view: a flat view over the whole library,
-such as Archived, has no open folder, so uploads started there land at the root
-(`mediaUploadFolderId` in `src/modules/media/lib/media-folder.ts`).
+such as Recent or Archived, has no open folder, so uploads started there land at the root
+(`openMediaFolderId` in `src/modules/media/lib/media-folder.ts`).
+
+The library scopes My Drive one level of the tree at a time: a folder shows its child folders
+and the Media filed directly in it, and the root shows the folders with no parent and the Media
+with no folder. `media.getMany` takes the open `folderId` (absent or null means the root) and
+returns the child folders alongside the first page of Media, each with its active item count;
+`getMeta` counts the same scope, so the header never disagrees with the grid. A search spans the
+whole active library and drops the folder filter: a name is often the only thing the editor
+remembers, and searching the open folder alone would hide a copy filed elsewhere. Recent and
+Archived are whole-library views that ignore the folder too: Recent lists every active Media
+newest first and is also what the picker reads, and Archived lists every archived Media.
+Archived Media keep their `folderId` but never appear inside a folder, and a folder's item count
+excludes them.
 
 ## Where things live
 
@@ -162,6 +174,7 @@ such as Archived, has no open folder, so uploads started there land at the root
 | Folder tree shaping and anti-cycle rule | `src/modules/media/lib/media-folder.ts` |
 | Folder CRUD | `src/modules/media/server/media-folder-service.ts` |
 | Admin folder sidebar and tree | `src/modules/media/ui/components/media-folder-sidebar.tsx`, `src/modules/media/ui/components/media-folder-tree.tsx` |
+| Folder-scoped grid and folder card | `src/modules/media/ui/components/media-grid.tsx`, `src/modules/media/ui/components/media-folder-card.tsx` |
 | Upload endpoint | `src/app/api/media/route.ts` |
 | Replace endpoint | `src/app/api/media/[mediaId]/replace/route.ts` |
 | Public Media delivery route | `src/app/media/[...path]/route.ts` |
