@@ -25,23 +25,27 @@ import { useMediaInvalidation } from "../../hooks/use-media-invalidation";
 import { useSuspenseMedia } from "../../hooks/use-media";
 
 import { MediaGrid } from "../components/media-grid";
+import { MediaFolderSidebar } from "../components/media-folder-sidebar";
 
 export const MediaView = () => {
   const [filters, setFilters] = useMediaFilters();
   const { data } = useSuspenseMedia(filters);
 
   return (
-    <div className="px-6">
-      {/* Remounting on a filter change is what empties the selection: it never
-          survives into a page, search or view the admin cannot see. */}
-      <MediaLibrary
-        key={JSON.stringify([filters.search, filters.page, filters.view])}
-        items={data.items}
-        view={filters.view}
-        page={filters.page}
-        totalPages={data.totalPages}
-        onPageChange={(page) => setFilters({ page })}
-      />
+    <div className="flex gap-6 px-6">
+      <MediaFolderSidebar />
+      <div className="min-w-0 flex-1">
+        {/* Remounting on a filter change is what empties the selection: it never
+            survives into a page, search or view the admin cannot see. */}
+        <MediaLibrary
+          key={JSON.stringify([filters.search, filters.page, filters.view])}
+          items={data.items}
+          view={filters.view}
+          page={filters.page}
+          totalPages={data.totalPages}
+          onPageChange={(page) => setFilters({ page })}
+        />
+      </div>
     </div>
   );
 };

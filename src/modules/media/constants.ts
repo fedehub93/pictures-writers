@@ -15,6 +15,9 @@ export const MEDIA_PICKER_PAGE_SIZE = 12;
 /** The debounce both media search surfaces use before the term is committed. */
 export const MEDIA_SEARCH_DEBOUNCE_MS = 500;
 
+/** A folder name is a label, not content; one line of the tree should hold it. */
+export const MAX_MEDIA_FOLDER_NAME_LENGTH = 120;
+
 /** Which half of the library the admin is looking at. */
 export const MEDIA_LIBRARY_VIEWS = ["active", "archived"] as const;
 

@@ -17,6 +17,7 @@ import {
   DEFAULT_MEDIA_VIEW,
   DEFAULT_PAGE,
   DEFAULT_PAGE_SIZE,
+  MAX_MEDIA_FOLDER_NAME_LENGTH,
   MAX_PAGE_SIZE,
   MEDIA_LIBRARY_VIEWS,
   MIN_PAGE_SIZE,
@@ -24,6 +25,12 @@ import {
 } from "../constants";
 
 import { toMediaTrpcError } from "./errors";
+import {
+  createMediaFolder,
+  deleteMediaFolder,
+  getMediaFolderTree,
+  updateMediaFolder,
+} from "./media-folder-service";
 import {
   archiveMediaBatch,
   deleteMediaPermanentlyBatch,
@@ -80,6 +87,25 @@ const idsInput = z.object({
   ids: z.array(z.string().min(1)),
 });
 
+const folderName = z
+  .string()
+  .trim()
+  .min(1)
+  .max(MAX_MEDIA_FOLDER_NAME_LENGTH);
+
+const createFolderInput = z.object({
+  name: folderName,
+  parentId: z.string().min(1).nullish(),
+});
+
+const updateFolderInput = z.object({
+  id: z.string().min(1),
+  name: folderName.optional(),
+  parentId: z.string().min(1).nullish(),
+});
+
+const folderIdInput = z.object({ id: z.string().min(1) });
+
 export const mediaRouter = createTRPCRouter({
   getMany: permissionProcedure(PERMISSIONS.MEDIA_READ)
     .input(listInput)
@@ -132,6 +158,44 @@ export const mediaRouter = createTRPCRouter({
       ]);
 
       return { total, quota, storage, rehome };
+    }),
+
+  getFolderTree: permissionProcedure(PERMISSIONS.MEDIA_READ).query(() =>
+    getMediaFolderTree(),
+  ),
+
+  createFolder: permissionProcedure(PERMISSIONS.MEDIA_CREATE)
+    .input(createFolderInput)
+    .mutation(async ({ input }) => {
+      try {
+        return await createMediaFolder(input);
+      } catch (error) {
+        throw toMediaTrpcError(error);
+      }
+    }),
+
+  /**
+   * Renames a folder or changes its parent. The service refuses a move that
+   * would put a folder inside itself or one of its descendants.
+   */
+  updateFolder: permissionProcedure(PERMISSIONS.MEDIA_UPDATE)
+    .input(updateFolderInput)
+    .mutation(async ({ input }) => {
+      try {
+        return await updateMediaFolder(input);
+      } catch (error) {
+        throw toMediaTrpcError(error);
+      }
+    }),
+
+  deleteFolder: permissionProcedure(PERMISSIONS.MEDIA_DELETE)
+    .input(folderIdInput)
+    .mutation(async ({ input }) => {
+      try {
+        return await deleteMediaFolder(input.id);
+      } catch (error) {
+        throw toMediaTrpcError(error);
+      }
     }),
 
   update: permissionProcedure(PERMISSIONS.MEDIA_UPDATE)

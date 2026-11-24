@@ -9,6 +9,12 @@ import {
   MediaProcessingError,
 } from "./media-service";
 import {
+  MediaFolderCycleError,
+  MediaFolderNameError,
+  MediaFolderNotEmptyError,
+  MediaFolderNotFoundError,
+} from "./media-folder-service";
+import {
   RehomeConfirmationRequiredError,
   RehomeDiskSpaceError,
   RehomeTargetUnconfiguredError,
@@ -25,13 +31,24 @@ export function toMediaTrpcError(error: unknown): TRPCError {
     return error;
   }
 
-  if (error instanceof MediaNotFoundError) {
+  if (
+    error instanceof MediaNotFoundError ||
+    error instanceof MediaFolderNotFoundError
+  ) {
     return new TRPCError({ code: "NOT_FOUND", message: error.message });
+  }
+
+  if (
+    error instanceof MediaFolderCycleError ||
+    error instanceof MediaFolderNameError
+  ) {
+    return new TRPCError({ code: "BAD_REQUEST", message: error.message });
   }
 
   if (
     error instanceof MediaNotArchivedError ||
     error instanceof MediaInUseError ||
+    error instanceof MediaFolderNotEmptyError ||
     error instanceof RehomeAlreadyRunningError
   ) {
     return new TRPCError({ code: "CONFLICT", message: error.message });

@@ -13,6 +13,10 @@ export const useMediaInvalidation = () => {
   const invalidateMeta = () =>
     queryClient.invalidateQueries({ queryKey: trpc.media.getMeta.queryKey() });
 
+  /** The sidebar tree. Every folder write refreshes it with the library. */
+  const invalidateFolders = () =>
+    queryClient.invalidateQueries(trpc.media.getFolderTree.pathFilter());
+
   /**
    * The move's own reads. A driver switch changes what a move would do, so
    * the preflight and the progress must be asked again rather than shown
@@ -32,5 +36,5 @@ export const useMediaInvalidation = () => {
       invalidateMeta(),
     ]);
 
-  return { invalidateLibrary, invalidateMeta, invalidateRehome };
+  return { invalidateLibrary, invalidateMeta, invalidateFolders, invalidateRehome };
 };

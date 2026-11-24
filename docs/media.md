@@ -151,6 +151,9 @@ arrived is gone.
 | Quota arithmetic (pure vs database) | `src/modules/media/lib/quota.ts`, `src/modules/media/server/media-quota.ts` |
 | Quota refusal response | `src/modules/media/server/quota-error-response.ts` |
 | Admin reads and row operations (tRPC) | `src/modules/media/server/procedures.ts` |
+| Folder tree shaping and anti-cycle rule | `src/modules/media/lib/media-folder.ts` |
+| Folder CRUD | `src/modules/media/server/media-folder-service.ts` |
+| Admin folder sidebar and tree | `src/modules/media/ui/components/media-folder-sidebar.tsx`, `src/modules/media/ui/components/media-folder-tree.tsx` |
 | Upload endpoint | `src/app/api/media/route.ts` |
 | Replace endpoint | `src/app/api/media/[mediaId]/replace/route.ts` |
 | Public Media delivery route | `src/app/media/[...path]/route.ts` |

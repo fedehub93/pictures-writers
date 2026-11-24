@@ -138,6 +138,14 @@ _Avoid_: Provider, bucket, path when referring to the record.
 The logical identity of one uploaded file in the library: its name, type, alt text, revision and the manifest of the renditions derived from it. The location of its bytes - storage key, driver, content type, size, checksum - is its Stored file. One Media per original file; content references the Media, never a rendition.
 _Avoid_: Asset, file, attachment when referring to the library entity; using Media for a derived rendition.
 
+**Media folder**:
+A container that organizes Media in the library, with a display name and an optional parent so folders nest at any depth. A Media belongs to at most one folder, and a folder that still holds Media or a subfolder cannot be deleted.
+_Avoid_: Directory, collection, album, tag, category.
+
+**My Drive**:
+The library root: where a Media with no Media folder lives and where the folder tree starts. It is the implicit root of the tree, not a folder row, so it has no id to move or delete.
+_Avoid_: Root folder, home, all files.
+
 **Media type**:
 The kind of file a Media holds - image, video, audio, document - which decides what metadata is meaningful and whether the file is processed at all.
 _Avoid_: Kind, media category; MIME type, which is a property of the file rather than the library category.

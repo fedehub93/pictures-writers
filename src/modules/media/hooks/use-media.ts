@@ -15,6 +15,16 @@ export const useSuspenseMedia = (params: MediaListInput) => {
 };
 
 /**
+ * The nested folder tree. It is non suspense so the sidebar renders beside a
+ * grid that is still resolving, without a second loading gate.
+ */
+export const useMediaFolderTree = () => {
+  const trpc = useTRPC();
+
+  return useQuery(trpc.media.getFolderTree.queryOptions());
+};
+
+/**
  * The header read: filtered count, quota, storage choice and how many files
  * still sit on another driver. It is non suspense so the header can render
  * while the grid streams.
