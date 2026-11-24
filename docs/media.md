@@ -134,6 +134,12 @@ newest first and is also what the picker reads, and Archived lists every archive
 Archived Media keep their `folderId` but never appear inside a folder, and a folder's item count
 excludes them.
 
+Media change folders through `media.moveMedia`, which takes one or many ids and a target
+`folderId` (null is the My Drive root). The target is checked before anything is written, and every
+id is loaded first, so a deleted folder or an unknown Media refuses the whole batch instead of
+filing part of it. The card's action menu and the bulk toolbar open the same folder picker, and a
+move refreshes the grid and the counts, so a row leaves the scope it no longer belongs to.
+
 ## Where things live
 
 | Concern | File |
@@ -175,6 +181,7 @@ excludes them.
 | Folder CRUD | `src/modules/media/server/media-folder-service.ts` |
 | Admin folder sidebar and tree | `src/modules/media/ui/components/media-folder-sidebar.tsx`, `src/modules/media/ui/components/media-folder-tree.tsx` |
 | Folder-scoped grid and folder card | `src/modules/media/ui/components/media-grid.tsx`, `src/modules/media/ui/components/media-folder-card.tsx` |
+| Move between folders: mutation and picker | `src/modules/media/server/media-service.ts`, `src/modules/media/ui/components/media-move-dialog.tsx` |
 | Upload endpoint | `src/app/api/media/route.ts` |
 | Replace endpoint | `src/app/api/media/[mediaId]/replace/route.ts` |
 | Public Media delivery route | `src/app/media/[...path]/route.ts` |

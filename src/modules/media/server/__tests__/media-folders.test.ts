@@ -272,6 +272,87 @@ describe("media folders", () => {
     });
   });
 
+  describe("moveMedia", () => {
+    it("files one Media into the chosen folder", async () => {
+      const folder = await createFolder(`${marker} target`);
+      const media = await createMediaInFolder(null);
+
+      await expect(
+        caller.moveMedia({ ids: [media.id], folderId: folder.id }),
+      ).resolves.toEqual({ moved: 1 });
+
+      const row = await db.media.findUnique({
+        where: { id: media.id },
+        select: { folderId: true },
+      });
+      expect(row?.folderId).toBe(folder.id);
+    });
+
+    it("moves several Media at once and back to the My Drive root", async () => {
+      const folder = await createFolder(`${marker} target`);
+      const first = await createMediaInFolder(null);
+      const second = await createMediaInFolder(null);
+
+      await expect(
+        caller.moveMedia({
+          ids: [first.id, second.id],
+          folderId: folder.id,
+        }),
+      ).resolves.toEqual({ moved: 2 });
+
+      const filed = await db.media.findMany({
+        where: { id: { in: [first.id, second.id] } },
+        select: { folderId: true },
+      });
+      expect(filed.map((row) => row.folderId)).toEqual([
+        folder.id,
+        folder.id,
+      ]);
+
+      await expect(
+        caller.moveMedia({ ids: [first.id, second.id], folderId: null }),
+      ).resolves.toEqual({ moved: 2 });
+
+      const unfiled = await db.media.findMany({
+        where: { id: { in: [first.id, second.id] } },
+        select: { folderId: true },
+      });
+      expect(unfiled.map((row) => row.folderId)).toEqual([null, null]);
+    });
+
+    it("refuses a target folder that does not exist", async () => {
+      const media = await createMediaInFolder(null);
+
+      await expect(
+        caller.moveMedia({ ids: [media.id], folderId: randomUUID() }),
+      ).rejects.toMatchObject({ code: "NOT_FOUND" });
+
+      const row = await db.media.findUnique({
+        where: { id: media.id },
+        select: { folderId: true },
+      });
+      expect(row?.folderId).toBeNull();
+    });
+
+    it("files nothing when one Media in the batch is unknown", async () => {
+      const folder = await createFolder(`${marker} target`);
+      const media = await createMediaInFolder(null);
+
+      await expect(
+        caller.moveMedia({
+          ids: [media.id, randomUUID()],
+          folderId: folder.id,
+        }),
+      ).rejects.toMatchObject({ code: "NOT_FOUND" });
+
+      const row = await db.media.findUnique({
+        where: { id: media.id },
+        select: { folderId: true },
+      });
+      expect(row?.folderId).toBeNull();
+    });
+  });
+
   describe("folder-scoped reads", () => {
     it("lists only the Media filed directly in the open folder", async () => {
       const open = await createFolder(`${marker} open`);

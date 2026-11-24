@@ -36,6 +36,7 @@ import {
   archiveMediaBatch,
   deleteMediaPermanentlyBatch,
   MediaNotFoundError,
+  moveMediaToFolder,
   restoreMediaBatch,
 } from "./media-service";
 import { getMediaQuotaStatus } from "./media-quota";
@@ -257,6 +258,30 @@ export const mediaRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       try {
         return await archiveMediaBatch(input.ids);
+      } catch (error) {
+        throw toMediaTrpcError(error);
+      }
+    }),
+
+  /**
+   * Files one or many Media into a folder, or back to the My Drive root when
+   * `folderId` is null. Archived Media are not refused: an archived row keeps
+   * its folder, so the target is a fact about filing rather than visibility.
+   */
+  moveMedia: permissionProcedure(PERMISSIONS.MEDIA_UPDATE)
+    .input(
+      idsInput.extend({
+        folderId: z.string().min(1).nullable(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      try {
+        const moved = await moveMediaToFolder({
+          mediaIds: input.ids,
+          folderId: input.folderId,
+        });
+
+        return { moved };
       } catch (error) {
         throw toMediaTrpcError(error);
       }

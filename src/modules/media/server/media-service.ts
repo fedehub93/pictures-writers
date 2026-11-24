@@ -213,12 +213,12 @@ function isRethrowableMediaError(
 }
 
 /**
- * The folder is checked before the bytes are written, but it can still be
- * deleted before the row that points at it is inserted. That race reaches the
- * database as a foreign-key refusal; naming the missing folder keeps the
- * answer the same 404 the pre-check gives.
+ * The folder is checked before the write, but it can still be deleted before
+ * the row that points at it is written. That race reaches the database as a
+ * foreign-key refusal; naming the missing folder keeps the answer the same 404
+ * the pre-check gives.
  */
-function mediaCreateError(
+function mediaFolderRaceError(
   error: unknown,
   folderId: string | null,
 ): unknown {
@@ -474,7 +474,7 @@ async function createStoredPlainMedia({
             select: { id: true },
           })
           .catch((error: unknown) => {
-            throw mediaCreateError(error, folderId);
+            throw mediaFolderRaceError(error, folderId);
           });
 
         await createStoredFileForMedia(tx, created.id, {
@@ -624,7 +624,7 @@ export async function createMediaFromUpload({
             select: { id: true },
           })
           .catch((error: unknown) => {
-            throw mediaCreateError(error, folderId);
+            throw mediaFolderRaceError(error, folderId);
           });
 
         await createStoredFileForMedia(tx, created.id, {
@@ -1055,6 +1055,37 @@ export async function restoreMediaBatch(mediaIds: string[]): Promise<number> {
   );
 
   return pending.length;
+}
+
+/**
+ * Files a selection into one folder, or back to the My Drive root when the
+ * target is null. The folder is checked before anything is written, so a
+ * deleted folder is a readable refusal rather than a foreign-key failure; the
+ * rows are loaded first, so an unknown id aborts the batch instead of filing
+ * part of it. Moving is idempotent: Media already in the target count as moved.
+ */
+export async function moveMediaToFolder({
+  mediaIds,
+  folderId,
+}: {
+  mediaIds: string[];
+  folderId: string | null;
+}): Promise<number> {
+  if (folderId) await assertMediaFolderExists(folderId);
+
+  const media = await loadMediaForBatch(mediaIds);
+  if (media.length === 0) return 0;
+
+  try {
+    await db.media.updateMany({
+      where: { id: { in: media.map((item) => item.id) } },
+      data: { folderId },
+    });
+  } catch (error) {
+    throw mediaFolderRaceError(error, folderId);
+  }
+
+  return media.length;
 }
 
 /**

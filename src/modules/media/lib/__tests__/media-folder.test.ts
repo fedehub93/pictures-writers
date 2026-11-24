@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildFolderTree,
+  mediaFolderName,
   openMediaFolderId,
   wouldCreateCycle,
   type MediaFolderRow,
@@ -41,6 +42,19 @@ describe("buildFolderTree", () => {
     ]);
 
     expect(tree.map((node) => node.name)).toEqual(["Orphan"]);
+  });
+});
+
+describe("mediaFolderName", () => {
+  it("names a folder at any depth of the built tree", () => {
+    const tree = buildFolderTree(rows);
+
+    expect(mediaFolderName(tree, "campaigns")).toBe("Campaigns");
+    expect(mediaFolderName(tree, "heroes")).toBe("Heroes");
+  });
+
+  it("names nothing for an id the tree does not hold", () => {
+    expect(mediaFolderName(buildFolderTree(rows), "gone")).toBeNull();
   });
 });
 

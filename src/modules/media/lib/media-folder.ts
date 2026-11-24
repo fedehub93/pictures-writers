@@ -74,6 +74,23 @@ export function buildFolderTree(rows: MediaFolderRow[]): MediaFolderNode[] {
 }
 
 /**
+ * The name of one folder in a tree `buildFolderTree` produced, or null when no
+ * node carries the id. The built tree is the only folder list a client holds,
+ * so naming the chosen target is a tree read, not a second flat read.
+ */
+export function mediaFolderName(
+  nodes: MediaFolderNode[],
+  id: string,
+): string | null {
+  for (const node of nodes) {
+    if (node.id === id) return node.name;
+    const match = mediaFolderName(node.children, id);
+    if (match) return match;
+  }
+  return null;
+}
+
+/**
  * Whether filing `folderId` under `nextParentId` would put a folder inside
  * itself. Walking up from the proposed parent catches both a direct self-parent
  * and a move into a descendant; an existing cycle in the rows is refused too,

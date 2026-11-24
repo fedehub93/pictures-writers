@@ -3,13 +3,26 @@
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { useMutation } from "@tanstack/react-query";
-import { Archive, ArchiveRestore, FileText, Trash } from "lucide-react";
+import {
+  Archive,
+  ArchiveRestore,
+  FileText,
+  FolderInput,
+  MoreHorizontal,
+  Trash,
+} from "lucide-react";
 import { MediaType } from "@/generated/prisma";
 
 import { useTRPC } from "@/trpc/client";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/shared/ui/dropdown-menu";
 import { formatBytes } from "@/lib/format";
 
 import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
@@ -27,6 +40,8 @@ interface MediaCardProps {
   media: MediaLibraryEntry;
   checked: boolean;
   onCheckboxChange: (id: string, isChecked: boolean) => void;
+  /** Opens the folder picker for this Media; the library owns the move. */
+  onMove: (id: string) => void;
 }
 
 function DetailRow({
@@ -57,6 +72,7 @@ export const MediaCard = ({
   media,
   checked,
   onCheckboxChange,
+  onMove,
 }: MediaCardProps) => {
   const { onOpen } = useModal();
 
@@ -173,6 +189,27 @@ export const MediaCard = ({
                 disabled={isLoading}
                 onConfirm={onArchive}
               />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    aria-label={`More actions for ${name}`}
+                    disabled={isLoading}
+                  >
+                    <MoreHorizontal />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    disabled={isLoading}
+                    onSelect={() => onMove(id)}
+                  >
+                    <FolderInput />
+                    Move to folder
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </>
           ) : (
             <>

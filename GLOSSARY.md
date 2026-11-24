@@ -146,6 +146,10 @@ _Avoid_: Directory, collection, album, tag, category.
 The library root: where a Media with no Media folder lives and where the folder tree starts. It is the implicit root of the tree, not a folder row, so it has no id to move or delete.
 _Avoid_: Root folder, home, all files.
 
+**Move to folder**:
+Filing a Media into a Media folder, or back at the My Drive root, by changing its folder. It changes organization only: the Stored file's bytes stay where they are. The tRPC mutation is `media.moveMedia`.
+_Avoid_: Re-home, which moves bytes between drivers; relocate, organize, archive.
+
 **Recent**:
 The flat library view that lists the latest active Media newest first, ignoring folder membership. It is also the read the asset picker uses, because a picker offers the whole library rather than one folder.
 _Avoid_: Latest, recents, all files.
