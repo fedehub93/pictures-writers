@@ -36,42 +36,25 @@ import {
   type MediaLibraryEntry,
 } from "../../lib/media-library";
 
+import { MediaDetailRow } from "./media-detail-row";
+
 interface MediaCardProps {
   media: MediaLibraryEntry;
   checked: boolean;
+  selected: boolean;
   onCheckboxChange: (id: string, isChecked: boolean) => void;
+  /** Shows this Media in the details panel; the library owns the selection. */
+  onSelect: (id: string) => void;
   /** Opens the folder picker for this Media; the library owns the move. */
   onMove: (id: string) => void;
-}
-
-function DetailRow({
-  label,
-  value,
-  title,
-  mono = false,
-}: {
-  label: string;
-  value: string;
-  title?: string;
-  mono?: boolean;
-}) {
-  return (
-    <div className="flex justify-between items-center gap-x-4">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span
-        className={`text-xs truncate ${mono ? "font-mono" : ""}`}
-        title={title ?? value}
-      >
-        {value}
-      </span>
-    </div>
-  );
 }
 
 export const MediaCard = ({
   media,
   checked,
+  selected,
   onCheckboxChange,
+  onSelect,
   onMove,
 }: MediaCardProps) => {
   const { onOpen } = useModal();
@@ -162,8 +145,20 @@ export const MediaCard = ({
       : "This permanently removes the file and every generated rendition. It cannot be undone. References embedded in rich text or page data are not counted and cannot be protected.";
 
   return (
-    <div className="relative group hover:shadow-2xs transition overflow-hidden border rounded-lg h-full">
-      <div className="absolute p-4 z-10 w-full flex items-start justify-between gap-x-2">
+    <div
+      data-media-id={id}
+      data-selected={selected || undefined}
+      onClick={() => onSelect(id)}
+      className={`relative group cursor-pointer hover:shadow-2xs transition overflow-hidden border rounded-lg h-full ${
+        selected ? "ring-2 ring-ring border-transparent" : ""
+      }`}
+    >
+      {/* The actions are a second surface: using them must not change which
+          item the details panel is describing. */}
+      <div
+        className="absolute p-4 z-10 w-full flex items-start justify-between gap-x-2"
+        onClick={(event) => event.stopPropagation()}
+      >
         <Checkbox checked={checked} onCheckedChange={handleCheckboxChange} />
         <div className="flex flex-wrap justify-end gap-x-2 gap-y-2">
           {!isArchived ? (
@@ -265,33 +260,49 @@ export const MediaCard = ({
       </div>
       <div className="flex flex-col gap-y-2 p-3">
         <div className="flex justify-between items-center gap-x-4">
-          <div className="text-sm truncate font-medium group-hover:text-sky-700 transition">
+          <button
+            type="button"
+            aria-label={`View details for ${name}`}
+            onClick={(event) => {
+              // The root selects on any click; this control is the keyboard
+              // path, so it must not select twice.
+              event.stopPropagation();
+              onSelect(id);
+            }}
+            className="min-w-0 truncate text-left text-sm font-medium transition group-hover:text-sky-700 focus-visible:underline focus-visible:outline-hidden"
+          >
             {name}
-          </div>
+          </button>
           <div className="flex items-center gap-x-2">
             {isArchived && <Badge variant="secondary">Archived</Badge>}
             <Badge>{type}</Badge>
           </div>
         </div>
-        <DetailRow label="Size" value={formatBytes(size || 0)} />
-        {dimensions && <DetailRow label="Dimensions" value={dimensions} />}
-        {mimeType && <DetailRow label="MIME" value={mimeType} />}
-        {checksum && (
-          <DetailRow
-            label="Checksum"
-            value={checksum.slice(0, 12)}
-            title={checksum}
-            mono
+        <dl className="flex flex-col gap-y-2">
+          <MediaDetailRow label="Size" value={formatBytes(size || 0)} />
+          {dimensions && (
+            <MediaDetailRow label="Dimensions" value={dimensions} />
+          )}
+          {mimeType && <MediaDetailRow label="MIME" value={mimeType} />}
+          {checksum && (
+            <MediaDetailRow
+              label="Checksum"
+              value={checksum.slice(0, 12)}
+              title={checksum}
+              mono
+            />
+          )}
+          {revision > 1 && (
+            <MediaDetailRow label="Revision" value={`v${revision}`} />
+          )}
+          <MediaDetailRow
+            label="Used in"
+            value={`${usageCount} relational ${
+              usageCount === 1 ? "reference" : "references"
+            }`}
+            title="References embedded in rich text or page data are not counted"
           />
-        )}
-        {revision > 1 && <DetailRow label="Revision" value={`v${revision}`} />}
-        <DetailRow
-          label="Used in"
-          value={`${usageCount} relational ${
-            usageCount === 1 ? "reference" : "references"
-          }`}
-          title="References embedded in rich text or page data are not counted"
-        />
+        </dl>
       </div>
     </div>
   );

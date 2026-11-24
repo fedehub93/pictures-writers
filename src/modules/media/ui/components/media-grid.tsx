@@ -10,7 +10,9 @@ interface MediaGridProps {
   items: MediaLibraryEntry[];
   folders: MediaFolderSummary[];
   checkedIds: string[];
+  selectedMediaId: string | null;
   onCheckboxChange: (id: string, isChecked: boolean) => void;
+  onSelectMedia: (mediaId: string) => void;
   onOpenFolder: (folderId: string) => void;
   onMove: (mediaId: string) => void;
 }
@@ -24,7 +26,9 @@ export const MediaGrid = ({
   items,
   folders,
   checkedIds,
+  selectedMediaId,
   onCheckboxChange,
+  onSelectMedia,
   onOpenFolder,
   onMove,
 }: MediaGridProps) => {
@@ -42,7 +46,9 @@ export const MediaGrid = ({
           key={item.id}
           media={item}
           checked={checkedIds.includes(item.id)}
+          selected={item.id === selectedMediaId}
           onCheckboxChange={onCheckboxChange}
+          onSelect={onSelectMedia}
           onMove={onMove}
         />
       ))}

@@ -36,6 +36,22 @@ export const useMediaMeta = (params: MediaMetaInput) => {
 };
 
 /**
+ * The facts the details panel shows for the folder the editor has open. It is
+ * enabled only inside My Drive, where a folder is the current scope; the flat
+ * Recent and Archived views select nothing but a Media.
+ */
+export const useMediaFolderDetails = (folderId: string | null) => {
+  const trpc = useTRPC();
+
+  return useQuery(
+    trpc.media.getFolderDetails.queryOptions(
+      { id: folderId ?? "" },
+      { enabled: folderId !== null },
+    ),
+  );
+};
+
+/**
  * The space the next move needs. It is only asked when the header says a
  * move is possible; the server refuses an impossible run with the same plan.
  */

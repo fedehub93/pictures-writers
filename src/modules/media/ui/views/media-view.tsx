@@ -16,15 +16,24 @@ import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 import { DEFAULT_PAGE, type MediaLibraryView } from "../../constants";
 import { mediaErrorMessage } from "../../lib/error-message";
 import { mediaDeletionCleanupNotice } from "../../lib/deletion-notice";
-import type { MediaFolderSummary } from "../../lib/media-folder";
+import {
+  openMediaFolderId,
+  type MediaFolderDetails,
+  type MediaFolderSummary,
+} from "../../lib/media-folder";
 import {
   MEDIA_USAGE_NOTE,
   type MediaLibraryEntry,
 } from "../../lib/media-library";
 import { useMediaFilters } from "../../hooks/use-media-filters";
 import { useMediaInvalidation } from "../../hooks/use-media-invalidation";
-import { useMediaFolderTree, useSuspenseMedia } from "../../hooks/use-media";
+import {
+  useMediaFolderDetails,
+  useMediaFolderTree,
+  useSuspenseMedia,
+} from "../../hooks/use-media";
 
+import { MediaDetailsPanel } from "../components/media-details-panel";
 import { MediaGrid } from "../components/media-grid";
 import { MediaFolderSidebar } from "../components/media-folder-sidebar";
 import { MediaMoveDialog } from "../components/media-move-dialog";
@@ -38,28 +47,39 @@ export const MediaView = () => {
   const openFolder = (folderId: string) =>
     setFilters({ view: "active", folderId, page: DEFAULT_PAGE });
 
+  // A selection belongs to the page it was made on: the same id may open
+  // another page, view or folder, where the details it would show are gone.
+  const scopeKey = JSON.stringify([
+    filters.search,
+    filters.page,
+    filters.view,
+    filters.folderId,
+  ]);
+
+  // Opening a folder selects it: the panel describes the folder the editor
+  // entered, so a folder is as readable as a Media. Recent and Archived are
+  // flat views with no folder to describe.
+  const openFolderId = openMediaFolderId(filters);
+  const { data: folder, isPending: isFolderPending } =
+    useMediaFolderDetails(openFolderId);
+
   return (
     <div className="flex gap-6 px-6">
       <MediaFolderSidebar />
-      <div className="min-w-0 flex-1">
-        {/* Remounting on a filter change is what empties the selection: it never
-            survives into a page, search, view or folder the admin cannot see. */}
-        <MediaLibrary
-          key={JSON.stringify([
-            filters.search,
-            filters.page,
-            filters.view,
-            filters.folderId,
-          ])}
-          items={data.items}
-          folders={data.folders}
-          view={filters.view}
-          page={filters.page}
-          totalPages={data.totalPages}
-          onPageChange={(page) => setFilters({ page })}
-          onOpenFolder={openFolder}
-        />
-      </div>
+      {/* Remounting on a filter change is what empties the selection: it never
+          survives into a page, search, view or folder the admin cannot see. */}
+      <MediaLibrary
+        key={scopeKey}
+        items={data.items}
+        folders={data.folders}
+        folder={folder ?? null}
+        folderPending={openFolderId !== null && isFolderPending}
+        view={filters.view}
+        page={filters.page}
+        totalPages={data.totalPages}
+        onPageChange={(page) => setFilters({ page })}
+        onOpenFolder={openFolder}
+      />
     </div>
   );
 };
@@ -67,6 +87,8 @@ export const MediaView = () => {
 interface MediaLibraryProps {
   items: MediaLibraryEntry[];
   folders: MediaFolderSummary[];
+  folder: MediaFolderDetails | null;
+  folderPending: boolean;
   view: MediaLibraryView;
   page: number;
   totalPages: number;
@@ -77,6 +99,8 @@ interface MediaLibraryProps {
 const MediaLibrary = ({
   items,
   folders,
+  folder,
+  folderPending,
   view,
   page,
   totalPages,
@@ -91,6 +115,11 @@ const MediaLibrary = ({
   const move = useMutation(trpc.media.moveMedia.mutationOptions());
 
   const [checkedIds, setCheckedIds] = useState<string[]>([]);
+  // The one Media whose details the panel describes. It is dropped when the
+  // row is no longer on screen, so the panel cannot outlive its subject.
+  const [selectedMediaId, setSelectedMediaId] = useState<string | null>(null);
+  const selectedMedia =
+    items.find((item) => item.id === selectedMediaId) ?? null;
   const [isBulkLoading, setIsBulkLoading] = useState(false);
   // The Media a move would file: the whole selection from the toolbar, or the
   // one card whose menu opened the picker.
@@ -173,83 +202,96 @@ const MediaLibrary = ({
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-4">
-        <p className="text-xs text-muted-foreground">{MEDIA_USAGE_NOTE}</p>
-        {canShowBulkAction && (
-          <div className="flex items-center gap-x-2">
-            {view !== "archived" && (
-              <Button
-                disabled={isBulkPending}
-                variant="outline"
-                size="sm"
-                onClick={() => setMoveIds(selectedIds)}
-              >
-                <FolderInput />
-                Move to folder
-              </Button>
-            )}
-            {view === "active" && (
-              <ConfirmModal
-                title="Archive selected Media?"
-                description="Archived Media leave the library but keep being served and referenced by published content. You can restore them later."
-                confirmLabel="Archive"
-                onConfirm={onBulkArchive}
-              >
-                <Button disabled={isBulkPending} variant="outline" size="sm">
-                  <Archive />
-                  Archive
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center justify-between gap-4 pb-4">
+          <p className="text-xs text-muted-foreground">{MEDIA_USAGE_NOTE}</p>
+          {canShowBulkAction && (
+            <div className="flex items-center gap-x-2">
+              {view !== "archived" && (
+                <Button
+                  disabled={isBulkPending}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setMoveIds(selectedIds)}
+                >
+                  <FolderInput />
+                  Move to folder
                 </Button>
-              </ConfirmModal>
-            )}
-            {view === "archived" && (
-              <ConfirmModal
-                title="Delete selected Media permanently?"
-                description="Permanent deletion removes the file and every generated rendition. It cannot be undone, and it is refused while content still references a Media."
-                confirmLabel="Delete permanently"
-                onConfirm={onBulkDelete}
-              >
-                <Button disabled={isBulkPending} variant="destructive" size="sm">
-                  <Trash />
-                  Delete
-                </Button>
-              </ConfirmModal>
-            )}
+              )}
+              {view === "active" && (
+                <ConfirmModal
+                  title="Archive selected Media?"
+                  description="Archived Media leave the library but keep being served and referenced by published content. You can restore them later."
+                  confirmLabel="Archive"
+                  onConfirm={onBulkArchive}
+                >
+                  <Button disabled={isBulkPending} variant="outline" size="sm">
+                    <Archive />
+                    Archive
+                  </Button>
+                </ConfirmModal>
+              )}
+              {view === "archived" && (
+                <ConfirmModal
+                  title="Delete selected Media permanently?"
+                  description="Permanent deletion removes the file and every generated rendition. It cannot be undone, and it is refused while content still references a Media."
+                  confirmLabel="Delete permanently"
+                  onConfirm={onBulkDelete}
+                >
+                  <Button
+                    disabled={isBulkPending}
+                    variant="destructive"
+                    size="sm"
+                  >
+                    <Trash />
+                    Delete
+                  </Button>
+                </ConfirmModal>
+              )}
+            </div>
+          )}
+        </div>
+        <MediaGrid
+          items={items}
+          folders={folders}
+          checkedIds={selectedIds}
+          selectedMediaId={selectedMediaId}
+          onCheckboxChange={handleCheckboxChange}
+          onSelectMedia={setSelectedMediaId}
+          onOpenFolder={onOpenFolder}
+          onMove={(mediaId) => setMoveIds([mediaId])}
+        />
+        {moveIds && (
+          <MediaMoveDialog
+            open
+            count={moveIds.length}
+            folders={folderTree ?? []}
+            isPending={move.isPending}
+            onOpenChange={(open) => {
+              if (!open) setMoveIds(null);
+            }}
+            onConfirm={onMove}
+          />
+        )}
+        {items.length === 0 && folders.length === 0 && (
+          <div className="text-center text-sm text-muted-foreground mt-10">
+            {view === "archived"
+              ? "No archived Media found"
+              : view === "recent"
+                ? "No Media uploaded yet"
+                : "No Media found"}
           </div>
         )}
-      </div>
-      <MediaGrid
-        items={items}
-        folders={folders}
-        checkedIds={selectedIds}
-        onCheckboxChange={handleCheckboxChange}
-        onOpenFolder={onOpenFolder}
-        onMove={(mediaId) => setMoveIds([mediaId])}
-      />
-      {moveIds && (
-        <MediaMoveDialog
-          open
-          count={moveIds.length}
-          folders={folderTree ?? []}
-          isPending={move.isPending}
-          onOpenChange={(open) => {
-            if (!open) setMoveIds(null);
-          }}
-          onConfirm={onMove}
+        <DataPagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
         />
-      )}
-      {items.length === 0 && folders.length === 0 && (
-        <div className="text-center text-sm text-muted-foreground mt-10">
-          {view === "archived"
-            ? "No archived Media found"
-            : view === "recent"
-              ? "No Media uploaded yet"
-              : "No Media found"}
-        </div>
-      )}
-      <DataPagination
-        page={page}
-        totalPages={totalPages}
-        onPageChange={onPageChange}
+      </div>
+      <MediaDetailsPanel
+        media={selectedMedia}
+        folder={folder}
+        folderPending={folderPending}
       />
     </>
   );

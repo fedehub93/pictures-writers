@@ -28,6 +28,7 @@ import { toMediaTrpcError } from "./errors";
 import {
   createMediaFolder,
   deleteMediaFolder,
+  getMediaFolderDetails,
   getMediaFolderTree,
   listMediaFolderChildren,
   updateMediaFolder,
@@ -186,6 +187,11 @@ export const mediaRouter = createTRPCRouter({
   getFolderTree: permissionProcedure(PERMISSIONS.MEDIA_READ).query(() =>
     getMediaFolderTree(),
   ),
+
+  /** What the details panel shows for one folder; null when it no longer exists. */
+  getFolderDetails: permissionProcedure(PERMISSIONS.MEDIA_READ)
+    .input(folderIdInput)
+    .query(({ input }) => getMediaFolderDetails(input.id)),
 
   createFolder: permissionProcedure(PERMISSIONS.MEDIA_CREATE)
     .input(createFolderInput)

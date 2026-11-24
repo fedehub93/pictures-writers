@@ -140,6 +140,16 @@ id is loaded first, so a deleted folder or an unknown Media refuses the whole ba
 filing part of it. The card's action menu and the bulk toolbar open the same folder picker, and a
 move refreshes the grid and the counts, so a row leaves the scope it no longer belongs to.
 
+The right-hand details panel is read-only. The selected Media's facts come from the row the grid
+already holds, and its public URL is the stored delivery address: the panel is a browser boundary
+that resolves a relative address, so it does not compose a second absolute form. A folder's name,
+active count, stored-original bytes and dates come from `media.getFolderDetails`, because the grid
+only returns child folders; the count and bytes cover the Media filed directly in it, matching the
+card that opened it. Opening a folder selects it, so the panel describes the folder the editor
+entered, while selecting a Media replaces it; a scope with neither (the My Drive root, Recent,
+Archived) shows a placeholder. Editing and destructive actions stay on the card and the bulk
+toolbar, so the panel never becomes a second control surface.
+
 ## Where things live
 
 | Concern | File |
@@ -182,6 +192,7 @@ move refreshes the grid and the counts, so a row leaves the scope it no longer b
 | Admin folder sidebar and tree | `src/modules/media/ui/components/media-folder-sidebar.tsx`, `src/modules/media/ui/components/media-folder-tree.tsx` |
 | Folder-scoped grid and folder card | `src/modules/media/ui/components/media-grid.tsx`, `src/modules/media/ui/components/media-folder-card.tsx` |
 | Move between folders: mutation and picker | `src/modules/media/server/media-service.ts`, `src/modules/media/ui/components/media-move-dialog.tsx` |
+| Read-only details panel and its folder read | `src/modules/media/ui/components/media-details-panel.tsx`, `src/modules/media/server/media-folder-service.ts` |
 | Upload endpoint | `src/app/api/media/route.ts` |
 | Replace endpoint | `src/app/api/media/[mediaId]/replace/route.ts` |
 | Public Media delivery route | `src/app/media/[...path]/route.ts` |

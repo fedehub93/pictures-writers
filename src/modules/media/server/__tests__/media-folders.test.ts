@@ -87,6 +87,35 @@ async function createMediaInFolder(
   return media;
 }
 
+/** A handed folder Media with the stored-file record its size comes from. */
+async function createStoredMediaInFolder(
+  folderId: string,
+  size: number,
+  overrides: Partial<Prisma.MediaUncheckedCreateInput> = {},
+) {
+  const id = overrides.id ?? randomUUID();
+  const media = await db.media.create({
+    data: {
+      id,
+      type: MediaType.FILE,
+      ...overrides,
+      name: overrides.name ?? `${marker} ${randomUUID()}`,
+      folderId,
+      storedFile: {
+        create: {
+          key: `folder-details/${id}/1/original`,
+          driver: "local",
+          contentType: "application/pdf",
+          size,
+          checksum: `checksum-${id}`,
+        },
+      },
+    },
+  });
+  mediaIds.push(media.id);
+  return media;
+}
+
 function findNode(
   tree: MediaFolderNode[],
   id: string,
@@ -118,6 +147,47 @@ describe("media folders", () => {
       expect(findNode(tree, root.id)?.children.map((node) => node.id)).toEqual([
         child.id,
       ]);
+    });
+  });
+
+  describe("getFolderDetails", () => {
+    it("counts and sizes the active Media filed directly in the folder", async () => {
+      const folder = await createFolder(`${marker} details`);
+      const other = await createFolder(`${marker} other`);
+
+      await createStoredMediaInFolder(folder.id, 1000);
+      await createStoredMediaInFolder(folder.id, 2500);
+      await createStoredMediaInFolder(folder.id, 9999, {
+        archivedAt: new Date(),
+      });
+      await createStoredMediaInFolder(other.id, 777);
+
+      const details = await caller.getFolderDetails({ id: folder.id });
+
+      expect(details).toMatchObject({
+        id: folder.id,
+        name: `${marker} details`,
+        parentId: null,
+        mediaCount: 2,
+        totalSize: 3500,
+      });
+      // The dates are the stored rows, not the read's own clock.
+      expect(details?.createdAt.getTime()).toBe(folder.createdAt.getTime());
+      expect(details?.updatedAt.getTime()).toBe(folder.updatedAt.getTime());
+    });
+
+    it("reports an empty folder as zero items and zero bytes", async () => {
+      const folder = await createFolder(`${marker} empty details`);
+
+      await expect(
+        caller.getFolderDetails({ id: folder.id }),
+      ).resolves.toMatchObject({ mediaCount: 0, totalSize: 0 });
+    });
+
+    it("answers null for a folder that no longer exists", async () => {
+      await expect(
+        caller.getFolderDetails({ id: randomUUID() }),
+      ).resolves.toBeNull();
     });
   });
 

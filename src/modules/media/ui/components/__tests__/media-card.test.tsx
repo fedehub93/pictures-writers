@@ -57,7 +57,7 @@ const MEDIA: MediaLibraryEntry = {
 let root: ReturnType<typeof createRoot> | null = null;
 let container: HTMLDivElement | null = null;
 
-function mount(onMove = () => undefined) {
+function mount(onMove = () => undefined, onSelect = () => undefined) {
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
@@ -68,7 +68,9 @@ function mount(onMove = () => undefined) {
         <MediaCard
           media={MEDIA}
           checked={false}
+          selected={false}
           onCheckboxChange={() => undefined}
+          onSelect={onSelect}
           onMove={onMove}
         />
       </QueryClientProvider>,
@@ -124,5 +126,50 @@ describe("MediaCard move action", () => {
 
     expect(onMove).toHaveBeenCalledTimes(1);
     expect(onMove).toHaveBeenCalledWith("media-1");
+  });
+});
+
+describe("MediaCard selection", () => {
+  it("reports the Media it shows when the card is clicked", async () => {
+    const onSelect = vi.fn();
+    mount(() => undefined, onSelect);
+
+    const card = document.querySelector<HTMLElement>(
+      '[data-media-id="media-1"]',
+    );
+    expect(card).not.toBeNull();
+
+    await act(async () => {
+      card!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(onSelect).toHaveBeenCalledWith("media-1");
+  });
+
+  it("selects the Media from its name for keyboard users", async () => {
+    const onSelect = vi.fn();
+    mount(() => undefined, onSelect);
+
+    const name = document.querySelector<HTMLButtonElement>(
+      '[aria-label="View details for Probe move"]',
+    );
+    expect(name).not.toBeNull();
+
+    await act(async () => {
+      name!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    expect(onSelect).toHaveBeenCalledTimes(1);
+    expect(onSelect).toHaveBeenCalledWith("media-1");
+  });
+
+  it("does not report a selection when a card action is used", async () => {
+    const onSelect = vi.fn();
+    mount(() => undefined, onSelect);
+
+    await press(menuTrigger());
+
+    expect(onSelect).not.toHaveBeenCalled();
   });
 });

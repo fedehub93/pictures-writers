@@ -22,6 +22,18 @@ export interface MediaFolderSummary extends MediaFolderRow {
 }
 
 /**
+ * The facts the details panel shows for one folder: the row plus what it holds.
+ * The count and size cover the active Media filed directly in it, so the panel
+ * agrees with the card that opened it and with the rows the folder shows.
+ */
+export interface MediaFolderDetails extends MediaFolderRow {
+  mediaCount: number;
+  totalSize: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
  * The folder the editor has open: the selected folder while My Drive is the
  * view, and none in a flat view over the whole library such as Recent or
  * Archived. Uploads land here and the tree highlights it.

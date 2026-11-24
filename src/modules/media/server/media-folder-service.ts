@@ -6,6 +6,7 @@ import { MAX_MEDIA_FOLDER_NAME_LENGTH } from "../constants";
 import {
   buildFolderTree,
   wouldCreateCycle,
+  type MediaFolderDetails,
   type MediaFolderNode,
   type MediaFolderSummary,
   type MediaFolderRow,
@@ -143,6 +144,45 @@ export async function listMediaFolderChildren(
     ...folder,
     mediaCount: _count.media,
   }));
+}
+
+/**
+ * One folder with the facts the details panel shows. The count and size cover
+ * the active Media filed directly in it, the same scope the card opened; a
+ * missing folder answers null rather than throwing, because a panel opened on
+ * a folder another tab just deleted only needs to fall back to its placeholder.
+ */
+export async function getMediaFolderDetails(
+  id: string,
+): Promise<MediaFolderDetails | null> {
+  const folder = await db.mediaFolder.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      name: true,
+      parentId: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  if (!folder) return null;
+
+  const [mediaCount, storedBytes] = await Promise.all([
+    db.media.count({ where: { folderId: id, archivedAt: null } }),
+    // The size lives on the stored-file record, not on the Media row, so the
+    // sum reads the same record the library draws its size from.
+    db.storedFile.aggregate({
+      _sum: { size: true },
+      where: { media: { folderId: id, archivedAt: null } },
+    }),
+  ]);
+
+  return {
+    ...folder,
+    mediaCount,
+    totalSize: storedBytes._sum.size ?? 0,
+  };
 }
 
 export async function createMediaFolder(input: {
