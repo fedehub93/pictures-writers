@@ -151,8 +151,8 @@ Filing a Media into a Media folder, or back at the My Drive root, by changing it
 _Avoid_: Re-home, which moves bytes between drivers; relocate, organize, archive.
 
 **Recent**:
-The flat library view that lists the latest active Media newest first, ignoring folder membership. It is also the read the asset picker uses, because a picker offers the whole library rather than one folder.
-_Avoid_: Latest, recents, all files.
+The preview surface that lists the latest active Media newest first, ignoring folder membership. It appears as the "Recent" box inside My Drive and is the read the asset picker uses, because a picker offers the whole library rather than one folder. It is no longer a separate page view in the sidebar.
+_Avoid_: Latest, recents, all files; using Recent for the whole My Drive view.
 
 **Media type**:
 The kind of file a Media holds - image, video, audio, document - which decides what metadata is meaningful and whether the file is processed at all.

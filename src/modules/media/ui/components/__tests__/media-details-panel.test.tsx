@@ -128,7 +128,7 @@ describe("MediaDetailsPanel", () => {
     const scope = mount(null, null);
 
     expect(scope.textContent).toContain(
-      "Select a Media or folder to see its details.",
+      "Select an item to view more information",
     );
   });
 });

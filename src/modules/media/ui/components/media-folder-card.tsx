@@ -2,8 +2,6 @@
 
 import { Folder } from "lucide-react";
 
-import { Badge } from "@/shared/ui/badge";
-
 import type { MediaFolderSummary } from "../../lib/media-folder";
 
 interface MediaFolderCardProps {
@@ -31,17 +29,11 @@ export const MediaFolderCard = ({ folder, onOpen }: MediaFolderCardProps) => {
         <Folder className="size-10" strokeWidth={1} />
       </div>
       <div className="flex flex-col gap-y-2 p-3">
-        <div className="flex items-center justify-between gap-x-4">
-          <div className="truncate text-sm font-medium transition group-hover:text-sky-700">
-            {name}
-          </div>
-          <Badge variant="secondary">Folder</Badge>
+        <div className="truncate text-sm font-medium transition group-hover:text-sky-700">
+          {name}
         </div>
-        <div className="flex items-center justify-between gap-x-4">
-          <span className="text-xs text-muted-foreground">Media</span>
-          <span className="text-xs">
-            {mediaCount} {mediaCount === 1 ? "item" : "items"}
-          </span>
+        <div className="text-xs text-muted-foreground">
+          {mediaCount} {mediaCount === 1 ? "item" : "items"}
         </div>
       </div>
     </button>

@@ -11,6 +11,8 @@ interface MediaGridProps {
   folders: MediaFolderSummary[];
   checkedIds: string[];
   selectedMediaId: string | null;
+  /** Whether the archived badge may appear on Media cards. */
+  showArchivedBadge?: boolean;
   onCheckboxChange: (id: string, isChecked: boolean) => void;
   onSelectMedia: (mediaId: string) => void;
   onOpenFolder: (folderId: string) => void;
@@ -27,13 +29,14 @@ export const MediaGrid = ({
   folders,
   checkedIds,
   selectedMediaId,
+  showArchivedBadge = false,
   onCheckboxChange,
   onSelectMedia,
   onOpenFolder,
   onMove,
 }: MediaGridProps) => {
   return (
-    <div className="grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 mb-4">
+    <div className="grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
       {folders.map((folder) => (
         <MediaFolderCard
           key={folder.id}
@@ -47,6 +50,7 @@ export const MediaGrid = ({
           media={item}
           checked={checkedIds.includes(item.id)}
           selected={item.id === selectedMediaId}
+          showArchivedBadge={showArchivedBadge}
           onCheckboxChange={onCheckboxChange}
           onSelect={onSelectMedia}
           onMove={onMove}

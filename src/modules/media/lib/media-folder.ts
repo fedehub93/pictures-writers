@@ -103,6 +103,23 @@ export function mediaFolderName(
 }
 
 /**
+ * The path from the My Drive root to one folder, as a list of nodes where the
+ * last entry is the folder itself. Returns an empty list when the id is not in
+ * the tree; the My Drive root is not a node and is added by the breadcrumb.
+ */
+export function mediaFolderPath(
+  nodes: MediaFolderNode[],
+  id: string,
+): MediaFolderNode[] {
+  for (const node of nodes) {
+    if (node.id === id) return [node];
+    const childPath = mediaFolderPath(node.children, id);
+    if (childPath.length > 0) return [node, ...childPath];
+  }
+  return [];
+}
+
+/**
  * Whether filing `folderId` under `nextParentId` would put a folder inside
  * itself. Walking up from the proposed parent catches both a direct self-parent
  * and a move into a descendant; an existing cycle in the rows is refused too,

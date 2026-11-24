@@ -3,16 +3,9 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useMutation } from "@tanstack/react-query";
-import {
-  Archive,
-  Clock,
-  FolderPlus,
-  HardDrive,
-  type LucideIcon,
-} from "lucide-react";
+import { Archive, HardDrive, type LucideIcon } from "lucide-react";
 
 import { useTRPC } from "@/trpc/client";
-import { Button } from "@/shared/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,26 +29,24 @@ import {
   type MediaFolderNode,
 } from "../../lib/media-folder";
 
-import { MediaFolderNameDialog } from "./media-folder-name-dialog";
 import { MediaFolderTree } from "./media-folder-tree";
 import { MediaStorageDetails } from "./media-storage-details";
-
-type DialogState =
-  | { mode: "create"; parentId: string | null }
-  | { mode: "rename"; folder: MediaFolderNode };
+import { useMediaFolderDialog } from "./media-folder-dialog-provider";
 
 /**
- * The library's navigation: My Drive with its folder tree, plus the flat Recent
- * and Archived views, with the storage details beneath them. It reads the
- * nested tree the server built and owns the three folder writes; the
- * presentational tree only reports the row an action named, so the same
- * components render without a router in a test.
+ * The library's navigation: My Drive with its folder tree, plus the Archived
+ * view, with the storage details beneath them. It reads the nested tree the
+ * server built and owns folder deletion; create and rename live in the shared
+ * dialog provider so the header's "New Folder" action can open the same
+ * surface. The presentational tree only reports the row an action named, so the
+ * same components render without a router in a test.
  */
 export const MediaFolderSidebar = () => {
   const trpc = useTRPC();
   const { data, isPending, isError, refetch } = useMediaFolderTree();
   const { invalidateFolders, invalidateLibrary } = useMediaInvalidation();
   const [filters, setFilters] = useMediaFilters();
+  const { openCreate, openRename } = useMediaFolderDialog();
   // The storage widget is beside navigation, so it shows the installation's
   // whole budget rather than the open scope. It shares the header's read, so
   // the two cost one request.
@@ -65,11 +56,8 @@ export const MediaFolderSidebar = () => {
     folderId: filters.folderId,
   });
 
-  const create = useMutation(trpc.media.createFolder.mutationOptions());
-  const update = useMutation(trpc.media.updateFolder.mutationOptions());
   const remove = useMutation(trpc.media.deleteFolder.mutationOptions());
 
-  const [dialog, setDialog] = useState<DialogState | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<MediaFolderNode | null>(
     null,
   );
@@ -77,7 +65,6 @@ export const MediaFolderSidebar = () => {
     () => new Set(),
   );
 
-  const isSubmitting = create.isPending || update.isPending;
   const isDeleting = remove.isPending;
 
   // Every navigation returns to page one: a page number only exists inside the
@@ -92,90 +79,53 @@ export const MediaFolderSidebar = () => {
 
   const selectedFolderId = openMediaFolderId(filters);
 
-  const run = async (action: () => Promise<unknown>, message: string) => {
-    try {
-      await action();
-      // The grid draws the child folders too, so a folder write refreshes both
-      // reads: the tree and the folder cards, which getMany owns.
-      await Promise.all([invalidateFolders(), invalidateLibrary()]);
-      setDialog(null);
-      setDeleteTarget(null);
-      toast.success(message);
-    } catch (error) {
-      toast.error(mediaErrorMessage(error));
-    }
-  };
-
-  const onSubmitName = (name: string) => {
-    if (!dialog) return;
-
-    if (dialog.mode === "create") {
-      const { parentId } = dialog;
-
-      void run(async () => {
-        await create.mutateAsync({ name, parentId });
-        // The new branch must be visible where the action was taken; its own
-        // row is already on screen, so only the parent has to open.
-        if (parentId) {
-          setExpandedIds((current) => new Set(current).add(parentId));
-        }
-      }, "Folder created");
-      return;
-    }
-
-    void run(
-      () => update.mutateAsync({ id: dialog.folder.id, name }),
-      "Folder renamed",
-    );
-  };
-
   const onDelete = () => {
     if (!deleteTarget) return;
     const { id } = deleteTarget;
 
-    void run(async () => {
-      await remove.mutateAsync({ id });
-      setExpandedIds((current) => {
-        const next = new Set(current);
-        next.delete(id);
-        return next;
-      });
-      // The grid cannot stay pointed at a folder that no longer exists.
-      if (filters.folderId === id) openView("active");
-    }, "Folder deleted");
+    const run = async () => {
+      try {
+        await remove.mutateAsync({ id });
+        // The grid draws the child folders too, so a folder write refreshes both
+        // reads: the tree and the folder cards, which getMany owns.
+        await Promise.all([invalidateFolders(), invalidateLibrary()]);
+        setExpandedIds((current) => {
+          const next = new Set(current);
+          next.delete(id);
+          return next;
+        });
+        // The grid cannot stay pointed at a folder that no longer exists.
+        if (filters.folderId === id) openView("active");
+        setDeleteTarget(null);
+        toast.success("Folder deleted");
+      } catch (error) {
+        toast.error(mediaErrorMessage(error));
+      }
+    };
+
+    void run();
   };
 
   return (
     <aside
       aria-label="Media folders"
-      className="w-56 shrink-0 border-r pr-4"
+      className="w-64 shrink-0 border-r pr-4"
     >
-      <div className="flex items-center justify-between gap-x-2">
-        <button
-          type="button"
-          onClick={() => openView("active")}
-          aria-current={
-            filters.view === "active" && !filters.folderId ? "page" : undefined
-          }
-          className={`flex min-w-0 flex-1 items-center gap-x-2 rounded-md px-2 py-1.5 text-left text-sm transition hover:bg-accent ${
-            filters.view === "active" && !filters.folderId
-              ? "bg-accent font-medium"
-              : ""
-          }`}
-        >
-          <HardDrive className="size-4 shrink-0 text-muted-foreground" />
-          <span className="truncate">My Drive</span>
-        </button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-xs"
-          aria-label="New folder in My Drive"
-          onClick={() => setDialog({ mode: "create", parentId: null })}
-        >
-          <FolderPlus />
-        </Button>
-      </div>
+      <button
+        type="button"
+        onClick={() => openView("active")}
+        aria-current={
+          filters.view === "active" && !filters.folderId ? "page" : undefined
+        }
+        className={`flex w-full items-center gap-x-2 rounded-md px-2 py-1.5 text-left text-sm transition hover:bg-accent ${
+          filters.view === "active" && !filters.folderId
+            ? "bg-accent font-medium"
+            : ""
+        }`}
+      >
+        <HardDrive className="size-4 shrink-0 text-muted-foreground" />
+        <span className="truncate">My Drive</span>
+      </button>
 
       <ScrollArea className="mt-2 max-h-[calc(100vh-18rem)]">
         {isPending && (
@@ -205,10 +155,16 @@ export const MediaFolderSidebar = () => {
               nodes={data}
               expandedIds={expandedIds}
               onExpandedChange={setExpandedIds}
-              onCreateChild={(folder) =>
-                setDialog({ mode: "create", parentId: folder.id })
-              }
-              onRename={(folder) => setDialog({ mode: "rename", folder })}
+              onCreateChild={(folder) => {
+                openCreate(folder.id, () => {
+                  // The new branch must be visible where the action was taken;
+                  // its own row is already on screen, so only the parent opens.
+                  setExpandedIds((current) =>
+                    new Set(current).add(folder.id),
+                  );
+                });
+              }}
+              onRename={openRename}
               onDelete={setDeleteTarget}
               onSelect={openFolder}
               selectedId={selectedFolderId}
@@ -225,12 +181,6 @@ export const MediaFolderSidebar = () => {
         className="mt-2 flex flex-col gap-y-0.5 border-t pt-2"
       >
         <SidebarNavItem
-          active={filters.view === "recent"}
-          icon={Clock}
-          label="Recent"
-          onClick={() => openView("recent")}
-        />
-        <SidebarNavItem
           active={filters.view === "archived"}
           icon={Archive}
           label="Archived"
@@ -242,26 +192,6 @@ export const MediaFolderSidebar = () => {
         <MediaStorageDetails
           quota={meta.quota}
           byMediaType={meta.byMediaType}
-        />
-      )}
-
-      {dialog && (
-        <MediaFolderNameDialog
-          // A fresh mount per target is what starts the form from the name it
-          // was opened with; no effect has to reset it.
-          key={
-            dialog.mode === "create"
-              ? `create-${dialog.parentId ?? "root"}`
-              : `rename-${dialog.folder.id}`
-          }
-          open
-          mode={dialog.mode}
-          initialName={dialog.mode === "rename" ? dialog.folder.name : ""}
-          isPending={isSubmitting}
-          onOpenChange={(open) => {
-            if (!open) setDialog(null);
-          }}
-          onSubmit={onSubmitName}
         />
       )}
 

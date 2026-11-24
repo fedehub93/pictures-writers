@@ -4,6 +4,8 @@ import { inferInput } from "@trpc/tanstack-react-query";
 import { useTRPC } from "@/trpc/client";
 import { trpc } from "@/trpc/server";
 
+import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from "../constants";
+
 type MediaListInput = inferInput<typeof trpc.media.getMany>;
 type MediaMetaInput = inferInput<typeof trpc.media.getMeta>;
 
@@ -12,6 +14,38 @@ export const useSuspenseMedia = (params: MediaListInput) => {
   const trpc = useTRPC();
 
   return useSuspenseQuery(trpc.media.getMany.queryOptions({ ...params }));
+};
+
+/**
+ * How many recent Media the collapsed preview shows. The Recent box always
+ * fetches the expanded page size and slices the preview, so expanding from the
+ * preview needs no extra round-trip.
+ */
+export const RECENT_PREVIEW_COUNT = 4;
+
+/** The page size the expanded Recent box uses for its own pagination. */
+export const RECENT_PAGE_SIZE = DEFAULT_PAGE_SIZE;
+
+/** Non-suspense read of the newest active Media for the Recent box. */
+export const useMediaRecent = (page: number = DEFAULT_PAGE) => {
+  const trpc = useTRPC();
+
+  return useQuery(
+    trpc.media.getMany.queryOptions({
+      view: "recent",
+      search: "",
+      page,
+      pageSize: RECENT_PAGE_SIZE,
+    }),
+  );
+};
+
+/** The input the server prefetches for the Recent box preview. */
+export const recentMediaInput = {
+  view: "recent" as const,
+  search: "",
+  page: DEFAULT_PAGE,
+  pageSize: RECENT_PAGE_SIZE,
 };
 
 /**

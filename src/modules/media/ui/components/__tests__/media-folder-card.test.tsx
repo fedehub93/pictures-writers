@@ -55,6 +55,7 @@ describe("MediaFolderCard", () => {
 
     expect(scope.textContent).toContain("Campaigns");
     expect(scope.textContent).toContain("3 items");
+    expect(scope.textContent).not.toContain("Folder");
   });
 
   it("counts one Media in the singular", () => {

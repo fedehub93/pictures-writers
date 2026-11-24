@@ -23,7 +23,7 @@ export const MediaSearchFilter = () => {
   return (
     <InputGroup>
       <InputGroupInput
-        placeholder="Filter by name"
+        placeholder="Search by name"
         value={filters.search}
         onChange={(event) =>
           setFilters(

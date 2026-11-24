@@ -7,8 +7,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { MediaType } from "@/generated/prisma";
 import type { MediaLibraryEntry } from "../../../lib/media-library";
 
-// The card only offers the folder picker here; its own mutations and the
-// admin modal store are not part of this surface.
+// The card offers the menu here; its own mutations and the admin modal store
+// are not part of this surface.
 vi.mock("@/trpc/client", () => {
   const mutationOptions = () => ({
     mutationFn: async () => undefined,
@@ -54,10 +54,31 @@ const MEDIA: MediaLibraryEntry = {
   usageCount: 0,
 };
 
+const ARCHIVED_MEDIA: MediaLibraryEntry = {
+  ...MEDIA,
+  id: "media-2",
+  name: "Archived probe",
+  archivedAt: new Date("2026-01-02T00:00:00Z"),
+};
+
 let root: ReturnType<typeof createRoot> | null = null;
 let container: HTMLDivElement | null = null;
 
-function mount(onMove = () => undefined, onSelect = () => undefined) {
+function mount(
+  media: MediaLibraryEntry,
+  props: Partial<
+    Pick<
+      React.ComponentProps<typeof MediaCard>,
+      | "selectable"
+      | "allowsSelection"
+      | "showArchivedBadge"
+      | "checked"
+      | "selected"
+    >
+  > = {},
+  onMove = () => undefined,
+  onSelect = () => undefined,
+) {
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
@@ -66,12 +87,13 @@ function mount(onMove = () => undefined, onSelect = () => undefined) {
     root!.render(
       <QueryClientProvider client={new QueryClient()}>
         <MediaCard
-          media={MEDIA}
+          media={media}
           checked={false}
           selected={false}
           onCheckboxChange={() => undefined}
           onSelect={onSelect}
           onMove={onMove}
+          {...props}
         />
       </QueryClientProvider>,
     );
@@ -81,6 +103,12 @@ function mount(onMove = () => undefined, onSelect = () => undefined) {
 function menuTrigger() {
   return document.querySelector<HTMLButtonElement>(
     '[aria-label="More actions for Probe move"]',
+  );
+}
+
+function archivedMenuTrigger() {
+  return document.querySelector<HTMLButtonElement>(
+    '[aria-label="More actions for Archived probe"]',
   );
 }
 
@@ -99,6 +127,11 @@ async function press(target: HTMLElement | null) {
   });
 }
 
+async function openMenu(trigger: HTMLElement | null) {
+  await press(trigger);
+  return [...document.querySelectorAll<HTMLElement>('[role="menuitem"]')];
+}
+
 afterEach(() => {
   act(() => {
     root?.unmount();
@@ -108,20 +141,45 @@ afterEach(() => {
   container = null;
 });
 
-describe("MediaCard move action", () => {
-  it("offers the folder picker from the card's action menu", async () => {
+describe("MediaCard menu", () => {
+  it("offers Edit, Replace, Move to folder and Archive for active Media", async () => {
+    mount(MEDIA);
+
+    const items = await openMenu(menuTrigger());
+    const labels = items.map((item) => item.textContent);
+
+    expect(labels).toContain("Edit");
+    expect(labels).toContain("Replace");
+    expect(labels).toContain("Move to folder");
+    expect(labels).toContain("Archive");
+    expect(labels).not.toContain("Restore");
+    expect(labels).not.toContain("Delete permanently");
+  });
+
+  it("offers Restore and Delete permanently for archived Media", async () => {
+    mount(ARCHIVED_MEDIA, { showArchivedBadge: true });
+
+    const items = await openMenu(archivedMenuTrigger());
+    const labels = items.map((item) => item.textContent);
+
+    expect(labels).toContain("Restore");
+    expect(labels).toContain("Delete permanently");
+    expect(labels).not.toContain("Edit");
+    expect(labels).not.toContain("Archive");
+  });
+
+  it("opens the folder picker from the card's action menu", async () => {
     const onMove = vi.fn();
-    mount(onMove);
+    mount(MEDIA, {}, onMove);
 
-    await press(menuTrigger());
-
-    const item = [...document.querySelectorAll<HTMLElement>('[role="menuitem"]')]
-      .find((candidate) => candidate.textContent?.includes("Move to folder"));
-
-    expect(item).not.toBeUndefined();
+    const items = await openMenu(menuTrigger());
+    const moveItem = items.find((item) =>
+      item.textContent?.includes("Move to folder"),
+    );
+    expect(moveItem).not.toBeUndefined();
 
     await act(async () => {
-      item!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      moveItem!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
 
     expect(onMove).toHaveBeenCalledTimes(1);
@@ -132,7 +190,7 @@ describe("MediaCard move action", () => {
 describe("MediaCard selection", () => {
   it("reports the Media it shows when the card is clicked", async () => {
     const onSelect = vi.fn();
-    mount(() => undefined, onSelect);
+    mount(MEDIA, {}, () => undefined, onSelect);
 
     const card = document.querySelector<HTMLElement>(
       '[data-media-id="media-1"]',
@@ -149,7 +207,7 @@ describe("MediaCard selection", () => {
 
   it("selects the Media from its name for keyboard users", async () => {
     const onSelect = vi.fn();
-    mount(() => undefined, onSelect);
+    mount(MEDIA, {}, () => undefined, onSelect);
 
     const name = document.querySelector<HTMLButtonElement>(
       '[aria-label="View details for Probe move"]',
@@ -164,11 +222,63 @@ describe("MediaCard selection", () => {
     expect(onSelect).toHaveBeenCalledWith("media-1");
   });
 
-  it("does not report a selection when a card action is used", async () => {
+  it("does not report a selection when the menu is opened", async () => {
     const onSelect = vi.fn();
-    mount(() => undefined, onSelect);
+    mount(MEDIA, {}, () => undefined, onSelect);
 
-    await press(menuTrigger());
+    await openMenu(menuTrigger());
+
+    expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  it("does not report a selection when the checkbox is toggled", async () => {
+    const onSelect = vi.fn();
+    const onCheckboxChange = vi.fn();
+
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+
+    act(() => {
+      root!.render(
+        <QueryClientProvider client={new QueryClient()}>
+          <MediaCard
+            media={MEDIA}
+            checked={false}
+            selected={false}
+            onCheckboxChange={onCheckboxChange}
+            onSelect={onSelect}
+            onMove={() => undefined}
+          />
+        </QueryClientProvider>,
+      );
+    });
+
+    const checkbox = document.querySelector<HTMLButtonElement>(
+      '[aria-label="Select Probe move"]',
+    );
+    expect(checkbox).not.toBeNull();
+
+    await act(async () => {
+      checkbox!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(onCheckboxChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("is not selectable when allowsSelection is false", async () => {
+    const onSelect = vi.fn();
+    mount(MEDIA, { allowsSelection: false }, () => undefined, onSelect);
+
+    const card = document.querySelector<HTMLElement>(
+      '[data-media-id="media-1"]',
+    );
+    expect(card).not.toBeNull();
+
+    await act(async () => {
+      card!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
 
     expect(onSelect).not.toHaveBeenCalled();
   });

@@ -26,7 +26,7 @@ interface MediaDetailsPanelProps {
  * The read-only details of the selected item. A Media always wins over the
  * folder the editor has open; editing and destructive actions stay on the card
  * and the bulk toolbar, so this panel is a place to read, not a second control
- * surface.
+ * surface. The parent supplies the column layout and border.
  */
 export const MediaDetailsPanel = ({
   media,
@@ -34,10 +34,7 @@ export const MediaDetailsPanel = ({
   folderPending = false,
 }: MediaDetailsPanelProps) => {
   return (
-    <aside
-      aria-label="Details panel"
-      className="w-72 shrink-0 border-l pl-4"
-    >
+    <div className="flex flex-col">
       <h2 className="text-xs font-medium uppercase text-muted-foreground">
         Details
       </h2>
@@ -51,10 +48,10 @@ export const MediaDetailsPanel = ({
         </p>
       ) : (
         <p className="mt-3 text-xs text-muted-foreground">
-          Select a Media or folder to see its details.
+          Select an item to view more information
         </p>
       )}
-    </aside>
+    </div>
   );
 };
 
