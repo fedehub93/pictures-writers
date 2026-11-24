@@ -7,17 +7,16 @@ import { useMediaFilters } from "../../hooks/use-media-filters";
 import { openMediaFolderId } from "../../lib/media-folder";
 
 import { MediaCreateAction } from "./media-create-action";
-import { MediaQuotaMeter } from "./media-quota-meter";
 import { MediaRehomePanel } from "./media-rehome-panel";
 import { MediaSearchFilter } from "./media-search-filter";
 import { MediaStorageDriverSelect } from "./media-storage-driver-select";
 
 /**
- * The header owns the filtered count, the search, the quota, the storage
- * driver choice, the offer to move files still elsewhere and the upload
- * action. The sidebar owns navigation between My Drive, Recent and Archived.
- * The header renders outside the grid's suspense boundary, so the list
- * resolving never hides the controls.
+ * The header owns the filtered count, the search, the storage driver choice,
+ * the offer to move files still elsewhere and the upload action. The sidebar
+ * owns navigation between My Drive, Recent and Archived, and the storage
+ * details beside it. The header renders outside the grid's suspense boundary,
+ * so the list resolving never hides the controls.
  */
 export const MediaListHeader = () => {
   const [filters] = useMediaFilters();
@@ -34,7 +33,6 @@ export const MediaListHeader = () => {
       <div className="flex flex-wrap items-center gap-4">
         <MediaSearchFilter />
         <div className="ml-auto flex flex-wrap items-center gap-4">
-          {data && <MediaQuotaMeter quota={data.quota} />}
           {data && (
             <MediaStorageDriverSelect
               active={data.storage.active}

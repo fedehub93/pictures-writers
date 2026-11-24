@@ -185,6 +185,7 @@ toolbar, so the panel never becomes a second control surface.
 | Parsing addresses and recognizing provider URLs | `src/modules/media/lib/url.ts` |
 | Absolute form and own-host check | `src/modules/media/server/media-url.ts` |
 | Quota arithmetic (pure vs database) | `src/modules/media/lib/quota.ts`, `src/modules/media/server/media-quota.ts` |
+| Storage details widget and its per-type breakdown | `src/modules/media/ui/components/media-storage-details.tsx`, `src/modules/media/server/media-quota.ts` |
 | Quota refusal response | `src/modules/media/server/quota-error-response.ts` |
 | Admin reads and row operations (tRPC) | `src/modules/media/server/procedures.ts` |
 | Folder tree shaping and anti-cycle rule | `src/modules/media/lib/media-folder.ts` |
@@ -479,6 +480,12 @@ plus the bytes in its rendition manifest, an attachment or avatar its own size, 
 Media keep counting. A Media with no record contributes nothing; the audit reports it.
 `src/modules/media/lib/quota.ts` is the pure arithmetic; `src/modules/media/server/media-quota.ts`
 reads the database and holds the admission lock.
+
+The admin's storage details, beside the folder tree, reads the same figure through
+`media.getMeta` and splits it across Images, Videos, Audio and Documents. The rows count stored
+originals only — a rendition shares its Media's bytes and an attachment or avatar has no Media
+type — while the total is the quota figure the uploads enforce, so the rows are deliberately not
+expected to add up to it.
 
 Inside that budget, `Settings.publicOriginReserveMb` (default 512, a tenth of the default quota)
 is the share public-origin files may occupy. A public upload is admitted only when it fits both

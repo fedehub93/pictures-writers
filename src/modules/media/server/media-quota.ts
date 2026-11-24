@@ -10,10 +10,13 @@ import {
   fitsMediaQuota,
   fitsPublicOriginReserve,
   mediaQuotaStatus,
+  mediaTypeUsage,
   mediaUsageBytes,
   megabytesToBytes,
   type MediaQuotaStatus,
   type MediaQuotaUsageRow,
+  type MediaStorageSnapshot,
+  type MediaTypeUsage,
 } from "@/modules/media/lib/quota";
 
 /**
@@ -29,7 +32,7 @@ const usageFileSelect = {
   mediaId: true,
   size: true,
   origin: true,
-  media: { select: { renditions: true } },
+  media: { select: { type: true, renditions: true } },
 } satisfies Prisma.StoredFileSelect;
 
 type UsageFileRow = Prisma.StoredFileGetPayload<{
@@ -89,16 +92,26 @@ interface StorageUsageSnapshot {
   publicBytes: number;
   quotaMb: number;
   reserveMb: number;
+  /** Stored originals grouped by Media type; empty unless asked for. */
+  byMediaType: MediaTypeUsage[];
+}
+
+interface UsageReadOptions {
+  /** A Media being replaced no longer counts against itself. */
+  excludeMediaId?: string;
+  /** The widget reads the breakdown; the admission checks only need totals. */
+  withMediaTypes?: boolean;
 }
 
 /**
  * Reads the quota, the reserve and the bytes every stored file occupies in one
  * round trip. Every file has a record, so the budget describes the disk without
- * a per-Media fallback.
+ * a per-Media fallback. The per-type breakdown is opt-in, because admission
+ * needs only the totals on the upload path.
  */
 async function readUsage(
   client: Prisma.TransactionClient,
-  excludeMediaId?: string,
+  { excludeMediaId, withMediaTypes = false }: UsageReadOptions = {},
 ): Promise<StorageUsageSnapshot> {
   const [settings, files] = await Promise.all([
     client.settings.findFirst({
@@ -121,6 +134,17 @@ async function readUsage(
     quotaMb: settings?.mediaQuotaMb ?? MEDIA_QUOTA_DEFAULT_MB,
     reserveMb:
       settings?.publicOriginReserveMb ?? PUBLIC_ORIGIN_RESERVE_DEFAULT_MB,
+    // Attachments and avatars have no Media type, so they count against the
+    // total but no row; renditions share their Media's original and are not
+    // independent files.
+    byMediaType: withMediaTypes
+      ? mediaTypeUsage(
+          countedFiles.map((file) => ({
+            type: file.media?.type ?? null,
+            size: file.size,
+          })),
+        )
+      : [],
   };
 }
 
@@ -156,6 +180,21 @@ function assertQuotaFits(
 
 export async function getMediaUsageBytes(): Promise<number> {
   return (await readUsage(db)).usedBytes;
+}
+
+/**
+ * Everything the storage-details widget shows: the quota figure the uploads
+ * enforce, plus the same read grouped by Media type. One read answers both, so
+ * the progress bar and the breakdown can never describe different libraries.
+ */
+export async function getMediaStorageDetails(): Promise<MediaStorageSnapshot> {
+  const { usedBytes, publicBytes, quotaMb, reserveMb, byMediaType } =
+    await readUsage(db, { withMediaTypes: true });
+
+  return {
+    quota: mediaQuotaStatus(usedBytes, quotaMb, publicBytes, reserveMb),
+    byMediaType,
+  };
 }
 
 export async function getMediaQuotaStatus(): Promise<MediaQuotaStatus> {
@@ -204,7 +243,7 @@ export async function withStorageQuotaAdmission<T>(
   return db.$transaction(async (tx) => {
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(${STORAGE_QUOTA_LOCK_KEY})`;
 
-    const usage = await readUsage(tx, excludeMediaId);
+    const usage = await readUsage(tx, { excludeMediaId });
     assertQuotaFits(usage, incomingBytes, origin);
 
     return write(tx);

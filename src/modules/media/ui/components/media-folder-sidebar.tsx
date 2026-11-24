@@ -27,7 +27,7 @@ import { ScrollArea } from "@/shared/ui/scroll-area";
 import { Skeleton } from "@/shared/ui/skeleton";
 
 import { DEFAULT_PAGE, type MediaLibraryView } from "../../constants";
-import { useMediaFolderTree } from "../../hooks/use-media";
+import { useMediaFolderTree, useMediaMeta } from "../../hooks/use-media";
 import { useMediaFilters } from "../../hooks/use-media-filters";
 import { useMediaInvalidation } from "../../hooks/use-media-invalidation";
 import { mediaErrorMessage } from "../../lib/error-message";
@@ -38,6 +38,7 @@ import {
 
 import { MediaFolderNameDialog } from "./media-folder-name-dialog";
 import { MediaFolderTree } from "./media-folder-tree";
+import { MediaStorageDetails } from "./media-storage-details";
 
 type DialogState =
   | { mode: "create"; parentId: string | null }
@@ -45,15 +46,24 @@ type DialogState =
 
 /**
  * The library's navigation: My Drive with its folder tree, plus the flat Recent
- * and Archived views. It reads the nested tree the server built and owns the
- * three folder writes; the presentational tree only reports the row an action
- * named, so the same components render without a router in a test.
+ * and Archived views, with the storage details beneath them. It reads the
+ * nested tree the server built and owns the three folder writes; the
+ * presentational tree only reports the row an action named, so the same
+ * components render without a router in a test.
  */
 export const MediaFolderSidebar = () => {
   const trpc = useTRPC();
   const { data, isPending, isError, refetch } = useMediaFolderTree();
   const { invalidateFolders, invalidateLibrary } = useMediaInvalidation();
   const [filters, setFilters] = useMediaFilters();
+  // The storage widget is beside navigation, so it shows the installation's
+  // whole budget rather than the open scope. It shares the header's read, so
+  // the two cost one request.
+  const { data: meta } = useMediaMeta({
+    search: filters.search,
+    view: filters.view,
+    folderId: filters.folderId,
+  });
 
   const create = useMutation(trpc.media.createFolder.mutationOptions());
   const update = useMutation(trpc.media.updateFolder.mutationOptions());
@@ -227,6 +237,13 @@ export const MediaFolderSidebar = () => {
           onClick={() => openView("archived")}
         />
       </nav>
+
+      {meta && (
+        <MediaStorageDetails
+          quota={meta.quota}
+          byMediaType={meta.byMediaType}
+        />
+      )}
 
       {dialog && (
         <MediaFolderNameDialog

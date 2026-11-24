@@ -346,6 +346,66 @@ describe("mediaRouter", () => {
       });
       expect(archivedMeta.total).toBe(1);
     });
+
+    it("breaks storage usage down by Media type", async () => {
+      const before = await caller.getMeta({});
+      const beforeByType = new Map(
+        before.byMediaType.map((usage) => [usage.type, usage]),
+      );
+
+      await createMedia(
+        {
+          type: MediaType.IMAGE,
+          renditions: [
+            { key: "a", width: 320, height: 200, bytes: 500, format: "webp" },
+          ] as PrismaJson.MediaRenditions,
+        },
+        { size: 1000 },
+      );
+      await createMedia({ type: MediaType.VIDEO }, { size: 2000 });
+      await createMedia({ type: MediaType.FILE }, { size: 4000 });
+      // Archived Media keep counting: hiding a row does not free its bytes.
+      await createMedia(
+        {
+          type: MediaType.FILE,
+          archivedAt: new Date("2026-11-18T10:00:00Z"),
+        },
+        { size: 5000 },
+      );
+
+      const after = await caller.getMeta({});
+      const delta = (type: MediaType) => {
+        const beforeUsage = beforeByType.get(type);
+        const afterUsage = after.byMediaType.find(
+          (usage) => usage.type === type,
+        );
+
+        return {
+          count: (afterUsage?.count ?? 0) - (beforeUsage?.count ?? 0),
+          bytes: (afterUsage?.bytes ?? 0) - (beforeUsage?.bytes ?? 0),
+        };
+      };
+
+      // Every type is reported in the library's listing order, including Audio,
+      // which this library does not hold.
+      expect(after.byMediaType.map((usage) => usage.type)).toEqual([
+        MediaType.IMAGE,
+        MediaType.VIDEO,
+        MediaType.AUDIO,
+        MediaType.FILE,
+      ]);
+
+      // The breakdown counts stored originals, not the renditions sharing their
+      // Media's quota. Documents include the archived row.
+      expect(delta(MediaType.IMAGE)).toEqual({ count: 1, bytes: 1000 });
+      expect(delta(MediaType.VIDEO)).toEqual({ count: 1, bytes: 2000 });
+      expect(delta(MediaType.AUDIO)).toEqual({ count: 0, bytes: 0 });
+      expect(delta(MediaType.FILE)).toEqual({ count: 2, bytes: 9000 });
+
+      // The total is the quota's figure, so the image's rendition is included.
+      expect(after.quota.usedBytes - before.quota.usedBytes).toBe(12500);
+      expect(after.quota.totalBytes).toBe(before.quota.totalBytes);
+    });
   });
 
   describe("rehome", () => {

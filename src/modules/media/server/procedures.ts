@@ -40,7 +40,7 @@ import {
   moveMediaToFolder,
   restoreMediaBatch,
 } from "./media-service";
-import { getMediaQuotaStatus } from "./media-quota";
+import { getMediaStorageDetails } from "./media-quota";
 import { countMediaReferencesFor } from "./media-usage";
 import { pendingRehome, planRehomeRun } from "./rehome";
 import { rehomeRunner } from "./rehome-runner";
@@ -173,15 +173,23 @@ export const mediaRouter = createTRPCRouter({
 
       // The active driver answers both the choice and how many files are
       // still elsewhere; the quota and the header count stay the sources they
-      // already were, so the header never grows a second arithmetic.
+      // already were, so the header never grows a second arithmetic. The
+      // breakdown comes from the quota's own read, so the progress bar and the
+      // per-type rows can never describe different libraries.
       const storage = await getStorageDriverChoice();
-      const [total, quota, rehome] = await Promise.all([
+      const [total, usage, rehome] = await Promise.all([
         db.media.count({ where }),
-        getMediaQuotaStatus(),
+        getMediaStorageDetails(),
         pendingRehome(storage.active),
       ]);
 
-      return { total, quota, storage, rehome };
+      return {
+        total,
+        quota: usage.quota,
+        byMediaType: usage.byMediaType,
+        storage,
+        rehome,
+      };
     }),
 
   getFolderTree: permissionProcedure(PERMISSIONS.MEDIA_READ).query(() =>
