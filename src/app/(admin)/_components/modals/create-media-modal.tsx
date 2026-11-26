@@ -73,14 +73,26 @@ interface DuplicateState {
   values: MediaFormValues;
 }
 
+/** What the library passes when it opens the upload dialog. */
+interface CreateMediaModalData {
+  /** The folder the open library view is showing; absent files at the root. */
+  folderId?: string | null;
+}
+
 export const CreateMediaModal = () => {
-  const { isOpen, onClose, type, onCallback } = useModal();
+  const { isOpen, onClose, type, onCallback, data } = useModal();
   const { invalidateLibrary } = useMediaInvalidation();
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [duplicate, setDuplicate] = useState<DuplicateState | null>(null);
   const [isOverriding, setIsOverriding] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // The library passes the folder it is showing when it opens the modal. The
+  // picker passes nothing, and a flat view passes null, so those uploads land
+  // at the My Drive root.
+  const modalData: CreateMediaModalData | undefined = data;
+  const folderId = modalData?.folderId || null;
 
   const isModalOpen = isOpen && type === "createMediaAsset";
 
@@ -149,6 +161,7 @@ export const CreateMediaModal = () => {
     formData.append("file", selectedFile);
     formData.append("name", values.name);
     if (values.altText) formData.append("altText", values.altText);
+    if (folderId) formData.append("folderId", folderId);
     if (override) formData.append("override", "true");
 
     return axios.post("/api/media", formData, {

@@ -50,6 +50,7 @@ import { mediaRouter } from "../procedures";
 const createCaller = createCallerFactory(mediaRouter);
 
 const mediaIds: string[] = [];
+const folderIds: string[] = [];
 const postRootIds: string[] = [];
 
 let caller: ReturnType<typeof createCaller>;
@@ -58,6 +59,7 @@ let driver: StorageDriver;
 
 beforeEach(async () => {
   mediaIds.length = 0;
+  folderIds.length = 0;
   postRootIds.length = 0;
 
   root = await mkdtemp(path.join(tmpdir(), "media-router-"));
@@ -74,9 +76,13 @@ afterEach(async () => {
   if (mediaIds.length > 0) {
     await db.media.deleteMany({ where: { id: { in: mediaIds } } });
   }
+  if (folderIds.length > 0) {
+    await db.mediaFolder.deleteMany({ where: { id: { in: folderIds } } });
+  }
   await rm(root, { recursive: true, force: true });
 
   mediaIds.length = 0;
+  folderIds.length = 0;
   postRootIds.length = 0;
   storage.driver = undefined;
 });
@@ -296,19 +302,204 @@ describe("mediaRouter", () => {
       ]);
     });
 
-    it("counts the relational references of every item", async () => {
+    it("orders by name A to Z without distinguishing case", async () => {
+      const marker = `Name sort ${randomUUID()}`;
+      const zebra = await createMedia({ name: `${marker} Zebra` });
+      const apple = await createMedia({ name: `${marker} apple` });
+      const banana = await createMedia({ name: `${marker} Banana` });
+
+      const result = await caller.getMany({
+        search: marker,
+        sort: "name",
+        pageSize: 10,
+      });
+
+      // The shared marker sorts first; the tails prove the order is decided on
+      // the lowercased name, not on the capital letters' byte values.
+      expect(result.items.map((item) => item.id)).toEqual([
+        apple.id,
+        banana.id,
+        zebra.id,
+      ]);
+    });
+
+    it("counts the same rows the name order lists when the term holds a wildcard", async () => {
+      const marker = `Wildcard sort ${randomUUID()}`;
+      const cotton = await createMedia({ name: `${marker} 100% cotton` });
+      await createMedia({ name: `${marker} unrelated` });
+
+      // Prisma's `contains` does not escape `%`, so this term widens the
+      // match; the name-ordered block must widen the same way or the header
+      // count and the grid would describe different rows.
+      const term = `${marker} 100%on`;
+      const result = await caller.getMany({
+        search: term,
+        sort: "name",
+        pageSize: 10,
+      });
+
+      expect(result.total).toBe(1);
+      expect(result.items.map((item) => item.id)).toEqual([cotton.id]);
+    });
+
+    it("orders by size largest first and keeps unknown sizes last", async () => {
+      const marker = `Size sort ${randomUUID()}`;
+      const prefix = `size-${randomUUID()}`;
+      const small = await createMedia(
+        { id: `${prefix}-a`, name: `${marker} small` },
+        { size: 100 },
+      );
+      const large = await createMedia(
+        { id: `${prefix}-b`, name: `${marker} large` },
+        { size: 900 },
+      );
+      // Equal sizes fall back to the id, so a block boundary is stable.
+      const tieFirst = await createMedia(
+        { id: `${prefix}-c`, name: `${marker} tie one` },
+        { size: 500 },
+      );
+      const tieSecond = await createMedia(
+        { id: `${prefix}-d`, name: `${marker} tie two` },
+        { size: 500 },
+      );
+      const unknown = await createMedia(
+        { id: `${prefix}-e`, name: `${marker} unknown` },
+        null,
+      );
+
+      const result = await caller.getMany({
+        search: marker,
+        sort: "size",
+        pageSize: 10,
+      });
+
+      expect(result.items.map((item) => item.id)).toEqual([
+        large.id,
+        tieFirst.id,
+        tieSecond.id,
+        small.id,
+        unknown.id,
+      ]);
+    });
+
+    it("keeps the name order stable across page boundaries", async () => {
+      const marker = `Name pages ${randomUUID()}`;
+      const created = [];
+      for (const tail of ["delta", "alpha", "echo", "bravo", "charlie"]) {
+        created.push(await createMedia({ name: `${marker} ${tail}` }));
+      }
+
+      const ids: string[] = [];
+      for (const page of [1, 2, 3]) {
+        const block = await caller.getMany({
+          search: marker,
+          sort: "name",
+          page,
+          pageSize: 2,
+        });
+        ids.push(...block.items.map((item) => item.id));
+      }
+
+      const byId = new Map(created.map((item) => [item.id, item.name]));
+      expect(ids).toHaveLength(created.length);
+      expect(new Set(ids).size).toBe(created.length);
+      expect(ids.map((id) => byId.get(id))).toEqual([
+        `${marker} alpha`,
+        `${marker} bravo`,
+        `${marker} charlie`,
+        `${marker} delta`,
+        `${marker} echo`,
+      ]);
+    });
+
+    it("keeps the size order stable across page boundaries", async () => {
+      const marker = `Size pages ${randomUUID()}`;
+      const prefix = `size-pages-${randomUUID()}`;
+      const rows = [
+        { id: `${prefix}-a`, size: 500 },
+        { id: `${prefix}-b`, size: 900 },
+        { id: `${prefix}-c`, size: 500 },
+        { id: `${prefix}-d`, size: 100 },
+      ];
+      for (const [index, row] of rows.entries()) {
+        await createMedia(
+          { id: row.id, name: `${marker} ${index}` },
+          { size: row.size },
+        );
+      }
+
+      const first = await caller.getMany({
+        search: marker,
+        sort: "size",
+        page: 1,
+        pageSize: 2,
+      });
+      const second = await caller.getMany({
+        search: marker,
+        sort: "size",
+        page: 2,
+        pageSize: 2,
+      });
+
+      // The equal 500-byte rows fall either side of the block boundary, so the
+      // id tie-break is what keeps the order whole.
+      expect([
+        ...first.items.map((item) => item.id),
+        ...second.items.map((item) => item.id),
+      ]).toEqual([rows[1]!.id, rows[0]!.id, rows[2]!.id, rows[3]!.id]);
+    });
+
+    it("applies the chosen order inside a folder and while searching", async () => {
+      const marker = `Scoped sort ${randomUUID()}`;
+      const folder = await db.mediaFolder.create({
+        data: { name: `${marker} folder` },
+      });
+      folderIds.push(folder.id);
+      const zebra = await createMedia({
+        name: `${marker} Zebra`,
+        folderId: folder.id,
+      });
+      const apple = await createMedia({
+        name: `${marker} apple`,
+        folderId: folder.id,
+      });
+      const elsewhere = await createMedia({ name: `${marker} elsewhere` });
+
+      const inFolder = await caller.getMany({
+        folderId: folder.id,
+        sort: "name",
+        pageSize: 10,
+      });
+      expect(inFolder.items.map((item) => item.id)).toEqual([
+        apple.id,
+        zebra.id,
+      ]);
+
+      const search = await caller.getMany({
+        search: marker,
+        sort: "name",
+        pageSize: 10,
+      });
+      expect(search.total).toBe(3);
+      expect(search.items.map((item) => item.id)).toEqual([
+        apple.id,
+        elsewhere.id,
+        zebra.id,
+      ]);
+    });
+
+    it("carries no per-row usage count", async () => {
       const marker = `Usage ${randomUUID()}`;
       const used = await createMedia({ name: `${marker} used` });
-      const unused = await createMedia({ name: `${marker} unused` });
+      await createMedia({ name: `${marker} unused` });
       await createReferencingPost(used.id);
 
       const result = await caller.getMany({ search: marker, pageSize: 10 });
-      const counts = new Map(
-        result.items.map((item) => [item.id, item.usageCount]),
-      );
 
-      expect(counts.get(used.id)).toBe(1);
-      expect(counts.get(unused.id)).toBe(0);
+      expect(result.items).toHaveLength(2);
+      for (const item of result.items) {
+        expect(item).not.toHaveProperty("usageCount");
+      }
     });
 
     it("rejects a page size above the limit", async () => {
@@ -345,6 +536,66 @@ describe("mediaRouter", () => {
         view: "archived",
       });
       expect(archivedMeta.total).toBe(1);
+    });
+
+    it("breaks storage usage down by Media type", async () => {
+      const before = await caller.getMeta({});
+      const beforeByType = new Map(
+        before.byMediaType.map((usage) => [usage.type, usage]),
+      );
+
+      await createMedia(
+        {
+          type: MediaType.IMAGE,
+          renditions: [
+            { key: "a", width: 320, height: 200, bytes: 500, format: "webp" },
+          ] as PrismaJson.MediaRenditions,
+        },
+        { size: 1000 },
+      );
+      await createMedia({ type: MediaType.VIDEO }, { size: 2000 });
+      await createMedia({ type: MediaType.FILE }, { size: 4000 });
+      // Archived Media keep counting: hiding a row does not free its bytes.
+      await createMedia(
+        {
+          type: MediaType.FILE,
+          archivedAt: new Date("2026-11-18T10:00:00Z"),
+        },
+        { size: 5000 },
+      );
+
+      const after = await caller.getMeta({});
+      const delta = (type: MediaType) => {
+        const beforeUsage = beforeByType.get(type);
+        const afterUsage = after.byMediaType.find(
+          (usage) => usage.type === type,
+        );
+
+        return {
+          count: (afterUsage?.count ?? 0) - (beforeUsage?.count ?? 0),
+          bytes: (afterUsage?.bytes ?? 0) - (beforeUsage?.bytes ?? 0),
+        };
+      };
+
+      // Every type is reported in the library's listing order, including Audio,
+      // which this library does not hold.
+      expect(after.byMediaType.map((usage) => usage.type)).toEqual([
+        MediaType.IMAGE,
+        MediaType.VIDEO,
+        MediaType.AUDIO,
+        MediaType.FILE,
+      ]);
+
+      // The breakdown counts stored originals, not the renditions sharing their
+      // Media's quota. Documents include the archived row.
+      expect(delta(MediaType.IMAGE)).toEqual({ count: 1, bytes: 1000 });
+      expect(delta(MediaType.VIDEO)).toEqual({ count: 1, bytes: 2000 });
+      expect(delta(MediaType.AUDIO)).toEqual({ count: 0, bytes: 0 });
+      expect(delta(MediaType.FILE)).toEqual({ count: 2, bytes: 9000 });
+
+      // The total is the quota's figure, so the image's rendition is included.
+      expect(after.quota.usedBytes - before.quota.usedBytes).toBe(12500);
+      expect(after.quota.totalBytes).toBe(before.quota.totalBytes);
     });
   });
 
@@ -503,7 +754,7 @@ describe("mediaRouter", () => {
       ).resolves.not.toBeNull();
     });
 
-    it("refuses a referenced Media and names the blocking reference count", async () => {
+    it("refuses a referenced Media without naming a count", async () => {
       const media = await createMedia({ archivedAt: new Date() });
       await createReferencingPost(media.id);
 
@@ -511,7 +762,7 @@ describe("mediaRouter", () => {
         caller.removeMany({ ids: [media.id] }),
       ).rejects.toMatchObject({
         code: "CONFLICT",
-        message: expect.stringContaining("1 content"),
+        message: expect.stringContaining("still used by content"),
       });
 
       await expect(

@@ -8,6 +8,7 @@ import {
   MediaProcessingError,
   type MediaUploadSource,
 } from "@/modules/media/server/media-service";
+import { MediaFolderNotFoundError } from "@/modules/media/server/media-folder-service";
 import { assertStorageQuotaAllows } from "@/modules/media/server/media-quota";
 import { quotaErrorResponse } from "@/modules/media/server/quota-error-response";
 import { resolveActiveStorageDriver } from "@/modules/media/server/storage";
@@ -20,6 +21,17 @@ import { checkUploadFile, writeTemporaryUpload } from "./_lib/upload-transport";
  * quota and a duplicate apart.
  */
 function mediaUploadErrorResponse(error: unknown): NextResponse {
+  if (error instanceof MediaFolderNotFoundError) {
+    return NextResponse.json(
+      {
+        code: "MEDIA_FOLDER_NOT_FOUND",
+        error:
+          "The selected folder no longer exists. Upload into another folder or the My Drive root.",
+      },
+      { status: 404 },
+    );
+  }
+
   if (error instanceof DuplicateMediaError) {
     return NextResponse.json(
       { code: "DUPLICATE_MEDIA", duplicate: true, media: error.existing },
@@ -49,6 +61,11 @@ async function handleMultipartUpload(req: Request): Promise<Response> {
   const form = await req.formData();
   const file = form.get("file");
   const override = form.get("override") === "true";
+  const folderField = form.get("folderId");
+  const folderId =
+    typeof folderField === "string" && folderField.trim()
+      ? folderField.trim()
+      : null;
 
   if (!(file instanceof File)) {
     return NextResponse.json(
@@ -81,6 +98,7 @@ async function handleMultipartUpload(req: Request): Promise<Response> {
       driver,
       storageDriver: driverName,
       source,
+      folderId,
       override,
     });
 

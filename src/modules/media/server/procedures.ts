@@ -2,7 +2,7 @@ import "server-only";
 
 import z from "zod";
 
-import type { Prisma } from "@/generated/prisma";
+import { Prisma } from "@/generated/prisma";
 
 import { db } from "@/shared/lib/db";
 import { PERMISSIONS } from "@/shared/lib/permissions";
@@ -11,35 +11,159 @@ import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 import {
   mediaLibraryItem,
   mediaLibraryRowSelect,
+  type MediaLibraryRow,
 } from "@/modules/media/lib/media-library";
 
 import {
+  DEFAULT_MEDIA_SORT,
   DEFAULT_MEDIA_VIEW,
   DEFAULT_PAGE,
   DEFAULT_PAGE_SIZE,
+  MAX_MEDIA_FOLDER_NAME_LENGTH,
   MAX_PAGE_SIZE,
+  MEDIA_LIBRARY_SORTS,
   MEDIA_LIBRARY_VIEWS,
   MIN_PAGE_SIZE,
+  type MediaLibrarySort,
   type MediaLibraryView,
 } from "../constants";
 
 import { toMediaTrpcError } from "./errors";
 import {
+  createMediaFolder,
+  deleteMediaFolder,
+  getMediaFolderDetails,
+  getMediaFolderTree,
+  listMediaFolderChildren,
+  updateMediaFolder,
+} from "./media-folder-service";
+import {
   archiveMediaBatch,
   deleteMediaPermanentlyBatch,
   MediaNotFoundError,
+  moveMediaToFolder,
   restoreMediaBatch,
 } from "./media-service";
-import { getMediaQuotaStatus } from "./media-quota";
-import { countMediaReferencesFor } from "./media-usage";
+import { getMediaStorageDetails } from "./media-quota";
 import { pendingRehome, planRehomeRun } from "./rehome";
 import { rehomeRunner } from "./rehome-runner";
 import { getStorageDriverChoice, resolveActiveStorageDriver } from "./storage";
 
-const MEDIA_LIST_ORDER_BY: Prisma.MediaOrderByWithRelationInput[] = [
-  { createdAt: "desc" },
-  { id: "asc" },
-];
+/**
+ * The orders Prisma can express directly. Name is absent because Prisma has no
+ * case-insensitive `orderBy`; it is paged in SQL by `listMediaIdsByName`.
+ * Every order ends on the Media id so a block boundary cannot repeat or skip a
+ * row that ties with the next one.
+ */
+const MEDIA_LIST_ORDER_BY: Record<
+  Exclude<MediaLibrarySort, "name">,
+  Prisma.MediaOrderByWithRelationInput[]
+> = {
+  created: [{ createdAt: "desc" }, { id: "asc" }],
+  size: [
+    // PostgreSQL sorts nulls first in descending order, and a Media with no
+    // stored-file record has no size either, so both kinds of unknown go last.
+    { storedFile: { size: { sort: "desc", nulls: "last" } } },
+    { id: "asc" },
+  ],
+};
+
+/**
+ * The ids of one name-ordered block. The production database uses the `C`
+ * collation, where `name ASC` puts every capital before every lowercase
+ * letter, so the order reads the name under the root ICU collation instead:
+ * case no longer splits the alphabet, and a name that starts with an accented
+ * letter sorts beside the same letter unaccented. The conditions mirror
+ * `buildMediaWhere`: a term spans the library, otherwise the active view
+ * browses the open folder (or the unfiled root) and Archived is flat. The
+ * block itself comes from the typed client, restored to this order.
+ */
+async function listMediaIdsByName({
+  search,
+  view,
+  folderId,
+  take,
+  skip,
+}: {
+  search?: string | null;
+  view: MediaLibraryView;
+  folderId?: string | null;
+  take: number;
+  skip: number;
+}): Promise<string[]> {
+  const term = search?.trim();
+  const conditions: Prisma.Sql[] = [
+    view === "archived"
+      ? Prisma.sql`"archivedAt" IS NOT NULL`
+      : Prisma.sql`"archivedAt" IS NULL`,
+  ];
+
+  if (term) {
+    // `ILIKE` is what Prisma's `contains` with an insensitive mode compiles
+    // to, including its treatment of `%` and `_`. Matching that exactly is
+    // what keeps the count and this block describing the same rows.
+    conditions.push(Prisma.sql`"name" ILIKE ${`%${term}%`}`);
+  } else if (view === "active") {
+    conditions.push(
+      folderId
+        ? Prisma.sql`"folderId" = ${folderId}`
+        : Prisma.sql`"folderId" IS NULL`,
+    );
+  }
+
+  const rows = await db.$queryRaw<{ id: string }[]>(Prisma.sql`
+    SELECT "id"
+    FROM "Media"
+    WHERE ${Prisma.join(conditions, " AND ")}
+    ORDER BY "name" COLLATE "und-x-icu" ASC, "id" ASC
+    LIMIT ${take} OFFSET ${skip}
+  `);
+
+  return rows.map((row) => row.id);
+}
+
+/** One block of the filtered list, in the requested order. */
+async function listMediaRows({
+  where,
+  sort,
+  search,
+  view,
+  folderId,
+  take,
+  skip,
+}: {
+  where: Prisma.MediaWhereInput;
+  sort: MediaLibrarySort;
+  search?: string | null;
+  view: MediaLibraryView;
+  folderId?: string | null;
+  take: number;
+  skip: number;
+}): Promise<MediaLibraryRow[]> {
+  if (sort !== "name") {
+    return db.media.findMany({
+      where,
+      select: mediaLibraryRowSelect,
+      orderBy: MEDIA_LIST_ORDER_BY[sort],
+      take,
+      skip,
+    });
+  }
+
+  const ids = await listMediaIdsByName({ search, view, folderId, take, skip });
+  if (ids.length === 0) return [];
+
+  const rows = await db.media.findMany({
+    where: { id: { in: ids } },
+    select: mediaLibraryRowSelect,
+  });
+  const byId = new Map(rows.map((row) => [row.id, row]));
+
+  return ids.flatMap((id) => {
+    const row = byId.get(id);
+    return row ? [row] : [];
+  });
+}
 
 /**
  * The grid and the header count share this filter, so the number above the
@@ -48,15 +172,23 @@ const MEDIA_LIST_ORDER_BY: Prisma.MediaOrderByWithRelationInput[] = [
 function buildMediaWhere({
   search,
   view,
+  folderId,
 }: {
   search?: string | null;
   view: MediaLibraryView;
+  folderId?: string | null;
 }): Prisma.MediaWhereInput {
   const term = search?.trim();
 
   return {
     name: term ? { contains: term, mode: "insensitive" } : undefined,
     archivedAt: view === "archived" ? { not: null } : null,
+    // My Drive browses one level of the tree: the open folder, or the unfiled
+    // Media at the root when none is open. A search spans the library, because
+    // a name is often the only thing the editor remembers; Recent and Archived
+    // are whole-library views anyway, so the folder never narrows them.
+    folderId:
+      view === "active" && !term ? (folderId ?? null) : undefined,
   };
 }
 
@@ -64,7 +196,21 @@ const viewInput = z
   .enum(MEDIA_LIBRARY_VIEWS)
   .default(DEFAULT_MEDIA_VIEW);
 
-const listInput = z.object({
+/** What both the grid and the header count: the filters that pick the rows. */
+const scopeInput = z.object({
+  search: z.string().nullish(),
+  view: viewInput,
+  /** The open folder inside My Drive; absent or null means the My Drive root. */
+  folderId: z.string().min(1).nullish(),
+});
+
+const listInput = scopeInput.extend({
+  /**
+   * The order the grid asked for. It is deliberately not part of `scopeInput`:
+   * the header count does not care about order, so a reorder must not refetch
+   * the number above the grid.
+   */
+  sort: z.enum(MEDIA_LIBRARY_SORTS).default(DEFAULT_MEDIA_SORT),
   page: z.number().int().min(1).default(DEFAULT_PAGE),
   pageSize: z
     .number()
@@ -72,13 +218,30 @@ const listInput = z.object({
     .min(MIN_PAGE_SIZE)
     .max(MAX_PAGE_SIZE)
     .default(DEFAULT_PAGE_SIZE),
-  search: z.string().nullish(),
-  view: viewInput,
 });
 
 const idsInput = z.object({
   ids: z.array(z.string().min(1)),
 });
+
+const folderName = z
+  .string()
+  .trim()
+  .min(1)
+  .max(MAX_MEDIA_FOLDER_NAME_LENGTH);
+
+const createFolderInput = z.object({
+  name: folderName,
+  parentId: z.string().min(1).nullish(),
+});
+
+const updateFolderInput = z.object({
+  id: z.string().min(1),
+  name: folderName.optional(),
+  parentId: z.string().min(1).nullish(),
+});
+
+const folderIdInput = z.object({ id: z.string().min(1) });
 
 export const mediaRouter = createTRPCRouter({
   getMany: permissionProcedure(PERMISSIONS.MEDIA_READ)
@@ -86,52 +249,105 @@ export const mediaRouter = createTRPCRouter({
     .query(async ({ input }) => {
       const where = buildMediaWhere(input);
 
-      const [rows, total] = await Promise.all([
-        db.media.findMany({
+      // Folders belong to the first page of My Drive: they are where browsing
+      // starts, not rows that repeat above every page of a folder's Media. A
+      // search lists what matched, not where it could be filed, so it draws no
+      // folder cards either; Recent and Archived are flat views.
+      const term = input.search?.trim();
+      const childFolders =
+        input.view === "active" && input.page === DEFAULT_PAGE && !term
+          ? listMediaFolderChildren(input.folderId ?? null)
+          : Promise.resolve([]);
+
+      const [rows, total, folders] = await Promise.all([
+        listMediaRows({
           where,
-          // The storage facts the admin sees come from the stored-file record;
-          // the Media's own columns are only the address and the archive state.
-          select: mediaLibraryRowSelect,
-          orderBy: MEDIA_LIST_ORDER_BY,
+          sort: input.sort,
+          search: input.search,
+          view: input.view,
+          folderId: input.folderId,
           take: input.pageSize,
           skip: (input.page - 1) * input.pageSize,
         }),
         db.media.count({ where }),
+        childFolders,
       ]);
 
-      const usage = await countMediaReferencesFor(rows.map((row) => row.id));
-
       return {
-        items: rows.map((row) => ({
-          ...mediaLibraryItem(row),
-          usageCount: usage.get(row.id) ?? 0,
-        })),
+        items: rows.map(mediaLibraryItem),
+        folders,
         total,
         totalPages: Math.ceil(total / input.pageSize),
       };
     }),
 
   getMeta: permissionProcedure(PERMISSIONS.MEDIA_READ)
-    .input(
-      z.object({
-        search: z.string().nullish(),
-        view: viewInput,
-      }),
-    )
+    .input(scopeInput)
     .query(async ({ input }) => {
       const where = buildMediaWhere(input);
 
       // The active driver answers both the choice and how many files are
       // still elsewhere; the quota and the header count stay the sources they
-      // already were, so the header never grows a second arithmetic.
+      // already were, so the header never grows a second arithmetic. The
+      // breakdown comes from the quota's own read, so the progress bar and the
+      // per-type rows can never describe different libraries.
       const storage = await getStorageDriverChoice();
-      const [total, quota, rehome] = await Promise.all([
+      const [total, usage, rehome] = await Promise.all([
         db.media.count({ where }),
-        getMediaQuotaStatus(),
+        getMediaStorageDetails(),
         pendingRehome(storage.active),
       ]);
 
-      return { total, quota, storage, rehome };
+      return {
+        total,
+        quota: usage.quota,
+        byMediaType: usage.byMediaType,
+        storage,
+        rehome,
+      };
+    }),
+
+  getFolderTree: permissionProcedure(PERMISSIONS.MEDIA_READ).query(() =>
+    getMediaFolderTree(),
+  ),
+
+  /** What the details panel shows for one folder; null when it no longer exists. */
+  getFolderDetails: permissionProcedure(PERMISSIONS.MEDIA_READ)
+    .input(folderIdInput)
+    .query(({ input }) => getMediaFolderDetails(input.id)),
+
+  createFolder: permissionProcedure(PERMISSIONS.MEDIA_CREATE)
+    .input(createFolderInput)
+    .mutation(async ({ input }) => {
+      try {
+        return await createMediaFolder(input);
+      } catch (error) {
+        throw toMediaTrpcError(error);
+      }
+    }),
+
+  /**
+   * Renames a folder or changes its parent. The service refuses a move that
+   * would put a folder inside itself or one of its descendants.
+   */
+  updateFolder: permissionProcedure(PERMISSIONS.MEDIA_UPDATE)
+    .input(updateFolderInput)
+    .mutation(async ({ input }) => {
+      try {
+        return await updateMediaFolder(input);
+      } catch (error) {
+        throw toMediaTrpcError(error);
+      }
+    }),
+
+  deleteFolder: permissionProcedure(PERMISSIONS.MEDIA_DELETE)
+    .input(folderIdInput)
+    .mutation(async ({ input }) => {
+      try {
+        return await deleteMediaFolder(input.id);
+      } catch (error) {
+        throw toMediaTrpcError(error);
+      }
     }),
 
   update: permissionProcedure(PERMISSIONS.MEDIA_UPDATE)
@@ -171,6 +387,30 @@ export const mediaRouter = createTRPCRouter({
     .mutation(async ({ input }) => {
       try {
         return await archiveMediaBatch(input.ids);
+      } catch (error) {
+        throw toMediaTrpcError(error);
+      }
+    }),
+
+  /**
+   * Files one or many Media into a folder, or back to the My Drive root when
+   * `folderId` is null. Archived Media are not refused: an archived row keeps
+   * its folder, so the target is a fact about filing rather than visibility.
+   */
+  moveMedia: permissionProcedure(PERMISSIONS.MEDIA_UPDATE)
+    .input(
+      idsInput.extend({
+        folderId: z.string().min(1).nullable(),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      try {
+        const moved = await moveMediaToFolder({
+          mediaIds: input.ids,
+          folderId: input.folderId,
+        });
+
+        return { moved };
       } catch (error) {
         throw toMediaTrpcError(error);
       }

@@ -5,6 +5,7 @@ import { randomUUID } from "node:crypto";
 import { MediaType, StoredFileKind, type Prisma } from "@/generated/prisma";
 
 import { db } from "@/shared/lib/db";
+import { isForeignKeyConstraintError } from "@/shared/lib/prisma-errors";
 
 import {
   mediaLibraryItem,
@@ -37,6 +38,10 @@ import {
   withMediaQuotaAdmission,
 } from "./media-quota";
 import { countMediaReferencesFor } from "./media-usage";
+import {
+  assertMediaFolderExists,
+  MediaFolderNotFoundError,
+} from "./media-folder-service";
 import { generateRenditions, normaliseImage, type NormalisedImage } from "./process-image";
 import {
   getInstallationSlug,
@@ -71,6 +76,11 @@ export interface CreateMediaFromUploadOptions {
   /** The driver that wrote this file. Defaults to the active driver. */
   storageDriver?: StorageDriverName;
   source: MediaUploadSource;
+  /**
+   * The folder the upload is filed into. Absent or null files it at the My
+   * Drive root.
+   */
+  folderId?: string | null;
   /** Explicit admin override: keep the duplicate and create a second row. */
   override?: boolean;
 }
@@ -140,9 +150,7 @@ export class MediaInUseError extends Error {
     readonly usage: number,
   ) {
     super(
-      `This media is referenced by ${usage} content ${
-        usage === 1 ? "item" : "items"
-      }. Remove those references before deleting it. References embedded in rich text or page data are not counted.`,
+      "This Media is still used by content. Remove those uses before deleting it.",
     );
     this.name = "MediaInUseError";
   }
@@ -192,12 +200,29 @@ function isRethrowableMediaError(
 ): error is
   | MediaProcessingError
   | MediaQuotaExceededError
-  | DuplicateMediaError {
+  | DuplicateMediaError
+  | MediaFolderNotFoundError {
   return (
     error instanceof MediaProcessingError ||
     error instanceof MediaQuotaExceededError ||
-    error instanceof DuplicateMediaError
+    error instanceof DuplicateMediaError ||
+    error instanceof MediaFolderNotFoundError
   );
+}
+
+/**
+ * The folder is checked before the write, but it can still be deleted before
+ * the row that points at it is written. That race reaches the database as a
+ * foreign-key refusal; naming the missing folder keeps the answer the same 404
+ * the pre-check gives.
+ */
+function mediaFolderRaceError(
+  error: unknown,
+  folderId: string | null,
+): unknown {
+  return folderId && isForeignKeyConstraintError(error)
+    ? new MediaFolderNotFoundError(folderId)
+    : error;
 }
 
 /**
@@ -366,11 +391,13 @@ async function createStoredPlainMedia({
   driver,
   storageDriver,
   source,
+  folderId,
   override,
 }: {
   driver: StorageDriver;
   storageDriver: StorageDriverName;
   source: MediaUploadSource;
+  folderId: string | null;
   override: boolean;
 }): Promise<MediaLibraryItem> {
   if (!source.key) {
@@ -432,16 +459,21 @@ async function createStoredPlainMedia({
     const media = await withMediaQuotaAdmission(
       { incomingBytes: stored.size },
       async (tx) => {
-        const created = await tx.media.create({
-          data: {
-            id,
-            name: source.name,
-            altText: source.altText || null,
-            type: source.type,
-            revision,
-          },
-          select: { id: true },
-        });
+        const created = await tx.media
+          .create({
+            data: {
+              id,
+              name: source.name,
+              altText: source.altText || null,
+              type: source.type,
+              revision,
+              folderId,
+            },
+            select: { id: true },
+          })
+          .catch((error: unknown) => {
+            throw mediaFolderRaceError(error, folderId);
+          });
 
         await createStoredFileForMedia(tx, created.id, {
           key: stored.key,
@@ -492,18 +524,25 @@ export function storedImageFields(
  * after every object exists, and a failure removes the whole prefix so the
  * library never holds a half-processed file. A non-image is copied untouched
  * under the same layout.
+ *
+ * A `folderId` files the new Media into that folder; absent or null files it
+ * at the My Drive root.
  */
 export async function createMediaFromUpload({
   driver,
   storageDriver,
   source,
+  folderId = null,
   override = false,
 }: CreateMediaFromUploadOptions): Promise<MediaLibraryItem> {
+  if (folderId) await assertMediaFolderExists(folderId);
+
   if (source.type !== MediaType.IMAGE) {
     return createStoredPlainMedia({
       driver,
       storageDriver: await recordedStorageDriver(storageDriver),
       source,
+      folderId,
       override,
     });
   }
@@ -571,15 +610,20 @@ export async function createMediaFromUpload({
         ]),
       },
       async (tx) => {
-        const created = await tx.media.create({
-          data: {
-            ...storedImageFields(stored, revision),
-            id,
-            name: source.name,
-            altText: source.altText || null,
-          },
-          select: { id: true },
-        });
+        const created = await tx.media
+          .create({
+            data: {
+              ...storedImageFields(stored, revision),
+              id,
+              name: source.name,
+              altText: source.altText || null,
+              folderId,
+            },
+            select: { id: true },
+          })
+          .catch((error: unknown) => {
+            throw mediaFolderRaceError(error, folderId);
+          });
 
         await createStoredFileForMedia(tx, created.id, {
           key: stored.key,
@@ -1009,6 +1053,37 @@ export async function restoreMediaBatch(mediaIds: string[]): Promise<number> {
   );
 
   return pending.length;
+}
+
+/**
+ * Files a selection into one folder, or back to the My Drive root when the
+ * target is null. The folder is checked before anything is written, so a
+ * deleted folder is a readable refusal rather than a foreign-key failure; the
+ * rows are loaded first, so an unknown id aborts the batch instead of filing
+ * part of it. Moving is idempotent: Media already in the target count as moved.
+ */
+export async function moveMediaToFolder({
+  mediaIds,
+  folderId,
+}: {
+  mediaIds: string[];
+  folderId: string | null;
+}): Promise<number> {
+  if (folderId) await assertMediaFolderExists(folderId);
+
+  const media = await loadMediaForBatch(mediaIds);
+  if (media.length === 0) return 0;
+
+  try {
+    await db.media.updateMany({
+      where: { id: { in: media.map((item) => item.id) } },
+      data: { folderId },
+    });
+  } catch (error) {
+    throw mediaFolderRaceError(error, folderId);
+  }
+
+  return media.length;
 }
 
 /**

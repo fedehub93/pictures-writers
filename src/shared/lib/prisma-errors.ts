@@ -7,3 +7,11 @@ import { Prisma } from "@/generated/prisma";
  */
 export const isUniqueConstraintError = (error: unknown) =>
   error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
+
+/**
+ * True when Prisma rejected a write because a related row does not exist
+ * (`P2003`). Callers use it to name the relation that disappeared while the
+ * write was being prepared.
+ */
+export const isForeignKeyConstraintError = (error: unknown) =>
+  error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2003";

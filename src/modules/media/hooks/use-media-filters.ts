@@ -1,26 +1,9 @@
-import {
-  parseAsInteger,
-  parseAsString,
-  parseAsStringEnum,
-  useQueryStates,
-} from "nuqs";
+import { useQueryStates } from "nuqs";
 
-import {
-  DEFAULT_MEDIA_VIEW,
-  DEFAULT_PAGE,
-  MEDIA_LIBRARY_VIEWS,
-} from "../constants";
+import { mediaSearchParams } from "../lib/media-search-params";
 
-export const useMediaFilters = () => {
-  return useQueryStates({
-    search: parseAsString
-      .withDefault("")
-      .withOptions({ clearOnDefault: true }),
-    page: parseAsInteger
-      .withDefault(DEFAULT_PAGE)
-      .withOptions({ clearOnDefault: true }),
-    view: parseAsStringEnum([...MEDIA_LIBRARY_VIEWS])
-      .withDefault(DEFAULT_MEDIA_VIEW)
-      .withOptions({ clearOnDefault: true }),
-  });
-};
+/**
+ * The library's URL state: what the editor is looking at, never how many blocks
+ * have been loaded. Loading another block is query state.
+ */
+export const useMediaFilters = () => useQueryStates(mediaSearchParams);

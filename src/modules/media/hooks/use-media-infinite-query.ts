@@ -2,11 +2,8 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 
 import { useTRPC, useTRPCClient } from "@/trpc/client";
 
-import {
-  DEFAULT_MEDIA_VIEW,
-  DEFAULT_PAGE,
-  MEDIA_PICKER_PAGE_SIZE,
-} from "../constants";
+import { DEFAULT_PAGE, MEDIA_PICKER_PAGE_SIZE } from "../constants";
+import { nextMediaPage } from "../lib/media-list";
 
 interface UseMediaInfiniteQueryProps {
   search: string;
@@ -15,9 +12,11 @@ interface UseMediaInfiniteQueryProps {
 
 /**
  * The Media picker's read: the library's own list procedure, twelve rows per
- * load, the same case-insensitive name search and the same active view. The
- * page is the infinite query's page param, so "load more" continues after the
- * rows already on screen instead of asking for a fresh first page.
+ * load and the same case-insensitive name search. It reads the Recent view
+ * because the picker offers the whole library, not one folder: Recent is the
+ * flat, newest-first read that ignores folder membership. The page is the
+ * infinite query's page param, so "load more" continues after the rows already
+ * on screen instead of asking for a fresh first page.
  *
  * The key lives in the `getMany` namespace, so the invalidation the library's
  * writes already perform refreshes the picker too.
@@ -32,7 +31,7 @@ export const useMediaInfiniteQuery = ({
   const input = {
     pageSize: MEDIA_PICKER_PAGE_SIZE,
     search,
-    view: DEFAULT_MEDIA_VIEW,
+    view: "recent" as const,
   };
 
   return useInfiniteQuery({
@@ -44,7 +43,7 @@ export const useMediaInfiniteQuery = ({
       trpcClient.media.getMany.query({ ...input, page: pageParam }, { signal }),
     initialPageParam: DEFAULT_PAGE,
     getNextPageParam: (lastPage, _pages, lastPageParam) =>
-      lastPageParam < lastPage.totalPages ? lastPageParam + 1 : undefined,
+      nextMediaPage(lastPage, lastPageParam),
     enabled,
     refetchOnWindowFocus: false,
   });

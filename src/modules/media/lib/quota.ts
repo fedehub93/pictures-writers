@@ -8,7 +8,33 @@
  * from public-origin files, against the reserve that bounds them.
  */
 
+import { MediaType } from "@/generated/prisma";
+
 export const BYTES_PER_MEGABYTE = 1024 * 1024;
+
+/** The order the library lists Media types in, whether or not one is present. */
+export const MEDIA_TYPE_STORAGE_ORDER = [
+  MediaType.IMAGE,
+  MediaType.VIDEO,
+  MediaType.AUDIO,
+  MediaType.FILE,
+] as const;
+
+/** How many stored originals of one Media type the library holds, and their bytes. */
+export interface MediaTypeUsage {
+  type: MediaType;
+  /** Number of Media originals; renditions are not separate files. */
+  count: number;
+  /** Stored original bytes. Renditions share the quota but are not counted here. */
+  bytes: number;
+}
+
+/** The columns a per-type aggregation reads from each stored file. */
+export interface MediaTypeUsageRow {
+  /** Null for an attachment or avatar, which has no Media type. */
+  type: MediaType | null;
+  size: number | null;
+}
 
 /** The default quota for an Installation that never changed it: 5 GB. */
 export const MEDIA_QUOTA_DEFAULT_MB = 5120;
@@ -41,6 +67,12 @@ export interface MediaQuotaStatus {
   ratio: number;
   percent: number;
   level: MediaQuotaLevel;
+}
+
+/** Everything the storage-details widget shows, read from one snapshot. */
+export interface MediaStorageSnapshot {
+  quota: MediaQuotaStatus;
+  byMediaType: MediaTypeUsage[];
 }
 
 export function megabytesToBytes(megabytes: number): number {
@@ -118,6 +150,42 @@ export function mediaUsageBytes(rows: MediaQuotaUsageRow[]): number {
   }
 
   return total;
+}
+
+/**
+ * Groups stored originals by Media type. Every type is returned, in the order
+ * the library lists them, so the widget does not have to invent an empty row.
+ * Archived Media count, like they do against the quota; a record with no size
+ * still counts as a file but contributes no bytes.
+ */
+export function mediaTypeUsage(rows: MediaTypeUsageRow[]): MediaTypeUsage[] {
+  const totals = new Map<MediaType, { count: number; bytes: number }>();
+
+  for (const type of MEDIA_TYPE_STORAGE_ORDER) {
+    totals.set(type, { count: 0, bytes: 0 });
+  }
+
+  for (const row of rows) {
+    if (row.type === null) continue;
+
+    const total = totals.get(row.type);
+    if (!total) continue;
+
+    total.count += 1;
+
+    if (
+      typeof row.size === "number" &&
+      Number.isFinite(row.size) &&
+      row.size > 0
+    ) {
+      total.bytes += row.size;
+    }
+  }
+
+  return MEDIA_TYPE_STORAGE_ORDER.map((type) => ({
+    type,
+    ...totals.get(type)!,
+  }));
 }
 
 export function mediaQuotaStatus(

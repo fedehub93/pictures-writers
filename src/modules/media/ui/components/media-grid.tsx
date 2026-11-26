@@ -1,31 +1,59 @@
 "use client";
 
-import type { MediaLibraryEntry } from "../../lib/media-library";
+import type { MediaFolderSummary } from "../../lib/media-folder";
+import type { MediaLibraryItem } from "../../lib/media-library";
 
 import { MediaCard } from "./media-card";
+import { MediaFolderCard } from "./media-folder-card";
 
 interface MediaGridProps {
-  items: MediaLibraryEntry[];
+  items: MediaLibraryItem[];
+  folders: MediaFolderSummary[];
   checkedIds: string[];
+  selectedMediaId: string | null;
+  /** Whether the archived badge may appear on Media cards. */
+  showArchivedBadge?: boolean;
   onCheckboxChange: (id: string, isChecked: boolean) => void;
+  onSelectMedia: (mediaId: string) => void;
+  onOpenFolder: (folderId: string) => void;
+  onMove: (mediaId: string) => void;
 }
 
 /**
  * The card grid stays a grid: the thumbnail is the content, not a column.
+ * Folders are drawn before the Media of the open scope, as a file browser does,
+ * and only in the first loaded block: only the folder's contents are paged.
  */
 export const MediaGrid = ({
   items,
+  folders,
   checkedIds,
+  selectedMediaId,
+  showArchivedBadge = false,
   onCheckboxChange,
+  onSelectMedia,
+  onOpenFolder,
+  onMove,
 }: MediaGridProps) => {
   return (
-    <div className="grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4 mb-4">
+    <div className="grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
+      {folders.map((folder) => (
+        <MediaFolderCard
+          key={folder.id}
+          folder={folder}
+          onOpen={onOpenFolder}
+        />
+      ))}
       {items.map((item) => (
         <MediaCard
           key={item.id}
           media={item}
           checked={checkedIds.includes(item.id)}
+          selected={item.id === selectedMediaId}
+          showArchivedBadge={showArchivedBadge}
           onCheckboxChange={onCheckboxChange}
+          onSelect={onSelectMedia}
+          onMove={onMove}
         />
       ))}
     </div>

@@ -18,6 +18,7 @@ import {
 import {
   MediaQuotaExceededError,
   getMediaQuotaStatus,
+  getMediaStorageDetails,
   getMediaUsageBytes,
 } from "../media-quota";
 import { createLocalStorageDriver } from "../storage/local";
@@ -197,6 +198,20 @@ describe("media quota", () => {
     });
 
     await expect(getMediaUsageBytes()).resolves.toBe(baseline + 1600);
+  });
+
+  it("counts an attachment in the total but in no Media type row", async () => {
+    const before = await getMediaStorageDetails();
+
+    await createOwnedFile({
+      kind: StoredFileKind.ATTACHMENT,
+      size: 700,
+    });
+
+    const after = await getMediaStorageDetails();
+
+    expect(after.quota.usedBytes - before.quota.usedBytes).toBe(700);
+    expect(after.byMediaType).toEqual(before.byMediaType);
   });
 
   it("names the public-origin share against the reserve", async () => {

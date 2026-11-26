@@ -15,9 +15,27 @@ export const MEDIA_PICKER_PAGE_SIZE = 12;
 /** The debounce both media search surfaces use before the term is committed. */
 export const MEDIA_SEARCH_DEBOUNCE_MS = 500;
 
-/** Which half of the library the admin is looking at. */
-export const MEDIA_LIBRARY_VIEWS = ["active", "archived"] as const;
+/** A folder name is a label, not content; one line of the tree should hold it. */
+export const MAX_MEDIA_FOLDER_NAME_LENGTH = 120;
+
+/**
+ * Which part of the library the admin is looking at. My Drive is the folder
+ * view and follows the tree; Recent and Archived are flat views over the whole
+ * library and ignore the open folder.
+ */
+export const MEDIA_LIBRARY_VIEWS = ["active", "recent", "archived"] as const;
 
 export type MediaLibraryView = (typeof MEDIA_LIBRARY_VIEWS)[number];
 
 export const DEFAULT_MEDIA_VIEW: MediaLibraryView = "active";
+
+/**
+ * The orders the admin library offers. Directions are fixed rather than chosen
+ * separately: Created is the newest first, Name is A to Z, Size is the largest
+ * first. Recent keeps newest-first regardless, because it is defined by date.
+ */
+export const MEDIA_LIBRARY_SORTS = ["created", "name", "size"] as const;
+
+export type MediaLibrarySort = (typeof MEDIA_LIBRARY_SORTS)[number];
+
+export const DEFAULT_MEDIA_SORT: MediaLibrarySort = "created";

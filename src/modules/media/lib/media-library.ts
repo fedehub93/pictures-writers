@@ -77,20 +77,11 @@ export function mediaLibraryItem(row: MediaLibraryRow): MediaLibraryItem {
   };
 }
 
-/** A library row plus its relational reference count for the current page. */
-export interface MediaLibraryEntry extends MediaLibraryItem {
-  usageCount: number;
-}
-
 /**
- * The fields a cover picker previews. The admin modal returns a full library
- * entry; a form only reads these three, so it does not depend on the storage
- * facts the row no longer stores.
+ * The fields a cover picker previews. A form reads only these three, so it
+ * does not depend on the storage facts the row no longer stores.
  */
 export type MediaCover = Pick<MediaLibraryItem, "id" | "url" | "altText">;
-
-export const MEDIA_USAGE_NOTE =
-  "Used in counts relational references only. References embedded in rich text or page data are not counted.";
 
 export function formatMediaDimensions(
   media: Pick<MediaLibraryItem, "metadata">,

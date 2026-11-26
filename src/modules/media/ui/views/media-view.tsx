@@ -1,177 +1,218 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useMutation } from "@tanstack/react-query";
-import { Archive, Trash } from "lucide-react";
 
-import { useTRPC } from "@/trpc/client";
-import { Button } from "@/shared/ui/button";
-import { DataPagination } from "@/shared/components/data-pagination";
 import { ErrorState } from "@/shared/components/error-state";
 import { LoadingState } from "@/shared/components/loading-state";
+import { useTRPC } from "@/trpc/client";
 
-import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
-
-import type { MediaLibraryView } from "../../constants";
-import { mediaErrorMessage } from "../../lib/error-message";
-import { mediaDeletionCleanupNotice } from "../../lib/deletion-notice";
 import {
-  MEDIA_USAGE_NOTE,
-  type MediaLibraryEntry,
-} from "../../lib/media-library";
+  type MediaLibrarySort,
+  type MediaLibraryView,
+} from "../../constants";
+import { mediaErrorMessage } from "../../lib/error-message";
+import { openMediaFolderId } from "../../lib/media-folder";
 import { useMediaFilters } from "../../hooks/use-media-filters";
 import { useMediaInvalidation } from "../../hooks/use-media-invalidation";
-import { useSuspenseMedia } from "../../hooks/use-media";
+import {
+  useMediaFolderDetails,
+  useMediaFolderTree,
+  useSuspenseMedia,
+} from "../../hooks/use-media";
 
-import { MediaGrid } from "../components/media-grid";
+import { MediaFolderSidebar } from "../components/media-folder-sidebar";
+import { MediaLibraryPanel } from "../components/media-library-panel";
+import { MediaMoveDialog } from "../components/media-move-dialog";
+import { MediaRecentBox } from "../components/media-recent-box";
 
 export const MediaView = () => {
-  const [filters, setFilters] = useMediaFilters();
-  const { data } = useSuspenseMedia(filters);
-
-  return (
-    <div className="px-6">
-      {/* Remounting on a filter change is what empties the selection: it never
-          survives into a page, search or view the admin cannot see. */}
-      <MediaLibrary
-        key={JSON.stringify([filters.search, filters.page, filters.view])}
-        items={data.items}
-        view={filters.view}
-        page={filters.page}
-        totalPages={data.totalPages}
-        onPageChange={(page) => setFilters({ page })}
-      />
-    </div>
-  );
-};
-
-interface MediaLibraryProps {
-  items: MediaLibraryEntry[];
-  view: MediaLibraryView;
-  page: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-}
-
-const MediaLibrary = ({
-  items,
-  view,
-  page,
-  totalPages,
-  onPageChange,
-}: MediaLibraryProps) => {
   const trpc = useTRPC();
   const { invalidateLibrary } = useMediaInvalidation();
-  const archive = useMutation(trpc.media.archive.mutationOptions());
-  const remove = useMutation(trpc.media.removeMany.mutationOptions());
+  const move = useMutation(trpc.media.moveMedia.mutationOptions());
+  const [filters, setFilters] = useMediaFilters();
+  // An old ?view=recent link lands on My Drive with the Recent box collapsed;
+  // it must not render an error or an empty page.
+  const listView: MediaLibraryView =
+    filters.view === "recent" ? "active" : filters.view;
+  const listFilters = { ...filters, view: listView };
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useSuspenseMedia(listFilters);
 
-  const [checkedIds, setCheckedIds] = useState<string[]>([]);
-  const [isBulkLoading, setIsBulkLoading] = useState(false);
+  // The blocks already loaded are one list: the rows keep their place as the
+  // next block appends, and folders come from the first block only, so they
+  // never repeat above later blocks.
+  const items = data.pages.flatMap((page) => page.items);
+  const folders = data.pages[0]?.folders ?? [];
 
-  // The grid and the batch consume only ids that are on screen right now, so a
-  // row removed by a refetch after a refused action cannot be acted on and is
-  // not drawn as checked.
-  const selectedIds = checkedIds.filter((id) =>
-    items.some((item) => item.id === id),
-  );
-  const canShowBulkAction = selectedIds.length > 0;
-  const isBulkPending = isBulkLoading || archive.isPending || remove.isPending;
+  // The Media a move would file: one from a card menu or the whole selection
+  // from the bulk toolbar. The dialog lives here so both the Recent box and the
+  // My Drive panel can share it.
+  const [moveIds, setMoveIds] = useState<string[] | null>(null);
 
-  const handleCheckboxChange = (id: string, isChecked: boolean) => {
-    setCheckedIds((current) =>
-      isChecked
-        ? [...new Set([...current, id])]
-        : current.filter((candidate) => candidate !== id),
-    );
-  };
+  // Opening a folder is navigation inside My Drive: it always starts the list
+  // over, because the loaded blocks belong to the scope they were counted in.
+  // An empty string means the My Drive root.
+  const openFolder = (folderId: string) =>
+    setFilters({
+      view: "active",
+      folderId: folderId || null,
+    });
 
-  const runBulkAction = async <T,>(
-    action: (ids: string[]) => Promise<T>,
-    announce: (result: T) => void,
-  ) => {
+  const onMove = async (folderId: string | null) => {
+    if (!moveIds) return;
+    const ids = moveIds;
+
     try {
-      setIsBulkLoading(true);
-      announce(await action(selectedIds));
-      setCheckedIds([]);
+      const result = await move.mutateAsync({ ids, folderId });
+      toast.success(`Moved ${result.moved} Media`);
+      setCheckedIdsFromPanel((current) =>
+        current.filter((candidate) => !ids.includes(candidate)),
+      );
+      setMoveIds(null);
     } catch (error) {
       toast.error(mediaErrorMessage(error));
     } finally {
-      // A refused batch writes nothing, but the resync repairs drift from
-      // another tab and proves the rows, count and quota the admin sees.
       await invalidateLibrary();
-      setIsBulkLoading(false);
     }
   };
 
-  const onBulkArchive = () =>
-    runBulkAction(
-      (ids) => archive.mutateAsync({ ids }),
-      (count) => toast.success(`Archived ${count} Media`),
-    );
+  // A selection belongs to the scope it was made in: loading another block
+  // keeps it, because those cards stay on screen, but a new search, view,
+  // folder or order starts a different list and drops it.
+  const scopeKey = JSON.stringify([
+    filters.search,
+    listView,
+    filters.folderId,
+    filters.sort,
+  ]);
 
-  const onBulkDelete = () =>
-    runBulkAction(
-      (ids) => remove.mutateAsync({ ids }),
-      ({ deleted, cleanup }) => {
-        toast.success(`Deleted ${deleted} Media permanently`);
+  // Opening a folder selects it: the panel describes the folder the editor
+  // entered, so a folder is as readable as a Media. Archived is a flat view
+  // with no folder to describe.
+  const openFolderId = openMediaFolderId({
+    view: listView,
+    folderId: filters.folderId,
+  });
+  const { data: folder, isPending: isFolderPending } =
+    useMediaFolderDetails(openFolderId);
+  const { data: folderTree } = useMediaFolderTree();
 
-        const notice = mediaDeletionCleanupNotice(cleanup);
-        if (notice) toast(notice);
-      },
-    );
+  // The My Drive panel owns checked ids; the view needs to clear them after a
+  // successful move so the checkbox state stays honest. The ids are stamped
+  // with the scope they were checked in; a different scope reads as empty and
+  // drops the stale entry, so returning to an earlier scope does not resurrect
+  // a selection the editor had already left behind.
+  const [selection, setSelection] = useState<{
+    scope: string;
+    ids: string[];
+  }>({ scope: scopeKey, ids: [] });
+
+  if (selection.scope !== scopeKey) {
+    setSelection({ scope: scopeKey, ids: [] });
+  }
+
+  const setCheckedIdsFromPanel = (
+    update: string[] | ((current: string[]) => string[]),
+  ) =>
+    setSelection((current) => {
+      const checked = current.scope === scopeKey ? current.ids : [];
+      return {
+        scope: scopeKey,
+        ids: typeof update === "function" ? update(checked) : update,
+      };
+    });
+
+  const checkedIdsFromPanel =
+    selection.scope === scopeKey ? selection.ids : [];
+
+  // The panel is the anchor a reorder scrolls back to: the blocks already
+  // loaded belonged to the old order, so the editor must see the new list from
+  // its first row. The remount key below carries the sort, so the panel's own
+  // state (the described Media) is dropped with the selection.
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // The reorder remounts the panel, so the scroll is applied once the new
+  // panel is on screen rather than while the old one is still laid out.
+  const pendingSortScroll = useRef(false);
+
+  const onSortChange = (sort: MediaLibrarySort) => {
+    if (sort === filters.sort) return;
+
+    pendingSortScroll.current = true;
+    void setFilters({ sort });
+  };
+
+  useEffect(() => {
+    if (!pendingSortScroll.current) return;
+
+    pendingSortScroll.current = false;
+    panelRef.current?.scrollIntoView({ block: "start" });
+  }, [filters.sort]);
+
+  // A failed block leaves the control in place and enabled, so the editor can
+  // retry; the toast says what went wrong. `throwOnError` is needed because the
+  // observer otherwise swallows the rejection.
+  const onLoadMore = async () => {
+    try {
+      await fetchNextPage({ throwOnError: true });
+    } catch (error) {
+      toast.error(mediaErrorMessage(error));
+    }
+  };
 
   return (
-    <>
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-4">
-        <p className="text-xs text-muted-foreground">{MEDIA_USAGE_NOTE}</p>
-        {canShowBulkAction && (
-          <div className="flex items-center gap-x-2">
-            {view === "active" && (
-              <ConfirmModal
-                title="Archive selected Media?"
-                description="Archived Media leave the library but keep being served and referenced by published content. You can restore them later."
-                confirmLabel="Archive"
-                onConfirm={onBulkArchive}
-              >
-                <Button disabled={isBulkPending} variant="outline" size="sm">
-                  <Archive />
-                  Archive
-                </Button>
-              </ConfirmModal>
-            )}
-            {view === "archived" && (
-              <ConfirmModal
-                title="Delete selected Media permanently?"
-                description="Permanent deletion removes the file and every generated rendition. It cannot be undone, and it is refused while content still references a Media."
-                confirmLabel="Delete permanently"
-                onConfirm={onBulkDelete}
-              >
-                <Button disabled={isBulkPending} variant="destructive" size="sm">
-                  <Trash />
-                  Delete
-                </Button>
-              </ConfirmModal>
-            )}
-          </div>
-        )}
-      </div>
-      <MediaGrid
-        items={items}
-        checkedIds={selectedIds}
-        onCheckboxChange={handleCheckboxChange}
-      />
-      {items.length === 0 && (
-        <div className="text-center text-sm text-muted-foreground mt-10">
-          {view === "archived" ? "No archived Media found" : "No Media found"}
+    <div className="flex gap-6 px-6">
+      <MediaFolderSidebar />
+      <div className="min-w-0 flex-1 flex flex-col gap-y-6">
+        {/* The reveal resets when the search or view changes, but a reorder
+            leaves the newest-first preview, and its open second row, alone. */}
+        <MediaRecentBox
+          key={JSON.stringify([filters.search, listView, filters.folderId])}
+          view={listView}
+          search={filters.search}
+          onMove={(mediaId) => setMoveIds([mediaId])}
+        />
+        {/* The ref stays mounted across a reorder, so the scroll lands on the
+            panel even though the panel itself remounts to drop its own state. */}
+        <div ref={panelRef}>
+          {/* Remounting on a scope change empties the panel's own state; the
+              checked ids are scope-stamped above for the same reason. */}
+          <MediaLibraryPanel
+            key={scopeKey}
+            items={items}
+            folders={folders}
+            folder={folder ?? null}
+            folderPending={openFolderId !== null && isFolderPending}
+            view={listView}
+            sort={filters.sort}
+            onSortChange={onSortChange}
+            hasMore={hasNextPage}
+            isLoadingMore={isFetchingNextPage}
+            folderTree={folderTree ?? []}
+            onLoadMore={() => void onLoadMore()}
+            onOpenFolder={openFolder}
+            onRequestMove={(ids) => setMoveIds(ids)}
+            checkedIds={checkedIdsFromPanel}
+            onCheckedIdsChange={setCheckedIdsFromPanel}
+          />
         </div>
+      </div>
+
+      {moveIds && (
+        <MediaMoveDialog
+          open
+          count={moveIds.length}
+          folders={folderTree ?? []}
+          isPending={move.isPending}
+          onOpenChange={(open) => {
+            if (!open) setMoveIds(null);
+          }}
+          onConfirm={onMove}
+        />
       )}
-      <DataPagination
-        page={page}
-        totalPages={totalPages}
-        onPageChange={onPageChange}
-      />
-    </>
+    </div>
   );
 };
 

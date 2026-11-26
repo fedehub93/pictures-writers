@@ -2,7 +2,8 @@ import { cn } from "@/shared/lib/utils";
 
 interface ContentHeaderProps {
   label: string;
-  totalEntries: number;
+  /** When omitted, the count paragraph is not rendered. */
+  totalEntries?: number;
   section?: string;
 }
 
@@ -25,9 +26,11 @@ export const ContentHeader = ({
           </span>
         ) : null}
         <h1 className="text-2xl">{label}</h1>
-        <p className="text-sm text-muted-foreground">
-          {totalEntries} entry found
-        </p>
+        {typeof totalEntries === "number" && (
+          <p className="text-sm text-muted-foreground">
+            {totalEntries} entry found
+          </p>
+        )}
       </div>
     </div>
   );

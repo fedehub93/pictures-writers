@@ -1,4 +1,5 @@
 import { mkdtemp, rm } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -74,9 +75,11 @@ describe("POST /api/media", () => {
   let root: string;
   let driver: StorageDriver;
   let mediaIds: string[];
+  let folderIds: string[];
 
   beforeEach(async () => {
     mediaIds = [];
+    folderIds = [];
     root = await mkdtemp(path.join(tmpdir(), "media-route-"));
     driver = createLocalStorageDriver({ root });
     storage.driver = driver;
@@ -88,8 +91,19 @@ describe("POST /api/media", () => {
     if (mediaIds.length > 0) {
       await db.media.deleteMany({ where: { id: { in: mediaIds } } });
     }
+    if (folderIds.length > 0) {
+      await db.mediaFolder.deleteMany({ where: { id: { in: folderIds } } });
+    }
     await rm(root, { recursive: true, force: true });
   });
+
+  async function createFolder() {
+    const folder = await db.mediaFolder.create({
+      data: { name: `Upload target ${randomUUID()}` },
+    });
+    folderIds.push(folder.id);
+    return folder;
+  }
 
   it("refuses a non-multipart body", async () => {
     const response = await POST(
@@ -114,6 +128,14 @@ describe("POST /api/media", () => {
       method: "POST",
       body: form,
     });
+  }
+
+  function uploadForm(file: File, name: string, folderId?: string): FormData {
+    const form = new FormData();
+    form.append("file", file);
+    form.append("name", name);
+    if (folderId) form.append("folderId", folderId);
+    return form;
   }
 
   it("accepts a multipart image upload and returns a namespaced Media", async () => {
@@ -142,6 +164,112 @@ describe("POST /api/media", () => {
 
     const stored = await driver.get(media.key);
     expect(stored.byteLength).toBe(media.size);
+  });
+
+  it("files an image upload into the requested folder", async () => {
+    const folder = await createFolder();
+    const bytes = await createPng();
+    const form = uploadForm(
+      new File([bytes], "folder-image.png", { type: "image/png" }),
+      "Image in a folder",
+      folder.id,
+    );
+
+    const response = await POST(multipartRequest(form));
+    const media = await response.json();
+    mediaIds.push(media.id);
+
+    expect(response.status).toBe(200);
+    const row = await db.media.findUniqueOrThrow({ where: { id: media.id } });
+    expect(row.folderId).toBe(folder.id);
+  });
+
+  it("files a document upload into the requested folder", async () => {
+    const folder = await createFolder();
+    const form = uploadForm(
+      new File([new Uint8Array([4, 3, 2, 1])], "folder-document.pdf", {
+        type: "application/pdf",
+      }),
+      "Document in a folder",
+      folder.id,
+    );
+
+    const response = await POST(multipartRequest(form));
+    const media = await response.json();
+    mediaIds.push(media.id);
+
+    expect(response.status).toBe(200);
+    const row = await db.media.findUniqueOrThrow({ where: { id: media.id } });
+    expect(row.folderId).toBe(folder.id);
+  });
+
+  it("files an upload at the My Drive root when no folder is requested", async () => {
+    const form = uploadForm(
+      new File([new Uint8Array([7, 7, 7])], "root-document.txt", {
+        type: "text/plain",
+      }),
+      "Root document",
+    );
+
+    const response = await POST(multipartRequest(form));
+    const media = await response.json();
+    mediaIds.push(media.id);
+
+    expect(response.status).toBe(200);
+    const row = await db.media.findUniqueOrThrow({ where: { id: media.id } });
+    expect(row.folderId).toBeNull();
+  });
+
+  it("answers 404 and writes no Media when the target folder is gone", async () => {
+    const form = uploadForm(
+      new File([new Uint8Array([1, 3, 3, 7])], "lost-folder.pdf", {
+        type: "application/pdf",
+      }),
+      "Lost folder document",
+      randomUUID(),
+    );
+
+    const response = await POST(multipartRequest(form));
+    const body = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(body).toMatchObject({ code: "MEDIA_FOLDER_NOT_FOUND" });
+    await expect(
+      db.media.count({ where: { name: "Lost folder document" } }),
+    ).resolves.toBe(0);
+  });
+
+  it("answers 404 when the folder is deleted while the upload is processed", async () => {
+    const folder = await createFolder();
+
+    // The folder passes the upload's own check and is deleted before the row is
+    // inserted, so only the foreign key can refuse it. Reading the temporary
+    // object is the last step before that insert.
+    storage.driver = {
+      ...driver,
+      get: async (key) => {
+        const bytes = await driver.get(key);
+        await db.mediaFolder.delete({ where: { id: folder.id } });
+        return bytes;
+      },
+    } satisfies StorageDriver;
+
+    const form = uploadForm(
+      new File([new Uint8Array([2, 4, 6, 8])], "racing-folder.pdf", {
+        type: "application/pdf",
+      }),
+      "Racing folder document",
+      folder.id,
+    );
+
+    const response = await POST(multipartRequest(form));
+    const body = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(body).toMatchObject({ code: "MEDIA_FOLDER_NOT_FOUND" });
+    await expect(
+      db.media.count({ where: { name: "Racing folder document" } }),
+    ).resolves.toBe(0);
   });
 
   it("rejects a multipart upload whose type the library cannot classify", async () => {

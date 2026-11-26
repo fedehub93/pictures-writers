@@ -114,6 +114,117 @@ token is configured. `POST /api/media` accepts only multipart: any other body an
 `UNSUPPORTED_CONTENT_TYPE`, because the JSON branch that recorded a provider object as it
 arrived is gone.
 
+The transport takes an optional `folderId` and files the new Media into that folder; a Media
+uploaded without one belongs at the My Drive root. The service checks the folder before it
+records anything, so a folder deleted while the upload dialog was open is answered with
+`MEDIA_FOLDER_NOT_FOUND` instead of an uploaded file filed nowhere. The admin library passes
+the folder it is showing only while My Drive is the view: a flat view over the whole library,
+such as Recent or Archived, has no open folder, so uploads started there land at the root
+(`openMediaFolderId` in `src/modules/media/lib/media-folder.ts`).
+
+The admin library is a three-pane shell: a folder sidebar on the left, the content on the right.
+The sidebar is `w-64` and shows the My Drive tree, the Archived view link, the per-folder
+"New subfolder" action and the storage-details widget. There is no Recent link in the sidebar:
+Recent is now a preview box inside My Drive rather than a page view.
+
+The page header shows "Media" with no entry count. One control row under it holds "New Folder" and
+"Upload Media" at the left and a wide but bounded search (`w-full max-w-lg`) at the right: the
+search keeps its "Search by name" placeholder and debounce, and wraps onto its own full-width line
+under the actions when the row is too narrow for both. Archived hides the two actions and keeps the
+search. The storage-driver select and its helper line are no longer on the page. "New Folder" opens
+the existing folder-name dialog and creates inside the open folder, or at the My Drive root while
+searching. The rehome banner stays full width under the control row.
+
+Below the banner, My Drive is drawn as a bordered panel. Its header is "My Drive" at the root and
+a clickable breadcrumb (`My Drive / Parent / Folder`) inside a folder. Bulk actions (`Move to
+folder`, `Archive`, `Delete`) sit under the header whenever at least one card is checked. The
+details column lives inside this panel as its right-hand column: it describes the selected Media,
+otherwise the open folder, otherwise the text placeholder "Select an item to view more
+information". Below `xl` the details stack under the grid.
+
+The panel no longer shows a relational-reference count, and the details column no longer has a
+"Used in" row: the count covered only relational references and missed Media embedded in rich-text
+JSON, so it answered no question the editor could trust. The server guard is unchanged: permanent
+deletion of a Media that content still uses is refused, and the refusal states that the Media is
+still in use and those uses must be removed first, without quoting a number. The archive and delete
+dialogs describe the action the same way.
+
+The Recent box is shown inside My Drive only — at the root and inside any folder — and is hidden
+while searching and in Archived. It is a two-row preview: one read of eight with the four newest on
+screen, newest first, and it draws no folder cards. A centered "View more" control under the grid
+reveals the second row of four; the box never shows more than eight, and the control disappears at
+the cap or when nothing more can be revealed. There is no pagination and no "Show less". It is not
+drawn at all when the library has no active Media. Recent-box cards carry no checkbox and no click
+action; only the `⋮` menu acts, offering the same Edit, Replace, Move to folder and Archive actions
+as the My Drive grid.
+
+The library scopes My Drive one level of the tree at a time: a folder shows its child folders
+and the Media filed directly in it, and the root shows the folders with no parent and the Media
+with no folder. `media.getMany` takes the open `folderId` (absent or null means the root) and
+returns the child folders alongside the first page of Media, each with its active item count. A
+search spans the whole active library and drops the folder filter: a name is often the only thing
+the editor remembers, and searching the open folder alone would hide a copy filed elsewhere.
+Archived lists every archived Media. Archived Media keep their `folderId` but never appear inside
+a folder, and a folder's item count excludes them.
+
+My Drive and Archived append the next block of eight Media only when the editor activates the
+centered "View more" control under the grid; the rows already on screen keep their place. The
+control shows an inline spinner and refuses a second activation while the block is in flight, puts
+a toast on a failed request and returns enabled so the editor can retry, and disappears when the
+last block is loaded. Folders come from the first block only, so they stay at the top and never
+repeat. The first block is prefetched with the page, so the panel hydrates with content and no
+empty grid flashes. Checked Media survive loading another block because their cards remain on
+screen; they are cleared when the search, view, folder or sort changes, because the loaded set is
+replaced. The page number is no longer part of the URL: loaded blocks are query state, and a legacy
+`?page=` parameter is ignored rather than rejected.
+
+The order is a selector at the right of the panel header, beside the My Drive breadcrumb or the
+Archived title; it has no visible label and is announced as "Sort by". Created is the default and
+lists the newest first, Name lists A to Z ignoring case, and Size lists the largest first with
+Media of unknown size last. The chosen order lives in the URL as `sort`, written only when it is
+not Created, and applies at the root, inside a folder and to search results; Recent stays
+newest-first. Changing it restarts the list from the first block, scrolls the panel back to its top
+and clears the checked Media, because the loaded blocks belonged to the previous order. The header
+count ignores the order, so a reorder does not refetch it.
+
+The URL carries the scope and the order as `search`, `view`, `folderId` and `sort`, so a shared
+link opens the same list; each parameter is cleared when it holds its default.
+
+`recent` stays in the server enum because the asset picker and the Recent box read it as the
+flat, newest-first active list. An old `?view=recent` URL is normalized to My Drive on the client
+so it lands on the active view with the Recent preview showing; it does not render an error or an
+empty page.
+
+Media change folders through `media.moveMedia`, which takes one or many ids and a target
+`folderId` (null is the My Drive root). The target is checked before anything is written, and every
+id is loaded first, so a deleted folder or an unknown Media refuses the whole batch instead of
+filing part of it. The card's action menu and the bulk toolbar open the same folder picker, and a
+move refreshes the grid and the counts, so a row leaves the scope it no longer belongs to.
+
+The read-only details column inside the My Drive panel describes the selected Media, the open
+folder, or a placeholder. A Media's facts come from the row the grid already holds: size,
+dimensions, MIME, storage driver, created and updated. The checksum is no longer shown. Its public
+URL is the stored delivery address, truncated to the column and copied to the clipboard when
+clicked, with a tooltip showing the full address and naming the action. The stored address is
+relative for a local file and the panel is the browser boundary that resolves it, so the clipboard
+receives an absolute URL while storage code keeps composing only the canonical form. A folder's
+name, active count,
+stored-original bytes and dates come from `media.getFolderDetails`, because the grid only returns
+child folders; the count and bytes cover the Media filed directly in it, matching the card that
+opened it. Opening a folder selects it, so the panel describes the folder the editor entered,
+while selecting a Media replaces it. Editing and destructive actions stay on the card and the bulk
+toolbar, so the panel never becomes a second editing surface; copying the public URL is its only
+action.
+
+Cards show the name and size; folder cards show the name and item count. The Media-type badge is
+gone from cards, and the "Archived" badge shows only in the Archived view. Every button over the
+thumbnail is replaced by a checkbox at the top-left and a single vertical `⋮` button at the
+top-right, both always visible and translucent; both stop propagation so they never move the
+selection or change the details selection. The menu for an active Media contains Edit, Replace,
+Move to folder and Archive; the menu for an archived Media contains Restore and Delete
+permanently. Folder cards keep no checkbox and no menu: folder writes stay in the tree, and
+clicking a folder card still opens it.
+
 ## Where things live
 
 | Concern | File |
@@ -149,8 +260,20 @@ arrived is gone.
 | Parsing addresses and recognizing provider URLs | `src/modules/media/lib/url.ts` |
 | Absolute form and own-host check | `src/modules/media/server/media-url.ts` |
 | Quota arithmetic (pure vs database) | `src/modules/media/lib/quota.ts`, `src/modules/media/server/media-quota.ts` |
+| Storage details widget and its per-type breakdown | `src/modules/media/ui/components/media-storage-details.tsx`, `src/modules/media/server/media-quota.ts` |
 | Quota refusal response | `src/modules/media/server/quota-error-response.ts` |
 | Admin reads and row operations (tRPC) | `src/modules/media/server/procedures.ts` |
+| Folder tree shaping and anti-cycle rule | `src/modules/media/lib/media-folder.ts` |
+| Folder CRUD | `src/modules/media/server/media-folder-service.ts` |
+| Admin folder sidebar and tree | `src/modules/media/ui/components/media-folder-sidebar.tsx`, `src/modules/media/ui/components/media-folder-tree.tsx` |
+| Folder-scoped grid and folder card | `src/modules/media/ui/components/media-grid.tsx`, `src/modules/media/ui/components/media-folder-card.tsx` |
+| My Drive / Archived panel | `src/modules/media/ui/components/media-library-panel.tsx` |
+| Library order selector | `src/modules/media/ui/components/media-sort-select.tsx` |
+| Library URL contract (search, view, folder, sort) | `src/modules/media/lib/media-search-params.ts`, `src/modules/media/params.ts` |
+| Recent box two-row preview and the shared View more control | `src/modules/media/ui/components/media-recent-box.tsx`, `src/modules/media/ui/components/media-view-more.tsx`, `src/modules/media/hooks/use-media.ts` |
+| Shared create/rename folder dialog | `src/modules/media/ui/components/media-folder-dialog-provider.tsx` |
+| Move between folders: mutation and picker | `src/modules/media/server/media-service.ts`, `src/modules/media/ui/components/media-move-dialog.tsx` |
+| Read-only details panel and its folder read | `src/modules/media/ui/components/media-details-panel.tsx`, `src/modules/media/server/media-folder-service.ts` |
 | Upload endpoint | `src/app/api/media/route.ts` |
 | Replace endpoint | `src/app/api/media/[mediaId]/replace/route.ts` |
 | Public Media delivery route | `src/app/media/[...path]/route.ts` |
@@ -437,6 +560,12 @@ plus the bytes in its rendition manifest, an attachment or avatar its own size, 
 Media keep counting. A Media with no record contributes nothing; the audit reports it.
 `src/modules/media/lib/quota.ts` is the pure arithmetic; `src/modules/media/server/media-quota.ts`
 reads the database and holds the admission lock.
+
+The admin's storage details, beside the folder tree, reads the same figure through
+`media.getMeta` and splits it across Images, Videos, Audio and Documents. The rows count stored
+originals only — a rendition shares its Media's bytes and an attachment or avatar has no Media
+type — while the total is the quota figure the uploads enforce, so the rows are deliberately not
+expected to add up to it.
 
 Inside that budget, `Settings.publicOriginReserveMb` (default 512, a tenth of the default quota)
 is the share public-origin files may occupy. A public upload is admitted only when it fits both

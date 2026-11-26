@@ -8,6 +8,7 @@ import { requirePermission } from "@/shared/lib/auth-utils";
 import { PERMISSIONS } from "@/shared/lib/permissions";
 
 import {
+  MediaFolderDialogProvider,
   MediaListHeader,
   MediaView,
   MediaViewError,
@@ -17,6 +18,7 @@ import { loadMediaSearchParams } from "@/modules/media/params";
 import {
   prefetchMedia,
   prefetchMediaMeta,
+  prefetchMediaRecent,
 } from "@/modules/media/server/prefetch";
 
 interface Props {
@@ -27,21 +29,38 @@ const MediaPage = async ({ searchParams }: Props) => {
   await requirePermission(PERMISSIONS.MEDIA_READ);
 
   const filters = await loadMediaSearchParams(searchParams);
+  // An old ?view=recent URL lands on My Drive: the main list uses the active
+  // view while the Recent box still reads the recent surface.
+  const listFilters =
+    filters.view === "recent"
+      ? { ...filters, view: "active" as const }
+      : filters;
 
-  prefetchMedia(filters);
-  await prefetchMediaMeta({
-    search: filters.search,
-    view: filters.view,
-  });
+  // The first block goes into the grid's infinite key, so the suspense
+  // boundary resolves with content rather than an empty grid.
+  const prefetches = [
+    prefetchMedia(listFilters),
+    prefetchMediaMeta({
+      search: filters.search,
+      view: filters.view,
+      folderId: filters.folderId,
+    }),
+  ];
+  if (filters.view !== "archived") {
+    prefetches.push(prefetchMediaRecent());
+  }
+  await Promise.all(prefetches);
 
   return (
     <HydrateClient>
-      <MediaListHeader />
-      <Suspense fallback={<MediaViewLoading />}>
-        <ErrorBoundary fallback={<MediaViewError />}>
-          <MediaView />
-        </ErrorBoundary>
-      </Suspense>
+      <MediaFolderDialogProvider>
+        <MediaListHeader />
+        <Suspense fallback={<MediaViewLoading />}>
+          <ErrorBoundary fallback={<MediaViewError />}>
+            <MediaView />
+          </ErrorBoundary>
+        </Suspense>
+      </MediaFolderDialogProvider>
     </HydrateClient>
   );
 };

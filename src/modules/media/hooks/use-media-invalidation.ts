@@ -13,6 +13,10 @@ export const useMediaInvalidation = () => {
   const invalidateMeta = () =>
     queryClient.invalidateQueries({ queryKey: trpc.media.getMeta.queryKey() });
 
+  /** The sidebar tree. Every folder write refreshes it with the library. */
+  const invalidateFolders = () =>
+    queryClient.invalidateQueries(trpc.media.getFolderTree.pathFilter());
+
   /**
    * The move's own reads. A driver switch changes what a move would do, so
    * the preflight and the progress must be asked again rather than shown
@@ -29,8 +33,11 @@ export const useMediaInvalidation = () => {
       // The path filter, not the query key: the library reads pages and the
       // picker reads an infinite list, and one write must refresh both.
       queryClient.invalidateQueries(trpc.media.getMany.pathFilter()),
+      // A Media write changes a folder's count and size, so the details panel
+      // of the folder the editor has open is re-read with the grid.
+      queryClient.invalidateQueries(trpc.media.getFolderDetails.pathFilter()),
       invalidateMeta(),
     ]);
 
-  return { invalidateLibrary, invalidateMeta, invalidateRehome };
+  return { invalidateLibrary, invalidateMeta, invalidateFolders, invalidateRehome };
 };

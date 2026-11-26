@@ -138,6 +138,22 @@ _Avoid_: Provider, bucket, path when referring to the record.
 The logical identity of one uploaded file in the library: its name, type, alt text, revision and the manifest of the renditions derived from it. The location of its bytes - storage key, driver, content type, size, checksum - is its Stored file. One Media per original file; content references the Media, never a rendition.
 _Avoid_: Asset, file, attachment when referring to the library entity; using Media for a derived rendition.
 
+**Media folder**:
+A container that organizes Media in the library, with a display name and an optional parent so folders nest at any depth. A Media belongs to at most one folder, and a folder that still holds Media or a subfolder cannot be deleted.
+_Avoid_: Directory, collection, album, tag, category.
+
+**My Drive**:
+The library root: where a Media with no Media folder lives and where the folder tree starts. It is the implicit root of the tree, not a folder row, so it has no id to move or delete.
+_Avoid_: Root folder, home, all files.
+
+**Move to folder**:
+Filing a Media into a Media folder, or back at the My Drive root, by changing its folder. It changes organization only: the Stored file's bytes stay where they are. The tRPC mutation is `media.moveMedia`.
+_Avoid_: Re-home, which moves bytes between drivers; relocate, organize, archive.
+
+**Recent**:
+The preview surface that lists the latest active Media newest first, ignoring folder membership. It appears as the "Recent" box inside My Drive and is the read the asset picker uses, because a picker offers the whole library rather than one folder. It is no longer a separate page view in the sidebar.
+_Avoid_: Latest, recents, all files; using Recent for the whole My Drive view.
+
 **Media type**:
 The kind of file a Media holds - image, video, audio, document - which decides what metadata is meaningful and whether the file is processed at all.
 _Avoid_: Kind, media category; MIME type, which is a property of the file rather than the library category.
