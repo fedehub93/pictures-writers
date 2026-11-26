@@ -4,7 +4,7 @@
 
 **Blocked by:** 03 — Recent box as a two-row preview (for the shared "View more" control, not for the behaviour)
 
-**Status:** ready-for-agent
+**Status:** done
 
 ## Decisions
 
@@ -19,14 +19,28 @@
 
 ## Checklist
 
-- [ ] My Drive appends the next block of eight Media on each activation, keeping the rows already shown.
-- [ ] Archived has the same load-more behaviour.
-- [ ] The control renders only when a next block exists, shows an inline spinner while fetching, returns enabled with a readable message after a failure, and disappears at the end.
-- [ ] Folder cards render only in the first block and never repeat.
-- [ ] The media URL no longer carries a page; `search`, `view` and `folderId` are unchanged, and a legacy page parameter is ignored.
-- [ ] The first block is prefetched into the same infinite query key, so the page hydrates with content.
-- [ ] The asset picker and the Recent box keep working against the page-based list contract.
-- [ ] Selection survives loading another block and is cleared when search, view or folder changes.
-- [ ] The panel remount key follows search, view and folder, and no longer includes a page.
-- [ ] Component tests cover the control's presence, callback, loading and end states; a search-param test covers the removed page and the kept parameters.
-- [ ] `npm run lint`, `npm run typecheck` and the test suite pass.
+- [x] My Drive appends the next block of eight Media on each activation, keeping the rows already shown.
+- [x] Archived has the same load-more behaviour.
+- [x] The control renders only when a next block exists, shows an inline spinner while fetching, returns enabled with a readable message after a failure, and disappears at the end.
+- [x] Folder cards render only in the first block and never repeat.
+- [x] The media URL no longer carries a page; `search`, `view` and `folderId` are unchanged, and a legacy page parameter is ignored.
+- [x] The first block is prefetched into the same infinite query key, so the page hydrates with content.
+- [x] The asset picker and the Recent box keep working against the page-based list contract.
+- [x] Selection survives loading another block and is cleared when search, view or folder changes.
+- [x] The panel remount key follows search, view and folder, and no longer includes a page.
+- [x] Component tests cover the control's presence, callback, loading and end states; a search-param test covers the removed page and the kept parameters.
+- [x] `npm run lint`, `npm run typecheck` and the test suite pass.
+
+## Comments
+
+**2026-11-26 — landed in `08693039`.**
+
+- My Drive and Archived now read the library as an infinite query. The first block of eight is prefetched server-side into the same key, and "View more" appends the next block through `useSuspenseMedia`. Folders come from `pages[0]`; rows come from every loaded page.
+- The control (`MediaViewMore`) renders only while `hasNextPage`, shows its spinner from `isFetchingNextPage`, and disappears once `getNextPageParam` reports no next block. A failed fetch toasts and leaves the button enabled for a retry; the view calls `fetchNextPage({ throwOnError: true })` because the observer otherwise swallows the rejection.
+- Checked ids are scope-stamped: they survive an appended block and read as empty when search, view or folder changes, without waiting for an effect. The panel remount key follows the same tuple and no longer includes a page.
+- The URL contract lost `page` in one parser map (`lib/media-search-params.ts`) shared by the server loader and `useMediaFilters`, so the two cannot drift. A legacy `?page=` is not read; `search`, `view` and `folderId` are unchanged.
+- The asset picker and the Recent box still request explicit pages. One `nextMediaPage` rule now drives the picker, the library and the prefetch.
+- Tests: `params.test.ts` covers the defaults, the kept parameters, and a legacy page alongside them; the panel suite covers the control's presence, callback, loading state and end state.
+- `docs/media.md` is deliberately left for ticket 06, whose decision is one documentation pass at the end so the page description is not edited in five conflicting places.
+
+Verification: `npm run lint` 0 errors (250 pre-existing warnings), `npm run typecheck` passes, full suite 308 files / 2790 tests passing, `npm run check:doc-citations` 97 docs / 0 broken, `npm run build:agent` passes.
