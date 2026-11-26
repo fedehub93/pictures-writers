@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { MediaType } from "@/generated/prisma";
 import type { MediaFolderDetails } from "../../../lib/media-folder";
-import type { MediaLibraryEntry } from "../../../lib/media-library";
+import type { MediaLibraryItem } from "../../../lib/media-library";
 
 vi.mock("@/trpc/client", () => {
   const mutationOptions = () => ({
@@ -40,7 +40,7 @@ vi.mock("@/app/(admin)/_hooks/use-modal-store", () => ({
 
 import { MediaLibraryPanel } from "../media-library-panel";
 
-const MEDIA: MediaLibraryEntry = {
+const MEDIA: MediaLibraryItem = {
   id: "media-1",
   name: "Panel item",
   type: MediaType.IMAGE,
@@ -56,7 +56,6 @@ const MEDIA: MediaLibraryEntry = {
   mimeType: "image/webp",
   checksum: "abc",
   storageDriver: "local",
-  usageCount: 0,
 };
 
 const FOLDER: MediaFolderDetails = {
@@ -129,12 +128,11 @@ describe("MediaLibraryPanel", () => {
     expect(scope.textContent).not.toContain("My Drive");
   });
 
-  it("shows the usage note", () => {
+  it("shows no usage note", () => {
     const scope = mount();
 
-    expect(scope.textContent).toContain(
-      "Used in counts relational references only",
-    );
+    expect(scope.textContent).not.toContain("relational references");
+    expect(scope.textContent).not.toContain("rich text");
   });
 
   it("shows the bulk action slot when a card is checked", async () => {

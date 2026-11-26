@@ -20,17 +20,14 @@ import {
   type MediaFolderNode,
   type MediaFolderSummary,
 } from "@/modules/media/lib/media-folder";
-import {
-  MEDIA_USAGE_NOTE,
-  type MediaLibraryEntry,
-} from "@/modules/media/lib/media-library";
+import type { MediaLibraryItem } from "@/modules/media/lib/media-library";
 import { useMediaInvalidation } from "@/modules/media/hooks/use-media-invalidation";
 
 import { MediaDetailsPanel } from "./media-details-panel";
 import { MediaGrid } from "./media-grid";
 
 interface MediaLibraryPanelProps {
-  items: MediaLibraryEntry[];
+  items: MediaLibraryItem[];
   folders: MediaFolderSummary[];
   folder: MediaFolderDetails | null;
   folderPending: boolean;
@@ -153,75 +150,53 @@ export const MediaLibraryPanel = ({
           folderTree={folderTree}
           onOpenFolder={onOpenFolder}
         />
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <p className="text-xs text-muted-foreground">{MEDIA_USAGE_NOTE}</p>
-          {canShowBulkAction && (
-            <div className="flex items-center gap-x-2">
-              {isMyDrive && (
+        {canShowBulkAction && (
+          <div className="flex flex-wrap items-center gap-x-2">
+            {isMyDrive && (
+              <Button
+                disabled={isBulkPending}
+                variant="outline"
+                size="sm"
+                onClick={() => onRequestMove(selectedIds)}
+              >
+                <FolderInput />
+                Move to folder
+              </Button>
+            )}
+            {isMyDrive && (
+              <ConfirmModal
+                title="Archive selected Media?"
+                description="Archived Media leave the library but keep being served and referenced. You can restore them later."
+                confirmLabel="Archive"
+                onConfirm={onBulkArchive}
+              >
                 <Button
                   disabled={isBulkPending}
                   variant="outline"
                   size="sm"
-                  onClick={() => onRequestMove(selectedIds)}
                 >
-                  <FolderInput />
-                  Move to folder
+                  <Archive />
+                  Archive
                 </Button>
-              )}
-              {isMyDrive && (
-                <ConfirmModal
-                  title="Archive selected Media?"
-                  description="Archived Media leave the library but keep being served and referenced by published content. You can restore them later."
-                  confirmLabel="Archive"
-                  onConfirm={onBulkArchive}
-                >
-                  <Button
-                    disabled={isBulkPending}
-                    variant="outline"
-                    size="sm"
-                  >
-                    <Archive />
-                    Archive
-                  </Button>
-                </ConfirmModal>
-              )}
-              {isMyDrive && (
-                <ConfirmModal
-                  title="Delete selected Media permanently?"
-                  description="Permanent deletion removes the file and every generated rendition. It cannot be undone, and it is refused while content still references a Media."
-                  confirmLabel="Delete permanently"
-                  onConfirm={onBulkDelete}
-                >
-                  <Button
-                    disabled={isBulkPending}
-                    variant="destructive"
-                    size="sm"
-                  >
-                    <Trash />
-                    Delete
-                  </Button>
-                </ConfirmModal>
-              )}
-              {!isMyDrive && (
-                <ConfirmModal
-                  title="Delete selected Media permanently?"
-                  description="Permanent deletion removes the file and every generated rendition. It cannot be undone, and it is refused while content still references a Media."
-                  confirmLabel="Delete permanently"
-                  onConfirm={onBulkDelete}
-                >
-                  <Button
-                    disabled={isBulkPending}
-                    variant="destructive"
-                    size="sm"
-                  >
-                    <Trash />
-                    Delete
-                  </Button>
-                </ConfirmModal>
-              )}
-            </div>
-          )}
-        </div>
+              </ConfirmModal>
+            )}
+            <ConfirmModal
+              title="Delete selected Media permanently?"
+              description="Permanent deletion removes the file and every generated rendition. It cannot be undone, and it is refused while content still uses a Media."
+              confirmLabel="Delete permanently"
+              onConfirm={onBulkDelete}
+            >
+              <Button
+                disabled={isBulkPending}
+                variant="destructive"
+                size="sm"
+              >
+                <Trash />
+                Delete
+              </Button>
+            </ConfirmModal>
+          </div>
+        )}
       </div>
       <div className="flex flex-col xl:flex-row">
         <div className="min-w-0 flex-1 p-4">

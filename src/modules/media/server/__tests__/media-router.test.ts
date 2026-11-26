@@ -296,19 +296,18 @@ describe("mediaRouter", () => {
       ]);
     });
 
-    it("counts the relational references of every item", async () => {
+    it("carries no per-row usage count", async () => {
       const marker = `Usage ${randomUUID()}`;
       const used = await createMedia({ name: `${marker} used` });
-      const unused = await createMedia({ name: `${marker} unused` });
+      await createMedia({ name: `${marker} unused` });
       await createReferencingPost(used.id);
 
       const result = await caller.getMany({ search: marker, pageSize: 10 });
-      const counts = new Map(
-        result.items.map((item) => [item.id, item.usageCount]),
-      );
 
-      expect(counts.get(used.id)).toBe(1);
-      expect(counts.get(unused.id)).toBe(0);
+      expect(result.items).toHaveLength(2);
+      for (const item of result.items) {
+        expect(item).not.toHaveProperty("usageCount");
+      }
     });
 
     it("rejects a page size above the limit", async () => {
@@ -563,7 +562,7 @@ describe("mediaRouter", () => {
       ).resolves.not.toBeNull();
     });
 
-    it("refuses a referenced Media and names the blocking reference count", async () => {
+    it("refuses a referenced Media without naming a count", async () => {
       const media = await createMedia({ archivedAt: new Date() });
       await createReferencingPost(media.id);
 
@@ -571,7 +570,7 @@ describe("mediaRouter", () => {
         caller.removeMany({ ids: [media.id] }),
       ).rejects.toMatchObject({
         code: "CONFLICT",
-        message: expect.stringContaining("1 content"),
+        message: expect.stringContaining("still used by content"),
       });
 
       await expect(

@@ -19,7 +19,7 @@ import { Button } from "@/shared/ui/button";
 import { MEDIA_SEARCH_DEBOUNCE_MS } from "@/modules/media/constants";
 import { MediaCreateAction } from "@/modules/media/ui/components/media-create-action";
 import { useMediaInfiniteQuery } from "@/modules/media/hooks/use-media-infinite-query";
-import type { MediaLibraryEntry } from "@/modules/media/lib/media-library";
+import type { MediaLibraryItem } from "@/modules/media/lib/media-library";
 
 export const SelectAssetModal = () => {
   const { isOpen, onClose, type, onCallback } = useModal();
@@ -46,7 +46,7 @@ export const SelectAssetModal = () => {
     );
   }
 
-  const onSelect = (media: MediaLibraryEntry) => {
+  const onSelect = (media: MediaLibraryItem) => {
     onCallback(media);
     handleClose();
   };

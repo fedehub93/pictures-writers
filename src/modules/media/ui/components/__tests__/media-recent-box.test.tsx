@@ -4,7 +4,7 @@ import { createRoot } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { MediaType } from "@/generated/prisma";
-import type { MediaLibraryEntry } from "../../../lib/media-library";
+import type { MediaLibraryItem } from "../../../lib/media-library";
 
 vi.mock("../../../hooks/use-media", () => ({
   RECENT_PREVIEW_COUNT: 4,
@@ -40,7 +40,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useMediaRecent } from "../../../hooks/use-media";
 import { MediaRecentBox } from "../media-recent-box";
 
-const ITEM = (id: string, name: string): MediaLibraryEntry => ({
+const ITEM = (id: string, name: string): MediaLibraryItem => ({
   id,
   name,
   type: MediaType.IMAGE,
@@ -56,7 +56,6 @@ const ITEM = (id: string, name: string): MediaLibraryEntry => ({
   mimeType: "image/webp",
   checksum: "abc",
   storageDriver: "local",
-  usageCount: 0,
 });
 
 let root: ReturnType<typeof createRoot> | null = null;
@@ -64,7 +63,7 @@ let container: HTMLDivElement | null = null;
 
 function mount(
   total: number,
-  items: MediaLibraryEntry[] = [],
+  items: MediaLibraryItem[] = [],
   props: Partial<Omit<React.ComponentProps<typeof MediaRecentBox>, "onMove">> = {},
 ) {
   (useMediaRecent as ReturnType<typeof vi.fn>).mockReturnValue({

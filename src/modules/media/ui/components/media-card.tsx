@@ -44,10 +44,10 @@ import { useModal } from "@/app/(admin)/_hooks/use-modal-store";
 import { mediaErrorMessage } from "../../lib/error-message";
 import { mediaDeletionCleanupNotice } from "../../lib/deletion-notice";
 import { useMediaInvalidation } from "../../hooks/use-media-invalidation";
-import { type MediaLibraryEntry } from "../../lib/media-library";
+import { type MediaLibraryItem } from "../../lib/media-library";
 
 interface MediaCardProps {
-  media: MediaLibraryEntry;
+  media: MediaLibraryItem;
   checked: boolean;
   selected: boolean;
   /** When false, the card is not selectable and renders no checkbox. */
@@ -90,7 +90,7 @@ export const MediaCard = ({
     | null
   >(null);
 
-  const { id, name, altText, url, type, size, mimeType, archivedAt, usageCount } = media;
+  const { id, name, altText, url, type, size, mimeType, archivedAt } = media;
   const isArchived = archivedAt !== null;
 
   const handleCheckboxChange = (next: boolean) => {
@@ -141,18 +141,9 @@ export const MediaCard = ({
     );
 
   const archiveDescription =
-    usageCount > 0
-      ? `${usageCount} content ${
-          usageCount === 1 ? "item references" : "items reference"
-        } this Media. Archiving keeps it served and keeps those references intact; you can restore it later. References embedded in rich text or page data are not counted.`
-      : "Archived Media leave the library but keep being served and referenced. You can restore them later.";
-
+    "Archived Media leave the library but keep being served and referenced. You can restore them later.";
   const deleteDescription =
-    usageCount > 0
-      ? `This would remove the file and every rendition, but ${usageCount} content ${
-          usageCount === 1 ? "item still references" : "items still reference"
-        } it, so the deletion will be refused. Remove those references first. References embedded in rich text or page data are not counted and cannot be protected.`
-      : "This permanently removes the file and every generated rendition. It cannot be undone. References embedded in rich text or page data are not counted and cannot be protected.";
+    "This permanently removes the file and every generated rendition. It cannot be undone, and it is refused while content still uses this Media.";
 
   return (
     <div

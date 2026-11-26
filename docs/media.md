@@ -134,12 +134,11 @@ creates inside the open folder, or at the My Drive root while searching. The reh
 full width under the control row.
 
 Below the banner, My Drive is drawn as a bordered panel. Its header is "My Drive" at the root and
-a clickable breadcrumb (`My Drive / Parent / Folder`) inside a folder. A muted sub-line under the
-header carries `MEDIA_USAGE_NOTE` on the left and bulk actions (`Move to folder`, `Archive`,
-`Delete`) on the right whenever at least one card is checked. The details column lives inside this
-panel as its right-hand column: it describes the selected Media, otherwise the open folder,
-otherwise the text placeholder "Select an item to view more information". Below `xl` the details
-stack under the grid.
+a clickable breadcrumb (`My Drive / Parent / Folder`) inside a folder. Bulk actions (`Move to
+folder`, `Archive`, `Delete`) sit under the header whenever at least one card is checked. The
+details column lives inside this panel as its right-hand column: it describes the selected Media,
+otherwise the open folder, otherwise the text placeholder "Select an item to view more
+information". Below `xl` the details stack under the grid.
 
 The Recent box is shown inside My Drive only — at the root and inside any folder — and is hidden
 while searching and in Archived. It holds the four newest active Media, newest first, and draws no

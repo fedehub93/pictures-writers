@@ -24,7 +24,7 @@ import { RehomeAlreadyRunningError } from "./rehome-runner";
 /**
  * Translate a media service error into the matching `TRPCError`, keeping the
  * service's message so the interface can still explain why an action was
- * refused (a Media is active, or a reference count blocks the deletion).
+ * refused (a Media is active, or content still uses it).
  */
 export function toMediaTrpcError(error: unknown): TRPCError {
   if (error instanceof TRPCError) {

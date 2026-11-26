@@ -5,13 +5,13 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import { MediaType } from "@/generated/prisma";
 import type { MediaFolderDetails } from "../../../lib/media-folder";
-import type { MediaLibraryEntry } from "../../../lib/media-library";
+import type { MediaLibraryItem } from "../../../lib/media-library";
 import { MediaDetailsPanel } from "../media-details-panel";
 
 const CREATED_AT = new Date("2026-01-02T10:00:00Z");
 const UPDATED_AT = new Date("2026-02-03T11:30:00Z");
 
-const MEDIA: MediaLibraryEntry = {
+const MEDIA: MediaLibraryItem = {
   id: "media-1",
   name: "Campaign cover",
   type: MediaType.IMAGE,
@@ -27,7 +27,6 @@ const MEDIA: MediaLibraryEntry = {
   mimeType: "image/webp",
   checksum: "abc123checksum",
   storageDriver: "local",
-  usageCount: 3,
 };
 
 const FOLDER: MediaFolderDetails = {
@@ -44,7 +43,7 @@ let root: ReturnType<typeof createRoot> | null = null;
 let container: HTMLDivElement | null = null;
 
 function mount(
-  media: MediaLibraryEntry | null,
+  media: MediaLibraryItem | null,
   folder: MediaFolderDetails | null,
   folderPending = false,
 ) {
@@ -86,7 +85,8 @@ describe("MediaDetailsPanel", () => {
     expect(text).toContain("image/webp");
     expect(text).toContain("abc123checksum");
     expect(text).toContain("local");
-    expect(text).toContain("3 relational references");
+    expect(text).not.toContain("Used in");
+    expect(text).not.toContain("relational");
     expect(text).toContain("/media/demo/media-1/2/original");
     expect(text).toContain("2 gen 2026");
     expect(text).toContain("3 feb 2026");

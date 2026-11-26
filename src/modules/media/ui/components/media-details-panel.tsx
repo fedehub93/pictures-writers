@@ -8,14 +8,14 @@ import { formatBytes, formatDate } from "@/lib/format";
 import type { MediaFolderDetails } from "../../lib/media-folder";
 import {
   formatMediaDimensions,
-  type MediaLibraryEntry,
+  type MediaLibraryItem,
 } from "../../lib/media-library";
 
 import { MediaDetailRow } from "./media-detail-row";
 
 interface MediaDetailsPanelProps {
   /** The selected Media, or null when none is selected. */
-  media: MediaLibraryEntry | null;
+  media: MediaLibraryItem | null;
   /** The folder the editor has open, or null outside My Drive. */
   folder: MediaFolderDetails | null;
   /** True while the open folder's details are being read for the first time. */
@@ -55,7 +55,7 @@ export const MediaDetailsPanel = ({
   );
 };
 
-function MediaDetails({ media }: { media: MediaLibraryEntry }) {
+function MediaDetails({ media }: { media: MediaLibraryItem }) {
   const {
     name,
     type,
@@ -63,7 +63,6 @@ function MediaDetails({ media }: { media: MediaLibraryEntry }) {
     mimeType,
     checksum,
     storageDriver,
-    usageCount,
     url,
     archivedAt,
   } = media;
@@ -93,13 +92,6 @@ function MediaDetails({ media }: { media: MediaLibraryEntry }) {
           breakAll
         />
         <MediaDetailRow label="Storage driver" value={storageDriver ?? "—"} />
-        <MediaDetailRow
-          label="Used in"
-          value={`${usageCount} relational ${
-            usageCount === 1 ? "reference" : "references"
-          }`}
-          title="References embedded in rich text or page data are not counted"
-        />
         <MediaDetailRow
           label="Created"
           value={formatDate({ date: media.createdAt })}

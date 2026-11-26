@@ -15,7 +15,7 @@ export async function countMediaReferences(mediaId: string): Promise<number> {
 }
 
 /**
- * Batch variant used by the library so a page of Media costs a fixed number of
+ * Batch variant used by the deletion guard so a batch costs a fixed number of
  * queries instead of one fan-out per row.
  */
 export async function countMediaReferencesFor(

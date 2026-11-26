@@ -1,13 +1,13 @@
 "use client";
 
 import type { MediaFolderSummary } from "../../lib/media-folder";
-import type { MediaLibraryEntry } from "../../lib/media-library";
+import type { MediaLibraryItem } from "../../lib/media-library";
 
 import { MediaCard } from "./media-card";
 import { MediaFolderCard } from "./media-folder-card";
 
 interface MediaGridProps {
-  items: MediaLibraryEntry[];
+  items: MediaLibraryItem[];
   folders: MediaFolderSummary[];
   checkedIds: string[];
   selectedMediaId: string | null;

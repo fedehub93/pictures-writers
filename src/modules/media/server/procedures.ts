@@ -41,7 +41,6 @@ import {
   restoreMediaBatch,
 } from "./media-service";
 import { getMediaStorageDetails } from "./media-quota";
-import { countMediaReferencesFor } from "./media-usage";
 import { pendingRehome, planRehomeRun } from "./rehome";
 import { rehomeRunner } from "./rehome-runner";
 import { getStorageDriverChoice, resolveActiveStorageDriver } from "./storage";
@@ -153,13 +152,8 @@ export const mediaRouter = createTRPCRouter({
         childFolders,
       ]);
 
-      const usage = await countMediaReferencesFor(rows.map((row) => row.id));
-
       return {
-        items: rows.map((row) => ({
-          ...mediaLibraryItem(row),
-          usageCount: usage.get(row.id) ?? 0,
-        })),
+        items: rows.map(mediaLibraryItem),
         folders,
         total,
         totalPages: Math.ceil(total / input.pageSize),

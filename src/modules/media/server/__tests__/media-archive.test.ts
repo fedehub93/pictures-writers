@@ -329,6 +329,11 @@ describe("media archive, restore and deletion", () => {
 
     expect(error).toBeInstanceOf(MediaInUseError);
     expect((error as MediaInUseError).usage).toBe(1);
+    expect((error as MediaInUseError).message).toContain(
+      "still used by content",
+    );
+    expect((error as MediaInUseError).message).not.toContain("rich text");
+    expect((error as MediaInUseError).message).not.toMatch(/\d/);
 
     const cover = await db.postVersion.findUniqueOrThrow({
       where: { id: post.id },

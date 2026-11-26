@@ -150,9 +150,7 @@ export class MediaInUseError extends Error {
     readonly usage: number,
   ) {
     super(
-      `This media is referenced by ${usage} content ${
-        usage === 1 ? "item" : "items"
-      }. Remove those references before deleting it. References embedded in rich text or page data are not counted.`,
+      "This Media is still used by content. Remove those uses before deleting it.",
     );
     this.name = "MediaInUseError";
   }

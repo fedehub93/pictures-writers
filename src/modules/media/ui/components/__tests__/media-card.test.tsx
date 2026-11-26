@@ -5,7 +5,7 @@ import { createRoot } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { MediaType } from "@/generated/prisma";
-import type { MediaLibraryEntry } from "../../../lib/media-library";
+import type { MediaLibraryItem } from "../../../lib/media-library";
 
 // The card offers the menu here; its own mutations and the admin modal store
 // are not part of this surface.
@@ -35,7 +35,7 @@ vi.mock("@/app/(admin)/_hooks/use-modal-store", () => ({
 
 import { MediaCard } from "../media-card";
 
-const MEDIA: MediaLibraryEntry = {
+const MEDIA: MediaLibraryItem = {
   id: "media-1",
   name: "Probe move",
   type: MediaType.FILE,
@@ -51,10 +51,9 @@ const MEDIA: MediaLibraryEntry = {
   mimeType: "application/pdf",
   checksum: "checksum",
   storageDriver: "local",
-  usageCount: 0,
 };
 
-const ARCHIVED_MEDIA: MediaLibraryEntry = {
+const ARCHIVED_MEDIA: MediaLibraryItem = {
   ...MEDIA,
   id: "media-2",
   name: "Archived probe",
@@ -65,7 +64,7 @@ let root: ReturnType<typeof createRoot> | null = null;
 let container: HTMLDivElement | null = null;
 
 function mount(
-  media: MediaLibraryEntry,
+  media: MediaLibraryItem,
   props: Partial<
     Pick<
       React.ComponentProps<typeof MediaCard>,
@@ -184,6 +183,50 @@ describe("MediaCard menu", () => {
 
     expect(onMove).toHaveBeenCalledTimes(1);
     expect(onMove).toHaveBeenCalledWith("media-1");
+  });
+});
+
+describe("MediaCard confirmation dialogs", () => {
+  it("describes archiving without a reference count or the rich-text caveat", async () => {
+    mount(MEDIA);
+
+    const items = await openMenu(menuTrigger());
+    const archive = items.find((item) => item.textContent === "Archive");
+    expect(archive).not.toBeUndefined();
+
+    await act(async () => {
+      archive!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    const dialog = document.querySelector('[role="alertdialog"]');
+    expect(dialog).not.toBeNull();
+    const text = dialog!.textContent ?? "";
+
+    expect(text).toContain("Archive this Media?");
+    expect(text).not.toMatch(/\d+ content/);
+    expect(text).not.toContain("rich text");
+  });
+
+  it("describes permanent deletion without a reference count or the rich-text caveat", async () => {
+    mount(ARCHIVED_MEDIA, { showArchivedBadge: true });
+
+    const items = await openMenu(archivedMenuTrigger());
+    const remove = items.find((item) =>
+      item.textContent?.includes("Delete permanently"),
+    );
+    expect(remove).not.toBeUndefined();
+
+    await act(async () => {
+      remove!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    const dialog = document.querySelector('[role="alertdialog"]');
+    expect(dialog).not.toBeNull();
+    const text = dialog!.textContent ?? "";
+
+    expect(text).toContain("Delete this Media permanently?");
+    expect(text).not.toMatch(/\d+ content/);
+    expect(text).not.toContain("rich text");
   });
 });
 
