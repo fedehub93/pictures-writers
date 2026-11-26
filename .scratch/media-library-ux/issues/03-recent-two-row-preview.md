@@ -4,7 +4,7 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done
 
 ## Decisions
 
@@ -17,13 +17,25 @@
 
 ## Checklist
 
-- [ ] The box opens with four cards, newest first.
-- [ ] A centered "View more" control with a downward chevron renders only when more than four Media exist.
-- [ ] One activation reveals the second row; the box never shows more than eight items even when more exist.
-- [ ] The control disappears at the cap and when there is nothing more to reveal.
-- [ ] No pagination, no page text and no "Show less" render in the box.
-- [ ] The box is still hidden while searching and in Archived, and absent when the library has no active Media.
-- [ ] Recent cards still have no checkbox or click selection, and their action menu still performs Edit, Replace, Move to folder and Archive.
-- [ ] One shared "View more" control exists and is used by the box, ready for the library to reuse with a loading state.
-- [ ] Component tests cover the initial count, the reveal, the cap, the disappearing control, the hidden states and the menu action.
-- [ ] `npm run lint`, `npm run typecheck` and the test suite pass.
+- [x] The box opens with four cards, newest first.
+- [x] A centered "View more" control with a downward chevron renders only when more than four Media exist.
+- [x] One activation reveals the second row; the box never shows more than eight items even when more exist.
+- [x] The control disappears at the cap and when there is nothing more to reveal.
+- [x] No pagination, no page text and no "Show less" render in the box.
+- [x] The box is still hidden while searching and in Archived, and absent when the library has no active Media.
+- [x] Recent cards still have no checkbox or click selection, and their action menu still performs Edit, Replace, Move to folder and Archive.
+- [x] One shared "View more" control exists and is used by the box, ready for the library to reuse with a loading state.
+- [x] Component tests cover the initial count, the reveal, the cap, the disappearing control, the hidden states and the menu action.
+- [x] `npm run lint`, `npm run typecheck` and the test suite pass.
+
+## Comments
+
+**2026-11-26 — landed in `fdc5ed82`.**
+
+- The Recent box reads eight Media in one request and opens on the newest four. A centered "View more" control under the grid reveals four more; the reveal is local state capped at eight, so the control disappears at the cap or when the second row is the last item. The page state, the pagination and the "Show less" toggle are gone.
+- Added `src/modules/media/ui/components/media-view-more.tsx`: one presentational button labelled "View more" with a downward chevron, centered, an optional `isLoading` state that shows an inline spinner and disables a second activation. The Recent box passes no loading state; the library's load-more reuses it next.
+- `RECENT_PAGE_SIZE` became `RECENT_BOX_SIZE = RECENT_PREVIEW_COUNT * 2`, and `useMediaRecent` lost its page parameter. `recentMediaInput` still prefetches page one, page size eight.
+- `docs/media.md` now describes the two-row preview instead of "View all"/pagination, and its map row names the shared control.
+- Tests: new `media-view-more` suite covers the label, the click handler, the spinner/disabled state and the enabled state; the Recent box suite covers the initial four, hiding the control at four or fewer, the reveal, the eight-item cap with a twelve-item fixture, the disappearing control at the cap and when the second row is the last item, the absence of pagination and "Show less", the hidden search/Archived/empty states, and the move menu action.
+
+Verification: `npm run lint` 0 errors (250 pre-existing warnings), `npm run typecheck` passes, `npm run check:doc-citations` 0 broken citations, full suite 307 files / 2783 tests passing. No schema or routing change, so no agent build was required.
