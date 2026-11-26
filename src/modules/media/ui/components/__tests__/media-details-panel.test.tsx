@@ -1,12 +1,16 @@
 // @vitest-environment happy-dom
 import { act } from "react";
 import { createRoot } from "react-dom/client";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { MediaType } from "@/generated/prisma";
 import type { MediaFolderDetails } from "../../../lib/media-folder";
 import type { MediaLibraryItem } from "../../../lib/media-library";
 import { MediaDetailsPanel } from "../media-details-panel";
+
+vi.mock("sonner", () => ({
+  toast: { success: vi.fn(), error: vi.fn() },
+}));
 
 const CREATED_AT = new Date("2026-01-02T10:00:00Z");
 const UPDATED_AT = new Date("2026-02-03T11:30:00Z");
@@ -71,6 +75,7 @@ afterEach(() => {
   container?.remove();
   root = null;
   container = null;
+  vi.restoreAllMocks();
 });
 
 describe("MediaDetailsPanel", () => {
@@ -83,13 +88,39 @@ describe("MediaDetailsPanel", () => {
     expect(text).toContain("2 KiB");
     expect(text).toContain("1920 × 1080");
     expect(text).toContain("image/webp");
-    expect(text).toContain("abc123checksum");
     expect(text).toContain("local");
     expect(text).not.toContain("Used in");
     expect(text).not.toContain("relational");
     expect(text).toContain("/media/demo/media-1/2/original");
     expect(text).toContain("2 gen 2026");
     expect(text).toContain("3 feb 2026");
+  });
+
+  it("does not show the checksum", () => {
+    const scope = mount(MEDIA, null);
+
+    expect(scope.textContent).not.toContain("Checksum");
+    expect(scope.textContent).not.toContain("abc123checksum");
+  });
+
+  it("copies the public URL as an absolute address when it is clicked", async () => {
+    const scope = mount(MEDIA, null);
+    const writeText = vi
+      .spyOn(navigator.clipboard, "writeText")
+      .mockResolvedValue(undefined);
+
+    const button = scope.querySelector<HTMLButtonElement>(
+      '[aria-label^="Copy public URL"]',
+    );
+    expect(button).not.toBeNull();
+    expect(button!.textContent).toContain("/media/demo/media-1/2/original");
+
+    await act(async () => {
+      button!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    const absoluteUrl = new URL(MEDIA.url, window.location.origin).toString();
+    expect(writeText).toHaveBeenCalledWith(absoluteUrl);
   });
 
   it("shows the details of the folder the editor opened", () => {

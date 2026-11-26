@@ -1,8 +1,16 @@
 "use client";
 
-import { Folder } from "lucide-react";
+import { CopyIcon, Folder } from "lucide-react";
+import { toast } from "sonner";
 
 import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared/ui/tooltip";
 import { formatBytes, formatDate } from "@/lib/format";
 
 import type { MediaFolderDetails } from "../../lib/media-folder";
@@ -25,8 +33,8 @@ interface MediaDetailsPanelProps {
 /**
  * The read-only details of the selected item. A Media always wins over the
  * folder the editor has open; editing and destructive actions stay on the card
- * and the bulk toolbar, so this panel is a place to read, not a second control
- * surface. The parent supplies the column layout and border.
+ * and the bulk toolbar, so this panel is a place to read and copy, not a second
+ * editing surface. The parent supplies the column layout and border.
  */
 export const MediaDetailsPanel = ({
   media,
@@ -61,7 +69,6 @@ function MediaDetails({ media }: { media: MediaLibraryItem }) {
     type,
     size,
     mimeType,
-    checksum,
     storageDriver,
     url,
     archivedAt,
@@ -85,12 +92,6 @@ function MediaDetails({ media }: { media: MediaLibraryItem }) {
         />
         <MediaDetailRow label="Dimensions" value={dimensions ?? "—"} />
         <MediaDetailRow label="MIME" value={mimeType ?? "—"} />
-        <MediaDetailRow
-          label="Checksum"
-          value={checksum ?? "—"}
-          mono
-          breakAll
-        />
         <MediaDetailRow label="Storage driver" value={storageDriver ?? "—"} />
         <MediaDetailRow
           label="Created"
@@ -104,11 +105,65 @@ function MediaDetails({ media }: { media: MediaLibraryItem }) {
 
       <div className="flex flex-col gap-y-1">
         <span className="text-xs text-muted-foreground">Public URL</span>
-        <code className="min-w-0 rounded bg-muted px-2 py-1 text-xs break-all">
-          {url || "—"}
-        </code>
+        <CopyPublicUrlButton url={url} />
       </div>
     </div>
+  );
+}
+
+/**
+ * The Media's delivery address, kept on one line and copied on click. The
+ * tooltip carries the full address and names the action, and the toast confirms
+ * the write, because the truncated text alone cannot show either.
+ */
+function CopyPublicUrlButton({ url }: { url: string }) {
+  if (!url) {
+    return (
+      <code className="rounded bg-muted px-2 py-1 text-xs text-muted-foreground">
+        —
+      </code>
+    );
+  }
+
+  const copy = async () => {
+    if (!navigator.clipboard) {
+      toast.error("The clipboard is not available");
+      return;
+    }
+
+    try {
+      // The stored address is relative for a local file: resolve it at this
+      // browser boundary so the clipboard receives a usable absolute URL.
+      const absoluteUrl = new URL(url, window.location.origin).toString();
+      await navigator.clipboard.writeText(absoluteUrl);
+      toast.success("Public URL copied");
+    } catch {
+      toast.error("Failed to copy the public URL");
+    }
+  };
+
+  return (
+    <TooltipProvider delayDuration={200}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            type="button"
+            variant="secondary"
+            size="xs"
+            aria-label={`Copy public URL: ${url}`}
+            className="w-full overflow-hidden"
+            onClick={() => void copy()}
+          >
+            <code className="min-w-0 flex-1 truncate text-left">{url}</code>
+            <CopyIcon data-icon="inline-end" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent className="max-w-xs">
+          <p className="break-all font-mono text-xs">{url}</p>
+          <p className="mt-1 text-xs text-muted-foreground">Click to copy</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 

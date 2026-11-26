@@ -202,14 +202,19 @@ filing part of it. The card's action menu and the bulk toolbar open the same fol
 move refreshes the grid and the counts, so a row leaves the scope it no longer belongs to.
 
 The read-only details column inside the My Drive panel describes the selected Media, the open
-folder, or a placeholder. A Media's facts come from the row the grid already holds, and its public
-URL is the stored delivery address: the panel is a browser boundary that resolves a relative
-address, so it does not compose a second absolute form. A folder's name, active count,
+folder, or a placeholder. A Media's facts come from the row the grid already holds: size,
+dimensions, MIME, storage driver, created and updated. The checksum is no longer shown. Its public
+URL is the stored delivery address, truncated to the column and copied to the clipboard when
+clicked, with a tooltip showing the full address and naming the action. The stored address is
+relative for a local file and the panel is the browser boundary that resolves it, so the clipboard
+receives an absolute URL while storage code keeps composing only the canonical form. A folder's
+name, active count,
 stored-original bytes and dates come from `media.getFolderDetails`, because the grid only returns
 child folders; the count and bytes cover the Media filed directly in it, matching the card that
 opened it. Opening a folder selects it, so the panel describes the folder the editor entered,
 while selecting a Media replaces it. Editing and destructive actions stay on the card and the bulk
-toolbar, so the panel never becomes a second control surface.
+toolbar, so the panel never becomes a second editing surface; copying the public URL is its only
+action.
 
 Cards show the name and size; folder cards show the name and item count. The Media-type badge is
 gone from cards, and the "Archived" badge shows only in the Archived view. Every button over the
