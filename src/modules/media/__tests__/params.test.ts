@@ -10,20 +10,23 @@ describe("loadMediaSearchParams", () => {
       search: "",
       view: "active",
       folderId: null,
+      sort: "created",
     });
   });
 
-  it("keeps search, view and folder in the parsed contract", () => {
+  it("keeps search, view, folder and sort in the parsed contract", () => {
     const params = loadMediaSearchParams({
       search: "cat",
       view: "archived",
       folderId: "campaigns",
+      sort: "size",
     });
 
     expect(params).toEqual({
       search: "cat",
       view: "archived",
       folderId: "campaigns",
+      sort: "size",
     });
   });
 
@@ -32,6 +35,7 @@ describe("loadMediaSearchParams", () => {
       search: "cat",
       view: "archived",
       folderId: "campaigns",
+      sort: "name",
       page: "3",
     });
 
@@ -39,6 +43,7 @@ describe("loadMediaSearchParams", () => {
       search: "cat",
       view: "archived",
       folderId: "campaigns",
+      sort: "name",
     });
   });
 });

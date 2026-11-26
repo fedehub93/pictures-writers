@@ -10,7 +10,10 @@ import { Button } from "@/shared/ui/button";
 
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 
-import { type MediaLibraryView } from "@/modules/media/constants";
+import {
+  type MediaLibrarySort,
+  type MediaLibraryView,
+} from "@/modules/media/constants";
 import { mediaErrorMessage } from "@/modules/media/lib/error-message";
 import { mediaDeletionCleanupNotice } from "@/modules/media/lib/deletion-notice";
 import {
@@ -24,6 +27,7 @@ import { useMediaInvalidation } from "@/modules/media/hooks/use-media-invalidati
 
 import { MediaDetailsPanel } from "./media-details-panel";
 import { MediaGrid } from "./media-grid";
+import { MediaSortSelect } from "./media-sort-select";
 import { MediaViewMore } from "./media-view-more";
 
 interface MediaLibraryPanelProps {
@@ -32,6 +36,10 @@ interface MediaLibraryPanelProps {
   folder: MediaFolderDetails | null;
   folderPending: boolean;
   view: MediaLibraryView;
+  /** The order the list is showing. */
+  sort: MediaLibrarySort;
+  /** Called when the editor picks another order. */
+  onSortChange: (sort: MediaLibrarySort) => void;
   /** Whether another block of Media exists past the loaded rows. */
   hasMore: boolean;
   /** Whether the next block is in flight. */
@@ -57,6 +65,8 @@ export const MediaLibraryPanel = ({
   folder,
   folderPending,
   view,
+  sort,
+  onSortChange,
   hasMore,
   isLoadingMore,
   folderTree,
@@ -150,6 +160,8 @@ export const MediaLibraryPanel = ({
           view={view}
           folder={folder}
           folderTree={folderTree}
+          sort={sort}
+          onSortChange={onSortChange}
           onOpenFolder={onOpenFolder}
         />
         {canShowBulkAction && (
@@ -240,44 +252,58 @@ function MediaPanelHeader({
   view,
   folder,
   folderTree,
+  sort,
+  onSortChange,
   onOpenFolder,
 }: {
   view: MediaLibraryView;
   folder: MediaFolderDetails | null;
   folderTree: MediaFolderNode[];
+  sort: MediaLibrarySort;
+  onSortChange: (sort: MediaLibrarySort) => void;
   onOpenFolder: (folderId: string) => void;
 }) {
-  if (view === "archived") {
-    return <h2 className="text-sm font-medium">Archived</h2>;
-  }
+  const path =
+    view === "archived" || !folder
+      ? []
+      : mediaFolderPath(folderTree, folder.id);
 
-  const path = folder ? mediaFolderPath(folderTree, folder.id) : [];
-
+  // The title and the sort control share one row and wrap onto two lines on a
+  // narrow screen, where the control keeps the right edge to itself.
   return (
-    <nav aria-label="My Drive breadcrumb">
-      <ol className="flex flex-wrap items-center gap-x-1 text-sm">
-        <li>
-          <button
-            type="button"
-            onClick={() => onOpenFolder("")}
-            className="font-medium hover:underline"
-          >
-            My Drive
-          </button>
-        </li>
-        {path.map((segment) => (
-          <li key={segment.id} className="flex items-center gap-x-1">
-            <ChevronRight className="size-4 text-muted-foreground" />
-            <button
-              type="button"
-              onClick={() => onOpenFolder(segment.id)}
-              className="font-medium hover:underline"
-            >
-              {segment.name}
-            </button>
-          </li>
-        ))}
-      </ol>
-    </nav>
+    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+      {view === "archived" ? (
+        <h2 className="text-sm font-medium">Archived</h2>
+      ) : (
+        <nav aria-label="My Drive breadcrumb">
+          <ol className="flex flex-wrap items-center gap-x-1 text-sm">
+            <li>
+              <button
+                type="button"
+                onClick={() => onOpenFolder("")}
+                className="font-medium hover:underline"
+              >
+                My Drive
+              </button>
+            </li>
+            {path.map((segment) => (
+              <li key={segment.id} className="flex items-center gap-x-1">
+                <ChevronRight className="size-4 text-muted-foreground" />
+                <button
+                  type="button"
+                  onClick={() => onOpenFolder(segment.id)}
+                  className="font-medium hover:underline"
+                >
+                  {segment.name}
+                </button>
+              </li>
+            ))}
+          </ol>
+        </nav>
+      )}
+      <div className="ml-auto">
+        <MediaSortSelect value={sort} onChange={onSortChange} />
+      </div>
+    </div>
   );
 }

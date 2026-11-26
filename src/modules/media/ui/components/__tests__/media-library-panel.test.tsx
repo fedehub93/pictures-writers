@@ -87,6 +87,8 @@ function mount(
           folder={null}
           folderPending={false}
           view="active"
+          sort="created"
+          onSortChange={() => undefined}
           hasMore={false}
           isLoadingMore={false}
           folderTree={[]}
@@ -126,6 +128,12 @@ describe("MediaLibraryPanel", () => {
 
     expect(scope.textContent).toContain("Archived");
     expect(scope.textContent).not.toContain("My Drive");
+  });
+
+  it("shows the sort control in the archived view", () => {
+    const scope = mount({ view: "archived" });
+
+    expect(scope.querySelector('[aria-label="Sort by"]')).not.toBeNull();
   });
 
   it("shows no usage note", () => {
@@ -190,6 +198,24 @@ describe("MediaLibraryPanel", () => {
     });
 
     expect(onCheckedIdsChange).toHaveBeenCalledWith(["media-1"]);
+  });
+
+  it("exposes the sort control by its accessible name and reports a change", async () => {
+    const onSortChange = vi.fn();
+    const scope = mount({ onSortChange });
+
+    const select = scope.querySelector<HTMLSelectElement>(
+      '[aria-label="Sort by"]',
+    );
+    expect(select).not.toBeNull();
+    expect(select!.value).toBe("created");
+
+    await act(async () => {
+      select!.value = "name";
+      select!.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+
+    expect(onSortChange).toHaveBeenCalledWith("name");
   });
 
   it("renders the breadcrumb with the open folder", () => {

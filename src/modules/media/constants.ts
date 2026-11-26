@@ -28,3 +28,14 @@ export const MEDIA_LIBRARY_VIEWS = ["active", "recent", "archived"] as const;
 export type MediaLibraryView = (typeof MEDIA_LIBRARY_VIEWS)[number];
 
 export const DEFAULT_MEDIA_VIEW: MediaLibraryView = "active";
+
+/**
+ * The orders the admin library offers. Directions are fixed rather than chosen
+ * separately: Created is the newest first, Name is A to Z, Size is the largest
+ * first. Recent keeps newest-first regardless, because it is defined by date.
+ */
+export const MEDIA_LIBRARY_SORTS = ["created", "name", "size"] as const;
+
+export type MediaLibrarySort = (typeof MEDIA_LIBRARY_SORTS)[number];
+
+export const DEFAULT_MEDIA_SORT: MediaLibrarySort = "created";

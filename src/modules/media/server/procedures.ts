@@ -2,7 +2,7 @@ import "server-only";
 
 import z from "zod";
 
-import type { Prisma } from "@/generated/prisma";
+import { Prisma } from "@/generated/prisma";
 
 import { db } from "@/shared/lib/db";
 import { PERMISSIONS } from "@/shared/lib/permissions";
@@ -11,16 +11,20 @@ import { createTRPCRouter, permissionProcedure } from "@/trpc/init";
 import {
   mediaLibraryItem,
   mediaLibraryRowSelect,
+  type MediaLibraryRow,
 } from "@/modules/media/lib/media-library";
 
 import {
+  DEFAULT_MEDIA_SORT,
   DEFAULT_MEDIA_VIEW,
   DEFAULT_PAGE,
   DEFAULT_PAGE_SIZE,
   MAX_MEDIA_FOLDER_NAME_LENGTH,
   MAX_PAGE_SIZE,
+  MEDIA_LIBRARY_SORTS,
   MEDIA_LIBRARY_VIEWS,
   MIN_PAGE_SIZE,
+  type MediaLibrarySort,
   type MediaLibraryView,
 } from "../constants";
 
@@ -45,10 +49,121 @@ import { pendingRehome, planRehomeRun } from "./rehome";
 import { rehomeRunner } from "./rehome-runner";
 import { getStorageDriverChoice, resolveActiveStorageDriver } from "./storage";
 
-const MEDIA_LIST_ORDER_BY: Prisma.MediaOrderByWithRelationInput[] = [
-  { createdAt: "desc" },
-  { id: "asc" },
-];
+/**
+ * The orders Prisma can express directly. Name is absent because Prisma has no
+ * case-insensitive `orderBy`; it is paged in SQL by `listMediaIdsByName`.
+ * Every order ends on the Media id so a block boundary cannot repeat or skip a
+ * row that ties with the next one.
+ */
+const MEDIA_LIST_ORDER_BY: Record<
+  Exclude<MediaLibrarySort, "name">,
+  Prisma.MediaOrderByWithRelationInput[]
+> = {
+  created: [{ createdAt: "desc" }, { id: "asc" }],
+  size: [
+    // PostgreSQL sorts nulls first in descending order, and a Media with no
+    // stored-file record has no size either, so both kinds of unknown go last.
+    { storedFile: { size: { sort: "desc", nulls: "last" } } },
+    { id: "asc" },
+  ],
+};
+
+/**
+ * The ids of one name-ordered block. The production database uses the `C`
+ * collation, where `name ASC` puts every capital before every lowercase
+ * letter, so the order reads the name under the root ICU collation instead:
+ * case no longer splits the alphabet, and a name that starts with an accented
+ * letter sorts beside the same letter unaccented. The conditions mirror
+ * `buildMediaWhere`: a term spans the library, otherwise the active view
+ * browses the open folder (or the unfiled root) and Archived is flat. The
+ * block itself comes from the typed client, restored to this order.
+ */
+async function listMediaIdsByName({
+  search,
+  view,
+  folderId,
+  take,
+  skip,
+}: {
+  search?: string | null;
+  view: MediaLibraryView;
+  folderId?: string | null;
+  take: number;
+  skip: number;
+}): Promise<string[]> {
+  const term = search?.trim();
+  const conditions: Prisma.Sql[] = [
+    view === "archived"
+      ? Prisma.sql`"archivedAt" IS NOT NULL`
+      : Prisma.sql`"archivedAt" IS NULL`,
+  ];
+
+  if (term) {
+    // `ILIKE` is what Prisma's `contains` with an insensitive mode compiles
+    // to, including its treatment of `%` and `_`. Matching that exactly is
+    // what keeps the count and this block describing the same rows.
+    conditions.push(Prisma.sql`"name" ILIKE ${`%${term}%`}`);
+  } else if (view === "active") {
+    conditions.push(
+      folderId
+        ? Prisma.sql`"folderId" = ${folderId}`
+        : Prisma.sql`"folderId" IS NULL`,
+    );
+  }
+
+  const rows = await db.$queryRaw<{ id: string }[]>(Prisma.sql`
+    SELECT "id"
+    FROM "Media"
+    WHERE ${Prisma.join(conditions, " AND ")}
+    ORDER BY "name" COLLATE "und-x-icu" ASC, "id" ASC
+    LIMIT ${take} OFFSET ${skip}
+  `);
+
+  return rows.map((row) => row.id);
+}
+
+/** One block of the filtered list, in the requested order. */
+async function listMediaRows({
+  where,
+  sort,
+  search,
+  view,
+  folderId,
+  take,
+  skip,
+}: {
+  where: Prisma.MediaWhereInput;
+  sort: MediaLibrarySort;
+  search?: string | null;
+  view: MediaLibraryView;
+  folderId?: string | null;
+  take: number;
+  skip: number;
+}): Promise<MediaLibraryRow[]> {
+  if (sort !== "name") {
+    return db.media.findMany({
+      where,
+      select: mediaLibraryRowSelect,
+      orderBy: MEDIA_LIST_ORDER_BY[sort],
+      take,
+      skip,
+    });
+  }
+
+  const ids = await listMediaIdsByName({ search, view, folderId, take, skip });
+  if (ids.length === 0) return [];
+
+  const rows = await db.media.findMany({
+    where: { id: { in: ids } },
+    select: mediaLibraryRowSelect,
+  });
+  const byId = new Map(rows.map((row) => [row.id, row]));
+
+  return ids.flatMap((id) => {
+    const row = byId.get(id);
+    return row ? [row] : [];
+  });
+}
 
 /**
  * The grid and the header count share this filter, so the number above the
@@ -90,6 +205,12 @@ const scopeInput = z.object({
 });
 
 const listInput = scopeInput.extend({
+  /**
+   * The order the grid asked for. It is deliberately not part of `scopeInput`:
+   * the header count does not care about order, so a reorder must not refetch
+   * the number above the grid.
+   */
+  sort: z.enum(MEDIA_LIBRARY_SORTS).default(DEFAULT_MEDIA_SORT),
   page: z.number().int().min(1).default(DEFAULT_PAGE),
   pageSize: z
     .number()
@@ -139,12 +260,12 @@ export const mediaRouter = createTRPCRouter({
           : Promise.resolve([]);
 
       const [rows, total, folders] = await Promise.all([
-        db.media.findMany({
+        listMediaRows({
           where,
-          // The storage facts the admin sees come from the stored-file record;
-          // the Media's own columns are only the address and the archive state.
-          select: mediaLibraryRowSelect,
-          orderBy: MEDIA_LIST_ORDER_BY,
+          sort: input.sort,
+          search: input.search,
+          view: input.view,
+          folderId: input.folderId,
           take: input.pageSize,
           skip: (input.page - 1) * input.pageSize,
         }),

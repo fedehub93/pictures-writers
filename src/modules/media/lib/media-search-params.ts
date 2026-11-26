@@ -1,6 +1,11 @@
 import { parseAsString, parseAsStringEnum } from "nuqs/server";
 
-import { DEFAULT_MEDIA_VIEW, MEDIA_LIBRARY_VIEWS } from "../constants";
+import {
+  DEFAULT_MEDIA_SORT,
+  DEFAULT_MEDIA_VIEW,
+  MEDIA_LIBRARY_SORTS,
+  MEDIA_LIBRARY_VIEWS,
+} from "../constants";
 
 /**
  * The library's URL contract, shared by the server loader and the client's
@@ -13,4 +18,7 @@ export const mediaSearchParams = {
     .withDefault(DEFAULT_MEDIA_VIEW)
     .withOptions({ clearOnDefault: true }),
   folderId: parseAsString.withOptions({ clearOnDefault: true }),
+  sort: parseAsStringEnum([...MEDIA_LIBRARY_SORTS])
+    .withDefault(DEFAULT_MEDIA_SORT)
+    .withOptions({ clearOnDefault: true }),
 };

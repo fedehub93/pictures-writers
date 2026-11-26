@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useMutation } from "@tanstack/react-query";
 
@@ -8,7 +8,10 @@ import { ErrorState } from "@/shared/components/error-state";
 import { LoadingState } from "@/shared/components/loading-state";
 import { useTRPC } from "@/trpc/client";
 
-import { type MediaLibraryView } from "../../constants";
+import {
+  type MediaLibrarySort,
+  type MediaLibraryView,
+} from "../../constants";
 import { mediaErrorMessage } from "../../lib/error-message";
 import { openMediaFolderId } from "../../lib/media-folder";
 import { useMediaFilters } from "../../hooks/use-media-filters";
@@ -76,12 +79,13 @@ export const MediaView = () => {
   };
 
   // A selection belongs to the scope it was made in: loading another block
-  // keeps it, because those cards stay on screen, but a new search, view or
-  // folder starts a different list and drops it.
+  // keeps it, because those cards stay on screen, but a new search, view,
+  // folder or order starts a different list and drops it.
   const scopeKey = JSON.stringify([
     filters.search,
     listView,
     filters.folderId,
+    filters.sort,
   ]);
 
   // Opening a folder selects it: the panel describes the folder the editor
@@ -97,12 +101,17 @@ export const MediaView = () => {
 
   // The My Drive panel owns checked ids; the view needs to clear them after a
   // successful move so the checkbox state stays honest. The ids are stamped
-  // with the scope they were checked in, so changing search, view or folder
-  // yields an empty selection without waiting for an effect.
+  // with the scope they were checked in; a different scope reads as empty and
+  // drops the stale entry, so returning to an earlier scope does not resurrect
+  // a selection the editor had already left behind.
   const [selection, setSelection] = useState<{
     scope: string;
     ids: string[];
   }>({ scope: scopeKey, ids: [] });
+
+  if (selection.scope !== scopeKey) {
+    setSelection({ scope: scopeKey, ids: [] });
+  }
 
   const setCheckedIdsFromPanel = (
     update: string[] | ((current: string[]) => string[]),
@@ -118,6 +127,30 @@ export const MediaView = () => {
   const checkedIdsFromPanel =
     selection.scope === scopeKey ? selection.ids : [];
 
+  // The panel is the anchor a reorder scrolls back to: the blocks already
+  // loaded belonged to the old order, so the editor must see the new list from
+  // its first row. The remount key below carries the sort, so the panel's own
+  // state (the described Media) is dropped with the selection.
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // The reorder remounts the panel, so the scroll is applied once the new
+  // panel is on screen rather than while the old one is still laid out.
+  const pendingSortScroll = useRef(false);
+
+  const onSortChange = (sort: MediaLibrarySort) => {
+    if (sort === filters.sort) return;
+
+    pendingSortScroll.current = true;
+    void setFilters({ sort });
+  };
+
+  useEffect(() => {
+    if (!pendingSortScroll.current) return;
+
+    pendingSortScroll.current = false;
+    panelRef.current?.scrollIntoView({ block: "start" });
+  }, [filters.sort]);
+
   // A failed block leaves the control in place and enabled, so the editor can
   // retry; the toast says what went wrong. `throwOnError` is needed because the
   // observer otherwise swallows the rejection.
@@ -132,29 +165,39 @@ export const MediaView = () => {
   return (
     <div className="flex gap-6 px-6">
       <MediaFolderSidebar />
-      {/* Remounting on a filter change empties the panel's own state; the
-          checked ids are scope-stamped above for the same reason. */}
-      <div key={scopeKey} className="min-w-0 flex-1 flex flex-col gap-y-6">
+      <div className="min-w-0 flex-1 flex flex-col gap-y-6">
+        {/* The reveal resets when the search or view changes, but a reorder
+            leaves the newest-first preview, and its open second row, alone. */}
         <MediaRecentBox
+          key={JSON.stringify([filters.search, listView, filters.folderId])}
           view={listView}
           search={filters.search}
           onMove={(mediaId) => setMoveIds([mediaId])}
         />
-        <MediaLibraryPanel
-          items={items}
-          folders={folders}
-          folder={folder ?? null}
-          folderPending={openFolderId !== null && isFolderPending}
-          view={listView}
-          hasMore={hasNextPage}
-          isLoadingMore={isFetchingNextPage}
-          folderTree={folderTree ?? []}
-          onLoadMore={() => void onLoadMore()}
-          onOpenFolder={openFolder}
-          onRequestMove={(ids) => setMoveIds(ids)}
-          checkedIds={checkedIdsFromPanel}
-          onCheckedIdsChange={setCheckedIdsFromPanel}
-        />
+        {/* The ref stays mounted across a reorder, so the scroll lands on the
+            panel even though the panel itself remounts to drop its own state. */}
+        <div ref={panelRef}>
+          {/* Remounting on a scope change empties the panel's own state; the
+              checked ids are scope-stamped above for the same reason. */}
+          <MediaLibraryPanel
+            key={scopeKey}
+            items={items}
+            folders={folders}
+            folder={folder ?? null}
+            folderPending={openFolderId !== null && isFolderPending}
+            view={listView}
+            sort={filters.sort}
+            onSortChange={onSortChange}
+            hasMore={hasNextPage}
+            isLoadingMore={isFetchingNextPage}
+            folderTree={folderTree ?? []}
+            onLoadMore={() => void onLoadMore()}
+            onOpenFolder={openFolder}
+            onRequestMove={(ids) => setMoveIds(ids)}
+            checkedIds={checkedIdsFromPanel}
+            onCheckedIdsChange={setCheckedIdsFromPanel}
+          />
+        </div>
       </div>
 
       {moveIds && (
