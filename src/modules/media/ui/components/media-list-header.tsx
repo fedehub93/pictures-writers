@@ -33,21 +33,24 @@ export const MediaListHeader = () => {
 
   const isArchived = filters.view === "archived";
   const isSearching = filters.search.trim().length > 0;
-  // While searching there is no open folder, so a new folder lands at the root.
-  const createFolderTarget = isSearching
-    ? null
-    : openMediaFolderId({
-        view: filters.view,
-        folderId: filters.folderId,
-      });
+  // The folder the library is showing, and where an upload or a new folder is
+  // filed. While searching there is no open folder, so a new folder lands at the
+  // root.
+  const folderTarget = openMediaFolderId({
+    view: filters.view,
+    folderId: filters.folderId,
+  });
+  const createFolderTarget = isSearching ? null : folderTarget;
 
   return (
     <div className="flex flex-col gap-y-4 px-6 py-4">
       <ContentHeader label="Media" />
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <MediaSearchFilter />
-        <div className="flex flex-wrap items-center gap-4">
-          {!isArchived && (
+      {/* `w-full` lets the search take a line of its own once it can no longer
+          share one with the actions; `max-w-lg` bounds it to 32rem either way,
+          and `ml-auto` keeps it right-aligned. */}
+      <div className="flex flex-wrap items-center gap-4">
+        {!isArchived && (
+          <div className="flex flex-wrap items-center gap-4">
             <Button
               variant="outline"
               size="sm"
@@ -56,17 +59,13 @@ export const MediaListHeader = () => {
               <FolderPlus />
               New Folder
             </Button>
-          )}
-          {/* Archived holds files that left the library; uploading there could
-              only create an active Media the view would not show. */}
-          {!isArchived && (
-            <MediaCreateAction
-              folderId={openMediaFolderId({
-                view: filters.view,
-                folderId: filters.folderId,
-              })}
-            />
-          )}
+            {/* Archived holds files that left the library; uploading there
+                could only create an active Media the view would not show. */}
+            <MediaCreateAction folderId={folderTarget} />
+          </div>
+        )}
+        <div className="w-full max-w-lg ml-auto">
+          <MediaSearchFilter />
         </div>
       </div>
       {data && (
