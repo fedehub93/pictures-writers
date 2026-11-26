@@ -141,12 +141,13 @@ otherwise the open folder, otherwise the text placeholder "Select an item to vie
 information". Below `xl` the details stack under the grid.
 
 The Recent box is shown inside My Drive only — at the root and inside any folder — and is hidden
-while searching and in Archived. It holds the four newest active Media, newest first, and draws no
-folder cards. It is not drawn at all when the library has no active Media. "View all" appears only
-when more than four exist; it expands the box in place into the full recent list, eight per page
-with its own local pagination, and becomes "Show less" to collapse. Recent-box cards carry no
-checkbox and no click action; only the `⋮` menu acts, offering the same Edit, Replace, Move to
-folder and Archive actions as the My Drive grid.
+while searching and in Archived. It is a two-row preview: one read of eight with the four newest on
+screen, newest first, and it draws no folder cards. A centered "View more" control under the grid
+reveals the second row of four; the box never shows more than eight, and the control disappears at
+the cap or when nothing more can be revealed. There is no pagination and no "Show less". It is not
+drawn at all when the library has no active Media. Recent-box cards carry no checkbox and no click
+action; only the `⋮` menu acts, offering the same Edit, Replace, Move to folder and Archive actions
+as the My Drive grid.
 
 The library scopes My Drive one level of the tree at a time: a folder shows its child folders
 and the Media filed directly in it, and the root shows the folders with no parent and the Media
@@ -159,7 +160,7 @@ a folder, and a folder's item count excludes them.
 
 `recent` stays in the server enum because the asset picker and the Recent box read it as the
 flat, newest-first active list. An old `?view=recent` URL is normalized to My Drive on the client
-so it lands on the active view with the Recent box collapsed; it does not render an error or an
+so it lands on the active view with the Recent preview showing; it does not render an error or an
 empty page.
 
 Media change folders through `media.moveMedia`, which takes one or many ids and a target
@@ -230,7 +231,7 @@ clicking a folder card still opens it.
 | Admin folder sidebar and tree | `src/modules/media/ui/components/media-folder-sidebar.tsx`, `src/modules/media/ui/components/media-folder-tree.tsx` |
 | Folder-scoped grid and folder card | `src/modules/media/ui/components/media-grid.tsx`, `src/modules/media/ui/components/media-folder-card.tsx` |
 | My Drive / Archived panel | `src/modules/media/ui/components/media-library-panel.tsx` |
-| Recent box preview and expansion | `src/modules/media/ui/components/media-recent-box.tsx`, `src/modules/media/hooks/use-media.ts` |
+| Recent box two-row preview and the shared View more control | `src/modules/media/ui/components/media-recent-box.tsx`, `src/modules/media/ui/components/media-view-more.tsx`, `src/modules/media/hooks/use-media.ts` |
 | Shared create/rename folder dialog | `src/modules/media/ui/components/media-folder-dialog-provider.tsx` |
 | Move between folders: mutation and picker | `src/modules/media/server/media-service.ts`, `src/modules/media/ui/components/media-move-dialog.tsx` |
 | Read-only details panel and its folder read | `src/modules/media/ui/components/media-details-panel.tsx`, `src/modules/media/server/media-folder-service.ts` |

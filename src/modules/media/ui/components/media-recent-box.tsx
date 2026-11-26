@@ -2,14 +2,15 @@
 
 import { useState } from "react";
 
-import { Button } from "@/shared/ui/button";
-import { DataPagination } from "@/shared/components/data-pagination";
-
-import { DEFAULT_PAGE } from "@/modules/media/constants";
 import type { MediaLibraryView } from "@/modules/media/constants";
-import { RECENT_PREVIEW_COUNT, useMediaRecent } from "@/modules/media/hooks/use-media";
+import {
+  RECENT_BOX_SIZE,
+  RECENT_PREVIEW_COUNT,
+  useMediaRecent,
+} from "@/modules/media/hooks/use-media";
 
 import { MediaCard } from "./media-card";
+import { MediaViewMore } from "./media-view-more";
 
 interface MediaRecentBoxProps {
   /** The current library view. The box only renders inside My Drive. */
@@ -21,40 +22,27 @@ interface MediaRecentBoxProps {
 }
 
 /**
- * A preview of the newest active Media. It is shown inside My Drive only, is
- * hidden while searching and never drawn when the library has no active Media.
- * "View all" expands the box in place with its own pagination; the expansion is
- * UI state, not URL state, and resets on navigation.
+ * A preview of the newest active Media, capped at two rows. It is shown inside
+ * My Drive only, is hidden while searching and never drawn when the library has
+ * no active Media. The single read holds eight rows; "View more" reveals the
+ * second four locally, so the reveal needs no request. The reveal is UI state,
+ * not URL state, and resets on navigation.
  */
 export const MediaRecentBox = ({ view, search, onMove }: MediaRecentBoxProps) => {
-  const [expanded, setExpanded] = useState(false);
-  const [page, setPage] = useState(DEFAULT_PAGE);
+  const [revealed, setRevealed] = useState(RECENT_PREVIEW_COUNT);
 
-  const { data } = useMediaRecent(page);
+  const { data } = useMediaRecent();
 
   if (view !== "active" || search.trim().length > 0) return null;
   if (!data || data.total === 0) return null;
 
-  const visibleItems = expanded
-    ? data.items
-    : data.items.slice(0, RECENT_PREVIEW_COUNT);
+  const visibleItems = data.items.slice(0, revealed);
+  const limit = Math.min(RECENT_BOX_SIZE, data.items.length);
 
   return (
     <section aria-label="Recent Media" className="rounded-lg border">
-      <div className="flex items-center justify-between border-b p-4">
+      <div className="border-b p-4">
         <h2 className="text-sm font-medium">Recent</h2>
-        {data.total > RECENT_PREVIEW_COUNT && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setExpanded((current) => !current);
-              setPage(DEFAULT_PAGE);
-            }}
-          >
-            {expanded ? "Show less" : "View all"}
-          </Button>
-        )}
       </div>
       <div className="p-4">
         <div className="grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4">
@@ -73,11 +61,13 @@ export const MediaRecentBox = ({ view, search, onMove }: MediaRecentBoxProps) =>
             />
           ))}
         </div>
-        {expanded && (
-          <DataPagination
-            page={page}
-            totalPages={data.totalPages}
-            onPageChange={setPage}
+        {revealed < limit && (
+          <MediaViewMore
+            onClick={() =>
+              setRevealed((current) =>
+                Math.min(current + RECENT_PREVIEW_COUNT, RECENT_BOX_SIZE),
+              )
+            }
           />
         )}
       </div>

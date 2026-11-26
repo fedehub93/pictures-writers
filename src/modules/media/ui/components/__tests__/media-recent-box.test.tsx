@@ -8,7 +8,7 @@ import type { MediaLibraryItem } from "../../../lib/media-library";
 
 vi.mock("../../../hooks/use-media", () => ({
   RECENT_PREVIEW_COUNT: 4,
-  RECENT_PAGE_SIZE: 8,
+  RECENT_BOX_SIZE: 8,
   useMediaRecent: vi.fn(),
 }));
 
@@ -58,16 +58,22 @@ const ITEM = (id: string, name: string): MediaLibraryItem => ({
   storageDriver: "local",
 });
 
+const items = (count: number) =>
+  Array.from({ length: count }, (_, index) => {
+    const number = index + 1;
+    return ITEM(`media-${number}`, `Media ${number}`);
+  });
+
 let root: ReturnType<typeof createRoot> | null = null;
 let container: HTMLDivElement | null = null;
 
 function mount(
   total: number,
-  items: MediaLibraryItem[] = [],
-  props: Partial<Omit<React.ComponentProps<typeof MediaRecentBox>, "onMove">> = {},
+  data: MediaLibraryItem[] = items(total),
+  props: Partial<React.ComponentProps<typeof MediaRecentBox>> = {},
 ) {
   (useMediaRecent as ReturnType<typeof vi.fn>).mockReturnValue({
-    data: { items, total, totalPages: Math.ceil(total / 8) },
+    data: { items: data, total },
   });
 
   container = document.createElement("div");
@@ -88,6 +94,10 @@ function mount(
   });
 
   return container;
+}
+
+function cards(scope: HTMLElement) {
+  return [...scope.querySelectorAll('[aria-label^="More actions for "]')];
 }
 
 async function click(scope: HTMLElement, text: string) {
@@ -112,15 +122,13 @@ afterEach(() => {
 });
 
 describe("MediaRecentBox", () => {
-  it("shows up to four recent Media", () => {
-    const scope = mount(
-      4,
-      [1, 2, 3, 4].map((i) => ITEM(`media-${i}`, `Media ${i}`)),
-    );
+  it("opens with the four newest Media", () => {
+    const scope = mount(8);
 
+    expect(cards(scope).length).toBe(4);
     expect(scope.textContent).toContain("Media 1");
     expect(scope.textContent).toContain("Media 4");
-    expect(scope.textContent).not.toContain("View all");
+    expect(scope.textContent).not.toContain("Media 5");
   });
 
   it("is not drawn when there are no active Media", () => {
@@ -129,68 +137,66 @@ describe("MediaRecentBox", () => {
   });
 
   it("is hidden while searching", () => {
-    const scope = mount(
-      4,
-      [1, 2, 3, 4].map((i) => ITEM(`media-${i}`, `Media ${i}`)),
-      { search: "query" },
-    );
+    const scope = mount(5, items(5), { search: "query" });
     expect(scope.children.length).toBe(0);
   });
 
   it("is hidden in the Archived view", () => {
-    const scope = mount(
-      4,
-      [1, 2, 3, 4].map((i) => ITEM(`media-${i}`, `Media ${i}`)),
-      { view: "archived" },
-    );
+    const scope = mount(5, items(5), { view: "archived" });
     expect(scope.children.length).toBe(0);
   });
 
-  it("shows View all only when more than four exist", () => {
-    const scope = mount(
-      5,
-      [1, 2, 3, 4, 5].map((i) => ITEM(`media-${i}`, `Media ${i}`)),
-    );
-
-    expect(scope.textContent).toContain("View all");
+  it("hides View more at four or fewer", () => {
+    const scope = mount(4);
+    expect(scope.textContent).not.toContain("View more");
   });
 
-  it("expands to the full list and paginates", async () => {
-    const scope = mount(
-      10,
-      [1, 2, 3, 4].map((i) => ITEM(`media-${i}`, `Media ${i}`)),
-    );
+  it("shows View more when more than four exist", () => {
+    const scope = mount(5, items(5));
+    expect(scope.textContent).toContain("View more");
+  });
 
-    expect(scope.textContent).toContain("View all");
+  it("reveals the second row on one activation and never grows past eight", async () => {
+    const scope = mount(12, items(12));
+
+    await click(scope, "View more");
+
+    expect(cards(scope).length).toBe(8);
+    expect(scope.textContent).toContain("Media 8");
+    expect(scope.textContent).not.toContain("Media 9");
+  });
+
+  it("drops the control at the cap", async () => {
+    const scope = mount(12, items(12));
+
+    expect(scope.textContent).toContain("View more");
+    await click(scope, "View more");
+    expect(scope.textContent).not.toContain("View more");
+  });
+
+  it("drops the control when the second row is the last item", async () => {
+    const scope = mount(5, items(5));
+
+    await click(scope, "View more");
+
+    expect(cards(scope).length).toBe(5);
+    expect(scope.textContent).toContain("Media 5");
+    expect(scope.textContent).not.toContain("View more");
+  });
+
+  it("renders no pagination and no collapse control", () => {
+    const scope = mount(12, items(8));
+
+    expect(scope.textContent).not.toContain("Page ");
+    expect(scope.textContent).not.toContain("Previous");
+    expect(scope.textContent).not.toContain("Next");
     expect(scope.textContent).not.toContain("Show less");
-
-    await click(scope, "View all");
-
-    expect(scope.textContent).toContain("Show less");
-    expect(scope.textContent).toContain("Page 1 of 2");
+    expect(scope.textContent).not.toContain("View all");
   });
 
   it("calls onMove when a card menu requests it", async () => {
     const onMove = vi.fn();
-    (useMediaRecent as ReturnType<typeof vi.fn>).mockReturnValue({
-      data: {
-        items: [ITEM("media-1", "Movable")],
-        total: 1,
-        totalPages: 1,
-      },
-    });
-
-    container = document.createElement("div");
-    document.body.appendChild(container);
-    root = createRoot(container);
-
-    act(() => {
-      root!.render(
-        <QueryClientProvider client={new QueryClient()}>
-          <MediaRecentBox view="active" search="" onMove={onMove} />
-        </QueryClientProvider>,
-      );
-    });
+    mount(1, [ITEM("media-1", "Movable")], { onMove });
 
     const trigger = document.querySelector<HTMLButtonElement>(
       '[aria-label="More actions for Movable"]',

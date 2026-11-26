@@ -4,7 +4,7 @@ import { inferInput } from "@trpc/tanstack-react-query";
 import { useTRPC } from "@/trpc/client";
 import { trpc } from "@/trpc/server";
 
-import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from "../constants";
+import { DEFAULT_PAGE } from "../constants";
 
 type MediaListInput = inferInput<typeof trpc.media.getMany>;
 type MediaMetaInput = inferInput<typeof trpc.media.getMeta>;
@@ -17,35 +17,31 @@ export const useSuspenseMedia = (params: MediaListInput) => {
 };
 
 /**
- * How many recent Media the collapsed preview shows. The Recent box always
- * fetches the expanded page size and slices the preview, so expanding from the
- * preview needs no extra round-trip.
+ * How many recent Media the preview opens with, and how many one "View more"
+ * activation adds. The box reads eight in one request, so the second row needs
+ * no round-trip.
  */
 export const RECENT_PREVIEW_COUNT = 4;
 
-/** The page size the expanded Recent box uses for its own pagination. */
-export const RECENT_PAGE_SIZE = DEFAULT_PAGE_SIZE;
-
-/** Non-suspense read of the newest active Media for the Recent box. */
-export const useMediaRecent = (page: number = DEFAULT_PAGE) => {
-  const trpc = useTRPC();
-
-  return useQuery(
-    trpc.media.getMany.queryOptions({
-      view: "recent",
-      search: "",
-      page,
-      pageSize: RECENT_PAGE_SIZE,
-    }),
-  );
-};
+/**
+ * The single read's page size, and the box's hard cap: two preview rows, so a
+ * second activation can always complete the row without another request.
+ */
+export const RECENT_BOX_SIZE = RECENT_PREVIEW_COUNT * 2;
 
 /** The input the server prefetches for the Recent box preview. */
 export const recentMediaInput = {
   view: "recent" as const,
   search: "",
   page: DEFAULT_PAGE,
-  pageSize: RECENT_PAGE_SIZE,
+  pageSize: RECENT_BOX_SIZE,
+};
+
+/** Non-suspense read of the newest active Media for the Recent box. */
+export const useMediaRecent = () => {
+  const trpc = useTRPC();
+
+  return useQuery(trpc.media.getMany.queryOptions(recentMediaInput));
 };
 
 /**
