@@ -1,6 +1,14 @@
 "use client";
 
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/ui/select";
+
+import {
   MEDIA_LIBRARY_SORTS,
   type MediaLibrarySort,
 } from "../../constants";
@@ -25,16 +33,19 @@ export const MediaSortSelect = ({
   value,
   onChange,
 }: MediaSortSelectProps) => (
-  <select
-    aria-label="Sort by"
-    className="h-8 rounded-md border bg-background px-2 text-sm"
+  <Select
     value={value}
-    onChange={(event) => onChange(event.target.value as MediaLibrarySort)}
+    onValueChange={(next) => onChange(next as MediaLibrarySort)}
   >
-    {MEDIA_LIBRARY_SORTS.map((sort) => (
-      <option key={sort} value={sort}>
-        {SORT_LABELS[sort]}
-      </option>
-    ))}
-  </select>
+    <SelectTrigger size="sm" aria-label="Sort by" className="min-w-28">
+      <SelectValue />
+    </SelectTrigger>
+    <SelectContent position="popper" align="end">
+      {MEDIA_LIBRARY_SORTS.map((sort) => (
+        <SelectItem key={sort} value={sort}>
+          {SORT_LABELS[sort]}
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
 );

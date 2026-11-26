@@ -204,15 +204,28 @@ describe("MediaLibraryPanel", () => {
     const onSortChange = vi.fn();
     const scope = mount({ onSortChange });
 
-    const select = scope.querySelector<HTMLSelectElement>(
+    const trigger = scope.querySelector<HTMLButtonElement>(
       '[aria-label="Sort by"]',
     );
-    expect(select).not.toBeNull();
-    expect(select!.value).toBe("created");
+    expect(trigger).not.toBeNull();
+    expect(trigger!.textContent).toContain("Created");
 
     await act(async () => {
-      select!.value = "name";
-      select!.dispatchEvent(new Event("change", { bubbles: true }));
+      trigger!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    const content = document.getElementById(
+      trigger!.getAttribute("aria-controls") ?? "",
+    );
+    expect(content).not.toBeNull();
+
+    const option = [
+      ...content!.querySelectorAll<HTMLElement>('[role="option"]'),
+    ].find((candidate) => candidate.textContent?.includes("Name"));
+    expect(option).not.toBeUndefined();
+
+    await act(async () => {
+      option!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
 
     expect(onSortChange).toHaveBeenCalledWith("name");
