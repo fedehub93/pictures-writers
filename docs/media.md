@@ -127,11 +127,13 @@ The sidebar is `w-64` and shows the My Drive tree, the Archived view link, the p
 "New subfolder" action and the storage-details widget. There is no Recent link in the sidebar:
 Recent is now a preview box inside My Drive rather than a page view.
 
-The page header shows "Media" with no entry count. One control row under it holds the search at
-the left and "New Folder" plus "Upload Media" at the right; the storage-driver select and its
-helper line are no longer on the page. "New Folder" opens the existing folder-name dialog and
-creates inside the open folder, or at the My Drive root while searching. The rehome banner stays
-full width under the control row.
+The page header shows "Media" with no entry count. One control row under it holds "New Folder" and
+"Upload Media" at the left and a wide but bounded search (`w-full max-w-lg`) at the right: the
+search keeps its "Search by name" placeholder and debounce, and wraps onto its own full-width line
+under the actions when the row is too narrow for both. Archived hides the two actions and keeps the
+search. The storage-driver select and its helper line are no longer on the page. "New Folder" opens
+the existing folder-name dialog and creates inside the open folder, or at the My Drive root while
+searching. The rehome banner stays full width under the control row.
 
 Below the banner, My Drive is drawn as a bordered panel. Its header is "My Drive" at the root and
 a clickable breadcrumb (`My Drive / Parent / Folder`) inside a folder. Bulk actions (`Move to
@@ -139,6 +141,13 @@ folder`, `Archive`, `Delete`) sit under the header whenever at least one card is
 details column lives inside this panel as its right-hand column: it describes the selected Media,
 otherwise the open folder, otherwise the text placeholder "Select an item to view more
 information". Below `xl` the details stack under the grid.
+
+The panel no longer shows a relational-reference count, and the details column no longer has a
+"Used in" row: the count covered only relational references and missed Media embedded in rich-text
+JSON, so it answered no question the editor could trust. The server guard is unchanged: permanent
+deletion of a Media that content still uses is refused, and the refusal states that the Media is
+still in use and those uses must be removed first, without quoting a number. The archive and delete
+dialogs describe the action the same way.
 
 The Recent box is shown inside My Drive only — at the root and inside any folder — and is hidden
 while searching and in Archived. It is a two-row preview: one read of eight with the four newest on
@@ -157,6 +166,29 @@ search spans the whole active library and drops the folder filter: a name is oft
 the editor remembers, and searching the open folder alone would hide a copy filed elsewhere.
 Archived lists every archived Media. Archived Media keep their `folderId` but never appear inside
 a folder, and a folder's item count excludes them.
+
+My Drive and Archived append the next block of eight Media only when the editor activates the
+centered "View more" control under the grid; the rows already on screen keep their place. The
+control shows an inline spinner and refuses a second activation while the block is in flight, puts
+a toast on a failed request and returns enabled so the editor can retry, and disappears when the
+last block is loaded. Folders come from the first block only, so they stay at the top and never
+repeat. The first block is prefetched with the page, so the panel hydrates with content and no
+empty grid flashes. Checked Media survive loading another block because their cards remain on
+screen; they are cleared when the search, view, folder or sort changes, because the loaded set is
+replaced. The page number is no longer part of the URL: loaded blocks are query state, and a legacy
+`?page=` parameter is ignored rather than rejected.
+
+The order is a selector at the right of the panel header, beside the My Drive breadcrumb or the
+Archived title; it has no visible label and is announced as "Sort by". Created is the default and
+lists the newest first, Name lists A to Z ignoring case, and Size lists the largest first with
+Media of unknown size last. The chosen order lives in the URL as `sort`, written only when it is
+not Created, and applies at the root, inside a folder and to search results; Recent stays
+newest-first. Changing it restarts the list from the first block, scrolls the panel back to its top
+and clears the checked Media, because the loaded blocks belonged to the previous order. The header
+count ignores the order, so a reorder does not refetch it.
+
+The URL carries the scope and the order as `search`, `view`, `folderId` and `sort`, so a shared
+link opens the same list; each parameter is cleared when it holds its default.
 
 `recent` stays in the server enum because the asset picker and the Recent box read it as the
 flat, newest-first active list. An old `?view=recent` URL is normalized to My Drive on the client
@@ -231,6 +263,8 @@ clicking a folder card still opens it.
 | Admin folder sidebar and tree | `src/modules/media/ui/components/media-folder-sidebar.tsx`, `src/modules/media/ui/components/media-folder-tree.tsx` |
 | Folder-scoped grid and folder card | `src/modules/media/ui/components/media-grid.tsx`, `src/modules/media/ui/components/media-folder-card.tsx` |
 | My Drive / Archived panel | `src/modules/media/ui/components/media-library-panel.tsx` |
+| Library order selector | `src/modules/media/ui/components/media-sort-select.tsx` |
+| Library URL contract (search, view, folder, sort) | `src/modules/media/lib/media-search-params.ts`, `src/modules/media/params.ts` |
 | Recent box two-row preview and the shared View more control | `src/modules/media/ui/components/media-recent-box.tsx`, `src/modules/media/ui/components/media-view-more.tsx`, `src/modules/media/hooks/use-media.ts` |
 | Shared create/rename folder dialog | `src/modules/media/ui/components/media-folder-dialog-provider.tsx` |
 | Move between folders: mutation and picker | `src/modules/media/server/media-service.ts`, `src/modules/media/ui/components/media-move-dialog.tsx` |
