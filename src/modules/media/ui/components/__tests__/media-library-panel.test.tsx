@@ -87,10 +87,10 @@ function mount(
           folder={null}
           folderPending={false}
           view="active"
-          page={1}
-          totalPages={1}
+          hasMore={false}
+          isLoadingMore={false}
           folderTree={[]}
-          onPageChange={() => undefined}
+          onLoadMore={() => undefined}
           onOpenFolder={() => undefined}
           onRequestMove={() => undefined}
           checkedIds={[]}
@@ -133,6 +133,42 @@ describe("MediaLibraryPanel", () => {
 
     expect(scope.textContent).not.toContain("relational references");
     expect(scope.textContent).not.toContain("rich text");
+  });
+
+  it("renders View more when another block exists", () => {
+    const scope = mount({ hasMore: true });
+    expect(scope.textContent).toContain("View more");
+  });
+
+  it("does not render View more at the end of the list", () => {
+    const scope = mount({ hasMore: false });
+    expect(scope.textContent).not.toContain("View more");
+  });
+
+  it("asks for the next block when View more is activated", async () => {
+    const onLoadMore = vi.fn();
+    const scope = mount({ hasMore: true, onLoadMore });
+
+    const button = [...scope.querySelectorAll("button")].find((candidate) =>
+      candidate.textContent?.includes("View more"),
+    );
+    expect(button).not.toBeNull();
+
+    await act(async () => {
+      button!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    expect(onLoadMore).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows the loading state while the next block loads", () => {
+    const scope = mount({ hasMore: true, isLoadingMore: true });
+
+    const button = [...scope.querySelectorAll("button")].find((candidate) =>
+      candidate.textContent?.includes("View more"),
+    );
+    expect(button?.disabled).toBe(true);
+    expect(button?.getAttribute("aria-busy")).toBe("true");
   });
 
   it("shows the bulk action slot when a card is checked", async () => {

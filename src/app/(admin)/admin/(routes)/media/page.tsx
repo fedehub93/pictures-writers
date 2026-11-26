@@ -36,15 +36,20 @@ const MediaPage = async ({ searchParams }: Props) => {
       ? { ...filters, view: "active" as const }
       : filters;
 
-  prefetchMedia(listFilters);
+  // The first block goes into the grid's infinite key, so the suspense
+  // boundary resolves with content rather than an empty grid.
+  const prefetches = [
+    prefetchMedia(listFilters),
+    prefetchMediaMeta({
+      search: filters.search,
+      view: filters.view,
+      folderId: filters.folderId,
+    }),
+  ];
   if (filters.view !== "archived") {
-    prefetchMediaRecent();
+    prefetches.push(prefetchMediaRecent());
   }
-  await prefetchMediaMeta({
-    search: filters.search,
-    view: filters.view,
-    folderId: filters.folderId,
-  });
+  await Promise.all(prefetches);
 
   return (
     <HydrateClient>

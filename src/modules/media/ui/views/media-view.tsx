@@ -8,7 +8,7 @@ import { ErrorState } from "@/shared/components/error-state";
 import { LoadingState } from "@/shared/components/loading-state";
 import { useTRPC } from "@/trpc/client";
 
-import { DEFAULT_PAGE, type MediaLibraryView } from "../../constants";
+import { type MediaLibraryView } from "../../constants";
 import { mediaErrorMessage } from "../../lib/error-message";
 import { openMediaFolderId } from "../../lib/media-folder";
 import { useMediaFilters } from "../../hooks/use-media-filters";
@@ -34,21 +34,27 @@ export const MediaView = () => {
   const listView: MediaLibraryView =
     filters.view === "recent" ? "active" : filters.view;
   const listFilters = { ...filters, view: listView };
-  const { data } = useSuspenseMedia(listFilters);
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useSuspenseMedia(listFilters);
+
+  // The blocks already loaded are one list: the rows keep their place as the
+  // next block appends, and folders come from the first block only, so they
+  // never repeat above later blocks.
+  const items = data.pages.flatMap((page) => page.items);
+  const folders = data.pages[0]?.folders ?? [];
 
   // The Media a move would file: one from a card menu or the whole selection
   // from the bulk toolbar. The dialog lives here so both the Recent box and the
   // My Drive panel can share it.
   const [moveIds, setMoveIds] = useState<string[] | null>(null);
 
-  // Opening a folder is navigation inside My Drive: it always returns to page
-  // one, because a page number belongs to the scope it was counted in. An empty
-  // string means the My Drive root.
+  // Opening a folder is navigation inside My Drive: it always starts the list
+  // over, because the loaded blocks belong to the scope they were counted in.
+  // An empty string means the My Drive root.
   const openFolder = (folderId: string) =>
     setFilters({
       view: "active",
       folderId: folderId || null,
-      page: DEFAULT_PAGE,
     });
 
   const onMove = async (folderId: string | null) => {
@@ -69,11 +75,11 @@ export const MediaView = () => {
     }
   };
 
-  // A selection belongs to the page it was made on: the same id may open
-  // another page, view or folder, where the details it would show are gone.
+  // A selection belongs to the scope it was made in: loading another block
+  // keeps it, because those cards stay on screen, but a new search, view or
+  // folder starts a different list and drops it.
   const scopeKey = JSON.stringify([
     filters.search,
-    filters.page,
     listView,
     filters.folderId,
   ]);
@@ -90,14 +96,44 @@ export const MediaView = () => {
   const { data: folderTree } = useMediaFolderTree();
 
   // The My Drive panel owns checked ids; the view needs to clear them after a
-  // successful move so the checkbox state stays honest.
-  const [checkedIdsFromPanel, setCheckedIdsFromPanel] = useState<string[]>([]);
+  // successful move so the checkbox state stays honest. The ids are stamped
+  // with the scope they were checked in, so changing search, view or folder
+  // yields an empty selection without waiting for an effect.
+  const [selection, setSelection] = useState<{
+    scope: string;
+    ids: string[];
+  }>({ scope: scopeKey, ids: [] });
+
+  const setCheckedIdsFromPanel = (
+    update: string[] | ((current: string[]) => string[]),
+  ) =>
+    setSelection((current) => {
+      const checked = current.scope === scopeKey ? current.ids : [];
+      return {
+        scope: scopeKey,
+        ids: typeof update === "function" ? update(checked) : update,
+      };
+    });
+
+  const checkedIdsFromPanel =
+    selection.scope === scopeKey ? selection.ids : [];
+
+  // A failed block leaves the control in place and enabled, so the editor can
+  // retry; the toast says what went wrong. `throwOnError` is needed because the
+  // observer otherwise swallows the rejection.
+  const onLoadMore = async () => {
+    try {
+      await fetchNextPage({ throwOnError: true });
+    } catch (error) {
+      toast.error(mediaErrorMessage(error));
+    }
+  };
 
   return (
     <div className="flex gap-6 px-6">
       <MediaFolderSidebar />
-      {/* Remounting on a filter change is what empties the selection: it never
-          survives into a page, search, view or folder the admin cannot see. */}
+      {/* Remounting on a filter change empties the panel's own state; the
+          checked ids are scope-stamped above for the same reason. */}
       <div key={scopeKey} className="min-w-0 flex-1 flex flex-col gap-y-6">
         <MediaRecentBox
           view={listView}
@@ -105,15 +141,15 @@ export const MediaView = () => {
           onMove={(mediaId) => setMoveIds([mediaId])}
         />
         <MediaLibraryPanel
-          items={data.items}
-          folders={data.folders}
+          items={items}
+          folders={folders}
           folder={folder ?? null}
           folderPending={openFolderId !== null && isFolderPending}
           view={listView}
-          page={filters.page}
-          totalPages={data.totalPages}
+          hasMore={hasNextPage}
+          isLoadingMore={isFetchingNextPage}
           folderTree={folderTree ?? []}
-          onPageChange={(page) => setFilters({ page })}
+          onLoadMore={() => void onLoadMore()}
           onOpenFolder={openFolder}
           onRequestMove={(ids) => setMoveIds(ids)}
           checkedIds={checkedIdsFromPanel}

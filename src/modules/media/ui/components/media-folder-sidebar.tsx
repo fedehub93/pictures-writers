@@ -19,7 +19,7 @@ import {
 import { ScrollArea } from "@/shared/ui/scroll-area";
 import { Skeleton } from "@/shared/ui/skeleton";
 
-import { DEFAULT_PAGE, type MediaLibraryView } from "../../constants";
+import { type MediaLibraryView } from "../../constants";
 import { useMediaFolderTree, useMediaMeta } from "../../hooks/use-media";
 import { useMediaFilters } from "../../hooks/use-media-filters";
 import { useMediaInvalidation } from "../../hooks/use-media-invalidation";
@@ -67,12 +67,12 @@ export const MediaFolderSidebar = () => {
 
   const isDeleting = remove.isPending;
 
-  // Every navigation returns to page one: a page number only exists inside the
-  // scope it was counted in.
+  // Every navigation starts a fresh list: the loaded blocks belong to the
+  // scope they were counted in.
   const openView = (view: MediaLibraryView) =>
-    setFilters({ view, folderId: null, page: DEFAULT_PAGE });
+    setFilters({ view, folderId: null });
   const openFolder = (folder: MediaFolderNode) => {
-    setFilters({ view: "active", folderId: folder.id, page: DEFAULT_PAGE });
+    setFilters({ view: "active", folderId: folder.id });
     // The branch opens with the folder, so the highlighted row is on screen.
     setExpandedIds((current) => new Set(current).add(folder.id));
   };

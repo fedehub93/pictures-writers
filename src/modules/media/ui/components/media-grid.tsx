@@ -22,7 +22,7 @@ interface MediaGridProps {
 /**
  * The card grid stays a grid: the thumbnail is the content, not a column.
  * Folders are drawn before the Media of the open scope, as a file browser does,
- * and are not paginated: only the folder's contents are pages.
+ * and only in the first loaded block: only the folder's contents are paged.
  */
 export const MediaGrid = ({
   items,

@@ -1,20 +1,47 @@
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import {
+  useQuery,
+  useSuspenseInfiniteQuery,
+} from "@tanstack/react-query";
 import { inferInput } from "@trpc/tanstack-react-query";
 
-import { useTRPC } from "@/trpc/client";
+import { useTRPC, useTRPCClient } from "@/trpc/client";
 import { trpc } from "@/trpc/server";
 
-import { DEFAULT_PAGE } from "../constants";
+import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from "../constants";
+import { mediaListInfiniteKey, nextMediaPage } from "../lib/media-list";
 
 type MediaListInput = inferInput<typeof trpc.media.getMany>;
 type MediaMetaInput = inferInput<typeof trpc.media.getMeta>;
 
-/** Suspense read of the visible page of the media library. */
-export const useSuspenseMedia = (params: MediaListInput) => {
-  const trpc = useTRPC();
+/**
+ * The library's scope. How much of it is loaded is query state, so `page` and
+ * `pageSize` are never part of what the URL or the caller chooses.
+ */
+export type MediaLibraryScope = Omit<MediaListInput, "page" | "pageSize">;
 
-  return useSuspenseQuery(trpc.media.getMany.queryOptions({ ...params }));
+/**
+ * The My Drive and Archived read. It opens with the first block and "View
+ * more" appends the next one, keeping the rows already on screen.
+ *
+ * `getMany` has no cursor, so the page is the infinite query's page param and
+ * the next-page rule is composed here. The server prefetches the same key with
+ * the same input, so the suspense boundary resolves with the first block.
+ */
+export const useSuspenseMedia = (scope: MediaLibraryScope) => {
+  const trpc = useTRPC();
+  const trpcClient = useTRPCClient();
+  const input = { ...scope, pageSize: DEFAULT_PAGE_SIZE };
+
+  return useSuspenseInfiniteQuery({
+    queryKey: mediaListInfiniteKey(trpc.media.getMany.queryKey(input)),
+    queryFn: ({ pageParam, signal }) =>
+      trpcClient.media.getMany.query({ ...input, page: pageParam }, { signal }),
+    initialPageParam: DEFAULT_PAGE,
+    getNextPageParam: (lastPage, _pages, lastPageParam) =>
+      nextMediaPage(lastPage, lastPageParam),
+  });
 };
+
 
 /**
  * How many recent Media the preview opens with, and how many one "View more"

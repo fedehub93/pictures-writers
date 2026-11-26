@@ -3,6 +3,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { useTRPC, useTRPCClient } from "@/trpc/client";
 
 import { DEFAULT_PAGE, MEDIA_PICKER_PAGE_SIZE } from "../constants";
+import { nextMediaPage } from "../lib/media-list";
 
 interface UseMediaInfiniteQueryProps {
   search: string;
@@ -42,7 +43,7 @@ export const useMediaInfiniteQuery = ({
       trpcClient.media.getMany.query({ ...input, page: pageParam }, { signal }),
     initialPageParam: DEFAULT_PAGE,
     getNextPageParam: (lastPage, _pages, lastPageParam) =>
-      lastPageParam < lastPage.totalPages ? lastPageParam + 1 : undefined,
+      nextMediaPage(lastPage, lastPageParam),
     enabled,
     refetchOnWindowFocus: false,
   });

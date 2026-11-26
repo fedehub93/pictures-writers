@@ -7,7 +7,6 @@ import { Archive, ChevronRight, FolderInput, Trash } from "lucide-react";
 
 import { useTRPC } from "@/trpc/client";
 import { Button } from "@/shared/ui/button";
-import { DataPagination } from "@/shared/components/data-pagination";
 
 import { ConfirmModal } from "@/app/(admin)/_components/modals/confirm-modal";
 
@@ -25,6 +24,7 @@ import { useMediaInvalidation } from "@/modules/media/hooks/use-media-invalidati
 
 import { MediaDetailsPanel } from "./media-details-panel";
 import { MediaGrid } from "./media-grid";
+import { MediaViewMore } from "./media-view-more";
 
 interface MediaLibraryPanelProps {
   items: MediaLibraryItem[];
@@ -32,10 +32,12 @@ interface MediaLibraryPanelProps {
   folder: MediaFolderDetails | null;
   folderPending: boolean;
   view: MediaLibraryView;
-  page: number;
-  totalPages: number;
+  /** Whether another block of Media exists past the loaded rows. */
+  hasMore: boolean;
+  /** Whether the next block is in flight. */
+  isLoadingMore: boolean;
   folderTree: MediaFolderNode[];
-  onPageChange: (page: number) => void;
+  onLoadMore: () => void;
   onOpenFolder: (folderId: string) => void;
   /** Called when a card menu or the bulk toolbar asks to move one or more Media. */
   onRequestMove: (ids: string[]) => void;
@@ -45,9 +47,9 @@ interface MediaLibraryPanelProps {
 }
 
 /**
- * The bordered panel that shows the My Drive or Archived grid, its pagination,
- * the bulk action bar and the in-panel details column. Selection is controlled
- * by the parent so a successful move can clear the checkboxes.
+ * The bordered panel that shows the My Drive or Archived grid, its load-more
+ * control, the bulk action bar and the in-panel details column. Selection is
+ * controlled by the parent so a successful move can clear the checkboxes.
  */
 export const MediaLibraryPanel = ({
   items,
@@ -55,10 +57,10 @@ export const MediaLibraryPanel = ({
   folder,
   folderPending,
   view,
-  page,
-  totalPages,
+  hasMore,
+  isLoadingMore,
   folderTree,
-  onPageChange,
+  onLoadMore,
   onOpenFolder,
   onRequestMove,
   checkedIds,
@@ -218,11 +220,9 @@ export const MediaLibraryPanel = ({
                 : "No Media found"}
             </div>
           )}
-          <DataPagination
-            page={page}
-            totalPages={totalPages}
-            onPageChange={onPageChange}
-          />
+          {hasMore && (
+            <MediaViewMore onClick={onLoadMore} isLoading={isLoadingMore} />
+          )}
         </div>
         <div className="border-t xl:border-t-0 xl:border-l p-4 xl:w-72">
           <MediaDetailsPanel
